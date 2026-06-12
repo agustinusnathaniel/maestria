@@ -19,6 +19,10 @@
   Guesses lead to bugs.
 - **Don't reference internal project names in explanations** — avoid
   leaking context outside the workspace.
+- **Use opensrc instead of API calls** — when analyzing reference repos
+  or external code, use `opensrc path <owner/repo>` (e.g. `opensrc path
+facebook/react`). It clones to a global cache and prints the path for
+  file tools. Use `--cwd` to resolve versions from the current project.
 
 ## Context Management
 
