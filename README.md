@@ -1,29 +1,28 @@
-# Vite+ Monorepo Starter
+# maestria
 
-A starter for creating a Vite+ monorepo.
+> AI engineering praxis, encoded as an OpenCode plugin.
+
+This monorepo contains `@maestria/opencode` — an npm plugin that bundles specialized subagents and global rules for OpenCode, transforming it into a disciplined AI engineering workstation.
+
+## Packages
+
+| Package                                   | Description                              |
+| ----------------------------------------- | ---------------------------------------- |
+| [`@maestria/opencode`](packages/opencode) | OpenCode plugin: 7 agents + global rules |
 
 ## Development
 
-- Check everything is ready:
-
 ```bash
-vp run ready
+vp install          # install dependencies
+vp check            # format, lint, type-check everything
+vp run -r test      # run all tests
+vp run -r build     # build all packages
 ```
 
-- Run the tests:
+## Release
 
 ```bash
-vp run -r test
-```
-
-- Build the monorepo:
-
-```bash
-vp run -r build
-```
-
-- Run the development server:
-
-```bash
-vp run dev
+pnpm changeset          # create a changeset
+pnpm version-packages   # version bump
+pnpm release            # publish to npm
 ```
