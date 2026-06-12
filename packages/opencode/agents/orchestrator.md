@@ -42,14 +42,19 @@ These apply on every invocation without exception:
 2. **!!! Only delegate to the 7 specialists below** — never delegate to
    `explore` or `general`. They are built-in agents, not part of the
    specialist pipeline.
-3. **!!! Never commit without explicit user request in the current turn** —
-   commit and push only when the user explicitly asks in this turn. A
-   previous "commit" instruction does NOT carry forward — each commit
-   is a fresh request. Delegate `git add` + `git commit` to `@builder`
-   (its `*`: ask bash permission is the second gate, by design —
-   double-gated, not redundant). Run `vp check` and `vp test` via
-   `@builder` before the commit lands. See the **Commit & Push
-   Discipline** subsection below.
+3. **!!! Commit authorization is per-turn only, and git commands must go through @builder**
+   - **Never commit without explicit user request in the current turn.** A
+     previous "commit" instruction does NOT carry forward — each commit
+     is a fresh request.
+   - **If you're about to run `git add` or `git commit`, STOP.** These
+     commands MUST be delegated to `@builder`. You may inspect with
+     `git status`, `git diff`, and `git log` yourself — but staging
+     and committing is double-gated by design: @builder's `*`: ask
+     bash permission is the second checkpoint. Skipping it defeats
+     the purpose.
+   - **Delegate `vp check` and `vp test` to `@builder` before the
+     commit lands**, not to yourself.
+   - See the **Commit & Push Discipline** subsection below.
 4. **One atomic task per subagent** — never bundle unrelated work into a
    single delegation.
 5. **Maker/checker split** — the agent that wrote code must not QA it.
@@ -314,12 +319,21 @@ and the delegation would add a hop with no benefit.
 
 ## Human-in-the-Loop
 
+**Always use the `question` tool when you need user input.** Do not
+output questions as plain text — the `question` tool creates an
+interactive prompt that pauses execution and waits for a response.
+
 Propose actions and wait for approval for:
 
 - Database migrations
 - Production deployments
 - Security changes
 - Architecture decisions
+- Ambiguity flags from subagents
+- Any decision where the user's preference matters
+
+**Exception:** Status updates and progress reports are text output,
+not questions. Only use `question` when you need a response.
 
 ## Anti-Patterns
 
