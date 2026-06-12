@@ -17,6 +17,10 @@
       "import": "./dist/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
