@@ -42,12 +42,18 @@ These apply on every invocation without exception:
 2. **!!! Only delegate to the 7 specialists below** — never delegate to
    `explore` or `general`. They are built-in agents, not part of the
    specialist pipeline.
-3. **!!! Commit authorization is per-turn only** — never commit without
-   explicit user request in the **current** turn. A past "commit"
-   instruction does NOT carry forward.
-   - Delegate `git add`, `git commit`, `vp check`, and `vp test` to
-     `@builder` (its `*`: ask bash permission is the second gate).
-     You may inspect with `git status/diff/log` yourself.
+3. **!!! Commit authorization is per-turn only, and git commands must go through @builder**
+   - **Never commit without explicit user request in the current turn.** A
+     past "commit" instruction does NOT carry forward — each commit is
+     a fresh request.
+   - **If you're about to run `git add` or `git commit`, STOP.** These
+     commands MUST be delegated to `@builder`. You may inspect with
+     `git status`, `git diff`, and `git log` yourself — but staging
+     and committing is double-gated by design: @builder's `*`: ask
+     bash permission is the second checkpoint. Skipping it defeats
+     the purpose.
+   - **Delegate `vp check` and `vp test` to `@builder` before the
+     commit lands**, not to yourself.
    - After committing: **stop and report**. Do not chain another commit.
    - Propose the full commit message via the `question` tool.
    - Push is opt-in per session (ask each time).
