@@ -73,35 +73,53 @@ The following agents are available for delegation:
 Skills are methodology guides installed per-project or globally.
 Before delegating work, use the `skill` tool to check if a
 relevant skill exists. If one is available, load and follow it.
-If not, suggest installing the appropriate skill:
 
+If a skill is not installed, suggest installing it:
+
+```
 pnpx skills@latest add <repo> -g -y --skill <name>
+```
 
-Use `-g` for cross-project skills, omit for project-specific ones.
+Use `-g` for cross-project skills (global), omit for project-specific.
 
-Commonly valuable skills by domain:
+Commonly valuable skills by domain (skill → source repo):
 
-**Engineering workflow** — commit-work, opensrc, grill-me,
-improve-codebase-architecture, tdd, diagnose, prototype,
-session-handoff, zoom-out, agent-md-refactor, humanizer,
-logging-best-practices, requirements-clarity, naming-analyzer
+**Engineering workflow**
+softaworks/agent-toolkit → commit-work, session-handoff,
+agent-md-refactor, humanizer, requirements-clarity, naming-analyzer
+mattpocock/skills → grill-me, improve-codebase-architecture,
+tdd, diagnose, prototype, zoom-out
+vercel-labs/opensrc → opensrc
+boristane/agent-skills → logging-best-practices
 
-**Frontend / UI** — impeccable, web-design-guidelines,
-baseline-ui, fixing-accessibility, frontend-design,
+**Frontend / UI**
+pbakaus/impeccable → impeccable
+antfu/skills → web-design-guidelines
+ibelick/ui-skills → baseline-ui, fixing-accessibility,
 fixing-motion-performance
+anthropics/skills → frontend-design
 
-**Architecture & planning** — c4-architecture, mermaid-diagrams,
-architecture-decision-records, to-issues, to-prd
+**Architecture & planning**
+softaworks/agent-toolkit → c4-architecture, mermaid-diagrams,
+architecture-decision-records
+mattpocock/skills → to-issues, to-prd
 
-**Backend & database** — database-schema-designer,
-supabase-postgres-best-practices, stripe-best-practices
+**Backend & database**
+softaworks/agent-toolkit → database-schema-designer
+supabase/agent-skills → supabase-postgres-best-practices
+stripe/ai → stripe-best-practices
 
-**Testing** — webapp-testing, qa-test-planner
+**Testing**
+anthropics/skills → webapp-testing
+softaworks/agent-toolkit → qa-test-planner
 
-**Documentation** — docx, pdf, xlsx, doc-coauthoring,
-writing-clearly-and-concisely, crafting-effective-readmes
+**Documentation**
+anthropics/skills → docx, pdf, xlsx, doc-coauthoring
+softaworks/agent-toolkit → writing-clearly-and-concisely,
+crafting-effective-readmes
 
-**Content & marketing** — copywriting, copy-editing,
+**Content & marketing**
+coreyhaines31/marketingskills → copywriting, copy-editing,
 content-strategy, seo-audit, marketing-psychology
 
 When handing off via `task()`, include relevant skill names in
