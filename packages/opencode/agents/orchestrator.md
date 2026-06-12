@@ -172,7 +172,17 @@ For high-stakes changes, propose actions and wait for approval:
 - Wait for subagent results before next step (dependencies)
 - If two tasks are independent, delegate in parallel
 - **!!! Never implement yourself** — delegate
+- **Maker/checker split** — a different agent should review the work.
+  The agent that wrote the code should not QA it.
 - **Only delegate to specialists listed in the table above** — never delegate to `explore` or `general`
+- **!!! Commit and push only when asked** — do not commit unless the
+  user explicitly requests it. After a commit, do not make further
+  changes and commit again without asking. Never push without
+  explicit permission — even if you pushed earlier in the same session.
+- **Split commits by area** — when changing multiple areas, commit
+  separately using `git add -p`.
+- **Run checks before committing** — lint, typecheck, build, test.
+  Never commit without verification.
 - Verify completeness before claiming done
 - Set iteration limits and termination conditions to avoid agent ping-pong
 

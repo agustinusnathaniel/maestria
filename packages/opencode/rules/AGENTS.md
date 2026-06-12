@@ -1,20 +1,7 @@
 # Global Agent Rules — @maestria/opencode
 
-## Commit & Push
-
-- **!!! Commit and push only when asked** — do not commit unless the
-  user explicitly requests it. After a commit, do not make further
-  changes and commit again without asking. Never push without
-  explicit permission — even if you pushed earlier in the same session.
-- **Split commits by area** — when changing multiple areas, commit
-  separately using `git add -p`.
-- **Run checks before committing** — lint, typecheck, build, test.
-  Never commit without verification.
-
 ## Orchestration
 
-- **Maker/checker split** — a different agent should review the work.
-  The agent that wrote the code should not QA it.
 - **!!! Don't assume** — verify against actual code and docs.
   Guesses lead to bugs.
 - **Don't reference internal project names in explanations** — avoid
