@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.1](https://github.com/agustinusnathaniel/maestria/compare/v0.2.0...v0.2.1) (2026-06-12)
+
+### Bug Fixes
+
+- force orchestrator delegation via permissions, inject specialist table into global rules ([74fcecd](https://github.com/agustinusnathaniel/maestria/commit/74fcecd20ec427da7accb857df2c6bb0b444b1f8))
+
 ## 0.2.0 (2026-06-12)
 
 ### Features
