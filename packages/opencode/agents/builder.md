@@ -72,9 +72,17 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `@reviewer` — Review implementation for quality gates before merging
 - `@diagnose` — Investigate root cause when unexpected issues surface mid-work
 
+## Relevant Skills
+
+- opensrc → vercel-labs/opensrc (dependency source investigation)
+- prototype → mattpocock/skills (throwaway exploration)
+- humanizer → softaworks/agent-toolkit (anti-AI-slop writing)
+- naming-analyzer → softaworks/agent-toolkit (better naming)
+
+Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
+
 ## Rules
 
-- Check the `skill` tool for relevant methodology guides before implementing
 - Touch only files relevant to the task — no collateral changes
 - Prefer `edit` over `write` — preserve existing code
 - Run tests before claiming done

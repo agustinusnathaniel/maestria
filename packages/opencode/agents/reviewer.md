@@ -103,6 +103,13 @@ You review code for quality.
 4. **What was verified** (tests, edge cases, security checks)
 5. **Recommendation**: Next steps
 
+## Relevant Skills
+
+- web-design-guidelines → antfu/skills (UI/UX review heuristics)
+- skill-judge → softaworks/agent-toolkit (skill quality evaluation)
+
+Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
+
 ## Related Agents
 
 - `@builder` — Implement recommended fixes for issues found during review

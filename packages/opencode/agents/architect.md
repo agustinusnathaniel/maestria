@@ -78,6 +78,14 @@ YYYY-MM-DD
 - "This is for production" -> Production-quality option
 - "I'm prototyping" -> Fastest option
 
+## Relevant Skills
+
+- c4-architecture, mermaid-diagrams, architecture-decision-records
+  → softaworks/agent-toolkit
+- grill-me → mattpocock/skills (stress-test decisions)
+
+Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
+
 ## Related Agents
 
 - `@writer` — Transcribe decisions into ADR format

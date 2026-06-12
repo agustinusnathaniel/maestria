@@ -74,6 +74,14 @@ You write documentation.
 - Link to relevant issues/PRs
 - Migration notes for breaking changes
 
+## Relevant Skills
+
+- docx, pdf, xlsx, doc-coauthoring → anthropics/skills (doc generation)
+- writing-clearly-and-concisely → softaworks/agent-toolkit (better prose)
+- crafting-effective-readmes → softaworks/agent-toolkit (README templates)
+
+Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
+
 ## Related Agents
 
 - `@architect` — Capture ADRs from architecture decisions and trade-off analysis

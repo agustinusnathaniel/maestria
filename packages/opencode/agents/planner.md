@@ -38,6 +38,14 @@ You create implementation plans.
 - Verify plan completeness before claiming done
 - Define guard rails: what to do and what not to do
 
+## Relevant Skills
+
+- requirements-clarity → softaworks/agent-toolkit (clarify ambiguous specs)
+- to-issues, to-prd → mattpocock/skills (plan → issues/PRDs)
+- grill-me → mattpocock/skills (stress-test plan before execution)
+
+Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
+
 ## Related Agents
 
 - `@architect` — Consult for architecture input before detailed planning
