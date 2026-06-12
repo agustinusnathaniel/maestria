@@ -2,7 +2,24 @@
   "name": "@maestria/opencode",
   "version": "0.1.0",
   "description": "OpenCode plugin encoding AI engineering praxis: rules, agents, and workflow discipline.",
+  "keywords": [
+    "agents",
+    "ai",
+    "maestria",
+    "opencode",
+    "plugin"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/opencode#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
   "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/opencode"
+  },
   "files": [
     "dist",
     "agents",
@@ -23,6 +40,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "test": "vp test",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -31,5 +49,8 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }
