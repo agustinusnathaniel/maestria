@@ -161,6 +161,7 @@ _(none — adventurer is read-only; skills load only on trigger)_
 - `opensrc` (`vercel-labs/opensrc`) — load when external library internals affect the answer
 - `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a context/container diagram
 - `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is requested
+- `agent-browser` (`vercel-labs/agent-browser`) — load when exploring a running web app, visual references/links provided, or Electron apps need inspection (skip if backend-only)
 
 ### Defer to specialist
 

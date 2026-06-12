@@ -105,6 +105,7 @@ After the ADR is written, your handoff should cover:
 
 - `architecture-decision-records` (`softaworks/agent-toolkit`) — Phase 5 (Document as ADR) requires this skill
 - `improve-codebase-architecture` (`mattpocock/skills`) — architect's home for codebase-deepen opportunities
+- `improve` (`shadcn/improve`) — survey codebase and produce prioritized implementation plans
 
 ### Load on trigger
 

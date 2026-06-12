@@ -145,6 +145,7 @@ You review code for quality.
 - `fixing-motion-performance` (`ibelick/ui-skills`) — load when reviewing animation (skip if non-UI)
 - `logging-best-practices` (`boristane/agent-skills`) — load when code adds/uses logs
 - `webapp-testing` (`anthropics/skills`) — load when reviewing tests
+- `agent-browser` (`vercel-labs/agent-browser`) — load when reviewing UI changes, verifying visual fidelity, or testing interactive flows (skip if backend-only)
 - `baseline-ui` (`ibelick/ui-skills`) — load when reviewing UI (skip if non-UI)
 - `userinterface-wiki` (`raphaelsalaja/userinterface-wiki`) — load when reviewing UI (skip if non-UI)
 

@@ -88,10 +88,11 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `vercel-react-best-practices` (`vercel-labs/agent-skills`) — load when task involves React (skip if non-frontend)
 - `vercel-composition-patterns` (`vercel-labs/agent-skills`) — load when task involves React composition (skip if non-frontend)
 - `react-dev` (`softaworks/agent-toolkit`) — load when task is React (skip if non-frontend)
-- `react-useeffect` (`softaworks/agent-toolkit`) — load when modifying `useEffect` (skip if non-frnd)
+- `react-useeffect` (`softaworks/agent-toolkit`) — load when modifying `useEffect` (skip if non-frontend)
 - `ai-sdk` (`vercel/ai`) — load when task is AI SDK (skip if unrelated)
 - `tdd` (`mattpocock/skills`) — load when user explicitly requests TDD
 - `webapp-testing` (`anthropics/skills`) — load when task needs browser-level test
+- `agent-browser` (`vercel-labs/agent-browser`) — load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
 - `vitest` (`antfu/skills`) — load when writing Vitest tests (skip if no tests)
 - `vite` (`antfu/skills`) — load when modifying `vite.config` or build
 - `pnpm` (`antfu/skills`) — load when changing `package.json`/lockfile
