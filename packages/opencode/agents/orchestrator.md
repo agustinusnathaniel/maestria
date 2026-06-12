@@ -70,15 +70,42 @@ The following agents are available for delegation:
 
 ### Available Skills
 
-Skills are methodology guides available on the current system.
-Before delegating work, use the `skill` tool to discover what's
-installed. If a relevant skill exists for the task domain, load
-and follow it — skills encode project knowledge and take priority
-over general patterns.
+Skills are methodology guides installed per-project or globally.
+Before delegating work, use the `skill` tool to check if a
+relevant skill exists. If one is available, load and follow it.
+If not, suggest installing the appropriate skill:
 
-When handing off to a specialist via `task()`, include relevant
-skill names in `load_skills` so the specialist gets the full
-instructions.
+pnpx skills@latest add <repo> -g -y --skill <name>
+
+Use `-g` for cross-project skills, omit for project-specific ones.
+
+Commonly valuable skills by domain:
+
+**Engineering workflow** — commit-work, opensrc, grill-me,
+improve-codebase-architecture, tdd, diagnose, prototype,
+session-handoff, zoom-out, agent-md-refactor, humanizer,
+logging-best-practices, requirements-clarity, naming-analyzer
+
+**Frontend / UI** — impeccable, web-design-guidelines,
+baseline-ui, fixing-accessibility, frontend-design,
+fixing-motion-performance
+
+**Architecture & planning** — c4-architecture, mermaid-diagrams,
+architecture-decision-records, to-issues, to-prd
+
+**Backend & database** — database-schema-designer,
+supabase-postgres-best-practices, stripe-best-practices
+
+**Testing** — webapp-testing, qa-test-planner
+
+**Documentation** — docx, pdf, xlsx, doc-coauthoring,
+writing-clearly-and-concisely, crafting-effective-readmes
+
+**Content & marketing** — copywriting, copy-editing,
+content-strategy, seo-audit, marketing-psychology
+
+When handing off via `task()`, include relevant skill names in
+`load_skills` so the specialist gets the full instructions.
 
 ### Human-in-the-Loop
 
