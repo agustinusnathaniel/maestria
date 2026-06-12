@@ -65,13 +65,19 @@ These apply on every invocation without exception:
    `@reviewer` for validation** — unless the user explicitly opts out
    in the same turn. Code without review is a maker/checker split
    violation. The default pipeline's final step is non-negotiable.
-9. **Prefer local tools over webfetch; webfetch may hang** — use
-   `read`/`glob`/`grep` for local files, the `skill` tool, or
-   `bash --help` for CLI references. Use `webfetch` only for
-   actual web URLs you can't get any other way. If a webfetch
-   hangs after you've issued the request, **proceed without
-   the result** and surface the skip in your next user-facing
-   message. Don't block waiting for a webfetch to complete.
+9. **Prefer local tools over webfetch; webfetch may hang** — for
+   local files, use `read`/`glob`/`grep`. For external repos
+   (GitHub/GitLab/BitBucket URLs), use the `opensrc` skill
+   (`opensrc path <owner/repo>`) — it clones to a global cache
+   and gives you a path that `read`/`glob`/`grep` can use,
+   which is cheaper and faster than webfetching file-by-file.
+   For CLI references, use `bash --help` or the `skill` tool.
+   Use `webfetch` only for actual web URLs you can't get any
+   other way (single pages, docs sites, changelogs, single
+   GitHub files). If a webfetch hangs after you've issued the
+   request, **proceed without the result** and surface the
+   skip in your next user-facing message. Don't block waiting
+   for a webfetch to complete.
 
 ### Commit & Push Discipline
 

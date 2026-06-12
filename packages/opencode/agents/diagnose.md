@@ -149,6 +149,12 @@ Save these as knowledge artifacts so they can be referenced later.
 - **!!! Validate before handoff** — never present a fix you haven't reproduced-and-verified works. Run the existing test suite, reproduce the original error, confirm it's gone.
 - **!!! If anything is unclear or ambiguous, flag it as an open question in your findings** — wrong assumptions waste more time than asking questions.
 - **Parallelization:** diagnose tasks on different bugs can run in parallel. Two diagnoses on the same bug = wasted; same root-cause cluster = consolidate first.
+- **External repos: `opensrc` for big repos, `webfetch` for single pages** —
+  For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
+  page) → `webfetch` is fine. Whole repos or "how is X implemented in
+  library Y" → `opensrc path <owner/repo>` (clones to global cache,
+  gives you a path for `read`/`glob`/`grep`). Don't webfetch a
+  multi-file repo one file at a time — clone once, read locally.
 
 **If the error description is vague or the reproduction is unclear,
 flag the ambiguity in your findings.** Wrong assumptions waste

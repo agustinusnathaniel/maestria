@@ -6,10 +6,14 @@
   Guesses lead to bugs.
 - **Don't reference internal project names in explanations** — avoid
   leaking context outside the workspace.
-- **Use opensrc instead of API calls** — when analyzing reference repos
-  or external code, use `opensrc path <owner/repo>` (e.g. `opensrc path
-facebook/react`). It clones to a global cache and prints the path for
-  file tools. Use `--cwd` to resolve versions from the current project.
+- **Use `opensrc` for repos; `webfetch` for pages** — when analyzing a
+  GitHub/GitLab/BitBucket repo or any multi-file code reference, run
+  `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`).
+  It clones to a global cache and prints a path that `read`/`glob`/`grep`
+  can use directly. For a single file, a specific page, or a known
+  URL, `webfetch` is fine. Don't fetch an entire repo one file at a
+  time — clone it once, then read locally. Use `--cwd` to resolve
+  versions from the current project.
 
 ## Delegation
 

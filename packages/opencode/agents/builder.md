@@ -123,6 +123,12 @@ This reveals what actually requires heavy tools vs. what's simple.
 - If a change grows beyond the original task scope, flag it in your
   handoff
 - Keep the change focused — one concern per invocation
+- **External repos: `opensrc` for big repos, `webfetch` for single pages** —
+  For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
+  page) → `webfetch` is fine. Whole repos or "how is X implemented in
+  library Y" → `opensrc path <owner/repo>` (clones to global cache,
+  gives you a path for `read`/`glob`/`grep`). Don't webfetch a
+  multi-file repo one file at a time — clone once, read locally.
 
 ## Handoff
 
