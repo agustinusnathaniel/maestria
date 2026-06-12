@@ -43,6 +43,10 @@ You create implementation plans.
 - requirements-clarity → softaworks/agent-toolkit (clarify ambiguous specs)
 - to-issues, to-prd → mattpocock/skills (plan → issues/PRDs)
 - grill-me → mattpocock/skills (stress-test plan before execution)
+- game-changing-features → softaworks/agent-toolkit
+  (identify high-leverage opportunities during planning)
+- prototype → mattpocock/skills (validate assumptions
+  with throwaway exploration before full planning)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

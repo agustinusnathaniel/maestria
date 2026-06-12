@@ -94,7 +94,11 @@ Always verify before handoff. Never present broken code.
 ## Relevant Skills
 
 - diagnose → mattpocock/skills (systematic debugging escalation)
-- logging-best-practices → boristane/agent-skills (canonical log line patterns)
+- logging-best-practices → boristane/agent-skills (canonical log patterns)
+- karpathy-guidelines → multica-ai/andrej-karpathy-skills
+  (prevent coding mistakes that cause bugs)
+- opensrc → vercel-labs/opensrc (investigate dependency code
+  when root cause is in a library)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

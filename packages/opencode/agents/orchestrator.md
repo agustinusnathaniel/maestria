@@ -86,22 +86,26 @@ Commonly valuable skills by domain (skill → source repo):
 
 **Engineering workflow**
 softaworks/agent-toolkit → commit-work, session-handoff,
-agent-md-refactor, humanizer, requirements-clarity, naming-analyzer
+agent-md-refactor, humanizer, requirements-clarity,
+naming-analyzer, game-changing-features, skill-judge
 mattpocock/skills → grill-me, improve-codebase-architecture,
-tdd, diagnose, prototype, zoom-out
+tdd, diagnose, prototype, zoom-out, caveman
 vercel-labs/opensrc → opensrc
 boristane/agent-skills → logging-best-practices
+multica-ai/andrej-karpathy-skills → karpathy-guidelines
+vercel-labs/skills → find-skills
 
 **Frontend / UI**
 pbakaus/impeccable → impeccable
+nutlope/hallmark → hallmark
 antfu/skills → web-design-guidelines
 ibelick/ui-skills → baseline-ui, fixing-accessibility,
-fixing-motion-performance
+fixing-motion-performance, fixing-metadata
 anthropics/skills → frontend-design
 
 **Architecture & planning**
 softaworks/agent-toolkit → c4-architecture, mermaid-diagrams,
-architecture-decision-records
+architecture-decision-records, draw-io, excalidraw
 mattpocock/skills → to-issues, to-prd
 
 **Backend & database**
@@ -120,7 +124,8 @@ crafting-effective-readmes
 
 **Content & marketing**
 coreyhaines31/marketingskills → copywriting, copy-editing,
-content-strategy, seo-audit, marketing-psychology
+content-strategy, seo-audit, marketing-psychology, social-content,
+pricing, launch
 
 When handing off via `task()`, include relevant skill names in
 `load_skills` so the specialist gets the full instructions.

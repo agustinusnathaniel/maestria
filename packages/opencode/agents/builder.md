@@ -76,8 +76,12 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 - opensrc → vercel-labs/opensrc (dependency source investigation)
 - prototype → mattpocock/skills (throwaway exploration)
+- karpathy-guidelines → multica-ai/andrej-karpathy-skills
+  (reduce common coding mistakes)
 - humanizer → softaworks/agent-toolkit (anti-AI-slop writing)
 - naming-analyzer → softaworks/agent-toolkit (better naming)
+- frontend-design → anthropics/skills (when implementing UI)
+- react-dev → softaworks/agent-toolkit (React-specific patterns)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

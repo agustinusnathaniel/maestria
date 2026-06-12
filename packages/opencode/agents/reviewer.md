@@ -107,6 +107,10 @@ You review code for quality.
 
 - web-design-guidelines → antfu/skills (UI/UX review heuristics)
 - skill-judge → softaworks/agent-toolkit (skill quality evaluation)
+- hallmark → nutlope/hallmark (anti-AI-slop design review)
+- fixing-accessibility, fixing-metadata, fixing-motion-performance
+  → ibelick/ui-skills (UI audit specializations)
+- naming-analyzer → softaworks/agent-toolkit (naming convention review)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

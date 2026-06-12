@@ -76,9 +76,13 @@ You write documentation.
 
 ## Relevant Skills
 
-- docx, pdf, xlsx, doc-coauthoring → anthropics/skills (doc generation)
+- docx, pdf, xlsx, pptx, doc-coauthoring → anthropics/skills
+  (document and presentation generation)
 - writing-clearly-and-concisely → softaworks/agent-toolkit (better prose)
 - crafting-effective-readmes → softaworks/agent-toolkit (README templates)
+- humanizer → softaworks/agent-toolkit (remove AI writing signs)
+- internal-comms → anthropics/skills (company communications)
+- template-skill → anthropics/skills (skill documentation templates)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 
