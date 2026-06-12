@@ -174,6 +174,13 @@ export const MaestriaPlugin: Plugin = async () => {
         ...agents,
       };
     },
+    "experimental.chat.system.transform": async (_input, output) => {
+      // Avoid re-injecting after compaction — check for existing marker
+      const hasAgentMarker = output.system.some((s) => s.includes("# Agent Instructions"));
+      if (!hasAgentMarker) {
+        output.system.push("# Agent Instructions");
+      }
+    },
     "experimental.session.compacting": async (_input, output) => {
       output.context.push(
         "Session was compacted. Task tracking is maintained via todowrite. " +
