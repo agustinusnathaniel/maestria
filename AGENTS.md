@@ -23,7 +23,8 @@ Monorepo structure:
 - **docs/adr/** — Architecture Decision Records
 - **apps/** — (reserved for future apps)
 
-The `@maestria/opencode` plugin registers 7 subagents (agents/\*.md) via the `config` hook and injects global rules (rules/AGENTS.md) via the `system.transform` hook.
+The `@maestria/opencode` plugin registers 7 subagents (agents/\*.md) via the `config` hook and
+injects global rules (rules/AGENTS.md) via `input.instructions`.
 
 Key files:
 

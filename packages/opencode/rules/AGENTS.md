@@ -31,9 +31,6 @@ not part of the pipeline.
 | `@reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
 | `@writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
 
-**Never implement yourself** — if you find yourself editing code, stop and
-delegate to `@builder`. Your job is orchestration, not implementation.
-
 ## Context Management
 
 - **Progressive disclosure** — start high-level, get specific as needed.

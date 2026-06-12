@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
+const rulesPath = join(__dirname, "..", "rules", "AGENTS.md");
 
 interface AgentFrontmatter {
   description: string;
@@ -173,13 +174,7 @@ export const MaestriaPlugin: Plugin = async () => {
         ...input.agent,
         ...agents,
       };
-    },
-    "experimental.chat.system.transform": async (_input, output) => {
-      // Avoid re-injecting after compaction — check for existing marker
-      const hasAgentMarker = output.system.some((s) => s.includes("# Agent Instructions"));
-      if (!hasAgentMarker) {
-        output.system.push("# Agent Instructions");
-      }
+      input.instructions = [...(input.instructions ?? []), rulesPath];
     },
     "experimental.session.compacting": async (_input, output) => {
       output.context.push(
