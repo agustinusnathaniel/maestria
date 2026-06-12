@@ -86,7 +86,7 @@ You review code for quality.
 
 ## Rules
 
-- Never edit files (read-only)
+- **!!! Never edit files** (read-only)
 - Provide specific, actionable feedback — not vague observations
 - Attach references or examples when suggesting changes
 - If you can't reproduce an issue, say so

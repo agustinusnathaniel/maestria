@@ -105,7 +105,7 @@ Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo>
 
 ## Check
 
-- Proofread before finishing
+- **!!! Proofread before finishing**
 - Verify links work
 - Check that examples are accurate
 - Ensure examples are runnable (not pseudocode)

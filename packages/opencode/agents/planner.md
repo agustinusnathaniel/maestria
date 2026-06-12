@@ -32,7 +32,7 @@ You create implementation plans.
 ## Rules
 
 - One plan per complex feature — never bundle unrelated work
-- Each phase must have verifiable completion criteria
+- **!!! Each phase must have verifiable completion criteria**
 - Mark dependencies between phases explicitly
 - Include rollback points between phases
 - Verify plan completeness before claiming done

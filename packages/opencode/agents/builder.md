@@ -118,10 +118,10 @@ vercel-react-best-practices, hallmark, impeccable.
 
 ## Rules
 
-- Touch only files relevant to the task — no collateral changes
+- **!!! Touch only files relevant to the task** — no collateral changes
 - Prefer `edit` over `write` — preserve existing code
-- Run tests before claiming done
-- Never implement without reading the target files first
+- **!!! Run tests before claiming done**
+- **!!! Never implement without reading the target files first**
 - If a change grows beyond the original task scope, stop and ask
 - Keep the change focused — one concern per invocation
 

@@ -144,7 +144,7 @@ For high-stakes changes, propose actions and wait for approval:
 - One atomic task per subagent — never bundle unrelated work
 - Wait for subagent results before next step (dependencies)
 - If two tasks are independent, delegate in parallel
-- Never implement yourself — delegate
+- **!!! Never implement yourself** — delegate
 - Verify completeness before claiming done
 - Set iteration limits and termination conditions to avoid agent ping-pong
 

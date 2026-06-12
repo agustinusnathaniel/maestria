@@ -89,7 +89,7 @@ Confirm it works:
 - Check for unintended side effects
 - Prepare rollback plan
 
-Always verify before handoff. Never present broken code.
+**!!! Always verify before handoff** — Never present broken code.
 
 ## Relevant Skills
 
