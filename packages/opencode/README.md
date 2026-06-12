@@ -19,15 +19,15 @@ This plugin bundles a set of agents and rules that encode effective AI-engineeri
 
 ## Installation
 
-Add one line to your `~/.config/opencode/opencode.jsonc`:
+Add to your `~/.config/opencode/opencode.jsonc`:
 
 ```jsonc
 {
-  "plugin": ["@maestria/opencode"],
+  "plugin": ["@maestria/opencode@latest"],
 }
 ```
 
-Restart OpenCode. The plugin auto-installs via Bun.
+If you want to pin a specific version, you can also keep a `package.json` in your config directory or let OpenCode auto-install it — the plugin publishes to npm under the `@maestria` scope. Restart OpenCode after adding the plugin.
 
 ## How It Works
 
@@ -39,11 +39,11 @@ Restart OpenCode. The plugin auto-installs via Bun.
 
 ## Updating
 
-```bash
-npm update @maestria/opencode
-```
+OpenCode auto-updates plugins on restart. Or run:
 
-Or restart OpenCode — it will auto-update the plugin.
+```bash
+opencode plugins update
+```
 
 ## License
 
