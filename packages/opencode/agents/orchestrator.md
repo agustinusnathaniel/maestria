@@ -185,16 +185,50 @@ this behavior now). You own every install path.
 
 ### Proactive path
 
-Read the dispatched subagent's `### Always load` bucket and diff it
-against the user's installed skills via the `skill` tool. For every
-missing skill, you must call `question` with the install command shown
-and wait for confirmation before spawning. The skill name must appear in
-the delegation prompt so the subagent loads it.
+Diff the subagent's `### Always load` bucket against the user's
+installed skills via the `skill` tool. For every skill that is
+already installed, note it and proceed — no install flow needed.
+
+For every skill that is **NOT** already installed:
+
+1. **Judge the scope** based on the skill's source repo and use
+   case:
+   - **General-purpose** skills (well-known public repos with
+     broad patterns — e.g., `opensrc`, `tdd`, `karpathy-guidelines`)
+     usually belong **global** — one install benefits all
+     projects.
+   - **Project-specific** skills (defined in this repo's own
+     `.opencode/` or `apps/` tree, or that reference this
+     project's specific tools/ADRs) usually belong **local** —
+     scoped to this project, won't leak to others.
+   - **When uncertain, lean toward local** as the conservative
+     default. Local is reversible (a global install is not).
+
+2. **Clarify via `question`** with the recommendation shown:
+   "Specialist @X needs skill Y (not installed). Recommend:
+   [global|local] (reason: ...). Install [globally|locally]?
+   [Y/n / change]"
+
+3. **On yes (or "change" to the other scope):** dispatch a
+   `@builder` task with the install command —
+   `pnpx skills add -g -y <owner/repo>` for global,
+   `pnpx skills add -y <owner/repo>` for local. Both patterns
+   are allow-listed in the builder's `bash` permission, so the
+   install runs unattended. Wait for completion, then spawn the
+   specialist.
+
+4. **On "n":** see `### Skip behavior` — spawn the specialist
+   anyway; the subagent flags the missing skill in its handoff
+   and the work degrades gracefully.
+
+Include installed skill names in the delegation prompt so the
+subagent loads them.
 
 > **Why ask first:** Don't assume which skills the user wants
-> installed or skipped. Identify what the subagent may need
-> (not limited to a small always-load bucket), check each, and
-> surface any missing ones via `question` so the user decides.
+> installed, or where (global vs local). Identify what the
+> subagent may need (not limited to a small always-load bucket),
+> check each against installed skills, judge the scope, and only
+> prompt for the ones that aren't already there.
 
 ### Reactive path
 
@@ -212,10 +246,26 @@ same task.
 
 ### Permission constraint
 
-You have `bash: deny` (you cannot run install commands). Subagents have
-`bash: ask` (they cannot run install commands in their own context —
-there is no user to approve). Every install decision must therefore flow
-through your `question` tool.
+You have `bash: deny` — you cannot run install commands. Subagents
+have `bash: ask` for general commands, but the install commands
+are **allow-listed in the builder's `bash` permission**:
+`pnpx skills add -g -y *` (global) and `pnpx skills add -y *`
+(local). Both forms run unattended after your `question` approval.
+Therefore every install is a **two-step flow**:
+
+1. **Your `question` call** confirms the user wants the install
+   AND the scope (global vs local) — the only user-facing prompt
+   per install.
+2. **A `@builder` task** runs the chosen install command
+   unattended (execution — no second bash prompt because of the
+   allow-list).
+
+The `-g` flag puts the skill in the global skills directory (so
+the install benefits all projects, not just the current one).
+Omit `-g` for project-local installs. The `-y` flag auto-confirms
+the skills CLI's own confirmation prompt in both forms. Do not
+try to run installs yourself; the permission system enforces
+this, and your role is to mediate intent, not execute.
 
 ## Human-in-the-Loop
 
