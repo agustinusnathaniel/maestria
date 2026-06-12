@@ -214,7 +214,9 @@ and ask the user via `question`:
 >
 > - From `vercel-labs/opensrc`: **opensrc** (general-purpose:
 >   well-known public repo — recommend **global**)
-> - From `mattpocock/skills`: **tdd**, **karpathy-guidelines**
+> - From `mattpocock/skills`: **tdd**
+>   (general-purpose — recommend **global**)
+> - From `multica-ai/andrej-karpathy-skills`: **karpathy-guidelines**
 >   (general-purpose — recommend **global**)
 > - From `anthropics/skills`: **frontend-design** (project-
 >   specific to this repo's tooling — recommend **local**)

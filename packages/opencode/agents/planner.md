@@ -66,28 +66,26 @@ After the plan is written, your handoff should cover:
 
 ### Always load
 
-- `requirements-clarity` — plan ambiguity is a planning problem; load to clarify upfront
+- `requirements-clarity` (`softaworks/agent-toolkit`) — plan ambiguity is a planning problem; load to clarify upfront
 
 ### Load on trigger
 
-- `to-issues` — load when plan is approved and needs issue breakdown
-- `to-prd` — load when plan becomes a PRD
-- `grill-me` — load before finalising the plan
-- `game-changing-features` — load when user asks for product strategy (skip on pure implementation plans)
-- `prototype` — load when plan needs runtime validation first
-- `zoom-out` — load when plan scope is unclear
+- `to-issues` (`mattpocock/skills`) — load when plan is approved and needs issue breakdown
+- `to-prd` (`mattpocock/skills`) — load when plan becomes a PRD
+- `grill-me` (`mattpocock/skills`) — load before finalising the plan
+- `game-changing-features` (`softaworks/agent-toolkit`) — load when user asks for product strategy (skip on pure implementation plans)
+- `prototype` (`mattpocock/skills`) — load when plan needs runtime validation first
+- `zoom-out` (`mattpocock/skills`) — load when plan scope is unclear
 
 ### Defer to specialist
 
-- `ship-learn-next` → @writer — turning transcripts into plans is a writing skill, not a planning skill
-- `improve` → @architect — codebase audit is architect's domain
+- `ship-learn-next` (`softaworks/agent-toolkit`) → @writer — turning transcripts into plans is a writing skill, not a planning skill
+- `improve` (`shadcn/improve`) → @architect — codebase audit is architect's domain
 
 ### Skip if
 
 - The plan is a 1-step todo; no formal plan structure needed
 - The user wants a quick plan, not a phased breakdown
-
-<!-- Source repos: softaworks/agent-toolkit (requirements-clarity, to-issues, to-prd, game-changing-features, ship-learn-next, improve), mattpocock/skills (grill-me, prototype, zoom-out) -->
 
 ## Related Agents
 

@@ -157,18 +157,16 @@ _(none — adventurer is read-only; skills load only on trigger)_
 
 ### Load on trigger
 
-- `zoom-out` — load when scoping crosses >1 module or the area is unfamiliar
-- `opensrc` — load when external library internals affect the answer
-- `c4-architecture` — load when output requires a context/container diagram
-- `mermaid-diagrams` — load when a sequence/flow/ER diagram is requested
+- `zoom-out` (`mattpocock/skills`) — load when scoping crosses >1 module or the area is unfamiliar
+- `opensrc` (`vercel-labs/opensrc`) — load when external library internals affect the answer
+- `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a context/container diagram
+- `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is requested
 
 ### Defer to specialist
 
-- `improve-codebase-architecture` — @architect / @planner's domain, not recon
+- `improve-codebase-architecture` (`mattpocock/skills`) → @architect / @planner's domain, not recon
 
 ### Skip if
 
 - The task is a 1-file lookup; no skill load needed
 - The user has not asked for any diagramming output
-
-<!-- Source repos: mattpocock/skills (zoom-out, improve-codebase-architecture), vercel-labs/opensrc (opensrc), softaworks/agent-toolkit (c4-architecture, mermaid-diagrams) -->

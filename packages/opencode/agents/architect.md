@@ -103,18 +103,18 @@ After the ADR is written, your handoff should cover:
 
 ### Always load
 
-- `architecture-decision-records` — Phase 5 (Document as ADR) requires this skill
-- `improve-codebase-architecture` — architect's home for codebase-deepen opportunities
+- `architecture-decision-records` (`softaworks/agent-toolkit`) — Phase 5 (Document as ADR) requires this skill
+- `improve-codebase-architecture` (`mattpocock/skills`) — architect's home for codebase-deepen opportunities
 
 ### Load on trigger
 
-- `c4-architecture` — load when output requires a container/component diagram
-- `mermaid-diagrams` — load when a sequence/flow/ER diagram is needed
-- `draw-io` — load when user asks for a `.drawio` file
-- `excalidraw` — load when user asks for an `.excalidraw` file
-- `grill-me` — load before recommending a final option
-- `grill-with-docs` — load when validating against this project's ADR/CONTEXT.md
-- `zoom-out` — load when scope is unclear
+- `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a container/component diagram
+- `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is needed
+- `draw-io` (`softaworks/agent-toolkit`) — load when user asks for a `.drawio` file
+- `excalidraw` (`softaworks/agent-toolkit`) — load when user asks for an `.excalidraw` file
+- `grill-me` (`mattpocock/skills`) — load before recommending a final option
+- `grill-with-docs` (`mattpocock/skills`) — load when validating against this project's ADR/CONTEXT.md
+- `zoom-out` (`mattpocock/skills`) — load when scope is unclear
 
 ### Defer to specialist
 
@@ -123,8 +123,6 @@ After the ADR is written, your handoff should cover:
 ### Skip if
 
 - The user only wants a quick opinion; no formal ADR/diagram needed
-
-<!-- Source repos: softaworks/agent-toolkit (c4-architecture, mermaid-diagrams, architecture-decision-records, draw-io, excalidraw), mattpocock/skills (grill-me, grill-with-docs, improve-codebase-architecture, zoom-out) -->
 
 ## Related Agents
 

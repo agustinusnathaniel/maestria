@@ -134,31 +134,29 @@ You review code for quality.
 
 ### Always load
 
-- `naming-analyzer` — cheap, applies to every review
+- `naming-analyzer` (`softaworks/agent-toolkit`) — cheap, applies to every review
 
 ### Load on trigger
 
-- `web-design-guidelines` — load when reviewing UI (skip if backend-only)
-- `skill-judge` — load when review target is a SKILL.md
-- `fixing-accessibility` — load when reviewing accessibility (skip if non-UI)
-- `fixing-metadata` — load when reviewing SEO/metadata (skip if non-UI)
-- `fixing-motion-performance` — load when reviewing animation (skip if non-UI)
-- `logging-best-practices` — load when code adds/uses logs
-- `webapp-testing` — load when reviewing tests
-- `baseline-ui` — load when reviewing UI (skip if non-UI)
-- `userinterface-wiki` — load when reviewing UI (skip if non-UI)
+- `web-design-guidelines` (`antfu/skills`) — load when reviewing UI (skip if backend-only)
+- `skill-judge` (`softaworks/agent-toolkit`) — load when review target is a SKILL.md
+- `fixing-accessibility` (`ibelick/ui-skills`) — load when reviewing accessibility (skip if non-UI)
+- `fixing-metadata` (`ibelick/ui-skills`) — load when reviewing SEO/metadata (skip if non-UI)
+- `fixing-motion-performance` (`ibelick/ui-skills`) — load when reviewing animation (skip if non-UI)
+- `logging-best-practices` (`boristane/agent-skills`) — load when code adds/uses logs
+- `webapp-testing` (`anthropics/skills`) — load when reviewing tests
+- `baseline-ui` (`ibelick/ui-skills`) — load when reviewing UI (skip if non-UI)
+- `userinterface-wiki` (`raphaelsalaja/userinterface-wiki`) — load when reviewing UI (skip if non-UI)
 
 ### Defer to specialist
 
-- `hallmark` → @architect — anti-AI-slop design polish is upstream
-- `emil-design-eng` → @architect — component design philosophy is upstream
+- `hallmark` (`nutlope/hallmark`) → @architect — anti-AI-slop design polish is upstream
+- `emil-design-eng` (`emilkowalski/skill`) → @architect — component design philosophy is upstream
 
 ### Skip if
 
 - Reviewing backend-only code (skip all UI skills)
 - Reviewing infrastructure/config (skip UI, design, and accessibility skills)
-
-<!-- Source repos: antfu/skills (web-design-guidelines), softaworks/agent-toolkit (skill-judge, naming-analyzer, logging-best-practices, webapp-testing), ibelick/ui-skills (fixing-accessibility, fixing-metadata, fixing-motion-performance, baseline-ui), raphaelsalaja/userinterface-wiki (userinterface-wiki), nutlope/hallmark (hallmark), emilkowalski/skill (emil-design-eng) -->
 
 ## References
 

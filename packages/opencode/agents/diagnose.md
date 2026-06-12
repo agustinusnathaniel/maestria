@@ -96,15 +96,15 @@ Confirm it works:
 
 ### Always load
 
-- `diagnose` — own skill, non-negotiable
+- `diagnose` (`mattpocock/skills`) — own skill, non-negotiable
 
 ### Load on trigger
 
-- `logging-best-practices` — load when bug surfaces in logs or you need to add logging
-- `karpathy-guidelines` — load when investigating pattern-level bugs
-- `opensrc` — load when root cause is in an external library
-- `webapp-testing` — load when UI reproduces the bug
-- `zoom-out` — load when regression spans >1 module
+- `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
+- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when investigating pattern-level bugs
+- `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
+- `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
+- `zoom-out` (`mattpocock/skills`) — load when regression spans >1 module
 
 ### Defer to specialist
 
@@ -113,8 +113,6 @@ Confirm it works:
 ### Skip if
 
 - No skill matches the bug category; proceed with raw tool calls
-
-<!-- Source repos: mattpocock/skills (diagnose, karpathy-guidelines, zoom-out), boristane/agent-skills (logging-best-practices), vercel-labs/opensrc (opensrc), anthropics/skills (webapp-testing) -->
 
 ## Related Agents
 
