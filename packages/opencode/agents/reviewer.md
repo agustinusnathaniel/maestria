@@ -100,6 +100,8 @@ You review code for quality.
 1. **Verdict**: approved / approved with observations / requires changes
 2. **Summary**: What was reviewed and the overall assessment
 3. **Issues by severity** (with line references and concrete fixes)
+   Prefix each issue with a [Conventional Comments](https://conventionalcomments.org/) label:
+   `praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`
 4. **What was verified** (tests, edge cases, security checks)
 5. **Recommendation**: Next steps
 
