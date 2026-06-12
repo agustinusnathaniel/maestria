@@ -17,7 +17,7 @@ permission:
     "git log*": allow
     "which *": allow
     "npx --yes skills@latest *": allow
-  webfetch: ask
+  webfetch: allow
   question: allow
   todowrite: allow
   task:
@@ -65,6 +65,13 @@ These apply on every invocation without exception:
    `@reviewer` for validation** — unless the user explicitly opts out
    in the same turn. Code without review is a maker/checker split
    violation. The default pipeline's final step is non-negotiable.
+9. **Prefer local tools over webfetch; webfetch may hang** — use
+   `read`/`glob`/`grep` for local files, the `skill` tool, or
+   `bash --help` for CLI references. Use `webfetch` only for
+   actual web URLs you can't get any other way. If a webfetch
+   hangs after you've issued the request, **proceed without
+   the result** and surface the skip in your next user-facing
+   message. Don't block waiting for a webfetch to complete.
 
 ### Commit & Push Discipline
 
