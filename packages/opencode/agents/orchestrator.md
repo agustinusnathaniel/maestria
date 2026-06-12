@@ -7,7 +7,6 @@ permission:
   read: allow
   glob: allow
   grep: allow
-  list: allow
   lsp: allow
   edit: deny
   bash:
@@ -16,6 +15,7 @@ permission:
     "git diff*": allow
     "git log*": allow
     "which *": allow
+    "pwd": allow
     "npx --yes skills@latest *": allow
   webfetch: allow
   question: allow

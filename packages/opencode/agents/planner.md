@@ -7,7 +7,7 @@ permission:
   read: allow
   glob: allow
   grep: allow
-  list: allow
+  lsp: allow
   edit: ask
   bash:
     "*": ask

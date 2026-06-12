@@ -7,7 +7,6 @@ permission:
   read: allow
   glob: allow
   grep: allow
-  list: allow
   edit: allow
   webfetch: allow
   skill: allow

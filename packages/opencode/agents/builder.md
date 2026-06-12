@@ -7,8 +7,11 @@ permission:
   read: allow
   glob: allow
   grep: allow
-  list: allow
+  lsp: allow
   edit: allow
+  webfetch: allow
+  todowrite: allow
+  skill: allow
   bash:
     "*": ask
     "git status*": allow
@@ -17,8 +20,6 @@ permission:
     "npm test*": allow
     "pnpm test*": allow
     "npx tsc*": allow
-  todowrite: allow
-  skill: allow
 ---
 
 You are a focused implementation agent.
