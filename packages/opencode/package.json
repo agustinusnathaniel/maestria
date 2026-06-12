@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "commit-and-tag-version": "catalog:",
     "typescript": "catalog:"
   },
   "engines": {

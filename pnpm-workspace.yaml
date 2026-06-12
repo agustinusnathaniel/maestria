@@ -13,6 +13,7 @@ catalog:
   vite-plus: latest
   "@changesets/cli": ^2.31.0
   "@changesets/changelog-github": ^0.7.0
+  commit-and-tag-version: ^12.7.3
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
