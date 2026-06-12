@@ -1,0 +1,31 @@
+{
+  "name": "@maestria/opencode",
+  "version": "0.1.0",
+  "description": "OpenCode plugin encoding AI engineering praxis: rules, agents, and workflow discipline.",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "agents",
+    "rules"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
