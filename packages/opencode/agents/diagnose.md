@@ -99,6 +99,10 @@ Always verify before handoff. Never present broken code.
   (prevent coding mistakes that cause bugs)
 - opensrc → vercel-labs/opensrc (investigate dependency code
   when root cause is in a library)
+- webapp-testing → anthropics/skills (browser-level debugging
+  when issue appears in UI)
+- zoom-out → mattpocock/skills (broader context when tracing
+  cross-module regressions)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

@@ -111,6 +111,15 @@ You review code for quality.
 - fixing-accessibility, fixing-metadata, fixing-motion-performance
   → ibelick/ui-skills (UI audit specializations)
 - naming-analyzer → softaworks/agent-toolkit (naming convention review)
+- logging-best-practices → boristane/agent-skills (review
+  logging patterns and wide-event coverage)
+- webapp-testing → anthropics/skills (review test quality,
+  coverage, and browser test patterns)
+- baseline-ui → ibelick/ui-skills (UI baseline enforcement)
+- userinterface-wiki → raphaelsalaja/userinterface-wiki
+  (comprehensive UI/UX best practices reference)
+- emil-design-eng → emilkowalski/skill (component design
+  philosophy and polish review)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

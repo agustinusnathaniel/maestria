@@ -47,6 +47,12 @@ You create implementation plans.
   (identify high-leverage opportunities during planning)
 - prototype → mattpocock/skills (validate assumptions
   with throwaway exploration before full planning)
+- zoom-out → mattpocock/skills (broader context
+  before committing to a plan)
+- ship-learn-next → softaworks/agent-toolkit (turn learning
+  goals into actionable implementation plans)
+- improve → shadcn/improve (codebase audit to identify
+  architecture issues before planning)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

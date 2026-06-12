@@ -83,6 +83,17 @@ You write documentation.
 - humanizer → softaworks/agent-toolkit (remove AI writing signs)
 - internal-comms → anthropics/skills (company communications)
 - template-skill → anthropics/skills (skill documentation templates)
+- professional-communication → softaworks/agent-toolkit
+  (professional tone, email structure)
+- backend-to-frontend-handoff-docs → softaworks/agent-toolkit
+  (API documentation for frontend consumers)
+- skill-creator → anthropics/skills (creating new skill packages)
+- frontend-to-backend-requirements → softaworks/agent-toolkit
+  (document frontend data needs for backend APIs)
+- copywriting → coreyhaines31/marketingskills
+  (public-facing marketing and landing page copy)
+- copy-editing → coreyhaines31/marketingskills
+  (edit and polish existing documentation)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

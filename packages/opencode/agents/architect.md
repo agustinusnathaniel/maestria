@@ -82,8 +82,9 @@ YYYY-MM-DD
 
 - c4-architecture, mermaid-diagrams, architecture-decision-records,
   draw-io, excalidraw → softaworks/agent-toolkit
-- grill-me, grill-with-docs, improve-codebase-architecture
-  → mattpocock/skills (stress-test, refactoring opportunities)
+- grill-me, grill-with-docs, improve-codebase-architecture,
+  zoom-out → mattpocock/skills (stress-test, refactoring,
+  broader perspective)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 

@@ -74,16 +74,47 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 ## Relevant Skills
 
-- opensrc → vercel-labs/opensrc (dependency source investigation)
+**Code quality & implementation patterns**
+
+- opensrc → vercel-labs/opensrc (investigate dependency source)
 - prototype → mattpocock/skills (throwaway exploration)
 - karpathy-guidelines → multica-ai/andrej-karpathy-skills
   (reduce common coding mistakes)
-- humanizer → softaworks/agent-toolkit (anti-AI-slop writing)
+- improve → shadcn/improve (codebase audit, impl plans)
 - naming-analyzer → softaworks/agent-toolkit (better naming)
-- frontend-design → anthropics/skills (when implementing UI)
+
+**Frontend / React**
+
+- frontend-design → anthropics/skills (production-grade UI)
+- hallmark → nutlope/hallmark (anti-AI-slop design)
+- impeccable → pbakaus/impeccable (design critique & polish)
+- vercel-react-best-practices, vercel-composition-patterns
+  → vercel-labs/agent-skills (React patterns & composition)
 - react-dev → softaworks/agent-toolkit (React-specific patterns)
+- react-useeffect → softaworks/agent-toolkit (effect dependency patterns)
+- ai-sdk → vercel/ai (AI SDK integration, project scope)
+
+**Testing**
+
+- tdd → mattpocock/skills (test-driven development)
+- webapp-testing → anthropics/skills (Playwright browser testing)
+- vitest → antfu/skills (test runner config & patterns)
+
+**Tooling & build**
+
+- vite → antfu/skills (build tool configuration)
+- pnpm → antfu/skills (package management)
+- dependency-updater → softaworks/agent-toolkit (dependency management)
+
+**Writing & docs**
+
+- humanizer → softaworks/agent-toolkit (remove AI writing signs)
+- writing-clearly-and-concisely → softaworks/agent-toolkit
+  (better commit messages, comments)
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
+Use project scope (omit `-g`) for stack-specific skills like
+vercel-react-best-practices, hallmark, impeccable.
 
 ## Rules
 
