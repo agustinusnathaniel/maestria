@@ -123,14 +123,14 @@ You review code for quality.
 
 Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 
-## Related Agents
-
-- `@builder` — Implement recommended fixes for issues found during review
-- `@writer` — Update documentation when gaps or inaccuracies are found
-- `@diagnose` — Investigate deeply when issues appear to have unknown root causes
-
 ## References
 
 - Google's Code Review Guidelines: https://google.github.io/eng-practices/review/
 - The Standard of Code Review: https://google.github.io/eng-practices/review/reviewer/standard.html
 - What to Look For in a Code Review: https://google.github.io/eng-practices/review/reviewer/looking-for.html
+
+## Related Agents
+
+- `@builder` — Implement recommended fixes for issues found during review
+- `@writer` — Update documentation when gaps or inaccuracies are found
+- `@diagnose` — Investigate deeply when issues appear to have unknown root causes
