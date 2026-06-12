@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.2](https://github.com/agustinusnathaniel/maestria/compare/v0.2.1...v0.2.2) (2026-06-12)
+
+### Features
+
+- **docs:** add Astro Starlight documentation site for @maestria/opencode ([06a21ac](https://github.com/agustinusnathaniel/maestria/commit/06a21ac7b95ab97bcf5773bd43081fabe1bf1be6))
+
+### Bug Fixes
+
+- **opencode:** correct source repos for 10 skills per my-base doc ([d2e0671](https://github.com/agustinusnathaniel/maestria/commit/d2e0671b7fd8816684bdb960b57defda1f074784))
+- **opencode:** restore commit discipline, counter builder dispatch bias ([29df280](https://github.com/agustinusnathaniel/maestria/commit/29df28071b4ca996cf65b1050de7f2c69b341c2f)), closes [#3](https://github.com/agustinusnathaniel/maestria/issues/3) [#7](https://github.com/agustinusnathaniel/maestria/issues/7) [#8](https://github.com/agustinusnathaniel/maestria/issues/8) [#1](https://github.com/agustinusnathaniel/maestria/issues/1)
+- **opencode:** stop injecting rules into subagent prompts ([9dfb79c](https://github.com/agustinusnathaniel/maestria/commit/9dfb79cd005629617b900d7be2b8dab42ea3e48c))
+- **orchestrator:** unstick webfetch by skipping approval + preferring local tools ([23278a0](https://github.com/agustinusnathaniel/maestria/commit/23278a03667909af740648af888377dc0ce8c31f)), closes [#9](https://github.com/agustinusnathaniel/maestria/issues/9)
+
 ## [0.2.1](https://github.com/agustinusnathaniel/maestria/compare/v0.2.0...v0.2.1) (2026-06-12)
 
 ### Bug Fixes
