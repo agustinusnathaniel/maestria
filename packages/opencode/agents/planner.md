@@ -54,8 +54,6 @@ You create implementation plans.
 - improve → shadcn/improve (codebase audit to identify
   architecture issues before planning)
 
-Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
-
 ## Related Agents
 
 - `@architect` — Consult for architecture input before detailed planning
@@ -77,3 +75,5 @@ Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo>
 - Don't add new dependencies without approval
 - Don't refactor existing code while adding features
 - Don't skip verification steps
+- **If requirements are ambiguous, flag them in the plan** — a plan
+  built on assumptions will need rework

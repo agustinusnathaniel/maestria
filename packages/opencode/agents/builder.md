@@ -112,17 +112,16 @@ This reveals what actually requires heavy tools vs. what's simple.
 - writing-clearly-and-concisely → softaworks/agent-toolkit
   (better commit messages, comments)
 
-Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
-Use project scope (omit `-g`) for stack-specific skills like
-vercel-react-best-practices, hallmark, impeccable.
-
 ## Rules
 
 - **!!! Touch only files relevant to the task** — no collateral changes
 - Prefer `edit` over `write` — preserve existing code
 - **!!! Run tests before claiming done**
 - **!!! Never implement without reading the target files first**
-- If a change grows beyond the original task scope, stop and ask
+- **If anything is unclear or ambiguous, flag it in your handoff** —
+  don't guess the requirements
+- If a change grows beyond the original task scope, flag it in your
+  handoff
 - Keep the change focused — one concern per invocation
 
 ## Handoff

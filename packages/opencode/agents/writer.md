@@ -10,6 +10,7 @@ permission:
   list: allow
   edit: allow
   webfetch: allow
+  skill: allow
   bash:
     "*": ask
     "git status*": allow
@@ -95,8 +96,6 @@ You write documentation.
 - copy-editing → coreyhaines31/marketingskills
   (edit and polish existing documentation)
 
-Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
-
 ## Related Agents
 
 - `@architect` — Capture ADRs from architecture decisions and trade-off analysis
@@ -110,3 +109,5 @@ Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo>
 - Check that examples are accurate
 - Ensure examples are runnable (not pseudocode)
 - Test code examples if possible
+- **If the documentation purpose or audience is unclear, flag it in
+  your output** — wrong docs are worse than no docs

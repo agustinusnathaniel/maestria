@@ -10,6 +10,7 @@ permission:
   grep: allow
   list: allow
   lsp: allow
+  skill: allow
   edit: deny
   bash:
     "*": ask
@@ -94,6 +95,8 @@ You review code for quality.
 - Propose concrete fixes, not just problems
 - If no issues, say so explicitly and state what you verified
 - Flag if the scope exceeds the stated intent (scope creep)
+- **If the review scope or criteria are unclear, flag it in your
+  output** — reviewing the wrong thing wastes everyone's time
 
 ## Output
 
@@ -122,8 +125,6 @@ You review code for quality.
   (comprehensive UI/UX best practices reference)
 - emil-design-eng → emilkowalski/skill (component design
   philosophy and polish review)
-
-Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
 
 ## References
 

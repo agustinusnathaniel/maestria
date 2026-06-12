@@ -9,6 +9,7 @@ permission:
   grep: allow
   list: allow
   webfetch: allow
+  skill: allow
   edit: deny
   bash:
     "*": ask
@@ -86,8 +87,6 @@ YYYY-MM-DD
   zoom-out → mattpocock/skills (stress-test, refactoring,
   broader perspective)
 
-Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
-
 ## Related Agents
 
 - `@writer` — Transcribe decisions into ADR format
@@ -100,3 +99,5 @@ Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo>
 - Don't oversimplify — acknowledge trade-offs honestly
 - For irreversible decisions, recommend more conservative options
 - Document assumptions explicitly in the ADR
+- **If the requirements are ambiguous, flag it as an assumption** —
+  don't guess which direction the user wants

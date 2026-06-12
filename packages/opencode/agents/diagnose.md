@@ -9,6 +9,7 @@ permission:
   grep: allow
   list: allow
   lsp: allow
+  skill: allow
   edit: ask
   bash:
     "*": ask
@@ -104,8 +105,6 @@ Confirm it works:
 - zoom-out → mattpocock/skills (broader context when tracing
   cross-module regressions)
 
-Check via `skill` tool. If not installed, suggest `pnpx skills@latest add <repo> -g -y --skill <name>`.
-
 ## Related Agents
 
 - `@builder` — Apply the fix once root cause is identified
@@ -123,3 +122,8 @@ Document findings at each step:
 - Prevention measures
 
 Save these as knowledge artifacts so they can be referenced later.
+
+**If the error description is vague or the reproduction is unclear,
+flag the ambiguity in your findings.** Wrong assumptions waste
+more time than asking questions — but you can't ask the user directly.
+Flag what's unclear so the orchestrator can follow up.

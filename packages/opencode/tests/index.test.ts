@@ -12,7 +12,7 @@ describe("plugin structure", () => {
     expect(typeof MaestriaPlugin).toBe("function");
   });
 
-  it("should load all 7 agents", async () => {
+  it("should load all 8 agents", async () => {
     const module = await import("../src/index.ts");
     const plugin = await module.MaestriaPlugin({} as never);
     const config = { agent: {} };
@@ -20,13 +20,14 @@ describe("plugin structure", () => {
 
     const agentNames = Object.keys(config.agent);
     expect(agentNames).toContain("orchestrator");
+    expect(agentNames).toContain("adventurer");
     expect(agentNames).toContain("architect");
     expect(agentNames).toContain("builder");
     expect(agentNames).toContain("diagnose");
     expect(agentNames).toContain("planner");
     expect(agentNames).toContain("reviewer");
     expect(agentNames).toContain("writer");
-    expect(agentNames).toHaveLength(7);
+    expect(agentNames).toHaveLength(8);
   });
 
   it("should parse agent frontmatter correctly", async () => {
