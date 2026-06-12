@@ -1,0 +1,35 @@
+---
+title: Changelog
+description: Release history for @maestria/opencode.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# Changelog
+
+## 0.2.1 (2026-06-12)
+
+### Bug Fixes
+
+- Force orchestrator delegation via permissions — orchestrator now has `edit: deny` and `bash: * deny` to prevent it from implementing itself
+- Inject specialist table into global rules so the delegation rules are always present
+
+## 0.2.0 (2026-06-12)
+
+### Features
+
+- **Initial plugin release** — `@maestria/opencode` with full agent system and rule injection
+- **7 specialist subagents** — adventurer, architect, builder, diagnose, planner, reviewer, writer
+- **Orchestrator agent** — `@orchestrator` with `mode: all` for managing multi-step workflows
+- **Global rules injection** — Cross-cutting rules (orchestration, delegation, context management) injected into every session
+- **Config hook** — Reads bundled agent `.md` files, parses frontmatter, registers agents programmatically
+- **Session compacting hook** — Preserves task tracking state across compaction events
+- **Agent cross-references** — Every agent lists related agents with delegation triggers
+- **Skill discovery guidance** — Every agent follows a check → use → suggest pattern for skills
+- **Conventional Comments** — Reviewer output uses standard labels (praise, suggestion, issue, nitpick, question)
+- **`opensrc` pattern** — Global rule for analyzing reference repos without API calls
+
+<Aside>
+  The initial release contains the complete agent system with all features. v0.2.1 is a focused fix
+  for orchestrator permission enforcement.
+</Aside>

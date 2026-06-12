@@ -12,5 +12,18 @@ export default defineConfig({
   },
   run: {
     cache: true,
+    tasks: {
+      "website#dev": {
+        command: "astro dev --root apps/docs",
+        cache: false,
+      },
+      "website#build": {
+        command: "astro build --root apps/docs",
+      },
+      "website#preview": {
+        command: "astro preview --root apps/docs",
+        cache: false,
+      },
+    },
   },
 });

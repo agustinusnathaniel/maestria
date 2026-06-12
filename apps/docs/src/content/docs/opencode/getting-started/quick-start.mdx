@@ -1,0 +1,59 @@
+---
+title: Quick Start
+description: Your first session with @maestria/opencode — delegate to specialists and use the orchestrator.
+---
+
+import { Steps, Aside, LinkButton } from "@astrojs/starlight/components";
+
+# Quick Start
+
+Once you've [installed the plugin](/opencode/getting-started/installation/), the agents and rules are available in every session.
+
+## Start a Session
+
+Launch OpenCode as usual. The plugin loads automatically — no additional commands needed.
+
+## Delegate to a Specialist
+
+Ask any of the 7 specialists directly:
+
+```markdown
+@adventurer Explore the codebase and understand how the auth module works.
+```
+
+Or delegate to the orchestrator:
+
+```markdown
+@orchestrator I need to add a logging middleware. Plan and implement it.
+```
+
+## Observe the Global Rules
+
+Every session includes global rules that guide agent behavior:
+
+- **Don't assume** — verify against actual code and docs
+- **Use `opensrc` instead of API calls** — for analyzing reference repos
+- **Progressive disclosure** — start high-level, get specific as needed
+- **State checkpointing** — summarize progress periodically
+- **Completion promises** — define success criteria before starting
+
+## Pipeline Flow
+
+A typical multi-step task flows through the agent system like this:
+
+```
+@orchestrator
+  ├─ @adventurer   → Explore codebase
+  ├─ @architect    → Design approach
+  ├─ @planner      → Create implementation plan
+  ├─ @builder      → Implement
+  └─ @reviewer     → Review changes
+```
+
+Each agent hands off to the next, and the orchestrator integrates results.
+
+## What's Next
+
+- [Explore the Agents](/opencode/agents/) — Detailed docs for each specialist
+- [Global Rules](/opencode/guide/global-rules/) — Full rule reference
+- [Configuration](/opencode/guide/configuration/) — Agent frontmatter and permissions

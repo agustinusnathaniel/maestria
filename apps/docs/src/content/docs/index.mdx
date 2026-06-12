@@ -1,0 +1,96 @@
+---
+title: Maestria
+description: Portable AI engineering praxis plugins for OpenCode and beyond. Installable, self-wiring plugins that encode effective workflows.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: "Maestria"
+  tagline: "Portable AI engineering praxis, encoded as plugins."
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /opencode/getting-started/introduction/
+    - text: Browse Agents
+      icon: external
+      variant: minimal
+      link: /opencode/agents/
+---
+
+import { LinkCard, CardGrid, LinkButton } from "@astrojs/starlight/components";
+
+## Why Maestria?
+
+Every AI coding tool needs agent configuration — prompts, rules, permissions, and workflows. Maestria encodes effective AI-engineering patterns into installable, self-wiring plugins. No manual setup. No copy-pasting configs. Just install and go.
+
+<div class="features-grid">
+  <div class="feature-card">
+    <div class="feature-icon">🔌</div>
+    <h3>Portable &amp; Self-Wiring</h3>
+    <p>
+      Install once, works everywhere. Plugin hooks register agents and inject rules into every
+      session automatically.
+    </p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🧠</div>
+    <h3>Multi-Agent Orchestration</h3>
+    <p>
+      7 specialized subagents with a manager that delegates, never implements. Each agent has a
+      focused domain and clear methodology.
+    </p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">📋</div>
+    <h3>Global Rules Injection</h3>
+    <p>
+      Cross-cutting rules appended to every session. Consistent AI behavior — no drift between
+      projects or sessions.
+    </p>
+  </div>
+</div>
+
+## The Ecosystem
+
+<div class="product-grid">
+  <a href="/opencode/" class="product-card">
+    <h2>
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="4 17 10 11 4 5" />
+        <line x1="12" y1="19" x2="20" y2="19" />
+      </svg>
+      @maestria/opencode
+      <span style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.15rem 0.55rem;border-radius:6px;font-size:0.7rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;background:#f97316;color:#fff;vertical-align:middle;">
+        plugin
+      </span>
+    </h2>
+    <p>
+      OpenCode plugin that registers 8 specialized agents and injects global rules into every
+      session. Available now on npm.
+    </p>
+    <span class="product-card-link">Learn more →</span>
+  </a>
+</div>
+
+## How It Works
+
+Maestria plugins are built on a simple architecture:
+
+1. **Config hook** — Reads bundled agent definitions and registers them with the coding agent
+2. **Rules injection** — Global directives appended to every session's system prompt
+3. **Session hooks** — Preserves task state across compaction events
+
+This means you get consistent behavior from the first prompt — no manual agent configuration required.
+
+<LinkButton href="/opencode/getting-started/introduction/" size="lg">
+  Get started with @maestria/opencode →
+</LinkButton>

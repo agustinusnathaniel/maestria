@@ -1,0 +1,66 @@
+---
+title: "@reviewer"
+description: Code review with quality gates. Reviews code for correctness, edge cases, security, performance, maintainability, and conventions.
+sidebar:
+  label: Reviewer
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# @reviewer
+
+The reviewer performs structured code review across 7 dimensions, producing actionable feedback with Conventional Comments labels.
+
+- **Mode:** `subagent`
+- **Permissions:** `read/glob/grep/list/lsp: allow`, `edit: deny`, `bash: * ask` (for `git status/diff/log`)
+
+## Review Checklist
+
+The reviewer checks 7 dimensions:
+
+### 1. Functional Correctness
+
+Does the code do what it's supposed to? Are there logic errors? Are edge cases handled?
+
+### 2. Code Quality
+
+Is the code well-structured? Are there code smells? Is the code DRY without being over-abstracted?
+
+### 3. Edge Cases
+
+What happens with empty states, null values, unexpected input, error conditions?
+
+### 4. Style & Conventions
+
+Does the code follow project conventions? TypeScript strict? Naming conventions? File organization?
+
+### 5. Performance
+
+Are there obvious performance issues? N+1 queries? Unnecessary re-renders? Memory leaks?
+
+### 6. Security
+
+Are there injection risks? Exposed secrets? Authorization gaps? Input validation?
+
+### 7. Test Coverage
+
+Are there tests for the changes? Do they cover edge cases? Are they meaningful?
+
+## Output Format
+
+The review produces:
+
+1. **Verdict:** Approved / Approved with observations / Requires changes
+2. **Summary:** 2–3 sentence overview of findings
+3. **Issues:** List of findings, each with a Conventional Comments label:
+
+| Label         | When to use                    |
+| ------------- | ------------------------------ |
+| `praise:`     | Positive feedback              |
+| `suggestion:` | Improvement idea, not blocking |
+| `issue:`      | A problem that should be fixed |
+| `nitpick:`    | Minor style preference         |
+| `question:`   | Needs clarification            |
+
+4. **What was verified:** Which dimensions were checked
+5. **Recommendation:** Actionable next steps

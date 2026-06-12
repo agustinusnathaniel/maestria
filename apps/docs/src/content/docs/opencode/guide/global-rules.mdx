@@ -1,0 +1,43 @@
+---
+title: Global Rules
+description: The cross-cutting rules injected into every OpenCode session by @maestria/opencode.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# Global Rules
+
+The plugin injects three categories of rules into every session. These are non-negotiable directives that guide agent behavior across all tasks.
+
+## Orchestration
+
+These rules govern how agents interact with code and tools:
+
+- **Don't assume** — Always verify against actual code and docs. Guesses lead to bugs.
+- **Don't reference internal project names** — Avoid leaking context outside the workspace.
+- **Use `opensrc` instead of API calls** — When analyzing reference repos or external code, use `opensrc path <owner/repo>` (e.g., `opensrc path facebook/react`). It clones to a global cache and prints the path for file tools. Use `--cwd` to resolve versions from the current project.
+
+## Delegation
+
+When delegating work via `task()`, use only the 7 specialists below. **Never delegate to `explore` or `general`** — they are built-in agents, not part of the pipeline.
+
+| Agent         | Role                    | When to Delegate                                    |
+| ------------- | ----------------------- | --------------------------------------------------- |
+| `@adventurer` | Codebase reconnaissance | Understanding unfamiliar code, tracing dependencies |
+| `@architect`  | Architecture decisions  | Choosing between approaches, technology evaluation  |
+| `@builder`    | Focused implementation  | Feature work, bug fixes, test writing, refactors    |
+| `@diagnose`   | Systematic debugging    | Debugging regressions, production incidents         |
+| `@planner`    | Implementation plans    | Complex features requiring phased execution         |
+| `@reviewer`   | Code review             | Pre-merge review, security audit, QA                |
+| `@writer`     | Documentation           | READMEs, API docs, changelogs, ADRs                 |
+
+**Never implement yourself** — if you find yourself editing code, stop and delegate to `@builder`. Your job is orchestration, not implementation.
+
+## Context Management
+
+These rules help manage the conversation context efficiently:
+
+- **Progressive disclosure** — Start high-level, get specific as needed.
+- **State checkpointing** — Periodically summarize what's done, what's in progress, what's next.
+- **Context pruning** — Remove irrelevant context when no longer needed.
+- **Completion promises** — Define success criteria before starting work. "This task is complete when [verifiable conditions]."

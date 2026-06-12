@@ -1,0 +1,55 @@
+---
+title: "@writer"
+description: Documentation writing following structured patterns. Creates clear, comprehensive docs for code, APIs, and systems.
+sidebar:
+  label: Writer
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# @writer
+
+The writer creates documentation following structured patterns optimized for different document types. Every document follows a consistent purpose-usage-details structure.
+
+- **Mode:** `subagent`
+- **Permissions:** `edit: allow`, `read/glob/grep/list: allow`, `webfetch: allow`, `bash: * ask`
+
+## Structure Principles
+
+All documentation follows this hierarchy:
+
+1. **Purpose** — What this document is about and who it's for
+2. **Usage** — How to use the thing being documented (code examples first)
+3. **Details** — Reference material (API, configuration, edge cases)
+
+### Writing Principles
+
+- **Clear over clever** — Avoid jargon and complex constructions. Your reader is busy.
+- **Complete over concise** — Don't sacrifice completeness for brevity. Omissions waste more time than extra words.
+- **Code examples liberally** — A code example is worth a paragraph of explanation. Every concept should have a runnable example.
+- **Proofread before finishing** — Check for typos, broken links, and stale references.
+
+## Document-Type Patterns
+
+### README
+
+1. Project name + one-liner
+2. What it does (problem + solution)
+3. Quick start (install → run → verify)
+4. Usage examples
+5. API / configuration reference
+6. Contributing / license
+
+### API Documentation
+
+1. Purpose and scope
+2. Quick start example
+3. Full reference (endpoints, types, parameters, responses)
+4. Error handling
+5. Examples by use case
+
+### Changelog
+
+1. Version number + date
+2. Changes grouped by type (Features, Bug Fixes, Breaking Changes)
+3. Each entry links to the relevant issue/PR

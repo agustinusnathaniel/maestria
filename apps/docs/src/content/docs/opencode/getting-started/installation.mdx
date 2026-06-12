@@ -1,0 +1,60 @@
+---
+title: Installation
+description: How to install and configure @maestria/opencode in your OpenCode setup.
+---
+
+import { Steps, Aside, LinkButton } from "@astrojs/starlight/components";
+
+# Installation
+
+## Prerequisites
+
+- [OpenCode](https://opencode.ai) CLI (latest version)
+- Node.js 18+ (for plugin resolution)
+
+## Add the Plugin
+
+<Steps>
+
+1. **Open your OpenCode config file**
+
+   ```bash
+   ~/.config/opencode/opencode.jsonc
+   ```
+
+2. **Add the plugin to the plugin array**
+
+   ```jsonc
+   {
+     "plugin": ["@maestria/opencode@latest"],
+   }
+   ```
+
+3. **Restart OpenCode**
+
+   The plugin will be auto-installed from npm on the next session start.
+
+</Steps>
+
+## Verify Installation
+
+Start a new OpenCode session. You should see the 8 agents available for delegation via `@` mention. The global rules will be active in every prompt session.
+
+## Updating
+
+OpenCode auto-updates plugins on restart. You can also manually update:
+
+```bash
+opencode plugins update
+```
+
+<Aside type="tip">
+  If you want to pin a specific version, use `"@maestria/opencode@0.2.1"` instead of
+  `"@maestria/opencode@latest"`.
+</Aside>
+
+## See Also
+
+- [Quick Start](/opencode/getting-started/quick-start/) — Your first session
+- [How It Works](/opencode/guide/how-it-works/) — Plugin architecture
+- [Configuration Reference](/opencode/guide/configuration/) — Frontmatter fields and permissions

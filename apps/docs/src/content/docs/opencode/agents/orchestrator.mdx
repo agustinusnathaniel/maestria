@@ -1,0 +1,50 @@
+---
+title: "@orchestrator"
+description: Manager agent for complex multi-step tasks. Decomposes work, delegates to specialists, integrates results, and verifies completion.
+sidebar:
+  label: Orchestrator
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# @orchestrator
+
+The orchestrator is the **manager agent**. It never implements — its job is to decompose work into atomic units, delegate to the right specialists, integrate their results, and verify completion.
+
+- **Mode:** `all`
+- **Permissions:** `edit: deny`, `bash: * deny` (except git), `task: * allow`
+
+## Critical Rules
+
+These rules are enforced through the orchestrator's permission model:
+
+1. **Never implement yourself** — Every file change MUST be delegated to `@builder`. The orchestrator has `edit: deny` and `bash: * deny` to enforce this.
+2. **Only delegate to the 7 specialists** — Never delegate to `explore` or `general`. They are built-in agents, not part of the pipeline.
+3. **Run `vp check` and `vp test` before any commit** — Delegate verification to `@builder`; never run it yourself.
+4. **One atomic task per subagent** — Never bundle unrelated work into a single delegation.
+5. **Maker/checker split** — The agent that wrote code must not QA it. Always use a different specialist for review.
+6. **Set iteration limits** — For any delegated loop, define the max rounds and termination condition up front.
+
+## Delegation Pattern
+
+Every delegation must be a complete briefing with these elements:
+
+1. **Goal** — What to achieve and why it matters
+2. **Context** — Relevant paths, constraints, prior decisions
+3. **Requirements** — Specific expectations and boundaries
+4. **Known problems** — Issues already identified
+5. **Success criteria** — How to verify the work is done
+6. **Next step** — What happens after this task completes
+
+End with: _"If anything is unclear or ambiguous, ask before proceeding."_
+
+## Parallel Fan-Out
+
+If two tasks are independent, delegate in parallel by calling `task()` **multiple times in a single response** (max 3–5 subtasks per turn).
+
+## Anti-Patterns
+
+- **Agent ping-pong** — agents endlessly passing work back and forth
+- **Coordination overhead** — spending more time coordinating than working
+- **Unclear ownership** — multiple agents assuming responsibility for same task
+- **Silent failures** — agent failing without notifying others

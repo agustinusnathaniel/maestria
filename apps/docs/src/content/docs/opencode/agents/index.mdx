@@ -1,0 +1,87 @@
+---
+title: Agents
+description: Reference documentation for all 8 agents in @maestria/opencode — orchestrator and 7 specialists.
+---
+
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+# Agents
+
+`@maestria/opencode` provides one manager agent (`@orchestrator`) and 7 specialist subagents. Each agent has a focused domain, clear methodology, and specific permissions.
+
+## The Orchestration Model
+
+The `@orchestrator` decomposes complex tasks into atomic units, delegates to specialists via `task()`, integrates results, and verifies completion. Specialists handle one domain each — exploration, design, implementation, debugging, planning, review, or documentation.
+
+## Agent Reference
+
+| Agent           | Mode       | Role                                  | Key Permissions                 |
+| --------------- | ---------- | ------------------------------------- | ------------------------------- |
+| `@orchestrator` | `all`      | Manager — delegates, never implements | `edit: deny`, `task: * allow`   |
+| `@adventurer`   | `subagent` | Codebase reconnaissance               | `edit: deny`, `bash: * ask`     |
+| `@architect`    | `subagent` | Architecture decisions                | `edit: deny`, `webfetch: allow` |
+| `@builder`      | `subagent` | Focused implementation                | `edit: allow`, `bash: * ask`    |
+| `@diagnose`     | `subagent` | Systematic debugging                  | `edit: ask`, `bash: * ask`      |
+| `@planner`      | `subagent` | Implementation plans                  | `edit: ask`, `webfetch: allow`  |
+| `@reviewer`     | `subagent` | Code review                           | `edit: deny`                    |
+| `@writer`       | `subagent` | Documentation                         | `edit: allow`                   |
+
+## Pipeline Flow
+
+A typical multi-step task follows this flow through the agent system:
+
+```
+@orchestrator (manager)
+  ├─ @adventurer  → Explore codebase, map dependencies
+  ├─ @architect   → Design approach, evaluate options
+  ├─ @planner     → Create phased implementation plan
+  ├─ @builder     → Implement changes
+  └─ @reviewer    → Review for correctness and quality
+```
+
+Each agent hands off to the next. The orchestrator integrates results and verifies completion.
+
+## Agent Details
+
+<CardGrid>
+  <LinkCard
+    title="Orchestrator"
+    description="Manager agent that delegates work, integrates results, and verifies completion."
+    href="/opencode/agents/orchestrator/"
+  />
+  <LinkCard
+    title="Adventurer"
+    description="Codebase reconnaissance — maps unfamiliar code, traces call chains."
+    href="/opencode/agents/adventurer/"
+  />
+  <LinkCard
+    title="Architect"
+    description="Architecture decisions with decision matrices and trade-off analysis."
+    href="/opencode/agents/architect/"
+  />
+  <LinkCard
+    title="Builder"
+    description="Focused implementation — one atomic task per invocation."
+    href="/opencode/agents/builder/"
+  />
+  <LinkCard
+    title="Diagnose"
+    description="Systematic debugging — 6-step regression tracing."
+    href="/opencode/agents/diagnose/"
+  />
+  <LinkCard
+    title="Planner"
+    description="Implementation plans with phased milestones and success criteria."
+    href="/opencode/agents/planner/"
+  />
+  <LinkCard
+    title="Reviewer"
+    description="Code review with 7-dimension quality checklist."
+    href="/opencode/agents/reviewer/"
+  />
+  <LinkCard
+    title="Writer"
+    description="Documentation following structured patterns."
+    href="/opencode/agents/writer/"
+  />
+</CardGrid>

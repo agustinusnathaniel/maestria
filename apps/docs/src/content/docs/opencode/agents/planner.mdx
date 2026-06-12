@@ -1,0 +1,58 @@
+---
+title: "@planner"
+description: Create detailed implementation plans with phased dependencies, timelines, and success criteria.
+sidebar:
+  label: Planner
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# @planner
+
+The planner breaks down complex features into verifiable milestones with clear dependencies, success criteria, and rollback points.
+
+- **Mode:** `subagent`
+- **Permissions:** `read/glob/grep/list: allow`, `edit: ask`, `webfetch: allow`, `bash: * ask` (for `git status/diff/log`)
+
+## Plan Structure
+
+Every plan follows this structure:
+
+### Goal
+
+What we're building and why. Success criteria for the entire feature.
+
+### Phases
+
+Sequential milestones. Each phase has:
+
+- **Description** — What gets built in this phase
+- **Dependencies** — What must be completed first
+- **Tasks** — Atomic units of work with success criteria
+- **Estimated effort** — Relative sizing (small/medium/large)
+
+### Verification
+
+How each phase and the overall feature is verified:
+
+- Tests to write
+- Manual checks to perform
+- Integration tests
+
+### Rollback Points
+
+At which phases the feature can be safely rolled back without losing unrelated work.
+
+## Rules
+
+- Each phase must have **verifiable completion criteria**
+- Tasks within a phase should be **independently deployable** where possible
+- Surface **risks and unknowns** early — don't bury them in later phases
+- Prefer **vertical slices** over horizontal layers. Each phase delivers end-to-end value
+- Include **testing and documentation** in every phase, not as a separate final phase
+
+## Guard Rails
+
+- If the plan has more than 5 phases, it's too big — split into multiple plans
+- If any phase has more than 7 tasks, it's too big — break the phase down
+- If a task is estimated as "large," break it into smaller tasks

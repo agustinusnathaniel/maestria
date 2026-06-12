@@ -1,0 +1,52 @@
+---
+title: Introduction
+description: What @maestria/opencode is, how it works, and the 8 agents it provides.
+---
+
+import { LinkCard, CardGrid, LinkButton, Aside } from "@astrojs/starlight/components";
+
+# Introduction
+
+`@maestria/opencode` is an npm plugin for [OpenCode](https://opencode.ai) that transforms your AI coding environment into a disciplined engineering workstation. It bundles 8 specialized agents and global workflow rules — all installed with a single line of configuration.
+
+## The Problem
+
+Without a plugin like this, every OpenCode session starts from scratch. You need to:
+
+- Manually configure agent prompts and permissions
+- Remember to set context management rules
+- Re-establish delegation patterns
+- Hope the AI remembers its methodology
+
+This is inconsistent, error-prone, and wastes context window on setup that should be automatic.
+
+## The Approach
+
+`@maestria/opencode` solves this with three layers:
+
+| Layer      | What it does                                         | How                                                       |
+| ---------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| **Agents** | 8 specialized subagents for different work phases    | Bundled `.md` files registered via OpenCode's config hook |
+| **Rules**  | Cross-cutting directives injected into every session | `input.instructions` path to `rules/AGENTS.md`            |
+| **Hooks**  | Self-wiring plugin architecture                      | OpenCode lifecycle hooks (`config`, `session.compacting`) |
+
+## The 8 Agents
+
+The plugin provides one manager agent and 7 specialist subagents:
+
+| Agent           | Mode     | Role                                                                    |
+| --------------- | -------- | ----------------------------------------------------------------------- |
+| `@orchestrator` | all      | Manager — decomposes work, delegates to specialists, integrates results |
+| `@adventurer`   | subagent | Codebase reconnaissance — maps unfamiliar code, traces call chains      |
+| `@architect`    | subagent | Architecture decisions — evaluates options with weighted criteria       |
+| `@builder`      | subagent | Focused implementation — one atomic task per invocation                 |
+| `@diagnose`     | subagent | Systematic debugging — 6-step regression tracing                        |
+| `@planner`      | subagent | Implementation plans — phased milestones with verification              |
+| `@reviewer`     | subagent | Code review — 7-dimension quality checklist                             |
+| `@writer`       | subagent | Documentation — structured patterns for any document type               |
+
+## Next Steps
+
+- [Install the plugin](/opencode/getting-started/installation/) — Add it to your OpenCode config
+- [Quick Start](/opencode/getting-started/quick-start/) — Your first session with the plugin
+- [Browse the Agents](/opencode/agents/) — Detailed documentation for each agent

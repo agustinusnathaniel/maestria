@@ -25,4 +25,6 @@ peerDependencyRules:
     vite: "*"
     vitest: "*"
 allowBuilds:
+  esbuild: true
   msgpackr-extract: false
+  sharp: true

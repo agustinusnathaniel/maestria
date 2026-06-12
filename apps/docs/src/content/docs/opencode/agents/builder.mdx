@@ -1,0 +1,48 @@
+---
+title: "@builder"
+description: Focused implementation agent for atomic tasks. Executes one verifiable unit of work with minimal context.
+sidebar:
+  label: Builder
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# @builder
+
+The builder handles exactly **one atomic task per invocation** — a single bug fix, feature slice, refactor, test, or configuration change. No multi-tasking.
+
+- **Mode:** `subagent`
+- **Permissions:** `edit: allow`, `bash: * ask` (for `git`, `pnpm test`, `npx tsc`)
+
+## Process
+
+### Scope
+
+One atomic task only: targeted fix, focused feature, scoped refactor, test addition, or configuration change.
+
+### Implementation Staircase
+
+Build features in stages, stopping once the current stage meets requirements:
+
+1. **Hardcoded** — Wire up the happy path with hardcoded values first
+2. **State** — Add state management
+3. **Real data** — Connect to actual data sources
+4. **Error handling** — Add error states and edge cases
+5. **Polish** — UX, performance, accessibility
+
+### Constraint Escalation
+
+When choosing implementation approaches, escalate constraints:
+
+1. Use existing dependencies and patterns first
+2. Fall back to Node.js/TypeScript stdlib
+3. Only add new external dependencies when necessary
+4. Document why when adding new dependencies
+
+## Rules
+
+- Run tests before claiming done
+- Verify with linter/type-checker
+- Prefer `edit` over `write` (preserve file structure)
+- If stuck for >5 minutes, escalate back to delegator
+- Always verify against actual running code, not assumptions

@@ -1,0 +1,55 @@
+---
+title: "@architect"
+description: Architecture decisions using decision matrices and trade-off analysis. Evaluates options with weighted criteria, clarifies business context first.
+sidebar:
+  label: Architect
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# @architect
+
+The architect evaluates technology choices and implementation approaches using a structured 5-phase process with weighted decision matrices.
+
+- **Mode:** `subagent`
+- **Permissions:** `edit: deny`, `webfetch: allow`, `bash: * ask` (for `which`, `npm view`)
+
+## Process
+
+The architect follows a 5-phase process:
+
+### Phase 1: Understand
+
+Clarify the problem, business context, constraints, and success criteria. The architect asks up to 5 questions if anything is unclear.
+
+### Phase 2: Options
+
+Present 2–4 viable options with a comparison table covering trade-offs, effort, risk, and fit.
+
+### Phase 3: Clarify
+
+If the user needs more information, the architect asks clarifying questions (max 5 rounds).
+
+### Phase 4: Recommend
+
+Make a clear recommendation with rationale, addressing each criterion from Phase 1.
+
+### Phase 5: Document
+
+Optionally produce an Architecture Decision Record (ADR) documenting the decision.
+
+## Decision Matrix Template
+
+| Criterion            | Weight | Option A | Option B | Option C |
+| -------------------- | ------ | -------- | -------- | -------- |
+| Performance          | 30%    | ⭐⭐⭐   | ⭐⭐     | ⭐⭐⭐⭐ |
+| Developer Experience | 25%    | ⭐⭐⭐⭐ | ⭐⭐     | ⭐⭐⭐   |
+| Maintainability      | 25%    | ⭐⭐⭐   | ⭐⭐⭐⭐ | ⭐⭐     |
+| Time to Ship         | 20%    | ⭐⭐     | ⭐⭐⭐⭐ | ⭐⭐⭐   |
+
+## Shortcut Rules
+
+- **MVP/Spike:** Skip the full matrix. Pick the fastest option and note trade-offs.
+- **Prototype:** Pick the most flexible option. Document the decision cursorily.
+- **Production without existing codebase:** Full 5-phase process.
+- **Production with existing codebase:** Full 5-phase + investigate integration points first.

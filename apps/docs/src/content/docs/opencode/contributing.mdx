@@ -1,0 +1,124 @@
+---
+title: Contributing
+description: How to contribute to @maestria/opencode — development setup, making changes, and submitting PRs.
+---
+
+import { Steps, LinkButton } from "@astrojs/starlight/components";
+
+# Contributing
+
+Thank you for your interest in contributing to `@maestria/opencode`! This guide covers how to set up the development environment, make changes, and submit pull requests.
+
+## Development Setup
+
+<Steps>
+
+1. **Clone the monorepo**
+
+   ```bash
+   git clone https://github.com/agustinusnathaniel/maestria.git
+   cd maestria
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   vp install
+   ```
+
+3. **Verify the setup**
+
+   ```bash
+   vp check
+   vp run -r test
+   vp run -r build
+   ```
+
+</Steps>
+
+## Project Structure
+
+```
+maestria/
+├── apps/
+│   └── docs/              # Documentation site (this site)
+├── packages/
+│   └── opencode/          # @maestria/opencode plugin
+│       ├── agents/        # Agent definitions (.md files)
+│       ├── rules/         # Global rules (AGENTS.md)
+│       ├── src/           # Plugin source code
+│       └── tests/         # Plugin tests
+├── docs/
+│   ├── adr/               # Architecture Decision Records (internal)
+│   └── notes/             # Session notes (internal)
+└── vite.config.ts         # Vite+ configuration
+```
+
+## Making Changes
+
+### Adding or Modifying Agents
+
+Agent definitions are Markdown files in `packages/opencode/agents/`. Each file has:
+
+- **YAML frontmatter** — description, mode, permissions
+- **Prompt body** — The full agent instructions
+
+To add a new agent, create a new `.md` file in that directory. To modify an existing agent, edit the corresponding file.
+
+### Modifying Global Rules
+
+Global rules live in `packages/opencode/rules/AGENTS.md`. Use the three-way filter documented in the plugin's ADRs when adding new rules:
+
+- **Agent file** — if it applies to one agent's domain
+- **Global rules** — if it's cross-cutting and not covered elsewhere
+- **Exclude** — if covered by agent directives or OpenCode defaults
+
+### Modifying Plugin Code
+
+The plugin source is `packages/opencode/src/index.ts` (~190 lines). The main components are:
+
+- **`parseFrontmatter()`** — Custom YAML frontmatter parser
+- **`parseAgentFile()`** — Splits agent files into frontmatter + prompt
+- **`loadAgents()`** — Reads all `.md` files from the agents directory
+- **`MaestriaPlugin`** — Plugin factory returning config + session.compacting hooks
+
+### Running the Docs Site Locally
+
+```bash
+vp run website#dev
+```
+
+## Building and Testing
+
+```bash
+# Build all packages
+vp run -r build
+
+# Run tests
+vp run -r test
+
+# Format and lint
+vp check
+```
+
+## Creating a Changeset
+
+This project uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing:
+
+```bash
+pnpm changeset
+```
+
+Follow the prompts to describe your changes. Commit the generated changeset file alongside your changes.
+
+## Pull Request Process
+
+1. **Fork the repository** and create a feature branch
+2. **Make your changes** following the existing conventions
+3. **Verify** — run `vp check` and ensure tests pass
+4. **Create a changeset** if your changes affect the published package
+5. **Submit a PR** with a clear description of what you changed and why
+
+## Need Help?
+
+Open an issue on GitHub or reach out to the maintainers.

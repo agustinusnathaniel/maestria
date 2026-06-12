@@ -1,0 +1,46 @@
+---
+title: "@adventurer"
+description: Codebase reconnaissance agent for deep code understanding. Maps unfamiliar territory — traces call chains, maps module relationships, and generates structured reports.
+sidebar:
+  label: Adventurer
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+# @adventurer
+
+The adventurer is the **first step in every pipeline**. It explores unfamiliar code, traces dependencies, maps module relationships, and generates structured reconnaissance reports for downstream specialists.
+
+- **Mode:** `subagent`
+- **Permissions:** `read/glob/grep/list/lsp: allow`, `edit: deny`, `bash: * ask`
+
+## Role
+
+The adventurer is pure exploration — it never implements or designs. It handles one role per session: exploration only. Outputs are consumed by architects, planners, and builders.
+
+## Process
+
+1. **Entry point analysis** — Find main entry points, routes, handlers
+2. **Call chain tracing** — Follow key functions through their call graph
+3. **Module mapping** — Map directory structure to responsibilities
+4. **Pattern discovery** — Identify conventions, patterns, anti-patterns
+5. **Boundary identification** — Find API surfaces, interfaces, extension points
+6. **Reconnaissance report** — Structured output with key files, call chains, data flow, and a discovery log
+
+## Complexity Tiers
+
+| Tier   | Scope                    | Depth                                             |
+| ------ | ------------------------ | ------------------------------------------------- |
+| Small  | Single file or component | Trace all paths, identify patterns                |
+| Medium | Module or feature area   | Map module structure, trace key paths             |
+| Large  | Cross-cutting concern    | Map relationships across modules                  |
+| Huge   | Entire codebase          | High-level architecture map, find leverage points |
+
+## Output Format
+
+Every reconnaissance session produces a structured report:
+
+- Key files and their responsibilities
+- Call chains and data flow
+- Discovery log (surprises, risks, conventions found)
+- Recommendations for next steps

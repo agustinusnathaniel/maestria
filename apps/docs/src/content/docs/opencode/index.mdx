@@ -1,0 +1,77 @@
+---
+title: "@maestria/opencode"
+description: OpenCode plugin that registers 8 specialized agents and injects global rules into every session.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: "AI Engineering Workflows, Encoded"
+  tagline: "Install one plugin. Get 8 agents, global rules, and session-aware orchestration — without lifting a finger."
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /opencode/getting-started/introduction/
+    - text: View Agents
+      icon: external
+      variant: minimal
+      link: /opencode/agents/
+---
+
+import { LinkCard, CardGrid, LinkButton, Aside } from "@astrojs/starlight/components";
+
+## How It Works
+
+1. **Plugin loads** — OpenCode installs `@maestria/opencode` from npm
+2. **Config hook** — Reads bundled agent `.md` files, parses frontmatter, registers them programmatically
+3. **Rules injected** — Global workflow directives appended to every session
+4. **Agents available** — All 8 agents are available as subagents via `@` mention
+5. **State preserved** — Session compaction hook remembers task status
+
+## Quick Install
+
+Add to your OpenCode config (`~/.config/opencode/opencode.jsonc`):
+
+```jsonc
+{
+  "plugin": ["@maestria/opencode@latest"],
+}
+```
+
+<LinkButton href="/opencode/getting-started/installation/" size="lg">
+  Installation Guide →
+</LinkButton>
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Introduction, installation, and your first session with the plugin."
+    href="/opencode/getting-started/introduction/"
+  />
+  <LinkCard
+    title="Agents"
+    description="Documentation for all 8 agents — roles, permissions, and methodology."
+    href="/opencode/agents/"
+  />
+  <LinkCard
+    title="Global Rules"
+    description="Cross-cutting rules injected into every session."
+    href="/opencode/guide/global-rules/"
+  />
+  <LinkCard
+    title="Configuration"
+    description="Frontmatter fields, permission model, and agent modes."
+    href="/opencode/guide/configuration/"
+  />
+  <LinkCard
+    title="How It Works"
+    description="Plugin hooks, agent loading, and rule injection architecture."
+    href="/opencode/guide/how-it-works/"
+  />
+  <LinkCard
+    title="Changelog"
+    description="Version history and release notes."
+    href="/opencode/changelog/"
+  />
+</CardGrid>
