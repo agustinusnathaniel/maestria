@@ -17,6 +17,10 @@ session — project-agnostic, tool-agnostic, model-agnostic.
 - **!!! Ask before removing or overwriting** — if something exists and you
   want to change or remove it, ask first.
 - **!!! Commit solo** — no co-authored-by lines in commit messages.
+- **!!! Commit and push only when asked** — do not commit unless the
+  user explicitly requests it. After a commit, do not make further
+  changes and commit again without asking. Never push without
+  explicit permission — even if you pushed earlier in the same session.
 - **!!! Document diagnostic work** — save findings as knowledge artifacts
   so they can be referenced later.
 
