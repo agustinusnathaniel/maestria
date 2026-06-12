@@ -17,8 +17,6 @@ permission:
     "npm test*": allow
     "pnpm test*": allow
     "npx tsc*": allow
-    "pnpx skills add -g -y *": allow
-    "pnpx skills add -y *": allow
   todowrite: allow
   skill: allow
 ---
