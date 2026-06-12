@@ -16,8 +16,7 @@ permission:
     "git diff*": allow
     "git log*": allow
     "which *": allow
-    "pnpx skills@latest add -g -y *": allow
-    "pnpx skills@latest add -y *": allow
+    "npx --yes skills@latest *": allow
   webfetch: ask
   question: allow
   todowrite: allow
@@ -195,35 +194,57 @@ check via the `skill` tool whether it is already available in
 and proceed — no install needed.
 
 For every skill missing in BOTH scopes, prepare a **bundled**
-question (one prompt for all missing skills, even if they have
-different recommended scopes) and ask the user via `question`:
+question (one prompt for all missing skills, grouped by source)
+and ask the user via `question`:
 
 > "Specialist @X needs these skills (not in global or project):
 >
-> - **A** (`owner/repo1`) — recommend **global** (general-purpose:
->   well-known public repo with broad patterns)
-> - **B** (`owner/repo2`) — recommend **local** (project-specific:
->   defined in this repo's `.opencode/` or `apps/` tree)
-> - **C** (`owner/repo3`) — recommend **local** (uncertain; lean
->   local as the conservative default — local is reversible, global
->   isn't)
+> - From `vercel-labs/opensrc`: **opensrc** (general-purpose:
+>   well-known public repo — recommend **global**)
+> - From `mattpocock/skills`: **tdd**, **karpathy-guidelines**
+>   (general-purpose — recommend **global**)
+> - From `anthropics/skills`: **frontend-design** (project-
+>   specific to this repo's tooling — recommend **local**)
 >
 > Install as recommended? [Y/n / specify per-skill scope]"
 
 The user can answer in one go, mixing scopes (e.g., "A globally,
-B globally, C locally" overrides the recommendation for B). The
-bundled form keeps the install flow to one user-facing prompt per
+B locally, C globally" overrides the recommendation for B).
+Bundling keeps the install flow to one user-facing prompt per
 spawn, even with multiple missing skills.
 
+**Judgment criteria** (general-purpose vs project-specific):
+
+- **General-purpose** (recommend global): well-known public
+  repos with broad patterns — e.g., `opensrc`, `tdd`,
+  `karpathy-guidelines`. One global install benefits all
+  projects.
+- **Project-specific** (recommend local): defined in this
+  repo's own `.opencode/` or `apps/` tree, or that references
+  this project's specific tools/ADRs. Shouldn't leak to other
+  projects.
+- **When uncertain, lean toward local** as the conservative
+  default — local is reversible, global is harder to undo.
+
 On yes (or per-skill confirmation), the orchestrator runs the
-install directly — **no `@builder` delegation**:
+install directly — **no `@builder` delegation**. Group by
+source, one install command per source. For each source's
+missing skills, the command is:
 
-- Global: `pnpx skills@latest add -g -y <owner/repo>`
-- Local: `pnpx skills@latest add -y <owner/repo>`
+- Install (e.g., `npx --yes skills@latest add <source> --skill <name>... -y` for project, or with `-g` added for global — but always run `--help` first to confirm the current flag set)
 
-Both patterns are allow-listed in your `bash` permission, so the
-install runs unattended. Wait for each install to complete, then
-spawn the specialist.
+**Get the current flag set** by running `npx --yes skills@latest
+--help` before any install — the CLI is the source of truth. Flag
+names and behavior can change between versions; this prompt does
+not document them. The general pattern is
+`npx --yes skills@latest add <source> [flags]` where `[flags]`
+is whatever the help shows (typically a `--skill <name>` per
+skill, `-y` for the CLI's auto-confirm, and `-g` only for
+global installs).
+
+This pattern is allow-listed in your `bash` permission, so the
+install runs unattended. Run each source's install command,
+await completion, then spawn the specialist.
 
 On "n" (decline all), see `### Skip behavior` — spawn the
 specialist anyway; the subagent flags the missing skills in its
@@ -233,11 +254,11 @@ Include installed skill names in the delegation prompt so the
 subagent loads them.
 
 > **Why ask first:** Don't assume which skills the user wants
-> installed, or where (global vs local). Read the subagent's
-> directive to know what's needed, check each against global and
-> project scope, and only prompt for the ones missing in both.
-> Bundling the question keeps the flow to one prompt per spawn
-> even with multiple skills.
+> installed, or where (global vs project). Read the subagent's
+> directive to know what's needed, check each against global
+> and project scope, and only prompt for the ones missing in
+> both. Bundling the question keeps the flow to one prompt per
+> spawn even with multiple skills.
 
 ### Reactive path
 
@@ -255,22 +276,26 @@ same task.
 
 ### Permission constraint
 
-You have `bash: deny` for general commands, but the install
-commands are **allow-listed in your own `bash` permission**:
-`pnpx skills@latest add -g -y *` (global) and
-`pnpx skills@latest add -y *` (local). You run the install
-directly after the user's `question` approval — no `@builder`
-delegation. The user sees exactly one prompt per install: your
-bundled `question`.
+You have `bash: deny` for general commands, but the skills CLI
+is **allow-listed in your own `bash` permission**:
+`npx --yes skills@latest *`. This pattern covers the install
+command (`add ...`), `--help` (for self-documentation), and any
+other subcommand of the `skills@latest` package. You run the
+install directly after the user's `question` approval — no
+`@builder` delegation. The user sees exactly one prompt per
+install: your bundled `question`.
 
-The `-g` flag puts the skill in the global skills directory (so
-the install benefits all projects, not just the current one).
-Omit `-g` for project-local installs. The `-y` flag auto-confirms
-the skills CLI's own confirmation prompt in both forms. The
-`@latest` pin ensures the latest `pnpx` package version. Do not
-delegate installs to `@builder` — the permission system is set
-up for you to handle this directly, and the delegation would add
-a hop with no benefit.
+**Don't memorize the skills CLI flag set.** Before any install,
+run `npx --yes skills@latest --help` to get the current flag
+reference. Flag names and behavior can change between versions;
+this prompt does not document them. The CLI is the source of
+truth.
+
+Skills can be installed at **global** (user-level) or
+**project** (default) scope — the user chooses via your bundled
+`question`. Do not delegate installs to `@builder` — the
+permission system is set up for you to handle this directly,
+and the delegation would add a hop with no benefit.
 
 ## Human-in-the-Loop
 
