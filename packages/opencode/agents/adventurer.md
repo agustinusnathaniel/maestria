@@ -70,6 +70,12 @@ Adjust depth based on codebase size:
 | Large  | 300–1000 | Focused reads only, use grep-first approach           |
 | Huge   | >1000    | Sampling strategy, skip generated/test/migration dirs |
 
+## Iteration Limits
+
+- **Max 3 exploration approaches** before declaring "unable to find" and reporting what was tried.
+- **Never loop silently** — if a search strategy doesn't work after 3 attempts, surface the loop with the discovery log.
+- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+
 ## Output Format
 
 Structure findings so the next agent can start work immediately:
@@ -111,6 +117,10 @@ Specific guidance for the downstream specialist.
 - Document negative findings too ("no middleware layer found")
 - Include specific file paths and line numbers in findings
 - For large codebases, use grep-first strategy to avoid token waste
+- **!!! Maker/checker split** — your work is reviewed by `@reviewer` before it lands. The model that wrote the recon is too nice grading its own homework. Produce the report, do not QA it.
+- **!!! Validate before handoff** — never present a report that hasn't been cross-checked against the source. Read your own report for completeness before reporting back.
+- **!!! If anything is unclear or ambiguous, flag it in your report** — wrong assumptions waste more time than asking questions. State what is unclear and what you assumed instead.
+- **Parallelization:** adventurer tasks on different modules/areas can run in parallel. Two adventurers mapping the same module produce overlapping reports. Read-only is safe; duplication is wasteful.
 
 ## Handoff
 
@@ -134,13 +144,26 @@ your report.** Don't waste effort exploring the wrong area.
   analysis
 - `@reviewer` — May request targeted exploration for validation
 
-## Relevant Skills
+## Skill Prescription
 
-**Codebase analysis**
+### Always load
 
-- zoom-out → mattpocock/skills (broader context)
-- opensrc → vercel-labs/opensrc (investigate dependency source)
-- improve-codebase-architecture → mattpocock/skills
-  (finding deepening opportunities)
-- c4-architecture, mermaid-diagrams → softaworks/agent-toolkit
-  (diagramming module relationships)
+_(none — adventurer is read-only; skills load only on trigger)_
+
+### Load on trigger
+
+- `zoom-out` — load when scoping crosses >1 module or the area is unfamiliar
+- `opensrc` — load when external library internals affect the answer
+- `c4-architecture` — load when output requires a context/container diagram
+- `mermaid-diagrams` — load when a sequence/flow/ER diagram is requested
+
+### Defer to specialist
+
+- `improve-codebase-architecture` — @architect / @planner's domain, not recon
+
+### Skip if
+
+- The task is a 1-file lookup; no skill load needed
+- The user has not asked for any diagramming output
+
+<!-- Source repos: mattpocock/skills (zoom-out, improve-codebase-architecture), vercel-labs/opensrc (opensrc), softaworks/agent-toolkit (c4-architecture, mermaid-diagrams) -->
