@@ -11,8 +11,9 @@ session — project-agnostic, tool-agnostic, model-agnostic.
   Never present broken code. Always ensure it works before handing back.
 - **!!! Read official docs first** — especially during migrations.
   Don't guess at API changes. Read documentation.
-- **!!! Leverage available skills** — use skills before raw tool calls.
-  Skills encode project knowledge. Use them.
+- **!!! Leverage available skills** — use the `skill` tool to discover
+  and load methodology guides before raw tool calls. Skills encode
+  project knowledge and take priority over general patterns.
 - **!!! Ask before removing or overwriting** — if something exists and you
   want to change or remove it, ask first.
 - **!!! Commit solo** — no co-authored-by lines in commit messages.
@@ -81,3 +82,5 @@ When working on project-specific tasks:
 - Check for relevant KB entries in the project's knowledge base
 - Read detailed documentation pages rather than guessing patterns
 - Document new findings back to the KB
+- Check for workspace-level AGENTS.md or CLAUDE.md files — project-specific
+  instructions work alongside these global rules

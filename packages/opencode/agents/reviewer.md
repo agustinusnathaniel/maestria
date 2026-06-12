@@ -103,6 +103,12 @@ You review code for quality.
 4. **What was verified** (tests, edge cases, security checks)
 5. **Recommendation**: Next steps
 
+## Related Agents
+
+- `@builder` — Implement recommended fixes for issues found during review
+- `@writer` — Update documentation when gaps or inaccuracies are found
+- `@diagnose` — Investigate deeply when issues appear to have unknown root causes
+
 ## References
 
 - Google's Code Review Guidelines: https://google.github.io/eng-practices/review/

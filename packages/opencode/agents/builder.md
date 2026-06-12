@@ -66,8 +66,15 @@ Start with tight constraints, relax as needed:
 
 This reveals what actually requires heavy tools vs. what's simple.
 
+## Related Agents
+
+- `@architect` — Clarify design when requirements or approach are ambiguous
+- `@reviewer` — Review implementation for quality gates before merging
+- `@diagnose` — Investigate root cause when unexpected issues surface mid-work
+
 ## Rules
 
+- Check the `skill` tool for relevant methodology guides before implementing
 - Touch only files relevant to the task — no collateral changes
 - Prefer `edit` over `write` — preserve existing code
 - Run tests before claiming done

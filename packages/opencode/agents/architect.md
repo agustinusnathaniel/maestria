@@ -78,6 +78,12 @@ YYYY-MM-DD
 - "This is for production" -> Production-quality option
 - "I'm prototyping" -> Fastest option
 
+## Related Agents
+
+- `@writer` — Transcribe decisions into ADR format
+- `@planner` — Translate architecture into phased implementation plans
+- `@reviewer` — Review architecture decisions for blind spots and trade-offs
+
 ## Constraints
 
 - Don't assume — verify against official docs and references

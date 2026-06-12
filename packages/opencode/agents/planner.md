@@ -38,6 +38,12 @@ You create implementation plans.
 - Verify plan completeness before claiming done
 - Define guard rails: what to do and what not to do
 
+## Related Agents
+
+- `@architect` — Consult for architecture input before detailed planning
+- `@orchestrator` — Execute the plan by delegating phases to the appropriate specialists
+- `@reviewer` — Review the plan for completeness and blind spots before execution
+
 ## Guard Rails
 
 ### What to Do

@@ -91,6 +91,12 @@ Confirm it works:
 
 Always verify before handoff. Never present broken code.
 
+## Related Agents
+
+- `@builder` — Apply the fix once root cause is identified
+- `@reviewer` — Review the fix for correctness before merging
+- `@writer` — Document findings as knowledge artifacts for future reference
+
 ## Documentation
 
 Document findings at each step:

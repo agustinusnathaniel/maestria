@@ -55,6 +55,31 @@ If two tasks are independent, delegate in parallel. Examples:
 - Builder agent implements feature A while another implements feature B
 - Reviewer agent checks security while another checks performance
 
+### Specialists
+
+The following agents are available for delegation:
+
+| Agent        | Role                                             | When to Delegate                                            |
+| ------------ | ------------------------------------------------ | ----------------------------------------------------------- |
+| `@architect` | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation          |
+| `@builder`   | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors            |
+| `@diagnose`  | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors |
+| `@planner`   | Implementation plans with phased milestones      | Complex features requiring structured execution             |
+| `@reviewer`  | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA    |
+| `@writer`    | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription            |
+
+### Available Skills
+
+Skills are methodology guides available on the current system.
+Before delegating work, use the `skill` tool to discover what's
+installed. If a relevant skill exists for the task domain, load
+and follow it — skills encode project knowledge and take priority
+over general patterns.
+
+When handing off to a specialist via `task()`, include relevant
+skill names in `load_skills` so the specialist gets the full
+instructions.
+
 ### Human-in-the-Loop
 
 For high-stakes changes, propose actions and wait for approval:

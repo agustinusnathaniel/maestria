@@ -184,8 +184,9 @@ export const MaestriaPlugin: Plugin = async () => {
     },
     "experimental.session.compacting": async (_input, output) => {
       output.context.push(
-        "The following tasks were in progress. Continue working on them. " +
-          "Check todowrite for status.",
+        "Session was compacted. Task tracking is maintained via todowrite. " +
+          "Active context (files, decisions, blockers) was captured before compaction. " +
+          "Continue where you left off.",
       );
     },
   };

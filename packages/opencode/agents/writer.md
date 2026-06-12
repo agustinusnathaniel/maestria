@@ -74,6 +74,12 @@ You write documentation.
 - Link to relevant issues/PRs
 - Migration notes for breaking changes
 
+## Related Agents
+
+- `@architect` — Capture ADRs from architecture decisions and trade-off analysis
+- `@reviewer` — Review documentation for accuracy, clarity, and completeness
+- `@builder` — Verify that documented examples match actual implementation
+
 ## Check
 
 - Proofread before finishing
