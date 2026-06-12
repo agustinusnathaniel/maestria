@@ -5,7 +5,6 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
-const rulesPath = join(__dirname, "..", "rules", "AGENTS.md");
 
 interface AgentFrontmatter {
   description: string;
@@ -174,7 +173,6 @@ export const MaestriaPlugin: Plugin = async () => {
         ...input.agent,
         ...agents,
       };
-      input.instructions = [...(input.instructions ?? []), rulesPath];
     },
     "experimental.session.compacting": async (_input, output) => {
       output.context.push(
