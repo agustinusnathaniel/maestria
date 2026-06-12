@@ -179,13 +179,43 @@ Examples:
 
 ## Skills for Subagents
 
-Before delegating to a specialist, check if relevant skills exist via the
-`skill` tool. If a skill is missing, use the `question` tool to ask the
-user to install it. Include skill names in the delegation prompt so the
-subagent loads them itself (each subagent starts with a fresh context).
+Subagents prescribe skills via a `### Always load` bucket in their
+frontmatter (Phases 2-4 introduce the format; the orchestrator adopts
+this behavior now). You own every install path.
 
-**Do not keep a skill directory here** — specialist-specific skills are
-documented in each agent's own prompt.
+### Proactive path
+
+Read the dispatched subagent's `### Always load` bucket and diff it
+against the user's installed skills via the `skill` tool. For every
+missing skill, you must call `question` with the install command shown
+and wait for confirmation before spawning. The skill name must appear in
+the delegation prompt so the subagent loads it.
+
+> **Why ask first:** Don't assume which skills the user wants
+> installed or skipped. Identify what the subagent may need
+> (not limited to a small always-load bucket), check each, and
+> surface any missing ones via `question` so the user decides.
+
+### Reactive path
+
+When a subagent's response includes a `pnpx skills add ...` suggestion
+for a skill you did not install proactively, surface it via `question`.
+Never install silently — every install is opt-in, including upgrades of
+already-installed skills.
+
+### Skip behavior
+
+If the user declines an install prompt, you must spawn the subagent
+anyway. The subagent flags the missing skill in its handoff and the
+work degrades gracefully. Never re-ask about the same skill within the
+same task.
+
+### Permission constraint
+
+You have `bash: deny` (you cannot run install commands). Subagents have
+`bash: ask` (they cannot run install commands in their own context —
+there is no user to approve). Every install decision must therefore flow
+through your `question` tool.
 
 ## Human-in-the-Loop
 
