@@ -7,8 +7,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
 const rulesPath = join(__dirname, "..", "rules", "AGENTS.md");
 
-const rulesContent = readFileSync(rulesPath, "utf-8");
-
 interface AgentFrontmatter {
   description: string;
   mode: string;
@@ -176,11 +174,7 @@ export const MaestriaPlugin: Plugin = async () => {
         ...input.agent,
         ...agents,
       };
-    },
-    "experimental.chat.system.transform": async (_input, output) => {
-      for (const line of rulesContent.split("\n")) {
-        output.system.push(line);
-      }
+      input.instructions = [...(input.instructions ?? []), rulesPath];
     },
     "experimental.session.compacting": async (_input, output) => {
       output.context.push(
