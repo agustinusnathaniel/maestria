@@ -1,4 +1,4 @@
-# ADR-002: Plugin Architecture — Pure Plugin, Markdown Agents, 3 Hooks
+# ADR-002: Plugin Architecture — Pure Plugin, Markdown Agents, 2 Hooks
 
 ## Status
 
@@ -15,9 +15,9 @@ skills to the user's OpenCode installation. Three approaches were considered:
 2. **Config-only approach** — no plugin code, just markdown files that the
    user manually copies or links (inspired by `opencode-agent-orchestration-kit`)
 3. **Pure plugin approach** — plugin registers agents via `config` hook,
-   injects rules via `system.transform`, preserves state via
-   `session.compacting`. Only the npm package is installed — no filesystem
-   side effects outside the package directory.
+   injects rules via `input.instructions` inside the `config` hook, preserves
+   state via `session.compacting`. Only the npm package is installed — no
+   filesystem side effects outside the package directory.
 
 We studied reference implementations for patterns:
 
@@ -29,28 +29,28 @@ We studied reference implementations for patterns:
 ### Choose: Pure Plugin Approach (Option 3)
 
 **The plugin is pure hooks.** It registers agents programmatically via the
-`config` hook, injects rules via `system.transform`, and preserves session
-state via `session.compacting`. No postinstall script, no file copying, no
-filesystem side effects.
+`config` hook, injects rules via `input.instructions` inside the `config` hook,
+and preserves session state via `session.compacting`. No postinstall script, no
+file copying, no filesystem side effects.
 
 ### Key Architecture Decisions
 
-| Decision                | Choice                                                                           | Rationale                                                                                      |
-| ----------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **Agent format**        | Markdown files with YAML frontmatter                                             | Readable, editable, versionable. No TypeScript factories needed.                               |
-| **Agent registration**  | `config` hook reads agents/\*.md, parses frontmatter, injects into `input.agent` | Always current — no stale files.                                                               |
-| **Number of hooks**     | Exactly 3                                                                        | `config`, `system.transform`, `session.compacting`. More hooks = more surface area. We need 3. |
-| **Rules injection**     | `system.transform` hook, not file copy                                           | Rules always present regardless of user's existing AGENTS.md.                                  |
-| **Build tool**          | `tsc`                                                                            | Package is ~200 lines, no bundling needed. `tsdown` is a sledgehammer for a thumbtack.         |
-| **Skills distribution** | Not bundled; reference by name                                                   | Skills are installed separately via `pnpx skills@latest add`. Keeps plugin focused.            |
-| **Postinstall**         | None                                                                             | Pure plugin has no side effects outside the npm package directory.                             |
+| Decision                | Choice                                                                           | Rationale                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Agent format**        | Markdown files with YAML frontmatter                                             | Readable, editable, versionable. No TypeScript factories needed.                       |
+| **Agent registration**  | `config` hook reads agents/\*.md, parses frontmatter, injects into `input.agent` | Always current — no stale files.                                                       |
+| **Number of hooks**     | Exactly 2                                                                        | `config`, `session.compacting`. More hooks = more surface area. We need 2.             |
+| **Rules injection**     | `input.instructions` in `config` hook, not file copy                             | Rules always present regardless of user's existing AGENTS.md.                          |
+| **Build tool**          | `tsc`                                                                            | Package is ~200 lines, no bundling needed. `tsdown` is a sledgehammer for a thumbtack. |
+| **Skills distribution** | Not bundled; reference by name                                                   | Skills are installed separately via `pnpx skills@latest add`. Keeps plugin focused.    |
+| **Postinstall**         | None                                                                             | Pure plugin has no side effects outside the npm package directory.                     |
 
 ### What We Avoid (learned from reference implementations)
 
 | Anti-pattern               | Why Not                                                                             |
 | -------------------------- | ----------------------------------------------------------------------------------- |
 | TypeScript agent factories | Markdown is editable, inspectable, versionable. We use .md files, not TS factories. |
-| 10+ lifecycle hooks        | 3 hooks cover the need; more hooks = more maintenance surface.                      |
+| 10+ lifecycle hooks        | 2 hooks cover the need; more hooks = more maintenance surface.                      |
 | Postinstall file copying   | Creates stale files, requires sentinel checks, fragile.                             |
 | Greek mythology naming     | Functional naming (architect, diagnose, builder) tells you what the agent does.     |
 | Telemetry / usage tracking | Privacy-invasive, adds no value to the user.                                        |
@@ -98,13 +98,8 @@ Each agent file has this as YAML frontmatter, parsed at plugin load time.
 From `@opencode-ai/plugin@1.17.4`:
 
 ```typescript
-// Config hook — mutate input.agent to register agents
+// Config hook — mutate input.agent to register agents and inject rules
 config: async (input: Config) => void;
-
-// System transform — inject rules into every session
-"experimental.chat.system.transform": async (input, output) => {
-  output.system: string[]; // push strings directly
-};
 
 // Session compacting — preserve task state
 "experimental.session.compacting": async (input, output) => {
