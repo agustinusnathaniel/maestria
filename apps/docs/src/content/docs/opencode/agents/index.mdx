@@ -15,16 +15,16 @@ The `@orchestrator` decomposes complex tasks into atomic units, delegates to spe
 
 ## Agent Reference
 
-| Agent           | Mode       | Role                                  | Key Permissions                 |
-| --------------- | ---------- | ------------------------------------- | ------------------------------- |
-| `@orchestrator` | `all`      | Manager — delegates, never implements | `edit: deny`, `task: * allow`   |
-| `@adventurer`   | `subagent` | Codebase reconnaissance               | `edit: deny`, `bash: * ask`     |
-| `@architect`    | `subagent` | Architecture decisions                | `edit: deny`, `webfetch: allow` |
-| `@builder`      | `subagent` | Focused implementation                | `edit: allow`, `bash: * ask`    |
-| `@diagnose`     | `subagent` | Systematic debugging                  | `edit: ask`, `bash: * ask`      |
-| `@planner`      | `subagent` | Implementation plans                  | `edit: ask`, `webfetch: allow`  |
-| `@reviewer`     | `subagent` | Code review                           | `edit: deny`                    |
-| `@writer`       | `subagent` | Documentation                         | `edit: allow`                   |
+| Agent           | Mode       | Role                                  | Key Permissions                 | `lsp`   | `todowrite` |
+| --------------- | ---------- | ------------------------------------- | ------------------------------- | ------- | ----------- |
+| `@orchestrator` | `all`      | Manager — delegates, never implements | `edit: deny`, `task: * allow`   | `allow` | `allow`     |
+| `@adventurer`   | `subagent` | Codebase reconnaissance               | `edit: deny`, `bash: * ask`     | `allow` | —           |
+| `@architect`    | `subagent` | Architecture decisions                | `edit: deny`, `webfetch: allow` | `allow` | —           |
+| `@builder`      | `subagent` | Focused implementation                | `edit: allow`, `bash: * ask`    | `allow` | `allow`     |
+| `@diagnose`     | `subagent` | Systematic debugging                  | `edit: ask`, `bash: * ask`      | `allow` | —           |
+| `@planner`      | `subagent` | Implementation plans                  | `edit: ask`, `webfetch: allow`  | `allow` | `allow`     |
+| `@reviewer`     | `subagent` | Code review                           | `edit: deny`                    | `allow` | —           |
+| `@writer`       | `subagent` | Documentation                         | `edit: allow`                   | —       | —           |
 
 ## Pipeline Flow
 
