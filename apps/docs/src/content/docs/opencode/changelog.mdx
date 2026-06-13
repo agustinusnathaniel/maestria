@@ -7,6 +7,34 @@ import { Aside } from "@astrojs/starlight/components";
 
 # Changelog
 
+## 0.2.5 (2026-06-12)
+
+_(no user-facing changes)_
+
+## 0.2.4 (2026-06-12)
+
+### Bug Fixes
+
+- Restore rules injection into subagent prompts — the previous removal was too aggressive and left subagents without cross-cutting instructions
+- Remove a conflicting instruction that prevented subagents from fulfilling their designated roles
+
+## 0.2.3 (2026-06-12)
+
+_(no user-facing changes)_
+
+## 0.2.2 (2026-06-12)
+
+### Features
+
+- **Astro Starlight documentation site** — Added a full documentation site for `@maestria/opencode` with guides, API reference, and changelog
+
+### Bug Fixes
+
+- Correct source repositories for 10 skills that pointed to wrong locations
+- Restore commit discipline and counter builder dispatch bias — the builder agent was being over-selected for tasks better suited to other specialists
+- Stop injecting global rules into subagent prompts — top-level rules were leaking into subagent context
+- Unstick `webfetch` by skipping the approval step and preferring local tools over remote fetches
+
 ## 0.2.1 (2026-06-12)
 
 ### Bug Fixes
@@ -28,8 +56,3 @@ import { Aside } from "@astrojs/starlight/components";
 - **Skill discovery guidance** — Every agent follows a check → use → suggest pattern for skills
 - **Conventional Comments** — Reviewer output uses standard labels (praise, suggestion, issue, nitpick, question)
 - **`opensrc` pattern** — Global rule for analyzing reference repos without API calls
-
-<Aside>
-  The initial release contains the complete agent system with all features. v0.2.1 is a focused fix
-  for orchestrator permission enforcement.
-</Aside>

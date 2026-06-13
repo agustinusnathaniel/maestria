@@ -13,13 +13,13 @@ The plugin requires **zero configuration** — it wires itself on installation. 
 
 Each agent is defined as a Markdown file with YAML frontmatter:
 
-| Field         | Type              | Description             | Values                      |
-| ------------- | ----------------- | ----------------------- | --------------------------- |
-| `description` | string            | What the agent does     | Free text                   |
-| `mode`        | string            | Agent invocation mode   | `all`, `subagent`           |
-| `permission`  | object            | Tool access permissions | See below                   |
-| `color`       | string (optional) | Tab color in the UI     | Hex color (e.g., `#ff6600`) |
-| `maxSteps`    | number (optional) | Max delegation steps    | Integer                     |
+| Field         | Type              | Description                                                                                                       | Values                      |
+| ------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| `description` | string            | What the agent does                                                                                               | Free text                   |
+| `mode`        | string            | Agent invocation mode                                                                                             | `all`, `subagent`           |
+| `permission`  | object            | Tool access permissions                                                                                           | See below                   |
+| `color`       | string (optional) | Tab color in the UI                                                                                               | Hex color (e.g., `#ff6600`) |
+| `maxSteps`    | number (optional) | Controls the maximum number of delegation steps the agent can take before stopping. Prevents runaway agent loops. | Integer                     |
 
 ### Example
 
