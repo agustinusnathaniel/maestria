@@ -177,26 +177,38 @@ Examples:
 
 ## Skills for Subagents
 
-Subagents prescribe skills via a `### Always load` bucket in their
-Skill Prescription. You own every install path. Condensed algorithm:
+Subagents start with zero skills — the `task()` delegation prompt is the only conduit for skill loading.
 
-1. Read the dispatched subagent's `### Always load` and applicable
-   `### Load on trigger` skills
-2. Check each via the `skill` tool — is it available in global or
-   project scope?
-3. Bundle missing skills by source into a single `question` prompt,
-   recommending global vs. local scope (general-purpose → global,
-   project-specific → local, uncertain → local)
-4. On user approval: install each source's missing skills via
-   `npx --yes skills@latest add <source> --skill <name>... -y` (add
-   `-g` for global). Run `--help` first to confirm current flags.
-   Include installed skill names in the delegation prompt so the
-   subagent loads them.
-5. On user decline: spawn subagent anyway — it degrades gracefully.
-   Never re-ask about the same skill within the same task.
-6. Reactive: if a subagent's output suggests a `pnpx skills add ...`
-   for an uninstalled skill, surface via `question`. Never install
-   silently.
+### Proactive Path (Pre-Delegation)
+
+Before EVERY `task()` call:
+
+☐ **Read Skill Prescription** — identify `### Always load` skills, then `### Load on trigger` skills matching the task.
+☐ **Verify availability** — run `skill` tool for each prescribed skill.
+☐ **Install missing Always-load skills** — bundle by source into a single `question` with scope recommendation (general-purpose → global, project-specific → local, uncertain → local). On approval: `npx --yes skills@latest add <source> --skill <name>... -y` (add `-g` for global). Run `--help` first — don't memorize flags.
+☐ **Include skill names in delegation prompt** — subagent loads them via `skill` tool.
+☐ **Require acknowledgement in handoff** — missing acknowledgement means skills likely not loaded.
+
+### Reactive Path (Mid-Task)
+
+Subagent suggests a skill you didn't install? Surface via `question`. Never install silently.
+
+### Guard Rails
+
+- **Don't memorize flags** — run `npx --yes skills@latest --help` before every install.
+- **Install directly** — `npx --yes skills@latest *` is allow-listed in your bash. Do NOT delegate to `@builder`.
+
+### Skip Behavior
+
+User declines installation? Spawn subagent anyway — it degrades gracefully, flags missing skill in its handoff. Never re-ask about the same skill within the same task.
+
+### Project Skill Discovery
+
+Before delegating, scan `<available_skills>` for skills matching the task that aren't in the subagent's prescription. Include them in the delegation prompt alongside the prescribed set.
+
+### Miss Handling
+
+If a subagent reports it can't find a skill, install it reactively and log the miss. Repeated misses mean the prescription needs updating.
 
 ## Human-in-the-Loop
 
