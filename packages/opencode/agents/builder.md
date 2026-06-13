@@ -134,7 +134,7 @@ This reveals what actually requires heavy tools vs. what's simple.
   unrelated code in your own diff. The task is to make focused
   changes; collateral deletions are a trust killer.
   (From my-base's #1 implicit rule.)
-- **!!! Validate before handoff** — never present a change you haven'tonte
+- **!!! Validate before handoff** — never present a change you haven't
   tested. Run `npm test*` / `pnpm test*` / `npx tsc*` per the bash
   allow-list. Run the existing test suite, confirm the diff is focused.
 - **!!! If anything is unclear or ambiguous, flag it in your handoff** —
