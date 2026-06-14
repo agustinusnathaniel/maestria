@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.6](https://github.com/agustinusnathaniel/maestria/compare/v0.2.5...v0.2.6) (2026-06-14)
+
+### Bug Fixes
+
+- **opencode:** fix typo in builder.md agent prompt ([1c098ff](https://github.com/agustinusnathaniel/maestria/commit/1c098fffce7235c6b1e1d88d9fd1750794ec9930))
+
 ## [0.2.5](https://github.com/agustinusnathaniel/maestria/compare/v0.2.4...v0.2.5) (2026-06-12)
 
 ## [0.2.4](https://github.com/agustinusnathaniel/maestria/compare/v0.2.3...v0.2.4) (2026-06-12)
