@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.7
+
+### Patch Changes
+
+- [`7c47456`](https://github.com/agustinusnathaniel/maestria/commit/7c474560c45c72b7769a5ec81e5e9ff42ae7743f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - docs: update README
+
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
 ## [0.2.6](https://github.com/agustinusnathaniel/maestria/compare/v0.2.5...v0.2.6) (2026-06-14)
