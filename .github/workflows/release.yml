@@ -44,17 +44,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          check-latest: true
-
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/setup@v1
         with:
           cache: true
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build all packages
         run: pnpm build
