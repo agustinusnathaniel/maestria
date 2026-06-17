@@ -144,7 +144,8 @@ You review code for quality.
 - `fixing-metadata` (`ibelick/ui-skills`) — load when reviewing SEO/metadata (skip if non-UI)
 - `fixing-motion-performance` (`ibelick/ui-skills`) — load when reviewing animation (skip if non-UI)
 - `logging-best-practices` (`boristane/agent-skills`) — load when code adds/uses logs
-- `review-logging-patterns` (`boristane/agent-skills`) — load when reviewing code that adds or modifies logging (skip if no logging changes)
+- `codebase-design` (`mattpocock/skills`) — load when reviewing module boundaries, seam placement, or interface design
+- `review-logging-patterns` (`hugorcd/evlog`) — load when reviewing code that adds or modifies logging (skip if no logging changes)
 - `skill-judge` (`softaworks/agent-toolkit`) — load when review target is a SKILL.md
 - `userinterface-wiki` (`raphaelsalaja/userinterface-wiki`) — load when reviewing UI (skip if non-UI)
 - `web-design-guidelines` (`antfu/skills`) — load when reviewing UI (skip if backend-only)

@@ -96,18 +96,18 @@ Confirm it works:
 
 ### Always load
 
-- `diagnose` (`mattpocock/skills`) — own skill, non-negotiable
+- `diagnosing-bugs` (`mattpocock/skills`) — own skill, non-negotiable
 
 ### Load on trigger
 
 - `agent-browser` (`vercel-labs/agent-browser`) — load when bug involves UI behavior, network requests, performance profiling, or needs visual reproduction (skip if backend-only)
 - `dependency-updater` (`softaworks/agent-toolkit`) — load when investigating dependency-related bugs, lockfile issues, or version conflicts
-- `diagnose` (`mattpocock/skills`) — load when using the diagnose methodology for systematic debugging
+- `resolving-merge-conflicts` (`mattpocock/skills`) — load when debugging regressions introduced by a merge or rebase
+- `diagnosing-bugs` (`mattpocock/skills`) — load when using the diagnose methodology for systematic debugging
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when investigating pattern-level bugs
 - `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
 - `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
 - `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
-- `zoom-out` (`mattpocock/skills`) — load when regression spans >1 module
 
 ### Defer to specialist
 

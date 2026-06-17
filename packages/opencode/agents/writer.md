@@ -84,23 +84,24 @@ You write documentation.
 ### Load on trigger
 
 - `backend-to-frontend-handoff-docs` (`softaworks/agent-toolkit`) — load when documenting an API for frontend consumers
+- `brand-guidelines` (`anthropics/skills`) — load when writing brand documentation, style guides, or tone-of-voice guidelines
 - `copy-editing` (`coreyhaines31/marketingskills`) — load when user wants in-place edits of existing copy
 - `crafting-effective-readmes` (`softaworks/agent-toolkit`) — load when output is a README
 - `doc-coauthoring` (`anthropics/skills`) — load when user wants to co-write, not just receive a doc
 - `docx` (`anthropics/skills`) — load when output must be `.docx`
+- `domain-modeling` (`mattpocock/skills`) — load when documenting the domain glossary, ubiquitous language, or domain concepts
 - `frontend-to-backend-requirements` (`softaworks/agent-toolkit`) — load when documenting frontend requirements for backend
 - `pdf` (`anthropics/skills`) — load when output must be `.pdf`
 - `pptx` (`anthropics/skills`) — load when output is slides
-- `write-a-skill` (`mattpocock/skills`) — load when creating or editing a SKILL.md file
-- `writing-prds` (`mattpocock/skills`) — load when writing a Product Requirements Document
+- `writing-great-skills` (`mattpocock/skills`) — load when creating or editing a SKILL.md file
 - `xlsx` (`anthropics/skills`) — load when output is a spreadsheet
 
 ### Defer to specialist
 
 - `internal-comms` (`anthropics/skills`) → out of scope — internal comms is not a code/ADRs/API docs task
 - `professional-communication` (`softaworks/agent-toolkit`) → out of scope — emails/team messaging not in writer's role
-- `template-skill` (`softaworks/agent-toolkit`) → out of scope — skill creation is a separate workflow
-- `skill-creator` (`softaworks/agent-toolkit`) → out of scope — same as above
+- `template-skill` (`anthropics/skills`) → out of scope — skill creation is a separate workflow
+- `skill-creator` (`anthropics/skills`) → out of scope — same as above
 - `copywriting` (`coreyhaines31/marketingskills`) → out of scope — marketing copy is not documentation
 
 ### Skip if
