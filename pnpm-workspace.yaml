@@ -14,6 +14,8 @@ catalog:
   "@changesets/cli": ^2.31.0
   "@changesets/changelog-github": ^0.7.0
   commit-and-tag-version: ^12.7.3
+  "@fontsource-variable/noto-serif": ^5.2.9
+  "@fontsource-variable/sn-pro": ^5.2.1
 overrides:
   vite: "catalog:"
   vitest: "catalog:"

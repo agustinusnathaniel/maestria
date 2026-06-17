@@ -12,6 +12,12 @@ catalogs:
     '@changesets/cli':
       specifier: ^2.31.0
       version: 2.31.0
+    '@fontsource-variable/noto-serif':
+      specifier: ^5.2.9
+      version: 5.2.9
+    '@fontsource-variable/sn-pro':
+      specifier: ^5.2.1
+      version: 5.2.1
     '@types/node':
       specifier: ^24
       version: 24.13.2
@@ -51,6 +57,12 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.39.2
         version: 0.39.3(astro@6.3.2(@types/node@25.9.3)(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.0))(typescript@5.9.3)
+      '@fontsource-variable/noto-serif':
+        specifier: 'catalog:'
+        version: 5.2.9
+      '@fontsource-variable/sn-pro':
+        specifier: 'catalog:'
+        version: 5.2.1
       astro:
         specifier: 6.3.2
         version: 6.3.2(@types/node@25.9.3)(jiti@2.7.0)(typescript@5.9.3)(yaml@2.9.0)
@@ -455,6 +467,12 @@ packages:
 
   '@expressive-code/plugin-text-markers@0.42.0':
     resolution: {integrity: sha512-l59lUx8fq1v5g6SpmbDjiU0+7IdfbiWnAyRmtTVSpfhyq+nZMN4UcmYyu2b9Mynhzt7Gr+O+cXyEPDNb2AVWVQ==}
+
+  '@fontsource-variable/noto-serif@5.2.9':
+    resolution: {integrity: sha512-9McZzWeOjD/Gsko+w6A2lpGlHXZw5J2JmxaSMgopiIHoMYI1m6DAyFrzG9QQ0WjdWxj5jZfKM0EGSBVZHC6+nw==}
+
+  '@fontsource-variable/sn-pro@5.2.1':
+    resolution: {integrity: sha512-0p0lgvL/guaZIsr4/BKBzg7t4PKJreMRxC24acnGLqiQq8wm3bCalJYyU8mBlzyf8RWKmdjYoRoNuL+0IcVD2A==}
 
   '@hutson/parse-repository-url@3.0.2':
     resolution: {integrity: sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q==}
@@ -4571,6 +4589,10 @@ snapshots:
   '@expressive-code/plugin-text-markers@0.42.0':
     dependencies:
       '@expressive-code/core': 0.42.0
+
+  '@fontsource-variable/noto-serif@5.2.9': {}
+
+  '@fontsource-variable/sn-pro@5.2.1': {}
 
   '@hutson/parse-repository-url@3.0.2': {}
 

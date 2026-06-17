@@ -1,87 +1,51 @@
 ---
-title: Agents
-description: Reference documentation for all 8 agents in @maestria/opencode — orchestrator and 7 specialists.
+title: Agent Reference
+description: Complete reference for all 8 agents — orchestrator and 7 specialists. Roles, permissions, and when to use each.
 ---
 
 import { LinkCard, CardGrid } from "@astrojs/starlight/components";
 
-# Agents
+`@maestria/opencode` provides one manager agent (`@orchestrator`) and 7 specialist subagents. Each agent has a focused domain, clear permissions, and a specific place in the pipeline.
 
-`@maestria/opencode` provides one manager agent (`@orchestrator`) and 7 specialist subagents. Each agent has a focused domain, clear methodology, and specific permissions.
+## Orchestration Model
 
-## The Orchestration Model
+The `@orchestrator` is the manager. It decomposes complex tasks into atomic units, delegates each unit to the right specialist, integrates the results, and verifies completion. Specialists each handle one domain — exploration, design, implementation, debugging, planning, review, or documentation.
 
-The `@orchestrator` decomposes complex tasks into atomic units, delegates to specialists via `task()`, integrates results, and verifies completion. Specialists handle one domain each — exploration, design, implementation, debugging, planning, review, or documentation.
-
-## Agent Reference
-
-| Agent           | Mode       | Role                                  | Key Permissions                 | `lsp`   | `todowrite` |
-| --------------- | ---------- | ------------------------------------- | ------------------------------- | ------- | ----------- |
-| `@orchestrator` | `all`      | Manager — delegates, never implements | `edit: deny`, `task: * allow`   | `allow` | `allow`     |
-| `@adventurer`   | `subagent` | Codebase reconnaissance               | `edit: deny`, `bash: * ask`     | `allow` | —           |
-| `@architect`    | `subagent` | Architecture decisions                | `edit: deny`, `webfetch: allow` | `allow` | —           |
-| `@builder`      | `subagent` | Focused implementation                | `edit: allow`, `bash: * ask`    | `allow` | `allow`     |
-| `@diagnose`     | `subagent` | Systematic debugging                  | `edit: ask`, `bash: * ask`      | `allow` | —           |
-| `@planner`      | `subagent` | Implementation plans                  | `edit: ask`, `webfetch: allow`  | `allow` | `allow`     |
-| `@reviewer`     | `subagent` | Code review                           | `edit: deny`                    | `allow` | —           |
-| `@writer`       | `subagent` | Documentation                         | `edit: allow`                   | —       | —           |
+The default pipeline for non-trivial work follows a sequence: recon first, then design or plan, then build, then review. Each step verifies before handing off to the next.
 
 ## Pipeline Flow
 
-A typical multi-step task follows this flow through the agent system:
-
 ```
 @orchestrator (manager)
-  ├─ @adventurer  → Explore codebase, map dependencies
-  ├─ @architect   → Design approach, evaluate options
-  ├─ @planner     → Create phased implementation plan
-  ├─ @builder     → Implement changes
-  └─ @reviewer    → Review for correctness and quality
+  ├─ @adventurer → Reconnaissance
+  ├─ @architect  → Design/decisions
+  ├─ @planner    → Phased plans
+  ├─ @builder    → Implementation
+  └─ @reviewer   → Validation
 ```
 
-Each agent hands off to the next. The orchestrator integrates results and verifies completion.
+## Agent Reference
 
-## Agent Details
+| Agent             | Mode       | Role                                                                                 | When to Use                                                                                         | Key Permissions                                    |
+| ----------------- | ---------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **@orchestrator** | `all`      | Manager — decomposes work, delegates, never implements                               | Complex multi-step tasks, cross-agent workflows, anything needing structure                         | `edit: deny`, task delegates to 7 specialists only |
+| **@adventurer**   | `subagent` | Codebase reconnaissance — maps unfamiliar code, traces dependencies, finds key files | Before implementing in unfamiliar code, understanding how something works, finding where code lives | `edit: deny`, read/search only                     |
+| **@architect**    | `subagent` | Architecture decisions — evaluates options with trade-off analysis, writes ADRs      | Choosing between technologies, making design decisions, evaluating approaches                       | `edit: deny`, `webfetch: allow`                    |
+| **@builder**      | `subagent` | Focused implementation — one atomic task per invocation                              | Bug fixes, feature work, tests, refactors — after recon and design are done                         | `edit: allow`, `bash: * ask`                       |
+| **@diagnose**     | `subagent` | Systematic debugging — traces errors from symptom to root cause                      | Bugs, regressions, crashes, mysterious errors, failing tests                                        | `edit: ask`, `bash: * ask`                         |
+| **@planner**      | `subagent` | Implementation plans — phased milestones with verification                           | Complex features needing structured rollout, migration plans, multi-phase work                      | `edit: ask`, `webfetch: allow`                     |
+| **@reviewer**     | `subagent` | Code review — correctness, edge cases, security, performance, maintainability        | Pre-merge review, security audit, post-implementation validation                                    | `edit: deny`                                       |
+| **@writer**       | `subagent` | Documentation — structured patterns for READMEs, API docs, changelogs, ADRs          | Documenting code, writing READMEs, API docs, changelogs, ADRs                                       | `edit: allow`                                      |
 
-<CardGrid>
-  <LinkCard
-    title="Orchestrator"
-    description="Manager agent that delegates work, integrates results, and verifies completion."
-    href="/opencode/agents/orchestrator/"
-  />
-  <LinkCard
-    title="Adventurer"
-    description="Codebase reconnaissance — maps unfamiliar code, traces call chains."
-    href="/opencode/agents/adventurer/"
-  />
-  <LinkCard
-    title="Architect"
-    description="Architecture decisions with decision matrices and trade-off analysis."
-    href="/opencode/agents/architect/"
-  />
-  <LinkCard
-    title="Builder"
-    description="Focused implementation — one atomic task per invocation."
-    href="/opencode/agents/builder/"
-  />
-  <LinkCard
-    title="Diagnose"
-    description="Systematic debugging — 6-step regression tracing."
-    href="/opencode/agents/diagnose/"
-  />
-  <LinkCard
-    title="Planner"
-    description="Implementation plans with phased milestones and success criteria."
-    href="/opencode/agents/planner/"
-  />
-  <LinkCard
-    title="Reviewer"
-    description="Code review with 7-dimension quality checklist."
-    href="/opencode/agents/reviewer/"
-  />
-  <LinkCard
-    title="Writer"
-    description="Documentation following structured patterns."
-    href="/opencode/agents/writer/"
-  />
-</CardGrid>
+## Usage Notes
+
+**Direct delegation.** Any agent can be invoked directly by typing `@agentname` in your prompt. For example, `@reviewer review my latest changes` or `@adventurer find where authentication is handled`.
+
+**Manager delegation.** For complex tasks involving multiple steps, let `@orchestrator` handle the entire pipeline. It decomposes the work and dispatches each piece to the right specialist automatically.
+
+**Pipeline discipline.** The default flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk — fine for simple changes, not recommended for cross-module work.
+
+## See Also
+
+- [Installation & Setup](/opencode/getting-started/installation/)
+- [Workflow Patterns](/opencode/guide/workflow-patterns/)

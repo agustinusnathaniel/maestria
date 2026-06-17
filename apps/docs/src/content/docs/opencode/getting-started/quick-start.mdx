@@ -1,45 +1,35 @@
 ---
 title: Quick Start
-description: Your first session with @maestria/opencode — delegate to specialists and use the orchestrator.
+description: Your first session with @maestria/opencode — delegating to specialists and using the orchestrator.
 ---
-
-import { Steps, Aside, LinkButton } from "@astrojs/starlight/components";
 
 # Quick Start
 
-Once you've [installed the plugin](/opencode/getting-started/installation/), the agents and rules are available in every session.
+Once you've installed the plugin, all agents and rules are loaded automatically in every session — no extra commands, no manual setup.
 
 ## Start a Session
 
-Launch OpenCode as usual. The plugin loads automatically — no additional commands needed.
+Launch OpenCode as usual. The plugin wires itself in. Just start working.
 
 ## Delegate to a Specialist
 
-Ask any of the 7 specialists directly:
+Call any of the 7 specialists directly:
 
 ```markdown
-@adventurer Explore the codebase and understand how the auth module works.
+@adventurer Explore the auth module and trace the login flow.
 ```
 
-Or delegate to the orchestrator:
+For multi-step work, hand it to the orchestrator:
 
 ```markdown
-@orchestrator I need to add a logging middleware. Plan and implement it.
+@orchestrator I need to add rate limiting to the API. Plan and implement it.
 ```
 
-## Observe the Global Rules
-
-Every session includes global rules that guide agent behavior:
-
-- **Don't assume** — verify against actual code and docs
-- **Use `opensrc` instead of API calls** — for analyzing reference repos
-- **Progressive disclosure** — start high-level, get specific as needed
-- **State checkpointing** — summarize progress periodically
-- **Completion promises** — define success criteria before starting
+The orchestrator breaks the task down, delegates to the right specialists, and integrates the results.
 
 ## Pipeline Flow
 
-A typical multi-step task flows through the agent system like this:
+A typical multi-step task moves through the agent system like this:
 
 ```
 @orchestrator
@@ -50,10 +40,9 @@ A typical multi-step task flows through the agent system like this:
   └─ @reviewer     → Review changes
 ```
 
-Each agent hands off to the next, and the orchestrator integrates results.
+Each agent hands off to the next. The orchestrator keeps everything moving.
 
-## What's Next
+## Next Steps
 
-- [Explore the Agents](/opencode/agents/) — Detailed docs for each specialist
-- [Global Rules](/opencode/guide/global-rules/) — Full rule reference
-- [Configuration](/opencode/guide/configuration/) — Agent frontmatter and permissions
+- [Agent Reference](/opencode/agents/) — Full docs for all 8 agents
+- [Workflow Patterns](/opencode/guide/workflow-patterns/) — Orchestration and pipeline patterns

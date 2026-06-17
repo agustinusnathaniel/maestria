@@ -70,13 +70,10 @@ export default defineConfig({
               label: "Getting Started",
               items: [{ autogenerate: { directory: "opencode/getting-started" } }],
             },
-            {
-              label: "Guide",
-              items: [{ autogenerate: { directory: "opencode/guide" } }],
-            },
+            { label: "Workflow Patterns", link: "/opencode/guide/workflow-patterns/" },
             {
               label: "Agents",
-              items: [{ autogenerate: { directory: "opencode/agents" } }],
+              items: [{ label: "Agent Reference", link: "/opencode/agents/" }],
             },
             { label: "Changelog", link: "/opencode/changelog/" },
             { label: "Contributing", link: "/opencode/contributing/" },

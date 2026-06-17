@@ -7,7 +7,7 @@ import { Steps, LinkButton } from "@astrojs/starlight/components";
 
 # Contributing
 
-Thank you for your interest in contributing to `@maestria/opencode`! This guide covers how to set up the development environment, make changes, and submit pull requests.
+Thank you for your interest in contributing to `@maestria/opencode`! This guide covers setup, making changes, and submitting PRs.
 
 ## Development Setup
 
@@ -41,46 +41,63 @@ Thank you for your interest in contributing to `@maestria/opencode`! This guide 
 ```
 maestria/
 ├── apps/
-│   └── docs/              # Documentation site (this site)
-├── packages/
-│   └── opencode/          # @maestria/opencode plugin
-│       ├── agents/        # Agent definitions (.md files)
-│       ├── rules/         # Global rules (AGENTS.md)
-│       ├── src/           # Plugin source code
-│       └── tests/         # Plugin tests
-├── docs/
-│   ├── adr/               # Architecture Decision Records (internal)
-│   └── notes/             # Session notes (internal)
-└── vite.config.ts         # Vite+ configuration
+│   └── docs/              # Documentation site
+└── packages/
+    └── opencode/          # @maestria/opencode plugin
+        ├── agents/        # Agent definitions (.md files)
+        ├── rules/         # Global rules (AGENTS.md)
+        ├── src/           # Plugin source code
+        └── tests/         # Plugin tests
 ```
 
 ## Making Changes
 
 ### Adding or Modifying Agents
 
-Agent definitions are Markdown files in `packages/opencode/agents/`. Each file has:
-
-- **YAML frontmatter** — description, mode, permissions
-- **Prompt body** — The full agent instructions
-
-To add a new agent, create a new `.md` file in that directory. To modify an existing agent, edit the corresponding file.
+Agent definitions live in `packages/opencode/agents/`. Each file contains YAML frontmatter (description, mode, permissions) and the agent's prompt body. To add a new agent, create a `.md` file in that directory. To modify an existing one, edit the corresponding file.
 
 ### Modifying Global Rules
 
-Global rules live in `packages/opencode/rules/AGENTS.md`. Use the three-way filter documented in the plugin's ADRs when adding new rules:
+Global rules are in `packages/opencode/rules/AGENTS.md`. This file is injected into every agent session and applies across all agents.
 
-- **Agent file** — if it applies to one agent's domain
-- **Global rules** — if it's cross-cutting and not covered elsewhere
-- **Exclude** — if covered by agent directives or OpenCode defaults
+### Agent Definition Format
+
+Each agent is a Markdown file with YAML frontmatter in `packages/opencode/agents/`. The frontmatter fields are:
+
+| Field         | Type              | Description                         | Values                      |
+| ------------- | ----------------- | ----------------------------------- | --------------------------- |
+| `description` | string            | What the agent does                 | Free text                   |
+| `mode`        | string            | Agent invocation mode               | `all`, `subagent`           |
+| `permission`  | object            | Tool access permissions             | See below                   |
+| `color`       | string (optional) | Tab color in the UI                 | Hex color (e.g., `#ff6600`) |
+| `maxSteps`    | number (optional) | Max delegation steps per invocation | Integer                     |
+
+**Permission model:** Each tool has one of three levels — `allow` (use freely), `ask` (prompt before use), `deny` (cannot use). Bash permissions support glob pattern matching for granular control.
+
+**Agent modes:**
+
+- `all` — Full agent, invocable directly or via `task()`
+- `subagent` — Invocable only via `task()`
+
+The orchestrator uses `all`; all 7 specialists use `subagent`.
+
+Example:
+
+```yaml
+---
+description: Focused implementation agent for atomic tasks.
+mode: subagent
+permission:
+  read: allow
+  edit: allow
+  bash:
+    "*": ask
+---
+```
 
 ### Modifying Plugin Code
 
-The plugin source is `packages/opencode/src/index.ts` (~190 lines). The main components are:
-
-- **`parseFrontmatter()`** — Custom YAML frontmatter parser
-- **`parseAgentFile()`** — Splits agent files into frontmatter + prompt
-- **`loadAgents()`** — Reads all `.md` files from the agents directory
-- **`MaestriaPlugin`** — Plugin factory returning config + session.compacting hooks
+The plugin source is `packages/opencode/src/index.ts` (~190 lines). This file handles loading agent files, parsing frontmatter, and registering agents with OpenCode.
 
 ### Running the Docs Site Locally
 
@@ -97,7 +114,7 @@ vp run -r build
 # Run tests
 vp run -r test
 
-# Format and lint
+# Format, lint, and type-check
 vp check
 ```
 
@@ -109,12 +126,12 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 pnpm changeset
 ```
 
-Follow the prompts to describe your changes. Commit the generated changeset file alongside your changes.
+Follow the prompts to describe your changes. Commit the generated changeset file alongside your code changes.
 
 ## Pull Request Process
 
 1. **Fork the repository** and create a feature branch
-2. **Make your changes** following the existing conventions
+2. **Make your changes** following existing conventions
 3. **Verify** — run `vp check` and ensure tests pass
 4. **Create a changeset** if your changes affect the published package
 5. **Submit a PR** with a clear description of what you changed and why

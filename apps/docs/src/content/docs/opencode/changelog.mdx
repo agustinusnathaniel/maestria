@@ -7,6 +7,39 @@ import { Aside } from "@astrojs/starlight/components";
 
 # Changelog
 
+## 0.3.3
+
+### Patch Changes
+
+- Audit and sort agent skill prescriptions across all 7 agents. Alphabetically sorts "Load on trigger" skill lists and adds missing entries (e.g., `session-handoff` to adventurer, `prioritizing-roadmap` and `technical-roadmaps` to planner).
+
+## 0.3.2
+
+### Patch Changes
+
+- Strengthen orchestrator delegation rules. Rule #1 expanded to explicitly forbid using shell for implementation. New Rule #2: "Shell is not a workaround" — catches the common failure mode of substituting shell commands for delegation.
+
+## 0.3.1
+
+### Patch Changes
+
+- Restrict orchestrator task permissions to 7 registered subagents. Changed from `"*": allow` to deny-by-default with explicit allow-list for only the 7 specialists.
+
+## 0.3.0
+
+### Minor Changes
+
+- Incorporate AI engineering learnings from my-base knowledge base:
+  - **"Read the docs first"** — new non-negotiable directive across global rules, architect, and builder
+  - **Diagnostic documentation mandate** — elevated to non-negotiable in diagnose.md
+  - **Skill prescription expansion** — builder gains `commit-work` skill, diagnose gains `dependency-updater`
+
+## 0.2.6
+
+### Bug Fixes
+
+- Fix typo in builder.md agent prompt
+
 ## 0.2.5 (2026-06-12)
 
 _(no user-facing changes)_
