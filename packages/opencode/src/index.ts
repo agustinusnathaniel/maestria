@@ -1,7 +1,8 @@
 import type { Plugin } from "@opencode-ai/plugin";
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync, existsSync, mkdirSync, cpSync } from "fs";
 import { join, dirname, basename } from "path";
 import { fileURLToPath } from "url";
+import { homedir } from "os";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
@@ -165,7 +166,31 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   return agents;
 }
 
+const skillsSrc = join(__dirname, "..", "skills");
+const configDir = join(homedir(), ".config", "opencode");
+const skillsDest = join(configDir, "skills");
+
+/**
+ * Lazily sync bundled skills to OpenCode's skills directory on first load.
+ * Only copies if target directory is missing (no force overwrite).
+ * This avoids postinstall side effects while ensuring skills are available
+ * after the user adds the plugin to their config.
+ */
+function syncSkillsToConfig(): void {
+  if (!existsSync(skillsDest)) {
+    try {
+      mkdirSync(skillsDest, { recursive: true });
+      cpSync(skillsSrc, skillsDest, { recursive: true });
+    } catch {
+      // Non-fatal: skills are optional — agents can still function
+      // without them. Common failure: CI environments without a home
+      // config directory.
+    }
+  }
+}
+
 export const MaestriaPlugin: Plugin = async () => {
+  syncSkillsToConfig();
   const agents = loadAgents();
 
   return {

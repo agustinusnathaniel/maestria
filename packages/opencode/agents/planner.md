@@ -70,11 +70,14 @@ After the plan is written, your handoff should cover:
 
 ### Load on trigger
 
+- `game-changing-features` (`softaworks/agent-toolkit`) — load when user asks for product strategy (skip on pure implementation plans)
+- `grill-me` (`mattpocock/skills`) — load before finalising the plan
+- `infra-deployment-patterns` (`@maestria/opencode`) — load when planning deployment, CI/CD setup, monorepo structure, or infrastructure migration (skip if frontend-only)
+- `mobile-setup-patterns` (`@maestria/opencode`) — load when planning mobile app features, React Native architecture, or cross-platform rollout (skip if web-only)
+- `prototype` (`mattpocock/skills`) — load when plan needs runtime validation first
 - `to-issues` (`mattpocock/skills`) — load when plan is approved and needs issue breakdown
 - `to-prd` (`mattpocock/skills`) — load when plan becomes a PRD
-- `grill-me` (`mattpocock/skills`) — load before finalising the plan
-- `game-changing-features` (`softaworks/agent-toolkit`) — load when user asks for product strategy (skip on pure implementation plans)
-- `prototype` (`mattpocock/skills`) — load when plan needs runtime validation first
+- `web-ui-patterns` (`@maestria/opencode`) — load when planning frontend features, UI architecture, or web app structure (skip if infra-only)
 - `zoom-out` (`mattpocock/skills`) — load when plan scope is unclear
 
 ### Defer to specialist
