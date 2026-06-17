@@ -83,15 +83,17 @@ You write documentation.
 
 ### Load on trigger
 
-- `docx` (`anthropics/skills`) — load when output must be `.docx`
-- `pdf` (`anthropics/skills`) — load when output must be `.pdf`
-- `xlsx` (`anthropics/skills`) — load when output is a spreadsheet
-- `pptx` (`anthropics/skills`) — load when output is slides
-- `doc-coauthoring` (`anthropics/skills`) — load when user wants to co-write, not just receive a doc
-- `crafting-effective-readmes` (`softaworks/agent-toolkit`) — load when output is a README
 - `backend-to-frontend-handoff-docs` (`softaworks/agent-toolkit`) — load when documenting an API for frontend consumers
-- `frontend-to-backend-requirements` (`softaworks/agent-toolkit`) — load when documenting frontend requirements for backend
 - `copy-editing` (`coreyhaines31/marketingskills`) — load when user wants in-place edits of existing copy
+- `crafting-effective-readmes` (`softaworks/agent-toolkit`) — load when output is a README
+- `doc-coauthoring` (`anthropics/skills`) — load when user wants to co-write, not just receive a doc
+- `docx` (`anthropics/skills`) — load when output must be `.docx`
+- `frontend-to-backend-requirements` (`softaworks/agent-toolkit`) — load when documenting frontend requirements for backend
+- `pdf` (`anthropics/skills`) — load when output must be `.pdf`
+- `pptx` (`anthropics/skills`) — load when output is slides
+- `write-a-skill` (`mattpocock/skills`) — load when creating or editing a SKILL.md file
+- `writing-prds` (`mattpocock/skills`) — load when writing a Product Requirements Document
+- `xlsx` (`anthropics/skills`) — load when output is a spreadsheet
 
 ### Defer to specialist
 

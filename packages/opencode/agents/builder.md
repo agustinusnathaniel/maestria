@@ -81,22 +81,24 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 ### Load on trigger
 
-- `opensrc` (`vercel-labs/opensrc`) — load when library internals are unclear
+- `agent-browser` (`vercel-labs/agent-browser`) — load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
+- `ai-sdk` (`vercel/ai`) — load when task is AI SDK (skip if unrelated)
+- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
+- `database-schema-designer` (`softaworks/agent-toolkit`) — load when designing database schemas, tables, or data models
+- `frontend-design` (`anthropics/skills`) — load when task is UI/visual
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when writing non-trivial logic
 - `naming-analyzer` (`softaworks/agent-toolkit`) — load when introducing new identifiers
-- `frontend-design` (`anthropics/skills`) — load when task is UI/visual
-- `vercel-react-best-practices` (`vercel-labs/agent-skills`) — load when task involves React (skip if non-frontend)
-- `vercel-composition-patterns` (`vercel-labs/agent-skills`) — load when task involves React composition (skip if non-frontend)
+- `opensrc` (`vercel-labs/opensrc`) — load when library internals are unclear
+- `pnpm` (`antfu/skills`) — load when changing `package.json`/lockfile
 - `react-dev` (`softaworks/agent-toolkit`) — load when task is React (skip if non-frontend)
 - `react-useeffect` (`softaworks/agent-toolkit`) — load when modifying `useEffect` (skip if non-frontend)
-- `ai-sdk` (`vercel/ai`) — load when task is AI SDK (skip if unrelated)
 - `tdd` (`mattpocock/skills`) — load when user explicitly requests TDD
-- `webapp-testing` (`anthropics/skills`) — load when task needs browser-level test
-- `agent-browser` (`vercel-labs/agent-browser`) — load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
-- `vitest` (`antfu/skills`) — load when writing Vitest tests (skip if no tests)
+- `typescript-expert` (`mattpocock/skills`) — load when writing TypeScript types, generics, or complex type utilities
+- `vercel-composition-patterns` (`vercel-labs/agent-skills`) — load when task involves React composition (skip if non-frontend)
+- `vercel-react-best-practices` (`vercel-labs/agent-skills`) — load when task involves React (skip if non-frontend)
 - `vite` (`antfu/skills`) — load when modifying `vite.config` or build
-- `pnpm` (`antfu/skills`) — load when changing `package.json`/lockfile
-- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
+- `vitest` (`antfu/skills`) — load when writing Vitest tests (skip if no tests)
+- `webapp-testing` (`anthropics/skills`) — load when task needs browser-level test
 - `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) — load when writing a commit message
 
 ### Defer to specialist

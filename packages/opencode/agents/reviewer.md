@@ -138,16 +138,17 @@ You review code for quality.
 
 ### Load on trigger
 
-- `web-design-guidelines` (`antfu/skills`) — load when reviewing UI (skip if backend-only)
-- `skill-judge` (`softaworks/agent-toolkit`) — load when review target is a SKILL.md
+- `agent-browser` (`vercel-labs/agent-browser`) — load when reviewing UI changes, verifying visual fidelity, or testing interactive flows (skip if backend-only)
+- `baseline-ui` (`ibelick/ui-skills`) — load when reviewing UI (skip if non-UI)
 - `fixing-accessibility` (`ibelick/ui-skills`) — load when reviewing accessibility (skip if non-UI)
 - `fixing-metadata` (`ibelick/ui-skills`) — load when reviewing SEO/metadata (skip if non-UI)
 - `fixing-motion-performance` (`ibelick/ui-skills`) — load when reviewing animation (skip if non-UI)
 - `logging-best-practices` (`boristane/agent-skills`) — load when code adds/uses logs
-- `webapp-testing` (`anthropics/skills`) — load when reviewing tests
-- `agent-browser` (`vercel-labs/agent-browser`) — load when reviewing UI changes, verifying visual fidelity, or testing interactive flows (skip if backend-only)
-- `baseline-ui` (`ibelick/ui-skills`) — load when reviewing UI (skip if non-UI)
+- `review-logging-patterns` (`boristane/agent-skills`) — load when reviewing code that adds or modifies logging (skip if no logging changes)
+- `skill-judge` (`softaworks/agent-toolkit`) — load when review target is a SKILL.md
 - `userinterface-wiki` (`raphaelsalaja/userinterface-wiki`) — load when reviewing UI (skip if non-UI)
+- `web-design-guidelines` (`antfu/skills`) — load when reviewing UI (skip if backend-only)
+- `webapp-testing` (`anthropics/skills`) — load when reviewing tests
 
 ### Defer to specialist
 

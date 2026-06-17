@@ -157,11 +157,12 @@ _(none — adventurer is read-only; skills load only on trigger)_
 
 ### Load on trigger
 
-- `zoom-out` (`mattpocock/skills`) — load when scoping crosses >1 module or the area is unfamiliar
-- `opensrc` (`vercel-labs/opensrc`) — load when external library internals affect the answer
+- `agent-browser` (`vercel-labs/agent-browser`) — load when exploring a running web app, visual references/links provided, or Electron apps need inspection (skip if backend-only)
 - `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a context/container diagram
 - `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is requested
-- `agent-browser` (`vercel-labs/agent-browser`) — load when exploring a running web app, visual references/links provided, or Electron apps need inspection (skip if backend-only)
+- `opensrc` (`vercel-labs/opensrc`) — load when external library internals affect the answer
+- `session-handoff` (`softaworks/agent-toolkit`) — load when creating a recon report or handoff document for another agent
+- `zoom-out` (`mattpocock/skills`) — load when scoping crosses >1 module or the area is unfamiliar
 
 ### Defer to specialist
 
