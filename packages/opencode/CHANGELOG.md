@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.2
+
+### Patch Changes
+
+- [`bda0043`](https://github.com/agustinusnathaniel/maestria/commit/bda00430d0dbfc6ba050dced54b9f52236d0811f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: strengthen orchestrator delegation rules
+  - Rule [#1](https://github.com/agustinusnathaniel/maestria/issues/1) expanded to explicitly forbid using shell commands for
+    implementation work — shell is for context-gathering only, never
+    for doing the work yourself. References the Available Specialists
+    table instead of duplicating agent mappings inline.
+  - New rule [#2](https://github.com/agustinusnathaniel/maestria/issues/2): "Shell is not a workaround" — catches the common
+    failure mode of substituting shell commands for delegation.
+  - Subsequent rules renumbered.
+
 ## 0.3.1
 
 ### Patch Changes
