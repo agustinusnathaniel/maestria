@@ -1,0 +1,220 @@
+---
+title: Installation & Setup
+description: Install @maestria/kimi-code in your Kimi Code CLI. No npm install, no build step — just a manifest and a few config blocks.
+---
+
+import { Steps, Aside, Tabs } from "@astrojs/starlight/components";
+
+`@maestria/kimi-code` is a declarative Kimi Code plugin — a manifest, a directory of skill files, and a global rules file. There is no `npm install`, no `pnpm install`, no build step. The plugin is loaded by Kimi Code at session start, and the orchestrator skill auto-injects the methodology.
+
+## Prerequisites
+
+- **Kimi Code v0.12.0+** — required for first-class `AgentSwarm` support. On older versions, the orchestrator skill still works, but the swarm guidance falls back to single `Agent` calls.
+- **No Node toolchain required** — the plugin is purely declarative files (manifest + markdown).
+
+## Installation
+
+<Steps>
+
+1. **Install the plugin**
+
+   In a Kimi Code session, run:
+
+   ```
+   /plugins install https://github.com/maestria/maestria
+   ```
+
+   By default, Kimi Code follows the **latest release** of the `maestria/maestria` repository. To pin a specific version:
+
+   | Pin type   | URL form                                                   |
+   | ---------- | ---------------------------------------------------------- |
+   | **Latest** | `https://github.com/maestria/maestria`                     |
+   | **Tag**    | `https://github.com/maestria/maestria/releases/tag/v0.1.0` |
+   | **Branch** | `https://github.com/maestria/maestria/tree/main#branch`    |
+   | **SHA**    | `https://github.com/maestria/maestria/tree/abc1234#sha`    |
+
+   <Aside type="tip">
+     For production work, pin to a tag or SHA. For trying the latest, the default URL is fine.
+   </Aside>
+
+2. **Place global rules (REQUIRED)**
+
+   Kimi Code auto-loads `AGENTS.md` from a few locations. The first location it checks is `~/.kimi-code/AGENTS.md`. Copy the bundled rules file there:
+
+   ```bash
+   mkdir -p ~/.kimi-code
+   cp packages/kimi-code/rules/AGENTS.md ~/.kimi-code/AGENTS.md
+   ```
+
+   <Aside type="caution" title="Why the plugin can't do this">
+     The plugin ships the file as `rules/AGENTS.md`, but the plugin itself cannot install it. Kimi
+     Code does not expose a plugin mechanism to write to `~/.kimi-code/`. You must copy it manually.
+   </Aside>
+
+   Verify the file is in place:
+
+   ```bash
+   ls -la ~/.kimi-code/AGENTS.md
+   ```
+
+   <Aside type="caution">
+     The file must stay under **32 KB**. If you customize it heavily, watch the size — Kimi Code
+     truncates AGENTS.md content past 32 KB with a marker.
+   </Aside>
+
+3. **Add lifecycle hooks to `config.toml` (recommended)**
+
+   Open `~/.kimi-code/config.toml` and add the following `[[hooks]]` blocks. These block destructive bash commands, inject a per-turn orchestrator reminder, and observe compaction cycles.
+
+   ```toml
+   # Block destructive bash commands
+   [[hooks]]
+   event = "PreToolUse"
+   matcher = "Bash"
+   command = "node ~/.kimi-code/hooks/block-dangerous-bash.mjs"
+   timeout = 5
+
+   # Per-turn orchestrator reminder
+   [[hooks]]
+   event = "UserPromptSubmit"
+   matcher = ""
+   command = "echo 'Maestria active: delegate via the orchestrator skill. Prefer adventurer for recon, architect for design, builder for implementation, diagnose for bugs, reviewer for QA, writer for docs, planner for multi-phase work.'"
+   timeout = 5
+
+   # Observe compaction cycles (observation-only)
+   [[hooks]]
+   event = "PreCompact"
+   matcher = ".*"
+   command = "echo \"compact start: $(date -Is)\" >> ~/.kimi-code/compact.log"
+   timeout = 5
+
+   [[hooks]]
+   event = "PostCompact"
+   matcher = ".*"
+   command = "echo \"compact end:   $(date -Is)\" >> ~/.kimi-code/compact.log"
+   timeout = 5
+   ```
+
+   Save the companion script as `~/.kimi-code/hooks/block-dangerous-bash.mjs`:
+
+   ```js
+   let input = "";
+   process.stdin.on("data", (chunk) => {
+     input += chunk;
+   });
+   process.stdin.on("end", () => {
+     const payload = JSON.parse(input);
+     const command = payload.tool_input?.command ?? "";
+     if (command.includes("rm -rf")) {
+       console.error("Dangerous command detected, blocked");
+       process.exit(2);
+     }
+   });
+   ```
+
+4. **Add permission rules (REQUIRED for safety)**
+
+   <Aside type="caution" title="Persona text alone is not enforcement">
+     By default, the 3 built-in Kimi Code subagents have full tool access. The `reviewer` and
+     `adventurer` personas _describe_ safety constraints in their SKILL.md text ("do not edit
+     files", "read-only Bash"), but those constraints are advisory only — they live in the prompt,
+     not the tool layer. The `[[permission.rules]]` blocks below are what actually _enforce_ the
+     persona boundaries. Without them, a misbehaving subagent can still write or edit files.
+   </Aside>
+
+   Add the following to `~/.kimi-code/config.toml`:
+
+   ```toml
+   # Builder (coder) — full access (default for the coder subagent)
+   [[permission.rules]]
+   tool = "Bash"
+   scope = "session-runtime"
+   allow = ["git status*", "git diff*", "git log*", "npm test*", "pnpm test*", "npx tsc*"]
+
+   # Adventurer (explore) — read-only
+   [[permission.rules]]
+   tool = "Write"
+   scope = "session-runtime"
+   deny = ["*"]
+
+   [[permission.rules]]
+   tool = "Edit"
+   scope = "session-runtime"
+   deny = ["*"]
+
+   # Reviewer (coder) — no editing
+   [[permission.rules]]
+   tool = "Write"
+   scope = "session-runtime"
+   deny = ["*"]
+
+   [[permission.rules]]
+   tool = "Edit"
+   scope = "session-runtime"
+   deny = ["*"]
+   ```
+
+   The `scope` field controls temporal granularity (`turn-override`, `session-runtime`, `project`, `user`) — it is not per-subagent granularity. Subagent tool lists come from the hardcoded profile (`coder`/`explore`/`plan`), not from per-agent rules. These rules are the **only tool-layer enforcement** of the persona boundaries declared in each specialist's SKILL.md.
+
+5. **Reload plugins and start a new session**
+
+   Plugin changes only take effect in new sessions. After installing, run:
+
+   ```
+   /reload
+   /new
+   ```
+
+6. **Verify**
+
+   In the fresh session, ask:
+
+   > "Review these 5 files for security issues: src/auth.ts, src/api.ts, src/db.ts, src/routes.ts, src/middleware.ts"
+
+   The orchestrator should:
+   1. Auto-load (via `sessionStart.skill`).
+   2. Identify the work as ≥3 uniform items → use `AgentSwarm` with the `reviewer` persona.
+   3. Dispatch a swarm across the 5 files.
+
+   If the orchestrator starts writing code directly, something is wrong with the install — check `/plugins list` and confirm the session-start skill loaded.
+
+</Steps>
+
+## Troubleshooting
+
+### Orchestrator not loading
+
+- Check `/plugins list` — `maestria` should appear with `enabled: true`.
+- Check `~/.kimi-code/AGENTS.md` exists.
+- Restart Kimi Code completely (not just the session).
+
+### AgentSwarm not available
+
+- Requires Kimi Code v0.12.0+ for first-class swarm support. On older versions, the orchestrator's swarm guidance falls back to parallel `Agent` calls.
+
+### AGENTS.md gets truncated
+
+- The 32 KB budget is enforced by Kimi Code. Trim verbose sections or move detail into specialist SKILL.md files (loaded on demand via the `Skill` tool).
+
+## Updating
+
+Kimi Code follows the latest release by default. To update, run `/plugins install https://github.com/maestria/maestria` again. Pin to a tag or SHA for production work.
+
+<Aside type="caution">
+  Updates overwrite any local edits to the bundled SKILL.md files. If you have customized them, fork
+  the repository or back up your changes before re-installing.
+</Aside>
+
+## Uninstalling
+
+```
+/plugins uninstall maestria
+rm ~/.kimi-code/AGENTS.md
+```
+
+Optionally remove the `[[hooks]]` and `[[permission.rules]]` blocks from `~/.kimi-code/config.toml`.
+
+## Next Steps
+
+- [Quick Start](/kimi-code/getting-started/quick-start/) — Your first session with the plugin
+- [Skill Reference](/kimi-code/skills/) — Detailed documentation for each skill

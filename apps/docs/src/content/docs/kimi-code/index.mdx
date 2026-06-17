@@ -1,0 +1,116 @@
+---
+title: "@maestria/kimi-code"
+description: Declarative Kimi Code plugin that ships 8 specialized skills with swarm-aware orchestration — no build step, no SDK hooks.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: "Engineering Workflows for Kimi Code"
+  tagline: "Install one plugin. Get 8 specialized skills, swarm-aware orchestration, and global rules — all from a declarative manifest, no build step."
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /kimi-code/getting-started/installation/
+    - text: View Skills
+      icon: external
+      variant: minimal
+      link: /kimi-code/skills/
+---
+
+import { LinkCard, CardGrid, LinkButton } from "@astrojs/starlight/components";
+
+## How It Works
+
+1. **Plugin loads** — Kimi Code parses `kimi.plugin.json` from the installed location and discovers `skills/`
+2. **Orchestrator auto-loads** — `sessionStart.skill: "orchestrator"` injects the full methodology and delegation rules into every session start
+3. **Global rules load** — `rules/AGENTS.md` is auto-loaded by Kimi Code from `~/.kimi-code/AGENTS.md` (one-time copy)
+4. **Safety enforced** — Optional `[[hooks]]` and `[[permission.rules]]` blocks in `config.toml` enforce persona boundaries at the tool layer
+
+## Quick Install
+
+In a Kimi Code session:
+
+```
+/plugins install https://github.com/maestria/maestria
+```
+
+That is the entire install. No `npm install`, no build step. The plugin is just a manifest and a directory of markdown files.
+
+<LinkButton href="/kimi-code/getting-started/installation/" size="lg">
+  Full Installation Guide →
+</LinkButton>
+
+## 8 Skills at a Glance
+
+<CardGrid>
+  <LinkCard
+    title="orchestrator"
+    description="Main agent — methodology, delegation, swarm fan-out. Auto-loads at session start."
+    href="/kimi-code/skills/"
+  />
+  <LinkCard
+    title="builder"
+    description="Focused implementation — atomic tasks, write code, run tests. (coder subagent)"
+    href="/kimi-code/skills/"
+  />
+  <LinkCard
+    title="adventurer"
+    description="Codebase reconnaissance — read-only exploration, structured reports. (explore subagent)"
+    href="/kimi-code/skills/"
+  />
+  <LinkCard
+    title="architect"
+    description="Architecture decisions — trade-off analysis, ADRs. (coder subagent)"
+    href="/kimi-code/skills/"
+  />
+  <LinkCard
+    title="planner"
+    description="Multi-phase implementation plans with verifiable milestones. (plan subagent)"
+    href="/kimi-code/skills/"
+  />
+  <LinkCard
+    title="reviewer"
+    description="Code review with quality gates — do not edit files. (coder subagent)"
+    href="/kimi-code/skills/"
+  />
+  <LinkCard
+    title="writer"
+    description="Documentation — READMEs, API docs, changelogs, ADR transcription. (coder subagent)"
+    href="/kimi-code/skills/"
+  />
+  <LinkCard
+    title="diagnose"
+    description="Systematic bug tracing and root cause analysis. (coder subagent)"
+    href="/kimi-code/skills/"
+  />
+</CardGrid>
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Installation, setup, and your first session with the plugin."
+    href="/kimi-code/getting-started/installation/"
+  />
+  <LinkCard
+    title="Skill Reference"
+    description="The 8 skills, mapped to Kimi Code's 3 built-in subagent profiles."
+    href="/kimi-code/skills/"
+  />
+  <LinkCard
+    title="Workflow Patterns"
+    description="Practical skill usage patterns — from recon to full build pipelines, plus swarm fan-out."
+    href="/kimi-code/guide/workflow-patterns/"
+  />
+  <LinkCard
+    title="Changelog"
+    description="Version history and release notes."
+    href="/kimi-code/changelog/"
+  />
+  <LinkCard
+    title="Contributing"
+    description="Project structure, editing skills, and how to extend the plugin."
+    href="/kimi-code/contributing/"
+  />
+</CardGrid>

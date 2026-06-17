@@ -1,0 +1,92 @@
+---
+title: Quick Start
+description: Your first session with @maestria/kimi-code — delegating to specialists and using the orchestrator's swarm fan-out.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+Once you've installed the plugin, the orchestrator skill and global rules are loaded automatically in every session — no extra commands, no manual setup.
+
+## What to expect
+
+Launch Kimi Code as usual. At session start, the orchestrator skill auto-loads via `sessionStart.skill` in `kimi.plugin.json`. You'll see a `<plugin_session_start>` block in the system prompt referencing the orchestrator's methodology. The global rules from `~/.kimi-code/AGENTS.md` are also injected by Kimi Code's session-start context preparer.
+
+The orchestrator is the methodology layer. It does not implement, debug, or edit code itself — it loads specialist skills via the `Skill` tool and dispatches them to Kimi Code's 3 built-in subagents (`coder`, `explore`, `plan`).
+
+## Try a single delegation
+
+Hand a concrete, scoped task to the `builder` persona (dispatched to the `coder` subagent):
+
+> "Use builder to add a JSDoc comment to the `add` function in `src/math.ts`."
+
+The orchestrator loads the `builder` SKILL.md, inlines the persona into an `Agent` call, and dispatches to the `coder` subagent. The `coder` subagent has Write/Edit/Bash access by default.
+
+## Try a multi-step task
+
+For work that spans multiple specialists, hand the whole thing to the orchestrator:
+
+> "The login flow throws on empty email. Trace the bug, fix it, and review the fix."
+
+The orchestrator decomposes the work:
+
+1. `diagnose` (coder) — 6-step root cause trace
+2. `builder` (coder) — apply the minimal fix
+3. `reviewer` (coder, no-edit) — validate the fix
+
+Each step verifies before handing off to the next.
+
+## Try swarm fan-out
+
+For ≥3 uniform items, the orchestrator uses `AgentSwarm` (Kimi Code v0.12.0+):
+
+> "Review these 5 files for security issues: src/auth.ts, src/api.ts, src/db.ts, src/routes.ts, src/middleware.ts."
+
+The orchestrator:
+
+1. Identifies ≥3 uniform independent items.
+2. Loads the `reviewer` persona.
+3. Calls `AgentSwarm` with a `prompt_template` that includes the `reviewer` persona + `{{item}}` placeholder.
+4. Returns a single `<agent_swarm_result>` envelope with one `<subagent>` per file.
+
+`AgentSwarm` must be the only tool call in the turn (exclusive-deny policy) — no "explore first, then swarm" in one turn.
+
+## Try a multi-phase plan
+
+For complex features, get a phased plan from `planner` (dispatched to the `plan` subagent) before implementing:
+
+> "Use planner to draft a migration plan from REST to GraphQL."
+
+The `planner` persona returns phases with success criteria and rollback points. Hand the plan to the orchestrator for execution, or to `builder` for individual phases.
+
+## Common pitfalls
+
+- **Forgot `~/.kimi-code/AGENTS.md`** — global rules never load. Verify with `ls -la ~/.kimi-code/AGENTS.md`.
+- **Forgot `[[hooks]]`** — destructive bash commands (`rm -rf`) slip through. Save the companion script as `~/.kimi-code/hooks/block-dangerous-bash.mjs`.
+- **Forgot `[[permission.rules]]`** — the `reviewer` persona can edit files because the `coder` subagent has Write/Edit tools. Persona text alone is advisory, not enforcement.
+- **Skipped `/new`** — plugin changes don't take effect in the current session. Run `/reload` then `/new`.
+- **Orchestrator starts writing code directly** — the orchestrator skill is supposed to route, not implement. Check `/plugins list` and confirm the session-start skill loaded.
+- **AgentSwarm not available** — requires Kimi Code v0.12.0+. On older versions, the orchestrator falls back to single `Agent` calls in parallel turns.
+
+## Pipeline reference
+
+```
+orchestrator (main agent, auto-loaded at session start)
+  ├─ adventurer  → Reconnaissance            (explore subagent, read-only)
+  ├─ architect   → Design/decisions          (coder subagent)
+  ├─ planner     → Phased plans              (plan subagent)
+  ├─ builder     → Implementation            (coder subagent)
+  ├─ reviewer    → Validation (do not edit)  (coder subagent)
+  ├─ writer      → Documentation             (coder subagent)
+  └─ diagnose    → Root cause analysis       (coder subagent)
+```
+
+<Aside type="tip">
+  Most tasks don't start with code. Start with recon (`adventurer`) or design (`architect`) before
+  reaching for `builder`. The orchestrator handles this routing automatically — but you can also
+  invoke specialists directly when you know which one you want.
+</Aside>
+
+## Next Steps
+
+- [Skill Reference](/kimi-code/skills/) — Full reference for all 8 skills
+- [Workflow Patterns](/kimi-code/guide/workflow-patterns/) — Practical examples for each skill
