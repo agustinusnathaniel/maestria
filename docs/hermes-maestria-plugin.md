@@ -2,19 +2,30 @@
 
 ## Goal
 
-Build a standalone Hermes plugin (`hermes-maestria`) that carries forward maestria's orchestration patterns — specialist delegation, global rules injection, permission enforcement, and the 7-agent roster — into the Hermes agent framework. No runtime coupling to `@maestria/opencode`. Each plugin optimized for its platform.
+Build a standalone Hermes plugin (`hermes-maestria`) that carries forward maestria's orchestration patterns — specialist delegation, global rules injection, permission enforcement — into the Hermes agent framework with a **domain-agnostic 9-specialist roster** covering all work domains: coding, research, analysis, communication, and creative work. No runtime coupling to `@maestria/opencode`. Each plugin optimized for its platform.
 
 ## Architecture Decision
 
 ### Separate Products, Shared Ideas (Option C)
 
-Build `hermes-maestria` as a standalone Hermes plugin. Share agent prompts and orchestration principles with `@maestria/opencode`, but no runtime coupling.
+Build `hermes-maestria` as a standalone Hermes plugin. Share orchestration principles with `@maestria/opencode`, but no runtime coupling.
 
 **Why:**
 
 1. Plugin models are too different for tight coupling — TypeScript config hook vs Python `register(ctx)`
-2. The valuable part is the *ideas* (agent prompts, orchestration principles, ADR patterns), not the code
+2. The valuable part is the *ideas* (orchestration principles, specialist methodology, ADR patterns), not the code
 3. Hermes has unique strengths to exploit: slash commands, 10+ hooks, `ctx.dispatch_tool`, MCP integration, Python ecosystem
+
+### ADR-008: General-Purpose Specialist Roster
+
+The original maestria roster (7 coding-focused agents) is too narrow for Hermes, which serves users across all work domains. The new roster expands to 9 domain-agnostic specialists with clear boundaries and universal methodologies.
+
+**Decision:** Replace coding-specific agent names (`adventurer`, `architect`, `builder`, `diagnose`) with domain-agnostic names (`researcher`, `analyst`, `implementer`, `diagnostician`). Add two new specialists (`communicator`, `ideator`) for stakeholder messaging and creative exploration.
+
+**Consequences:**
+- Specialist names describe *what they do*, not *what domain they work in*
+- Pipelines compose specialists across domains (e.g., `researcher → communicator → reviewer` for stakeholder updates)
+- The orchestrator can route any request type, not just code tasks
 
 ### Mapping: maestria Concepts → Hermes Equivalents
 
@@ -27,15 +38,58 @@ Build `hermes-maestria` as a standalone Hermes plugin. Share agent prompts and o
 | `session.compacting` | `on_session_start/end` hooks | More hooks available |
 | Agent config (`edit:deny`, `bash:allow`) | Python guard functions | Must implement per-tool gating |
 
+### Specialist Roster Mapping
+
+| Old Name (maestria) | New Name (hermes-maestria) | Domain | Core Methodology |
+|---|---|---|---|
+| adventurer | `researcher` | Information gathering, analysis, synthesis | Scope → source → extract → verify → report |
+| architect | `analyst` | Decisions, evaluation, trade-off analysis | Context → options → compare → recommend → document |
+| builder | `implementer` | Focused execution — code, config, content creation | Read → execute → verify → report |
+| diagnose | `diagnostician` | Root cause analysis, systematic tracing | Error → environment → history → blast radius → fix → prevention |
+| planner | `planner` | Phased plans, roadmaps, prioritization | Goal → phases → tasks → verification → rollback |
+| reviewer | `reviewer` | Quality gates, validation, feedback | Checklist → inspect → classify → recommend |
+| writer | `writer` | Structured documentation, content | Purpose → usage → details → proofread |
+| — | `communicator` | Stakeholder messaging, emails, updates | Audience → intent → draft → review → send |
+| — | `ideator` | Brainstorming, creative exploration, design | Diverge → converge → prototype → evaluate |
+
 ### Key Design Principles (carried from ADRs)
 
-- **ADR-001**: Global rules are cross-cutting, not per-agent. Agent-specific behavior lives in skill prompts.
+- **ADR-001**: Global rules are cross-cutting, not per-agent. Specialist-specific behavior lives in skill prompts.
 - **ADR-002**: Pure plugin — no filesystem side effects outside the plugin directory.
-- **ADR-003**: `!!!` markers for critical rules, cross-references between agents, skill prescription pattern.
+- **ADR-003**: `!!!` markers for critical rules, cross-references between specialists, skill prescription pattern.
 - **ADR-004**: 4-bucket skill prescription, 5-section handoff, iteration limits, rules bullets.
 - **ADR-005**: Orchestrator-direct skill installs, bundled questions, `--help` as source of truth.
 - **ADR-006**: Permissions are permissive by default; directives encode policy.
 - **ADR-007**: `opensrc` for repos, `webfetch` for pages.
+- **ADR-008**: Domain-agnostic specialist roster — names describe function, not domain.
+
+---
+
+## Default Pipelines
+
+| Pipeline | Sequence | Use Case |
+|---|---|---|
+| Implementation | `researcher → analyst → implementer → reviewer` | Building features, writing code, creating configs |
+| Bug fix | `diagnostician → implementer → reviewer` | Fixing failures, regressions, errors |
+| Planning | `researcher → planner → reviewer` | Roadmaps, migrations, prioritization |
+| Content | `researcher → writer → reviewer` | Documentation, READMEs, changelogs |
+| Communication | `researcher → communicator → reviewer` | Emails, status updates, stakeholder messages |
+| Creative | `ideator → analyst → implementer` | Brainstorming, design exploration, new ideas |
+
+## Routing Rules
+
+| Signal | Specialist | Pipeline |
+|---|---|---|
+| "how does X work", "find all…", "explain" | `researcher` | — |
+| "should we use X or Y", "evaluate", "compare" | `analyst` | — |
+| "build X", "fix Y", "create Z", "implement" | `implementer` | `researcher → implementer → reviewer` |
+| "bug", "broken", "failing", "regression" | `diagnostician` | `diagnostician → implementer → reviewer` |
+| "plan X", "roadmap", "prioritize", "migrate" | `planner` | `researcher → planner → reviewer` |
+| "review this", "check my work", "QA" | `reviewer` | — |
+| "document X", "write README", "changelog" | `writer` | — |
+| "email X", "update stakeholders", "draft message" | `communicator` | — |
+| "brainstorm", "ideas for", "creative", "design" | `ideator` | `ideator → analyst` (converge) |
+| Complex/multi-domain/ambiguous | `orchestrator` | Orchestrator decides |
 
 ---
 
@@ -51,9 +105,9 @@ Build `hermes-maestria` as a standalone Hermes plugin. Share agent prompts and o
 ├── __init__.py              # Entry point: register(ctx)
 ├── plugin.py                # Core logic: hooks, tools, guards
 ├── skills/
-│   ├── orchestrator.md      # Manager agent — decompose, delegate, integrate
-│   ├── builder.md           # Focused implementation
-│   └── reviewer.md          # Code review with quality gates
+│   ├── orchestrator.md      # Manager — decompose, delegate, integrate
+│   ├── implementer.md       # Focused execution of atomic tasks
+│   └── reviewer.md          # Quality gates and validation
 └── rules/
     └── AGENTS.md            # Global rules injected into every session
 ```
@@ -68,7 +122,7 @@ Build `hermes-maestria` as a standalone Hermes plugin. Share agent prompts and o
 ```yaml
 name: hermes-maestria
 version: 0.1.0
-description: Orchestration plugin with specialist delegation
+description: Orchestration plugin with domain-agnostic specialist delegation
 entry: __init__.py
 author: <author>
 license: MIT
@@ -99,7 +153,7 @@ def register(ctx):
             "properties": {
                 "specialist": {
                     "type": "string",
-                    "enum": ["orchestrator", "builder", "reviewer"],
+                    "enum": ["orchestrator", "implementer", "reviewer"],
                     "description": "Which specialist to delegate to"
                 },
                 "briefing": {
@@ -123,13 +177,13 @@ def register(ctx):
             "specialist": "reviewer",
             "briefing": args or "Review the current changes",
         }),
-        description="Route to reviewer specialist for code review",
+        description="Route to reviewer specialist for quality review",
     )
 
     # Register skills
     skills_dir = Path(__file__).parent / "skills"
     ctx.register_skill("orchestrator", skills_dir / "orchestrator.md")
-    ctx.register_skill("builder", skills_dir / "builder.md")
+    ctx.register_skill("implementer", skills_dir / "implementer.md")
     ctx.register_skill("reviewer", skills_dir / "reviewer.md")
 ```
 
@@ -198,7 +252,7 @@ PERMISSIONS = {
         },
         "delegate_task": "allow", "skill": "allow",
     },
-    "builder": {
+    "implementer": {
         "read": "allow", "glob": "allow", "grep": "allow",
         "edit": "allow",
         "bash": {
@@ -239,20 +293,14 @@ def pre_tool_call_enforce_permissions(tool_name, args, task_id, **kwargs):
 ```
 
 **Success criteria:**
-- `delegate_task` tool can be invoked with `{"specialist": "builder", "briefing": "Fix the typo in README.md"}`
+- `delegate_task` tool can be invoked with `{"specialist": "implementer", "briefing": "Fix the typo in README.md"}`
 - `pre_llm_call` hook injects global rules as a system message before every LLM call
 - `pre_tool_call` hook blocks `edit` for reviewer, blocks `bash` for orchestrator (except allow-listed commands)
-- Permission profiles match the maestria frontmatter specs (adapted for Hermes)
+- Permission profiles match the domain-agnostic specialist specs
 
 #### 1.4 — rules/AGENTS.md (Global Rules)
 
-**What:** Adapt maestria's global rules for Hermes context. Replace opencode-specific references.
-
-**Spec:** Copy from `packages/opencode/rules/AGENTS.md` with these changes:
-- Remove `@maestria/opencode` title — use `hermes-maestria`
-- Replace `task()` references with `delegate_task` tool
-- Replace `opensrc` skill reference with generic "clone repos to temp dir" guidance (Hermes may not have opensrc)
-- Keep `!!!` markers, context management rules, delegation table
+**What:** Domain-agnostic global rules for hermes-maestria. No coding-specific references.
 
 **Content:**
 ```markdown
@@ -260,63 +308,89 @@ def pre_tool_call_enforce_permissions(tool_name, args, task_id, **kwargs):
 
 ## Orchestration
 
-- **!!! Don't assume** — verify against actual code and docs. Guesses lead to bugs.
-- **!!! Read the docs first** — before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes.
-- **Don't reference internal project names in explanations** — avoid leaking context outside the workspace.
-- **For external repos, clone once and read locally** — when analyzing a GitHub/GitLab/BitBucket repo, clone it to a temp directory and use local file tools. Don't fetch a multi-file repo one file at a time.
+- **!!! Don't assume** — verify against actual sources.
+  Guesses lead to errors.
+- **!!! Read/watch/listen first** — before acting on unfamiliar
+  tools, APIs, data, or domains, consult the source material.
+  Don't guess at behavior. This rule is scar tissue from
+  repeated failures, not a preference.
+- **Don't reference internal project names in explanations** — avoid
+  leaking context outside the workspace.
 
 ## Delegation
 
-When delegating work via `delegate_task`, use only the registered specialists.
-**Never delegate to built-in agents** — they are not part of the specialist pipeline.
+When delegating work via `delegate_task`, use only the registered
+specialists below. **Never delegate to built-in agents** — they are
+not part of the specialist pipeline.
 
-| Specialist    | Role                                             | When to Delegate                                                                             |
-| ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `orchestrator`| Manager agent, decompose work, delegate          | Complex multi-step tasks, 3+ step workflows                                                  |
-| `builder`     | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
-| `reviewer`    | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
+| Specialist      | Role                                    | When to Delegate                                                     |
+| --------------- | --------------------------------------- | -------------------------------------------------------------------- |
+| `researcher`    | Information gathering and synthesis     | Understanding unfamiliar domains, gathering context, finding sources |
+| `analyst`       | Decisions, evaluation, trade-offs       | Comparing options, evaluating approaches, making recommendations     |
+| `implementer`   | Focused execution of atomic tasks       | Concrete, scoped tasks with no ambiguity — code, config, content     |
+| `diagnostician` | Systematic root cause analysis          | Debugging failures, tracing regressions, investigating errors        |
+| `planner`       | Phased plans with milestones            | Complex features, rollouts, migrations, prioritization               |
+| `reviewer`      | Quality gates and validation            | Pre-submit review, QA, security audit, completeness checks           |
+| `writer`        | Structured documentation and content    | READMEs, docs, changelogs, ADRs, explanations                        |
+| `communicator`  | Stakeholder messaging and updates       | Emails, status updates, team messages, cross-platform comms          |
+| `ideator`       | Brainstorming and creative exploration  | Generating ideas, exploring design spaces, creative direction        |
 
 ## Context Management
 
 - **Progressive disclosure** — start high-level, get specific as needed.
-- **State checkpointing** — periodically summarize what's done, what's in progress, what's next.
+- **State checkpointing** — periodically summarize what's done, what's
+  in progress, what's next.
 - **Context pruning** — remove irrelevant context when no longer needed.
-- **Completion promises** — define success criteria before starting work. "This task is complete when [verifiable conditions]."
+- **Completion promises** — define success criteria before starting work.
+  "This task is complete when [verifiable conditions]."
 ```
 
-**Success criteria:** Rules are injected as system message. Content is Hermes-native (no opencode references). `!!!` markers preserved.
+**Success criteria:** Rules are injected as system message. Content is domain-agnostic (no coding-only references). `!!!` markers preserved. All 9 specialists listed in delegation table.
 
 #### 1.5 — skills/orchestrator.md
 
-**What:** Adapt maestria's orchestrator agent prompt for Hermes skill format. Remove YAML frontmatter (permissions handled by Python hooks). Keep the methodology, delegation patterns, critical rules.
+**What:** Adapt maestria's orchestrator agent prompt for Hermes skill format. Remove YAML frontmatter (permissions handled by Python hooks). Keep the methodology, delegation patterns, critical rules. Update specialist names to domain-agnostic roster.
 
 **Adaptation rules:**
 - Remove YAML frontmatter block (`---...---`)
 - Replace `task()` calls with `delegate_task` tool calls
 - Replace `@agent` references with `delegate_task(specialist="agent")`
+- Replace old specialist names: `adventurer` → `researcher`, `architect` → `analyst`, `builder` → `implementer`, `diagnose` → `diagnostician`
+- Add new specialists: `communicator`, `ideator`
 - Keep: CRITICAL RULES, Available Specialists table, Delegation Pattern, Anti-Patterns, Iteration Limits
 - Keep: `!!!` markers, maker/checker split, commit authorization rules
-- Update: Skill Prescription section — use Hermes skill names if known, otherwise mark as "TBD — validate against Hermes skill registry"
+- Update: Skill Prescription section — use Hermes skill names
 
 **Source:** `packages/opencode/agents/orchestrator.md` (266 lines)
 
-**Success criteria:** Skill prompt is self-contained. No YAML frontmatter. All `task()` → `delegate_task`. All `@agent` → `specialist="agent"`.
+**Success criteria:** Skill prompt is self-contained. No YAML frontmatter. All `task()` → `delegate_task`. All old names → new names. 9 specialists in roster.
 
-#### 1.6 — skills/builder.md
+#### 1.6 — skills/implementer.md
 
-**What:** Adapt builder agent prompt. Remove frontmatter. Keep process, implementation patterns, rules.
+**What:** Adapt builder agent prompt to `implementer`. Remove frontmatter. Keep process, implementation patterns, rules. Generalize beyond code — implementer handles any focused execution (code, config, content creation).
 
 **Source:** `packages/opencode/agents/builder.md` (171 lines)
 
-**Success criteria:** Same adaptation rules as 1.5. Skill prompt is self-contained.
+**Adaptation notes:**
+- Rename from `builder` to `implementer`
+- Generalize language: "code" → "work product" where appropriate
+- Keep: process, implementation patterns, rules
+- Keep: `!!!` markers, verification steps
+
+**Success criteria:** Skill prompt is self-contained. Domain-agnostic language. Process preserved.
 
 #### 1.7 — skills/reviewer.md
 
-**What:** Adapt reviewer agent prompt. Remove frontmatter. Keep review checklist, output format, rules.
+**What:** Adapt reviewer agent prompt. Remove frontmatter. Keep review checklist, output format, rules. Generalize beyond code review — reviewer handles quality gates for any work domain.
 
 **Source:** `packages/opencode/agents/reviewer.md` (173 lines)
 
-**Success criteria:** Same adaptation rules as 1.5. Skill prompt is self-contained.
+**Adaptation notes:**
+- Generalize: "code review" → "quality review" where appropriate
+- Keep: review checklist, output format, rules
+- Keep: `!!!` markers, maker/checker split
+
+**Success criteria:** Skill prompt is self-contained. Quality gate methodology preserved.
 
 ### Phase 1 Verification
 
@@ -326,9 +400,10 @@ When delegating work via `delegate_task`, use only the registered specialists.
 | Tool registered | `delegate_task` appears in tool list |
 | Hooks fire | `pre_llm_call` injects rules (verify with debug logging) |
 | Permission gate | `pre_tool_call` blocks `edit` for reviewer |
-| Skill loadable | `orchestrator`, `builder`, `reviewer` skills load via `ctx.register_skill` |
+| Skill loadable | `orchestrator`, `implementer`, `reviewer` skills load via `ctx.register_skill` |
 | Slash command | `/review` routes to reviewer specialist |
-| End-to-end | Invoke `delegate_task(specialist="builder", briefing="Read the README")` — specialist prompt loads, briefing is complete |
+| End-to-end | Invoke `delegate_task(specialist="implementer", briefing="Read the README")` — specialist prompt loads, briefing is complete |
+| Domain-agnostic | Global rules contain no coding-only references |
 
 ### Rollback Point
 
@@ -338,7 +413,7 @@ After Phase 1: plugin loads, 3 skills work, delegation tool routes correctly. Ca
 
 ## Phase 2 (v0.2): Full Specialist Roster
 
-**Goal:** Add remaining 4 specialists. Add slash commands. Add session state persistence.
+**Goal:** Add remaining 6 specialists. Add slash commands. Add session state persistence. Full permission profiles for all 9 specialists.
 
 ### Dependencies
 
@@ -348,11 +423,13 @@ Phase 1 complete.
 
 ```
 skills/
-├── adventurer.md     # Codebase reconnaissance
-├── architect.md      # Architecture decisions, ADRs
-├── diagnose.md       # Systematic bug tracing
-├── planner.md        # Implementation plans
-└── writer.md         # Documentation writing
+├── researcher.md      # Information gathering and synthesis
+├── analyst.md         # Decisions, evaluation, trade-offs
+├── diagnostician.md   # Systematic root cause analysis
+├── planner.md         # Phased plans, roadmaps, prioritization
+├── writer.md          # Structured documentation and content
+├── communicator.md    # Stakeholder messaging and updates
+└── ideator.md         # Brainstorming and creative exploration
 ```
 
 ### Files to Modify
@@ -360,120 +437,206 @@ skills/
 ```
 __init__.py           # Register new skills, commands, hooks
 plugin.py             # Add permission profiles, session hooks
-rules/AGENTS.md       # Update delegation table with all 7 specialists
+rules/AGENTS.md       # Already has all 9 from Phase 1 (verify)
 ```
 
 ### Tasks
 
-#### 2.1 — skills/adventurer.md
+#### 2.1 — skills/researcher.md
 
-**What:** Adapt adventurer prompt. Read-only reconnaissance agent.
+**What:** Adapt adventurer prompt to `researcher`. Generalize beyond codebase reconnaissance — researcher handles information gathering in any domain.
 
 **Source:** `packages/opencode/agents/adventurer.md` (174 lines)
 
 **Adaptation notes:**
-- Remove frontmatter
+- Rename from `adventurer` to `researcher`
+- Generalize: "codebase" → "sources", "code" → "information"
 - Keep: Mission, Process, Exploration Techniques, Complexity Tiers, Output Format
 - Keep: `!!! Never edit files`, `!!! Never implement`, `!!! Never make design decisions`
 - Update: Skill Prescription — mark `opensrc` as "clone external repos to temp dir"
 
-**Success criteria:** Skill prompt is self-contained. Reconnaissance report format preserved.
+**Success criteria:** Skill prompt is self-contained. Reconnaissance report format preserved. Domain-agnostic language.
 
-#### 2.2 — skills/architect.md
+#### 2.2 — skills/analyst.md
 
-**What:** Adapt architect prompt. Architecture decisions with decision matrices and ADRs.
+**What:** Adapt architect prompt to `analyst`. Generalize beyond architecture decisions — analyst handles evaluation and trade-off analysis in any domain.
 
 **Source:** `packages/opencode/agents/architect.md` (157 lines)
 
 **Adaptation notes:**
-- Remove frontmatter
+- Rename from `architect` to `analyst`
+- Generalize: "architecture" → "decisions", "system design" → "evaluation"
 - Keep: 5-phase process (Understand → Present → Clarify → Recommend → Document)
 - Keep: ADR template, Shortcut Rules, Iteration Limits
 - Update: `opensrc` → "clone external repos"
 
-**Success criteria:** Skill prompt is self-contained. ADR template preserved.
+**Success criteria:** Skill prompt is self-contained. Decision framework preserved. Domain-agnostic language.
 
-#### 2.3 — skills/diagnose.md
+#### 2.3 — skills/diagnostician.md
 
-**What:** Adapt diagnose prompt. Systematic 6-step regression tracing.
+**What:** Adapt diagnose prompt to `diagnostician`. Keep systematic 6-step root cause analysis. Generalize beyond code bugs — diagnostician handles failure analysis in any domain.
 
 **Source:** `packages/opencode/agents/diagnose.md` (166 lines)
 
 **Adaptation notes:**
-- Remove frontmatter
-- Keep: 6-step process (Error → Environment → Git History → Blast Radius → Fix → Prevention)
+- Rename from `diagnose` to `diagnostician`
+- Generalize: "bug" → "failure", "regression" → "unexpected behavior"
+- Keep: 6-step process (Error → Environment → History → Blast Radius → Fix → Prevention)
 - Keep: `!!! Always verify before handoff`, `!!! Document diagnostic work`
 - Keep: Iteration Limits (max 3 fix attempts)
 
-**Success criteria:** Skill prompt is self-contained. 6-step process preserved.
+**Success criteria:** Skill prompt is self-contained. 6-step process preserved. Domain-agnostic language.
 
 #### 2.4 — skills/planner.md
 
-**What:** Adapt planner prompt. Implementation plans with phased milestones.
+**What:** Adapt planner prompt. Keep phased plan structure. Generalize beyond implementation plans — planner handles roadmaps, migrations, and prioritization in any domain.
 
 **Source:** `packages/opencode/agents/planner.md` (114 lines)
 
 **Adaptation notes:**
-- Remove frontmatter
+- Generalize: "implementation plan" → "plan" where appropriate
 - Keep: Structure (Goal, Phases, Tasks, Verification, Rollback Points)
 - Keep: Handoff contract, Iteration Limits, Guard Rails
 - Keep: `!!! Each phase must have verifiable completion criteria`
 
-**Success criteria:** Skill prompt is self-contained. Plan structure preserved.
+**Success criteria:** Skill prompt is self-contained. Plan structure preserved. Domain-agnostic language.
 
 #### 2.5 — skills/writer.md
 
-**What:** Adapt writer prompt. Documentation following structured patterns.
+**What:** Adapt writer prompt. Keep structured documentation patterns. Generalize beyond code documentation — writer handles any structured content.
 
 **Source:** `packages/opencode/agents/writer.md` (150 lines)
 
 **Adaptation notes:**
-- Remove frontmatter
 - Keep: Structure (Purpose, Usage, Details), Principles, Patterns by Document Type
 - Keep: `!!! Proofread before finishing`, `!!! Maker/checker split`
 - Update: Skill Prescription — mark Hermes-available skills
 
 **Success criteria:** Skill prompt is self-contained. Document type patterns preserved.
 
-#### 2.6 — Register New Skills and Commands
+#### 2.6 — skills/communicator.md
 
-**What:** Update `__init__.py` to register all 7 skills and 3 slash commands.
+**What:** New specialist for stakeholder messaging. Follows the Audience → Intent → Draft → Review → Send methodology.
+
+**Spec:**
+```markdown
+# Communicator
+
+Stakeholder messaging, emails, status updates, cross-platform communications.
+
+## Methodology
+
+1. **Audience** — Identify who receives the message, their context, their needs
+2. **Intent** — Clarify what the message should achieve (inform, request, update, persuade)
+3. **Draft** — Write the message in appropriate tone and format for the platform
+4. **Review** — Check for clarity, completeness, tone, and correctness
+5. **Send** — Deliver via the appropriate channel
+
+## Rules
+
+- **!!! Know your audience** — tone, detail level, and format depend on who reads it
+- **!!! One message, one purpose** — don't bundle unrelated asks
+- **!!! Proofread before sending** — typos in stakeholder comms erode trust
+- Never send without confirming the recipient and channel
+- Match the platform's conventions (email vs Slack vs formal memo)
+
+## Output Format
+
+- Subject/purpose line
+- Body with clear structure (context → action → deadline if applicable)
+- Sign-off appropriate to the platform
+```
+
+**Success criteria:** Skill prompt is self-contained. Communication methodology is clear and actionable.
+
+#### 2.7 — skills/ideator.md
+
+**What:** New specialist for brainstorming and creative exploration. Follows the Diverge → Converge → Prototype → Evaluate methodology.
+
+**Spec:**
+```markdown
+# Ideator
+
+Brainstorming, creative exploration, design thinking.
+
+## Methodology
+
+1. **Diverge** — Generate many ideas without judgment. Quantity over quality.
+2. **Converge** — Cluster, filter, and rank ideas by feasibility and impact.
+3. **Prototype** — Sketch or describe the top ideas in enough detail to evaluate.
+4. **Evaluate** — Assess prototypes against criteria. Recommend top options.
+
+## Rules
+
+- **!!! No premature convergence** — diverge first, evaluate later
+- **!!! Quantity drives quality** — more ideas = better final selection
+- **!!! Build on others' ideas** — combine and extend, don't just filter
+- Never dismiss an idea during the diverge phase
+- Use analogies and cross-domain references to spark novel ideas
+
+## Output Format
+
+- Diverge: list of 10+ ideas (brief descriptions)
+- Converge: top 3-5 clusters with rationale
+- Prototype: detailed sketch/description of top 2-3
+- Evaluate: recommendation with trade-off analysis
+```
+
+**Success criteria:** Skill prompt is self-contained. Creative methodology is clear and actionable.
+
+#### 2.8 — Register New Skills and Commands
+
+**What:** Update `__init__.py` to register all 9 skills and 6 slash commands.
 
 **Spec:**
 ```python
 # In register(ctx):
 
 # Register all skills
-skills = ["orchestrator", "adventurer", "architect", "builder", "diagnose", "planner", "reviewer", "writer"]
+skills = [
+    "orchestrator", "researcher", "analyst", "implementer",
+    "diagnostician", "planner", "reviewer", "writer",
+    "communicator", "ideator",
+]
 skills_dir = Path(__file__).parent / "skills"
 for skill_name in skills:
     ctx.register_skill(skill_name, skills_dir / f"{skill_name}.md")
 
 # Register slash commands
-ctx.register_command("plan", handler=plan_handler, description="Route to planner specialist")
 ctx.register_command("review", handler=review_handler, description="Route to reviewer specialist")
-ctx.register_command("diagnose", handler=diagnose_handler, description="Route to diagnose specialist")
+ctx.register_command("plan", handler=plan_handler, description="Route to planner specialist")
+ctx.register_command("diagnose", handler=diagnose_handler, description="Route to diagnostician specialist")
+ctx.register_command("research", handler=research_handler, description="Route to researcher specialist")
+ctx.register_command("brainstorm", handler=brainstorm_handler, description="Route to ideator specialist")
+ctx.register_command("communicate", handler=communicate_handler, description="Route to communicator specialist")
 ```
 
-**Success criteria:** All 7 skills registered. 3 slash commands work.
+**Success criteria:** All 9 skills registered. 6 slash commands work.
 
-#### 2.7 — Permission Profiles for New Specialists
+#### 2.9 — Permission Profiles for All Specialists
 
-**What:** Add permission profiles for adventurer, architect, diagnose, planner, writer in `plugin.py`.
+**What:** Add permission profiles for researcher, analyst, diagnostician, planner, writer, communicator, ideator in `plugin.py`.
 
-**Spec (derived from maestria frontmatter):**
+**Spec (derived from maestria frontmatter, generalized):**
 
-| Specialist  | read | glob | grep | edit | bash | skill | webfetch |
-|-------------|------|------|------|------|------|-------|----------|
-| adventurer  | allow | allow | allow | deny | ask (git log/diff/which: allow) | allow | allow |
-| architect   | allow | allow | allow | deny | ask (which/npm view: allow) | allow | allow |
-| diagnose    | allow | allow | allow | ask | ask (git status/diff/log/blame/show/which/env/pwd: allow) | allow | allow |
-| planner     | allow | allow | allow | ask | ask (git status/diff/log: allow) | allow | allow |
-| writer      | allow | allow | allow | allow | ask (git status/npm view: allow) | allow | allow |
+| Specialist      | read | glob | grep | edit | bash | skill | webfetch |
+|-----------------|------|------|------|------|------|-------|----------|
+| orchestrator    | allow | allow | allow | deny | deny (git status/diff/log: allow) | allow | — |
+| researcher      | allow | allow | allow | deny | deny (git log/diff/which: allow) | allow | allow |
+| analyst         | allow | allow | allow | deny | deny (which/npm view: allow) | allow | allow |
+| implementer     | allow | allow | allow | allow | allow | allow | — |
+| diagnostician   | allow | allow | allow | ask | ask (git status/diff/log/blame/show/which/env/pwd: allow) | allow | allow |
+| planner         | allow | allow | allow | ask | ask (git status/diff/log: allow) | allow | allow |
+| reviewer        | allow | allow | allow | deny | allow (git status/diff/log: allow) | allow | — |
+| writer          | allow | allow | allow | allow | ask (git status/npm view: allow) | allow | allow |
+| communicator    | allow | allow | allow | deny | deny | allow | allow |
+| ideator         | allow | allow | allow | deny | deny | allow | allow |
 
-**Success criteria:** `pre_tool_call` hook enforces correct permissions for all 7 specialists. Reviewer can't edit. Orchestrator can't bash (except allow-listed). Builder's bash is `ask`.
+**Note:** `ask` is not a native Hermes hook return value. Use `allow` for tools the specialist needs and `deny` for those it doesn't. Where `ask` is listed, implement as `allow` with a log warning (future: prompt user before execution).
 
-#### 2.8 — Session State Hooks
+**Success criteria:** `pre_tool_call` hook enforces correct permissions for all 9 specialists. Reviewer can't edit. Orchestrator can't bash (except allow-listed). Communicator and ideator are read-only.
+
+#### 2.10 — Session State Hooks
 
 **What:** Implement `on_session_start` and `on_session_end` hooks for state persistence via file-based storage (no `ctx.get_state/set_state` APIs exist).
 
@@ -515,33 +678,26 @@ ctx.register_hook("on_session_end", on_session_end)
 
 **Success criteria:** State persists across sessions. Active specialist is restored on restart.
 
-#### 2.9 — Update Global Rules
-
-**What:** Update `rules/AGENTS.md` delegation table to include all 7 specialists.
-
-**Spec:** Add adventurer, architect, diagnose, planner, writer to the delegation table.
-
-**Success criteria:** Rules injection includes all 7 specialists in the table.
-
 ### Phase 2 Verification
 
 | Check | How |
 |---|---|
-| All skills load | `hermes skill list` shows all 7 |
-| All commands work | `/plan`, `/review`, `/diagnose` route correctly |
-| Permission profiles | `pre_tool_call` enforces correct permissions for all 7 |
+| All skills load | `hermes skill list` shows all 9 |
+| All commands work | `/review`, `/plan`, `/diagnose`, `/research`, `/brainstorm`, `/communicate` route correctly |
+| Permission profiles | `pre_tool_call` enforces correct permissions for all 9 |
 | Session persistence | Restart Hermes, verify state restored |
-| Global rules | Rules injection includes full specialist table |
+| Global rules | Rules injection includes full 9-specialist table |
+| New specialists | `communicator` and `ideator` skills load and have correct methodology |
 
 ### Rollback Point
 
-After Phase 2: full 7-specialist roster, 3 slash commands, session persistence. Can ship as v0.2.0.
+After Phase 2: full 9-specialist roster, 6 slash commands, session persistence, full permissions. Can ship as v0.2.0.
 
 ---
 
 ## Phase 3 (v0.3): Advanced Features
 
-**Goal:** Parallel delegation, MCP integration, skill prescription, shared prompt library.
+**Goal:** Parallel delegation, MCP integration, automation (schedule_task), skill prescription, shared prompt library, memory integration.
 
 ### Dependencies
 
@@ -587,7 +743,39 @@ schema={
 
 **Success criteria:** External MCP client can call `delegate_task` and receive specialist output.
 
-#### 3.3 — Skill Prescription
+#### 3.3 — Automation (schedule_task tool)
+
+**What:** Register a `schedule_task` tool for cron-based automation. Automation is a trigger mechanism, not a specialist — it dispatches to the appropriate specialist on schedule.
+
+**Spec:**
+```python
+ctx.register_tool(
+    name="schedule_task",
+    toolset="maestria",
+    schema={
+        "type": "object",
+        "properties": {
+            "cron": {"type": "string", "description": "Cron expression"},
+            "specialist": {
+                "type": "string",
+                "enum": ["orchestrator", "researcher", "analyst", "implementer",
+                         "diagnostician", "planner", "reviewer", "writer",
+                         "communicator", "ideator"],
+                "description": "Which specialist to delegate to on schedule"
+            },
+            "briefing": {"type": "string", "description": "Task briefing for the specialist"},
+        },
+        "required": ["cron", "specialist", "briefing"],
+    },
+    handler=handle_schedule_task,
+)
+```
+
+**Handler:** Store scheduled tasks in `.state.json`. On `on_session_start`, check for due tasks and dispatch.
+
+**Success criteria:** `schedule_task` registers. Cron expression is parsed. Due tasks dispatch to correct specialist on session start.
+
+#### 3.4 — Skill Prescription
 
 **What:** Implement the skill prescription pattern from ADR-004 — each specialist skill defines "Always load", "Load on trigger", "Defer to specialist", "Skip if" buckets.
 
@@ -595,7 +783,7 @@ schema={
 
 **Success criteria:** Orchestrator checks skill prescription before delegation. Missing skills trigger bundled install prompt.
 
-#### 3.4 — Shared Prompt Library
+#### 3.5 — Shared Prompt Library
 
 **What:** Create a `prompts/` directory with extracted, platform-agnostic prompt fragments that both `@maestria/opencode` and `hermes-maestria` can reference.
 
@@ -611,16 +799,25 @@ prompts/
 
 **Success criteria:** Both plugins can import from `prompts/`. No duplication of core principles.
 
-#### 3.5 — Post-Tool-Call Observability Hook
+#### 3.6 — Memory Integration
+
+**What:** Integrate with Hermes memory system (if available) for cross-session context retention. Store specialist decisions, research findings, and evaluation outcomes.
+
+**Spec:** Use `on_session_end` to persist key findings to a memory store. Use `on_session_start` to restore relevant context. Fall back to file-based `.state.json` if no memory API exists.
+
+**Success criteria:** Key findings persist across sessions. Specialist context is available without re-research.
+
+#### 3.7 — Post-Tool-Call Observability Hook
 
 **What:** Implement `post_tool_call` hook for logging and observation.
 
 **Spec:**
 ```python
-async def post_tool_call_observe(ctx, tool_name, args, result):
+async def post_tool_call_observe(tool_name, args, result, **kwargs):
     """Log tool calls for observability."""
-    specialist = ctx.get_state("active_specialist", default="orchestrator")
-    ctx.log(f"[{specialist}] {tool_name}: {args.get('command', args.get('path', ''))[:80]}")
+    specialist = _active_specialist
+    # Log to file or stdout
+    print(f"[{specialist}] {tool_name}: {args.get('command', args.get('path', ''))[:80]}")
 ```
 
 **Success criteria:** Tool calls are logged with active specialist context.
@@ -631,8 +828,10 @@ async def post_tool_call_observe(ctx, tool_name, args, result):
 |---|---|
 | Parallel delegation | `delegate_task(tasks=[...])` returns merged results |
 | MCP exposure | External MCP client can invoke `delegate_task` |
+| Automation | `schedule_task` registers and dispatches on schedule |
 | Skill prescription | Missing skills trigger install prompt |
 | Shared prompts | Both plugins reference same prompt fragments |
+| Memory | Key findings persist across sessions |
 | Observability | `post_tool_call` logs specialist + tool + args |
 
 ### Rollback Point
@@ -650,20 +849,23 @@ For each agent prompt in `packages/opencode/agents/*.md`:
 1. **Strip YAML frontmatter** — permissions are handled by Python hooks, not declarative frontmatter
 2. **Replace `task()` calls** with `delegate_task` tool invocations
 3. **Replace `@agent` references** with `specialist="agent"` syntax
-4. **Replace opencode-specific tools** (`lsp`, `opensrc`) with Hermes equivalents or generic guidance
-5. **Keep everything else** — methodology, `!!!` markers, iteration limits, rules bullets, handoff contracts, skill prescription
+4. **Rename specialists** — `adventurer` → `researcher`, `architect` → `analyst`, `builder` → `implementer`, `diagnose` → `diagnostician`
+5. **Replace opencode-specific tools** (`lsp`, `opensrc`) with Hermes equivalents or generic guidance
+6. **Generalize language** — remove coding-specific terminology where the specialist's domain is broader
+7. **Keep everything else** — methodology, `!!!` markers, iteration limits, rules bullets, handoff contracts, skill prescription
 
 ### Template
 
 ```markdown
-# [Agent Name]
+# [Specialist Name]
 
-[Rest of agent prompt — no YAML frontmatter]
+[Rest of specialist prompt — no YAML frontmatter]
 
 ## Hermes Adaptations
 
 - `task(agent, briefing)` → `delegate_task(specialist="agent", briefing=briefing)`
 - `@agent` → `specialist="agent"`
+- `adventurer` → `researcher`, `architect` → `analyst`, `builder` → `implementer`, `diagnose` → `diagnostician`
 - `opensrc path <repo>` → `git clone <repo> /tmp/<repo> && read locally`
 - `lsp` tool → remove (Hermes may not have LSP; use grep/read instead)
 ```
@@ -678,19 +880,22 @@ For each agent prompt in `packages/opencode/agents/*.md`:
 - `test_delegate_task_handler.py` — Verify tool routing, briefing composition, skill loading
 - `test_rules_injection.py` — Verify `pre_llm_call` injects correct rules content
 - `test_session_state.py` — Verify state persistence across start/end hooks
+- `test_routing_rules.py` — Verify signal-to-specialist routing matches the routing table
 
 ### Integration Tests
 
 - `test_end_to_end_delegation.py` — Invoke `delegate_task`, verify specialist prompt loads, verify output format
-- `test_slash_commands.py` — Invoke `/plan`, `/review`, `/diagnose`, verify routing
+- `test_slash_commands.py` — Invoke `/review`, `/plan`, `/diagnose`, `/research`, `/brainstorm`, `/communicate`, verify routing
 - `test_permission_enforcement.py` — Attempt blocked operations, verify rejection
+- `test_pipeline_composition.py` — Verify multi-specialist pipelines compose correctly
 
 ### Manual Tests
 
 - Load plugin in Hermes, run `/review` on a real diff
-- Verify global rules appear in system context
+- Verify global rules appear in system context (domain-agnostic)
 - Verify `pre_tool_call` blocks reviewer from editing files
 - Verify session state persists across restart
+- Test each new specialist: `/research`, `/brainstorm`, `/communicate`
 
 ---
 
@@ -701,9 +906,11 @@ For each agent prompt in `packages/opencode/agents/*.md`:
 | Hermes `register(ctx)` API changes | Medium | High | Pin Hermes version in `plugin.yaml`. Monitor Hermes changelog. |
 | Skill loading mechanism differs from spec | Medium | High | Validate `ctx.register_skill` signature early in Phase 1. |
 | `pre_tool_call` hook signature wrong | Medium | Medium | Verify hook contract with Hermes docs before implementation. |
+| Domain-agnostic names confuse existing users | Low | Medium | Document mapping table. Keep old names as aliases in Phase 2 transition. |
 | MCP integration complexity | Low | Medium | Defer to Phase 3. MCP is additive, not core. |
 | Permission profiles too restrictive/lenient | Low | Medium | Start permissive (ADR-006), tighten based on real usage. |
 | Shared prompt library creates coupling | Low | Low | Prompts are reference-only, not runtime dependency. |
+| `communicator` and `ideator` underused | Low | Low | They're additive — no impact if unused. Can deprecate later. |
 
 ---
 
@@ -720,6 +927,7 @@ For each agent prompt in `packages/opencode/agents/*.md`:
 7. ❌ **`ctx.get_state/set_state/load_state/save_state` API** — **Not found.** Use module-level variables and file-based persistence instead.
 8. ❌ **Hook return values for `pre_tool_call`** — **Wrong format.** Not `(bool, str)` tuple. Return `{"action": "block", "message": "..."}` to block, `None` to allow. No "ask" behavior.
 9. ❌ **Hook callback signatures receive `ctx`** — **Wrong.** All hooks receive their specific arguments directly (no `ctx` param). See Fix 1 details.
+10. ⚠️ **`ask` permission level** — Not native to Hermes. Where maestria uses `ask`, implement as `allow` with logging. Future: prompt user before execution.
 
 ### Open Questions
 
@@ -742,10 +950,10 @@ Note these as useful for future phases:
 
 ## Summary
 
-| Phase | Milestone | Deliverables | Timeline |
+| Phase | Milestone | Deliverables | Version |
 |---|---|---|---|
-| Phase 1 | Core Loop | plugin.yaml, __init__.py, plugin.py, 3 skills, 1 tool, 2 hooks, 1 command | v0.1.0 |
-| Phase 2 | Full Roster | 4 more skills, 2 more commands, session persistence, full permissions | v0.2.0 |
-| Phase 3 | Advanced | Parallel delegation, MCP, skill prescription, shared prompts, observability | v0.3.0 |
+| Phase 1 | Core Loop | plugin.yaml, __init__.py, plugin.py, 3 skills (orchestrator, implementer, reviewer), 1 tool, 2 hooks, 1 command (/review), domain-agnostic global rules | v0.1.0 |
+| Phase 2 | Full Roster | 6 more skills (researcher, analyst, diagnostician, planner, writer, communicator, ideator), 5 more commands (/plan, /diagnose, /research, /brainstorm, /communicate), session persistence, full permissions for all 9 | v0.2.0 |
+| Phase 3 | Advanced | Parallel delegation, MCP, automation (schedule_task), skill prescription, shared prompts, memory integration, observability | v0.3.0 |
 
-**Termination condition:** All phases have success criteria, all dependencies mapped, all rollback points identified, all assumptions documented.
+**Termination condition:** All phases have success criteria, all dependencies mapped, all rollback points identified, all assumptions documented, all 9 specialists have permission profiles.
