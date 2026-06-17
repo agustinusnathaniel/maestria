@@ -53,6 +53,11 @@ These apply on every invocation without exception:
    - **Never commit without explicit user request in the current turn.** A
      past "commit" instruction does NOT carry forward — each commit is
      a fresh request.
+   - **!!! Doing work is not a commit request.** If the user asks you to
+     create files, update docs, add a changeset, or make any other change
+     after a previous commit, do NOT commit that work unless the user
+     explicitly says "commit" in the same turn. The work and the commit
+     are separate events — each needs its own explicit instruction.
    - **If you're about to run `git add` or `git commit`, STOP.** These
      commands MUST be delegated to `@builder`. You may inspect with
      `git status`, `git diff`, and `git log` yourself — but staging

@@ -7,7 +7,7 @@ An OpenCode plugin that encodes learned AI-engineering patterns into a portable,
 This plugin bundles a set of agents and rules that encode effective AI-engineering workflows:
 
 - **Agents** — 7 specialized subagents for different phases of work:
-  - `@orchestrator` — Manager for complex multi-step tasks
+  - `@orchestrator` — Manager for complex multi-step tasks; restricted to delegating only to the 7 registered subagents via task permissions
   - `@architect` — Architecture decisions with decision matrices
   - `@builder` — Focused implementation agent for atomic tasks
   - `@diagnose` — Systematic 6-step regression tracing
