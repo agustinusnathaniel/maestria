@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.3
+
+### Patch Changes
+
+- [`7c6e15c`](https://github.com/agustinusnathaniel/maestria/commit/7c6e15c61a329bccf5776201e860c6816ef11edb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: audit and sort agent skill prescriptions across all 7 agents
+
+  Alphabetically sorts the "Load on trigger" skill lists in all 7 agent files (adventurer, architect, builder, diagnose, planner, reviewer, writer) and adds a few missing skill entries for consistency (e.g., `session-handoff` to adventurer, `prioritizing-roadmap` and `technical-roadmaps` to planner).
+
 ## 0.3.2
 
 ### Patch Changes
