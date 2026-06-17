@@ -135,6 +135,24 @@ load relevant skills → AgentSwarm (≥3 uniform items) OR single Agent (1-2 it
 > Skipping steps is allowed only with explicit justification in the handoff.
 > The final `@reviewer` step is non-negotiable after a `@builder` change.
 
+### Background Sub-Agents
+
+`AgentSwarm` is always foreground (its `runInBackground: false` flag
+makes results block until the whole batch returns), but a single
+`Agent` dispatch can optionally run in the background. Background
+sub-agents:
+
+- Return their result automatically to the main Agent on completion
+  (no polling needed)
+- Can be called back to continue the same task
+- Free the main Agent to do other work while a long investigation
+  runs in parallel
+
+Use background mode when the task is likely to take more than ~2
+minutes AND the main Agent has independent work to do while waiting.
+Otherwise prefer foreground (the default) — it is simpler to reason
+about and the result is available when the `Agent` call returns.
+
 ## How to Invoke a Specialist Persona
 
 The Kimi Code plugin does not register new subagent types — the 3 built-in

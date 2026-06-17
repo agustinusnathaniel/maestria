@@ -175,10 +175,11 @@ persona opens with "Do not edit files" and the `adventurer/SKILL.md`
 persona scopes to read-only Bash — these rules make those
 constraints binding, not just suggested.
 
-### 5. Restart Kimi Code (REQUIRED)
+### 5. Reload plugins and start a new session (REQUIRED)
 
-Plugin installation and `AGENTS.md` placement take effect on the next
-session. Restart Kimi Code and start a new session.
+Plugin changes only take effect in new sessions. After installing,
+enabling, or removing a plugin, run `/reload` to reload the plugin
+manifest, then `/new` to open a session that uses it.
 
 ### 6. Verify (REQUIRED)
 
