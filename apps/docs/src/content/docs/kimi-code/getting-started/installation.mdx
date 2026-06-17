@@ -129,33 +129,76 @@ import { Steps, Aside, Tabs } from "@astrojs/starlight/components";
    Add the following to `~/.kimi-code/config.toml`:
 
    ```toml
-   # Builder (coder) — full access (default for the coder subagent)
-   [[permission.rules]]
-   tool = "Bash"
-   scope = "session-runtime"
-   allow = ["git status*", "git diff*", "git log*", "npm test*", "pnpm test*", "npx tsc*"]
-
-   # Adventurer (explore) — read-only
-   [[permission.rules]]
-   tool = "Write"
-   scope = "session-runtime"
-   deny = ["*"]
+   # === Builder (coder) — read-only git + test commands ===
+   # 6 separate rules because each `pattern` matches one command.
+   # scope = "session-runtime" applies to the current session only.
 
    [[permission.rules]]
-   tool = "Edit"
+   decision = "allow"
+   pattern = "Bash(git status*)"
    scope = "session-runtime"
-   deny = ["*"]
-
-   # Reviewer (coder) — no editing
-   [[permission.rules]]
-   tool = "Write"
-   scope = "session-runtime"
-   deny = ["*"]
+   reason = "Builder: read-only git status"
 
    [[permission.rules]]
-   tool = "Edit"
+   decision = "allow"
+   pattern = "Bash(git diff*)"
    scope = "session-runtime"
-   deny = ["*"]
+   reason = "Builder: read-only git diff"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(git log*)"
+   scope = "session-runtime"
+   reason = "Builder: read-only git log"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(npm test*)"
+   scope = "session-runtime"
+   reason = "Builder: run npm tests"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(pnpm test*)"
+   scope = "session-runtime"
+   reason = "Builder: run pnpm tests"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(npx tsc*)"
+   scope = "session-runtime"
+   reason = "Builder: run TypeScript type check"
+
+   # === Adventurer (explore) — read-only persona; deny Write/Edit ===
+
+   [[permission.rules]]
+   decision = "deny"
+   pattern = "Write"
+   scope = "session-runtime"
+   reason = "Adventurer is read-only by persona (explore subagent)"
+
+   [[permission.rules]]
+   decision = "deny"
+   pattern = "Edit"
+   scope = "session-runtime"
+   reason = "Adventurer is read-only by persona (explore subagent)"
+
+   # === Reviewer (coder) — review-only; deny Write/Edit ===
+   # Reviewer persona opens with !!! DO NOT EDIT FILES. The
+   # persona text is advisory; these rules are the only tool-
+   # layer enforcement (REQUIRED for safety).
+
+   [[permission.rules]]
+   decision = "deny"
+   pattern = "Write"
+   scope = "session-runtime"
+   reason = "Reviewer is read-only by persona (maker/checker)"
+
+   [[permission.rules]]
+   decision = "deny"
+   pattern = "Edit"
+   scope = "session-runtime"
+   reason = "Reviewer is read-only by persona (maker/checker)"
    ```
 
    The `scope` field controls temporal granularity (`turn-override`, `session-runtime`, `project`, `user`) — it is not per-subagent granularity. Subagent tool lists come from the hardcoded profile (`coder`/`explore`/`plan`), not from per-agent rules. These rules are the **only tool-layer enforcement** of the persona boundaries declared in each specialist's SKILL.md.
