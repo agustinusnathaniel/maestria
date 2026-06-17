@@ -133,6 +133,9 @@ After the ADR is written, your handoff should cover:
 
 ## Constraints
 
+- **!!! Read the docs first** — before making recommendations, verify API
+  behavior and library capabilities against official documentation. Don't
+  guess at how a tool works.
 - Don't assume — verify against official docs and references
 - Don't oversimplify — acknowledge trade-offs honestly
 - For irreversible decisions, recommend more conservative options

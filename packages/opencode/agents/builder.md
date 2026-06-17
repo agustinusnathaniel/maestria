@@ -96,6 +96,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `vitest` (`antfu/skills`) — load when writing Vitest tests (skip if no tests)
 - `vite` (`antfu/skills`) — load when modifying `vite.config` or build
 - `pnpm` (`antfu/skills`) — load when changing `package.json`/lockfile
+- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
 - `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) — load when writing a commit message
 
 ### Defer to specialist
@@ -118,6 +119,9 @@ This reveals what actually requires heavy tools vs. what's simple.
 - Prefer `edit` over `write` — preserve existing code
 - **!!! Run tests before claiming done**
 - **!!! Never implement without reading the target files first**
+- **!!! Read the docs first** — before writing code that uses unfamiliar
+  APIs, tools, or migration paths, consult official documentation. Don't
+  guess at API changes.
 - If a change grows beyond the original task scope, flag it in your
   handoff
 - Keep the change focused — one concern per invocation

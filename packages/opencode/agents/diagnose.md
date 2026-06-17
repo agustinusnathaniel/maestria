@@ -105,6 +105,7 @@ Confirm it works:
 - `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
 - `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
 - `agent-browser` (`vercel-labs/agent-browser`) — load when bug involves UI behavior, network requests, performance profiling, or needs visual reproduction (skip if backend-only)
+- `dependency-updater` (`softaworks/agent-toolkit`) — load when investigating dependency-related bugs, lockfile issues, or version conflicts
 - `zoom-out` (`mattpocock/skills`) — load when regression spans >1 module
 
 ### Defer to specialist
@@ -132,7 +133,9 @@ Document findings at each step:
 - Prevention measures
 - **Open questions for orchestrator** — what is still unclear, what assumptions you made
 
-Save these as knowledge artifacts so they can be referenced later.
+**!!! Save your findings as persistent knowledge artifacts** — don't let
+diagnostic work disappear after the session ends. Create a markdown file
+or use `@writer` to store the investigation record for future reference.
 
 ## Iteration Limits
 
@@ -142,6 +145,7 @@ Save these as knowledge artifacts so they can be referenced later.
 
 ## Rules
 
+- **!!! Document your diagnostic work as persistent knowledge artifacts** — save what you investigated, ruled out, root cause, and fix applied. Don't let findings disappear when the session ends. Use `@writer` or a markdown file if no knowledge base exists yet.
 - **!!! Edit and bash permissions are `ask`** — explain why before any change
 - **!!! Always verify before handoff** — Never present broken code
 - **!!! Maker/checker split** — your work is reviewed by `@reviewer` before it lands. The model that wrote the fix is too nice grading its own homework. Apply the fix, do not QA it.

@@ -4,6 +4,10 @@
 
 - **!!! Don't assume** — verify against actual code and docs.
   Guesses lead to bugs.
+- **!!! Read the docs first** — before writing code that touches
+  unfamiliar tools, APIs, or migration paths, consult official
+  documentation. Don't guess at API changes. This rule is scar
+  tissue from repeated failures, not a preference.
 - **Don't reference internal project names in explanations** — avoid
   leaking context outside the workspace.
 - **Use `opensrc` for repos; `webfetch` for pages** — when analyzing a
