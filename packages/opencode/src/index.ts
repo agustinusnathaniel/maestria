@@ -170,22 +170,28 @@ const skillsSrc = join(__dirname, "..", "skills");
 const configDir = join(homedir(), ".config", "opencode");
 const skillsDest = join(configDir, "skills");
 
+const SKILL_NAMES = ["web-ui-patterns", "mobile-setup-patterns", "infra-deployment-patterns"];
+
 /**
  * Lazily sync bundled skills to OpenCode's skills directory on first load.
- * Only copies if target directory is missing (no force overwrite).
- * This avoids postinstall side effects while ensuring skills are available
- * after the user adds the plugin to their config.
+ * Copies individual skills that don't already exist in the target directory.
+ * Unlike the previous check for the entire skills directory, this correctly
+ * handles the case where the user has installed other skills (via CLI) but
+ * is missing some skills bundled by this plugin.
  */
 function syncSkillsToConfig(): void {
-  if (!existsSync(skillsDest)) {
-    try {
-      mkdirSync(skillsDest, { recursive: true });
-      cpSync(skillsSrc, skillsDest, { recursive: true });
-    } catch {
-      // Non-fatal: skills are optional — agents can still function
-      // without them. Common failure: CI environments without a home
-      // config directory.
+  try {
+    mkdirSync(skillsDest, { recursive: true });
+    for (const skillName of SKILL_NAMES) {
+      const skillDest = join(skillsDest, skillName);
+      if (!existsSync(skillDest)) {
+        cpSync(join(skillsSrc, skillName), skillDest, { recursive: true });
+      }
     }
+  } catch {
+    // Non-fatal: skills are optional — agents can still function
+    // without them. Common failure: CI environments without a home
+    // config directory.
   }
 }
 
