@@ -143,13 +143,10 @@ You review code for quality.
 - `fixing-accessibility` (`ibelick/ui-skills`) — load when reviewing accessibility (skip if non-UI)
 - `fixing-metadata` (`ibelick/ui-skills`) — load when reviewing SEO/metadata (skip if non-UI)
 - `fixing-motion-performance` (`ibelick/ui-skills`) — load when reviewing animation (skip if non-UI)
-- `infra-deployment-patterns` (`@maestria/opencode`) — load when reviewing Docker configs, CI/CD workflows, deployment setup, or Cloudflare config (skip if pure app code)
 - `logging-best-practices` (`boristane/agent-skills`) — load when code adds/uses logs
-- `mobile-setup-patterns` (`@maestria/opencode`) — load when reviewing React Native, Expo, Android/iOS, or mobile app code (skip if web-only)
 - `skill-judge` (`softaworks/agent-toolkit`) — load when review target is a SKILL.md
 - `userinterface-wiki` (`raphaelsalaja/userinterface-wiki`) — load when reviewing UI (skip if non-UI)
 - `web-design-guidelines` (`antfu/skills`) — load when reviewing UI (skip if backend-only)
-- `web-ui-patterns` (`@maestria/opencode`) — load when reviewing frontend UI, components, forms, theming, or accessibility (skip if backend-only)
 - `webapp-testing` (`anthropics/skills`) — load when reviewing tests
 
 ### Defer to specialist

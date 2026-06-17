@@ -84,9 +84,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `agent-browser` (`vercel-labs/agent-browser`) — load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
 - `ai-sdk` (`vercel/ai`) — load when task is AI SDK (skip if unrelated)
 - `frontend-design` (`anthropics/skills`) — load when task is UI/visual
-- `infra-deployment-patterns` (`@maestria/opencode`) — load when task involves Docker, CI/CD, deployment config, monorepo setup, or Cloudflare (skip if pure frontend)
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when writing non-trivial logic
-- `mobile-setup-patterns` (`@maestria/opencode`) — load when task involves React Native, Expo, Android/iOS builds, push notifications, or mobile app setup (skip if web-only)
 - `naming-analyzer` (`softaworks/agent-toolkit`) — load when introducing new identifiers
 - `opensrc` (`vercel-labs/opensrc`) — load when library internals are unclear
 - `pnpm` (`antfu/skills`) — load when changing `package.json`/lockfile
@@ -99,7 +97,6 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `pnpm` (`antfu/skills`) — load when changing `package.json`/lockfile
 - `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
 - `vitest` (`antfu/skills`) — load when writing Vitest tests (skip if no tests)
-- `web-ui-patterns` (`@maestria/opencode`) — load when task involves UI/UX, frontend components, forms, theming, or accessibility (skip if backend-only)
 - `webapp-testing` (`anthropics/skills`) — load when task needs browser-level test
 - `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) — load when writing a commit message
 

@@ -1,8 +1,7 @@
 import type { Plugin } from "@opencode-ai/plugin";
-import { readFileSync, readdirSync, existsSync, mkdirSync, cpSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { join, dirname, basename } from "path";
 import { fileURLToPath } from "url";
-import { homedir } from "os";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
@@ -166,37 +165,7 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   return agents;
 }
 
-const skillsSrc = join(__dirname, "..", "skills");
-const configDir = join(homedir(), ".config", "opencode");
-const skillsDest = join(configDir, "skills");
-
-const SKILL_NAMES = ["web-ui-patterns", "mobile-setup-patterns", "infra-deployment-patterns"];
-
-/**
- * Lazily sync bundled skills to OpenCode's skills directory on first load.
- * Copies individual skills that don't already exist in the target directory.
- * Unlike the previous check for the entire skills directory, this correctly
- * handles the case where the user has installed other skills (via CLI) but
- * is missing some skills bundled by this plugin.
- */
-function syncSkillsToConfig(): void {
-  try {
-    mkdirSync(skillsDest, { recursive: true });
-    for (const skillName of SKILL_NAMES) {
-      const skillDest = join(skillsDest, skillName);
-      if (!existsSync(skillDest)) {
-        cpSync(join(skillsSrc, skillName), skillDest, { recursive: true });
-      }
-    }
-  } catch {
-    // Non-fatal: skills are optional — agents can still function
-    // without them. Common failure: CI environments without a home
-    // config directory.
-  }
-}
-
 export const MaestriaPlugin: Plugin = async () => {
-  syncSkillsToConfig();
   const agents = loadAgents();
 
   return {

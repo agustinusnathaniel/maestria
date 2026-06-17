@@ -114,10 +114,7 @@ After the ADR is written, your handoff should cover:
 - `excalidraw` (`softaworks/agent-toolkit`) — load when user asks for an `.excalidraw` file
 - `grill-me` (`mattpocock/skills`) — load before recommending a final option
 - `grill-with-docs` (`mattpocock/skills`) — load when validating against this project's ADR/CONTEXT.md
-- `infra-deployment-patterns` (`@maestria/opencode`) — load when evaluating deployment platforms, CI/CD tools, or monorepo architecture
 - `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is needed
-- `mobile-setup-patterns` (`@maestria/opencode`) — load when choosing mobile frameworks, build tooling, or cross-platform strategies
-- `web-ui-patterns` (`@maestria/opencode`) — load when evaluating frontend framework choices, UI architecture decisions, or component library selection
 - `zoom-out` (`mattpocock/skills`) — load when scope is unclear
 
 ### Defer to specialist
