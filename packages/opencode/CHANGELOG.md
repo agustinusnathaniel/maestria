@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- [`9759d01`](https://github.com/agustinusnathaniel/maestria/commit/9759d01c08dba296a4c139be977147131be9134a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Incorporate AI engineering learnings from my-base knowledge base
+  - **"Read the docs first"** — new non-negotiable directive across global rules (AGENTS.md), architect, and builder agents to prevent guessing at API behavior
+  - **Diagnostic documentation mandate** — elevated from passive guidance to `!!!` non-negotiable in diagnose.md; diagnostic findings must be saved as persistent knowledge artifacts
+  - **Skill prescription expansion** — builder gains `commit-work` skill, diagnose gains `dependency-updater` skill for dependency-related investigations
+
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
 ## [0.2.6](https://github.com/agustinusnathaniel/maestria/compare/v0.2.5...v0.2.6) (2026-06-14)
