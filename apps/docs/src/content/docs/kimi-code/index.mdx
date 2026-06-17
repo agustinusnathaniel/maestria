@@ -31,10 +31,18 @@ import { LinkCard, CardGrid, LinkButton } from "@astrojs/starlight/components";
 In a Kimi Code session:
 
 ```
-/plugins install https://github.com/agustinusnathaniel/maestria
+/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
 ```
 
 That is the entire install. No `npm install`, no build step. The plugin is just a manifest and a directory of markdown files.
+
+> Kimi Code only looks for `kimi.plugin.json` at the archive root, so the
+> CI workflow maintains a `release/kimi-code` branch where the manifest
+> sits at the root. The plugin lives at `packages/kimi-code/` in a
+> monorepo; pushing a `@maestria/kimi-code-v<version>` tag triggers a
+> `git subtree split` that updates the release branch. Re-installing
+> picks up the latest version automatically. See
+> [ADR-008](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/ADR-008-kimi-code-distribution.md) for the rationale.
 
 <LinkButton href="/kimi-code/getting-started/installation/" size="lg">
   Full Installation Guide →

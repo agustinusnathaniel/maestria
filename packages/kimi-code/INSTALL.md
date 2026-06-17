@@ -19,18 +19,35 @@ Step-by-step setup for the maestria agent pack on Kimi Code.
 In a Kimi Code session, run:
 
 ```
-/plugins install https://github.com/agustinusnathaniel/maestria
+/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
 ```
 
-By default, Kimi Code follows the **latest release** of the
-`agustinusnathaniel/maestria` repository. To pin a specific version, use one of:
+> **Why a branch URL?**
+> Kimi Code v0.13.1's plugin system only looks for `kimi.plugin.json` at the
+> archive root. The plugin lives at `packages/kimi-code/` in a monorepo,
+> which Kimi Code cannot extract as a subpath (its URL parser interprets
+> any `/tree/<ref>/<subpath>` as a git ref, not a path). To make installs
+> work, we maintain a `release/kimi-code` branch where the manifest sits
+> at the root. See
+> [ADR-008](../../docs/adr/ADR-008-kimi-code-distribution.md) for the rationale.
 
-- **Tag**: `/plugins install https://github.com/agustinusnathaniel/maestria/releases/tag/v0.1.0`
-- **Branch**: `/plugins install https://github.com/agustinusnathaniel/maestria/tree/main`
-- **SHA**: `/plugins install https://github.com/agustinusnathaniel/maestria/tree/abc1234`
+The plugin lives in a monorepo at `packages/kimi-code/`. To cut a new
+release, push a `@maestria/kimi-code-v<version>` tag — the CI workflow
+runs `git subtree split` and force-pushes the result to
+`release/kimi-code`. The branch URL is stable; re-installing picks up
+the latest version automatically.
 
-> Tip: For production work, pin to a tag or SHA. For trying the latest,
-> the default URL is fine.
+To pin a specific version:
+
+- **Auto-update (recommended)**:
+  `/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code`
+- **Pin to a specific commit**:
+  `/plugins install https://github.com/agustinusnathaniel/maestria/commit/<sha>`
+
+> Tip: For production work, pin to a specific commit SHA. The
+> `tree/release/kimi-code` form always pulls whatever is on the release
+> branch, which is convenient for staying current but not for
+> reproducible installs.
 
 ### 2. Place global rules (REQUIRED)
 
@@ -278,13 +295,18 @@ with the install — check that the plugin appears under
 
 ## Updating
 
-Kimi Code follows the latest release by default. To update:
+Kimi Code installs from a branch URL track the branch. To pick up a
+new release, re-run the install command:
 
 ```
-/plugins install https://github.com/agustinusnathaniel/maestria
+/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
 ```
 
-Or pin to a specific tag/SHA via the URL forms above.
+Or pin to a specific commit:
+
+```
+/plugins install https://github.com/agustinusnathaniel/maestria/commit/<sha>
+```
 
 > **Warning:** updates overwrite any local edits to the bundled
 > SKILL.md files. If you've customized them, fork the repository or
