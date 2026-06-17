@@ -62,12 +62,6 @@ After the plan is written, your handoff should cover:
 - **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need
   [input] to proceed."
 
-## Domain Knowledge
-
-- **CI pipeline design** — plan parallel jobs (lint, typecheck, test, build, e2e) with explicit `timeout-minutes`. Cache ordering matters: restore before install.
-- **Mobile capabilities before build** — decide data fetching, storage encryption, webview strategy, remote config, and force-update mechanism BEFORE build setup begins. These are architectural decisions, not implementation details.
-- **EAS build profile planning** — include all 4 profiles (dev, preview, staging, production) in the plan. Each has different env vars, distribution targets, and build types.
-
 ## Skill Prescription
 
 ### Always load
