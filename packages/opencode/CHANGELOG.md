@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.1
+
+### Patch Changes
+
+- [`fc26805`](https://github.com/agustinusnathaniel/maestria/commit/fc26805a19ee712b75e96766859d8c2d86d31266) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: restrict orchestrator task permissions to 7 registered subagents
+
+  The orchestrator's `task` permission was changed from `"*": allow` to a
+  deny-by-default pattern that explicitly allows only the 7 registered
+  subagents (adventurer, architect, builder, diagnose, planner, reviewer,
+  writer). Built-in `explore` and `general` subagents are removed from the
+  Task tool description entirely, providing technical enforcement that
+  prevents the orchestrator from delegating to them.
+
 ## 0.3.0
 
 ### Minor Changes
