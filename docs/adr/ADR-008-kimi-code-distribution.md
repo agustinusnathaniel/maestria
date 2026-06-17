@@ -41,16 +41,16 @@ This ADR records the distribution mechanism chosen to ship the plugin from a mon
 
 ## Decision
 
-We use **Option F: subtree split into a release branch**. A GitHub Action (`.github/workflows/release-kimi-code.yml`) triggers on push of any `@maestria/kimi-code-*` tag, runs `git subtree split --prefix=packages/kimi-code`, and force-pushes the resulting commit to a `release/kimi-code` branch where `kimi.plugin.json` sits at the root.
+We use **Option F: subtree split into a release branch**. A GitHub Action (`.github/workflows/release-kimi-code.yml`) triggers on push of any `@maestria/kimi-code@*` tag, runs `git subtree split --prefix=packages/kimi-code`, and force-pushes the resulting commit to a `release/kimi-code` branch where `kimi.plugin.json` sits at the root.
 
 The subtree split hoists `packages/kimi-code/*` to the branch root, so the manifest's `skills: "./skills/"` resolves correctly without any path rewriting.
 
 ### Tag Convention
 
-`@maestria/kimi-code-*` — mirrors the npm scoped package convention. The literal `@` in git tag names is unusual but valid. Examples:
+`@maestria/kimi-code@*` — mirrors the npm scoped package convention. The literal `@` in git tag names is unusual but valid. Examples:
 
-- `@maestria/kimi-code-v0.1.0` → triggers a release branch update
-- `@maestria/kimi-code-v0.2.0` → triggers a release branch update
+- `@maestria/kimi-code@v0.1.0` → triggers a release branch update
+- `@maestria/kimi-code@v0.2.0` → triggers a release branch update
 
 ### CI Behavior
 
@@ -58,7 +58,7 @@ The subtree split hoists `packages/kimi-code/*` to the branch root, so the manif
 on:
   push:
     tags:
-      - "@maestria/kimi-code-*"
+      - "@maestria/kimi-code@*"
 ```
 
 The workflow:

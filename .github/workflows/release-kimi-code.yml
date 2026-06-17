@@ -3,7 +3,7 @@ name: Release kimi-code plugin
 on:
   push:
     tags:
-      - "@maestria/kimi-code-*"
+      - "@maestria/kimi-code@*"
 
 permissions:
   contents: write

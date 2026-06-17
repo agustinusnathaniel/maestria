@@ -32,7 +32,7 @@ In a Kimi Code session, run:
 > [ADR-008](../../docs/adr/ADR-008-kimi-code-distribution.md) for the rationale.
 
 The plugin lives in a monorepo at `packages/kimi-code/`. To cut a new
-release, push a `@maestria/kimi-code-v<version>` tag — the CI workflow
+release, push a `@maestria/kimi-code@v<version>` tag — the CI workflow
 runs `git subtree split` and force-pushes the result to
 `release/kimi-code`. The branch URL is stable; re-installing picks up
 the latest version automatically.
