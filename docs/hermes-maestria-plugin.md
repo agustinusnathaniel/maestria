@@ -52,6 +52,59 @@ The original maestria roster (7 coding-focused agents) is too narrow for Hermes,
 | — | `communicator` | Stakeholder messaging, emails, updates | Audience → intent → draft → review → send |
 | — | `ideator` | Brainstorming, creative exploration, design | Diverge → converge → prototype → evaluate |
 
+## Skill File Design
+
+### Template
+
+Skills are methodology bundles, not agent definitions. They're composable, focused, and domain-agnostic.
+
+```markdown
+# [Skill Name]
+
+> One-line description.
+
+## Methodology
+[The process — steps, phases, patterns]
+
+## Handoff Format
+[Structured output contract]
+
+## Rules
+[!!! non-negotiables]
+
+## Iteration Limits
+[When to stop, when to escalate]
+
+## Composition
+[How this skill works with others]
+```
+
+### What's Different from maestria/opencode
+
+| maestria/opencode Agent Prompts | hermes-maestria Skills |
+|---|---|
+| 150-266 lines | 50-80 lines |
+| "You are a focused implementation agent" | No identity — approach only |
+| YAML frontmatter with permissions | No frontmatter — hooks handle permissions |
+| References opensrc, lsp, task() | References read, grep, webfetch, terminal |
+| Related agents section | Composition section |
+| Always active per session | Opt-in, loaded on demand |
+| One agent = one session | Multiple skills composable |
+
+### Skill Composition Model
+
+Skills are additive methodologies, not competing identities. When multiple skills are loaded, they merge into a combined behavior.
+
+Composition patterns:
+- Simple fix: implementer + reviewer
+- Complex feature: orchestrator + planner + implementer + reviewer
+- Bug investigation: orchestrator + diagnostician + implementer + reviewer
+- Documentation: orchestrator + researcher + writer + reviewer
+- Stakeholder update: orchestrator + communicator + analyst
+- Architecture decision: orchestrator + analyst + researcher + writer
+
+The Composition section in each skill declares its dependencies and interactions.
+
 ### Key Design Principles (carried from ADRs)
 
 - **ADR-001**: Global rules are cross-cutting, not per-agent. Specialist-specific behavior lives in skill prompts.
@@ -349,48 +402,190 @@ not part of the specialist pipeline.
 
 #### 1.5 — skills/orchestrator.md
 
-**What:** Adapt maestria's orchestrator agent prompt for Hermes skill format. Remove YAML frontmatter (permissions handled by Python hooks). Keep the methodology, delegation patterns, critical rules. Update specialist names to domain-agnostic roster.
+**What:** Create the orchestrator skill from scratch using the skill template. This is NOT a direct port of maestria's orchestrator prompt — it's a fresh design using the methodology-first template.
 
-**Adaptation rules:**
-- Remove YAML frontmatter block (`---...---`)
-- Replace `task()` calls with `delegate_task` tool calls
-- Replace `@agent` references with `delegate_task(specialist="agent")`
-- Replace old specialist names: `adventurer` → `researcher`, `architect` → `analyst`, `builder` → `implementer`, `diagnose` → `diagnostician`
-- Add new specialists: `communicator`, `ideator`
-- Keep: CRITICAL RULES, Available Specialists table, Delegation Pattern, Anti-Patterns, Iteration Limits
-- Keep: `!!!` markers, maker/checker split, commit authorization rules
-- Update: Skill Prescription section — use Hermes skill names
+**Spec:**
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- References `delegate_task` tool (not `task()`)
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-**Source:** `packages/opencode/agents/orchestrator.md` (266 lines)
+**Complete file content:**
+```markdown
+# Orchestrator
 
-**Success criteria:** Skill prompt is self-contained. No YAML frontmatter. All `task()` → `delegate_task`. All old names → new names. 9 specialists in roster.
+> Decompose complex work into atomic units, delegate to specialists, integrate results.
+
+## Methodology
+
+### Decomposition
+
+1. **Classify the request** — Is this a single-task, multi-step, or cross-domain problem?
+2. **Identify atomic units** — Each unit is one specialist's work: one file, one decision, one document.
+3. **Map dependencies** — Which units block others? Which can run in parallel?
+4. **Sequence** — Order units by dependency; fan out independent work.
+
+### Delegation
+
+Every delegation is a complete briefing:
+
+- **Goal** — What to achieve and why
+- **Context** — Relevant paths, constraints, prior decisions
+- **Requirements** — Specific expectations and boundaries
+- **Success criteria** — How to verify completion
+- **Next step** — What happens after this unit completes
+
+End every briefing with: *"If anything is unclear, ask before proceeding."*
+
+### Integration
+
+- Collect results from all units
+- Verify each unit met its success criteria
+- Identify gaps or conflicts between units
+- Report consolidated status
+
+## Handoff Format
+
+1. **What was requested** — the original ask (1 sentence)
+2. **What was done** — units completed, by whom
+3. **What was NOT done** — out-of-scope, blocked, or deferred
+4. **Open questions** — ambiguity flags from specialists
+5. **Next step** — what the user should do next
+
+## Rules
+
+- **!!! Never execute the work yourself** — delegate to specialists. Your job is decomposition, briefing, and integration.
+- **!!! One atomic unit per delegation** — never bundle unrelated work.
+- **!!! Maker/checker split** — the specialist that wrote code must not review it. Use a different specialist for validation.
+- **!!! Commit authorization is per-turn only** — a past "commit" does not carry forward. Each commit needs explicit user request.
+- **!!! After any code change, dispatch a reviewer** — unless the user explicitly opts out.
+- Set iteration limits on any delegated loop (max 3 rounds before escalating).
+- If two units are independent, delegate in parallel (max 3-5 per turn).
+
+## Iteration Limits
+
+- **Max 3 delegation rounds** per unit before escalating — if a specialist can't complete after 3 attempts, surface the blocker.
+- **Max 5 units per turn** — beyond that, batch into phases.
+- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+
+## Composition
+
+- **With `planner`** — load when the request needs phased execution before delegation.
+- **With `analyst`** — load when delegation decisions require trade-off evaluation.
+- **With `reviewer`** — always load after code/content changes for maker/checker validation.
+- **With `diagnostician`** — load when a delegated unit fails unexpectedly.
+- Orchestrator is the default entry point; other skills augment its delegation briefings.
+```
+
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. References `delegate_task`, read, grep, webfetch, terminal.
 
 #### 1.6 — skills/implementer.md
 
-**What:** Adapt builder agent prompt to `implementer`. Remove frontmatter. Keep process, implementation patterns, rules. Generalize beyond code — implementer handles any focused execution (code, config, content creation).
+**What:** Create the implementer skill from scratch using the skill template. This is NOT a direct port of maestria's builder prompt — it's a fresh design using the methodology-first template.
 
-**Source:** `packages/opencode/agents/builder.md` (171 lines)
+**Spec:**
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: same methodology for code, config, content, or infrastructure
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-**Adaptation notes:**
-- Rename from `builder` to `implementer`
-- Generalize language: "code" → "work product" where appropriate
-- Keep: process, implementation patterns, rules
-- Keep: `!!!` markers, verification steps
+**Complete file content:**
+```markdown
+# Implementer
 
-**Success criteria:** Skill prompt is self-contained. Domain-agnostic language. Process preserved.
+> Execute one atomic task with focused precision. Code, config, content — any domain.
+
+## Methodology
+
+### Scope Check
+
+Before starting, verify the task is atomic:
+
+- Single file or tightly coupled file group
+- Single concern (one bug, one feature slice, one config change)
+- No design ambiguity (approach is clear)
+
+If the task spans multiple unrelated concerns, stop and request decomposition.
+
+### Execution Loop
+
+1. **Read** — Load relevant files. Understand existing patterns.
+2. **Plan** — Identify the minimal change. Prefer `edit` over `write`.
+3. **Execute** — Make the change. Touch only files relevant to the task.
+4. **Verify** — Run tests, type checks, or validation. Confirm correctness.
+5. **Report** — State what changed, why, and verification results.
+
+### Implementation Staircase
+
+For complex features, build incrementally:
+
+1. Hardcoded version that demonstrates the concept
+2. Add state management with mock data
+3. Connect to real data/API
+4. Add error handling and edge cases
+5. Optimize and polish
+
+Each step is verifiable before moving to the next.
+
+### Constraint Escalation
+
+Start tight, relax as needed:
+
+- Round 1: Existing dependencies only
+- Round 2: Standard library features
+- Round 3: External dependencies if necessary
+
+## Handoff Format
+
+1. **Files modified** — list with one-line summary per file
+2. **What changed** — the diff in plain language
+3. **Why** — rationale for the approach taken
+4. **Verification** — test results, type check output
+5. **Blockers or follow-ups** — anything that needs attention
+
+## Rules
+
+- **!!! Touch only files relevant to the task** — no collateral changes.
+- **!!! Read before writing** — never implement without reading the target files first.
+- **!!! Read the docs first** — before using unfamiliar APIs, consult documentation. Don't guess.
+- **!!! Run verification before claiming done** — tests, type checks, or manual validation.
+- **!!! Maker/checker split** — your work is reviewed by `reviewer` before it lands.
+- **!!! Don't delete what you didn't create** — flag deletions of unrelated code in your diff.
+- **!!! If anything is unclear, flag it in your handoff** — wrong assumptions waste more time than asking questions.
+- Prefer `edit` over `write` — preserve existing structure.
+- Keep the change focused — one concern per invocation.
+
+## Iteration Limits
+
+- **Max 3 fix attempts** when verification fails before escalating.
+- **Termination condition:** verification passes, diff is focused on task scope, no collateral changes.
+- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+
+## Composition
+
+- **With `orchestrator`** — implementer receives atomic units from orchestrator; report back via handoff format.
+- **With `reviewer`** — always pair with reviewer after implementation for maker/checker validation.
+- **With `diagnostician`** — load when unexpected issues surface mid-implementation.
+- **With `researcher`** — load when implementation requires understanding unfamiliar code or APIs.
+- Implementer is domain-agnostic: same methodology for code, config, content, or infrastructure.
+```
+
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Domain-agnostic language.
 
 #### 1.7 — skills/reviewer.md
 
-**What:** Adapt reviewer agent prompt. Remove frontmatter. Keep review checklist, output format, rules. Generalize beyond code review — reviewer handles quality gates for any work domain.
+**What:** Create the reviewer skill from scratch using the skill template. This is NOT a direct port of maestria's reviewer prompt — it's a fresh design using the methodology-first template.
 
-**Source:** `packages/opencode/agents/reviewer.md` (173 lines)
+**Spec:**
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: quality gates for any work domain (code, content, decisions)
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-**Adaptation notes:**
-- Generalize: "code review" → "quality review" where appropriate
-- Keep: review checklist, output format, rules
-- Keep: `!!!` markers, maker/checker split
-
-**Success criteria:** Skill prompt is self-contained. Quality gate methodology preserved.
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Domain-agnostic quality gate methodology.
 
 ### Phase 1 Verification
 
@@ -444,145 +639,94 @@ rules/AGENTS.md       # Already has all 9 from Phase 1 (verify)
 
 #### 2.1 — skills/researcher.md
 
-**What:** Adapt adventurer prompt to `researcher`. Generalize beyond codebase reconnaissance — researcher handles information gathering in any domain.
+**What:** Create the researcher skill from scratch using the skill template. This is NOT a direct port of maestria's adventurer prompt — it's a fresh design using the methodology-first template.
 
-**Source:** `packages/opencode/agents/adventurer.md` (174 lines)
+**Spec:**
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: information gathering in any domain (code, data, research, analysis)
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-**Adaptation notes:**
-- Rename from `adventurer` to `researcher`
-- Generalize: "codebase" → "sources", "code" → "information"
-- Keep: Mission, Process, Exploration Techniques, Complexity Tiers, Output Format
-- Keep: `!!! Never edit files`, `!!! Never implement`, `!!! Never make design decisions`
-- Update: Skill Prescription — mark `opensrc` as "clone external repos to temp dir"
-
-**Success criteria:** Skill prompt is self-contained. Reconnaissance report format preserved. Domain-agnostic language.
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Domain-agnostic information gathering methodology.
 
 #### 2.2 — skills/analyst.md
 
-**What:** Adapt architect prompt to `analyst`. Generalize beyond architecture decisions — analyst handles evaluation and trade-off analysis in any domain.
+**What:** Create the analyst skill from scratch using the skill template. This is NOT a direct port of maestria's architect prompt — it's a fresh design using the methodology-first template.
 
-**Source:** `packages/opencode/agents/architect.md` (157 lines)
+**Spec:**
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: evaluation and trade-off analysis in any domain
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-**Adaptation notes:**
-- Rename from `architect` to `analyst`
-- Generalize: "architecture" → "decisions", "system design" → "evaluation"
-- Keep: 5-phase process (Understand → Present → Clarify → Recommend → Document)
-- Keep: ADR template, Shortcut Rules, Iteration Limits
-- Update: `opensrc` → "clone external repos"
-
-**Success criteria:** Skill prompt is self-contained. Decision framework preserved. Domain-agnostic language.
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Domain-agnostic decision framework.
 
 #### 2.3 — skills/diagnostician.md
 
-**What:** Adapt diagnose prompt to `diagnostician`. Keep systematic 6-step root cause analysis. Generalize beyond code bugs — diagnostician handles failure analysis in any domain.
+**What:** Create the diagnostician skill from scratch using the skill template. This is NOT a direct port of maestria's diagnose prompt — it's a fresh design using the methodology-first template.
 
-**Source:** `packages/opencode/agents/diagnose.md` (166 lines)
+**Spec:**
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: failure analysis in any domain (code bugs, system failures, process breakdowns)
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-**Adaptation notes:**
-- Rename from `diagnose` to `diagnostician`
-- Generalize: "bug" → "failure", "regression" → "unexpected behavior"
-- Keep: 6-step process (Error → Environment → History → Blast Radius → Fix → Prevention)
-- Keep: `!!! Always verify before handoff`, `!!! Document diagnostic work`
-- Keep: Iteration Limits (max 3 fix attempts)
-
-**Success criteria:** Skill prompt is self-contained. 6-step process preserved. Domain-agnostic language.
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Domain-agnostic failure analysis methodology.
 
 #### 2.4 — skills/planner.md
 
-**What:** Adapt planner prompt. Keep phased plan structure. Generalize beyond implementation plans — planner handles roadmaps, migrations, and prioritization in any domain.
+**What:** Create the planner skill from scratch using the skill template. This is NOT a direct port of maestria's planner prompt — it's a fresh design using the methodology-first template.
 
-**Source:** `packages/opencode/agents/planner.md` (114 lines)
+**Spec:**
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: phased plans, roadmaps, and prioritization in any domain
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-**Adaptation notes:**
-- Generalize: "implementation plan" → "plan" where appropriate
-- Keep: Structure (Goal, Phases, Tasks, Verification, Rollback Points)
-- Keep: Handoff contract, Iteration Limits, Guard Rails
-- Keep: `!!! Each phase must have verifiable completion criteria`
-
-**Success criteria:** Skill prompt is self-contained. Plan structure preserved. Domain-agnostic language.
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Domain-agnostic planning methodology.
 
 #### 2.5 — skills/writer.md
 
-**What:** Adapt writer prompt. Keep structured documentation patterns. Generalize beyond code documentation — writer handles any structured content.
+**What:** Create the writer skill from scratch using the skill template. This is NOT a direct port of maestria's writer prompt — it's a fresh design using the methodology-first template.
 
-**Source:** `packages/opencode/agents/writer.md` (150 lines)
+**Spec:**
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: structured documentation and content in any domain
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-**Adaptation notes:**
-- Keep: Structure (Purpose, Usage, Details), Principles, Patterns by Document Type
-- Keep: `!!! Proofread before finishing`, `!!! Maker/checker split`
-- Update: Skill Prescription — mark Hermes-available skills
-
-**Success criteria:** Skill prompt is self-contained. Document type patterns preserved.
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Domain-agnostic documentation methodology.
 
 #### 2.6 — skills/communicator.md
 
-**What:** New specialist for stakeholder messaging. Follows the Audience → Intent → Draft → Review → Send methodology.
+**What:** Create the communicator skill from scratch using the skill template. This is a new specialist for stakeholder messaging.
 
 **Spec:**
-```markdown
-# Communicator
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: stakeholder messaging, emails, status updates, cross-platform communications
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-Stakeholder messaging, emails, status updates, cross-platform communications.
-
-## Methodology
-
-1. **Audience** — Identify who receives the message, their context, their needs
-2. **Intent** — Clarify what the message should achieve (inform, request, update, persuade)
-3. **Draft** — Write the message in appropriate tone and format for the platform
-4. **Review** — Check for clarity, completeness, tone, and correctness
-5. **Send** — Deliver via the appropriate channel
-
-## Rules
-
-- **!!! Know your audience** — tone, detail level, and format depend on who reads it
-- **!!! One message, one purpose** — don't bundle unrelated asks
-- **!!! Proofread before sending** — typos in stakeholder comms erode trust
-- Never send without confirming the recipient and channel
-- Match the platform's conventions (email vs Slack vs formal memo)
-
-## Output Format
-
-- Subject/purpose line
-- Body with clear structure (context → action → deadline if applicable)
-- Sign-off appropriate to the platform
-```
-
-**Success criteria:** Skill prompt is self-contained. Communication methodology is clear and actionable.
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Communication methodology is clear and actionable.
 
 #### 2.7 — skills/ideator.md
 
-**What:** New specialist for brainstorming and creative exploration. Follows the Diverge → Converge → Prototype → Evaluate methodology.
+**What:** Create the ideator skill from scratch using the skill template. This is a new specialist for brainstorming and creative exploration.
 
 **Spec:**
-```markdown
-# Ideator
+- Target length: 50-80 lines
+- Sections: Methodology, Handoff Format, Rules, Iteration Limits, Composition
+- No YAML frontmatter, no identity statement, no permission references
+- Domain-agnostic: brainstorming, creative exploration, design thinking
+- References read, grep, webfetch, terminal (not opensrc, lsp)
 
-Brainstorming, creative exploration, design thinking.
-
-## Methodology
-
-1. **Diverge** — Generate many ideas without judgment. Quantity over quality.
-2. **Converge** — Cluster, filter, and rank ideas by feasibility and impact.
-3. **Prototype** — Sketch or describe the top ideas in enough detail to evaluate.
-4. **Evaluate** — Assess prototypes against criteria. Recommend top options.
-
-## Rules
-
-- **!!! No premature convergence** — diverge first, evaluate later
-- **!!! Quantity drives quality** — more ideas = better final selection
-- **!!! Build on others' ideas** — combine and extend, don't just filter
-- Never dismiss an idea during the diverge phase
-- Use analogies and cross-domain references to spark novel ideas
-
-## Output Format
-
-- Diverge: list of 10+ ideas (brief descriptions)
-- Converge: top 3-5 clusters with rationale
-- Prototype: detailed sketch/description of top 2-3
-- Evaluate: recommendation with trade-off analysis
-```
-
-**Success criteria:** Skill prompt is self-contained. Creative methodology is clear and actionable.
+**Success criteria:** File is 50-80 lines. Uses the skill template (Methodology, Handoff Format, Rules, Iteration Limits, Composition). No YAML frontmatter. No identity statement. Creative methodology is clear and actionable.
 
 #### 2.8 — Register New Skills and Commands
 
@@ -842,33 +986,44 @@ After Phase 3: full feature set. Can ship as v0.3.0.
 
 ## Migration Path: maestria Prompts → Hermes Skills
 
+### Important: Skills Are NOT Direct Ports
+
+Skills are **redesigned from scratch** using the methodology-first template. The maestria agent prompts (150-266 lines) are **reference material**, not source to copy. The methodology informs the skills but doesn't define them.
+
+Key differences:
+- **Identity removal** — Skills have no "You are a focused implementation agent" identity statement
+- **Length reduction** — Skills target 50-80 lines vs 150-266 lines
+- **Template-first** — All skills use the same 5-section template (Methodology, Handoff Format, Rules, Iteration Limits, Composition)
+- **Composition model** — Skills declare how they work with others, not which agents they relate to
+- **No frontmatter** — Permissions are handled by Python hooks, not YAML declarations
+
 ### Process
 
 For each agent prompt in `packages/opencode/agents/*.md`:
 
-1. **Strip YAML frontmatter** — permissions are handled by Python hooks, not declarative frontmatter
-2. **Replace `task()` calls** with `delegate_task` tool invocations
-3. **Replace `@agent` references** with `specialist="agent"` syntax
-4. **Rename specialists** — `adventurer` → `researcher`, `architect` → `analyst`, `builder` → `implementer`, `diagnose` → `diagnostician`
-5. **Replace opencode-specific tools** (`lsp`, `opensrc`) with Hermes equivalents or generic guidance
-6. **Generalize language** — remove coding-specific terminology where the specialist's domain is broader
-7. **Keep everything else** — methodology, `!!!` markers, iteration limits, rules bullets, handoff contracts, skill prescription
+1. **Extract methodology** — Identify the core process, rules, and patterns
+2. **Redesign using template** — Rewrite from scratch using the skill template
+3. **Compress** — Target 50-80 lines by removing identity statements, redundant examples, and domain-specific details
+4. **Generalize** — Remove coding-specific terminology where the specialist's domain is broader
+5. **Add Composition** — Declare how this skill works with others
+6. **Validate** — Ensure the skill is self-contained and domain-agnostic
 
-### Template
+### What to Keep from maestria Prompts
 
-```markdown
-# [Specialist Name]
+- Core methodology and process steps
+- `!!!` markers for critical rules
+- Iteration limits and escalation patterns
+- Handoff format requirements
+- Maker/checker split principles
 
-[Rest of specialist prompt — no YAML frontmatter]
+### What to Discard from maestria Prompts
 
-## Hermes Adaptations
-
-- `task(agent, briefing)` → `delegate_task(specialist="agent", briefing=briefing)`
-- `@agent` → `specialist="agent"`
-- `adventurer` → `researcher`, `architect` → `analyst`, `builder` → `implementer`, `diagnose` → `diagnostician`
-- `opensrc path <repo>` → `git clone <repo> /tmp/<repo> && read locally`
-- `lsp` tool → remove (Hermes may not have LSP; use grep/read instead)
-```
+- YAML frontmatter blocks
+- Identity statements ("You are a focused implementation agent")
+- Domain-specific examples (keep patterns, remove specifics)
+- Agent-specific tool references (opensrc, lsp, task())
+- Related agents section (replaced by Composition)
+- Skill prescription section (handled by orchestrator, not individual skills)
 
 ---
 
@@ -955,5 +1110,6 @@ Note these as useful for future phases:
 | Phase 1 | Core Loop | plugin.yaml, __init__.py, plugin.py, 3 skills (orchestrator, implementer, reviewer), 1 tool, 2 hooks, 1 command (/review), domain-agnostic global rules | v0.1.0 |
 | Phase 2 | Full Roster | 6 more skills (researcher, analyst, diagnostician, planner, writer, communicator, ideator), 5 more commands (/plan, /diagnose, /research, /brainstorm, /communicate), session persistence, full permissions for all 9 | v0.2.0 |
 | Phase 3 | Advanced | Parallel delegation, MCP, automation (schedule_task), skill prescription, shared prompts, memory integration, observability | v0.3.0 |
+| Skill Design | Cross-cutting | All skills follow the methodology-first template (50-80 lines). Skills are composable, domain-agnostic, and opt-in. Composition model enables multi-skill workflows. | All phases |
 
-**Termination condition:** All phases have success criteria, all dependencies mapped, all rollback points identified, all assumptions documented, all 9 specialists have permission profiles.
+**Termination condition:** All phases have success criteria, all dependencies mapped, all rollback points identified, all assumptions documented, all 9 specialists have permission profiles. All skills use the skill template and are 50-80 lines.
