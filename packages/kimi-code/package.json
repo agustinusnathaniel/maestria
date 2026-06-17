@@ -1,0 +1,40 @@
+{
+  "name": "@maestria/kimi-code",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Maestria agent pack for Kimi Code — 8 specialized skills with swarm-aware orchestration",
+  "keywords": [
+    "kimi-code",
+    "maestria",
+    "orchestration",
+    "skills",
+    "swarm"
+  ],
+  "homepage": "https://github.com/maestria/maestria/tree/main/packages/kimi-code#readme",
+  "bugs": {
+    "url": "https://github.com/maestria/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maestria/maestria.git",
+    "directory": "packages/kimi-code"
+  },
+  "files": [
+    "kimi.plugin.json",
+    "skills",
+    "rules",
+    "INSTALL.md",
+    "README.md"
+  ],
+  "type": "module",
+  "scripts": {
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

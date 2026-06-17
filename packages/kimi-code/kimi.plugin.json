@@ -1,0 +1,32 @@
+{
+  "name": "maestria",
+  "version": "0.1.0",
+  "description": "Maestria agent pack for Kimi Code — 8 specialized skills with swarm-aware orchestration",
+  "keywords": [
+    "maestria",
+    "kimi-code",
+    "skills",
+    "orchestration",
+    "engineering",
+    "workflow",
+    "swarm"
+  ],
+  "author": {
+    "name": "Agustinus Nathaniel",
+    "email": "berserk.nate@gmail.com"
+  },
+  "homepage": "https://github.com/maestria/maestria",
+  "license": "MIT",
+  "skills": "./skills/",
+  "sessionStart": {
+    "skill": "orchestrator"
+  },
+  "skillInstructions": "Maestria agent pack: 8 specialized skills for Kimi Code — orchestrator (methodology + delegation + swarm), builder (focused implementation), adventurer (codebase reconnaissance), architect (architecture decisions), planner (multi-phase plans), reviewer (code review), writer (documentation), diagnose (root cause analysis). The orchestrator auto-loads at session start. See each skill's whenToUse field for invocation guidance.",
+  "interface": {
+    "displayName": "Maestria Agent Pack",
+    "shortDescription": "8 specialized engineering workflow skills for Kimi Code",
+    "longDescription": "Maestria packages 7 specialist personas (builder, adventurer, planner, reviewer, architect, writer, diagnose) plus an orchestrator skill that auto-loads at session start. The orchestrator composes personas into prompt templates for Kimi Code's 3 built-in subagents (coder, explore, plan) and uses AgentSwarm for parallel fan-out. Built on the Harness Engineering principle: precise rules, explicit boundaries, and clear delegation chains over raw capability.",
+    "developerName": "Agustinus Nathaniel",
+    "websiteURL": "https://github.com/maestria/maestria"
+  }
+}
