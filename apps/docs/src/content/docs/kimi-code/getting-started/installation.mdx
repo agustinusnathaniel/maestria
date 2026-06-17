@@ -21,17 +21,17 @@ import { Steps, Aside, Tabs } from "@astrojs/starlight/components";
    In a Kimi Code session, run:
 
    ```
-   /plugins install https://github.com/maestria/maestria
+   /plugins install https://github.com/agustinusnathaniel/maestria
    ```
 
-   By default, Kimi Code follows the **latest release** of the `maestria/maestria` repository. To pin a specific version:
+   By default, Kimi Code follows the **latest release** of the `agustinusnathaniel/maestria` repository. To pin a specific version:
 
-   | Pin type   | URL form                                                   |
-   | ---------- | ---------------------------------------------------------- |
-   | **Latest** | `https://github.com/maestria/maestria`                     |
-   | **Tag**    | `https://github.com/maestria/maestria/releases/tag/v0.1.0` |
-   | **Branch** | `https://github.com/maestria/maestria/tree/main#branch`    |
-   | **SHA**    | `https://github.com/maestria/maestria/tree/abc1234#sha`    |
+   | Pin type   | URL form                                                             |
+   | ---------- | -------------------------------------------------------------------- |
+   | **Latest** | `https://github.com/agustinusnathaniel/maestria`                     |
+   | **Tag**    | `https://github.com/agustinusnathaniel/maestria/releases/tag/v0.1.0` |
+   | **Branch** | `https://github.com/agustinusnathaniel/maestria/tree/main`           |
+   | **SHA**    | `https://github.com/agustinusnathaniel/maestria/tree/abc1234`        |
 
    <Aside type="tip">
      For production work, pin to a tag or SHA. For trying the latest, the default URL is fine.
@@ -59,8 +59,12 @@ import { Steps, Aside, Tabs } from "@astrojs/starlight/components";
 
    <Aside type="caution">
      The file must stay under **32 KB**. If you customize it heavily, watch the size — Kimi Code
-     truncates AGENTS.md content past 32 KB with a marker.
+     truncates AGENTS.md content past 32 KB with this marker:
    </Aside>
+
+   ```html
+   <!-- Some AGENTS.md files were truncated or omitted to fit the 32 KB budget -->
+   ```
 
 3. **Add lifecycle hooks to `config.toml` (recommended)**
 
@@ -198,7 +202,7 @@ import { Steps, Aside, Tabs } from "@astrojs/starlight/components";
 
 ## Updating
 
-Kimi Code follows the latest release by default. To update, run `/plugins install https://github.com/maestria/maestria` again. Pin to a tag or SHA for production work.
+Kimi Code follows the latest release by default. To update, run `/plugins install https://github.com/agustinusnathaniel/maestria` again. Pin to a tag or SHA for production work.
 
 <Aside type="caution">
   Updates overwrite any local edits to the bundled SKILL.md files. If you have customized them, fork

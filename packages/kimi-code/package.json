@@ -10,15 +10,15 @@
     "skills",
     "swarm"
   ],
-  "homepage": "https://github.com/maestria/maestria/tree/main/packages/kimi-code#readme",
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/kimi-code#readme",
   "bugs": {
-    "url": "https://github.com/maestria/maestria/issues"
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
   },
   "license": "MIT",
   "author": "agustinusnathaniel",
   "repository": {
     "type": "git",
-    "url": "https://github.com/maestria/maestria.git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
     "directory": "packages/kimi-code"
   },
   "files": [

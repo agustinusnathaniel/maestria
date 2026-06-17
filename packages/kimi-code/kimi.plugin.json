@@ -15,7 +15,7 @@
     "name": "Agustinus Nathaniel",
     "email": "berserk.nate@gmail.com"
   },
-  "homepage": "https://github.com/maestria/maestria",
+  "homepage": "https://github.com/agustinusnathaniel/maestria",
   "license": "MIT",
   "skills": "./skills/",
   "sessionStart": {
@@ -27,6 +27,6 @@
     "shortDescription": "8 specialized engineering workflow skills for Kimi Code",
     "longDescription": "Maestria packages 7 specialist personas (builder, adventurer, planner, reviewer, architect, writer, diagnose) plus an orchestrator skill that auto-loads at session start. The orchestrator composes personas into prompt templates for Kimi Code's 3 built-in subagents (coder, explore, plan) and uses AgentSwarm for parallel fan-out. Built on the Harness Engineering principle: precise rules, explicit boundaries, and clear delegation chains over raw capability.",
     "developerName": "Agustinus Nathaniel",
-    "websiteURL": "https://github.com/maestria/maestria"
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria"
   }
 }

@@ -9,7 +9,7 @@ swarm-aware orchestration.
 See [INSTALL.md](./INSTALL.md) for the full checklist. Quick start:
 
 ```
-/plugins install https://github.com/maestria/maestria
+/plugins install https://github.com/agustinusnathaniel/maestria
 mkdir -p ~/.kimi-code && cp packages/kimi-code/rules/AGENTS.md ~/.kimi-code/AGENTS.md
 ```
 
@@ -89,7 +89,7 @@ design rationale.
 ## Updating
 
 ```
-/plugins install https://github.com/maestria/maestria
+/plugins install https://github.com/agustinusnathaniel/maestria
 ```
 
 Updates follow the latest release by default. Pin via tag or SHA for

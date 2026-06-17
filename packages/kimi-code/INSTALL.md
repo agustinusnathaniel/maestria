@@ -19,15 +19,15 @@ Step-by-step setup for the maestria agent pack on Kimi Code.
 In a Kimi Code session, run:
 
 ```
-/plugins install https://github.com/maestria/maestria
+/plugins install https://github.com/agustinusnathaniel/maestria
 ```
 
 By default, Kimi Code follows the **latest release** of the
-`maestria/maestria` repository. To pin a specific version, use one of:
+`agustinusnathaniel/maestria` repository. To pin a specific version, use one of:
 
-- **Tag**: `/plugins install https://github.com/maestria/maestria/releases/tag/v0.1.0`
-- **Branch**: `/plugins install https://github.com/maestria/maestria/tree/main#branch`
-- **SHA**: `/plugins install https://github.com/maestria/maestria/tree/abc1234#sha`
+- **Tag**: `/plugins install https://github.com/agustinusnathaniel/maestria/releases/tag/v0.1.0`
+- **Branch**: `/plugins install https://github.com/agustinusnathaniel/maestria/tree/main`
+- **SHA**: `/plugins install https://github.com/agustinusnathaniel/maestria/tree/abc1234`
 
 > Tip: For production work, pin to a tag or SHA. For trying the latest,
 > the default URL is fine.
@@ -56,7 +56,13 @@ ls -la ~/.kimi-code/AGENTS.md
 
 > The file must stay under **32 KB**. If you customize it heavily,
 > watch the size — Kimi Code truncates AGENTS.md content past 32 KB
-> with a marker (`profile/context.ts:8-10`).
+> with this marker:
+>
+> ```html
+> <!-- Some AGENTS.md files were truncated or omitted to fit the 32 KB budget -->
+> ```
+>
+> (`profile/context.ts:9-10`)
 
 ### 3. Add lifecycle hooks to `config.toml` (OPTIONAL — recommended)
 
@@ -232,7 +238,7 @@ with the install — check that the plugin appears under
 Kimi Code follows the latest release by default. To update:
 
 ```
-/plugins install https://github.com/maestria/maestria
+/plugins install https://github.com/agustinusnathaniel/maestria
 ```
 
 Or pin to a specific tag/SHA via the URL forms above.
