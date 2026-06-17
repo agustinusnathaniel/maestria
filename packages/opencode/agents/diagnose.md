@@ -100,12 +100,12 @@ Confirm it works:
 
 ### Load on trigger
 
-- `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
-- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when investigating pattern-level bugs
-- `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
-- `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
 - `agent-browser` (`vercel-labs/agent-browser`) — load when bug involves UI behavior, network requests, performance profiling, or needs visual reproduction (skip if backend-only)
 - `dependency-updater` (`softaworks/agent-toolkit`) — load when investigating dependency-related bugs, lockfile issues, or version conflicts
+- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when investigating pattern-level bugs
+- `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
+- `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
+- `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
 - `zoom-out` (`mattpocock/skills`) — load when regression spans >1 module
 
 ### Defer to specialist

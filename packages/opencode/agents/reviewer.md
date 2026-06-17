@@ -130,6 +130,18 @@ You review code for quality.
    - **What was NOT verified** — out-of-scope, can't reproduce, or skipped checklist items
 5. **Recommendation**: Next steps
 
+## Domain Knowledge
+
+### Web
+
+- **Responsive skeletons** — verify skeleton layouts match the actual content layout per breakpoint. A table skeleton on mobile where content renders as cards is worse than no skeleton.
+- **Electron sandbox** — confirm sandbox: true, contextIsolation: true, nodeIntegration: false. Flag any ELECTRON_DISABLE_SANDBOX usage.
+
+### Infrastructure
+
+- **CI cache ordering** — check that cache restore precedes install steps. A common mistake: cache after install = never restores.
+- **Parallel CI jobs** — verify every job has `timeout-minutes`. A hanging Playwright install without a timeout burns billing.
+
 ## Skill Prescription
 
 ### Always load

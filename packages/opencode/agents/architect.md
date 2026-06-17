@@ -99,6 +99,13 @@ After the ADR is written, your handoff should cover:
 4. **Verification** — was the user presented with the recommendation? Did they accept?
 5. **Next step** — usually "delegate transcription to `@writer`" for the ADR doc, or "proceed to `@planner`" for the implementation plan
 
+## Domain Knowledge
+
+- **oklch for theming** — prefer oklch over HSL for color tokens. Perceptually uniform — same hue/chroma across light/dark, only lightness changes. Define as CSS custom properties.
+- **Electron security architecture** — sandbox, contextIsolation, nodeIntegration: false is the only secure configuration. This is a non-negotiable architecture constraint.
+- **pnpm catalog for monorepo dependency management** — centralize shared dependency versions in pnpm-workspace.yaml. Prevents drift across packages without duplicating version strings.
+- **Mobile credentials as infrastructure** — keystores, provisioning profiles, and distribution certs are the most common build failure root cause. Design credential management into the architecture, not as an afterthought.
+
 ## Skill Prescription
 
 ### Always load

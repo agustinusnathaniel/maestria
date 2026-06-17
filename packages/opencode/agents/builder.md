@@ -83,6 +83,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 - `agent-browser` (`vercel-labs/agent-browser`) — load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
 - `ai-sdk` (`vercel/ai`) — load when task is AI SDK (skip if unrelated)
+- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
 - `frontend-design` (`anthropics/skills`) — load when task is UI/visual
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when writing non-trivial logic
 - `naming-analyzer` (`softaworks/agent-toolkit`) — load when introducing new identifiers
@@ -94,8 +95,6 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `vercel-composition-patterns` (`vercel-labs/agent-skills`) — load when task involves React composition (skip if non-frontend)
 - `vercel-react-best-practices` (`vercel-labs/agent-skills`) — load when task involves React (skip if non-frontend)
 - `vite` (`antfu/skills`) — load when modifying `vite.config` or build
-- `pnpm` (`antfu/skills`) — load when changing `package.json`/lockfile
-- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
 - `vitest` (`antfu/skills`) — load when writing Vitest tests (skip if no tests)
 - `webapp-testing` (`anthropics/skills`) — load when task needs browser-level test
 - `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) — load when writing a commit message
@@ -168,3 +167,23 @@ When done, report:
 - What changed and why
 - Verification results
 - Any blockers or follow-ups needed
+
+## Domain Knowledge
+
+### Web
+
+- **Security header validation** — define CSP as a single TypeScript source of truth, validate in CI across all deployment targets. Prevents silent config drift between Vercel, Netlify, and Cloudflare.
+- **Modern bundlers over manual chunks** — trust Rolldown's built-in code splitting. Manual `manualChunks` regex splitting causes module duplication. Use route-level dynamic imports.
+- **Error boundaries with observability** — always-on global error handlers (window.onerror, unhandledrejection), lazy-load Sentry SDK only when DSN is configured. Show recovery UI, never raw errors in production.
+
+### Infrastructure
+
+- **CI cache ordering** — cache restore MUST precede install steps. Guard install with `if: cache-hit != 'true'`. A cache step after install never restores.
+- **Docker single volume pattern** — mount one volume at /root with an init script to seed build-time contents. Avoids managing multiple specialized volumes.
+- **pnpm catalog for monorepos** — use `catalog:` protocol for shared dependency versions. Single source of truth prevents workspace drift.
+
+### Mobile
+
+- **EAS build profiles** — separate profiles for dev client, preview (internal APK), staging (internal + env), and production. Define env vars in eas.json, not .env files.
+- **Push notification asymmetry** — iOS needs APNs + p8/p12; Android needs FCM. The setup differs fundamentally; don't assume one pattern works for both.
+- **gitignore wisely** — ignore /android and /ios if no native modifications. Ignore credentials.json. EAS copies git-tracked files only.
