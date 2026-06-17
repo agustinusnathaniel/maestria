@@ -21,7 +21,14 @@ permission:
   question: allow
   todowrite: allow
   task:
-    "*": allow
+    "*": deny
+    "adventurer": allow
+    "architect": allow
+    "builder": allow
+    "diagnose": allow
+    "planner": allow
+    "reviewer": allow
+    "writer": allow
   skill: allow
 ---
 
