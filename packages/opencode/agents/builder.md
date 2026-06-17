@@ -84,6 +84,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `agent-browser` (`vercel-labs/agent-browser`) — load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
 - `ai-sdk` (`vercel/ai`) — load when task is AI SDK (skip if unrelated)
 - `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
+- `database-schema-designer` (`softaworks/agent-toolkit`) — load when designing database schemas, tables, or data models
 - `frontend-design` (`anthropics/skills`) — load when task is UI/visual
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when writing non-trivial logic
 - `naming-analyzer` (`softaworks/agent-toolkit`) — load when introducing new identifiers
@@ -92,6 +93,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `react-dev` (`softaworks/agent-toolkit`) — load when task is React (skip if non-frontend)
 - `react-useeffect` (`softaworks/agent-toolkit`) — load when modifying `useEffect` (skip if non-frontend)
 - `tdd` (`mattpocock/skills`) — load when user explicitly requests TDD
+- `typescript-expert` (`mattpocock/skills`) — load when writing TypeScript types, generics, or complex type utilities
 - `vercel-composition-patterns` (`vercel-labs/agent-skills`) — load when task involves React composition (skip if non-frontend)
 - `vercel-react-best-practices` (`vercel-labs/agent-skills`) — load when task involves React (skip if non-frontend)
 - `vite` (`antfu/skills`) — load when modifying `vite.config` or build

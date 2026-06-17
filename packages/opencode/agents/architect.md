@@ -104,16 +104,18 @@ After the ADR is written, your handoff should cover:
 ### Always load
 
 - `architecture-decision-records` (`softaworks/agent-toolkit`) — Phase 5 (Document as ADR) requires this skill
-- `improve-codebase-architecture` (`mattpocock/skills`) — architect's home for codebase-deepen opportunities
 - `improve` (`shadcn/improve`) — survey codebase and produce prioritized implementation plans
 
 ### Load on trigger
 
+- `api-design-principles` (`softaworks/agent-toolkit`) — load when designing APIs, choosing REST vs GraphQL, or defining endpoint structures
+- `architecture-decision-records` (`anthropics/skills`) — load when documenting an architecture decision as an ADR
 - `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a container/component diagram
 - `draw-io` (`softaworks/agent-toolkit`) — load when user asks for a `.drawio` file
 - `excalidraw` (`softaworks/agent-toolkit`) — load when user asks for an `.excalidraw` file
 - `grill-me` (`mattpocock/skills`) — load before recommending a final option
 - `grill-with-docs` (`mattpocock/skills`) — load when validating against this project's ADR/CONTEXT.md
+- `improve-codebase-architecture` (`mattpocock/skills`) — load when surveying the codebase for architecture improvement opportunities
 - `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is needed
 - `zoom-out` (`mattpocock/skills`) — load when scope is unclear
 

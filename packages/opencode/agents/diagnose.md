@@ -102,6 +102,7 @@ Confirm it works:
 
 - `agent-browser` (`vercel-labs/agent-browser`) — load when bug involves UI behavior, network requests, performance profiling, or needs visual reproduction (skip if backend-only)
 - `dependency-updater` (`softaworks/agent-toolkit`) — load when investigating dependency-related bugs, lockfile issues, or version conflicts
+- `diagnose` (`mattpocock/skills`) — load when using the diagnose methodology for systematic debugging
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when investigating pattern-level bugs
 - `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
 - `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
