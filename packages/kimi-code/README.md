@@ -83,7 +83,7 @@ plugin is just `kimi.plugin.json` + `skills/` + `rules/`. This means:
   `coder`/`explore`/`plan`. The 7 specialist identities are encoded
   as persona content in prompt templates.
 
-See [ADR-004](../adr/ADR-004-kimi-code-architecture.md) for the full
+See [ADR-009](../adr/kimi-code/ADR-009-kimi-code-architecture.md) for the full
 design rationale.
 
 ## Updating
@@ -107,5 +107,5 @@ MIT
 
 - [`@maestria/opencode`](../opencode/README.md) — the OpenCode variant
   of this plugin (TypeScript SDK, programmatic hooks).
-- [ADR-004](../adr/ADR-004-kimi-code-architecture.md) — the architecture
+- [ADR-009](../adr/kimi-code/ADR-009-kimi-code-architecture.md) — the architecture
   decision record for the Kimi Code plugin.

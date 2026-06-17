@@ -29,7 +29,7 @@ In a Kimi Code session, run:
 > any `/tree/<ref>/<subpath>` as a git ref, not a path). To make installs
 > work, we maintain a `release/kimi-code` branch where the manifest sits
 > at the root. See
-> [ADR-008](../../docs/adr/ADR-008-kimi-code-distribution.md) for the rationale.
+> [ADR-008](../../docs/adr/kimi-code/ADR-008-kimi-code-distribution.md) for the rationale.
 
 The plugin lives in a monorepo at `packages/kimi-code/`. To cut a new
 release, push a `@maestria/kimi-code@v<version>` tag — the CI workflow

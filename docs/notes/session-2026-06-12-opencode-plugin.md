@@ -124,11 +124,11 @@ OpenCode user config, not a plugin-enforced directive.
 
 All architectural decisions are documented as ADRs:
 
-| ADR                                              | Title               | What It Covers                                                                                  |
-| ------------------------------------------------ | ------------------- | ----------------------------------------------------------------------------------------------- |
-| [ADR-001](../adr/ADR-001-global-rules-scope.md)  | Global Rules Scope  | Three-way filter for rules: agent file vs global vs exclude                                     |
-| [ADR-002](../adr/ADR-002-plugin-architecture.md) | Plugin Architecture | Pure plugin, markdown agents, programmatic registration, 3 hooks, build tool, no bundled skills |
-| [ADR-003](../adr/ADR-003-agent-conventions.md)   | Agent Conventions   | `!!!` markers, cross-references, skill pattern, conventional comments                           |
+| ADR                                                   | Title               | What It Covers                                                                                  |
+| ----------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------- |
+| [ADR-001](../adr/core/ADR-001-global-rules-scope.md)  | Global Rules Scope  | Three-way filter for rules: agent file vs global vs exclude                                     |
+| [ADR-002](../adr/core/ADR-002-plugin-architecture.md) | Plugin Architecture | Pure plugin, markdown agents, programmatic registration, 3 hooks, build tool, no bundled skills |
+| [ADR-003](../adr/core/ADR-003-agent-conventions.md)   | Agent Conventions   | `!!!` markers, cross-references, skill pattern, conventional comments                           |
 
 ---
 
