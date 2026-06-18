@@ -1,33 +1,41 @@
 # Plans: Maestria Meta-Agent
 
-This directory contains the architecture and implementation planning documents for the maestria meta-agent.
+The maestria meta-agent maintains, ships, and improves the [@maestria/opencode](https://www.npmjs.com/package/@maestria/opencode) plugin. It lives at `apps/maestria-agent/` and runs autonomously — a robot that builds robots.
 
-The maestria meta-agent is an [Eve](https://www.npmjs.com/package/eve) agent that runs at `apps/maestria-agent/`. It autonomously maintains, ships, self-improves, and self-learns the [@maestria/opencode](https://www.npmjs.com/package/@maestria/opencode) plugin and the monorepo around it. Think of it as the robot that builds the robots.
+## Framework: Flue
+
+The agent uses [Flue](https://flueframework.com/), a TypeScript framework by the Astro team. Flue is built on [Pi](https://pi.dev) (Earendil Inc.) and provides sandbox-free monorepo execution, GitHub Actions deployment, and Durable Streams for session recording. Eve (Vercel's framework) was evaluated; the comparison lives in [`architecture.md`](./architecture.md).
 
 ## Contents
 
-| File | What it covers |
+| File | Covers |
 |---|---|
-| [`architecture.md`](./architecture.md) | Full architecture design: agent structure, tools, skills, channels, subagents, self-learning loop, trade-off decisions, ADRs (008-010) |
-| [`implementation-plan.md`](./implementation-plan.md) | Phased build plan: 7 phases from scaffold to evals, with task breakdowns, dependencies, and verification criteria |
+| [`architecture.md`](./architecture.md) | Agent design, tools, skills, channels, subagents, self-learning loop, Flue vs Eve comparison, ADRs 008-010 |
+| [`implementation-plan.md`](./implementation-plan.md) | 7-phase build plan — task breakdowns, dependencies, verification criteria |
 
-## Quick Context
+## Timeline (7 Phases)
 
-- **Monorepo**: `agustinusnathaniel/maestria` — pnpm workspaces with Vite+, changesets
-- **Plugin**: `@maestria/opencode` at `packages/opencode/` — 7 subagents, global rules injection
-- **Agent framework**: [Eve v0.11.x](https://www.npmjs.com/package/eve) — filesystem-first durable agents on Vercel
-- **Deployment target**: Vercel
+Each phase depends on the one before it.
 
-## Reading Order
+| Phase | Focus | Depends on |
+|---|---|---|
+| 1 | Scaffold: Flue init, monorepo wiring | — |
+| 2 | Core agent: tools, skills, channels | 1 |
+| 3 | Subagents: reviewer, learner | 2 |
+| 4 | Self-learning loop: `.maestria-learnings/`, feedback | 3 |
+| 5 | CI/CD: GitHub Actions, release automation | 4 |
+| 6 | Monitoring: logging, metrics, Durable Streams replay | 5 |
+| 7 | Evals: quality gates, benchmarks | 6 |
 
-1. Start with `architecture.md` to understand the design
-2. Then `implementation-plan.md` for the build sequence
-3. The existing [`maestria-meta-agent-plan.md`](./maestria-meta-agent-plan.md) has detailed, low-level implementation notes you can reference during development
+## Getting Started
 
-## ADR Continuity
+```bash
+npx flue init --target github-actions apps/maestria-agent/
+```
 
-The architecture document contains three new ADRs that extend the project's decision record in `docs/adr/`:
+## References
 
-- **ADR-008**: Monorepo Integration Strategy (sandbox-based)
-- **ADR-009**: Self-Learning Storage (`.maestria-learnings/`)
-- **ADR-010**: Subagent Architecture (reviewer + learner)
+- [Flue](https://flueframework.com/) / [docs](https://flueframework.com/docs/getting-started/quickstart/) / [GitHub](https://github.com/withastro/flue)
+- [Pi](https://pi.dev) — open-source coding harness
+- [Eve](https://vercel.com/eve) — evaluated, not chosen
+- [maestria](https://github.com/agustinusnathaniel/maestria) — monorepo
