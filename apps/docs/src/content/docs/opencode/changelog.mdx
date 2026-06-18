@@ -7,6 +7,16 @@ import { Aside } from "@astrojs/starlight/components";
 
 # Changelog
 
+## 0.3.7
+
+### Patch Changes
+
+- **Permission patterns now actually work.** A bug in the custom YAML frontmatter parser caused every permission rule — things like `"*": deny` or `"git status*": allow` — to be silently ignored. The parser was storing YAML quote characters as literal parts of the pattern keys, so nothing ever matched. This affected all 8 agents: the orchestrator's strict permissions didn't actually block anything, and subagents' bash allowlists were dead code.
+
+- **Replaced the hand-rolled YAML parser** with the spec-compliant `yaml` library (eemeli/yaml). This eliminates an entire class of parsing bugs and removes ~120 lines of brittle custom parsing code.
+
+- **Agent descriptions now use proper YAML syntax.** All 8 agent description fields were converted to YAML folded block scalars (`>`) for cleaner multiline text that won't trip up future parsing.
+
 ## 0.3.6
 
 ### Patch Changes
