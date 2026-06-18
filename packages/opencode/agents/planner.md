@@ -15,6 +15,7 @@ permission:
     "git status*": allow
     "git diff*": allow
     "git log*": allow
+    "which *": allow
   webfetch: allow
   todowrite: allow
   skill: allow

@@ -11,6 +11,7 @@ permission:
   lsp: allow
   webfetch: allow
   skill: allow
+  todowrite: allow
   edit: ask
   bash:
     "*": ask

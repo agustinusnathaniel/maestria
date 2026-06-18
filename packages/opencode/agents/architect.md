@@ -14,6 +14,9 @@ permission:
   edit: deny
   bash:
     "*": ask
+    "git diff*": allow
+    "git log*": allow
+    "git status*": allow
     "which *": allow
     "npm view *": allow
 ---

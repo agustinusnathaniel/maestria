@@ -21,6 +21,7 @@ permission:
     "npm test*": allow
     "pnpm test*": allow
     "npx tsc*": allow
+    "npm view *": allow
 ---
 
 You are a focused implementation agent.

@@ -8,12 +8,16 @@ permission:
   read: allow
   glob: allow
   grep: allow
+  lsp: allow
   edit: allow
   webfetch: allow
   skill: allow
+  todowrite: allow
   bash:
     "*": ask
     "git status*": allow
+    "git diff*": allow
+    "git log*": allow
     "npm view *": allow
 ---
 

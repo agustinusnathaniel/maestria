@@ -14,11 +14,13 @@ permission:
   lsp: allow
   webfetch: allow
   skill: allow
+  todowrite: allow
   edit: deny
   bash:
     "*": ask
     "git log*": allow
     "git diff*": allow
+    "git status*": allow
     "which *": allow
 ---
 
