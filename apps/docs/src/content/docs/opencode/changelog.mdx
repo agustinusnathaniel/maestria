@@ -7,6 +7,12 @@ import { Aside } from "@astrojs/starlight/components";
 
 # Changelog
 
+## 0.3.6
+
+### Patch Changes
+
+- **The orchestrator's read-side tools are now explicitly denied.** The v0.3.5 refactor removed the `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions, but the opencode framework's wildcard `*: allow` rule still let the orchestrator use them. A missing key is not an explicit deny. This release adds explicit `deny` entries for the same five tools, completing the strict-dispatcher role. The 7 specialist subagents retain full read-side access.
+
 ## 0.3.5
 
 ### Patch Changes
