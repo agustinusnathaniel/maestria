@@ -10,14 +10,14 @@ hero:
   actions:
     - text: Get Started
       icon: right-arrow
-      link: /opencode/getting-started/introduction/
+      link: /opencode/getting-started/installation/
     - text: View Agents
       icon: external
       variant: minimal
       link: /opencode/agents/
 ---
 
-import { LinkCard, CardGrid, LinkButton, Aside } from "@astrojs/starlight/components";
+import { LinkCard, CardGrid, LinkButton } from "@astrojs/starlight/components";
 
 ## How It Works
 
@@ -46,32 +46,27 @@ Add to your OpenCode config (`~/.config/opencode/opencode.jsonc`):
 <CardGrid>
   <LinkCard
     title="Getting Started"
-    description="Introduction, installation, and your first session with the plugin."
-    href="/opencode/getting-started/introduction/"
+    description="Installation, setup, and your first session with the plugin."
+    href="/opencode/getting-started/installation/"
   />
   <LinkCard
-    title="Agents"
-    description="Documentation for all 8 agents — roles, permissions, and methodology."
+    title="Agent Reference"
+    description="Roles, permissions, and when to use each of the 8 agents."
     href="/opencode/agents/"
   />
   <LinkCard
-    title="Global Rules"
-    description="Cross-cutting rules injected into every session."
-    href="/opencode/guide/global-rules/"
-  />
-  <LinkCard
-    title="Configuration"
-    description="Frontmatter fields, permission model, and agent modes."
-    href="/opencode/guide/configuration/"
-  />
-  <LinkCard
-    title="How It Works"
-    description="Plugin hooks, agent loading, and rule injection architecture."
-    href="/opencode/guide/how-it-works/"
+    title="Workflow Patterns"
+    description="Practical agent usage patterns — from recon to full build pipelines."
+    href="/opencode/guide/workflow-patterns/"
   />
   <LinkCard
     title="Changelog"
     description="Version history and release notes."
     href="/opencode/changelog/"
+  />
+  <LinkCard
+    title="Contributing"
+    description="Development setup, project structure, and how to extend the plugin."
+    href="/opencode/contributing/"
   />
 </CardGrid>

@@ -1,5 +1,71 @@
 # Changelog
 
+## 0.3.8
+
+### Patch Changes
+
+- [`2e2f10e`](https://github.com/agustinusnathaniel/maestria/commit/2e2f10e62e932747d0fc1a260aed3ef2b65f267c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refine agent permissions after audit
+
+  - Add `todowrite` to adventurer, diagnose, writer for multi-step tracking
+  - Add missing git commands (status, show, diff, log) to adventurer, architect, reviewer, writer
+  - Add `lsp` to writer for code navigation during doc generation
+  - Add `npm view` to builder for dependency checks
+  - Add `which` to planner for tool discovery
+
+## 0.3.7
+
+### Patch Changes
+
+- [`86c9589`](https://github.com/agustinusnathaniel/maestria/commit/86c958922d3d52308f106bb3d9785e3cab202092) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: replace hand-rolled YAML parser with spec-compliant library
+
+  The custom YAML frontmatter parser (~120 lines) didn't handle quoting,
+  nesting, or multiline values correctly. Permission patterns like
+  `"git status*": allow` and `"*": deny` were silently broken because the
+  parser treated quotes as literal characters instead of YAML syntax.
+
+  This is now replaced with the `yaml` library (eemeli/yaml) — a proper
+  spec-compliant parser that handles quoting, multiline values, and
+  nested structures natively. The `stripYamlQuotes` workaround, added to
+  patch the old parser, has been removed as it's no longer needed.
+
+  All 8 agent descriptions have also been converted to YAML folded block
+  scalars (`>`) for cleaner multiline text that reads well both in source
+  and when parsed.
+
+  Every agent's permission model was broken out of the box — deny-by-default
+  didn't deny, and allowlists didn't allow. That's fixed now.
+
+## 0.3.6
+
+### Patch Changes
+
+- [`a52dd48`](https://github.com/agustinusnathaniel/maestria/commit/a52dd48b8ee2aa031f9989fde268d08d5c2569ce) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: explicitly deny orchestrator read-side tools
+
+  The orchestrator's `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions are now explicitly set to `deny`. The previous refactor relied on a missing-key default that the opencode framework does not honor, so the orchestrator was still able to use these tools. The new explicit denials make the strict-dispatcher role effective.
+
+  The 7 specialist subagents retain full read-side tool access for the work they pick up.
+
+## 0.3.5
+
+### Patch Changes
+
+- [`f9f9a7d`](https://github.com/agustinusnathaniel/maestria/commit/f9f9a7d6f08699d5db8c2ddc0d7234eb9e3b2251) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: strip orchestrator read-side tools and add missing global directives
+
+  The orchestrator is restructured into a strict dispatcher. Its `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions are removed, and the opening prompt is rewritten as a dispatcher mandate stating that `task()` and `question()` are the only tools for making progress. CRITICAL RULES are consolidated from 10 to 8 — the redundant "Shell is not a workaround" and "Prefer local tools over webfetch; webfetch may hang" directives are deleted and the rest are renumbered. The 7 specialists retain full read-side tool access for the work they pick up.
+
+  Three directives are also added to the global rules (`packages/opencode/rules/AGENTS.md`): "Webfetch may hang — don't block on it", "CLI references — use local tools first", and "Local files — read directly". Because global rules are injected into every specialist's prompt at runtime, this closes 21 directive-coverage gaps (3 directives × 7 specialists) and the guidance now applies uniformly.
+
+## 0.3.4
+
+### Patch Changes
+
+- [`361171d`](https://github.com/agustinusnathaniel/maestria/commit/361171de7b0d2b90235a98f7d61c1ba3c541f3f4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: audit and update skill prescriptions across all 7 agents
+  - Fix rename: `diagnose` → `diagnosing-bugs`, `write-a-skill` → `writing-great-skills`
+  - Remove dead skill: `zoom-out` (not in mattpocock/skills)
+  - Fix 10 wrong source repos (ADRs → wshobson/agents, review-logging-patterns → hugorcd/evlog, etc.)
+  - Remove skills from sickn33/antigravity-awesome-skills and refoundai/lenny-skills sources
+  - Add 8 new skills from mattpocock/skills and anthropics/skills with cross-references across appropriate agents
+
 ## 0.3.3
 
 ### Patch Changes

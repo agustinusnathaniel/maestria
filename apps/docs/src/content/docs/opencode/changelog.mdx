@@ -7,6 +7,68 @@ import { Aside } from "@astrojs/starlight/components";
 
 # Changelog
 
+## 0.3.7
+
+### Patch Changes
+
+- **Permission patterns now actually work.** A bug in the custom YAML frontmatter parser caused every permission rule — things like `"*": deny` or `"git status*": allow` — to be silently ignored. The parser was storing YAML quote characters as literal parts of the pattern keys, so nothing ever matched. This affected all 8 agents: the orchestrator's strict permissions didn't actually block anything, and subagents' bash allowlists were dead code.
+
+- **Replaced the hand-rolled YAML parser** with the spec-compliant `yaml` library (eemeli/yaml). This eliminates an entire class of parsing bugs and removes ~120 lines of brittle custom parsing code.
+
+- **Agent descriptions now use proper YAML syntax.** All 8 agent description fields were converted to YAML folded block scalars (`>`) for cleaner multiline text that won't trip up future parsing.
+
+## 0.3.6
+
+### Patch Changes
+
+- **The orchestrator's read-side tools are now explicitly denied.** The v0.3.5 refactor removed the `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions, but the opencode framework's wildcard `*: allow` rule still let the orchestrator use them. A missing key is not an explicit deny. This release adds explicit `deny` entries for the same five tools, completing the strict-dispatcher role. The 7 specialist subagents retain full read-side access.
+
+## 0.3.5
+
+### Patch Changes
+
+- **The orchestrator is now a strict dispatcher.** Its read-side tool permissions (`read`, `glob`, `grep`, `lsp`, `webfetch`) are removed, and the opening prompt is rewritten as a dispatcher mandate: `task()` and `question()` are the only tools for making progress. The 7 specialist subagents keep full read-side access for the work they pick up.
+- **Three new directives added to global rules.** "Webfetch may hang — don't block on it", "CLI references — use local tools first", and "Local files — read directly" are added, closing 21 directive-coverage gaps (3 × 7 specialists) so the guidance now applies uniformly.
+
+## 0.3.4
+
+### Patch Changes
+
+- Audit and update skill prescriptions across all 7 agents. Fix renames (`diagnose` → `diagnosing-bugs`, `write-a-skill` → `writing-great-skills`), remove the dead `zoom-out` skill, correct 10 wrong source repos (e.g., ADRs → wshobson/agents, review-logging-patterns → hugorcd/evlog), drop skills from stale sources (sickn33/antigravity-awesome-skills, refoundai/lenny-skills), and add 8 new skills from mattpocock/skills and anthropics/skills with cross-references across the appropriate agents.
+
+## 0.3.3
+
+### Patch Changes
+
+- Audit and sort agent skill prescriptions across all 7 agents. Alphabetically sorts "Load on trigger" skill lists and adds missing entries (e.g., `session-handoff` to adventurer, `prioritizing-roadmap` and `technical-roadmaps` to planner).
+
+## 0.3.2
+
+### Patch Changes
+
+- Strengthen orchestrator delegation rules. Rule #1 expanded to explicitly forbid using shell for implementation. New Rule #2: "Shell is not a workaround" — catches the common failure mode of substituting shell commands for delegation.
+
+## 0.3.1
+
+### Patch Changes
+
+- Restrict orchestrator task permissions to 7 registered subagents. Changed from `"*": allow` to deny-by-default with explicit allow-list for only the 7 specialists.
+
+## 0.3.0
+
+### Minor Changes
+
+- Incorporate AI engineering learnings from my-base knowledge base:
+  - **"Read the docs first"** — new non-negotiable directive across global rules, architect, and builder
+  - **Diagnostic documentation mandate** — elevated to non-negotiable in diagnose.md
+  - **Skill prescription expansion** — builder gains `commit-work` skill, diagnose gains `dependency-updater`
+
+## 0.2.6
+
+### Bug Fixes
+
+- Fix typo in builder.md agent prompt
+
 ## 0.2.5 (2026-06-12)
 
 _(no user-facing changes)_

@@ -1,28 +1,28 @@
 ---
-title: Installation
-description: How to install and configure @maestria/opencode in your OpenCode setup.
+title: Installation & Setup
+description: How to install @maestria/opencode and what you get — 8 specialized agents and global workflow rules for OpenCode.
 ---
 
-import { Steps, Aside, LinkButton } from "@astrojs/starlight/components";
+import { Steps, Aside } from "@astrojs/starlight/components";
 
-# Installation
+`@maestria/opencode` is an npm plugin for [OpenCode](https://opencode.ai) that turns your AI coding environment into a disciplined engineering workstation. It bundles 8 specialized agents and global workflow rules — all installed with a single line of configuration. No manual setup, no prompt engineering, no forgotten context between sessions.
 
 ## Prerequisites
 
 - [OpenCode](https://opencode.ai) CLI (latest version)
-- Node.js 18+ (for plugin resolution)
+- **Node.js 22.12+** — Required for plugin resolution. Earlier versions are not supported.
 
-## Add the Plugin
+## Installation
 
 <Steps>
 
-1. **Open your OpenCode config file**
+1. **Open your OpenCode config**
 
    ```bash
    ~/.config/opencode/opencode.jsonc
    ```
 
-2. **Add the plugin to the plugin array**
+2. **Add the plugin**
 
    ```jsonc
    {
@@ -30,31 +30,49 @@ import { Steps, Aside, LinkButton } from "@astrojs/starlight/components";
    }
    ```
 
+   That is the entire configuration. Zero setup, zero wiring.
+
 3. **Restart OpenCode**
 
-   The plugin will be auto-installed from npm on the next session start.
+   The plugin auto-installs from npm on session start. Agents and rules are available immediately.
 
 </Steps>
 
 ## Verify Installation
 
-Start a new OpenCode session. You should see the 8 agents available for delegation via `@` mention. The global rules will be active in every prompt session.
+Start a new OpenCode session. The 8 agents are ready for delegation via `@` mention. Try typing `@orchestrator` to kick off your first task — the manager agent decomposes it and hands pieces to the right specialist.
+
+The global workflow rules are active in every prompt. You will see them reflected in how agents respond, delegate, and structure their output.
 
 ## Updating
 
-OpenCode auto-updates plugins on restart. You can also manually update:
+OpenCode auto-updates plugins on restart. To trigger an update manually:
 
 ```bash
 opencode plugins update
 ```
 
 <Aside type="tip">
-  If you want to pin a specific version, use `"@maestria/opencode@0.2.1"` instead of
+  To pin a specific version, use `"@maestria/opencode@0.3.3"` instead of
   `"@maestria/opencode@latest"`.
 </Aside>
 
-## See Also
+## What's Included
 
-- [Quick Start](/opencode/getting-started/quick-start/) — Your first session
-- [How It Works](/opencode/guide/how-it-works/) — Plugin architecture
-- [Configuration Reference](/opencode/guide/configuration/) — Frontmatter fields and permissions
+The plugin provides one manager agent and 7 specialist subagents:
+
+| Agent           | Mode     | Role                                                                  |
+| --------------- | -------- | --------------------------------------------------------------------- |
+| `@orchestrator` | all      | Manager — decomposes work, delegates to specialists, never implements |
+| `@adventurer`   | subagent | Codebase reconnaissance — maps unfamiliar code                        |
+| `@architect`    | subagent | Architecture decisions — evaluates options with trade-off analysis    |
+| `@builder`      | subagent | Focused implementation — one atomic task per invocation               |
+| `@diagnose`     | subagent | Systematic debugging — 6-step root cause tracing                      |
+| `@planner`      | subagent | Implementation plans — phased milestones with verification            |
+| `@reviewer`     | subagent | Code review — 7-dimension quality checklist                           |
+| `@writer`       | subagent | Documentation — structured patterns for any document type             |
+
+## Next Steps
+
+- [Quick Start](/opencode/getting-started/quick-start/) — Your first session with the plugin
+- [Browse the Agents](/opencode/agents/) — Detailed documentation for each agent

@@ -1,6 +1,6 @@
 {
   "name": "@maestria/opencode",
-  "version": "0.3.3",
+  "version": "0.3.8",
   "description": "OpenCode plugin encoding AI engineering praxis: rules, agents, and workflow discipline.",
   "keywords": [
     "agents",
@@ -44,7 +44,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "^1.17.0"
+    "@opencode-ai/plugin": "^1.17.0",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

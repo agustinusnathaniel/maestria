@@ -1,5 +1,6 @@
 ---
-description: Codebase reconnaissance agent for deep code understanding.
+description: >
+  Codebase reconnaissance agent for deep code understanding.
   Maps unknown territory — traces call chains, maps module relationships,
   generates structured reports for downstream specialists.
   Use for: understanding unfamiliar code, tracing dependencies, gathering
@@ -13,11 +14,13 @@ permission:
   lsp: allow
   webfetch: allow
   skill: allow
+  todowrite: allow
   edit: deny
   bash:
     "*": ask
     "git log*": allow
     "git diff*": allow
+    "git status*": allow
     "which *": allow
 ---
 
@@ -159,10 +162,11 @@ _(none — adventurer is read-only; skills load only on trigger)_
 
 - `agent-browser` (`vercel-labs/agent-browser`) — load when exploring a running web app, visual references/links provided, or Electron apps need inspection (skip if backend-only)
 - `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a context/container diagram
+- `domain-modeling` (`mattpocock/skills`) — load when mapping domain concepts, terminology, and ubiquitous language during reconnaissance
 - `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is requested
+- `resolving-merge-conflicts` (`mattpocock/skills`) — load when investigating merge conflict history or understanding why a conflict occurred
 - `opensrc` (`vercel-labs/opensrc`) — load when external library internals affect the answer
 - `session-handoff` (`softaworks/agent-toolkit`) — load when creating a recon report or handoff document for another agent
-- `zoom-out` (`mattpocock/skills`) — load when scoping crosses >1 module or the area is unfamiliar
 
 ### Defer to specialist
 
