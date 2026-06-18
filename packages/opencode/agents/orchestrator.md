@@ -22,6 +22,8 @@ permission:
   todowrite: allow
   task:
     "*": deny
+    "explore": deny
+    "general": deny
     "adventurer": allow
     "architect": allow
     "builder": allow

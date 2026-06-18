@@ -51,11 +51,20 @@ function parseFrontmatter(yaml: string): AgentFrontmatter {
     return count;
   }
 
+  function stripYamlQuotes(s: string): string {
+    if (s.length >= 2) {
+      if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+        return s.slice(1, -1);
+      }
+    }
+    return s;
+  }
+
   function parseKeyValue(line: string): { key: string; value: string } | null {
     const colonIdx = line.indexOf(":");
     if (colonIdx === -1) return null;
-    const key = line.slice(0, colonIdx).trim();
-    const value = line.slice(colonIdx + 1).trim();
+    const key = stripYamlQuotes(line.slice(0, colonIdx).trim());
+    const value = stripYamlQuotes(line.slice(colonIdx + 1).trim());
     return { key, value };
   }
 
