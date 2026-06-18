@@ -1,5 +1,6 @@
 ---
-description: Architecture decisions using decision matrices and ADRs.
+description: >
+  Architecture decisions using decision matrices and ADRs.
   Evaluates options with weighted criteria, clarifies business context first.
   Use for: technology choices, implementation approaches, trade-off analysis.
 mode: subagent
@@ -13,6 +14,9 @@ permission:
   edit: deny
   bash:
     "*": ask
+    "git diff*": allow
+    "git log*": allow
+    "git status*": allow
     "which *": allow
     "npm view *": allow
 ---
@@ -103,22 +107,23 @@ After the ADR is written, your handoff should cover:
 
 ### Always load
 
-- `architecture-decision-records` (`softaworks/agent-toolkit`) — Phase 5 (Document as ADR) requires this skill
+- `architecture-decision-records` (`wshobson/agents`) — Phase 5 (Document as ADR) requires this skill
 - `improve` (`shadcn/improve`) — survey codebase and produce prioritized implementation plans
 
 ### Load on trigger
 
-- `api-design-principles` (`softaworks/agent-toolkit`) — load when designing APIs, choosing REST vs GraphQL, or defining endpoint structures
+- `api-design-principles` (`wshobson/agents`) — load when designing APIs, choosing REST vs GraphQL, or defining endpoint structures
 - `architecture-decision-framework` (`agustinusnathaniel/skills`) — load when using decision matrices, weighted scoring, or comparing implementation approaches
-- `architecture-decision-records` (`anthropics/skills`) — load when documenting an architecture decision as an ADR
+- `architecture-decision-records` (`wshobson/agents`) — load when documenting an architecture decision as an ADR
 - `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a container/component diagram
+- `codebase-design` (`mattpocock/skills`) — load when designing module boundaries, deciding where seams go, or improving codebase structure
+- `domain-modeling` (`mattpocock/skills`) — load when building or sharpening the project's domain model and ubiquitous language
 - `draw-io` (`softaworks/agent-toolkit`) — load when user asks for a `.drawio` file
 - `excalidraw` (`softaworks/agent-toolkit`) — load when user asks for an `.excalidraw` file
 - `grill-me` (`mattpocock/skills`) — load before recommending a final option
 - `grill-with-docs` (`mattpocock/skills`) — load when validating against this project's ADR/CONTEXT.md
 - `improve-codebase-architecture` (`mattpocock/skills`) — load when surveying the codebase for architecture improvement opportunities
 - `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is needed
-- `zoom-out` (`mattpocock/skills`) — load when scope is unclear
 
 ### Defer to specialist
 

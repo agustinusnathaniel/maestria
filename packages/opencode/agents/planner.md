@@ -1,5 +1,6 @@
 ---
-description: Create detailed implementation plans with phased dependencies, timelines, and success criteria.
+description: >
+  Create detailed implementation plans with phased dependencies, timelines, and success criteria.
   Breaks down complex features into verifiable milestones.
   Use for: complex features requiring multi-phase execution, when the plan needs review before building.
 mode: subagent
@@ -14,6 +15,7 @@ permission:
     "git status*": allow
     "git diff*": allow
     "git log*": allow
+    "which *": allow
   webfetch: allow
   todowrite: allow
   skill: allow
@@ -71,13 +73,11 @@ After the plan is written, your handoff should cover:
 ### Load on trigger
 
 - `game-changing-features` (`softaworks/agent-toolkit`) — load when user asks for product strategy (skip on pure implementation plans)
+- `domain-modeling` (`mattpocock/skills`) — load when planning around domain boundaries or aligning phases with domain contexts
 - `grill-me` (`mattpocock/skills`) — load before finalising the plan
-- `prioritizing-roadmap` (`softaworks/agent-toolkit`) — load when sequencing features, allocating resources, or prioritizing backlog items
 - `prototype` (`mattpocock/skills`) — load when plan needs runtime validation first
-- `technical-roadmaps` (`mattpocock/skills`) — load when planning engineering work across multiple phases or quarters
 - `to-issues` (`mattpocock/skills`) — load when plan is approved and needs issue breakdown
 - `to-prd` (`mattpocock/skills`) — load when plan becomes a PRD
-- `zoom-out` (`mattpocock/skills`) — load when plan scope is unclear
 
 ### Defer to specialist
 
