@@ -50,4 +50,9 @@ Maestria packages are pure plugins - no postinstall scripts, no file system side
 
 ## How This Project Evolves
 
-Patterns are curated from experience, documented in the knowledge base, then promoted into Maestria packages when proven. The Eve meta-agent (at `apps/maestria-agent/`) assists with maintenance, analysis, and improvement proposals - but all changes flow through human review. No autonomous code changes. See **PATTERNS.md** for the catalog of design patterns that each platform package implements.
+Patterns are curated from experience, documented in the knowledge base,
+then promoted into Maestria packages when proven. The [Flue](https://flueframework.com/) meta-agent
+(at `apps/maestria-agent/`) assists with maintenance, analysis, and
+improvement proposals - but all changes flow through human review. No
+autonomous code changes. See **PATTERNS.md** for the catalog of design
+patterns that each platform package implements.

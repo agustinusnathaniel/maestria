@@ -1,202 +1,465 @@
 # Implementation Plan: Maestria Meta-Agent
 
-This plan breaks the meta-agent into five phases. Each phase builds on the previous and has concrete verification criteria. Phases are ordered so each unlocks the next.
+This plan breaks the build into seven sequential phases. Each phase has concrete deliverables, dependencies, verification criteria, and a rollback point. Phases are ordered so each unlocks the next.
 
-**Monorepo:** `agustinusnathaniel/maestria`, pnpm workspaces, vite-plus, changesets.
+**Framework**: [Flue](https://github.com/withastro/flue) — TypeScript agent framework by the Astro team, built on Pi. Deploys to GitHub Actions. Tools run directly in Node.js — no sandbox needed.
 
-**Current versions:** `@maestria/opencode` v0.5.2, `@maestria/core` v0.3.1, `@maestria/pi` v0.3.2, `@maestria/kimi-code` v0.3.2.
+**Monorepo**: `agustinusnathaniel/maestria`, pnpm workspaces, Vite+, changesets.
 
-**Framework:** None. The meta-agent uses GitHub Actions scheduled workflows, shell scripts, and the existing monorepo tooling. No separate agent framework required.
+**Version**: `@maestria/opencode` at **v0.3.7+**. See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) at the project root for the canonical project vision and design patterns.
 
----
+## Phase 1: Scaffold + Maintenance (Foundation)
 
-## Phase 1: Foundation
+**Goal**: A working Flue agent that runs maestria maintenance commands and reports health daily via GitHub Actions.
 
-**Status:** Mostly done. The infrastructure the meta-agent operates on is already shipped. This phase documents what exists and identifies any remaining gaps.
-
-**Goal:** A verified, documented foundation that the remaining phases build on.
-
-### Existing Components
-
-- [x] **Canonical source** — `packages/core/agent-directives/` with 8 specialist prompts, orchestrator prompt, and consolidated rules. Pure Markdown, no platform-specific syntax.
-- [x] **Sync pipeline** — `packages/core/scripts/sync.ts` (config-driven pipeline) backed by 6 library modules. Supports `--check`, `--diff`, `--dry-run`.
-- [x] **Plugin sync configs** — `packages/opencode/sync.config.ts`, `packages/pi/sync.config.ts`, `packages/kimi-code/sync.config.ts`.
-- [x] **Sync orchestration** — `scripts/sync-all` (iterates over packages/\*/sync.config.ts) and `scripts/check-sync` (CI mode).
-- [x] **CLI tool** — `apps/maestria-cli/` with `install`, `update`, `status` commands. Uses Effect v4 + citty.
-- [x] **Project workflow** — `.maestria/workflow.md` (sequencing guidance) and `.maestria/rules.md` (non-negotiable project rules).
-- [x] **CI integration** — `check-sync` runs as part of `vp check` via vite-plus task configuration. Generated directories excluded from `vp fmt`.
-- [x] **Release pipeline** — `pnpm changeset` → `pnpm version-packages` → `pnpm release` with npm provenance.
-- [x] **Namespaced ADRs** — `docs/adr/core/`, `docs/adr/opencode/`, `docs/adr/kimi-code/`, `docs/adr/pi/` with prefix-scoped numbering.
-- [x] **Published packages** — `@maestria/opencode` (v0.5.2), `@maestria/core` (v0.3.1), `@maestria/pi` (v0.3.2), `@maestria/kimi-code` (v0.3.2).
-
-### Remaining Tasks
-
-- [ ] **1.1** Verify `check-sync` runs correctly in CI and on clean checkouts
-- [ ] **1.2** Document canonical content ownership rules (edit `packages/core/agent-directives/`, never generated copies) — done in `packages/core/agent-directives/README.md`
-- [ ] **1.3** Ensure `scripts/check-sync` runs as a blocking CI gate (pre-merge, not just as part of `vp check`)
-
-### Verification
-
-- [ ] `bash scripts/check-sync` exits 0 on clean state
-- [ ] Editing a canonical source file + running `scripts/sync-all` regenerates all 3 plugin outputs
-- [ ] `pnpm check` passes (includes check-sync, lint, typecheck)
-- [ ] `pnpm test` passes across all packages
-- [ ] `pnpm build` produces correct output for all packages
-
----
-
-## Phase 2: Automated Maintenance
-
-**Status:** Partially done. Basic CI runs on every commit. Scheduled runs are not yet configured.
-
-**Goal:** GitHub Actions workflows that run the full maintenance pipeline on a schedule and report results.
-
-**Dependencies:** Phase 1.
+**Dependencies**: None.
 
 ### Tasks
 
-- [ ] **2.1** Create daily health check workflow - `.github/workflows/daily-check.yml` - Cron: `0 6 * * *` (daily at 06:00 UTC) - Steps: checkout → pnpm install → `pnpm check` → `pnpm test` → `bash scripts/check-sync` - On failure: create a GitHub issue with the failure details - Manual trigger via `workflow_dispatch`
+- [ ] **1.1** Scaffold Flue project at `apps/maestria-agent/`
+  - Run `npx flue init --target github-actions` from `apps/maestria-agent/`
+  - Creates `package.json`, `tsconfig.json`, `flue.config.ts`, `src/` scaffolding
+  - Create `.env.example` with all 7 environment variables (see [Environment Variables](#environment-variables))
+  - Run `pnpm install` from monorepo root to link workspace dependency
 
-- [ ] **2.2** Create weekly sync audit workflow - `.github/workflows/weekly-sync-audit.yml` - Cron: `0 8 * * 1` (Mondays at 08:00 UTC) - Steps: checkout → `bash scripts/check-sync --diff` → compare with last week's state - On drift detected: open a PR to sync or create an issue explaining the drift
+- [ ] **1.2** Configure `flue.config.ts`
+  - Set `target: 'github-actions'`
+  - Set `model: 'anthropic/claude-opus-4-8'`
+  - Point `agents` and `workflows` to `src/agents/` and `src/workflows/`
 
-- [ ] **2.3** Create weekly dependency audit workflow - `.github/workflows/weekly-deps.yml` - Cron: `0 10 * * 1` (Mondays at 10:00 UTC) - Steps: `pnpm outdated --json` → parse and format → create issue if any dependencies are >2 majors behind - Exclude devDependencies and peerDependencies unless they're security-critical
+- [ ] **1.3** Create root agent
+  - `src/agents/maestria.ts`: `createAgent` with Claude Opus 4.8, `sandbox: local()`, HTTP route passthrough
+  - `src/lib/base-instructions.ts`: agent identity string — role, authority model (no direct-to-main pushes), tool catalog, communication guidance
+  - Reference [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) in the base instructions so the agent understands the project's vision, non-goals, and design patterns when analyzing or improving agent files
+  - Register all Phase 1 tools and the `maintain` skill
 
-- [ ] **2.4** Configure Dependabot or Renovate for automated dependency updates - Enable for patch and minor updates (PRs auto-created) - Major updates as separate PRs requiring human review - Group related dependencies to reduce PR noise
+- [ ] **1.4** Build maintenance tools (`src/tools/`)
+  - `vp-install.ts` — `execSync('vp install', { cwd: process.cwd() })`, parse output
+  - `vp-check.ts` — `execSync('vp check')`, return formatted pass/fail
+  - `vp-test.ts` — `execSync('vp test')`, return formatted pass/fail
+  - `vp-build.ts` — `execSync('vp run -r build')`, return build output
+  - `check-dependencies.ts` — `execSync('pnpm outdated --json')`, parse and format
+  - `read-agent.ts` — read agent `.md` from `packages/opencode/agents/` (input: `{ name }`). Agent files use the `yaml` library for frontmatter parsing — reading tools should use the same `yaml` library, not a custom parser.
+  - `read-rules.ts` — read `packages/opencode/rules/AGENTS.md`
+  - `read-changelog.ts` — read `packages/opencode/CHANGELOG.md`
+  - Tools export `{ description, parameters, execute }` objects
 
-- [ ] **2.5** Configure health check dashboard - Create a GitHub issue template for automated reports - Use GitHub Actions summaries for workflow results - Ensure failure notifications reach the maintainer
+- [ ] **1.5** Create maintenance skill
+  - `src/skills/maintain.md`: install → check → test → build pipeline, report pass/fail per step
+  - If a step fails: categorize error, fix if trivial, report if ambiguous
+
+- [ ] **1.6** Create daily maintenance workflow
+  - `.github/workflows/daily-check.yml`: cron `0 6 * * *`, `workflow_dispatch`, node 24, `npm install`, `npx flue run daily-check`
+  - `src/workflows/daily-check.ts`: `init(maestria)` → `session.prompt('Run vp install, vp check, and vp test. Report results.')`
+  - Reports via console initially; refactored to Telegram in Phase 2
+
+- [ ] **1.7** Verify scaffold and maintenance
+  - `flue connect maestria local` starts an interactive session
+  - `flue run daily-check` runs the workflow and completes
+  - All 8 tools are callable and return correct output
+  - `maintain` skill guides the agent through the full pipeline
 
 ### Verification
 
-- [ ] `daily-check` workflow runs on schedule and on `workflow_dispatch`
-- [ ] Failing check creates a GitHub issue with relevant logs
-- [ ] `weekly-sync-audit` detects intentional drift and opens issue
-- [ ] `weekly-deps` correctly identifies outdated dependencies
-- [ ] Dependabot/Renovate opens PRs for patch/minor updates automatically
-- [ ] All workflows pass on a clean monorepo state
+- [ ] `flue connect maestria local` discovers the agent and starts a session
+- [ ] All 8 maintenance tools are callable and return correct outputs
+- [ ] `maintain` skill is loadable and the model follows its steps
+- [ ] `flue run daily-check` completes successfully
+
+**Rollback**: Delete `apps/maestria-agent/` and revert pnpm lockfile changes.
 
 ---
 
-## Phase 3: Automated Shipping
+## Phase 2: Channels
 
-**Status:** Partially done. Release commands exist but are manual. Automated end-to-end shipping is not configured.
+**Goal**: Agent accessible via Telegram, GitHub, and local CLI.
 
-**Goal:** A workflow that creates changesets, versions packages, opens release PRs, and publishes to npm — all with human approval gates.
-
-**Dependencies:** Phase 2 (reliable CI must pass before release).
+**Dependencies**: Phase 1.
 
 ### Tasks
 
-- [ ] **3.1** Assess the existing release workflow - Check `.github/workflows/release.yml` (if it exists) or the current release process documentation - Identify gaps between manual and automated process
+- [ ] **2.1** Install channel packages
+  - `npm install @flue/telegram @flue/github`
 
-- [ ] **3.2** Create release preparation workflow - `.github/workflows/prepare-release.yml` - Trigger: manual (`workflow_dispatch`) with inputs for bump type (patch/minor/major) and a summary of changes - Steps: 1. Verify `bash scripts/check-sync` passes (mandatory pre-release gate) 2. Run `pnpm changeset` with the specified bump type 3. Run `pnpm version-packages` to bump versions and generate changelogs 4. Create a branch `release/v{next-version}` 5. Open a PR against `main` with the version bumps and changelog - The PR title and body should be auto-generated from changeset summaries
+- [ ] **2.2** Configure Telegram channel
+  - `src/channels/telegram.ts`: `createTelegramChannel` with `botToken` from env, dispatch to maestria agent
+  - Register bot via BotFather, set `TELEGRAM_BOT_TOKEN`
+  - Set `MAESTRIA_ADMIN_CHAT_ID` for scheduled notifications
 
-- [ ] **3.3** Create publish workflow - `.github/workflows/publish.yml` - Trigger: PR merge to main (check for `release/` branch pattern or specific label) - Steps: 1. Checkout main at the merged commit 2. Verify `bash scripts/check-sync` 3. Build all packages (`pnpm build`) 4. Run `pnpm release` (which runs `changeset publish`) 5. Verify npm packages are published at the expected versions 6. Cross-platform sync verification post-release
+- [ ] **2.3** Configure GitHub channel
+  - `src/channels/github.ts`: `createGitHubChannel` with GitHub App credentials
+  - Create GitHub App on `agustinusnathaniel/maestria` with Issues R/W, PRs R/W, Contents R/W
+  - Set `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET`
 
-- [ ] **3.4** Create version sync check post-release - After publish, verify that `scripts/check-sync` still passes (canonical source changes during the release should not break sync) - If sync is broken, open a blocking issue immediately
+- [ ] **2.4** Refactor daily-check workflow to report via Telegram
+  - Update `src/workflows/daily-check.ts` to dispatch results through Telegram channel
+  - Target `MAESTRIA_ADMIN_CHAT_ID` for the notification
 
-- [ ] **3.5** Document the release process - Update `CONTRIBUTING.md` with the automated release workflow
+- [ ] **2.5** Verify all three interaction surfaces
+  - `flue connect maestria local` — local CLI session
+  - Telegram bot responds to direct messages
+  - GitHub `@maestria-agent` mention triggers agent response
+  - `daily-check` schedule delivers results to Telegram chat
 
 ### Verification
 
-- [ ] `prepare-release` workflow creates a version bump PR with correct changelog
-- [ ] PR is labelled appropriately for human review
-- [ ] `publish` workflow runs after PR merge and publishes to npm
-- [ ] Published packages are installable and functional
-- [ ] Post-release sync check passes
-- [ ] Full dry run on a test branch passes before enabling on main
+- [ ] Local CLI: `flue connect maestria local` starts interactive session
+- [ ] Telegram: bot responds to direct messages
+- [ ] GitHub: `@maestria-agent` mention in PR triggers response
+- [ ] `daily-check` workflow delivers results to Telegram chat
+
+**Rollback**: Reverting channel files removes messaging surfaces but preserves maintenance capability.
+
+---
+
+## Phase 3: Shipping
+
+**Goal**: Agent creates changesets, versions packages, opens PRs, and publishes to npm — with approval gates.
+
+**Dependencies**: Phase 1 (tools), Phase 2 (GitHub channel for PR creation).
+
+### Tasks
+
+- [ ] **3.1** Build shipping tools (`src/tools/`)
+  - `git-status.ts` — `execSync('git status --porcelain')`, parse and return
+  - `git-branch.ts` — create and switch to feature branch (input: `{ name }`)
+  - `create-changeset.ts` — write `.changeset/*.md` (input: summary, package, bump type)
+  - `version-packages.ts` — `execSync('pnpm version-packages')`
+  - `publish-release.ts` — `execSync('pnpm release')`, gated with approval check
+  - `create-pr.ts` — open GitHub PR via GitHub App installation token, gated with approval check
+
+- [ ] **3.2** Write shipping skill
+  - `src/skills/ship.md`: assess → changeset → version → review → PR → publish workflow
+  - Guard rails: never push to main, never publish without approval, abort if tests fail
+
+- [ ] **3.3** Configure git push auth
+  - In GitHub Actions runner: set git `user.name` / `user.email` in the workflow step
+  - `create-pr` tool: generate GitHub App installation token, configure git credential helper, push branch
+
+- [ ] **3.4** Create release workflow (manual trigger)
+  - `src/workflows/release.ts`: orchestrates the full ship pipeline
+  - `.github/workflows/release.yml`: `workflow_dispatch` trigger
+
+- [ ] **3.5** Verify full release flow end-to-end
+
+### Verification
+
+- [ ] All 6 shipping tools callable
+- [ ] `ship` skill loadable and model follows its steps
+- [ ] End-to-end: changeset → version → PR opened on GitHub
+- [ ] `create-pr` and `publish-release` require human approval
+- [ ] Git push works with GitHub App credential brokering
+
+**Rollback**: Reverting shipping tools and skill removes release capability but preserves channels and maintenance.
 
 ---
 
 ## Phase 4: Self-Improvement
 
-**Status:** Planned. No automation exists for this phase yet.
+**Goal**: Agent reads and proposes changes to maestria agent prompts and global rules.
 
-**Goal:** The meta-agent analyzes the monorepo state, identifies improvement opportunities, and opens proposals as PRs.
-
-**Dependencies:** Phase 2 (reliable maintenance pipeline), Phase 3 (shipping pipeline for getting proposals through review).
+**Dependencies**: Phase 3 (shipping pipeline for PR creation).
 
 ### Tasks
 
-- [ ] **4.1** Create agent directive consistency checker - A script that reads all canonical source files and checks for: - Inconsistent terminology (same concept, different names across files) - Broken cross-references (a file references another that doesn't exist or has been renamed) - Stale skill prescriptions (referencing skills that don't exist or have been deprecated) - Contradictory guidance (two files say opposite things about the same topic) - Output: structured report with file references, severity, and suggestion
+- [ ] **4.1** Build improvement tools (`src/tools/`)
+  - `update-agent.ts` — write new content to an agent `.md` file (input: `{ name, content }`), gated with approval. When parsing or modifying agent frontmatter, use the `yaml` library (not a custom parser) — this matches the implementation in `packages/opencode/src/index.ts`.
+  - `update-rules.ts` — write new content to `rules/AGENTS.md` (input: `{ content }`), gated with approval
+  - `propose-skill-change.ts` — write a draft skill change proposal (input: `{ skill, description, changes }`), gated with approval
 
-- [ ] **4.2** Create ADR gap detection workflow - `.github/workflows/adr-gap-check.yml` - Cron: monthly - Compares recent git changes to existing ADRs in the relevant namespace - If a pattern change, dependency addition, or structural change lacks an ADR, opens an issue suggesting a new ADR - Uses git log to detect changes of interest (new dependencies, new scripts, new config files, etc.)
+- [ ] **4.2** Write improvement skill
+  - `src/skills/improve.md`: analyze → diagnose → propose → apply workflow
+  - Analyze: read all 8 agent files, rules, changelog, session logs
+  - Diagnose: inconsistent terminology, missing skills, redundant rules, contradictions
+  - Propose: draft changes with rationale per change
+  - Apply: call update tools (with approval), then delegate to `ship` skill for PR
 
-- [ ] **4.3** Create sync health improvement workflow - `.github/workflows/sync-improvements.yml` - Cron: monthly - Analyzes `check-sync` history from CI logs - If the same sync pattern breaks repeatedly, opens a PR to improve the canonical source or the sync config to prevent the recurring drift - Example: if a platform-specific transform is consistently missing, suggest adding it to the default config
+- [ ] **4.3** Integrate with shipping pipeline
+  - `improve.md` references `ship.md` for the final apply step
+  - All agent/rules edits go through PR, never directly to main
 
-- [ ] **4.4** Create CI pattern analysis workflow - `.github/workflows/ci-pattern-analysis.yml` - Cron: monthly - Analyzes CI failure logs from the past 30 days - Identifies recurring failure patterns (same test, same lint rule, same sync error appearing multiple times) - Opens an issue with suggestions for fixes (e.g., "test X has failed 3 times this month — consider mocking the external dependency")
+- [ ] **4.4** Verify agent reads an agent file, identifies a gap, proposes improvement as PR
 
 ### Verification
 
-- [ ] Consistency checker identifies real inconsistencies in canonical source
-- [ ] ADR gap detector catches changes that lack documentation
-- [ ] Sync improvement workflow generates actionable PRs
-- [ ] CI pattern analysis produces useful reduction in recurring failures
-- [ ] All proposals go through PR review — no direct commits
+- [ ] `update-agent`, `update-rules`, `propose-skill-change` tools callable
+- [ ] `improve` skill guides the agent through the full loop
+- [ ] End-to-end: analyze agents → identify gap → propose change → PR opened with rationale
+- [ ] All editing tools require human approval
+
+**Rollback**: Reverting improvement tools and skill removes self-improvement but preserves shipping.
 
 ---
 
-## Phase 5: Learning & Analytics
+## Phase 5: Self-Learning
 
-**Status:** Planned. This is the most speculative phase and should only be pursued after phases 2-4 are stable.
+**Goal**: Agent records session outcomes via Durable Streams, analyzes patterns, and proposes self-improvements weekly.
 
-**Goal:** Collect operational data, analyze trends, and use the analysis to drive further improvements. This phase adds instrumentation rather than new automation.
-
-**Dependencies:** Phase 2 (maintenance data), Phase 3 (shipping data), Phase 4 (improvement data).
+**Dependencies**: Phase 4 (improvement tools for acting on proposals).
 
 ### Tasks
 
-- [ ] **5.1** Instrument CI workflows with structured output - Each workflow writes a structured summary to a `ci-logs/` directory (or equivalent) with: - Exit code, duration, and key metrics per step - List of changed files (for shipping workflows) - Sync drift info (for sync audit workflows) - Format: JSON, versioned, append-only
+- [ ] **5.1** Initialize `.maestria-learnings/` at monorepo root
+  - Create `README.md`, `sessions/`, `insights/` directories
+  - Commit and push so the checkout in GitHub Actions picks it up
 
-- [ ] **5.2** Create trend analysis workflow - `.github/workflows/trend-analysis.yml` - Cron: monthly - Reads accumulated CI logs - Reports trends: - Test suite duration over time - Sync drift frequency per platform - Most common failure types - Release cycle duration - Opens a report issue with charts (text-based) and recommendations
+- [ ] **5.2** Configure Durable Streams
+  - Flue records sessions automatically via built-in Durable Streams
+  - No explicit hooks needed — session data available via `read-session-log` tool
+  - Verify stream output is readable and contains session metadata
 
-- [ ] **5.3** Create agent prompt effectiveness analysis - Review closed issues and PRs for agent-related bugs or confusion - Cross-reference with canonical source changes in the same period - Identify if certain prompts consistently cause confusion or errors - Opens an issue with proposed improvements
+- [ ] **5.3** Build learning tools (`src/tools/`)
+  - `read-learnings.ts` — list and read files in `.maestria-learnings/` (input: `{ path?, limit? }`)
+  - `record-learning.ts` — write timestamped markdown to `sessions/` (input: title, summary, category, tags)
+  - `read-session-log.ts` — read Durable Stream session trace
+  - `propose-improvement.ts` — write insight proposal to `insights/` (input: title, problem, proposal, affectedFiles, rationale)
 
-- [ ] **5.4** Create improvement PR generator - Based on trend analysis and effectiveness data, generate structured PRs that: - Address the most common failure pattern from the past month - Update ADRs for undocumented decisions - Update canonical source to reflect lessons from CI data
+- [ ] **5.4** Create learner subagent
+  - `src/agents/learner.ts` — `createAgent` with Claude Opus 4.8
+  - Instructions: session analysis workflow — read all sessions, find patterns, draft improvements
+  - Tools: `correlate-sessions.ts` (find repeated patterns), `draft-improvement.ts` (write structured proposals)
+
+- [ ] **5.5** Write learning skill
+  - `src/skills/learn.md`: delegate to learner → review findings → route proposals through `improve`
+  - Add instruction to base instructions: "Call `record-learning` at the end of every substantive task"
+
+- [ ] **5.6** Create weekly learning review schedule
+  - `src/workflows/weekly-learning.ts`: `init(maestria)` → dispatch learning review
+  - `.github/workflows/weekly-learning.yml`: cron `0 10 * * 0`, `workflow_dispatch`
+  - Reports findings to Telegram via `MAESTRIA_ADMIN_CHAT_ID`
+
+- [ ] **5.7** Verify session generates learning entry, weekly review produces improvement proposal
 
 ### Verification
 
-- [ ] CI logs are structured, versioned, and queryable
-- [ ] Trend analysis produces useful reports (not noise)
-- [ ] Prompt effectiveness analysis identifies at least one actionable improvement
-- [ ] Improvement PR generator creates high-quality, focused PRs
-- [ ] No data collection beyond what CI already produces — no telemetry, no external analytics services
+- [ ] `.maestria-learnings/` exists in monorepo and is git-tracked
+- [ ] `record-learning` writes session summaries to `sessions/`
+- [ ] `read-learnings` and `read-session-log` return data
+- [ ] Durable Streams capture session metadata automatically
+- [ ] Learner subagent analyzes session files and drafts proposals
+- [ ] `learn` skill orchestrates the learner → review → propose flow
+- [ ] `weekly-learning` workflow triggers the full pipeline
+
+**Rollback**: Reverting removes `.maestria-learnings/` and related files. Shipping and improvement remain.
+
+---
+
+## Phase 6: Reviewer Subagent
+
+**Goal**: Maker/checker split enforced — all proposed changes reviewed before PR submission.
+
+**Dependencies**: Phase 3 (shipping produces diffs), Phase 4 (improvement produces edits), Phase 5 (learning produces proposals).
+
+### Tasks
+
+- [ ] **6.1** Create reviewer subagent
+  - `src/agents/reviewer.ts` — `createAgent` with Claude Sonnet 4.6
+  - Instructions: review checklist — correctness, consistency, completeness, regression risk, style
+  - Tools: `review-diff.ts` (fetch git diff, return structured review), `check-consistency.ts` (read all agents/rules, flag terminology conflicts, broken refs, contradictions)
+  - Output: structured verdict (APPROVED / CHANGES_REQUESTED / COMMENT), summary, array of issues with severity, file, line, description, suggestion
+
+- [ ] **6.2** Integrate reviewer into shipping pipeline
+  - Update `ship.md`: add reviewer gate before PR creation
+  - If CHANGES_REQUESTED: fix issues, re-review
+  - If APPROVED or COMMENT: proceed to PR
+
+- [ ] **6.3** Integrate reviewer into improvement pipeline
+  - Update `improve.md`: add reviewer gate before applying agent/rules edits
+  - `check-consistency` validates no contradictions introduced
+
+- [ ] **6.4** Integrate reviewer into learning pipeline
+  - Update `learn.md`: route learner proposals through reviewer before applying
+  - Include reviewer summary in improvement PR
+
+- [ ] **6.5** Verify any proposed change passes through reviewer before reaching PR stage
+
+### Verification
+
+- [ ] `reviewer` subagent callable with diff, returns structured feedback
+- [ ] `check-consistency` identifies inconsistencies across agents/rules
+- [ ] `ship` skill includes reviewer gate before PR
+- [ ] `improve` / `learn` skills route proposals through reviewer
+- [ ] Reviewer correctly distinguishes intentional patterns from issues
+
+**Rollback**: Reviewer subagent is self-contained. Reverting removes the review gate but preserves all other functionality.
+
+---
+
+## Phase 7: Evals + Hardening
+
+**Goal**: Test suites validate agent behavior. Edge cases handled. Deployment ready.
+
+**Dependencies**: All prior phases.
+
+### Tasks
+
+- [ ] **7.1** Write maintenance eval
+  - `evals/maintenance.eval.ts`: ask agent to run `vp-check`, verify it calls the tool and reports status
+
+- [ ] **7.2** Write shipping eval
+  - `evals/shipping.eval.ts`: ask agent to create a changeset, verify tool call and reply
+
+- [ ] **7.3** Write self-learning eval
+  - `evals/self-learning.eval.ts`: record a learning, delegate to learner, verify tools called
+
+- [ ] **7.4** Hardening — error handling across all tools
+  - All `execSync`-based tools: return `{ stdout, stderr, exitCode }`, don't throw on non-zero exit
+  - `create-changeset`: validate bump type, handle missing `.changeset/` dir
+  - `version-packages`: handle no changesets exist case
+  - `create-pr`: handle rate limits, handle branch already has open PR
+  - `publish-release`: verify `NPM_TOKEN` before attempt, handle 2FA
+  - `update-agent` / `update-rules`: validate agent name exists, preserve line endings
+  - `record-learning`: handle missing `.maestria-learnings/sessions/` dir
+  - `read-learnings`: handle empty dir, limit file count to avoid context overflow
+  - All skills: add "what to do if X fails" guidance per step
+
+- [ ] **7.5** Create weekly dependency audit schedule
+  - `src/workflows/weekly-audit.ts`: orchestrates dependency check
+  - `.github/workflows/weekly-audit.yml`: cron `0 8 * * 1`, `workflow_dispatch`
+  - Flags packages >2 majors behind, reports to Telegram
+
+- [ ] **7.6** Final verification
+  - Run all evals with `flue eval` (or equivalent test harness)
+  - Trigger all workflows via `workflow_dispatch` and verify completion
+  - Test error scenarios: missing env vars, git conflicts, npm publish failure
+  - Verify all GitHub Actions workflows pass
+
+- [ ] **7.7** Update monorepo `README.md` with meta-agent documentation
+
+### Verification
+
+- [ ] All three eval suites pass
+- [ ] Agent handles error scenarios gracefully (returns errors, doesn't hang)
+- [ ] All three GitHub Actions schedules dispatch correctly
+- [ ] `flue connect maestria local` works for interactive debugging
+- [ ] All `workflow_dispatch` triggers complete successfully
+
+**Rollback**: Evals and hardening are additive. Reverting removes tests and polish but preserves all functionality.
 
 ---
 
 ## Phase Dependencies
 
 ```
-Phase 1 (Foundation) — Mostly done
-  └─► Phase 2 (Automated Maintenance) — Partially done
-        └─► Phase 3 (Automated Shipping) — Partially done
-              └─► Phase 4 (Self-Improvement) — Planned
-                    └─► Phase 5 (Learning & Analytics) — Planned
+Phase 1 (Scaffold + Maintenance)
+  └─► Phase 2 (Channels)
+        └─► Phase 3 (Shipping)
+              └─► Phase 4 (Self-Improvement)
+                    └─► Phase 5 (Self-Learning)
+                          └─► Phase 6 (Reviewer)
+                                └─► Phase 7 (Evals + Hardening)
 ```
 
-Phases 2 and 3 can partially overlap (the shipping pipeline needs reliable CI from phase 2, but the workflow infrastructure is shared). Phase 4 depends on having both maintenance and shipping stable to generate meaningful improvement proposals. Phase 5 depends on all prior phases to generate sufficient data.
+Phases 6 and 5 could partially overlap (the reviewer subagent is standalone), but the integration tasks in 6.2-6.4 depend on the pipelines created in Phases 3-5. The strict ordering avoids integration rework.
 
-## Key Principles
+## Source Directory Structure
 
-1. **Framework-free.** All operations use shell scripts, TypeScript via `tsx`, and GitHub Actions YAML. No agent framework dependency.
+```
+apps/maestria-agent/
+├── flue.config.ts
+├── package.json
+├── tsconfig.json
+├── .env.example
+├── src/
+│   ├── agents/
+│   │   ├── maestria.ts              # Root agent (Claude Opus 4.8)
+│   │   ├── reviewer.ts              # Reviewer subagent (Claude Sonnet 4.6)
+│   │   └── learner.ts               # Learner subagent (Claude Opus 4.8)
+│   ├── lib/
+│   │   └── base-instructions.ts     # Agent identity string
+│   ├── tools/
+│   │   ├── vp-install.ts
+│   │   ├── vp-check.ts
+│   │   ├── vp-test.ts
+│   │   ├── vp-build.ts
+│   │   ├── check-dependencies.ts
+│   │   ├── read-agent.ts
+│   │   ├── read-rules.ts
+│   │   ├── read-changelog.ts
+│   │   ├── git-status.ts
+│   │   ├── git-branch.ts
+│   │   ├── create-changeset.ts
+│   │   ├── version-packages.ts
+│   │   ├── publish-release.ts
+│   │   ├── create-pr.ts
+│   │   ├── update-agent.ts
+│   │   ├── update-rules.ts
+│   │   ├── propose-skill-change.ts
+│   │   ├── read-learnings.ts
+│   │   ├── record-learning.ts
+│   │   ├── read-session-log.ts
+│   │   ├── propose-improvement.ts
+│   │   ├── review-diff.ts
+│   │   ├── correlate-sessions.ts
+│   │   ├── draft-improvement.ts
+│   │   └── check-consistency.ts
+│   ├── skills/
+│   │   ├── maintain.md
+│   │   ├── ship.md
+│   │   ├── improve.md
+│   │   └── learn.md
+│   ├── channels/
+│   │   ├── telegram.ts
+│   │   └── github.ts
+│   └── workflows/
+│       ├── daily-check.ts
+│       ├── release.ts
+│       ├── weekly-learning.ts
+│       └── weekly-audit.ts
+├── .github/
+│   └── workflows/
+│       ├── daily-check.yml
+│       ├── release.yml
+│       ├── weekly-learning.yml
+│       └── weekly-audit.yml
+└── evals/
+    ├── maintenance.eval.ts
+    ├── shipping.eval.ts
+    └── self-learning.eval.ts
+```
 
-2. **PR-gated.** Every file change goes through a pull request. The meta-agent creates branches and opens PRs — never pushes directly to main.
+## Key Assumptions
 
-3. **Incremental.** Each phase adds one or two workflows. No big-bang deployments. Each addition is independently verifiable and reversible.
+1. **Public GitHub repo**: `agustinusnathaniel/maestria` is public. GitHub Actions `checkout@v4` needs no auth. Git push (PR branches) uses GitHub App installation tokens.
 
-4. **Observable by default.** All workflow outputs are visible in GitHub Actions logs. Structured summaries are committed to the repo where possible.
+2. **Tools run in the GitHub Actions runner**: No sandbox. `execSync` runs `vp`, `pnpm`, and `git` commands directly in the checked-out monorepo. Local development (`flue connect maestria local`) runs from the monorepo root — same filesystem, same commands.
 
-5. **No telemetry.** No external analytics, no data collection beyond what GitHub Actions and git history already provide. Phase 5 uses CI artifacts, not external services.
+3. **Durable Streams replace explicit hooks**: Flue records session metadata automatically. Phase 5 reads from Durable Streams rather than implementing custom `session_recorder` and `change_audit` hooks.
 
-6. **Canonical source authority.** The meta-agent must never edit generated platform files directly. All agent prompt changes go through `packages/core/agent-directives/` and the sync pipeline.
+4. **Instructions are TypeScript strings**: Agent identity lives in `src/lib/base-instructions.ts` as an exported string. No `instructions.md` file.
 
----
+5. **Flat tools directory**: All tools live in `src/tools/` — one file per tool, no subdirectories. Tools export `{ description, parameters, execute }` objects.
+
+6. **NPM_TOKEN**: Referenced in `.env.example` and GitHub Actions secrets. The agent publishes `@maestria/opencode` using this token.
+
+7. **All changes via PRs**: The agent never pushes directly to `main`. It creates feature branches, opens PRs, and waits for human approval.
+
+8. **`.maestria-learnings/` at monorepo root**: Git-tracked, available in the GitHub Actions checkout. Agent commits learnings back to the repo.
+
+9. **Deployment target is GitHub Actions**: The agent runs on schedule via `.github/workflows/*.yml`. Interactive sessions use `flue connect maestria local`. No Vercel deployment needed.
+
+## Environment Variables
+
+```bash
+ANTHROPIC_API_KEY=           # Claude model access
+TELEGRAM_BOT_TOKEN=          # Bot token from BotFather
+GITHUB_APP_ID=               # GitHub App ID
+GITHUB_APP_PRIVATE_KEY=      # GitHub App private key (PEM)
+GITHUB_WEBHOOK_SECRET=       # GitHub webhook secret
+NPM_TOKEN=                   # npm publish token
+MAESTRIA_ADMIN_CHAT_ID=      # Telegram chat ID for notifications
+```
+
+All seven variables are stored as GitHub Actions secrets for scheduled workflows. For local development, they live in `.env` (git-ignored).
 
 ## Summary by Phase
 
-| Phase | Effort | Key Deliverable | Status |
-| --- | --- | --- | --- |
-| 1: Foundation | Low (documentation + gap filling) | Verified, documented foundation | Mostly done |
-| 2: Automated Maintenance | Medium | Daily/weekly scheduled health + sync + dep checks | Partially done |
-| 3: Automated Shipping | Medium | End-to-end release pipeline with PR gates | Partially done |
-| 4: Self-Improvement | Medium | Consistency checking, ADR gap detection, CI pattern analysis | Planned |
-| 5: Learning & Analytics | Medium | Trend analysis, prompt effectiveness, improvement PR generation | Planned |
+| Phase | Effort | New Files | Key Deliverable |
+|---|---|---|---|
+| 1: Scaffold + Maintenance | Large (~8 tools, skill, workflow) | ~13 | Agent boots, runs vp check |
+| 2: Channels | Medium | ~3 | Agent responds on Telegram, GitHub, CLI |
+| 3: Shipping | Medium | ~8 | Full release cycle with approval gates |
+| 4: Self-Improvement | Medium | ~4 | Agent edits its own prompts via PR |
+| 5: Self-Learning | Large (tools, subagent, skill, workflow) | ~9 | Weekly learning review produces proposals |
+| 6: Reviewer | Medium | ~5 | Maker/checker split enforced |
+| 7: Evals + Hardening | Large (evals, hardening, final workflow) | ~6 | All evals pass, schedules trigger |

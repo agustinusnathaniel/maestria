@@ -1,56 +1,45 @@
 # Plans: Maestria Meta-Agent
 
-The meta-agent is an autonomous system that maintains, ships, and improves the [maestria](https://github.com/agustinusnathaniel/maestria) monorepo. It runs as GitHub Actions scheduled workflows — no separate framework, no agent directory, no sandbox. It is a complementary operator to the interactive 8-agent pipeline (which handles AI coding sessions), not a replacement for it.
+The maestria meta-agent maintains, ships, and improves the [@maestria/opencode](https://www.npmjs.com/package/@maestria/opencode) plugin. It lives at `apps/maestria-agent/` and runs autonomously — a robot that builds robots.
 
-Aligned with [@maestria/opencode](https://www.npmjs.com/package/@maestria/opencode) **v0.5.2**, [@maestria/core](https://www.npmjs.com/package/@maestria/core) **v0.3.1**, [@maestria/pi](https://www.npmjs.com/package/@maestria/pi) **v0.3.2**. See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) for the project vision and design patterns this meta-agent implements.
+Aligned with maestria **v0.3.7+**. See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) at the project root for the canonical project vision and design patterns this meta-agent implements.
 
-## Architecture at a Glance
+## Framework: Flue
 
-The monorepo uses a **canonical-source-sync** model:
-
-- `packages/core/agent-directives/` — single source of truth for all agent prompts
-- `scripts/sync-all` — reads `packages/*/sync.config.ts`, regenerates platform agent files
-- `scripts/check-sync` — verifies no drift between canonical source and generated copies
-- `apps/maestria-cli/` — CLI tool for cross-platform plugin management
-- `.maestria/workflow.md` + `.maestria/rules.md` — project-level agent workflow and rules
-
-The meta-agent builds on this foundation. It runs checks, creates changesets, ships releases, and proposes improvements via PRs — all through GitHub Actions automation.
+The agent uses [Flue](https://flueframework.com/), a TypeScript framework by the Astro team. Flue is built on [Pi](https://pi.dev) (Earendil Inc.) and provides sandbox-free monorepo execution, GitHub Actions deployment, and Durable Streams for session recording. Eve (Vercel's framework) was evaluated; the comparison lives in [`architecture.md`](./architecture.md).
 
 ## Contents
 
 | File | Covers |
-| --- | --- |
-| [`architecture.md`](./architecture.md) | System context, current foundation, meta-agent design, ADR references, C4 diagrams |
-| [`implementation-plan.md`](./implementation-plan.md) | 5-phase build plan — Foundation, Maintenance, Shipping, Improvement, Learning |
+|---|---|
+| [`architecture.md`](./architecture.md) | Agent design, tools, skills, channels, subagents, self-learning loop, Flue vs Eve comparison, ADRs 008-010 |
+| [`implementation-plan.md`](./implementation-plan.md) | 7-phase build plan — task breakdowns, dependencies, verification criteria |
 
-## Timeline (5 Phases)
+## Timeline (7 Phases)
 
-| Phase | Focus                 | Status         |
-| ----- | --------------------- | -------------- |
-| 1     | Foundation            | Mostly done    |
-| 2     | Automated Maintenance | Partially done |
-| 3     | Automated Shipping    | Partially done |
-| 4     | Self-Improvement      | Planned        |
-| 5     | Learning & Analytics  | Planned        |
+Each phase depends on the one before it.
+
+| Phase | Focus | Depends on |
+|---|---|---|
+| 1 | Scaffold: Flue init, monorepo wiring | — |
+| 2 | Core agent: tools, skills, channels | 1 |
+| 3 | Subagents: reviewer, learner | 2 |
+| 4 | Self-learning loop: `.maestria-learnings/`, feedback | 3 |
+| 5 | CI/CD: GitHub Actions, release automation | 4 |
+| 6 | Monitoring: logging, metrics, Durable Streams replay | 5 |
+| 7 | Evals: quality gates, benchmarks | 6 |
 
 ## Getting Started
 
 ```bash
-# Run the full maintenance pipeline locally
-pnpm check
-pnpm test
-pnpm build
-
-# Verify sync consistency
-bash scripts/check-sync
-
-# Generate platform agent files from canonical source
-bash scripts/sync-all
+npx flue init --target github-actions apps/maestria-agent/
 ```
 
 ## References
 
+- [Flue](https://flueframework.com/) / [docs](https://flueframework.com/docs/getting-started/quickstart/) / [GitHub](https://github.com/withastro/flue)
+- [Pi](https://pi.dev) — open-source coding harness
+- [Eve](https://vercel.com/eve) — evaluated, not chosen
+- [maestria](https://github.com/agustinusnathaniel/maestria) — monorepo
 - [VISION.md](../VISION.md) — Project vision, goals, and non-goals
 - [PATTERNS.md](../PATTERNS.md) — Design patterns catalog (Pipeline Composition, Maker/Checker Split)
-- [architecture.md](./architecture.md) — Detailed architecture description
-- [implementation-plan.md](./implementation-plan.md) — Build plan by phase
