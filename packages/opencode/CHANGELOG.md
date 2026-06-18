@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.8
+
+### Patch Changes
+
+- [`2e2f10e`](https://github.com/agustinusnathaniel/maestria/commit/2e2f10e62e932747d0fc1a260aed3ef2b65f267c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refine agent permissions after audit
+
+  - Add `todowrite` to adventurer, diagnose, writer for multi-step tracking
+  - Add missing git commands (status, show, diff, log) to adventurer, architect, reviewer, writer
+  - Add `lsp` to writer for code navigation during doc generation
+  - Add `npm view` to builder for dependency checks
+  - Add `which` to planner for tool discovery
+
 ## 0.3.7
 
 ### Patch Changes
