@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.6
+
+### Patch Changes
+
+- [`a52dd48`](https://github.com/agustinusnathaniel/maestria/commit/a52dd48b8ee2aa031f9989fde268d08d5c2569ce) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: explicitly deny orchestrator read-side tools
+
+  The orchestrator's `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions are now explicitly set to `deny`. The previous refactor relied on a missing-key default that the opencode framework does not honor, so the orchestrator was still able to use these tools. The new explicit denials make the strict-dispatcher role effective.
+
+  The 7 specialist subagents retain full read-side tool access for the work they pick up.
+
 ## 0.3.5
 
 ### Patch Changes
