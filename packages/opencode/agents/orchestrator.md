@@ -4,6 +4,11 @@ description: Manager agent for complex multi-step tasks.
   Use for: multi-file features, cross-domain tasks, 3+ step workflows.
 mode: all
 permission:
+  read: deny
+  glob: deny
+  grep: deny
+  lsp: deny
+  webfetch: deny
   edit: deny
   bash:
     "*": deny
