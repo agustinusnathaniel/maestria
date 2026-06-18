@@ -14,6 +14,42 @@ The maestria meta-agent is a [Flue](https://flueframework.com/) agent at `apps/m
 - A reviewer subagent (Claude Sonnet) validates every change; a learner subagent (Claude Opus) analyzes session patterns
 - Ecosystem packages (`@flue/telegram`, `@flue/github`) handle channel integration
 - No vendor lock-in — any LLM, any host, any deploy target
+- This design aligns with maestria's design patterns in [`PATTERNS.md`](../PATTERNS.md) (Pipeline Composition, Maker/Checker Split) and fulfills the vision defined in [`VISION.md`](../VISION.md).
+
+## Alignment with Maestria Project Docs
+
+The meta-agent design explicitly maps to maestria's canonical project documents at the monorepo root.
+
+### VISION.md
+
+The meta-agent fulfills the maestria vision of a maintainer that "assists with maintenance, analysis, and improvement proposals." All changes flow through human review — the agent creates branches, opens PRs, and never pushes directly to `main`. This aligns with VISION.md's **curation-driven evolution** principle:
+
+- **"No auto-extraction"** — The learner subagent analyzes Durable Streams and proposes improvements via PRs. No automated commits, no implicit learning.
+- **"No telemetry"** — Durable Streams are local-only, stored within the monorepo. No network calls from session recording.
+- **"No vendor lock-in"** — Built on Flue (not Eve), deployed to GitHub Actions (self-hosted), any LLM provider. See [Why Flue (Not Eve)](#why-flue-not-eve) for the full comparison.
+
+### PATTERNS.md — Pipeline Composition
+
+The meta-agent's phases (maintain → ship → improve → learn) follow the Pipeline Composition pattern. Each phase is a sequential stage with structured handoffs:
+
+| Meta-Agent Phase | Pipeline Stage | Purpose |
+|---|---|---|
+| Maintain | `vp install → vp check → vp test → vp build` | Run project checks, report health |
+| Ship | Changeset → version → review → PR → publish | Cut releases with approval gates |
+| Improve | Analyze → diagnose → propose → apply | Edit agent prompts and global rules |
+| Learn | Session analysis → pattern detection → proposal | Self-improvement via learner subagent |
+
+Each arrow is a handoff contract — the output of one stage is the input briefing for the next.
+
+### PATTERNS.md — Maker/Checker Split
+
+The reviewer subagent enforces the maker/checker split:
+
+- **`edit: deny`** — The reviewer has no write tools. It reads diffs and returns structured feedback but cannot modify files.
+- **Completions promise** — Success criteria defined before work begins. The reviewer checks the promise, not its opinion.
+- **Integration** — Reviewer gates every pipeline that produces changes (shipping, improvement, learning). No change reaches a PR without passing through the reviewer first.
+
+For the full pattern definitions, see [`PATTERNS.md`](../PATTERNS.md).
 
 ## Why Flue (Not Eve)
 
@@ -30,6 +66,8 @@ We evaluated two frameworks for the maestria meta-agent: **Eve** (Vercel's files
 The sandbox approach alone was a dealbreaker. Eve requires cloning the entire monorepo into a sandbox at bootstrap (~30 seconds, plus git credential management). Flue runs in-process — the monorepo is already on disk. For an agent that runs scheduled maintenance multiple times a day, 30 seconds of bootstrap per run adds real friction.
 
 The comparison table below breaks down every dimension we evaluated.
+
+**Why this matters for the maestria vision:** Flue delivers the multi-platform independence VISION.md calls for — zero vendor lock-in (any LLM, any host), self-hosted deployment (GitHub Actions, no external infra), and all changes flowing through PRs (curation-driven evolution, not auto-commits). The framework choice is itself an implementation of maestria's principles.
 
 ## Flue Framework
 

@@ -2,6 +2,8 @@
 
 The maestria meta-agent maintains, ships, and improves the [@maestria/opencode](https://www.npmjs.com/package/@maestria/opencode) plugin. It lives at `apps/maestria-agent/` and runs autonomously — a robot that builds robots.
 
+Aligned with maestria **v0.3.7+**. See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) at the project root for the canonical project vision and design patterns this meta-agent implements.
+
 ## Framework: Flue
 
 The agent uses [Flue](https://flueframework.com/), a TypeScript framework by the Astro team. Flue is built on [Pi](https://pi.dev) (Earendil Inc.) and provides sandbox-free monorepo execution, GitHub Actions deployment, and Durable Streams for session recording. Eve (Vercel's framework) was evaluated; the comparison lives in [`architecture.md`](./architecture.md).
@@ -39,3 +41,5 @@ npx flue init --target github-actions apps/maestria-agent/
 - [Pi](https://pi.dev) — open-source coding harness
 - [Eve](https://vercel.com/eve) — evaluated, not chosen
 - [maestria](https://github.com/agustinusnathaniel/maestria) — monorepo
+- [VISION.md](../VISION.md) — Project vision, goals, and non-goals
+- [PATTERNS.md](../PATTERNS.md) — Design patterns catalog (Pipeline Composition, Maker/Checker Split)

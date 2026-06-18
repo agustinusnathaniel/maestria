@@ -6,6 +6,8 @@ This plan breaks the build into seven sequential phases. Each phase has concrete
 
 **Monorepo**: `agustinusnathaniel/maestria`, pnpm workspaces, Vite+, changesets.
 
+**Version**: `@maestria/opencode` at **v0.3.7+**. See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) at the project root for the canonical project vision and design patterns.
+
 ## Phase 1: Scaffold + Maintenance (Foundation)
 
 **Goal**: A working Flue agent that runs maestria maintenance commands and reports health daily via GitHub Actions.
@@ -28,6 +30,7 @@ This plan breaks the build into seven sequential phases. Each phase has concrete
 - [ ] **1.3** Create root agent
   - `src/agents/maestria.ts`: `createAgent` with Claude Opus 4.8, `sandbox: local()`, HTTP route passthrough
   - `src/lib/base-instructions.ts`: agent identity string — role, authority model (no direct-to-main pushes), tool catalog, communication guidance
+  - Reference [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) in the base instructions so the agent understands the project's vision, non-goals, and design patterns when analyzing or improving agent files
   - Register all Phase 1 tools and the `maintain` skill
 
 - [ ] **1.4** Build maintenance tools (`src/tools/`)
@@ -36,7 +39,7 @@ This plan breaks the build into seven sequential phases. Each phase has concrete
   - `vp-test.ts` — `execSync('vp test')`, return formatted pass/fail
   - `vp-build.ts` — `execSync('vp run -r build')`, return build output
   - `check-dependencies.ts` — `execSync('pnpm outdated --json')`, parse and format
-  - `read-agent.ts` — read agent `.md` from `packages/opencode/agents/` (input: `{ name }`)
+  - `read-agent.ts` — read agent `.md` from `packages/opencode/agents/` (input: `{ name }`). Agent files use the `yaml` library for frontmatter parsing — reading tools should use the same `yaml` library, not a custom parser.
   - `read-rules.ts` — read `packages/opencode/rules/AGENTS.md`
   - `read-changelog.ts` — read `packages/opencode/CHANGELOG.md`
   - Tools export `{ description, parameters, execute }` objects
@@ -160,7 +163,7 @@ This plan breaks the build into seven sequential phases. Each phase has concrete
 ### Tasks
 
 - [ ] **4.1** Build improvement tools (`src/tools/`)
-  - `update-agent.ts` — write new content to an agent `.md` file (input: `{ name, content }`), gated with approval
+  - `update-agent.ts` — write new content to an agent `.md` file (input: `{ name, content }`), gated with approval. When parsing or modifying agent frontmatter, use the `yaml` library (not a custom parser) — this matches the implementation in `packages/opencode/src/index.ts`.
   - `update-rules.ts` — write new content to `rules/AGENTS.md` (input: `{ content }`), gated with approval
   - `propose-skill-change.ts` — write a draft skill change proposal (input: `{ skill, description, changes }`), gated with approval
 
