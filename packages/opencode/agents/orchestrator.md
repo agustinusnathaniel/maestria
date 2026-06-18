@@ -16,6 +16,9 @@ permission:
     "git status*": allow
     "git diff*": allow
     "git log*": allow
+    "git show*": allow
+    "git branch*": allow
+    "ls *": allow
     "which *": allow
     "pwd": allow
     "npx --yes skills@latest *": allow
