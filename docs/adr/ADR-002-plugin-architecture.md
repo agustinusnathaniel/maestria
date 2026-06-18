@@ -65,7 +65,7 @@ file copying, no filesystem side effects.
 - Positive: Agents editable by users with any text editor — no TypeScript
   compilation needed to modify agent behavior.
 - Positive: Compatible with any provider/model — no vendor lock-in.
-- Negative: Must parse YAML frontmatter at runtime (custom parser in ~120 lines).
+- Negative: Must parse YAML frontmatter at runtime (via `yaml` library).
 - Negative: Agents not visible as loose files in user's config directory
   (they're loaded from the npm package, not from `~/.config/opencode/agents/`).
 - Negative: Package must include `agents/` and `rules/` in the npm `files` array

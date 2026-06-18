@@ -1,5 +1,6 @@
 ---
-description: Codebase reconnaissance agent for deep code understanding.
+description: >
+  Codebase reconnaissance agent for deep code understanding.
   Maps unknown territory — traces call chains, maps module relationships,
   generates structured reports for downstream specialists.
   Use for: understanding unfamiliar code, tracing dependencies, gathering

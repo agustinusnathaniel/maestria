@@ -1,5 +1,6 @@
 ---
-description: Architecture decisions using decision matrices and ADRs.
+description: >
+  Architecture decisions using decision matrices and ADRs.
   Evaluates options with weighted criteria, clarifies business context first.
   Use for: technology choices, implementation approaches, trade-off analysis.
 mode: subagent

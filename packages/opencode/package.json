@@ -44,7 +44,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "^1.17.0"
+    "@opencode-ai/plugin": "^1.17.0",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

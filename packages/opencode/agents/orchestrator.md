@@ -1,5 +1,6 @@
 ---
-description: Manager agent for complex multi-step tasks.
+description: >
+  Manager agent for complex multi-step tasks.
   Breaks down work, delegates to specialists, integrates results.
   Use for: multi-file features, cross-domain tasks, 3+ step workflows.
 mode: all
