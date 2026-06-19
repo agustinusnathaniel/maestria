@@ -20,7 +20,7 @@
   "sessionStart": {
     "skill": "orchestrator"
   },
-  "skillInstructions": "Maestria agent pack: 8 specialized skills for Kimi Code — orchestrator (methodology + delegation + swarm), builder (focused implementation), adventurer (codebase reconnaissance), architect (architecture decisions), planner (multi-phase plans), reviewer (code review), writer (documentation), diagnose (root cause analysis). The orchestrator auto-loads at session start. See each skill's whenToUse field for invocation guidance.",
+  "skillInstructions": "Maestria dispatch rules for Kimi Code:\n- 7 specialist personas: builder, adventurer, architect, planner, reviewer, writer, diagnose\n- Use Skill(name=\"<persona>\") to load a persona, then inline its methodology into Agent()/AgentSwarm() prompts\n- builder/adventurer/planner/reviewer/writer/diagnose → subagent_type \"coder\" (except adventurer → \"explore\", planner → \"plan\")\n- Routing table in the orchestrator skill shows the full specialist→subagent mapping\n- The orchestrator auto-loads at session start and provides full delegation methodology",
   "interface": {
     "displayName": "Maestria Agent Pack",
     "shortDescription": "8 specialized engineering workflow skills for Kimi Code",

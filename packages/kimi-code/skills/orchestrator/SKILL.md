@@ -82,50 +82,21 @@ a single `<agent_swarm_result>` XML envelope.
 
 ### Tool schema (Zod, from `agent-swarm.ts`)
 
-| Field              | Type                  | Required    | Notes                                                                                 |
-| ------------------ | --------------------- | ----------- | ------------------------------------------------------------------------------------- |
-| `description`      | string                | Yes         | Short description of the whole swarm                                                  |
-| `subagent_type`    | string                | No          | Defaults to `coder`                                                                   |
-| `prompt_template`  | string                | Conditional | Required if `items` is provided; **must include `{{item}}`** placeholder              |
-| `items`            | string[]              | Conditional | Each item launches one new subagent; max **128**; min 2 (or 1+ if `resume_agent_ids`) |
-| `resume_agent_ids` | record<string,string> | No          | Map of existing `agent_id` → prompt; resumed before new spawns                        |
-
-### Scheduling (from `session/subagent-batch.ts`)
-
-- **Initial**: 5 tasks start immediately, then 1 more every 700 ms.
-- **Per-task timeout**: 30 minutes (`DEFAULT_SUBAGENT_TIMEOUT_MS = 30 * 60 * 1000`).
-- **Rate-limit phase**: provider rate limit requeues the offending subagent
-  with exponential backoff (3s, 6s, 12s, doubling); capacity shrinks by 1,
-  recovers by 1 after 3 quiet minutes.
-- **Return order**: results match input order, even if some finish out-of-order.
+The AgentSwarm tool fields (description, subagent_type, prompt_template, items, resume_agent_ids) are documented in the tool's own description. Refer to that for field details and constraints.
 
 ### Exclusive-deny policy
 
-> "If `AgentSwarm` is called, that call must be the only tool call in the
-> response." (`agent-swarm.md`)
-
-The tool also declares `accesses: ToolAccesses.all()` — its file-access
-declaration conflicts with every other tool's, so the loop cannot schedule
-it alongside other tool calls in the same turn. **Practically: you cannot
-"explore first, then swarm" in one turn — it must be two turns.** The
-`resume_agent_ids` field can re-feed failed subagents in a later turn
-without losing the items that already completed.
+`AgentSwarm` cannot be paired with other tool calls in the same turn
+(its exclusive-deny policy is documented in the tool description).
+If you need to explore first and then swarm, split it into two turns.
+Use `resume_agent_ids` to re-feed failed subagents in a later turn.
 
 ### Interpreting the result envelope
 
-`AgentSwarm` returns one `<agent_swarm_result>` XML envelope:
-
-```xml
-<agent_swarm_result>
-  <summary>N tasks completed, M failed, K aborted</summary>
-  <resume_hint>optional: re-feed the failed subagents</resume_hint>
-  <subagent agent_id="..." item="..." state="..." outcome="completed|failed|aborted">...</subagent>
-  <!-- one <subagent> per task, in input order -->
-</agent_swarm_result>
-```
-
-Use the per-task outcomes to decide whether to retry via `resume_agent_ids`,
-escalate to the user, or proceed with the completed subset.
+`AgentSwarm` returns the results of all its subagents. Each subagent outcome
+is one of: `completed`, `failed`, or `aborted`. Use the per-task outcomes to
+decide whether to retry via `resume_agent_ids`, escalate to the user, or
+proceed with the completed subset.
 
 ## Default Pipeline (Non-Trivial Work)
 
@@ -141,21 +112,11 @@ load relevant skills → AgentSwarm (≥3 uniform items) OR single Agent (1-2 it
 
 ### Background Sub-Agents
 
-`AgentSwarm` is always foreground (its `runInBackground: false` flag
-makes results block until the whole batch returns), but a single
-`Agent` dispatch can optionally run in the background. Background
-sub-agents:
-
-- Return their result automatically to the main Agent on completion
-  (no polling needed)
-- Can be called back to continue the same task
-- Free the main Agent to do other work while a long investigation
-  runs in parallel
-
-Use background mode when the task is likely to take more than ~2
-minutes AND the main Agent has independent work to do while waiting.
-Otherwise prefer foreground (the default) — it is simpler to reason
-about and the result is available when the `Agent` call returns.
+A single `Agent` dispatch can optionally run in the background, returning
+its result automatically when complete. Use background mode when the task
+will take more than ~2 minutes AND you have independent work to do while
+waiting. Otherwise prefer foreground (the default) — the result is
+available when the `Agent` call returns and is simpler to reason about.
 
 ## How to Invoke a Specialist Persona
 

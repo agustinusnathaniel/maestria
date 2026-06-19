@@ -24,30 +24,6 @@
 
 - **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or `LSP` when available) for any file you have path access to. Don't `WebFetch` a local file or a file in a checked-out repo.
 
-## Delegation
-
-When delegating work via the `Agent` or `AgentSwarm` tool, dispatch one of
-the 7 specialist personas (loaded via the `Skill` tool) into the prompt
-of the appropriate Kimi Code subagent (`coder`, `explore`, or `plan`).
-**Never dispatch a raw subagent without a persona** — the personas carry
-the methodology and constraints (reviewer doesn't edit, adventurer is
-read-only, etc.).
-
-| Specialist   | Role                                             | When to Delegate                                                                             |
-| ------------ | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| `architect`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
-| `builder`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
-| `diagnose`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
-| `planner`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
-| `reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
-| `writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
-
-For ≥3 uniform independent items, use `AgentSwarm` (one `prompt_template`
-across many `items`). For 1–2 items or stateful work, use a single `Agent`
-call. The orchestrator skill (auto-loaded at session start) carries the
-full routing table and the swarm methodology.
-
 ## Context Management
 
 - **Progressive disclosure** — start high-level, get specific as needed.
