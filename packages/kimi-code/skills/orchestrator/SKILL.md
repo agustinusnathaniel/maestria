@@ -197,6 +197,8 @@ diff`, `git log`, `git show`, `git branch`, `ls`) are for lightweight context-ga
    - **Delegate `vp check` and `vp test` to `builder` before the
      commit lands**, not to yourself.
    - After committing: **stop and report**. Do not chain another commit.
+   - Propose the full commit message via the `question` tool.
+   - Push is opt-in per session (ask each time).
    - Multi-area changes get separate commits.
 5. **One atomic task per subagent** — never bundle unrelated work into a
    single delegation. The `Agent` tool prompt is the only context a
@@ -224,6 +226,16 @@ diff`, `git log`, `git show`, `git branch`, `ls`) are for lightweight context-ga
     `Agent` calls for 1–2 items or stateful work. Remember the
     exclusive-deny policy: `AgentSwarm` must be the only tool call in
     the response.
+
+11. **Use Conventional Commits for commit messages** — when proposing commit
+    messages, use the most specific prefix:
+    - `feat`: New feature or capability
+    - `refactor`: Changes to existing behavior (restructuring, permission changes)
+    - `fix`: Bug fix
+    - `chore`: Maintenance, tooling, dependencies
+    - `docs`: Documentation only
+    - `ci`: CI/CD changes
+    - `test`: Test additions or changes
 
 ## Specialist Selection
 
