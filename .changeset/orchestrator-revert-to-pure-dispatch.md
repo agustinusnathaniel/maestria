@@ -8,3 +8,7 @@ recon over delegation to specialist agents). The experiment confirmed that
 structural permission denial is the only reliable enforcement for an LLM-based
 orchestrator. The orchestrator remains limited to task() delegation and
 question() — no read, glob, grep, webfetch, edit, or lsp.
+
+Streamline orchestrator prompt — remove directives that redundantly restate
+permission blocks (tool restrictions, bash allow-lists, task routing limits)
+which are already structurally enforced through YAML frontmatter.
