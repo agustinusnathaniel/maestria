@@ -21,6 +21,12 @@
 - **Webfetch may hang — don't block on it** — if a `webfetch` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
 - **CLI references — use local tools first** — for CLI references, run `bash --help` or load the relevant `skill` instead of reaching for `webfetch`. Local tools are faster and more reliable than fetching docs.
 - **Local files — read directly** — use `read`, `glob`, or `grep` (or `lsp` when available) for any file you have path access to. Don't `webfetch` a local file or a file in a checked-out repo.
+- **Tool hierarchy for external information:**
+  1. `webfetch` — fetch a specific known URL (for docs, pages)
+  2. `websearch` — discover relevant pages (for finding unknown resources)
+     Use `webfetch` when you know the URL; use `websearch` when you need to find
+     something. `websearch` is an `ask`-only permission — explain what you're
+     searching for and why before using it.
 
 ## Delegation
 
