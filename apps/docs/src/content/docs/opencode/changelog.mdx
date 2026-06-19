@@ -3,9 +3,29 @@ title: Changelog
 description: Release history for @maestria/opencode.
 ---
 
-import { Aside } from "@astrojs/starlight/components";
-
 # Changelog
+
+## v0.3.9
+
+_June 19, 2026_
+
+### Websearch for agents
+
+`@architect`, `@adventurer`, and `@diagnose` now have `websearch` permission set to `ask`. When these agents need to find information they don't have a URL for, they can search the web — but the tool requires user approval before each search.
+
+Other agents (`@builder`, `@planner`, `@reviewer`, `@writer`) remain websearch-free.
+
+### Orchestrator gains read-only recon
+
+The orchestrator now has `read`, `glob`, and `grep` for quick verification before delegation. This lets it check file existence, skim exports, and confirm references — without leaving the dispatcher role.
+
+Structural boundaries remain:
+
+- `edit: deny` — orchestrator cannot implement
+- `webfetch: deny` — orchestrator delegates web research
+- `lsp: deny` — deep code intelligence is for specialists
+
+A new _Read-Side Tool Policy_ in the orchestrator's instructions caps read/glob/grep at 3 calls per task before delegating deeper recon to `@adventurer`.
 
 ## 0.3.7
 
@@ -16,6 +36,12 @@ import { Aside } from "@astrojs/starlight/components";
 - **Replaced the hand-rolled YAML parser** with the spec-compliant `yaml` library (eemeli/yaml). This eliminates an entire class of parsing bugs and removes ~120 lines of brittle custom parsing code.
 
 - **Agent descriptions now use proper YAML syntax.** All 8 agent description fields were converted to YAML folded block scalars (`>`) for cleaner multiline text that won't trip up future parsing.
+
+## 0.3.8
+
+### Patch Changes
+
+- **Permission refinements after audit.** A systematic review uncovered several gaps in agent permissions. Three agents (adventurer, diagnose, writer) gained `todowrite` for multi-step task tracking. Git read commands (`status`, `show`, `diff`, `log`) — needed for inspecting history without leaving a role — were missing from four agents (adventurer, architect, reviewer, writer), now added. Writer gained `lsp` for code navigation during doc generation. Builder can now run `npm view` for dependency checks, and planner has `which` for tool discovery.
 
 ## 0.3.6
 
