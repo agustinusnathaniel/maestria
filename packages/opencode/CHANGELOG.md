@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.10
+
+### Patch Changes
+
+- [`a12fc6d`](https://github.com/agustinusnathaniel/maestria/commit/a12fc6d719cefc7572f4afe85c664ee0ebc4031d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Revert orchestrator to pure dispatcher — after real-world testing, read/glob/grep
+  permissions on the orchestrator caused workaround behavior (preferring direct
+  recon over delegation to specialist agents). The experiment confirmed that
+  structural permission denial is the only reliable enforcement for an LLM-based
+  orchestrator. The orchestrator remains limited to task() delegation and
+  question() — no read, glob, grep, webfetch, edit, or lsp.
+
+  Streamline orchestrator prompt — remove directives that redundantly restate
+  permission blocks (tool restrictions, bash allow-lists, task routing limits)
+  which are already structurally enforced through YAML frontmatter.
+
 ## 0.3.9
 
 ### Patch Changes
