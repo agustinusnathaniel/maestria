@@ -312,6 +312,8 @@ in-process, so we cannot rely on the subprocess `--tools` filter —
 we must block the full set):
 
 ```typescript
+import { DANGEROUS_PATTERNS } from "./tools.js";
+
 pi.on("tool_call", async (event, ctx) => {
   const state = await getMaestriaState(ctx);
   if (!state.reviewMode) return;
@@ -319,12 +321,23 @@ pi.on("tool_call", async (event, ctx) => {
   if (
     isToolCallEventType("edit", event) ||
     isToolCallEventType("write", event) ||
-    (isToolCallEventType("bash", event) && isDestructiveBash(event.input.command))
+    (isToolCallEventType("bash", event) &&
+      DANGEROUS_PATTERNS.some((p) => p.test(event.input.command)))
   ) {
     return { block: true, reason: "Review mode: edits and destructive bash are blocked" };
   }
 });
 ```
+
+The `DANGEROUS_PATTERNS` array was previously defined in a separate
+`src/safety.ts` module. After the ecosystem audit the patterns are
+inlined into `src/tools.ts` (they match Pi's canonical
+`permission-gate.ts` example and don't warrant a separate module).
+See [`03-package-design.md` §4.7](./03-package-design.md#47-srctoolsts--tool-call-interceptors).
+
+**Optional:** Users who want configurable policy enforcement
+(allow/ask/deny permissions) can add
+`@gotgenes/pi-permission-system` as a peer dependency.
 
 This catches the case where the orchestrator forgets to restrict
 the subprocess toolset, or where the review happens in the parent

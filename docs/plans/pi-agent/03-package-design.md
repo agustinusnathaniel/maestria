@@ -34,8 +34,7 @@ packages/
     │   ├── state.ts            # State management (in-memory + persisted)
     │   ├── subagent.ts         # Custom subagent delegation tool
     │   ├── commands.ts         # /orchestrate, /review, /handoff, /maestria-status
-    │   ├── tools.ts            # Tool-call interceptor (maker/checker + dangerous commands)
-    │   └── safety.ts           # Shared DANGEROUS_PATTERNS + isDestructiveBash
+    │   └── tools.ts            # Tool-call interceptor (maker/checker + inline dangerous patterns)
     ├── dist/                   # Build output (tsc)
     │   ├── extension.js
     │   ├── extension.d.ts
@@ -687,26 +686,31 @@ implementation is in `src/commands.ts`.
 
 ### 4.7 `src/tools.ts` — Tool-Call Interceptors
 
-The `tool_call` event handler that enforces the maker/checker
-split. Two checks:
+A single module for tool-call interception. Contains:
 
-1. **Review-mode block.** If `state.reviewMode === true`, block
-   `edit`, `write`, and `bash` calls (the parent-session `/review`
-   cannot rely on subprocess `--tools`; we block the full set
-   here).
-2. **Dangerous-command block.** Always block `rm -rf`, `sudo`,
-   `chmod 777`, etc. (consistent with the example
-   `permission-gate.ts`).
+1. **`DANGEROUS_PATTERNS`** — Inlined from Pi's `permission-gate.ts`
+   example. A `const` array of `RegExp` patterns matching destructive
+   commands (`rm -rf`, `dd if=`, `> /dev/sda`, `chmod -R 777 /`). When
+   a bash tool call matches, it is blocked with a confirmation prompt
+   (or returned as an error when there's no UI for confirmation).
 
-`DANGEROUS_PATTERNS` and `isDestructiveBash` are defined in
-`src/safety.ts` (see §4.13) and imported by both `src/tools.ts`
-and `src/subagent.ts`. The subagent tool uses them to validate
-the `--tools` argument it passes to the subprocess.
+2. **Review-mode interceptor** — Unique maestria methodology. When
+   `state.reviewMode` is active, blocks `edit`, `write`, and
+   destructive `bash` tool calls for the reviewer specialist. Uses
+   `tool_call` event with `{ block: true, reason }`.
 
 ```typescript
 import { isToolCallEventType, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { getMaestriaState } from "./state.js";
-import { DANGEROUS_PATTERNS, isDestructiveBash } from "./safety.js";
+
+// Patterns matching destructive bash commands, inlined from
+// Pi's canonical permission-gate.ts example.
+const DANGEROUS_PATTERNS: RegExp[] = [
+  /\brm\s+(-rf?|--recursive)\b/i,
+  /\bdd\s+if=/i,
+  />\s+\/dev\/sd[a-z]/i,
+  /\bchmod\s+-R\s+777\s+\//i,
+];
 
 export function installToolInterceptors(pi: ExtensionAPI): void {
   pi.on("tool_call", async (event, ctx) => {
@@ -742,6 +746,15 @@ export function installToolInterceptors(pi: ExtensionAPI): void {
   });
 }
 ```
+
+Previously these were split across `src/safety.ts` and `src/tools.ts`.
+Consolidated after ecosystem audit (see ADR-015): the safety patterns
+are identical to Pi's canonical `permission-gate.ts` example and do not
+warrant a separate module.
+
+**Optional:** Users who want configurable policy enforcement
+(allow/ask/deny permissions) can add
+`@gotgenes/pi-permission-system` as a peer dependency.
 
 The dangerous-pattern block is always active. The review-mode
 block only activates after `/review` is invoked.
@@ -938,31 +951,6 @@ Tests:
 
 We use `vitest` (consistent with the rest of the monorepo) and
 the `@vitest` catalog version. See [pnpm-workspace.yaml](../../pnpm-workspace.yaml).
-
-### 4.13 `src/safety.ts` — Shared Danger Patterns
-
-A small module that exports `DANGEROUS_PATTERNS` (the regex set for
-destructive bash) and `isDestructiveBash(command: string)`. Both
-`src/tools.ts` (the `tool_call` interceptor) and `src/subagent.ts`
-(the subprocess toolset validator) import from here. Single source
-of truth for "what counts as destructive".
-
-```typescript
-/**
- * Patterns that indicate a destructive bash command.
- * Matches `rm -rf`, `sudo`, `chmod 777`, etc.
- * Same set as the upstream `permission-gate.ts` example.
- */
-export const DANGEROUS_PATTERNS: RegExp[] = [
-  /\brm\s+(-rf?|--recursive)/i,
-  /\bsudo\b/i,
-  /\b(chmod|chown)\b.*777/i,
-];
-
-export function isDestructiveBash(command: string): boolean {
-  return DANGEROUS_PATTERNS.some((p) => p.test(command));
-}
-```
 
 ## 5. The `pi` Manifest Entry
 
@@ -1221,7 +1209,8 @@ The package is:
   package directory
 
 A developer can scaffold this in a day. The full implementation
-(Phase 1–8) is ~2 weeks of focused work. See
+(Phase 1–8) is ~9 working days of focused work (reduced from 10
+after consolidating safety patterns into tools.ts). See
 [`04-implementation-phases.md`](./04-implementation-phases.md).
 
 ## Date

@@ -1,5 +1,15 @@
 # 04. Implementation Phases — Phased Delivery Plan
 
+> **Ecosystem reuse (see ADR-015):** Following the thinness audit, the
+> package scope has been reduced:
+>
+> - Subagent runtime → depends on `@gotgenes/pi-subagents`
+> - Safety patterns → inlined from Pi's `permission-gate.ts` example
+> - State persistence → uses built-in `pi.appendEntry()` in v1.1
+> - All tool/model APIs use Pi's built-in `setActiveTools()`, `setModel()`
+>
+> Estimate: ~~11~~ → ~~10~~ → **9 days**
+
 This document is the build order. Each phase has:
 
 - **Goal** — what we're trying to ship
@@ -496,7 +506,8 @@ active model for review turns.
 - [ ] The interceptor blocks `edit` / `write` / destructive
       `bash` when `state.reviewMode === true`
 - [ ] The interceptor always blocks dangerous patterns
-      (`rm -rf`, `sudo`, `chmod 777`) with a user confirm
+      (`rm -rf`, `dd if=`, `> /dev/sda`, `chmod -R 777 /`) with a user
+      confirm — inlined from Pi's `permission-gate.ts` example
 - [ ] `src/commands.ts` adds the `/review` command
 - [ ] The `/review` command:
   1. Saves the current model
@@ -544,7 +555,9 @@ file), Phase 4 (reviewer prompt template).
 
 ### Estimated Time
 
-1.5 days.
+0.5 days. Safety patterns are inlined into `src/tools.ts`
+(instead of a separate `src/safety.ts`), reducing scaffolding
+and test overhead.
 
 ---
 
@@ -688,12 +701,13 @@ All prior phases.
 | 3     | 1.0  | 2.0        |
 | 4     | 3.0  | 5.0        |
 | 5     | 1.0  | 6.0        |
-| 6     | 1.5  | 7.5        |
-| 7     | 1.0  | 8.5        |
-| 8     | 1.5  | 10.0       |
+| 6     | 0.5  | 6.5        |
+| 7     | 1.0  | 7.5        |
+| 8     | 1.5  | 9.0        |
 
-**Total: 10 working days of focused implementation.**
-(Reduced from 11 following ADR-015's subagent reuse.)
+**Total: 9 working days of focused implementation.**
+(Reduced from 11 following ADR-015, then from 10 after
+safety.ts consolidation inlining patterns into tools.ts.)
 
 This is a rough estimate. Phase 4 (prompt templates) is the
 most variable — if the opencode agent content can be
