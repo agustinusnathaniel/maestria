@@ -18,6 +18,11 @@
   URL, `WebFetch` is fine. Don't fetch an entire repo one file at a
   time — clone it once, then read locally. Use `--cwd` to resolve
   versions from the current project.
+- **Webfetch may hang — don't block on it** — if a `WebFetch` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
+
+- **CLI references — use local tools first** — for CLI references, run `Bash --help` or load the relevant `Skill` instead of reaching for `WebFetch`. Local tools are faster and more reliable than fetching docs.
+
+- **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or `LSP` when available) for any file you have path access to. Don't `WebFetch` a local file or a file in a checked-out repo.
 
 ## Delegation
 
