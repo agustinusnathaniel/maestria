@@ -434,6 +434,20 @@ content inline because prompt-template expansion is more reliable
 than skill auto-loading for the methodology the orchestrator
 encodes.
 
+> **Update (June 2026):** The orchestrator prompt was rewritten on `@maestria/opencode` main.
+> Key differences from the plan's description above:
+>
+> - **Zero read tools** — the orchestrator has no `read`, no `grep`, no `glob` at all.
+>   It is a dispatcher only.
+> - **"Dispatcher" mandate** — the orchestrator's sole job is to delegate. It does not
+>   research, plan, or review. That is the specialists' job.
+> - **7 CRITICAL RULES** instead of 10 — streamlined to the minimum viable set. The 3
+>   removed rules are now encoded in the specialist prompts.
+>
+> This rewrite is convergent with the plan's architecture: the Pi orchestrator is also
+> a dispatcher that delegates via `subagent(...)` calls, with no methodology work done
+> in the parent session.
+
 ### 4.4 Invoking Specialists
 
 Three invocation paths:
@@ -459,6 +473,12 @@ The global rules (`rules/AGENTS.md`) are the same as in
 - Delegation table (the 7 specialists)
 - Context management (progressive disclosure, checkpointing,
   completion promises)
+- **Webfetch may hang** — proceed without result if a fetch hangs,
+  surface the skip in the next user-facing message.
+- **CLI references** — use `bash --help` or load the relevant skill
+  first instead of reaching for `webfetch`.
+- **Local files** — read directly with `read`/`glob`/`grep`. Don't
+  `webfetch` a file you have access to.
 
 ### 5.1 Injection Mechanism
 

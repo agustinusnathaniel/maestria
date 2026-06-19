@@ -114,6 +114,11 @@ YAML, no per-agent permissions).
 - [`docs/adr/ADR-002-plugin-architecture.md`](../adr/ADR-002-plugin-architecture.md) — the opencode
   equivalent, applied to Pi
 
+> **Note (June 2026):** ADR-002's "custom parser in ~120 lines" (the
+> `parseFrontmatter` function) has been replaced on main with the
+> `yaml@^2.7.0` library (v0.3.7). The opencode package is now shorter
+> than the ~189 lines cited in the plan.
+
 ### Date
 
 2026-06-18
@@ -480,6 +485,15 @@ This is the closest analog to OpenCode's
 [`ADR-002`](../adr/ADR-002-plugin-architecture.md)) and
 to the `system.transform` hook that the opencode README
 references.
+
+The rules content (as of `@maestria/opencode@0.3.8`) includes:
+
+- **Orchestration** — don't assume, read docs first, use opensrc
+- **Delegation** — 7-specialist table
+- **Context management** — progressive disclosure, checkpointing
+- **Webfetch may hang** — proceed without result, surface the skip
+- **CLI references** — use `bash --help` or skill first
+- **Local files** — read directly, don't `webfetch`
 
 ### Consequences
 

@@ -809,6 +809,18 @@ in capabilities.
   declarative and human-readable. Pi's `tool_call` interception is
   programmatic TypeScript. The declarative version is easier to audit.
 
+  The per-agent tool grants have been expanded with additional bash patterns:
+
+  | Agent         | Additional permissions                      |
+  | ------------- | ------------------------------------------- |
+  | `@adventurer` | `todowrite`, `git status*`                  |
+  | `@architect`  | `git diff*`, `git log*`, `git status*`      |
+  | `@builder`    | `npm view *`                                |
+  | `@diagnose`   | `todowrite`                                 |
+  | `@planner`    | `which *`                                   |
+  | `@reviewer`   | `git show*`                                 |
+  | `@writer`     | `todowrite`, `lsp`, `git diff*`, `git log*` |
+
 - **Maturity.** OpenCode is at 1.17.x. Pi is at 0.79.6 — pre-1.0,
   with API surface changes still happening.
 
@@ -819,6 +831,9 @@ in capabilities.
 
 [`packages/opencode/src/index.ts`](../../packages/opencode/src/index.ts)
 is 189 lines.
+
+> **Update (June 2026):** The custom YAML frontmatter parser (previously ~120 lines
+> in this file) has been replaced with the `yaml@^2.7.0` library on main (v0.3.7).
 
 ### 7.3 What Neither Platform Does
 

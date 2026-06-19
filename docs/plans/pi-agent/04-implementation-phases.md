@@ -178,7 +178,9 @@ inspecting the system prompt in a running Pi session.
       the generated content
 - [ ] `rules/AGENTS.md` is a copy of
       `packages/opencode/rules/AGENTS.md` (possibly with
-      orchestrator-table updates)
+      orchestrator-table updates), including the 3 new
+      directives: webfetch may hang, CLI refs via bash --help,
+      local files read directly
 - [ ] In a running Pi session, the system prompt contains
       the rules content
 - [ ] `ctx.getSystemPrompt().includes("Maestria Global Rules")`
@@ -391,6 +393,13 @@ opencode agents, not coding.
 Wire the `subagent` custom tool, the `/orchestrate` command,
 and the handoff recording. The orchestrator can now delegate
 to specialists via isolated subprocesses.
+
+> **Convergent with main:** The orchestrator prompt on main now has **zero read
+> tools** (no `read`, `grep`, `glob`). It is a pure dispatcher. The Pi
+> orchestrator follows the same pattern: it delegates via `subagent(...)` calls
+> and does no methodology work in the parent session. The 7 CRITICAL RULES
+> (streamlined from 10) and the "dispatcher" mandate are consistent with this
+> architecture.
 
 ### Exit Criteria
 

@@ -768,6 +768,21 @@ The content is identical to
 [`packages/opencode/rules/AGENTS.md`](../../packages/opencode/rules/AGENTS.md).
 The orchestrator table and the methodology rules are the same.
 
+The rules content includes these directives (as of `@maestria/opencode@0.3.8`):
+
+- **Orchestration** — don't assume, read docs first, use opensrc for repos
+- **Delegation** — 7-specialist table with delegation triggers
+- **Context management** — progressive disclosure, checkpointing, completion promises
+- **Webfetch may hang** — proceed without result if a fetch hangs, surface the skip
+- **CLI references** — use `bash --help` or load the relevant skill first
+- **Local files** — read directly, don't `webfetch` a file you have access to
+
+> **Update (June 2026):** The opencode package's custom YAML frontmatter parser
+> (previously in `packages/opencode/src/index.ts`) has been replaced with the
+> `yaml@^2.7.0` library on main (v0.3.7). The Pi package's `discoverSpecialists`
+> in `src/subagent.ts` still uses a regex approach for frontmatter, which is
+> sufficient for the single `model:` field it parses.
+
 We embed the content as a string constant so the extension has
 no runtime file system reads at load time. The build step
 generates `src/rules-content.ts`:

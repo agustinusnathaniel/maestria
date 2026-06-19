@@ -405,6 +405,38 @@ shows the pattern.
 state-only summary; v1.1 adds the LLM-summarization
 fallback.
 
+### ~~R-14: Custom YAML parser in opencode package is a maintenance burden~~
+
+**Description.** The `@maestria/opencode` plugin's frontmatter parser
+(`parseFrontmatter` in `packages/opencode/src/index.ts`) is a ~120-line
+custom YAML implementation. It handles the specific frontmatter format
+but is fragile for edge cases (multiline strings, nested objects, etc.)
+and must be maintained separately from the YAML ecosystem.
+
+**Likelihood:** N/A — resolved.
+
+**Severity:** Low.
+
+**Status:** **Resolved.** Replaced with `yaml@^2.7.0` library on main
+(v0.3.7). The opencode package source is now shorter and relies on a
+standard parser.
+
+### ~~R-15: Orchestrator with read tools may do its own research instead of delegating~~
+
+**Description.** The orchestrator prompt template grants `read`, `grep`,
+and `glob` permissions. The orchestrator could use these to research
+the codebase itself rather than delegating to `@adventurer`. This
+defeats the pipeline composition pattern.
+
+**Likelihood:** N/A — mitigated.
+
+**Severity:** Medium.
+
+**Status:** **Mitigated.** On main, the orchestrator has been rewritten
+with **zero read tools** — no `read`, `grep`, `glob`, or any research
+capability. The orchestrator is a pure dispatcher that delegates all
+work to specialists. The Pi orchestrator follows the same architecture.
+
 ---
 
 ## Open Questions
@@ -571,6 +603,8 @@ configuration in settings.json.
 | R-11 | High       | Low      | Full                       |
 | R-12 | Low        | Low      | Full                       |
 | R-13 | High       | Medium   | Partial (v1) / Full (v1.1) |
+| R-14 | N/A        | Low      | Resolved (yaml library)    |
+| R-15 | N/A        | Medium   | Mitigated (no read tools)  |
 
 ## Open Questions Summary
 
