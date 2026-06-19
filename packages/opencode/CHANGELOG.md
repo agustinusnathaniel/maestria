@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.3.11
+
+### Patch Changes
+
+- [`4500749`](https://github.com/agustinusnathaniel/maestria/commit/4500749126e1c4b37fba83bdb8daf8dc319b654a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove read-only bash permissions (git status/diff/log/show/branch, ls, which, pwd) from orchestrator — it is now a pure dispatcher. Any codebase inspection must go through @adventurer or @builder.
+
+## 0.3.10
+
+### Patch Changes
+
+- [`a12fc6d`](https://github.com/agustinusnathaniel/maestria/commit/a12fc6d719cefc7572f4afe85c664ee0ebc4031d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Revert orchestrator to pure dispatcher — after real-world testing, read/glob/grep
+  permissions on the orchestrator caused workaround behavior (preferring direct
+  recon over delegation to specialist agents). The experiment confirmed that
+  structural permission denial is the only reliable enforcement for an LLM-based
+  orchestrator. The orchestrator remains limited to task() delegation and
+  question() — no read, glob, grep, webfetch, edit, or lsp.
+
+  Streamline orchestrator prompt — remove directives that redundantly restate
+  permission blocks (tool restrictions, bash allow-lists, task routing limits)
+  which are already structurally enforced through YAML frontmatter.
+
+## 0.3.9
+
+### Patch Changes
+
+- [`21d866f`](https://github.com/agustinusnathaniel/maestria/commit/21d866ff9a2b41e68e4de17152c5a6727d6b0e22) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add websearch:ask for architect, adventurer, and diagnose agents — these discovery-oriented agents can now search the web (with user prompt via `ask` permission) to find relevant documentation and resources.
+
+  Grant read/glob/grep to orchestrator — the orchestrator now has read-only reconnaissance tools for quick verification before delegation, with structural safeguards (edit/webfetch/lsp remain denied, 3-call limit).
+
 ## 0.3.8
 
 ### Patch Changes

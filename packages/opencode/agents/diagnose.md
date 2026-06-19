@@ -10,6 +10,7 @@ permission:
   grep: allow
   lsp: allow
   webfetch: allow
+  websearch: ask
   skill: allow
   todowrite: allow
   edit: ask
