@@ -60,6 +60,28 @@ The first audit (`259a72a`, "audit tool permissions for 7 agents + revert webfet
 
 All three were reverted to `webfetch: allow`. Every agent now has `webfetch: allow`.
 
+### 5. Post-Audit Amendment: Orchestrator Read-Side Tools
+
+After [commit `ecd3e16`](https://github.com/agustinusnathaniel/maestria/commit/ecd3e16)
+fixed the YAML parser (confirming subagents load correctly), the orchestrator's
+strict lockdown was re-evaluated.
+
+The orchestrator was granted `read: allow`, `glob: allow`, `grep: allow` with
+the following safeguards:
+
+| Boundary | Value                          | Rationale                                               |
+| -------- | ------------------------------ | ------------------------------------------------------- |
+| read     | allow                          | Quick verification — check file existence, skim exports |
+| glob     | allow                          | Find files by pattern before delegation                 |
+| grep     | allow                          | Confirm function/reference existence                    |
+| webfetch | deny                           | Web research belongs to @adventurer/@architect          |
+| edit     | deny                           | Structural boundary — orchestrator cannot implement     |
+| lsp      | deny                           | Deep code intelligence is for specialists               |
+| bash     | `"*": deny`, allow-listed only | Same as before — no arbitrary execution                 |
+
+A **Read-Side Tool Policy** in the orchestrator's prompt caps read/glob/grep at
+3 calls per task before deeper recon must be delegated to `@adventurer`.
+
 ### Design Principle
 
 **Permissions are permissive; directives encode policy.**
