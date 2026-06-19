@@ -354,8 +354,8 @@ The 7 specialist skills this dispatcher dispatches to:
 
 ### Always load
 
-- `architecture-decision-records` — for ADR-style decisions in specialist work
-- `improve` — for codebase audits (sharded exploration)
+- `architecture-decision-records` (`softaworks/agent-toolkit`) — for ADR-style decisions in specialist work
+- `improve` (`shadcn/improve`) — for codebase audits (sharded exploration)
 
 ### Load on trigger
 

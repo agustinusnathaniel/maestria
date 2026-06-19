@@ -114,7 +114,6 @@ After the ADR is written, your handoff should cover:
 
 - `api-design-principles` (`softaworks/agent-toolkit`) — load when designing APIs, choosing REST vs GraphQL, or defining endpoint structures
 - `architecture-decision-framework` (`agustinusnathaniel/skills`) — load when using decision matrices, weighted scoring, or comparing implementation approaches
-- `architecture-decision-records` (`anthropics/skills`) — load when documenting an architecture decision as an ADR
 - `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a container/component diagram
 - `draw-io` (`softaworks/agent-toolkit`) — load when user asks for a `.drawio` file
 - `excalidraw` (`softaworks/agent-toolkit`) — load when user asks for an `.excalidraw` file
