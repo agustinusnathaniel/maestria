@@ -1,18 +1,15 @@
 # maestria
 
-> AI engineering praxis, encoded as plugins for OpenCode and Kimi Code.
+> AI engineering praxis, encoded as plugins.
 
-This monorepo contains `@maestria/opencode` and `@maestria/kimi-code` — plugins that bring disciplined AI engineering workflows to OpenCode and Kimi Code.
+Plugins that bring disciplined AI engineering workflows — precise rules, explicit boundaries,
+and clear delegation chains — to AI coding assistants. Each plugin ships specialized agents or
+skills tailored to its platform's plugin model.
 
 ## Packages
 
-| Package                                     | Description                                                                                                                                                 |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`@maestria/opencode`](packages/opencode)   | OpenCode plugin: 7 agents + global rules                                                                                                                    |
-| [`@maestria/kimi-code`](packages/kimi-code) | Kimi Code plugin: 8 skills + swarm-aware orchestrator. Install via `/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code` |
-
-> **Note:** `@maestria/opencode` is installed via npm (opencode.jsonc plugins).  
-> `@maestria/kimi-code` is installed via Kimi Code's `/plugins install` command — no npm needed.
+- [`@maestria/opencode`](packages/opencode) — [README](packages/opencode/README.md)
+- [`@maestria/kimi-code`](packages/kimi-code) — [README](packages/kimi-code/README.md)
 
 ## Development
 
