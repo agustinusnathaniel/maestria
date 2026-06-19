@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.9
+
+### Patch Changes
+
+- [`21d866f`](https://github.com/agustinusnathaniel/maestria/commit/21d866ff9a2b41e68e4de17152c5a6727d6b0e22) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add websearch:ask for architect, adventurer, and diagnose agents — these discovery-oriented agents can now search the web (with user prompt via `ask` permission) to find relevant documentation and resources.
+
+  Grant read/glob/grep to orchestrator — the orchestrator now has read-only reconnaissance tools for quick verification before delegation, with structural safeguards (edit/webfetch/lsp remain denied, 3-call limit).
+
 ## 0.3.8
 
 ### Patch Changes
