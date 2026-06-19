@@ -11,7 +11,7 @@ Once you've installed the plugin, the orchestrator skill and global rules are lo
 
 Launch Kimi Code as usual. At session start, the orchestrator skill auto-loads via `sessionStart.skill` in `kimi.plugin.json`. You'll see a `<plugin_session_start>` block in the system prompt referencing the orchestrator's methodology. The global rules from `~/.kimi-code/AGENTS.md` are also injected by Kimi Code's session-start context preparer.
 
-The orchestrator is the methodology layer. It does not implement, debug, or edit code itself — it loads specialist skills via the `Skill` tool and dispatches them to Kimi Code's 3 built-in subagents (`coder`, `explore`, `plan`).
+The orchestrator is the routing layer. It does not implement, debug, or edit code itself — it loads specialist skills via the `Skill` tool and dispatches them to Kimi Code's 3 built-in subagents (`coder`, `explore`, `plan`).
 
 ## Try a single delegation
 
@@ -69,16 +69,7 @@ The `planner` persona returns phases with success criteria and rollback points. 
 
 ## Pipeline reference
 
-```
-orchestrator (main agent, auto-loaded at session start)
-  ├─ adventurer  → Reconnaissance            (explore subagent, read-only)
-  ├─ architect   → Design/decisions          (coder subagent)
-  ├─ planner     → Phased plans              (plan subagent)
-  ├─ builder     → Implementation            (coder subagent)
-  ├─ reviewer    → Validation (do not edit)  (coder subagent)
-  ├─ writer      → Documentation             (coder subagent)
-  └─ diagnose    → Root cause analysis       (coder subagent)
-```
+The full pipeline diagram is in [Workflow Patterns](/kimi-code/guide/workflow-patterns/#pipeline-reference).
 
 <Aside type="tip">
   Most tasks don't start with code. Start with recon (`adventurer`) or design (`architect`) before

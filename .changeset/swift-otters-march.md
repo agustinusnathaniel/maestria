@@ -2,4 +2,4 @@
 "@maestria/kimi-code": minor
 ---
 
-Initial release of `@maestria/kimi-code` — declarative skill-based plugin for Kimi Code. Ships 8 SKILL.md files (orchestrator + 7 specialists), kimi.plugin.json manifest, global rules, and a swarm-aware orchestration pattern. See [ADR-004](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/ADR-004-kimi-code-architecture.md) for the design.
+Initial release of `@maestria/kimi-code` — declarative skill-based plugin for Kimi Code. Ships 8 SKILL.md files (orchestrator + 7 specialists), kimi.plugin.json manifest, global rules, and a swarm-aware orchestration pattern. See [ADR-009](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/kimi-code/ADR-009-kimi-code-architecture.md) for the design.
