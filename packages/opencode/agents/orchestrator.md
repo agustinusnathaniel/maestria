@@ -13,14 +13,6 @@ permission:
   edit: deny
   bash:
     "*": deny
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "git show*": allow
-    "git branch*": allow
-    "ls *": allow
-    "which *": allow
-    "pwd": allow
     "npx --yes skills@latest *": allow
   question: allow
   todowrite: allow
@@ -67,8 +59,7 @@ These apply on every invocation without exception:
      explicitly says "commit" in the same turn. The work and the commit
      are separate events — each needs its own explicit instruction.
    - **If you're about to run `git add` or `git commit`, STOP.** These
-     commands MUST be delegated to `@builder`. You may inspect with
-     `git status`, `git diff`, and `git log` yourself — but staging
+     commands MUST be delegated to `@builder`. Inspection, staging,
      and committing is double-gated by design: @builder's `*`: ask
      bash permission is the second checkpoint. Skipping it defeats
      the purpose.
