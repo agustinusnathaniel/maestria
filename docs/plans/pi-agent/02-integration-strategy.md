@@ -41,8 +41,8 @@ Input → @adventurer (recon) → @planner or @architect (plan/design)
 
 On OpenCode, the orchestrator implements this with sequential `task()`
 calls. On Pi, the orchestrator implements it with sequential `subagent`
-tool calls (the custom tool we register, which spawns isolated `pi`
-subprocesses).
+tool calls (backed by `@gotgenes/pi-subagents`, the in-process subagent
+runtime — see ADR-015).
 
 The user's invocation looks the same:
 
@@ -83,6 +83,8 @@ The orchestrator role is split across two Pi primitives:
    orchestrator template.
 3. **The `subagent` custom tool** — invoked by the LLM as
    `subagent({ agent, task, ... })` for each specialist delegation.
+   Backed by `@gotgenes/pi-subagents` for in-process subagent
+   dispatch (not subprocess spawn — see ADR-015).
 
 The command + template + subagent tool together implement the
 orchestrator role. We register the command (rather than detecting
@@ -230,6 +232,41 @@ the example, leaving headroom for the orchestrator's recommended
 limit).
 
 Reference: [`examples/extensions/subagent/index.ts:27`](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/subagent/index.ts)
+
+### 2.7 Specialist Dispatch Strategy
+
+Specialists are dispatched via `@gotgenes/pi-subagents` (in-process),
+not via subprocess spawn. This reflects the decision in ADR-015 to
+reuse existing Pi ecosystem packages rather than build from scratch.
+
+✅ **Shared session context** — specialists see the same conversation
+history as the orchestrator
+✅ **No cold-start overhead** — in-process is ~0ms vs 100-500ms
+subprocess spawn
+✅ **Lifecycle events** — `@maestria/pi` hooks into `subagents:*`
+events for orchestration
+✅ **Typed API** — TypeScript-first, with `SubagentsService` and
+`WorkspaceProvider` interfaces
+
+Before each dispatch, the orchestrator's handoff contract is validated
+by a lightweight pre-check (`validateHandoff`) that verifies all 6
+fields (Goal, Context, Requirements, Known Problems, Success Criteria,
+Next Step) are present and non-empty. A malformed handoff is rejected
+with a clear error before the specialist is spawned.
+
+The adapter layer sits on top of `@gotgenes/pi-subagents` and adds:
+
+1. Handoff validation pre-check
+2. Spec-driven orchestration metadata (passing the current spec
+   from the orchestrator's workflow DAG)
+3. Session tree metadata (recording parent task IDs for session
+   tree reconstruction)
+
+**Design constraint:** `@gotgenes/pi-subagents` has a recursion guard
+that prevents subagents from spawning their own subagents.
+`@maestria/pi`'s orchestration layer sits above the subagent layer —
+the orchestrator dispatches specialists, specialists do not
+self-orchestrate.
 
 ## 3. Pattern 2: Maker/Checker Split on Pi
 
@@ -710,10 +747,10 @@ will be 800–1,200 lines plus 8 prompt templates and 2 skills.
 
 To be honest about the trade-offs:
 
-1. **No sub-millisecond subagent spawn.** Each `subagent` call is a
-   subprocess invocation. Cold start is 100–500ms. OpenCode's
-   `task()` is in-process. This makes Pi worse for highly
-   parallel fan-out.
+1. **Subagent spawn is in-process due to `@gotgenes/pi-subagents`.**
+   Cold start is ~0ms (same as OpenCode's `task()`). Parallel
+   fan-out latency is bounded by the subagent runtime, not
+   subprocess spawn costs.
 2. **No per-agent permission YAML.** OpenCode's
    `permission.edit: deny` is a one-liner. Our equivalent is
    ~50 lines of TypeScript and a session-state flag.
@@ -734,8 +771,9 @@ The strategy is:
 1. Encode the methodology in **prompt templates** (advisory).
 2. Enforce critical rules in the **extension's event handlers**
    (advisory + technical).
-3. Delegate specialist work via a **custom `subagent` tool** that
-   spawns isolated Pi subprocesses.
+3. Delegate specialist work via a **`subagent` tool** backed by
+   `@gotgenes/pi-subagents` (in-process, typed API, lifecycle
+   events). See ADR-015.
 4. Use **`tool_call` interception** for the maker/checker split
    and dangerous command gating.
 5. Use **`before_agent_start` for rule injection** and

@@ -97,8 +97,13 @@ useful end-to-end test.
 - [ ] `packages/pi/` exists with the directory structure
       from [`03-package-design.md`](./03-package-design.md)
 - [ ] `package.json` has the `pi-package` keyword, the `pi`
-      manifest, and the `files` array
+      manifest, the `files` array, and
+      `@gotgenes/pi-subagents@^17.0.0` in `dependencies`
 - [ ] `src/extension.ts` exists with a no-op default export
+- [ ] `src/subagent.ts` exists with an adapter module wrapping
+      `SubagentsService` from `@gotgenes/pi-subagents`
+- [ ] Implement handoff validation pre-check:
+      `validateHandoff(handoff: string): {valid: boolean, errors: string[]}`
 - [ ] `tsc` produces `dist/extension.js` without errors
 - [ ] `prompts/hello.md` exists with a simple "say hello to
       $1" template
@@ -107,6 +112,8 @@ useful end-to-end test.
       to "Hello, world!"
 - [ ] `pi list` shows `@maestria/pi` is installed
 - [ ] `vp check` and `vp test` pass on the new package
+- [ ] Publish to npm for install-proof-of-life:
+      `pi install npm:@maestria/pi@0.1.0`
 
 ### Verification
 
@@ -140,18 +147,22 @@ Hello, ${1:-world}!
 
 ### Files Touched
 
-- `packages/pi/package.json` (new)
+- `packages/pi/package.json` (new — includes
+  `@gotgenes/pi-subagents@^17.0.0` in `dependencies`)
 - `packages/pi/tsconfig.json` (new)
 - `packages/pi/README.md` (new — minimal, links to monorepo)
 - `packages/pi/.gitignore` (new — `dist/`, `node_modules/`)
 - `packages/pi/src/extension.ts` (new — no-op)
+- `packages/pi/src/subagent.ts` (new — adapter wrapping
+  `@gotgenes/pi-subagents` + `validateHandoff`)
 - `packages/pi/prompts/hello.md` (new — content above)
 - `packages/pi/scripts/build-rules.ts` (new — placeholder,
   not yet wired to anything)
 
 ### Dependencies
 
-None.
+None. `@gotgenes/pi-subagents` is an npm dependency installed
+via `pi install` (Phase 1 verification).
 
 ### Estimated Time
 
@@ -390,10 +401,17 @@ opencode agents, not coding.
 
 ### Goal
 
-Wire the `subagent` custom tool, the `/orchestrate` command,
+Wire the `subagent` custom tool (backed by
+`@gotgenes/pi-subagents`), the `/orchestrate` command,
 and the handoff recording. The orchestrator can now delegate
-to specialists via isolated subprocesses.
+to specialists via the in-process subagent runtime.
 
+> **Scope reduction (ADR-015):** This phase no longer builds
+> the subagent tool from scratch. Instead, it integrates
+> `@gotgenes/pi-subagents` for subagent dispatch and implements
+> the handoff contract pre-check on top. Estimated code: ~100
+> lines (vs ~400 for a custom subprocess implementation).
+>
 > **Convergent with main:** The orchestrator prompt on main now has **zero read
 > tools** (no `read`, `grep`, `glob`). It is a pure dispatcher. The Pi
 > orchestrator follows the same pattern: it delegates via `subagent(...)` calls
@@ -403,13 +421,16 @@ to specialists via isolated subprocesses.
 
 ### Exit Criteria
 
-- [ ] `src/subagent.ts` exists with the `subagent` tool
-      registration
+- [ ] `src/subagent.ts` integrates `@gotgenes/pi-subagents`
+      for subagent dispatch
+- [ ] Handoff contract pre-check function
+      (`validateHandoff`) is implemented in the dispatch
+      pipeline — verifies all 6 fields present and non-empty,
+      rejects with clear error if malformed
+- [ ] Spec-driven orchestration is wired on top of subagent
+      lifecycle events (`subagents:*`)
 - [ ] The tool supports single, parallel (max 8), and chain
       modes (with `{previous}` substitution)
-- [ ] The tool spawns a `pi` subprocess with
-      `--append-system-prompt <prompt>` and
-      `--tools <restricted>` arguments
 - [ ] The tool records handoffs in `MaestriaState`
 - [ ] The tool blocks tasks with agents that don't exist in
       the allowed list
@@ -430,13 +451,14 @@ npm test -- tests/subagent.test.ts
 pi -e ./packages/pi
 # /orchestrate Find the auth module's session handling
 # Expect: orchestrator template expands, LLM calls
-# subagent(adventurer, ...), subprocess spawns, handoff
-# recorded
+# subagent(adventurer, ...), subagent spawns in-process,
+# handoff recorded
 ```
 
 ### Files Touched
 
-- `packages/pi/src/subagent.ts` (new — ~400 lines)
+- `packages/pi/src/subagent.ts` (new — ~100 lines adapter
+  layer, reduced from ~400 lines subprocess approach)
 - `packages/pi/src/commands.ts` (new — `/orchestrate`,
   `/maestria-status`)
 - `packages/pi/src/extension.ts` (update — install subagent
@@ -445,14 +467,15 @@ pi -e ./packages/pi
 
 ### Dependencies
 
-Phase 3 (state module), Phase 4 (orchestrator prompt
-template, but the subagent tool doesn't depend on the
-prompt content).
+Phase 1 (pi-subagents dependency installed), Phase 3 (state
+module), Phase 4 (orchestrator prompt template, but the
+subagent tool doesn't depend on the prompt content).
 
 ### Estimated Time
 
-2 days. The subagent tool is the most complex piece of the
-extension.
+1 day. The adapter layer is ~100 lines plus validation logic,
+significantly less than the original ~400 line subprocess
+tool.
 
 ---
 
@@ -664,12 +687,13 @@ All prior phases.
 | 2     | 0.5  | 1.0        |
 | 3     | 1.0  | 2.0        |
 | 4     | 3.0  | 5.0        |
-| 5     | 2.0  | 7.0        |
-| 6     | 1.5  | 8.5        |
-| 7     | 1.0  | 9.5        |
-| 8     | 1.5  | 11.0       |
+| 5     | 1.0  | 6.0        |
+| 6     | 1.5  | 7.5        |
+| 7     | 1.0  | 8.5        |
+| 8     | 1.5  | 10.0       |
 
-**Total: 11 working days of focused implementation.**
+**Total: 10 working days of focused implementation.**
+(Reduced from 11 following ADR-015's subagent reuse.)
 
 This is a rough estimate. Phase 4 (prompt templates) is the
 most variable — if the opencode agent content can be

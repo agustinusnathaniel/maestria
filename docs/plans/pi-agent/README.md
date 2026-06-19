@@ -25,7 +25,7 @@ any implementation begins.
 The maestria methodology maps cleanly to Pi's primitives, but the mapping is
 **not** a one-to-one port of `@maestria/opencode`. The core insight from
 research: Pi's event-based extension model and its existing `subagent`
-extension pattern (which spawns isolated `pi` subprocesses) provide a **more
+extension pattern (now available as `@gotgenes/pi-subagents`, the in-process subagent runtime) provide a **more
 expressive substrate** than OpenCode's two-hook plugin model — at the cost of
 more code to maintain.
 
@@ -36,9 +36,10 @@ The plan:
    for state preservation, and `input` for orchestrator routing.
 2. **Eight prompt templates** (orchestrator + 7 specialists) shipped in
    `prompts/`, invoked as `/orchestrator`, `/adventurer`, `/planner`, etc.
-3. **One custom subagent tool** that spawns isolated `pi` subprocesses (the
-   basis of Pipeline Composition) and a `/orchestrate` command for orchestrated
-   execution with parallel/chain modes.
+3. **One subagent tool backed by `@gotgenes/pi-subagents`** (in-process,
+   typed API, lifecycle events) providing Pipeline Composition dispatch
+   and a `/orchestrate` command for orchestrated execution with
+   parallel/chain modes.
 4. **Tool-call interception** for the maker/checker split — `tool_call` event
    blocks destructive operations during a review session.
 5. **Compaction hooks** preserve task state (active file, blockers, completion
@@ -69,7 +70,7 @@ plus prompt templates plus a custom subagent delegation tool.
 | Custom tools registered    | 1 (subagent delegation)                                               |
 | Custom commands registered | 4 (orchestrate, review, handoff, maestria-status)                     |
 | Peer dependencies          | `@earendil-works/pi-coding-agent`, `@earendil-works/pi-ai`, `typebox` |
-| Third-party deps           | None expected in v1                                                   |
+| Third-party deps           | `@gotgenes/pi-subagents@^17.0.0` (see ADR-015)                        |
 | Compaction state           | Active task, completion promise, blockers, references                 |
 | Postinstall script         | None (pure plugin, consistent with all `@maestria/*` packages)        |
 | Files published to npm     | `dist`, `prompts`, `skills`, `README.md`, `CHANGELOG.md`, `LICENSE`   |
@@ -112,14 +113,13 @@ this plan. Each is defended in detail in the linked document.
    maestria methodology than the opencode two-hook model allows. The price
    is more code and more surface area to maintain.
 
-2. **Pi's "no native subagent" problem has an answer.** Pi's single primary
-   agent loop does not have an OpenCode-style `task()` subagent primitive,
-   but the existing `subagent` example extension (in
-   `packages/coding-agent/examples/extensions/subagent/`) demonstrates the
-   pattern: spawn a separate `pi` subprocess with `--mode json -p` to get
-   isolated context, structured output, and parallel execution. This is the
-   basis for our `subagent` custom tool and the orchestrator's delegation
-   pattern.
+2. **Pi's "no native subagent" problem has an answer — reuse the ecosystem.**
+   Pi's single primary agent loop does not have an OpenCode-style `task()`
+   subagent primitive, but the Pi ecosystem has `@gotgenes/pi-subagents`
+   (MIT, v17, 21.5K downloads/mo), an in-process subagent runtime with
+   typed API and lifecycle events. Rather than building our own from
+   scratch, `@maestria/pi` wraps `@gotgenes/pi-subagents` with handoff
+   validation and spec-driven orchestration metadata. See ADR-015.
 
 3. **The maker/checker split is harder on Pi.** OpenCode's `edit: deny` in
    agent frontmatter is a hard technical gate. Pi's equivalent is the

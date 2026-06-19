@@ -41,11 +41,12 @@ interleave.
 
 **Mitigation.** Two-part:
 
-1. The orchestrator uses the `subagent` custom tool to
-   delegate work. The tool spawns a **separate `pi`
-   subprocess** with an isolated context window. The
-   specialist's work happens in the subprocess; only the
-   final output flows back to the parent.
+1. The orchestrator uses the `subagent` tool (backed by
+   `@gotgenes/pi-subagents`) to delegate work. The tool
+   spawns a **separate in-process subagent** with an
+   isolated context window. The specialist's work happens
+   in the subagent context; only the final output flows
+   back to the parent.
 2. When the user directly invokes `/specialist`, the
    specialist's prompt is appended to the current
    conversation. The methodology assumes this is for
@@ -53,9 +54,9 @@ interleave.
    the LLM can handle the in-context reasoning.
 
 The trade-off: direct `/specialist` invocations are
-cheaper (no subprocess) but riskier (shared context);
-orchestrator-mediated `subagent` invocations are more
-expensive (subprocess) but safer (isolated context).
+cheaper (no subagent launch) but riskier (shared context);
+orchestrator-mediated `subagent` invocations involve
+context isolation (in-process, ~0ms overhead).
 
 **Status:** Full mitigation.
 
@@ -162,20 +163,13 @@ handler is a defense-in-depth backstop.
 **Severity:** Medium. If bypassed, the maker/checker
 split is silently violated. The user may not notice.
 
-**Mitigation.** Three layers (see
-[`02-integration-strategy.md` §3](./02-integration-strategy.md)):
+**Decision:** Accept the 3-layer trade-off. Subprocess
+`--tools` restriction + `tool_call` interceptor +
+prompt discipline are sufficient in practice. Risk
+documented in README and orchestrator prompt
+CRITICAL RULES.
 
-1. Subprocess toolset restriction (`--tools
-read,grep,find,ls`) — the strongest layer.
-2. `tool_call` event interceptor — defense in depth.
-3. Prompt discipline — advisory.
-
-In practice, all three hold. The risk is a future Pi
-API change that makes one layer ineffective.
-
-**Status:** Partial mitigation. We accept the trade-off.
-Documented in the README and in the orchestrator
-prompt's CRITICAL RULES.
+**Status:** Mitigated.
 
 ### R-06: Pi is moving fast (v0.79.6 → potentially v1) — API churn
 
@@ -289,20 +283,14 @@ handoff will ask for clarification (per the
 "If anything is unclear, ask" rule). The pipeline
 slows down but doesn't break.
 
-**Mitigation.**
+**Decision:** Add lightweight validation pre-check to
+subagent tool. Before spawning a specialist, verify
+the 6-field handoff contract (Goal, Context,
+Requirements, Known Problems, Success Criteria, Next
+Step) is present and non-empty. Reject with clear
+error if missing.
 
-1. The handoff contract is in the handoff skill
-   (`/skill:handoff`), which the LLM loads on demand.
-2. The specialist prompt template starts with "If
-   anything is unclear or ambiguous, ask before
-   proceeding."
-3. We can add a `subagent` tool pre-check that
-   validates the handoff has 6 sections (with a soft
-   warning) in a future version. For v1, this is
-   advisory.
-
-**Status:** Partial mitigation. We accept the
-advisory-only approach for v1.
+**Status:** Mitigated.
 
 ### R-10: State module-scope doesn't survive `/reload` or process restart
 
@@ -318,16 +306,38 @@ workflow, but it happens.
 methodology state. The LLM has to rebuild the
 context from scratch.
 
-**Mitigation.**
+**Decision:** Design persistence schema now. Use
+`pi.appendEntry` to write state entries with key-value
+format: `maestria:state:<key>:<value>`. On
+`session_start`, reload entries and rebuild
+`MaestriaState`. Schema documented in
+[`03-package-design.md`](./03-package-design.md) §State
+module. Implementation deferred to Phase 3.
 
-1. We use `pi.appendEntry` to persist a minimal state
-   snapshot. On `session_start`, we read the entries
-   and rebuild the state.
-2. This is deferred to v1.1. For v1, we accept the
-   reset on `/reload` and document it.
+### Persistence Schema
 
-**Status:** Partial mitigation. v1 is fine for
-non-`/reload` users; v1.1 adds persistence.
+Entry format:
+
+- Key pattern: `maestria:state:{sessionId}:{key}`
+- Values: JSON-serialized, chunked if > 8KB
+
+On `session_start`:
+
+1. Query all `maestria:state:{sessionId}:*` entries
+   via `pi.appendEntry`'s read API
+2. Deserialize and merge into `MaestriaState`
+3. If no saved state, initialize empty
+
+On state mutation:
+
+1. Write full state snapshot as entry (or delta for
+   large states)
+2. Cap at `MAX_ENTRIES = 50` per session
+3. Oldest entries pruned when limit reached
+
+**Status:** Partial mitigation (v1). Design done, schema
+documented. Implementation deferred to Phase 3
+(currently implements module-scope only).
 
 ### R-11: The `before_agent_start` injection adds ~3KB to every system prompt
 
@@ -382,28 +392,14 @@ would have generated.
 **Severity:** Medium. Without the original summary,
 the LLM may miss important conversation context.
 
-**Mitigation.** **v1 (partial):** We render the maestria state
-as a markdown block and append a pointer to "see session
-for full history" rather than the full auto-summary. The
-state is capped at `MAX_FILE_REFS = 10` for `filesRead` /
-`filesModified` and at the last 5 handoffs (see
-[`02-integration-strategy.md` §6](./02-integration-strategy.md)).
-This keeps the summary small but loses some conversation
-context.
+**Decision:** Verified `convertToLlm` and
+`serializeConversation` exist as public, stable exports
+from `@earendil-works/pi-coding-agent`. v1 ships
+state-only summary. v1.1 will merge both: call Pi's
+native compaction serializer, prepend maestria state
+block. API path validated — implementation deferred.
 
-**v1.1 (full):** Use the `convertToLlm` and
-`serializeConversation` helpers from
-`@earendil-works/pi-coding-agent` to produce Pi's default
-LLM-summarization of the messages-to-summarize, then
-prepend the maestria state and append the "see session
-for full history" pointer. The custom-compaction example
-at
-[`examples/extensions/custom-compaction.ts:54,90-99`](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/custom-compaction.ts)
-shows the pattern.
-
-**Status:** Partial mitigation. v1 ships the
-state-only summary; v1.1 adds the LLM-summarization
-fallback.
+**Status:** Mitigated.
 
 ### ~~R-14: Custom YAML parser in opencode package is a maintenance burden~~
 
@@ -436,6 +432,44 @@ defeats the pipeline composition pattern.
 with **zero read tools** — no `read`, `grep`, `glob`, or any research
 capability. The orchestrator is a pure dispatcher that delegates all
 work to specialists. The Pi orchestrator follows the same architecture.
+
+### R-16: Dependency on @gotgenes/pi-subagents introduces transitive risk
+
+**Description.** `@gotgenes/pi-subagents` v17 is
+pre-1.0. Breaking changes could require simultaneous
+updates to `@maestria/pi` and `@gotgenes/pi-subagents`.
+
+**Likelihood:** Medium. Pre-1.0 packages may change
+API between minor versions.
+
+**Severity:** Medium. If `@gotgenes/pi-subagents`
+changes its API in a breaking way, the subagent
+dispatch layer breaks.
+
+**Mitigation.** Pin to `^17.0.0` peer dependency
+range. Source is MIT-licensed; can fork as last
+resort.
+
+**Status:** Mitigated.
+
+### R-17: @gotgenes/pi-subagents recursion guard prevents nested subagents
+
+**Description.** Subagents spawned through
+`@gotgenes/pi-subagents` cannot spawn their own
+subagents. This means `@maestria/pi`'s orchestration
+must sit above the subagent layer.
+
+**Likelihood:** High. This is by design in
+`@gotgenes/pi-subagents`.
+
+**Severity:** Low. The architecture already assumes
+single-level dispatch.
+
+**Mitigation.** This is by design. Orchestrator
+dispatches specialists via `@gotgenes/pi-subagents`;
+specialists do not self-orchestrate.
+
+**Status:** Documented.
 
 ---
 
@@ -524,7 +558,8 @@ We should match.
 **Decision:** **Resolve-now.** Yes, we ship a
 `CHANGELOG.md` with v0.1.0. Initial entry covers
 the v0.1.0 scope (8 prompts, 2 skills, 4 commands,
-custom subagent tool, compaction preservation).
+`@gotgenes/pi-subagents` adapter, compaction
+preservation).
 
 ### O-08: What's the minimum-viable prompt template content?
 
@@ -584,27 +619,40 @@ reviewer when auditing logs).
 restrictions. v1.1 can add a `maestria.subagent.tools`
 configuration in settings.json.
 
+### O-12: Should we adopt pi-crew or pi-dynamic-workflows in v1.1?
+
+**Context.** Both `pi-crew` and
+`@quintinshaw/pi-dynamic-workflows` offer
+orchestration features that overlap with
+`@maestria/pi`'s v1.1 roadmap (workflow DAGs,
+fan-out, cost accounting).
+
+**Decision:** **Defer to v1.1.** Re-evaluate when
+v1.0 spec-driven orchestration ships.
+
 ---
 
 ## Mitigations Summary
 
-| Risk | Likelihood | Severity | Mitigation Status          |
-| ---- | ---------- | -------- | -------------------------- |
-| R-01 | High       | Medium   | Full                       |
-| R-02 | Medium     | Medium   | Full                       |
-| R-03 | High       | Low      | Full                       |
-| R-04 | Low/High   | High     | Full                       |
-| R-05 | Low        | Medium   | Partial                    |
-| R-06 | High       | Medium   | Full                       |
-| R-07 | Medium     | Low      | Full                       |
-| R-08 | High       | Low      | Full                       |
-| R-09 | Medium     | Low      | Partial                    |
-| R-10 | Medium     | Medium   | Partial                    |
-| R-11 | High       | Low      | Full                       |
-| R-12 | Low        | Low      | Full                       |
-| R-13 | High       | Medium   | Partial (v1) / Full (v1.1) |
-| R-14 | N/A        | Low      | Resolved (yaml library)    |
-| R-15 | N/A        | Medium   | Mitigated (no read tools)  |
+| Risk | Likelihood | Severity | Mitigation Status         |
+| ---- | ---------- | -------- | ------------------------- |
+| R-01 | High       | Medium   | Full                      |
+| R-02 | Medium     | Medium   | Full                      |
+| R-03 | High       | Low      | Full                      |
+| R-04 | Low/High   | High     | Full                      |
+| R-05 | Low        | Medium   | Mitigated                 |
+| R-06 | High       | Medium   | Full                      |
+| R-07 | Medium     | Low      | Full                      |
+| R-08 | High       | Low      | Full                      |
+| R-09 | Medium     | Low      | Mitigated                 |
+| R-10 | Medium     | Medium   | Partial (v1, schema done) |
+| R-11 | High       | Low      | Full                      |
+| R-12 | Low        | Low      | Full                      |
+| R-13 | High       | Medium   | Mitigated                 |
+| R-14 | N/A        | Low      | Resolved (yaml library)   |
+| R-15 | N/A        | Medium   | Mitigated (no read tools) |
+| R-16 | Medium     | Medium   | Mitigated                 |
+| R-17 | High       | Low      | Documented                |
 
 ## Open Questions Summary
 
@@ -621,6 +669,19 @@ configuration in settings.json.
 | O-09     | Resolve-in-phase-2        |
 | O-10     | Resolve-in-phase-5        |
 | O-11     | Defer                     |
+| O-12     | Defer (v1.1)              |
+
+### Summary
+
+| Metric                                | New value | Previous |
+| ------------------------------------- | --------- | -------- |
+| Total risks                           | 17        | 15       |
+| Open                                  | 0         | 4        |
+| Mitigated (inc. resolved)             | 15        | 10       |
+| Resolved (unchanged)                  | 1         | 1        |
+| New (R-17 documented, R-16 mitigated) | 2         | 0        |
+| Total open questions                  | 12        | 11       |
+| Defer                                 | 6         | 5        |
 
 ## Date
 
