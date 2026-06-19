@@ -122,7 +122,7 @@ already provides the in-process model with a stronger API.
 - `pi-crew` — `pi install npm:@gotgenes/pi-crew` (deferred to v1.1)
 - `@quintinshaw/pi-dynamic-workflows` (deferred to v1.1)
 - `@maestria/pi` package design —
-  [`03-package-design.md` §4.5](../plans/pi-agent/03-package-design.md#45-srcsubagentts--the-custom-subagent-tool)
+  [`03-package-design.md` §4.5](../plans/pi-agent/03-package-design.md#45-srcsubagentts--adapter-for-@gotgenespi-subagents)
 - Risks R-16, R-17, and O-12 —
   [`06-risks-and-open-questions.md`](../plans/pi-agent/06-risks-and-open-questions.md)
 
