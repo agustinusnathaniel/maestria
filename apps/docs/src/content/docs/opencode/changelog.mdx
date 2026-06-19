@@ -5,6 +5,30 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.3.11
+
+_June 20, 2026_
+
+### Orchestrator stripped of read-only bash permissions
+
+The orchestrator's remaining read-only bash permissions — `git status/diff/log/show/branch`, `ls`, `which`, `pwd` — have been stripped. Its only bash exception is `npx --yes skills@latest *` for skill installation. Any codebase inspection must now go through `@adventurer` or `@builder`.
+
+This completes the orchestrator's transition to a pure dispatcher role, consistent with v0.3.10's removal of read-side tools (read, glob, grep).
+
+## v0.3.10
+
+_June 19, 2026_
+
+### Orchestrator reverted to pure dispatcher
+
+After real-world testing, the read/glob/grep permissions granted in v0.3.9 caused workaround behavior — the orchestrator preferred direct reconnaissance over delegation to specialists. Structural permission denial proved to be the only reliable enforcement for an LLM-based orchestrator.
+
+The orchestrator is now limited to `task()` delegation and `question()` — no read, glob, grep, webfetch, edit, or lsp.
+
+### Prompt streamlined
+
+Removed directives that redundantly restated permission blocks (tool restrictions, bash allow-lists, task routing limits) which are already structurally enforced through YAML frontmatter.
+
 ## v0.3.9
 
 _June 19, 2026_
