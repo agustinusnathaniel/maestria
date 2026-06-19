@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.11
+
+### Patch Changes
+
+- [`4500749`](https://github.com/agustinusnathaniel/maestria/commit/4500749126e1c4b37fba83bdb8daf8dc319b654a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove read-only bash permissions (git status/diff/log/show/branch, ls, which, pwd) from orchestrator — it is now a pure dispatcher. Any codebase inspection must go through @adventurer or @builder.
+
 ## 0.3.10
 
 ### Patch Changes
