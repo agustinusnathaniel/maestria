@@ -108,7 +108,7 @@ The `kimi.plugin.json` manifest fields:
 
 2. **Add the skill to the orchestrator's routing table**
 
-   Edit `packages/kimi-code/skills/orchestrator/SKILL.md` to add the new specialist to the "7 Specialists" table and the "Specialist → Subagent Routing Table". Update `rules/AGENTS.md` similarly.
+   Edit `packages/kimi-code/skills/orchestrator/SKILL.md` to add the new specialist to the "7 Specialists" table and the "Specialist → Subagent Routing Table".
 
 3. **Add tests**
 
@@ -121,7 +121,7 @@ The `kimi.plugin.json` manifest fields:
 </Steps>
 
 <Aside type="caution">
-  The "7 specialists" label in the orchestrator and rules is load-bearing — the table count and the
+  The "7 specialists" label in the orchestrator skill is load-bearing — the table count and the
   persona constraints (reviewer no-edit, adventurer read-only) are the trust model. If you add an
   8th specialist that needs different subagent routing, update both tables and add tests for the new
   safety constraints.

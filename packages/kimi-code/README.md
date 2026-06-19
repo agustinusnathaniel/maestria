@@ -9,8 +9,8 @@ swarm-aware orchestration.
 See [INSTALL.md](./INSTALL.md) for the full checklist. Quick start:
 
 ```
-/plugins install https://github.com/agustinusnathaniel/maestria
-mkdir -p ~/.kimi-code && cp packages/kimi-code/rules/AGENTS.md ~/.kimi-code/AGENTS.md
+/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
+mkdir -p ~/.kimi-code && cp rules/AGENTS.md ~/.kimi-code/AGENTS.md
 ```
 
 ## The 8 Skills at a Glance

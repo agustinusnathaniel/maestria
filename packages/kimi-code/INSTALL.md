@@ -12,7 +12,14 @@ In a Kimi Code session:
 
 ## Post-Install Checklist
 
-1. **Copy global rules** — `/plugins install` copies `rules/AGENTS.md` to `~/.kimi-code/AGENTS.md` automatically. Verify with `ls ~/.kimi-code/AGENTS.md`.
+1. **Copy global rules** — Kimi Code auto-loads `~/.kimi-code/AGENTS.md` at session start, but the plugin cannot install it there. Copy manually:
+
+   ```bash
+   mkdir -p ~/.kimi-code
+   cp rules/AGENTS.md ~/.kimi-code/AGENTS.md
+   ```
+
+   Verify with `ls ~/.kimi-code/AGENTS.md`.
 
 2. **Add hooks and permission rules** — see the [full installation guide](https://maestria.dev/kimi-code/getting-started/installation/) for the required `[[hooks]]` and `[[permission.rules]]` blocks to add to `~/.kimi-code/config.toml`.
 

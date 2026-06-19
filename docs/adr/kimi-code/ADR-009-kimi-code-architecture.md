@@ -119,24 +119,9 @@ Our 7 specialists map as follows:
 
 The main agent has access to `AgentSwarm` — a first-class tool for fanning out one prompt template across N independent items (`packages/agent-core/src/tools/builtin/collaboration/agent-swarm.ts`). Kimi Code also exposes a session-level `SwarmMode` toggled by `/swarm on|off` or `/swarm <task>` (the `/swarm` slash command also turns SwarmMode on and auto-exits when the turn completes).
 
-**Tool schema** (Zod, from `agent-swarm.ts`):
+The AgentSwarm tool fields (description, subagent_type, prompt_template, items, resume_agent_ids) are documented in the tool's own description — refer to that for field details.
 
-| Field              | Type                  | Required    | Notes                                                                                           |
-| ------------------ | --------------------- | ----------- | ----------------------------------------------------------------------------------------------- |
-| `description`      | string                | Yes         | Short description of the whole swarm                                                            |
-| `subagent_type`    | string                | No          | Defaults to `coder`                                                                             |
-| `prompt_template`  | string                | Conditional | Required if `items` is provided; **must include `{{item}}`** placeholder                        |
-| `items`            | string[]              | Conditional | Each item launches one new subagent; max **128**; min 2 (or 1+ if `resume_agent_ids` non-empty) |
-| `resume_agent_ids` | record<string,string> | No          | Map of existing agent_id → prompt; resumed before new spawns                                    |
-
-**Scheduling** (from `session/subagent-batch.ts`):
-
-- Initial: 5 tasks start immediately, then 1 more every 700 ms
-- Per-task timeout: 30 minutes (`DEFAULT_SUBAGENT_TIMEOUT_MS = 30 * 60 * 1000`)
-- Rate-limit phase: provider rate limit requeues the offending subagent with exponential backoff (3s, 6s, 12s, doubling); capacity shrinks by 1, recovers by 1 after 3 quiet minutes
-- Return order: results match input order, even if some subagents finish out-of-order
-
-**Exclusive-deny policy** (from `agent-swarm.md`): "If `AgentSwarm` is called, that call must be the only tool call in the response." The tool also declares `accesses: ToolAccesses.all()` — its file-access declaration conflicts with every other tool's, so the loop cannot schedule it alongside other tool calls in the same turn. Practically: the orchestrator cannot do "explore first, then swarm" in one turn — it must be two turns.
+**Exclusive-deny policy**: `AgentSwarm` cannot be paired with other tool calls in the same turn. The orchestrator cannot do "explore first, then swarm" in one turn — it must be two turns.
 
 **Orchestrator's swarm design:**
 
@@ -157,7 +142,7 @@ The main agent has access to `AgentSwarm` — a first-class tool for fanning out
   Use Bash only for read-only commands (ls, git log, git diff). Do not edit files.
   ```
 
-**Result aggregation** (from `renderSwarmResults`): the tool returns one `<agent_swarm_result>` XML envelope with a `<summary>` line, an optional `<resume_hint>` for partially-failed runs, and one `<subagent agent_id="..." item="..." state="..." outcome="completed|failed|aborted">` element per task. The orchestrator skill body teaches the main agent how to parse this envelope and how to use `resume_agent_ids` to retry only the unfinished items.
+**Result aggregation**: `AgentSwarm` returns the results of all its subagents. Each subagent outcome is one of: `completed`, `failed`, or `aborted`. The orchestrator uses `resume_agent_ids` to retry only the unfinished items.
 
 ### Routing Table
 
@@ -412,7 +397,7 @@ The plugin bundles the file as `rules/AGENTS.md` for convenience; the user must 
 - **Reviewer → `coder` is dangerous without an explicit no-edit constraint** — the `coder` profile has `Write` and `Edit` tools. Without a hard "produce a structured review report only" line in the persona, the reviewer could "fix" issues it found, which violates the maker/checker split. Mitigation: the `reviewer/SKILL.md` persona opens with "Do not edit files. Produce a structured review report only." and the orchestrator routing table flags this constraint. Future hardening: explore whether Kimi Code adds a per-subagent `disable` rule for the `Write`/`Edit` tools (no such API exists in v0.13.1).
 - **Architect was originally mapped to `plan`; remapped to `coder`** — `plan` has no `Bash` tool, which blocks architect's validation commands (`which`, `npm view`). Remapping to `coder` recovers those commands at the cost of being able to edit files. Mitigation: the architect persona in `architect/SKILL.md` is structured so the model only uses Bash for read-only validation, but the tool is technically available. We accept the trade-off.
 - **Subagents cannot use the Skill tool** — the `coder`, `explore`, and `plan` profiles do not include `Skill` in their tool lists (only the main `agent` profile does; see `profile/default/agent.yaml`). This means a subagent dispatched by the orchestrator cannot load additional skills mid-task. The only path to inject specialist identity into a subagent is to inline the persona content in the `prompt` (or `prompt_template`, for `AgentSwarm`). The orchestrator skill body documents this constraint.
-- **`AgentSwarm`'s exclusive-deny policy forbids combining it with other tool calls in the same turn** — the tool's `accesses: ToolAccesses.all()` conflicts with every other tool's file-access declaration, and the tool description states "If `AgentSwarm` is called, that call must be the only tool call in the response." Implication: the orchestrator cannot "explore first, then swarm" in a single turn — exploration must happen in turn N, swarm in turn N+1. Mitigation: the orchestrator skill explicitly describes the two-turn pattern; the `resume_agent_ids` field can re-feed failed subagents without losing the items already completed.
+- **`AgentSwarm`'s exclusive-deny policy forbids combining it with other tool calls in the same turn** — the tool's exclusive-deny declaration conflicts with every other tool's file-access declaration, and the tool description states "If `AgentSwarm` is called, that call must be the only tool call in the response." Implication: the orchestrator cannot "explore first, then swarm" in a single turn — exploration must happen in turn N, swarm in turn N+1. Mitigation: the orchestrator skill explicitly describes the two-turn pattern; the `resume_agent_ids` field can re-feed failed subagents without losing the items already completed.
 - **Sub-skill hierarchy maxes out at 3 levels** — Kimi Code terminates skill invocations beyond depth 3. The orchestrator (level 1) → persona skill (level 2) → ??? (level 3) hierarchy is at the cap. A future "orchestrator-of-orchestrators" or skill-chained pipeline would need a different solution. No mitigation today; revisit if Kimi Code raises the limit.
 
 ## What We're NOT Doing
