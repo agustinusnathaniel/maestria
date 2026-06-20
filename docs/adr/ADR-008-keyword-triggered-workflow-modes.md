@@ -34,7 +34,7 @@ We needed a mechanism that lets the user express their intent upfront — one wo
 | ---------------------------------------- | ---------------------------------------------------------- |
 | Position                                 | Anywhere in the message                                    |
 | Detection mechanism                      | Word-boundary regex (`\bfein\b`, `\bsonar\b`, `\bblitz\b`) |
-| Multiple keywords                        | Rightmost keyword wins                                     |
+| Multiple keywords                        | Most restrictive keyword wins (fein > sonar > blitz)       |
 | Special characters / brackets / prefixes | None — plain words only                                    |
 | Stripped before orchestrator             | Removed from message text                                  |
 
@@ -43,7 +43,7 @@ Rationale for plain words over bracketed syntax:
 - **Lower friction** — `fein: map the auth module` reads naturally. `[MODE: FOCUSED] map the auth module` is noisy and mechanical.
 - **Learnable by context** — a user who types `blitz: fix this bug` can infer the pattern from `sonar: what does this code do` without reading docs.
 - **No prefix collision** — `fein`, `sonar`, `blitz` are not common programming terms. False positives are negligible.
-- **Rightmost-wins** handles the case where a user rephrases mid-message: `we need sonar for this but actually blitz it`.
+- **Most-restrictive-wins** handles the case where a user rephrases mid-message: `we need sonar for this but actually blitz it`.
 
 ### Mechanism: Hybrid Hook + Prompt
 
@@ -61,7 +61,7 @@ The design separates detection (hook) from behavior (prompt + global rules). Thi
 The `chat.message` hook:
 
 1. Tests incoming message against `\bfein\b`, `\bsonar\b`, `\bblitz\b`
-2. If multiple match, keeps the rightmost
+2. If multiple match, the most restrictive mode wins (fein > sonar > blitz)
 3. Strips the keyword from the message
 4. Prepends `[MODE: fein]` (or `sonar`/`blitz`) marker + the mode's summary prompt (~3-5 lines)
 
@@ -155,7 +155,7 @@ combining them would lose context.
 
 ### Prompt Depth Gap
 
-The mode prompts above reference several granular behavioral rules — e.g., "ADRs required for new patterns", "Max 3 rounds per phase", "Load architecture-decision-records and codebase-design skills" — that are also covered by the orchestrator's existing CRITICAL RULES. This overlap is intentional: the mode prompts reference the most relevant rules from the orchestrator's global rule set so a mode override is self-contained. The prompts do not re-implement those rules; they reference them. If a rule changes in the orchestrator's CRITICAL RULES, it does not need to be edited in the mode prompts — the prompts serve as hints, not authoritative definitions.
+The mode prompts above are self-contained — each prompt fully describes the pipeline behavior for that mode without referencing back to the orchestrator's global CRITICAL RULES. This makes the prompts independently maintainable: changes to mode behavior only require editing the prompt text in one place (`src/modes/prompts.ts`), without coupling to orchestrator.md changes. The trade-off is some duplication between mode prompts and the orchestrator's rules, but the independence is worth it — mode overrides are injected as complete briefs that don't assume knowledge of the orchestrator's full rule set.
 
 ### Config Model: Denylist Only
 
@@ -203,13 +203,12 @@ This follows ADR-002's principle: "functional naming tells you what the agent do
 | Bracketed syntax (`[FEIN]`)        | Noisy, mechanical feel. Plain words read naturally in context.            |
 | Hashtag prefixes (`#fein`)         | No advantage over plain words; adds a character with no semantic benefit. |
 | Case-sensitive matching            | `Fein`, `FEIN`, `fein` all trigger the same mode. Lowercase is canonical. |
-| Leftmost-wins on multiple keywords | Rightmost-wins lets users correct themselves mid-message.                 |
+| Leftmost-wins on multiple keywords | Most-restrictive-wins lets users correct themselves mid-message.          |
 | Persistent mode state              | Per-turn only. Mode is re-detected each message; no session-level state.  |
 | Phase tracking                     | Over-engineered for a per-turn feature. Conversation history handles it.  |
 | Default / fallback mode            | Standard pipeline is the implicit default. Mode keywords are overrides.   |
 | Allowlist configuration            | Adding modes should not break existing setups; denylist is forward-safe.  |
 | Per-agent mode overrides           | Mode is about orchestrator pipeline, not individual agent behavior.       |
-| Plugin option for mode prompts     | Prompts are text, not code. They belong in markdown, not TypeScript.      |
 
 ## Consequences
 
@@ -218,10 +217,10 @@ This follows ADR-002's principle: "functional naming tells you what the agent do
 - Positive: Per-turn detection means modes can switch mid-task without stale state
 - Positive: Hook is minimal (~30 lines TS) — easy to audit and maintain
 - Positive: Denylist config is simple — one array, no mode resolution logic
-- Positive: Prompts live in orchestrator.md, not in TypeScript — editable without rebuilding the package
+- Positive: Prompts live in TypeScript (`src/modes/prompts.ts`) for hook-injection purposes — faster than file reads and co-located with detection code, at the cost of requiring a package rebuild to edit
 - Positive: ADR-002 compliant — functional naming (fein/sonar/blitz), not mythological
 - Positive: No default mode changes — existing orchestrator behavior is undisturbed
-- Positive: Rightmost-wins lets users correct themselves mid-message
+- Positive: Most-restrictive-wins lets users correct themselves mid-message
 - Negative: Three more imported concepts for users to learn (fein, sonar, blitz)
 - Negative: Plain-word detection can false-positive in rare cases (e.g., a code snippet containing "sonar")
 - Negative: No shortcut for hybrid modes (e.g., "research + build" — must use two turns)
@@ -229,7 +228,7 @@ This follows ADR-002's principle: "functional naming tells you what the agent do
 
 ## Lessons Learned
 
-1. **Plain words over brackets came from user-first reasoning.** Bracketed syntax (`[MODE: FEIN]`) is unambiguous for machines but feels mechanical to humans. Plain words read naturally — `fein: trace this dependency` reads like a sentence, not a config file. The rightmost-wins rule handles the edge case where a user types `we need sonar for this but actually blitz it`.
+1. **Plain words over brackets came from user-first reasoning.** Bracketed syntax (`[MODE: FEIN]`) is unambiguous for machines but feels mechanical to humans. Plain words read naturally — `fein: trace this dependency` reads like a sentence, not a config file. The most-restrictive-wins rule handles the edge case where a user types `we need sonar for this but actually blitz it`.
 
 2. **Per-turn mode eliminates stale-state bugs.** The initial design considered a session-level mode flag. But what happens when a user switches from `sonar` to `blitz` mid-session? Or when a compacted session restores a stale mode? Per-turn detection avoids all of these — each message is evaluated fresh.
 
