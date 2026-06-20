@@ -2,38 +2,42 @@ import { describe, it, expect } from "vite-plus/test";
 import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "../src/modes/index.js";
 import type { ModeResult } from "../src/modes/types.js";
 
+function expectNotNull<T>(value: T | null): asserts value is T {
+  expect(value).not.toBeNull();
+}
+
 // ---------------------------------------------------------------------------
 // detectMode
 // ---------------------------------------------------------------------------
 describe("detectMode", () => {
   it("detects keyword at start of message", () => {
     const result = detectMode("fein build the feature");
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("fein");
-    expect(result!.keyword).toBe("fein");
-    expect(result!.index).toBe(0);
+    expectNotNull(result);
+    expect(result.mode).toBe("fein");
+    expect(result.keyword).toBe("fein");
+    expect(result.index).toBe(0);
   });
 
   it("detects keyword in middle of message", () => {
     const result = detectMode("let's sonar this design");
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("sonar");
-    expect(result!.keyword).toBe("sonar");
-    expect(result!.index).toBe(6);
+    expectNotNull(result);
+    expect(result.mode).toBe("sonar");
+    expect(result.keyword).toBe("sonar");
+    expect(result.index).toBe(6);
   });
 
   it("detects keyword at end of message", () => {
     const result = detectMode("implement it blitz");
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("blitz");
-    expect(result!.keyword).toBe("blitz");
+    expectNotNull(result);
+    expect(result.mode).toBe("blitz");
+    expect(result.keyword).toBe("blitz");
   });
 
   it("rightmost wins with multiple keywords", () => {
     const result = detectMode("fein research then blitz implement");
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("blitz");
-    expect(result!.index).toBe(19);
+    expectNotNull(result);
+    expect(result.mode).toBe("blitz");
+    expect(result.index).toBe(19);
   });
 
   it("returns null when no keyword present", () => {
@@ -43,16 +47,16 @@ describe("detectMode", () => {
 
   it("is case insensitive (FEIN, Sonar, BLITZ)", () => {
     const r1 = detectMode("FEIN uppercase");
-    expect(r1).not.toBeNull();
-    expect(r1!.mode).toBe("fein");
+    expectNotNull(r1);
+    expect(r1.mode).toBe("fein");
 
     const r2 = detectMode("Sonar title case");
-    expect(r2).not.toBeNull();
-    expect(r2!.mode).toBe("sonar");
+    expectNotNull(r2);
+    expect(r2.mode).toBe("sonar");
 
     const r3 = detectMode("uppercase BLITZ");
-    expect(r3).not.toBeNull();
-    expect(r3!.mode).toBe("blitz");
+    expectNotNull(r3);
+    expect(r3.mode).toBe("blitz");
   });
 
   it("does not match inside word boundaries (feinish, dfein, blitzkrieg)", () => {
@@ -70,8 +74,8 @@ describe("detectMode", () => {
   it("detects keyword outside code block correctly", () => {
     const text = "some code:\n```\nconst x = 1;\n```\nfein then build";
     const result = detectMode(text);
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("fein");
+    expectNotNull(result);
+    expect(result.mode).toBe("fein");
   });
 
   it("does not match inside inline backtick content", () => {
@@ -83,14 +87,14 @@ describe("detectMode", () => {
   it("matches hyphenated keyword (sonar-like)", () => {
     // Hyphen is a non-word char boundary, so `sonar` in `sonar-like` matches
     const result = detectMode("sonar-like exploration");
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("sonar");
+    expectNotNull(result);
+    expect(result.mode).toBe("sonar");
   });
 
   it("respects disabled keywords", () => {
     const result = detectMode("fein research then blitz build", new Set(["blitz"]));
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("fein");
+    expectNotNull(result);
+    expect(result.mode).toBe("fein");
   });
 
   it("returns null when all keywords disabled", () => {
@@ -105,17 +109,17 @@ describe("detectMode", () => {
 
   it("detects keyword with trailing colon", () => {
     const result = detectMode("fein: build the feature");
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("fein");
-    expect(result!.index).toBe(0);
-    expect(result!.keyword).toBe("fein");
+    expectNotNull(result);
+    expect(result.mode).toBe("fein");
+    expect(result.index).toBe(0);
+    expect(result.keyword).toBe("fein");
   });
 
   it("returns prompt and marker in result", () => {
     const result = detectMode("sonar research this");
-    expect(result).not.toBeNull();
-    expect(result!.prompt).toBeTruthy();
-    expect(result!.marker).toBe("[MODE: sonar]");
+    expectNotNull(result);
+    expect(result.prompt).toBeTruthy();
+    expect(result.marker).toBe("[MODE: sonar]");
   });
 });
 
