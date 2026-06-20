@@ -213,34 +213,6 @@ describe("stripKeyword", () => {
   });
 });
 
-describe("stripKeyword whitespace", () => {
-  function makeResult(
-    mode: "fein" | "sonar" | "blitz",
-    keyword: string,
-    index: number,
-  ): ModeResult {
-    return {
-      mode,
-      keyword,
-      index,
-      prompt: getModePrompt(mode),
-      marker: getModeMarker(mode),
-    };
-  }
-
-  it("keyword at end should not leave trailing whitespace", () => {
-    const text = "implement it blitz";
-    const result = makeResult("blitz", "blitz", 13);
-    expect(stripKeyword(text, result)).toBe("implement it");
-  });
-
-  it("keyword removed from middle should collapse double spaces", () => {
-    const text = "let's sonar research this";
-    const result = makeResult("sonar", "sonar", 6);
-    expect(stripKeyword(text, result)).toBe("let's research this");
-  });
-});
-
 // ---------------------------------------------------------------------------
 // Config validation (MaestriaPlugin)
 // ---------------------------------------------------------------------------

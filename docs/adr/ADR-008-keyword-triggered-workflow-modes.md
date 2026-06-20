@@ -30,13 +30,14 @@ We needed a mechanism that lets the user express their intent upfront — one wo
 
 ### Detection Syntax
 
-| Rule                                     | Value                                                      |
-| ---------------------------------------- | ---------------------------------------------------------- |
-| Position                                 | Anywhere in the message                                    |
-| Detection mechanism                      | Word-boundary regex (`\bfein\b`, `\bsonar\b`, `\bblitz\b`) |
-| Multiple keywords                        | Most restrictive keyword wins (fein > sonar > blitz)       |
-| Special characters / brackets / prefixes | None — plain words only                                    |
-| Stripped before orchestrator             | Removed from message text                                  |
+| Rule                                     | Value                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------- |
+| Position                                 | Anywhere in the message                                                          |
+| Detection mechanism                      | Word-boundary regex (`\bfein\b`, `\bsonar\b`, `\bblitz\b`)                       |
+| Multiple keywords                        | Most restrictive keyword wins (fein > sonar > blitz)                             |
+| Special characters / brackets / prefixes | None — plain words only                                                          |
+| Code blocks                              | Keywords inside ```fences and`inline` backtick spans are excluded from detection |
+| Stripped before orchestrator             | Removed from message text                                                        |
 
 Rationale for plain words over bracketed syntax:
 
@@ -71,86 +72,42 @@ The mode marker is **re-injected every turn** — it is not stateful. The hook f
 
 The mode is per-turn, not per-phase. Conversation history (the existing message log) tracks progress between turns. No additional state machinery is needed. A user can switch from `sonar` to `blitz` between turns by changing the keyword.
 
-### Mode Prompts (Orchestrator Addition)
+### Mode Prompts (TypeScript Definition)
 
-The following text is added to `agents/orchestrator.md` as a new `## Mode Override` section:
+The following prompts are defined in `src/modes/prompts.ts` and injected by the hook at the start of each turn:
 
-#### fein mode (~25 lines)
-
-```
-## Mode Override: fein
-
-A [MODE: fein] marker was injected into this turn. Follow these rules:
-
-**Pipeline is mandatory:** @adventurer (recon) → @architect or @planner
-(design) → @builder (implement) → @reviewer (validate). Every step must
-complete before reporting done. Do not skip any step.
-
-**Reviewer gate is non-negotiable.** @reviewer must approve before you
-report the task as complete. If the reviewer identifies issues, route
-them back to @builder.
-
-**Tests must pass.** Before @reviewer validation, delegate `vp test` to
-@builder and confirm all tests pass. If tests fail, route back to
-@builder for fixes.
-
-**ADRs required for new patterns.** If the work introduces a new
-architectural pattern, dependency, or design approach, delegate to
-@architect for an ADR as part of the design phase.
-
-**Max 3 rounds per phase.** If a phase exceeds 3 task() delegations
-without completing, escalate via question().
-```
-
-#### sonar mode (~20 lines)
+#### fein prompt
 
 ```
-## Mode Override: sonar
+## MODE: fein (Full Pipeline)
 
-A [MODE: sonar] marker was injected into this turn. Follow these rules:
-
-**Research only — no implementation.** Pipeline: @adventurer (recon) →
-@architect or @planner (synthesis) → STOP. Do NOT delegate to @builder
-under any circumstance. No code changes, no file writes.
-
-**Output a structured summary covering:**
-1. What was investigated
-2. Key findings and data points
-3. Options identified (with pros/cons per option)
-4. Recommended next steps (but do NOT execute them)
-
-**Load architecture-decision-records and codebase-design skills**
-before delegating to @architect — the research phase benefits from
-structured decision vocabulary.
-
-**If the user follows up with implementation intent**, acknowledge the
-research findings and wait for a new mode keyword. Do not assume the
-research phase authorizes building.
+Execute the complete fein pipeline: mandatory reconnaissance
+(@adventurer) → design/plan (@architect or @planner) →
+implementation (@builder) → review (@reviewer).
+Do NOT skip any phase unless the user explicitly overrides
+in the same turn.
 ```
 
-#### blitz mode (~15 lines)
+#### sonar prompt
 
 ```
-## Mode Override: blitz
+## MODE: sonar (Research Only)
 
-A [MODE: blitz] marker was injected into this turn. Follow these rules:
+Research mode: reconnaissance and design only. Delegate to
+@adventurer (recon) followed by @architect or @planner
+(analysis/design). STOP after delivering findings and design.
+Do NOT implement, write code, or create any production files.
+```
 
-**Builder direct.** Delegate to @builder immediately. No recon
-(@adventurer), no design (@architect or @planner), no review
-(@reviewer) unless explicitly requested.
+#### blitz prompt
 
-**One-shot preferred.** Request a single, complete implementation rather
-than iterative refinement. If the change has edge cases, handle them
-in the first delegation — don't save them for a second pass.
+```
+## MODE: blitz (Fast Implementation)
 
-**Tests optional.** Skip testing unless the user explicitly asks for it.
-Token efficiency is the priority.
-
-**No ADRs.** Do not suggest or delegate ADR creation.
-
-**Token efficiency prioritized.** Minimize delegation overhead. Avoid
-parallel fan-out unless the sub-tasks are clearly independent and
-combining them would lose context.
+Speed mode: skip reconnaissance and design gates. Go directly
+to @builder for implementation. Only use @adventurer if the
+codebase context is genuinely unknown (not as a default step).
+Skip @reviewer unless the user explicitly requests review.
 ```
 
 ### Prompt Depth Gap

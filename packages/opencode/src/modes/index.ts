@@ -19,6 +19,9 @@ const MODE_PRIORITY: Record<ModeKeyword, number> = {
  * Regex matching fenced code blocks (```) and inline backtick spans (`).
  * Used to exclude keyword matches inside code spans.
  */
+// Note: Unclosed fenced code blocks (``` without closing ```) are not
+// excluded — the regex requires matching fences. This is an accepted
+// false-positive risk (see ADR-008 consequences).
 const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/g;
 
 /**
@@ -28,7 +31,6 @@ const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/g;
  */
 function findAllCodeBlockRanges(text: string): Array<[number, number]> {
   const ranges: Array<[number, number]> = [];
-  CODE_BLOCK_RE.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = CODE_BLOCK_RE.exec(text)) !== null) {
     ranges.push([match.index, match.index + match[0].length]);
@@ -66,10 +68,14 @@ function buildKeywordRegex(keyword: string): RegExp {
  */
 export function detectMode(text: string, disabled?: Set<string>): ModeResult | null {
   const codeRanges = findAllCodeBlockRanges(text);
+  // Normalize disabled keywords to lowercase for case-insensitive comparison
+  const normalizedDisabled = disabled
+    ? new Set(Array.from(disabled).map((k) => k.toLowerCase()))
+    : undefined;
   let bestMatch: { keyword: string; index: number; mode: ModeKeyword } | null = null;
 
   for (const keyword of VALID_KEYWORDS) {
-    if (disabled?.has(keyword)) continue;
+    if (normalizedDisabled?.has(keyword)) continue;
 
     const regex = buildKeywordRegex(keyword);
     let match: RegExpExecArray | null;

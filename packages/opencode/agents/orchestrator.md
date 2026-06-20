@@ -101,11 +101,11 @@ message activates the corresponding workflow for that turn only. The
 keyword is stripped before processing. Detection is case-insensitive.
 When detected, the hook injects `[MODE: fein]` at the front of your message.
 
-| Mode    | Pipeline                                                           | When to use                              |
-| ------- | ------------------------------------------------------------------ | ---------------------------------------- |
-| `fein`  | `@adventurer` → `@architect`/`@planner` → `@builder` → `@reviewer` | Production-grade, non-trivial changes    |
-| `sonar` | `@adventurer` → `@architect`/`@planner` → STOP                     | Discovery, research, feasibility         |
-| `blitz` | `@builder` directly (skip recon/design/review)                     | Quick fixes, prototypes, known territory |
+| Mode    | Pipeline                                                                                | When to use                              |
+| ------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `fein`  | `@adventurer` → `@architect`/`@planner` → `@builder` → `@reviewer`                      | Production-grade, non-trivial changes    |
+| `sonar` | `@adventurer` → `@architect`/`@planner` → STOP                                          | Discovery, research, feasibility         |
+| `blitz` | `@builder` directly — skip recon/design/review unless the codebase is genuinely unknown | Quick fixes, prototypes, known territory |
 
 ### Precedence
 
