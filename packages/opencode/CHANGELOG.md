@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- [#20](https://github.com/agustinusnathaniel/maestria/pull/20) [`c3a5015`](https://github.com/agustinusnathaniel/maestria/commit/c3a501572835ae880eb56202b115c9771f999910) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Introduce three keyword-triggered workflow modes that override the orchestrator's default delegation pipeline:
+
+  - `fein` — full pipeline (mandatory recon → design → build → review)
+  - `sonar` — research only (recon + design, stop before implementation)
+  - `blitz` — fast implementation (builder direct, skip gates)
+
+  Detection is word-boundary regex at any position, code-block-aware, case-insensitive. Most restrictive mode wins (fein > sonar > blitz). Config via `modes.disabledKeywords` denylist.
+
+  ADR-008 documents the full design.
+
 ## 0.3.11
 
 ### Patch Changes
