@@ -4,14 +4,34 @@
  * @see ADR-008 for full design context.
  */
 
+import { z } from "zod";
+
 /**
- * The three workflow mode keywords.
+ * Valid mode keywords.
  *
- * - `"fein"` — Full pipeline (recon → design → build → review)
- * - `"sonar"` — Research only (recon + design, stop before build)
- * - `"blitz"` — Fast implementation (builder direct, skip recon/design/review)
+ * - `"fein"` -- Full pipeline (recon -> design -> build -> review)
+ * - `"sonar"` -- Research only (recon + design, stop before build)
+ * - `"blitz"` -- Fast implementation (builder direct, skip recon/design/review)
  */
-export type ModeKeyword = "fein" | "sonar" | "blitz";
+export const modeKeywordSchema = z.enum(["fein", "sonar", "blitz"]);
+export type ModeKeyword = z.infer<typeof modeKeywordSchema>;
+
+/**
+ * Plugin-level options for @maestria/opencode.
+ */
+export const maestriaOptionsSchema = z.object({
+  modes: z
+    .object({
+      disabledKeywords: z.array(modeKeywordSchema).optional(),
+    })
+    .optional(),
+});
+export type MaestriaPluginOptions = z.infer<typeof maestriaOptionsSchema>;
+
+/** Resolved config after validation */
+export interface ResolvedMaestriaConfig {
+  disabledKeywords: Set<ModeKeyword>;
+}
 
 /**
  * Result returned when a mode keyword is detected in a message.
@@ -27,19 +47,4 @@ export interface ModeResult {
   prompt: string;
   /** The mode marker string like `[MODE: fein]`. */
   marker: string;
-}
-
-/**
- * Plugin-level options for @maestria/opencode.
- *
- * Extends the base plugin options with workflow mode configuration.
- */
-export interface MaestriaPluginOptions {
-  modes?: {
-    /**
-     * List of mode keywords to disable.
-     * Disabled keywords will be ignored during detection.
-     */
-    disabledKeywords?: ModeKeyword[];
-  };
 }

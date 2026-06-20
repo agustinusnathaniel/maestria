@@ -3,9 +3,8 @@ import { readFileSync, readdirSync } from "fs";
 import { join, dirname, basename } from "path";
 import { parse as parseYaml } from "yaml";
 import { fileURLToPath } from "url";
-import type { MaestriaPluginOptions } from "./modes/types";
+import { type MaestriaPluginOptions, maestriaOptionsSchema } from "./modes/types";
 import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "./modes/index";
-import { VALID_KEYWORDS } from "./modes/prompts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
@@ -74,30 +73,12 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   return agents;
 }
 
-function validateOptions(options?: MaestriaPluginOptions): void {
-  const disabled = options?.modes?.disabledKeywords ?? [];
-  if (!Array.isArray(disabled)) {
-    throw new Error(
-      "@maestria/opencode: modes.disabledKeywords must be an array. " + `Got ${typeof disabled}.`,
-    );
-  }
-  for (const kw of disabled) {
-    if (!(VALID_KEYWORDS as readonly string[]).includes(kw.toLowerCase())) {
-      throw new Error(
-        `@maestria/opencode: Unknown mode "${kw}". ` + `Valid: ${VALID_KEYWORDS.join(", ")}.`,
-      );
-    }
-  }
-}
-
-function resolveDisabledKeywords(options?: MaestriaPluginOptions): Set<string> {
-  const raw = options?.modes?.disabledKeywords ?? [];
-  return new Set(raw.map((k) => k.toLowerCase()));
-}
-
 export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOptions) => {
-  validateOptions(options);
-  const disabledKeywords = resolveDisabledKeywords(options);
+  // Validate and parse options with zod
+  const parsed = maestriaOptionsSchema.parse(options ?? {});
+  const disabledKeywords = new Set<string>(
+    (parsed.modes?.disabledKeywords ?? []).map((k) => k.toLowerCase()),
+  );
   const agents = loadAgents();
 
   return {

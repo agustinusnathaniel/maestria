@@ -14,7 +14,7 @@ The orchestrator's default pipeline (`adventurer → architect/planner → build
 
 3. **Fast implementation** — the user knows what they want and wants it done now. Skip recon, skip design, skip review. One-shot edits preferred. Tests optional.
 
-Before this ADR, the only way to express intent was through the natural language prompt — "take your time", "just explore", "ship it fast". These are ambiguous, inconsistently phrased, and easy for the orchestrator to misinterpret. A research request gets interpreted as needing a plan. A fast request triggers the full pipeline. Every mode was a guess.
+Before this ADR, the only way to express intent was through the natural language prompt — "take your time", "just explore", "ship it fast". These are ambiguous or phrased inconsistently. A research request gets interpreted as needing a plan. A fast request triggers the full pipeline. Every mode was a guess.
 
 We needed a mechanism that lets the user express their intent upfront — one word, unambiguous, machine-detectable — and redirects the orchestrator's pipeline accordingly.
 
@@ -155,7 +155,7 @@ combining them would lose context.
 
 ### Prompt Depth Gap
 
-The mode prompts above reference several granular behavioral rules — e.g., "ADRs required for new patterns", "Max 3 rounds per phase", "Load architecture-decision-records and codebase-design skills" — that are also covered by the orchestrator's existing CRITICAL RULES. This overlap is intentional: the mode prompts surface the most relevant rules from the orchestrator's global rule set so a mode override is self-contained. The prompts do not re-implement those rules; they reference them. If a rule changes in the orchestrator's CRITICAL RULES, it does not need to be edited in the mode prompts — the prompts serve as discoverability cues, not authoritative definitions.
+The mode prompts above reference several granular behavioral rules — e.g., "ADRs required for new patterns", "Max 3 rounds per phase", "Load architecture-decision-records and codebase-design skills" — that are also covered by the orchestrator's existing CRITICAL RULES. This overlap is intentional: the mode prompts reference the most relevant rules from the orchestrator's global rule set so a mode override is self-contained. The prompts do not re-implement those rules; they reference them. If a rule changes in the orchestrator's CRITICAL RULES, it does not need to be edited in the mode prompts — the prompts serve as hints, not authoritative definitions.
 
 ### Config Model: Denylist Only
 
@@ -192,7 +192,7 @@ The three keywords are functional descriptors, not mythological/thematic:
 
 - **fein** — German for "fine, precise" — communicates careful, methodical work
 - **sonar** — technology metaphor — communicates scanning/depth-finding without action
-- **blitz** — German for "lightning" — communicates speed, directness, minimal ceremony
+- **blitz** — German for "lightning" — communicates speed and minimal ceremony
 
 This follows ADR-002's principle: "functional naming tells you what the agent does." Each keyword tells you the pipeline shape.
 
@@ -213,10 +213,10 @@ This follows ADR-002's principle: "functional naming tells you what the agent do
 
 ## Consequences
 
-- Positive: Users express intent with one word — unambiguous, machine-detectable, human-readable
+- Positive: Users express intent with one word — unambiguous and machine-detectable
 - Positive: Plain words integrate naturally into sentences — no bracket syntax or special characters
 - Positive: Per-turn detection means modes can switch mid-task without stale state
-- Positive: Hook is minimal (~30 lines TS) — easy to audit, maintain, and test
+- Positive: Hook is minimal (~30 lines TS) — easy to audit and maintain
 - Positive: Denylist config is simple — one array, no mode resolution logic
 - Positive: Prompts live in orchestrator.md, not in TypeScript — editable without rebuilding the package
 - Positive: ADR-002 compliant — functional naming (fein/sonar/blitz), not mythological

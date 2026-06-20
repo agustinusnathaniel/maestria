@@ -45,7 +45,9 @@
   },
   "dependencies": {
     "@opencode-ai/plugin": "^1.17.0",
-    "yaml": "^2.7.0"
+    "es-toolkit": "^1.47.1",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

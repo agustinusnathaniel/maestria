@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
 import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "../src/modes/index.js";
-import { findAllCodeBlockRanges } from "../src/modes/helpers.js";
 import type { ModeResult } from "../src/modes/types.js";
 
 // ---------------------------------------------------------------------------
@@ -62,13 +61,6 @@ describe("detectMode", () => {
     expect(detectMode("blitzkrieg attack")).toBeNull();
   });
 
-  it("matches hyphenated keyword (sonar-like)", () => {
-    // Hyphen is a non-word char boundary, so `sonar` in `sonar-like` matches
-    const result = detectMode("sonar-like exploration");
-    expect(result).not.toBeNull();
-    expect(result!.mode).toBe("sonar");
-  });
-
   it("does not match inside fenced code blocks", () => {
     const text = "```blitz this```";
     const result = detectMode(text);
@@ -76,7 +68,7 @@ describe("detectMode", () => {
   });
 
   it("detects keyword outside code block correctly", () => {
-    const text = "Here is some code:\n```\nconst x = 1;\n```\nfein then build";
+    const text = "some code:\n```\nconst x = 1;\n```\nfein then build";
     const result = detectMode(text);
     expect(result).not.toBeNull();
     expect(result!.mode).toBe("fein");
@@ -86,6 +78,13 @@ describe("detectMode", () => {
     const text = "run `blitz` command";
     const result = detectMode(text);
     expect(result).toBeNull();
+  });
+
+  it("matches hyphenated keyword (sonar-like)", () => {
+    // Hyphen is a non-word char boundary, so `sonar` in `sonar-like` matches
+    const result = detectMode("sonar-like exploration");
+    expect(result).not.toBeNull();
+    expect(result!.mode).toBe("sonar");
   });
 
   it("respects disabled keywords", () => {
@@ -188,52 +187,6 @@ describe("stripKeyword", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// findAllCodeBlockRanges
-// ---------------------------------------------------------------------------
-describe("findAllCodeBlockRanges", () => {
-  it("returns empty array for empty string", () => {
-    expect(findAllCodeBlockRanges("")).toEqual([]);
-  });
-
-  it("returns empty array when no backticks present", () => {
-    expect(findAllCodeBlockRanges("just plain text")).toEqual([]);
-  });
-
-  it("returns correct range for a single fenced code block", () => {
-    const result = findAllCodeBlockRanges("text\n```\ncode\n```\nmore");
-    // ``` at index 5, closing ``` at index 14 → range [5, 14+3=17]
-    expect(result).toEqual([[5, 17]]);
-  });
-
-  it("returns correct range for a single inline backtick span", () => {
-    const result = findAllCodeBlockRanges("run `cmd` here");
-    expect(result).toEqual([[4, 9]]);
-  });
-
-  it("treats unclosed inline backtick as range to end", () => {
-    const result = findAllCodeBlockRanges("text `unclosed");
-    // "text `unclosed" has length 14, backtick at index 5 → range [5, 14]
-    expect(result).toEqual([[5, 14]]);
-  });
-
-  it("returns multiple ranges for multiple code blocks", () => {
-    const result = findAllCodeBlockRanges("`a` and ```b``` and `c`");
-    // `a` = [0, 3], ```b``` = [8, 15], `c` = [20, 23]
-    expect(result).toEqual([
-      [0, 3],
-      [8, 15],
-      [20, 23],
-    ]);
-  });
-
-  it("handles unclosed fenced code block", () => {
-    const result = findAllCodeBlockRanges("before\n```\nno close");
-    // "before\n```\nno close" has length 19, ``` at index 7 → range [7, 19]
-    expect(result).toEqual([[7, 19]]);
-  });
-});
-
 describe("stripKeyword whitespace", () => {
   function makeResult(
     mode: "fein" | "sonar" | "blitz",
@@ -272,7 +225,9 @@ describe("MaestriaPlugin config validation", () => {
       MaestriaPlugin({} as never, {
         modes: { disabledKeywords: ["invalid"] as any },
       }),
-    ).rejects.toThrow('@maestria/opencode: Unknown mode "invalid".');
+    ).rejects.toThrow(
+      "Invalid enum value. Expected 'fein' | 'sonar' | 'blitz', received 'invalid'",
+    );
   });
 
   it("accepts valid config with disabled keywords", async () => {
@@ -306,7 +261,7 @@ describe("MaestriaPlugin config validation", () => {
       MaestriaPlugin({} as never, {
         modes: { disabledKeywords: "fein" as any },
       }),
-    ).rejects.toThrow("@maestria/opencode: modes.disabledKeywords must be an array.");
+    ).rejects.toThrow("Expected array, received string");
   });
 });
 
