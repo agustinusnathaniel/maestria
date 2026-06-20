@@ -34,9 +34,15 @@ The orchestrator responds to three mode keywords that adjust the pipeline depth:
 | `sonar` | Research            | adventurer → architect/planner → STOP               | Understanding before committing    |
 | `blitz` | Fast implementation | builder direct                                      | Quick fixes, known territory       |
 
-The keyword is detected at any position in your message, case-insensitively. Rightmost keyword wins. Code blocks are excluded from detection.
+The keyword is detected at any position in your message, case-insensitively. Most restrictive keyword wins (fein > sonar > blitz). Code blocks are excluded from detection.
 
-To disable a mode, set `modes.disabledKeywords` in your plugin configuration.
+To disable a mode, set `modes.disabledKeywords` in your plugin configuration:
+
+```jsonc
+{
+  "plugin": ["@maestria/opencode", { "modes": { "disabledKeywords": ["blitz"] } }],
+}
+```
 
 ## Agent Reference
 
