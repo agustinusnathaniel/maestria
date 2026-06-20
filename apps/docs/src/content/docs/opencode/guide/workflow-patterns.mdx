@@ -88,6 +88,38 @@ The orchestrator spawns independent tasks simultaneously and presents a combined
 
 Specialists are invoked via `task()`. The built-in `explore` and `general` agents are not part of this pipeline.
 
+## Workflow Modes
+
+Prefix your message with a mode keyword to override the orchestrator's default pipeline:
+
+| Keyword            | Effect                                                              | When to use                                          |
+| ------------------ | ------------------------------------------------------------------- | ---------------------------------------------------- |
+| `fein build this`  | Full pipeline: recon → design → build → review with mandatory gates | Production-grade changes where quality matters       |
+| `sonar trace this` | Research only: recon + design, then STOP before implementation      | Exploring unfamiliar code, evaluating approaches     |
+| `blitz fix this`   | Fast implementation: builder direct, skip recon and review          | Quick fixes, prototypes, code you already understand |
+
+The keyword can appear at the start, middle, or end of your message. It's case-insensitive. If multiple keywords appear, the rightmost wins.
+
+```markdown
+fein add a new rate limiter # Full pipeline with all gates
+let's sonar the auth flow # Research the auth system
+write the test blitz # Quick test implementation
+```
+
+To disable a mode you don't use, configure it in your plugin options:
+
+```jsonc
+{
+  "plugin": ["@maestria/opencode", { "modes": { "disabledKeywords": ["blitz"] } }],
+}
+```
+
+<Aside type="tip">
+  Use <code>fein</code> for anything that touches multiple files or crosses module boundaries. Use{" "}
+  <code>sonar</code> when you need to understand something before committing to a solution. Use{" "}
+  <code>blitz</code> when you know exactly what to do and just need it done.
+</Aside>
+
 <Aside type="tip">
   Most tasks don't start with code. Start with recon (@adventurer) or design (@architect) before
   reaching for @builder. The orchestrator handles this routing automatically.

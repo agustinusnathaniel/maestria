@@ -42,6 +42,22 @@ A typical multi-step task moves through the agent system like this:
 
 Each agent hands off to the next. The orchestrator keeps everything moving.
 
+## Workflow Modes
+
+The orchestrator supports three modes that change how it delegates work:
+
+- **`fein`** — Full pipeline with mandatory review. Best for production changes.
+- **`sonar`** — Research only, no implementation. Best for understanding code.
+- **`blitz`** — Fast implementation, skip gates. Best for quick fixes.
+
+Type the keyword anywhere in your message:
+
+```
+fein add rate limiting to the API
+```
+
+See [Workflow Patterns](/opencode/guide/workflow-patterns/) for detailed examples.
+
 ## Next Steps
 
 - [Agent Reference](/opencode/agents/) — Full docs for all 8 agents
