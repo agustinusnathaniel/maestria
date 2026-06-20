@@ -49,4 +49,4 @@ export const MODE_MARKERS: Record<ModeKeyword, string> = {
 /**
  * Array of all valid mode keywords for runtime iteration.
  */
-export const VALID_KEYWORDS: ModeKeyword[] = ["fein", "sonar", "blitz"];
+export const VALID_KEYWORDS: readonly ModeKeyword[] = ["fein", "sonar", "blitz"];

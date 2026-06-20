@@ -28,11 +28,6 @@ export const maestriaOptionsSchema = z.object({
 });
 export type MaestriaPluginOptions = z.infer<typeof maestriaOptionsSchema>;
 
-/** Resolved config after validation */
-export interface ResolvedMaestriaConfig {
-  disabledKeywords: Set<ModeKeyword>;
-}
-
 /**
  * Result returned when a mode keyword is detected in a message.
  */

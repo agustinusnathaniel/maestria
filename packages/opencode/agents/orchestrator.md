@@ -98,8 +98,8 @@ These apply on every invocation without exception:
 
 Modes override the default delegation pipeline. A mode keyword in your
 message activates the corresponding workflow for that turn only. The
-keyword is stripped before processing. A `[MODE: fein]` marker is
-injected at the front of your message.
+keyword is stripped before processing. Detection is case-insensitive.
+When detected, the hook injects `[MODE: fein]` at the front of your message.
 
 | Mode    | Pipeline                                                           | When to use                              |
 | ------- | ------------------------------------------------------------------ | ---------------------------------------- |
