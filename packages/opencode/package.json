@@ -40,7 +40,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "vp test",
+    "test": "node ./node_modules/vitest/vitest.mjs run",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -50,7 +50,8 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "commit-and-tag-version": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "engines": {
     "node": ">=22.12.0"

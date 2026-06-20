@@ -3,6 +3,9 @@ import { readFileSync, readdirSync } from "fs";
 import { join, dirname, basename } from "path";
 import { parse as parseYaml } from "yaml";
 import { fileURLToPath } from "url";
+import type { MaestriaPluginOptions } from "./modes/types";
+import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "./modes/index";
+import { VALID_KEYWORDS } from "./modes/prompts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
@@ -71,7 +74,30 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   return agents;
 }
 
-export const MaestriaPlugin: Plugin = async () => {
+function validateOptions(options?: MaestriaPluginOptions): void {
+  const disabled = options?.modes?.disabledKeywords ?? [];
+  if (!Array.isArray(disabled)) {
+    throw new Error(
+      "@maestria/opencode: modes.disabledKeywords must be an array. " + `Got ${typeof disabled}.`,
+    );
+  }
+  for (const kw of disabled) {
+    if (!(VALID_KEYWORDS as readonly string[]).includes(kw.toLowerCase())) {
+      throw new Error(
+        `@maestria/opencode: Unknown mode "${kw}". ` + `Valid: ${VALID_KEYWORDS.join(", ")}.`,
+      );
+    }
+  }
+}
+
+function resolveDisabledKeywords(options?: MaestriaPluginOptions): Set<string> {
+  const raw = options?.modes?.disabledKeywords ?? [];
+  return new Set(raw.map((k) => k.toLowerCase()));
+}
+
+export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOptions) => {
+  validateOptions(options);
+  const disabledKeywords = resolveDisabledKeywords(options);
   const agents = loadAgents();
 
   return {
@@ -88,6 +114,33 @@ export const MaestriaPlugin: Plugin = async () => {
           "Active context (files, decisions, blockers) was captured before compaction. " +
           "Continue where you left off.",
       );
+    },
+    "chat.message": async (hookInput, hookOutput) => {
+      // Only fire for the orchestrator agent
+      if (hookInput.agent !== "orchestrator") return;
+
+      // Find the first text part with user content
+      const textPart = hookOutput.parts.find((p) => p.type === "text") as
+        | { text: string; type: "text" }
+        | undefined;
+      if (!textPart) return;
+
+      // Detect keyword in the text
+      const result = detectMode(textPart.text, disabledKeywords);
+      if (!result) return;
+
+      // Strip keyword from text
+      textPart.text = stripKeyword(textPart.text, result);
+
+      // Inject mode marker + prompt at the front of parts
+      hookOutput.parts.unshift({
+        id: crypto.randomUUID(),
+        sessionID: hookInput.sessionID,
+        messageID: hookOutput.message.id,
+        type: "text",
+        text: [getModeMarker(result.mode), "", getModePrompt(result.mode)].join("\n"),
+        synthetic: true,
+      });
     },
   };
 };

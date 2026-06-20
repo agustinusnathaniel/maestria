@@ -19,6 +19,9 @@
   time — clone it once, then read locally. Use `--cwd` to resolve
   versions from the current project.
 - **Webfetch may hang — don't block on it** — if a `webfetch` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
+- **Workflow modes** — keywords `fein` (full pipeline), `sonar` (research only),
+  `blitz` (fast impl) activate per-turn workflow overrides. See the
+  orchestrator prompt for details.
 - **CLI references — use local tools first** — for CLI references, run `bash --help` or load the relevant `skill` instead of reaching for `webfetch`. Local tools are faster and more reliable than fetching docs.
 - **Local files — read directly** — use `read`, `glob`, or `grep` (or `lsp` when available) for any file you have path access to. Don't `webfetch` a local file or a file in a checked-out repo.
 - **Tool hierarchy for external information:**
