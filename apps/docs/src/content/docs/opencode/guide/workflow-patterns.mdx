@@ -98,7 +98,7 @@ Prefix your message with a mode keyword to override the orchestrator's default p
 | `sonar trace this` | Research only: recon + design, then STOP before implementation      | Exploring unfamiliar code, evaluating approaches     |
 | `blitz fix this`   | Fast implementation: builder direct, skip recon and review          | Quick fixes, prototypes, code you already understand |
 
-The keyword can appear at the start, middle, or end of your message. It's case-insensitive. If multiple keywords appear, the rightmost wins.
+The keyword can appear at the start, middle, or end of your message. It's case-insensitive. If multiple keywords appear, the most restrictive mode wins: `fein` (full pipeline) > `sonar` (research only) > `blitz` (fast impl).
 
 ```markdown
 fein add a new rate limiter # Full pipeline with all gates

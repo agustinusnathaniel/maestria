@@ -33,11 +33,33 @@ describe("detectMode", () => {
     expect(result.keyword).toBe("blitz");
   });
 
-  it("rightmost wins with multiple keywords", () => {
-    const result = detectMode("fein research then blitz implement");
-    expectNotNull(result);
-    expect(result.mode).toBe("blitz");
-    expect(result.index).toBe(19);
+  it("most restrictive wins with multiple keywords", () => {
+    const r1 = detectMode("fein research then blitz implement");
+    expectNotNull(r1);
+    expect(r1.mode).toBe("fein");
+    expect(r1.index).toBe(0);
+
+    const r2 = detectMode("fein sonar blitz");
+    expectNotNull(r2);
+    expect(r2.mode).toBe("fein");
+
+    const r3 = detectMode("sonar blitz");
+    expectNotNull(r3);
+    expect(r3.mode).toBe("sonar");
+  });
+
+  it("priority order is fein > sonar > blitz regardless of position", () => {
+    const r1 = detectMode("blitz sonar fein");
+    expectNotNull(r1);
+    expect(r1.mode).toBe("fein");
+
+    const r2 = detectMode("fein blitz sonar");
+    expectNotNull(r2);
+    expect(r2.mode).toBe("fein");
+
+    const r3 = detectMode("blitz sonar");
+    expectNotNull(r3);
+    expect(r3.mode).toBe("sonar");
   });
 
   it("returns null when no keyword present", () => {

@@ -3,6 +3,19 @@ import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from "./prompts";
 import type { ModeKeyword, ModeResult } from "./types";
 
 /**
+ * Priority mapping for mode keyword restrictiveness.
+ * Higher number = more restrictive = wins when multiple keywords are present.
+ * fein (3): full pipeline with mandatory gates
+ * sonar (2): research only, no code
+ * blitz (1): fast implementation, skip all gates
+ */
+const MODE_PRIORITY: Record<ModeKeyword, number> = {
+  fein: 3,
+  sonar: 2,
+  blitz: 1,
+};
+
+/**
  * Regex matching fenced code blocks (```) and inline backtick spans (`).
  * Used to exclude keyword matches inside code spans.
  */
@@ -42,7 +55,7 @@ function buildKeywordRegex(keyword: string): RegExp {
  *
  * Detection rules (per ADR-008):
  * - Word-boundary regex matching (`\bfein\b`, `\bsonar\b`, `\bblitz\b`)
- * - Rightmost match wins (allows user to correct themselves mid-message)
+ * - Most restrictive match wins (fein > sonar > blitz)
  * - Case-insensitive
  * - Disabled keywords are ignored
  * - Matches inside fenced code blocks (```) and inline backticks (`) are ignored
@@ -63,7 +76,8 @@ export function detectMode(text: string, disabled?: Set<string>): ModeResult | n
 
     while ((match = regex.exec(text)) !== null) {
       if (isInRanges(match.index, codeRanges)) continue;
-      if (bestMatch === null || match.index > bestMatch.index) {
+      // Most-restrictive wins: prefer higher-priority mode over position
+      if (bestMatch === null || MODE_PRIORITY[keyword] > MODE_PRIORITY[bestMatch.mode]) {
         bestMatch = {
           keyword: match[0],
           index: match.index,
