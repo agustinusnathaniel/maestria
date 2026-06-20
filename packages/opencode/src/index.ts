@@ -3,6 +3,8 @@ import { readFileSync, readdirSync } from "fs";
 import { join, dirname, basename } from "path";
 import { parse as parseYaml } from "yaml";
 import { fileURLToPath } from "url";
+import { type MaestriaPluginOptions, maestriaOptionsSchema } from "./modes/types";
+import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "./modes/index";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
@@ -71,7 +73,12 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   return agents;
 }
 
-export const MaestriaPlugin: Plugin = async () => {
+export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOptions) => {
+  // Validate and parse options with zod
+  const parsed = maestriaOptionsSchema.parse(options ?? {});
+  const disabledKeywords = new Set<string>(
+    (parsed.modes?.disabledKeywords ?? []).map((k) => k.toLowerCase()),
+  );
   const agents = loadAgents();
 
   return {
@@ -88,6 +95,33 @@ export const MaestriaPlugin: Plugin = async () => {
           "Active context (files, decisions, blockers) was captured before compaction. " +
           "Continue where you left off.",
       );
+    },
+    "chat.message": async (hookInput, hookOutput) => {
+      // Only fire for the orchestrator agent
+      if (hookInput.agent !== "orchestrator") return;
+
+      // Find the first text part with user content
+      const textPart = hookOutput.parts.find((p) => p.type === "text") as
+        | { text: string; type: "text" }
+        | undefined;
+      if (!textPart) return;
+
+      // Detect keyword in the text
+      const result = detectMode(textPart.text, disabledKeywords);
+      if (!result) return;
+
+      // Strip keyword from text
+      textPart.text = stripKeyword(textPart.text, result);
+
+      // Inject mode marker + prompt at the front of parts
+      hookOutput.parts.unshift({
+        id: crypto.randomUUID(),
+        sessionID: hookInput.sessionID,
+        messageID: hookOutput.message.id,
+        type: "text",
+        text: [getModeMarker(result.mode), "", getModePrompt(result.mode)].join("\n"),
+        synthetic: true,
+      });
     },
   };
 };

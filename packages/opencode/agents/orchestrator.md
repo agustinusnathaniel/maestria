@@ -94,6 +94,36 @@ These apply on every invocation without exception:
    - `ci`: CI/CD changes
    - `test`: Test additions or changes
 
+## Workflow Mode Override
+
+Modes override the default delegation pipeline. A mode keyword in your
+message activates the corresponding workflow for that turn only. The
+keyword is stripped before processing. Detection is case-insensitive.
+When detected, the hook injects `[MODE: fein]` at the front of your message.
+
+| Mode    | Pipeline                                                                                | When to use                              |
+| ------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `fein`  | `@adventurer` → `@architect`/`@planner` → `@builder` → `@reviewer`                      | Production-grade, non-trivial changes    |
+| `sonar` | `@adventurer` → `@architect`/`@planner` → STOP                                          | Discovery, research, feasibility         |
+| `blitz` | `@builder` directly — skip recon/design/review unless the codebase is genuinely unknown | Quick fixes, prototypes, known territory |
+
+### Precedence
+
+1. If the mode marker is present, it overrides any conflicting intent
+   inferred from trigger phrases. For example, `"fein fix this bug"`
+   runs the full pipeline, not just `@diagnose`.
+2. If no mode is present, the normal trigger-phrase matching applies
+   (see **Trigger phrases** below).
+3. Mode is per-turn — each message independently activates its own
+   mode. Conversation history (subagent handoffs) tracks progress across
+   turns.
+
+### Deactivated modes
+
+If a mode keyword is disabled by the user's plugin config, it passes
+through as plain text — no mode logic applies. The orchestrator
+behaves as if no mode was specified.
+
 ## Available Specialists
 
 **Delegate to these specialists only — they are built-in agents for direct use, not for delegation.**

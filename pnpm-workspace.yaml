@@ -9,7 +9,7 @@ catalog:
   "@types/node": ^24
   typescript: ^5
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
+  vitest: npm:@voidzero-dev/vite-plus-test@^0.1.24
   vite-plus: latest
   "@changesets/cli": ^2.31.0
   "@changesets/changelog-github": ^0.7.0
