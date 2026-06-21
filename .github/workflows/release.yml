@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths:
-      - ".changeset/**"
-      - "**/CHANGELOG.md"
-      - "**/package.json"
-      - ".github/workflows/release.yml"
+      - '.changeset/**'
+      - '**/CHANGELOG.md'
+      - '**/package.json'
+      - '.github/workflows/release.yml'
   pull_request:
     types:
       - opened
@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version bump type (major, minor, patch). Leave empty for changeset-defined."
+        description: 'Version bump type (major, minor, patch). Leave empty for changeset-defined.'
         required: false
         type: choice
         options:
@@ -44,12 +44,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: pnpm/setup@v1
+      - uses: voidzero-dev/setup-vp@v1
         with:
+          node-version: 'lts'
           cache: true
+          run-install: true
 
       - name: Build all packages
-        run: pnpm build
+        run: pnpm run build
 
       - name: Create Release Pull Request or Publish
         if: github.ref == 'refs/heads/main'
@@ -57,7 +59,7 @@ jobs:
         with:
           version: pnpm version-packages
           publish: pnpm release
-          title: "chore: version packages"
-          commit: "chore: version packages"
+          title: 'chore: version packages'
+          commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

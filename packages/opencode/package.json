@@ -41,7 +41,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "test": "node ./node_modules/vitest/vitest.mjs run",
+    "test": "vp test",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
