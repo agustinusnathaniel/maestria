@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.5
+
+### Patch Changes
+
+- [`2d10324`](https://github.com/agustinusnathaniel/maestria/commit/2d10324e0d2a539616c7d3da576695eb6fd994fb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix scripts to use vp
+
 ## 0.4.4
 
 ### Patch Changes
