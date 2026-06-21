@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "ready": "pnpm check && pnpm test && pnpm build",
+    "ready": "vp run check && vp run test && vp run build",
     "dev": "vp run @maestria/docs#dev",
     "prepare": "vp config",
     "preview": "vp run @maestria/docs#preview",

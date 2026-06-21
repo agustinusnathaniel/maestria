@@ -253,7 +253,7 @@ permission keys, and prompt length.
 
 ### When Publishing
 
-1. `npm run build` (prepublishOnly runs this)
+1. `vp run build` (prepublishOnly runs this)
 2. Verify `files` array in package.json includes dist, agents, rules
 3. Test on a fresh install: add to `opencode.jsonc`, restart, verify agents
 
