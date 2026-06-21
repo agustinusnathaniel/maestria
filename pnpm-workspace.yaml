@@ -16,6 +16,7 @@ catalog:
   commit-and-tag-version: ^12.7.3
   "@fontsource-variable/noto-serif": ^5.2.9
   "@fontsource-variable/sn-pro": ^5.2.1
+  vite-tsconfig-paths: ^6.1.1
 overrides:
   vite: "catalog:"
   vitest: "catalog:"

@@ -1,0 +1,4 @@
+# Resolve project root to set an absolute PATH for Vite+ tools
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+export PATH="$PROJECT_ROOT/node_modules/.bin:$PATH"
+vp check && pnpm test

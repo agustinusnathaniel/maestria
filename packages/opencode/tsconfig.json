@@ -4,14 +4,16 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
-    "outDir": "dist",
-    "rootDir": "src",
     "strict": true,
-    "declaration": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src", "tests"],
+  "exclude": ["dist", "node_modules"]
 }

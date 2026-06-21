@@ -8,12 +8,12 @@ describe("plugin structure", () => {
   });
 
   it("should export MaestriaPlugin", async () => {
-    const { MaestriaPlugin } = await import("../src/index.ts");
+    const { MaestriaPlugin } = await import("@/index.js");
     expect(typeof MaestriaPlugin).toBe("function");
   });
 
   it("should load all 8 agents", async () => {
-    const module = await import("../src/index.ts");
+    const module = await import("@/index.js");
     const plugin = await module.MaestriaPlugin({} as never);
     const config = { agent: {} };
     await plugin.config?.(config);
@@ -31,7 +31,7 @@ describe("plugin structure", () => {
   });
 
   it("should parse agent frontmatter correctly", async () => {
-    const module = await import("../src/index.ts");
+    const module = await import("@/index.js");
     const plugin = await module.MaestriaPlugin({} as never);
     const config = { agent: {} };
     await plugin.config?.(config);

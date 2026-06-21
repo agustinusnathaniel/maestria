@@ -3,8 +3,8 @@ import { readFileSync, readdirSync } from "fs";
 import { join, dirname, basename } from "path";
 import { parse as parseYaml } from "yaml";
 import { fileURLToPath } from "url";
-import { type MaestriaPluginOptions, maestriaOptionsSchema } from "./modes/types.js";
-import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "./modes/index.js";
+import { type MaestriaPluginOptions, maestriaOptionsSchema } from "@/modes/types.js";
+import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "@/modes/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");
@@ -110,18 +110,17 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
       const result = detectMode(textPart.text, disabledKeywords);
       if (!result) return;
 
-      // Strip keyword from text
-      textPart.text = stripKeyword(textPart.text, result);
-
-      // Inject mode marker + prompt at the front of parts
-      hookOutput.parts.unshift({
-        id: crypto.randomUUID(),
-        sessionID: hookInput.sessionID,
-        messageID: hookOutput.message.id,
-        type: "text",
-        text: [getModeMarker(result.mode), "", getModePrompt(result.mode)].join("\n"),
-        synthetic: true,
-      });
+      // Strip keyword from text and prepend mode marker + prompt inline.
+      // We embed everything in the existing text part rather than injecting
+      // a second text part into `parts`, because the OpenCode runtime does
+      // not handle multiple text parts per message (causes a hang).
+      textPart.text = [
+        getModeMarker(result.mode),
+        "",
+        getModePrompt(result.mode),
+        "",
+        stripKeyword(textPart.text, result),
+      ].join("\n");
     },
   };
 };

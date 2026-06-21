@@ -8,6 +8,7 @@
     "dev": "vp run website#dev",
     "prepare": "vp config",
     "build": "vp run -r build",
+    "test": "vp run -r test",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish"
