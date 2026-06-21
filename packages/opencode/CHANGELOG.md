@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.1
+
+### Patch Changes
+
+- [`0990997`](https://github.com/agustinusnathaniel/maestria/commit/099099761174ad6f277405d21005a09abc3cf2a8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix ESM compatibility: add .js extensions to relative imports
+
+  Relative imports in the plugin source were missing `.js` extensions,
+  causing ERR_MODULE_NOT_FOUND in Node ESM environments. Added `.js`
+  extensions to all 5 internal imports and a build-time verification
+  script to catch future regressions.
+
 ## 0.4.0
 
 ### Minor Changes
