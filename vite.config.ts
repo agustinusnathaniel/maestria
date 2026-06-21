@@ -8,7 +8,7 @@ export default defineConfig({
     semi: true,
     singleQuote: true,
     sortPackageJson: true,
-    ignorePatterns: ['dist/**'],
+    ignorePatterns: ['dist/**', '.changeset/**'],
   },
   lint: {
     ignorePatterns: ['dist/**'],
