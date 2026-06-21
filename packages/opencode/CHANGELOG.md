@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.3
+
+### Patch Changes
+
+- [`b722da0`](https://github.com/agustinusnathaniel/maestria/commit/b722da01d6bbe8a105a26d757a870b5cf0ef9b43) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Switch build from tsc to vp pack (tsdown), consolidate configs
+
+  - Replace tsc build with vp pack/tsdown for native @/ alias resolution
+  - Consolidate vitest.config.ts into single vite.config.ts with pack + test blocks
+  - Add integration tests for chat.message hook
+  - Remove tsconfig.build.json, verify-imports.sh (no longer needed)
+  - Add proper pack config (target, sourcemap, minify)
+  - Simplify pre-push hook
+  - Remove redundant typecheck script (vp check covers it)
+
 ## 0.4.2
 
 ### Patch Changes
