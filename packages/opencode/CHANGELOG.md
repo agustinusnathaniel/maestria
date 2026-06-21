@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.2
+
+### Patch Changes
+
+- [`20fdde5`](https://github.com/agustinusnathaniel/maestria/commit/20fdde52b05142ec7a7e293f15ebc9cbc1496e5f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add @/ path alias, integration tests, vitest config, and pre-push hooks
+
+  - Add @/ path alias to tsconfig.json for cleaner imports across src/ and tests/
+  - Create vitest.config.ts with tsconfigPaths resolution
+  - Add integration tests for chat.message hook (asserts on parts length)
+  - Add pre-push hook via vite-hooks (runs vp check + pnpm test)
+
 ## 0.4.1
 
 ### Patch Changes
