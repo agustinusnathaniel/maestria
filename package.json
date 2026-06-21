@@ -11,7 +11,8 @@
     "test": "vp run -r test",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "check": "vp check && pnpm test"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
