@@ -9,6 +9,7 @@ on:
       - '**/CHANGELOG.md'
       - '**/package.json'
       - '.github/workflows/release.yml'
+      - '.vite-hooks/**'
   pull_request:
     types:
       - opened
