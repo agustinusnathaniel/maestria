@@ -51,14 +51,14 @@ jobs:
           run-install: true
 
       - name: Build all packages
-        run: pnpm run build
+        run: vp run build
 
       - name: Create Release Pull Request or Publish
         if: github.ref == 'refs/heads/main'
         uses: changesets/action@v1
         with:
-          version: pnpm version-packages
-          publish: pnpm release
+          version: vp run version-packages
+          publish: vp run release
           title: 'chore: version packages'
           commit: 'chore: version packages'
         env:
