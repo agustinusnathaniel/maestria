@@ -18,11 +18,11 @@ permission:
   todowrite: allow
   edit: deny
   bash:
-    "*": ask
-    "git log*": allow
-    "git diff*": allow
-    "git status*": allow
-    "which *": allow
+    '*': ask
+    'git log*': allow
+    'git diff*': allow
+    'git status*': allow
+    'which *': allow
 ---
 
 You are a codebase reconnaissance agent.

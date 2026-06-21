@@ -1,6 +1,6 @@
-import { escapeRegExp } from "es-toolkit";
-import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from "@/modes/prompts.js";
-import type { ModeKeyword, ModeResult } from "@/modes/types.js";
+import { escapeRegExp } from 'es-toolkit';
+import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from '@/modes/prompts.js';
+import type { ModeKeyword, ModeResult } from '@/modes/types.js';
 
 /**
  * Priority mapping for mode keyword restrictiveness.
@@ -49,7 +49,7 @@ function isInRanges(index: number, ranges: Array<[number, number]>): boolean {
  * and is case-insensitive so `Fein`, `FEIN`, `fein` all match.
  */
 function buildKeywordRegex(keyword: string): RegExp {
-  return new RegExp(`\\b${escapeRegExp(keyword)}\\b`, "gi");
+  return new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'gi');
 }
 
 /**
@@ -118,11 +118,11 @@ export function stripKeyword(text: string, result: ModeResult): string {
 
   // Remove any colon + optional whitespace after the keyword
   // (e.g. "fein: do this" -> "do this")
-  const cleaned = after.replace(/^:\s*/, "");
+  const cleaned = after.replace(/^:\s*/, '');
 
   // Collapse double spaces and trim both ends (handles keyword at start,
   // end, or middle of text, plus extra whitespace around colon)
-  return (before + cleaned).replace(/\s{2,}/g, " ").trim();
+  return (before + cleaned).replace(/\s{2,}/g, ' ').trim();
 }
 
 /**
@@ -135,7 +135,7 @@ export function getModePrompt(mode: string): string {
   if (isModeKeyword(mode)) {
     return MODE_PROMPTS[mode];
   }
-  return "";
+  return '';
 }
 
 /**
@@ -148,7 +148,7 @@ export function getModeMarker(mode: string): string {
   if (isModeKeyword(mode)) {
     return MODE_MARKERS[mode];
   }
-  return "";
+  return '';
 }
 
 /**

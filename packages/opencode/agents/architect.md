@@ -14,12 +14,12 @@ permission:
   skill: allow
   edit: deny
   bash:
-    "*": ask
-    "git diff*": allow
-    "git log*": allow
-    "git status*": allow
-    "which *": allow
-    "npm view *": allow
+    '*': ask
+    'git diff*': allow
+    'git log*': allow
+    'git status*': allow
+    'which *': allow
+    'npm view *': allow
 ---
 
 You make architecture decisions systematically.

@@ -12,19 +12,19 @@ permission:
   webfetch: deny
   edit: deny
   bash:
-    "*": deny
-    "npx --yes skills@latest *": allow
+    '*': deny
+    'npx --yes skills@latest *': allow
   question: allow
   todowrite: allow
   task:
-    "*": deny
-    "adventurer": allow
-    "architect": allow
-    "builder": allow
-    "diagnose": allow
-    "planner": allow
-    "reviewer": allow
-    "writer": allow
+    '*': deny
+    'adventurer': allow
+    'architect': allow
+    'builder': allow
+    'diagnose': allow
+    'planner': allow
+    'reviewer': allow
+    'writer': allow
   skill: allow
 ---
 

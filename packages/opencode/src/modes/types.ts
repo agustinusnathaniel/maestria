@@ -4,7 +4,7 @@
  * @see ADR-008 for full design context.
  */
 
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Valid mode keywords.
@@ -13,7 +13,7 @@ import { z } from "zod";
  * - `"sonar"` -- Research only (recon + design, stop before build)
  * - `"blitz"` -- Fast implementation (builder direct, skip recon/design/review)
  */
-export const modeKeywordSchema = z.enum(["fein", "sonar", "blitz"]);
+export const modeKeywordSchema = z.enum(['fein', 'sonar', 'blitz']);
 export type ModeKeyword = z.infer<typeof modeKeywordSchema>;
 
 /**

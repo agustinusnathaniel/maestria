@@ -129,12 +129,12 @@ The mode prompts above are self-contained — each prompt fully describes the pi
 // Plugin options type
 type PluginOptions = {
   modes?: {
-    disabledKeywords?: Array<"fein" | "sonar" | "blitz">;
+    disabledKeywords?: Array<'fein' | 'sonar' | 'blitz'>;
   };
 };
 
 // Usage: opt out of blitz
-MaestriaPlugin({ modes: { disabledKeywords: ["blitz"] } });
+MaestriaPlugin({ modes: { disabledKeywords: ['blitz'] } });
 ```
 
 Rationale:

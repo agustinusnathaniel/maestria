@@ -14,11 +14,11 @@ permission:
   skill: allow
   todowrite: allow
   bash:
-    "*": ask
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "npm view *": allow
+    '*': ask
+    'git status*': allow
+    'git diff*': allow
+    'git log*': allow
+    'npm view *': allow
 ---
 
 You write documentation.
