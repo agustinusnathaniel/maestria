@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.4
+
+### Patch Changes
+
+- [`9c396e6`](https://github.com/agustinusnathaniel/maestria/commit/9c396e6e6920d74a2080903fcf6e91293457d9fd) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Upgrade TypeScript to v6, streamline Vite+ configuration, and consolidate scripts
+
 ## 0.4.3
 
 ### Patch Changes
