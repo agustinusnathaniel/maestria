@@ -3,8 +3,8 @@ import { readFileSync, readdirSync } from "fs";
 import { join, dirname, basename } from "path";
 import { parse as parseYaml } from "yaml";
 import { fileURLToPath } from "url";
-import { type MaestriaPluginOptions, maestriaOptionsSchema } from "./modes/types";
-import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "./modes/index";
+import { type MaestriaPluginOptions, maestriaOptionsSchema } from "./modes/types.js";
+import { detectMode, stripKeyword, getModeMarker, getModePrompt } from "./modes/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, "..", "agents");

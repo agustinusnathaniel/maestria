@@ -1,4 +1,4 @@
-import type { ModeKeyword } from "./types";
+import type { ModeKeyword } from "./types.js";
 
 /**
  * Mode prompt text for each keyword.

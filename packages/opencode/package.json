@@ -39,7 +39,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && bash scripts/verify-imports.sh",
     "test": "node ./node_modules/vitest/vitest.mjs run",
     "prepublishOnly": "npm run build"
   },
