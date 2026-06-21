@@ -39,7 +39,8 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && bash scripts/verify-imports.sh",
+    "build": "vp pack",
+    "dev": "vp pack --watch",
     "test": "node ./node_modules/vitest/vitest.mjs run",
     "prepublishOnly": "npm run build"
   },
