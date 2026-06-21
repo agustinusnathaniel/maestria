@@ -9,6 +9,5 @@ Switch build from tsc to vp pack (tsdown), consolidate configs
 - Add integration tests for chat.message hook
 - Remove tsconfig.build.json, verify-imports.sh (no longer needed)
 - Add proper pack config (target, sourcemap, minify)
-- Add dev watch script
 - Simplify pre-push hook
 - Remove redundant typecheck script (vp check covers it)
