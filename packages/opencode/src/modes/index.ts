@@ -1,6 +1,6 @@
 import { escapeRegExp } from "es-toolkit";
-import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from "./prompts";
-import type { ModeKeyword, ModeResult } from "./types";
+import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from "./prompts.js";
+import type { ModeKeyword, ModeResult } from "./types.js";
 
 /**
  * Priority mapping for mode keyword restrictiveness.
