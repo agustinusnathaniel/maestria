@@ -31,6 +31,8 @@ export interface MaestriaState {
   originalModel: string | null;
   originalTools: string[] | null;
   subagentStatus: Record<string, SubagentStatusInfo>;
+  /** Model ID to use when entering review mode. Null = no preference. */
+  reviewModel: string | null;
 }
 
 export function createInitialState(): MaestriaState {
@@ -47,6 +49,7 @@ export function createInitialState(): MaestriaState {
     originalModel: null,
     originalTools: null,
     subagentStatus: {},
+    reviewModel: null,
   };
 }
 
@@ -144,11 +147,66 @@ export async function restoreOriginalState(
   Object.assign(state, clearedState);
 }
 
+/**
+ * Persist the current state to the session by appending a custom entry.
+ * Creates a shallow copy to ensure appendEntry sees the latest snapshot.
+ */
+export function persistState(pi: ExtensionAPI, state: MaestriaState): void {
+  pi.appendEntry('maestria_state', { ...state });
+}
+
+/**
+ * If a review model is configured, switch to it.
+ * Falls back to any available model from a different provider if not configured.
+ * Returns the model ID switched to, or null if no switch occurred.
+ */
+export async function cycleToReviewModel(
+  pi: ExtensionAPI,
+  ctx: ExtensionCommandContext,
+  state: MaestriaState,
+): Promise<string | null> {
+  const reviewModel = state.reviewModel;
+  if (reviewModel) {
+    try {
+      const models = ctx.modelRegistry.getAll();
+      const model = models.find((m) => m.id === reviewModel);
+      if (model) {
+        await pi.setModel(model);
+        return reviewModel;
+      } else {
+        ctx.ui.notify(`Review model "${reviewModel}" not found in registry, staying on current.`);
+        return null;
+      }
+    } catch {
+      ctx.ui.notify(`Could not switch to review model "${reviewModel}", staying on current.`);
+      return null;
+    }
+  }
+
+  // Fallback: try to find a different-provider model
+  try {
+    const models = ctx.modelRegistry.getAll();
+    const currentModel = ctx.model?.id;
+    const alternative = models.find((m) => m.id !== currentModel);
+    if (alternative) {
+      await pi.setModel(alternative);
+      return alternative.id;
+    }
+  } catch {
+    // Can't switch, just proceed without model cycling
+  }
+  return null;
+}
+
 export function renderMaestriaSummary(state: MaestriaState): string {
   const parts: string[] = [];
 
   if (state.mode) {
     parts.push(`**Mode:** ${state.mode.toUpperCase()}`);
+  }
+
+  if (state.reviewModel) {
+    parts.push(`**Review Model:** ${state.reviewModel}`);
   }
 
   if (state.activeTask) {

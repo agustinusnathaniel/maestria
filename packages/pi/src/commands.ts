@@ -1,6 +1,12 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from './state.js';
-import { renderMaestriaSummary, restoreOriginalState } from './state.js';
+import {
+  cycleToReviewModel,
+  persistState,
+  renderMaestriaSummary,
+  restoreOriginalState,
+} from './state.js';
+import { MAESTRIA_EVENTS } from './subagent.js';
 
 /**
  * Read-only tools that let a reviewer inspect code without making changes.
@@ -25,7 +31,14 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
 
       // Exit review mode if active (restore original model/tools)
       if (state.reviewMode) {
+        const prevOriginalModel = state.originalModel;
         await restoreOriginalState(pi, ctx, state);
+        persistState(pi, state);
+        pi.events?.emit(MAESTRIA_EVENTS.REVIEW_DEACTIVATED, {
+          originalModel: prevOriginalModel,
+          source: 'orchestrate',
+          timestamp: Date.now(),
+        });
       }
 
       pi.sendUserMessage(
@@ -72,9 +85,22 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
         originalTools: currentTools,
       };
       Object.assign(state, updatedState);
-      pi.appendEntry('maestria_state', state);
+      persistState(pi, state);
 
-      // 3. Restrict to read-only tools
+      // 3. Switch to review model if configured
+      if (state.reviewModel) {
+        const switched = await cycleToReviewModel(pi, ctx, state);
+        if (switched) {
+          ctx.ui.notify(`Review mode: switched to ${switched}`);
+          pi.events?.emit(MAESTRIA_EVENTS.REVIEW_ACTIVATED, {
+            originalModel: state.originalModel,
+            reviewModel: switched,
+            timestamp: Date.now(),
+          });
+        }
+      }
+
+      // 4. Restrict to read-only tools
       pi.setActiveTools(READ_ONLY_TOOLS);
 
       pi.sendUserMessage(
@@ -97,8 +123,92 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
         ctx.ui.notify('Not in review mode. Nothing to restore.');
         return;
       }
+      const prevOriginalModel = state.originalModel;
       await restoreOriginalState(pi, ctx, state);
+      persistState(pi, state);
       ctx.ui.notify('Restored original model and tools.');
+      pi.events?.emit(MAESTRIA_EVENTS.REVIEW_DEACTIVATED, {
+        originalModel: prevOriginalModel,
+        timestamp: Date.now(),
+      });
+    },
+  });
+
+  pi.registerCommand('handoff', {
+    description: 'Generate a structured handoff prompt for a new task context',
+    handler: async (args: string, ctx) => {
+      if (!args.trim()) {
+        ctx.ui.notify('Usage: /handoff <goal> — describe the task context for handoff');
+        return;
+      }
+
+      // Build a structured handoff document with 6 fields
+      const goal = args.trim();
+      const handoffPrompt = [
+        '**Goal:** ' + goal,
+        '',
+        '**Context:**',
+        '- Mode: ' + (state.mode ?? 'none'),
+        '- Active task: ' + (state.activeTask || 'none'),
+        '- Specialists delegated: ' +
+          ((state.specialistsDelegated?.length ?? 0) > 0
+            ? state.specialistsDelegated.join(', ')
+            : 'none'),
+        '- Recent handoffs: ' + (state.handoffHistory?.length ?? 0) + ' entries',
+        '- Files modified: ' +
+          ((state.filesModified?.length ?? 0) > 0 ? state.filesModified.join(', ') : 'none'),
+        '',
+        '**Requirements:**',
+        '(fill in specific requirements)',
+        '',
+        '**Known problems:**',
+        (state.blockers?.length ?? 0) > 0
+          ? state.blockers.map((b: string) => '- ' + b).join('\n')
+          : '(no known problems documented)',
+        '',
+        '**Success criteria:**',
+        '(fill in how to verify completion)',
+        '',
+        '**Next step:**',
+        '(fill in what happens after this task)',
+        '',
+        '---',
+        'Complete the fields above before sending.',
+      ].join('\n');
+
+      // Record in state
+      state.handoffHistory = [
+        { from: 'current', to: 'next', task: goal, timestamp: Date.now() },
+        ...(state.handoffHistory ?? []),
+      ].slice(0, 5);
+
+      // Persist state
+      persistState(pi, state);
+
+      // Send as user message with steer delivery
+      pi.sendUserMessage(handoffPrompt, { deliverAs: 'steer' });
+    },
+  });
+
+  pi.registerCommand('review-model', {
+    description: 'Set which model to use when entering review mode',
+    handler: async (args: string, ctx) => {
+      if (!args.trim()) {
+        ctx.ui.notify('Usage: /review-model <model-id>');
+        return;
+      }
+      const modelId = args.trim();
+      const models = ctx.modelRegistry.getAll();
+      const model = models.find((m) => m.id === modelId);
+      if (!model) {
+        ctx.ui.notify(
+          `Unknown model: "${modelId}". Available: ${models.map((m) => m.id).join(', ')}`,
+        );
+        return;
+      }
+      state.reviewModel = modelId;
+      persistState(pi, state);
+      ctx.ui.notify(`Review model set to: ${modelId}`);
     },
   });
 }

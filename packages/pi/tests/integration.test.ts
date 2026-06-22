@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, it, expect, vi } from 'vite-plus/test';
 import extension from '../src/extension.js';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
@@ -55,6 +58,8 @@ describe('extension smoke tests', () => {
       'maestria-status',
       'review',
       'restore-model',
+      'handoff',
+      'review-model',
     ];
 
     for (const name of expected) {
@@ -103,5 +108,20 @@ describe('extension smoke tests', () => {
     for (const name of expected) {
       expect(eventNames).toContain(name);
     }
+  });
+});
+
+describe('package.json metadata', () => {
+  const __dirname = fileURLToPath(new URL('.', import.meta.url));
+  const pkgPath = join(__dirname, '..', 'package.json');
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+
+  it('has publishConfig.provenance set to true', () => {
+    expect(pkg.publishConfig?.provenance).toBe(true);
+  });
+
+  it('has pi-package keyword for npm discoverability', () => {
+    expect(pkg.keywords).toBeDefined();
+    expect(pkg.keywords).toContain('pi-package');
   });
 });

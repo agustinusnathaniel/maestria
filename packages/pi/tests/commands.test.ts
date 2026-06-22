@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { installCommands } from '../src/commands.js';
+import { MAESTRIA_EVENTS } from '../src/subagent.js';
 import { createInitialState } from '../src/state.js';
 import type { MaestriaState } from '../src/state.js';
 
@@ -47,7 +48,7 @@ function getHandler(
 }
 
 describe('installCommands', () => {
-  it('registers all four commands', () => {
+  it('registers all six commands', () => {
     const pi = createMockPi();
     const state = createInitialState();
     installCommands(pi as any, state);
@@ -59,6 +60,8 @@ describe('installCommands', () => {
     expect(registeredNames).toContain('maestria-status');
     expect(registeredNames).toContain('review');
     expect(registeredNames).toContain('restore-model');
+    expect(registeredNames).toContain('handoff');
+    expect(registeredNames).toContain('review-model');
   });
 });
 
@@ -141,6 +144,54 @@ describe('/review command', () => {
     expect(state.originalModel).toBeNull();
     expect(state.reviewMode).toBe(true);
   });
+
+  it('cycles to reviewModel when configured', async () => {
+    const pi = createMockPi();
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewModel: 'gpt-4o',
+    };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'review')!;
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
+      },
+    });
+    await handler('review code', ctx);
+
+    // Should switch to the review model
+    expect(pi.setModel).toHaveBeenCalledWith(expect.objectContaining({ id: 'gpt-4o' }));
+    // Should notify about the switch
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('switched to gpt-4o'));
+  });
+
+  it('emits maestria:review:activated when review model cycles', async () => {
+    const pi = { ...createMockPi(), events: { emit: vi.fn() } };
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewModel: 'gpt-4o',
+    };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'review')!;
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
+      },
+    });
+    await handler('review code', ctx);
+
+    expect(pi.events.emit).toHaveBeenCalledWith(
+      MAESTRIA_EVENTS.REVIEW_ACTIVATED,
+      expect.objectContaining({
+        originalModel: 'claude-sonnet-4-20250514',
+        reviewModel: 'gpt-4o',
+        timestamp: expect.any(Number),
+      }),
+    );
+  });
 });
 
 describe('/orchestrate command', () => {
@@ -190,6 +241,58 @@ describe('/orchestrate command', () => {
     // but we also shouldn't pass null/empty
     expect(state.reviewMode).toBe(false);
   });
+
+  it('persists state via appendEntry after exiting review mode', async () => {
+    const pi = createMockPi();
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewMode: true,
+      originalModel: 'gpt-4o',
+      originalTools: ['read', 'grep', 'bash'],
+    };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'orchestrate')!;
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]),
+      },
+    });
+    await handler('build feature', ctx);
+
+    expect(pi.appendEntry).toHaveBeenCalledWith(
+      'maestria_state',
+      expect.objectContaining({ reviewMode: false }),
+    );
+  });
+
+  it('emits maestria:review:deactivated when exiting review mode', async () => {
+    const pi = { ...createMockPi(), events: { emit: vi.fn() } };
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewMode: true,
+      originalModel: 'gpt-4o',
+      originalTools: ['read', 'grep', 'bash'],
+    };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'orchestrate')!;
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]),
+      },
+    });
+    await handler('build feature', ctx);
+
+    expect(pi.events.emit).toHaveBeenCalledWith(
+      MAESTRIA_EVENTS.REVIEW_DEACTIVATED,
+      expect.objectContaining({
+        originalModel: 'gpt-4o',
+        source: 'orchestrate',
+        timestamp: expect.any(Number),
+      }),
+    );
+  });
 });
 
 describe('/restore-model command', () => {
@@ -230,5 +333,211 @@ describe('/restore-model command', () => {
 
     expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('Not in review mode'));
     expect(state.reviewMode).toBe(false);
+  });
+
+  it('persists state via appendEntry after restoring model', async () => {
+    const pi = createMockPi();
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewMode: true,
+      originalModel: 'claude-sonnet-4-20250514',
+      originalTools: ['read', 'grep', 'bash', 'edit'],
+    };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'restore-model')!;
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]),
+      },
+    });
+    await handler('', ctx);
+
+    expect(pi.appendEntry).toHaveBeenCalledWith(
+      'maestria_state',
+      expect.objectContaining({ reviewMode: false }),
+    );
+  });
+
+  it('emits maestria:review:deactivated after restoration', async () => {
+    const pi = { ...createMockPi(), events: { emit: vi.fn() } };
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewMode: true,
+      originalModel: 'claude-sonnet-4-20250514',
+      originalTools: ['read', 'grep', 'bash', 'edit'],
+    };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'restore-model')!;
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]),
+      },
+    });
+    await handler('', ctx);
+
+    expect(pi.events.emit).toHaveBeenCalledWith(
+      MAESTRIA_EVENTS.REVIEW_DEACTIVATED,
+      expect.objectContaining({
+        originalModel: 'claude-sonnet-4-20250514',
+        timestamp: expect.any(Number),
+      }),
+    );
+  });
+});
+
+describe('/review-model command', () => {
+  it('sets reviewModel and persists state', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'review-model')!;
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
+      },
+    });
+    await handler('gpt-4o', ctx);
+
+    expect(state.reviewModel).toBe('gpt-4o');
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('gpt-4o'));
+    expect(pi.appendEntry).toHaveBeenCalledWith(
+      'maestria_state',
+      expect.objectContaining({ reviewModel: 'gpt-4o' }),
+    );
+  });
+
+  it('shows error for unknown model', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'review-model')!;
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]),
+      },
+    });
+    await handler('nonexistent', ctx);
+
+    expect(state.reviewModel).toBeNull();
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('Unknown model'));
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('nonexistent'));
+  });
+
+  it('shows usage for empty args', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'review-model')!;
+    const ctx = createMockCtx();
+    await handler('', ctx);
+
+    expect(state.reviewModel).toBeNull();
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('Usage: /review-model'));
+  });
+});
+
+describe('/handoff command', () => {
+  it('generates structured prompt with all 6 field headers', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'handoff')!;
+    const ctx = createMockCtx();
+    await handler('implement login feature', ctx);
+
+    const prompt = pi.sendUserMessage.mock.calls[0][0] as string;
+    expect(prompt).toContain('**Goal:**');
+    expect(prompt).toContain('**Context:**');
+    expect(prompt).toContain('**Requirements:**');
+    expect(prompt).toContain('**Known problems:**');
+    expect(prompt).toContain('**Success criteria:**');
+    expect(prompt).toContain('**Next step:**');
+  });
+
+  it('shows usage for empty args', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'handoff')!;
+    const ctx = createMockCtx();
+    await handler('', ctx);
+
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('Usage: /handoff'));
+  });
+
+  it('records handoff in state and persists via appendEntry', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'handoff')!;
+    const ctx = createMockCtx();
+    await handler('refactor auth module', ctx);
+
+    expect(state.handoffHistory).toHaveLength(1);
+    expect(state.handoffHistory[0].from).toBe('current');
+    expect(state.handoffHistory[0].to).toBe('next');
+    expect(state.handoffHistory[0].task).toBe('refactor auth module');
+    expect(state.handoffHistory[0].timestamp).toEqual(expect.any(Number));
+
+    expect(pi.appendEntry).toHaveBeenCalledWith(
+      'maestria_state',
+      expect.objectContaining({
+        handoffHistory: expect.arrayContaining([
+          expect.objectContaining({ task: 'refactor auth module' }),
+        ]),
+      }),
+    );
+  });
+
+  it('calls sendUserMessage with steer delivery', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'handoff')!;
+    const ctx = createMockCtx();
+    await handler('bump dependencies', ctx);
+
+    expect(pi.sendUserMessage).toHaveBeenCalledWith(expect.any(String), { deliverAs: 'steer' });
+  });
+
+  it('includes state context in prompt', async () => {
+    const pi = createMockPi();
+    const state: MaestriaState = {
+      ...createInitialState(),
+      mode: 'fein',
+      activeTask: 'design API',
+      blockers: ['missing auth spec', 'performance concerns'],
+    };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'handoff')!;
+    const ctx = createMockCtx();
+    await handler('review architecture', ctx);
+
+    expect(pi.sendUserMessage).toHaveBeenCalledWith(
+      expect.stringContaining('Mode: fein'),
+      expect.objectContaining({ deliverAs: 'steer' }),
+    );
+    expect(pi.sendUserMessage).toHaveBeenCalledWith(
+      expect.stringContaining('Active task: design API'),
+      expect.objectContaining({ deliverAs: 'steer' }),
+    );
+    expect(pi.sendUserMessage).toHaveBeenCalledWith(
+      expect.stringContaining('missing auth spec'),
+      expect.objectContaining({ deliverAs: 'steer' }),
+    );
+    expect(pi.sendUserMessage).toHaveBeenCalledWith(
+      expect.stringContaining('performance concerns'),
+      expect.objectContaining({ deliverAs: 'steer' }),
+    );
   });
 });

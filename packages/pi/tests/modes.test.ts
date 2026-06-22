@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { MODE_KEYWORDS, getModePrompt, installModeCommands } from '../src/modes.js';
 import { createInitialState } from '../src/state.js';
 
@@ -64,6 +64,7 @@ describe('installModeCommands', () => {
         commands[name] = config;
       },
       sendUserMessage: (_content: string | unknown[], _options?: { deliverAs?: string }) => {},
+      appendEntry: vi.fn(),
       _commands: commands,
     } as any;
   }
@@ -101,6 +102,7 @@ describe('installModeCommands', () => {
           capturedMessage = message;
           capturedOptions = options;
         },
+        appendEntry: vi.fn(),
         _commands: {} as Record<string, any>,
       };
 
@@ -158,6 +160,77 @@ describe('installModeCommands', () => {
 
       expect(state.mode).toBe('fein');
       expect(notifyMessage).toBe("Mode set to fein. Describe what you'd like to work on.");
+    });
+  });
+
+  describe('persists state on mode changes', () => {
+    it('persists state via appendEntry after setting fein mode', async () => {
+      const pi = {
+        registerCommand: (name: string, config: any) => {
+          pi._commands[name] = config;
+        },
+        sendUserMessage: vi.fn(),
+        appendEntry: vi.fn(),
+        _commands: {} as Record<string, any>,
+      };
+      const state = createInitialState();
+      installModeCommands(pi as any, state);
+
+      const handler = pi._commands.fein.handler;
+      const ctx = { ui: { notify: vi.fn() } };
+      await handler('build feature', ctx);
+
+      expect(state.mode).toBe('fein');
+      expect(pi.appendEntry).toHaveBeenCalledWith(
+        'maestria_state',
+        expect.objectContaining({ mode: 'fein' }),
+      );
+    });
+
+    it('persists state via appendEntry after setting sonar mode', async () => {
+      const pi = {
+        registerCommand: (name: string, config: any) => {
+          pi._commands[name] = config;
+        },
+        sendUserMessage: vi.fn(),
+        appendEntry: vi.fn(),
+        _commands: {} as Record<string, any>,
+      };
+      const state = createInitialState();
+      installModeCommands(pi as any, state);
+
+      const handler = pi._commands.sonar.handler;
+      const ctx = { ui: { notify: vi.fn() } };
+      await handler('research', ctx);
+
+      expect(state.mode).toBe('sonar');
+      expect(pi.appendEntry).toHaveBeenCalledWith(
+        'maestria_state',
+        expect.objectContaining({ mode: 'sonar' }),
+      );
+    });
+
+    it('persists state via appendEntry after setting blitz mode', async () => {
+      const pi = {
+        registerCommand: (name: string, config: any) => {
+          pi._commands[name] = config;
+        },
+        sendUserMessage: vi.fn(),
+        appendEntry: vi.fn(),
+        _commands: {} as Record<string, any>,
+      };
+      const state = createInitialState();
+      installModeCommands(pi as any, state);
+
+      const handler = pi._commands.blitz.handler;
+      const ctx = { ui: { notify: vi.fn() } };
+      await handler('implement quickly', ctx);
+
+      expect(state.mode).toBe('blitz');
+      expect(pi.appendEntry).toHaveBeenCalledWith(
+        'maestria_state',
+        expect.objectContaining({ mode: 'blitz' }),
+      );
     });
   });
 });

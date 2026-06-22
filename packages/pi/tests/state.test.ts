@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import {
   createInitialState,
+  cycleToReviewModel,
+  persistState,
   recordHandoff,
   recordFileModified,
   recordFileRead,
@@ -23,6 +25,7 @@ const NEW_STATE_KEYS = [
   'originalModel',
   'originalTools',
   'subagentStatus',
+  'reviewModel',
 ];
 
 describe('createInitialState', () => {
@@ -57,6 +60,7 @@ describe('createInitialState', () => {
     expect(state.reviewMode).toBe(false);
     expect(state.originalModel).toBeNull();
     expect(state.originalTools).toBeNull();
+    expect(state.reviewModel).toBeNull();
   });
 });
 
@@ -338,5 +342,117 @@ describe('exitReviewMode', () => {
     expect(next.reviewMode).toBe(false);
     expect(originalModel).toBeNull();
     expect(originalTools).toBeNull();
+  });
+});
+
+describe('cycleToReviewModel', () => {
+  it('switches to configured reviewModel when found in registry', async () => {
+    const pi = { setModel: vi.fn().mockResolvedValue(true), appendEntry: vi.fn() };
+    const ctx = {
+      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]) },
+      model: { id: 'claude-sonnet-4-20250514' },
+      ui: { notify: vi.fn() },
+    };
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewModel: 'gpt-4o',
+    };
+
+    const result = await cycleToReviewModel(pi as any, ctx as any, state);
+
+    expect(result).toBe('gpt-4o');
+    expect(pi.setModel).toHaveBeenCalledWith({ id: 'gpt-4o' });
+  });
+
+  it('returns null and notifies when configured model is not found', async () => {
+    const pi = { setModel: vi.fn(), appendEntry: vi.fn() };
+    const ctx = {
+      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]) },
+      model: { id: 'claude-sonnet-4-20250514' },
+      ui: { notify: vi.fn() },
+    };
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewModel: 'nonexistent-model',
+    };
+
+    const result = await cycleToReviewModel(pi as any, ctx as any, state);
+
+    expect(result).toBeNull();
+    expect(pi.setModel).not.toHaveBeenCalled();
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('nonexistent-model'));
+  });
+
+  it('falls back to alternative model when reviewModel is not set', async () => {
+    const pi = { setModel: vi.fn().mockResolvedValue(true), appendEntry: vi.fn() };
+    const ctx = {
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
+      },
+      model: { id: 'claude-sonnet-4-20250514' },
+      ui: { notify: vi.fn() },
+    };
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewModel: null,
+    };
+
+    const result = await cycleToReviewModel(pi as any, ctx as any, state);
+
+    expect(result).toBe('gpt-4o');
+    expect(pi.setModel).toHaveBeenCalledWith({ id: 'gpt-4o' });
+  });
+
+  it('returns null when setModel throws', async () => {
+    const pi = { setModel: vi.fn().mockRejectedValue(new Error('no key')), appendEntry: vi.fn() };
+    const ctx = {
+      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]) },
+      model: { id: 'claude-sonnet-4-20250514' },
+      ui: { notify: vi.fn() },
+    };
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewModel: 'gpt-4o',
+    };
+
+    const result = await cycleToReviewModel(pi as any, ctx as any, state);
+
+    expect(result).toBeNull();
+    expect(pi.setModel).toHaveBeenCalled();
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('gpt-4o'));
+  });
+});
+
+describe('persistState', () => {
+  it('calls pi.appendEntry with maestria_state and a copy of state', () => {
+    const pi = { appendEntry: vi.fn() };
+    const state = createInitialState();
+
+    persistState(pi as any, state);
+
+    expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', { ...state });
+    // Ensure it's a copy, not the original reference
+    expect(pi.appendEntry.mock.calls[0][1]).not.toBe(state);
+  });
+});
+
+describe('renderMaestriaSummary with reviewModel', () => {
+  it('includes review model section when set', () => {
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewModel: 'gpt-4o',
+    };
+
+    const summary = renderMaestriaSummary(state);
+
+    expect(summary).toContain('**Review Model:** gpt-4o');
+  });
+
+  it('omits review model section when not set', () => {
+    const state = createInitialState();
+
+    const summary = renderMaestriaSummary(state);
+
+    expect(summary).not.toContain('**Review Model:**');
   });
 });

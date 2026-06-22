@@ -50,6 +50,16 @@ describe('installToolInterceptors', () => {
     expect(result.block).toBe(true);
   });
 
+  it('allows non-destructive tools in review mode (typed guard distinguishes tools)', async () => {
+    const pi = { on: vi.fn() };
+    const state = { ...createInitialState(), reviewMode: true };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'read' }, {});
+    expect(result).toBeUndefined();
+  });
+
   it('allows safe bash commands', async () => {
     const pi = { on: vi.fn() };
     const state = { ...createInitialState(), reviewMode: false };

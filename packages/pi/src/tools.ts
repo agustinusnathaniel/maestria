@@ -1,7 +1,8 @@
-import type {
-  ExtensionAPI,
-  ToolCallEvent,
-  ExtensionContext,
+import {
+  isToolCallEventType,
+  type ExtensionAPI,
+  type ToolCallEvent,
+  type ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from './state.js';
 
@@ -22,24 +23,27 @@ const DANGEROUS_PATTERNS = [
   /kill\s+-9\s+\d+/,
 ];
 
-const DESTRUCTIVE_TOOLS = new Set(['edit', 'write', 'bash']);
-
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
   pi.on('tool_call', async (event: ToolCallEvent, ctx: ExtensionContext) => {
     if (!event || !event.toolName) return;
 
     // Block destructive tools in review mode
-    if (state.reviewMode && DESTRUCTIVE_TOOLS.has(event.toolName)) {
-      return {
-        block: true,
-        reason: 'Review mode is active. Report findings, do not edit.',
-      };
+    if (state.reviewMode) {
+      if (
+        isToolCallEventType('edit', event) ||
+        isToolCallEventType('write', event) ||
+        isToolCallEventType('bash', event)
+      ) {
+        return {
+          block: true,
+          reason: 'Review mode is active. Report findings, do not edit.',
+        };
+      }
     }
 
     // Block dangerous bash patterns regardless of mode
-    if (event.toolName === 'bash') {
-      const bashInput = event.input as { command?: string };
-      const command = bashInput.command;
+    if (isToolCallEventType('bash', event)) {
+      const command = event.input.command;
       if (command) {
         for (const pattern of DANGEROUS_PATTERNS) {
           if (pattern.test(command)) {

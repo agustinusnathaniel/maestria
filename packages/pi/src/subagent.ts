@@ -2,7 +2,20 @@ import { Type } from 'typebox';
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 import type { MaestriaState } from './state.js';
-import { recordHandoff } from './state.js';
+import { persistState, recordHandoff } from './state.js';
+
+/**
+ * Maestria cross-extension event names.
+ * Other Pi extensions can subscribe via `pi.events?.on(...)`.
+ * Convention: `maestria:<domain>:<action>`
+ */
+export const MAESTRIA_EVENTS = {
+  REVIEW_ACTIVATED: 'maestria:review:activated',
+  REVIEW_DEACTIVATED: 'maestria:review:deactivated',
+  SUBAGENT_STARTED: 'maestria:subagent:started',
+  SUBAGENT_COMPLETED: 'maestria:subagent:completed',
+  SUBAGENT_FAILED: 'maestria:subagent:failed',
+} as const;
 
 const ALLOWED_AGENTS = [
   'adventurer',
@@ -27,6 +40,9 @@ const HANDOFF_FIELDS = [
 
 /** Terminal subagent statuses — agent will produce no more updates. */
 const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
+
+/** Maximum number of tasks allowed in parallel dispatch. */
+export const MAX_PARALLEL_TASKS = 8;
 
 export function validateHandoff(handoff: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
@@ -57,88 +73,277 @@ export function installSubagentTool(
       return args;
     },
     parameters: Type.Object({
-      agent: Type.String({ description: 'Specialist agent name' }),
-      task: Type.String({ description: 'Task description for the subagent' }),
+      agent: Type.Optional(Type.String({ description: 'Specialist agent name' })),
+      task: Type.Optional(Type.String({ description: 'Task description for the subagent' })),
+      tasks: Type.Optional(
+        Type.Array(
+          Type.Object({
+            agent: Type.String(),
+            task: Type.String(),
+          }),
+          { description: 'Array of task objects for parallel or chain dispatch' },
+        ),
+      ),
+      mode: Type.Optional(
+        Type.Union([Type.Literal('parallel'), Type.Literal('chain'), Type.Literal('single')]),
+      ),
     }),
     async execute(
       _toolCallId: string,
-      params: { agent: string; task: string },
+      params: {
+        agent?: string;
+        task?: string;
+        tasks?: Array<{ agent: string; task: string }>;
+        mode?: 'parallel' | 'chain' | 'single';
+      },
       signal: AbortSignal | undefined,
       onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
       _ctx: ExtensionContext,
     ) {
-      // Validate agent name
-      if (!ALLOWED_AGENTS.includes(params.agent as AllowedAgent)) {
-        throw new Error(`Unknown agent: "${params.agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
-      }
+      // Determine dispatch mode (default to 'single' for backward compat)
+      const mode = params.mode ?? 'single';
 
-      // Validate task description
-      if (!params.task || !params.task.trim()) {
-        throw new Error('Task description is required');
+      // Validate parameters based on mode
+      if (mode === 'single') {
+        // Backward-compatible validation — must match original error messages exactly
+        if (!ALLOWED_AGENTS.includes(params.agent as AllowedAgent)) {
+          throw new Error(
+            `Unknown agent: "${params.agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`,
+          );
+        }
+        if (!params.task || !params.task.trim()) {
+          throw new Error('Task description is required');
+        }
+      } else if (mode === 'parallel') {
+        if (!params.tasks || params.tasks.length < 2) {
+          throw new Error(`For parallel mode, tasks array is required with at least 2 items`);
+        }
+        if (params.tasks.length > MAX_PARALLEL_TASKS) {
+          throw new Error(
+            `For parallel mode, tasks array may have at most ${MAX_PARALLEL_TASKS} items (got ${params.tasks.length})`,
+          );
+        }
+        for (const t of params.tasks) {
+          if (!ALLOWED_AGENTS.includes(t.agent as AllowedAgent)) {
+            throw new Error(`Unknown agent: "${t.agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
+          }
+          if (!t.task || !t.task.trim()) {
+            throw new Error('Task description is required for all tasks');
+          }
+        }
+      } else if (mode === 'chain') {
+        if (!params.tasks || params.tasks.length < 2) {
+          throw new Error('For chain mode, tasks array is required with at least 2 items');
+        }
+        for (const t of params.tasks) {
+          if (!ALLOWED_AGENTS.includes(t.agent as AllowedAgent)) {
+            throw new Error(`Unknown agent: "${t.agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
+          }
+          if (!t.task || !t.task.trim()) {
+            throw new Error('Task description is required for all tasks');
+          }
+        }
       }
 
       // Attempt to dispatch via @gotgenes/pi-subagents; fallback gracefully
       try {
         const { getSubagentsService } = await import('@gotgenes/pi-subagents');
-        const service = getSubagentsService();
-        if (!service || typeof service.spawn !== 'function') {
+        const service = getSubagentsService()!;
+        if (typeof service.spawn !== 'function') {
           throw new Error('Subagents service unavailable or incomplete');
         }
 
-        // Spawn in foreground — returns subagent ID synchronously
-        const id = service.spawn(params.agent, params.task, {
-          description: params.task.slice(0, 80),
-          foreground: true,
-          inheritContext: true,
-        });
-
-        // Record handoff in state and persist (only after spawn succeeds)
-        const updatedState = recordHandoff(state, 'orchestrator', params.agent, params.task);
-        Object.assign(state, updatedState);
-        pi.appendEntry('maestria_state', state);
-
-        // Poll for completion (SubagentRecord has no promise field)
+        // Helper: poll a single subagent until terminal or timeout
         const POLL_TIMEOUT_MS = 60_000; // 60s max wait
         const POLL_INTERVAL_MS = 500;
-        const maxPolls = POLL_TIMEOUT_MS / POLL_INTERVAL_MS;
-        let polls = 0;
-        let record = service.getRecord(id);
-        while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
-          if (signal?.aborted) throw new Error('Maestria subagent call aborted');
-          await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
-          record = service.getRecord(id);
-          polls++;
+        async function pollSubagent(
+          id: string,
+          label: string,
+          sendUpdates: boolean,
+        ): Promise<{ status: string; result?: string; error?: string }> {
+          const maxPolls = POLL_TIMEOUT_MS / POLL_INTERVAL_MS;
+          let polls = 0;
+          let record = service.getRecord(id);
+          while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
+            if (signal?.aborted) throw new Error('Maestria subagent call aborted');
+            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+            record = service.getRecord(id);
+            polls++;
+            if (sendUpdates) {
+              onUpdate?.({
+                content: [
+                  {
+                    type: 'text' as const,
+                    text: `${label} running... (${Math.round((polls * POLL_INTERVAL_MS) / 1000)}s)`,
+                  },
+                ],
+              });
+            }
+          }
+          if (record && !TERMINAL_STATUSES.has(record.status)) {
+            throw new Error(`Subagent ${id} timed out after ${POLL_TIMEOUT_MS}ms`);
+          }
+          if (!record) {
+            throw new Error(`Subagent ${id} was cleaned up before completion`);
+          }
+          return record;
+        }
+
+        // --- SINGLE MODE ---
+        if (mode === 'single') {
+          const agent = params.agent!;
+          const task = params.task!;
+
+          // Spawn in foreground — returns subagent ID synchronously
+          const id = service.spawn(agent, task, {
+            description: task.slice(0, 80),
+            foreground: true,
+            inheritContext: true,
+          });
+
+          // Record handoff in state and persist (only after spawn succeeds)
+          const updatedState = recordHandoff(state, 'orchestrator', agent, task);
+          Object.assign(state, updatedState);
+          pi.appendEntry('maestria_state', state);
+
+          // Poll for completion
+          const record = await pollSubagent(id, `Subagent ${agent}`, true);
+
+          const resultText = record.result ?? record.error ?? 'No output.';
+
+          return {
+            content: [{ type: 'text' as const, text: resultText }],
+            details: { subagentId: id },
+          };
+        }
+
+        // --- PARALLEL MODE ---
+        if (mode === 'parallel') {
+          const taskList = params.tasks!;
+
+          onUpdate?.({
+            content: [
+              { type: 'text' as const, text: `Spawning ${taskList.length} parallel subagents...` },
+            ],
+          });
+
+          // Spawn all tasks
+          const spawnedIds: string[] = [];
+          for (const t of taskList) {
+            const id = service.spawn(t.agent, t.task, {
+              description: t.task.slice(0, 80),
+              foreground: true,
+              inheritContext: true,
+            });
+            spawnedIds.push(id);
+
+            // Record each handoff
+            const updatedState = recordHandoff(state, 'orchestrator', t.agent, t.task);
+            Object.assign(state, updatedState);
+          }
+          pi.appendEntry('maestria_state', state);
+
+          // Poll all concurrently
+          const records = await Promise.all(
+            spawnedIds.map((id, i) =>
+              pollSubagent(id, `${taskList[i].agent} (${i + 1}/${taskList.length})`, false),
+            ),
+          );
+
           onUpdate?.({
             content: [
               {
                 type: 'text' as const,
-                text: `Subagent ${params.agent} running... (${Math.round((polls * POLL_INTERVAL_MS) / 1000)}s)`,
+                text: `All ${taskList.length} parallel subagents completed.`,
               },
             ],
           });
-        }
-        if (record && !TERMINAL_STATUSES.has(record.status)) {
-          throw new Error(`Subagent ${id} timed out after ${POLL_TIMEOUT_MS}ms`);
+
+          // Aggregate results
+          const parts = [`## Parallel Results (${taskList.length} tasks)\n`];
+          for (let i = 0; i < taskList.length; i++) {
+            const t = taskList[i];
+            const rec = records[i];
+            const resultText = rec.result ?? rec.error ?? 'No output.';
+            parts.push(`### ${i + 1}: ${t.agent}`);
+            parts.push(resultText);
+          }
+
+          return {
+            content: [{ type: 'text' as const, text: parts.join('\n\n') }],
+            details: { subagentIds: spawnedIds },
+          };
         }
 
-        if (!record) {
-          throw new Error(`Subagent ${id} was cleaned up before completion`);
+        // --- CHAIN MODE ---
+        if (mode === 'chain') {
+          const taskList = params.tasks!;
+          let previousResult = '';
+
+          for (let i = 0; i < taskList.length; i++) {
+            const t = taskList[i];
+            let taskText = t.task;
+
+            // Substitute {previous} placeholder with previous result
+            if (i > 0 && taskText.includes('{previous}')) {
+              taskText = taskText.replace(/\{previous\}/g, previousResult);
+            }
+
+            const id = service.spawn(t.agent, taskText, {
+              description: taskText.slice(0, 80),
+              foreground: true,
+              inheritContext: true,
+            });
+
+            // Record handoff
+            const updatedState = recordHandoff(state, 'orchestrator', t.agent, taskText);
+            Object.assign(state, updatedState);
+            pi.appendEntry('maestria_state', state);
+
+            onUpdate?.({
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Chain step ${i + 1}/${taskList.length}: ${t.agent} running...`,
+                },
+              ],
+            });
+
+            // Poll for completion
+            const record = await pollSubagent(id, `Chain step ${i + 1}: ${t.agent}`, true);
+
+            previousResult = record.result ?? record.error ?? 'No output.';
+
+            if (i < taskList.length - 1) {
+              onUpdate?.({
+                content: [
+                  {
+                    type: 'text' as const,
+                    text: `Chain step ${i + 1}/${taskList.length}: ${t.agent} completed. Moving to next step.`,
+                  },
+                ],
+              });
+            }
+          }
+
+          return {
+            content: [{ type: 'text' as const, text: previousResult }],
+            details: { subagentId: 'chain-completed' },
+          };
         }
 
-        const resultText = record.result ?? record.error ?? 'No output.';
-
-        return {
-          content: [{ type: 'text' as const, text: resultText }],
-          details: { subagentId: id },
-        };
+        // Should not reach here — all modes are handled above
+        throw new Error('Unknown dispatch mode');
       } catch {
         // Return handoff payload as structured text when SDK unavailable
+        const agentName = params.agent ?? params.tasks?.[0]?.agent ?? 'unknown';
+        const taskDesc = params.task ?? params.tasks?.map((t) => t.task).join('; ') ?? 'unknown';
         const handoffInfo = [
           `## Subagent Handoff Required`,
           ``,
           `**From:** orchestrator`,
-          `**To:** ${params.agent}`,
-          `**Task:** ${params.task}`,
+          `**To:** ${agentName}`,
+          `**Task:** ${taskDesc}`,
           ``,
           `Subagent SDK not available. Please delegate this work manually.`,
         ].join('\n');
@@ -158,6 +363,12 @@ export function installSubagentTool(
     const unsubStarted = pi.events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
       const { id, type } = data as { id: string; type: string };
       state.subagentStatus[id] = { type, status: 'running', startedAt: Date.now() };
+      persistState(pi, state);
+      pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_STARTED, {
+        id,
+        type,
+        timestamp: Date.now(),
+      });
     });
 
     const unsubCompleted = pi.events.on(SUBAGENT_EVENTS.COMPLETED, (data: unknown) => {
@@ -167,6 +378,12 @@ export function installSubagentTool(
         existing.status = 'completed';
         existing.completedAt = Date.now();
       }
+      persistState(pi, state);
+      pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_COMPLETED, {
+        id,
+        type: existing?.type,
+        timestamp: Date.now(),
+      });
     });
 
     const unsubFailed = pi.events.on(SUBAGENT_EVENTS.FAILED, (data: unknown) => {
@@ -176,6 +393,12 @@ export function installSubagentTool(
         existing.status = status ?? 'error';
         existing.completedAt = Date.now();
       }
+      persistState(pi, state);
+      pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_FAILED, {
+        id,
+        type: existing?.type,
+        timestamp: Date.now(),
+      });
     });
 
     const unsubSteered = pi.events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
@@ -185,6 +408,7 @@ export function installSubagentTool(
       if (!state.subagentStatus[id]) {
         state.subagentStatus[id] = { type: 'unknown', status: 'running', startedAt: Date.now() };
       }
+      persistState(pi, state);
     });
 
     if (cleanups) {
