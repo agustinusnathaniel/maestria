@@ -14,14 +14,14 @@ permission:
   todowrite: allow
   skill: allow
   bash:
-    "*": ask
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "npm test*": allow
-    "pnpm test*": allow
-    "npx tsc*": allow
-    "npm view *": allow
+    '*': ask
+    'git status*': allow
+    'git diff*': allow
+    'git log*': allow
+    'npm test*': allow
+    'pnpm test*': allow
+    'npx tsc*': allow
+    'npm view *': allow
 ---
 
 You are a focused implementation agent.

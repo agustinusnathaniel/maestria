@@ -47,8 +47,8 @@ The orchestrator needed `pwd` for diagnostic use — build/CI path checks during
 
 ```yaml
 bash:
-  "*": deny
-  "pwd": allow
+  '*': deny
+  'pwd': allow
   # ... other allow-listed commands
 ```
 
@@ -59,6 +59,45 @@ bash:
 The first audit (`259a72a`, "audit tool permissions for 7 agents + revert webfetch: ask") attempted `webfetch: ask` for adventurer, builder, and diagnose. The user pointed out this created friction with no policy benefit: the opensrc-vs-webfetch guidance is already encoded in each agent's `## Rules` section. Permission-level `ask` would prompt the user on every web request, even for legitimate single-page lookups.
 
 All three were reverted to `webfetch: allow`. Every agent now has `webfetch: allow`.
+
+### 5. Post-Audit Amendment: Orchestrator Read-Side Tools
+
+After [commit `ecd3e16`](https://github.com/agustinusnathaniel/maestria/commit/ecd3e16)
+fixed the YAML parser (confirming subagents load correctly), the orchestrator's
+strict lockdown was re-evaluated.
+
+The orchestrator was granted `read: allow`, `glob: allow`, `grep: allow` with
+the following safeguards:
+
+| Boundary | Value                          | Rationale                                               |
+| -------- | ------------------------------ | ------------------------------------------------------- |
+| read     | allow                          | Quick verification — check file existence, skim exports |
+| glob     | allow                          | Find files by pattern before delegation                 |
+| grep     | allow                          | Confirm function/reference existence                    |
+| webfetch | deny                           | Web research belongs to @adventurer/@architect          |
+| edit     | deny                           | Structural boundary — orchestrator cannot implement     |
+| lsp      | deny                           | Deep code intelligence is for specialists               |
+| bash     | `"*": deny`, allow-listed only | Same as before — no arbitrary execution                 |
+
+A **Read-Side Tool Policy** in the orchestrator's prompt caps read/glob/grep at
+3 calls per task before deeper recon must be delegated to `@adventurer`.
+
+> **Update (same session):** After real-world testing, this change was reverted.
+> The orchestrator with read tools consistently exhibited workaround behavior —
+> preferring to {grep} through `node_modules` and find alternative paths rather
+> than delegating to specialist agents. This confirmed that structural permission
+> denial is the only reliable enforcement for an LLM-based orchestrator.
+>
+> The orchestrator remains at:
+>
+> - `read`: deny
+> - `glob`: deny
+> - `grep`: deny
+> - `webfetch`: deny
+> - `lsp`: deny
+> - `edit`: deny
+>
+> Full context in commit history: `fc79183` (grant) → subsequent revert commit.
 
 ### Design Principle
 
