@@ -24,18 +24,38 @@ The default pipeline for non-trivial work follows a sequence: recon first, then 
   └─ @reviewer   → Validation
 ```
 
+## Workflow Modes
+
+The orchestrator responds to three mode keywords that adjust the pipeline depth:
+
+| Keyword | Full form           | Pipeline                                            | Use case                           |
+| ------- | ------------------- | --------------------------------------------------- | ---------------------------------- |
+| `fein`  | Full pipeline       | adventurer → architect/planner → builder → reviewer | Production-grade, mandatory review |
+| `sonar` | Research            | adventurer → architect/planner → STOP               | Understanding before committing    |
+| `blitz` | Fast implementation | builder direct                                      | Quick fixes, known territory       |
+
+The keyword is detected at any position in your message, case-insensitively. Most restrictive keyword wins (fein > sonar > blitz). Code blocks are excluded from detection.
+
+To disable a mode, set `modes.disabledKeywords` in your plugin configuration:
+
+```jsonc
+{
+  "plugin": ["@maestria/opencode", { "modes": { "disabledKeywords": ["blitz"] } }],
+}
+```
+
 ## Agent Reference
 
-| Agent             | Mode       | Role                                                                                 | When to Use                                                                                         | Key Permissions                                    |
-| ----------------- | ---------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **@orchestrator** | `all`      | Manager — decomposes work, delegates, never implements                               | Complex multi-step tasks, cross-agent workflows, anything needing structure                         | `edit: deny`, task delegates to 7 specialists only |
-| **@adventurer**   | `subagent` | Codebase reconnaissance — maps unfamiliar code, traces dependencies, finds key files | Before implementing in unfamiliar code, understanding how something works, finding where code lives | `edit: deny`, read/search only                     |
-| **@architect**    | `subagent` | Architecture decisions — evaluates options with trade-off analysis, writes ADRs      | Choosing between technologies, making design decisions, evaluating approaches                       | `edit: deny`, `webfetch: allow`                    |
-| **@builder**      | `subagent` | Focused implementation — one atomic task per invocation                              | Bug fixes, feature work, tests, refactors — after recon and design are done                         | `edit: allow`, `bash: * ask`                       |
-| **@diagnose**     | `subagent` | Systematic debugging — traces errors from symptom to root cause                      | Bugs, regressions, crashes, mysterious errors, failing tests                                        | `edit: ask`, `bash: * ask`                         |
-| **@planner**      | `subagent` | Implementation plans — phased milestones with verification                           | Complex features needing structured rollout, migration plans, multi-phase work                      | `edit: ask`, `webfetch: allow`                     |
-| **@reviewer**     | `subagent` | Code review — correctness, edge cases, security, performance, maintainability        | Pre-merge review, security audit, post-implementation validation                                    | `edit: deny`                                       |
-| **@writer**       | `subagent` | Documentation — structured patterns for READMEs, API docs, changelogs, ADRs          | Documenting code, writing READMEs, API docs, changelogs, ADRs                                       | `edit: allow`                                      |
+| Agent             | Mode       | Role                                                                                 | When to Use                                                                                                                  | Key Permissions                                    |
+| ----------------- | ---------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **@orchestrator** | `all`      | Manager — decomposes work, delegates, never implements                               | Complex multi-step tasks, cross-agent workflows, anything needing structure — supports `fein`/`sonar`/`blitz` workflow modes | `edit: deny`, task delegates to 7 specialists only |
+| **@adventurer**   | `subagent` | Codebase reconnaissance — maps unfamiliar code, traces dependencies, finds key files | Before implementing in unfamiliar code, understanding how something works, finding where code lives                          | `edit: deny`, read/search only                     |
+| **@architect**    | `subagent` | Architecture decisions — evaluates options with trade-off analysis, writes ADRs      | Choosing between technologies, making design decisions, evaluating approaches                                                | `edit: deny`, `webfetch: allow`                    |
+| **@builder**      | `subagent` | Focused implementation — one atomic task per invocation                              | Bug fixes, feature work, tests, refactors — after recon and design are done                                                  | `edit: allow`, `bash: * ask`                       |
+| **@diagnose**     | `subagent` | Systematic debugging — traces errors from symptom to root cause                      | Bugs, regressions, crashes, mysterious errors, failing tests                                                                 | `edit: ask`, `bash: * ask`                         |
+| **@planner**      | `subagent` | Implementation plans — phased milestones with verification                           | Complex features needing structured rollout, migration plans, multi-phase work                                               | `edit: ask`, `webfetch: allow`                     |
+| **@reviewer**     | `subagent` | Code review — correctness, edge cases, security, performance, maintainability        | Pre-merge review, security audit, post-implementation validation                                                             | `edit: deny`                                       |
+| **@writer**       | `subagent` | Documentation — structured patterns for READMEs, API docs, changelogs, ADRs          | Documenting code, writing READMEs, API docs, changelogs, ADRs                                                                | `edit: allow`                                      |
 
 ## Usage Notes
 
