@@ -44,7 +44,7 @@
   },
   "pi": {
     "extensions": [
-      "./dist/extension.js"
+      "./dist/extension.mjs"
     ],
     "prompts": [
       "./prompts"
