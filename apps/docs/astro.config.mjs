@@ -79,6 +79,17 @@ export default defineConfig({
             { label: 'Contributing', link: '/opencode/contributing/' },
           ],
         },
+        {
+          label: '@maestria/pi',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/pi/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'pi/getting-started' } }],
+            },
+          ],
+        },
       ],
     }),
   ],

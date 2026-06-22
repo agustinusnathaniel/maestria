@@ -9,7 +9,7 @@ Accepted
 The `@maestria/pi` plan (Phase 0) originally assumed building the
 subagent dispatch tool, workflow engine, and specialist isolation from
 scratch. The design in
-[`03-package-design.md`](../plans/pi-agent/03-package-design.md) §4.5
+the package-design plan (§4.5)
 specified a custom `subagent` tool that spawns `pi` subprocesses
 directly via `node:child_process.spawn`.
 
@@ -122,9 +122,8 @@ already provides the in-process model with a stronger API.
 - `pi-crew` — `pi install npm:@gotgenes/pi-crew` (deferred to v1.1)
 - `@quintinshaw/pi-dynamic-workflows` (deferred to v1.1)
 - `@maestria/pi` package design —
-  [`03-package-design.md` §4.5](../plans/pi-agent/03-package-design.md#45-srcsubagentts--adapter-for-@gotgenespi-subagents)
-- Risks R-16, R-17, and O-12 —
-  [`06-risks-and-open-questions.md`](../plans/pi-agent/06-risks-and-open-questions.md)
+  Package design plan §4.5 — adapter design for @gotgenes/pi-subagents
+- Risks documented in the plan's risk register — R-16 (vendor dependency on a pre-1.0 package), R-17 (API instability from Pi ecosystem changes), and O-12 (whether to build vs adopt subagent dispatch)
 
 ## Date
 
