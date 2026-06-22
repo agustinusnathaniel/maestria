@@ -32,6 +32,21 @@ describe('installCompactionHandlers', () => {
   });
 
   describe('session_before_compact handler', () => {
+    const baseCompactEvent = {
+      type: 'session_before_compact' as const,
+      preparation: {
+        firstKeptEntryId: '',
+        messagesToSummarize: [],
+        turnPrefixMessages: [],
+        isSplitTurn: false,
+        tokensBefore: 0,
+        fileOps: { reads: [], writes: [] },
+        settings: { enabled: true, reserveTokens: 0, keepRecentTokens: 0 },
+      },
+      branchEntries: [],
+      signal: new AbortController().signal,
+    };
+
     it('returns compaction.summary containing the Goal section when activeTask is set', () => {
       const pi = createMockPi();
       let state = createInitialState();
@@ -39,60 +54,94 @@ describe('installCompactionHandlers', () => {
       installCompactionHandlers(pi as any, state);
 
       const handler = pi.handlers.get('session_before_compact')!;
-      const result = handler();
+      const result = handler(baseCompactEvent);
 
       expect(result).toEqual({
         compaction: {
           summary: expect.stringContaining('**Goal:** build the feature'),
+          firstKeptEntryId: '',
+          tokensBefore: 0,
         },
       });
     });
 
-    it('returns compaction.summary with mode and Goal sections', () => {
+    it('returns compaction with mode and Goal sections', () => {
       const pi = createMockPi();
       const state = { ...createInitialState(), mode: 'fein' as const, activeTask: 'test task' };
       installCompactionHandlers(pi as any, state);
 
       const handler = pi.handlers.get('session_before_compact')!;
-      const result = handler();
+      const result = handler(baseCompactEvent);
 
       expect(typeof result.compaction.summary).toBe('string');
       expect(result.compaction.summary).toContain('**Mode:** FEIN');
       expect(result.compaction.summary).toContain('**Goal:** test task');
+      expect(result.compaction).toHaveProperty('firstKeptEntryId');
+      expect(result.compaction).toHaveProperty('tokensBefore');
+    });
+
+    it('extracts firstKeptEntryId and tokensBefore from event.preparation', () => {
+      const pi = createMockPi();
+      const state = createInitialState();
+      installCompactionHandlers(pi as any, state);
+
+      const handler = pi.handlers.get('session_before_compact')!;
+      const result = handler({
+        ...baseCompactEvent,
+        preparation: {
+          ...baseCompactEvent.preparation,
+          firstKeptEntryId: 'entry-123',
+          tokensBefore: 8192,
+        },
+      });
+
+      expect(result.compaction.firstKeptEntryId).toBe('entry-123');
+      expect(result.compaction.tokensBefore).toBe(8192);
     });
   });
 
   describe('session_before_tree handler', () => {
-    it('returns summary when userWantsSummary is true', () => {
+    const baseTreeEvent = {
+      type: 'session_before_tree' as const,
+      preparation: {
+        targetId: 'test',
+        oldLeafId: null,
+        commonAncestorId: null,
+        entriesToSummarize: [],
+        userWantsSummary: false,
+      },
+      signal: new AbortController().signal,
+    };
+
+    it('returns summary when preparation.userWantsSummary is true', () => {
       const pi = createMockPi();
       let state = createInitialState();
       state = { ...state, activeTask: 'analyze results' };
       installCompactionHandlers(pi as any, state);
 
       const handler = pi.handlers.get('session_before_tree')!;
-      const result = handler({ userWantsSummary: true });
+      const result = handler({
+        ...baseTreeEvent,
+        preparation: { ...baseTreeEvent.preparation, userWantsSummary: true },
+      });
 
-      expect(result).toContain('**Goal:** analyze results');
+      expect(result).toEqual({
+        summary: {
+          summary: expect.stringContaining('**Goal:** analyze results'),
+        },
+      });
     });
 
-    it('returns undefined when userWantsSummary is false', () => {
+    it('returns undefined when preparation.userWantsSummary is false', () => {
       const pi = createMockPi();
       const state = createInitialState();
       installCompactionHandlers(pi as any, state);
 
       const handler = pi.handlers.get('session_before_tree')!;
-      const result = handler({ userWantsSummary: false });
-
-      expect(result).toBeUndefined();
-    });
-
-    it('returns undefined when userWantsSummary is absent', () => {
-      const pi = createMockPi();
-      const state = createInitialState();
-      installCompactionHandlers(pi as any, state);
-
-      const handler = pi.handlers.get('session_before_tree')!;
-      const result = handler({});
+      const result = handler({
+        ...baseTreeEvent,
+        preparation: { ...baseTreeEvent.preparation, userWantsSummary: false },
+      });
 
       expect(result).toBeUndefined();
     });

@@ -1,6 +1,6 @@
-<!-- Source: packages/opencode/rules/AGENTS.md — sync both files when updating -->
+<!-- Source: packages/pi/rules/AGENTS.md — sync both files when updating -->
 
-# Global Agent Rules — @maestria/opencode
+# Global Agent Rules — @maestria/pi
 
 ## Orchestration
 

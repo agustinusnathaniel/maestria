@@ -69,28 +69,49 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
       // Attempt to dispatch via @gotgenes/pi-subagents; fallback gracefully
       try {
         const { getSubagentsService } = await import('@gotgenes/pi-subagents');
-        const service = getSubagentsService() as any;
-        if (!service) throw new Error('Subagents service unavailable');
+        const service = getSubagentsService() as unknown as {
+          spawn: (
+            agent: string,
+            opts?: { task?: string; mode?: string },
+          ) => Promise<string | Record<string, unknown>>;
+        };
+        if (!service || typeof service.spawn !== 'function') {
+          throw new Error('Subagents service unavailable or incomplete');
+        }
+
+        const subagentPromise = service.spawn(params.agent, {
+          task: params.task,
+          mode: params.mode || undefined,
+        });
+
+        const result = await subagentPromise;
+
         return {
           content: [
             {
               type: 'text' as const,
-              text: await service.dispatch(params.agent, params.task, params.mode),
+              text: typeof result === 'string' ? result : JSON.stringify(result),
             },
           ],
         };
       } catch {
-        // Return handoff payload as structured data when SDK unavailable
+        // Return handoff payload as structured text when SDK unavailable
+        const handoffInfo = [
+          `## Subagent Handoff Required`,
+          ``,
+          `**From:** orchestrator`,
+          `**To:** ${params.agent}`,
+          `**Task:** ${params.task}`,
+          `${params.mode ? `**Mode:** ${params.mode}` : ''}`,
+          ``,
+          `Subagent SDK not available. Please delegate this work manually.`,
+        ].join('\n');
+
         return {
-          content: [
-            {
-              type: 'text' as const,
-              text: 'Subagent SDK not available. Use the handoff data to delegate manually.',
-            },
-          ],
-          details: { _handoff: { from: 'orchestrator', to: params.agent, task: params.task } },
+          content: [{ type: 'text' as const, text: handoffInfo }],
         };
       }
     },
-  } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any); // TypeBox inferred types don't match ToolDefinition exactly
 }

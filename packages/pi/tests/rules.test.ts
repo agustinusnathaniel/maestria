@@ -14,12 +14,13 @@ describe('createBeforeAgentStartHandler', () => {
     systemPromptOptions: {} as any,
   };
 
-  it('when mode is null, returns undefined (no-op)', () => {
+  it('when mode is null, still prepends RULES_CONTENT to the system prompt', () => {
     const state = createInitialState();
     const handler = createBeforeAgentStartHandler(state);
 
-    const result = handler(baseEvent, {} as any);
-    expect(result).toBeUndefined();
+    const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
+    expect(result.systemPrompt!).toContain('# Global Agent Rules');
+    expect(result.systemPrompt!).toContain('You are an AI assistant.');
   });
 
   it('when mode is "fein", returns a result with systemPrompt containing the mode marker', () => {
@@ -40,14 +41,17 @@ describe('createBeforeAgentStartHandler', () => {
     expect(result.systemPrompt!).toContain('Research Only');
   });
 
-  it("the returned systemPrompt appends to (rather than replaces) the event's existing systemPrompt", () => {
+  it('the returned systemPrompt starts with RULES_CONTENT, then appends existing systemPrompt and mode', () => {
     const state = createInitialState();
     state.mode = 'blitz';
     const handler = createBeforeAgentStartHandler(state);
 
     const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
-    expect(result.systemPrompt!).toContain('You are an AI assistant.');
-    expect(result.systemPrompt!).toContain('[MODE: blitz]');
+    // RULES_CONTENT should come first
+    expect(result.systemPrompt!.indexOf('# Global Agent Rules')).toBeLessThan(
+      result.systemPrompt!.indexOf('You are an AI assistant.'),
+    );
+    // Original system prompt should precede mode
     expect(result.systemPrompt!.indexOf('You are an AI assistant.')).toBeLessThan(
       result.systemPrompt!.indexOf('[MODE: blitz]'),
     );

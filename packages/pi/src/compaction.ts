@@ -1,22 +1,30 @@
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import type {
+  ExtensionAPI,
+  SessionBeforeCompactEvent,
+  SessionBeforeTreeEvent,
+} from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from './state.js';
 import { renderMaestriaSummary } from './state.js';
 
 export function installCompactionHandlers(pi: ExtensionAPI, state: MaestriaState): void {
-  (pi as unknown as { on: (event: string, handler: (...args: any[]) => any) => void }).on(
-    'session_before_compact',
-    () => {
-      return { compaction: { summary: renderMaestriaSummary(state) } };
-    },
-  );
+  pi.on('session_before_compact', (event: SessionBeforeCompactEvent) => {
+    return {
+      compaction: {
+        summary: renderMaestriaSummary(state),
+        firstKeptEntryId: event.preparation.firstKeptEntryId,
+        tokensBefore: event.preparation.tokensBefore,
+      },
+    };
+  });
 
-  (pi as unknown as { on: (event: string, handler: (...args: any[]) => any) => void }).on(
-    'session_before_tree',
-    (event: { userWantsSummary?: boolean }) => {
-      if (event.userWantsSummary) {
-        return renderMaestriaSummary(state);
-      }
-      return undefined;
-    },
-  );
+  pi.on('session_before_tree', (event: SessionBeforeTreeEvent) => {
+    if (event.preparation.userWantsSummary) {
+      return {
+        summary: {
+          summary: renderMaestriaSummary(state),
+        },
+      };
+    }
+    return undefined;
+  });
 }

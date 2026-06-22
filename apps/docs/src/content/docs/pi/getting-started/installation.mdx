@@ -38,7 +38,7 @@ There are two ways to install `@maestria/pi`.
 3. **Install the npm package**
 
    ```bash
-   pip install npm:@maestria/pi
+   pi install npm:@maestria/pi
    ```
 
    Pi resolves npm packages from its built-in registry bridge. The `npm:@maestria/pi` syntax installs the package from npm.
@@ -54,7 +54,7 @@ There are two ways to install `@maestria/pi`.
 Skip the config file step — install and register in one command:
 
 ```bash
-pip install npm:@maestria/pi
+pi install npm:@maestria/pi
 pi config extensions add @maestria/pi
 pi config prompts add node_modules/@maestria/pi/prompts
 ```
@@ -82,11 +82,11 @@ You should see `@maestria/pi` in the output.
 To update `@maestria/pi` to the latest version:
 
 ```bash
-pip install npm:@maestria/pi@latest
+pi install npm:@maestria/pi@latest
 ```
 
 <Aside type="tip">
-  To pin a specific version, use `pip install npm:@maestria/pi@0.1.0`. Check the
+  To pin a specific version, use `pi install npm:@maestria/pi@0.1.0`. Check the
   [changelog](/opencode/changelog/) for version history.
 </Aside>
 
