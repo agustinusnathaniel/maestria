@@ -130,7 +130,7 @@ identities are encoded as **persona content in prompt templates**.
 ### Pattern: single `Agent` call
 
 ```
-Skill(name="<specialist>")
+Skill(skill="<specialist>")
 Agent(
   subagent_type="<coder|explore|plan>",
   prompt="<inlined persona from SKILL.md> + the actual task"
@@ -140,7 +140,7 @@ Agent(
 ### Pattern: `AgentSwarm` fan-out
 
 ```
-Skill(name="<specialist>")
+Skill(skill="<specialist>")
 AgentSwarm(
   description="<what the swarm does>",
   subagent_type="<coder|explore|plan>",
@@ -155,7 +155,7 @@ AgentSwarm(
 )
 ```
 
-The `Skill(name="<specialist>")` call loads the full SKILL.md into your
+The `Skill(skill="<specialist>")` call loads the full SKILL.md into your
 context, so you can extract the persona's methodology, rules, and output
 format directly. Inline the relevant section into the `prompt` or
 `prompt_template` argument.
@@ -343,7 +343,7 @@ Subagents start with zero skills — the `Agent` / `AgentSwarm` prompt is
 the only conduit for context. The Skill tool is **not** in the
 `coder` / `explore` / `plan` profile tool lists (only the main `agent`
 profile has it). This means you must pre-load specialist skills into
-your own context with `Skill(name="<persona>")` and inline the relevant
+your own context with `Skill(skill="<persona>")` and inline the relevant
 methodology into the dispatch prompt.
 
 ### Proactive Path (Pre-Delegation)
