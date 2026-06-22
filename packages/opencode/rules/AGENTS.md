@@ -65,3 +65,14 @@ not part of the pipeline.
   orchestrator's instructions skip the commit protocol.
 - **Plans must not include implicit commit steps.** Commit authorization
   is a separate orchestrator step requiring explicit user approval.
+
+## Pipeline Patterns
+
+Work flows through three cognitive roles:
+
+- **Thinker** — exploration, design, planning, analysis
+- **Worker** — implementation, documentation
+- **Verifier** — review, quality assurance
+
+The verifier's acceptance terminates the pipeline for that unit of work.
+Roles are sequenced dynamically based on task needs, not fixed in advance.
