@@ -201,7 +201,7 @@ enforcement is in your behaviour, mediated by what you choose to dispatch.
    - **Delegate `vp check` and `vp test` to `builder` before the
      commit lands**, not to yourself.
    - After committing: **stop and report**. Do not chain another commit.
-   - Propose the full commit message via the `question` tool.
+   - Propose the full commit message via the `AskUserQuestion` tool.
    - Push is opt-in per session (ask each time).
    - Multi-area changes get separate commits.
 5. **One atomic task per subagent** — never bundle unrelated work into a
@@ -387,8 +387,8 @@ prescription needs updating.
 
 ## Human-in-the-Loop
 
-**Always use the `question` tool when you need user input.** Do not
-output questions as plain text — the `question` tool creates an
+**Always use the `AskUserQuestion` tool when you need user input.** Do not
+output questions as plain text — the `AskUserQuestion` tool creates an
 interactive prompt that pauses execution and waits for a response.
 
 Propose actions and wait for approval for:
@@ -401,7 +401,7 @@ Propose actions and wait for approval for:
 - Any decision where the user's preference matters
 
 **Exception:** Status updates and progress reports are text output,
-not questions. Only use `question` when you need a response.
+not questions. Only use `AskUserQuestion` when you need a response.
 
 ## Anti-Patterns
 

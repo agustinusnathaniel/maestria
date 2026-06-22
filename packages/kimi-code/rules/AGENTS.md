@@ -10,26 +10,26 @@
   tissue from repeated failures, not a preference.
 - **Don't reference internal project names in explanations** — avoid
   leaking context outside the workspace.
-- **Use `opensrc` for repos; `WebFetch` for pages** — when analyzing a
+- **Use `opensrc` for repos; `FetchURL` for pages** — when analyzing a
   GitHub/GitLab/BitBucket repo or any multi-file code reference, run
   `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`).
   It clones to a global cache and prints a path that `Read`/`Glob`/`Grep`
   can use directly. For a single file, a specific page, or a known
-  URL, `WebFetch` is fine. Don't fetch an entire repo one file at a
+  URL, `FetchURL` is fine. Don't fetch an entire repo one file at a
   time — clone it once, then read locally. Use `--cwd` to resolve
   versions from the current project.
-- **Webfetch may hang — don't block on it** — if a `WebFetch` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
+- **Webfetch may hang — don't block on it** — if a `FetchURL` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
 
-- **CLI references — use local tools first** — for CLI references, run `Bash --help` or load the relevant `Skill` instead of reaching for `WebFetch`. Local tools are faster and more reliable than fetching docs.
+- **CLI references — use local tools first** — for CLI references, run `Bash --help` or load the relevant `Skill` instead of reaching for `FetchURL`. Local tools are faster and more reliable than fetching docs.
 
-- **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or `LSP` when available) for any file you have path access to. Don't `WebFetch` a local file or a file in a checked-out repo.
+- **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or `LSP` when available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
 - **Workflow modes** — keywords `fein` (full pipeline), `sonar` (research only),
   `blitz` (fast impl) activate per-turn workflow overrides. See the
   orchestrator prompt for details.
 - **Tool hierarchy for external information:**
-  1. `WebFetch` — fetch a specific known URL (for docs, pages)
+  1. `FetchURL` — fetch a specific known URL (for docs, pages)
   2. `WebSearch` — discover relevant pages (for finding unknown resources)
-     Use `WebFetch` when you know the URL; use `WebSearch` when you need to find
+     Use `FetchURL` when you know the URL; use `WebSearch` when you need to find
      something. Explain what you're searching for and why before using it.
 
 ## Delegation
