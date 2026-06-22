@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.6
+
+### Patch Changes
+
+- [`ecfa74a`](https://github.com/agustinusnathaniel/maestria/commit/ecfa74a34acadb66871c66de9e6b05fd0695d769) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: preserve line breaks when stripping mode keywords from messages
+
+- [`9b91ca9`](https://github.com/agustinusnathaniel/maestria/commit/9b91ca9aa3b75566edca317b2535794092f5fcf8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Strengthen commit authorization rules in orchestrator directive
+
+  - Add explicit COMMIT PROTOCOL section to the orchestrator prompt
+  - Harden CRITICAL RULE [#3](https://github.com/agustinusnathaniel/maestria/issues/3) with ZERO authorization after each commit
+  - Add Commit Policy section to global rules for all subagents
+  - Tighten prose and remove redundant language
+
 ## 0.4.5
 
 ### Patch Changes
