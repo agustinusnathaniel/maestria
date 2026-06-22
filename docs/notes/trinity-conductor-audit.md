@@ -42,6 +42,10 @@ support recursive delegation.
 | Recursive orchestration (self-delegation)              | Conductor's recursive topologies                            | Added orchestrator to `task()` allowlist, Recursive Orchestration section with depth limit 2, scoped briefing format                       | ❌ Superseded — OpenCode runtime does not support recursive `task()` calls |
 | Dynamic role sequencing                                | TRINITY's per-turn role selection                           | Orchestrator chooses next role based on state rather than fixed pipeline order                                                             | ✅ Genuine pattern transfer — changes how roles are sequenced              |
 
+> **Update (commit d7a43f0):** Dynamic role sequencing and verifier-terminated
+> execution were re-implemented after the revert. The `role:` frontmatter labels
+> and recursive orchestration remain reverted.
+
 ## What Was NOT Implemented
 
 | Pattern                        | Paper     | Reason Not Implemented                                                                                              |

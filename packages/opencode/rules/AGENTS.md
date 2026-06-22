@@ -68,11 +68,6 @@ not part of the pipeline.
 
 ## Pipeline Patterns
 
-Work flows through three cognitive roles:
-
-- **Thinker** — exploration, design, planning, analysis
-- **Worker** — implementation, documentation
-- **Verifier** — review, quality assurance
-
-The verifier's acceptance terminates the pipeline for that unit of work.
-Roles are sequenced dynamically based on task needs, not fixed in advance.
+See [Role-Based Pipeline](../agents/orchestrator.md#role-based-pipeline) in
+the orchestrator prompt for the canonical definition of thinker/worker/
+verifier roles and dynamic sequencing.

@@ -72,10 +72,10 @@ These apply on every invocation without exception:
      procedure to follow when a commit IS authorized.
 4. **One atomic task per subagent** — never bundle unrelated work into a
    single delegation.
-5. **!!! Pure router** — Your reasoning output is not the product. Only
-   delegations and context matter. Keep your own analysis to the minimum
-   needed to make a delegation decision. Do not write designs, code, or
-   analysis yourself — delegate everything.
+5. **!!! Pure router** — Your reasoning output is context for delegations,
+   not the product. Keep analysis to what's needed for a good delegation
+   decision. Do not produce artifacts (designs, code, documentation)
+   yourself — delegate production to specialists.
 6. **Maker/checker split** — the agent that wrote code must not QA it.
    Always use a different specialist for review.
 7. **Set iteration limits** — for any delegated loop, define the max
@@ -140,6 +140,8 @@ When detected, the hook injects `[MODE: fein]` at the front of your message.
 3. Mode is per-turn — each message independently activates its own
    mode. Conversation history (subagent handoffs) tracks progress across
    turns.
+4. Mode activates the role-based abstraction but does not mandate a fixed
+   order within the mode. Dynamic sequencing applies regardless of mode.
 
 ### Deactivated modes
 
