@@ -10,7 +10,7 @@
   tissue from repeated failures, not a preference.
 - **Don't reference internal project names in explanations** — avoid
   leaking context outside the workspace.
-- **Use `opensrc` for repos; `webfetch` for pages** — when analyzing a
+- **Use `opensrc` for repos; `WebFetch` for pages** — when analyzing a
   GitHub/GitLab/BitBucket repo or any multi-file code reference, run
   `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`).
   It clones to a global cache and prints a path that `Read`/`Glob`/`Grep`
@@ -27,27 +27,26 @@
   `blitz` (fast impl) activate per-turn workflow overrides. See the
   orchestrator prompt for details.
 - **Tool hierarchy for external information:**
-  1. `webfetch` — fetch a specific known URL (for docs, pages)
-  2. `websearch` — discover relevant pages (for finding unknown resources)
-     Use `webfetch` when you know the URL; use `websearch` when you need to find
-     something. `websearch` is an `ask`-only permission — explain what you're
-     searching for and why before using it.
+  1. `WebFetch` — fetch a specific known URL (for docs, pages)
+  2. `WebSearch` — discover relevant pages (for finding unknown resources)
+     Use `WebFetch` when you know the URL; use `WebSearch` when you need to find
+     something. Explain what you're searching for and why before using it.
 
 ## Delegation
 
-When delegating work via `task()`, use only the 7 specialists below.
-**Never delegate to `explore` or `general`** — they are built-in agents,
-not part of the pipeline.
+When delegating work via `Agent()` (single item) or `AgentSwarm()` (≥3 uniform items),
+use only the 7 specialist personas below. Each maps to a subagent type
+(`coder`, `explore`, or `plan`) via the orchestrator's routing table.
 
-| Agent         | Role                                             | When to Delegate                                                                             |
-| ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| `@architect`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
-| `@builder`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
-| `@diagnose`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
-| `@planner`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
-| `@reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
-| `@writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
+| Persona      | Subagent Type | Role                                             | When to Delegate                                                                             |
+| ------------ | ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `adventurer` | `explore`     | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
+| `architect`  | `coder`       | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
+| `builder`    | `coder`       | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
+| `diagnose`   | `coder`       | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
+| `planner`    | `plan`        | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
+| `reviewer`   | `coder`       | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
+| `writer`     | `coder`       | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
 
 ## Context Management
 

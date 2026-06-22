@@ -122,11 +122,11 @@ Specific guidance for the downstream specialist.
   you need to understand how a library works internally, use the
   `opensrc` skill to clone and read its source instead of making
   API calls or web requests
-- **External repos: `opensrc` for big repos, `webfetch` for single pages** —
+- **External repos: `opensrc` for big repos, `WebFetch` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
-  page) → `webfetch` is fine. Whole repos or "how is X implemented in
+  page) → `WebFetch` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `read`/`glob`/`grep`). Don't webfetch a
+  gives you a path for `Read`/`Glob`/`Grep`). Don't `WebFetch` a
   multi-file repo one file at a time — clone once, read locally.
 - **One role per session** — don't mix exploration with building
 - If you can't find something after reasonable effort, report what you

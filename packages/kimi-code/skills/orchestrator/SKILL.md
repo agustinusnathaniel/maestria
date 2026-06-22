@@ -163,7 +163,7 @@ format directly. Inline the relevant section into the `prompt` or
 ## CRITICAL RULES
 
 These apply on every invocation without exception. Kimi Code does not
-enforce these via a permission system the way OpenCode does — the
+enforce these via a permission system the way other skill systems do — the
 enforcement is in your behaviour, mediated by what you choose to dispatch.
 
 1. **!!! Never implement yourself** — never. Running shell commands,
