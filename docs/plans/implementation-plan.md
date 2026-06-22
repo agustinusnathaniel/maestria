@@ -6,11 +6,32 @@ This plan breaks the build into seven sequential phases. Each phase has concrete
 
 **Monorepo**: `agustinusnathaniel/maestria`, pnpm workspaces, Vite+, changesets.
 
-**Version**: `@maestria/opencode` at **v0.3.7+**. See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) at the project root for the canonical project vision and design patterns.
+**Version**: `@maestria/opencode` at **v0.4.6** (shipped on `main`). See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) at the project root for the canonical project vision and design patterns.
+
+## Phase 0: Existing Foundation (Shipped on `main`)
+
+These components are already shipped on `main` and serve as the foundation for Phases 1-7. No additional work required.
+
+- [x] **Plugin entry** — `packages/opencode/src/index.ts` with 3 hooks (`config`, `experimental.session.compacting`, `chat.message`)
+- [x] **8 subagents** — `packages/opencode/agents/*.md` (orchestrator + 7 specialists)
+- [x] **Global rules** — `packages/opencode/rules/AGENTS.md` injected via `input.instructions`
+- [x] **Mode keyword system** — `packages/opencode/src/modes/` (fein/sonar/blitz)
+- [x] **Commit authorization rules** — COMMIT PROTOCOL in orchestrator prompt
+- [x] **9 ADRs** — ADR-001 through ADR-009, including ADR-008 (mode keywords) and ADR-009 (commit authorization)
+- [x] **Release pipeline** — `.github/workflows/release.yml` (Changesets-based)
+
+**Relationship to build phases:**
+| Build Phase | Relation to Foundation |
+|---|---|
+| Phases 1-7 | Build the Flue meta-agent at `apps/maestria-agent/`, which runs alongside the existing plugin |
+| Phase 3 (Shipping) | Overlaps with existing `release.yml` — Flue pipeline would replace/supplement it |
+| Phase 6 (Reviewer) | The existing `reviewer.md` subagent is for interactive sessions; Flue reviewer is autonomous PR review |
 
 ## Phase 1: Scaffold + Maintenance (Foundation)
 
 **Goal**: A working Flue agent that runs maestria maintenance commands and reports health daily via GitHub Actions.
+
+**Relation to existing agents:** The maintenance skill reads from the 8 existing OpenCode subagents on `main` to assess project health.
 
 **Dependencies**: None.
 
@@ -115,6 +136,8 @@ This plan breaks the build into seven sequential phases. Each phase has concrete
 ## Phase 3: Shipping
 
 **Goal**: Agent creates changesets, versions packages, opens PRs, and publishes to npm — with approval gates.
+
+**Overlap with existing infrastructure:** A `release.yml` workflow already exists on `main` for Changesets-based publishing. The Flue shipping pipeline would replace or supplement it, adding an agent-driven decision layer.
 
 **Dependencies**: Phase 1 (tools), Phase 2 (GitHub channel for PR creation).
 
@@ -247,6 +270,8 @@ This plan breaks the build into seven sequential phases. Each phase has concrete
 ## Phase 6: Reviewer Subagent
 
 **Goal**: Maker/checker split enforced — all proposed changes reviewed before PR submission.
+
+**Relation to existing reviewer:** The `@maestria/opencode` plugin already ships a `reviewer.md` subagent for interactive code review inside agent sessions. The Flue reviewer described here is a different concept — it performs autonomous PR review outside interactive sessions.
 
 **Dependencies**: Phase 3 (shipping produces diffs), Phase 4 (improvement produces edits), Phase 5 (learning produces proposals).
 
@@ -454,12 +479,13 @@ All seven variables are stored as GitHub Actions secrets for scheduled workflows
 
 ## Summary by Phase
 
-| Phase | Effort | New Files | Key Deliverable |
-|---|---|---|---|
-| 1: Scaffold + Maintenance | Large (~8 tools, skill, workflow) | ~13 | Agent boots, runs vp check |
-| 2: Channels | Medium | ~3 | Agent responds on Telegram, GitHub, CLI |
-| 3: Shipping | Medium | ~8 | Full release cycle with approval gates |
-| 4: Self-Improvement | Medium | ~4 | Agent edits its own prompts via PR |
-| 5: Self-Learning | Large (tools, subagent, skill, workflow) | ~9 | Weekly learning review produces proposals |
-| 6: Reviewer | Medium | ~5 | Maker/checker split enforced |
-| 7: Evals + Hardening | Large (evals, hardening, final workflow) | ~6 | All evals pass, schedules trigger |
+| Phase                     | Effort                                   | New Files | Key Deliverable                           |
+| ------------------------- | ---------------------------------------- | --------- | ----------------------------------------- |
+| 0: Existing Foundation    | — (shipped)                              | —         | Already shipped on `main`                 |
+| 1: Scaffold + Maintenance | Large (~8 tools, skill, workflow)        | ~13       | Agent boots, runs vp check                |
+| 2: Channels               | Medium                                   | ~3        | Agent responds on Telegram, GitHub, CLI   |
+| 3: Shipping               | Medium                                   | ~8        | Full release cycle with approval gates    |
+| 4: Self-Improvement       | Medium                                   | ~4        | Agent edits its own prompts via PR        |
+| 5: Self-Learning          | Large (tools, subagent, skill, workflow) | ~9        | Weekly learning review produces proposals |
+| 6: Reviewer               | Medium                                   | ~5        | Maker/checker split enforced              |
+| 7: Evals + Hardening      | Large (evals, hardening, final workflow) | ~6        | All evals pass, schedules trigger         |

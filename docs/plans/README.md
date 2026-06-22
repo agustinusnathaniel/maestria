@@ -2,7 +2,20 @@
 
 The maestria meta-agent maintains, ships, and improves the [@maestria/opencode](https://www.npmjs.com/package/@maestria/opencode) plugin. It lives at `apps/maestria-agent/` and runs autonomously — a robot that builds robots.
 
-Aligned with maestria **v0.3.7+**. See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) at the project root for the canonical project vision and design patterns this meta-agent implements.
+Aligned with maestria **v0.4.6**. See [`VISION.md`](../VISION.md) and [`PATTERNS.md`](../PATTERNS.md) at the project root for the canonical project vision and design patterns this meta-agent implements.
+
+## Current State
+
+The `@maestria/opencode` plugin at **v0.4.6** already ships on `main` with:
+
+- **Plugin entry** at `packages/opencode/src/index.ts` — 3 hooks (`config`, `experimental.session.compacting`, `chat.message`)
+- **8 subagents** at `packages/opencode/agents/*.md` — orchestrator + 7 specialists
+- **Global rules** at `packages/opencode/rules/AGENTS.md`
+- **Mode keyword system** — `fein`/`sonar`/`blitz` with precedence rules
+- **9 Architecture Decision Records** (ADR-001 through ADR-009), including ADR-008 (mode keywords) and ADR-009 (commit authorization)
+- **Release pipeline** via `.github/workflows/release.yml`
+
+These are the existing foundation. The meta-agent plans in this directory describe a complementary **Flue-based** system that handles autonomous maintenance, shipping, and learning outside interactive AI coding sessions — building on top of what's already shipped.
 
 ## Framework: Flue
 
@@ -10,24 +23,24 @@ The agent uses [Flue](https://flueframework.com/), a TypeScript framework by the
 
 ## Contents
 
-| File | Covers |
-|---|---|
-| [`architecture.md`](./architecture.md) | Agent design, tools, skills, channels, subagents, self-learning loop, Flue vs Eve comparison, ADRs 008-010 |
-| [`implementation-plan.md`](./implementation-plan.md) | 7-phase build plan — task breakdowns, dependencies, verification criteria |
+| File                                                 | Covers                                                                                                     |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [`architecture.md`](./architecture.md)               | Agent design, tools, skills, channels, subagents, self-learning loop, Flue vs Eve comparison, ADRs 008-013 |
+| [`implementation-plan.md`](./implementation-plan.md) | 7-phase build plan — task breakdowns, dependencies, verification criteria                                  |
 
 ## Timeline (7 Phases)
 
 Each phase depends on the one before it.
 
-| Phase | Focus | Depends on |
-|---|---|---|
-| 1 | Scaffold: Flue init, monorepo wiring | — |
-| 2 | Core agent: tools, skills, channels | 1 |
-| 3 | Subagents: reviewer, learner | 2 |
-| 4 | Self-learning loop: `.maestria-learnings/`, feedback | 3 |
-| 5 | CI/CD: GitHub Actions, release automation | 4 |
-| 6 | Monitoring: logging, metrics, Durable Streams replay | 5 |
-| 7 | Evals: quality gates, benchmarks | 6 |
+| Phase | Focus                  | Depends on |
+| ----- | ---------------------- | ---------- |
+| 1     | Scaffold + Maintenance | —          |
+| 2     | Channels               | 1          |
+| 3     | Shipping               | 2          |
+| 4     | Self-Improvement       | 3          |
+| 5     | Self-Learning          | 4          |
+| 6     | Reviewer Subagent      | 5          |
+| 7     | Evals + Hardening      | 6          |
 
 ## Getting Started
 
