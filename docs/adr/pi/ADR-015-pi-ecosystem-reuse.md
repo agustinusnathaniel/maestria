@@ -125,6 +125,45 @@ already provides the in-process model with a stronger API.
   Package design plan §4.5 — adapter design for @gotgenes/pi-subagents
 - Risks documented in the plan's risk register — R-16 (vendor dependency on a pre-1.0 package), R-17 (API instability from Pi ecosystem changes), and O-12 (whether to build vs adopt subagent dispatch)
 
+## Implementation Notes (Post-Implementation)
+
+### ✅ `@gotgenes/pi-subagents@17.2.0` Confirmed Working
+
+The package was tested with `@earendil-works/pi-coding-agent@0.79.9`.
+The `SubagentsService` API (`getSubagentsService()`, `spawn()`) works
+as documented. Version pinned to `^17.0.0` in `package.json`.
+
+### ⚠️ Tool Name Collision Discovered and Resolved
+
+`@gotgenes/pi-subagents` v17 registers its own `subagent` tool. If
+`@maestria/pi` also registered a tool named `subagent`, Pi would
+silently pick one (last registration wins), breaking one or both.
+
+**Resolution:** The maestria tool was renamed to `maestria_subagent`.
+All prompts, commands, and tests reference `maestria_subagent`.
+
+### ✅ Handoff Validation Pre-Check Implemented
+
+As designed in the ADR, `src/subagent.ts` implements
+`validateHandoff()` which checks all 6 handoff fields (Goal, Context,
+Requirements, Known Problems, Success Criteria, Next Step) before
+dispatching. Rejects with clear error if a field is missing.
+
+### ✅ Recursion Guard Respected
+
+`@gotgenes/pi-subagents` has a recursion guard preventing subagents
+from spawning their own subagents. The maestria orchestration sits
+above the subagent layer (orchestrator → subagent → specialist, not
+nested). This is the correct architecture and matches the ADR's
+design constraint.
+
+### 📝 Graceful Fallback
+
+The `subagent.ts` module catches errors from `@gotgenes/pi-subagents`
+and returns a structured handoff text instead of crashing. This means
+the package works (with degraded functionality) even if the subagent
+SDK is unavailable.
+
 ## Date
 
-2026-06-19
+2026-06-19 (ADR), 2026-06-22 (implementation notes)

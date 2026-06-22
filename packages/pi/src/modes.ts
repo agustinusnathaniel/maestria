@@ -1,5 +1,6 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from './state.js';
+import { restoreOriginalState } from './state.js';
 
 export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
 export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
@@ -46,6 +47,11 @@ export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): voi
     pi.registerCommand(keyword, {
       description: `Set workflow mode to ${keyword}`,
       handler: async (args, ctx) => {
+        // Exit review mode if active (restore original model/tools)
+        if (state.reviewMode) {
+          await restoreOriginalState(pi, ctx, state);
+        }
+
         state.mode = keyword;
 
         if (args.trim()) {

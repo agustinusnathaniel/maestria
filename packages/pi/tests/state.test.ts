@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import {
   createInitialState,
   recordHandoff,
   recordFileModified,
   recordFileRead,
   setReviewMode,
+  exitReviewMode,
   renderMaestriaSummary,
 } from '../src/state.js';
 import type { MaestriaState } from '../src/state.js';
@@ -20,6 +21,9 @@ const NEW_STATE_KEYS = [
   'handoffHistory',
   'reviewMode',
   'reviewModel',
+  'originalModel',
+  'originalTools',
+  'subagentStatus',
 ];
 
 describe('createInitialState', () => {
@@ -53,6 +57,8 @@ describe('createInitialState', () => {
     expect(state.handoffHistory).toEqual([]);
     expect(state.reviewMode).toBe(false);
     expect(state.reviewModel).toBeNull();
+    expect(state.originalModel).toBeNull();
+    expect(state.originalTools).toBeNull();
   });
 });
 
@@ -281,5 +287,79 @@ describe('renderMaestriaSummary', () => {
     expect(summary).toContain('**Files:**');
     expect(summary).toContain('**Read:** src/readonly.ts');
     expect(summary).not.toContain('**Modified:**');
+  });
+});
+
+describe('state persistence pattern', () => {
+  it('calls appendEntry with current state after mutation', () => {
+    const pi = { appendEntry: vi.fn() };
+    const state = createInitialState();
+
+    // Simulate the mutation + persistence pattern used in commands/subagent
+    const updatedState = recordHandoff(state, 'orchestrator', 'builder', 'implement feature');
+    Object.assign(state, updatedState);
+    pi.appendEntry('maestria_state', state);
+
+    expect(pi.appendEntry).toHaveBeenCalledWith(
+      'maestria_state',
+      expect.objectContaining({
+        handoffHistory: expect.arrayContaining([
+          expect.objectContaining({
+            from: 'orchestrator',
+            to: 'builder',
+            task: 'implement feature',
+          }),
+        ]),
+      }),
+    );
+  });
+});
+
+describe('exitReviewMode', () => {
+  it('clears reviewMode, reviewModel, originalModel, originalTools', () => {
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewMode: true,
+      reviewModel: 'claude-sonnet',
+      originalModel: 'gpt-4o',
+      originalTools: ['read', 'grep', 'bash'],
+    };
+
+    const { state: next, originalModel, originalTools } = exitReviewMode(state);
+
+    expect(next.reviewMode).toBe(false);
+    expect(next.reviewModel).toBeNull();
+    expect(next.originalModel).toBeNull();
+    expect(next.originalTools).toBeNull();
+    expect(originalModel).toBe('gpt-4o');
+    expect(originalTools).toEqual(['read', 'grep', 'bash']);
+  });
+
+  it('is immutable — does not mutate the original state', () => {
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewMode: true,
+      originalModel: 'claude-sonnet',
+      originalTools: ['read', 'grep'],
+    };
+
+    exitReviewMode(state);
+
+    expect(state.reviewMode).toBe(true);
+    expect(state.originalModel).toBe('claude-sonnet');
+    expect(state.originalTools).toEqual(['read', 'grep']);
+  });
+
+  it('handles null originals gracefully', () => {
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewMode: true,
+    };
+
+    const { state: next, originalModel, originalTools } = exitReviewMode(state);
+
+    expect(next.reviewMode).toBe(false);
+    expect(originalModel).toBeNull();
+    expect(originalTools).toBeNull();
   });
 });

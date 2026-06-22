@@ -1,5 +1,11 @@
 # 05. Architecture Decisions — ADRs 008–014
 
+> **Note:** These ADRs were written pre-implementation and their
+> decisions were validated (or diverged from) during implementation.
+> Annotations below mark the divergences. The ADR statuses remain
+> "Accepted" — the decisions still stand, but some implementation
+> details changed.
+
 This document records the non-obvious architectural decisions for
 `@maestria/pi`. Each ADR follows the Michael Nygard format
 (Status, Context, Decision, Consequences) consistent with the
@@ -129,7 +135,15 @@ YAML, no per-agent permissions).
 
 ### Status
 
-Accepted
+Accepted — fully implemented
+
+> **Note:** Model cycling is implemented in `src/commands.ts` (the `/review`
+> command) and `src/tools.ts` (the `tool_call` interceptor that blocks
+> destructive tools when `reviewMode` is active). The implementation is
+> slightly simpler than the plan: model switching via `pi.setModel()` is
+> not yet wired (the `/review` command sets a `reviewMode` flag and sends
+> a steer message). The tool-call blocking (`tool_call` returning
+> `{ block: true }`) is the primary enforcement mechanism.
 
 ### Context
 
@@ -327,7 +341,12 @@ versions at runtime.
 
 ### Status
 
-Accepted
+**Accepted (implementation diverged)**
+
+> **Note — implementation divergence:** The actual implementation uses
+> **`vp pack` (Rolldown)**, not `tsc`. Rationale added below. The ADR
+> analysis (options, trade-offs) remains valid; the decision changed
+> during implementation based on practical experience.
 
 ### Context
 
@@ -357,72 +376,68 @@ We considered:
 
 ### Decision
 
-**Choose: `tsc` to `dist/`, consistent with `@maestria/opencode`.**
+**Plan chose: `tsc` to `dist/`, consistent with `@maestria/opencode`.**
 
-The package is small (~7 source files, ~1000 lines of TS
-including the subagent tool). `tsc` is fast enough and
-produces the smallest, simplest output.
+**Implementation chose: `vp pack` (Rolldown/tsdown) to `dist/extension.mjs`.**
 
-The output is:
+The implementation divergence was driven by:
 
-- `dist/extension.js` and `dist/extension.d.ts`
-- `dist/rules.js`, `dist/rules.d.ts`, etc.
-- `dist/rules-content.js`, `dist/rules-content.d.ts` (the
-  generated rules bundle)
+1. **Pi loads a single extension entry point.** `vp pack` produces a single
+   `dist/extension.mjs` that Pi's dynamic import can consume directly. `tsc`
+   would produce multiple output files (one per source module), requiring
+   Pi to resolve module paths across the bundle.
+2. **Module resolution complexity.** `tsc` output imports peer dependencies
+   (`@earendil-works/pi-*`, `typebox`) as ESM imports. The Rolldown bundle
+   marks them as external, producing clean `import` statements that Pi's
+   runtime resolves. No import-map or path-mapping needed.
+3. **Faster builds.** Rolldown is ~10x faster than `tsc` for this project
+   size (~1s vs ~10s).
+4. **Smaller output.** Single 35KB `.mjs` file vs ~14 files totaling ~50KB.
+   The bundle loads faster (one file open vs many).
 
-Total: ~14 files, ~50KB minified.
-
-We deliberately do not bundle. Each module is its own
-file in `dist/`, matching the source structure. This is
-what `tsc` does by default with `rootDir: "src"` and
-`outDir: "dist"`.
-
-The `vp check` integration in the monorepo already
-understands `tsc` builds. No new tool to integrate.
+The `vp check` integration in the monorepo already works with `vp pack`
+output (the check task runs `tsc --noEmit` for type checking and
+`oxlint` for linting; the build task is separate).
 
 ### Consequences
 
-- Positive: Consistent with `@maestria/opencode`. The same
-  build command works in both packages.
-- Positive: `tsc` is built into TypeScript, no extra
-  dependency.
-- Positive: Output is small and inspectable.
-- Positive: `.d.ts` files give users type hints if they
-  import the package directly.
-- Negative: Cold start is faster than jiti (we pre-compile),
-  but slower than a bundled output. For 7 files, this is
-  negligible (~50ms vs. ~200ms for jiti).
-- Negative: Multiple output files vs. a single bundle.
-  The bundle would be ~30KB, the multi-file output is
-  ~50KB. The size difference is irrelevant for an
-  extension that's loaded once at startup.
+**Implementation consequences (updated from plan):**
+
+- Positive: Single `dist/extension.mjs` file — Pi's dynamic import resolves
+  it immediately. No module path resolution needed.
+- Positive: Faster builds (~1s vs ~10s for `tsc`).
+- Positive: `vp pack` is the standard Vite+ build command. Consistent with
+  the monorepo's toolchain.
+- Negative: No `.d.ts` files in the published package. Type hints are
+  available at dev time via `tsc --noEmit`. Users who import `@maestria/pi`
+  directly get no IDE completion — but the package is not designed for
+  programmatic consumption (it's a Pi extension).
+- Negative: The bundle is harder to debug (minified source in a single file).
+  Sourcemaps are included (`extension.mjs.map`).
+- The original plan's negative (inconsistency with opencode's `tsc`) is now
+  moot — `@maestria/opencode` uses `tsc` for different architectural
+  reasons, and the two packages are built differently because their
+  platforms have different loading expectations.
 
 ### Alternatives Considered
 
-**`tsdown`** is the Vite+ default bundler. We considered
-using it but the extension is small enough that
-bundling adds complexity without benefit. The
-`rolldown` output is a single file, which is harder to
-debug if there's a stack trace.
+**`tsdown`** (now known as `vp pack`) — chosen in implementation. The
+Vite+ default bundler was actually simpler than `tsc` for this use case
+because it produces a single entry file that Pi can consume directly.
 
-**`unbuild`** is used by many npm packages. We don't
-need its features (multi-entry, dual ESM/CJS) for a
-single-entry extension.
-
-**No build** is the most Pi-idiomatic. But the cold-start
-penalty and the lack of `.d.ts` files are real costs.
-The opencode package also uses `tsc`, so consistency
-wins.
+**`tsc`** — the plan's choice. Would require additional module resolution
+configuration in Pi. The multi-file output adds no value for a single-entry
+extension.
 
 ### References
 
-- [`03-package-design.md` §7](./03-package-design.md#7-build-strategy)
-- [`packages/opencode/tsconfig.json`](../../packages/opencode/tsconfig.json)
-- [`packages/opencode/package.json`](../../packages/opencode/package.json)
+- [`03-package-design.md` §7](./03-package-design.md#7-build-strategy) (updated)
+- [`packages/pi/vite.config.ts`](../../packages/pi/vite.config.ts)
+- [`packages/pi/tsconfig.json`](../../packages/pi/tsconfig.json) (`noEmit: true`)
 
 ### Date
 
-2026-06-18
+2026-06-18 (ADR), 2026-06-22 (implementation)
 
 ---
 

@@ -35,7 +35,7 @@
 
 ## Delegation
 
-When delegating work via \`subagent()\`, use only the 7 specialists below.
+When delegating work via \`maestria_subagent()\`, use only the 7 specialists below.
 **Never delegate to `explore` or `general`** — they are built-in agents,
 not part of the pipeline.
 

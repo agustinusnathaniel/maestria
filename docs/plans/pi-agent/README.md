@@ -5,20 +5,22 @@ maestria monorepo. `@maestria/pi` is the Pi-coding-agent adaptation of the
 maestria methodology (Pipeline Composition + Maker/Checker Split + 7 specialist
 agents + global rules).
 
-This is a research and planning document set. **No code is being written yet.**
-After this plan is reviewed and approved, implementation will proceed phase by
-phase (see [`04-implementation-phases.md`](./04-implementation-phases.md)).
+This is a research and planning document set that was written **before** implementation
+began. The package is now implemented and published as `@maestria/pi@0.1.0`.
+Implementation details that diverged from the plan are annotated throughout this
+document set with `> **Note:** Plan diverged` callouts. See the actual code at
+[`packages/pi/`](../../packages/pi/) for the authoritative source.
 
 ## Status
 
-**Proposed.** Awaiting review by `@reviewer` and approval by the user before
-any implementation begins.
+**Implemented (v0.1.0).** Published 2026-06-22. The package is shipping and
+available at `pi install npm:@maestria/pi`.
 
 - **Date drafted:** 2026-06-18
-- **Target version:** `@maestria/pi@0.1.0` (first published)
-- **Pi target:** `@earendil-works/pi-coding-agent@0.79.6` (v0.79.x line)
-- **Status in VISION.md:** Exploring → will move to In development after this
-  plan is approved
+- **Date implemented:** 2026-06-22
+- **Published version:** `@maestria/pi@0.1.0`
+- **Pi target:** `@earendil-works/pi-coding-agent@^0.79` (confirmed working with 0.79.9)
+- **Status in VISION.md:** Shipping (updated from Exploring)
 
 ## TL;DR
 
@@ -53,27 +55,37 @@ plus prompt templates plus a custom subagent delegation tool.
 
 ## Quick Reference
 
-| Item                       | Value                                                                 |
-| -------------------------- | --------------------------------------------------------------------- |
-| Package name               | `@maestria/pi`                                                        |
-| Target version             | `0.1.0` (initial release)                                             |
-| Pi version target          | `^0.79.0` (covers 0.79.x at time of writing)                          |
-| License                    | MIT                                                                   |
-| Type                       | ESM, jiti-loadable TypeScript                                         |
-| `keywords`                 | `["pi-package", "maestria", "ai", "agents", "coding-agent"]`          |
-| Build tool                 | `tsc` (consistent with `@maestria/opencode`)                          |
-| Number of TS source files  | 7 (extension, rules, compaction, state, subagent, commands, tools)    |
-| Number of prompt templates | 8 (orchestrator + 7 specialists)                                      |
-| Number of skills           | 2 (handoff, iteration-limits) — v1 scope                              |
-| Themes                     | 0 (skip in v1)                                                        |
-| Custom provider registered | No                                                                    |
-| Custom tools registered    | 1 (subagent delegation)                                               |
-| Custom commands registered | 4 (orchestrate, review, handoff, maestria-status)                     |
-| Peer dependencies          | `@earendil-works/pi-coding-agent`, `@earendil-works/pi-ai`, `typebox` |
-| Third-party deps           | `@gotgenes/pi-subagents@^17.0.0` (see ADR-015)                        |
-| Compaction state           | Active task, completion promise, blockers, references                 |
-| Postinstall script         | None (pure plugin, consistent with all `@maestria/*` packages)        |
-| Files published to npm     | `dist`, `prompts`, `skills`, `README.md`, `CHANGELOG.md`, `LICENSE`   |
+| Item                       | Value                                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| Package name               | `@maestria/pi`                                                                                  |
+| Published version          | `0.1.0` (initial release)                                                                       |
+| Pi version target          | `^0.79.0` (confirmed with 0.79.9)                                                               |
+| License                    | MIT                                                                                             |
+| Type                       | ESM, bundled `.mjs`                                                                             |
+| `keywords`                 | `["pi-package", "maestria", "ai", "agents", "coding-agent"]`                                    |
+| Build tool                 | `vp pack` (Rolldown bundle, **not** `tsc` — see divergence note below)                          |
+| Number of TS source files  | 9 (extension, rules, compaction, state, subagent, commands, tools, **modes**, rules-content)    |
+| Number of prompt templates | 8 (orchestrator + 7 specialists)                                                                |
+| Number of skills           | 2 (handoff, iteration-limits) — v1 scope                                                        |
+| Themes                     | 0 (skip in v1)                                                                                  |
+| Custom provider registered | No                                                                                              |
+| Custom tools registered    | 1 (`subagent` → renamed to `maestria_subagent` to avoid collision)                              |
+| Custom commands registered | 4 (`orchestrate`, `review`, `maestria-status`, plus 3 workflow modes: `fein`, `sonar`, `blitz`) |
+| Peer dependencies          | `@earendil-works/pi-coding-agent`, `@earendil-works/pi-ai`, `typebox`                           |
+| Third-party deps           | `@gotgenes/pi-subagents@^17.0.0` (see ADR-015)                                                  |
+| Compaction state           | Active task, mode, completion promise, blockers, handoff history                                |
+| Postinstall script         | None (pure plugin, consistent with all `@maestria/*` packages)                                  |
+| Files published to npm     | `dist`, `prompts`, `rules`, `skills`, `README.md`, `LICENSE`                                    |
+
+> **Note — divergences from plan:**
+>
+> - Build tool: plan specified `tsc`; implementation uses `vp pack` (Rolldown) which produces `dist/extension.mjs`
+> - Tool name: plan specified `subagent`; renamed to `maestria_subagent` to avoid collision with `@gotgenes/pi-subagents` internal tool
+> - Modes module: `src/modes.ts` was added to the plan — implements `/fein`, `/sonar`, `/blitz` workflow mode commands
+> - `rules/` directory IS included in the `files` array (plan said exclude; included because Pi resolves rule files from the package directory)
+> - `CHANGELOG.md` is NOT included in the `files` array (plan said include; omitted to keep the published package minimal — CHANGELOG is in the git repo)
+> - `publishConfig.provenance` is NOT set (plan said `true`; deferred to a future release when npm provenance build infrastructure is in place)
+> - Node engine: actual requires `>=22.12.0` (plan said `>=22.19.0`)
 
 ## How to Read This Plan
 
@@ -148,11 +160,11 @@ this plan. Each is defended in detail in the linked document.
    `rules/AGENTS.md` inside the npm package and is read at runtime. This
    keeps rules versioned with the package.
 
-7. **Build with `tsc`, same as `@maestria/opencode`.** Pi loads TypeScript
-   via jiti at runtime, so we could ship source. But `tsc` produces `.d.ts`
-   for any user that wants type hints, mirrors the opencode package
-   conventions, and keeps `vp check` working uniformly. The build artifact
-   is small (~10 files, ~500 lines).
+7. **Build with `vp pack` (Rolldown), not `tsc` as planned.** The implementation
+   uses `vp pack` to produce a single `dist/extension.mjs` bundle that Pi's
+   dynamic import can consume directly. `tsc` would require additional module
+   resolution. See ADR-011 for the divergence rationale. The build artifact
+   is a single ~35KB `.mjs` file with sourcemap.
 
 8. **Skills ship for handoff contracts and iteration limits.** These are
    methodology that the specialists reference repeatedly. Bundling them
@@ -197,6 +209,23 @@ this plan. Each is defended in detail in the linked document.
   the opencode permission model; this plan adapts the equivalent
   `tool_call` interception on Pi
 
+## Implementation Milestone
+
+All 8 phases are complete. See [`04-implementation-phases.md`](./04-implementation-phases.md)
+for the updated status table.
+
+| Phase | Description             | Status  | Notes                                                              |
+| ----- | ----------------------- | ------- | ------------------------------------------------------------------ |
+| 0     | Research & Scoping      | ✅ Done | Planning documents                                                 |
+| 1     | Skeleton & Install      | ✅ Done | Package loads, `/fein`/`/sonar`/`/blitz` commands work             |
+| 2     | Global Rules Injection  | ✅ Done | `before_agent_start` injects rules                                 |
+| 3     | Compaction Preservation | ✅ Done | State survives session compaction                                  |
+| 4     | Prompt Templates        | ✅ Done | 8 prompts, 2 skills                                                |
+| 5     | Orchestration Hooks     | ✅ Done | Subagent tool renamed to `maestria_subagent` (collision avoidance) |
+| 6     | Maker/Checker           | ✅ Done | Model cycling + tool_call blocking                                 |
+| 7     | Skills                  | ✅ Done | Handoff + iteration-limits                                         |
+| 8     | Polish & Publish        | ✅ Done | Build via `vp pack` (diverged from plan: `tsc`)                    |
+
 ## Date
 
-2026-06-18
+2026-06-18 (plan drafted), 2026-06-22 (implementation complete)

@@ -1,5 +1,9 @@
 # 07. References
 
+> **Note:** This document was updated post-implementation to include
+> references to the actual source files and community extensions
+> examined. New sections are marked with 🆕.
+
 This document lists every source cited in this plan. It is the
 audit trail for the claims made about Pi, the maestria
 methodology, and the existing `@maestria/opencode` package.
@@ -310,7 +314,74 @@ To verify a citation in this plan:
 If a citation is unclear, find the matching section in
 the relevant document and verify the quote.
 
-## 10. Source-of-Truth Hierarchy
+## 🆕 10. Actual Source Files (Post-Implementation)
+
+The following source files in [`packages/pi/`](../../packages/pi/)
+represent the actual implementation. These supersede the plan's
+design documents.
+
+### 10.1 TypeScript Source Files
+
+| File                                                             | Purpose                                                             |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [`src/extension.ts`](../../packages/pi/src/extension.ts)         | Main entry point — wires event handlers, tools, commands            |
+| [`src/state.ts`](../../packages/pi/src/state.ts)                 | `MaestriaState` interface, CRUD helpers, summary renderer           |
+| [`src/rules.ts`](../../packages/pi/src/rules.ts)                 | `before_agent_start` handler — injects global rules + mode prompts  |
+| [`src/rules-content.ts`](../../packages/pi/src/rules-content.ts) | Generated — bundles `rules/AGENTS.md` as a string constant          |
+| [`src/compaction.ts`](../../packages/pi/src/compaction.ts)       | `session_before_compact` and `session_before_tree` handlers         |
+| [`src/subagent.ts`](../../packages/pi/src/subagent.ts)           | `maestria_subagent` tool registration + handoff validation          |
+| [`src/commands.ts`](../../packages/pi/src/commands.ts)           | `/orchestrate`, `/review`, `/maestria-status` commands              |
+| [`src/tools.ts`](../../packages/pi/src/tools.ts)                 | `tool_call` interceptor — review mode blocking + dangerous patterns |
+| [`src/modes.ts`](../../packages/pi/src/modes.ts)                 | `/fein`, `/sonar`, `/blitz` workflow mode commands                  |
+
+### 10.2 Configuration Files
+
+| File                                                   | Purpose                               |
+| ------------------------------------------------------ | ------------------------------------- |
+| [`package.json`](../../packages/pi/package.json)       | Package manifest, pi entry, peer deps |
+| [`tsconfig.json`](../../packages/pi/tsconfig.json)     | TypeScript config (`noEmit: true`)    |
+| [`vite.config.ts`](../../packages/pi/vite.config.ts)   | Vite+ pack/test task config           |
+| [`rules/AGENTS.md`](../../packages/pi/rules/AGENTS.md) | Source global rules content           |
+
+### 10.3 Test Files
+
+| File                                                                     | Purpose                                         |
+| ------------------------------------------------------------------------ | ----------------------------------------------- |
+| [`tests/state.test.ts`](../../packages/pi/tests/state.test.ts)           | State CRUD, handoff trimming, summary rendering |
+| [`tests/compaction.test.ts`](../../packages/pi/tests/compaction.test.ts) | Compaction summary structure                    |
+| [`tests/tools.test.ts`](../../packages/pi/tests/tools.test.ts)           | Tool-call interceptor logic, dangerous patterns |
+| [`tests/subagent.test.ts`](../../packages/pi/tests/subagent.test.ts)     | Handoff validation, agent name checks           |
+| [`tests/modes.test.ts`](../../packages/pi/tests/modes.test.ts)           | Mode prompt generation                          |
+| [`tests/rules.test.ts`](../../packages/pi/tests/rules.test.ts)           | Rules injection handler behavior                |
+| [`tests/skills.test.ts`](../../packages/pi/tests/skills.test.ts)         | Skill frontmatter validation                    |
+
+### 10.4 Community Extensions Examined 🆕
+
+| Package                              | Purpose                         | Reference                             |
+| ------------------------------------ | ------------------------------- | ------------------------------------- |
+| `@gotgenes/pi-subagents@17.2.0`      | In-process subagent runtime     | `dependencies` in `package.json`      |
+| `pi-subagentura`                     | In-process subagent (smaller)   | Considered, not adopted               |
+| `pi-crew`                            | Multi-agent orchestration       | Deferred to v1.1                      |
+| `@quintinshaw/pi-dynamic-workflows`  | Workflow fan-out                | Deferred to v1.1                      |
+| `@juicesharp/rpiv-pi`                | Skill-based dev workflow        | Considered, not adopted               |
+| `pi-permission-system` (`@gotgenes`) | Configurable policy enforcement | Referenced in plan as optional add-on |
+| `shitty-extensions`                  | Various Pi extension patterns   | Surveyed for patterns                 |
+| Pi example extensions (75+)          | Reference implementations       | See §2.2 in this document             |
+
+### 10.5 Pi API Files Inspected via opensrc
+
+The following files in the Pi source repo were directly inspected
+during implementation:
+
+- `packages/coding-agent/src/core/extensions/types.ts` — `ExtensionAPI`, `ExtensionContext` types
+- `packages/coding-agent/docs/extensions.md` — Event API reference
+- `packages/coding-agent/docs/compaction.md` — Compaction event contract
+- `packages/coding-agent/examples/extensions/subagent/index.ts` — Subprocess subagent pattern
+- `packages/coding-agent/examples/extensions/permission-gate.ts` — Dangerous pattern detection
+- `packages/coding-agent/examples/extensions/tools.ts` — `setActiveTools()` pattern
+- `packages/coding-agent/examples/extensions/custom-compaction.ts` — Custom compaction with model switching
+
+## 11. Source-of-Truth Hierarchy
 
 When sources conflict, the order of authority is:
 

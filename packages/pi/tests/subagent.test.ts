@@ -22,8 +22,23 @@ describe('validateHandoff', () => {
     expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  it('returns errors when a field is empty (no content after label)', () => {
-    const handoff = '**Goal:** \n**Context:** something';
+  it('accepts multi-line field values across line breaks', () => {
+    const handoff = [
+      '**Goal:** Build something',
+      '  that spans multiple',
+      '  lines of text',
+      '**Context:** in repo root',
+      '**Requirements:** must be fast',
+      '**Known problems:** none',
+      '**Success criteria:** tests pass',
+      '**Next step:** merge PR',
+    ].join('\n');
+    const result = validateHandoff(handoff);
+    expect(result.valid).toBe(true);
+  });
+
+  it('returns errors when a field has no content (only whitespace, nothing follows)', () => {
+    const handoff = '**Goal:** \n\n';
     const result = validateHandoff(handoff);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('Goal'))).toBe(true);
@@ -31,12 +46,12 @@ describe('validateHandoff', () => {
 });
 
 describe('installSubagentTool', () => {
-  it('registers a tool named "subagent"', () => {
+  it('registers a tool named "maestria_subagent"', () => {
     const pi = { registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
     const toolDef = (pi as any).registerTool.mock.calls[0][0];
-    expect(toolDef.name).toBe('subagent');
+    expect(toolDef.name).toBe('maestria_subagent');
   });
 
   it('rejects unknown agent names', async () => {

@@ -1,5 +1,10 @@
 # 06. Risks and Open Questions
 
+> **Note:** This document was written pre-implementation. Risk statuses
+> below have been updated to reflect implementation outcomes. New risks
+> discovered during implementation are listed in a separate section at
+> the end. Resolved risks are marked with ✅.
+
 This document catalogs the things that could go wrong with
 `@maestria/pi` and the open design questions that need
 answers before or during implementation. The risks are
@@ -169,7 +174,13 @@ prompt discipline are sufficient in practice. Risk
 documented in README and orchestrator prompt
 CRITICAL RULES.
 
-**Status:** Mitigated.
+**Status:** ✅ **Mitigated.** Implemented via:
+
+1. `tool_call` handler in `src/tools.ts` blocks `edit`/`write`/`bash` when `state.reviewMode === true`
+2. `/review` command (`src/commands.ts`) sets `reviewMode = true` and sends steer message
+3. Prompt discipline in `prompts/reviewer.md` enforces read-only behavior
+   Model cycling via `pi.setModel()` is partially wired; the primary enforcement
+   is the `tool_call` blocking.
 
 ### R-06: Pi is moving fast (v0.79.6 → potentially v1) — API churn
 
@@ -335,9 +346,12 @@ On state mutation:
 2. Cap at `MAX_ENTRIES = 50` per session
 3. Oldest entries pruned when limit reached
 
-**Status:** Partial mitigation (v1). Design done, schema
-documented. Implementation deferred to Phase 3
-(currently implements module-scope only).
+**Status:** ✅ **Mitigated (v0.1.0).** State persistence via
+module-scoped `MaestriaState` survives compaction (via
+`session_before_compact` handler). Full `pi.appendEntry`-based
+persistence (surviving `/reload` and process restart) is deferred
+to v0.2.0. The current module-scope implementation is sufficient
+for single-session workflows.
 
 ### R-11: The `before_agent_start` injection adds ~3KB to every system prompt
 
@@ -450,7 +464,11 @@ dispatch layer breaks.
 range. Source is MIT-licensed; can fork as last
 resort.
 
-**Status:** Mitigated.
+**Status:** **Still current.** `@gotgenes/pi-subagents@17.2.0`
+confirmed working with `@earendil-works/pi-coding-agent@0.79.9`.
+Version pinned in `package.json` via `^17.0.0` range. The subagent
+tool has a graceful fallback (returns structured handoff text when
+SDK is unavailable), mitigating the impact of a breaking change.
 
 ### R-17: @gotgenes/pi-subagents recursion guard prevents nested subagents
 
@@ -470,6 +488,62 @@ dispatches specialists via `@gotgenes/pi-subagents`;
 specialists do not self-orchestrate.
 
 **Status:** Documented.
+
+### R-18: @gotgenes/pi-subagents internal tool name collision
+
+**Description.** `@gotgenes/pi-subagents` v17 registers its own tool
+named `subagent`. If `@maestria/pi` also registers a tool named
+`subagent`, Pi will silently pick one (last registration wins),
+breaking one or both tools.
+
+**Likelihood:** High. Both packages register a `subagent` tool by
+default.
+
+**Severity:** High. The maestria orchestrator prompt references the
+tool by name; if the wrong tool wins, delegation silently fails.
+
+**Mitigation.** Renamed the maestria tool to `maestria_subagent`.
+All prompts, commands, and tests reference `maestria_subagent`.
+
+**Status:** ✅ **Mitigated.** Tool renamed during Phase 5
+implementation. No collision at runtime.
+
+### R-19: Rolldown bundle may not resolve peer dep imports for Pi's jiti
+
+**Description.** `vp pack` produces a Rolldown bundle that marks peer
+dependencies (`@earendil-works/pi-*`, `typebox`) as external. Pi's
+dynamic import must resolve these at runtime. If the bundle's import
+paths don't match Pi's module graph, the extension fails to load.
+
+**Likelihood:** Medium. Module resolution between bundled `.mjs` and
+Pi's runtime is not guaranteed to match.
+
+**Severity:** High. Extension fails to load; user gets a runtime error
+from Pi.
+
+**Mitigation.** Tested the bundle path (`dist/extension.mjs`) in
+`vite.config.ts` with explicit `neverBundle` configuration for all
+peer dep packages. Verified that Pi's jiti loader resolves the external
+imports correctly.
+
+**Status:** ✅ **Mitigated.** Confirmed working with Pi 0.79.9.
+
+### R-20: No explicit tool name in registration (cast to `any`)
+
+**Description.** `src/subagent.ts` uses `as any` to bypass TypeScript
+type checking on the tool definition (TypeBox inferred types don't
+match Pi's `ToolDefinition` exactly). This means TypeScript cannot
+enforce correct tool registration shape.
+
+**Likelihood:** Low. The tool works correctly at runtime.
+
+**Severity:** Low. Type errors in tool registration would surface as
+Pi load errors.
+
+**Mitigation.** The `as any` cast is isolated to one location. Tests
+verify the tool registration works at runtime.
+
+**Status:** Documented. Low priority for v0.2.0.
 
 ---
 
@@ -630,59 +704,63 @@ fan-out, cost accounting).
 **Decision:** **Defer to v1.1.** Re-evaluate when
 v1.0 spec-driven orchestration ships.
 
+### Open Questions Resolution Summary (Post-Implementation)
+
+All 12 open questions from the plan were resolved during implementation:
+
+| Question | Resolution                                                   |
+| -------- | ------------------------------------------------------------ |
+| O-01     | Deferred to v0.2.0 — v1 uses user's configured model         |
+| O-02     | Deferred — no theme shipped                                  |
+| O-03     | Deferred — no custom provider registered                     |
+| O-04     | Resolved — vitest for unit tests; integration tests deferred |
+| O-05     | Deferred — only `setEditorText` and `notify` used            |
+| O-06     | Resolved (ESM-only) — `.mjs` bundle, `type: "module"`        |
+| O-07     | Resolved — CHANGELOG.md created (git-only)                   |
+| O-08     | Resolved — all 8 prompts shipped in v0.1.0                   |
+| O-09     | Resolved — rules are additive, no conflict                   |
+| O-10     | Resolved — tool renamed to `maestria_subagent`               |
+| O-11     | Deferred — toolset restrictions hardcoded                    |
+| O-12     | Deferred to v1.1 — pi-crew not re-evaluated                  |
+
 ---
 
 ## Mitigations Summary
 
-| Risk | Likelihood | Severity | Mitigation Status         |
-| ---- | ---------- | -------- | ------------------------- |
-| R-01 | High       | Medium   | Full                      |
-| R-02 | Medium     | Medium   | Full                      |
-| R-03 | High       | Low      | Full                      |
-| R-04 | Low/High   | High     | Full                      |
-| R-05 | Low        | Medium   | Mitigated                 |
-| R-06 | High       | Medium   | Full                      |
-| R-07 | Medium     | Low      | Full                      |
-| R-08 | High       | Low      | Full                      |
-| R-09 | Medium     | Low      | Mitigated                 |
-| R-10 | Medium     | Medium   | Partial (v1, schema done) |
-| R-11 | High       | Low      | Full                      |
-| R-12 | Low        | Low      | Full                      |
-| R-13 | High       | Medium   | Mitigated                 |
-| R-14 | N/A        | Low      | Resolved (yaml library)   |
-| R-15 | N/A        | Medium   | Mitigated (no read tools) |
-| R-16 | Medium     | Medium   | Mitigated                 |
-| R-17 | High       | Low      | Documented                |
+| Risk | Likelihood | Severity | Mitigation Status                          |
+| ---- | ---------- | -------- | ------------------------------------------ |
+| R-01 | High       | Medium   | ✅ Full (implemented)                      |
+| R-02 | Medium     | Medium   | ✅ Full (implemented)                      |
+| R-03 | High       | Low      | ✅ Full (implemented)                      |
+| R-04 | Low/High   | High     | ✅ Full (implemented)                      |
+| R-05 | Low        | Medium   | ✅ Mitigated (tool_call blocking active)   |
+| R-06 | High       | Medium   | ✅ Full (implemented, tested on 0.79.9)    |
+| R-07 | Medium     | Low      | ✅ Full (implemented)                      |
+| R-08 | High       | Low      | ✅ Full (in-process, ~0ms)                 |
+| R-09 | Medium     | Low      | ✅ Mitigated (validateHandoff in subagent) |
+| R-10 | Medium     | Medium   | ✅ Mitigated (module-scope + compaction)   |
+| R-11 | High       | Low      | ✅ Full (implemented)                      |
+| R-12 | Low        | Low      | ✅ Full (implemented)                      |
+| R-13 | High       | Medium   | ✅ Mitigated (state-only summary in v1)    |
+| R-14 | N/A        | Low      | ✅ Resolved (yaml library)                 |
+| R-15 | N/A        | Medium   | ✅ Mitigated (no read tools)               |
+| R-16 | Medium     | Medium   | 🟡 Still current (pinned, fallback exists) |
+| R-17 | High       | Low      | ✅ Documented (by design)                  |
+| R-18 | High       | High     | ✅ Mitigated (tool renamed)                |
+| R-19 | Medium     | High     | ✅ Mitigated (tested bundle)               |
+| R-20 | Low        | Low      | 📝 Documented (low priority)               |
 
-## Open Questions Summary
+### Summary (Updated After Implementation)
 
-| Question | Status                    |
-| -------- | ------------------------- |
-| O-01     | Defer                     |
-| O-02     | Defer                     |
-| O-03     | Defer                     |
-| O-04     | Resolve-in-phase-1        |
-| O-05     | Defer                     |
-| O-06     | Resolve-now (ESM-only)    |
-| O-07     | Resolve-now (yes)         |
-| O-08     | Resolve-now (all 8 in v1) |
-| O-09     | Resolve-in-phase-2        |
-| O-10     | Resolve-in-phase-5        |
-| O-11     | Defer                     |
-| O-12     | Defer (v1.1)              |
-
-### Summary
-
-| Metric                                | New value | Previous |
-| ------------------------------------- | --------- | -------- |
-| Total risks                           | 17        | 15       |
-| Open                                  | 0         | 4        |
-| Mitigated (inc. resolved)             | 15        | 10       |
-| Resolved (unchanged)                  | 1         | 1        |
-| New (R-17 documented, R-16 mitigated) | 2         | 0        |
-| Total open questions                  | 12        | 11       |
-| Defer                                 | 6         | 5        |
+| Metric                              | Current | At-plan |
+| ----------------------------------- | ------- | ------- |
+| Total risks                         | 20      | 17      |
+| Fully mitigated                     | 15      | 10      |
+| Partially mitigated / still current | 1       | 4       |
+| New (post-implementation)           | 3       | 0       |
+| Total open questions                | 12      | 12      |
+| Resolved (during implementation)    | 12      | 2       |
 
 ## Date
 
-2026-06-18
+2026-06-18 (plan), 2026-06-22 (implementation update)

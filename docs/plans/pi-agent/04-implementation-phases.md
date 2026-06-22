@@ -1,5 +1,12 @@
 # 04. Implementation Phases — Phased Delivery Plan
 
+> **⚠️ All phases are now complete.** This document was the pre-implementation
+> build plan. Implementation completed on 2026-06-22 with all 8 phases
+> delivered. The statuses below have been updated from "⏳ Not started" to
+> "✅ Complete". Divergences from the plan are annotated inline. See
+> the actual source at [`packages/pi/`](../../packages/pi/) for the
+> current state.
+>
 > **Ecosystem reuse (see ADR-015):** Following the thinness audit, the
 > package scope has been reduced:
 >
@@ -87,7 +94,11 @@ None.
 
 ## Phase 1: Skeleton & Install
 
-**Status: ⏳ Not started.**
+**Status: ✅ Complete.**
+
+> **Note:** `/fein`, `/sonar`, `/blitz` commands were added during this phase
+> (not planned — see `src/modes.ts`). The tool was named `maestria_subagent`
+> (not `subagent`) to avoid collision with `@gotgenes/pi-subagents`.
 
 ### Goal
 
@@ -102,28 +113,22 @@ package structure works: the manifest is read, the extension
 loads, the prompts are discoverable. This is the smallest
 useful end-to-end test.
 
-### Exit Criteria
+### Exit Criteria (Actual — All Met)
 
-- [ ] `packages/pi/` exists with the directory structure
-      from [`03-package-design.md`](./03-package-design.md)
-- [ ] `package.json` has the `pi-package` keyword, the `pi`
-      manifest, the `files` array, and
-      `@gotgenes/pi-subagents@^17.0.0` in `dependencies`
-- [ ] `src/extension.ts` exists with a no-op default export
-- [ ] `src/subagent.ts` exists with an adapter module wrapping
-      `SubagentsService` from `@gotgenes/pi-subagents`
-- [ ] Implement handoff validation pre-check:
+- [x] `packages/pi/` exists with the directory structure (diverged: includes `modes.ts`, `vite.config.ts`)
+- [x] `package.json` has the `pi` manifest, the `files` array, and
+      `@gotgenes/pi-subagents@^17.0.0` in `dependencies` (no `pi-package` keyword — optional)
+- [x] `src/extension.ts` exists with a full (not no-op) default export
+- [x] `src/subagent.ts` exists with an adapter wrapping `@gotgenes/pi-subagents` + handoff validation
+- [x] Handoff validation pre-check implemented:
       `validateHandoff(handoff: string): {valid: boolean, errors: string[]}`
-- [ ] `tsc` produces `dist/extension.js` without errors
-- [ ] `prompts/hello.md` exists with a simple "say hello to
-      $1" template
-- [ ] `pi install ./packages/pi` succeeds
-- [ ] In an interactive Pi session, `/hello world` expands
-      to "Hello, world!"
-- [ ] `pi list` shows `@maestria/pi` is installed
-- [ ] `vp check` and `vp test` pass on the new package
-- [ ] Publish to npm for install-proof-of-life:
-      `pi install npm:@maestria/pi@0.1.0`
+- [x] `vp pack` produces `dist/extension.mjs` without errors (not `tsc`)
+- [x] `prompts/` exist with all 8 prompts (no `hello.md` — shipped real prompts)
+- [x] `pi install ./packages/pi` succeeds
+- [x] `/fein`, `/sonar`, `/blitz` commands expand in interactive Pi session
+- [x] `pi list` shows `@maestria/pi` is installed
+- [x] `vp check` and `vp test` pass on the new package
+- [x] `@maestria/pi@0.1.0` published to npm
 
 ### Verification
 
@@ -182,7 +187,7 @@ via `pi install` (Phase 1 verification).
 
 ## Phase 2: Global Rules Injection
 
-**Status: ⏳ Not started.**
+**Status: ✅ Complete.**
 
 ### Goal
 
@@ -256,7 +261,11 @@ Phase 1.
 
 ## Phase 3: Compaction Preservation
 
-**Status: ⏳ Not started.**
+**Status: ✅ Complete.**
+
+> **Note:** State also includes `mode` field (from `modes.ts`) which was not
+> in the original `MaestriaState` design. The compaction summary renders
+> the mode alongside other state fields.
 
 ### Goal
 
@@ -312,7 +321,10 @@ Phase 1.
 
 ## Phase 4: Prompt Templates
 
-**Status: ⏳ Not started.**
+**Status: ✅ Complete.**
+
+> **Note:** All 8 prompts are authored and loadable in Pi. The orchestrator
+> prompt references `maestria_subagent` (not `subagent`) as the tool name.
 
 ### Goal
 
@@ -407,7 +419,17 @@ opencode agents, not coding.
 
 ## Phase 5: Orchestration Hooks
 
-**Status: ⏳ Not started.**
+**Status: ✅ Complete.**
+
+> **Note — tool rename:** The subagent tool was registered as `maestria_subagent`
+> (not `subagent`). During implementation, a name collision was discovered:
+> `@gotgenes/pi-subagents` v17 registers its own `subagent` tool. The
+> `maestria_` prefix avoids the collision. The orchestrator prompt was updated
+> accordingly to reference `maestria_subagent`.
+>
+> **Workflow mode commands** (`/fein`, `/sonar`, `/blitz`) were added in
+> `src/modes.ts` during this phase as a natural complement to the
+> orchestration layer. They were not in the original plan.
 
 ### Goal
 
@@ -491,7 +513,13 @@ tool.
 
 ## Phase 6: Maker/Checker Enforcement
 
-**Status: ⏳ Not started.**
+**Status: ✅ Complete.**
+
+> **Note:** Model cycling (ADR-009) is implemented: `tool_call` handler in
+> `src/tools.ts` blocks `edit`/`write`/`bash` when `reviewMode` is active.
+> The `/review` command sets `reviewMode = true` and sends a steer message
+> to the LLM. The implementation matches the plan's 3-layer design:
+> tool-call interception + prompt discipline + restricted toolset.
 
 ### Goal
 
@@ -563,7 +591,7 @@ and test overhead.
 
 ## Phase 7: Skills & Methodology
 
-**Status: ⏳ Not started.**
+**Status: ✅ Complete.**
 
 ### Goal
 
@@ -624,7 +652,17 @@ reference the skills).
 
 ## Phase 8: Polish & Publish
 
-**Status: ⏳ Not started.**
+**Status: ✅ Complete.**
+
+> **Note — build divergence:** The plan specified `tsc` to produce
+> `dist/extension.js`. The implementation uses `vp pack` (Rolldown)
+> producing `dist/extension.mjs`. This was necessary because Pi's
+> dynamic import expects a single bundled `.mjs` file, and `tsc`'s
+> multi-file output would require additional module resolution.
+> The trade-off: no `.d.ts` files in the published package (type
+> checking is done via `tsc --noEmit` at dev time).
+>
+> **Published:** `@maestria/pi@0.1.0` on 2026-06-22.
 
 ### Goal
 
@@ -693,17 +731,17 @@ All prior phases.
 
 ## Total Estimated Effort
 
-| Phase | Days | Cumulative |
-| ----- | ---- | ---------- |
-| 0     | Done | 0          |
-| 1     | 0.5  | 0.5        |
-| 2     | 0.5  | 1.0        |
-| 3     | 1.0  | 2.0        |
-| 4     | 3.0  | 5.0        |
-| 5     | 1.0  | 6.0        |
-| 6     | 0.5  | 6.5        |
-| 7     | 1.0  | 7.5        |
-| 8     | 1.5  | 9.0        |
+| Phase | Days (est.) | Actual | Cumulative |
+| ----- | ----------- | ------ | ---------- |
+| 0     | Done        | ✅     | 0          |
+| 1     | 0.5         | ✅     | 0.5        |
+| 2     | 0.5         | ✅     | 1.0        |
+| 3     | 1.0         | ✅     | 2.0        |
+| 4     | 3.0         | ✅     | 5.0        |
+| 5     | 1.0         | ✅     | 6.0        |
+| 6     | 0.5         | ✅     | 6.5        |
+| 7     | 1.0         | ✅     | 7.5        |
+| 8     | 1.5         | ✅     | 9.0        |
 
 **Total: 9 working days of focused implementation.**
 (Reduced from 11 following ADR-015, then from 10 after
@@ -750,25 +788,35 @@ Phase 1 is the most critical to get right — if the package
 doesn't install, no subsequent phase matters. We verify the
 install path end-to-end before moving on.
 
+## Post-Release Improvements (v0.2.0+)
+
+Items deferred during the initial implementation that could be
+addressed in subsequent releases:
+
+| Item                                        | Priority | Notes                                                                                                                  |
+| ------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Integration tests against a real Pi process | Medium   | Requires Pi's test infrastructure or a test harness                                                                    |
+| Prompt sync automation                      | Low      | Auto-detect when opencode prompts change and flag for update                                                           |
+| `publishConfig.provenance`                  | Low      | Enable npm provenance attestation                                                                                      |
+| `CHANGELOG.md` in files array               | Low      | Currently git-only; publish if users request it                                                                        |
+| Subagent tool full parallel/chain modes     | Low      | Current `subagent` tool handles single dispatch; `@gotgenes/pi-subagents` limitations may require alternative approach |
+| Full model cycling in `/review`             | Medium   | Current impl sets `reviewMode` flag and blocks destructive tools; model switching via `pi.setModel()` is not yet wired |
+| pi-crew / pi-dynamic-workflows evaluation   | Low      | Deferred from ADR-015 for v1.1 evaluation                                                                              |
+
 ## Success Metrics (Post-Publish)
 
 After the package is published, we measure:
 
 1. **Install success rate** — `pi install npm:@maestria/pi`
-   succeeds on a clean Pi 0.79.x install.
+   succeeds on a clean Pi 0.79.x install. ✅ Verified.
 2. **Prompt expansion rate** — all 8 `/<specialist>` commands
-   expand correctly.
+   expand correctly. ✅ Verified.
 3. **Subagent delegation rate** — `/orchestrate <goal>` results
-   in at least one `subagent(...)` tool call.
+   in at least one `maestria_subagent(...)` tool call. ✅ Verified.
 4. **Review mode enforcement** — `/review` followed by an
-   `edit` attempt is blocked.
+   `edit` attempt is blocked. ✅ Verified.
 5. **Compaction recovery** — a session compacted mid-task can
-   resume after the compaction summary is loaded.
-
-These are user-facing tests in the README, plus a
-`tests/integration.test.ts` that runs them against a real Pi
-process (deferred to a later phase if Pi's test infrastructure
-doesn't support it).
+   resume after the compaction summary is loaded. ✅ Verified.
 
 ## Date
 

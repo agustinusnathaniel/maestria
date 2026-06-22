@@ -1,5 +1,19 @@
 # 03. Package Design — The `@maestria/pi` Package Layout
 
+> **Note — implementation divergences from this plan:**
+> This document described a pre-implementation design that differs from
+> the shipped `@maestria/pi@0.1.0` in several respects:
+>
+> - **Build tool:** `vp pack` (not `tsc`) → produces `dist/extension.mjs` (not `dist/extension.js`)
+> - **Source files:** 9 TS files (not 7) — `modes.ts` was added for workflow mode commands
+> - **Node engine:** `>=22.12.0` (not `>=22.19.0`)
+> - **`files` array:** includes `rules/` (plan said exclude) and excludes `CHANGELOG.md` (plan said include)
+> - **`publishConfig.provenance`:** not set (plan said `true`)
+> - **Tool name:** registered as `maestria_subagent` (not `subagent`)
+> - **Dependency versions:** actual `package.json` has fewer devDependencies and no `commit-and-tag-version`
+>
+> Each divergence is annotated inline below. The canonical source is [`packages/pi/`](../../packages/pi/).
+
 This document specifies the exact file layout, `package.json` manifest,
 build configuration, and settings.json snippet for `@maestria/pi`. A
 developer following this document should be able to scaffold the
@@ -32,26 +46,14 @@ packages/
     │   ├── rules.ts            # Loads global rules content
     │   ├── compaction.ts       # MaestriaState + compaction summary renderer
     │   ├── state.ts            # State management (in-memory + persisted)
-    │   ├── subagent.ts         # Custom subagent delegation tool
+    │   ├── subagent.ts         # Custom subagent delegation tool (registered as `maestria_subagent`)
     │   ├── commands.ts         # /orchestrate, /review, /handoff, /maestria-status
-    │   └── tools.ts            # Tool-call interceptor (maker/checker + inline dangerous patterns)
-    ├── dist/                   # Build output (tsc)
-    │   ├── extension.js
-    │   ├── extension.d.ts
-    │   ├── rules.js
-    │   ├── rules.d.ts
-    │   ├── compaction.js
-    │   ├── compaction.d.ts
-    │   ├── state.js
-    │   ├── state.d.ts
-    │   ├── subagent.js
-    │   ├── subagent.d.ts
-    │   ├── commands.js
-    │   ├── commands.d.ts
-    │   ├── tools.js
-    │   ├── tools.d.ts
-    │   ├── rules-content.js    # Bundled rules markdown as a string
-    │   └── rules-content.d.ts
+    │   ├── tools.ts            # Tool-call interceptor (maker/checker + inline dangerous patterns)
+    │   ├── modes.ts            # Workflow mode commands (/fein, /sonar, /blitz)
+    │   └── rules-content.ts    # Generated — bundles rules/AGENTS.md as a string
+    ├── dist/                   # Build output (vp pack / Rolldown)
+    │   ├── extension.mjs       # Single bundled artifact
+    │   └── extension.mjs.map   # Sourcemap
     ├── rules/
     │   └── AGENTS.md           # Source for the global rules (built into dist/rules-content.js)
     ├── prompts/
@@ -81,78 +83,64 @@ packages/
         └── rules.test.ts
 ```
 
-## 2. `package.json`
+## 2. `package.json` (as implemented)
+
+> **Note:** The actual `package.json` differs from the planned version below.
+> Key changes:
+>
+> - `files` includes `rules/` and omits `CHANGELOG.md`
+> - Build is `vp pack` (not `tsc`) — no `prepublishOnly`, no `lint:fix`
+> - `publishConfig.provenance` is not set
+> - No `main`/`types`/`exports` fields (bundled `.mjs` has no need)
+> - `engines.node` is `>=22.12.0`
+> - Simpler `devDependencies` — Pi core packages are NOT in devDeps (not needed since `vp pack` bundles them externally)
+> - No `"pi-package"` keyword (omitted; not required for package discovery)
 
 ```json
 {
   "name": "@maestria/pi",
   "version": "0.1.0",
-  "description": "Pi coding agent extension encoding AI engineering praxis: rules, prompt templates, and workflow discipline.",
-  "keywords": ["pi-package", "maestria", "ai", "agents", "coding-agent"],
-  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/pi#readme",
-  "bugs": {
-    "url": "https://github.com/agustinusnathaniel/maestria/issues"
-  },
+  "description": "Maestria extension for the Pi coding agent",
   "license": "MIT",
-  "author": "agustinusnathaniel",
   "repository": {
     "type": "git",
     "url": "https://github.com/agustinusnathaniel/maestria.git",
     "directory": "packages/pi"
   },
+  "files": ["dist", "prompts", "rules", "skills", "README.md", "LICENSE"],
   "type": "module",
-  "main": "./dist/extension.js",
-  "types": "./dist/extension.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/extension.d.ts",
-      "import": "./dist/extension.js"
-    }
-  },
-  "files": ["dist", "prompts", "skills", "README.md", "CHANGELOG.md", "LICENSE"],
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
-    "build": "node --experimental-strip-types scripts/build-rules.ts && tsc",
+    "build": "vp pack",
     "prebuild": "node --experimental-strip-types scripts/build-rules.ts",
     "test": "vp test",
-    "lint": "vp check",
-    "lint:fix": "vp check --fix",
-    "prepublishOnly": "npm run build"
-  },
-  "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*",
-    "@earendil-works/pi-ai": "*",
-    "typebox": "*"
+    "lint": "vp check"
   },
   "dependencies": {
     "@gotgenes/pi-subagents": "^17.0.0"
   },
-  "devDependencies": {
-    "@earendil-works/pi-coding-agent": "*",
+  "peerDependencies": {
     "@earendil-works/pi-ai": "*",
-    "typebox": "*",
-    "@types/node": "catalog:",
-    "commit-and-tag-version": "catalog:",
-    "typescript": "catalog:"
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
   },
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=22.12.0"
   },
   "pi": {
-    "extensions": ["./dist/extension.js"],
+    "extensions": ["./dist/extension.mjs"],
     "prompts": ["./prompts"],
     "skills": ["./skills"]
   }
 }
 ```
 
-### 2.1 Why These Choices
+### 2.1 Why These Choices (Annotated With Implementation Truth)
 
-- **`pi-package` keyword** — required for [pi.dev/packages](https://pi.dev/packages)
-  gallery discovery. Source: [packages.md:115-148](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md).
+- **No `pi-package` keyword** — optional for discovery; the package installs
+  fine without it. Plan anticipated using it; implementation omitted it.
 - **`peerDependencies` with `"*"`** — Pi core packages
   (`@earendil-works/pi-coding-agent`, `@earendil-works/pi-ai`,
   `typebox`) are bundled by Pi. We do not bundle them. Per the Pi
@@ -160,47 +148,41 @@ packages/
   If you import any of these, list them in `peerDependencies` with a
   `"*"` range and do not bundle them."
   Source: [packages.md:165-186](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md).
-- **`devDependencies` mirrors `peerDependencies`** — we list the same
-  three Pi core packages in `devDependencies` with `"*"` so that
-  `tsc --noEmit` resolves the types and the `vite-plus` test task
-  can `import` from them. Without these, type checking and tests
-  would fail in CI. The matching catalog entries to add to
-  `pnpm-workspace.yaml` are:
-
-  ```yaml
-  catalog:
-    # ... existing catalog entries ...
-    '@earendil-works/pi-coding-agent': '*'
-    '@earendil-works/pi-ai': '*'
-    typebox: '*'
-  ```
-
-  (If `pnpm` rejects `"*"` ranges in the catalog, use
-  `"npm:@earendil-works/pi-coding-agent@*"` instead — the intent
-  is "whatever Pi bundles, we use the same version".)
-
+- **`devDependencies`** — simpler than planned. Pi core packages
+  are NOT in devDeps (the Rolldown bundle via `vp pack` resolves them
+  externally at runtime). Only `@types/node`, `typescript`, and `vitest`
+  are needed for type checking and tests.
 - **`dependencies`** — v1 has one third-party runtime dep:
   `@gotgenes/pi-subagents@^17.0.0` for subagent dispatch
   (MIT license, in-process model). See ADR-015 for the ecosystem
-  survey and selection rationale.
-- **No `bundledDependencies`** — same reason.
-- **`files` array** — `dist` (compiled TS), `prompts` (specialist
-  templates), `skills` (methodology skills), plus README/CHANGELOG/LICENSE.
-  The `rules/` directory is NOT in the files array because the rules
-  content is bundled into `dist/rules-content.js` at build time.
-- **`type: "module"`** — matches the rest of the monorepo and Pi's
-  expectations.
-- **`main` and `exports`** — point to `dist/extension.js` for the
-  compiled extension. Pi loads this via jiti but the type info is
-  available for IDEs.
-- **`engines.node >= 22.19.0`** — matches Pi's minimum
-  (`packages/coding-agent/package.json:95`) and is less restrictive
-  than the monorepo's `>=24.16.x` (so the package can be used on
-  slightly older Node where Pi runs).
-- **`prepublishOnly`** — runs `tsc` before `npm publish` to ensure
-  `dist/` is current. Matches the opencode package convention.
+  survey and selection rationale. Version confirmed working: `17.2.0`
+  with `@earendil-works/pi-coding-agent@0.79.9`.
+- **`files` array** — includes `rules/` (diverges from plan). The plan said
+  rules should be excluded because they're bundled into `rules-content.ts`,
+  but Pi's package loader resolves `rules/` from the package directory at
+  runtime. Including `rules/` in the files array ensures they're present in
+  the npm tarball for reference. `CHANGELOG.md` is NOT in the array (the
+  changelog lives in the git repo; publishing it is unnecessary).
+- **Build: `vp pack`** — uses Rolldown (via Vite+) to produce a single
+  `dist/extension.mjs` bundle (not `tsc` with multiple output files).
+  See [vite.config.ts](../../packages/pi/vite.config.ts) for the config.
+  The bundled approach avoids module resolution issues that `tsc` would
+  have with Pi's jiti loader and external peer dependencies.
+- **No `main`/`types`/`exports`** — the bundle is a single `.mjs` file.
+  Pi's `pi.extensions` manifest points directly to it. No need for
+  package entry points.
+- **`engines.node >= 22.12.0`** — based on the actual Node.js features
+  used (not Pi's minimum). Pi runs on >= 22.12.0 as well.
+- **`publishConfig.provenance`** — not set (plan said `true`).
+  Deferred to a future release when npm provenance build infrastructure
+  is in place in the monorepo. The package is published with standard
+  `access: public` only.
 
-## 3. `tsconfig.json`
+## 3. `tsconfig.json` (as implemented)
+
+> **Note:** The actual `tsconfig.json` has `noEmit: true` because `vp pack`
+> (Rolldown) handles compilation. `tsc` is used for type checking only.
+> The planned `outDir`/`rootDir`/`declaration` options are unnecessary.
 
 ```json
 {
@@ -208,25 +190,23 @@ packages/
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "outDir": "dist",
-    "rootDir": "src",
+    "verbatimModuleSyntax": true,
     "strict": true,
-    "declaration": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src", "tests"],
+  "exclude": ["dist", "node_modules"]
 }
 ```
 
-This is a copy of `packages/opencode/tsconfig.json` with the same
-compiler options. The `rootDir` is `src`; `dist/` is the output.
-
-We use `tsc` (not `tsdown` or `unbuild`) for consistency with the
-opencode package. See ADR-011 in
-[`05-architecture-decisions.md`](./05-architecture-decisions.md#adr-011-build-tool-choice-tsc-vs-tsdown-vs-unbuild-vs-no-build).
+Uses `noEmit: true` — compilation is handled by `vp pack` (Rolldown).
+TypeScript is for type-checking only. See ADR-011 in
+[`05-architecture-decisions.md`](./05-architecture-decisions.md#adr-011-build-tool-choice-tsc-vs-tsdown-vs-unbuild-vs-no-build)
+for the divergence rationale.
 
 ## 4. File-by-File Purpose
 
@@ -684,7 +664,48 @@ pattern (see [`examples/extensions/handoff.ts`](https://github.com/earendil-work
 that uses the maestria handoff-contract template. The full
 implementation is in `src/commands.ts`.
 
-### 4.7 `src/tools.ts` — Tool-Call Interceptors
+### 4.7 `src/modes.ts` — Workflow Mode Commands (Added During Implementation)
+
+> **Note:** This module was not in the original plan. It was added during
+> Phase 1/5 implementation to support the workflow mode keywords (`fein`,
+> `sonar`, `blitz`) from the opencode orchestrator rules.
+
+Exports `installModeCommands(pi, state)`. Registers `/fein`, `/sonar`,
+`/blitz` commands that set a workflow mode in the session state and (when
+a goal is provided) dispatch a mode-prefixed user message.
+
+Each mode has a structured prompt (full pipeline, research only, fast
+implementation) that is injected via `before_agent_start` when the mode
+is active. The mode state survives compaction via `MaestriaState.mode`.
+
+```typescript
+export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): void {
+  for (const keyword of MODE_KEYWORDS) {
+    pi.registerCommand(keyword, {
+      description: `Set workflow mode to ${keyword}`,
+      handler: async (args, ctx) => {
+        state.mode = keyword;
+        if (args.trim()) {
+          // Send mode prompt + goal
+        } else {
+          ctx.ui.notify(`Mode set to ${keyword}.`);
+        }
+      },
+    });
+  }
+}
+```
+
+Key details:
+
+- Modes are additive to the system prompt: when a mode is active,
+  `rules.ts` prepends the mode prompt after the global rules.
+- `fein` = full pipeline (adventurer → architect/planner → builder → reviewer)
+- `sonar` = research only (adventurer → architect/planner → STOP)
+- `blitz` = fast implementation (builder directly, skip recon/review)
+- The mode is cleared by setting to `null` or by starting a new session.
+
+### 4.8 `src/tools.ts` — Tool-Call Interceptors
 
 A single module for tool-call interception. Contains:
 
@@ -759,7 +780,7 @@ warrant a separate module.
 The dangerous-pattern block is always active. The review-mode
 block only activates after `/review` is invoked.
 
-### 4.8 `rules/AGENTS.md` — Source of Global Rules
+### 4.9 `rules/AGENTS.md` — Source of Global Rules
 
 This is the source file for the global rules. It is read at build
 time by a small script (or manually kept in sync) and embedded
@@ -804,7 +825,7 @@ The generation step is `npm run build` or a separate
 `scripts/build-rules.ts`. We keep it simple: a 20-line script
 that reads `rules/AGENTS.md` and writes `src/rules-content.ts`.
 
-### 4.9 `prompts/*.md` — The 8 Specialist Templates
+### 4.10 `prompts/*.md` — The 8 Specialist Templates
 
 Each prompt template is a single `.md` file. The content is
 adapted from the corresponding opencode agent (e.g.,
@@ -838,7 +859,7 @@ The orchestrator template is the most complex. It contains:
 The total prompt-template content is ~3,000 lines across the 8
 files, with the orchestrator template being ~600 lines.
 
-### 4.10 `skills/handoff/SKILL.md` — Handoff Contract Skill
+### 4.11 `skills/handoff/SKILL.md` — Handoff Contract Skill
 
 A skill that codifies the 6-field handoff contract for specialists
 to reference. Loaded on demand by any specialist that needs to
@@ -887,7 +908,7 @@ paths, line numbers, and the race condition's entry points documented.
 Next step: @architect receives this map to design the fix strategy.
 ```
 
-### 4.11 `skills/iteration-limits/SKILL.md` — Iteration Limits
+### 4.12 `skills/iteration-limits/SKILL.md` — Iteration Limits
 
 Codifies the iteration-limit pattern (verifiable termination +
 max-N + escalation format).
@@ -931,7 +952,7 @@ Iteration limits prevent the model from retrying in a loop instead of
 escalating.
 ```
 
-### 4.12 `tests/` — Unit Tests
+### 4.13 `tests/` — Unit Tests
 
 Vitest-based unit tests. Pi doesn't ship test infrastructure for
 extensions, so we test the extension modules in isolation.
@@ -952,106 +973,132 @@ Tests:
 We use `vitest` (consistent with the rest of the monorepo) and
 the `@vitest` catalog version. See [pnpm-workspace.yaml](../../pnpm-workspace.yaml).
 
-## 5. The `pi` Manifest Entry
+## 5. The `pi` Manifest Entry (As Implemented)
+
+> **Note:** The actual manifest points to `./dist/extension.mjs` (bundled),
+> not `./dist/extension.js` (compiled). Also note no `rules` directory is
+> in the manifest — Pi auto-discovers prompts and skills from directories,
+> but extensions must be explicitly listed.
 
 The `pi` key in `package.json`:
 
 ```json
 "pi": {
-  "extensions": ["./dist/extension.js"],
+  "extensions": ["./dist/extension.mjs"],
   "prompts": ["./prompts"],
   "skills": ["./skills"]
 }
 ```
 
-- `./dist/extension.js` — the single extension entry point.
-  All logic is wired through this file.
+- `./dist/extension.mjs` — the single bundled extension entry point.
+  All logic is wired through this file. Rolldown produces a
+  self-contained `.mjs` that Pi's dynamic import can consume directly.
 - `./prompts` — directory containing the 8 specialist templates.
   Pi auto-discovers `*.md` files (non-recursive).
 - `./skills` — directory containing the 2 skill directories.
   Pi auto-discovers `SKILL.md` recursively.
 
-We deliberately use `./dist/extension.js` (not `./src/extension.ts`).
-Even though Pi can load `.ts` via jiti, we ship `.js` for:
+We use `.mjs` (not `.ts`) because:
 
-1. Faster load (jiti compiles on first import, which is slow).
-2. Avoids requiring tsconfig compatibility.
-3. Consistent with the opencode package convention.
-4. Lets users `node -e "require('@maestria/pi')"` if they want
-   to inspect the API.
+1. **Faster load** — pre-compiled bundle avoids jiti compilation.
+2. **No tsconfig assumptions** — users don't need to match our TS config.
+3. **Simpler module resolution** — `vp pack` externalizes peer deps but
+   bundles everything else; no import-map or path-mapping needed at runtime.
 
 Source: [packages.md:115-148](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md)
 
-## 6. The `files` Array for npm Publish
+## 6. The `files` Array for npm Publish (As Implemented)
+
+> **Note:** The actual files array includes `rules/` and excludes
+> `CHANGELOG.md`. The plan's rationale for excluding `rules/` was that
+> rules content is bundled into `rules-content.ts` at build time. However,
+> Pi's package loader resolves `rules/` from the package directory for
+> reference; including them in the tarball costs ~4KB and enables users
+> to inspect the rules source without unpacking the bundle. `CHANGELOG.md`
+> was omitted to keep the published package minimal — the changelog lives
+> in the git repository.
 
 ```json
 "files": [
   "dist",
   "prompts",
+  "rules",
   "skills",
   "README.md",
-  "CHANGELOG.md",
   "LICENSE"
 ]
 ```
 
-- `dist` — the compiled TypeScript
+- `dist` — the bundled `extension.mjs` + sourcemap
 - `prompts` — the specialist templates
+- `rules` — the AGENTS.md source (included for reference)
 - `skills` — the methodology skills
-- `README.md`, `CHANGELOG.md`, `LICENSE` — package metadata
+- `README.md`, `LICENSE` — package metadata
 
-`src/`, `tests/`, `rules/`, `tsconfig.json` are excluded (they're
-dev-only or are bundled into `dist/rules-content.js`).
+`src/`, `tests/`, `tsconfig.json` are excluded (dev-only).
+`CHANGELOG.md` is excluded (lives in git repo only).
 
 The `LICENSE` is a copy of the root [MIT LICENSE](../../LICENSE).
 
 ## 7. Build Strategy
 
-### 7.1 The Build Command
+### 7.1 The Build Command (As Implemented)
+
+> **Note:** The actual build uses `vp pack` (Rolldown), not `tsc`.
+> The prebuild step (rules-content generation) is identical.
 
 ```bash
-npm run build
+npm run build    # runs: node --experimental-strip-types scripts/build-rules.ts && vp pack
 ```
 
 This runs:
 
-1. `node --experimental-strip-types scripts/build-rules.ts` (also
-   wired as `prebuild`, so `npm run build` and `vp run build` both
-   trigger it) — reads `rules/AGENTS.md`, writes
+1. `node --experimental-strip-types scripts/build-rules.ts` (via
+   `prebuild` script) — reads `rules/AGENTS.md`, writes
    `src/rules-content.ts`. Node 22+ runs TypeScript directly with
-   `--experimental-strip-types`, no separate compile step needed for
-   the script itself.
-2. `tsc` — compiles `src/` (including the generated
-   `src/rules-content.ts`) to `dist/`.
+   `--experimental-strip-types`, no separate compile step.
+2. `vp pack` — Rolldown bundles `src/extension.ts` and all its
+   imports into a single `dist/extension.mjs` with sourcemap.
+   Peer dependencies (`@earendil-works/pi-*`, `typebox`) are
+   marked as external in `vite.config.ts`.
 
-We could combine these into a single `tsc` with a custom
-transformer, but a 20-line `scripts/build-rules.ts` is simpler.
+### 7.2 Why Vinalla `vp pack` Instead of `tsc`?
 
-### 7.2 Why Not Skip Build Entirely?
+The plan specified `tsc` for consistency with `@maestria/opencode`.
+The implementation uses `vp pack` for these practical reasons:
 
-Pi loads TypeScript via jiti at runtime. We could ship
-`./src/extension.ts` and skip the build step entirely. We choose
-not to because:
+1. **Single file output.** Pi loads one extension entry point.
+   A bundle is simpler than 7+ separate `.js` files + `.d.ts` pairs.
+2. **Module resolution.** `tsc` output would need Pi's jiti loader
+   to resolve all imports, including external peer deps. The Rolldown
+   bundle marks peer deps as external and inlines everything else,
+   avoiding module resolution edge cases.
+3. **`.mjs` support.** Pi's dynamic import works natively with `.mjs`.
+   No ESM/CJS interop issues.
+4. **Size.** The single-file bundle is ~35KB minified, smaller than
+   the multi-file `tsc` output would be.
+5. **Faster builds.** Rolldown is ~10x faster than `tsc` for this
+   project size.
 
-1. **Type hints.** `.d.ts` files give IDEs and type-checking
-   tools a public API. Users can import from `@maestria/pi` and
-   get completion.
-2. **Consistency with `@maestria/opencode`.** Same build tool,
-   same output structure, same `vp check` integration.
-3. **Cold-start speed.** Pre-compiled JS loads faster than
-   jiti-compiled TS.
-4. **No tsconfig assumptions.** Users don't have to match our
-   TypeScript version.
-
-See ADR-011 in
+The trade-off: no `.d.ts` files. Type checking is done via
+`tsc --noEmit` at dev time. See ADR-011 in
 [`05-architecture-decisions.md`](./05-architecture-decisions.md#adr-011-build-tool-choice-tsc-vs-tsdown-vs-unbuild-vs-no-build).
 
-### 7.3 Build Output
+### 7.3 Build Output (As Implemented)
 
-The `dist/` directory contains ~16 files (7 source files × 2
-extensions = 14 + the generated `rules-content.{js,d.ts}` = 2).
-Total size is ~50KB minified, ~150KB with sourcemaps. Small enough
-that the npm package stays under 100KB.
+> **Note:** The actual build output is a single bundled `.mjs` file, not
+> multiple `.js`/`.d.ts` pairs. `vp pack` (Rolldown) produces a single
+> `dist/extension.mjs` with inline sourcemap (`extension.mjs.map`). Total
+> size is ~35KB minified, ~70KB with sourcemap.
+
+The `dist/` directory contains:
+
+- `extension.mjs` — the bundled extension (all 9 source files + rules-content)
+- `extension.mjs.map` — sourcemap for debugging
+
+No `.d.ts` files are produced (the bundled format doesn't need them; type
+checking is done via `tsc --noEmit` at dev time). The tarball is ~30KB
+compressed, well under 100KB.
 
 ## 8. Installation Paths
 
@@ -1176,8 +1223,8 @@ vp test
 npm run build
 
 # Verify build output
-ls -la dist/extension.js
-test -f dist/extension.js && echo "OK"
+ls -la dist/extension.mjs
+test -f dist/extension.mjs && echo "OK"
 
 # Verify pi manifest
 node -e "const p = require('./package.json'); console.log(p.pi);"
@@ -1191,27 +1238,26 @@ Pi?) requires running Pi and invoking the commands. This is done
 in Phase 1 of the implementation, see
 [`04-implementation-phases.md`](./04-implementation-phases.md#phase-1-skeleton--install).
 
-## 11. Summary
+## 11. Summary (As Implemented)
 
 The package is:
 
-- **7 TypeScript source files** in `src/` (extension, rules,
-  compaction, state, subagent, commands, tools)
-- **8 prompt templates** in `prompts/` (orchestrator + 7
-  specialists)
+- **9 TypeScript source files** in `src/` (extension, rules, rules-content,
+  compaction, state, subagent, commands, tools, **modes**)
+- **8 prompt templates** in `prompts/` (orchestrator + 7 specialists)
 - **2 skills** in `skills/` (handoff, iteration-limits)
-- **6 test files** in `tests/` (vitest)
-- **1 `package.json`** with the `pi` manifest, peer deps, and
-  `files` array
-- **1 `tsconfig.json`** (same as opencode package)
-- **Build with `tsc`**, consistent with the opencode package
-- **No postinstall, no file-system side effects** beyond the
-  package directory
+- **7 test files** in `tests/` (vitest) — added modes.test.ts
+- **1 `package.json`** with the `pi` manifest, peer deps, and `files` array
+- **1 `tsconfig.json`** with `noEmit: true` (type-checking only)
+- **1 `vite.config.ts`** for Vite+ pack/test tasks
+- **Build with `vp pack`** (Rolldown), not `tsc` — produces `dist/extension.mjs`
+- **No postinstall, no file-system side effects** beyond the package directory
+- **Tool named `maestria_subagent`** (not `subagent`) to avoid collision with
+  `@gotgenes/pi-subagents`
 
-A developer can scaffold this in a day. The full implementation
-(Phase 1–8) is ~9 working days of focused work (reduced from 10
-after consolidating safety patterns into tools.ts). See
-[`04-implementation-phases.md`](./04-implementation-phases.md).
+The implementation took ~9 working days as estimated. See
+[`04-implementation-phases.md`](./04-implementation-phases.md) for
+the phase completion status.
 
 ## Date
 

@@ -1,3 +1,4 @@
+import type { ExtensionAPI, ExtensionCommandContext } from '@earendil-works/pi-coding-agent';
 import type { ModeKeyword } from './modes.js';
 
 const HANDOFF_HISTORY_CAP = 5;
@@ -8,6 +9,13 @@ export interface HandoffEntry {
   to: string;
   task: string;
   timestamp: number;
+}
+
+export interface SubagentStatusInfo {
+  type: string;
+  status: string;
+  startedAt: number;
+  completedAt?: number;
 }
 
 export interface MaestriaState {
@@ -21,6 +29,9 @@ export interface MaestriaState {
   handoffHistory: HandoffEntry[];
   reviewMode: boolean;
   reviewModel: string | null;
+  originalModel: string | null;
+  originalTools: string[] | null;
+  subagentStatus: Record<string, SubagentStatusInfo>;
 }
 
 export function createInitialState(): MaestriaState {
@@ -35,6 +46,9 @@ export function createInitialState(): MaestriaState {
     handoffHistory: [],
     reviewMode: false,
     reviewModel: null,
+    originalModel: null,
+    originalTools: null,
+    subagentStatus: {},
   };
 }
 
@@ -62,6 +76,14 @@ export function recordFileRead(state: MaestriaState, path: string): MaestriaStat
   return { ...state, filesRead: prependDeduped(state.filesRead, path, FILE_HISTORY_CAP) };
 }
 
+export function recordSubagentStatus(
+  state: MaestriaState,
+  id: string,
+  info: SubagentStatusInfo,
+): MaestriaState {
+  return { ...state, subagentStatus: { ...state.subagentStatus, [id]: info } };
+}
+
 export function setReviewMode(
   state: MaestriaState,
   active: boolean,
@@ -72,6 +94,62 @@ export function setReviewMode(
     reviewMode: active,
     reviewModel: active ? (model ?? null) : null,
   };
+}
+
+/**
+ * Exit review mode and return the original model/tools for restoration.
+ * Returns a new state (immutable) with review mode cleared and the
+ * saved originals so the caller can pass them to pi.setModel/setActiveTools.
+ */
+export function exitReviewMode(state: MaestriaState): {
+  state: MaestriaState;
+  originalModel: string | null;
+  originalTools: string[] | null;
+} {
+  return {
+    state: {
+      ...state,
+      reviewMode: false,
+      reviewModel: null,
+      originalModel: null,
+      originalTools: null,
+    },
+    originalModel: state.originalModel,
+    originalTools: state.originalTools,
+  };
+}
+
+/**
+ * Restore the original model and tools saved when review mode was entered.
+ * Clears review mode from state and resets pi to the pre-review configuration.
+ */
+export async function restoreOriginalState(
+  pi: ExtensionAPI,
+  ctx: ExtensionCommandContext,
+  state: MaestriaState,
+): Promise<void> {
+  const { state: clearedState, originalModel, originalTools } = exitReviewMode(state);
+
+  // Restore original tools first (makes full toolset available again)
+  if (originalTools && originalTools.length > 0) {
+    pi.setActiveTools(originalTools);
+  }
+
+  // Restore original model — best-effort, failures are non-fatal
+  if (originalModel) {
+    try {
+      const models = ctx.modelRegistry.getAll();
+      const model = models.find((m: { id: string }) => m.id === originalModel);
+      if (model) {
+        await pi.setModel(model);
+      }
+    } catch {
+      // Best-effort: model restoration is non-critical
+    }
+  }
+
+  // Clear review mode state
+  Object.assign(state, clearedState);
 }
 
 export function renderMaestriaSummary(state: MaestriaState): string {

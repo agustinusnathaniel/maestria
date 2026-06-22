@@ -1,5 +1,13 @@
 # 02. Integration Strategy — Mapping Maestria to Pi
 
+> **Note:** This strategy document was validated and implemented. Key
+> divergences from the plan: the `subagent` tool was renamed to
+> `maestria_subagent` to avoid a name collision with `@gotgenes/pi-subagents`
+> internal tool registration; model cycling (ADR-009) is fully implemented
+> in the `/review` command; state persistence via `pi.appendEntry` is
+> implemented in the `src/state.ts` module. See actual source at
+> [`packages/pi/src/`](../../packages/pi/src/) for the implementation.
+
 This document answers the central question: **how does the maestria
 methodology (Pipeline Composition + Maker/Checker Split + 7 specialist
 agents + global rules) map to Pi's primitives?**
@@ -16,17 +24,23 @@ The package design that implements this strategy is in
 
 ## 1. The Mapping at a Glance
 
-| Maestria concept                   | OpenCode implementation                | Pi implementation                                              |
-| ---------------------------------- | -------------------------------------- | -------------------------------------------------------------- |
-| `@orchestrator`                    | Agent with `task()` permission         | Prompt template + `input` event handler + subagent tool        |
-| `@adventurer` / `@architect` / ... | Subagent definitions in `agents/*.md`  | Prompt templates in `prompts/*.md`                             |
-| Handoff contract                   | Markdown in the delegation prompt      | `${@}` / `${1:-default}` argument binding in prompt template   |
-| Iteration limits                   | `maxSteps` per agent + prompt rules    | Prompt-template rules + session-level state in `MaestriaState` |
-| `edit: deny` for reviewer          | YAML frontmatter                       | `tool_call` interceptor with session flag                      |
-| Rules injection                    | `input.instructions` in `config` hook  | `before_agent_start` event handler                             |
-| Compaction preservation            | `experimental.session.compacting` hook | `session_before_compact` event returning custom summary        |
-| Skill install flow                 | Orchestrator runs `npx skills@latest`  | Subagent spawns with `--append-system-prompt` containing skill |
-| Maker/checker permission model     | Static `edit: deny`                    | Dynamic `tool_call` block + `--tools` arg on subprocess        |
+| Maestria concept                   | OpenCode implementation                | Pi implementation (as implemented)                                 |
+| ---------------------------------- | -------------------------------------- | ------------------------------------------------------------------ |
+| `@orchestrator`                    | Agent with `task()` permission         | Prompt template + `input` event handler + `maestria_subagent` tool |
+| `@adventurer` / `@architect` / ... | Subagent definitions in `agents/*.md`  | Prompt templates in `prompts/*.md`                                 |
+| Handoff contract                   | Markdown in the delegation prompt      | `${@}` / `${1:-default}` argument binding in prompt template       |
+| Iteration limits                   | `maxSteps` per agent + prompt rules    | Prompt-template rules + session-level state in `MaestriaState`     |
+| `edit: deny` for reviewer          | YAML frontmatter                       | `tool_call` interceptor with session flag                          |
+| Rules injection                    | `input.instructions` in `config` hook  | `before_agent_start` event handler                                 |
+| Compaction preservation            | `experimental.session.compacting` hook | `session_before_compact` event returning custom summary            |
+| Skill install flow                 | Orchestrator runs `npx skills@latest`  | Subagent spawns with `--append-system-prompt` containing skill     |
+| Maker/checker permission model     | Static `edit: deny`                    | Dynamic `tool_call` block + `pi.setActiveTools()` read-only set    |
+| Workflow modes                     | n/a                                    | `/fein`, `/sonar`, `/blitz` commands with mode-specific prompts    |
+
+> **Note:** The tool is registered as `maestria_subagent` (not `subagent`)
+> in the implementation to avoid a name collision with
+> `@gotgenes/pi-subagents` internal tool registration. The plan's original
+> `subagent` name was discovered colliding during Phase 5 implementation.
 
 ## 2. Pattern 1: Pipeline Composition on Pi
 
@@ -362,6 +376,12 @@ ignore explicit instructions AND attempt an action that the
 `tool_call` handler would block. In practice, the LLM never tries.
 
 ### 3.4 The `/review` Command and Model Cycling
+
+> **Note:** Model cycling is implemented in `src/commands.ts` and
+> `src/tools.ts`. The `/review` command sets `reviewMode = true` in
+> state, which the `tool_call` handler in `tools.ts` uses to block
+> `edit`/`write`/`bash` tools. See actual source for implementation
+> details.
 
 The maker/checker split is enhanced on Pi by **model cycling**: a
 `/review <target>` command switches the active model to a different

@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI, SessionStartEvent } from '@earendil-works/pi-coding-agent';
 import { createInitialState } from './state.js';
 import { installModeCommands } from './modes.js';
 import { createBeforeAgentStartHandler } from './rules.js';
@@ -18,6 +18,23 @@ export default function (pi: ExtensionAPI): void {
 
   pi.on('before_agent_start', (event, ctx) => {
     return handleBeforeAgentStart(event, ctx);
+  });
+
+  // Restore persisted state on session start (reload/resume/fork)
+  pi.on('session_start', (_event: SessionStartEvent, ctx) => {
+    if (!ctx.sessionManager?.getEntries) return;
+    const entries = ctx.sessionManager.getEntries();
+    // Walk from newest to oldest, find the last persisted maestria_state entry
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const entry = entries[i];
+      if (entry.type === 'custom' && entry.customType === 'maestria_state') {
+        const data = entry.data;
+        if (data && typeof data === 'object') {
+          Object.assign(state, data);
+        }
+        break;
+      }
+    }
   });
 
   // Install compaction preservation handlers

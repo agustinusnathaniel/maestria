@@ -30,7 +30,7 @@ for (const name of prompts) {
 
   // Check no lingering task() references
   if (content.includes('task(')) {
-    console.error(`❌ prompts/${name}.md: contains "task(" (should be "subagent(")`);
+    console.error(`❌ prompts/${name}.md: contains "task(" (should be "maestria_subagent(")`);
     allValid = false;
   }
 

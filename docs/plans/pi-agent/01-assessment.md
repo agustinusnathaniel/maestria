@@ -1,5 +1,12 @@
 # 01. Pi Coding Agent — Deep Dive
 
+> **Note:** This document was written during the research phase and describes
+> Pi architecture accurately at v0.79.6. Implementation has since progressed
+> past assessment. For the current state of the implementation, see the
+> actual source code at [`packages/pi/src/`](../../packages/pi/src/). This
+> document remains useful as a Pi architecture reference but should not be
+> treated as an implementation specification.
+
 This document covers what the Pi coding agent is, how it works, and how its
 primitives differ from OpenCode's. It's the foundation for the integration
 strategy in [`02-integration-strategy.md`](./02-integration-strategy.md).
