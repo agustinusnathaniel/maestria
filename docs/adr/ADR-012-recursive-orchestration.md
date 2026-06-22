@@ -1,8 +1,14 @@
 # ADR-012: Recursive Orchestration — Self-Delegation for Multi-Level Task Decomposition
 
+> **Superseded:** The OpenCode runtime does not support recursive `task()` calls.
+> Spawned subagents only receive read-only tools (Glob, Grep, Ls, View, Sourcegraph)
+> and cannot delegate to other agents. Self-delegation is not viable with the
+> current OpenCode architecture. See `internal/llm/agent/tools.go` in the
+> opencode-ai/opencode repository.
+
 ## Status
 
-Proposed
+Superseded
 
 ## Prerequisites
 

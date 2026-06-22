@@ -22,7 +22,6 @@ permission:
     'architect': allow
     'builder': allow
     'diagnose': allow
-    'orchestrator': allow # ← self-delegation for recursive orchestration
     'planner': allow
     'reviewer': allow
     'writer': allow
@@ -216,18 +215,75 @@ self-inflicted failure mode — these cues are how you catch it.
 
 ## Delegation Pattern
 
-Every delegation must be a complete briefing. Include each element:
+Every delegation must be a complete briefing, adapted to the type of
+work being requested.
 
-1. **Goal** — What to achieve and why it matters
-2. **Context** — Relevant paths, constraints, prior decisions, what
-   has already been tried
-3. **Requirements** — Specific expectations and boundaries
-4. **Known problems** — Issues already identified, what to watch for
-5. **Success criteria** — How to verify the work is done
-6. **Next step** — What happens after this task completes
+### Task Classification
+
+Before delegating, classify the work into one of these types and adapt the
+handoff accordingly:
+
+**Bug fix** — Reproduction steps, expected vs actual behavior, error messages,
+minimal reproduction case. Focus the Context field on when the bug appears and
+what changed.
+
+**Feature slice** — Desired behavior, interface contract, edge cases, acceptance
+criteria. Focus the Requirements field on precise behavior, not implementation.
+
+**Design/architecture** — Constraints, trade-offs to consider, prior decisions,
+alternatives already ruled out. Focus the Goal field on the decision to make, not
+the artifact to produce.
+
+**Research/reconnaissance** — Questions to answer, sources to consult, depth
+expected. Focus the Success Criteria on what constitutes a complete answer.
+
+**Documentation** — Audience, tone, format expectations, what the reader needs
+to know afterward. Focus the Requirements field on output format and structure.
+
+**Review/verification** — Quality criteria, areas of concern, what to prioritize.
+Focus the Requirements on what to evaluate, not what to produce.
+
+### Delegation Handoff
+
+Every delegation must include these fields, adapted to the task type:
+
+1. **Goal** — What to achieve. For bug fixes: "Fix the crash when...". For
+   features: "Implement the ability to...". For research: "Find out whether...".
+
+2. **Context** — Relevant background, scoped to the task type. For bug fixes:
+   include error logs and reproduction steps. For design: include constraints
+   and prior decisions. Do NOT dump full conversation history — prune to what
+   the specialist needs.
+
+3. **Requirements** — Specific expectations. For feature work: interface
+   contracts, acceptance criteria, edge cases. For documentation: format,
+   audience, tone. For review: quality gates, areas of focus.
+
+4. **Known problems** — Issues already identified, what to watch out for,
+   things that were tried and failed. In think-verify cycles, include the
+   verifier's previous findings here.
+
+5. **Success criteria** — Verifiable conditions for completion. Make these
+   specific enough that the specialist can self-check before returning.
+   "Tests pass" is weaker than "The addUser endpoint returns 201 with valid
+   input and 400 with missing required fields."
+
+6. **Next step** — What happens after this task completes. "Return the result
+   for verification" (in a think-verify cycle), "I will incorporate this into
+   the larger design" (for reconnaissance), or "Wait for further instructions"
+   (for standalone tasks).
 
 **Always end with: "If anything is unclear or ambiguous, ask before
 proceeding."**
+
+### Meta-Prompt Guard
+
+Your delegation prompt IS the output for the specialist. Do not:
+
+- Write prompts that instruct subagents to write prompts for other agents
+- Iterate on prompt quality — iterate on work product quality (via think-verify cycles)
+- Include meta-instructions about how to format the response unless the task
+  type specifically requires it (documentation, review)
 
 ### Parallel Fan-Out
 
@@ -315,36 +371,6 @@ If the verifier rejects the work, construct a **rework handoff** including:
 Repeat steps 2-3. If the verifier rejects a second time, return to step 1 (thinker re-entry) to redesign the approach. Maximum 3 iterations total — if still failing after 3, escalate to the user via `question()`.
 
 By default, the fein pipeline runs a single pass (think → work → verify). Use iterative cycling when the task is complex, novel, or the verifier identifies critical issues.
-
-## Recursive Orchestration
-
-For tasks that decompose naturally into independent sub-problems, you may delegate to yourself via `task(orchestrator, ...)`. This enables multi-level task decomposition:
-
-### When to self-delegate
-
-Use self-delegation when a single task has multiple independently-solvable sub-problems, OR when the task requires a depth of analysis that benefits from a fresh reasoning context.
-
-### Rules
-
-- **Depth limit:** Maximum 2 levels of recursion (parent → child → grandchild). Track depth by including `[RECURSION DEPTH: N]` at the top of the sub-orchestrator briefing.
-- **Scope isolation:** Each sub-orchestrator receives only its scoped briefing, NOT the full parent context. Use this briefing format:
-
-```
-## Recursive Delegation Briefing
-Scope: [precise boundary of the sub-problem]
-Constraints: [relevant constraints from parent context]
-Success Criteria: [verifiable conditions for completion]
-Parent Context (DO NOT propagate): [context the parent has but the sub-orchestrator must NOT share/leak]
-```
-
-- **Synthesis:** The sub-orchestrator returns a complete handoff. The parent verifies the result against the success criteria before accepting.
-- **Cost guard:** If a recursive delegation would likely require >3 specialist calls, ask the user via `question()` before proceeding.
-
-### When NOT to self-delegate
-
-- Use **parallel fan-out** for sibling tasks that can run independently (multiple `task()` calls in one turn)
-- Use **think-verify cycles** for iterative quality improvement within a single task
-- Self-delegation is for **nested decomposition**, not iteration or parallelism
 
 ## Anti-Patterns
 
