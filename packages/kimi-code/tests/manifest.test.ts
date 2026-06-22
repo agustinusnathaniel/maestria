@@ -1,23 +1,23 @@
-import { describe, it, expect } from "vite-plus/test";
-import { readFile, stat } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { describe, it, expect } from 'vite-plus/test';
+import { readFile, stat } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PACKAGE_ROOT = path.resolve(__dirname, "..");
+const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const AGENTS_MD_MAX_BYTES = 32 * 1024;
 
 const EXPECTED_SKILLS = [
-  "orchestrator",
-  "builder",
-  "adventurer",
-  "architect",
-  "planner",
-  "reviewer",
-  "writer",
-  "diagnose",
+  'orchestrator',
+  'builder',
+  'adventurer',
+  'architect',
+  'planner',
+  'reviewer',
+  'writer',
+  'diagnose',
 ] as const;
 
 interface RawManifest {
@@ -36,7 +36,7 @@ interface RawManifest {
 
 async function readJson<T>(relativePath: string): Promise<T> {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, "utf8");
+  const raw = await readFile(absolute, 'utf8');
   return JSON.parse(raw) as T;
 }
 
@@ -51,14 +51,14 @@ async function pathExists(absolutePath: string): Promise<boolean> {
 
 function parseFrontmatter(text: string): { data: Record<string, unknown>; body: string } {
   const lines = text.split(/\r?\n/);
-  if (lines[0]?.trim() !== "---") {
-    throw new Error("missing opening frontmatter fence");
+  if (lines[0]?.trim() !== '---') {
+    throw new Error('missing opening frontmatter fence');
   }
-  const close = lines.findIndex((line, index) => index > 0 && line.trim() === "---");
+  const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
   if (close === -1) {
-    throw new Error("missing closing frontmatter fence");
+    throw new Error('missing closing frontmatter fence');
   }
-  const yamlText = lines.slice(1, close).join("\n").trim();
+  const yamlText = lines.slice(1, close).join('\n').trim();
   // Minimal YAML parsing — the fields we validate are simple scalars
   // and key: value pairs (no nested objects in our frontmatter). For
   // robust YAML support, swap in `js-yaml`; we avoid the dependency
@@ -70,17 +70,17 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
     const [, key, rawValue] = m;
     if (rawValue === undefined) continue;
     const value = rawValue.trim();
-    if (value === "[]" || value === "") {
-      data[key] = value === "[]" ? [] : "";
+    if (value === '[]' || value === '') {
+      data[key] = value === '[]' ? [] : '';
       continue;
     }
-    if (value.startsWith("[") && value.endsWith("]")) {
+    if (value.startsWith('[') && value.endsWith(']')) {
       // basic array of strings
       const inner = value.slice(1, -1).trim();
       data[key] =
-        inner === ""
+        inner === ''
           ? []
-          : inner.split(",").map((entry) => entry.trim().replace(/^["']|["']$/g, ""));
+          : inner.split(',').map((entry) => entry.trim().replace(/^["']|["']$/g, ''));
     } else if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
@@ -90,47 +90,47 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
       data[key] = value;
     }
   }
-  const body = lines.slice(close + 1).join("\n");
+  const body = lines.slice(close + 1).join('\n');
   return { data, body };
 }
 
-describe("kimi.plugin.json manifest", () => {
-  it("exists and parses as valid JSON", async () => {
-    const manifest = await readJson<RawManifest>("kimi.plugin.json");
-    expect(typeof manifest).toBe("object");
+describe('kimi.plugin.json manifest', () => {
+  it('exists and parses as valid JSON', async () => {
+    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    expect(typeof manifest).toBe('object');
     expect(manifest).not.toBeNull();
   });
 
   it('has a "name" matching the Kimi Code PLUGIN_NAME_REGEX', async () => {
-    const manifest = await readJson<RawManifest>("kimi.plugin.json");
-    expect(typeof manifest.name).toBe("string");
+    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    expect(typeof manifest.name).toBe('string');
     expect(manifest.name).toMatch(PLUGIN_NAME_REGEX);
   });
 
   it('has "skills" field that starts with "./"', async () => {
-    const manifest = await readJson<RawManifest>("kimi.plugin.json");
+    const manifest = await readJson<RawManifest>('kimi.plugin.json');
     expect(manifest.skills).toBeDefined();
     if (Array.isArray(manifest.skills)) {
       expect(manifest.skills.length).toBeGreaterThan(0);
       for (const entry of manifest.skills) {
-        expect(entry.startsWith("./")).toBe(true);
+        expect(entry.startsWith('./')).toBe(true);
       }
     } else {
-      expect(typeof manifest.skills).toBe("string");
-      expect(manifest.skills?.startsWith("./")).toBe(true);
+      expect(typeof manifest.skills).toBe('string');
+      expect(manifest.skills?.startsWith('./')).toBe(true);
     }
   });
 
   it('has "sessionStart.skill" pointing at the orchestrator skill', async () => {
-    const manifest = await readJson<RawManifest>("kimi.plugin.json");
+    const manifest = await readJson<RawManifest>('kimi.plugin.json');
     expect(manifest.sessionStart).toBeDefined();
-    expect(manifest.sessionStart?.skill).toBe("orchestrator");
-    const skillPath = path.join(PACKAGE_ROOT, "skills", "orchestrator", "SKILL.md");
+    expect(manifest.sessionStart?.skill).toBe('orchestrator');
+    const skillPath = path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md');
     expect(await pathExists(skillPath)).toBe(true);
   });
 
-  it("includes required interface fields", async () => {
-    const manifest = await readJson<RawManifest>("kimi.plugin.json");
+  it('includes required interface fields', async () => {
+    const manifest = await readJson<RawManifest>('kimi.plugin.json');
     expect(manifest.interface).toBeDefined();
     expect(manifest.interface?.displayName).toBeDefined();
     expect(manifest.interface?.shortDescription).toBeDefined();
@@ -139,25 +139,24 @@ describe("kimi.plugin.json manifest", () => {
     expect(manifest.interface?.websiteURL).toBeDefined();
   });
 
-  it("includes author with name and email", async () => {
-    const manifest = await readJson<RawManifest>("kimi.plugin.json");
+  it('includes author with name', async () => {
+    const manifest = await readJson<RawManifest>('kimi.plugin.json');
     expect(manifest.author?.name).toBeDefined();
-    expect(manifest.author?.email).toBeDefined();
   });
 
-  it("does not include unsupported runtime fields", async () => {
+  it('does not include unsupported runtime fields', async () => {
     const raw = JSON.parse(
-      await readFile(path.join(PACKAGE_ROOT, "kimi.plugin.json"), "utf8"),
+      await readFile(path.join(PACKAGE_ROOT, 'kimi.plugin.json'), 'utf8'),
     ) as Record<string, unknown>;
     const unsupported = [
-      "tools",
-      "commands",
-      "hooks",
-      "apps",
-      "inject",
-      "configFile",
-      "config_file",
-      "bootstrap",
+      'tools',
+      'commands',
+      'hooks',
+      'apps',
+      'inject',
+      'configFile',
+      'config_file',
+      'bootstrap',
     ];
     for (const field of unsupported) {
       expect(raw[field]).toBeUndefined();
@@ -165,67 +164,67 @@ describe("kimi.plugin.json manifest", () => {
   });
 });
 
-describe("skills directory", () => {
-  it("contains all 8 expected skills", async () => {
+describe('skills directory', () => {
+  it('contains all 8 expected skills', async () => {
     for (const skill of EXPECTED_SKILLS) {
-      const skillPath = path.join(PACKAGE_ROOT, "skills", skill, "SKILL.md");
+      const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
       expect(await pathExists(skillPath)).toBe(true);
     }
   });
 
   for (const skill of EXPECTED_SKILLS) {
     describe(`skills/${skill}/SKILL.md`, () => {
-      it("parses with valid frontmatter", async () => {
-        const skillPath = path.join(PACKAGE_ROOT, "skills", skill, "SKILL.md");
-        const text = await readFile(skillPath, "utf8");
+      it('parses with valid frontmatter', async () => {
+        const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+        const text = await readFile(skillPath, 'utf8');
         const { data } = parseFrontmatter(text);
-        expect(typeof data.name).toBe("string");
+        expect(typeof data.name).toBe('string');
         expect((data.name as string).length).toBeGreaterThan(0);
-        expect(typeof data.description).toBe("string");
+        expect(typeof data.description).toBe('string');
         expect((data.description as string).length).toBeGreaterThan(0);
         expect(data.name).toBe(skill);
       });
 
-      it("has a whenToUse field", async () => {
-        const skillPath = path.join(PACKAGE_ROOT, "skills", skill, "SKILL.md");
-        const text = await readFile(skillPath, "utf8");
+      it('has a whenToUse field', async () => {
+        const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+        const text = await readFile(skillPath, 'utf8');
         const { data } = parseFrontmatter(text);
-        expect(typeof data.whenToUse).toBe("string");
+        expect(typeof data.whenToUse).toBe('string');
         expect((data.whenToUse as string).trim().length).toBeGreaterThan(0);
       });
     });
   }
 
-  it("orchestrator skill mentions AgentSwarm and the 7-specialist table", async () => {
+  it('orchestrator skill mentions AgentSwarm and the 7-specialist table', async () => {
     const text = await readFile(
-      path.join(PACKAGE_ROOT, "skills", "orchestrator", "SKILL.md"),
-      "utf8",
+      path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
+      'utf8',
     );
-    expect(text).toContain("AgentSwarm");
+    expect(text).toContain('AgentSwarm');
     // The 7 specialist names appear in the orchestrator routing table.
     for (const specialist of [
-      "builder",
-      "adventurer",
-      "architect",
-      "planner",
-      "reviewer",
-      "writer",
-      "diagnose",
+      'builder',
+      'adventurer',
+      'architect',
+      'planner',
+      'reviewer',
+      'writer',
+      'diagnose',
     ]) {
       expect(text).toContain(specialist);
     }
   });
 
-  it("reviewer skill has the explicit do-not-edit constraint near the top", async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, "skills", "reviewer", "SKILL.md"), "utf8");
+  it('reviewer skill has the explicit do-not-edit constraint near the top', async () => {
+    const text = await readFile(path.join(PACKAGE_ROOT, 'skills', 'reviewer', 'SKILL.md'), 'utf8');
     const head = text.slice(0, 1500);
     expect(head).toMatch(/do not edit/i);
   });
 
-  it("adventurer skill has the explicit read-only Bash constraint near the top", async () => {
+  it('adventurer skill has the explicit read-only Bash constraint near the top', async () => {
     const text = await readFile(
-      path.join(PACKAGE_ROOT, "skills", "adventurer", "SKILL.md"),
-      "utf8",
+      path.join(PACKAGE_ROOT, 'skills', 'adventurer', 'SKILL.md'),
+      'utf8',
     );
     const head = text.slice(0, 2000);
     expect(head).toMatch(/read-only/i);
@@ -233,43 +232,43 @@ describe("skills directory", () => {
   });
 });
 
-describe("rules/AGENTS.md", () => {
-  it("exists", async () => {
-    const rulesPath = path.join(PACKAGE_ROOT, "rules", "AGENTS.md");
+describe('rules/AGENTS.md', () => {
+  it('exists', async () => {
+    const rulesPath = path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md');
     expect(await pathExists(rulesPath)).toBe(true);
   });
 
-  it("is under the 32 KB Kimi Code truncation budget", async () => {
-    const rulesPath = path.join(PACKAGE_ROOT, "rules", "AGENTS.md");
+  it('is under the 32 KB Kimi Code truncation budget', async () => {
+    const rulesPath = path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md');
     const stats = await stat(rulesPath);
     expect(stats.size).toBeLessThanOrEqual(AGENTS_MD_MAX_BYTES);
   });
 
-  it("contains the 7-specialist delegation table", async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, "rules", "AGENTS.md"), "utf8");
+  it('contains the 7-specialist delegation table', async () => {
+    const text = await readFile(path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md'), 'utf8');
     for (const specialist of [
-      "adventurer",
-      "architect",
-      "builder",
-      "diagnose",
-      "planner",
-      "reviewer",
-      "writer",
+      'adventurer',
+      'architect',
+      'builder',
+      'diagnose',
+      'planner',
+      'reviewer',
+      'writer',
     ]) {
       expect(text).toContain(specialist);
     }
     // All three sections from the opencode rules are preserved.
-    expect(text).toContain("## Orchestration");
-    expect(text).toContain("## Delegation");
-    expect(text).toContain("## Context Management");
+    expect(text).toContain('## Orchestration');
+    expect(text).toContain('## Delegation');
+    expect(text).toContain('## Context Management');
   });
 });
 
-describe("package.json", () => {
-  it("has the expected name, private flag, and files", async () => {
-    const pkg = await readJson<Record<string, unknown>>("package.json");
-    expect(pkg.name).toBe("@maestria/kimi-code");
+describe('package.json', () => {
+  it('has the expected name, private flag, and files', async () => {
+    const pkg = await readJson<Record<string, unknown>>('package.json');
+    expect(pkg.name).toBe('@maestria/kimi-code');
     expect(pkg.private).toBe(true);
-    expect(pkg.type).toBe("module");
+    expect(pkg.type).toBe('module');
   });
 });

@@ -3,7 +3,7 @@ title: Skill Reference
 description: The 8 skills in @maestria/kimi-code, mapped to Kimi Code's 3 built-in subagent profiles (coder, explore, plan).
 ---
 
-import { LinkCard, CardGrid, Aside } from "@astrojs/starlight/components";
+import { LinkCard, CardGrid, Aside } from '@astrojs/starlight/components';
 
 `@maestria/kimi-code` ships one orchestrator skill and 7 specialist skills. Kimi Code's plugin system has only 3 built-in subagent profiles (`coder`, `explore`, `plan`) — the 7 specialist identities are encoded as **persona content** in prompt templates that the orchestrator dispatches to those subagents. The orchestrator auto-loads at session start and routes requests to the right persona based on the routing table below.
 

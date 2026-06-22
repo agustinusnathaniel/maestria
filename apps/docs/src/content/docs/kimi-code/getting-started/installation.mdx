@@ -3,7 +3,7 @@ title: Installation & Setup
 description: Install @maestria/kimi-code in your Kimi Code CLI. No npm install, no build step — just a manifest and a few config blocks.
 ---
 
-import { Steps, Aside, Tabs } from "@astrojs/starlight/components";
+import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
 
 `@maestria/kimi-code` is a declarative Kimi Code plugin — a manifest, a directory of skill files, and a global rules file. There is no `npm install`, no `pnpm install`, no build step. The plugin is loaded by Kimi Code at session start, and the orchestrator skill auto-injects the methodology.
 
@@ -113,15 +113,15 @@ import { Steps, Aside, Tabs } from "@astrojs/starlight/components";
    Save the companion script as `~/.kimi-code/hooks/block-dangerous-bash.mjs`:
 
    ```js
-   let input = "";
-   process.stdin.on("data", (chunk) => {
+   let input = '';
+   process.stdin.on('data', (chunk) => {
      input += chunk;
    });
-   process.stdin.on("end", () => {
+   process.stdin.on('end', () => {
      const payload = JSON.parse(input);
-     const command = payload.tool_input?.command ?? "";
-     if (command.includes("rm -rf")) {
-       console.error("Dangerous command detected, blocked");
+     const command = payload.tool_input?.command ?? '';
+     if (command.includes('rm -rf')) {
+       console.error('Dangerous command detected, blocked');
        process.exit(2);
      }
    });

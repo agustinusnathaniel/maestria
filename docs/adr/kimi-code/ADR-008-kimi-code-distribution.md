@@ -58,7 +58,7 @@ The subtree split hoists `packages/kimi-code/*` to the branch root, so the manif
 on:
   push:
     tags:
-      - "@maestria/kimi-code@*"
+      - '@maestria/kimi-code@*'
 ```
 
 The workflow:

@@ -24,6 +24,22 @@
 
 - **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or `LSP` when available) for any file you have path access to. Don't `WebFetch` a local file or a file in a checked-out repo.
 
+## Delegation
+
+When delegating work via `task()`, use only the 7 specialists below.
+**Never delegate to `explore` or `general`** — they are built-in agents,
+not part of the pipeline.
+
+| Agent         | Role                                             | When to Delegate                                                                             |
+| ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
+| `@architect`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
+| `@builder`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
+| `@diagnose`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
+| `@planner`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
+| `@reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
+| `@writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
+
 ## Context Management
 
 - **Progressive disclosure** — start high-level, get specific as needed.

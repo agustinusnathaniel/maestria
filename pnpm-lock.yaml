@@ -96,7 +96,7 @@ importers:
         version: 24.13.2
       typescript:
         specifier: 'catalog:'
-        version: 5.9.3
+        version: 6.0.3
 
   packages/opencode:
     dependencies:

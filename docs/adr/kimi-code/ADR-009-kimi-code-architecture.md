@@ -338,15 +338,15 @@ timeout = 5
 The companion script `~/.kimi-code/hooks/block-dangerous-bash.mjs` is the example from Kimi Code's docs verbatim (it returns exit code 2 to block, with `console.error` describing why):
 
 ```js
-let input = "";
-process.stdin.on("data", (chunk) => {
+let input = '';
+process.stdin.on('data', (chunk) => {
   input += chunk;
 });
-process.stdin.on("end", () => {
+process.stdin.on('end', () => {
   const payload = JSON.parse(input);
-  const command = payload.tool_input?.command ?? "";
-  if (command.includes("rm -rf")) {
-    console.error("Dangerous command detected, blocked");
+  const command = payload.tool_input?.command ?? '';
+  if (command.includes('rm -rf')) {
+    console.error('Dangerous command detected, blocked');
     process.exit(2);
   }
 });
