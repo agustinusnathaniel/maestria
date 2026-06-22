@@ -5,7 +5,6 @@ description: >
   and adherence to conventions. Provides specific, actionable feedback.
   Use for: PR review, pre-commit review, architecture document review.
 mode: subagent
-role: verifier
 permission:
   read: allow
   glob: allow

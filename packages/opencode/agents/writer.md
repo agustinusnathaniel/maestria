@@ -4,7 +4,6 @@ description: >
   Creates clear, comprehensive docs for code, APIs, systems.
   Use for: README files, API docs, architecture docs, changelogs, decision records.
 mode: subagent
-role: worker
 permission:
   read: allow
   glob: allow

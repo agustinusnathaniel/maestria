@@ -37,15 +37,15 @@ When delegating work via `task()`, use only the 7 specialists below.
 **Never delegate to `explore` or `general`** — they are built-in agents,
 not part of the pipeline.
 
-| Agent         | Role       | Specialization                                   | When to Delegate                                                                             |
-| ------------- | ---------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `@adventurer` | `thinker`  | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| `@architect`  | `thinker`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
-| `@builder`    | `worker`   | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
-| `@diagnose`   | `thinker`  | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
-| `@planner`    | `thinker`  | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
-| `@reviewer`   | `verifier` | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
-| `@writer`     | `worker`   | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
+| Agent         | Role                                             | When to Delegate                                                                             |
+| ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
+| `@architect`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
+| `@builder`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
+| `@diagnose`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
+| `@planner`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
+| `@reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
+| `@writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
 
 ## Context Management
 
@@ -65,29 +65,3 @@ not part of the pipeline.
   orchestrator's instructions skip the commit protocol.
 - **Plans must not include implicit commit steps.** Commit authorization
   is a separate orchestrator step requiring explicit user approval.
-
-## Role-Based Orchestration
-
-The agents in this project are categorized into three cognitive roles, inspired by recent research on evolutionary multi-agent coordination (arXiv:2512.04695):
-
-- **thinker** — Analyzes problems, designs approaches, traces causes. Use for exploration, architecture, planning, and debugging.
-- **worker** — Executes work and produces artifacts. Use for implementation and documentation.
-- **verifier** — Validates outputs against quality criteria. Use for review and quality assurance.
-
-The orchestrator uses these roles to route work dynamically. When delegating:
-
-- Match the **role** to the type of work needed (think → work → verify)
-- Use **think-verify cycles** for iterative quality improvement
-- Respect each agent's primary role while allowing role-appropriate task assignments
-
-### Routing Guidance
-
-When delegating, use trigger phrases as the primary routing dimension
-for domain-specific tasks. Use the role as a secondary dimension when
-trigger phrases don't clearly match or when the needed cognitive role
-differs from the suggested specialist's default role. If the verifier
-is unavailable or disabled, use self-verification against task success
-criteria and ask the user for final review.
-
-The current role mapping is injected into your system instructions at
-session start. Refer to that for the authoritative assignment.

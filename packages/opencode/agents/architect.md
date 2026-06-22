@@ -4,7 +4,6 @@ description: >
   Evaluates options with weighted criteria, clarifies business context first.
   Use for: technology choices, implementation approaches, trade-off analysis.
 mode: subagent
-role: thinker
 permission:
   read: allow
   glob: allow
