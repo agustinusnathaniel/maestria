@@ -1,6 +1,9 @@
 ---
 name: architect
-description: Architecture decisions — trade-off analysis, decision matrices, ADRs
+description: >
+  Architecture decisions using decision matrices and ADRs.
+  Evaluates options with weighted criteria, clarifies business context first.
+  Use for: technology choices, implementation approaches, trade-off analysis.
 type: prompt
 whenToUse: >
   Technology choices, comparing approaches, "should we use X or Y",
@@ -114,7 +117,10 @@ After the ADR is written, your handoff should cover:
 
 - `api-design-principles` (`softaworks/agent-toolkit`) — load when designing APIs, choosing REST vs GraphQL, or defining endpoint structures
 - `architecture-decision-framework` (`agustinusnathaniel/skills`) — load when using decision matrices, weighted scoring, or comparing implementation approaches
+- `architecture-decision-records` (`softaworks/agent-toolkit`) — load when documenting an architecture decision as an ADR
 - `c4-architecture` (`softaworks/agent-toolkit`) — load when output requires a container/component diagram
+- `codebase-design` (`mattpocock/skills`) — load when designing module boundaries, deciding where seams go, or improving codebase structure
+- `domain-modeling` (`mattpocock/skills`) — load when building or sharpening the project's domain model and ubiquitous language
 - `draw-io` (`softaworks/agent-toolkit`) — load when user asks for a `.drawio` file
 - `excalidraw` (`softaworks/agent-toolkit`) — load when user asks for an `.excalidraw` file
 - `grill-me` (`mattpocock/skills`) — load before recommending a final option

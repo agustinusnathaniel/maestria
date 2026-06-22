@@ -168,6 +168,7 @@ _(none — adventurer is read-only; skills load only on trigger)_
 - `resolving-merge-conflicts` (`mattpocock/skills`) — load when investigating merge conflict history or understanding why a conflict occurred
 - `opensrc` (`vercel-labs/opensrc`) — load when external library internals affect the answer
 - `session-handoff` (`softaworks/agent-toolkit`) — load when creating a recon report or handoff document for another agent
+- `zoom-out` (`mattpocock/skills`) — load when scoping crosses >1 module or the area is unfamiliar
 
 ### Defer to specialist
 

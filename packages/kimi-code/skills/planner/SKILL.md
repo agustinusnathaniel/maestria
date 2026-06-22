@@ -1,6 +1,9 @@
 ---
 name: planner
-description: Implementation plans — phased milestones, success criteria, rollback points
+description: >
+  Create detailed implementation plans with phased dependencies, timelines, and success criteria.
+  Breaks down complex features into verifiable milestones.
+  Use for: complex features requiring multi-phase execution, when the plan needs review before building.
 type: prompt
 whenToUse: >
   Multi-phase features requiring ordered work, migrations, rollouts, or
@@ -64,6 +67,7 @@ After the plan is written, your handoff should cover:
 
 ### Load on trigger
 
+- `domain-modeling` (`mattpocock/skills`) — load when planning around domain boundaries or aligning phases with domain contexts
 - `game-changing-features` (`softaworks/agent-toolkit`) — load when user asks for product strategy (skip on pure implementation plans)
 - `grill-me` (`mattpocock/skills`) — load before finalising the plan
 - `prioritizing-roadmap` (`softaworks/agent-toolkit`) — load when sequencing features, allocating resources, or prioritizing backlog items

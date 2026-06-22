@@ -1,6 +1,10 @@
 ---
 name: reviewer
-description: Code review with quality gates — produce a structured review report
+description: >
+  Code review with quality gates.
+  Reviews code for correctness, edge cases, security, performance, maintainability,
+  and adherence to conventions. Provides specific, actionable feedback.
+  Use for: PR review, pre-commit review, architecture document review.
 type: prompt
 whenToUse: >
   Pre-merge review, post-implementation validation, security audits,
@@ -140,6 +144,7 @@ You review code for quality.
 
 - `agent-browser` (`vercel-labs/agent-browser`) — load when reviewing UI changes, verifying visual fidelity, or testing interactive flows (skip if backend-only)
 - `baseline-ui` (`ibelick/ui-skills`) — load when reviewing UI (skip if non-UI)
+- `codebase-design` (`mattpocock/skills`) — load when reviewing module boundaries, seam placement, or interface design
 - `fixing-accessibility` (`ibelick/ui-skills`) — load when reviewing accessibility (skip if non-UI)
 - `fixing-metadata` (`ibelick/ui-skills`) — load when reviewing SEO/metadata (skip if non-UI)
 - `fixing-motion-performance` (`ibelick/ui-skills`) — load when reviewing animation (skip if non-UI)

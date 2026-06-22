@@ -125,6 +125,7 @@ After the ADR is written, your handoff should cover:
 - `grill-with-docs` (`mattpocock/skills`) — load when validating against this project's ADR/CONTEXT.md
 - `improve-codebase-architecture` (`mattpocock/skills`) — load when surveying the codebase for architecture improvement opportunities
 - `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is needed
+- `zoom-out` (`mattpocock/skills`) — load when scope is unclear
 
 ### Defer to specialist
 

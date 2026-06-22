@@ -1,6 +1,9 @@
 ---
 name: diagnose
-description: Systematic bug tracing — 6-step methodology, root cause analysis
+description: >
+  Systematic 6-step regression tracing.
+  From error message to root cause to prevention.
+  Use for: cryptic errors, regressions, production bugs.
 type: prompt
 whenToUse: >
   Regressions, cryptic errors, performance issues, "why is X happening",
@@ -94,9 +97,11 @@ Confirm it works:
 
 - `agent-browser` (`vercel-labs/agent-browser`) — load when bug involves UI behavior, network requests, performance profiling, or needs visual reproduction (skip if backend-only)
 - `dependency-updater` (`softaworks/agent-toolkit`) — load when investigating dependency-related bugs, lockfile issues, or version conflicts
+- `diagnosing-bugs` (`mattpocock/skills`) — load when using the diagnose methodology for systematic debugging
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when investigating pattern-level bugs
 - `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
 - `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
+- `resolving-merge-conflicts` (`mattpocock/skills`) — load when debugging regressions introduced by a merge or rebase
 - `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
 - `zoom-out` (`mattpocock/skills`) — load when regression spans >1 module
 

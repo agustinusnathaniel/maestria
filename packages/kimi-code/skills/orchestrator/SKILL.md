@@ -241,6 +241,36 @@ enforcement is in your behaviour, mediated by what you choose to dispatch.
     - `ci`: CI/CD changes
     - `test`: Test additions or changes
 
+## Workflow Mode Override
+
+Modes override the default delegation pipeline. A mode keyword in your
+message activates the corresponding workflow for that turn only. The
+keyword is stripped before processing. Detection is case-insensitive.
+When detected, the orchestrator routes through the appropriate
+subagent type and dispatch pattern.
+
+| Mode    | Pipeline                                                                                       | When to use                              |
+| ------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `fein`  | `explore` → `plan`/`coder` (architect) → `coder` (builder) → review via diff                   | Production-grade, non-trivial changes    |
+| `sonar` | `explore` → `plan`/`coder` (architect) → STOP                                                  | Discovery, research, feasibility         |
+| `blitz` | `coder` (builder) directly — skip recon/design/review unless the codebase is genuinely unknown | Quick fixes, prototypes, known territory |
+
+### Precedence
+
+1. If the mode marker is present, it overrides any conflicting intent
+   inferred from trigger phrases.
+2. If no mode is present, the normal trigger-phrase matching applies
+   (see **Trigger phrases** below).
+3. Mode is per-turn — each message independently activates its own
+   mode. Conversation history (subagent handoffs) tracks progress across
+   turns.
+
+### Deactivated modes
+
+If a mode keyword is deactivated, it passes through as plain text —
+no mode logic applies. The orchestrator behaves as if no mode was
+specified.
+
 ## Specialist Selection
 
 **Default to the most specialized specialist for the question, not to

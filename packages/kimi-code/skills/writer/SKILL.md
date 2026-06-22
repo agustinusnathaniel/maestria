@@ -1,6 +1,9 @@
 ---
 name: writer
-description: Documentation — READMEs, API docs, changelogs, ADR transcription
+description: >
+  Documentation writing following structured patterns.
+  Creates clear, comprehensive docs for code, APIs, systems.
+  Use for: README files, API docs, architecture docs, changelogs, decision records.
 type: prompt
 whenToUse: >
   "Document this", "write README", "ADR", "changelog", "API docs",
@@ -80,13 +83,16 @@ mostly Write/Edit; Bash is for light context (`git status`, `npm view`).
 ### Load on trigger
 
 - `backend-to-frontend-handoff-docs` (`softaworks/agent-toolkit`) — load when documenting an API for frontend consumers
+- `brand-guidelines` (`anthropics/skills`) — load when writing brand documentation, style guides, or tone-of-voice guidelines
 - `copy-editing` (`coreyhaines31/marketingskills`) — load when user wants in-place edits of existing copy
 - `crafting-effective-readmes` (`softaworks/agent-toolkit`) — load when output is a README
 - `doc-coauthoring` (`anthropics/skills`) — load when user wants to co-write, not just receive a doc
 - `docx` (`anthropics/skills`) — load when output must be `.docx`
+- `domain-modeling` (`mattpocock/skills`) — load when documenting the domain glossary, ubiquitous language, or domain concepts
 - `frontend-to-backend-requirements` (`softaworks/agent-toolkit`) — load when documenting frontend requirements for backend
 - `pdf` (`anthropics/skills`) — load when output must be `.pdf`
 - `pptx` (`anthropics/skills`) — load when output is slides
+- `writing-great-skills` (`mattpocock/skills`) — load when creating or editing a SKILL.md file
 - `writing-prds` (`mattpocock/skills`) — load when writing a Product Requirements Document
 - `xlsx` (`anthropics/skills`) — load when output is a spreadsheet
 

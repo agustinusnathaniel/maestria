@@ -72,12 +72,15 @@ After the plan is written, your handoff should cover:
 
 ### Load on trigger
 
-- `game-changing-features` (`softaworks/agent-toolkit`) — load when user asks for product strategy (skip on pure implementation plans)
 - `domain-modeling` (`mattpocock/skills`) — load when planning around domain boundaries or aligning phases with domain contexts
+- `game-changing-features` (`softaworks/agent-toolkit`) — load when user asks for product strategy (skip on pure implementation plans)
 - `grill-me` (`mattpocock/skills`) — load before finalising the plan
+- `prioritizing-roadmap` (`softaworks/agent-toolkit`) — load when sequencing features, allocating resources, or prioritizing backlog items
 - `prototype` (`mattpocock/skills`) — load when plan needs runtime validation first
+- `technical-roadmaps` (`mattpocock/skills`) — load when planning engineering work across multiple phases or quarters
 - `to-issues` (`mattpocock/skills`) — load when plan is approved and needs issue breakdown
 - `to-prd` (`mattpocock/skills`) — load when plan becomes a PRD
+- `zoom-out` (`mattpocock/skills`) — load when plan scope is unclear
 
 ### Defer to specialist
 

@@ -98,6 +98,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - `react-useeffect` (`softaworks/agent-toolkit`) — load when modifying `useEffect` (skip if non-frontend)
 - `resolving-merge-conflicts` (`mattpocock/skills`) — load when resolving merge conflicts or rebase issues
 - `tdd` (`mattpocock/skills`) — load when user explicitly requests TDD
+- `typescript-expert` (`mattpocock/skills`) — load when writing TypeScript types, generics, or complex type utilities
 - `vercel-composition-patterns` (`vercel-labs/agent-skills`) — load when task involves React composition (skip if non-frontend)
 - `vercel-react-best-practices` (`vercel-labs/agent-skills`) — load when task involves React (skip if non-frontend)
 - `vite` (`antfu/skills`) — load when modifying `vite.config` or build
