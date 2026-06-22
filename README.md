@@ -15,8 +15,8 @@ This monorepo contains `@maestria/opencode` — an npm plugin that bundles speci
 ```bash
 vp install          # install dependencies
 vp check            # format, lint, type-check everything
-vp run -r test      # run all tests
-vp run -r build     # build all packages
+vp run test           # run all tests
+vp run build          # build all packages
 ```
 
 ## Release

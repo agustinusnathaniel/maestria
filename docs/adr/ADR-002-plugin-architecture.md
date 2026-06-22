@@ -79,13 +79,13 @@ Derived from `@opencode-ai/sdk` types:
 type AgentConfig = {
   prompt: string;
   description: string;
-  mode: "subagent" | "primary" | "all";
+  mode: 'subagent' | 'primary' | 'all';
   color?: string;
   maxSteps?: number;
   permission?: {
-    edit?: "ask" | "allow" | "deny";
-    bash?: "ask" | "allow" | "deny" | { [key: string]: "ask" | "allow" | "deny" };
-    webfetch?: "ask" | "allow" | "deny";
+    edit?: 'ask' | 'allow' | 'deny';
+    bash?: 'ask' | 'allow' | 'deny' | { [key: string]: 'ask' | 'allow' | 'deny' };
+    webfetch?: 'ask' | 'allow' | 'deny';
     // ... more actions
   };
 };

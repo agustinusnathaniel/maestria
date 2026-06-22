@@ -2,10 +2,10 @@
    FONTS
    ============================================ */
 
-@import "@fontsource-variable/noto-serif";
-@import "@fontsource-variable/noto-serif/wght-italic.css";
-@import "@fontsource-variable/sn-pro";
-@import "@fontsource-variable/sn-pro/wght-italic.css";
+@import '@fontsource-variable/noto-serif';
+@import '@fontsource-variable/noto-serif/wght-italic.css';
+@import '@fontsource-variable/sn-pro';
+@import '@fontsource-variable/sn-pro/wght-italic.css';
 
 /* Dark mode colors. */
 :root {
@@ -22,7 +22,7 @@
   --sl-color-black: #151a13;
 }
 /* Light mode colors. */
-:root[data-theme="light"] {
+:root[data-theme='light'] {
   --sl-color-accent-low: #c0e2b8;
   --sl-color-accent: #165800;
   --sl-color-accent-high: #0d3e00;
@@ -38,7 +38,7 @@
 }
 
 :root {
-  --sl-font: "SN Pro Variable", sans-serif;
+  --sl-font: 'SN Pro Variable', sans-serif;
 }
 
 /* ============================================
@@ -51,7 +51,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Noto Serif Variable", serif;
+  font-family: 'Noto Serif Variable', serif;
 }
 
 body .hero h1,
@@ -118,11 +118,11 @@ body .hero .tagline {
   border-color: var(--sl-color-accent-low);
 }
 
-[data-theme="dark"] .feature-card {
+[data-theme='dark'] .feature-card {
   background: var(--sl-color-gray-6, rgba(255, 255, 255, 0.02));
 }
 
-[data-theme="dark"] .feature-card:hover {
+[data-theme='dark'] .feature-card:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 

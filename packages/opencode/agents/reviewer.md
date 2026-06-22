@@ -13,11 +13,11 @@ permission:
   skill: allow
   edit: deny
   bash:
-    "*": ask
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "git show*": allow
+    '*': ask
+    'git status*': allow
+    'git diff*': allow
+    'git log*': allow
+    'git show*': allow
   webfetch: allow
 ---
 
