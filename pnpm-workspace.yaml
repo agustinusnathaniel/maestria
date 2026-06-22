@@ -30,8 +30,8 @@ peerDependencyRules:
     vite: '*'
     vitest: '*'
 allowBuilds:
-  '@google/genai': set this to true or false
+  '@google/genai': true
   esbuild: true
   msgpackr-extract: false
-  protobufjs: set this to true or false
+  protobufjs: true
   sharp: true
