@@ -68,7 +68,6 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
       const updatedState: MaestriaState = {
         ...state,
         reviewMode: true,
-        reviewModel: currentModelId,
         originalModel: currentModelId,
         originalTools: currentTools,
       };
@@ -77,21 +76,6 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
 
       // 3. Restrict to read-only tools
       pi.setActiveTools(READ_ONLY_TOOLS);
-
-      // 4. Try to switch to a review-optimized model if configured
-      if (state.reviewModel && currentModelId !== state.reviewModel) {
-        try {
-          const models = ctx.modelRegistry.getAll();
-          const reviewModel = models.find((m) => m.id === state.reviewModel);
-          if (reviewModel) {
-            await pi.setModel(reviewModel);
-          }
-        } catch {
-          ctx.ui.notify(
-            `Warning: could not switch to review model "${state.reviewModel}". Tool restriction is active.`,
-          );
-        }
-      }
 
       pi.sendUserMessage(
         [

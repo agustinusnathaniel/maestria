@@ -9,6 +9,7 @@ import { installToolInterceptors } from './tools.js';
 
 export default function (pi: ExtensionAPI): void {
   const state = createInitialState();
+  const cleanups: Array<() => void> = [];
 
   // Install mode commands: /fein, /sonar, /blitz
   installModeCommands(pi, state);
@@ -41,8 +42,14 @@ export default function (pi: ExtensionAPI): void {
   installCompactionHandlers(pi, state);
 
   // Install orchestration hooks: subagent tool and commands
-  installSubagentTool(pi, state);
+  installSubagentTool(pi, state, cleanups);
   installCommands(pi, state);
+
+  // Cleanup subscriptions on shutdown
+  pi.on('session_shutdown', () => {
+    for (const cleanup of cleanups) cleanup();
+    cleanups.length = 0;
+  });
 
   // Install tool call interceptors for review mode and dangerous patterns
   installToolInterceptors(pi, state);

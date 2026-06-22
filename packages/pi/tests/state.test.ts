@@ -20,7 +20,6 @@ const NEW_STATE_KEYS = [
   'filesRead',
   'handoffHistory',
   'reviewMode',
-  'reviewModel',
   'originalModel',
   'originalTools',
   'subagentStatus',
@@ -56,7 +55,6 @@ describe('createInitialState', () => {
     expect(state.filesRead).toEqual([]);
     expect(state.handoffHistory).toEqual([]);
     expect(state.reviewMode).toBe(false);
-    expect(state.reviewModel).toBeNull();
     expect(state.originalModel).toBeNull();
     expect(state.originalTools).toBeNull();
   });
@@ -178,44 +176,25 @@ describe('recordFileRead', () => {
 });
 
 describe('setReviewMode', () => {
-  it('sets reviewMode to true and reviewModel when model is given', () => {
-    const state = createInitialState();
-    const next = setReviewMode(state, true, 'claude-sonnet');
-
-    expect(next.reviewMode).toBe(true);
-    expect(next.reviewModel).toBe('claude-sonnet');
-  });
-
-  it('sets reviewMode to true and reviewModel to null when model is omitted', () => {
+  it('sets reviewMode to true', () => {
     const state = createInitialState();
     const next = setReviewMode(state, true);
 
     expect(next.reviewMode).toBe(true);
-    expect(next.reviewModel).toBeNull();
   });
 
-  it('clears reviewMode and reviewModel when active is false', () => {
+  it('clears reviewMode when active is false', () => {
     const state = createInitialState();
-    const enabled = setReviewMode(state, true, 'claude-sonnet');
+    const enabled = setReviewMode(state, true);
     const next = setReviewMode(enabled, false);
 
     expect(next.reviewMode).toBe(false);
-    expect(next.reviewModel).toBeNull();
-  });
-
-  it('clears reviewModel when active is false even if model is passed', () => {
-    const state = createInitialState();
-    const next = setReviewMode(state, false, 'claude-sonnet');
-
-    expect(next.reviewMode).toBe(false);
-    expect(next.reviewModel).toBeNull();
   });
 
   it('is immutable — does not mutate the original state', () => {
     const state = createInitialState();
-    setReviewMode(state, true, 'claude-sonnet');
+    setReviewMode(state, true);
     expect(state.reviewMode).toBe(false);
-    expect(state.reviewModel).toBeNull();
   });
 });
 
@@ -316,11 +295,10 @@ describe('state persistence pattern', () => {
 });
 
 describe('exitReviewMode', () => {
-  it('clears reviewMode, reviewModel, originalModel, originalTools', () => {
+  it('clears reviewMode, originalModel, originalTools', () => {
     const state: MaestriaState = {
       ...createInitialState(),
       reviewMode: true,
-      reviewModel: 'claude-sonnet',
       originalModel: 'gpt-4o',
       originalTools: ['read', 'grep', 'bash'],
     };
@@ -328,7 +306,6 @@ describe('exitReviewMode', () => {
     const { state: next, originalModel, originalTools } = exitReviewMode(state);
 
     expect(next.reviewMode).toBe(false);
-    expect(next.reviewModel).toBeNull();
     expect(next.originalModel).toBeNull();
     expect(next.originalTools).toBeNull();
     expect(originalModel).toBe('gpt-4o');

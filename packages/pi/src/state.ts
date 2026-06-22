@@ -28,7 +28,6 @@ export interface MaestriaState {
   filesRead: string[];
   handoffHistory: HandoffEntry[];
   reviewMode: boolean;
-  reviewModel: string | null;
   originalModel: string | null;
   originalTools: string[] | null;
   subagentStatus: Record<string, SubagentStatusInfo>;
@@ -45,7 +44,6 @@ export function createInitialState(): MaestriaState {
     filesRead: [],
     handoffHistory: [],
     reviewMode: false,
-    reviewModel: null,
     originalModel: null,
     originalTools: null,
     subagentStatus: {},
@@ -84,15 +82,10 @@ export function recordSubagentStatus(
   return { ...state, subagentStatus: { ...state.subagentStatus, [id]: info } };
 }
 
-export function setReviewMode(
-  state: MaestriaState,
-  active: boolean,
-  model?: string | null,
-): MaestriaState {
+export function setReviewMode(state: MaestriaState, active: boolean): MaestriaState {
   return {
     ...state,
     reviewMode: active,
-    reviewModel: active ? (model ?? null) : null,
   };
 }
 
@@ -110,7 +103,6 @@ export function exitReviewMode(state: MaestriaState): {
     state: {
       ...state,
       reviewMode: false,
-      reviewModel: null,
       originalModel: null,
       originalTools: null,
     },

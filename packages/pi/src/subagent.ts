@@ -1,4 +1,4 @@
-import { Type } from '@earendil-works/pi-ai';
+import { Type } from 'typebox';
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 import type { MaestriaState } from './state.js';
@@ -39,21 +39,32 @@ export function validateHandoff(handoff: string): { valid: boolean; errors: stri
   return { valid: errors.length === 0, errors };
 }
 
-export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): void {
+export function installSubagentTool(
+  pi: ExtensionAPI,
+  state: MaestriaState,
+  cleanups?: Array<() => void>,
+): void {
   pi.registerTool({
     name: 'maestria_subagent',
     label: 'Maestria Subagent',
     description: 'Dispatch a task to a @maestria specialist subagent',
+    promptSnippet:
+      'Delegate tasks to @maestria specialist subagents (adventurer, architect, builder, planner, diagnose, reviewer, writer)',
+    promptGuidelines: [
+      'Use maestria_subagent when a task MUST be delegated to a specialist subagent rather than handled directly. Each specialist has focused capabilities: adventurer (recon), architect (design), builder (impl), planner (planning), diagnose (bugs), reviewer (QA), writer (docs).',
+    ],
+    prepareArguments(args: unknown) {
+      return args;
+    },
     parameters: Type.Object({
       agent: Type.String({ description: 'Specialist agent name' }),
       task: Type.String({ description: 'Task description for the subagent' }),
-      mode: Type.Optional(Type.String({ description: 'Optional workflow mode override' })),
     }),
     async execute(
       _toolCallId: string,
-      params: { agent: string; task: string; mode?: string },
-      _signal: AbortSignal | undefined,
-      _onUpdate: unknown,
+      params: { agent: string; task: string },
+      signal: AbortSignal | undefined,
+      onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
       _ctx: ExtensionContext,
     ) {
       // Validate agent name
@@ -66,11 +77,6 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
         throw new Error('Task description is required');
       }
 
-      // Record handoff in state and persist
-      const updatedState = recordHandoff(state, 'orchestrator', params.agent, params.task);
-      Object.assign(state, updatedState); // sync mutation-in-place
-      pi.appendEntry('maestria_state', state); // persist for reload/resume/fork
-
       // Attempt to dispatch via @gotgenes/pi-subagents; fallback gracefully
       try {
         const { getSubagentsService } = await import('@gotgenes/pi-subagents');
@@ -79,16 +85,17 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
           throw new Error('Subagents service unavailable or incomplete');
         }
 
-        // Note: `params.mode` is intentionally NOT passed to service.spawn().
-        // Mode is handled at the extension level via mode prompts (fein/sonar/blitz),
-        // not at the subagent process level.
-
         // Spawn in foreground — returns subagent ID synchronously
         const id = service.spawn(params.agent, params.task, {
           description: params.task.slice(0, 80),
           foreground: true,
           inheritContext: true,
         });
+
+        // Record handoff in state and persist (only after spawn succeeds)
+        const updatedState = recordHandoff(state, 'orchestrator', params.agent, params.task);
+        Object.assign(state, updatedState);
+        pi.appendEntry('maestria_state', state);
 
         // Poll for completion (SubagentRecord has no promise field)
         const POLL_TIMEOUT_MS = 60_000; // 60s max wait
@@ -97,10 +104,18 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
         let polls = 0;
         let record = service.getRecord(id);
         while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
-          if (_signal?.aborted) throw new Error('Maestria subagent call aborted');
+          if (signal?.aborted) throw new Error('Maestria subagent call aborted');
           await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
           record = service.getRecord(id);
           polls++;
+          onUpdate?.({
+            content: [
+              {
+                type: 'text' as const,
+                text: `Subagent ${params.agent} running... (${Math.round((polls * POLL_INTERVAL_MS) / 1000)}s)`,
+              },
+            ],
+          });
         }
         if (record && !TERMINAL_STATUSES.has(record.status)) {
           throw new Error(`Subagent ${id} timed out after ${POLL_TIMEOUT_MS}ms`);
@@ -124,7 +139,6 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
           `**From:** orchestrator`,
           `**To:** ${params.agent}`,
           `**Task:** ${params.task}`,
-          `${params.mode ? `**Mode:** ${params.mode}` : ''}`,
           ``,
           `Subagent SDK not available. Please delegate this work manually.`,
         ].join('\n');
@@ -141,12 +155,12 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
   // These subscriptions are set up once at extension init, not on every tool call.
   // pi.events is the shared EventBus — distinct from pi.on() lifecycle hooks.
   if (pi.events) {
-    pi.events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
+    const unsubStarted = pi.events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
       const { id, type } = data as { id: string; type: string };
       state.subagentStatus[id] = { type, status: 'running', startedAt: Date.now() };
     });
 
-    pi.events.on(SUBAGENT_EVENTS.COMPLETED, (data: unknown) => {
+    const unsubCompleted = pi.events.on(SUBAGENT_EVENTS.COMPLETED, (data: unknown) => {
       const { id } = data as { id: string };
       const existing = state.subagentStatus[id];
       if (existing) {
@@ -155,7 +169,7 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
       }
     });
 
-    pi.events.on(SUBAGENT_EVENTS.FAILED, (data: unknown) => {
+    const unsubFailed = pi.events.on(SUBAGENT_EVENTS.FAILED, (data: unknown) => {
       const { id, status } = data as { id: string; status: string };
       const existing = state.subagentStatus[id];
       if (existing) {
@@ -164,7 +178,7 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
       }
     });
 
-    pi.events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
+    const unsubSteered = pi.events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
       // Steering is informational — no status transition, but ensure
       // the agent is tracked as running if it wasn't already observed.
       const { id } = data as { id: string };
@@ -172,5 +186,9 @@ export function installSubagentTool(pi: ExtensionAPI, state: MaestriaState): voi
         state.subagentStatus[id] = { type: 'unknown', status: 'running', startedAt: Date.now() };
       }
     });
+
+    if (cleanups) {
+      cleanups.push(unsubStarted, unsubCompleted, unsubFailed, unsubSteered);
+    }
   }
 }
