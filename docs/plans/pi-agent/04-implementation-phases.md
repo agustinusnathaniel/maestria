@@ -149,7 +149,7 @@ The exact content of `prompts/hello.md` is:
 ```markdown
 ---
 description: Say hello to someone
-argument-hint: "[name]"
+argument-hint: '[name]'
 ---
 
 Hello, ${1:-world}!
@@ -347,7 +347,7 @@ expands to the specialist's methodology.
 description: Run the maestria default pipeline on a goal. Use when the
   user types `/orchestrate <goal>` or when the LLM needs to delegate to
   multiple specialists in sequence.
-argument-hint: "<goal>"
+argument-hint: '<goal>'
 ---
 ```
 

@@ -170,9 +170,9 @@ packages/
   ```yaml
   catalog:
     # ... existing catalog entries ...
-    "@earendil-works/pi-coding-agent": "*"
-    "@earendil-works/pi-ai": "*"
-    typebox: "*"
+    '@earendil-works/pi-coding-agent': '*'
+    '@earendil-works/pi-ai': '*'
+    typebox: '*'
   ```
 
   (If `pnpm` rejects `"*"` ranges in the catalog, use
@@ -237,13 +237,13 @@ subagent tool, and registers the commands. Imports from the
 other modules in `src/`.
 
 ```typescript
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { MAESTRIA_RULES_CONTENT } from "./rules-content.js";
-import { installRulesInjection } from "./rules.js";
-import { installCompactionHandlers } from "./compaction.js";
-import { installSubagentTool } from "./subagent.js";
-import { installCommands } from "./commands.js";
-import { installToolInterceptors } from "./tools.js";
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { MAESTRIA_RULES_CONTENT } from './rules-content.js';
+import { installRulesInjection } from './rules.js';
+import { installCompactionHandlers } from './compaction.js';
+import { installSubagentTool } from './subagent.js';
+import { installCommands } from './commands.js';
+import { installToolInterceptors } from './tools.js';
 
 export default function (pi: ExtensionAPI): void {
   installRulesInjection(pi, MAESTRIA_RULES_CONTENT);
@@ -264,12 +264,12 @@ Exports `installRulesInjection(pi, content)`. Subscribes to
 prompt.
 
 ```typescript
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
 export function installRulesInjection(pi: ExtensionAPI, rulesContent: string): void {
-  pi.on("before_agent_start", async (event) => {
+  pi.on('before_agent_start', async (event) => {
     return {
-      systemPrompt: event.systemPrompt + "\n\n## Maestria Global Rules\n\n" + rulesContent,
+      systemPrompt: event.systemPrompt + '\n\n## Maestria Global Rules\n\n' + rulesContent,
     };
   });
 }
@@ -295,11 +295,11 @@ The state is capped at `MAX_FILE_REFS = 10` for `filesRead` /
 `filesModified` and the last 5 handoffs (see §4.4).
 
 ```typescript
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { getMaestriaState, renderMaestriaSummary } from "./state.js";
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { getMaestriaState, renderMaestriaSummary } from './state.js';
 
 export function installCompactionHandlers(pi: ExtensionAPI): void {
-  pi.on("session_before_compact", async (event) => {
+  pi.on('session_before_compact', async (event) => {
     const state = getMaestriaState();
     const summary = renderMaestriaSummary(state);
     return {
@@ -311,7 +311,7 @@ export function installCompactionHandlers(pi: ExtensionAPI): void {
     };
   });
 
-  pi.on("session_before_tree", async (event) => {
+  pi.on('session_before_tree', async (event) => {
     if (!event.preparation.userWantsSummary) return;
     const state = getMaestriaState();
     return {
@@ -337,7 +337,7 @@ helpers. Updates the state on tool_call events for file tracking
 and on subagent invocations for handoff history.
 
 ```typescript
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
 // Cap on file references to keep the compaction summary small.
 // Each file path is ~30–80 chars; 10 entries = ~600 chars, well
@@ -419,8 +419,8 @@ export function renderMaestriaSummary(state: MaestriaState): string {
 
 function createEmptyState(): MaestriaState {
   return {
-    activeTask: "",
-    completionPromise: "",
+    activeTask: '',
+    completionPromise: '',
     specialistsDelegated: [],
     blockers: [],
     filesModified: [],
@@ -501,9 +501,9 @@ self-orchestrate.
 #### Implementation Sketch
 
 ```typescript
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { getSubagentsService } from "@gotgenes/pi-subagents";
-import { recordHandoff } from "./state.js";
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { getSubagentsService } from '@gotgenes/pi-subagents';
+import { recordHandoff } from './state.js';
 
 const MAX_PARALLEL_TASKS = 8;
 const MAX_CONCURRENCY = 4;
@@ -512,17 +512,17 @@ const MAX_CONCURRENCY = 4;
 // Returns { valid: true } or { valid: false, errors: string[] }.
 function validateHandoff(handoff: string): { valid: boolean; errors: string[] } {
   const requiredFields = [
-    "Goal",
-    "Context",
-    "Requirements",
-    "Known problems",
-    "Success criteria",
-    "Next step",
+    'Goal',
+    'Context',
+    'Requirements',
+    'Known problems',
+    'Success criteria',
+    'Next step',
   ];
   const errors: string[] = [];
   for (const field of requiredFields) {
     // Check field is present with non-empty content
-    const re = new RegExp(`^${field}:\\s*(.+)$`, "m");
+    const re = new RegExp(`^${field}:\\s*(.+)$`, 'm');
     const match = handoff.match(re);
     if (!match || !match[1]?.trim()) {
       errors.push(`Missing or empty field: ${field}`);
@@ -535,31 +535,31 @@ export function installSubagentTool(pi: ExtensionAPI): void {
   const subagents = getSubagentsService(pi);
 
   pi.registerTool({
-    name: "subagent",
-    label: "Subagent",
+    name: 'subagent',
+    label: 'Subagent',
     description: [
-      "Delegate tasks to specialized subagents with isolated context.",
-      "Available agents: adventurer, architect, builder, diagnose, planner, reviewer, writer.",
-      "Modes: single (agent + task), parallel (tasks array, max 8), chain (sequential with {previous} placeholder).",
-      "Each subagent runs in-process with its own context via @gotgenes/pi-subagents.",
-      "The handoff contract (Goal, Context, Requirements, Known Problems, Success Criteria, Next Step) is validated before dispatch.",
-    ].join(" "),
+      'Delegate tasks to specialized subagents with isolated context.',
+      'Available agents: adventurer, architect, builder, diagnose, planner, reviewer, writer.',
+      'Modes: single (agent + task), parallel (tasks array, max 8), chain (sequential with {previous} placeholder).',
+      'Each subagent runs in-process with its own context via @gotgenes/pi-subagents.',
+      'The handoff contract (Goal, Context, Requirements, Known Problems, Success Criteria, Next Step) is validated before dispatch.',
+    ].join(' '),
     parameters: Type.Object({
-      agent: Type.Optional(Type.String({ description: "Name of the agent (single mode)" })),
-      task: Type.Optional(Type.String({ description: "Task to delegate (single mode)" })),
+      agent: Type.Optional(Type.String({ description: 'Name of the agent (single mode)' })),
+      task: Type.Optional(Type.String({ description: 'Task to delegate (single mode)' })),
       // ... parallel and chain parameters (same shape as before) ...
     }),
 
     async execute(_toolCallId, params, signal, _onUpdate, ctx) {
       // Validate handoff contract before dispatch
-      const handoff = params.task ?? "";
+      const handoff = params.task ?? '';
       const validation = validateHandoff(handoff);
       if (!validation.valid) {
         return {
           content: [
             {
-              type: "text",
-              text: `Handoff contract validation failed:\n- ${validation.errors.join("\n- ")}`,
+              type: 'text',
+              text: `Handoff contract validation failed:\n- ${validation.errors.join('\n- ')}`,
             },
           ],
           isError: true,
@@ -575,7 +575,7 @@ export function installSubagentTool(pi: ExtensionAPI): void {
         parentTaskId: ctx.maestria?.currentTaskId,
       });
 
-      recordHandoff("orchestrator", params.agent, handoff);
+      recordHandoff('orchestrator', params.agent, handoff);
       return result;
     },
   });
@@ -604,11 +604,11 @@ Registers `/orchestrate`, `/review`, `/handoff`, and
 methodology in a single-keyword UX.
 
 ```typescript
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
 export function installCommands(pi: ExtensionAPI): void {
-  pi.registerCommand("orchestrate", {
-    description: "Run the full maestria pipeline on a goal",
+  pi.registerCommand('orchestrate', {
+    description: 'Run the full maestria pipeline on a goal',
     handler: async (args, ctx) => {
       // Send a user message that triggers the orchestrator template + subagent chain
       ctx.sendUserMessage(
@@ -618,22 +618,22 @@ export function installCommands(pi: ExtensionAPI): void {
     },
   });
 
-  pi.registerCommand("review", {
-    description: "Switch to a fresh model and run the reviewer methodology",
+  pi.registerCommand('review', {
+    description: 'Switch to a fresh model and run the reviewer methodology',
     handler: async (args, ctx) => {
       // See src/commands.ts for the model-cycling implementation
     },
   });
 
-  pi.registerCommand("handoff", {
-    description: "Generate a handoff prompt to a new session",
+  pi.registerCommand('handoff', {
+    description: 'Generate a handoff prompt to a new session',
     handler: async (args, ctx) => {
       // Delegates to the handoff skill (see skills/handoff/SKILL.md)
     },
   });
 
-  pi.registerCommand("maestria-status", {
-    description: "Show current Maestria state (task, blockers, review mode)",
+  pi.registerCommand('maestria-status', {
+    description: 'Show current Maestria state (task, blockers, review mode)',
     handler: async (_args, ctx) => {
       const state = getMaestriaState();
       // Render into the editor so the user can read, copy, and
@@ -700,8 +700,8 @@ A single module for tool-call interception. Contains:
    `tool_call` event with `{ block: true, reason }`.
 
 ```typescript
-import { isToolCallEventType, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { getMaestriaState } from "./state.js";
+import { isToolCallEventType, type ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { getMaestriaState } from './state.js';
 
 // Patterns matching destructive bash commands, inlined from
 // Pi's canonical permission-gate.ts example.
@@ -713,33 +713,33 @@ const DANGEROUS_PATTERNS: RegExp[] = [
 ];
 
 export function installToolInterceptors(pi: ExtensionAPI): void {
-  pi.on("tool_call", async (event, ctx) => {
+  pi.on('tool_call', async (event, ctx) => {
     const state = getMaestriaState();
 
     // Review mode: block edits, writes, and ALL bash
     if (state.reviewMode) {
       if (
-        isToolCallEventType("edit", event) ||
-        isToolCallEventType("write", event) ||
-        isToolCallEventType("bash", event)
+        isToolCallEventType('edit', event) ||
+        isToolCallEventType('write', event) ||
+        isToolCallEventType('bash', event)
       ) {
         return {
           block: true,
-          reason: "Review mode is active. Report findings, do not edit.",
+          reason: 'Review mode is active. Report findings, do not edit.',
         };
       }
     }
 
     // Always: block dangerous patterns
-    if (isToolCallEventType("bash", event)) {
+    if (isToolCallEventType('bash', event)) {
       const command = event.input.command as string;
       if (DANGEROUS_PATTERNS.some((p) => p.test(command))) {
         if (!ctx.hasUI) {
-          return { block: true, reason: "Dangerous command (no UI for confirmation)" };
+          return { block: true, reason: 'Dangerous command (no UI for confirmation)' };
         }
-        const ok = await ctx.ui.confirm("Dangerous command", `Allow?\n\n  ${command}`);
+        const ok = await ctx.ui.confirm('Dangerous command', `Allow?\n\n  ${command}`);
         if (!ok) {
-          return { block: true, reason: "Blocked by user" };
+          return { block: true, reason: 'Blocked by user' };
         }
       }
     }

@@ -312,19 +312,19 @@ in-process, so we cannot rely on the subprocess `--tools` filter —
 we must block the full set):
 
 ```typescript
-import { DANGEROUS_PATTERNS } from "./tools.js";
+import { DANGEROUS_PATTERNS } from './tools.js';
 
-pi.on("tool_call", async (event, ctx) => {
+pi.on('tool_call', async (event, ctx) => {
   const state = await getMaestriaState(ctx);
   if (!state.reviewMode) return;
 
   if (
-    isToolCallEventType("edit", event) ||
-    isToolCallEventType("write", event) ||
-    (isToolCallEventType("bash", event) &&
+    isToolCallEventType('edit', event) ||
+    isToolCallEventType('write', event) ||
+    (isToolCallEventType('bash', event) &&
       DANGEROUS_PATTERNS.some((p) => p.test(event.input.command)))
   ) {
-    return { block: true, reason: "Review mode: edits and destructive bash are blocked" };
+    return { block: true, reason: 'Review mode: edits and destructive bash are blocked' };
   }
 });
 ```
@@ -536,9 +536,9 @@ Pi's analog of `input.instructions` in OpenCode's `config` hook is
 the `before_agent_start` event. The extension registers a handler:
 
 ```typescript
-pi.on("before_agent_start", async (event, ctx) => {
+pi.on('before_agent_start', async (event, ctx) => {
   return {
-    systemPrompt: event.systemPrompt + "\n\n" + maestriaRules,
+    systemPrompt: event.systemPrompt + '\n\n' + maestriaRules,
   };
 });
 ```
@@ -621,7 +621,7 @@ When `session_before_compact` fires, the extension serializes the
 state into a markdown summary and returns it:
 
 ```typescript
-pi.on("session_before_compact", async (event, ctx) => {
+pi.on('session_before_compact', async (event, ctx) => {
   const state = getMaestriaState();
   const summary = renderMaestriaSummary(state);
   return {

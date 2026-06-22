@@ -132,7 +132,7 @@ registration, and a handful of session/messaging methods.
 ### 2.1 Default Export Contract
 
 ```typescript
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
 export default function (pi: ExtensionAPI) {
   // Synchronous or async — async factories complete before session_start,
@@ -335,11 +335,11 @@ been replaced will route the message to the wrong session.
 
 ```typescript
 // Correct
-pi.on("command_name", async (args, ctx) => {
+pi.on('command_name', async (args, ctx) => {
   const cancelled = await ctx.newSession({
     withSession: async (newCtx) => {
       // newCtx.sendUserMessage(...) targets the new session
-      await newCtx.sendUserMessage("Fresh prompt for the new session");
+      await newCtx.sendUserMessage('Fresh prompt for the new session');
     },
   });
   if (cancelled) {
@@ -348,9 +348,9 @@ pi.on("command_name", async (args, ctx) => {
 });
 
 // Wrong — outer ctx.sendUserMessage would target the OLD session
-pi.on("command_name", async (args, ctx) => {
+pi.on('command_name', async (args, ctx) => {
   await ctx.newSession();
-  await ctx.sendUserMessage("This goes to the wrong session");
+  await ctx.sendUserMessage('This goes to the wrong session');
 });
 ```
 
@@ -363,18 +363,18 @@ Custom tools are registered with a TypeBox schema for parameters and an
 async `execute` function:
 
 ```typescript
-import { Type } from "typebox";
+import { Type } from 'typebox';
 
 pi.registerTool({
-  name: "greet",
-  label: "Greet",
-  description: "Greet someone by name",
+  name: 'greet',
+  label: 'Greet',
+  description: 'Greet someone by name',
   parameters: Type.Object({
-    name: Type.String({ description: "Name to greet" }),
+    name: Type.String({ description: 'Name to greet' }),
   }),
   async execute(toolCallId, params, signal, onUpdate, ctx) {
     return {
-      content: [{ type: "text", text: `Hello, ${params.name}!` }],
+      content: [{ type: 'text', text: `Hello, ${params.name}!` }],
       details: {},
     };
   },
@@ -392,10 +392,10 @@ Source: [extensions.md:1283-1318](https://github.com/earendil-works/pi/blob/main
 Commands are user-invokable via `/name`:
 
 ```typescript
-pi.registerCommand("hello", {
-  description: "Say hello",
+pi.registerCommand('hello', {
+  description: 'Say hello',
   handler: async (args, ctx) => {
-    ctx.ui.notify(`Hello ${args || "world"}!`, "info");
+    ctx.ui.notify(`Hello ${args || 'world'}!`, 'info');
   },
 });
 ```
@@ -702,7 +702,7 @@ Two events:
 - `session_compact` — fires after compaction is saved
 
 ```typescript
-pi.on("session_before_compact", async (event, ctx) => {
+pi.on('session_before_compact', async (event, ctx) => {
   // event.preparation.messagesToSummarize
   // event.preparation.turnPrefixMessages
   // event.preparation.previousSummary
@@ -711,7 +711,7 @@ pi.on("session_before_compact", async (event, ctx) => {
 
   return {
     compaction: {
-      summary: "Your summary...",
+      summary: 'Your summary...',
       firstKeptEntryId: event.preparation.firstKeptEntryId,
       tokensBefore: event.preparation.tokensBefore,
     },
