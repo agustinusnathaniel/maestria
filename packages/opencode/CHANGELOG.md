@@ -1,5 +1,80 @@
 # Changelog
 
+## 0.4.6
+
+### Patch Changes
+
+- [`ecfa74a`](https://github.com/agustinusnathaniel/maestria/commit/ecfa74a34acadb66871c66de9e6b05fd0695d769) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: preserve line breaks when stripping mode keywords from messages
+
+- [`9b91ca9`](https://github.com/agustinusnathaniel/maestria/commit/9b91ca9aa3b75566edca317b2535794092f5fcf8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Strengthen commit authorization rules in orchestrator directive
+
+  - Add explicit COMMIT PROTOCOL section to the orchestrator prompt
+  - Harden CRITICAL RULE [#3](https://github.com/agustinusnathaniel/maestria/issues/3) with ZERO authorization after each commit
+  - Add Commit Policy section to global rules for all subagents
+  - Tighten prose and remove redundant language
+
+## 0.4.5
+
+### Patch Changes
+
+- [`2d10324`](https://github.com/agustinusnathaniel/maestria/commit/2d10324e0d2a539616c7d3da576695eb6fd994fb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix scripts to use vp
+
+## 0.4.4
+
+### Patch Changes
+
+- [`9c396e6`](https://github.com/agustinusnathaniel/maestria/commit/9c396e6e6920d74a2080903fcf6e91293457d9fd) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Upgrade TypeScript to v6, streamline Vite+ configuration, and consolidate scripts
+
+## 0.4.3
+
+### Patch Changes
+
+- [`b722da0`](https://github.com/agustinusnathaniel/maestria/commit/b722da01d6bbe8a105a26d757a870b5cf0ef9b43) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Switch build from tsc to vp pack (tsdown), consolidate configs
+
+  - Replace tsc build with vp pack/tsdown for native @/ alias resolution
+  - Consolidate vitest.config.ts into single vite.config.ts with pack + test blocks
+  - Add integration tests for chat.message hook
+  - Remove tsconfig.build.json, verify-imports.sh (no longer needed)
+  - Add proper pack config (target, sourcemap, minify)
+  - Simplify pre-push hook
+  - Remove redundant typecheck script (vp check covers it)
+
+## 0.4.2
+
+### Patch Changes
+
+- [`20fdde5`](https://github.com/agustinusnathaniel/maestria/commit/20fdde52b05142ec7a7e293f15ebc9cbc1496e5f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add @/ path alias, integration tests, vitest config, and pre-push hooks
+
+  - Add @/ path alias to tsconfig.json for cleaner imports across src/ and tests/
+  - Create vitest.config.ts with tsconfigPaths resolution
+  - Add integration tests for chat.message hook (asserts on parts length)
+  - Add pre-push hook via vite-hooks (runs vp check + pnpm test)
+
+## 0.4.1
+
+### Patch Changes
+
+- [`0990997`](https://github.com/agustinusnathaniel/maestria/commit/099099761174ad6f277405d21005a09abc3cf2a8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix ESM compatibility: add .js extensions to relative imports
+
+  Relative imports in the plugin source were missing `.js` extensions,
+  causing ERR_MODULE_NOT_FOUND in Node ESM environments. Added `.js`
+  extensions to all 5 internal imports and a build-time verification
+  script to catch future regressions.
+
+## 0.4.0
+
+### Minor Changes
+
+- [#20](https://github.com/agustinusnathaniel/maestria/pull/20) [`c3a5015`](https://github.com/agustinusnathaniel/maestria/commit/c3a501572835ae880eb56202b115c9771f999910) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Introduce three keyword-triggered workflow modes that override the orchestrator's default delegation pipeline:
+
+  - `fein` — full pipeline (mandatory recon → design → build → review)
+  - `sonar` — research only (recon + design, stop before implementation)
+  - `blitz` — fast implementation (builder direct, skip gates)
+
+  Detection is word-boundary regex at any position, code-block-aware, case-insensitive. Most restrictive mode wins (fein > sonar > blitz). Config via `modes.disabledKeywords` denylist.
+
+  ADR-008 documents the full design.
+
 ## 0.3.11
 
 ### Patch Changes

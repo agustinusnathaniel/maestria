@@ -4,17 +4,27 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "ready": "vp check && vp run -r test && vp run -r build",
-    "dev": "vp run website#dev",
+    "ready": "vp run check && vp run test && vp run build",
+    "dev": "vp run @maestria/docs#dev",
     "prepare": "vp config",
+    "preview": "vp run @maestria/docs#preview",
     "build": "vp run -r build",
+    "test": "vp run -r test",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "check": "vp check",
+    "clean": "vp cache clean",
+    "fmt": "vp fmt",
+    "fmt:check": "vp fmt --check",
+    "lint": "vp lint",
+    "lint:fix": "vp lint --fix",
+    "typecheck": "vp check --no-fmt --no-lint"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
     "@changesets/cli": "catalog:",
+    "@types/node": "catalog:",
     "vite-plus": "catalog:"
   },
   "devEngines": {

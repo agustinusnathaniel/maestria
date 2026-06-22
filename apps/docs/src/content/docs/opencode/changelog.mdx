@@ -5,6 +5,53 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.4.6
+
+_June 22, 2026_
+
+### Commit authorization rules hardened
+
+The orchestrator now follows an explicit **COMMIT PROTOCOL** with five
+sequential steps: inspect git status, propose the full commit message via
+a user prompt, delegate to the builder with validation checks, stop and
+report, and ask separately before pushing. Rules now explicitly state that
+commit authorization resets to zero after each commit, preventing
+auto-committing on subsequent work instructions.
+
+Affected files:
+
+- `agents/orchestrator.md` — new COMMIT PROTOCOL section
+- `rules/AGENTS.md` — new Commit Policy section
+- `docs/adr/ADR-009-commit-authorization-rules.md` — decision record
+
+## v0.4.3
+
+_June 22, 2026_
+
+- Internal refactoring and reliability improvements
+
+## v0.4.2
+
+_June 20, 2026_
+
+- Infrastructure improvements and bug fixes
+
+## v0.4.0
+
+_June 20, 2026_
+
+### Keyword-triggered workflow modes
+
+Three plain-word keywords that override the orchestrator's default delegation pipeline:
+
+| Keyword | Mode                | Pipeline                                                                              | Use case                                                |
+| ------- | ------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `fein`  | Full pipeline       | adventurer → architect/planner → builder → reviewer (mandatory gates, tests required) | Production-grade changes, cross-module work             |
+| `sonar` | Research only       | adventurer → architect/planner → STOP (no code, structured doc output)                | Discovery, feasibility, understanding before committing |
+| `blitz` | Fast implementation | builder direct (skip recon/design/review)                                             | Quick fixes, prototypes, known territory                |
+
+Detection uses a word-boundary regex at any position in the message, is code-block-aware, and the most restrictive keyword wins (`fein` > `sonar` > `blitz`), and detection is case-insensitive. Modes can be disabled via `modes.disabledKeywords` in plugin options (denylist-only). The full design is documented in ADR-008.
+
 ## v0.3.11
 
 _June 20, 2026_
@@ -51,90 +98,118 @@ Structural boundaries remain:
 
 A new _Read-Side Tool Policy_ in the orchestrator's instructions caps read/glob/grep at 3 calls per task before delegating deeper recon to `@adventurer`.
 
-## 0.3.7
+## v0.3.8
 
-### Patch Changes
+_June 18, 2026_
 
-- **Permission patterns now actually work.** A bug in the custom YAML frontmatter parser caused every permission rule — things like `"*": deny` or `"git status*": allow` — to be silently ignored. The parser was storing YAML quote characters as literal parts of the pattern keys, so nothing ever matched. This affected all 8 agents: the orchestrator's strict permissions didn't actually block anything, and subagents' bash allowlists were dead code.
+### Permission refinements after audit
 
-- **Replaced the hand-rolled YAML parser** with the spec-compliant `yaml` library (eemeli/yaml). This eliminates an entire class of parsing bugs and removes ~120 lines of brittle custom parsing code.
+A systematic review uncovered several gaps in agent permissions. Three agents (adventurer, diagnose, writer) gained `todowrite` for multi-step task tracking. Git read commands (`status`, `show`, `diff`, `log`) — needed for inspecting history without leaving a role — were missing from four agents (adventurer, architect, reviewer, writer), now added. Writer gained `lsp` for code navigation during doc generation. Builder can now run `npm view` for dependency checks, and planner has `which` for tool discovery.
 
-- **Agent descriptions now use proper YAML syntax.** All 8 agent description fields were converted to YAML folded block scalars (`>`) for cleaner multiline text that won't trip up future parsing.
+## v0.3.7
 
-## 0.3.8
+_June 18, 2026_
 
-### Patch Changes
+### Permission parser bug fix
 
-- **Permission refinements after audit.** A systematic review uncovered several gaps in agent permissions. Three agents (adventurer, diagnose, writer) gained `todowrite` for multi-step task tracking. Git read commands (`status`, `show`, `diff`, `log`) — needed for inspecting history without leaving a role — were missing from four agents (adventurer, architect, reviewer, writer), now added. Writer gained `lsp` for code navigation during doc generation. Builder can now run `npm view` for dependency checks, and planner has `which` for tool discovery.
+Fixed a bug where permission rules (e.g., `"*": deny`, `"git status*": allow`) were silently ignored due to a custom YAML frontmatter parser that stored quote characters as literal parts of pattern keys. All 8 agents were affected: the orchestrator's strict permissions didn't actually block anything, and subagents' bash allowlists were dead code.
 
-## 0.3.6
+## v0.3.6
 
-### Patch Changes
+_June 18, 2026_
 
-- **The orchestrator's read-side tools are now explicitly denied.** The v0.3.5 refactor removed the `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions, but the opencode framework's wildcard `*: allow` rule still let the orchestrator use them. A missing key is not an explicit deny. This release adds explicit `deny` entries for the same five tools, completing the strict-dispatcher role. The 7 specialist subagents retain full read-side access.
+### Orchestrator's read-side tools now explicitly denied
 
-## 0.3.5
+The v0.3.5 refactor removed the `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions, but the opencode framework's wildcard `*: allow` rule still let the orchestrator use them. A missing key is not an explicit deny. This release adds explicit `deny` entries for the same five tools, completing the strict-dispatcher role. The 7 specialist subagents retain full read-side access.
 
-### Patch Changes
+## v0.3.5
 
-- **The orchestrator is now a strict dispatcher.** Its read-side tool permissions (`read`, `glob`, `grep`, `lsp`, `webfetch`) are removed, and the opening prompt is rewritten as a dispatcher mandate: `task()` and `question()` are the only tools for making progress. The 7 specialist subagents keep full read-side access for the work they pick up.
-- **Three new directives added to global rules.** "Webfetch may hang — don't block on it", "CLI references — use local tools first", and "Local files — read directly" are added, closing 21 directive-coverage gaps (3 × 7 specialists) so the guidance now applies uniformly.
+_June 18, 2026_
 
-## 0.3.4
+### Orchestrator is now a strict dispatcher
 
-### Patch Changes
+Its read-side tool permissions (`read`, `glob`, `grep`, `lsp`, `webfetch`) are removed, and the opening prompt is rewritten as a dispatcher mandate: `task()` and `question()` are the only tools for making progress. The 7 specialist subagents keep full read-side access for the work they pick up.
 
-- Audit and update skill prescriptions across all 7 agents. Fix renames (`diagnose` → `diagnosing-bugs`, `write-a-skill` → `writing-great-skills`), remove the dead `zoom-out` skill, correct 10 wrong source repos (e.g., ADRs → wshobson/agents, review-logging-patterns → hugorcd/evlog), drop skills from stale sources (sickn33/antigravity-awesome-skills, refoundai/lenny-skills), and add 8 new skills from mattpocock/skills and anthropics/skills with cross-references across the appropriate agents.
+### Three new directives added to global rules
 
-## 0.3.3
+"Webfetch may hang — don't block on it", "CLI references — use local tools first", and "Local files — read directly" are added, closing 21 directive-coverage gaps (3 × 7 specialists) so the guidance now applies uniformly.
 
-### Patch Changes
+## v0.3.4
 
-- Audit and sort agent skill prescriptions across all 7 agents. Alphabetically sorts "Load on trigger" skill lists and adds missing entries (e.g., `session-handoff` to adventurer, `prioritizing-roadmap` and `technical-roadmaps` to planner).
+_June 18, 2026_
 
-## 0.3.2
+### Skill prescription audit
 
-### Patch Changes
+Updated skill prescriptions across all 7 agents. Fixed renamed skills, removed dead entries, corrected source repositories, and added 8 new skills with cross-references.
 
-- Strengthen orchestrator delegation rules. Rule #1 expanded to explicitly forbid using shell for implementation. New Rule #2: "Shell is not a workaround" — catches the common failure mode of substituting shell commands for delegation.
+## v0.3.3
 
-## 0.3.1
+_June 17, 2026_
 
-### Patch Changes
+### Skill prescription gap fill
 
-- Restrict orchestrator task permissions to 7 registered subagents. Changed from `"*": allow` to deny-by-default with explicit allow-list for only the 7 specialists.
+Audited and filled missing skill entries across agents. Added `session-handoff` to adventurer, `prioritizing-roadmap` and `technical-roadmaps` to planner, and sorted skill lists alphabetically.
 
-## 0.3.0
+## v0.3.2
 
-### Minor Changes
+_June 17, 2026_
 
-- Incorporate AI engineering learnings from my-base knowledge base:
-  - **"Read the docs first"** — new non-negotiable directive across global rules, architect, and builder
-  - **Diagnostic documentation mandate** — elevated to non-negotiable in diagnose.md
-  - **Skill prescription expansion** — builder gains `commit-work` skill, diagnose gains `dependency-updater`
+### Stronger orchestrator delegation rules
 
-## 0.2.6
+Rule #1 expanded to explicitly forbid using shell for implementation. New Rule #2: "Shell is not a workaround" — catches the common failure mode of substituting shell commands for delegation.
+
+## v0.3.1
+
+_June 17, 2026_
+
+### Orchestrator task permission lockdown
+
+Restricted orchestrator task permissions to 7 registered subagents. Changed from `"*": allow` to deny-by-default with explicit allow-list for only the 7 specialists.
+
+## v0.3.0
+
+_June 17, 2026_
+
+### AI engineering learnings incorporated
+
+Incorporate learnings from my-base knowledge base:
+
+- **"Read the docs first"** — new non-negotiable directive across global rules, architect, and builder
+- **Diagnostic documentation mandate** — elevated to non-negotiable in diagnose.md
+- **Skill prescription expansion** — builder gains `commit-work` skill, diagnose gains `dependency-updater`
+
+## v0.2.6
+
+_June 14, 2026_
 
 ### Bug Fixes
 
 - Fix typo in builder.md agent prompt
 
-## 0.2.5 (2026-06-12)
+## v0.2.5
+
+_June 13, 2026_
 
 _(no user-facing changes)_
 
-## 0.2.4 (2026-06-12)
+## v0.2.4
+
+_June 13, 2026_
 
 ### Bug Fixes
 
 - Restore rules injection into subagent prompts — the previous removal was too aggressive and left subagents without cross-cutting instructions
 - Remove a conflicting instruction that prevented subagents from fulfilling their designated roles
 
-## 0.2.3 (2026-06-12)
+## v0.2.3
+
+_June 13, 2026_
 
 _(no user-facing changes)_
 
-## 0.2.2 (2026-06-12)
+## v0.2.2
+
+_June 13, 2026_
 
 ### Features
 
@@ -147,14 +222,18 @@ _(no user-facing changes)_
 - Stop injecting global rules into subagent prompts — top-level rules were leaking into subagent context
 - Unstick `webfetch` by skipping the approval step and preferring local tools over remote fetches
 
-## 0.2.1 (2026-06-12)
+## v0.2.1
+
+_June 12, 2026_
 
 ### Bug Fixes
 
 - Force orchestrator delegation via permissions — orchestrator now has `edit: deny` and `bash: * deny` to prevent it from implementing itself
 - Inject specialist table into global rules so the delegation rules are always present
 
-## 0.2.0 (2026-06-12)
+## v0.2.0
+
+_June 12, 2026_
 
 ### Features
 

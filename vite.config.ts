@@ -1,29 +1,25 @@
-import { defineConfig } from "vite-plus";
+import { defineConfig } from 'vite-plus';
 
 export default defineConfig({
   staged: {
-    "*": "vp check --fix",
+    '*.{ts,js,tsx,mjs,mts,cjs}': 'vp check --fix',
   },
-  fmt: {},
+  fmt: {
+    semi: true,
+    singleQuote: true,
+    sortPackageJson: true,
+    ignorePatterns: ['dist/**', '.changeset/**'],
+  },
   lint: {
-    jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
-    rules: { "vite-plus/prefer-vite-plus-imports": "error" },
+    ignorePatterns: ['dist/**'],
+    jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
+    rules: { 'vite-plus/prefer-vite-plus-imports': 'error' },
     options: { typeAware: true, typeCheck: true },
   },
   run: {
-    cache: true,
-    tasks: {
-      "website#dev": {
-        command: "astro dev --root apps/docs",
-        cache: false,
-      },
-      "website#build": {
-        command: "astro build --root apps/docs",
-      },
-      "website#preview": {
-        command: "astro preview --root apps/docs",
-        cache: false,
-      },
-    },
+    cache: { scripts: true, tasks: true },
+  },
+  resolve: {
+    tsconfigPaths: true,
   },
 });

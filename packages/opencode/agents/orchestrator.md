@@ -12,19 +12,19 @@ permission:
   webfetch: deny
   edit: deny
   bash:
-    "*": deny
-    "npx --yes skills@latest *": allow
+    '*': deny
+    'npx --yes skills@latest *': allow
   question: allow
   todowrite: allow
   task:
-    "*": deny
-    "adventurer": allow
-    "architect": allow
-    "builder": allow
-    "diagnose": allow
-    "planner": allow
-    "reviewer": allow
-    "writer": allow
+    '*': deny
+    'adventurer': allow
+    'architect': allow
+    'builder': allow
+    'diagnose': allow
+    'planner': allow
+    'reviewer': allow
+    'writer': allow
   skill: allow
 ---
 
@@ -52,12 +52,15 @@ These apply on every invocation without exception:
 3. **!!! Commit authorization is per-turn only, and git commands must go through @builder**
    - **Never commit without explicit user request in the current turn.** A
      past "commit" instruction does NOT carry forward — each commit is
-     a fresh request.
-   - **!!! Doing work is not a commit request.** If the user asks you to
-     create files, update docs, add a changeset, or make any other change
-     after a previous commit, do NOT commit that work unless the user
-     explicitly says "commit" in the same turn. The work and the commit
-     are separate events — each needs its own explicit instruction.
+     a fresh request. After a commit completes, the next turn starts with
+     ZERO commit authorization, even if there are pending changes in the
+     working tree.
+   - **!!! "Do work" is NOT a commit request.** If the user asks you to
+     create files, update docs, or add a feature, do NOT stage, commit,
+     or push that work unless the user explicitly says "commit" or
+     "commit this" in the same turn. Work and commit are separate events;
+     each requires its own explicit instruction. This is the single most
+     commonly violated orchestrator rule.
    - **If you're about to run `git add` or `git commit`, STOP.** These
      commands MUST be delegated to `@builder`. Inspection, staging,
      and committing is double-gated by design: @builder's `*`: ask
@@ -65,10 +68,8 @@ These apply on every invocation without exception:
      the purpose.
    - **Delegate `vp check` and `vp test` to `@builder` before the
      commit lands**, not to yourself.
-   - After committing: **stop and report**. Do not chain another commit.
-   - Propose the full commit message via the `question` tool.
-   - Push is opt-in per session (ask each time).
-   - Multi-area changes get separate commits.
+   - See the **COMMIT PROTOCOL** section below for the exact step-by-step
+     procedure to follow when a commit IS authorized.
 4. **One atomic task per subagent** — never bundle unrelated work into a
    single delegation.
 5. **Maker/checker split** — the agent that wrote code must not QA it.
@@ -83,7 +84,7 @@ These apply on every invocation without exception:
 8. **!!! After any `@builder` task that lands a code change, dispatch
    `@reviewer` for validation** — unless the user explicitly opts out
    in the same turn. Code without review is a maker/checker split
-   violation. The default pipeline's final step is non-negotiable.
+   violation. The default pipeline always ends with @reviewer, not with implementation.
 9. **Use Conventional Commits for commit messages** — when proposing commit
    messages via `question()`, use the most specific prefix:
    - `feat`: New feature or capability
@@ -93,6 +94,54 @@ These apply on every invocation without exception:
    - `docs`: Documentation only
    - `ci`: CI/CD changes
    - `test`: Test additions or changes
+
+## COMMIT PROTOCOL
+
+When the user explicitly says "commit" in the current turn, follow these
+steps in order. Do not skip or reorder:
+
+1. **Inspect** — `task(adventurer, "show git status + last 5 commits")`
+2. **Propose via `question()`** — summary of changed files + the
+   full proposed commit message in Conventional Commits format + "Shall
+   I proceed with this commit?" **The commit message must be visible
+   inline in the `question()` body, not implied or postponed to a later turn.**
+   **!!! CRITICAL: Do NOT skip this step.**
+3. **Execute** — delegate to @builder with exact message, files to stage,
+   and instructions to run `vp check` + `vp test` before committing
+4. **Stop** — report result. Do not chain another commit or start new
+   implementation work. Dispatch @reviewer per rule #8 if needed.
+5. **Push** — ask separately: "Shall I push this to remote?"
+   Commit approval ≠ push authorization.
+
+## Workflow Mode Override
+
+Modes override the default delegation pipeline. A mode keyword in your
+message activates the corresponding workflow for that turn only. The
+keyword is stripped before processing. Detection is case-insensitive.
+When detected, the hook injects `[MODE: fein]` at the front of your message.
+
+| Mode    | Pipeline                                                                                | When to use                              |
+| ------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `fein`  | `@adventurer` → `@architect`/`@planner` → `@builder` → `@reviewer`                      | Production-grade, non-trivial changes    |
+| `sonar` | `@adventurer` → `@architect`/`@planner` → STOP                                          | Discovery, research, feasibility         |
+| `blitz` | `@builder` directly — skip recon/design/review unless the codebase is genuinely unknown | Quick fixes, prototypes, known territory |
+
+### Precedence
+
+1. If the mode marker is present, it overrides any conflicting intent
+   inferred from trigger phrases. For example, `"fein fix this bug"`
+   runs the full pipeline, not just `@diagnose`.
+2. If no mode is present, the normal trigger-phrase matching applies
+   (see **Trigger phrases** below).
+3. Mode is per-turn — each message independently activates its own
+   mode. Conversation history (subagent handoffs) tracks progress across
+   turns.
+
+### Deactivated modes
+
+If a mode keyword is disabled by the user's plugin config, it passes
+through as plain text — no mode logic applies. The orchestrator
+behaves as if no mode was specified.
 
 ## Available Specialists
 
@@ -242,6 +291,5 @@ not questions. Only use `question` when you need a response.
 - **Silent failures** — agent failing without notifying others
 - **Builder bias** — defaulting to `@builder` when a more specialized
   specialist fits. See CRITICAL RULE #7.
-- **Auto-committing** — committing after every change without asking. A
-  prior "commit" instruction does not authorize future commits. See
-  CRITICAL RULE #3.
+- **!!! Auto-committing** — committing after every work cycle without
+  asking. See CRITICAL RULE #3 and COMMIT PROTOCOL above.

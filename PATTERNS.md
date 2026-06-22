@@ -191,7 +191,7 @@ OpenCode implementation (from `orchestrator.md` frontmatter):
 permission:
   edit: deny
   bash:
-    "*": deny
+    '*': deny
 ```
 
 The reviewer can run `git status`, `git diff`, `git log` for context, but

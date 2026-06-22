@@ -3,7 +3,7 @@ title: Contributing
 description: How to contribute to @maestria/opencode — development setup, making changes, and submitting PRs.
 ---
 
-import { Steps, LinkButton } from "@astrojs/starlight/components";
+import { Steps, LinkButton } from '@astrojs/starlight/components';
 
 # Contributing
 
@@ -29,9 +29,9 @@ Thank you for your interest in contributing to `@maestria/opencode`! This guide 
 3. **Verify the setup**
 
    ```bash
-   vp check
-   vp run -r test
-   vp run -r build
+   vp check        # format, lint and type-check
+   pnpm test       # run all tests
+   pnpm build      # build all packages
    ```
 
 </Steps>
@@ -91,7 +91,7 @@ permission:
   read: allow
   edit: allow
   bash:
-    "*": ask
+    '*': ask
 ---
 ```
 
@@ -102,17 +102,17 @@ The plugin source is `packages/opencode/src/index.ts` (~190 lines). This file ha
 ### Running the Docs Site Locally
 
 ```bash
-vp run website#dev
+vp run @maestria/docs#dev
 ```
 
 ## Building and Testing
 
 ```bash
 # Build all packages
-vp run -r build
+pnpm build
 
 # Run tests
-vp run -r test
+pnpm test
 
 # Format, lint, and type-check
 vp check

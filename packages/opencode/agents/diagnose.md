@@ -15,15 +15,15 @@ permission:
   todowrite: allow
   edit: ask
   bash:
-    "*": ask
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "git blame*": allow
-    "git show*": allow
-    "which *": allow
-    "env": allow
-    "pwd": allow
+    '*': ask
+    'git status*': allow
+    'git diff*': allow
+    'git log*': allow
+    'git blame*': allow
+    'git show*': allow
+    'which *': allow
+    'env': allow
+    'pwd': allow
 ---
 
 You trace bugs systematically.

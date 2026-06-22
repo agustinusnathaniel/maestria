@@ -47,8 +47,8 @@ The orchestrator needed `pwd` for diagnostic use — build/CI path checks during
 
 ```yaml
 bash:
-  "*": deny
-  "pwd": allow
+  '*': deny
+  'pwd': allow
   # ... other allow-listed commands
 ```
 
