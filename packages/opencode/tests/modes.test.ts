@@ -212,6 +212,24 @@ describe('stripKeyword', () => {
     const result = makeResult('fein', 'fein', 100);
     expect(stripKeyword(text, result)).toBe('just a normal message');
   });
+
+  it('preserves single newline between lines', () => {
+    const text = 'fein: do this\nand this';
+    const result = makeResult('fein', 'fein', 0);
+    expect(stripKeyword(text, result)).toBe('do this\nand this');
+  });
+
+  it('preserves double newline (paragraph break)', () => {
+    const text = 'sonar: paragraph one\n\nparagraph two';
+    const result = makeResult('sonar', 'sonar', 0);
+    expect(stripKeyword(text, result)).toBe('paragraph one\n\nparagraph two');
+  });
+
+  it('preserves indentation in multi-line content', () => {
+    const text = 'fein: do this\n  - sub item A\n  - sub item B';
+    const result = makeResult('fein', 'fein', 0);
+    expect(stripKeyword(text, result)).toBe('do this\n - sub item A\n - sub item B');
+  });
 });
 
 // ---------------------------------------------------------------------------

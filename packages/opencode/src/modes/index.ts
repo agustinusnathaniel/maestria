@@ -122,7 +122,7 @@ export function stripKeyword(text: string, result: ModeResult): string {
 
   // Collapse double spaces and trim both ends (handles keyword at start,
   // end, or middle of text, plus extra whitespace around colon)
-  return (before + cleaned).replace(/\s{2,}/g, ' ').trim();
+  return (before + cleaned).replace(/ {2,}/g, ' ').trim();
 }
 
 /**
