@@ -1,4 +1,4 @@
-# ADR-011: Commit Authorization Rules in Orchestrator Directive
+# ADR-009: Commit Authorization Rules in Orchestrator Directive
 
 ## Status
 

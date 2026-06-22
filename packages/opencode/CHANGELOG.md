@@ -73,7 +73,7 @@
 
   Detection is word-boundary regex at any position, code-block-aware, case-insensitive. Most restrictive mode wins (fein > sonar > blitz). Config via `modes.disabledKeywords` denylist.
 
-  ADR-010 documents the full design.
+  ADR-008 documents the full design.
 
 ## 0.3.11
 

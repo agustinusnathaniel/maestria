@@ -12,4 +12,4 @@ Fix duplicate skills, thin orchestrator, fix skillInstructions, trim AGENTS.md
 - Thins orchestrator SKILL.md by removing ~67 lines of internal Kimi Code implementation details
 - Fixes skillInstructions in kimi.plugin.json to tactical dispatch rules
 - Removes redundant delegation table from rules/AGENTS.md
-- Updates contributing, INSTALL, README, and ADR-009 to reflect current implementation
+- Updates contributing, INSTALL, README, and ADR-011 to reflect current implementation

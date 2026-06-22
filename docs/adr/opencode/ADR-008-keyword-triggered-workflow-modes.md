@@ -1,4 +1,4 @@
-# ADR-010: Keyword-Triggered Workflow Modes — Hybrid Hook + Prompt, Denylist Config
+# ADR-008: Keyword-Triggered Workflow Modes — Hybrid Hook + Prompt, Denylist Config
 
 ## Status
 

@@ -1,4 +1,4 @@
-# ADR-009: Kimi Code Plugin Architecture — Declarative Skills, No Custom Subagents
+# ADR-011: Kimi Code Plugin Architecture — Declarative Skills, No Custom Subagents
 
 ## Status
 

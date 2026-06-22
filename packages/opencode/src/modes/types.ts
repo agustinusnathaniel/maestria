@@ -1,7 +1,7 @@
 /**
  * Types for keyword-triggered workflow modes.
  *
- * @see ADR-010 for full design context.
+ * @see ADR-008 for full design context.
  */
 
 import { z } from 'zod';
