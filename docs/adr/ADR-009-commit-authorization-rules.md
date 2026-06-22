@@ -10,8 +10,8 @@ ADR-001 established the principle that commit behavior belongs to OpenCode's
 built-in defaults and should not be duplicated in `@maestria/opencode`'s agent
 files or global rules:
 
-> *"OpenCode defaults handle commit behavior... Duplicating them in our rules
-> creates maintenance burden and drift risk."* (ADR-001, Decision Table —
+> _"OpenCode defaults handle commit behavior... Duplicating them in our rules
+> creates maintenance burden and drift risk."_ (ADR-001, Decision Table —
 > "Exclude" row)
 
 In practice, this proved insufficient. The orchestrator agent (the LLM acting
@@ -62,12 +62,14 @@ Add commit authorization rules at two levels:
 ### Level 1: Orchestrator Directive (`agents/orchestrator.md`)
 
 **CRITICAL RULE #3** was strengthened with:
+
 - "Never commit without explicit user request in the current turn"
 - "After a commit completes, the next turn starts with ZERO commit authorization"
 - "'Do work' is NOT a commit request — changing files and committing are
   separate instructions"
 
 A new **COMMIT PROTOCOL** section was added with a 5-step checklist:
+
 1. Inspect — check git status via `@adventurer`
 2. Propose — present full commit message inline in `question()` — **!!! Do NOT skip**
 3. Execute — delegate to `@builder` with exact message + `vp check` + `vp test`
@@ -80,6 +82,7 @@ violated rule, with cross-references to rule #3 and the protocol.
 ### Level 2: Global Rules (`rules/AGENTS.md`)
 
 A new **Commit Policy** section was added visible to all subagents:
+
 - Only the orchestrator authorizes commits
 - Subagents must refuse commit requests and redirect to the orchestrator
 - Builders must flag it if the orchestrator's instructions skip the protocol

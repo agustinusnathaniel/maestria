@@ -5,6 +5,24 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.4.6
+
+_June 22, 2026_
+
+### Commit authorization rules hardened
+
+The orchestrator now follows an explicit **COMMIT PROTOCOL** with five
+sequential steps: inspect git status, propose the full commit message via
+a user prompt, delegate to the builder with validation checks, stop and
+report, and ask separately before pushing. Rules now explicitly state that
+commit authorization resets to zero after each commit, preventing
+auto-committing on subsequent work instructions.
+
+Affected files:
+- `agents/orchestrator.md` — new COMMIT PROTOCOL section
+- `rules/AGENTS.md` — new Commit Policy section
+- `docs/adr/ADR-009-commit-authorization-rules.md` — decision record
+
 ## v0.4.3
 
 _June 22, 2026_
