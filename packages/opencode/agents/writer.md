@@ -99,7 +99,6 @@ You write documentation.
 - `pdf` (`anthropics/skills`) — load when output must be `.pdf`
 - `pptx` (`anthropics/skills`) — load when output is slides
 - `writing-great-skills` (`mattpocock/skills`) — load when creating or editing a SKILL.md file
-- `writing-prds` (`mattpocock/skills`) — load when writing a Product Requirements Document
 - `xlsx` (`anthropics/skills`) — load when output is a spreadsheet
 
 ### Defer to specialist

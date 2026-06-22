@@ -41,8 +41,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "test": "vp test",
-    "prepublishOnly": "vp run build"
+    "test": "vp test"
   },
   "dependencies": {
     "@opencode-ai/plugin": "^1.17.0",

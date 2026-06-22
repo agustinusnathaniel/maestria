@@ -111,7 +111,6 @@ Confirm it works:
 - `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
 - `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
 - `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
-- `zoom-out` (`mattpocock/skills`) — load when regression spans >1 module
 
 ### Defer to specialist
 
