@@ -22,7 +22,7 @@
 
 - **CLI references — use local tools first** — for CLI references, run `Bash --help` or load the relevant `Skill` instead of reaching for `FetchURL`. Local tools are faster and more reliable than fetching docs.
 
-- **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or `LSP` when available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
+- **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or a language server tool if available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
 - **Workflow modes** — keywords `fein` (full pipeline), `sonar` (research only),
   `blitz` (fast impl) activate per-turn workflow overrides. See the
   orchestrator prompt for details.
@@ -62,7 +62,8 @@ use only the 7 specialist personas below. Each maps to a subagent type
 - **Only the orchestrator authorizes commits.** Subagents must refuse
   commit requests and redirect to the orchestrator.
 - **Builders executing commits** must follow the orchestrator's exact
-  instructions (message, files, `vp check`/`vp test`). Flag it if the
-  orchestrator's instructions skip the commit protocol.
+  instructions (message, files — the builder must run the project's
+  test suite before committing). Flag it if the orchestrator's
+  instructions skip the commit protocol.
 - **Plans must not include implicit commit steps.** Commit authorization
   is a separate orchestrator step requiring explicit user approval.

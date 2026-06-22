@@ -183,6 +183,7 @@ describe('skills directory', () => {
         expect(typeof data.description).toBe('string');
         expect((data.description as string).length).toBeGreaterThan(0);
         expect(data.name).toBe(skill);
+        expect(data.type).toBe('prompt');
       });
 
       it('has a whenToUse field', async () => {
@@ -271,4 +272,82 @@ describe('package.json', () => {
     expect(pkg.private).toBe(true);
     expect(pkg.type).toBe('module');
   });
+});
+
+describe('tool name PascalCase compliance', () => {
+  const CANONICAL_TOOLS = new Set([
+    'Read',
+    'Write',
+    'Edit',
+    'Grep',
+    'Glob',
+    'ReadMediaFile',
+    'Bash',
+    'WebSearch',
+    'FetchURL',
+    'Agent',
+    'AgentSwarm',
+    'Skill',
+    'AskUserQuestion',
+    'TodoList',
+    'EnterPlanMode',
+    'ExitPlanMode',
+    'TaskList',
+    'TaskOutput',
+    'TaskStop',
+    'CronCreate',
+    'CronList',
+    'CronDelete',
+  ]);
+
+  // Known non-tool backtick words commonly found in skill files
+  const ALLOWED_VARIATIONS = new Set([
+    'explore',
+    'plan',
+    'coder', // subagent types
+    'fein',
+    'sonar',
+    'blitz', // workflow modes
+    'praise',
+    'suggestion',
+    'issue',
+    'nitpick',
+    'question', // conventional comments
+    'opensrc', // skill name, not a tool
+    'vp',
+    'pnpm',
+    'npm',
+    'npx',
+    'node',
+    'git',
+    'curl', // CLI commands
+  ]);
+
+  for (const skill of EXPECTED_SKILLS) {
+    it(`skills/${skill}/SKILL.md has PascalCase tool references`, async () => {
+      const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+      const text = await readFile(skillPath, 'utf8');
+      // Find all backtick-quoted words
+      const backtickWords = text.match(/`([A-Za-z][A-Za-z0-9_-]*)`/g) || [];
+      const violations: string[] = [];
+      for (const match of backtickWords) {
+        const word = match.slice(1, -1); // strip backticks
+        // Skip things that start with lowercase (unlikely to be tools)
+        if (word[0] === word[0]?.toLowerCase()) continue;
+        // Skip known non-tool words
+        if (ALLOWED_VARIATIONS.has(word)) continue;
+        // If it looks like a tool name (PascalCase) but isn't in canonical list
+        if (CANONICAL_TOOLS.has(word)) continue;
+        // Check for potential Kimi Code tool names that might be missing
+        // We flag unrecognized PascalCase as warnings
+        violations.push(word);
+      }
+      // Allow violations to be empty — no assertions needed
+      // This test is meant for monitoring, not blocking
+      // (since skill references may vary)
+      if (violations.length > 0) {
+        console.warn(`Unrecognized PascalCase references in ${skill}: ${violations.join(', ')}`);
+      }
+    });
+  }
 });

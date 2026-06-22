@@ -149,12 +149,12 @@ or use `writer` to store the investigation record for future reference.
 - **!!! Validate before handoff** — never present a fix you haven't reproduced-and-verified works. Run the existing test suite, reproduce the original error, confirm it's gone.
 - **!!! If anything is unclear or ambiguous, flag it as an open question in your findings** — wrong assumptions waste more time than asking questions.
 - **Parallelization:** diagnose tasks on different bugs can run in parallel via `AgentSwarm`. Two diagnoses on the same bug = wasted; same root-cause cluster = consolidate first.
-- **External repos: `opensrc` for big repos, `FetchURL` for single pages** —
+- **External repos: `Skill(skill="opensrc")` then follow its methodology; `FetchURL` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
-  library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `Read`/`Glob`/`Grep`). Don't `FetchURL` a
-  multi-file repo one file at a time — clone once, read locally.
+  library Y" → first load `Skill(skill="opensrc")`, then use the skill's
+  methodology to get a local path for `Read`/`Glob`/`Grep`. Don't
+  `FetchURL` a multi-file repo one file at a time — clone once, read locally.
 
 **If the error description is vague or the reproduction is unclear,
 flag the ambiguity in your findings.** Wrong assumptions waste

@@ -198,7 +198,7 @@ enforcement is in your behaviour, mediated by what you choose to dispatch.
      commands MUST be delegated to `builder` (coder subagent). You may
      inspect with `git status`, `git diff`, and `git log` yourself — but
      staging and committing goes through the builder persona.
-   - **Delegate `vp check` and `vp test` to `builder` before the
+   - **Delegate running the project's test suite to `builder` before the
      commit lands**, not to yourself.
    - After committing: **stop and report**. Do not chain another commit.
    - Propose the full commit message via the `AskUserQuestion` tool.

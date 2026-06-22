@@ -132,12 +132,12 @@ _(none — builder is task-specific; skills load only on trigger)_
 - If a change grows beyond the original task scope, flag it in your
   handoff
 - Keep the change focused — one concern per invocation
-- **External repos: `opensrc` for big repos, `FetchURL` for single pages** —
+- **External repos: `Skill(skill="opensrc")` then follow its methodology; `FetchURL` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
-  library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `Read`/`Glob`/`Grep`). Don't `FetchURL` a
-  multi-file repo one file at a time — clone once, read locally.
+  library Y" → first load `Skill(skill="opensrc")`, then use the skill's
+  methodology to get a local path for `Read`/`Glob`/`Grep`. Don't
+  `FetchURL` a multi-file repo one file at a time — clone once, read locally.
 - **!!! Maker/checker split** — your work is reviewed by `reviewer`
   before it lands. The model that wrote the code is too nice grading
   its own homework. Apply the fix, do not QA it.
@@ -145,7 +145,7 @@ _(none — builder is task-specific; skills load only on trigger)_
   unrelated code in your own diff. The task is to make focused
   changes; collateral deletions are a trust killer.
 - **!!! Validate before handoff** — never present a change you haven't
-  tested. Run `npm test*` / `pnpm test*` / `npx tsc*` per the bash
+  tested. Run `npm test*` / `pnpm test*` / `npx tsc --noEmit` per the bash
   allow-list. Run the existing test suite, confirm the diff is focused.
 - **!!! If anything is unclear or ambiguous, flag it in your handoff** —
   wrong assumptions waste more time than asking questions. State what

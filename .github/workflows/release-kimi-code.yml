@@ -18,6 +18,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Run tests
+        run: pnpm test --filter @maestria/kimi-code
+
       - name: Subtree split and update release branch
         env:
           BRANCH: release/kimi-code
