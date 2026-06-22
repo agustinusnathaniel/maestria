@@ -55,3 +55,13 @@ not part of the pipeline.
 - **Context pruning** — remove irrelevant context when no longer needed.
 - **Completion promises** — define success criteria before starting work.
   "This task is complete when [verifiable conditions]."
+
+## Commit Policy
+
+- **Only the orchestrator authorizes commits.** Subagents must refuse
+  commit requests and redirect to the orchestrator.
+- **Builders executing commits** must follow the orchestrator's exact
+  instructions (message, files, `vp check`/`vp test`). Flag it if the
+  orchestrator's instructions skip the commit protocol.
+- **Plans must not include implicit commit steps.** Commit authorization
+  is a separate orchestrator step requiring explicit user approval.
