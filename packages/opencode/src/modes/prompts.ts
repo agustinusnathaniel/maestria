@@ -4,7 +4,7 @@ import type { ModeKeyword } from '@/modes/types.js';
  * Mode prompt text for each keyword.
  * These are injected into the turn when a mode is detected.
  *
- * @see ADR-008 (section "Mode Prompts")
+ * @see ADR-010 (section "Mode Prompts")
  */
 export const MODE_PROMPTS: Record<ModeKeyword, string> = {
   fein: [
