@@ -4,6 +4,7 @@ description: >
   From error message to root cause to prevention.
   Use for: cryptic errors, regressions, production bugs.
 mode: subagent
+role: thinker
 permission:
   read: allow
   glob: allow

@@ -4,6 +4,7 @@ description: >
   Executes one verifiable unit of work with minimal context.
   Use for: targeted fixes, feature implementation, refactors, adding tests.
 mode: subagent
+role: worker
 permission:
   read: allow
   glob: allow

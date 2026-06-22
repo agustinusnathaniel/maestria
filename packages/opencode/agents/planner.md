@@ -4,6 +4,7 @@ description: >
   Breaks down complex features into verifiable milestones.
   Use for: complex features requiring multi-phase execution, when the plan needs review before building.
 mode: subagent
+role: thinker
 permission:
   read: allow
   glob: allow

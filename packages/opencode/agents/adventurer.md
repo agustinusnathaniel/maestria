@@ -7,6 +7,7 @@ description: >
   context before implementation, investigating module structures.
   One role per session: exploration only — never implement or design.
 mode: subagent
+role: thinker
 permission:
   read: allow
   glob: allow

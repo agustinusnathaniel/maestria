@@ -10,22 +10,29 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const agentsDir = join(__dirname, '..', 'agents');
 const rulesPath = join(__dirname, '..', 'rules', 'AGENTS.md');
 
+export type AgentRole = 'thinker' | 'worker' | 'verifier';
+
+const VALID_ROLES = new Set<AgentRole>(['thinker', 'worker', 'verifier']);
+
 interface AgentFrontmatter {
   description: string;
   mode: string;
   permission: Record<string, unknown>;
   color?: string;
   maxSteps?: number;
+  role?: AgentRole;
 }
 
 function parseFrontmatter(yamlStr: string): AgentFrontmatter {
   const result = parseYaml(yamlStr) as Record<string, unknown>;
+  const role = result.role as string | undefined;
   return {
     description: (result.description as string) || '',
     mode: (result.mode as string) || 'subagent',
     permission: (result.permission as Record<string, unknown>) || {},
     color: result.color as string | undefined,
     maxSteps: result.maxSteps ? Number(result.maxSteps) : undefined,
+    role: role && VALID_ROLES.has(role as AgentRole) ? (role as AgentRole) : undefined,
   };
 }
 
@@ -54,6 +61,7 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
 
   if (frontmatter.color) config.color = frontmatter.color;
   if (frontmatter.maxSteps) config.maxSteps = frontmatter.maxSteps;
+  if (frontmatter.role) config.role = frontmatter.role;
 
   return { name, config };
 }
@@ -73,6 +81,25 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   return agents;
 }
 
+/**
+ * Generate a dynamic role mapping table from agent configs.
+ * Agents without a role field are listed as coordinator (no role).
+ */
+function generateRoleMapping(agents: Record<string, Record<string, unknown>>): string {
+  const lines = ['## Agent Role Mapping'];
+  const sortedNames = Object.keys(agents).sort();
+  for (const name of sortedNames) {
+    const agent = agents[name];
+    const role = agent.role as string | undefined;
+    if (!role) {
+      lines.push(`- @${name} — coordinator, no role`);
+      continue;
+    }
+    lines.push(`- @${name} — ${role}`);
+  }
+  return lines.join('\n');
+}
+
 export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOptions) => {
   // Validate and parse options with zod
   const parsed = maestriaOptionsSchema.parse(options ?? {});
@@ -87,7 +114,7 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
         ...input.agent,
         ...agents,
       };
-      input.instructions = [...(input.instructions ?? []), rulesPath];
+      input.instructions = [...(input.instructions ?? []), rulesPath, generateRoleMapping(agents)];
     },
     'experimental.session.compacting': async (_input, output) => {
       output.context.push(
