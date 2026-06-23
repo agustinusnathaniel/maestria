@@ -1,7 +1,7 @@
 ---
-"@maestria/opencode": minor
-"@maestria/pi": minor
-"@maestria/kimi-code": minor
+"@maestria/opencode": patch
+"@maestria/pi": patch
+"@maestria/kimi-code": patch
 "@maestria/core": minor
 ---
 
