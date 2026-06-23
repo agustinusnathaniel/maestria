@@ -33,6 +33,7 @@ export interface ResolvedSyncConfig {
   configDir: string;
   source: string;
   output: string;
+  default?: FileConfig;
   files: Record<string, ResolvedFileConfig>;
   preserve: string[];
 }
@@ -95,7 +96,14 @@ function resolveConfig(raw: SyncConfig, configDir: string): ResolvedSyncConfig {
     }
   }
 
-  return { configDir, source, output, files: resolvedFiles, preserve: raw.preserve ?? [] };
+  return {
+    configDir,
+    source,
+    output,
+    default: raw.default,
+    files: resolvedFiles,
+    preserve: raw.preserve ?? [],
+  };
 }
 
 function resolveFileConfig(

@@ -61,19 +61,28 @@ export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
     matchedFiles.add(filename);
 
     const fileCfg = config.files[filename];
-    if (!fileCfg && verbose) {
-      logger(`[${report}] No config for ${relPath}, using defaults`);
-    }
+    const isExplicit = filename in config.files;
 
-    const resolved: ResolvedFileConfig = fileCfg ?? {
-      output: config.output
-        ? resolve(config.output, filename)
-        : resolve(config.configDir, filename),
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
-      append: '',
-    };
+    let resolved: ResolvedFileConfig;
+    if (isExplicit) {
+      // File was in config.files — resolveFileConfig already merged defaults
+      resolved = fileCfg;
+    } else {
+      // File wasn't in config.files — apply default merging here
+      if (verbose) {
+        logger(`[${report}] No config for ${relPath}, using defaults`);
+      }
+      resolved = {
+        output: config.output
+          ? resolve(config.output, filename)
+          : resolve(config.configDir, filename),
+        stripFrontmatter: config.default?.stripFrontmatter ?? false,
+        replace: [...(config.default?.replace ?? [])],
+        prepend: config.default?.prepend ?? '',
+        append: config.default?.append ?? '',
+        frontmatter: config.default?.frontmatter,
+      };
+    }
 
     generatedOutputs.add(resolved.output);
 

@@ -22,14 +22,6 @@ export default {
   },
 
   files: {
-    'adventurer.md': {},
-    'architect.md': {},
-    'builder.md': {},
-    'diagnose.md': {},
-    'planner.md': {},
-    'reviewer.md': {},
-    'writer.md': {},
-    'orchestrator.md': {},
     'rules.md': {
       output: '../rules/AGENTS.md',
     },
