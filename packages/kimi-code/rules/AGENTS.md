@@ -67,3 +67,8 @@ use only the 7 specialist personas below. Each maps to a subagent type
   instructions skip the commit protocol.
 - **Plans must not include implicit commit steps.** Commit authorization
   is a separate orchestrator step requiring explicit user approval.
+
+## Pipeline Patterns
+
+The orchestrator skill defines the canonical Role-Based Pipeline with
+thinker/worker/verifier roles and dynamic sequencing.
