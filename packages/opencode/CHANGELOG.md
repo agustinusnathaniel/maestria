@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.8
+
+### Patch Changes
+
+- [`c035ef2`](https://github.com/agustinusnathaniel/maestria/commit/c035ef2769586f253bb0d668fd07fcab38c567b6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Move @opencode-ai/plugin to peerDependencies + devDependencies (community convention)
+  Add graceful error handling in loadAgents() with per-file try/catch
+  Add opencode metadata block to package.json for plugin discovery
+
 ## 0.4.7
 
 ### Patch Changes
