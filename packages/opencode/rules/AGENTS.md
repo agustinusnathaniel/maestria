@@ -68,6 +68,5 @@ not part of the pipeline.
 
 ## Pipeline Patterns
 
-See [Role-Based Pipeline](../agents/orchestrator.md#role-based-pipeline) in
-the orchestrator prompt for the canonical definition of thinker/worker/
-verifier roles and dynamic sequencing.
+The orchestrator prompt defines the canonical Role-Based Pipeline with
+thinker/worker/verifier roles and dynamic sequencing.
