@@ -1,0 +1,157 @@
+---
+title: Contributing
+description: How to contribute to @maestria/pi — development setup, making changes, and submitting PRs.
+---
+
+import { Steps, LinkButton } from '@astrojs/starlight/components';
+
+# Contributing
+
+Thank you for your interest in contributing to `@maestria/pi`! This guide covers setup, making changes, and submitting PRs.
+
+## Development Setup
+
+<Steps>
+
+1. **Clone the monorepo**
+
+   ```bash
+   git clone https://github.com/agustinusnathaniel/maestria.git
+   cd maestria
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   vp install
+   ```
+
+3. **Verify the setup**
+
+   ```bash
+   vp check              # format, lint and type-check
+   pnpm --filter @maestria/pi test   # run Pi tests
+   pnpm --filter @maestria/pi build  # build Pi package
+   ```
+
+</Steps>
+
+## Project Structure
+
+```
+maestria/
+├── apps/
+│   └── docs/                 # Documentation site
+└── packages/
+    └── pi/                   # @maestria/pi extension
+        ├── prompts/          # Agent prompt templates (8 agents)
+        ├── rules/            # Global agent rules (AGENTS.md)
+        ├── skills/           # Methodology skills (handoff, iteration-limits)
+        ├── src/              # Extension source code
+        │   ├── extension.ts  # Extension entry point
+        │   ├── modes.ts      # Agent mode definitions
+        │   ├── rules.ts      # Rule resolution logic
+        │   ├── rules-content.ts  # In-memory rules content
+        │   ├── state.ts      # Session state management
+        │   ├── compaction.ts # Context compaction
+        │   ├── subagent.ts   # Subagent orchestration
+        │   ├── commands.ts   # Pi commands
+        │   └── tools.ts      # Tool definitions
+        ├── scripts/          # Validation and build scripts
+        └── tests/            # Vitest test suite (9 test files, ~63 tests)
+```
+
+## Making Changes
+
+### Adding or Modifying Prompts
+
+Prompts live in `packages/pi/prompts/`. Each file corresponds to one of the 8 agents (orchestrator plus 7 specialists). To add a new prompt, create a `.md` file in that directory. To modify an existing one, edit the corresponding file. After editing, run the prompt validation script:
+
+```bash
+pnpm --filter @maestria/pi validate-prompts
+```
+
+### Modifying Global Rules
+
+Global rules are in `packages/pi/rules/AGENTS.md`. This file is injected into every agent session and applies across all subagents. After editing, rebuild to regenerate the compiled rules:
+
+```bash
+pnpm --filter @maestria/pi build
+```
+
+### Adding or Modifying Skills
+
+Skills live in `packages/pi/skills/`. Each skill directory contains a SKILL.md and any supporting files. To add a new skill, create a directory under `skills/` with a SKILL.md file. Validate your changes with:
+
+```bash
+pnpm --filter @maestria/pi validate-skills
+```
+
+### Modifying Extension Code
+
+The extension source is in `packages/pi/src/`. The entry point is `extension.ts` which registers modes, rules, commands, tools, and skills with the Pi runtime. Other source files cover specific concerns:
+
+| File               | Purpose                           |
+| ------------------ | --------------------------------- |
+| `extension.ts`     | Extension entry, registers agents |
+| `modes.ts`         | Agent mode definitions            |
+| `rules.ts`         | Rule resolution at session start  |
+| `rules-content.ts` | Compiled rule content in memory   |
+| `state.ts`         | Session state tracking            |
+| `compaction.ts`    | Context compaction for long runs  |
+| `subagent.ts`      | Subagent delegation logic         |
+| `commands.ts`      | Custom Pi commands                |
+| `tools.ts`         | Tool definitions and permissions  |
+
+### Running the Docs Site Locally
+
+```bash
+vp run @maestria/docs#dev
+```
+
+## Building and Testing
+
+The build uses Rolldown (`vp pack`) rather than tsc:
+
+```bash
+# Build the Pi package
+pnpm --filter @maestria/pi build
+
+# Run tests (Vitest)
+pnpm --filter @maestria/pi test
+
+# Validate prompts and skills
+pnpm --filter @maestria/pi validate
+
+# Format, lint, and type-check
+vp check
+```
+
+Tests are written with Vitest and live in `packages/pi/tests/`. You can run individual test files:
+
+```bash
+pnpm --filter @maestria/pi test -- tests/commands.test.ts
+```
+
+## Creating a Changeset
+
+This project uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing:
+
+```bash
+pnpm changeset
+```
+
+Follow the prompts to describe your changes. Commit the generated changeset file alongside your code changes.
+
+## Pull Request Process
+
+1. **Fork the repository** and create a feature branch
+2. **Make your changes** following existing conventions
+3. **Verify** — run `vp check` and ensure tests pass with `pnpm --filter @maestria/pi test`
+4. **Run validation** — `pnpm --filter @maestria/pi validate` if you changed prompts or skills
+5. **Create a changeset** if your changes affect the published package
+6. **Submit a PR** with a clear description of what you changed and why
+
+## Need Help?
+
+Open an issue on GitHub or reach out to the maintainers.

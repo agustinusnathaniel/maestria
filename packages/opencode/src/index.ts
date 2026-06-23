@@ -60,17 +60,27 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
 
 /**
  * Load all agent configs from the bundled agents/ directory.
+ * Returns partial results if some agent files fail to load.
  */
 function loadAgents(): Record<string, Record<string, unknown>> {
-  const files = readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
-  const agents: Record<string, Record<string, unknown>> = {};
+  try {
+    const files = readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
+    const agents: Record<string, Record<string, unknown>> = {};
 
-  for (const file of files) {
-    const { name, config } = parseAgentFile(join(agentsDir, file));
-    agents[name] = config;
+    for (const file of files) {
+      try {
+        const { name, config } = parseAgentFile(join(agentsDir, file));
+        agents[name] = config;
+      } catch (err) {
+        console.warn(`[maestria] Failed to parse agent file "${file}":`, err);
+      }
+    }
+
+    return agents;
+  } catch (err) {
+    console.warn(`[maestria] Failed to read agents directory:`, err);
+    return {};
   }
-
-  return agents;
 }
 
 export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOptions) => {

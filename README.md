@@ -10,20 +10,12 @@ skills tailored to its platform's plugin model.
 
 - [`@maestria/opencode`](packages/opencode) — [README](packages/opencode/README.md)
 - [`@maestria/kimi-code`](packages/kimi-code) — [README](packages/kimi-code/README.md)
+- [`@maestria/pi`](packages/pi) — Pi coding agent extension: 7 specialists + 3 workflow modes
 
 ## Development
 
-```bash
-vp install          # install dependencies
-vp check            # format, lint, type-check everything
-vp run test           # run all tests
-vp run build          # build all packages
-```
+vp install / vp check / vp run test / vp run build
 
 ## Release
 
-```bash
-pnpm changeset          # create a changeset
-pnpm version-packages   # version bump
-pnpm release            # publish to npm
-```
+pnpm changeset / pnpm version-packages / pnpm release

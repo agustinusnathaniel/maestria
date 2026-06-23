@@ -1,4 +1,6 @@
-# Global Agent Rules — @maestria/opencode
+<!-- Source: packages/pi/rules/AGENTS.md — sync both files when updating -->
+
+# Global Agent Rules — @maestria/pi
 
 ## Orchestration
 
@@ -33,19 +35,19 @@
 
 ## Delegation
 
-When delegating work via `task()`, use only the 7 specialists below.
+When delegating work via \`maestria_subagent()\`, use only the 7 specialists below.
 **Never delegate to `explore` or `general`** — they are built-in agents,
 not part of the pipeline.
 
 | Agent         | Role                                             | When to Delegate                                                                             |
 | ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| `@architect`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
-| `@builder`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
-| `@diagnose`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
-| `@planner`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
-| `@reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
-| `@writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
+| `/adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
+| `/architect`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
+| `/builder`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
+| `/diagnose`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
+| `/planner`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
+| `/reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
+| `/writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
 
 ## Context Management
 
@@ -61,12 +63,7 @@ not part of the pipeline.
 - **Only the orchestrator authorizes commits.** Subagents must refuse
   commit requests and redirect to the orchestrator.
 - **Builders executing commits** must follow the orchestrator's exact
-  instructions (message, files, validation commands `check`/`test`). Flag it if the
+  instructions (message, files, `check`/`test`). Flag it if the
   orchestrator's instructions skip the commit protocol.
 - **Plans must not include implicit commit steps.** Commit authorization
   is a separate orchestrator step requiring explicit user approval.
-
-## Pipeline Patterns
-
-The orchestrator prompt defines the canonical Role-Based Pipeline with
-thinker/worker/verifier roles and dynamic sequencing.

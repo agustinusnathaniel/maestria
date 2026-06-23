@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.8
+
+### Patch Changes
+
+- [`c035ef2`](https://github.com/agustinusnathaniel/maestria/commit/c035ef2769586f253bb0d668fd07fcab38c567b6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Move @opencode-ai/plugin to peerDependencies + devDependencies (community convention)
+  Add graceful error handling in loadAgents() with per-file try/catch
+  Add opencode metadata block to package.json for plugin discovery
+
+## 0.4.7
+
+### Patch Changes
+
+- [#29](https://github.com/agustinusnathaniel/maestria/pull/29) [`8761471`](https://github.com/agustinusnathaniel/maestria/commit/8761471e185595cb0123b78cb4fa38fbbcd799fb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactor orchestrator pipeline to use role-based abstraction (thinker/worker/verifier) with dynamic sequencing, verifier-terminated execution, and context access lists for delegation handoffs. Updates fein mode prompt to reference roles instead of specific agents.
+
+- [`b5edf75`](https://github.com/agustinusnathaniel/maestria/commit/b5edf75080248d649dff847ff832cb3298a9dfda) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove Vite+-specific CLI references from plugin agents and rules
+
+  Replace hard-coded `vp check` / `vp test` references with generic
+  validation language so the plugin is toolchain-agnostic.
+
 ## 0.4.6
 
 ### Patch Changes
@@ -30,7 +49,6 @@
 ### Patch Changes
 
 - [`b722da0`](https://github.com/agustinusnathaniel/maestria/commit/b722da01d6bbe8a105a26d757a870b5cf0ef9b43) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Switch build from tsc to vp pack (tsdown), consolidate configs
-
   - Replace tsc build with vp pack/tsdown for native @/ alias resolution
   - Consolidate vitest.config.ts into single vite.config.ts with pack + test blocks
   - Add integration tests for chat.message hook
@@ -44,7 +62,6 @@
 ### Patch Changes
 
 - [`20fdde5`](https://github.com/agustinusnathaniel/maestria/commit/20fdde52b05142ec7a7e293f15ebc9cbc1496e5f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add @/ path alias, integration tests, vitest config, and pre-push hooks
-
   - Add @/ path alias to tsconfig.json for cleaner imports across src/ and tests/
   - Create vitest.config.ts with tsconfigPaths resolution
   - Add integration tests for chat.message hook (asserts on parts length)
@@ -66,7 +83,6 @@
 ### Minor Changes
 
 - [#20](https://github.com/agustinusnathaniel/maestria/pull/20) [`c3a5015`](https://github.com/agustinusnathaniel/maestria/commit/c3a501572835ae880eb56202b115c9771f999910) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Introduce three keyword-triggered workflow modes that override the orchestrator's default delegation pipeline:
-
   - `fein` — full pipeline (mandatory recon → design → build → review)
   - `sonar` — research only (recon + design, stop before implementation)
   - `blitz` — fast implementation (builder direct, skip gates)
@@ -109,7 +125,6 @@
 ### Patch Changes
 
 - [`2e2f10e`](https://github.com/agustinusnathaniel/maestria/commit/2e2f10e62e932747d0fc1a260aed3ef2b65f267c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refine agent permissions after audit
-
   - Add `todowrite` to adventurer, diagnose, writer for multi-step tracking
   - Add missing git commands (status, show, diff, log) to adventurer, architect, reviewer, writer
   - Add `lsp` to writer for code navigation during doc generation

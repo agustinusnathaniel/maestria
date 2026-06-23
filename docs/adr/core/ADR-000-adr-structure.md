@@ -55,5 +55,7 @@ occupy numbers that do not conflict with any opencode decisions.
 
 - ADR-001 (global rules scope)
 - ADR-002 (plugin architecture)
+- ADR-008 (keyword-triggered workflow modes)
+- ADR-009 (commit authorization rules)
 - ADR-010 (kimi-code distribution)
 - ADR-011 (kimi-code architecture)
