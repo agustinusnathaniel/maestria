@@ -49,8 +49,7 @@ Three patterns from the papers:
 
 3. **Access list for context isolation** — Delegation handoffs explicitly
    enumerate which prior outputs a specialist may reference. This prevents bias
-   and context leakage between subagents during independent analysis. Derived
-   from Fugu's intra-workflow agent isolation.
+   and context leakage between subagents during independent analysis.
 
 ### Deferred to Future Research
 
@@ -102,7 +101,6 @@ Three patterns remain out of scope without ML infrastructure investment:
 
 - [TRINITY: Evolved Orchestrator for Multi-Agent Code Generation](https://arxiv.org/abs/2512.04695)
 - [Conductor: Learning to Orchestrate Agents in Natural Language with RL](https://arxiv.org/abs/2512.04388)
-- [Fugu Technical Report](https://github.com/SakanaAI/fugu/blob/main/Fugu_technical_report.pdf)
 - This ADR supersedes the earlier ADR-010 and ADR-011 drafts that were created
   and reverted on the `poc/trinity-conductor-pattern` branch
 
