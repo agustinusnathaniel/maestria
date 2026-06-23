@@ -1,0 +1,170 @@
+---
+title: Agent Reference
+description: Complete reference for all 8 Pi agents — orchestrator and 7 specialists. Roles, permissions, mode commands, and when to use each.
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+`@maestria/pi` provides one manager agent (`@orchestrator`) and 7 specialist subagents. Each agent has a focused domain, clear permissions, and a specific place in the pipeline.
+
+## Orchestration Model
+
+The `@orchestrator` is the manager. It decomposes complex tasks into atomic units, delegates each unit to the right specialist, integrates the results, and verifies completion. Specialists each handle one domain — exploration, design, implementation, debugging, planning, review, or documentation.
+
+The default pipeline for non-trivial work follows a sequence: recon first, then design or plan, then build, then review. Each step verifies before handing off to the next.
+
+### Spec-Driven Delegation
+
+Unlike OpenCode's free-form delegation, Pi's orchestrator gives each specialist a **spec** — a structured handoff containing six required fields:
+
+| Field                | Description                                                  |
+| -------------------- | ------------------------------------------------------------ |
+| **Goal**             | What the specialist must accomplish                          |
+| **Context**          | Current mode, active task, specialist history, files touched |
+| **Requirements**     | Specific deliverables and constraints                        |
+| **Known Problems**   | Blockers or caveats the specialist should address            |
+| **Success Criteria** | Verifiable conditions for completion                         |
+| **Next Step**        | What happens after this task completes                       |
+
+The orchestrator enforces **phase gates** — each specialist must verify completion before the next phase begins. If a specialist blocks, the orchestrator escalates or re-plans.
+
+### Session Tree Integration
+
+Every `maestria_subagent` call records the parent task ID and specialist name in the session tree. Compaction preserves this state so resumed or forked sessions retain full context. The session tree is surfaced via `/maestria-status` and compaction summaries.
+
+### Commit Protocol
+
+Only the orchestrator authorizes commits. Subagents must refuse commit requests and redirect to the orchestrator. The orchestrator runs `vp check` and `vp test` before authorizing.
+
+## Pipeline Flow
+
+```
+@orchestrator (manager) — issues specs with phase gates
+  ├─ @adventurer → Reconnaissance
+  ├─ @architect  → Design/decisions
+  ├─ @planner    → Phased plans
+  ├─ @builder    → Implementation
+  └─ @reviewer   → Validation
+```
+
+## Workflow Modes
+
+Pi uses **mode commands** (`/fein`, `/sonar`, `/blitz`) rather than keyword-triggered modes. Type a slash command to set the mode for the session, then describe your task. The mode is persisted across turns and resets only on explicit `/command`.
+
+| Command  | Full form           | Pipeline                                            | Use case                           |
+| -------- | ------------------- | --------------------------------------------------- | ---------------------------------- |
+| `/fein`  | Full pipeline       | adventurer → architect/planner → builder → reviewer | Production-grade, mandatory review |
+| `/sonar` | Research            | adventurer → architect/planner → STOP               | Understanding before committing    |
+| `/blitz` | Fast implementation | builder direct                                      | Quick fixes, known territory       |
+
+When a mode is active, Pi injects a mode prompt into every agent start, reinforcing the pipeline constraints throughout the session.
+
+**Usage:**
+
+```
+/fein Implement user authentication with JWT
+```
+
+This sets mode to `fein` and starts the full pipeline.
+
+## Agent Reference
+
+| Agent             | Role                                                                                          | When to Use                                                                                                                    | Key Permissions                                                       |
+| ----------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| **@orchestrator** | Manager — decomposes work, delegates, never implements. Enforces phase gates, commit protocol | Complex multi-step tasks, cross-agent workflows, anything needing structure — supports `/fein`/`/sonar`/`/blitz` mode commands | `edit: deny`, delegates via `maestria_subagent` to 7 specialists only |
+| **@adventurer**   | Codebase reconnaissance — maps unfamiliar code, traces dependencies, finds key files          | Before implementing in unfamiliar code, understanding how something works, finding where code lives                            | `edit: deny`, read/search only                                        |
+| **@architect**    | Architecture decisions — evaluates options with trade-off analysis, writes ADRs               | Choosing between technologies, making design decisions, evaluating approaches                                                  | `edit: deny`, `webfetch: allow`                                       |
+| **@builder**      | Focused implementation — one atomic task per invocation                                       | Bug fixes, feature work, tests, refactors — after recon and design are done                                                    | `edit: allow`, `bash: * ask`                                          |
+| **@diagnose**     | Systematic debugging — traces errors from symptom to root cause                               | Bugs, regressions, crashes, mysterious errors, failing tests                                                                   | `edit: ask`, `bash: * ask`                                            |
+| **@planner**      | Implementation plans — phased milestones with verification                                    | Complex features needing structured rollout, migration plans, multi-phase work                                                 | `edit: ask`, `webfetch: allow`                                        |
+| **@reviewer**     | Code review — correctness, edge cases, security, performance, maintainability                 | Pre-merge review, security audit, post-implementation validation                                                               | `edit: deny` (uses `/review` command for restricted toolset)          |
+| **@writer**       | Documentation — structured patterns for READMEs, API docs, changelogs, ADRs                   | Documenting code, writing READMEs, API docs, changelogs, ADRs                                                                  | `edit: allow`                                                         |
+
+## Commands
+
+Pi adds several slash commands beyond the mode toggles:
+
+| Command              | Description                                                                   |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `/orchestrate`       | Start a full pipeline by delegating to the orchestrator with a goal           |
+| `/fein`              | Set workflow mode to full pipeline                                            |
+| `/sonar`             | Set workflow mode to research only                                            |
+| `/blitz`             | Set workflow mode to fast implementation                                      |
+| `/review <target>`   | Enter review mode — restricts toolset to read-only, optionally switches model |
+| `/restore-model`     | Exit review mode and restore original model and tools                         |
+| `/review-model <id>` | Configure which model to use when entering review mode                        |
+| `/handoff <goal>`    | Generate a structured handoff document for task context transfer              |
+| `/maestria-status`   | Show current session state including handoff history                          |
+
+## Subagent Tool
+
+Specialists are dispatched via `maestria_subagent` (renamed from `pi_subagent` to avoid collision with `@gotgenes/pi-subagents`). The tool supports three dispatch modes:
+
+### Single Mode
+
+Dispatch one task to one specialist. The orchestrator waits for completion before proceeding.
+
+```json
+{
+  "agent": "adventurer",
+  "task": "Map the authentication flow in the auth module"
+}
+```
+
+### Parallel Mode
+
+Dispatch multiple specialists concurrently. Useful for independent research or parallel implementation.
+
+```json
+{
+  "mode": "parallel",
+  "tasks": [
+    { "agent": "adventurer", "task": "Find all API route definitions" },
+    { "agent": "architect", "task": "Evaluate database migration options" }
+  ]
+}
+```
+
+### Chain Mode
+
+Dispatch specialists sequentially, piping each result to the next. Use `{previous}` to reference the prior step's output.
+
+```json
+{
+  "mode": "chain",
+  "tasks": [
+    { "agent": "adventurer", "task": "Find the current login implementation" },
+    { "agent": "builder", "task": "Refactor login using findings from: {previous}" }
+  ]
+}
+```
+
+Maximum parallel tasks: 8.
+
+## Review Mode
+
+The `/review` command switches Pi into review-only mode:
+
+1. Saves the current model and toolset
+2. Optionally switches to a different model (configured via `/review-model`)
+3. Restricts tools to read-only (`read`, `grep`, `find`, `ls`, `glob`)
+4. Blocks `edit`, `write`, and `bash` calls
+
+Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are blocked or require confirmation in all modes.
+
+## Usage Notes
+
+**Direct delegation.** Any specialist can be invoked via `maestria_subagent` by the orchestrator. Specialists are not invoked directly by the user — the orchestrator acts as the single entry point.
+
+**Orchestration delegation.** For complex tasks, delegate via `/orchestrate <goal>`. The orchestrator decomposes the work and dispatches each piece to the right specialist automatically, enforcing phase gates between steps.
+
+**Pipeline discipline.** The default flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk — fine for simple changes, not recommended for cross-module work.
+
+**Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains all six required fields. Incomplete handoffs are rejected.
+
+**Session persistence.** Mode and delegation state survive session compaction, resume, and fork operations. Run `/maestria-status` to view the current state at any time.
+
+## See Also
+
+- [Installation & Setup](/pi/getting-started/installation/)
+- [Workflow Patterns](/pi/guide/workflow-patterns/)

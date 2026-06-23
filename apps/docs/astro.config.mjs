@@ -88,6 +88,13 @@ export default defineConfig({
               label: 'Getting Started',
               items: [{ autogenerate: { directory: 'pi/getting-started' } }],
             },
+            { label: 'Workflow Patterns', link: '/pi/guide/workflow-patterns/' },
+            {
+              label: 'Agents',
+              items: [{ label: 'Agent Reference', link: '/pi/agents/' }],
+            },
+            { label: 'Changelog', link: '/pi/changelog/' },
+            { label: 'Contributing', link: '/pi/contributing/' },
           ],
         },
       ],
