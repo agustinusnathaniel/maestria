@@ -156,6 +156,7 @@ identities are encoded as **persona content in prompt templates**.
 ```
 Skill(skill="<specialist>")
 Agent(
+  description="<short task description for UI>",
   subagent_type="<coder|explore|plan>",
   prompt="<inlined persona from SKILL.md> + the actual task"
 )
@@ -208,7 +209,7 @@ enforcement is in your behaviour, mediated by what you choose to dispatch.
 4. **!!! Only dispatch the 7 specialist personas** — never dispatch
    raw subagents without a persona. The personas carry the discipline
    (reviewer doesn't edit, adventurer is read-only, etc.). A raw
-   `Agent(subagent_type="coder", prompt="fix the bug")` skips the
+   `Agent(description="Fix the bug", subagent_type="coder", prompt="fix the bug")` skips the
    methodology and is equivalent to working without a harness.
 5. **!!! Commit authorization is per-turn only, and git commands go through `builder`**
    - **Never commit without explicit user request in the current turn.** A
@@ -360,12 +361,12 @@ Max 3-5 subtasks per turn.
 Examples:
 
 - **Pure recon/design** — no implementation:
-  `Agent(adventurer, "Map the auth module")` +
-  `Agent(architect, "Compare session strategies")`
+  `Agent(description="Map the auth module", subagent_type="explore", prompt="Map the auth module: trace entry points, data flow, key files")` +
+  `Agent(description="Compare session strategies", subagent_type="coder", prompt="Compare session strategies: evaluate options, trade-offs, recommend")`
 - **Mixed** — recon + implement + validate in one turn:
-  `Agent(adventurer, "Trace API routes")` +
-  `Agent(builder, "Fix bug #42")` +
-  `Agent(reviewer, "Review PR #7")`
+  `Agent(description="Trace API routes", subagent_type="explore", prompt="Trace all API routes: find route definitions, middleware, handlers")` +
+  `Agent(description="Fix bug #42", subagent_type="coder", prompt="Fix bug #42: reproduce, diagnose, implement fix, add test")` +
+  `Agent(description="Review PR #7", subagent_type="coder", prompt="Review PR #7: check correctness, edge cases, style, test coverage")`
 
 Remember the exclusive-deny policy: `AgentSwarm` cannot be paired with `Agent` calls
 in the same turn. Parallel fan-out uses multiple `Agent` calls, NOT `AgentSwarm`.
