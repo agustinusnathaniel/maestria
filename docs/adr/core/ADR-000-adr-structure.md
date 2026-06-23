@@ -21,9 +21,23 @@ ADRs are organized into three subdirectories:
 - `docs/adr/<plugin>/` — plugin-specific decisions. One subdirectory per plugin:
   `opencode/`, `kimi-code/`, etc.
 - ADR numbering remains flat and chronological, not per-subdir. The pre-existing
-  `ADR-004` (opencode) takes precedence; the kimi-code architecture ADR
-  (originally also numbered 004) is renumbered to `ADR-009` to resolve the
-  conflict.
+  `ADR-004` (core/ADR-004-agent-prompt-template) takes precedence; the kimi-code architecture ADR
+  (originally also numbered 004) was initially renumbered to `ADR-009` to resolve
+  the conflict.
+
+### Collision Resolution (2026-06-22)
+
+When upstream opencode ADRs (ADR-008 keyword-triggered workflow modes, ADR-009
+commit authorization rules) were merged from main, their numbers collided with
+the kimi-code ADRs that had been assigned ADR-008/ADR-009. Resolution:
+
+- **Opencode ADRs keep their original numbers** (ADR-008, ADR-009) — matching
+  main's canonical numbering.
+- **Kimi-code ADRs move to the next available numbers**: ADR-008 (distribution)
+  → ADR-010, ADR-009 (architecture) → ADR-011.
+
+This ensures main's ADR numbering remains canonical and kimi-code-specific ADRs
+occupy numbers that do not conflict with any opencode decisions.
 
 ## Consequences
 
@@ -43,3 +57,5 @@ ADRs are organized into three subdirectories:
 - ADR-002 (plugin architecture)
 - ADR-008 (keyword-triggered workflow modes)
 - ADR-009 (commit authorization rules)
+- ADR-010 (kimi-code distribution)
+- ADR-011 (kimi-code architecture)

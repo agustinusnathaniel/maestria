@@ -1,0 +1,53 @@
+name: Release kimi-code plugin
+
+on:
+  push:
+    tags:
+      - '@maestria/kimi-code@*'
+
+permissions:
+  contents: write
+
+jobs:
+  update-release-branch:
+    name: Update release branch via subtree split
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run tests
+        run: pnpm test --filter @maestria/kimi-code
+
+      - name: Subtree split and update release branch
+        env:
+          BRANCH: release/kimi-code
+        run: |
+          set -euo pipefail
+
+          # Configure git identity for the commit
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Subtree split: hoist packages/kimi-code/* to the branch root
+          # The split starts from the tag's commit, producing a branch
+          # whose history is just the commits that touched the prefix,
+          # with paths rewritten to be at the root.
+          git subtree split --prefix=packages/kimi-code "$GITHUB_SHA" -B split-tmp
+
+          # Create-or-reset the release branch to the split commit
+          # `git checkout -B <branch> <start>` always creates or resets
+          # the branch to the specified start point.
+          git checkout -B "$BRANCH" split-tmp
+
+          # Force-push the updated release branch.
+          # The first run creates the branch; subsequent runs update it.
+          # `--force-with-lease` is safe under concurrent pushes.
+          git push --force-with-lease origin "$BRANCH" 2>/dev/null || \
+            git push origin "$BRANCH"
+
+          # Cleanup
+          git checkout main
+          git branch -D split-tmp || true

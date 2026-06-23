@@ -1,0 +1,117 @@
+---
+title: Workflow Patterns
+description: Practical patterns for using @maestria/kimi-code skills together — from simple tasks to complex multi-step workflows and swarm fan-out.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The 8 skills work as a team. The orchestrator manages the flow, specialists do the work. These patterns cover the most common workflows.
+
+## Explore a codebase
+
+Send `adventurer` to map unfamiliar code before making changes.
+
+> "Map the auth module — find all routes, middleware, and error handlers."
+
+Dispatched to the `explore` subagent. The `adventurer` persona is read-only — Bash is limited to commands like `ls`, `git log`, `grep`, `find`. The persona produces a structured reconnaissance report with key files, call chains, and a discovery log.
+
+Start here whenever you edit code you haven't worked with before.
+
+## Make a design decision
+
+Delegate to `architect` when you need to evaluate options.
+
+> "Should we use Postgres or SQLite for the new event store? Evaluate trade-offs."
+
+Dispatched to the `coder` subagent. The `architect` persona runs a 5-phase methodology: understand the problem, present 2–4 options, clarify (max 5 questions), recommend, document as an ADR. Bash is for validation commands (`which`, `npm view`, `node --version`) only — never for state-mutating work.
+
+## Plan a feature
+
+Get a phased plan from `planner` before implementing multi-step features.
+
+> "Plan the implementation for a multi-tenant organization feature."
+
+Dispatched to the `plan` subagent — the only specialist that does not have Bash access. The `planner` persona returns phases with success criteria and rollback points. Plans are pure markdown; the orchestrator consumes them and dispatches each phase to the appropriate specialist.
+
+## Build something
+
+Use the orchestrator for end-to-end feature work. It chains the full pipeline.
+
+> "We need a WebSocket-based notification system. Explore, plan, implement, and review."
+
+The orchestrator delegates in sequence: `adventurer` → `architect` → `planner` → `builder` → `reviewer`. It never implements — every code change goes through `builder` (coder), every review through `reviewer` (coder, no-edit).
+
+## Fix a bug
+
+Start with `diagnose` to find the root cause, then hand the fix to the orchestrator.
+
+> "Users are getting a 503 error when uploading files over 10MB. Find the root cause."
+
+Then:
+
+> "Fix the upload issue that diagnose identified."
+
+The `diagnose` persona runs a 6-step methodology: error → source → git history → blast radius → minimal fix → prevention. The output is a findings document with what was investigated, ruled out, root cause, fix applied, and open questions for the orchestrator.
+
+## Review code
+
+Let `reviewer` check your changes before committing.
+
+> "Review my current changes before I commit."
+
+<Aside type="caution">
+  The `reviewer` persona is dispatched to the `coder` subagent (which has Write and Edit tools), but
+  the persona text opens with "!!! DO NOT EDIT FILES." The persona carries the methodology; the
+  `[[permission.rules]]` block in `config.toml` is what makes the no-edit constraint binding.
+  Without those rules, the reviewer can still edit files. See
+  [Installation](/kimi-code/getting-started/installation/).
+</Aside>
+
+The `reviewer` runs a 7-dimension checklist: correctness, code quality, edge cases, style, performance, security, test coverage. Output uses [Conventional Comments](https://conventionalcomments.org/) labels (`praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`).
+
+## Document something
+
+Delegate READMEs, ADRs, changelogs, and API docs to `writer`.
+
+> "Write a README for the new caching package."
+
+Dispatched to the `coder` subagent. The `writer` persona follows structured patterns matched to the document type: purpose, usage, details. Always proofreads before finishing.
+
+## Swarm fan-out
+
+For ≥3 uniform independent items, the orchestrator uses `AgentSwarm` instead of single `Agent` calls.
+
+> "Review these 50 files for security issues."
+
+The orchestrator:
+
+1. Identifies the work as ≥3 uniform items (50 files, same task, different inputs).
+2. Loads the `reviewer` persona.
+3. Calls `AgentSwarm` with a `prompt_template` that inlines the persona and includes a `{{item}}` placeholder.
+4. Returns a single `<agent_swarm_result>` envelope with one `<subagent>` per file.
+
+`AgentSwarm` is cheaper per-item, scales to 128, has rate-limit-aware retry, and shows live TUI progress. It must be the only tool call in the turn (exclusive-deny policy) — you cannot "explore first, then swarm" in one turn.
+
+<Aside type="tip">
+  Reserve `AgentSwarm` for ≥3 uniform items. For 1–2 items, use a single `Agent` call (cheaper,
+  simpler handoff). For sequential or stateful work, dispatch multiple `Agent` calls in parallel
+  turns instead.
+</Aside>
+
+## Pipeline reference
+
+```
+orchestrator (main agent, auto-loaded at session start)
+  ├─ adventurer  → Reconnaissance            (explore subagent, read-only)
+  ├─ architect   → Design/decisions          (coder subagent)
+  ├─ planner     → Phased plans              (plan subagent)
+  ├─ builder     → Implementation            (coder subagent)
+  ├─ reviewer    → Validation (do not edit)  (coder subagent)
+  ├─ writer      → Documentation             (coder subagent)
+  └─ diagnose    → Root cause analysis       (coder subagent)
+```
+
+<Aside type="tip">
+  Most tasks don't start with code. Start with recon (`adventurer`) or design (`architect`) before
+  reaching for `builder`. The orchestrator handles this routing automatically.
+</Aside>

@@ -1,0 +1,288 @@
+---
+title: Installation & Setup
+description: Install @maestria/kimi-code in your Kimi Code CLI. No npm install, no build step — just a manifest and a few config blocks.
+---
+
+import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
+
+`@maestria/kimi-code` is a declarative Kimi Code plugin — a manifest, a directory of skill files, and a global rules file. There is no `npm install`, no `pnpm install`, no build step. The plugin is loaded by Kimi Code at session start, and the orchestrator skill auto-injects the methodology.
+
+## Prerequisites
+
+- **Kimi Code v0.12.0+** — required for first-class `AgentSwarm` support. On older versions, the orchestrator skill still works, but the swarm guidance falls back to single `Agent` calls.
+- **No Node toolchain required** — the plugin is purely declarative files (manifest + markdown).
+
+## Installation
+
+<Steps>
+
+1. **Install the plugin**
+
+   In a Kimi Code session, run:
+
+   ```
+   /plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
+   ```
+
+   > **Why a branch URL?** Kimi Code v0.13.1's plugin system only finds
+   > `kimi.plugin.json` at the archive root. The plugin lives at `packages/kimi-code/` in a
+   > monorepo, which Kimi Code cannot extract as a subpath (its URL parser interprets any
+   > `/tree/<ref>/<subpath>` as a git ref, not a path). To make installs work, the CI
+   > workflow maintains a `release/kimi-code` branch where the manifest sits at the root.
+   > See [ADR-010](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/kimi-code/ADR-010-kimi-code-distribution.md)
+   > for the rationale.
+
+   The plugin lives in a monorepo at `packages/kimi-code/`. To cut a new release, push a
+   `@maestria/kimi-code@v<version>` tag — the CI workflow runs `git subtree split` and
+   force-pushes the result to `release/kimi-code`. Three install forms:
+
+   | Install form                          | Command                                                                                  |
+   | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+   | **Auto-update** (recommended)         | `/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code` |
+   | **Pin to specific commit**            | `/plugins install https://github.com/agustinusnathaniel/maestria/commit/<sha>`           |
+   | **Pin to specific tag** (alternative) | `/plugins install https://github.com/agustinusnathaniel/maestria/releases/tag/<tag>`     |
+
+   <Aside type="tip">
+     For production work, pin to a specific commit SHA. The `tree/release/kimi-code` form always
+     pulls whatever is on the release branch, which is convenient for staying current but not for
+     reproducible installs.
+   </Aside>
+
+2. **Place global rules (REQUIRED)**
+
+   Kimi Code auto-loads `AGENTS.md` from a few locations. The first location it checks is `~/.kimi-code/AGENTS.md`. Copy the bundled rules file there:
+
+   ```bash
+   mkdir -p ~/.kimi-code
+   cp packages/kimi-code/rules/AGENTS.md ~/.kimi-code/AGENTS.md
+   ```
+
+   <Aside type="caution" title="Why the plugin can't do this">
+     The plugin ships the file as `rules/AGENTS.md`, but the plugin itself cannot install it. Kimi
+     Code does not expose a plugin mechanism to write to `~/.kimi-code/`. You must copy it manually.
+   </Aside>
+
+   Verify the file is in place:
+
+   ```bash
+   ls -la ~/.kimi-code/AGENTS.md
+   ```
+
+   <Aside type="caution">
+     The file must stay under **32 KB**. If you customize it heavily, watch the size — Kimi Code
+     truncates AGENTS.md content past 32 KB with this marker:
+   </Aside>
+
+   ```html
+   <!-- Some AGENTS.md files were truncated or omitted to fit the 32 KB budget -->
+   ```
+
+3. **Add lifecycle hooks to `config.toml` (recommended)**
+
+   Open `~/.kimi-code/config.toml` and add the following `[[hooks]]` blocks. These block destructive bash commands, inject a per-turn orchestrator reminder, and observe compaction cycles.
+
+   ```toml
+   # Block destructive bash commands
+   [[hooks]]
+   event = "PreToolUse"
+   matcher = "Bash"
+   command = "node ~/.kimi-code/hooks/block-dangerous-bash.mjs"
+   timeout = 5
+
+   # Per-turn orchestrator reminder
+   [[hooks]]
+   event = "UserPromptSubmit"
+   matcher = ""
+   command = "echo 'Maestria active: delegate via the orchestrator skill. Prefer adventurer for recon, architect for design, builder for implementation, diagnose for bugs, reviewer for QA, writer for docs, planner for multi-phase work.'"
+   timeout = 5
+
+   # Observe compaction cycles (observation-only)
+   [[hooks]]
+   event = "PreCompact"
+   matcher = ".*"
+   command = "echo \"compact start: $(date -Is)\" >> ~/.kimi-code/compact.log"
+   timeout = 5
+
+   [[hooks]]
+   event = "PostCompact"
+   matcher = ".*"
+   command = "echo \"compact end:   $(date -Is)\" >> ~/.kimi-code/compact.log"
+   timeout = 5
+   ```
+
+   Save the companion script as `~/.kimi-code/hooks/block-dangerous-bash.mjs`:
+
+   ```js
+   let input = '';
+   process.stdin.on('data', (chunk) => {
+     input += chunk;
+   });
+   process.stdin.on('end', () => {
+     const payload = JSON.parse(input);
+     const command = payload.tool_input?.command ?? '';
+     if (command.includes('rm -rf')) {
+       console.error('Dangerous command detected, blocked');
+       process.exit(2);
+     }
+   });
+   ```
+
+4. **Add permission rules (REQUIRED for safety)**
+
+   <Aside type="caution" title="Persona text alone is not enforcement">
+     By default, the 3 built-in Kimi Code subagents have full tool access. The `reviewer` and
+     `adventurer` personas _describe_ safety constraints in their SKILL.md text ("do not edit
+     files", "read-only Bash"), but those constraints are advisory only — they live in the prompt,
+     not the tool layer. The `[[permission.rules]]` blocks below are what actually _enforce_ the
+     persona boundaries. Without them, a misbehaving subagent can still write or edit files.
+   </Aside>
+
+   Add the following to `~/.kimi-code/config.toml`:
+
+   ```toml
+   # === Builder (coder) — read-only git + test commands ===
+   # 6 separate rules because each `pattern` matches one command.
+   # scope = "session-runtime" applies to the current session only.
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(git status*)"
+   scope = "session-runtime"
+   reason = "Builder: read-only git status"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(git diff*)"
+   scope = "session-runtime"
+   reason = "Builder: read-only git diff"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(git log*)"
+   scope = "session-runtime"
+   reason = "Builder: read-only git log"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(npm test*)"
+   scope = "session-runtime"
+   reason = "Builder: run npm tests"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(pnpm test*)"
+   scope = "session-runtime"
+   reason = "Builder: run pnpm tests"
+
+   [[permission.rules]]
+   decision = "allow"
+   pattern = "Bash(npx tsc*)"
+   scope = "session-runtime"
+   reason = "Builder: run TypeScript type check"
+
+   # === Adventurer (explore) — read-only persona; deny Write/Edit ===
+
+   [[permission.rules]]
+   decision = "deny"
+   pattern = "Write"
+   scope = "session-runtime"
+   reason = "Adventurer is read-only by persona (explore subagent)"
+
+   [[permission.rules]]
+   decision = "deny"
+   pattern = "Edit"
+   scope = "session-runtime"
+   reason = "Adventurer is read-only by persona (explore subagent)"
+
+   # === Reviewer (coder) — review-only; deny Write/Edit ===
+   # Reviewer persona opens with !!! DO NOT EDIT FILES. The
+   # persona text is advisory; these rules are the only tool-
+   # layer enforcement (REQUIRED for safety).
+
+   [[permission.rules]]
+   decision = "deny"
+   pattern = "Write"
+   scope = "session-runtime"
+   reason = "Reviewer is read-only by persona (maker/checker)"
+
+   [[permission.rules]]
+   decision = "deny"
+   pattern = "Edit"
+   scope = "session-runtime"
+   reason = "Reviewer is read-only by persona (maker/checker)"
+   ```
+
+   The `scope` field controls temporal granularity (`turn-override`, `session-runtime`, `project`, `user`) — it is not per-subagent granularity. Subagent tool lists come from the hardcoded profile (`coder`/`explore`/`plan`), not from per-agent rules. These rules are the **only tool-layer enforcement** of the persona boundaries declared in each specialist's SKILL.md.
+
+5. **Reload plugins and start a new session**
+
+   Plugin changes only take effect in new sessions. After installing, run:
+
+   ```
+   /reload
+   /new
+   ```
+
+6. **Verify**
+
+   In the fresh session, ask:
+
+   > "Review these 5 files for security issues: src/auth.ts, src/api.ts, src/db.ts, src/routes.ts, src/middleware.ts"
+
+   The orchestrator should:
+   1. Auto-load (via `sessionStart.skill`).
+   2. Identify the work as ≥3 uniform items → use `AgentSwarm` with the `reviewer` persona.
+   3. Dispatch a swarm across the 5 files.
+
+   If the orchestrator starts writing code directly, something is wrong with the install — check `/plugins list` and confirm the session-start skill loaded.
+
+</Steps>
+
+## Troubleshooting
+
+### Orchestrator not loading
+
+- Check `/plugins list` — `maestria` should appear with `enabled: true`.
+- Check `~/.kimi-code/AGENTS.md` exists.
+- Restart Kimi Code completely (not just the session).
+
+### AgentSwarm not available
+
+- Requires Kimi Code v0.12.0+ for first-class swarm support. On older versions, the orchestrator's swarm guidance falls back to parallel `Agent` calls.
+
+### AGENTS.md gets truncated
+
+- The 32 KB budget is enforced by Kimi Code. Trim verbose sections or move detail into specialist SKILL.md files (loaded on demand via the `Skill` tool).
+
+## Updating
+
+Kimi Code installs from a branch URL track the branch. To pick up a new release, re-run the install command:
+
+```
+/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
+```
+
+Or pin to a specific commit:
+
+```
+/plugins install https://github.com/agustinusnathaniel/maestria/commit/<sha>
+```
+
+<Aside type="caution">
+  Updates overwrite any local edits to the bundled SKILL.md files. If you have customized them, fork
+  the repository or back up your changes before re-installing.
+</Aside>
+
+## Uninstalling
+
+```
+/plugins uninstall maestria
+rm ~/.kimi-code/AGENTS.md
+```
+
+Optionally remove the `[[hooks]]` and `[[permission.rules]]` blocks from `~/.kimi-code/config.toml`.
+
+## Next Steps
+
+- [Quick Start](/kimi-code/getting-started/quick-start/) — Your first session with the plugin
+- [Skill Reference](/kimi-code/skills/) — Detailed documentation for each skill

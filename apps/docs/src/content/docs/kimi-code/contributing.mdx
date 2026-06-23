@@ -1,0 +1,176 @@
+---
+title: Contributing
+description: How to contribute to @maestria/kimi-code — project structure, editing skills, and submitting PRs.
+---
+
+import { Steps, LinkButton, Aside } from '@astrojs/starlight/components';
+
+# Contributing
+
+Thank you for your interest in contributing to `@maestria/kimi-code`! This guide covers project structure, editing skills, and submitting PRs.
+
+## Development Setup
+
+<Steps>
+
+1. **Clone the monorepo**
+
+   ```bash
+   git clone https://github.com/agustinusnathaniel/maestria.git
+   cd maestria
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   vp install
+   ```
+
+3. **Verify the setup**
+
+   ```bash
+   vp check
+   vp test
+   ```
+
+</Steps>
+
+## Project Structure
+
+Unlike `@maestria/opencode` (TypeScript SDK with a `src/index.ts` entry point), `@maestria/kimi-code` is a **declarative plugin** — there is no build step and no source code. The "package source" is the manifest, the skill files, and the global rules.
+
+```
+maestria/
+├── apps/
+│   └── docs/                # Documentation site
+└── packages/
+    └── kimi-code/           # @maestria/kimi-code plugin
+        ├── kimi.plugin.json # Plugin manifest (name, version, sessionStart.skill)
+        ├── skills/          # SKILL.md files (orchestrator + 7 specialists)
+        │   ├── orchestrator/
+        │   ├── builder/
+        │   ├── adventurer/
+        │   ├── architect/
+        │   ├── planner/
+        │   ├── reviewer/
+        │   ├── writer/
+        │   └── diagnose/
+        ├── rules/
+        │   └── AGENTS.md     # Global rules (copied to ~/.kimi-code/AGENTS.md)
+        ├── tests/            # Vitest assertions for manifest + safety
+        ├── INSTALL.md        # Step-by-step setup checklist
+        ├── README.md         # Overview
+        └── CHANGELOG.md      # Release notes
+```
+
+## Making Changes
+
+### Editing a skill
+
+Each specialist is a single `SKILL.md` file in `packages/kimi-code/skills/<name>/SKILL.md`. Edit the file, then run `vp test` to verify the frontmatter and safety constraints still pass.
+
+### SKILL.md frontmatter reference
+
+| Field                    | Type    | Description                                       |
+| ------------------------ | ------- | ------------------------------------------------- |
+| `name`                   | string  | Skill identifier (matches the directory name)     |
+| `description`            | string  | One-line role summary                             |
+| `type`                   | string  | Always `"prompt"` for persona content             |
+| `whenToUse`              | string  | Multi-line trigger phrases for the orchestrator   |
+| `arguments`              | array   | Optional positional arguments the skill accepts   |
+| `disableModelInvocation` | boolean | If true, only humans can invoke; the model cannot |
+
+### Manifest reference
+
+The `kimi.plugin.json` manifest fields:
+
+| Field                | Type   | Description                                                      |
+| -------------------- | ------ | ---------------------------------------------------------------- |
+| `name`               | string | Plugin identifier (`maestria`)                                   |
+| `version`            | string | Semver version, follows the monorepo changeset pipeline          |
+| `description`        | string | One-line summary for the plugin marketplace                      |
+| `keywords`           | array  | Discovery keywords (`maestria`, `kimi-code`, `swarm`, etc.)      |
+| `author`             | object | `{ name, email }`                                                |
+| `homepage`           | string | Project homepage URL                                             |
+| `license`            | string | SPDX license identifier                                          |
+| `skills`             | string | Path to the skills directory (e.g., `"./skills/"`)               |
+| `sessionStart.skill` | string | Name of the skill to auto-load at session start (`orchestrator`) |
+| `skillInstructions`  | string | Plugin-wide instruction string injected alongside skills         |
+| `interface`          | object | Display metadata (`displayName`, `shortDescription`, etc.)       |
+
+### Adding a new skill
+
+<Steps>
+
+1. **Write the SKILL.md**
+
+   Create `packages/kimi-code/skills/<name>/SKILL.md` with the frontmatter above and a full persona body. Follow the Skill Prescription pattern (4 sections: Always load / Load on trigger / Defer to specialist / Skip if).
+
+2. **Add the skill to the orchestrator's routing table**
+
+   Edit `packages/kimi-code/skills/orchestrator/SKILL.md` to add the new specialist to the "7 Specialists" table and the "Specialist → Subagent Routing Table".
+
+3. **Add tests**
+
+   Add vitest assertions in `packages/kimi-code/tests/manifest.test.ts` (or a new test file) to validate the new skill's frontmatter and any safety constraints.
+
+4. **Run `vp test`**
+
+   Verify everything passes before submitting a PR.
+
+</Steps>
+
+<Aside type="caution">
+  The "7 specialists" label in the orchestrator skill is load-bearing — the table count and the
+  persona constraints (reviewer no-edit, adventurer read-only) are the trust model. If you add an
+  8th specialist that needs different subagent routing, update both tables and add tests for the new
+  safety constraints.
+</Aside>
+
+## Skill Prescription
+
+Every skill's SKILL.md follows a 4-section prescription pattern. This pattern keeps each specialist focused on its own methodology while routing edge cases to the right persona.
+
+| Section                 | Purpose                                                                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Always load**         | Skills this specialist's role requires unconditionally (e.g., `diagnose` loads the `diagnose` methodology skill)                 |
+| **Load on trigger**     | Conditional skills matched to specific situations (e.g., `architect` loads `c4-architecture` when a container diagram is needed) |
+| **Defer to specialist** | Skills that belong to a different persona's domain (e.g., `humanizer` is the `writer`'s job, not the `builder`'s)                |
+| **Skip if**             | Conditions under which no skill load is needed at all (e.g., a 1-line fix, no new dependencies)                                  |
+
+When writing or editing a skill, keep all four sections in the same order. The orchestrator's Skill tool loads specialist skills on demand — the prescription sections are what the model uses to decide which additional skills to load.
+
+## Building and Testing
+
+```bash
+# Run manifest + safety tests
+vp test
+
+# Format, lint, and type-check
+vp check
+
+# Run the docs site locally
+vp run website#dev
+```
+
+## Creating a Changeset
+
+This project uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing:
+
+```bash
+pnpm changeset
+```
+
+Follow the prompts to describe your changes. Commit the generated changeset file alongside your code changes.
+
+## Pull Request Process
+
+1. **Fork the repository** and create a feature branch
+2. **Make your changes** following existing conventions
+3. **Verify** — run `vp check` and ensure tests pass
+4. **Create a changeset** if your changes affect the published package
+5. **Submit a PR** with a clear description of what you changed and why
+
+## Need Help?
+
+Open an issue on GitHub or reach out to the maintainers.

@@ -17,8 +17,10 @@ export default defineConfig({
         starlightLlmsTxt({
           projectName: 'maestria',
           description:
-            'Portable AI engineering praxis plugins for OpenCode and beyond. ' +
-            'Includes @maestria/opencode with 8 agents and global rules injection.',
+            'Portable AI engineering praxis plugins for OpenCode, Kimi Code, and Pi. ' +
+            'Includes @maestria/opencode (8 agents, global rules injection), ' +
+            '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), and ' +
+            '@maestria/pi (full agent orchestration for Pi Coding Agent).',
         }),
         starlightPageActions({
           share: true,
@@ -77,6 +79,23 @@ export default defineConfig({
             },
             { label: 'Changelog', link: '/opencode/changelog/' },
             { label: 'Contributing', link: '/opencode/contributing/' },
+          ],
+        },
+        {
+          label: '@maestria/kimi-code',
+          items: [
+            { label: 'Overview', link: '/kimi-code/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'kimi-code/getting-started' } }],
+            },
+            { label: 'Workflow Patterns', link: '/kimi-code/guide/workflow-patterns/' },
+            {
+              label: 'Skills',
+              items: [{ label: 'Skill Reference', link: '/kimi-code/skills/' }],
+            },
+            { label: 'Changelog', link: '/kimi-code/changelog/' },
+            { label: 'Contributing', link: '/kimi-code/contributing/' },
           ],
         },
         {
