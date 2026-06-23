@@ -122,6 +122,18 @@ On top of the subagents, `@maestria/pi` adds:
 - **Session tree integration** — Each subagent invocation records its parent task ID for full session tree reconstruction.
 - **Commit protocol enforcement** — Only the orchestrator authorizes commits; subagents must redirect commit requests.
 
+## Uninstalling
+
+To remove the extension:
+
+1. Open your `~/.config/pi/pi.json` config file
+2. Remove `"@maestria/pi"` from the `"extensions"` array
+3. Remove `"node_modules/@maestria/pi/prompts"` from the `"prompts"` array
+4. Run: `pi uninstall @maestria/pi`
+5. Restart Pi
+
+This will unregister all agents and restore the default configuration.
+
 ## Next Steps
 
 - [Quick Start](/pi/getting-started/quick-start/) — Your first session with the extension

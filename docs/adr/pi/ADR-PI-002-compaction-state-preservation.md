@@ -1,4 +1,4 @@
-# ADR-017: Compaction State Preservation
+# ADR-PI-002: Compaction State Preservation
 
 ## Status
 
@@ -98,7 +98,7 @@ The orchestrator prompt template (`packages/pi/src/prompts/orchestrator.md`) inc
 
 ### ⏳ `pi.appendEntry`-Based Persistence Deferred to v1.1
 
-Full session persistence that survives `/reload` and `/new` requires `pi.appendEntry` to write state to the session log. This is deferred to v1.1 (see ADR-015 for v1.1 scope and timeline).
+Full session persistence that survives `/reload` and `/new` requires `pi.appendEntry` to write state to the session log. This is deferred to v1.1 (see ADR-PI-000 for v1.1 scope and timeline).
 
 ## Date
 

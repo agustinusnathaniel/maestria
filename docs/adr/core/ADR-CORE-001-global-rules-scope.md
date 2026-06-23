@@ -1,4 +1,4 @@
-# ADR-001: Global Rules Scope — What Belongs in rules/AGENTS.md
+# ADR-CORE-001: Global Rules Scope — What Belongs in rules/AGENTS.md
 
 ## Status
 

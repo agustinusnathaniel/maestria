@@ -1,4 +1,4 @@
-# ADR-015: Reuse existing Pi ecosystem packages for subagent dispatch and workflow
+# ADR-PI-000: Reuse existing Pi ecosystem packages for subagent dispatch and workflow
 
 ## Status
 

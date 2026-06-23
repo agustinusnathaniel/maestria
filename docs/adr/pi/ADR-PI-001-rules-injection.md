@@ -1,4 +1,4 @@
-# ADR-016: Rules Injection via `before_agent_start`
+# ADR-PI-001: Rules Injection via `before_agent_start`
 
 ## Status
 
@@ -47,7 +47,7 @@ appends:
 to the system prompt on every turn.
 
 This is the closest analog to OpenCode's `input.instructions` injection
-(per ADR-002) and to the `system.transform` hook that the opencode
+(per ADR-CORE-002) and to the `system.transform` hook that the opencode
 README references.
 
 The rules content includes: Orchestration (don't assume, read docs
@@ -76,9 +76,9 @@ references, Local files.
 
 ## References
 
-- `docs/adr/core/ADR-001-global-rules-scope.md` — what belongs in
+- `docs/adr/core/ADR-CORE-001-global-rules-scope.md` — what belongs in
   global rules
-- `docs/adr/core/ADR-002-plugin-architecture.md` — opencode's rules
+- `docs/adr/core/ADR-CORE-002-plugin-architecture.md` — opencode's rules
   injection pattern
 - Pi `before_agent_start` event — extensions.md:494-528
 

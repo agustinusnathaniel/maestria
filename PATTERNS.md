@@ -64,7 +64,7 @@ Example:
 
 ```
 Goal: Map the auth module's session handling paths before we refactor login.
-Context: /src/auth/session.ts (the main file), ADR-003 in docs/adr/.
+Context: /src/auth/session.ts (the main file), ADR-CORE-003 in docs/adr/core/.
   We already know the token refresh path has a race condition (issue #42).
 Requirements: Trace every code path that reads or writes session state.
   Do not edit any files — read only. List files and line numbers.

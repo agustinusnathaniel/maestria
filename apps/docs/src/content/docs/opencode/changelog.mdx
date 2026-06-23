@@ -22,7 +22,7 @@ Affected files:
 
 - `agents/orchestrator.md` — new COMMIT PROTOCOL section
 - `rules/AGENTS.md` — new Commit Policy section
-- `docs/adr/opencode/ADR-009-commit-authorization-rules.md` — decision record
+- `docs/adr/opencode/ADR-OC-004-commit-authorization-rules.md` — decision record
 
 ## v0.4.3
 
@@ -50,7 +50,7 @@ Three plain-word keywords that override the orchestrator's default delegation pi
 | `sonar` | Research only       | adventurer → architect/planner → STOP (no code, structured doc output)                | Discovery, feasibility, understanding before committing |
 | `blitz` | Fast implementation | builder direct (skip recon/design/review)                                             | Quick fixes, prototypes, known territory                |
 
-Detection uses a word-boundary regex at any position in the message, is code-block-aware, and the most restrictive keyword wins (`fein` > `sonar` > `blitz`), and detection is case-insensitive. Modes can be disabled via `modes.disabledKeywords` in plugin options (denylist-only). The full design is documented in ADR-008.
+Detection uses a word-boundary regex at any position in the message, is code-block-aware, and the most restrictive keyword wins (`fein` > `sonar` > `blitz`), and detection is case-insensitive. Modes can be disabled via `modes.disabledKeywords` in plugin options (denylist-only). The full design is documented in ADR-OC-003.
 
 ## v0.3.11
 

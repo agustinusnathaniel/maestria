@@ -1,4 +1,4 @@
-# ADR-003: Agent Conventions — `!!!` Markers, Cross-References, Skill Pattern
+# ADR-CORE-003: Agent Conventions — `!!!` Markers, Cross-References, Skill Pattern
 
 ## Status
 

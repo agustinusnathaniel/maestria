@@ -72,6 +72,16 @@ The plugin provides one manager agent and 7 specialist subagents:
 | `@reviewer`     | subagent | Code review — 7-dimension quality checklist                           |
 | `@writer`       | subagent | Documentation — structured patterns for any document type             |
 
+## Uninstalling
+
+To remove the extension:
+
+1. Open your `~/.config/opencode/opencode.jsonc` config file
+2. Remove `"@maestria/opencode@latest"` from the `"plugin"` array
+3. Restart OpenCode
+
+This will unregister all agents and restore the default configuration.
+
 ## Next Steps
 
 - [Quick Start](/opencode/getting-started/quick-start/) — Your first session with the plugin

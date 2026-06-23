@@ -1,4 +1,4 @@
-# ADR-011: Kimi Code Plugin Architecture — Declarative Skills, No Custom Subagents
+# ADR-KC-001: Kimi Code Plugin Architecture — Declarative Skills, No Custom Subagents
 
 ## Status
 
@@ -35,7 +35,7 @@ that instructs the model on methodology) replaces the need for custom subagents 
 
 ### What We Learned from OpenCode
 
-ADR-002 established three principles that carry forward:
+ADR-CORE-002 established three principles that carry forward:
 
 1. **Markdown is the source of truth** — agent behavior lives in editable markdown files, not TypeScript factories
 2. **Agents are self-contained** — each agent file contains its full methodology
@@ -361,7 +361,7 @@ process.stdin.on('end', () => {
 The user places this file at `~/.kimi-code/AGENTS.md` (or `$KIMI_CODE_HOME/AGENTS.md`).
 It is automatically loaded by Kimi Code at session start and injected into the system prompt,
 along with project-level AGENTS.md files. It contains the cross-cutting rules
-from ADR-001 that apply across all platforms (e.g., "use opensrc instead of API calls",
+from ADR-CORE-001 that apply across all platforms (e.g., "use opensrc instead of API calls",
 "don't assume — verify against actual code"). Platform-specific rules (e.g., OpenCode
 orchestration patterns) are excluded.
 
@@ -456,9 +456,9 @@ the model when to use which.
 
 ## Related Decisions
 
-- ADR-001 (global rules scope filter) — applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
-- ADR-002: Pure plugin architecture for opencode (established the "markdown as source of truth" principle)
-- ADR-003: Agent conventions (!!! markers, cross-references, skill pattern — carried forward into SKILL.md)
+- ADR-CORE-001 (global rules scope filter) — applied here: cross-cutting rules ship as `rules/AGENTS.md`; agent-specific rules inline in each SKILL.md
+- ADR-CORE-002: Pure plugin architecture for opencode (established the "markdown as source of truth" principle)
+- ADR-CORE-003: Agent conventions (!!! markers, cross-references, skill pattern — carried forward into SKILL.md)
 
 ## Date
 

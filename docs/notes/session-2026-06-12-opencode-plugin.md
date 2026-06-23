@@ -124,11 +124,11 @@ OpenCode user config, not a plugin-enforced directive.
 
 All architectural decisions are documented as ADRs:
 
-| ADR                                                   | Title               | What It Covers                                                                                  |
-| ----------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------- |
-| [ADR-001](../adr/core/ADR-001-global-rules-scope.md)  | Global Rules Scope  | Three-way filter for rules: agent file vs global vs exclude                                     |
-| [ADR-002](../adr/core/ADR-002-plugin-architecture.md) | Plugin Architecture | Pure plugin, markdown agents, programmatic registration, 3 hooks, build tool, no bundled skills |
-| [ADR-003](../adr/core/ADR-003-agent-conventions.md)   | Agent Conventions   | `!!!` markers, cross-references, skill pattern, conventional comments                           |
+| ADR                                                             | Title               | What It Covers                                                                                  |
+| --------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------- |
+| [ADR-CORE-001](../adr/core/ADR-CORE-001-global-rules-scope.md)  | Global Rules Scope  | Three-way filter for rules: agent file vs global vs exclude                                     |
+| [ADR-CORE-002](../adr/core/ADR-CORE-002-plugin-architecture.md) | Plugin Architecture | Pure plugin, markdown agents, programmatic registration, 3 hooks, build tool, no bundled skills |
+| [ADR-CORE-003](../adr/core/ADR-CORE-003-agent-conventions.md)   | Agent Conventions   | `!!!` markers, cross-references, skill pattern, conventional comments                           |
 
 ---
 
@@ -239,7 +239,7 @@ permission keys, and prompt length.
 
 ### When Modifying Rules
 
-1. Apply the three-way filter (ADR-001)
+1. Apply the three-way filter (ADR-CORE-001)
 2. If the rule is `!!!` level, ensure it's truly non-negotiable
 3. Check if the rule is already covered by an agent's instructions
 4. Keep global rules under 30 lines

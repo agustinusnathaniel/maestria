@@ -1,4 +1,4 @@
-# ADR-006: Tool Permission Design — Permissive by Default, Policy in Directives
+# ADR-OC-001: Tool Permission Design — Permissive by Default, Policy in Directives
 
 ## Status
 
@@ -54,7 +54,7 @@ bash:
 
 ### 4. Revert `webfetch: ask` — Keep `webfetch: allow` for All Agents
 
-(The install-flow implications of this decision are documented in ADR-005. This ADR covers the permission design principle.)
+(The install-flow implications of this decision are documented in ADR-OC-000. This ADR covers the permission design principle.)
 
 The first audit (`259a72a`, "audit tool permissions for 7 agents + revert webfetch: ask") attempted `webfetch: ask` for adventurer, builder, and diagnose. The user pointed out this created friction with no policy benefit: the opensrc-vs-webfetch guidance is already encoded in each agent's `## Rules` section. Permission-level `ask` would prompt the user on every web request, even for legitimate single-page lookups.
 

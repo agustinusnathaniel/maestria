@@ -1,4 +1,4 @@
-# ADR-005: Skill Install Flow — Orchestrator-Direct, Bundled Questions, --help as Source of Truth
+# ADR-OC-000: Skill Install Flow — Orchestrator-Direct, Bundled Questions, --help as Source of Truth
 
 ## Status
 
@@ -66,7 +66,7 @@ The initial design assumed `-g` didn't exist. The `--help` output confirms: `-g,
 
 ### 6. webfetch: allow for All Agents
 
-Permissions are permissive by default. The opensrc-vs-webfetch guidance in each agent's `## Rules` section encodes the policy. Permission-level `ask` was tried for builder, adventurer, and diagnose — it was reverted after user feedback because it added friction without changing behavior. (See ADR-006 for the full permission design rationale.)
+Permissions are permissive by default. The opensrc-vs-webfetch guidance in each agent's `## Rules` section encodes the policy. Permission-level `ask` was tried for builder, adventurer, and diagnose — it was reverted after user feedback because it added friction without changing behavior. (See ADR-OC-001 for the full permission design rationale.)
 
 ### Evolution From Initial Design (commit `b00eb13`)
 

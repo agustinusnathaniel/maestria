@@ -50,7 +50,7 @@ This guide does NOT cover the following:
 
 The following are explicitly deferred to follow-up tasks, not permanently excluded:
 
-1. **Retrofit existing ADRs (ADR-001 through ADR-007) with Goals and Non-Goals sections** — planned as a follow-up task.
+1. **Retrofit existing ADRs (ADR-CORE-001 through ADR-CORE-004, ADR-OC-000 through ADR-OC-002) with Goals and Non-Goals sections** — planned as a follow-up task.
 
 2. **Update the README with Motivation/Goals/Non-Goals sections** — completed — see `packages/opencode/README.md`.)
 
@@ -103,7 +103,7 @@ All new ADRs must follow the expanded format:
 
 ### Retrofit Existing ADRs
 
-Existing ADRs (ADR-001 through ADR-007) are not rewritten as part of this convention (see Future Considerations #1). A follow-up task ("ADR Retrofit: Add Goals/Non-Goals to ADR-001 through ADR-007") will handle this in a separate pass. The retrofit task will:
+Existing ADRs (ADR-CORE-001 through ADR-CORE-004, ADR-OC-000 through ADR-OC-002) are not rewritten as part of this convention (see Future Considerations #1). A follow-up task ("ADR Retrofit: Add Goals/Non-Goals to ADR-CORE-001 through ADR-CORE-004, ADR-OC-000 through ADR-OC-002") will handle this in a separate pass. The retrofit task will:
 
 1. Extract implicit boundaries from existing "What We Avoid" tables, decision tables, and `## Lessons Learned` sections.
 2. Add `## Goals` and `## Non-Goals` sections without altering the original decision text.

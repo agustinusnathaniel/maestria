@@ -1,4 +1,4 @@
-# ADR-009: Commit Authorization Rules in Orchestrator Directive
+# ADR-OC-004: Commit Authorization Rules in Orchestrator Directive
 
 ## Status
 
@@ -6,12 +6,12 @@ Accepted
 
 ## Context
 
-ADR-001 established the principle that commit behavior belongs to OpenCode's
+ADR-CORE-001 established the principle that commit behavior belongs to OpenCode's
 built-in defaults and should not be duplicated in `@maestria/opencode`'s agent
 files or global rules:
 
 > _"OpenCode defaults handle commit behavior... Duplicating them in our rules
-> creates maintenance burden and drift risk."_ (ADR-001, Decision Table —
+> creates maintenance burden and drift risk."_ (ADR-CORE-001, Decision Table —
 > "Exclude" row)
 
 In practice, this proved insufficient. The orchestrator agent (the LLM acting
@@ -105,7 +105,7 @@ A new **Commit Policy** section was added visible to all subagents:
 - The orchestrator directive grew from 277 to 295 lines (+6.5%), adding token
   overhead to every session
 - The global rules file grew from 57 to 67 lines (+17.5%)
-- ADR-001's "exclude commit behavior" principle is partially reversed for this
+- ADR-CORE-001's "exclude commit behavior" principle is partially reversed for this
   specific use case, creating a tension between the two records
 - No programmatic enforcement — compliance still depends on the LLM following
   the directive
@@ -119,12 +119,12 @@ A new **Commit Policy** section was added visible to all subagents:
 
 ## Lessons Learned
 
-- ADR-001's assumption that "OpenCode defaults handle commit behavior" was
+- ADR-CORE-001's assumption that "OpenCode defaults handle commit behavior" was
   correct in principle but insufficient in practice. The LLM's failure to follow
   implicit defaults was the root cause, not a flaw in the defaults themselves.
 - Future agent prompt changes should be validated against actual model behavior
   before assuming good-faith instruction following.
-- The "exclude if covered by OpenCode defaults" filter from ADR-001 should be
+- The "exclude if covered by OpenCode defaults" filter from ADR-CORE-001 should be
   softened to: "exclude if OpenCode defaults are consistently followed in
   practice." If a default is routinely ignored, add explicit rules.
 

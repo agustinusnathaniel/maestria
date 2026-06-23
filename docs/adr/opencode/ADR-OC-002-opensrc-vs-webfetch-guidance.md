@@ -1,4 +1,4 @@
-# ADR-007: Opensrc vs Webfetch Guidance — Scoped Queries to Webfetch, Whole Repos to Opensrc
+# ADR-OC-002: Opensrc vs Webfetch Guidance — Scoped Queries to Webfetch, Whole Repos to Opensrc
 
 ## Status
 
@@ -55,7 +55,7 @@ Applied to 6 agents initially, narrowed to 5 after user feedback:
 
 > - **Use `opensrc` for repos; `webfetch` for pages** — when analyzing a GitHub/GitLab/BitBucket repo or any multi-file code reference, run `opensrc path <owner/repo>`. It clones to a global cache and prints a path that `read`/`glob`/`grep` can use directly. For a single file, a specific page, or a known URL, `webfetch` is fine. Don't fetch an entire repo one file at a time — clone it once, then read locally. Use `--cwd` to resolve versions from the current project.
 
-The permission context for this choice is documented in ADR-006 (Tool Permission Design — Permissive by Default, Policy in Directives).
+The permission context for this choice is documented in ADR-OC-001 (Tool Permission Design — Permissive by Default, Policy in Directives).
 
 ### Orchestrator's Webfetch Hang Fallback
 

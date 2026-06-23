@@ -1,4 +1,4 @@
-# ADR-002: Plugin Architecture — Pure Plugin, Markdown Agents, 2 Hooks
+# ADR-CORE-002: Plugin Architecture — Pure Plugin, Markdown Agents, 2 Hooks
 
 ## Status
 

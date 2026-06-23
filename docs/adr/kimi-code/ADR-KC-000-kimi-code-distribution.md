@@ -1,4 +1,4 @@
-# ADR-010: Kimi Code Plugin Distribution — Subtree-Split Release Branch
+# ADR-KC-000: Kimi Code Plugin Distribution — Subtree-Split Release Branch
 
 ## Status
 
@@ -8,7 +8,7 @@ Accepted (Revised 2026-06-18)
 
 Kimi Code v0.13.1's plugin system only finds `kimi.plugin.json` at the root of the extracted archive. The kimi-code plugin lives at `packages/kimi-code/` in a monorepo, which Kimi Code cannot extract as a subpath. Its URL parser interprets any `/tree/<ref>/<subpath>` as a git ref, not a path. Subpath URLs are not supported; neither is npm install (Kimi Code's installer only fetches via codeload.github.com).
 
-This ADR records the distribution mechanism chosen to ship the plugin from a monorepo. The full plugin architecture (manifest, skills, subagent mapping, orchestrator) is captured in ADR-011.
+This ADR records the distribution mechanism chosen to ship the plugin from a monorepo. The full plugin architecture (manifest, skills, subagent mapping, orchestrator) is captured in ADR-KC-001.
 
 ## Decision Drivers
 
@@ -125,12 +125,12 @@ For supply-chain security, the workflow could sign the release-branch tip with `
 
 ### Auto-update via Kimi Code marketplace — Future
 
-Kimi Code's marketplace UI shows `update <local> → <latest>` when a newer version is available (per ADR-011's "Consequences" section). This is the platform's auto-update affordance — we don't need to invent our own. The marketplace surfaces new releases once the release branch moves.
+Kimi Code's marketplace UI shows `update <local> → <latest>` when a newer version is available (per ADR-KC-001's "Consequences" section). This is the platform's auto-update affordance — we don't need to invent our own. The marketplace surfaces new releases once the release branch moves.
 
 ## Related Decisions
 
-- **ADR-011** — Kimi Code plugin architecture. Documents the manifest, skills, and subagent mapping. The distribution mechanism is downstream of the manifest's "root-of-archive" constraint.
-- **ADR-007** — Opensrc vs. webfetch guidance. Not directly related, but the `opensrc path <owner/repo>` pattern reads from a GitHub repository; this ADR documents how to install plugins from a GitHub repository.
+- **ADR-KC-001** — Kimi Code plugin architecture. Documents the manifest, skills, and subagent mapping. The distribution mechanism is downstream of the manifest's "root-of-archive" constraint.
+- **ADR-OC-002** — Opensrc vs. webfetch guidance. Not directly related, but the `opensrc path <owner/repo>` pattern reads from a GitHub repository; this ADR documents how to install plugins from a GitHub repository.
 
 ## Date
 

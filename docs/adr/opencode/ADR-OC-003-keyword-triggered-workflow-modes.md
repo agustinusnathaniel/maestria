@@ -1,4 +1,4 @@
-# ADR-008: Keyword-Triggered Workflow Modes — Hybrid Hook + Prompt, Denylist Config
+# ADR-OC-003: Keyword-Triggered Workflow Modes — Hybrid Hook + Prompt, Denylist Config
 
 ## Status
 
@@ -143,7 +143,7 @@ Rationale:
 - **No default mode** because the orchestrator's existing behavior (standard pipeline) is the fallback. A mode keyword is an override, not a requirement.
 - **No per-agent overrides** because mode is about the orchestrator's pipeline, not individual agent behavior. A blitz'd builder still builds; a sonar'd architect still designs.
 
-### ADR-Naming Compliance (ADR-002)
+### ADR-Naming Compliance (ADR-CORE-002)
 
 The three keywords are functional descriptors, not mythological/thematic:
 
@@ -151,7 +151,7 @@ The three keywords are functional descriptors, not mythological/thematic:
 - **sonar** — technology metaphor — communicates scanning/depth-finding without action
 - **blitz** — German for "lightning" — communicates speed and minimal ceremony
 
-This follows ADR-002's principle: "functional naming tells you what the agent does." Each keyword tells you the pipeline shape.
+This follows ADR-CORE-002's principle: "functional naming tells you what the agent does." Each keyword tells you the pipeline shape.
 
 ### What We Avoid
 
@@ -175,7 +175,7 @@ This follows ADR-002's principle: "functional naming tells you what the agent do
 - Positive: Hook is minimal (~30 lines TS) — easy to audit and maintain
 - Positive: Denylist config is simple — one array, no mode resolution logic
 - Positive: Prompts live in TypeScript (`src/modes/prompts.ts`) for hook-injection purposes — faster than file reads and co-located with detection code, at the cost of requiring a package rebuild to edit
-- Positive: ADR-002 compliant — functional naming (fein/sonar/blitz), not mythological
+- Positive: ADR-CORE-002 compliant — functional naming (fein/sonar/blitz), not mythological
 - Positive: No default mode changes — existing orchestrator behavior is undisturbed
 - Positive: Most-restrictive-wins lets users correct themselves mid-message
 - Negative: Three more imported concepts for users to learn (fein, sonar, blitz)
@@ -189,9 +189,9 @@ This follows ADR-002's principle: "functional naming tells you what the agent do
 
 2. **Per-turn mode eliminates stale-state bugs.** The initial design considered a session-level mode flag. But what happens when a user switches from `sonar` to `blitz` mid-session? Or when a compacted session restores a stale mode? Per-turn detection avoids all of these — each message is evaluated fresh.
 
-3. **The hybrid hook + prompt split was learned from ADR-002 and ADR-006.** ADR-002 established that plugin hooks should be minimal. ADR-006 established that policy belongs in directives, not in code. The mode mechanism follows both: detection logic is in the hook (~30 lines), but pipeline behavior is in orchestrator.md (~60 lines). Neither layer does the other's job.
+3. **The hybrid hook + prompt split was learned from ADR-CORE-002 and ADR-OC-001.** ADR-CORE-002 established that plugin hooks should be minimal. ADR-OC-001 established that policy belongs in directives, not in code. The mode mechanism follows both: detection logic is in the hook (~30 lines), but pipeline behavior is in orchestrator.md (~60 lines). Neither layer does the other's job.
 
-4. **Mode prompts are orchestrator rules, not global rules.** An early draft put mode behavior in `rules/AGENTS.md`. But mode only affects the orchestrator's pipeline decisions — subagents don't change behavior based on mode. The orchestrator already mediates between user and specialist; mode override is a natural extension of that role. ADR-001's filter (global rules are for cross-cutting techniques only) confirms this: mode behavior is orchestrator-specific.
+4. **Mode prompts are orchestrator rules, not global rules.** An early draft put mode behavior in `rules/AGENTS.md`. But mode only affects the orchestrator's pipeline decisions — subagents don't change behavior based on mode. The orchestrator already mediates between user and specialist; mode override is a natural extension of that role. ADR-CORE-001's filter (global rules are for cross-cutting techniques only) confirms this: mode behavior is orchestrator-specific.
 
 5. **Denylist is forward-safe.** If a fourth mode is added in the future, all existing users get it automatically. An allowlist would require an explicit opt-in for each new mode. Denylist matches the principle that modes are additive features.
 

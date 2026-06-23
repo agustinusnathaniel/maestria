@@ -1,4 +1,4 @@
-# ADR-004: Agent Prompt Template — 4-Bucket Skills, 5-Section Handoff, Iteration Limits, Rules Bullets
+# ADR-CORE-004: Agent Prompt Template — 4-Bucket Skills, 5-Section Handoff, Iteration Limits, Rules Bullets
 
 ## Status
 
@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-The 7 agents (orchestrator, architect, builder, diagnose, planner, reviewer, writer) were built incrementally across multiple sessions. Each agent had its own structure — some had skill lists, some had output formats, some had iteration limits, others didn't. After ADR-003 established the `!!!` marker convention and skill pattern, the template still varied significantly between agents:
+The 7 agents (orchestrator, architect, builder, diagnose, planner, reviewer, writer) were built incrementally across multiple sessions. Each agent had its own structure — some had skill lists, some had output formats, some had iteration limits, others didn't. After ADR-CORE-003 established the `!!!` marker convention and skill pattern, the template still varied significantly between agents:
 
 1. **Skill sections** were flat lists with no trigger logic — agents had to guess whether to load a skill
 2. **Source repos** were in a separate column, HTML comments, or missing entirely
@@ -108,7 +108,7 @@ The template was proven on smaller agents first:
 
 2. **Prove the template on small agents first.** Applying the full template to adventurer and diagnose first caught edge cases (e.g., "Always load" with no items) before hitting the larger agents. The architect needed special handling to preserve its existing Phase 3 max-5-questions rule while adding the new iteration-limit structure.
 
-3. **"Don't delete what you didn't create" is builder/reviewer specific, not universal.** It was initially considered a global rule (ADR-001), then correctly classified as builder- and reviewer-specific. It doesn't apply to read-only agents or writer.
+3. **"Don't delete what you didn't create" is builder/reviewer specific, not universal.** It was initially considered a global rule (ADR-CORE-001), then correctly classified as builder- and reviewer-specific. It doesn't apply to read-only agents or writer.
 
 4. **Parallelization guidance must be per-agent.** A generic "can parallelize if on different scopes" was too vague. Each agent now has specific guidance about when parallelization is safe vs. wasteful (e.g., "Two builders on the same file = merge conflict" vs. "Two writers on the same doc = wasted effort").
 
