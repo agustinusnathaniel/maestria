@@ -8,34 +8,33 @@ Accepted
 
 TRINITY (arXiv:2512.04695) and Conductor (arXiv:2512.04388) propose
 orchestration architectures for multi-agent code generation. TRINITY introduces
-learned routing via CMA-ES, dynamic per-turn role assignment (thinker/worker/
-verifier), and verifier-terminated execution. Conductor proposes RL-trained
-strategy generation where a model learns to produce natural-language
-coordination plans with discovered topologies. Both papers were published at
-ICLR 2026.
+per-turn role assignment (thinker/worker/verifier) and verifier-terminated
+execution. Conductor proposes strategy generation with discovered coordination
+topologies. Both papers were published at ICLR 2026. However, their core
+contributions depend on ML training infrastructure that is outside the scope
+of a plugin-only project.
 
-We wanted to learn what patterns maestria could adopt without the ML training
-infrastructure both papers depend on. An audit compared paper proposals against
-maestria's existing fein pipeline (recon → design → build → review) and found
-that the thinker→worker→verifier pattern was already present in linear form.
-The papers' core innovations — learned routing and RL-trained strategies —
-are research-level infrastructure requiring SLMs, evolutionary optimization,
-and PPO training pipelines. The implementable patterns were incremental: role
-metadata, quality-gated iteration loops, and adaptive sequencing.
+We audited both papers against maestria's existing fein pipeline (recon →
+design → build → review) and found that the thinker→worker→verifier pattern was
+already present in linear form. The implementable patterns were incremental:
+role metadata, quality-gated iteration loops, and adaptive sequencing.
 
-An initial POC on this branch (commit `63bc476`) implemented role frontmatter,
-recursive orchestration, and dynamic role sequencing. Recursive orchestration
-was superseded when we confirmed OpenCode's `task()` does not support recursive
-delegation — subagents receive read-only tools only. The POC was reverted
-(commit `e21dd76`), then dynamic sequencing and verifier-terminated execution
-were re-implemented (commit `d7a43f0`). This ADR formalizes what we keep and
-what remains deferred.
+An initial POC on this branch (commit `63bc476`) implemented role frontmatter
+and dynamic role sequencing. Dynamic sequencing and verifier-terminated execution
+were refined and committed (`d7a43f0`). This ADR formalizes what we keep.
+
+We also investigated recursive orchestration (the orchestrator delegating
+to itself via task(orchestrator, ...) for nested task decomposition). This
+proved not viable: OpenCode's task() grants subagents read-only tools only
+(Glob, Grep, Ls, View, Sourcegraph) — they cannot delegate further, run
+commands, or edit files. Self-delegation is outside the current OpenCode
+plugin architecture.
 
 ## Decision
 
 ### Adopted
 
-Three patterns from the papers:
+Three patterns inspired by the papers:
 
 1. **Verifier-terminated pipeline** — The reviewer's acceptance signals
    pipeline completion, skipping unnecessary subsequent stages. Derived from
@@ -51,24 +50,12 @@ Three patterns from the papers:
    enumerate which prior outputs a specialist may reference. This prevents bias
    and context leakage between subagents during independent analysis.
 
-### Deferred to Future Research
-
-Three patterns remain out of scope without ML infrastructure investment:
-
-4. **Learned routing via CMA-ES** — Requires a ~0.6B SLM and evolutionary
-   optimization pipeline. Not feasible in a plugin-only project.
-5. **RL-trained strategy generation** — Requires a 7B model trained via PPO.
-   Not feasible in a plugin-only project.
-6. **Recursive orchestration** — Blocked by OpenCode runtime: `task()` grants
-   subagents read-only tools, preventing orchestrator self-delegation.
-
 ### What We Avoid
 
-| Anti-pattern                   | Why Not                                                                       |
-| ------------------------------ | ----------------------------------------------------------------------------- |
-| Fixed pipeline unconditionally | Always running all stages wastes tokens when the verifier would accept early  |
-| Laissez-faire handoff          | Passing full conversation history lets subagents bias each other's analysis   |
-| ML-dependent routing           | Requires training infrastructure that does not exist and may never exist here |
+| Anti-pattern                   | Why Not                                                                      |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| Fixed pipeline unconditionally | Always running all stages wastes tokens when the verifier would accept early |
+| Laissez-faire handoff          | Passing full conversation history lets subagents bias each other's analysis  |
 
 ## Consequences
 
@@ -90,19 +77,16 @@ Three patterns remain out of scope without ML infrastructure investment:
 
 ### Risks
 
-- Learned routing and RL training remain deferred indefinitely without ML
-  infrastructure investment
-- If OpenCode adds support for recursive `task()` calls, the recursive
-  orchestration design from the superseded POC could be revived
 - Orchestrator prompt has grown incrementally across ADRs — cumulative
   complexity may reduce instruction-following reliability over time
+- Recursive orchestration is not viable in current OpenCode. Complex
+  hierarchical tasks must be flattened into sequential or parallel
+  delegations by the orchestrator.
 
 ## References
 
 - [TRINITY: Evolved Orchestrator for Multi-Agent Code Generation](https://arxiv.org/abs/2512.04695)
 - [Conductor: Learning to Orchestrate Agents in Natural Language with RL](https://arxiv.org/abs/2512.04388)
-- This ADR supersedes the earlier ADR-010 and ADR-011 drafts that were created
-  and reverted on the `poc/trinity-conductor-pattern` branch
 
 ## Date
 
