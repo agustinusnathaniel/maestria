@@ -1,5 +1,5 @@
 [build]
-command = "pnpm docs:build"
+command = "pnpm --filter @maestria/docs build"
 publish = "dist"
 
 [build.environment]
@@ -7,7 +7,7 @@ NODE_VERSION = "24"
 COREPACK_INTEGRITY_KEYS = "0"
 
 [dev]
-command = "pnpm docs:dev"
+command = "pnpm --filter @maestria/docs dev"
 port = 4321
 
 [[headers]]
@@ -20,4 +20,4 @@ Referrer-Policy = "strict-origin-when-cross-origin"
 Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 Cross-Origin-Opener-Policy = "same-origin"
 Cross-Origin-Resource-Policy = "same-origin"
-Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' umami.sznm.dev; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://umami.sznm.dev; frame-ancestors 'none'; form-action 'self'; base-uri 'self'"
+Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' umami.sznm.dev static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://umami.sznm.dev https://static.cloudflareinsights.com; frame-ancestors 'none'; form-action 'self'; base-uri 'self'"
