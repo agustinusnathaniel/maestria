@@ -32,8 +32,8 @@
     "prebuild": "node --experimental-strip-types scripts/build-rules.ts",
     "test": "vp test",
     "lint": "vp check",
-    "validate-prompts": "node scripts/validate-prompts.mjs",
-    "validate-skills": "node scripts/validate-skills.mjs",
+    "validate-prompts": "node --experimental-strip-types scripts/validate-prompts.ts",
+    "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "sync-prompts": "bash scripts/sync-prompts.sh",
     "validate": "npm run validate-prompts && npm run validate-skills && npm run sync-prompts"
   },

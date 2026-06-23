@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 const __dirname = import.meta.dirname;
 const root = join(__dirname, '..');
