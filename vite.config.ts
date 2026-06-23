@@ -16,6 +16,14 @@ export default defineConfig({
       'packages/*/rules/**',
       'packages/*/skills/**',
     ],
+    overrides: [
+      {
+        files: ['packages/core/**/*.md'],
+        options: {
+          proseWrap: 'never',
+        },
+      },
+    ],
   },
   lint: {
     ignorePatterns: ['dist/**'],

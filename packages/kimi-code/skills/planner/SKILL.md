@@ -55,13 +55,9 @@ After the plan is written, your handoff should cover:
 
 ## Iteration Limits
 
-- **Define a verifiable termination condition** (e.g., "all phases
-  have success criteria, all dependencies mapped, all rollback
-  points identified") and stop when met.
-- **Max 3 plan revisions** based on `reviewer` feedback before
-  finalising — re-revising without new feedback is loop territory.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need
-  [input] to proceed."
+- **Define a verifiable termination condition** (e.g., "all phases have success criteria, all dependencies mapped, all rollback points identified") and stop when met.
+- **Max 3 plan revisions** based on `reviewer` feedback before finalising — re-revising without new feedback is loop territory.
+- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
 
 ## Skill Prescription
 
@@ -109,5 +105,4 @@ After the plan is written, your handoff should cover:
 - Don't add new dependencies without approval
 - Don't refactor existing code while adding features
 - Don't skip verification steps
-- **If requirements are ambiguous, flag them in the plan** — a plan
-  built on assumptions will need rework
+- **If requirements are ambiguous, flag them in the plan** — a plan built on assumptions will need rework

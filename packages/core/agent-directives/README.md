@@ -4,13 +4,9 @@ Canonical source of truth for agent directives across all plugins.
 
 ## Purpose
 
-This directory holds the shared methodology, rules, and skill
-prescriptions that define how pipeline agents operate. Every
-plugin-specific agent file (`@adventurer`, `@architect`, etc.)
-is derived from these canonical sources.
+This directory holds the shared methodology, rules, and skill prescriptions that define how pipeline agents operate. Every plugin-specific agent file (`@adventurer`, `@architect`, etc.) is derived from these canonical sources.
 
-**Do not edit plugin-specific agent files directly.** Edit here,
-then run the sync tool to propagate changes to all plugins.
+**Do not edit plugin-specific agent files directly.** Edit here, then run the sync tool to propagate changes to all plugins.
 
 ## Directory Structure
 
@@ -34,9 +30,7 @@ agent-directives/
 ## How to Add a New Specialist
 
 1. Create a new file in `specialists/<name>.md`
-2. Follow the same structure: role description, methodology sections,
-   iteration limits, handoff format, skill prescription, related agents,
-   and rules
+2. Follow the same structure: role description, methodology sections, iteration limits, handoff format, skill prescription, related agents, and rules
 3. Add the specialist to the delegation table in the orchestrator prompt
 4. Register the agent in each plugin's agent loader
 5. Run the sync tool to generate plugin-specific agent files
