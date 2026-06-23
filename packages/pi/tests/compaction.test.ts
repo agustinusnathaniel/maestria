@@ -59,6 +59,7 @@ describe('installCompactionHandlers', () => {
       expect(result).toEqual({
         compaction: {
           summary: expect.stringContaining('**Goal:** build the feature'),
+          details: expect.any(Object),
           firstKeptEntryId: '',
           tokensBefore: 0,
         },

@@ -11,6 +11,7 @@ export function installCompactionHandlers(pi: ExtensionAPI, state: MaestriaState
     return {
       compaction: {
         summary: renderMaestriaSummary(state),
+        details: { ...state },
         firstKeptEntryId: event.preparation.firstKeptEntryId,
         tokensBefore: event.preparation.tokensBefore,
       },
