@@ -1,0 +1,23 @@
+---
+title: Changelog
+description: Release history for @maestria/pi.
+---
+
+# Changelog
+
+## v0.1.0
+
+_June 22, 2026_
+
+### Features
+
+Initial release of `@maestria/pi` — a portable Pi extension that brings Maestria's spec-driven orchestration, workflow modes, and specialist subagents to the Pi coding agent.
+
+- **8 specialist prompt templates** — one orchestrator plus seven specialist subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer) with structured role definitions, permission boundaries, and delegation triggers
+- **3 workflow modes** — `fein` (full pipeline with gates), `sonar` (research only), `blitz` (fast implementation), each routing to the appropriate subagent pipeline
+- **Global rules injection** — cross-cutting orchestration, delegation, and context-management rules injected into every session via the `before_agent_start` event
+- **Session compaction preservation** — structured state summaries survive compaction events, keeping task tracking and work-in-progress intact across turns
+- **Subagent dispatch via `@gotgenes/pi-subagents`** — 6-field handoff validation ensures every delegation carries the right context, constraints, and completion criteria
+- **`/orchestrate`, `/review`, `/maestria-status` commands** — slash commands for dispatching work, requesting reviews, and inspecting extension state
+- **Maker/checker enforcement** — tool-call interception prevents the orchestrator from implementing its own tasks, enforcing the separation of dispatch from execution
+- **2 methodology skills** — handoff contract (standardized delegation format) and iteration limits (max 3 proofread-revise cycles before escalation)

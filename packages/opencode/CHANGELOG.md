@@ -41,7 +41,6 @@
 ### Patch Changes
 
 - [`b722da0`](https://github.com/agustinusnathaniel/maestria/commit/b722da01d6bbe8a105a26d757a870b5cf0ef9b43) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Switch build from tsc to vp pack (tsdown), consolidate configs
-
   - Replace tsc build with vp pack/tsdown for native @/ alias resolution
   - Consolidate vitest.config.ts into single vite.config.ts with pack + test blocks
   - Add integration tests for chat.message hook
@@ -55,7 +54,6 @@
 ### Patch Changes
 
 - [`20fdde5`](https://github.com/agustinusnathaniel/maestria/commit/20fdde52b05142ec7a7e293f15ebc9cbc1496e5f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add @/ path alias, integration tests, vitest config, and pre-push hooks
-
   - Add @/ path alias to tsconfig.json for cleaner imports across src/ and tests/
   - Create vitest.config.ts with tsconfigPaths resolution
   - Add integration tests for chat.message hook (asserts on parts length)
@@ -77,7 +75,6 @@
 ### Minor Changes
 
 - [#20](https://github.com/agustinusnathaniel/maestria/pull/20) [`c3a5015`](https://github.com/agustinusnathaniel/maestria/commit/c3a501572835ae880eb56202b115c9771f999910) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Introduce three keyword-triggered workflow modes that override the orchestrator's default delegation pipeline:
-
   - `fein` — full pipeline (mandatory recon → design → build → review)
   - `sonar` — research only (recon + design, stop before implementation)
   - `blitz` — fast implementation (builder direct, skip gates)
@@ -120,7 +117,6 @@
 ### Patch Changes
 
 - [`2e2f10e`](https://github.com/agustinusnathaniel/maestria/commit/2e2f10e62e932747d0fc1a260aed3ef2b65f267c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refine agent permissions after audit
-
   - Add `todowrite` to adventurer, diagnose, writer for multi-step tracking
   - Add missing git commands (status, show, diff, log) to adventurer, architect, reviewer, writer
   - Add `lsp` to writer for code navigation during doc generation

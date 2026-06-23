@@ -88,7 +88,7 @@ configuration. Nothing more.
 | `@maestria/kimi-code`   | Kimi Code           | In development     |
 | `@maestria/claude-code` | Claude Code & Codex | Planned            |
 | `@maestria/hermes`      | Hermes              | Exploring          |
-| `@maestria/pi`          | Pi                  | Exploring          |
+| `@maestria/pi`          | Pi                  | Shipping (v0.1.0)  |
 
 ## How This Project Evolves
 

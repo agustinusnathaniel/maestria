@@ -79,6 +79,24 @@ export default defineConfig({
             { label: 'Contributing', link: '/opencode/contributing/' },
           ],
         },
+        {
+          label: '@maestria/pi',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/pi/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'pi/getting-started' } }],
+            },
+            { label: 'Workflow Patterns', link: '/pi/guide/workflow-patterns/' },
+            {
+              label: 'Agents',
+              items: [{ label: 'Agent Reference', link: '/pi/agents/' }],
+            },
+            { label: 'Changelog', link: '/pi/changelog/' },
+            { label: 'Contributing', link: '/pi/contributing/' },
+          ],
+        },
       ],
     }),
   ],
