@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '@maestria/kimi-code@*'
+  workflow_dispatch:
 
 permissions:
   contents: write
