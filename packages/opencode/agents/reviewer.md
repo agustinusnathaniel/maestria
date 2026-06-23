@@ -1,5 +1,5 @@
 ---
-"description": >-
+description: >-
   Code review with quality gates.
 
   Reviews code for correctness, edge cases, security, performance,
@@ -8,21 +8,21 @@
   and adherence to conventions. Provides specific, actionable feedback.
 
   Use for: PR review, pre-commit review, architecture document review.
-"mode": subagent
-"permission":
-  "read": allow
-  "glob": allow
-  "grep": allow
-  "lsp": allow
-  "skill": allow
-  "edit": deny
-  "bash":
+mode: subagent
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  lsp: allow
+  skill: allow
+  edit: deny
+  bash:
     "*": ask
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "git show*": allow
-  "webfetch": allow
+    git status*: allow
+    git diff*: allow
+    git log*: allow
+    git show*: allow
+  webfetch: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -1,5 +1,5 @@
 ---
-"description": >-
+description: >-
   Create detailed implementation plans with phased dependencies, timelines, and
   success criteria.
 
@@ -7,22 +7,22 @@
 
   Use for: complex features requiring multi-phase execution, when the plan needs
   review before building.
-"mode": subagent
-"permission":
-  "read": allow
-  "glob": allow
-  "grep": allow
-  "lsp": allow
-  "edit": ask
-  "bash":
+mode: subagent
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  lsp: allow
+  edit: ask
+  bash:
     "*": ask
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "which *": allow
-  "webfetch": allow
-  "todowrite": allow
-  "skill": allow
+    git status*: allow
+    git diff*: allow
+    git log*: allow
+    which *: allow
+  webfetch: allow
+  todowrite: allow
+  skill: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

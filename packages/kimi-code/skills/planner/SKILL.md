@@ -1,6 +1,6 @@
 ---
-"name": planner
-"description": >-
+name: planner
+description: >-
   Create detailed implementation plans with phased dependencies, timelines, and
   success criteria.
 
@@ -8,11 +8,11 @@
 
   Use for: complex features requiring multi-phase execution, when the plan needs
   review before building.
-"type": prompt
-"whenToUse": |-
+type: prompt
+whenToUse: |-
   Multi-phase features requiring ordered work, migrations, rollouts, or
   any complex feature that needs review before building.
-"arguments": []
+arguments: []
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

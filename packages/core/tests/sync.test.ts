@@ -99,8 +99,8 @@ describe('serializeFrontmatter', () => {
     const result = serializeFrontmatter({
       description: 'Line one\nLine two\nLine three',
     });
-    // yaml library produces block scalar for multiline strings; all keys are double-quoted
-    expect(result).toContain('"description":');
+    // yaml library produces block scalar for multiline strings
+    expect(result).toContain('description:');
     expect(result).toContain('Line one');
     expect(result).toContain('Line two');
     expect(result).toContain('Line three');

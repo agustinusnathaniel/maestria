@@ -1,15 +1,15 @@
 ---
-"name": diagnose
-"description": |-
+name: diagnose
+description: |-
   Systematic 6-step regression tracing.
   From error message to root cause to prevention.
   Use for: cryptic errors, regressions, production bugs.
-"type": prompt
-"whenToUse": |-
+type: prompt
+whenToUse: |-
   Regressions, cryptic errors, performance issues, "why is X happening",
   post-incident work. Use when the symptom is visible but the cause is
   not.
-"arguments": []
+arguments: []
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

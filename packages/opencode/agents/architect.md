@@ -1,25 +1,25 @@
 ---
-"description": |-
+description: |-
   Architecture decisions using decision matrices and ADRs.
   Evaluates options with weighted criteria, clarifies business context first.
   Use for: technology choices, implementation approaches, trade-off analysis.
-"mode": subagent
-"permission":
-  "read": allow
-  "glob": allow
-  "grep": allow
-  "lsp": allow
-  "webfetch": allow
-  "websearch": ask
-  "skill": allow
-  "edit": deny
-  "bash":
+mode: subagent
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  lsp: allow
+  webfetch: allow
+  websearch: ask
+  skill: allow
+  edit: deny
+  bash:
     "*": ask
-    "git diff*": allow
-    "git log*": allow
-    "git status*": allow
-    "which *": allow
-    "npm view *": allow
+    git diff*: allow
+    git log*: allow
+    git status*: allow
+    which *: allow
+    npm view *: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

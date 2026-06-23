@@ -1,27 +1,27 @@
 ---
-"description": >-
+description: >-
   Documentation writing following structured patterns.
 
   Creates clear, comprehensive docs for code, APIs, systems.
 
   Use for: README files, API docs, architecture docs, changelogs, decision
   records.
-"mode": subagent
-"permission":
-  "read": allow
-  "glob": allow
-  "grep": allow
-  "lsp": allow
-  "edit": allow
-  "webfetch": allow
-  "skill": allow
-  "todowrite": allow
-  "bash":
+mode: subagent
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  lsp: allow
+  edit: allow
+  webfetch: allow
+  skill: allow
+  todowrite: allow
+  bash:
     "*": ask
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "npm view *": allow
+    git status*: allow
+    git diff*: allow
+    git log*: allow
+    npm view *: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -1,6 +1,6 @@
 ---
-"name": reviewer
-"description": >-
+name: reviewer
+description: >-
   Code review with quality gates.
 
   Reviews code for correctness, edge cases, security, performance,
@@ -9,11 +9,11 @@
   and adherence to conventions. Provides specific, actionable feedback.
 
   Use for: PR review, pre-commit review, architecture document review.
-"type": prompt
-"whenToUse": |-
+type: prompt
+whenToUse: |-
   Pre-merge review, post-implementation validation, security audits,
   before-commit QA. Use after `builder` lands a code change.
-"arguments": []
+arguments: []
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
