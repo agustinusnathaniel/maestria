@@ -1,8 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const rulesPath = resolve(__dirname, '..', 'rules', 'AGENTS.md');
 
 const content = readFileSync(rulesPath, 'utf-8');

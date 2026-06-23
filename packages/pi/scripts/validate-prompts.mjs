@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 import { readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const root = join(__dirname, '..');
 
 const prompts = [
