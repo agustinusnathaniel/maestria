@@ -216,7 +216,7 @@ permission keys, and prompt length.
 
 | Agent            | Initial                     | Final                                                                         | Key Changes                         |
 | ---------------- | --------------------------- | ----------------------------------------------------------------------------- | ----------------------------------- |
-| **orchestrator** | 5-step process, basic rules | Added parallel execution, human-in-the-loop, anti-patterns                    | orchestration patterns      |
+| **orchestrator** | 5-step process, basic rules | Added parallel execution, human-in-the-loop, anti-patterns                    | orchestration patterns              |
 | **architect**    | 5 phases, shortcut rules    | Added constraints, explicit assumptions, ADR template                         | Clarification before recommendation |
 | **builder**      | "1-2 file edits" limit      | Atomic tasks, implementation staircase, constraint escalation                 | Removed arbitrary limits            |
 | **diagnose**     | 6 steps                     | Added environment check, safety-first, documentation per step                 | Systematic debugging order          |
