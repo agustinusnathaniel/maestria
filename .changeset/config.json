@@ -10,5 +10,5 @@
     "tag": true
   },
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": ["@maestria/docs"]
 }
