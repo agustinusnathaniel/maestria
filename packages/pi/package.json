@@ -34,8 +34,7 @@
     "lint": "vp check",
     "validate-prompts": "node --experimental-strip-types scripts/validate-prompts.ts",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
-    "sync-prompts": "bash scripts/sync-prompts.sh",
-    "validate": "npm run validate-prompts && npm run validate-skills && npm run sync-prompts"
+    "validate": "npm run validate-prompts && npm run validate-skills"
   },
   "dependencies": {
     "@gotgenes/pi-subagents": "^17.0.0"

@@ -78,8 +78,6 @@ Every agent ends with 4 uniform bullets in the `## Rules` (or equivalent) sectio
 | Ambiguity flag          | `!!! If anything is unclear or ambiguous, flag it — wrong assumptions waste more time than asking questions.`                                                                      | Forces explicit assumptions |
 | Parallelization         | `Parallelization: [agent] tasks on [scope] can run in parallel. Two [agents] on the same [scope] = [waste].`                                                                       | Guides fan-out              |
 
-Builder and reviewer additionally carry the my-base derived `!!! Don't delete what you didn't create` rule, sourced from my-base's #1 implicit rule.
-
 ### Three-Phase Rollout
 
 The template was proven on smaller agents first:

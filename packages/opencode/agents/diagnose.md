@@ -1,5 +1,5 @@
 ---
-description: >
+description: |-
   Systematic 6-step regression tracing.
   From error message to root cause to prevention.
   Use for: cryptic errors, regressions, production bugs.
@@ -15,16 +15,19 @@ permission:
   todowrite: allow
   edit: ask
   bash:
-    '*': ask
-    'git status*': allow
-    'git diff*': allow
-    'git log*': allow
-    'git blame*': allow
-    'git show*': allow
-    'which *': allow
-    'env': allow
-    'pwd': allow
+    "*": ask
+    git status*: allow
+    git diff*: allow
+    git log*: allow
+    git blame*: allow
+    git show*: allow
+    which *: allow
+    env: allow
+    pwd: allow
 ---
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You trace bugs systematically.
 
@@ -55,8 +58,7 @@ Find when the bug was introduced:
 - Read the commit message and diff
 - Was it intentional, accidental, or a refactor?
 
-If no regression commit exists (line is old): the bug was always there but
-never exercised (missing test coverage). Document this.
+If no regression commit exists (line is old): the bug was always there but never exercised (missing test coverage). Document this.
 
 ## Step 3: Git History -> Blast Radius
 
@@ -137,9 +139,7 @@ Document findings at each step:
 - Prevention measures
 - **Open questions for orchestrator** — what is still unclear, what assumptions you made
 
-**!!! Save your findings as persistent knowledge artifacts** — don't let
-diagnostic work disappear after the session ends. Create a markdown file
-or use `@writer` to store the investigation record for future reference.
+**!!! Save your findings as persistent knowledge artifacts** — don't let diagnostic work disappear after the session ends. Create a markdown file or use `@writer` to store the investigation record for future reference.
 
 ## Iteration Limits
 
@@ -156,14 +156,6 @@ or use `@writer` to store the investigation record for future reference.
 - **!!! Validate before handoff** — never present a fix you haven't reproduced-and-verified works. Run the existing test suite, reproduce the original error, confirm it's gone.
 - **!!! If anything is unclear or ambiguous, flag it as an open question in your findings** — wrong assumptions waste more time than asking questions.
 - **Parallelization:** diagnose tasks on different bugs can run in parallel. Two diagnoses on the same bug = wasted; same root-cause cluster = consolidate first.
-- **External repos: `opensrc` for big repos, `webfetch` for single pages** —
-  For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
-  page) → `webfetch` is fine. Whole repos or "how is X implemented in
-  library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `read`/`glob`/`grep`). Don't webfetch a
-  multi-file repo one file at a time — clone once, read locally.
+- **External repos: `opensrc` for big repos, `webfetch` for single pages** — For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single page) → `webfetch` is fine. Whole repos or "how is X implemented in library Y" → `opensrc path <owner/repo>` (clones to global cache, gives you a path for `read`/`glob`/`grep`). Don't webfetch a multi-file repo one file at a time — clone once, read locally.
 
-**If the error description is vague or the reproduction is unclear,
-flag the ambiguity in your findings.** Wrong assumptions waste
-more time than asking questions — but you can't ask the user directly.
-Flag what's unclear so the orchestrator can follow up.
+**If the error description is vague or the reproduction is unclear, flag the ambiguity in your findings.** Wrong assumptions waste more time than asking questions — but you can't ask the user directly. Flag what's unclear so the orchestrator can follow up.

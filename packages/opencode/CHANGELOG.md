@@ -223,7 +223,7 @@
 
 ### Minor Changes
 
-- [`9759d01`](https://github.com/agustinusnathaniel/maestria/commit/9759d01c08dba296a4c139be977147131be9134a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Incorporate AI engineering learnings from my-base knowledge base
+- [`9759d01`](https://github.com/agustinusnathaniel/maestria/commit/9759d01c08dba296a4c139be977147131be9134a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Incorporate AI engineering learnings from knowledge base
   - **"Read the docs first"** — new non-negotiable directive across global rules (AGENTS.md), architect, and builder agents to prevent guessing at API behavior
   - **Diagnostic documentation mandate** — elevated from passive guidance to `!!!` non-negotiable in diagnose.md; diagnostic findings must be saved as persistent knowledge artifacts
   - **Skill prescription expansion** — builder gains `commit-work` skill, diagnose gains `dependency-updater` skill for dependency-related investigations
@@ -254,7 +254,7 @@ All notable changes to this project will be documented in this file. See [commit
 
 ### Bug Fixes
 
-- **opencode:** correct source repos for 10 skills per my-base doc ([d2e0671](https://github.com/agustinusnathaniel/maestria/commit/d2e0671b7fd8816684bdb960b57defda1f074784))
+- **opencode:** correct source repos for 10 skills per KB doc ([d2e0671](https://github.com/agustinusnathaniel/maestria/commit/d2e0671b7fd8816684bdb960b57defda1f074784))
 - **opencode:** restore commit discipline, counter builder dispatch bias ([29df280](https://github.com/agustinusnathaniel/maestria/commit/29df28071b4ca996cf65b1050de7f2c69b341c2f)), closes [#3](https://github.com/agustinusnathaniel/maestria/issues/3) [#7](https://github.com/agustinusnathaniel/maestria/issues/7) [#8](https://github.com/agustinusnathaniel/maestria/issues/8) [#1](https://github.com/agustinusnathaniel/maestria/issues/1)
 - **opencode:** stop injecting rules into subagent prompts ([9dfb79c](https://github.com/agustinusnathaniel/maestria/commit/9dfb79cd005629617b900d7be2b8dab42ea3e48c))
 - **orchestrator:** unstick webfetch by skipping approval + preferring local tools ([23278a0](https://github.com/agustinusnathaniel/maestria/commit/23278a03667909af740648af888377dc0ce8c31f)), closes [#9](https://github.com/agustinusnathaniel/maestria/issues/9)
