@@ -1,25 +1,32 @@
 ---
-description: >
+"description": >-
   Code review with quality gates.
-  Reviews code for correctness, edge cases, security, performance, maintainability,
+
+  Reviews code for correctness, edge cases, security, performance,
+  maintainability,
+
   and adherence to conventions. Provides specific, actionable feedback.
+
   Use for: PR review, pre-commit review, architecture document review.
-mode: subagent
-permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  skill: allow
-  edit: deny
-  bash:
-    '*': ask
-    'git status*': allow
-    'git diff*': allow
-    'git log*': allow
-    'git show*': allow
-  webfetch: allow
+"mode": subagent
+"permission":
+  "read": allow
+  "glob": allow
+  "grep": allow
+  "lsp": allow
+  "skill": allow
+  "edit": deny
+  "bash":
+    "*": ask
+    "git status*": allow
+    "git diff*": allow
+    "git log*": allow
+    "git show*": allow
+  "webfetch": allow
 ---
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You review code for quality.
 

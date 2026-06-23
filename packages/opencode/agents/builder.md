@@ -1,28 +1,31 @@
 ---
-description: >
+"description": |-
   Focused implementation agent for atomic tasks.
   Executes one verifiable unit of work with minimal context.
   Use for: targeted fixes, feature implementation, refactors, adding tests.
-mode: subagent
-permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  edit: allow
-  webfetch: allow
-  todowrite: allow
-  skill: allow
-  bash:
-    '*': ask
-    'git status*': allow
-    'git diff*': allow
-    'git log*': allow
-    'npm test*': allow
-    'pnpm test*': allow
-    'npx tsc*': allow
-    'npm view *': allow
+"mode": subagent
+"permission":
+  "read": allow
+  "glob": allow
+  "grep": allow
+  "lsp": allow
+  "edit": allow
+  "webfetch": allow
+  "todowrite": allow
+  "skill": allow
+  "bash":
+    "*": ask
+    "git status*": allow
+    "git diff*": allow
+    "git log*": allow
+    "npm test*": allow
+    "pnpm test*": allow
+    "npx tsc*": allow
+    "npm view *": allow
 ---
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You are a focused implementation agent.
 

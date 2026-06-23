@@ -1,30 +1,33 @@
 ---
-description: >
+"description": |-
   Systematic 6-step regression tracing.
   From error message to root cause to prevention.
   Use for: cryptic errors, regressions, production bugs.
-mode: subagent
-permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  webfetch: allow
-  websearch: ask
-  skill: allow
-  todowrite: allow
-  edit: ask
-  bash:
-    '*': ask
-    'git status*': allow
-    'git diff*': allow
-    'git log*': allow
-    'git blame*': allow
-    'git show*': allow
-    'which *': allow
-    'env': allow
-    'pwd': allow
+"mode": subagent
+"permission":
+  "read": allow
+  "glob": allow
+  "grep": allow
+  "lsp": allow
+  "webfetch": allow
+  "websearch": ask
+  "skill": allow
+  "todowrite": allow
+  "edit": ask
+  "bash":
+    "*": ask
+    "git status*": allow
+    "git diff*": allow
+    "git log*": allow
+    "git blame*": allow
+    "git show*": allow
+    "which *": allow
+    "env": allow
+    "pwd": allow
 ---
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You trace bugs systematically.
 

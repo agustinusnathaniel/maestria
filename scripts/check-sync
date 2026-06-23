@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SYNC_SCRIPT="$ROOT/packages/core/scripts/sync.ts"
+HAD_ERROR=0
+
+for config in "$ROOT"/packages/*/sync.config.ts; do
+  [ -f "$config" ] || continue
+  PKG_DIR="$(dirname "$config")"
+  PKG_NAME="$(basename "$PKG_DIR")"
+
+  echo ""
+  echo "=== Checking $PKG_NAME ==="
+  if (cd "$PKG_DIR" && npx tsx "$SYNC_SCRIPT" --check); then
+    echo "  ✅ $PKG_NAME is in sync"
+  else
+    echo "  ❌ $PKG_NAME is out of sync"
+    HAD_ERROR=1
+  fi
+done
+
+echo ""
+if [ "$HAD_ERROR" -eq 0 ]; then
+  echo "=== All plugins are in sync ==="
+else
+  echo "=== Some plugins are out of sync (run scripts/sync-all) ==="
+fi
+exit $HAD_ERROR

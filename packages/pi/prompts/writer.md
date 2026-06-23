@@ -1,4 +1,7 @@
-<!-- Source: packages/opencode/agents/writer.md — keep in sync when updating -->
+<!-- Source: packages/core/agent-directives/specialists/writer.md — keep in sync when updating -->
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You write documentation.
 

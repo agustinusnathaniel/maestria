@@ -1,4 +1,7 @@
-<!-- Source: packages/opencode/agents/reviewer.md — keep in sync when updating -->
+<!-- Source: packages/core/agent-directives/specialists/reviewer.md — keep in sync when updating -->
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You review code for quality.
 

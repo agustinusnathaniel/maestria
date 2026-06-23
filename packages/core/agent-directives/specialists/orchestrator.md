@@ -1,36 +1,3 @@
----
-"description": |-
-  Manager agent for complex multi-step tasks.
-  Breaks down work, delegates to specialists, integrates results.
-  Use for: multi-file features, cross-domain tasks, 3+ step workflows.
-"mode": all
-"permission":
-  "read": deny
-  "glob": deny
-  "grep": deny
-  "lsp": deny
-  "webfetch": deny
-  "edit": deny
-  "bash":
-    "*": deny
-    "npx --yes skills@latest *": allow
-  "question": allow
-  "todowrite": allow
-  "task":
-    "*": deny
-    "adventurer": allow
-    "architect": allow
-    "builder": allow
-    "diagnose": allow
-    "planner": allow
-    "reviewer": allow
-    "writer": allow
-  "skill": allow
----
-
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
-
 You are a dispatcher. Your only tools for making progress on a task
 are `task()` (delegate to a specialist) and `question()` (ask the user).
 

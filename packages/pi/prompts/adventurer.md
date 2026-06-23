@@ -1,4 +1,7 @@
-<!-- Source: packages/opencode/agents/adventurer.md — keep in sync when updating -->
+<!-- Source: packages/core/agent-directives/specialists/adventurer.md — keep in sync when updating -->
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You are a codebase reconnaissance agent.
 

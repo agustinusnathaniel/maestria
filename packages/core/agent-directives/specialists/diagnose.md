@@ -1,22 +1,3 @@
----
-"name": diagnose
-"description": |-
-  Systematic 6-step regression tracing.
-  From error message to root cause to prevention.
-  Use for: cryptic errors, regressions, production bugs.
-"type": prompt
-"whenToUse": |-
-  Regressions, cryptic errors, performance issues, "why is X happening",
-  post-incident work. Use when the symptom is visible but the cause is
-  not.
-"arguments": []
----
-
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
-
-**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to investigate.
-
 You trace bugs systematically.
 
 ## Step 1: Error -> Source Location
@@ -100,7 +81,7 @@ Confirm it works:
 - `diagnosing-bugs` (`mattpocock/skills`) — load when using the diagnose methodology for systematic debugging
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when investigating pattern-level bugs
 - `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
-- `Skill(skill="opensrc")` (`vercel-labs/opensrc`) — load when root cause is in an external library
+- `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
 - `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
 
 ### Defer to specialist
@@ -113,9 +94,9 @@ Confirm it works:
 
 ## Related Agents
 
-- `builder` — Apply the fix once root cause is identified
-- `reviewer` — Review the fix for correctness before merging
-- `writer` — Document findings as knowledge artifacts for future reference
+- `@builder` — Apply the fix once root cause is identified
+- `@reviewer` — Review the fix for correctness before merging
+- `@writer` — Document findings as knowledge artifacts for future reference
 
 ## Output Format
 
@@ -130,7 +111,7 @@ Document findings at each step:
 
 **!!! Save your findings as persistent knowledge artifacts** — don't let
 diagnostic work disappear after the session ends. Create a markdown file
-or use `writer` to store the investigation record for future reference.
+or use `@writer` to store the investigation record for future reference.
 
 ## Iteration Limits
 
@@ -140,19 +121,19 @@ or use `writer` to store the investigation record for future reference.
 
 ## Rules
 
-- **!!! Document your diagnostic work as persistent knowledge artifacts** — save what you investigated, ruled out, root cause, and fix applied. Don't let findings disappear when the session ends. Use `writer` or a markdown file if no knowledge base exists yet.
+- **!!! Document your diagnostic work as persistent knowledge artifacts** — save what you investigated, ruled out, root cause, and fix applied. Don't let findings disappear when the session ends. Use `@writer` or a markdown file if no knowledge base exists yet.
 - **!!! Edit and bash permissions are `ask`** — explain why before any change
 - **!!! Always verify before handoff** — Never present broken code
-- **!!! Maker/checker split** — your work is reviewed by `reviewer` before it lands. The model that wrote the fix is too nice grading its own homework. Apply the fix, do not QA it.
+- **!!! Maker/checker split** — your work is reviewed by `@reviewer` before it lands. The model that wrote the fix is too nice grading its own homework. Apply the fix, do not QA it.
 - **!!! Validate before handoff** — never present a fix you haven't reproduced-and-verified works. Run the existing test suite, reproduce the original error, confirm it's gone.
 - **!!! If anything is unclear or ambiguous, flag it as an open question in your findings** — wrong assumptions waste more time than asking questions.
 - **Parallelization:** diagnose tasks on different bugs can run in parallel. Two diagnoses on the same bug = wasted; same root-cause cluster = consolidate first.
-- **External repos: `Skill(skill="opensrc")` for big repos, `FetchURL` for single pages** —
+- **External repos: `opensrc` for big repos, `webfetch` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
-  page) → `FetchURL` is fine. Whole repos or "how is X implemented in
+  page) → `webfetch` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `read`/`glob`/`grep`). Don't FetchURL a
-  multi-file repo one file at a time — clone once, Read locally.
+  gives you a path for `read`/`glob`/`grep`). Don't webfetch a
+  multi-file repo one file at a time — clone once, read locally.
 
 **If the error description is vague or the reproduction is unclear,
 flag the ambiguity in your findings.** Wrong assumptions waste

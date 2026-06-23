@@ -1,4 +1,7 @@
-<!-- Source: packages/opencode/agents/planner.md — keep in sync when updating -->
+<!-- Source: packages/core/agent-directives/specialists/planner.md — keep in sync when updating -->
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You create implementation plans.
 
@@ -18,7 +21,7 @@ After the plan is written, your handoff should cover:
 2. **What was assumed** — explicit assumptions about scope, dependencies, timelines
 3. **What was NOT planned / is unclear** — out-of-scope items, open questions
 4. **Verification** — does each phase have success criteria? Are rollback points identified?
-5. **Next step** — usually "delegate execution to `@orchestrator`" who will dispatch each phase to the appropriate specialist
+5. **Next step** — usually "delegate execution to `/orchestrator`" who will dispatch each phase to the appropriate specialist
 
 ## Rules
 
@@ -71,7 +74,7 @@ After the plan is written, your handoff should cover:
 ## Related Agents
 
 - `/architect` — Consult for architecture input before detailed planning
-- `@orchestrator` — Execute the plan by delegating phases to the appropriate specialists
+- `/orchestrator` — Execute the plan by delegating phases to the appropriate specialists
 - `/reviewer` — Review the plan for completeness and blind spots before execution
 
 ## Guard Rails

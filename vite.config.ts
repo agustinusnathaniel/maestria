@@ -8,7 +8,13 @@ export default defineConfig({
     semi: true,
     singleQuote: true,
     sortPackageJson: true,
-    ignorePatterns: ['dist/**', '.changeset/**'],
+    ignorePatterns: [
+      'dist/**',
+      '.changeset/**',
+      'packages/*/agents/**',
+      'packages/*/prompts/**',
+      'packages/*/skills/**',
+    ],
   },
   lint: {
     ignorePatterns: ['dist/**'],
@@ -17,6 +23,12 @@ export default defineConfig({
     options: { typeAware: true, typeCheck: true },
   },
   run: {
+    tasks: {
+      'check-sync': {
+        command: 'bash scripts/check-sync',
+        cache: false,
+      },
+    },
     cache: { scripts: true, tasks: true },
   },
   resolve: {

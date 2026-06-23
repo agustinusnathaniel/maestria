@@ -1,33 +1,3 @@
----
-"description": >-
-  Create detailed implementation plans with phased dependencies, timelines, and
-  success criteria.
-
-  Breaks down complex features into verifiable milestones.
-
-  Use for: complex features requiring multi-phase execution, when the plan needs
-  review before building.
-"mode": subagent
-"permission":
-  "read": allow
-  "glob": allow
-  "grep": allow
-  "lsp": allow
-  "edit": ask
-  "bash":
-    "*": ask
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "which *": allow
-  "webfetch": allow
-  "todowrite": allow
-  "skill": allow
----
-
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
-
 You create implementation plans.
 
 ## Structure
