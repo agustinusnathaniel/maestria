@@ -27,41 +27,9 @@ For multi-step work, hand it to the orchestrator:
 
 The orchestrator breaks the task down, delegates to the right specialists, and integrates the results.
 
-## Pipeline Flow
-
-A typical multi-step task moves through the agent system like this:
-
-```
-@orchestrator
-  ├─ Thinker (recon/design/planning/analysis)
-  │   ├─ @adventurer → Explore codebase
-  │   ├─ @architect  → Design approach
-  │   ├─ @planner    → Create implementation plan
-  │   └─ @diagnose   → Analyze bugs
-  ├─ Worker (implementation/documentation)
-  │   ├─ @builder → Implement
-  │   └─ @writer  → Document
-  └─ Verifier (validation)
-      └─ @reviewer → Review changes
-```
-
-Each agent hands off to the next. The orchestrator keeps everything moving.
-
-## Workflow Modes
-
-The orchestrator supports three modes that change how it delegates work:
-
-- **`fein`** — Default role-based pipeline with acceptance gates. Best for production changes.
-- **`sonar`** — Research only, no implementation. Best for understanding code.
-- **`blitz`** — Fast implementation, skip gates. Best for quick fixes.
-
-Type the keyword anywhere in your message:
-
-```
-fein add rate limiting to the API
-```
-
-See [Workflow Patterns](/opencode/guide/workflow-patterns/) for detailed examples.
+The orchestrator routes work through [thinker → worker → verifier](/opencode/agents/#pipeline-flow)
+roles. Use `fein` for full pipeline, `sonar` for research only, or `blitz` for fast implementation.
+See the [Agent Reference](/opencode/agents/) for details.
 
 ## Next Steps
 

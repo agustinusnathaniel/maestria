@@ -9,6 +9,10 @@ import { Aside } from '@astrojs/starlight/components';
 
 The 8 agents work as a team. The orchestrator manages the flow, specialists do the work. These patterns cover the most common workflows.
 
+> This page builds on the [agent roles and pipeline model](/opencode/agents/#pipeline-flow)
+> documented in the Agent Reference. The pipeline routes work through
+> thinker → worker → verifier roles with dynamic sequencing.
+
 ## Explore a codebase
 
 Send `@adventurer` to map unfamiliar code before making changes.
@@ -39,7 +43,7 @@ Use the orchestrator for end-to-end feature work. It chains the full pipeline.
 
 > `@orchestrator` We need a WebSocket-based notification system. Explore, plan, implement, and review.
 
-The orchestrator delegates by role: **thinker** (recon, design, planning, analysis) → **worker** (implementation, documentation) → **verifier** (validation). The pipeline terminates when the verifier accepts — no unnecessary stages run. Every code change goes through builder, every review through reviewer.
+The orchestrator delegates to the right specialists in order, following the [pipeline model](/opencode/agents/#pipeline-flow). Every code change goes through builder, every review through reviewer.
 
 ## Fix a bug
 
@@ -74,64 +78,6 @@ Fan out multiple adventurers to understand several areas at once.
 > `@orchestrator` I need to understand both the auth system and the payment system. Map them in parallel.
 
 The orchestrator spawns independent tasks simultaneously and presents a combined report.
-
-## Pipeline reference
-
-```
-@orchestrator (manager)
-  ├─ Thinker (recon/design/planning/analysis)
-  │   ├─ @adventurer → Reconnaissance
-  │   ├─ @architect  → Design/decisions
-  │   ├─ @planner    → Phased plan
-  │   └─ @diagnose   → Root cause analysis
-  ├─ Worker (implementation/documentation)
-  │   ├─ @builder → Implementation
-  │   └─ @writer  → Documentation
-  └─ Verifier (validation)
-      └─ @reviewer → Validation
-```
-
-Specialists are invoked via `task()`. The built-in `explore` and `general` agents are not part of this pipeline.
-
-### Key Concepts
-
-**Dynamic sequencing.** The orchestrator doesn't run every role on every task. It adapts the order based on what the task requires — skipping roles that aren't needed, reordering within roles as appropriate.
-
-**Verifier-termination.** The pipeline stops as soon as the verifier accepts the work. A simple change might never reach the verifier at all, while complex work may cycle between worker and verifier until acceptance.
-
-**Access lists.** Each delegation includes an explicit access list that scopes what context the subagent can reference. This replaces free-form context passing and keeps each delegation focused on its assigned role.
-
-## Workflow Modes
-
-Include a mode keyword in your message to override the orchestrator's default pipeline:
-
-| Keyword            | Effect                                                              | When to use                                          |
-| ------------------ | ------------------------------------------------------------------- | ---------------------------------------------------- |
-| `fein build this`  | Default pipeline: thinker → worker → verifier with acceptance gates | Production-grade changes where quality matters       |
-| `sonar trace this` | Research only: recon + design, then STOP before implementation      | Exploring unfamiliar code, evaluating approaches     |
-| `blitz fix this`   | Fast implementation: builder direct, skip recon and review          | Quick fixes, prototypes, code you already understand |
-
-The keyword can appear at the start, middle, or end of your message. It's case-insensitive. If multiple keywords appear, the most restrictive mode wins: `fein` (full pipeline) > `sonar` (research only) > `blitz` (fast impl). Keywords inside code blocks (` ``` ` `or` ` ``) are ignored.
-
-```markdown
-fein add a new rate limiter # Full pipeline with all gates
-let's sonar the auth flow # Research the auth system
-write the test blitz # Quick test implementation
-```
-
-To disable a mode you don't use, configure it in your plugin options:
-
-```jsonc
-{
-  "plugin": ["@maestria/opencode", { "modes": { "disabledKeywords": ["blitz"] } }],
-}
-```
-
-<Aside type="tip">
-  Use <code>fein</code> for anything that touches multiple files or crosses module boundaries. Use{' '}
-  <code>sonar</code> when you need to understand something before committing to a solution. Use{' '}
-  <code>blitz</code> when you know exactly what to do and just need it done.
-</Aside>
 
 <Aside type="tip">
   Most tasks don't start with code. Start with recon (@adventurer) or design (@architect) before
