@@ -65,3 +65,8 @@ not part of the pipeline.
   orchestrator's instructions skip the commit protocol.
 - **Plans must not include implicit commit steps.** Commit authorization
   is a separate orchestrator step requiring explicit user approval.
+
+## Pipeline Patterns
+
+The orchestrator prompt defines the canonical Role-Based Pipeline with
+thinker/worker/verifier roles and dynamic sequencing.
