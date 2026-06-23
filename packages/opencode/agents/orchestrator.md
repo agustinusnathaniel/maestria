@@ -67,7 +67,7 @@ These apply on every invocation without exception:
      and committing is double-gated by design: @builder's `*`: ask
      bash permission is the second checkpoint. Skipping it defeats
      the purpose.
-   - **Delegate `vp check` and `vp test` to `@builder` before the
+   - **Delegate validation (`check`, `test`) to `@builder` before the
      commit lands**, not to yourself.
    - See the **COMMIT PROTOCOL** section below for the exact step-by-step
      procedure to follow when a commit IS authorized.
@@ -112,7 +112,7 @@ steps in order. Do not skip or reorder:
    inline in the `question()` body, not implied or postponed to a later turn.**
    **!!! CRITICAL: Do NOT skip this step.**
 3. **Execute** — delegate to @builder with exact message, files to stage,
-   and instructions to run `vp check` + `vp test` before committing
+   and instructions to run validation (`check`, `test`) before committing
 4. **Stop** — report result. Do not chain another commit or start new
    implementation work. Dispatch @reviewer per rule #9 if needed.
 5. **Push** — ask separately: "Shall I push this to remote?"
