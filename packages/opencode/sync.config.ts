@@ -227,5 +227,9 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
         },
       },
     },
+    'rules.md': {
+      output: '../rules/AGENTS.md',
+      // No transforms needed — opencode IS the canonical format
+    },
   },
 };

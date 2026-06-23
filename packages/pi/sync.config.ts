@@ -52,5 +52,10 @@ export default {
       prepend:
         '<!-- Source: packages/core/agent-directives/specialists/orchestrator.md — keep in sync when updating -->\n',
     },
+    'rules.md': {
+      output: '../rules/AGENTS.md',
+      prepend:
+        '<!-- Source: packages/core/agent-directives/rules.md — keep in sync when updating -->\n',
+    },
   },
 };

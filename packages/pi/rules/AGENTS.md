@@ -1,6 +1,9 @@
-<!-- Source: packages/pi/rules/AGENTS.md — sync both files when updating -->
+<!-- Source: packages/core/agent-directives/rules.md — keep in sync when updating -->
 
-# Global Agent Rules — @maestria/pi
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
+# Global Agent Rules
 
 ## Orchestration
 
@@ -35,7 +38,7 @@
 
 ## Delegation
 
-When delegating work via \`maestria_subagent()\`, use only the 7 specialists below.
+When delegating work via `maestria_subagent()`, use only the 7 specialists below.
 **Never delegate to `explore` or `general`** — they are built-in agents,
 not part of the pipeline.
 
@@ -63,7 +66,12 @@ not part of the pipeline.
 - **Only the orchestrator authorizes commits.** Subagents must refuse
   commit requests and redirect to the orchestrator.
 - **Builders executing commits** must follow the orchestrator's exact
-  instructions (message, files, `check`/`test`). Flag it if the
+  instructions (message, files, validation commands `check`/`test`). Flag it if the
   orchestrator's instructions skip the commit protocol.
 - **Plans must not include implicit commit steps.** Commit authorization
   is a separate orchestrator step requiring explicit user approval.
+
+## Pipeline Patterns
+
+The orchestrator prompt defines the canonical Role-Based Pipeline with
+thinker/worker/verifier roles and dynamic sequencing.

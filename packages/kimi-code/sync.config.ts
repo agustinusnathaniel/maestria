@@ -292,5 +292,56 @@ To compact the conversation for transfer, output:
 This should appear at the end of your response when the user asks for a handoff, or when context pressure requires a fresh agent.
 `,
     },
+
+    'rules.md': {
+      output: '../rules/AGENTS.md',
+      prepend:
+        '<!-- Auto-generated from @maestria/core. See the canonical file at packages/core/agent-directives/rules.md. -->\n\n',
+      replace: [
+        { from: '# Global Agent Rules', to: '# Global Agent Rules \u2014 @maestria/kimi-code' },
+        { from: '`read`', to: '`Read`' },
+        { from: '`glob`', to: '`Glob`' },
+        { from: '`grep`', to: '`Grep`' },
+        { from: '`bash`', to: '`Bash`' },
+        { from: '`lsp`', to: 'a language server tool' },
+        { from: 'bash --help', to: 'Bash --help' },
+        { from: 'treat it seriously.', to: 'treat it seriously, not a preference.' },
+        // Replace the canonical delegation section (post-default-transform) with a kimi-code version
+        {
+          from: `## Delegation
+
+When delegating work via \`Agent()\`, use only the 7 specialists below.
+**Never delegate to \`explore\` or \`general\`** — they are built-in agents,
+not part of the pipeline.
+
+| Agent         | Role                                             | When to Delegate                                                                             |
+| ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| \`adventurer\` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
+| \`architect\`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
+| \`builder\`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
+| \`diagnose\`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
+| \`planner\`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
+| \`reviewer\`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
+| \`writer\`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
+
+`,
+          to: `## Delegation
+
+When delegating work via \`Agent()\` (single item) or \`AgentSwarm()\` (≥3 uniform items), use only the 7 specialist personas below. Each maps to a subagent type (\`coder\`, \`explore\`, or \`plan\`) via the orchestrator's routing table.
+
+| Persona      | Subagent Type | Role                                             |
+| ------------ | ------------- | ------------------------------------------------ |
+| \`adventurer\` | \`explore\`     | Codebase reconnaissance, deep code understanding |
+| \`architect\`  | \`coder\`       | Architecture decisions, trade-off analysis, ADRs |
+| \`builder\`    | \`coder\`       | Focused implementation, single-task execution   |
+| \`diagnose\`   | \`coder\`       | Systematic bug tracing, root cause analysis     |
+| \`planner\`    | \`plan\`        | Implementation plans with phased milestones     |
+| \`reviewer\`   | \`coder\`       | Code review with quality gates                  |
+| \`writer\`     | \`coder\`       | Documentation following structured patterns     |
+
+`,
+        },
+      ],
+    },
   },
 };

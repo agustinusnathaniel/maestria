@@ -1,3 +1,9 @@
+<!-- Auto-generated from @maestria/core. See the canonical file at packages/core/agent-directives/rules.md. -->
+
+
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 # Global Agent Rules — @maestria/kimi-code
 
 ## Orchestration
@@ -7,46 +13,43 @@
 - **!!! Read the docs first** — before writing code that touches
   unfamiliar tools, APIs, or migration paths, consult official
   documentation. Don't guess at API changes. This rule is scar
-  tissue from repeated failures, not a preference.
+  tissue from repeated failures; treat it seriously, not a preference.
 - **Don't reference internal project names in explanations** — avoid
   leaking context outside the workspace.
-- **Use `opensrc` for repos; `FetchURL` for pages** — when analyzing a
+- **Use `Skill(skill="opensrc")` for repos; `FetchURL` for pages** — when analyzing a
   GitHub/GitLab/BitBucket repo or any multi-file code reference, run
   `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`).
   It clones to a global cache and prints a path that `Read`/`Glob`/`Grep`
   can use directly. For a single file, a specific page, or a known
   URL, `FetchURL` is fine. Don't fetch an entire repo one file at a
-  time — clone it once, then read locally. Use `--cwd` to resolve
+  time — clone it once, then Read locally. Use `--cwd` to resolve
   versions from the current project.
 - **Webfetch may hang — don't block on it** — if a `FetchURL` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
-
-- **CLI references — use local tools first** — for CLI references, run `Bash --help` or load the relevant `Skill` instead of reaching for `FetchURL`. Local tools are faster and more reliable than fetching docs.
-
-- **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or a language server tool if available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
 - **Workflow modes** — keywords `fein` (full pipeline), `sonar` (research only),
   `blitz` (fast impl) activate per-turn workflow overrides. See the
   orchestrator prompt for details.
+- **CLI references — use local tools first** — for CLI references, run `Bash --help` or load the relevant `skill` instead of reaching for `FetchURL`. Local tools are faster and more reliable than fetching docs.
+- **Local files — Read directly** — use `Read`, `Glob`, or `Grep` (or a language server tool when available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
 - **Tool hierarchy for external information:**
   1. `FetchURL` — fetch a specific known URL (for docs, pages)
-  2. `WebSearch` — discover relevant pages (for finding unknown resources)
-     Use `FetchURL` when you know the URL; use `WebSearch` when you need to find
-     something. Explain what you're searching for and why before using it.
+  2. `websearch` — discover relevant pages (for finding unknown resources)
+     Use `FetchURL` when you know the URL; use `websearch` when you need to find
+     something. `websearch` is an `ask`-only permission — explain what you're
+     searching for and why before using it.
 
 ## Delegation
 
-When delegating work via `Agent()` (single item) or `AgentSwarm()` (≥3 uniform items),
-use only the 7 specialist personas below. Each maps to a subagent type
-(`coder`, `explore`, or `plan`) via the orchestrator's routing table.
+When delegating work via `Agent()` (single item) or `AgentSwarm()` (≥3 uniform items), use only the 7 specialist personas below. Each maps to a subagent type (`coder`, `explore`, or `plan`) via the orchestrator's routing table.
 
-| Persona      | Subagent Type | Role                                             | When to Delegate                                                                             |
-| ------------ | ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `adventurer` | `explore`     | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| `architect`  | `coder`       | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
-| `builder`    | `coder`       | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
-| `diagnose`   | `coder`       | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
-| `planner`    | `plan`        | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
-| `reviewer`   | `coder`       | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
-| `writer`     | `coder`       | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
+| Persona      | Subagent Type | Role                                             |
+| ------------ | ------------- | ------------------------------------------------ |
+| `adventurer` | `explore`     | Codebase reconnaissance, deep code understanding |
+| `architect`  | `coder`       | Architecture decisions, trade-off analysis, ADRs |
+| `builder`    | `coder`       | Focused implementation, single-task execution   |
+| `diagnose`   | `coder`       | Systematic bug tracing, root cause analysis     |
+| `planner`    | `plan`        | Implementation plans with phased milestones     |
+| `reviewer`   | `coder`       | Code review with quality gates                  |
+| `writer`     | `coder`       | Documentation following structured patterns     |
 
 ## Context Management
 
@@ -62,13 +65,12 @@ use only the 7 specialist personas below. Each maps to a subagent type
 - **Only the orchestrator authorizes commits.** Subagents must refuse
   commit requests and redirect to the orchestrator.
 - **Builders executing commits** must follow the orchestrator's exact
-  instructions (message, files — the builder must run the project's
-  test suite before committing). Flag it if the orchestrator's
-  instructions skip the commit protocol.
+  instructions (message, files, validation commands `check`/`test`). Flag it if the
+  orchestrator's instructions skip the commit protocol.
 - **Plans must not include implicit commit steps.** Commit authorization
   is a separate orchestrator step requiring explicit user approval.
 
 ## Pipeline Patterns
 
-The orchestrator skill defines the canonical Role-Based Pipeline with
+The orchestrator prompt defines the canonical Role-Based Pipeline with
 thinker/worker/verifier roles and dynamic sequencing.

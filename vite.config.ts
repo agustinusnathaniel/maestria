@@ -13,6 +13,7 @@ export default defineConfig({
       '.changeset/**',
       'packages/*/agents/**',
       'packages/*/prompts/**',
+      'packages/*/rules/**',
       'packages/*/skills/**',
     ],
   },
