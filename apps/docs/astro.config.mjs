@@ -31,6 +31,9 @@ export default defineConfig({
         }),
         starlightAutoSidebar(),
       ],
+      components: {
+        Head: './src/components/StarlightHead.astro',
+      },
       head: [
         {
           tag: 'meta',
