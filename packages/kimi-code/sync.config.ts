@@ -31,6 +31,7 @@ export default {
       { from: 'Related Agents', to: 'Related Skills' },
       { from: '`edit`', to: '`Edit`' },
       { from: '`write`', to: '`Write`' },
+      { from: 'run in parallel', to: 'run in parallel via `AgentSwarm`' },
     ],
   },
 
@@ -69,12 +70,6 @@ evaluating options with long-term consequences. Use when more than
 one approach is viable and the choice has downstream impact.`,
         arguments: [],
       },
-      replace: [
-        {
-          from: 'can run in parallel',
-          to: 'can run in parallel via `AgentSwarm`',
-        },
-      ],
     },
     'builder.md': {
       output: 'builder/SKILL.md',

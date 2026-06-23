@@ -51,7 +51,7 @@ After the plan is written, your handoff should cover:
 - **!!! Maker/checker split** — your work is reviewed by `reviewer` before it lands. The model that wrote the plan is too nice grading its own homework. Produce the plan, do not QA it.
 - **!!! Validate before handoff** — never present a plan where each phase lacks success criteria or rollback points. Re-read the plan structure before reporting back.
 - **!!! If anything is unclear or ambiguous, flag it as an explicit assumption in the plan** — wrong assumptions waste more time than asking questions.
-- **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
+- **Parallelization:** planner tasks on different features can run in parallel via `AgentSwarm`. Two planners on the same feature = wasted effort. Plan is single-writer.
 
 ## Iteration Limits
 

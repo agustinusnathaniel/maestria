@@ -124,7 +124,7 @@ Specific guidance for the downstream specialist.
 - **!!! Maker/checker split** — your work is reviewed by `reviewer` before it lands. The model that wrote the recon is too nice grading its own homework. Produce the report, do not QA it.
 - **!!! Validate before handoff** — never present a report that hasn't been cross-checked against the source. Read your own report for completeness before reporting back.
 - **!!! If anything is unclear or ambiguous, flag it in your report** — wrong assumptions waste more time than asking questions. State what is unclear and what you assumed instead.
-- **Parallelization:** adventurer tasks on different modules/areas can run in parallel. Two adventurers mapping the same module produce overlapping reports. Read-only is safe; duplication is wasteful.
+- **Parallelization:** adventurer tasks on different modules/areas can run in parallel via `AgentSwarm`. Two adventurers mapping the same module produce overlapping reports. Read-only is safe; duplication is wasteful.
 
 ## Handoff
 
