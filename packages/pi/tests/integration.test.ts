@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from 'vite-plus/test';
 import extension from '../src/extension.js';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
-function createMockPi(): ExtensionAPI {
+function createMockPi() {
   return {
     on: vi.fn(),
     registerTool: vi.fn(),
@@ -16,7 +16,7 @@ function createMockPi(): ExtensionAPI {
     setActiveTools: vi.fn(),
     getActiveTools: vi.fn(() => []),
     sendUserMessage: vi.fn(),
-  } as unknown as ExtensionAPI;
+  };
 }
 
 describe('extension smoke tests', () => {
@@ -26,15 +26,15 @@ describe('extension smoke tests', () => {
 
   it('wires up without crashing', () => {
     const mockPi = createMockPi();
-    expect(() => extension(mockPi)).not.toThrow();
+    expect(() => extension(mockPi as unknown as ExtensionAPI)).not.toThrow();
   });
 
   it('registers the maestria_subagent tool', () => {
     const mockPi = createMockPi();
-    extension(mockPi);
+    extension(mockPi as unknown as ExtensionAPI);
 
     expect(mockPi.registerTool).toHaveBeenCalledTimes(1);
-    const toolDef = (mockPi.registerTool as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const toolDef = mockPi.registerTool.mock.calls[0][0];
 
     // registerTool receives a single object argument with a name property
     if (typeof toolDef === 'object' && toolDef !== null) {
@@ -44,11 +44,9 @@ describe('extension smoke tests', () => {
 
   it('registers all expected mode and workflow commands', () => {
     const mockPi = createMockPi();
-    extension(mockPi);
+    extension(mockPi as unknown as ExtensionAPI);
 
-    const commandNames = (mockPi.registerCommand as ReturnType<typeof vi.fn>).mock.calls.map(
-      (call: unknown[]) => call[0],
-    );
+    const commandNames = mockPi.registerCommand.mock.calls.map((call: unknown[]) => call[0]);
 
     const expected: string[] = [
       'fein',
@@ -71,11 +69,9 @@ describe('extension smoke tests', () => {
 
   it('registers all expected lifecycle event hooks via pi.on', () => {
     const mockPi = createMockPi();
-    extension(mockPi);
+    extension(mockPi as unknown as ExtensionAPI);
 
-    const eventNames = (mockPi.on as ReturnType<typeof vi.fn>).mock.calls.map(
-      (call: unknown[]) => call[0],
-    );
+    const eventNames = mockPi.on.mock.calls.map((call: unknown[]) => call[0]);
 
     const expected = [
       'before_agent_start',
@@ -92,11 +88,9 @@ describe('extension smoke tests', () => {
 
   it('registers all expected subagent event subscriptions via pi.events.on', () => {
     const mockPi = createMockPi();
-    extension(mockPi);
+    extension(mockPi as unknown as ExtensionAPI);
 
-    const eventNames = (mockPi.events.on as ReturnType<typeof vi.fn>).mock.calls.map(
-      (call: unknown[]) => call[0],
-    );
+    const eventNames = mockPi.events.on.mock.calls.map((call: unknown[]) => call[0]);
 
     const expected = [
       'subagents:started',

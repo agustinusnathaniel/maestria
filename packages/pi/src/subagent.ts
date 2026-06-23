@@ -41,6 +41,12 @@ const HANDOFF_FIELDS = [
 /** Terminal subagent statuses — agent will produce no more updates. */
 const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
 
+/** Maximum time to wait for a subagent to complete, in milliseconds. */
+export const POLL_TIMEOUT_MS = 60_000;
+
+/** Interval between subagent status checks, in milliseconds. */
+export const POLL_INTERVAL_MS = 500;
+
 /** Maximum number of tasks allowed in parallel dispatch. */
 export const MAX_PARALLEL_TASKS = 8;
 
@@ -100,6 +106,18 @@ export function installSubagentTool(
       onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
       _ctx: ExtensionContext,
     ) {
+      // Block subagent dispatch when in review mode
+      if (state.reviewMode) {
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: 'Subagent dispatch is not available during review mode. Use /restore-model to exit review mode first.',
+            },
+          ],
+        };
+      }
+
       // Determine dispatch mode (default to 'single' for backward compat)
       const mode = params.mode ?? 'single';
 
@@ -154,8 +172,6 @@ export function installSubagentTool(
         }
 
         // Helper: poll a single subagent until terminal or timeout
-        const POLL_TIMEOUT_MS = 60_000; // 60s max wait
-        const POLL_INTERVAL_MS = 500;
         async function pollSubagent(
           id: string,
           label: string,

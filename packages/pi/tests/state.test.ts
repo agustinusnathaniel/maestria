@@ -383,7 +383,7 @@ describe('cycleToReviewModel', () => {
     expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('nonexistent-model'));
   });
 
-  it('falls back to alternative model when reviewModel is not set', async () => {
+  it('returns null when reviewModel is not set', async () => {
     const pi = { setModel: vi.fn().mockResolvedValue(true), appendEntry: vi.fn() };
     const ctx = {
       modelRegistry: {
@@ -399,8 +399,8 @@ describe('cycleToReviewModel', () => {
 
     const result = await cycleToReviewModel(pi as any, ctx as any, state);
 
-    expect(result).toBe('gpt-4o');
-    expect(pi.setModel).toHaveBeenCalledWith({ id: 'gpt-4o' });
+    expect(result).toBeNull();
+    expect(pi.setModel).not.toHaveBeenCalled();
   });
 
   it('returns null when setModel throws', async () => {

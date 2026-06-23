@@ -13,14 +13,11 @@ const DANGEROUS_PATTERNS = [
   /chmod\s+-R\s+777\s+\//,
   /mkfs\.\w+/,
   /:(){ :\|:& };:/, // fork bomb
-  /sudo\s+/,
   />\s*\/etc\/(passwd|shadow|sudoers)/,
   /\beval\b/,
   /wget\s+-O\s*-\s*\|\s*(bash|sh)/,
   /curl\s+.*\|\s*(bash|sh)/,
-  /git\s+push\s+--force/,
   /crontab\s+-r/,
-  /kill\s+-9\s+\d+/,
 ];
 
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {

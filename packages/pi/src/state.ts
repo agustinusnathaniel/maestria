@@ -157,7 +157,6 @@ export function persistState(pi: ExtensionAPI, state: MaestriaState): void {
 
 /**
  * If a review model is configured, switch to it.
- * Falls back to any available model from a different provider if not configured.
  * Returns the model ID switched to, or null if no switch occurred.
  */
 export async function cycleToReviewModel(
@@ -166,36 +165,23 @@ export async function cycleToReviewModel(
   state: MaestriaState,
 ): Promise<string | null> {
   const reviewModel = state.reviewModel;
-  if (reviewModel) {
-    try {
-      const models = ctx.modelRegistry.getAll();
-      const model = models.find((m) => m.id === reviewModel);
-      if (model) {
-        await pi.setModel(model);
-        return reviewModel;
-      } else {
-        ctx.ui.notify(`Review model "${reviewModel}" not found in registry, staying on current.`);
-        return null;
-      }
-    } catch {
-      ctx.ui.notify(`Could not switch to review model "${reviewModel}", staying on current.`);
-      return null;
-    }
+  if (!reviewModel) {
+    return null;
   }
-
-  // Fallback: try to find a different-provider model
   try {
     const models = ctx.modelRegistry.getAll();
-    const currentModel = ctx.model?.id;
-    const alternative = models.find((m) => m.id !== currentModel);
-    if (alternative) {
-      await pi.setModel(alternative);
-      return alternative.id;
+    const model = models.find((m) => m.id === reviewModel);
+    if (model) {
+      await pi.setModel(model);
+      return reviewModel;
+    } else {
+      ctx.ui.notify(`Review model "${reviewModel}" not found in registry, staying on current.`);
+      return null;
     }
   } catch {
-    // Can't switch, just proceed without model cycling
+    ctx.ui.notify(`Could not switch to review model "${reviewModel}", staying on current.`);
+    return null;
   }
-  return null;
 }
 
 export function renderMaestriaSummary(state: MaestriaState): string {

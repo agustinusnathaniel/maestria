@@ -13,7 +13,6 @@ export function installCompactionHandlers(pi: ExtensionAPI, state: MaestriaState
         summary: renderMaestriaSummary(state),
         firstKeptEntryId: event.preparation.firstKeptEntryId,
         tokensBefore: event.preparation.tokensBefore,
-        details: state, // Persist state in compaction entry
       },
     };
   });

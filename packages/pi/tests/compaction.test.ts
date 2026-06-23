@@ -61,7 +61,6 @@ describe('installCompactionHandlers', () => {
           summary: expect.stringContaining('**Goal:** build the feature'),
           firstKeptEntryId: '',
           tokensBefore: 0,
-          details: expect.objectContaining({ activeTask: 'build the feature' }),
         },
       });
     });
