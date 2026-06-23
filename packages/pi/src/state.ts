@@ -1,5 +1,5 @@
 import type { ExtensionAPI, ExtensionCommandContext } from '@earendil-works/pi-coding-agent';
-import type { ModeKeyword } from './modes.js';
+import type { ModeKeyword } from '@/modes.js';
 
 const HANDOFF_HISTORY_CAP = 5;
 const FILE_HISTORY_CAP = 10;

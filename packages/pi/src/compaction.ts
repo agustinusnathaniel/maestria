@@ -3,8 +3,8 @@ import type {
   SessionBeforeCompactEvent,
   SessionBeforeTreeEvent,
 } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from './state.js';
-import { renderMaestriaSummary } from './state.js';
+import type { MaestriaState } from '@/state.js';
+import { renderMaestriaSummary } from '@/state.js';
 
 export function installCompactionHandlers(pi: ExtensionAPI, state: MaestriaState): void {
   pi.on('session_before_compact', (event: SessionBeforeCompactEvent) => {

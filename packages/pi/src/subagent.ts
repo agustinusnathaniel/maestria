@@ -1,8 +1,8 @@
 import { Type } from 'typebox';
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
-import type { MaestriaState } from './state.js';
-import { persistState, recordHandoff } from './state.js';
+import type { MaestriaState } from '@/state.js';
+import { persistState, recordHandoff } from '@/state.js';
 
 /**
  * Maestria cross-extension event names.

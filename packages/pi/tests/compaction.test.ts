@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { installCompactionHandlers } from '../src/compaction.js';
-import { createInitialState } from '../src/state.js';
+import { installCompactionHandlers } from '@/compaction.js';
+import { createInitialState } from '@/state.js';
 
 describe('installCompactionHandlers', () => {
   function createMockPi() {

@@ -1,11 +1,11 @@
 import type { ExtensionAPI, SessionStartEvent } from '@earendil-works/pi-coding-agent';
-import { createInitialState } from './state.js';
-import { installModeCommands } from './modes.js';
-import { createBeforeAgentStartHandler } from './rules.js';
-import { installCompactionHandlers } from './compaction.js';
-import { installSubagentTool } from './subagent.js';
-import { installCommands } from './commands.js';
-import { installToolInterceptors } from './tools.js';
+import { createInitialState } from '@/state.js';
+import { installModeCommands } from '@/modes.js';
+import { createBeforeAgentStartHandler } from '@/rules.js';
+import { installCompactionHandlers } from '@/compaction.js';
+import { installSubagentTool } from '@/subagent.js';
+import { installCommands } from '@/commands.js';
+import { installToolInterceptors } from '@/tools.js';
 
 export default function (pi: ExtensionAPI): void {
   const state = createInitialState();

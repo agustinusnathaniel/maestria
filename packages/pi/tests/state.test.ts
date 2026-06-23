@@ -9,8 +9,8 @@ import {
   setReviewMode,
   exitReviewMode,
   renderMaestriaSummary,
-} from '../src/state.js';
-import type { MaestriaState } from '../src/state.js';
+} from '@/state.js';
+import type { MaestriaState } from '@/state.js';
 
 const NEW_STATE_KEYS = [
   'mode',

@@ -1,12 +1,12 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from './state.js';
+import type { MaestriaState } from '@/state.js';
 import {
   cycleToReviewModel,
   persistState,
   renderMaestriaSummary,
   restoreOriginalState,
-} from './state.js';
-import { MAESTRIA_EVENTS } from './subagent.js';
+} from '@/state.js';
+import { MAESTRIA_EVENTS } from '@/subagent.js';
 
 /**
  * Read-only tools that let a reviewer inspect code without making changes.

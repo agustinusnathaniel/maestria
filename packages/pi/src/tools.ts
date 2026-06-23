@@ -4,7 +4,7 @@ import {
   type ToolCallEvent,
   type ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from './state.js';
+import type { MaestriaState } from '@/state.js';
 
 const DANGEROUS_PATTERNS = [
   /rm\s+-rf\s+\//,

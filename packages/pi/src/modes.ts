@@ -1,6 +1,6 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from './state.js';
-import { persistState, restoreOriginalState } from './state.js';
+import type { MaestriaState } from '@/state.js';
+import { persistState, restoreOriginalState } from '@/state.js';
 
 export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
 export type ModeKeyword = (typeof MODE_KEYWORDS)[number];

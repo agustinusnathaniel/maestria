@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, it, expect, vi } from 'vite-plus/test';
-import extension from '../src/extension.js';
+import extension from '@/extension.js';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
 function createMockPi() {

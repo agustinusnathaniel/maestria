@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { createBeforeAgentStartHandler } from '../src/rules.js';
-import { createInitialState } from '../src/state.js';
+import { createBeforeAgentStartHandler } from '@/rules.js';
+import { createInitialState } from '@/state.js';
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,

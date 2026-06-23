@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { installToolInterceptors } from '../src/tools.js';
-import { createInitialState } from '../src/state.js';
+import { installToolInterceptors } from '@/tools.js';
+import { createInitialState } from '@/state.js';
 
 describe('installToolInterceptors', () => {
   it('registers a tool_call handler', () => {

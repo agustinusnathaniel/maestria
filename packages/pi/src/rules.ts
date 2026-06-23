@@ -3,9 +3,9 @@ import type {
   BeforeAgentStartEventResult,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from './state.js';
-import { getModePrompt } from './modes.js';
-import { RULES_CONTENT } from './rules-content.js';
+import type { MaestriaState } from '@/state.js';
+import { getModePrompt } from '@/modes.js';
+import { RULES_CONTENT } from '@/rules-content.js';
 
 export function createBeforeAgentStartHandler(state: MaestriaState) {
   return (

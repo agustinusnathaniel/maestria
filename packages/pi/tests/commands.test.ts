@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { installCommands } from '../src/commands.js';
-import { MAESTRIA_EVENTS } from '../src/subagent.js';
-import { createInitialState } from '../src/state.js';
-import type { MaestriaState } from '../src/state.js';
+import { installCommands } from '@/commands.js';
+import { MAESTRIA_EVENTS } from '@/subagent.js';
+import { createInitialState } from '@/state.js';
+import type { MaestriaState } from '@/state.js';
 
 function createMockPi() {
   return {

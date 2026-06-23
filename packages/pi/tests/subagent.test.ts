@@ -4,8 +4,8 @@ import {
   installSubagentTool,
   MAX_PARALLEL_TASKS,
   MAESTRIA_EVENTS,
-} from '../src/subagent.js';
-import { createInitialState } from '../src/state.js';
+} from '@/subagent.js';
+import { createInitialState } from '@/state.js';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 
 describe('MAX_PARALLEL_TASKS', () => {

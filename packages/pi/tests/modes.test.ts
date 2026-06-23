@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { MODE_KEYWORDS, getModePrompt, installModeCommands } from '../src/modes.js';
-import { createInitialState } from '../src/state.js';
+import { MODE_KEYWORDS, getModePrompt, installModeCommands } from '@/modes.js';
+import { createInitialState } from '@/state.js';
 
 // ---------------------------------------------------------------------------
 // MODE_KEYWORDS
