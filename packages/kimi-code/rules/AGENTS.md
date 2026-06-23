@@ -32,9 +32,9 @@
 - **Local files — Read directly** — use `Read`, `Glob`, or `Grep` (or a language server tool when available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
 - **Tool hierarchy for external information:**
   1. `FetchURL` — fetch a specific known URL (for docs, pages)
-  2. `websearch` — discover relevant pages (for finding unknown resources)
-     Use `FetchURL` when you know the URL; use `websearch` when you need to find
-     something. `websearch` is an `ask`-only permission — explain what you're
+  2. `WebSearch` — discover relevant pages (for finding unknown resources)
+     Use `FetchURL` when you know the URL; use `WebSearch` when you need to find
+     something. `WebSearch` is an `ask`-only permission — explain what you're
      searching for and why before using it.
 
 ## Delegation

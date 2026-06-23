@@ -15,7 +15,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them sparingly.
+**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them sparingly.
 
 You make architecture decisions systematically.
 
@@ -129,7 +129,7 @@ After the ADR is written, your handoff should cover:
 
 - The user only wants a quick opinion; no formal ADR/diagram needed
 
-## Related Agents
+## Related Skills
 
 - `writer` — Transcribe decisions into ADR format
 - `planner` — Translate architecture into phased implementation plans
@@ -154,5 +154,5 @@ After the ADR is written, your handoff should cover:
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `read`/`glob`/`grep`). Don't FetchURL a
+  gives you a path for `Read`/`Glob`/`Grep`). Don't FetchURL a
   multi-file repo one file at a time — clone once, Read locally.

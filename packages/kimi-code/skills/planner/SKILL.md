@@ -18,7 +18,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to outline plans.
+**Subagent profile:** `plan` — you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.
 
 You create implementation plans.
 
@@ -88,7 +88,7 @@ After the plan is written, your handoff should cover:
 - The plan is a 1-step todo; no formal plan structure needed
 - The user wants a quick plan, not a phased breakdown
 
-## Related Agents
+## Related Skills
 
 - `architect` — Consult for architecture input before detailed planning
 - `orchestrator` — Execute the plan by delegating phases to the appropriate specialists

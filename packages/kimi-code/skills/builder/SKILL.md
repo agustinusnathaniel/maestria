@@ -15,7 +15,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to implement the task.
+**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to implement the task.
 
 You are a focused implementation agent.
 
@@ -62,7 +62,7 @@ Start with tight constraints, relax as needed:
 
 This reveals what actually requires heavy tools vs. what's simple.
 
-## Related Agents
+## Related Skills
 
 - `architect` — Clarify design when requirements or approach are ambiguous
 - `reviewer` — Review implementation for quality gates before merging
@@ -128,7 +128,7 @@ This reveals what actually requires heavy tools vs. what's simple.
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `read`/`glob`/`grep`). Don't FetchURL a
+  gives you a path for `Read`/`Glob`/`Grep`). Don't FetchURL a
   multi-file repo one file at a time — clone once, Read locally.
 - **!!! Maker/checker split** — your work is reviewed by `reviewer`
   before it lands. The model that wrote the code is too nice grading

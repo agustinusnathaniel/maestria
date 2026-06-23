@@ -26,6 +26,13 @@ export default {
       { from: 'question(', to: 'AskUserQuestion(' },
       { from: '`opensrc`', to: '`Skill(skill="opensrc")`' },
       { from: '`webfetch`', to: '`FetchURL`' },
+      { from: 'websearch', to: 'WebSearch' },
+      { from: '`read`', to: '`Read`' },
+      { from: '`glob`', to: '`Glob`' },
+      { from: '`grep`', to: '`Grep`' },
+      { from: '`lsp`', to: 'a language server tool' },
+      { from: 'Related Agents', to: 'Related Skills' },
+      { from: 'read-only', to: 'Read-only' },
     ],
   },
 
@@ -33,7 +40,7 @@ export default {
     'adventurer.md': {
       output: 'adventurer/SKILL.md',
       prepend:
-        '**Subagent profile:** `explore` — you have Read, Glob, Grep, Bash, FetchURL, and WebSearch. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `explore` — you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'adventurer',
         description: `Codebase reconnaissance agent for deep code understanding.
@@ -52,7 +59,7 @@ Read-only — never implement, design, or edit.`,
     'architect.md': {
       output: 'architect/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them sparingly.\n\n',
+        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them sparingly.\n\n',
       frontmatter: {
         name: 'architect',
         description: `Architecture decisions using decision matrices and ADRs.
@@ -68,7 +75,7 @@ one approach is viable and the choice has downstream impact.`,
     'builder.md': {
       output: 'builder/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to implement the task.\n\n',
+        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to implement the task.\n\n',
       frontmatter: {
         name: 'builder',
         description: `Focused implementation agent for atomic tasks.
@@ -84,7 +91,7 @@ work is a concrete atomic unit.`,
     'diagnose.md': {
       output: 'diagnose/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to investigate.\n\n',
+        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to investigate.\n\n',
       frontmatter: {
         name: 'diagnose',
         description: `Systematic 6-step regression tracing.
@@ -100,7 +107,7 @@ not.`,
     'planner.md': {
       output: 'planner/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to outline plans.\n\n',
+        '**Subagent profile:** `plan` — you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'planner',
         description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
@@ -115,7 +122,7 @@ any complex feature that needs review before building.`,
     'reviewer.md': {
       output: 'reviewer/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Read, Glob, Grep, Bash, FetchURL, and WebSearch. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `coder` — you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'reviewer',
         description: `Code review with quality gates.
@@ -131,7 +138,7 @@ before-commit QA. Use after \`builder\` lands a code change.`,
     'writer.md': {
       output: 'writer/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to produce docs.\n\n',
+        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to produce docs.\n\n',
       frontmatter: {
         name: 'writer',
         description: `Documentation writing following structured patterns.
@@ -308,6 +315,8 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: '`lsp`', to: 'a language server tool' },
         { from: 'bash --help', to: 'Bash --help' },
         { from: 'treat it seriously.', to: 'treat it seriously, not a preference.' },
+        { from: 'websearch', to: 'WebSearch' },
+        { from: 'read-only', to: 'Read-only' },
         // Replace the canonical delegation section (post-default-transform) with a kimi-code version
         {
           from: `## Delegation

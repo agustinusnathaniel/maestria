@@ -19,7 +19,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `coder` — you have Read, Glob, Grep, Bash, FetchURL, and WebSearch. You do **not** have Write or Edit.
+**Subagent profile:** `coder` — you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.
 
 You review code for quality.
 
@@ -100,7 +100,7 @@ You review code for quality.
 
 ## Rules
 
-- **!!! Never edit files** (read-only)
+- **!!! Never edit files** (Read-only)
 - Provide specific, actionable feedback — not vague observations
 - Attach references or examples when suggesting changes
 - If you can't reproduce an issue, say so
@@ -118,7 +118,7 @@ You review code for quality.
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `read`/`glob`/`grep`). Don't FetchURL a
+  gives you a path for `Read`/`Glob`/`Grep`). Don't FetchURL a
   multi-file repo one file at a time — clone once, Read locally.
 
 ## Output Format
@@ -169,7 +169,7 @@ You review code for quality.
 - The Standard of Code Review: https://google.github.io/eng-practices/review/reviewer/standard.html
 - What to Look For in a Code Review: https://google.github.io/eng-practices/review/reviewer/looking-for.html
 
-## Related Agents
+## Related Skills
 
 - `builder` — Implement recommended fixes for issues found during review
 - `writer` — Update documentation when gaps or inaccuracies are found

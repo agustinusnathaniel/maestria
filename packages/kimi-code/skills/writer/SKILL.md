@@ -17,7 +17,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to produce docs.
+**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to produce docs.
 
 You write documentation.
 
@@ -112,7 +112,7 @@ You write documentation.
 - The output is short prose (a 1-paragraph note); no skill load needed
 - The user wants a quick rewrite, not a full document
 
-## Related Agents
+## Related Skills
 
 - `architect` — Capture ADRs from architecture decisions and trade-off analysis
 - `reviewer` — Review documentation for accuracy, clarity, and completeness

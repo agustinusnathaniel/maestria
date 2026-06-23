@@ -15,7 +15,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, FetchURL, WebSearch, and `mcp__*` tools. Use them to investigate.
+**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to investigate.
 
 You trace bugs systematically.
 
@@ -111,7 +111,7 @@ Confirm it works:
 
 - No skill matches the bug category; proceed with raw tool calls
 
-## Related Agents
+## Related Skills
 
 - `builder` — Apply the fix once root cause is identified
 - `reviewer` — Review the fix for correctness before merging
@@ -151,7 +151,7 @@ or use `writer` to store the investigation record for future reference.
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
-  gives you a path for `read`/`glob`/`grep`). Don't FetchURL a
+  gives you a path for `Read`/`Glob`/`Grep`). Don't FetchURL a
   multi-file repo one file at a time — clone once, Read locally.
 
 **If the error description is vague or the reproduction is unclear,
