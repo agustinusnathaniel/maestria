@@ -33,11 +33,16 @@ A typical multi-step task moves through the agent system like this:
 
 ```
 @orchestrator
-  ├─ @adventurer   → Explore codebase
-  ├─ @architect    → Design approach
-  ├─ @planner      → Create implementation plan
-  ├─ @builder      → Implement
-  └─ @reviewer     → Review changes
+  ├─ Thinker (recon/design/planning/analysis)
+  │   ├─ @adventurer → Explore codebase
+  │   ├─ @architect  → Design approach
+  │   ├─ @planner    → Create implementation plan
+  │   └─ @diagnose   → Analyze bugs
+  ├─ Worker (implementation/documentation)
+  │   ├─ @builder → Implement
+  │   └─ @writer  → Document
+  └─ Verifier (validation)
+      └─ @reviewer → Review changes
 ```
 
 Each agent hands off to the next. The orchestrator keeps everything moving.
@@ -46,7 +51,7 @@ Each agent hands off to the next. The orchestrator keeps everything moving.
 
 The orchestrator supports three modes that change how it delegates work:
 
-- **`fein`** — Full pipeline with mandatory review. Best for production changes.
+- **`fein`** — Default role-based pipeline with acceptance gates. Best for production changes.
 - **`sonar`** — Research only, no implementation. Best for understanding code.
 - **`blitz`** — Fast implementation, skip gates. Best for quick fixes.
 
