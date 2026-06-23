@@ -1,28 +1,20 @@
 # maestria
 
-> AI engineering praxis, encoded as an OpenCode plugin.
+> AI engineering praxis, encoded as plugins.
 
-This monorepo contains `@maestria/opencode` — an npm plugin that bundles specialized subagents and global rules for OpenCode, transforming it into a disciplined AI engineering workstation.
+Plugins that bring disciplined AI engineering workflows — precise rules, explicit boundaries,
+and clear delegation chains — to AI coding assistants. Each plugin ships specialized agents
+adapted to its platform's plugin model.
 
 ## Packages
 
-| Package                                   | Description                              |
-| ----------------------------------------- | ---------------------------------------- |
-| [`@maestria/opencode`](packages/opencode) | OpenCode plugin: 7 agents + global rules |
+- [`@maestria/opencode`](packages/opencode) — OpenCode plugin: 7 agents + global rules
+- [`@maestria/pi`](packages/pi) — Pi coding agent extension: 7 specialists + 3 workflow modes
 
 ## Development
 
-```bash
-vp install          # install dependencies
-vp check            # format, lint, type-check everything
-vp run test           # run all tests
-vp run build          # build all packages
-```
+vp install / vp check / vp run test / vp run build
 
 ## Release
 
-```bash
-pnpm changeset          # create a changeset
-pnpm version-packages   # version bump
-pnpm release            # publish to npm
-```
+pnpm changeset / pnpm version-packages / pnpm release
