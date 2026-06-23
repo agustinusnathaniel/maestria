@@ -11,28 +11,33 @@ import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 The `@orchestrator` is the manager. It decomposes complex tasks into atomic units, delegates each unit to the right specialist, integrates the results, and verifies completion. Specialists each handle one domain — exploration, design, implementation, debugging, planning, review, or documentation.
 
-The default pipeline for non-trivial work follows a sequence: recon first, then design or plan, then build, then review. Each step verifies before handing off to the next.
+The default pipeline for non-trivial work groups specialists into three roles — **thinker** (recon, design, planning, analysis), **worker** (implementation, documentation), and **verifier** (validation). The orchestrator routes work dynamically based on task needs, and the pipeline terminates when the verifier accepts.
 
 ## Pipeline Flow
 
 ```
 @orchestrator (manager)
-  ├─ @adventurer → Reconnaissance
-  ├─ @architect  → Design/decisions
-  ├─ @planner    → Phased plans
-  ├─ @builder    → Implementation
-  └─ @reviewer   → Validation
+  ├─ Thinker (recon/design/planning/analysis)
+  │   ├─ @adventurer → Reconnaissance
+  │   ├─ @architect  → Design/decisions
+  │   ├─ @planner    → Phased plans
+  │   └─ @diagnose   → Root cause analysis
+  ├─ Worker (implementation/documentation)
+  │   ├─ @builder → Implementation
+  │   └─ @writer  → Documentation
+  └─ Verifier (validation)
+      └─ @reviewer → Quality gates
 ```
 
 ## Workflow Modes
 
 The orchestrator responds to three mode keywords that adjust the pipeline depth:
 
-| Keyword | Full form           | Pipeline                                            | Use case                           |
-| ------- | ------------------- | --------------------------------------------------- | ---------------------------------- |
-| `fein`  | Full pipeline       | adventurer → architect/planner → builder → reviewer | Production-grade, mandatory review |
-| `sonar` | Research            | adventurer → architect/planner → STOP               | Understanding before committing    |
-| `blitz` | Fast implementation | builder direct                                      | Quick fixes, known territory       |
+| Keyword | Full form           | Pipeline                                     | Use case                           |
+| ------- | ------------------- | -------------------------------------------- | ---------------------------------- |
+| `fein`  | Full pipeline       | thinker → worker → verifier (adaptive order) | Production-grade, mandatory review |
+| `sonar` | Research            | adventurer → architect/planner → STOP        | Understanding before committing    |
+| `blitz` | Fast implementation | builder direct                               | Quick fixes, known territory       |
 
 The keyword is detected at any position in your message, case-insensitively. Most restrictive keyword wins (fein > sonar > blitz). Code blocks are excluded from detection.
 
@@ -62,8 +67,6 @@ To disable a mode, set `modes.disabledKeywords` in your plugin configuration:
 **Direct delegation.** Any agent can be invoked directly by typing `@agentname` in your prompt. For example, `@reviewer review my latest changes` or `@adventurer find where authentication is handled`.
 
 **Manager delegation.** For complex tasks involving multiple steps, let `@orchestrator` handle the entire pipeline. It decomposes the work and dispatches each piece to the right specialist automatically.
-
-**Pipeline discipline.** The default flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk — fine for simple changes, not recommended for cross-module work.
 
 ## See Also
 

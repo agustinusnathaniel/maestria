@@ -10,9 +10,9 @@ export const MODE_PROMPTS: Record<ModeKeyword, string> = {
   fein: [
     '## MODE: fein (Full Pipeline)',
     '',
-    'Execute the complete fein pipeline: mandatory reconnaissance',
-    '(@adventurer) → design/plan (@architect or @planner) →',
-    'implementation (@builder) → review (@reviewer).',
+    'Default role-based pipeline: thinker (recon/design/plan) → worker (implementation) → verifier (review).',
+    'Verifier acceptance terminates the pipeline for that unit of work.',
+    'Roles and order may adapt to task needs — this is the default, not a fixed requirement.',
     'Do NOT skip any phase unless the user explicitly overrides',
     'in the same turn.',
   ].join('\n'),
