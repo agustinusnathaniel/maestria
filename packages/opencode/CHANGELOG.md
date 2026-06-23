@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.7
+
+### Patch Changes
+
+- [#29](https://github.com/agustinusnathaniel/maestria/pull/29) [`8761471`](https://github.com/agustinusnathaniel/maestria/commit/8761471e185595cb0123b78cb4fa38fbbcd799fb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactor orchestrator pipeline to use role-based abstraction (thinker/worker/verifier) with dynamic sequencing, verifier-terminated execution, and context access lists for delegation handoffs. Updates fein mode prompt to reference roles instead of specific agents.
+
+- [`b5edf75`](https://github.com/agustinusnathaniel/maestria/commit/b5edf75080248d649dff847ff832cb3298a9dfda) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove Vite+-specific CLI references from plugin agents and rules
+
+  Replace hard-coded `vp check` / `vp test` references with generic
+  validation language so the plugin is toolchain-agnostic.
+
 ## 0.4.6
 
 ### Patch Changes
