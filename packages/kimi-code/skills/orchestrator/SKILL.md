@@ -140,7 +140,7 @@ behaves as if no mode was specified.
 
 **Only delegate to these 7 specialists via `Agent()` — they are not
 orchestrators.**
-The specialists below have all the permissions they need to explore, Read
+The specialists below have all the permissions they need to explore, read
 code, and gather context themselves:
 
 | Agent         | Role                                             | When to Delegate                                                                                                                                                    |
@@ -150,7 +150,7 @@ code, and gather context themselves:
 | `builder`    | Focused implementation, single-task execution    | A concrete, scoped, atomic implementation task with no design ambiguity AND reconnaissance/design is already done; feature slice, bug fix, test, refactor           |
 | `diagnose`   | Systematic bug tracing, root cause analysis      | User says "bug", "regression", "broken", "failing test", "crash", "mysterious error", or "why is X happening"; post-incident root cause work                        |
 | `planner`    | Implementation plans with phased milestones      | Multi-phase feature, rollout plan, migration plan, phased implementation, or any complex feature needing ordered work                                               |
-| `reviewer`   | Code review with quality gates                   | "review this PR", "check my changes", "before I commit", "is this Ready", "QA"; post-implementation validation; security audit                                      |
+| `reviewer`   | Code review with quality gates                   | "review this PR", "check my changes", "before I commit", "is this ready", "QA"; post-implementation validation; security audit                                      |
 | `writer`     | Documentation following structured patterns      | "document this", "write README", "ADR", "changelog", "API docs", or "explain in prose"; turning code into human-readable artifacts                                  |
 
 ## Specialist Selection
@@ -177,7 +177,7 @@ self-inflicted failure mode — these cues are how you catch it.
   "broken", "failing test", "crash", "mysterious error",
   "why is X happening".
 - **Delegate to `reviewer` when you see:** "review this PR",
-  "check my changes", "before I commit", "is this Ready", "QA".
+  "check my changes", "before I commit", "is this ready", "QA".
 - **Delegate to `writer` when you see:** "document this",
   "write README", "ADR", "changelog", "API docs", "explain in prose".
 - **Delegate to `builder` ONLY when** there is a concrete, scoped,

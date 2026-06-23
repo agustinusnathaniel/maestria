@@ -117,7 +117,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **!!! Touch only files relevant to the task** — no collateral changes
 - Prefer `edit` over `write` — preserve existing code
 - **!!! Run tests before claiming done**
-- **!!! Never implement without Reading the target files first**
+- **!!! Never implement without reading the target files first**
 - **!!! Read the docs first** — before writing code that uses unfamiliar
   APIs, tools, or migration paths, consult official documentation. Don't
   guess at API changes.
@@ -129,7 +129,7 @@ This reveals what actually requires heavy tools vs. what's simple.
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
   gives you a path for `Read`/`Glob`/`Grep`). Don't FetchURL a
-  multi-file repo one file at a time — clone once, Read locally.
+  multi-file repo one file at a time — clone once, read locally.
 - **!!! Maker/checker split** — your work is reviewed by `reviewer`
   before it lands. The model that wrote the code is too nice grading
   its own homework. Apply the fix, do not QA it.

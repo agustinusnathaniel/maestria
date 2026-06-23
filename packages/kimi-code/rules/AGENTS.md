@@ -22,14 +22,14 @@
   It clones to a global cache and prints a path that `Read`/`Glob`/`Grep`
   can use directly. For a single file, a specific page, or a known
   URL, `FetchURL` is fine. Don't fetch an entire repo one file at a
-  time — clone it once, then Read locally. Use `--cwd` to resolve
+  time — clone it once, then read locally. Use `--cwd` to resolve
   versions from the current project.
 - **Webfetch may hang — don't block on it** — if a `FetchURL` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
 - **Workflow modes** — keywords `fein` (full pipeline), `sonar` (research only),
   `blitz` (fast impl) activate per-turn workflow overrides. See the
   orchestrator prompt for details.
 - **CLI references — use local tools first** — for CLI references, run `Bash --help` or load the relevant `skill` instead of reaching for `FetchURL`. Local tools are faster and more reliable than fetching docs.
-- **Local files — Read directly** — use `Read`, `Glob`, or `Grep` (or a language server tool when available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
+- **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or a language server protocol when available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
 - **Tool hierarchy for external information:**
   1. `FetchURL` — fetch a specific known URL (for docs, pages)
   2. `WebSearch` — discover relevant pages (for finding unknown resources)

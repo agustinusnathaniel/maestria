@@ -155,4 +155,4 @@ After the ADR is written, your handoff should cover:
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
   gives you a path for `Read`/`Glob`/`Grep`). Don't FetchURL a
-  multi-file repo one file at a time — clone once, Read locally.
+  multi-file repo one file at a time — clone once, read locally.

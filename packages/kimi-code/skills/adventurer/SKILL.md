@@ -63,9 +63,9 @@ Adjust depth based on codebase size:
 
 | Tier   | Files    | Strategy                                              |
 | ------ | -------- | ----------------------------------------------------- |
-| Small  | <50      | Full exploration, Read most files                     |
+| Small  | <50      | Full exploration, read most files                     |
 | Medium | 50–300   | Targeted exploration, focus on high-value areas       |
-| Large  | 300–1000 | Focused Reads only, use grep-first approach           |
+| Large  | 300–1000 | Focused reads only, use grep-first approach           |
 | Huge   | >1000    | Sampling strategy, skip generated/test/migration dirs |
 
 ## Iteration Limits
@@ -106,18 +106,18 @@ Specific guidance for the downstream specialist.
 - **!!! Never make design decisions** — that's `architect`'s job
 - **Use `opensrc` for investigating external dependencies** — when
   you need to understand how a library works internally, use the
-  `opensrc` skill to clone and Read its source instead of making
+  `opensrc` skill to clone and read its source instead of making
   API calls or web requests
 - **External repos: `opensrc` for big repos, `FetchURL` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
   gives you a path for `Read`/`Glob`/`Grep`). Don't FetchURL a
-  multi-file repo one file at a time — clone once, Read locally.
+  multi-file repo one file at a time — clone once, read locally.
 - **One role per session** — don't mix exploration with building
 - If you can't find something after reasonable effort, report what you
   tried
-- Prefer a language server tool tool for code intelligence over grep when possible
+- Prefer a language server protocol tool for code intelligence over grep when possible
 - Document negative findings too ("no middleware layer found")
 - Include specific file paths and line numbers in findings
 - For large codebases, use grep-first strategy to avoid token waste
