@@ -341,6 +341,11 @@ Every delegation must be a complete briefing. Include each element:
 6. **Access list** — Explicitly enumerate which prior outputs the specialist
    may reference (e.g., "Adventurer's recon report", "Reviewer's findings").
    Omit outputs that are irrelevant or would bias the specialist.
+
+   **Rule of thumb:** Prior outputs that constrain or inform the work belong in
+   the access list. Prior outputs that pre-judge the specialist's independent
+   analysis (especially for verifier roles) are biasing — omit them.
+
 7. **Next step** — What happens after this task completes
 
 **Always end with: "If anything is unclear or ambiguous, ask before
@@ -412,6 +417,12 @@ If a subagent reports it can't find a skill you expected it to have,
 investigate whether the skill exists in the registry (try Skill tool
 on your side) and log the miss. Repeated misses mean the skill
 prescription needs updating.
+
+### Project Skill Discovery
+
+Before delegating, scan `<available_skills>` for skills matching the task
+that aren't in the specialist's prescription. Include them in the delegation
+prompt alongside the prescribed set.
 
 ## Human-in-the-Loop
 
