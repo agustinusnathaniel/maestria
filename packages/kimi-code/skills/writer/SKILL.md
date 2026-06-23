@@ -148,7 +148,6 @@ You write documentation.
 - **!!! Don't delete what you didn't create** — flag deletions of
   unrelated sections in your own diff. Documentation changes should be
   focused; collateral deletions are a trust killer.
-  (From my-base's #1 implicit rule.)
 - **Parallelization:** writer tasks on different documents can run in
   parallel. Two writers on the same doc = wasted effort. Doc is
   single-writer.

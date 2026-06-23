@@ -37,9 +37,8 @@ reads bundled `agents/*.md` files, parses YAML frontmatter, and injects them int
 
 - User feedback: "I felt the skills are still too shallow"
 - User feedback: "reviewer agent is still too shallow"
-- Not leveraging the rich my-base KB that was the whole point of this project
 
-**What we switched to:** Read 7 my-base KB files thoroughly:
+**What we switched to:** Read 7 KB files thoroughly:
 
 - `agent-patterns.mdx` — workflow archetypes, implicit rules, escalation ladder
 - `directive-library.mdx` — reusable directives, `!!!` prefix, composition
@@ -53,7 +52,7 @@ Then enriched all 7 agents with patterns from these sources.
 
 ### 3. Including Skills in Distribution
 
-**What we did:** Copied 6 skills from `my-base/skills/` and included them in the
+**What we did:** Copied 6 skills from `kb/skills/` and included them in the
 plugin distribution via postinstall.
 
 **Why it was wrong:**
@@ -217,7 +216,7 @@ permission keys, and prompt length.
 
 | Agent            | Initial                     | Final                                                                         | Key Changes                         |
 | ---------------- | --------------------------- | ----------------------------------------------------------------------------- | ----------------------------------- |
-| **orchestrator** | 5-step process, basic rules | Added parallel execution, human-in-the-loop, anti-patterns                    | My-base orchestration patterns      |
+| **orchestrator** | 5-step process, basic rules | Added parallel execution, human-in-the-loop, anti-patterns                    | orchestration patterns      |
 | **architect**    | 5 phases, shortcut rules    | Added constraints, explicit assumptions, ADR template                         | Clarification before recommendation |
 | **builder**      | "1-2 file edits" limit      | Atomic tasks, implementation staircase, constraint escalation                 | Removed arbitrary limits            |
 | **diagnose**     | 6 steps                     | Added environment check, safety-first, documentation per step                 | Systematic debugging order          |
@@ -231,7 +230,7 @@ permission keys, and prompt length.
 
 ### When Adding a New Agent
 
-1. Read the relevant section in my-base KB first
+1. Read the relevant section in KB first
 2. Check `installed-skills.mdx` for related skill references
 3. Include cross-references to other agents in the "Handoff" section
 4. Add `Related Agents` table listing sibling agents and delegation triggers

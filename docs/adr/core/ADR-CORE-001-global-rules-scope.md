@@ -12,8 +12,6 @@ We built `@maestria/opencode` with three layers where behavior is defined:
 - **Global rules** (`rules/AGENTS.md`) — cross-cutting principles injected into every session
 - **OpenCode defaults** — built-in permission model, agent mode behavior, commit handling
 
-After a comprehensive scan of `my-base` KB (~300 files across AI concepts, agent patterns, directive library, loop engineering, and 6 methodology skills), we needed to decide which patterns to promote to global rules vs. leave in agent files vs. exclude entirely.
-
 ## Decision
 
 Apply this three-way filter when evaluating any candidate pattern:

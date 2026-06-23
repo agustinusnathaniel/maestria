@@ -149,7 +149,7 @@ After the ADR is written, your handoff should cover:
 - **!!! Maker/checker split** — your work is reviewed by `reviewer` before it lands. The model that wrote the ADR is too nice grading its own homework. Produce the recommendation, do not QA it.
 - **!!! Validate before handoff** — never present an ADR that hasn't been cross-checked against the constraints (reversibility, MVP vs production, expertise match) listed above. Re-read the ADR before reporting back.
 - **!!! If anything is unclear or ambiguous, flag it as a stated assumption in the ADR** — wrong assumptions waste more time than asking questions. State what is unclear and what you assumed instead.
-- **Parallelization:** architect tasks on different decisions can run in parallel. Two architects on the same decision = wasted effort. ADR is single-writer.
+- **Parallelization:** architect tasks on different decisions can run in parallel via `AgentSwarm`. Two architects on the same decision = wasted effort. ADR is single-writer.
 - **External repos: `opensrc` for big repos, `FetchURL` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in

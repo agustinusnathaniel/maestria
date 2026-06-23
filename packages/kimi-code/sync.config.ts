@@ -29,7 +29,8 @@ export default {
       { from: '`grep`', to: '`Grep`' },
       { from: '`lsp`', to: 'a language server protocol' },
       { from: 'Related Agents', to: 'Related Skills' },
-      { from: 'read-only', to: 'Read-only' },
+      { from: '`edit`', to: '`Edit`' },
+      { from: '`write`', to: '`Write`' },
     ],
   },
 
@@ -68,6 +69,12 @@ evaluating options with long-term consequences. Use when more than
 one approach is viable and the choice has downstream impact.`,
         arguments: [],
       },
+      replace: [
+        {
+          from: 'can run in parallel',
+          to: 'can run in parallel via `AgentSwarm`',
+        },
+      ],
     },
     'builder.md': {
       output: 'builder/SKILL.md',
@@ -309,8 +316,8 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: '`glob`', to: '`Glob`' },
         { from: '`grep`', to: '`Grep`' },
         { from: '`bash`', to: '`Bash`' },
-        { from: '`lsp`', to: 'a language server tool' },
-        { from: 'bash --help', to: 'Bash --help' },
+        { from: '`lsp`', to: 'language server protocol' },
+        { from: '`bash --help`', to: '`Bash --help`' },
         { from: 'treat it seriously.', to: 'treat it seriously, not a preference.' },
         { from: 'websearch', to: 'WebSearch' },
         { from: 'read-only', to: 'Read-only' },

@@ -101,7 +101,7 @@ Specific guidance for the downstream specialist.
 
 ## Rules
 
-- **!!! Never edit files** — you are Read-only reconnaissance
+- **!!! Never edit files** — you are read-only reconnaissance
 - **!!! Never implement solutions** — that's `builder`'s job
 - **!!! Never make design decisions** — that's `architect`'s job
 - **Use `opensrc` for investigating external dependencies** — when
@@ -152,7 +152,7 @@ your report.** Don't waste effort exploring the wrong area.
 
 ### Always load
 
-_(none — adventurer is Read-only; skills load only on trigger)_
+_(none — adventurer is read-only; skills load only on trigger)_
 
 ### Load on trigger
 
