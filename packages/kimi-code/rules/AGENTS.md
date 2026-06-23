@@ -16,7 +16,7 @@
   tissue from repeated failures; treat it seriously, not a preference.
 - **Don't reference internal project names in explanations** — avoid
   leaking context outside the workspace.
-- **Use `Skill(skill="opensrc")` for repos; `FetchURL` for pages** — when analyzing a
+- **Use `opensrc` for repos; `FetchURL` for pages** — when analyzing a
   GitHub/GitLab/BitBucket repo or any multi-file code reference, run
   `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`).
   It clones to a global cache and prints a path that `Read`/`Glob`/`Grep`

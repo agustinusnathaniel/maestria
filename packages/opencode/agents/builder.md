@@ -88,8 +88,8 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 - `agent-browser` (`vercel-labs/agent-browser`) — load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
 - `ai-sdk` (`vercel/ai`) — load when task is AI SDK (skip if unrelated)
-- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
 - `codebase-design` (`mattpocock/skills`) — load when implementing a designed interface or building to match module boundary specifications
+- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
 - `database-schema-designer` (`softaworks/agent-toolkit`) — load when designing database schemas, tables, or data models
 - `frontend-design` (`anthropics/skills`) — load when task is UI/visual
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when writing non-trivial logic

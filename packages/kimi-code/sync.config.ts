@@ -24,7 +24,6 @@ export default {
       { from: '(read ', to: '(Read ' },
       { from: 'glob(', to: 'Glob(' },
       { from: 'question(', to: 'AskUserQuestion(' },
-      { from: '`opensrc`', to: '`Skill(skill="opensrc")`' },
       { from: '`webfetch`', to: '`FetchURL`' },
       { from: 'websearch', to: 'WebSearch' },
       { from: '`read`', to: '`Read`' },

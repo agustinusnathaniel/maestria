@@ -100,7 +100,7 @@ Confirm it works:
 - `diagnosing-bugs` (`mattpocock/skills`) — load when using the diagnose methodology for systematic debugging
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when investigating pattern-level bugs
 - `logging-best-practices` (`boristane/agent-skills`) — load when bug surfaces in logs or you need to add logging
-- `Skill(skill="opensrc")` (`vercel-labs/opensrc`) — load when root cause is in an external library
+- `opensrc` (`vercel-labs/opensrc`) — load when root cause is in an external library
 - `webapp-testing` (`anthropics/skills`) — load when UI reproduces the bug
 
 ### Defer to specialist
@@ -147,7 +147,7 @@ or use `writer` to store the investigation record for future reference.
 - **!!! Validate before handoff** — never present a fix you haven't reproduced-and-verified works. Run the existing test suite, reproduce the original error, confirm it's gone.
 - **!!! If anything is unclear or ambiguous, flag it as an open question in your findings** — wrong assumptions waste more time than asking questions.
 - **Parallelization:** diagnose tasks on different bugs can run in parallel. Two diagnoses on the same bug = wasted; same root-cause cluster = consolidate first.
-- **External repos: `Skill(skill="opensrc")` for big repos, `FetchURL` for single pages** —
+- **External repos: `opensrc` for big repos, `FetchURL` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,

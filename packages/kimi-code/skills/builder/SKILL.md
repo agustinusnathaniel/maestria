@@ -78,14 +78,14 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 - `agent-browser` (`vercel-labs/agent-browser`) — load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
 - `ai-sdk` (`vercel/ai`) — load when task is AI SDK (skip if unrelated)
-- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
 - `codebase-design` (`mattpocock/skills`) — load when implementing a designed interface or building to match module boundary specifications
+- `commit-work` (`softaworks/agent-toolkit`) — load when committing, staging changes, or crafting commit messages
 - `database-schema-designer` (`softaworks/agent-toolkit`) — load when designing database schemas, tables, or data models
 - `frontend-design` (`anthropics/skills`) — load when task is UI/visual
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) — load when writing non-trivial logic
 - `mcp-builder` (`anthropics/skills`) — load when building or modifying MCP servers (skip if non-MCP work)
 - `naming-analyzer` (`softaworks/agent-toolkit`) — load when introducing new identifiers
-- `Skill(skill="opensrc")` (`vercel-labs/opensrc`) — load when library internals are unclear
+- `opensrc` (`vercel-labs/opensrc`) — load when library internals are unclear
 - `pnpm` (`antfu/skills`) — load when changing `package.json`/lockfile
 - `react-dev` (`softaworks/agent-toolkit`) — load when task is React (skip if non-frontend)
 - `react-useeffect` (`softaworks/agent-toolkit`) — load when modifying `useEffect` (skip if non-frontend)
@@ -124,7 +124,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - If a change grows beyond the original task scope, flag it in your
   handoff
 - Keep the change focused — one concern per invocation
-- **External repos: `Skill(skill="opensrc")` for big repos, `FetchURL` for single pages** —
+- **External repos: `opensrc` for big repos, `FetchURL` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,

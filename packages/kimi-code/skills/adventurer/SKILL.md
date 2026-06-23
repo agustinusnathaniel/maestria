@@ -104,11 +104,11 @@ Specific guidance for the downstream specialist.
 - **!!! Never edit files** — you are Read-only reconnaissance
 - **!!! Never implement solutions** — that's `builder`'s job
 - **!!! Never make design decisions** — that's `architect`'s job
-- **Use `Skill(skill="opensrc")` for investigating external dependencies** — when
+- **Use `opensrc` for investigating external dependencies** — when
   you need to understand how a library works internally, use the
-  `Skill(skill="opensrc")` skill to clone and Read its source instead of making
+  `opensrc` skill to clone and Read its source instead of making
   API calls or web requests
-- **External repos: `Skill(skill="opensrc")` for big repos, `FetchURL` for single pages** —
+- **External repos: `opensrc` for big repos, `FetchURL` for single pages** —
   For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single
   page) → `FetchURL` is fine. Whole repos or "how is X implemented in
   library Y" → `opensrc path <owner/repo>` (clones to global cache,
@@ -161,7 +161,7 @@ _(none — adventurer is Read-only; skills load only on trigger)_
 - `domain-modeling` (`mattpocock/skills`) — load when mapping domain concepts, terminology, and ubiquitous language during reconnaissance
 - `mermaid-diagrams` (`softaworks/agent-toolkit`) — load when a sequence/flow/ER diagram is requested
 - `resolving-merge-conflicts` (`mattpocock/skills`) — load when investigating merge conflict history or understanding why a conflict occurred
-- `Skill(skill="opensrc")` (`vercel-labs/opensrc`) — load when external library internals affect the answer
+- `opensrc` (`vercel-labs/opensrc`) — load when external library internals affect the answer
 - `session-handoff` (`softaworks/agent-toolkit`) — load when creating a recon report or handoff document for another agent
 
 ### Defer to specialist
