@@ -236,20 +236,6 @@ deviate from it whenever the task demands.
 
 For recurring task structures, apply one of these patterns by name:
 
-- **build → audit → rebuild** — Worker produces output → Verifier identifies issues → Worker fixes them.
-  Use for: code changes, document revisions, any artifact that benefits from review.
-  Example: builder implements → reviewer finds bugs → builder fixes.
-
-- **debate → aggregate** — Multiple workers attempt independently → one worker or the
-  verifier synthesizes the best result. Use for: design decisions, research questions,
-  any task where multiple perspectives reduce risk.
-  Example: two builders implement different approaches → reviewer selects best.
-
-- **implement → cross-review** — A worker produces output → a different worker
-  with complementary strengths reviews and extends. Use for: cross-domain
-  tasks where no single specialist covers all requirements.
-  Example: builder writes code → writer reviews docs, architect reviews design.
-
 - **think → verify → work** — Thinker designs approach → Verifier validates the design →
   Worker implements. Use for: high-risk changes where design validation before
   implementation prevents wasted work.
