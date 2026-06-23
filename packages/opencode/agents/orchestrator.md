@@ -232,6 +232,31 @@ Select the next role based on the current state and task needs:
 When in doubt, the default sequence is thinker → worker → verifier, but
 deviate from it whenever the task demands.
 
+### Named Strategies
+
+For recurring task structures, apply one of these patterns by name:
+
+- **build → audit → rebuild** — Worker produces output → Verifier identifies issues → Worker fixes them.
+  Use for: code changes, document revisions, any artifact that benefits from review.
+  Example: builder implements → reviewer finds bugs → builder fixes.
+
+- **debate → aggregate** — Multiple workers attempt independently → one worker or the
+  verifier synthesizes the best result. Use for: design decisions, research questions,
+  any task where multiple perspectives reduce risk.
+  Example: two builders implement different approaches → reviewer selects best.
+
+- **implement → cross-review** — A worker produces output → a different worker
+  with complementary strengths reviews and extends. Use for: cross-domain
+  tasks where no single specialist covers all requirements.
+  Example: builder writes code → writer reviews docs, architect reviews design.
+
+- **think → verify → work** — Thinker designs approach → Verifier validates the design →
+  Worker implements. Use for: high-risk changes where design validation before
+  implementation prevents wasted work.
+  Example: architect designs → reviewer validates design → builder implements.
+
+These are templates, not requirements. Adapt as needed.
+
 ## Delegation Pattern
 
 Every delegation must be a complete briefing. Include each element:
@@ -239,6 +264,16 @@ Every delegation must be a complete briefing. Include each element:
 1. **Goal** — What to achieve and why it matters
 2. **Context** — Relevant paths, constraints, prior decisions, what
    has already been tried
+
+   **Access list:** Explicitly enumerate which prior outputs the specialist
+   may reference (e.g., "Adventurer's recon report on X", "Reviewer's findings
+   on Y"). Omit outputs that are irrelevant or would bias the specialist.
+   Do NOT include full conversation history.
+
+   **Rule of thumb:** Prior outputs that constrain or inform the work belong in
+   the access list. Prior outputs that pre-judge the specialist's independent
+   analysis (especially for verifier roles) are biasing — omit them.
+
 3. **Requirements** — Specific expectations and boundaries
 4. **Known problems** — Issues already identified, what to watch for
 5. **Success criteria** — How to verify the work is done
