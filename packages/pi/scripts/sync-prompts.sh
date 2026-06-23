@@ -25,6 +25,29 @@ strip_frontmatter() {
   perl -0777 -pe 's/^---\n.*?\n---\n//s' "$1"
 }
 
+# Normalize role prefixes for comparison: / → @ (Pi conventions back to opencode source conventions)
+# The Pi prompts use /adventurer, /builder, etc. while opencode sources use @adventurer, @builder.
+# We match /role only when preceded by a non-letter/non-slash character (space, backtick, etc.)
+# to avoid matching inside URL paths like review/reviewer. Start-of-line case is also handled.
+normalize_role_prefixes() {
+  local text="$1"
+  echo "$text" | sed \
+    -e 's|\([^a-zA-Z/]\)/adventurer|\1@adventurer|g' \
+    -e 's|^/adventurer|@adventurer|g' \
+    -e 's|\([^a-zA-Z/]\)/architect|\1@architect|g' \
+    -e 's|^/architect|@architect|g' \
+    -e 's|\([^a-zA-Z/]\)/builder|\1@builder|g' \
+    -e 's|^/builder|@builder|g' \
+    -e 's|\([^a-zA-Z/]\)/diagnose|\1@diagnose|g' \
+    -e 's|^/diagnose|@diagnose|g' \
+    -e 's|\([^a-zA-Z/]\)/planner|\1@planner|g' \
+    -e 's|^/planner|@planner|g' \
+    -e 's|\([^a-zA-Z/]\)/reviewer|\1@reviewer|g' \
+    -e 's|^/reviewer|@reviewer|g' \
+    -e 's|\([^a-zA-Z/]\)/writer|\1@writer|g' \
+    -e 's|^/writer|@writer|g'
+}
+
 ALL_SYNCED=true
 UPDATED=0
 
@@ -50,10 +73,18 @@ for prompt_file in "$PROMPTS_DIR"/*.md; do
 
   # Normalize both sides for comparison:
   #   Prompt: strip the <!-- Source: ... --> line, then replace
-  #           maestria_subagent( with task( (the delegation rename)
+  #           maestria_subagent( with task( (the delegation rename),
+  #           and normalize /→@ role prefixes
   #   Source: strip YAML frontmatter
   prompt_body=$(tail -n +2 "$prompt_file" | sed 's/maestria_subagent(/task(/g')
+  prompt_body=$(normalize_role_prefixes "$prompt_body")
   source_body=$(strip_frontmatter "$source_abs")
+
+  # Strip leading blank lines from both sides to avoid false DRIFTED
+  # from differing blank-line patterns between the prompt source-comment
+  # and the source frontmatter.
+  prompt_body=$(echo "$prompt_body" | sed '/./,$!d')
+  source_body=$(echo "$source_body" | sed '/./,$!d')
 
   if diff <(echo "$prompt_body") <(echo "$source_body") > /dev/null 2>&1; then
     echo "✓   $name — in sync"
@@ -65,8 +96,14 @@ for prompt_file in "$PROMPTS_DIR"/*.md; do
       # Write updated content: source comment + source body with task() → maestria_subagent()
       {
         echo "<!-- Source: $source_rel — keep in sync when updating -->"
-        echo ""
-        strip_frontmatter "$source_abs" | sed 's/task(/maestria_subagent(/g'
+        strip_frontmatter "$source_abs" | sed 's/task(/maestria_subagent(/g' | sed \
+          -e 's|@adventurer|/adventurer|g' \
+          -e 's|@architect|/architect|g' \
+          -e 's|@builder|/builder|g' \
+          -e 's|@diagnose|/diagnose|g' \
+          -e 's|@planner|/planner|g' \
+          -e 's|@reviewer|/reviewer|g' \
+          -e 's|@writer|/writer|g'
       } > "$prompt_file"
       echo "    → Updated $name"
       UPDATED=$((UPDATED + 1))

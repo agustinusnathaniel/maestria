@@ -207,7 +207,7 @@ describe('renderMaestriaSummary', () => {
     let state = createInitialState();
     state = { ...state, activeTask: 'build the feature' };
     state = { ...state, completionPromise: 'tests pass' };
-    state = { ...state, specialistsDelegated: ['@builder', '@reviewer'] };
+    state = { ...state, specialistsDelegated: ['/builder', '/reviewer'] };
     state = { ...state, blockers: ['missing API key', 'unclear spec'] };
     state = recordFileModified(state, 'src/foo.ts');
     state = recordFileRead(state, 'src/bar.ts');
@@ -217,7 +217,7 @@ describe('renderMaestriaSummary', () => {
 
     expect(summary).toContain('**Goal:** build the feature');
     expect(summary).toContain('**Completion Promise:** tests pass');
-    expect(summary).toContain('**Specialists Delegated:** @builder, @reviewer');
+    expect(summary).toContain('**Specialists Delegated:** /builder, /reviewer');
     expect(summary).toContain('**Blockers:**');
     expect(summary).toContain('- missing API key');
     expect(summary).toContain('- unclear spec');

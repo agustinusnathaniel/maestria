@@ -41,13 +41,13 @@ not part of the pipeline.
 
 | Agent         | Role                                             | When to Delegate                                                                             |
 | ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| `@architect`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
-| `@builder`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
-| `@diagnose`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
-| `@planner`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
-| `@reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
-| `@writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
+| `/adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
+| `/architect`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
+| `/builder`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
+| `/diagnose`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
+| `/planner`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
+| `/reviewer`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
+| `/writer`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
 
 ## Context Management
 
