@@ -1,6 +1,8 @@
 // packages/opencode/sync.config.ts
 // Sync config: derives opencode agent files from canonical core directives
 
+import type { SyncConfig } from '../core/scripts/lib/config.js';
+
 export default {
   source: '../core/agent-directives/specialists',
   output: 'agents',
@@ -232,4 +234,4 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
       // No transforms needed — opencode IS the canonical format
     },
   },
-};
+} satisfies SyncConfig;

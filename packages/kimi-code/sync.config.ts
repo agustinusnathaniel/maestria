@@ -1,6 +1,8 @@
 // packages/kimi-code/sync.config.ts
 // Sync config: derives kimi-code skill files from canonical core directives
 
+import type { SyncConfig } from '../core/scripts/lib/config.js';
+
 export default {
   source: '../core/agent-directives/specialists',
   output: 'skills',
@@ -344,4 +346,4 @@ When delegating work via \`Agent()\` (single item) or \`AgentSwarm()\` (≥3 uni
       ],
     },
   },
-};
+} satisfies SyncConfig;

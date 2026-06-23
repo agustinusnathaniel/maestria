@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-23)
+Accepted — Updated (2026-06-24)
 
 ## Context
 
@@ -32,7 +32,7 @@ That milestone is reached. The third platform (pi) is in production, and the tea
 
 ## Decision
 
-Create two packages — `packages/core/agent-directives/` as the canonical content source and `packages/core-sync/` as a shared CLI tool — with a plugin-owned configuration layer in between.
+Create a canonical content source at `packages/core/agent-directives/` and a config-driven sync pipeline at `packages/core/scripts/sync.ts` that derives plugin-specific agent files.
 
 ### 1. Core Content: `packages/core/agent-directives/`
 
@@ -40,19 +40,17 @@ Pure Markdown content, no platform-specific syntax, no frontmatter, no tool name
 
 ```
 packages/core/agent-directives/
-├── specialists/
-│   ├── adventurer.md       # Read-only codebase reconnaissance
-│   ├── architect.md        # Architecture decisions, trade-off analysis
-│   ├── builder.md          # Focused implementation
-│   ├── diagnose.md         # Systematic bug tracing
-│   ├── planner.md          # Multi-phase planning
-│   ├── reviewer.md         # Code review with quality gates
-│   └── writer.md           # Documentation following structured patterns
-├── rules/
-│   ├── context-management.md   # Progressive disclosure, state checkpointing
-│   ├── commit-policy.md        # Commit authorization rules
-│   └── pipeline-patterns.md    # Role-based pipeline patterns
-└── README.md                   # Content ownership and editing guide
+├── README.md              # Content ownership and editing guide
+├── rules.md               # Cross-cutting rules (orchestration, delegation, commit policy, pipeline patterns)
+└── specialists/
+    ├── adventurer.md       # Read-only codebase reconnaissance
+    ├── architect.md        # Architecture decisions, trade-off analysis
+    ├── builder.md          # Focused implementation
+    ├── diagnose.md         # Systematic bug tracing
+    ├── orchestrator.md     # Manager agent (dispatcher, router)
+    ├── planner.md          # Multi-phase planning
+    ├── reviewer.md         # Code review with quality gates
+    └── writer.md           # Documentation following structured patterns
 ```
 
 Content rules:
@@ -61,113 +59,195 @@ Content rules:
 - **No frontmatter** — frontmatter is a plugin-specific concern (YAML vs SKILL.md format)
 - **No role prefixes** — write "delegate to architect" rather than `@architect` or `/architect`
 - **Section structure preserved** — `!!!` markers, skill buckets, iteration limits, handoff contracts, rules bullets remain unchanged
-- **File naming** — snake-case `.md`, one specialist per file
+- **File naming** — snake-case `.md`, one file per specialist (flat, no subdirectories)
+- **Rules as a single file** — rules were consolidated into one `rules.md` instead of separate files per topic, since the rules are short and rarely edited independently
+- **Orchestrator lives here** — the orchestrator prompt is in `specialists/orchestrator.md`, alongside the 7 specialist prompts, sharing the same sync pipeline. It was originally excluded (see Post-Implementation Evolution).
 
-### 2. Sync Tool: `packages/core-sync/`
+### 2. Sync Tool: `packages/core/scripts/sync.ts`
 
-A Node.js CLI tool (`core-sync`) with three commands:
+A single TypeScript script (not a separate package) run via `npx tsx`. It lives at `packages/core/scripts/sync.ts` (142 lines) backed by 6 library modules:
 
-| Command | Behavior                                                     |
-| ------- | ------------------------------------------------------------ |
-| `write` | Apply transforms and write output to each plugin's agent dir |
-| `check` | Exit non-zero if output would differ from disk (for CI)      |
-| `diff`  | Show changes between current disk state and derived output   |
+| Module                        | Lines | Purpose                                                                                                    |
+| ----------------------------- | ----- | ---------------------------------------------------------------------------------------------------------- |
+| `scripts/sync.ts`             | 142   | CLI entry — arg parsing, help, main loop                                                                   |
+| `scripts/lib/config.ts`       | 120   | Config types (`SyncConfig`, `FileConfig`), loading, merging default + per-file config                      |
+| `scripts/lib/transforms.ts`   | 39    | Content transform functions (strip frontmatter, find/replace, YAML serialization, line endings)            |
+| `scripts/lib/file.ts`         | 100   | File I/O (directory walk, atomic write, auto-clean stale outputs)                                          |
+| `scripts/lib/diff.ts`         | 16    | Unified diff wrapper (via `diff` package)                                                                  |
+| `scripts/lib/process-file.ts` | 161   | Transform pipeline — reads a source file, applies transforms in order, dispatches to write/check/diff mode |
+| `scripts/lib/sync.ts`         | 141   | Orchestration — walks source dirs, matches config entries, dispatches to `processFile`, auto-cleans        |
 
-Pipeline design:
+It is not published to npm. It runs inside the monorepo via `tsx`. This avoided adding a separate publish-and-consume cycle for a tool that only ever runs inside this repo.
+
+**CLI flags** (not subcommands):
+
+| Flag         | Behavior                                                                       |
+| ------------ | ------------------------------------------------------------------------------ |
+| _(no flags)_ | Sync (write output)                                                            |
+| `--check`    | CI mode: exit 1 if any output would differ                                     |
+| `--diff`     | Show unified diff of changes during write or check                             |
+| `--dry-run`  | Print what would happen without writing                                        |
+| `--verbose`  | Print every file operation                                                     |
+| `--config`   | Specify config path (default: `./sync.config.ts`, fallback `./sync.config.js`) |
+| `--help`     | Print CLI help                                                                 |
+
+Exit codes: 0 (ok), 1 (check failed), 2 (configuration error).
+
+**Transform pipeline** (per file):
 
 ```
-core/agent-directives/*.md
-        │
-        ▼
-   [plugin A transforms]  ←  plugin-a/sync.config.js
-        │
-        ▼
-   plugin-a/agents/*.md  (generated)
+source file
+  → strip frontmatter (if configured)
+  → find/replace (string-based from/to pairs)
+  → strip existing source comment (idempotency)
+  → prepend content
+  → append content
+  → serialize frontmatter + auto-generated header
+  → normalize line endings
+  → write / check / diff / dry-run
 ```
 
-The tool works in three steps:
+Every generated file starts with an auto-generated comment:
 
-1. **Read** — loads source Markdown files from `core/agent-directives/`
-2. **Transform** — applies each plugin's declared find/replace rules, prepends frontmatter, renames files
-3. **Write** — writes output files, or compares them for `check`/`diff` mode
+```html
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
+```
 
-### 3. Plugin Config: `sync.config.js`
+### 3. Plugin Config: `sync.config.ts`
 
-Each plugin declares a config file at its package root:
+Each plugin declares a TypeScript config file at its package root, typed via `satisfies SyncConfig` for compile-time validation:
 
-```javascript
-// packages/opencode/sync.config.js
+```typescript
+// packages/opencode/sync.config.ts
+import type { SyncConfig } from '../core/scripts/lib/config.js';
+
 export default {
-  source: '../core/agent-directives',
-  output: './agents',
-  transforms: [
-    // Role prefix: @
-    { find: /(?<=delegate to )(\w+)/g, replace: '@$1' },
-    // Prepend YAML frontmatter
-    { find: /^/, replace: (match, file) => frontmatterFor(file) },
-  ],
-  extension: '.md',
-};
+  source: '../core/agent-directives/specialists',
+  output: 'agents',
+
+  files: {
+    'adventurer.md': {
+      frontmatter: { description: '...', mode: 'subagent', permission: { ... } },
+    },
+    'architect.md': { frontmatter: { ... } },
+    // ... one entry per specialist (including orchestrator.md)
+    'rules.md': {
+      output: '../rules/AGENTS.md',
+    },
+  },
+} satisfies SyncConfig;
 ```
 
-```javascript
-// packages/kimi-code/sync.config.js
+```typescript
+// packages/kimi-code/sync.config.ts
+import type { SyncConfig } from '../core/scripts/lib/config.js';
+
 export default {
-  source: '../core/agent-directives',
-  output: './skills',
-  transforms: [
-    // Tool name: Agent()
-    { find: /\btask\b/g, replace: 'Agent' },
-    // Role prefix: bare
-    { find: /@(\w+)/g, replace: '$1' },
-    // Each file -> subdirectory/SKILL.md
-    { find: /^/, replace: (match, file) => kimiFrontmatterFor(file) },
-  ],
-  extension: (file) => `/${basename(file, '.md')}/SKILL.md`,
-};
+  source: '../core/agent-directives/specialists',
+  output: 'skills',
+
+  default: {
+    replace: [
+      { from: '@adventurer', to: 'adventurer' },
+      { from: 'task(', to: 'Agent(' },
+      { from: 'webfetch', to: 'FetchURL' },
+      // ... 10+ platform-specific substitutions
+    ],
+  },
+
+  files: {
+    'adventurer.md': {
+      output: 'adventurer/SKILL.md',
+      prepend: '**Subagent profile:** `explore` — ...\n\n',
+      frontmatter: { name: 'adventurer', type: 'prompt', ... },
+    },
+    'rules.md': {
+      output: '../rules/AGENTS.md',
+      // Custom content: kimi-code replaces the entire delegation table
+      replace: [ ... ],
+    },
+  },
+} satisfies SyncConfig;
 ```
 
-Core-sync has zero knowledge of plugins. It reads the config, applies transforms in order, and writes output. Plugins own their derivation.
+Config shape (key differences from the design phase):
+
+- **`replace` is string-based, not regex** — uses `content.split(from).join(to)` instead of regex. Simpler to write and review. Regex wasn't needed in practice.
+- **Per-file config** — each source file gets its own config block for `output`, `frontmatter`, `prepend`, `append`, `replace`, and `stripFrontmatter`. A `default` block provides shared values.
+- **`output` overrides** — can redirect output to a different path or filename (e.g. `rules.md` → `rules/AGENTS.md`, `adventurer.md` → `adventurer/SKILL.md`).
+- **YAML quoting** — uses the `yaml` library's default (quotes only when structurally necessary), not explicit double-quoting.
+- **`frontmatter` is a static object or string** — no function-based dynamic frontmatter generation. Each plugin defines frontmatter inline per file.
+
+The sync tool has zero knowledge of plugins. It reads the config, applies transforms, and writes output. Plugins own their derivation.
 
 ### 4. Root Orchestration Scripts
 
+Plugin discovery uses a bash glob over `packages/*/sync.config.ts`, running the tool once per package:
+
+```bash
+#!/usr/bin/env bash
+# scripts/sync-all
+for config in "$ROOT"/packages/*/sync.config.ts; do
+  [ -f "$config" ] || continue
+  PKG_DIR="$(dirname "$config")"
+  (cd "$PKG_DIR" && npx tsx "$ROOT/packages/core/scripts/sync.ts" --verbose)
+done
+```
+
+A companion `scripts/check-sync` runs `--check` instead of write, used in CI:
+
 ```json
-// package.json scripts
-{
-  "sync-all": "core-sync write packages/*/sync.config.js",
-  "check-sync": "core-sync check packages/*/sync.config.js"
+// vite.config.ts (check-sync runs as part of "vp check")
+tasks: {
+  'check-sync': {
+    command: 'bash scripts/check-sync',
+    cache: false,
+  },
 }
 ```
 
-### What Stays in Each Plugin
+Generated directories are excluded from `vp fmt` via `fmt.ignorePatterns`:
 
-Orchestrator files remain in each plugin. They are platform integration points — they define how the main agent talks to the platform's delegation API, how agents are registered (or not), and how state is preserved. Sharing them would introduce platform coupling that core-dir content avoids.
+```typescript
+// vite.config.ts
+fmt: {
+  ignorePatterns: [
+    'packages/*/agents/**',
+    'packages/*/prompts/**',
+    'packages/*/rules/**',
+    'packages/*/skills/**',
+  ],
+},
+```
 
 ## Consequences
 
 ### Positive
 
 - **Drift eliminated** — content is authored once in `core/agent-directives/`, derived per plugin. No manual porting.
-- **4th plugin = one config file** — adding a Cursor or Copilot variant requires only a new `sync.config.js` and zero pipeline code changes.
-- **Declarative transforms** — find/replace rules are explicit, diff-friendly, and reviewable. A PR to add a transform is self-documenting.
+- **4th plugin = one config file** — adding a Cursor or Copilot variant requires only a new `sync.config.ts` and zero pipeline code changes.
+- **Declarative transforms** — `replace` rules (string `from`/`to` pairs) are explicit, diff-friendly, and reviewable. A PR to add a transform is self-documenting.
 - **Core stays pure content** — no platform logic, no TypeScript, no frontmatter. Plugin owners own their derivation.
-- **CI guard is trivial** — `core-sync check` exits non-zero if output drifts from generated files, preventing stale agents from landing.
-- **Familiar tool pattern** — `sync.config.js` follows the same declarative pattern as `vitest.config.ts`, `vite.config.ts`, etc.
-- **Migration is additive** — existing plugin agent files remain until `sync.config.js` is ready. Rollout can be per-plugin.
+- **CI guard is trivial** — `scripts/check-sync` exits non-zero if output drifts. Runs as part of `vp check`.
+- **Type-safe config** — `satisfies SyncConfig` catches typos and missing fields without needing runtime validation.
+- **Run dependency-free** — the tool is a TypeScript script inside `@maestria/core`, not a published package. No publish cycle needed to update the pipeline.
+- **Format/sync cycle resolved** — `fmt.ignorePatterns` excludes generated directories from `vp fmt`, so formatting the canonical source does not collide with generated output.
+- **Better DX than the original design** — the CLI uses flags (`--check`, `--diff`, `--dry-run`) instead of positional subcommands, which maps directly to how the tool is used.
+- **Migration is additive** — existing plugin agent files remain until `sync.config.ts` is ready. Rollout can be per-plugin.
 
 ### Negative
 
-- **Generated artifacts** — existing plugin agent files become generated files. Developers must learn to edit `core/agent-directives/`, not the generated copies. Mitigation: `.gitattributes` markers, README in core dir, and CI check that fails on direct edits.
-- **Sync tax** — changes to core content must be followed by `core-sync write` before they appear in any plugin. Mitigation: root-level `sync-all` script and `check-sync` in CI.
-- **Migration effort** — extracting content from 3 plugins into the canonical core format requires careful diffing to preserve platform-specific patches that aren't captured by transforms.
-- **Transform coverage isn't 100%** — some differences may be structural (e.g., Kimi Code's SKILL.md per-subdirectory format vs opencode's flat files). The config's `extension` function exists for this case, but structural divergence may require per-file overrides.
-- **Plugin config lives in the plugin** — transforms are in sync.config.js, not in core. A developer changing a transform needs to find the right plugin's config. This is intentional (plugin owns its derivation) but adds a hop.
+- **Generated artifacts** — existing plugin agent files become generated files. Developers must learn to edit `core/agent-directives/`, not the generated copies. Mitigation: auto-generated comment on every file, README in core dir, and CI check that fails writes.
+- **Sync tax** — changes to core content must be followed by `scripts/sync-all` before they appear in any plugin. Mitigation: `check-sync` in CI (runs via `vp check`), and developers run `vp check` before pushing.
+- **Migration effort** — extracting content from 3 plugins into the canonical core format required careful diffing to preserve platform-specific patches that aren't captured by transforms.
+- **Reconfiguring a plugin requires finding its config** — transforms live in each plugin's `sync.config.ts`, not in core. This is intentional (plugin owns its derivation) but adds a hop. Mitigation: per-plugin configs are short and tooling (grep, glob) makes finding them fast.
 
 ## Alternatives Considered
 
 ### Option A: Markdown Source + Per-Plugin Bash Scripts
 
-Each plugin has a `sync.sh` that uses `sed`/`awk` to transform content. No shared CLI tool.
+Each plugin has a `sync.sh` that uses `sed`/`awk` to transform content. No shared tool.
 
 Rejected because: pipeline logic is duplicated N times, error handling is inconsistent, `sed` portability issues between macOS and Linux, no `--check` or `--diff` mode without reimplementing it in every script. Pi's existing shell script is the evidence — it works but is fragile and not extensible.
 
@@ -181,13 +261,94 @@ Rejected because: content owners must edit TypeScript instead of Markdown. PRs t
 
 Core content uses Handlebars/EJS-style `{{toolName}}` placeholders. Each plugin provides a context object that fills them in.
 
-Rejected because: templates with conditionals (`{{#if kimi_code}}`) handle structural differences poorly — you end up with templates that are harder to read than the raw content. The chosen hybrid approach (pure Markdown + declarative find/replace) keeps the source readable while handling 90%+ of differences through simple string transforms.
+Rejected because: templates with conditionals (`{{#if kimi_code}}`) handle structural differences poorly — you end up with templates that are harder to read than the raw content. The chosen hybrid approach (pure Markdown + declarative string replace) keeps the source readable while handling 90%+ of differences through simple transforms.
 
 ### Option D: Monorepo Symlinks
 
 Each plugin `agents/` directory contains symlinks to `core/agent-directives/`. No sync tool needed.
 
 Rejected because: symlinks don't apply transforms. The files would still need platform-specific frontmatter, renaming, and tool names. Symlinks also break on Windows and confuse editor tooling.
+
+## Post-Implementation Evolution
+
+Several details diverged from the original design during implementation. This section documents what changed and why.
+
+### Package Structure: Script, Not Package
+
+**Designed:** `packages/core-sync/` as a separate npm-publishable CLI tool (`core-sync`).
+
+**Built:** `packages/core/scripts/sync.ts` — a single TypeScript script inside the existing `@maestria/core` package, run via `npx tsx`.
+
+**Why:** The tool only ever runs inside this monorepo. Publishing it as a standalone package added a publish-consume cycle (version bumps, changesets, CI) for zero benefit. Running it via `tsx` inside `@maestria/core` keeps the pipeline co-located with the content it processes. If a future consumer outside this repo needs it, extracting it into a package is straightforward — the library modules (`lib/config.ts`, `lib/sync.ts`, etc.) already have clean interfaces.
+
+### Orchestrator Moved to Core
+
+**Designed:** Orchestrator files remain in each plugin (excluded from sync). The ADR said: "They are platform integration points — sharing them would introduce platform coupling."
+
+**Built:** `specialists/orchestrator.md` lives in `packages/core/agent-directives/` alongside the 7 specialists, synced via the same pipeline.
+
+**Why:** The orchestrator prompt turned out to be ~90% shared methodology (commit protocol, delegation patterns, role-based pipeline, human-in-the-loop rules) and only ~10% platform-specific (tool names, delegation API syntax). The shared methodology was already duplicated across 3 plugins. Moving it to core eliminated that duplication and let the sync pipeline handle the platform-specific parts (same `replace` rules as specialists). The `preserve` config option still exists for any truly plugin-local content that should never be synced.
+
+### Rules Consolidated to a Single File
+
+**Designed:** `rules/` subdirectory with `context-management.md`, `commit-policy.md`, `pipeline-patterns.md`.
+
+**Built:** A single `rules.md` file at the root of `agent-directives/`.
+
+**Why:** The rules are short (72 lines total) and rarely edited independently. Splitting them into 3 files added file-management overhead with no practical benefit. A single file is easier to read, edit, and sync. The `rules/` directory still appears in the agent-directives README as a legacy reference — it was never created.
+
+### Config Format: Static, per-File, String-Based
+
+**Designed:** Config with `transforms` arrays using regex `find`/`replace` objects and a function-based `extension` parameter.
+
+**Built:** Per-file config with static `frontmatter` objects, string-based `replace` (from/to), `prepend`, `append`, and `output` path overrides.
+
+**Why:** Several design-phase assumptions didn't hold:
+
+- **Regex wasn't needed** — all real substitutions were exact string replacements (e.g., `@adventurer` → `/adventurer`, `task(` → `Agent(`). The `split/join` approach is simpler and avoids escaping issues.
+- **Dynamic frontmatter generation wasn't needed** — each plugin's frontmatter is fully known at config-write time. No file-dependent logic required.
+- **`prepend`/`append` were cleaner than regex** — injecting content at the beginning or end of a file is better expressed as explicit fields than as edge-case regex.
+- **`output` override was simpler than `extension` functions** — redirecting a file to a different path (e.g., `rules.md` → `rules/AGENTS.md`, `adventurer.md` → `adventurer/SKILL.md`) is clearer as a per-file string than as a function that computes paths from filenames.
+
+### Auto-Generated Notice Added
+
+**Not in design.** Every generated file starts with `<!-- Auto-generated from @maestria/core. Do not edit directly. ... -->`. This was added to make the provenance of generated files unambiguous — developers landing on a generated file know immediately where to make edits.
+
+### YAML Serialization Uses Library Defaults
+
+**Designed:** `QUOTE_DOUBLE` for YAML output.
+
+**Built:** Uses the `yaml` library's default (quotes only when structurally necessary).
+
+**Why:** `QUOTE_DOUBLE` produced unnecessarily noisy YAML (e.g., `"*": ask` instead of `'*': ask`). The library's default quotes only when needed, which is more readable. The `serializeFrontmatter` function in `lib/transforms.ts` is a 4-line wrapper, so changing this back is trivial if a platform requires double-quoted YAML.
+
+### CLI Uses Flags, Not Subcommands
+
+**Designed:** `core-sync write`, `core-sync check`, `core-sync diff` as positional subcommands.
+
+**Built:** `tsx sync.ts` (write by default), `--check`, `--diff`, `--dry-run`, `--verbose` as boolean flags.
+
+**Why:** There are only 3 modes and they are mutually exclusive — they behaved like flags, not subcommands. Boolean flags are simpler to parse (Node's `parseArgs`), simpler to combine (e.g., `--check --diff` to see what CI would catch), and simpler to document. The bash scripts could also pass through flags easily for ad-hoc use.
+
+### Plugin Discovery: Bash Glob, Not Tool-Based
+
+**Designed:** `core-sync write packages/*/sync.config.js` — the tool discovers plugins by glob.
+
+**Built:** A bash script (`scripts/sync-all`) iterates over glob results, changing into each package directory and running `tsx sync.ts` there.
+
+**Why:** The tool is not a published binary — it's a `.ts` file. Running it from outside `packages/core/` means the module resolution for relative imports (e.g., `'../core/scripts/lib/config.js'`) breaks. The bash approach lets each plugin's `tsx` invocation resolve modules from its own package root. The overhead is negligible (one `cd` per plugin).
+
+### Config Files Use .ts with satisfies
+
+**Designed:** `sync.config.js` with no type information.
+
+**Built:** `sync.config.ts` with `import type { SyncConfig }` and `satisfies SyncConfig`.
+
+**Why:** TypeScript catches config errors (wrong field names, wrong types) during development rather than at runtime. Since the project is already TypeScript, `.ts` configs require no extra tooling. The `satisfies` keyword (TS 5.3+) preserves type inference on the config object literal while ensuring it conforms to `SyncConfig`. This was not available when the ADR was written (TS 5.3 shipped November 2023).
+
+### Format/Sync Cycle Resolution
+
+**Not in design.** Generated directories (`agents/`, `prompts/`, `rules/`, `skills/`) are excluded from `vp fmt` via `fmt.ignorePatterns` in `vite.config.ts`. Without this, formatting the canonical source and then running `scripts/sync-all` would produce a different result than running sync-all first — a circular dependency between fmt and sync. The ignore patterns break the cycle.
 
 ## Related Decisions
 

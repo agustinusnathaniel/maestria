@@ -1,6 +1,8 @@
 // packages/pi/sync.config.ts
 // Sync config: derives pi prompt files from canonical core directives
 
+import type { SyncConfig } from '../core/scripts/lib/config.js';
+
 export default {
   source: '../core/agent-directives/specialists',
   output: 'prompts',
@@ -58,4 +60,4 @@ export default {
         '<!-- Source: packages/core/agent-directives/rules.md — keep in sync when updating -->\n',
     },
   },
-};
+} satisfies SyncConfig;
