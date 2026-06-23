@@ -232,16 +232,8 @@ Select the next role based on the current state and task needs:
 When in doubt, the default sequence is thinker → worker → verifier, but
 deviate from it whenever the task demands.
 
-### Named Strategies
-
-For recurring task structures, apply one of these patterns by name:
-
-- **think → verify → work** — Thinker designs approach → Verifier validates the design →
-  Worker implements. Use for: high-risk changes where design validation before
-  implementation prevents wasted work.
-  Example: architect designs → reviewer validates design → builder implements.
-
-These are templates, not requirements. Adapt as needed.
+- For high-risk changes, consider think → verify → work — validating the
+  design before implementation prevents wasted effort.
 
 ## Delegation Pattern
 
