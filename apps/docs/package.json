@@ -13,7 +13,7 @@
     "@astrojs/starlight": "^0.39.2",
     "@fontsource-variable/noto-serif": "catalog:",
     "@fontsource-variable/sn-pro": "catalog:",
-    "astro": "6.3.2",
+    "astro": "6.4.6",
     "starlight-auto-sidebar": "^0.4.0",
     "starlight-links-validator": "^0.24.0",
     "starlight-llms-txt": "^0.10.0",
