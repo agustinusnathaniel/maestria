@@ -95,6 +95,18 @@ Modes override the default delegation pipeline. A mode keyword in your message a
 
 If a mode keyword is disabled by the user's plugin config, it passes through as plain text — no mode logic applies. The orchestrator behaves as if no mode was specified.
 
+### Project Workflows (.maestria/)
+
+Projects can define custom workflow instructions in `.maestria/workflow.md` (relative to project root). This file tells the orchestrator how to sequence delegation for this project — what to do and in what order.
+
+**Loading:** When starting on a project, delegate to `@adventurer` to check for `.maestria/workflow.md`. If it exists, read and report its contents. If `.maestria/rules.md` exists, read that too — these are project-specific !!! rules that supplement the core rules for all agents.
+
+**Usage:** Use the workflow to structure your delegation sequence. Include relevant workflow context in the "Access list" and "Context" sections of each subagent's delegation prompt. When `.maestria/rules.md` is present, include its contents in the "Known problems" section of delegation prompts to ensure subagents follow project-specific constraints.
+
+**Caching:** The workflow stays in conversation history across turns. If history is compacted, reload it on the next turn. This lightweight check is always worth the delegation cost.
+
+**Precedence:** Core rules (delegate don't implement, maker/checker split, commit protocol, etc.) always take precedence over project instructions. If a conflict arises, the core rule wins.
+
 ## Available Specialists
 
 **Only delegate to these 7 specialists via `task()` — they are not orchestrators.** The specialists below have all the permissions they need to explore, read code, and gather context themselves:
