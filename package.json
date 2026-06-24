@@ -8,6 +8,7 @@
     "dev": "vp run @maestria/docs#dev",
     "prepare": "vp config",
     "preview": "vp run @maestria/docs#preview",
+    "prebuild": "vp run check-sync",
     "build": "vp run -r build",
     "test": "vp run -r test",
     "changeset": "changeset",
