@@ -39,10 +39,10 @@ Delegate to `@adventurer` to read any ADR relevant to the change before implemen
 
 | Scope                                             | Location                       |
 | ------------------------------------------------- | ------------------------------ |
-| Monorepo-level (structure, conventions, sync)     | `docs/adr/core/` (6 ADRs)      |
-| OpenCode plugin (modes, permissions, commits)     | `docs/adr/opencode/` (5 ADRs)  |
-| Kimi Code plugin (distribution, architecture)     | `docs/adr/kimi-code/` (2 ADRs) |
-| Pi extension (rules injection, compaction, reuse) | `docs/adr/pi/` (3 ADRs)        |
+| Monorepo-level (structure, conventions, sync)     | `docs/adr/core/`      |
+| OpenCode plugin (modes, permissions, commits)     | `docs/adr/opencode/`  |
+| Kimi Code plugin (distribution, architecture)     | `docs/adr/kimi-code/` |
+| Pi extension (rules injection, compaction, reuse) | `docs/adr/pi/`        |
 
 If the change introduces a new architectural pattern, dependency, or structural change, create a new ADR following the existing format (Status, Date, Context, Decision, Rationale, Alternatives, Consequences).
 

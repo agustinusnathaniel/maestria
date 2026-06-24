@@ -7,7 +7,9 @@ sections.
 - `!!!` **Canonical source purity** — Edit canonical sources in
   `packages/core/agent-directives/` only. Never edit generated copies
   in `packages/opencode/agents/`, `packages/kimi-code/skills/`, or
-  `packages/pi/prompts/`. The sync pipeline exists to prevent drift;
+  `packages/pi/prompts/`. After editing, run `bash scripts/sync-all`
+  to regenerate platform copies and `bash scripts/check-sync` to
+  verify consistency. The sync pipeline exists to prevent drift;
   bypassing it creates technical debt.
 - `!!!` **Sync pipeline correctness** — Run `scripts/check-sync` after
   every agent directive change. A corrupted sync breaks agents across
@@ -18,10 +20,6 @@ sections.
 - `!!!` **Changeset for user-facing changes** — Run `pnpm changeset`
   before committing any user-facing change. Only `feat` commits warrant
   a minor bump; all others are patch.
-- `!!!` **Sync, don't edit generated files** — Never modify files in
-  `packages/opencode/agents/`, `packages/kimi-code/skills/`, or
-  `packages/pi/prompts/` directly. Edit canonical sources in
-  `packages/core/agent-directives/` and run `bash scripts/sync-all`.
 - `!!!` **Idempotent operations** — Running the same operation twice
   must produce the same result. Tasks must be safe to re-apply.
 - `!!!` **Maker/checker split** — The agent that wrote code must not
