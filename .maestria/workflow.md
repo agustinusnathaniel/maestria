@@ -37,8 +37,8 @@ Before proposing any change, delegate to `@adventurer`:
 
 Delegate to `@adventurer` to read any ADR relevant to the change before implementing:
 
-| Scope                                             | Location                       |
-| ------------------------------------------------- | ------------------------------ |
+| Scope                                             | Location              |
+| ------------------------------------------------- | --------------------- |
 | Monorepo-level (structure, conventions, sync)     | `docs/adr/core/`      |
 | OpenCode plugin (modes, permissions, commits)     | `docs/adr/opencode/`  |
 | Kimi Code plugin (distribution, architecture)     | `docs/adr/kimi-code/` |
