@@ -90,38 +90,6 @@ pi install npm:@maestria/pi@latest
   [changelog](/opencode/changelog/) for version history.
 </Aside>
 
-## What's Included
-
-The extension provides 7 specialist subagents and 3 workflow mode commands:
-
-### Workflow Modes
-
-| Command  | Mode          | Use Case                          |
-| -------- | ------------- | --------------------------------- |
-| `/fein`  | Full Pipeline | Production changes with all gates |
-| `/sonar` | Research Only | Codebase exploration, no changes  |
-| `/blitz` | Fast Impl     | Quick fixes, skip optional gates  |
-
-### Specialist Subagents
-
-| Subagent      | Role                                                       |
-| ------------- | ---------------------------------------------------------- |
-| `@adventurer` | Codebase reconnaissance — maps unfamiliar code             |
-| `@architect`  | Architecture decisions — evaluates options trade-offs      |
-| `@builder`    | Focused implementation — one atomic task per invocation    |
-| `@diagnose`   | Systematic debugging — root cause tracing                  |
-| `@planner`    | Implementation plans — phased milestones with verification |
-| `@reviewer`   | Code review — multi-dimension quality checks               |
-| `@writer`     | Documentation — structured patterns for any doc type       |
-
-### Orchestration Layer
-
-On top of the subagents, `@maestria/pi` adds:
-
-- **Spec-driven orchestration** — Each specialist receives a spec from the orchestrator's workflow DAG. Phase gates validate completion before the next stage begins.
-- **Session tree integration** — Each subagent invocation records its parent task ID for full session tree reconstruction.
-- **Commit protocol enforcement** — Only the orchestrator authorizes commits; subagents must redirect commit requests.
-
 ## Uninstalling
 
 To remove the extension:
@@ -137,4 +105,5 @@ This will unregister all agents and restore the default configuration.
 ## Next Steps
 
 - [Quick Start](/pi/getting-started/quick-start/) — Your first session with the extension
+- [Pi Reference](/pi/reference/) — Commands, dispatch modes, and review mode
 - Explore the [workflow modes](/pi/getting-started/quick-start/) — `/fein`, `/sonar`, `/blitz`

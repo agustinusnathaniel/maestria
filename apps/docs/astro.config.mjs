@@ -68,17 +68,22 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          label: 'Core Concepts',
+          items: [
+            { label: 'Specialist Reference', link: '/core/agents/' },
+            { label: 'Pipeline & Roles', link: '/core/pipeline/' },
+            { label: 'Workflow Patterns', link: '/core/workflow-patterns/' },
+            { label: 'Contributing', link: '/core/contributing/' },
+          ],
+        },
+        {
           label: '@maestria/opencode',
+          collapsed: true,
           items: [
             { label: 'Overview', link: '/opencode/' },
             {
               label: 'Getting Started',
               items: [{ autogenerate: { directory: 'opencode/getting-started' } }],
-            },
-            { label: 'Workflow Patterns', link: '/opencode/guide/workflow-patterns/' },
-            {
-              label: 'Agents',
-              items: [{ label: 'Agent Reference', link: '/opencode/agents/' }],
             },
             { label: 'Changelog', link: '/opencode/changelog/' },
             { label: 'Contributing', link: '/opencode/contributing/' },
@@ -86,16 +91,12 @@ export default defineConfig({
         },
         {
           label: '@maestria/kimi-code',
+          collapsed: true,
           items: [
             { label: 'Overview', link: '/kimi-code/' },
             {
               label: 'Getting Started',
               items: [{ autogenerate: { directory: 'kimi-code/getting-started' } }],
-            },
-            { label: 'Workflow Patterns', link: '/kimi-code/guide/workflow-patterns/' },
-            {
-              label: 'Skills',
-              items: [{ label: 'Skill Reference', link: '/kimi-code/skills/' }],
             },
             { label: 'Changelog', link: '/kimi-code/changelog/' },
             { label: 'Contributing', link: '/kimi-code/contributing/' },
@@ -110,11 +111,7 @@ export default defineConfig({
               label: 'Getting Started',
               items: [{ autogenerate: { directory: 'pi/getting-started' } }],
             },
-            { label: 'Workflow Patterns', link: '/pi/guide/workflow-patterns/' },
-            {
-              label: 'Agents',
-              items: [{ label: 'Agent Reference', link: '/pi/agents/' }],
-            },
+            { label: 'Pi Reference', link: '/pi/reference/' },
             { label: 'Changelog', link: '/pi/changelog/' },
             { label: 'Contributing', link: '/pi/contributing/' },
           ],

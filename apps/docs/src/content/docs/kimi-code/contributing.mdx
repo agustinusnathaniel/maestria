@@ -3,37 +3,13 @@ title: Contributing
 description: How to contribute to @maestria/kimi-code — project structure, editing skills, and submitting PRs.
 ---
 
-import { Steps, LinkButton, Aside } from '@astrojs/starlight/components';
+import { Steps, Aside } from '@astrojs/starlight/components';
 
 # Contributing
 
 Thank you for your interest in contributing to `@maestria/kimi-code`! This guide covers project structure, editing skills, and submitting PRs.
 
-## Development Setup
-
-<Steps>
-
-1. **Clone the monorepo**
-
-   ```bash
-   git clone https://github.com/agustinusnathaniel/maestria.git
-   cd maestria
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   vp install
-   ```
-
-3. **Verify the setup**
-
-   ```bash
-   vp check
-   vp test
-   ```
-
-</Steps>
+> For general development setup, changesets, and pull request workflow, see the [Contributing Guide](/core/contributing/).
 
 ## Project Structure
 
@@ -67,7 +43,7 @@ maestria/
 
 ### Editing a skill
 
-Each specialist is a single `SKILL.md` file in `packages/kimi-code/skills/<name>/SKILL.md`. Edit the file, then run `vp test` to verify the frontmatter and safety constraints still pass.
+Each specialist's prompt is authored in the canonical source and synced to SKILL.md format via the sync pipeline. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide.
 
 ### SKILL.md frontmatter reference
 
@@ -100,25 +76,10 @@ The `kimi.plugin.json` manifest fields:
 
 ### Adding a new skill
 
-<Steps>
-
-1. **Write the SKILL.md**
-
-   Create `packages/kimi-code/skills/<name>/SKILL.md` with the frontmatter above and a full persona body. Follow the Skill Prescription pattern (4 sections: Always load / Load on trigger / Defer to specialist / Skip if).
-
-2. **Add the skill to the orchestrator's routing table**
-
-   Edit `packages/kimi-code/skills/orchestrator/SKILL.md` to add the new specialist to the "7 Specialists" table and the "Specialist → Subagent Routing Table".
-
-3. **Add tests**
-
-   Add vitest assertions in `packages/kimi-code/tests/manifest.test.ts` (or a new test file) to validate the new skill's frontmatter and any safety constraints.
-
-4. **Run `vp test`**
-
-   Verify everything passes before submitting a PR.
-
-</Steps>
+1. **Create the canonical prompt** — See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide. No frontmatter needed — the canonical source is plain Markdown.
+2. **Add a sync config entry** — Add a new entry in `packages/kimi-code/sync.config.ts` specifying frontmatter (name, description, type, whenToUse triggers), the subagent type mapping (`coder` for write/edit access, `explore` for read-only, or `plan` for research-only), and add the new specialist to the orchestrator's `append` section routing table.
+3. **Add tests** — Add vitest assertions in `packages/kimi-code/tests/manifest.test.ts` (or a new test file) to validate the new skill's frontmatter and any safety constraints.
+4. **Run `vp test`** — Verify everything passes before submitting a PR.
 
 <Aside type="caution">
   The "7 specialists" label in the orchestrator skill is load-bearing — the table count and the
@@ -140,37 +101,6 @@ Every skill's SKILL.md follows a 4-section prescription pattern. This pattern ke
 
 When writing or editing a skill, keep all four sections in the same order. The orchestrator's Skill tool loads specialist skills on demand — the prescription sections are what the model uses to decide which additional skills to load.
 
-## Building and Testing
+## See Also
 
-```bash
-# Run manifest + safety tests
-vp test
-
-# Format, lint, and type-check
-vp check
-
-# Run the docs site locally
-vp run website#dev
-```
-
-## Creating a Changeset
-
-This project uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing:
-
-```bash
-pnpm changeset
-```
-
-Follow the prompts to describe your changes. Commit the generated changeset file alongside your code changes.
-
-## Pull Request Process
-
-1. **Fork the repository** and create a feature branch
-2. **Make your changes** following existing conventions
-3. **Verify** — run `vp check` and ensure tests pass
-4. **Create a changeset** if your changes affect the published package
-5. **Submit a PR** with a clear description of what you changed and why
-
-## Need Help?
-
-Open an issue on GitHub or reach out to the maintainers.
+- [Contributing Guide](/core/contributing/) — General setup, changesets, and PR process

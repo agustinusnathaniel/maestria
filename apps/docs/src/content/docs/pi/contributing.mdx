@@ -3,38 +3,9 @@ title: Contributing
 description: How to contribute to @maestria/pi — development setup, making changes, and submitting PRs.
 ---
 
-import { Steps, LinkButton } from '@astrojs/starlight/components';
-
 # Contributing
 
-Thank you for your interest in contributing to `@maestria/pi`! This guide covers setup, making changes, and submitting PRs.
-
-## Development Setup
-
-<Steps>
-
-1. **Clone the monorepo**
-
-   ```bash
-   git clone https://github.com/agustinusnathaniel/maestria.git
-   cd maestria
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   vp install
-   ```
-
-3. **Verify the setup**
-
-   ```bash
-   vp check              # format, lint and type-check
-   pnpm --filter @maestria/pi test   # run Pi tests
-   pnpm --filter @maestria/pi build  # build Pi package
-   ```
-
-</Steps>
+> For general development setup, changesets, and pull request workflow, see the [Contributing Guide](/core/contributing/).
 
 ## Project Structure
 
@@ -65,23 +36,21 @@ maestria/
 
 ### Adding or Modifying Prompts
 
-Prompts live in `packages/pi/prompts/`. Each file corresponds to one of the 8 agents (orchestrator plus 7 specialists). To add a new prompt, create a `.md` file in that directory. To modify an existing one, edit the corresponding file. After editing, run the prompt validation script:
-
-```bash
-pnpm --filter @maestria/pi validate-prompts
-```
+Each specialist's prompt is authored in the canonical source and synced to Pi's prompt format via the sync pipeline. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide.
 
 ### Modifying Global Rules
 
-Global rules are in `packages/pi/rules/AGENTS.md`. This file is injected into every agent session and applies across all subagents. After editing, rebuild to regenerate the compiled rules:
+Global rules follow the same canonical-source workflow as prompts. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide.
 
-```bash
-pnpm --filter @maestria/pi build
-```
+**Never edit `packages/pi/rules/AGENTS.md` directly.**
 
 ### Adding or Modifying Skills
 
-Skills live in `packages/pi/skills/`. Each skill directory contains a SKILL.md and any supporting files. To add a new skill, create a directory under `skills/` with a SKILL.md file. Validate your changes with:
+Skills fall into two categories:
+
+**Canonical skills** (the 8 specialist agents: adventurer, architect, builder, diagnose, planner, reviewer, writer, orchestrator) — these are authored at `packages/core/agent-directives/specialists/<name>.md` and synced to `packages/pi/prompts/<name>.md`. See [Adding or Modifying Prompts](#adding-or-modifying-prompts) above.
+
+**Pi-only methodology skills** (handoff, iteration-limits) — these live in `packages/pi/skills/` and have no canonical source. Each skill directory contains a SKILL.md and any supporting files. To add a new Pi-only skill, create a directory under `skills/` with a SKILL.md file. Validate your changes with:
 
 ```bash
 pnpm --filter @maestria/pi validate-skills
@@ -102,12 +71,6 @@ The extension source is in `packages/pi/src/`. The entry point is `extension.ts`
 | `subagent.ts`      | Subagent delegation logic         |
 | `commands.ts`      | Custom Pi commands                |
 | `tools.ts`         | Tool definitions and permissions  |
-
-### Running the Docs Site Locally
-
-```bash
-vp run @maestria/docs#dev
-```
 
 ## Building and Testing
 
@@ -133,25 +96,6 @@ Tests are written with Vitest and live in `packages/pi/tests/`. You can run indi
 pnpm --filter @maestria/pi test -- tests/commands.test.ts
 ```
 
-## Creating a Changeset
+## See Also
 
-This project uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing:
-
-```bash
-pnpm changeset
-```
-
-Follow the prompts to describe your changes. Commit the generated changeset file alongside your code changes.
-
-## Pull Request Process
-
-1. **Fork the repository** and create a feature branch
-2. **Make your changes** following existing conventions
-3. **Verify** — run `vp check` and ensure tests pass with `pnpm --filter @maestria/pi test`
-4. **Run validation** — `pnpm --filter @maestria/pi validate` if you changed prompts or skills
-5. **Create a changeset** if your changes affect the published package
-6. **Submit a PR** with a clear description of what you changed and why
-
-## Need Help?
-
-Open an issue on GitHub or reach out to the maintainers.
+- [Contributing Guide](/core/contributing/) — General setup, changesets, and PR process

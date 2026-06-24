@@ -1,0 +1,52 @@
+---
+title: Contributing
+description: Contributing guides for each Maestria plugin — links to platform-specific contributing docs.
+---
+
+Each Maestria plugin has its own contributing guide with project structure, source file locations, and build commands. Developer documentation is at the repository root.
+
+## Canonical Source Workflow
+
+Agent prompts, specialist personas, and global rules are authored in a single canonical source at `packages/core/agent-directives/` and synced to all plugin packages via the config-driven sync pipeline.
+
+**Never edit the generated files** in plugin-specific directories (`packages/opencode/agents/`, `packages/pi/prompts/`, `packages/kimi-code/skills/`, or any `rules/` directory) — they are overwritten on every sync.
+
+### Editing the Canonical Source
+
+To modify an agent prompt or global rule:
+
+1. Edit the corresponding file in `packages/core/agent-directives/specialists/` (e.g., `builder.md` for the Builder specialist) or `packages/core/agent-directives/rules.md` for global rules
+2. Run `scripts/sync-all` from the repo root to regenerate all plugin-specific files
+3. Verify with `scripts/check-sync` (also run as part of `vp check`)
+
+The canonical source is plain Markdown without platform-specific syntax, YAML frontmatter, or role prefixes (`@`). Platform adaptations are handled by the sync pipeline's transforms.
+
+### How the Sync Pipeline Works
+
+Each plugin has a `sync.config.ts` that defines how canonical content is adapted:
+
+| Plugin | Config | Transforms |
+|--------|--------|------------|
+| `@maestria/opencode` | `packages/opencode/sync.config.ts` | Adds YAML frontmatter with permissions per specialist |
+| `@maestria/kimi-code` | `packages/kimi-code/sync.config.ts` | Converts to SKILL.md format with 23 text replacements, persona prepends, and routing table |
+| `@maestria/pi` | `packages/pi/sync.config.ts` | 10 text replacements (`@adventurer` → `/adventurer`, `task()` → `maestria_subagent()`) |
+
+### Running the Docs Site
+
+```bash
+vp run @maestria/docs#dev
+```
+
+This starts the Astro dev server for the user-facing documentation at `apps/docs/`.
+
+## Plugin-Specific Guides
+
+- [@maestria/opencode Contributing](/opencode/contributing/)
+- [@maestria/kimi-code Contributing](/kimi-code/contributing/)
+- [@maestria/pi Contributing](/pi/contributing/)
+
+## See Also
+
+- [Specialist Reference](/core/agents/)
+- [Pipeline & Roles](/core/pipeline/)
+- [Workflow Patterns](/core/workflow-patterns/)

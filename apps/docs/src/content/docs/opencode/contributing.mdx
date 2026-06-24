@@ -3,38 +3,11 @@ title: Contributing
 description: How to contribute to @maestria/opencode — development setup, making changes, and submitting PRs.
 ---
 
-import { Steps, LinkButton } from '@astrojs/starlight/components';
-
 # Contributing
 
-Thank you for your interest in contributing to `@maestria/opencode`! This guide covers setup, making changes, and submitting PRs.
+> For general development setup, changesets, and pull request workflow, see the [Contributing Guide](/core/contributing/).
 
-## Development Setup
-
-<Steps>
-
-1. **Clone the monorepo**
-
-   ```bash
-   git clone https://github.com/agustinusnathaniel/maestria.git
-   cd maestria
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   vp install
-   ```
-
-3. **Verify the setup**
-
-   ```bash
-   vp check        # format, lint and type-check
-   pnpm test       # run all tests
-   pnpm build      # build all packages
-   ```
-
-</Steps>
+Thank you for your interest in contributing to `@maestria/opencode`! This guide covers the project structure and how to make changes specific to the plugin.
 
 ## Project Structure
 
@@ -43,9 +16,13 @@ maestria/
 ├── apps/
 │   └── docs/              # Documentation site
 └── packages/
+    ├── core/
+    │   └── agent-directives/
+    │       ├── specialists/   # Canonical agent prompts (.md files)
+    │       └── rules.md       # Canonical global rules
     └── opencode/          # @maestria/opencode plugin
-        ├── agents/        # Agent definitions (.md files)
-        ├── rules/         # Global rules (AGENTS.md)
+        ├── agents/        # Generated copies (do not edit directly)
+        ├── rules/         # Generated copies (do not edit directly)
         ├── src/           # Plugin source code
         └── tests/         # Plugin tests
 ```
@@ -54,13 +31,15 @@ maestria/
 
 ### Adding or Modifying Agents
 
-Agent definitions live in `packages/opencode/agents/`. Each file contains YAML frontmatter (description, mode, permissions) and the agent's prompt body. To add a new agent, create a `.md` file in that directory. To modify an existing one, edit the corresponding file.
+Agent prompts and global rules are authored in the canonical source. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide.
 
 ### Modifying Global Rules
 
-Global rules are in `packages/opencode/rules/AGENTS.md`. This file is injected into every agent session and applies across all agents.
+See [Adding or Modifying Agents](#adding-or-modifying-agents) above — global rules follow the same canonical-source flow.
 
 ### Agent Definition Format
+
+> The format below describes the generated output in `packages/opencode/agents/`. The canonical source in `packages/core/agent-directives/` is plain Markdown without frontmatter — the YAML frontmatter is added by the sync pipeline's transforms.
 
 Each agent is a Markdown file with YAML frontmatter in `packages/opencode/agents/`. The frontmatter fields are:
 
@@ -99,43 +78,6 @@ permission:
 
 The plugin source is `packages/opencode/src/index.ts` (~190 lines). This file handles loading agent files, parsing frontmatter, and registering agents with OpenCode.
 
-### Running the Docs Site Locally
+## See Also
 
-```bash
-vp run @maestria/docs#dev
-```
-
-## Building and Testing
-
-```bash
-# Build all packages
-pnpm build
-
-# Run tests
-pnpm test
-
-# Format, lint, and type-check
-vp check
-```
-
-## Creating a Changeset
-
-This project uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing:
-
-```bash
-pnpm changeset
-```
-
-Follow the prompts to describe your changes. Commit the generated changeset file alongside your code changes.
-
-## Pull Request Process
-
-1. **Fork the repository** and create a feature branch
-2. **Make your changes** following existing conventions
-3. **Verify** — run `vp check` and ensure tests pass
-4. **Create a changeset** if your changes affect the published package
-5. **Submit a PR** with a clear description of what you changed and why
-
-## Need Help?
-
-Open an issue on GitHub or reach out to the maintainers.
+- [Contributing Guide](/core/contributing/) — General setup, changesets, and PR process

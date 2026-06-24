@@ -1,0 +1,94 @@
+---
+title: Workflow Patterns
+description: Practical patterns for using Maestria specialists together — from simple tasks to complex multi-step workflows.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# Workflow Patterns
+
+The 7 specialists work as a team. The orchestrator manages the flow — it decomposes complex requests into phases, delegates each phase to the appropriate specialist, and verifies completion before moving on.
+
+> This page builds on the [specialist roles and pipeline model](/core/agents/) documented in the Specialist Reference. The pipeline routes work through thinker → worker → verifier roles with dynamic sequencing.
+
+## Explore a codebase
+
+Send **Adventurer** to map unfamiliar code before making changes.
+
+> Adventurer: Map the API layer — find all routes, middleware, and error handlers.
+
+The Adventurer traces call chains, maps modules, and reports back with a structured reconnaissance report. Start here whenever you edit code you haven't worked with before.
+
+## Make a design decision
+
+Delegate to **Architect** when you need to evaluate options.
+
+> Architect: Should we use REST or GraphQL for the new public API? Evaluate trade-offs.
+
+The Architect returns a trade-off analysis with a clear recommendation, often accompanied by a lightweight Architecture Decision Record.
+
+## Plan a feature
+
+Get a phased plan from **Planner** before implementing multi-step features.
+
+> Planner: Plan the implementation for a multi-tenant organization feature.
+
+The Planner breaks work into ordered milestones with verification criteria and rollback points. Plans are pure strategy — the orchestrator consumes them and dispatches each phase to the appropriate specialist.
+
+## Build something
+
+Use the orchestrator for end-to-end feature work. It chains the full pipeline.
+
+> Orchestrator: We need a WebSocket-based notification system. Explore, plan, implement, and review.
+
+The orchestrator delegates to the right specialists in sequence, following the pipeline model. Every code change goes through Builder, every review through Reviewer.
+
+## Fix a bug
+
+Start with **Diagnose** to find the root cause, then hand the fix to the orchestrator.
+
+> Diagnose: Users are getting a 503 error when uploading files over 10MB. Find the root cause.
+
+Then:
+
+> Orchestrator: Fix the upload issue that Diagnose identified.
+
+The Diagnose specialist runs a systematic tracing loop — error to source to git history to blast radius to minimal fix to prevention — and reports the root cause with a suggested fix.
+
+## Review code
+
+Let **Reviewer** check your changes before committing.
+
+> Reviewer: Review my current changes before I commit.
+
+The Reviewer runs a 7-dimension checklist: correctness, performance, security, maintainability, test coverage, error handling, and style. The Reviewer is read-only and never edits files directly.
+
+## Document something
+
+Delegate READMEs, ADRs, changelogs, and API docs to **Writer**.
+
+> Writer: Write a README for the new caching package.
+
+The Writer follows structured patterns matched to the document type — purpose, usage, details. Description in, complete document out.
+
+## Parallel exploration
+
+Fan out multiple Adventurers to understand several areas at once.
+
+> Orchestrator: I need to understand both the auth system and the payment system. Map them in parallel.
+
+The orchestrator spawns independent exploration tasks simultaneously and presents a combined report.
+
+## Pipeline reference
+
+See [Pipeline & Roles](/core/pipeline/) for the full pipeline diagram and role descriptions.
+
+<Aside type="tip">
+  Most tasks don't start with code. Start with recon (Adventurer) or design (Architect) before
+  reaching for Builder. The orchestrator handles this routing automatically.
+</Aside>
+
+## See Also
+
+- [Specialist Reference](/core/agents/)
+- [Pipeline & Roles](/core/pipeline/)
