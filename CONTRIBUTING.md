@@ -40,13 +40,13 @@ maestria/
 
 ### Package Roles
 
-| Package | Published | Role |
-| --- | --- | --- |
-| `@maestria/core` | No | Canonical agent prompts in `agent-directives/`, sync pipeline scripts |
-| `@maestria/opencode` | Yes | 7 specialist subagents + orchestrator + workflow modes for OpenCode |
-| `@maestria/kimi-code` | No | 7 specialist skills with swarm-aware orchestration for Kimi Code |
-| `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
-| `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
+| Package               | Published | Role                                                                    |
+| --------------------- | --------- | ----------------------------------------------------------------------- |
+| `@maestria/core`      | No        | Canonical agent prompts in `agent-directives/`, sync pipeline scripts   |
+| `@maestria/opencode`  | Yes       | 7 specialist subagents + orchestrator + workflow modes for OpenCode     |
+| `@maestria/kimi-code` | No        | 7 specialist skills with swarm-aware orchestration for Kimi Code        |
+| `@maestria/pi`        | Yes       | 7 specialists + 3 workflow modes as a Pi extension                      |
+| `@maestria/docs`      | No        | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
 
 ### Data Flow
 
@@ -91,25 +91,25 @@ source file
 
 ### Key Files
 
-| File | Role |
-| --- | --- |
-| `packages/core/scripts/sync.ts` | CLI entry point — `--check` for CI, `--diff` for review, `--dry-run` for preview |
-| `packages/core/scripts/lib/process-file.ts` | Single-file transform pipeline (the canonical transform) |
-| `packages/core/scripts/lib/transforms.ts` | Individual transform functions (stripFrontmatter, findAndReplace, serializeFrontmatter, etc.) |
-| `packages/core/scripts/lib/config.ts` | Config types: `SyncConfig`, `FileConfig`, `ReplaceOp`, `ResolvedFileConfig` |
-| `packages/core/scripts/lib/sync.ts` | Core orchestration — walks source dirs, dispatches to processFile, auto-cleans stale outputs |
-| `packages/core/scripts/lib/file.ts` | File I/O: atomic write (tmp + rename), directory walker, auto-clean |
-| `packages/core/scripts/lib/diff.ts` | Unified diff generation for `--diff` mode |
+| File                                        | Role                                                                                          |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `packages/core/scripts/sync.ts`             | CLI entry point — `--check` for CI, `--diff` for review, `--dry-run` for preview              |
+| `packages/core/scripts/lib/process-file.ts` | Single-file transform pipeline (the canonical transform)                                      |
+| `packages/core/scripts/lib/transforms.ts`   | Individual transform functions (stripFrontmatter, findAndReplace, serializeFrontmatter, etc.) |
+| `packages/core/scripts/lib/config.ts`       | Config types: `SyncConfig`, `FileConfig`, `ReplaceOp`, `ResolvedFileConfig`                   |
+| `packages/core/scripts/lib/sync.ts`         | Core orchestration — walks source dirs, dispatches to processFile, auto-cleans stale outputs  |
+| `packages/core/scripts/lib/file.ts`         | File I/O: atomic write (tmp + rename), directory walker, auto-clean                           |
+| `packages/core/scripts/lib/diff.ts`         | Unified diff generation for `--diff` mode                                                     |
 
 ### Sync Configs (per-plugin)
 
 Each plugin defines its transforms in `sync.config.ts`:
 
-| Plugin | Key transforms | Output format |
-| --- | --- | --- |
-| **opencode** | Adds YAML frontmatter with `mode`, `permission` blocks | `agents/<name>.md` — agent files with tool permissions |
-| **kimi-code** | 18 string replacements (`task(` → `Agent(`, `webfetch` → `FetchURL`, etc.) + prepend subagent profile + append routing/swarm docs | `skills/<name>/SKILL.md` — Kimi Code skills |
-| **pi** | 9 replacements (`task(` → `maestria_subagent(`, `@` → `/`) | `prompts/<name>.md` — prompt files |
+| Plugin        | Key transforms                                                                                                                    | Output format                                          |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **opencode**  | Adds YAML frontmatter with `mode`, `permission` blocks                                                                            | `agents/<name>.md` — agent files with tool permissions |
+| **kimi-code** | 18 string replacements (`task(` → `Agent(`, `webfetch` → `FetchURL`, etc.) + prepend subagent profile + append routing/swarm docs | `skills/<name>/SKILL.md` — Kimi Code skills            |
+| **pi**        | 9 replacements (`task(` → `maestria_subagent(`, `@` → `/`)                                                                        | `prompts/<name>.md` — prompt files                     |
 
 ### Commands
 
@@ -174,38 +174,38 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 
 ### opencode
 
-| Concern | Details |
-| --- | --- |
-| Entry point | `packages/opencode/src/index.ts` (~190 lines) |
-| Hooks | `config`, `chat.message`, `experimental.session.compacting` |
-| Test | `pnpm --filter @maestria/opencode test` |
-| Build | `vp pack` (Rolldown) — outputs to `dist/` |
-| Agents | Auto-generated in `agents/` from sync pipeline |
-| Dependencies | `@opencode-ai/plugin` (peer), `yaml`, `zod`, `es-toolkit` |
+| Concern      | Details                                                     |
+| ------------ | ----------------------------------------------------------- |
+| Entry point  | `packages/opencode/src/index.ts` (~190 lines)               |
+| Hooks        | `config`, `chat.message`, `experimental.session.compacting` |
+| Test         | `pnpm --filter @maestria/opencode test`                     |
+| Build        | `vp pack` (Rolldown) — outputs to `dist/`                   |
+| Agents       | Auto-generated in `agents/` from sync pipeline              |
+| Dependencies | `@opencode-ai/plugin` (peer), `yaml`, `zod`, `es-toolkit`   |
 
 ### kimi-code
 
-| Concern | Details |
-| --- | --- |
-| Format | Declarative — no build step (no `dist/` output) |
-| Skills | Auto-generated in `skills/<name>/SKILL.md` from sync pipeline |
-| Manifest | `kimi.plugin.json` — plugin definition file |
-| Test | `vp test` |
-| Release | Push `@maestria/kimi-code@v<version>` tag → CI runs subtree split |
-| Subagent types | `explore` (read-only), `coder` (write/edit), `plan` (read+bash) |
+| Concern        | Details                                                           |
+| -------------- | ----------------------------------------------------------------- |
+| Format         | Declarative — no build step (no `dist/` output)                   |
+| Skills         | Auto-generated in `skills/<name>/SKILL.md` from sync pipeline     |
+| Manifest       | `kimi.plugin.json` — plugin definition file                       |
+| Test           | `vp test`                                                         |
+| Release        | Push `@maestria/kimi-code@v<version>` tag → CI runs subtree split |
+| Subagent types | `explore` (read-only), `coder` (write/edit), `plan` (read+bash)   |
 
 ### pi
 
-| Concern | Details |
-| --- | --- |
-| Entry point | `packages/pi/src/extension.ts` |
+| Concern        | Details                                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Entry point    | `packages/pi/src/extension.ts`                                                                                    |
 | Source modules | `modes.ts`, `rules.ts`, `compaction.ts`, `subagent.ts`, `commands.ts`, `tools.ts`, `state.ts`, `rules-content.ts` |
-| Test | `pnpm --filter @maestria/pi test` |
-| Build | `vp pack` (Rolldown) — outputs to `dist/` |
-| Validate | `pnpm --filter @maestria/pi validate` |
-| Prebuild | `node --experimental-strip-types scripts/build-rules.ts` |
-| Peer deps | `@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `typebox` |
-| Key transforms | `task(` → `maestria_subagent(`, `@` → `/` |
+| Test           | `pnpm --filter @maestria/pi test`                                                                                 |
+| Build          | `vp pack` (Rolldown) — outputs to `dist/`                                                                         |
+| Validate       | `pnpm --filter @maestria/pi validate`                                                                             |
+| Prebuild       | `node --experimental-strip-types scripts/build-rules.ts`                                                          |
+| Peer deps      | `@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `typebox`                                             |
+| Key transforms | `task(` → `maestria_subagent(`, `@` → `/`                                                                         |
 
 ---
 
@@ -255,16 +255,16 @@ Create a changeset whenever you make a user-facing change to a published package
 
 ## 10. Documentation
 
-| Area | Location | How to run |
-| --- | --- | --- |
-| User-facing docs | `apps/docs/` (Astro + Starlight) | `vp run @maestria/docs#dev` |
-| Architecture decisions | `docs/adr/{core,opencode,kimi-code,pi}/` | Read as markdown |
-| Testing guide | `docs/testing.md` | Read as markdown |
-| Completion checklist | `docs/checklist.md` | Read as markdown |
-| Root project docs | `AGENTS.md`, `PATTERNS.md`, `VISION.md`, `README.md` | Read as markdown |
+| Area                   | Location                                             | How to run                  |
+| ---------------------- | ---------------------------------------------------- | --------------------------- |
+| User-facing docs       | `apps/docs/` (Astro + Starlight)                     | `vp run @maestria/docs#dev` |
+| Architecture decisions | `docs/adr/{core,opencode,kimi-code,pi}/`             | Read as markdown            |
+| Testing guide          | `docs/testing.md`                                    | Read as markdown            |
+| Completion checklist   | `docs/checklist.md`                                  | Read as markdown            |
+| Root project docs      | `AGENTS.md`, `PATTERNS.md`, `VISION.md`, `README.md` | Read as markdown            |
 
 The docs site auto-generates sidebar navigation via `starlight-auto-sidebar`. After adding a new page, verify it appears in the sidebar during local dev.
 
 ---
 
-*Before committing agent directive changes, always run `scripts/check-sync` to verify synced plugins are up-to-date.*
+_Before committing agent directive changes, always run `scripts/check-sync` to verify synced plugins are up-to-date._

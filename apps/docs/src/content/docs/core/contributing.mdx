@@ -25,11 +25,11 @@ The canonical source is plain Markdown without platform-specific syntax, YAML fr
 
 Each plugin has a `sync.config.ts` that defines how canonical content is adapted:
 
-| Plugin | Config | Transforms |
-|--------|--------|------------|
-| `@maestria/opencode` | `packages/opencode/sync.config.ts` | Adds YAML frontmatter with permissions per specialist |
+| Plugin                | Config                              | Transforms                                                                                 |
+| --------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| `@maestria/opencode`  | `packages/opencode/sync.config.ts`  | Adds YAML frontmatter with permissions per specialist                                      |
 | `@maestria/kimi-code` | `packages/kimi-code/sync.config.ts` | Converts to SKILL.md format with 23 text replacements, persona prepends, and routing table |
-| `@maestria/pi` | `packages/pi/sync.config.ts` | 10 text replacements (`@adventurer` → `/adventurer`, `task()` → `maestria_subagent()`) |
+| `@maestria/pi`        | `packages/pi/sync.config.ts`        | 10 text replacements (`@adventurer` → `/adventurer`, `task()` → `maestria_subagent()`)     |
 
 ### Running the Docs Site
 
