@@ -1,6 +1,7 @@
 ---
 '@maestria/opencode': minor
 '@maestria/pi': minor
+'@maestria/kimi-code': minor
 ---
 
 Add `.maestria/` project workflow protocol to agent directives
