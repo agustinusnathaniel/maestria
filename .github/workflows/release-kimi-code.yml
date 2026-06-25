@@ -40,7 +40,7 @@ jobs:
           # The split starts from the tag's commit, producing a branch
           # whose history is just the commits that touched the prefix,
           # with paths rewritten to be at the root.
-          git subtree split --prefix=packages/kimi-code "$GITHUB_SHA" -B split-tmp
+          git subtree split --prefix=packages/kimi-code "$GITHUB_SHA" -b split-tmp
 
           # Create-or-reset the release branch to the split commit
           # `git checkout -B <branch> <start>` always creates or resets
