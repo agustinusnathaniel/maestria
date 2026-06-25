@@ -3,7 +3,7 @@ title: Installation & Setup
 description: How to install @maestria/opencode and what you get — 8 specialized agents and global workflow rules for OpenCode.
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components';
 
 `@maestria/opencode` is an npm plugin for [OpenCode](https://opencode.ai) that turns your AI coding environment into a disciplined engineering workstation. It bundles 8 specialized agents and global workflow rules — all installed with a single line of configuration. No manual setup, no prompt engineering, no forgotten context between sessions.
 
@@ -16,8 +16,16 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 
 Install the plugin with a single command:
 
+**Global install** (available in all projects):
+
 ```bash
 opencode plugin @maestria/opencode@latest -g
+```
+
+**Project-level install** (current project only):
+
+```bash
+opencode plugin @maestria/opencode@latest
 ```
 
 Or, add it manually to your OpenCode config:
@@ -26,19 +34,16 @@ Or, add it manually to your OpenCode config:
 
 1. **Open your OpenCode config**
 
-   ```bash
-   ~/.config/opencode/opencode.jsonc
-   ```
+   - **Global:** `~/.config/opencode/opencode.jsonc`
+   - **Project-level:** `.opencode/opencode.jsonc`
 
-2. **Add the plugin**
+2. **Add the plugin to the `plugin` array**
 
    ```jsonc
    {
      "plugin": ["@maestria/opencode@latest"],
    }
    ```
-
-   That is the entire configuration. Zero setup, zero wiring.
 
 3. **Restart OpenCode**
 
@@ -54,11 +59,40 @@ The global workflow rules are active in every prompt. You will see them reflecte
 
 ## Updating
 
-OpenCode auto-updates plugins on restart. To trigger an update manually:
+OpenCode does not auto-update plugins. Packages are cached locally in
+`~/.cache/opencode/packages/<name>@<version>/` — the npm registry is not consulted if the
+package is already cached. To update, re-run the install command with the same scope as
+the original install:
 
 ```bash
-opencode plugins update
+# If installed globally
+opencode plugin @maestria/opencode@latest -g --force
+
+# If installed at project level
+opencode plugin @maestria/opencode@latest --force
 ```
+
+Use `--force` to replace an existing config entry. To force a fresh install from
+npm (bypassing the local cache), clear the cache first:
+
+<Tabs syncKey="os">
+  <TabItem label="macOS / Linux">
+    <Code code="rm -rf ~/.cache/opencode/packages/@maestria/opencode*" lang="bash" />
+  </TabItem>
+  <TabItem label="Windows (PowerShell)">
+    <Code
+      code='Remove-Item -Recurse -Force "$env:USERPROFILE\.cache\opencode\packages\@maestria\opencode*"'
+      lang="powershell"
+    />
+  </TabItem>
+  <TabItem label="Windows (CMD)">
+    <Code code='rmdir /s /q "%USERPROFILE%\.cache\opencode\packages\@maestria"' lang="cmd" />
+  </TabItem>
+</Tabs>
+
+Then re-run the install command (with or without `-g` as appropriate).
+
+Run `opencode debug paths` to see the cache directory resolved for your platform.
 
 <Aside type="tip">
   To pin a specific version, use `"@maestria/opencode@0.3.3"` instead of
@@ -91,13 +125,39 @@ To disable a mode, set `modes.disabledKeywords` in your plugin configuration:
 
 ## Uninstalling
 
-To remove the extension:
+There is no CLI command to remove a plugin. To uninstall, edit your OpenCode
+config file and remove the entry from the `plugin` array:
 
-1. Open your `~/.config/opencode/opencode.jsonc` config file
-2. Remove `"@maestria/opencode@latest"` from the `"plugin"` array
-3. Restart OpenCode
+<Steps>
 
-This will unregister all agents and restore the default configuration.
+1. **Open your OpenCode config file**
+
+   - **Global:** `~/.config/opencode/opencode.jsonc`
+   - **Project-level:** `.opencode/opencode.jsonc`
+
+2. **Remove the plugin from the `plugin` array**
+
+   ```jsonc
+   {
+     "plugin": [
+       // Remove or comment out the line below:
+       // "@maestria/opencode@latest",
+     ],
+   }
+   ```
+
+3. **Restart OpenCode**
+
+   The `@maestria/opencode` agents and rules will no longer be available.
+   Other OpenCode plugins you have installed remain unaffected.
+
+</Steps>
+
+You can also optionally delete the cached package:
+
+```bash
+rm -rf ~/.cache/opencode/packages/@maestria/opencode*
+```
 
 ## Next Steps
 
