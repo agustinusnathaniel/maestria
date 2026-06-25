@@ -130,7 +130,7 @@ export async function restoreOriginalState(
     pi.setActiveTools(originalTools);
   }
 
-  // Restore original model — best-effort, failures are non-fatal
+  // Restore original model - best-effort, failures are non-fatal
   if (originalModel) {
     try {
       const models = ctx.modelRegistry.getAll();

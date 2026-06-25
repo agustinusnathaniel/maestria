@@ -39,26 +39,26 @@ export default {
     'adventurer.md': {
       output: 'adventurer/SKILL.md',
       prepend:
-        '**Subagent profile:** `explore` — you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `explore` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'adventurer',
         description: `Codebase reconnaissance agent for deep code understanding.
-Maps unknown territory — traces call chains, maps module relationships,
+Maps unknown territory - traces call chains, maps module relationships,
 generates structured reports for downstream specialists.
 Use for: understanding unfamiliar code, tracing dependencies, gathering
 context before implementation, investigating module structures.
-One role per session: exploration only — never implement or design.`,
+One role per session: exploration only - never implement or design.`,
         type: 'prompt',
         whenToUse: `Understanding unfamiliar code, tracing dependencies, mapping a module
 before editing it. Use before any implementation in unknown territory.
-Read-only — never implement, design, or edit.`,
+Read-only - never implement, design, or edit.`,
         arguments: [],
       },
     },
     'architect.md': {
       output: 'architect/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them sparingly.\n\n',
+        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them sparingly.\n\n',
       frontmatter: {
         name: 'architect',
         description: `Architecture decisions using decision matrices and ADRs.
@@ -74,7 +74,7 @@ one approach is viable and the choice has downstream impact.`,
     'builder.md': {
       output: 'builder/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to implement the task.\n\n',
+        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to implement the task.\n\n',
       frontmatter: {
         name: 'builder',
         description: `Focused implementation agent for atomic tasks.
@@ -90,7 +90,7 @@ work is a concrete atomic unit.`,
     'diagnose.md': {
       output: 'diagnose/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to investigate.\n\n',
+        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to investigate.\n\n',
       frontmatter: {
         name: 'diagnose',
         description: `Systematic 6-step regression tracing.
@@ -106,7 +106,7 @@ not.`,
     'planner.md': {
       output: 'planner/SKILL.md',
       prepend:
-        '**Subagent profile:** `plan` — you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'planner',
         description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
@@ -121,7 +121,7 @@ any complex feature that needs review before building.`,
     'reviewer.md': {
       output: 'reviewer/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `coder` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'reviewer',
         description: `Code review with quality gates.
@@ -137,7 +137,7 @@ before-commit QA. Use after \`builder\` lands a code change.`,
     'writer.md': {
       output: 'writer/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` — you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to produce docs.\n\n',
+        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to produce docs.\n\n',
       frontmatter: {
         name: 'writer',
         description: `Documentation writing following structured patterns.
@@ -152,7 +152,7 @@ Use for: README files, API docs, architecture docs, changelogs, decision records
     'orchestrator.md': {
       output: 'orchestrator/SKILL.md',
       prepend:
-        '**Subagent profile:** `plan` — you have Read, Glob, Grep, Bash, FetchURL, and WebSearch. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, FetchURL, and WebSearch. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'orchestrator',
         description: 'Methodology + delegation + swarm usage for the maestria workflow',
@@ -210,9 +210,9 @@ You may launch \`Agent(persona: "explore", task: "research this")\` as a backgro
 
 ## How to Invoke a Specialist Persona
 
-1. \`Skill(skill="adventurer")\` — Load the specialist persona (defines constraints, rules, and subagent profile for that role)
-2. \`Agent(persona: "...", data: {...}, prompt: "...")\` — Delegate a unit of work to the persona
-3. \`AgentSwarm(persona: "...", data: [...], prompt: "...")\` — Delegate N uniform items to parallel persona instances
+1. \`Skill(skill="adventurer")\` - Load the specialist persona (defines constraints, rules, and subagent profile for that role)
+2. \`Agent(persona: "...", data: {...}, prompt: "...")\` - Delegate a unit of work to the persona
+3. \`AgentSwarm(persona: "...", data: [...], prompt: "...")\` - Delegate N uniform items to parallel persona instances
 
 ### Why the two-step pattern?
 
@@ -251,19 +251,19 @@ for (const r of results) {
 
 ## Anti-Patterns (additional)
 
-7. **Swarm mixed personas** — Each AgentSwarm must use a single persona. Different work = different swarms.
-8. **Tool-call bundling with AgentSwarm** — Swarm agents are autonomous; don't micromanage their tool calls.
-9. **Fixed-pipeline thinking** — Not every task needs all 7 specialists. Skip what you don't need.
+7. **Swarm mixed personas** - Each AgentSwarm must use a single persona. Different work = different swarms.
+8. **Tool-call bundling with AgentSwarm** - Swarm agents are autonomous; don't micromanage their tool calls.
+9. **Fixed-pipeline thinking** - Not every task needs all 7 specialists. Skip what you don't need.
 
 ## Related Skills
 
-- \`adventurer\` — Codebase reconnaissance
-- \`architect\` — Architecture decisions + ADRs
-- \`builder\` — Focused implementation
-- \`diagnose\` — 6-step bug tracing
-- \`planner\` — Multi-phase plans
-- \`reviewer\` — Code review with quality gates
-- \`writer\` — Documentation
+- \`adventurer\` - Codebase reconnaissance
+- \`architect\` - Architecture decisions + ADRs
+- \`builder\` - Focused implementation
+- \`diagnose\` - 6-step bug tracing
+- \`planner\` - Multi-phase plans
+- \`reviewer\` - Code review with quality gates
+- \`writer\` - Documentation
 
 ## Skill Prescription
 
@@ -306,7 +306,7 @@ This should appear at the end of your response when the user asks for a handoff,
       prepend:
         '<!-- Auto-generated from @maestria/core. See the canonical file at packages/core/agent-directives/rules.md. -->\n\n',
       replace: [
-        { from: '# Global Agent Rules', to: '# Global Agent Rules \u2014 @maestria/kimi-code' },
+        { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/kimi-code' },
         { from: '`read`', to: '`Read`' },
         { from: '`glob`', to: '`Glob`' },
         { from: '`grep`', to: '`Grep`' },
@@ -321,7 +321,7 @@ This should appear at the end of your response when the user asks for a handoff,
           from: `## Delegation
 
 When delegating work via \`Agent()\`, use only the 7 specialists below.
-**Never delegate to \`explore\` or \`general\`** — they are built-in agents,
+**Never delegate to \`explore\` or \`general\`** - they are built-in agents,
 not part of the pipeline.
 
 | Agent         | Role                                             | When to Delegate                                                                             |

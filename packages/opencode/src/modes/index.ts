@@ -20,7 +20,7 @@ const MODE_PRIORITY: Record<ModeKeyword, number> = {
  * Used to exclude keyword matches inside code spans.
  */
 // Note: Unclosed fenced code blocks (``` without closing ```) are not
-// excluded — the regex requires matching fences. This is an accepted
+// excluded - the regex requires matching fences. This is an accepted
 // false-positive risk (see ADR-OC-003 consequences).
 const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/g;
 

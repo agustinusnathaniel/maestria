@@ -11,11 +11,11 @@ export default {
     'adventurer.md': {
       frontmatter: {
         description: `Codebase reconnaissance agent for deep code understanding.
-Maps unknown territory — traces call chains, maps module relationships,
+Maps unknown territory - traces call chains, maps module relationships,
 generates structured reports for downstream specialists.
 Use for: understanding unfamiliar code, tracing dependencies, gathering
 context before implementation, investigating module structures.
-One role per session: exploration only — never implement or design.`,
+One role per session: exploration only - never implement or design.`,
         mode: 'subagent',
         permission: {
           read: 'allow',
@@ -231,7 +231,7 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
     },
     'rules.md': {
       output: '../rules/AGENTS.md',
-      // No transforms needed — opencode IS the canonical format
+      // No transforms needed - opencode IS the canonical format
     },
   },
 } satisfies SyncConfig;

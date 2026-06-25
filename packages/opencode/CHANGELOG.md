@@ -6,27 +6,20 @@
 
 - [#36](https://github.com/agustinusnathaniel/maestria/pull/36) [`d1bc253`](https://github.com/agustinusnathaniel/maestria/commit/d1bc253b9c4004ccf4ef09cfa9c8b1a7f99b39e7) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add `.maestria/` project workflow protocol to agent directives
 
-  Projects using maestria's agent directives can now define
-  `.maestria/workflow.md` for custom delegation sequencing and
-  `.maestria/rules.md` for project-specific non-negotiable rules.
-  The orchestrator loads these files via `@adventurer` delegation
-  and propagates project rules to all subagents via delegation
-  prompts.
+  Projects using maestria's agent directives can now define `.maestria/workflow.md` for custom delegation sequencing and `.maestria/rules.md` for project-specific non-negotiable rules. The orchestrator loads these files via `@adventurer` delegation and propagates project rules to all subagents via delegation prompts.
 
   See ADR-CORE-006 for the design decision.
 
 - [`665bf4b`](https://github.com/agustinusnathaniel/maestria/commit/665bf4b0aed6162ed93579a1f1c55e80fae887ec) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add effort anthropomorphism guard and writing style guidance to agent directives
-
-  - **Critical Rule [#11](https://github.com/agustinusnathaniel/maestria/issues/11) (orchestrator):** "Don't anthropomorphize effort" — prevents the dispatcher from avoiding the correct specialist because an analysis "feels like too much work"
+  - **Critical Rule [#11](https://github.com/agustinusnathaniel/maestria/issues/11) (orchestrator):** "Don't anthropomorphize effort" - prevents the dispatcher from avoiding the correct specialist because an analysis "feels like too much work"
   - **Output Style section (orchestrator):** Guides the dispatcher to write for humans, avoiding AI-typical patterns like em dash overuse and promotional phrasing
-  - **Global agent rules (rules.md):** Cross-agent versions of both — "Don't anthropomorphize effort" and "Write for humans" — so architect, planner, builder, and all other specialists also receive the guidance
+  - **Global agent rules (rules.md):** Cross-agent versions of both - "Don't anthropomorphize effort" and "Write for humans" - so architect, planner, builder, and all other specialists also receive the guidance
 
 ## 0.4.9
 
 ### Patch Changes
 
 - [#33](https://github.com/agustinusnathaniel/maestria/pull/33) [`c2075b6`](https://github.com/agustinusnathaniel/maestria/commit/c2075b69b3c44ec8a95ba3711ce4bc4d76e6d163) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Introduce @maestria/core as canonical source for agent directives with config-driven sync tool
-
   - Add packages/core/agent-directives/ with canonical specialist, orchestrator, and rules files
   - Add packages/core/scripts/sync.ts transform pipeline (replace, prepend, append, frontmatter)
   - Add per-plugin sync.config.ts for opencode, pi, and kimi-code
@@ -38,9 +31,7 @@
 
 ### Patch Changes
 
-- [`c035ef2`](https://github.com/agustinusnathaniel/maestria/commit/c035ef2769586f253bb0d668fd07fcab38c567b6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Move @opencode-ai/plugin to peerDependencies + devDependencies (community convention)
-  Add graceful error handling in loadAgents() with per-file try/catch
-  Add opencode metadata block to package.json for plugin discovery
+- [`c035ef2`](https://github.com/agustinusnathaniel/maestria/commit/c035ef2769586f253bb0d668fd07fcab38c567b6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Move @opencode-ai/plugin to peerDependencies + devDependencies (community convention) Add graceful error handling in loadAgents() with per-file try/catch Add opencode metadata block to package.json for plugin discovery
 
 ## 0.4.7
 
@@ -50,8 +41,7 @@
 
 - [`b5edf75`](https://github.com/agustinusnathaniel/maestria/commit/b5edf75080248d649dff847ff832cb3298a9dfda) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove Vite+-specific CLI references from plugin agents and rules
 
-  Replace hard-coded `vp check` / `vp test` references with generic
-  validation language so the plugin is toolchain-agnostic.
+  Replace hard-coded `vp check` / `vp test` references with generic validation language so the plugin is toolchain-agnostic.
 
 ## 0.4.6
 
@@ -60,7 +50,6 @@
 - [`ecfa74a`](https://github.com/agustinusnathaniel/maestria/commit/ecfa74a34acadb66871c66de9e6b05fd0695d769) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: preserve line breaks when stripping mode keywords from messages
 
 - [`9b91ca9`](https://github.com/agustinusnathaniel/maestria/commit/9b91ca9aa3b75566edca317b2535794092f5fcf8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Strengthen commit authorization rules in orchestrator directive
-
   - Add explicit COMMIT PROTOCOL section to the orchestrator prompt
   - Harden CRITICAL RULE [#3](https://github.com/agustinusnathaniel/maestria/issues/3) with ZERO authorization after each commit
   - Add Commit Policy section to global rules for all subagents
@@ -107,19 +96,16 @@
 
 - [`0990997`](https://github.com/agustinusnathaniel/maestria/commit/099099761174ad6f277405d21005a09abc3cf2a8) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix ESM compatibility: add .js extensions to relative imports
 
-  Relative imports in the plugin source were missing `.js` extensions,
-  causing ERR_MODULE_NOT_FOUND in Node ESM environments. Added `.js`
-  extensions to all 5 internal imports and a build-time verification
-  script to catch future regressions.
+  Relative imports in the plugin source were missing `.js` extensions, causing ERR_MODULE_NOT_FOUND in Node ESM environments. Added `.js` extensions to all 5 internal imports and a build-time verification script to catch future regressions.
 
 ## 0.4.0
 
 ### Minor Changes
 
 - [#20](https://github.com/agustinusnathaniel/maestria/pull/20) [`c3a5015`](https://github.com/agustinusnathaniel/maestria/commit/c3a501572835ae880eb56202b115c9771f999910) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Introduce three keyword-triggered workflow modes that override the orchestrator's default delegation pipeline:
-  - `fein` — full pipeline (mandatory recon → design → build → review)
-  - `sonar` — research only (recon + design, stop before implementation)
-  - `blitz` — fast implementation (builder direct, skip gates)
+  - `fein` - full pipeline (mandatory recon → design → build → review)
+  - `sonar` - research only (recon + design, stop before implementation)
+  - `blitz` - fast implementation (builder direct, skip gates)
 
   Detection is word-boundary regex at any position, code-block-aware, case-insensitive. Most restrictive mode wins (fein > sonar > blitz). Config via `modes.disabledKeywords` denylist.
 
@@ -129,30 +115,23 @@
 
 ### Patch Changes
 
-- [`4500749`](https://github.com/agustinusnathaniel/maestria/commit/4500749126e1c4b37fba83bdb8daf8dc319b654a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove read-only bash permissions (git status/diff/log/show/branch, ls, which, pwd) from orchestrator — it is now a pure dispatcher. Any codebase inspection must go through @adventurer or @builder.
+- [`4500749`](https://github.com/agustinusnathaniel/maestria/commit/4500749126e1c4b37fba83bdb8daf8dc319b654a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove read-only bash permissions (git status/diff/log/show/branch, ls, which, pwd) from orchestrator - it is now a pure dispatcher. Any codebase inspection must go through @adventurer or @builder.
 
 ## 0.3.10
 
 ### Patch Changes
 
-- [`a12fc6d`](https://github.com/agustinusnathaniel/maestria/commit/a12fc6d719cefc7572f4afe85c664ee0ebc4031d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Revert orchestrator to pure dispatcher — after real-world testing, read/glob/grep
-  permissions on the orchestrator caused workaround behavior (preferring direct
-  recon over delegation to specialist agents). The experiment confirmed that
-  structural permission denial is the only reliable enforcement for an LLM-based
-  orchestrator. The orchestrator remains limited to task() delegation and
-  question() — no read, glob, grep, webfetch, edit, or lsp.
+- [`a12fc6d`](https://github.com/agustinusnathaniel/maestria/commit/a12fc6d719cefc7572f4afe85c664ee0ebc4031d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Revert orchestrator to pure dispatcher - after real-world testing, read/glob/grep permissions on the orchestrator caused workaround behavior (preferring direct recon over delegation to specialist agents). The experiment confirmed that structural permission denial is the only reliable enforcement for an LLM-based orchestrator. The orchestrator remains limited to task() delegation and question() - no read, glob, grep, webfetch, edit, or lsp.
 
-  Streamline orchestrator prompt — remove directives that redundantly restate
-  permission blocks (tool restrictions, bash allow-lists, task routing limits)
-  which are already structurally enforced through YAML frontmatter.
+  Streamline orchestrator prompt - remove directives that redundantly restate permission blocks (tool restrictions, bash allow-lists, task routing limits) which are already structurally enforced through YAML frontmatter.
 
 ## 0.3.9
 
 ### Patch Changes
 
-- [`21d866f`](https://github.com/agustinusnathaniel/maestria/commit/21d866ff9a2b41e68e4de17152c5a6727d6b0e22) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add websearch:ask for architect, adventurer, and diagnose agents — these discovery-oriented agents can now search the web (with user prompt via `ask` permission) to find relevant documentation and resources.
+- [`21d866f`](https://github.com/agustinusnathaniel/maestria/commit/21d866ff9a2b41e68e4de17152c5a6727d6b0e22) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add websearch:ask for architect, adventurer, and diagnose agents - these discovery-oriented agents can now search the web (with user prompt via `ask` permission) to find relevant documentation and resources.
 
-  Grant read/glob/grep to orchestrator — the orchestrator now has read-only reconnaissance tools for quick verification before delegation, with structural safeguards (edit/webfetch/lsp remain denied, 3-call limit).
+  Grant read/glob/grep to orchestrator - the orchestrator now has read-only reconnaissance tools for quick verification before delegation, with structural safeguards (edit/webfetch/lsp remain denied, 3-call limit).
 
 ## 0.3.8
 
@@ -171,22 +150,13 @@
 
 - [`86c9589`](https://github.com/agustinusnathaniel/maestria/commit/86c958922d3d52308f106bb3d9785e3cab202092) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: replace hand-rolled YAML parser with spec-compliant library
 
-  The custom YAML frontmatter parser (~120 lines) didn't handle quoting,
-  nesting, or multiline values correctly. Permission patterns like
-  `"git status*": allow` and `"*": deny` were silently broken because the
-  parser treated quotes as literal characters instead of YAML syntax.
+  The custom YAML frontmatter parser (~120 lines) didn't handle quoting, nesting, or multiline values correctly. Permission patterns like `"git status*": allow` and `"*": deny` were silently broken because the parser treated quotes as literal characters instead of YAML syntax.
 
-  This is now replaced with the `yaml` library (eemeli/yaml) — a proper
-  spec-compliant parser that handles quoting, multiline values, and
-  nested structures natively. The `stripYamlQuotes` workaround, added to
-  patch the old parser, has been removed as it's no longer needed.
+  This is now replaced with the `yaml` library (eemeli/yaml) - a proper spec-compliant parser that handles quoting, multiline values, and nested structures natively. The `stripYamlQuotes` workaround, added to patch the old parser, has been removed as it's no longer needed.
 
-  All 8 agent descriptions have also been converted to YAML folded block
-  scalars (`>`) for cleaner multiline text that reads well both in source
-  and when parsed.
+  All 8 agent descriptions have also been converted to YAML folded block scalars (`>`) for cleaner multiline text that reads well both in source and when parsed.
 
-  Every agent's permission model was broken out of the box — deny-by-default
-  didn't deny, and allowlists didn't allow. That's fixed now.
+  Every agent's permission model was broken out of the box - deny-by-default didn't deny, and allowlists didn't allow. That's fixed now.
 
 ## 0.3.6
 
@@ -204,9 +174,9 @@
 
 - [`f9f9a7d`](https://github.com/agustinusnathaniel/maestria/commit/f9f9a7d6f08699d5db8c2ddc0d7234eb9e3b2251) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: strip orchestrator read-side tools and add missing global directives
 
-  The orchestrator is restructured into a strict dispatcher. Its `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions are removed, and the opening prompt is rewritten as a dispatcher mandate stating that `task()` and `question()` are the only tools for making progress. CRITICAL RULES are consolidated from 10 to 8 — the redundant "Shell is not a workaround" and "Prefer local tools over webfetch; webfetch may hang" directives are deleted and the rest are renumbered. The 7 specialists retain full read-side tool access for the work they pick up.
+  The orchestrator is restructured into a strict dispatcher. Its `read`, `glob`, `grep`, `lsp`, and `webfetch` permissions are removed, and the opening prompt is rewritten as a dispatcher mandate stating that `task()` and `question()` are the only tools for making progress. CRITICAL RULES are consolidated from 10 to 8 - the redundant "Shell is not a workaround" and "Prefer local tools over webfetch; webfetch may hang" directives are deleted and the rest are renumbered. The 7 specialists retain full read-side tool access for the work they pick up.
 
-  Three directives are also added to the global rules (`packages/opencode/rules/AGENTS.md`): "Webfetch may hang — don't block on it", "CLI references — use local tools first", and "Local files — read directly". Because global rules are injected into every specialist's prompt at runtime, this closes 21 directive-coverage gaps (3 directives × 7 specialists) and the guidance now applies uniformly.
+  Three directives are also added to the global rules (`packages/opencode/rules/AGENTS.md`): "Webfetch may hang - don't block on it", "CLI references - use local tools first", and "Local files - read directly". Because global rules are injected into every specialist's prompt at runtime, this closes 21 directive-coverage gaps (3 directives × 7 specialists) and the guidance now applies uniformly.
 
 ## 0.3.4
 
@@ -232,12 +202,8 @@
 ### Patch Changes
 
 - [`bda0043`](https://github.com/agustinusnathaniel/maestria/commit/bda00430d0dbfc6ba050dced54b9f52236d0811f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: strengthen orchestrator delegation rules
-  - Rule [#1](https://github.com/agustinusnathaniel/maestria/issues/1) expanded to explicitly forbid using shell commands for
-    implementation work — shell is for context-gathering only, never
-    for doing the work yourself. References the Available Specialists
-    table instead of duplicating agent mappings inline.
-  - New rule [#2](https://github.com/agustinusnathaniel/maestria/issues/2): "Shell is not a workaround" — catches the common
-    failure mode of substituting shell commands for delegation.
+  - Rule [#1](https://github.com/agustinusnathaniel/maestria/issues/1) expanded to explicitly forbid using shell commands for implementation work - shell is for context-gathering only, never for doing the work yourself. References the Available Specialists table instead of duplicating agent mappings inline.
+  - New rule [#2](https://github.com/agustinusnathaniel/maestria/issues/2): "Shell is not a workaround" - catches the common failure mode of substituting shell commands for delegation.
   - Subsequent rules renumbered.
 
 ## 0.3.1
@@ -246,21 +212,16 @@
 
 - [`fc26805`](https://github.com/agustinusnathaniel/maestria/commit/fc26805a19ee712b75e96766859d8c2d86d31266) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: restrict orchestrator task permissions to 7 registered subagents
 
-  The orchestrator's `task` permission was changed from `"*": allow` to a
-  deny-by-default pattern that explicitly allows only the 7 registered
-  subagents (adventurer, architect, builder, diagnose, planner, reviewer,
-  writer). Built-in `explore` and `general` subagents are removed from the
-  Task tool description entirely, providing technical enforcement that
-  prevents the orchestrator from delegating to them.
+  The orchestrator's `task` permission was changed from `"*": allow` to a deny-by-default pattern that explicitly allows only the 7 registered subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer). Built-in `explore` and `general` subagents are removed from the Task tool description entirely, providing technical enforcement that prevents the orchestrator from delegating to them.
 
 ## 0.3.0
 
 ### Minor Changes
 
 - [`9759d01`](https://github.com/agustinusnathaniel/maestria/commit/9759d01c08dba296a4c139be977147131be9134a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Incorporate AI engineering learnings from knowledge base
-  - **"Read the docs first"** — new non-negotiable directive across global rules (AGENTS.md), architect, and builder agents to prevent guessing at API behavior
-  - **Diagnostic documentation mandate** — elevated from passive guidance to `!!!` non-negotiable in diagnose.md; diagnostic findings must be saved as persistent knowledge artifacts
-  - **Skill prescription expansion** — builder gains `commit-work` skill, diagnose gains `dependency-updater` skill for dependency-related investigations
+  - **"Read the docs first"** - new non-negotiable directive across global rules (AGENTS.md), architect, and builder agents to prevent guessing at API behavior
+  - **Diagnostic documentation mandate** - elevated from passive guidance to `!!!` non-negotiable in diagnose.md; diagnostic findings must be saved as persistent knowledge artifacts
+  - **Skill prescription expansion** - builder gains `commit-work` skill, diagnose gains `dependency-updater` skill for dependency-related investigations
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 

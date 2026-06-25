@@ -1,8 +1,6 @@
 # Maestria Project Workflow
 
-This file defines the project-specific delegation sequence for the maestria monorepo.
-The orchestrator reads this file and follows its sequencing guidance. Subagent-level
-conventions are propagated via delegation prompt "Access list" and "Context" sections.
+This file defines the project-specific delegation sequence for the maestria monorepo. The orchestrator reads this file and follows its sequencing guidance. Subagent-level conventions are propagated via delegation prompt "Access list" and "Context" sections.
 
 ## Sequencing
 
@@ -17,13 +15,13 @@ Before proposing any change, delegate to `@adventurer`:
 - Check recent commits (`git log --oneline -20`) and diff (`git diff --name-only HEAD~5..HEAD`)
 - Read `package.json` and `pnpm-workspace.yaml` for workspace layout and scripts
 - Map the monorepo structure:
-  - `packages/core/` — canonical agent directives + sync pipeline (scripts/, tests/)
-  - `packages/opencode/` — OpenCode plugin (src/, agents/ [auto-gen], tests/)
-  - `packages/kimi-code/` — Kimi Code plugin (skills/ [auto-gen], tests/)
-  - `packages/pi/` — Pi extension (src/, prompts/ [auto-gen], tests/)
-  - `apps/docs/` — Astro + Starlight documentation site
-  - `scripts/` — sync-all and check-sync (bash)
-  - `docs/adr/` — architecture decision records (core/, opencode/, kimi-code/, pi/)
+  - `packages/core/` - canonical agent directives + sync pipeline (scripts/, tests/)
+  - `packages/opencode/` - OpenCode plugin (src/, agents/ [auto-gen], tests/)
+  - `packages/kimi-code/` - Kimi Code plugin (skills/ [auto-gen], tests/)
+  - `packages/pi/` - Pi extension (src/, prompts/ [auto-gen], tests/)
+  - `apps/docs/` - Astro + Starlight documentation site
+  - `scripts/` - sync-all and check-sync (bash)
+  - `docs/adr/` - architecture decision records (core/, opencode/, kimi-code/, pi/)
 
 ### 2. Understand the Problem
 
@@ -46,7 +44,7 @@ Delegate to `@adventurer` to read any ADR relevant to the change before implemen
 
 If the change introduces a new architectural pattern, dependency, or structural change, create a new ADR following the existing format (Status, Date, Context, Decision, Rationale, Alternatives, Consequences).
 
-### 4. Be Pragmatic — Reuse Before Reinventing
+### 4. Be Pragmatic - Reuse Before Reinventing
 
 When delegating to `@builder`, include these principles:
 
@@ -94,7 +92,7 @@ Then re-verify with `scripts/check-sync`.
   - New specialist prompts or directive changes in `packages/core/tests/`
   - Mode detection changes in `packages/opencode/tests/`
   - Plugin behavior changes in the respective package's tests
-- Ensure changes are **idempotent** — running the same operation twice produces the same result
+- Ensure changes are **idempotent** - running the same operation twice produces the same result
 - For mode detection changes, verify both keyword detection and deactivated-mode behavior
 
 ### 6. Commit Conventions
@@ -110,7 +108,7 @@ pnpm changeset
 Bump type rules:
 
 - **`minor`**: only for actual new features or user-facing additions (`feat` commits)
-- **`patch`**: everything else — refactors, fixes, chores, docs, tests, tooling
+- **`patch`**: everything else - refactors, fixes, chores, docs, tests, tooling
 - **`major`**: breaking changes only
 
 **Commit messages:** Follow Conventional Commits:
@@ -125,7 +123,7 @@ Bump type rules:
 | `test`     | patch          | Tests                                        |
 | `style`    | patch          | Formatting                                   |
 
-Only `feat` warrants a minor bump — all others are patch.
+Only `feat` warrants a minor bump - all others are patch.
 
 Split into multiple commits if the change spans unrelated concerns (e.g., core directive change + plugin mode change + docs update should be separate commits).
 
@@ -144,6 +142,4 @@ If the change affects behavior, architecture, or user-facing features, delegate 
 
 ## Precedence
 
-Core rules (delegate don't implement, maker/checker split, commit protocol, etc.)
-always take precedence over these project workflow instructions. If a conflict
-arises, the core rule wins.
+Core rules (delegate don't implement, maker/checker split, commit protocol, etc.) always take precedence over these project workflow instructions. If a conflict arises, the core rule wins.

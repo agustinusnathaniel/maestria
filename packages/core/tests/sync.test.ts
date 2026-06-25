@@ -342,7 +342,7 @@ describe('config merge semantics', () => {
           'test.md': {
             stripFrontmatter: false,
             prepend: 'file-prepend\\n',
-            // append left undefined — inherits from default
+            // append left undefined - inherits from default
             frontmatter: { key: 'file' },
           },
         },
@@ -453,7 +453,7 @@ describe('preserve option', () => {
     writeFileSync(join(outputDir, 'stale.md'), '# Stale\n', 'utf-8');
     writeFileSync(join(outputDir, 'orchestrator.md'), '# Orchestrator\n', 'utf-8');
 
-    // No preserve patterns — both stale files get removed
+    // No preserve patterns - both stale files get removed
     const config: ResolvedSyncConfig = {
       configDir: tmpDir,
       source: sourceDir,

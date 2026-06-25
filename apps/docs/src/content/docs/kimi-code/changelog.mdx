@@ -20,19 +20,19 @@ via `@adventurer` delegation.
 
 The orchestrator and all specialists now include explicit guardrails against two common failure modes:
 
-- **Don't anthropomorphize effort** — A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
-- **Write for humans** — The orchestrator and all specialists are guided to avoid AI-typical writing patterns (em dash overuse, inflated language, promotional phrasing) in user-facing output. Documentation artifacts can be delegated to `@writer` for thorough humanizing via the `humanizer` skill.
+- **Don't anthropomorphize effort** - A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
+- **Write for humans** - The orchestrator and all specialists are guided to avoid AI-typical writing patterns (em dash overuse, inflated language, promotional phrasing) in user-facing output. Documentation artifacts can be delegated to `@writer` for thorough humanizing via the `humanizer` skill.
 
 ## 0.1.0
 
 ### Minor Changes
 
-- Initial release of `@maestria/kimi-code` — a declarative, manifest-based plugin that ports the 8 specialist skills from `@maestria/opencode` v0.3.2 to Kimi Code v0.13.1.
-- **8 SKILL.md files** — orchestrator + 7 specialists using the v0.3.x Skill Prescription pattern
-- **Manifest-only plugin** — no SDK hooks, no build step; the plugin is pure static config (`kimi.plugin.json` + `skills/` + `rules/`)
-- **Swarm-aware orchestration** — the orchestrator routes ≥3 uniform items through Kimi Code's `AgentSwarm` for parallel fan-out, with the 7-specialist table covering the `coder` / `explore` / `plan` subagent profiles
-- **Global rules** — `rules/AGENTS.md` with the 7-specialist delegation table, auto-loaded by Kimi Code from `~/.kimi-code/AGENTS.md`
-- **Install checklist** — `INSTALL.md` with recommended `[[hooks]]` and `[[permission.rules]]` config blocks for tool-layer safety enforcement (persona text alone is advisory)
-- **20 vitest tests** — validate manifest schema, frontmatter, rules budget, and persona safety constraints (reviewer no-edit, adventurer read-only Bash)
+- Initial release of `@maestria/kimi-code` - a declarative, manifest-based plugin that ports the 8 specialist skills from `@maestria/opencode` v0.3.2 to Kimi Code v0.13.1.
+- **8 SKILL.md files** - orchestrator + 7 specialists using the v0.3.x Skill Prescription pattern
+- **Manifest-only plugin** - no SDK hooks, no build step; the plugin is pure static config (`kimi.plugin.json` + `skills/` + `rules/`)
+- **Swarm-aware orchestration** - the orchestrator routes ≥3 uniform items through Kimi Code's `AgentSwarm` for parallel fan-out, with the 7-specialist table covering the `coder` / `explore` / `plan` subagent profiles
+- **Global rules** - `rules/AGENTS.md` with the 7-specialist delegation table, auto-loaded by Kimi Code from `~/.kimi-code/AGENTS.md`
+- **Install checklist** - `INSTALL.md` with recommended `[[hooks]]` and `[[permission.rules]]` config blocks for tool-layer safety enforcement (persona text alone is advisory)
+- **20 vitest tests** - validate manifest schema, frontmatter, rules budget, and persona safety constraints (reviewer no-edit, adventurer read-only Bash)
 
 See [ADR-KC-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/kimi-code/ADR-KC-001-kimi-code-architecture.md) for the full design rationale.

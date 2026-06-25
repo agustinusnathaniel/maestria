@@ -1,4 +1,4 @@
-// packages/core/scripts/lib/file.ts — File I/O utilities
+// packages/core/scripts/lib/file.ts - File I/O utilities
 
 import { readdir, writeFile, rename, unlink, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';

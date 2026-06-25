@@ -38,7 +38,7 @@ const HANDOFF_FIELDS = [
   'Next step',
 ] as const;
 
-/** Terminal subagent statuses — agent will produce no more updates. */
+/** Terminal subagent statuses - agent will produce no more updates. */
 const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
 
 /** Maximum time to wait for a subagent to complete, in milliseconds. */
@@ -123,7 +123,7 @@ export function installSubagentTool(
 
       // Validate parameters based on mode
       if (mode === 'single') {
-        // Backward-compatible validation — must match original error messages exactly
+        // Backward-compatible validation - must match original error messages exactly
         if (!ALLOWED_AGENTS.includes(params.agent as AllowedAgent)) {
           throw new Error(
             `Unknown agent: "${params.agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`,
@@ -210,7 +210,7 @@ export function installSubagentTool(
           const agent = params.agent!;
           const task = params.task!;
 
-          // Spawn in foreground — returns subagent ID synchronously
+          // Spawn in foreground - returns subagent ID synchronously
           const id = service.spawn(agent, task, {
             description: task.slice(0, 80),
             foreground: true,
@@ -348,7 +348,7 @@ export function installSubagentTool(
           };
         }
 
-        // Should not reach here — all modes are handled above
+        // Should not reach here - all modes are handled above
         throw new Error('Unknown dispatch mode');
       } catch {
         // Return handoff payload as structured text when SDK unavailable
@@ -374,7 +374,7 @@ export function installSubagentTool(
 
   // Subscribe to subagent lifecycle events for accurate state tracking.
   // These subscriptions are set up once at extension init, not on every tool call.
-  // pi.events is the shared EventBus — distinct from pi.on() lifecycle hooks.
+  // pi.events is the shared EventBus - distinct from pi.on() lifecycle hooks.
   if (pi.events) {
     const unsubStarted = pi.events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
       const { id, type } = data as { id: string; type: string };
@@ -418,7 +418,7 @@ export function installSubagentTool(
     });
 
     const unsubSteered = pi.events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
-      // Steering is informational — no status transition, but ensure
+      // Steering is informational - no status transition, but ensure
       // the agent is tracked as running if it wasn't already observed.
       const { id } = data as { id: string };
       if (!state.subagentStatus[id]) {

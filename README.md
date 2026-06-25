@@ -11,21 +11,21 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 ```
 maestria/
 ├── apps/
-│   └── docs/            — Documentation site (Astro + Starlight)
+│   └── docs/            - Documentation site (Astro + Starlight)
 ├── docs/
-│   ├── adr/             — Architecture Decision Records
-│   │   ├── core/        — Cross-cutting decisions (ADR-CORE-*)
-│   │   ├── opencode/    — @maestria/opencode decisions (ADR-OC-*)
-│   │   ├── kimi-code/   — @maestria/kimi-code decisions (ADR-KC-*)
-│   │   └── pi/          — @maestria/pi decisions (ADR-PI-*)
-│   └── guides/          — Development guides and conventions
+│   ├── adr/             - Architecture Decision Records
+│   │   ├── core/        - Cross-cutting decisions (ADR-CORE-*)
+│   │   ├── opencode/    - @maestria/opencode decisions (ADR-OC-*)
+│   │   ├── kimi-code/   - @maestria/kimi-code decisions (ADR-KC-*)
+│   │   └── pi/          - @maestria/pi decisions (ADR-PI-*)
+│   └── guides/          - Development guides and conventions
 ├── packages/
-│   ├── opencode/        — @maestria/opencode plugin
-│   ├── kimi-code/       — @maestria/kimi-code plugin
-│   └── pi/              — @maestria/pi plugin
-├── VISION.md            — Project vision and principles
-├── PATTERNS.md          — Reusable workflow patterns
-└── README.md            — This file
+│   ├── opencode/        - @maestria/opencode plugin
+│   ├── kimi-code/       - @maestria/kimi-code plugin
+│   └── pi/              - @maestria/pi plugin
+├── VISION.md            - Project vision and principles
+├── PATTERNS.md          - Reusable workflow patterns
+└── README.md            - This file
 ```
 
 ## Vision
@@ -34,11 +34,11 @@ See [VISION.md](VISION.md) for the project's guiding philosophy and long-term go
 
 ## Packages
 
-| Package                                    | Description                                                 | README                                 |
-| ------------------------------------------ | ----------------------------------------------------------- | -------------------------------------- |
-| [@maestria/opencode](packages/opencode/)   | 7 specialist subagents + orchestrator + workflow modes      | [README](packages/opencode/README.md)  |
-| [@maestria/kimi-code](packages/kimi-code/) | 2 specialist subagents + skills for Kimi Code               | [README](packages/kimi-code/README.md) |
-| [@maestria/pi](packages/pi/)               | Pi coding agent extension: 7 specialists + 3 workflow modes | [README](packages/pi/README.md)        |
+| Package | Description | README |
+| --- | --- | --- |
+| [@maestria/opencode](packages/opencode/) | 7 specialist subagents + orchestrator + workflow modes | [README](packages/opencode/README.md) |
+| [@maestria/kimi-code](packages/kimi-code/) | 2 specialist subagents + skills for Kimi Code | [README](packages/kimi-code/README.md) |
+| [@maestria/pi](packages/pi/) | Pi coding agent extension: 7 specialists + 3 workflow modes | [README](packages/pi/README.md) |
 
 ## Development
 

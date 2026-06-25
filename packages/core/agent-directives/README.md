@@ -12,19 +12,19 @@ This directory holds the shared methodology, rules, and skill prescriptions that
 
 ```
 agent-directives/
-  README.md          — This file
-  specialists/       — Role definitions for the 7 pipeline agents
-    adventurer.md    — Codebase reconnaissance
-    architect.md     — Architecture decisions and ADRs
-    builder.md       — Focused implementation
-    diagnose.md      — Systematic bug tracing
-    planner.md       — Implementation plans
-    reviewer.md      — Code review with quality gates
-    writer.md        — Documentation writing
-  rules/             — Shared rules used across agents
-    context-management.md  — Progressive disclosure, checkpointing, pruning
-    commit-policy.md       — Orchestrator-only commit authorization
-    pipeline-patterns.md   — Role-Based Pipeline with thinker/worker/verifier
+  README.md          - This file
+  specialists/       - Role definitions for the 7 pipeline agents
+    adventurer.md    - Codebase reconnaissance
+    architect.md     - Architecture decisions and ADRs
+    builder.md       - Focused implementation
+    diagnose.md      - Systematic bug tracing
+    planner.md       - Implementation plans
+    reviewer.md      - Code review with quality gates
+    writer.md        - Documentation writing
+  rules/             - Shared rules used across agents
+    context-management.md  - Progressive disclosure, checkpointing, pruning
+    commit-policy.md       - Orchestrator-only commit authorization
+    pipeline-patterns.md   - Role-Based Pipeline with thinker/worker/verifier
 ```
 
 ## How to Add a New Specialist

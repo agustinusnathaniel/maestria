@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// packages/core/scripts/sync.ts — CLI entry for config-driven agent directive syncing
+// packages/core/scripts/sync.ts - CLI entry for config-driven agent directive syncing
 
 import { existsSync } from 'node:fs';
 import { parseArgs } from 'node:util';
@@ -22,7 +22,7 @@ interface CliOptions {
 
 function printHelp(): void {
   console.log(`
-core-sync — Config-driven agent directive syncing tool
+core-sync - Config-driven agent directive syncing tool
 
 USAGE
   core-sync                          Sync (write output)

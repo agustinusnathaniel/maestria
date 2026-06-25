@@ -1,4 +1,4 @@
-// packages/core/scripts/lib/diff.ts — Unified diff utility
+// packages/core/scripts/lib/diff.ts - Unified diff utility
 
 import { createTwoFilesPatch } from 'diff';
 

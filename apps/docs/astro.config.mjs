@@ -39,7 +39,7 @@ export default defineConfig({
           tag: 'meta',
           attrs: {
             property: 'og:title',
-            content: 'Maestria — Portable AI Engineering Praxis Plugins',
+            content: 'Maestria - Portable AI Engineering Praxis Plugins',
           },
         },
         {

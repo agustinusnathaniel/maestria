@@ -1,13 +1,13 @@
 ---
 title: Workflow Patterns
-description: Practical patterns for using Maestria specialists together — from simple tasks to complex multi-step workflows.
+description: Practical patterns for using Maestria specialists together - from simple tasks to complex multi-step workflows.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
 # Workflow Patterns
 
-The 7 specialists work as a team. The orchestrator manages the flow — it decomposes complex requests into phases, delegates each phase to the appropriate specialist, and verifies completion before moving on.
+The 7 specialists work as a team. The orchestrator manages the flow - it decomposes complex requests into phases, delegates each phase to the appropriate specialist, and verifies completion before moving on.
 
 > This page builds on the [specialist roles and pipeline model](/core/agents/) documented in the Specialist Reference. The pipeline routes work through thinker → worker → verifier roles with dynamic sequencing.
 
@@ -15,7 +15,7 @@ The 7 specialists work as a team. The orchestrator manages the flow — it decom
 
 Send **Adventurer** to map unfamiliar code before making changes.
 
-> Adventurer: Map the API layer — find all routes, middleware, and error handlers.
+> Adventurer: Map the API layer - find all routes, middleware, and error handlers.
 
 The Adventurer traces call chains, maps modules, and reports back with a structured reconnaissance report. Start here whenever you edit code you haven't worked with before.
 
@@ -33,7 +33,7 @@ Get a phased plan from **Planner** before implementing multi-step features.
 
 > Planner: Plan the implementation for a multi-tenant organization feature.
 
-The Planner breaks work into ordered milestones with verification criteria and rollback points. Plans are pure strategy — the orchestrator consumes them and dispatches each phase to the appropriate specialist.
+The Planner breaks work into ordered milestones with verification criteria and rollback points. Plans are pure strategy - the orchestrator consumes them and dispatches each phase to the appropriate specialist.
 
 ## Build something
 
@@ -53,7 +53,7 @@ Then:
 
 > Orchestrator: Fix the upload issue that Diagnose identified.
 
-The Diagnose specialist runs a systematic tracing loop — error to source to git history to blast radius to minimal fix to prevention — and reports the root cause with a suggested fix.
+The Diagnose specialist runs a systematic tracing loop - error to source to git history to blast radius to minimal fix to prevention - and reports the root cause with a suggested fix.
 
 ## Review code
 
@@ -69,7 +69,7 @@ Delegate READMEs, ADRs, changelogs, and API docs to **Writer**.
 
 > Writer: Write a README for the new caching package.
 
-The Writer follows structured patterns matched to the document type — purpose, usage, details. Description in, complete document out.
+The Writer follows structured patterns matched to the document type - purpose, usage, details. Description in, complete document out.
 
 ## Parallel exploration
 
@@ -99,10 +99,10 @@ the orchestrator how to sequence delegation for that specific project.
 The orchestrator checks for these files when starting work on a project by delegating
 to `@adventurer`. If found:
 
-- **`.maestria/workflow.md`** — Guides delegation sequencing. The orchestrator follows
+- **`.maestria/workflow.md`** - Guides delegation sequencing. The orchestrator follows
   this to determine what to do and in what order (e.g., read the README first, check
   recent commits, read relevant ADRs before implementing).
-- **`.maestria/rules.md`** — Project-specific non-negotiable rules that supplement the
+- **`.maestria/rules.md`** - Project-specific non-negotiable rules that supplement the
   core rules. These are propagated to all subagents via delegation prompts.
 
 ### Precedence
@@ -142,7 +142,7 @@ Create a `.maestria/workflow.md` when your project has:
 - A structured ADR or decision documentation process
 - Multiple packages with different conventions
 
-The file is entirely opt-in — projects without `.maestria/` files see no change in agent behavior.
+The file is entirely opt-in - projects without `.maestria/` files see no change in agent behavior.
 
 ## See Also
 

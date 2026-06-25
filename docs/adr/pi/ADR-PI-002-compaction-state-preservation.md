@@ -19,13 +19,13 @@ Without preservation, the post-compaction turn has no memory of these. The metho
 
 The choices:
 
-1. **Append to Pi's default summary** — Pi's `session_before_compact` returns a `compaction` object that **replaces** the default summary. We can't append; we must include the maestria state in our returned summary.
-2. **Use the `details` field** — Pi's compaction has a `details` field for custom data. The LLM may or may not see this.
-3. **Module-scope state plus pre-compaction render** — the extension maintains `MaestriaState` in module scope, renders it to markdown on `session_before_compact`, and includes the render in the returned summary.
+1. **Append to Pi's default summary** - Pi's `session_before_compact` returns a `compaction` object that **replaces** the default summary. We can't append; we must include the maestria state in our returned summary.
+2. **Use the `details` field** - Pi's compaction has a `details` field for custom data. The LLM may or may not see this.
+3. **Module-scope state plus pre-compaction render** - the extension maintains `MaestriaState` in module scope, renders it to markdown on `session_before_compact`, and includes the render in the returned summary.
 
 ## Decision
 
-**Choose: Option 3 — module-scope state, render at compaction time, include in the returned summary.**
+**Choose: Option 3 - module-scope state, render at compaction time, include in the returned summary.**
 
 The `MaestriaState` is maintained by event handlers (`before_agent_start` for `activeTask`, `tool_call` for file tracking, `subagent` tool invocations for `handoffHistory`, `/review` command for `reviewMode`).
 
@@ -58,15 +58,15 @@ For full session persistence (survives `/reload` and `/new`), `pi.appendEntry` w
 
 ## Alternatives Considered
 
-- **Pi's default compaction** — generic, doesn't preserve maestria state.
-- **Append-only state** — not possible since `compaction.summary` is wholesale replacement.
-- **State persistence via `pi.appendEntry`** — would survive `/reload` but requires more code. Deferred to v1.1.
+- **Pi's default compaction** - generic, doesn't preserve maestria state.
+- **Append-only state** - not possible since `compaction.summary` is wholesale replacement.
+- **State persistence via `pi.appendEntry`** - would survive `/reload` but requires more code. Deferred to v1.1.
 
 ## References
 
-- Pi `session_before_compact` event — `session_before_compact` event docs
-- Pi `CompactionEntry` structure — Pi compaction API docs
-- OpenCode equivalent — `packages/opencode/src/index.ts` (compaction hook for session state management)
+- Pi `session_before_compact` event - `session_before_compact` event docs
+- Pi `CompactionEntry` structure - Pi compaction API docs
+- OpenCode equivalent - `packages/opencode/src/index.ts` (compaction hook for session state management)
 
 ## Implementation Notes (Post-Implementation)
 
@@ -84,7 +84,7 @@ On `session_before_compact`, the rendered markdown is returned as the `compactio
 
 ### ✅ `details` Field Populated with Structured State
 
-The raw `MaestriaState` object is also serialized into the `compaction.details` field for future-proofing — enabling structured access if Pi's compaction API evolves to support `details`-based recovery.
+The raw `MaestriaState` object is also serialized into the `compaction.details` field for future-proofing - enabling structured access if Pi's compaction API evolves to support `details`-based recovery.
 
 ### ✅ Orchestrator Prompt Includes "Post-Compaction Recovery" Section
 

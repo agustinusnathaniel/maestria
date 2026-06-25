@@ -59,7 +59,7 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
     throw new Error('missing closing frontmatter fence');
   }
   const yamlText = lines.slice(1, close).join('\n').trim();
-  // Minimal YAML parsing — the fields we validate are simple scalars
+  // Minimal YAML parsing - the fields we validate are simple scalars
   // and key: value pairs (no nested objects in our frontmatter). For
   // robust YAML support, swap in `js-yaml`; we avoid the dependency
   // because this is a manifest validator, not a skill parser.
@@ -342,7 +342,7 @@ describe('tool name PascalCase compliance', () => {
         // We flag unrecognized PascalCase as warnings
         violations.push(word);
       }
-      // Allow violations to be empty — no assertions needed
+      // Allow violations to be empty - no assertions needed
       // This test is meant for monitoring, not blocking
       // (since skill references may vary)
       if (violations.length > 0) {

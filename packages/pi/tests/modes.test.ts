@@ -11,7 +11,7 @@ describe('MODE_KEYWORDS', () => {
   });
 
   it('is a readonly tuple', () => {
-    // Type-level check — the const assertion ensures this is a tuple
+    // Type-level check - the const assertion ensures this is a tuple
     expect(MODE_KEYWORDS.length).toBe(3);
   });
 });

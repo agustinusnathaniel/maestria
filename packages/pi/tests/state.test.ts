@@ -77,7 +77,7 @@ describe('recordHandoff', () => {
     expect(typeof entry.timestamp).toBe('number');
   });
 
-  it('is immutable — does not mutate the original state', () => {
+  it('is immutable - does not mutate the original state', () => {
     const state = createInitialState();
     recordHandoff(state, 'a', 'b', 'c');
     expect(state.handoffHistory).toHaveLength(0);
@@ -195,7 +195,7 @@ describe('setReviewMode', () => {
     expect(next.reviewMode).toBe(false);
   });
 
-  it('is immutable — does not mutate the original state', () => {
+  it('is immutable - does not mutate the original state', () => {
     const state = createInitialState();
     setReviewMode(state, true);
     expect(state.reviewMode).toBe(false);
@@ -316,7 +316,7 @@ describe('exitReviewMode', () => {
     expect(originalTools).toEqual(['read', 'grep', 'bash']);
   });
 
-  it('is immutable — does not mutate the original state', () => {
+  it('is immutable - does not mutate the original state', () => {
     const state: MaestriaState = {
       ...createInitialState(),
       reviewMode: true,

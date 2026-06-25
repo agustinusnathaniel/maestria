@@ -1,6 +1,6 @@
 ---
 title: Contributing
-description: How to contribute to @maestria/opencode — development setup, making changes, and submitting PRs.
+description: How to contribute to @maestria/opencode - development setup, making changes, and submitting PRs.
 ---
 
 # Contributing
@@ -35,11 +35,11 @@ Agent prompts and global rules are authored in the canonical source. See [Canoni
 
 ### Modifying Global Rules
 
-See [Adding or Modifying Agents](#adding-or-modifying-agents) above — global rules follow the same canonical-source flow.
+See [Adding or Modifying Agents](#adding-or-modifying-agents) above - global rules follow the same canonical-source flow.
 
 ### Agent Definition Format
 
-> The format below describes the generated output in `packages/opencode/agents/`. The canonical source in `packages/core/agent-directives/` is plain Markdown without frontmatter — the YAML frontmatter is added by the sync pipeline's transforms.
+> The format below describes the generated output in `packages/opencode/agents/`. The canonical source in `packages/core/agent-directives/` is plain Markdown without frontmatter - the YAML frontmatter is added by the sync pipeline's transforms.
 
 Each agent is a Markdown file with YAML frontmatter in `packages/opencode/agents/`. The frontmatter fields are:
 
@@ -51,12 +51,12 @@ Each agent is a Markdown file with YAML frontmatter in `packages/opencode/agents
 | `color`       | string (optional) | Tab color in the UI                 | Hex color (e.g., `#ff6600`) |
 | `maxSteps`    | number (optional) | Max delegation steps per invocation | Integer                     |
 
-**Permission model:** Each tool has one of three levels — `allow` (use freely), `ask` (prompt before use), `deny` (cannot use). Bash permissions support glob pattern matching for granular control.
+**Permission model:** Each tool has one of three levels - `allow` (use freely), `ask` (prompt before use), `deny` (cannot use). Bash permissions support glob pattern matching for granular control.
 
 **Agent modes:**
 
-- `all` — Full agent, invocable directly or via `task()`
-- `subagent` — Invocable only via `task()`
+- `all` - Full agent, invocable directly or via `task()`
+- `subagent` - Invocable only via `task()`
 
 The orchestrator uses `all`; all 7 specialists use `subagent`.
 
@@ -80,4 +80,4 @@ The plugin source is `packages/opencode/src/index.ts` (~190 lines). This file ha
 
 ## See Also
 
-- [Contributing Guide](/core/contributing/) — General setup, changesets, and PR process
+- [Contributing Guide](/core/contributing/) - General setup, changesets, and PR process

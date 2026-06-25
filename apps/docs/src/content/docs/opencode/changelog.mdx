@@ -20,17 +20,17 @@ that instructs the orchestrator to load these files via `@adventurer` delegation
 and follow their guidance. Core rules always take precedence over project
 instructions.
 
-- `packages/core/agent-directives/specialists/orchestrator.md` — new "Project
+- `packages/core/agent-directives/specialists/orchestrator.md` - new "Project
   Workflows (.maestria/)" section
-- `packages/core/agent-directives/rules.md` — awareness bullet referencing the
+- `packages/core/agent-directives/rules.md` - awareness bullet referencing the
   protocol
 
 ### Effort anthropomorphism guard and writing style guidance
 
 The orchestrator and all specialists now include explicit guardrails against two common failure modes:
 
-- **Don't anthropomorphize effort** — A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
-- **Write for humans** — The orchestrator and all specialists are guided to avoid AI-typical writing patterns (em dash overuse, inflated language, promotional phrasing) in user-facing output. Documentation artifacts can be delegated to `@writer` for thorough humanizing via the `humanizer` skill.
+- **Don't anthropomorphize effort** - A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
+- **Write for humans** - The orchestrator and all specialists are guided to avoid AI-typical writing patterns (em dash overuse, inflated language, promotional phrasing) in user-facing output. Documentation artifacts can be delegated to `@writer` for thorough humanizing via the `humanizer` skill.
 
 ## v0.4.6
 
@@ -47,9 +47,9 @@ auto-committing on subsequent work instructions.
 
 Affected files:
 
-- `agents/orchestrator.md` — new COMMIT PROTOCOL section
-- `rules/AGENTS.md` — new Commit Policy section
-- `docs/adr/opencode/ADR-OC-004-commit-authorization-rules.md` — decision record
+- `agents/orchestrator.md` - new COMMIT PROTOCOL section
+- `rules/AGENTS.md` - new Commit Policy section
+- `docs/adr/opencode/ADR-OC-004-commit-authorization-rules.md` - decision record
 
 ## v0.4.3
 
@@ -85,7 +85,7 @@ _June 20, 2026_
 
 ### Orchestrator stripped of read-only bash permissions
 
-The orchestrator's remaining read-only bash permissions — `git status/diff/log/show/branch`, `ls`, `which`, `pwd` — have been stripped. Its only bash exception is `npx --yes skills@latest *` for skill installation. Any codebase inspection must now go through `@adventurer` or `@builder`.
+The orchestrator's remaining read-only bash permissions - `git status/diff/log/show/branch`, `ls`, `which`, `pwd` - have been stripped. Its only bash exception is `npx --yes skills@latest *` for skill installation. Any codebase inspection must now go through `@adventurer` or `@builder`.
 
 This completes the orchestrator's transition to a pure dispatcher role, consistent with v0.3.10's removal of read-side tools (read, glob, grep).
 
@@ -95,9 +95,9 @@ _June 19, 2026_
 
 ### Orchestrator reverted to pure dispatcher
 
-After real-world testing, the read/glob/grep permissions granted in v0.3.9 caused workaround behavior — the orchestrator preferred direct reconnaissance over delegation to specialists. Structural permission denial proved to be the only reliable enforcement for an LLM-based orchestrator.
+After real-world testing, the read/glob/grep permissions granted in v0.3.9 caused workaround behavior - the orchestrator preferred direct reconnaissance over delegation to specialists. Structural permission denial proved to be the only reliable enforcement for an LLM-based orchestrator.
 
-The orchestrator is now limited to `task()` delegation and `question()` — no read, glob, grep, webfetch, edit, or lsp.
+The orchestrator is now limited to `task()` delegation and `question()` - no read, glob, grep, webfetch, edit, or lsp.
 
 ### Prompt streamlined
 
@@ -109,19 +109,19 @@ _June 19, 2026_
 
 ### Websearch for agents
 
-`@architect`, `@adventurer`, and `@diagnose` now have `websearch` permission set to `ask`. When these agents need to find information they don't have a URL for, they can search the web — but the tool requires user approval before each search.
+`@architect`, `@adventurer`, and `@diagnose` now have `websearch` permission set to `ask`. When these agents need to find information they don't have a URL for, they can search the web - but the tool requires user approval before each search.
 
 Other agents (`@builder`, `@planner`, `@reviewer`, `@writer`) remain websearch-free.
 
 ### Orchestrator gains read-only recon
 
-The orchestrator now has `read`, `glob`, and `grep` for quick verification before delegation. This lets it check file existence, skim exports, and confirm references — without leaving the dispatcher role.
+The orchestrator now has `read`, `glob`, and `grep` for quick verification before delegation. This lets it check file existence, skim exports, and confirm references - without leaving the dispatcher role.
 
 Structural boundaries remain:
 
-- `edit: deny` — orchestrator cannot implement
-- `webfetch: deny` — orchestrator delegates web research
-- `lsp: deny` — deep code intelligence is for specialists
+- `edit: deny` - orchestrator cannot implement
+- `webfetch: deny` - orchestrator delegates web research
+- `lsp: deny` - deep code intelligence is for specialists
 
 A new _Read-Side Tool Policy_ in the orchestrator's instructions caps read/glob/grep at 3 calls per task before delegating deeper recon to `@adventurer`.
 
@@ -131,7 +131,7 @@ _June 18, 2026_
 
 ### Permission refinements after audit
 
-A systematic review uncovered several gaps in agent permissions. Three agents (adventurer, diagnose, writer) gained `todowrite` for multi-step task tracking. Git read commands (`status`, `show`, `diff`, `log`) — needed for inspecting history without leaving a role — were missing from four agents (adventurer, architect, reviewer, writer), now added. Writer gained `lsp` for code navigation during doc generation. Builder can now run `npm view` for dependency checks, and planner has `which` for tool discovery.
+A systematic review uncovered several gaps in agent permissions. Three agents (adventurer, diagnose, writer) gained `todowrite` for multi-step task tracking. Git read commands (`status`, `show`, `diff`, `log`) - needed for inspecting history without leaving a role - were missing from four agents (adventurer, architect, reviewer, writer), now added. Writer gained `lsp` for code navigation during doc generation. Builder can now run `npm view` for dependency checks, and planner has `which` for tool discovery.
 
 ## v0.3.7
 
@@ -159,7 +159,7 @@ Its read-side tool permissions (`read`, `glob`, `grep`, `lsp`, `webfetch`) are r
 
 ### Three new directives added to global rules
 
-"Webfetch may hang — don't block on it", "CLI references — use local tools first", and "Local files — read directly" are added, closing 21 directive-coverage gaps (3 × 7 specialists) so the guidance now applies uniformly.
+"Webfetch may hang - don't block on it", "CLI references - use local tools first", and "Local files - read directly" are added, closing 21 directive-coverage gaps (3 × 7 specialists) so the guidance now applies uniformly.
 
 ## v0.3.4
 
@@ -183,7 +183,7 @@ _June 17, 2026_
 
 ### Stronger orchestrator delegation rules
 
-Rule #1 expanded to explicitly forbid using shell for implementation. New Rule #2: "Shell is not a workaround" — catches the common failure mode of substituting shell commands for delegation.
+Rule #1 expanded to explicitly forbid using shell for implementation. New Rule #2: "Shell is not a workaround" - catches the common failure mode of substituting shell commands for delegation.
 
 ## v0.3.1
 
@@ -201,9 +201,9 @@ _June 17, 2026_
 
 Incorporate learnings from knowledge base:
 
-- **"Read the docs first"** — new non-negotiable directive across global rules, architect, and builder
-- **Diagnostic documentation mandate** — elevated to non-negotiable in diagnose.md
-- **Skill prescription expansion** — builder gains `commit-work` skill, diagnose gains `dependency-updater`
+- **"Read the docs first"** - new non-negotiable directive across global rules, architect, and builder
+- **Diagnostic documentation mandate** - elevated to non-negotiable in diagnose.md
+- **Skill prescription expansion** - builder gains `commit-work` skill, diagnose gains `dependency-updater`
 
 ## v0.2.6
 
@@ -225,7 +225,7 @@ _June 13, 2026_
 
 ### Bug Fixes
 
-- Restore rules injection into subagent prompts — the previous removal was too aggressive and left subagents without cross-cutting instructions
+- Restore rules injection into subagent prompts - the previous removal was too aggressive and left subagents without cross-cutting instructions
 - Remove a conflicting instruction that prevented subagents from fulfilling their designated roles
 
 ## v0.2.3
@@ -240,13 +240,13 @@ _June 13, 2026_
 
 ### Features
 
-- **Astro Starlight documentation site** — Added a full documentation site for `@maestria/opencode` with guides, API reference, and changelog
+- **Astro Starlight documentation site** - Added a full documentation site for `@maestria/opencode` with guides, API reference, and changelog
 
 ### Bug Fixes
 
 - Correct source repositories for 10 skills that pointed to wrong locations
-- Restore commit discipline and counter builder dispatch bias — the builder agent was being over-selected for tasks better suited to other specialists
-- Stop injecting global rules into subagent prompts — top-level rules were leaking into subagent context
+- Restore commit discipline and counter builder dispatch bias - the builder agent was being over-selected for tasks better suited to other specialists
+- Stop injecting global rules into subagent prompts - top-level rules were leaking into subagent context
 - Unstick `webfetch` by skipping the approval step and preferring local tools over remote fetches
 
 ## v0.2.1
@@ -255,7 +255,7 @@ _June 12, 2026_
 
 ### Bug Fixes
 
-- Force orchestrator delegation via permissions — orchestrator now has `edit: deny` and `bash: * deny` to prevent it from implementing itself
+- Force orchestrator delegation via permissions - orchestrator now has `edit: deny` and `bash: * deny` to prevent it from implementing itself
 - Inject specialist table into global rules so the delegation rules are always present
 
 ## v0.2.0
@@ -264,13 +264,13 @@ _June 12, 2026_
 
 ### Features
 
-- **Initial plugin release** — `@maestria/opencode` with full agent system and rule injection
-- **7 specialist subagents** — adventurer, architect, builder, diagnose, planner, reviewer, writer
-- **Orchestrator agent** — `@orchestrator` with `mode: all` for managing multi-step workflows
-- **Global rules injection** — Cross-cutting rules (orchestration, delegation, context management) injected into every session
-- **Config hook** — Reads bundled agent `.md` files, parses frontmatter, registers agents programmatically
-- **Session compacting hook** — Preserves task tracking state across compaction events
-- **Agent cross-references** — Every agent lists related agents with delegation triggers
-- **Skill discovery guidance** — Every agent follows a check → use → suggest pattern for skills
-- **Conventional Comments** — Reviewer output uses standard labels (praise, suggestion, issue, nitpick, question)
-- **`opensrc` pattern** — Global rule for analyzing reference repos without API calls
+- **Initial plugin release** - `@maestria/opencode` with full agent system and rule injection
+- **7 specialist subagents** - adventurer, architect, builder, diagnose, planner, reviewer, writer
+- **Orchestrator agent** - `@orchestrator` with `mode: all` for managing multi-step workflows
+- **Global rules injection** - Cross-cutting rules (orchestration, delegation, context management) injected into every session
+- **Config hook** - Reads bundled agent `.md` files, parses frontmatter, registers agents programmatically
+- **Session compacting hook** - Preserves task tracking state across compaction events
+- **Agent cross-references** - Every agent lists related agents with delegation triggers
+- **Skill discovery guidance** - Every agent follows a check → use → suggest pattern for skills
+- **Conventional Comments** - Reviewer output uses standard labels (praise, suggestion, issue, nitpick, question)
+- **`opensrc` pattern** - Global rule for analyzing reference repos without API calls

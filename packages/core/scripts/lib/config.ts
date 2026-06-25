@@ -1,4 +1,4 @@
-// packages/core/scripts/lib/config.ts — Config types, loader & merge
+// packages/core/scripts/lib/config.ts - Config types, loader & merge
 
 import { existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';

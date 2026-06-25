@@ -11,11 +11,11 @@ import { MAESTRIA_EVENTS } from '@/subagent.js';
 /**
  * Read-only tools that let a reviewer inspect code without making changes.
  *
- * - `read`, `grep`, `find`, `ls`, `glob` — all non-destructive.
- * - Excluded: `bash`, `edit`, `write` — these can modify the filesystem.
+ * - `read`, `grep`, `find`, `ls`, `glob` - all non-destructive.
+ * - Excluded: `bash`, `edit`, `write` - these can modify the filesystem.
  *
  * `glob` is included for file pattern matching even though it's not a
- * built-in Pi tool — extensions may register it, and including it is a no-op
+ * built-in Pi tool - extensions may register it, and including it is a no-op
  * if absent.
  */
 const READ_ONLY_TOOLS = ['read', 'grep', 'find', 'ls', 'glob'];
@@ -25,7 +25,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
     description: 'Start a full pipeline by delegating to the orchestrator',
     handler: async (args: string, ctx) => {
       if (!args.trim()) {
-        ctx.ui.notify('Usage: /orchestrate <goal> — describe what to accomplish');
+        ctx.ui.notify('Usage: /orchestrate <goal> - describe what to accomplish');
         return;
       }
 
@@ -69,7 +69,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
     description: 'Enter review mode. Blocks destructive tools, sets read-only toolset.',
     handler: async (args: string, ctx) => {
       if (!args.trim()) {
-        ctx.ui.notify('Usage: /review <target> — describe what to review');
+        ctx.ui.notify('Usage: /review <target> - describe what to review');
         return;
       }
 
@@ -138,7 +138,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
     description: 'Generate a structured handoff prompt for a new task context',
     handler: async (args: string, ctx) => {
       if (!args.trim()) {
-        ctx.ui.notify('Usage: /handoff <goal> — describe the task context for handoff');
+        ctx.ui.notify('Usage: /handoff <goal> - describe the task context for handoff');
         return;
       }
 

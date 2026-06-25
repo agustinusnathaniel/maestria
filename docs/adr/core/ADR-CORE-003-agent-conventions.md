@@ -1,4 +1,4 @@
-# ADR-CORE-003: Agent Conventions — `!!!` Markers, Cross-References, Skill Pattern
+# ADR-CORE-003: Agent Conventions - `!!!` Markers, Cross-References, Skill Pattern
 
 ## Status
 
@@ -6,35 +6,30 @@ Accepted
 
 ## Context
 
-As we built 7 agents (orchestrator, architect, builder, diagnose, planner,
-reviewer, writer), we needed consistent conventions for:
+As we built 7 agents (orchestrator, architect, builder, diagnose, planner, reviewer, writer), we needed consistent conventions for:
 
-1. **Critical vs. advisory rules** — How to distinguish non-negotiable
-   instructions from suggestions within agent prompts
-2. **Agent interconnections** — How agents reference each other for delegation
-3. **Skill discovery** — How agents tell the user to install relevant skills
-4. **Review output format** — How reviewer structures its findings
+1. **Critical vs. advisory rules** - How to distinguish non-negotiable instructions from suggestions within agent prompts
+2. **Agent interconnections** - How agents reference each other for delegation
+3. **Skill discovery** - How agents tell the user to install relevant skills
+4. **Review output format** - How reviewer structures its findings
 
-These conventions emerged during implementation and should be documented so
-future agents follow the same patterns.
+These conventions emerged during implementation and should be documented so future agents follow the same patterns.
 
 ## Decision
 
 ### 1. `!!!` Marker Convention
 
-Prefix critical, non-negotiable rules with `!!!`. This signals "this is not
-a suggestion — violating this will produce incorrect or destructive output."
+Prefix critical, non-negotiable rules with `!!!`. This signals "this is not a suggestion - violating this will produce incorrect or destructive output."
 
 | Context      | Example                                   |
 | ------------ | ----------------------------------------- |
-| Orchestrator | `!!! Never implement yourself — delegate` |
+| Orchestrator | `!!! Never implement yourself - delegate` |
 | Reviewer     | `!!! Never edit files (read-only)`        |
 | Builder      | `!!! Run tests before claiming done`      |
 | Diagnose     | `!!! Always verify before handoff`        |
 | Writer       | `!!! Proofread before finishing`          |
 
-Rules without `!!!` are advisory or contextual — the agent should follow them
-unless there's a compelling reason not to.
+Rules without `!!!` are advisory or contextual - the agent should follow them unless there's a compelling reason not to.
 
 ### 2. Agent Cross-References
 
@@ -47,8 +42,8 @@ Lists sibling agents with specific delegation triggers:
 ```markdown
 ## Related Agents
 
-- `@architect` — Consult for architecture input before detailed planning
-- `@reviewer` — Review the plan for completeness and blind spots before execution
+- `@architect` - Consult for architecture input before detailed planning
+- `@reviewer` - Review the plan for completeness and blind spots before execution
 ```
 
 Rules:
@@ -59,8 +54,7 @@ Rules:
 
 #### Orchestrator's `Specialists` Table
 
-The orchestrator additionally has a full table of all subagents with role
-descriptions and delegation triggers:
+The orchestrator additionally has a full table of all subagents with role descriptions and delegation triggers:
 
 ```markdown
 | Agent        | Role                   | When to Delegate            |
@@ -85,13 +79,11 @@ Scope convention:
 - Use `-g` (global) for cross-project methodology skills (e.g., diagnose, tdd)
 - Omit `-g` for stack-specific skills (e.g., hallmark, impeccable)
 
-Skills are listed in each agent grouped by domain with source repos, so the
-agent can construct the install command without guessing.
+Skills are listed in each agent grouped by domain with source repos, so the agent can construct the install command without guessing.
 
 ### 4. Conventional Comments in Review Output
 
-The reviewer prefixes each issue with a
-[Conventional Comments](https://conventionalcomments.org/) label:
+The reviewer prefixes each issue with a [Conventional Comments](https://conventionalcomments.org/) label:
 
 | Label         | When                           |
 | ------------- | ------------------------------ |
@@ -105,17 +97,12 @@ This makes review output structured, grepable, and consistent across sessions.
 
 ## Consequences
 
-- Positive: `!!!` makes critical rules instantly recognizable — agents can't
-  claim "I didn't know this was mandatory."
-- Positive: Cross-references make the agent system navigable — reading one
-  agent tells you when to delegate to another.
-- Positive: Skill pattern is self-service — agents don't bundle skills but
-  can install them on demand.
+- Positive: `!!!` makes critical rules instantly recognizable - agents can't claim "I didn't know this was mandatory."
+- Positive: Cross-references make the agent system navigable - reading one agent tells you when to delegate to another.
+- Positive: Skill pattern is self-service - agents don't bundle skills but can install them on demand.
 - Positive: Conventional Comments create structured, actionable review output.
-- Negative: `!!!` can lose meaning if overused — must reserve for genuinely
-  non-negotiable rules only (~1-3 per agent).
-- Negative: Skill catalogs in agent files need maintenance when new skills
-  emerge or repos rename.
+- Negative: `!!!` can lose meaning if overused - must reserve for genuinely non-negotiable rules only (~1-3 per agent).
+- Negative: Skill catalogs in agent files need maintenance when new skills emerge or repos rename.
 
 ## Date
 

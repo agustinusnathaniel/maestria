@@ -40,13 +40,13 @@ maestria/
 
 ### Package Roles
 
-| Package               | Published | Role                                                                    |
-| --------------------- | --------- | ----------------------------------------------------------------------- |
-| `@maestria/core`      | No        | Canonical agent prompts in `agent-directives/`, sync pipeline scripts   |
-| `@maestria/opencode`  | Yes       | 7 specialist subagents + orchestrator + workflow modes for OpenCode     |
-| `@maestria/kimi-code` | No        | 7 specialist skills with swarm-aware orchestration for Kimi Code        |
-| `@maestria/pi`        | Yes       | 7 specialists + 3 workflow modes as a Pi extension                      |
-| `@maestria/docs`      | No        | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
+| Package | Published | Role |
+| --- | --- | --- |
+| `@maestria/core` | No | Canonical agent prompts in `agent-directives/`, sync pipeline scripts |
+| `@maestria/opencode` | Yes | 7 specialist subagents + orchestrator + workflow modes for OpenCode |
+| `@maestria/kimi-code` | No | 7 specialist skills with swarm-aware orchestration for Kimi Code |
+| `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
+| `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
 
 ### Data Flow
 
@@ -69,7 +69,7 @@ This is the most critical infrastructure in the project. **Single source of trut
 
 ### Purpose
 
-One canonical copy of each specialist prompt lives in `packages/core/agent-directives/specialists/`. The sync pipeline derives platform-specific files — with correct tool names, frontmatter, and routing — for each plugin. Edit once, sync everywhere.
+One canonical copy of each specialist prompt lives in `packages/core/agent-directives/specialists/`. The sync pipeline derives platform-specific files - with correct tool names, frontmatter, and routing - for each plugin. Edit once, sync everywhere.
 
 ### Architecture
 
@@ -91,25 +91,25 @@ source file
 
 ### Key Files
 
-| File                                        | Role                                                                                          |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `packages/core/scripts/sync.ts`             | CLI entry point — `--check` for CI, `--diff` for review, `--dry-run` for preview              |
-| `packages/core/scripts/lib/process-file.ts` | Single-file transform pipeline (the canonical transform)                                      |
-| `packages/core/scripts/lib/transforms.ts`   | Individual transform functions (stripFrontmatter, findAndReplace, serializeFrontmatter, etc.) |
-| `packages/core/scripts/lib/config.ts`       | Config types: `SyncConfig`, `FileConfig`, `ReplaceOp`, `ResolvedFileConfig`                   |
-| `packages/core/scripts/lib/sync.ts`         | Core orchestration — walks source dirs, dispatches to processFile, auto-cleans stale outputs  |
-| `packages/core/scripts/lib/file.ts`         | File I/O: atomic write (tmp + rename), directory walker, auto-clean                           |
-| `packages/core/scripts/lib/diff.ts`         | Unified diff generation for `--diff` mode                                                     |
+| File | Role |
+| --- | --- |
+| `packages/core/scripts/sync.ts` | CLI entry point - `--check` for CI, `--diff` for review, `--dry-run` for preview |
+| `packages/core/scripts/lib/process-file.ts` | Single-file transform pipeline (the canonical transform) |
+| `packages/core/scripts/lib/transforms.ts` | Individual transform functions (stripFrontmatter, findAndReplace, serializeFrontmatter, etc.) |
+| `packages/core/scripts/lib/config.ts` | Config types: `SyncConfig`, `FileConfig`, `ReplaceOp`, `ResolvedFileConfig` |
+| `packages/core/scripts/lib/sync.ts` | Core orchestration - walks source dirs, dispatches to processFile, auto-cleans stale outputs |
+| `packages/core/scripts/lib/file.ts` | File I/O: atomic write (tmp + rename), directory walker, auto-clean |
+| `packages/core/scripts/lib/diff.ts` | Unified diff generation for `--diff` mode |
 
 ### Sync Configs (per-plugin)
 
 Each plugin defines its transforms in `sync.config.ts`:
 
-| Plugin        | Key transforms                                                                                                                    | Output format                                          |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **opencode**  | Adds YAML frontmatter with `mode`, `permission` blocks                                                                            | `agents/<name>.md` — agent files with tool permissions |
-| **kimi-code** | 18 string replacements (`task(` → `Agent(`, `webfetch` → `FetchURL`, etc.) + prepend subagent profile + append routing/swarm docs | `skills/<name>/SKILL.md` — Kimi Code skills            |
-| **pi**        | 9 replacements (`task(` → `maestria_subagent(`, `@` → `/`)                                                                        | `prompts/<name>.md` — prompt files                     |
+| Plugin | Key transforms | Output format |
+| --- | --- | --- |
+| **opencode** | Adds YAML frontmatter with `mode`, `permission` blocks | `agents/<name>.md` - agent files with tool permissions |
+| **kimi-code** | 18 string replacements (`task(` → `Agent(`, `webfetch` → `FetchURL`, etc.) + prepend subagent profile + append routing/swarm docs | `skills/<name>/SKILL.md` - Kimi Code skills |
+| **pi** | 9 replacements (`task(` → `maestria_subagent(`, `@` → `/`) | `prompts/<name>.md` - prompt files |
 
 ### Commands
 
@@ -117,7 +117,7 @@ Each plugin defines its transforms in `sync.config.ts`:
 # Regenerate all plugin outputs
 scripts/sync-all
 
-# CI check — exit 1 if any output differs from expected
+# CI check - exit 1 if any output differs from expected
 scripts/check-sync
 
 # Per-plugin (run from the plugin directory)
@@ -136,16 +136,16 @@ cd packages/opencode && npx tsx ../core/scripts/sync.ts --diff   # show changes
 
 ### Add a new specialist
 
-1. Create `packages/core/agent-directives/specialists/<name>.md` — follow the existing structure (role description, methodology, iteration limits, handoff format, skill prescription, related agents)
+1. Create `packages/core/agent-directives/specialists/<name>.md` - follow the existing structure (role description, methodology, iteration limits, handoff format, skill prescription, related agents)
 2. Register in the orchestrator prompt's delegation table
 3. For each plugin, check `sync.config.ts`:
    - **OpenCode:** Add frontmatter with `mode: subagent`, `description`, and `permission` blocks
    - **Kimi Code:** Add a `files` entry with subagent type mapping, prepend content, frontmatter with `name`/`description`/`whenToUse`, and add to the routing table in `orchestrator`'s append
-   - **Pi:** Usually just default transforms apply — check if specialist-specific overrides are needed
+   - **Pi:** Usually just default transforms apply - check if specialist-specific overrides are needed
 
 ### Edit an existing specialist
 
-1. Edit `packages/core/agent-directives/specialists/<name>.md` — never edit generated copies
+1. Edit `packages/core/agent-directives/specialists/<name>.md` - never edit generated copies
 2. Run `scripts/sync-all` to regenerate all plugin outputs
 3. Verify with `scripts/check-sync`
 4. Run tests: `vp check && pnpm test`
@@ -162,7 +162,7 @@ To port Maestria to a new AI coding agent (e.g., Claude Code, Copilot):
    - Frontmatter/format adjustments for the target platform
    - Prepend/append for platform-required headers or routing tables
 3. **Implement the plugin:** write source code that hooks into the target platform's lifecycle (subagents, skills, extensions, etc.)
-4. **Sync integration:** the root `scripts/sync-all` auto-detects new `packages/*/sync.config.ts` files — no script registration needed
+4. **Sync integration:** the root `scripts/sync-all` auto-detects new `packages/*/sync.config.ts` files - no script registration needed
 5. **Document:** add a docs section in `apps/docs/src/content/docs/<name>/`
 6. **Test:** `vp check` must pass; add platform-specific tests
 
@@ -179,7 +179,7 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 | Entry point  | `packages/opencode/src/index.ts` (~190 lines)               |
 | Hooks        | `config`, `chat.message`, `experimental.session.compacting` |
 | Test         | `pnpm --filter @maestria/opencode test`                     |
-| Build        | `vp pack` (Rolldown) — outputs to `dist/`                   |
+| Build        | `vp pack` (Rolldown) - outputs to `dist/`                   |
 | Agents       | Auto-generated in `agents/` from sync pipeline              |
 | Dependencies | `@opencode-ai/plugin` (peer), `yaml`, `zod`, `es-toolkit`   |
 
@@ -187,25 +187,25 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 
 | Concern        | Details                                                           |
 | -------------- | ----------------------------------------------------------------- |
-| Format         | Declarative — no build step (no `dist/` output)                   |
+| Format         | Declarative - no build step (no `dist/` output)                   |
 | Skills         | Auto-generated in `skills/<name>/SKILL.md` from sync pipeline     |
-| Manifest       | `kimi.plugin.json` — plugin definition file                       |
+| Manifest       | `kimi.plugin.json` - plugin definition file                       |
 | Test           | `vp test`                                                         |
 | Release        | Push `@maestria/kimi-code@v<version>` tag → CI runs subtree split |
 | Subagent types | `explore` (read-only), `coder` (write/edit), `plan` (read+bash)   |
 
 ### pi
 
-| Concern        | Details                                                                                                           |
-| -------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Entry point    | `packages/pi/src/extension.ts`                                                                                    |
+| Concern | Details |
+| --- | --- |
+| Entry point | `packages/pi/src/extension.ts` |
 | Source modules | `modes.ts`, `rules.ts`, `compaction.ts`, `subagent.ts`, `commands.ts`, `tools.ts`, `state.ts`, `rules-content.ts` |
-| Test           | `pnpm --filter @maestria/pi test`                                                                                 |
-| Build          | `vp pack` (Rolldown) — outputs to `dist/`                                                                         |
-| Validate       | `pnpm --filter @maestria/pi validate`                                                                             |
-| Prebuild       | `node --experimental-strip-types scripts/build-rules.ts`                                                          |
-| Peer deps      | `@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `typebox`                                             |
-| Key transforms | `task(` → `maestria_subagent(`, `@` → `/`                                                                         |
+| Test | `pnpm --filter @maestria/pi test` |
+| Build | `vp pack` (Rolldown) - outputs to `dist/` |
+| Validate | `pnpm --filter @maestria/pi validate` |
+| Prebuild | `node --experimental-strip-types scripts/build-rules.ts` |
+| Peer deps | `@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `typebox` |
+| Key transforms | `task(` → `maestria_subagent(`, `@` → `/` |
 
 ---
 
@@ -213,10 +213,10 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 
 See [`docs/testing.md`](docs/testing.md) for the full guide. Key principles:
 
-- **Test from contracts, not implementation** — test observable behavior at the highest practical boundary
-- **Avoid mocks** — prefer real lightweight boundaries or explicit fakes; mocking is a design smell
-- **Keep regression tests intentional** — only add a regression test if it protects a durable contract or a meaningful failure mode
-- **Use explicit `it()` blocks** — `it("does X when Y")` so condition and behavior are clear from the name
+- **Test from contracts, not implementation** - test observable behavior at the highest practical boundary
+- **Avoid mocks** - prefer real lightweight boundaries or explicit fakes; mocking is a design smell
+- **Keep regression tests intentional** - only add a regression test if it protects a durable contract or a meaningful failure mode
+- **Use explicit `it()` blocks** - `it("does X when Y")` so condition and behavior are clear from the name
 
 ---
 
@@ -241,7 +241,7 @@ Create a changeset whenever you make a user-facing change to a published package
 
 ## 9. Pull Request Process
 
-1. **Fork + feature branch** — branch from `main`, use a descriptive name (`fix/sync-crash`, `feat/claude-code-plugin`)
+1. **Fork + feature branch** - branch from `main`, use a descriptive name (`fix/sync-crash`, `feat/claude-code-plugin`)
 2. **Make changes following conventions:**
    - Edit canonical sources, never generated copies
    - If changing agent directives: run `scripts/sync-all` + `scripts/check-sync`
@@ -255,13 +255,13 @@ Create a changeset whenever you make a user-facing change to a published package
 
 ## 10. Documentation
 
-| Area                   | Location                                             | How to run                  |
-| ---------------------- | ---------------------------------------------------- | --------------------------- |
-| User-facing docs       | `apps/docs/` (Astro + Starlight)                     | `vp run @maestria/docs#dev` |
-| Architecture decisions | `docs/adr/{core,opencode,kimi-code,pi}/`             | Read as markdown            |
-| Testing guide          | `docs/testing.md`                                    | Read as markdown            |
-| Completion checklist   | `docs/checklist.md`                                  | Read as markdown            |
-| Root project docs      | `AGENTS.md`, `PATTERNS.md`, `VISION.md`, `README.md` | Read as markdown            |
+| Area | Location | How to run |
+| --- | --- | --- |
+| User-facing docs | `apps/docs/` (Astro + Starlight) | `vp run @maestria/docs#dev` |
+| Architecture decisions | `docs/adr/{core,opencode,kimi-code,pi}/` | Read as markdown |
+| Testing guide | `docs/testing.md` | Read as markdown |
+| Completion checklist | `docs/checklist.md` | Read as markdown |
+| Root project docs | `AGENTS.md`, `PATTERNS.md`, `VISION.md`, `README.md` | Read as markdown |
 
 The docs site auto-generates sidebar navigation via `starlight-auto-sidebar`. After adding a new page, verify it appears in the sidebar during local dev.
 

@@ -27,11 +27,11 @@ Phase 8 (no deps)
 - Phase 7 (cross-extension events) depends on Phase 1 (review events) and Phase 4 (subagent lifecycle events)
 - Phases 3, 6, 8 are fully independent
 
-**Rollback points exist after every phase** — each phase is independently verifiable.
+**Rollback points exist after every phase** - each phase is independently verifiable.
 
 ---
 
-## Phase 1 — Review Model Cycling (Tier 1, Gap #1)
+## Phase 1 - Review Model Cycling (Tier 1, Gap #1)
 
 **Effort:** Medium  
 **Dependencies:** None  
@@ -64,7 +64,7 @@ pi.registerCommand('review-model', {
   description: 'Set which model to use when entering review mode',
   handler: async (args: string, ctx) => {
     if (!args.trim()) {
-      ctx.ui.notify('Usage: /review-model <model-id> — set the review model');
+      ctx.ui.notify('Usage: /review-model <model-id> - set the review model');
       return;
     }
     const modelId = args.trim();
@@ -86,7 +86,7 @@ pi.registerCommand('review-model', {
 
 #### 1d. Update `restoreOriginalState` to also clear `reviewModel` (`state.ts`)
 
-The `exitReviewMode` function already clears `originalModel` and `originalTools`. No changes needed — `reviewModel` should persist across review sessions (it's a preference, not a session state).
+The `exitReviewMode` function already clears `originalModel` and `originalTools`. No changes needed - `reviewModel` should persist across review sessions (it's a preference, not a session state).
 
 #### 1e. Update `renderMaestriaSummary` (`state.ts`)
 
@@ -120,7 +120,7 @@ Commit after 1a-1f. If `/review` model switching breaks, revert this phase. The 
 
 ---
 
-## Phase 2 — `/handoff` Command (Tier 1, Gap #3)
+## Phase 2 - `/handoff` Command (Tier 1, Gap #3)
 
 **Effort:** Medium  
 **Dependencies:** None  
@@ -135,7 +135,7 @@ pi.registerCommand('handoff', {
   description: 'Generate a structured handoff prompt for a new task context',
   handler: async (args: string, ctx) => {
     if (!args.trim()) {
-      ctx.ui.notify('Usage: /handoff <goal> — describe the task context for handoff');
+      ctx.ui.notify('Usage: /handoff <goal> - describe the task context for handoff');
       return;
     }
 
@@ -175,7 +175,7 @@ pi.registerCommand('handoff', {
     ].slice(0, 5);
     pi.appendEntry('maestria_state', state);
 
-    // Send as user message — triggers a new agent turn with the handoff context
+    // Send as user message - triggers a new agent turn with the handoff context
     pi.sendUserMessage(handoffPrompt, { deliverAs: 'steer' });
   },
 });
@@ -206,7 +206,7 @@ Commit after 2a-2b. The `/handoff` command is additive and has no impact on exis
 
 ---
 
-## Phase 3 — Orchestrator Prompt Sync (Tier 1, Gap #2)
+## Phase 3 - Orchestrator Prompt Sync (Tier 1, Gap #2)
 
 **Effort:** Small  
 **Dependencies:** None  
@@ -220,12 +220,12 @@ Copy from `packages/opencode/agents/orchestrator.md` but remove unreachable `npx
 
 The section should include:
 
-- **Proactive Path** — Before every `maestria_subagent()` call, identify skills
-- **Reactive Path** — Subagent suggests a skill you didn't include
-- **Guard Rails** — Don't memorize flags, install directly
-- **Skip Behavior** — User declines? Spawn anyway
-- **Project Skill Discovery** — Scan available_skills
-- **Miss Handling** — If subagent can't find a skill
+- **Proactive Path** - Before every `maestria_subagent()` call, identify skills
+- **Reactive Path** - Subagent suggests a skill you didn't include
+- **Guard Rails** - Don't memorize flags, install directly
+- **Skip Behavior** - User declines? Spawn anyway
+- **Project Skill Discovery** - Scan available_skills
+- **Miss Handling** - If subagent can't find a skill
 
 **Pi-specific adaptations:**
 
@@ -250,7 +250,7 @@ Status updates are delivered via the tool's onUpdate callback.
 ## Human-in-the-Loop
 
 Always use the `question` tool when you need user input. Do not output
-questions as plain text — the `question` tool creates an interactive
+questions as plain text - the `question` tool creates an interactive
 prompt that pauses execution and waits for a response.
 
 Propose actions and wait for approval for:
@@ -270,12 +270,12 @@ Exception: Status updates and progress reports are text output, not questions.
 ```
 ## Anti-Patterns
 
-- **Agent ping-pong** — agents endlessly passing work back and forth
-- **Coordination overhead** — spending more time coordinating than working
-- **Unclear ownership** — multiple agents assuming responsibility for same task
-- **Silent failures** — agent failing without notifying others
-- **Builder bias** — defaulting to @builder when a more specialized specialist fits
-- **Auto-committing** — committing after every work cycle without asking
+- **Agent ping-pong** - agents endlessly passing work back and forth
+- **Coordination overhead** - spending more time coordinating than working
+- **Unclear ownership** - multiple agents assuming responsibility for same task
+- **Silent failures** - agent failing without notifying others
+- **Builder bias** - defaulting to @builder when a more specialized specialist fits
+- **Auto-committing** - committing after every work cycle without asking
 ```
 
 #### 3e. Update delegation docs
@@ -291,7 +291,7 @@ Exception: Status updates and progress reports are text output, not questions.
 - [ ] "Human-in-the-Loop" section present
 - [ ] "Anti-Patterns" section present
 - [ ] All delegation examples use `maestria_subagent()` not `subagent()`/`task()`
-- [ ] Comment at top still says `<!-- Source: packages/opencode/agents/orchestrator.md — keep in sync -->`
+- [ ] Comment at top still says `<!-- Source: packages/opencode/agents/orchestrator.md - keep in sync -->`
 
 ### Rollback Point
 
@@ -299,7 +299,7 @@ Commit after 3a-3e. This is a prompt-only change; `git checkout -- packages/pi/p
 
 ---
 
-## Phase 4 — Subagent Parallel/Chain Modes (Tier 2, Gap #4)
+## Phase 4 - Subagent Parallel/Chain Modes (Tier 2, Gap #4)
 
 **Effort:** Large  
 **Dependencies:** None (but will need to update tests from Phase 1 for any state changes)  
@@ -397,17 +397,17 @@ Current signature handles single dispatch. Refactor to:
 - [ ] `tasks` array parameter accepted alongside existing `agent`/`task`
 - [ ] Parallel mode dispatches 2-8 tasks concurrently
 - [ ] Chain mode pipes results through `{previous}` placeholder
-- [ ] Backward compatible — existing single-agent calls unchanged
+- [ ] Backward compatible - existing single-agent calls unchanged
 - [ ] `MAX_PARALLEL_TASKS = 8` exported
 - [ ] All handoffs recorded in state
 
 ### Rollback Point
 
-Commit after 4a-4f. The tool definition is backward compatible — existing `maestria_subagent({ agent, task })` calls work identically.
+Commit after 4a-4f. The tool definition is backward compatible - existing `maestria_subagent({ agent, task })` calls work identically.
 
 ---
 
-## Phase 5 — State Persistence Consistency (Tier 2, Gap #5)
+## Phase 5 - State Persistence Consistency (Tier 2, Gap #5)
 
 **Effort:** Small  
 **Dependencies:** Phase 1, Phase 2, Phase 4 (needs all mutation paths to exist)  
@@ -419,16 +419,16 @@ Commit after 4a-4f. The tool definition is backward compatible — existing `mae
 
 Review every `Object.assign(state, ...)` and direct state mutation for persistence calls:
 
-| Location                                 | Current Persistence                             | Action                                          |
-| ---------------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
-| `commands.ts` — `/orchestrate` handler   | None (restores from review)                     | Add `pi.appendEntry`                            |
-| `commands.ts` — `/review` handler        | Has `pi.appendEntry`                            | ✅ OK                                           |
-| `commands.ts` — `/restore-model` handler | None (clears review via `restoreOriginalState`) | Add `pi.appendEntry`                            |
-| `commands.ts` — `/review-model` handler  | Has `pi.appendEntry` (from Phase 1)             | ✅ OK                                           |
-| `commands.ts` — `/handoff` handler       | Has `pi.appendEntry` (from Phase 2)             | ✅ OK                                           |
-| `modes.ts` — mode commands               | None (sets `state.mode`)                        | Add `pi.appendEntry`                            |
-| `subagent.ts` — handoff recording        | Has `pi.appendEntry`                            | ✅ OK                                           |
-| `subagent.ts` — subagent status updates  | No (mutates `state.subagentStatus` directly)    | Add `pi.appendEntry` on terminal status changes |
+| Location | Current Persistence | Action |
+| --- | --- | --- |
+| `commands.ts` - `/orchestrate` handler | None (restores from review) | Add `pi.appendEntry` |
+| `commands.ts` - `/review` handler | Has `pi.appendEntry` | ✅ OK |
+| `commands.ts` - `/restore-model` handler | None (clears review via `restoreOriginalState`) | Add `pi.appendEntry` |
+| `commands.ts` - `/review-model` handler | Has `pi.appendEntry` (from Phase 1) | ✅ OK |
+| `commands.ts` - `/handoff` handler | Has `pi.appendEntry` (from Phase 2) | ✅ OK |
+| `modes.ts` - mode commands | None (sets `state.mode`) | Add `pi.appendEntry` |
+| `subagent.ts` - handoff recording | Has `pi.appendEntry` | ✅ OK |
+| `subagent.ts` - subagent status updates | No (mutates `state.subagentStatus` directly) | Add `pi.appendEntry` on terminal status changes |
 
 #### 5b. Create persistence helper
 
@@ -470,7 +470,7 @@ Commit after 5a-5d. Each persistence call is additive and non-breaking.
 
 ---
 
-## Phase 6 — `isToolCallEventType` Refactor (Tier 2, Gap #6)
+## Phase 6 - `isToolCallEventType` Refactor (Tier 2, Gap #6)
 
 **Effort:** Small  
 **Dependencies:** None  
@@ -501,7 +501,10 @@ if (state.reviewMode) {
     isToolCallEventType('write', event) ||
     isToolCallEventType('bash', event)
   ) {
-    return { block: true, reason: 'Review mode is active. Report findings, do not edit.' };
+    return {
+      block: true,
+      reason: 'Review mode is active. Report findings, do not edit.',
+    };
   }
 }
 ```
@@ -521,7 +524,7 @@ Remove the set if no longer needed, or keep for clarity. The set can remain as a
 
 #### 6d. Tests
 
-- Test `installToolInterceptors` uses `isToolCallEventType` calls (test via `event.toolName` matching — the function still returns the same result shape)
+- Test `installToolInterceptors` uses `isToolCallEventType` calls (test via `event.toolName` matching - the function still returns the same result shape)
 - Verify backward compatibility: all existing tests pass unchanged
 
 ### Success Criteria
@@ -537,7 +540,7 @@ Commit after 6a-6d. Pure refactor with identical behavior.
 
 ---
 
-## Phase 7 — Cross-extension Events via `pi.events` (Tier 3, Gap #7)
+## Phase 7 - Cross-extension Events via `pi.events` (Tier 3, Gap #7)
 
 **Effort:** Medium  
 **Dependencies:** Phase 1 (review mode), Phase 4 (subagent lifecycle)  
@@ -563,19 +566,27 @@ export const MAESTRIA_EVENTS = {
 In `/review` handler (`commands.ts`), after successful model switch:
 
 ```ts
-pi.events?.emit(MAESTRIA_EVENTS.REVIEW_ACTIVATED, { originalModel, reviewModel });
+pi.events?.emit(MAESTRIA_EVENTS.REVIEW_ACTIVATED, {
+  originalModel,
+  reviewModel,
+});
 ```
 
 In `/restore-model` handler, after restoration:
 
 ```ts
-pi.events?.emit(MAESTRIA_EVENTS.REVIEW_DEACTIVATED, { originalModel, reviewModel });
+pi.events?.emit(MAESTRIA_EVENTS.REVIEW_DEACTIVATED, {
+  originalModel,
+  reviewModel,
+});
 ```
 
 In `/orchestrate` handler when exiting review mode:
 
 ```ts
-pi.events?.emit(MAESTRIA_EVENTS.REVIEW_DEACTIVATED, { originalModel: state.originalModel });
+pi.events?.emit(MAESTRIA_EVENTS.REVIEW_DEACTIVATED, {
+  originalModel: state.originalModel,
+});
 ```
 
 #### 7c. Emit subagent lifecycle events
@@ -625,7 +636,7 @@ Commit after 7a-7e. Events are additive and non-breaking.
 
 ---
 
-## Phase 8 — Build/Provenance Cleanup (Tier 3, Gap #8)
+## Phase 8 - Build/Provenance Cleanup (Tier 3, Gap #8)
 
 **Effort:** Small  
 **Dependencies:** None  
@@ -648,11 +659,11 @@ Commit after 7a-7e. Events are additive and non-breaking.
 "keywords": ["pi-package", "maestria", "agent-orchestration"]
 ```
 
-(The `keywords` field doesn't exist yet — add it.)
+(The `keywords` field doesn't exist yet - add it.)
 
 #### 8c. Integration test scaffold
 
-Create `tests/integration.test.ts` additions — the file already exists. Add test cases:
+Create `tests/integration.test.ts` additions - the file already exists. Add test cases:
 
 ```ts
 it('package.json has publishConfig.provenance', () => {
@@ -705,34 +716,34 @@ And verify the extension loads by checking `dist/extension.mjs` was generated.
 ### Manual spot checks
 
 1. Start a Pi session with `@maestria/pi` installed
-2. `/review-model gpt-4o` — should confirm model set
-3. `/review audit auth module` — should switch model and restrict tools
-4. `/restore-model` — should restore original
-5. `/handoff implement user auth` — should generate structured prompt
-6. `/orchestrate build feature` — should exit review mode
-7. `maestria_subagent({ tasks: [...], mode: 'parallel' })` — test parallel dispatch
-8. `maestria_subagent({ tasks: [...], mode: 'chain' })` — test chain dispatch
+2. `/review-model gpt-4o` - should confirm model set
+3. `/review audit auth module` - should switch model and restrict tools
+4. `/restore-model` - should restore original
+5. `/handoff implement user auth` - should generate structured prompt
+6. `/orchestrate build feature` - should exit review mode
+7. `maestria_subagent({ tasks: [...], mode: 'parallel' })` - test parallel dispatch
+8. `maestria_subagent({ tasks: [...], mode: 'chain' })` - test chain dispatch
 
 ---
 
 ## Assumptions
 
-1. **`isToolCallEventType` is stable** — Assumed to be the correct typed guard function exported from `@earendil-works/pi-coding-agent`. The version we checked (0.79.9) exports it.
-2. **`ctx.modelRegistry.getAll()` is the correct API for model enumeration** — Already used in `restoreOriginalState`, so this is validated.
-3. **`pi.events.emit()` signature** — Assumed to match `EventBus.emit(event: string, data: unknown): void` pattern (based on the `createEventBus` export).
-4. **`pi.sendUserMessage()` with `steer` delivery is the correct handoff mechanism** — Pi may not expose `sessionManager.fork()` to extensions. Steer messages are the closest alternative.
-5. **`pi.getAllModels()` is not available** — We use `ctx.modelRegistry.getAll()` instead.
-6. **Backward compatibility is required** — The `maestria_subagent` tool must remain named exactly `maestria_subagent` and support existing `{ agent, task }` calls unchanged.
-7. **Review model preference should persist across sessions** — `reviewModel` is not cleared by `exitReviewMode`; it's a user preference, not session state.
+1. **`isToolCallEventType` is stable** - Assumed to be the correct typed guard function exported from `@earendil-works/pi-coding-agent`. The version we checked (0.79.9) exports it.
+2. **`ctx.modelRegistry.getAll()` is the correct API for model enumeration** - Already used in `restoreOriginalState`, so this is validated.
+3. **`pi.events.emit()` signature** - Assumed to match `EventBus.emit(event: string, data: unknown): void` pattern (based on the `createEventBus` export).
+4. **`pi.sendUserMessage()` with `steer` delivery is the correct handoff mechanism** - Pi may not expose `sessionManager.fork()` to extensions. Steer messages are the closest alternative.
+5. **`pi.getAllModels()` is not available** - We use `ctx.modelRegistry.getAll()` instead.
+6. **Backward compatibility is required** - The `maestria_subagent` tool must remain named exactly `maestria_subagent` and support existing `{ agent, task }` calls unchanged.
+7. **Review model preference should persist across sessions** - `reviewModel` is not cleared by `exitReviewMode`; it's a user preference, not session state.
 
 ---
 
 ## What Was NOT Planned / Is Unclear
 
-1. **Model cycling in `/restore-model`** — The current `restoreOriginalState` already calls `pi.setModel()` with the original model. The gap is that `/review` never calls `pi.setModel()` to switch _to_ a review model. This is fixed in Phase 1.
-2. **`pi.getAllModels()` exploration** — Not available in the API. Using `ctx.modelRegistry.getAll()` as established pattern.
-3. **Fork vs. steer for `/handoff`** — Forking a Pi session requires `sessionManager.fork()` which may not be exposed to extensions. Using `sendUserMessage` with `steer` as the safest cross-version approach.
-4. **Subagent service ability for parallel dispatch** — The `@gotgenes/pi-subagents` service exposes `service.spawn()` which returns synchronously. We assume spawning multiple in sequence, then polling all concurrently, will work. If `service.spawn()` has side effects that prevent concurrent agents, chain mode becomes the only viable multi-agent pattern.
+1. **Model cycling in `/restore-model`** - The current `restoreOriginalState` already calls `pi.setModel()` with the original model. The gap is that `/review` never calls `pi.setModel()` to switch _to_ a review model. This is fixed in Phase 1.
+2. **`pi.getAllModels()` exploration** - Not available in the API. Using `ctx.modelRegistry.getAll()` as established pattern.
+3. **Fork vs. steer for `/handoff`** - Forking a Pi session requires `sessionManager.fork()` which may not be exposed to extensions. Using `sendUserMessage` with `steer` as the safest cross-version approach.
+4. **Subagent service ability for parallel dispatch** - The `@gotgenes/pi-subagents` service exposes `service.spawn()` which returns synchronously. We assume spawning multiple in sequence, then polling all concurrently, will work. If `service.spawn()` has side effects that prevent concurrent agents, chain mode becomes the only viable multi-agent pattern.
 
 ---
 

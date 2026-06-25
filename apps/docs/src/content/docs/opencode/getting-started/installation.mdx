@@ -1,16 +1,16 @@
 ---
 title: Installation & Setup
-description: How to install @maestria/opencode and what you get — 8 specialized agents and global workflow rules for OpenCode.
+description: How to install @maestria/opencode and what you get - 8 specialized agents and global workflow rules for OpenCode.
 ---
 
 import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components';
 
-`@maestria/opencode` is an npm plugin for [OpenCode](https://opencode.ai) that turns your AI coding environment into a disciplined engineering workstation. It bundles 8 specialized agents and global workflow rules — all installed with a single line of configuration. No manual setup, no prompt engineering, no forgotten context between sessions.
+`@maestria/opencode` is an npm plugin for [OpenCode](https://opencode.ai) that turns your AI coding environment into a disciplined engineering workstation. It bundles 8 specialized agents and global workflow rules - all installed with a single line of configuration. No manual setup, no prompt engineering, no forgotten context between sessions.
 
 ## Prerequisites
 
 - [OpenCode](https://opencode.ai) CLI (latest version)
-- **Node.js 22.12+** — Required for plugin resolution. Earlier versions are not supported.
+- **Node.js 22.12+** - Required for plugin resolution. Earlier versions are not supported.
 
 ## Installation
 
@@ -53,14 +53,14 @@ Or, add it manually to your OpenCode config:
 
 ## Verify Installation
 
-Start a new OpenCode session. The 8 agents are ready for delegation via `@` mention. Try typing `@orchestrator` to kick off your first task — the manager agent decomposes it and hands pieces to the right specialist.
+Start a new OpenCode session. The 8 agents are ready for delegation via `@` mention. Try typing `@orchestrator` to kick off your first task - the manager agent decomposes it and hands pieces to the right specialist.
 
 The global workflow rules are active in every prompt. You will see them reflected in how agents respond, delegate, and structure their output.
 
 ## Updating
 
 OpenCode does not auto-update plugins. Packages are cached locally in
-`~/.cache/opencode/packages/<name>@<version>/` — the npm registry is not consulted if the
+`~/.cache/opencode/packages/<name>@<version>/` - the npm registry is not consulted if the
 package is already cached. To update, re-run the install command with the same scope as
 the original install:
 
@@ -161,5 +161,5 @@ rm -rf ~/.cache/opencode/packages/@maestria/opencode*
 
 ## Next Steps
 
-- [Quick Start](/opencode/getting-started/quick-start/) — Your first session with the plugin
-- [Browse the Agents](/core/agents/) — Detailed documentation for each agent
+- [Quick Start](/opencode/getting-started/quick-start/) - Your first session with the plugin
+- [Browse the Agents](/core/agents/) - Detailed documentation for each agent

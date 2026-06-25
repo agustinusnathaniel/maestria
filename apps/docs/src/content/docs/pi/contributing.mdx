@@ -1,6 +1,6 @@
 ---
 title: Contributing
-description: How to contribute to @maestria/pi — development setup, making changes, and submitting PRs.
+description: How to contribute to @maestria/pi - development setup, making changes, and submitting PRs.
 ---
 
 # Contributing
@@ -48,9 +48,9 @@ Global rules follow the same canonical-source workflow as prompts. See [Canonica
 
 Skills fall into two categories:
 
-**Canonical skills** (the 8 specialist agents: adventurer, architect, builder, diagnose, planner, reviewer, writer, orchestrator) — these are authored at `packages/core/agent-directives/specialists/<name>.md` and synced to `packages/pi/prompts/<name>.md`. See [Adding or Modifying Prompts](#adding-or-modifying-prompts) above.
+**Canonical skills** (the 8 specialist agents: adventurer, architect, builder, diagnose, planner, reviewer, writer, orchestrator) - these are authored at `packages/core/agent-directives/specialists/<name>.md` and synced to `packages/pi/prompts/<name>.md`. See [Adding or Modifying Prompts](#adding-or-modifying-prompts) above.
 
-**Pi-only methodology skills** (handoff, iteration-limits) — these live in `packages/pi/skills/` and have no canonical source. Each skill directory contains a SKILL.md and any supporting files. To add a new Pi-only skill, create a directory under `skills/` with a SKILL.md file. Validate your changes with:
+**Pi-only methodology skills** (handoff, iteration-limits) - these live in `packages/pi/skills/` and have no canonical source. Each skill directory contains a SKILL.md and any supporting files. To add a new Pi-only skill, create a directory under `skills/` with a SKILL.md file. Validate your changes with:
 
 ```bash
 pnpm --filter @maestria/pi validate-skills
@@ -98,4 +98,4 @@ pnpm --filter @maestria/pi test -- tests/commands.test.ts
 
 ## See Also
 
-- [Contributing Guide](/core/contributing/) — General setup, changesets, and PR process
+- [Contributing Guide](/core/contributing/) - General setup, changesets, and PR process

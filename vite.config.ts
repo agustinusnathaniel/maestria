@@ -15,10 +15,17 @@ export default defineConfig({
       'packages/*/prompts/**',
       'packages/*/rules/**',
       'packages/*/skills/**',
+      '.agents',
     ],
     overrides: [
       {
         files: ['packages/core/**/*.md'],
+        options: {
+          proseWrap: 'never',
+        },
+      },
+      {
+        files: ['**/*.md'],
         options: {
           proseWrap: 'never',
         },

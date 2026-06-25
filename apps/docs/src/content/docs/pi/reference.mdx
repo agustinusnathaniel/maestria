@@ -1,13 +1,13 @@
 ---
 title: Pi Reference
-description: Pi-specific reference — mode commands, subagent dispatch, review mode, and session management for @maestria/pi.
+description: Pi-specific reference - mode commands, subagent dispatch, review mode, and session management for @maestria/pi.
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ## Spec-Driven Delegation
 
-The orchestrator gives each specialist a **spec** — a structured handoff containing six required fields:
+The orchestrator gives each specialist a **spec** - a structured handoff containing six required fields:
 
 | Field                | Description                                                  |
 | -------------------- | ------------------------------------------------------------ |
@@ -18,7 +18,7 @@ The orchestrator gives each specialist a **spec** — a structured handoff conta
 | **Success Criteria** | Verifiable conditions for completion                         |
 | **Next Step**        | What happens after this task completes                       |
 
-The orchestrator enforces **phase gates** — each specialist must verify completion before the next phase begins. If a specialist blocks, the orchestrator escalates or re-plans.
+The orchestrator enforces **phase gates** - each specialist must verify completion before the next phase begins. If a specialist blocks, the orchestrator escalates or re-plans.
 
 ## Session Tree Integration
 
@@ -32,7 +32,7 @@ Every `maestria_subagent` call records the parent task ID and specialist name in
 | `/fein`              | Set workflow mode to full pipeline                                            |
 | `/sonar`             | Set workflow mode to research only                                            |
 | `/blitz`             | Set workflow mode to fast implementation                                      |
-| `/review <target>`   | Enter review mode — restricts toolset to read-only, optionally switches model |
+| `/review <target>`   | Enter review mode - restricts toolset to read-only, optionally switches model |
 | `/restore-model`     | Exit review mode and restore original model and tools                         |
 | `/review-model <id>` | Configure which model to use when entering review mode                        |
 | `/handoff <goal>`    | Generate a structured handoff document for task context transfer              |
@@ -96,7 +96,7 @@ Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are block
 
 ## Usage Notes
 
-**Pipeline discipline.** The default flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk — fine for simple changes, not recommended for cross-module work.
+**Pipeline discipline.** The default flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk - fine for simple changes, not recommended for cross-module work.
 
 **Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains all six required fields. Incomplete handoffs are rejected.
 

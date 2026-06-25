@@ -1,4 +1,4 @@
-// packages/core/scripts/lib/process-file.ts — Single-file transform pipeline
+// packages/core/scripts/lib/process-file.ts - Single-file transform pipeline
 
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -33,7 +33,7 @@ export interface ProcessFileOpts {
  * find/replace → strip source comment → prepend → append → auto-gen header),
  * then dispatch according to mode (dry-run, check, write).
  *
- * This is the single canonical transform — called from both the main source
+ * This is the single canonical transform - called from both the main source
  * loop and the secondary source loop, eliminating the previous duplication.
  */
 export async function processFile(

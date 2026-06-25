@@ -4,29 +4,29 @@
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-# Global Agent Rules — @maestria/kimi-code
+# Global Agent Rules - @maestria/kimi-code
 
 ## Orchestration
 
-- **!!! Don't assume** — verify against actual code and docs. Guesses lead to bugs.
-- **!!! Read the docs first** — before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes. This rule is scar tissue from repeated failures; treat it seriously, not a preference.
-- **!!! Don't anthropomorphize effort** — You operate at machine scale. When assessing alternatives, don't let perceived "amount of work" bias your judgment. What feels like a lot of work to a human is routine iteration for you. Choose the right approach based on technical trade-offs, not effort estimates. Effort estimation is a category error for agents with machine-scale capabilities.
+- **!!! Don't assume** - verify against actual code and docs. Guesses lead to bugs.
+- **!!! Read the docs first** - before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes. This rule is scar tissue from repeated failures; treat it seriously, not a preference.
+- **!!! Don't anthropomorphize effort** - You operate at machine scale. When assessing alternatives, don't let perceived "amount of work" bias your judgment. What feels like a lot of work to a human is routine iteration for you. Choose the right approach based on technical trade-offs, not effort estimates. Effort estimation is a category error for agents with machine-scale capabilities.
 
-- **Don't reference internal project names in explanations** — avoid leaking context outside the workspace.
-- **Write for humans** — Your output (reasoning, commit messages, documentation, status updates, questions) is read by people. Avoid AI-typical patterns: em dash overuse (—), inflated language, and promotional phrasing. For thorough humanizing of documentation artifacts, delegate to `writer` which loads the `humanizer` skill.
-- **Use `opensrc` for repos; `FetchURL` for pages** — when analyzing a GitHub/GitLab/BitBucket repo or any multi-file code reference, run `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`). It clones to a global cache and prints a path that `Read`/`Glob`/`Grep` can use directly. For a single file, a specific page, or a known URL, `FetchURL` is fine. Don't fetch an entire repo one file at a time — clone it once, then read locally. Use `--cwd` to resolve versions from the current project.
-- **Webfetch may hang — don't block on it** — if a `FetchURL` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
-- **Workflow modes** — keywords `fein` (full pipeline), `sonar` (research only), `blitz` (fast impl) activate per-turn workflow overrides. See the orchestrator prompt for details.
-- **Project `.maestria/`** — `.maestria/workflow.md` and `.maestria/rules.md` in the project root define project-specific workflow sequencing and non-negotiable rules. The orchestrator loads them on start; rules are propagated to all agents via delegation prompts. See the orchestrator prompt for details.
-- **CLI references — use local tools first** — for CLI references, run `Bash --help` or load the relevant `skill` instead of reaching for `FetchURL`. Local tools are faster and more reliable than fetching docs.
-- **Local files — read directly** — use `Read`, `Glob`, or `Grep` (or a language server protocol when available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
+- **Don't reference internal project names in explanations** - avoid leaking context outside the workspace.
+- **Write for humans** - Your output (reasoning, commit messages, documentation, status updates, questions) is read by people. Avoid AI-typical patterns: em dash overuse (-), inflated language, and promotional phrasing. For thorough humanizing of documentation artifacts, delegate to `writer` which loads the `humanizer` skill.
+- **Use `opensrc` for repos; `FetchURL` for pages** - when analyzing a GitHub/GitLab/BitBucket repo or any multi-file code reference, run `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`). It clones to a global cache and prints a path that `Read`/`Glob`/`Grep` can use directly. For a single file, a specific page, or a known URL, `FetchURL` is fine. Don't fetch an entire repo one file at a time - clone it once, then read locally. Use `--cwd` to resolve versions from the current project.
+- **Webfetch may hang - don't block on it** - if a `FetchURL` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
+- **Workflow modes** - keywords `fein` (full pipeline), `sonar` (research only), `blitz` (fast impl) activate per-turn workflow overrides. See the orchestrator prompt for details.
+- **Project `.maestria/`** - `.maestria/workflow.md` and `.maestria/rules.md` in the project root define project-specific workflow sequencing and non-negotiable rules. The orchestrator loads them on start; rules are propagated to all agents via delegation prompts. See the orchestrator prompt for details.
+- **CLI references - use local tools first** - for CLI references, run `Bash --help` or load the relevant `skill` instead of reaching for `FetchURL`. Local tools are faster and more reliable than fetching docs.
+- **Local files - read directly** - use `Read`, `Glob`, or `Grep` (or a language server protocol when available) for any file you have path access to. Don't `FetchURL` a local file or a file in a checked-out repo.
 - **Tool hierarchy for external information:**
-  1. `FetchURL` — fetch a specific known URL (for docs, pages)
-  2. `WebSearch` — discover relevant pages (for finding unknown resources) Use `FetchURL` when you know the URL; use `WebSearch` when you need to find something. `WebSearch` is an `ask`-only permission — explain what you're searching for and why before using it.
+  1. `FetchURL` - fetch a specific known URL (for docs, pages)
+  2. `WebSearch` - discover relevant pages (for finding unknown resources) Use `FetchURL` when you know the URL; use `WebSearch` when you need to find something. `WebSearch` is an `ask`-only permission - explain what you're searching for and why before using it.
 
 ## Delegation
 
-When delegating work via `Agent()`, use only the 7 specialists below. **Never delegate to `explore` or `general`** — they are built-in agents, not part of the pipeline.
+When delegating work via `Agent()`, use only the 7 specialists below. **Never delegate to `explore` or `general`** - they are built-in agents, not part of the pipeline.
 
 | Agent | Role | When to Delegate |
 | --- | --- | --- |
@@ -40,10 +40,10 @@ When delegating work via `Agent()`, use only the 7 specialists below. **Never de
 
 ## Context Management
 
-- **Progressive disclosure** — start high-level, get specific as needed.
-- **State checkpointing** — periodically summarize what's done, what's in progress, what's next.
-- **Context pruning** — remove irrelevant context when no longer needed.
-- **Completion promises** — define success criteria before starting work. "This task is complete when [verifiable conditions]."
+- **Progressive disclosure** - start high-level, get specific as needed.
+- **State checkpointing** - periodically summarize what's done, what's in progress, what's next.
+- **Context pruning** - remove irrelevant context when no longer needed.
+- **Completion promises** - define success criteria before starting work. "This task is complete when [verifiable conditions]."
 
 ## Commit Policy
 

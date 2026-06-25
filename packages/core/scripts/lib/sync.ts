@@ -1,4 +1,4 @@
-// packages/core/scripts/lib/sync.ts — Core sync orchestration
+// packages/core/scripts/lib/sync.ts - Core sync orchestration
 //
 // Orchestrates the sync pipeline: walks source directories, applies
 // transforms via processFile(), resolves secondary sources for files
@@ -65,10 +65,10 @@ export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
 
     let resolved: ResolvedFileConfig;
     if (isExplicit) {
-      // File was in config.files — resolveFileConfig already merged defaults
+      // File was in config.files - resolveFileConfig already merged defaults
       resolved = fileCfg;
     } else {
-      // File wasn't in config.files — apply default merging here
+      // File wasn't in config.files - apply default merging here
       if (verbose) {
         logger(`[${report}] No config for ${relPath}, using defaults`);
       }

@@ -39,7 +39,7 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
   // Split on ---
   const parts = content.split('---');
   if (parts.length < 3) {
-    throw new Error(`Invalid agent file: ${filePath} — missing frontmatter`);
+    throw new Error(`Invalid agent file: ${filePath} - missing frontmatter`);
   }
 
   const frontmatter = parseFrontmatter(parts[1].trim());

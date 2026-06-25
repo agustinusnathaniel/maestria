@@ -11,11 +11,11 @@ Do not add a regression test for every fix. Before adding coverage, ask:
 - Does this protect a durable contract or meaningful failure mode?
 - Is the test likely to catch a plausible future regression?
 
-Skip tests for incidental implementation details, rare edge cases, and fixes whose corrected form is the natural result of the surrounding design. Every test makes a behavior harder to change — add one only when that constraint is valuable.
+Skip tests for incidental implementation details, rare edge cases, and fixes whose corrected form is the natural result of the surrounding design. Every test makes a behavior harder to change - add one only when that constraint is valuable.
 
 ## Avoid mocks
 
-Prefer testing through real lightweight boundaries, small explicit fakes for injected interfaces, or narrow transport fixtures. If existing design forces broad mocking, treat that as a design smell — record the cleanup opportunity and document the temporary mock in the test.
+Prefer testing through real lightweight boundaries, small explicit fakes for injected interfaces, or narrow transport fixtures. If existing design forces broad mocking, treat that as a design smell - record the cleanup opportunity and document the temporary mock in the test.
 
 ## Test structure
 
