@@ -5,17 +5,6 @@ description: Release history for @maestria/kimi-code.
 
 # Changelog
 
-## v0.4.0
-
-_June 25, 2026_
-
-### Effort anthropomorphism guard and writing style guidance
-
-The orchestrator and all specialists now include explicit guardrails against two common failure modes:
-
-- **Don't anthropomorphize effort** — A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
-- **Write for humans** — The orchestrator and all specialists are guided to avoid AI-typical writing patterns (em dash overuse, inflated language, promotional phrasing) in user-facing output. Documentation artifacts can be delegated to `@writer` for thorough humanizing via the `humanizer` skill.
-
 ## v0.3.0
 
 _June 24, 2026_
@@ -26,6 +15,13 @@ Ships the `.maestria/` project workflow protocol. Projects using maestria's agen
 directives can now define `.maestria/workflow.md` for custom delegation sequencing
 and `.maestria/rules.md` for project-specific rules. The orchestrator loads these
 via `@adventurer` delegation.
+
+### Effort anthropomorphism guard and writing style guidance
+
+The orchestrator and all specialists now include explicit guardrails against two common failure modes:
+
+- **Don't anthropomorphize effort** — A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
+- **Write for humans** — The orchestrator and all specialists are guided to avoid AI-typical writing patterns (em dash overuse, inflated language, promotional phrasing) in user-facing output. Documentation artifacts can be delegated to `@writer` for thorough humanizing via the `humanizer` skill.
 
 ## 0.1.0
 
