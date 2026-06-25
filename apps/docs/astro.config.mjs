@@ -72,6 +72,7 @@ export default defineConfig({
           items: [
             { label: 'Specialist Reference', link: '/core/agents/' },
             { label: 'Pipeline & Roles', link: '/core/pipeline/' },
+            { label: 'How It Works', link: '/core/how-it-works/' },
             { label: 'Workflow Patterns', link: '/core/workflow-patterns/' },
             { label: 'Contributing', link: '/core/contributing/' },
           ],
