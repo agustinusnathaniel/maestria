@@ -7,7 +7,10 @@
 
 - **!!! Don't assume** — verify against actual code and docs. Guesses lead to bugs.
 - **!!! Read the docs first** — before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes. This rule is scar tissue from repeated failures; treat it seriously.
+- **!!! Don't anthropomorphize effort** — You operate at machine scale. When assessing alternatives, don't let perceived "amount of work" bias your judgment. What feels like a lot of work to a human is routine iteration for you. Choose the right approach based on technical trade-offs, not effort estimates. Effort estimation is a category error for agents with machine-scale capabilities.
+
 - **Don't reference internal project names in explanations** — avoid leaking context outside the workspace.
+- **Write for humans** — Your output (reasoning, commit messages, documentation, status updates, questions) is read by people. Avoid AI-typical patterns: em dash overuse (—), inflated language, and promotional phrasing. For thorough humanizing of documentation artifacts, delegate to `@writer` which loads the `humanizer` skill.
 - **Use `opensrc` for repos; `webfetch` for pages** — when analyzing a GitHub/GitLab/BitBucket repo or any multi-file code reference, run `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`). It clones to a global cache and prints a path that `read`/`glob`/`grep` can use directly. For a single file, a specific page, or a known URL, `webfetch` is fine. Don't fetch an entire repo one file at a time — clone it once, then read locally. Use `--cwd` to resolve versions from the current project.
 - **Webfetch may hang — don't block on it** — if a `webfetch` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
 - **Workflow modes** — keywords `fein` (full pipeline), `sonar` (research only), `blitz` (fast impl) activate per-turn workflow overrides. See the orchestrator prompt for details.
