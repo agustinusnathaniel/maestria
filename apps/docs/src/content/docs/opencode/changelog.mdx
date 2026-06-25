@@ -5,6 +5,26 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.5.0
+
+_June 24, 2026_
+
+### Project workflow configuration (.maestria/)
+
+Introduces a lightweight protocol for project-specific agent workflows. Projects
+can now define `.maestria/workflow.md` for custom delegation sequencing and
+`.maestria/rules.md` for project-specific non-negotiable rules.
+
+The orchestrator prompt includes a new "Project Workflows (.maestria/)" section
+that instructs the orchestrator to load these files via `@adventurer` delegation
+and follow their guidance. Core rules always take precedence over project
+instructions.
+
+- `packages/core/agent-directives/specialists/orchestrator.md` — new "Project
+  Workflows (.maestria/)" section
+- `packages/core/agent-directives/rules.md` — awareness bullet referencing the
+  protocol
+
 ## v0.4.6
 
 _June 22, 2026_

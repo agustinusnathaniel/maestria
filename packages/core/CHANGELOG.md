@@ -1,5 +1,11 @@
 # @maestria/core
 
+## 0.3.0
+
+### Minor Changes
+
+- [#36](https://github.com/agustinusnathaniel/maestria/pull/36) [`83a3d8b`](https://github.com/agustinusnathaniel/maestria/commit/83a3d8b) — Add `.maestria/` project workflow protocol to agent directives. Projects can now define `.maestria/workflow.md` and `.maestria/rules.md` for custom delegation sequencing and project-specific rules.
+
 ## 0.2.0
 
 ### Minor Changes

@@ -88,7 +88,65 @@ See [Pipeline & Roles](/core/pipeline/) for the full pipeline diagram and role d
   reaching for Builder. The orchestrator handles this routing automatically.
 </Aside>
 
+## Project Workflows (.maestria/)
+
+Projects using maestria's agent directives can define custom workflow instructions in
+`.maestria/workflow.md` and `.maestria/rules.md` at the project root. These files tell
+the orchestrator how to sequence delegation for that specific project.
+
+### How It Works
+
+The orchestrator checks for these files when starting work on a project by delegating
+to `@adventurer`. If found:
+
+- **`.maestria/workflow.md`** — Guides delegation sequencing. The orchestrator follows
+  this to determine what to do and in what order (e.g., read the README first, check
+  recent commits, read relevant ADRs before implementing).
+- **`.maestria/rules.md`** — Project-specific non-negotiable rules that supplement the
+  core rules. These are propagated to all subagents via delegation prompts.
+
+### Precedence
+
+Core rules (delegate don't implement, maker/checker split, commit protocol, etc.) always
+take precedence over project instructions. If a conflict arises, the core rule wins.
+
+### Example
+
+Here's a minimal `.maestria/workflow.md`:
+
+```
+## Sequencing
+
+### 1. Understand Context
+Delegate to @adventurer:
+- Read README.md for project overview
+- Check recent commits (git log --oneline -10)
+- Read package.json and workspace config
+
+### 2. Read Relevant ADRs
+Delegate to @adventurer to read ADRs in docs/adr/ before implementing.
+
+### 3. Implement and Test
+Delegate to @builder with the project's quality pipeline:
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+### When to Use
+
+Create a `.maestria/workflow.md` when your project has:
+
+- Specific conventions for how work should be sequenced (recon → design → implement → docs)
+- Project-specific quality gates (particular test commands, linting, build steps)
+- A structured ADR or decision documentation process
+- Multiple packages with different conventions
+
+The file is entirely opt-in — projects without `.maestria/` files see no change in agent behavior.
+
 ## See Also
 
 - [Specialist Reference](/core/agents/)
 - [Pipeline & Roles](/core/pipeline/)
+- Orchestrator prompt "Project Workflows (.maestria/)" section
+- Core agents documentation
