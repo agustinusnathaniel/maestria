@@ -1,18 +1,35 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "agustinusnathaniel/maestria" }],
+  "changelog": [
+    "@changesets/changelog-github",
+    {
+      "repo": "agustinusnathaniel/maestria"
+    }
+  ],
   "commit": false,
   "fixed": [],
-  "linked": [],
+  "linked": [
+    [
+      "@maestria/core",
+      "@maestria/opencode"
+    ],
+    [
+      "@maestria/core",
+      "@maestria/pi"
+    ],
+    [
+      "@maestria/core",
+      "@maestria/kimi-code"
+    ]
+  ],
   "access": "public",
   "baseBranch": "main",
   "privatePackages": {
     "tag": true
   },
   "updateInternalDependencies": "patch",
-	"bumpVersionsWithWorkspaceProtocolOnly": true,
-  "ignore": ["@maestria/docs"],
-  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
-    "updateInternalDependents": "always"
-  }
+  "bumpVersionsWithWorkspaceProtocolOnly": true,
+  "ignore": [
+    "@maestria/docs"
+  ]
 }

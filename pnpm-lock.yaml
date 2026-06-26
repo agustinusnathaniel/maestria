@@ -119,9 +119,6 @@ importers:
 
   packages/kimi-code:
     devDependencies:
-      '@maestria/core':
-        specifier: 'workspace:'
-        version: link:../core
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2
@@ -141,9 +138,6 @@ importers:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
-      '@maestria/core':
-        specifier: 'workspace:'
-        version: link:../core
       '@opencode-ai/plugin':
         specifier: ^1.17.0
         version: 1.17.3
@@ -172,9 +166,6 @@ importers:
         specifier: '*'
         version: 1.2.18
     devDependencies:
-      '@maestria/core':
-        specifier: 'workspace:'
-        version: link:../core
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2

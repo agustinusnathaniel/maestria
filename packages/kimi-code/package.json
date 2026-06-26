@@ -33,7 +33,6 @@
     "test": "vp test"
   },
   "devDependencies": {
-    "@maestria/core": "workspace:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }
