@@ -40,6 +40,8 @@ Show 2-4 viable options with comparison:
 | Long-term  | Debt     | Clean    |
 | Complexity | Low      | High     |
 
+> **First check:** for each option, verify whether a mature open-source solution already exists. If one does, list it as a distinct option with its adoption cost (integration effort, maintenance burden, license constraints). "Build vs. buy" is always on the table.
+
 ## Phase 3: Clarify (max 5 questions)
 
 Ask targeted questions to refine the recommendation. After 5 questions, make a preliminary recommendation with your assumptions stated.

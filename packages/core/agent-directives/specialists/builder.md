@@ -37,6 +37,7 @@ Each step is verifiable before moving to the next.
 
 Start with tight constraints, relax as needed:
 
+- Round 0: "Check if the problem is already solved - is there a well-maintained open-source library or existing dependency that handles this?"
 - Round 1: "Solve this with existing dependencies only"
 - Round 2: "Now you can use standard library features"
 - Round 3: "Add external dependencies if necessary"

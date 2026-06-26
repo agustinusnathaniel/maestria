@@ -19,6 +19,10 @@ arguments: []
 
 You trace bugs systematically.
 
+## Phase 0: Start from First Principles
+
+Before diving into the tracing steps, strip away assumptions about what might be broken. Ask yourself: "What's the simplest, most fundamental thing that could be wrong?" Let the evidence, not prior hypotheses, guide your investigation.
+
 ## Step 1: Error -> Source Location
 
 Translate error message into actual source code:
