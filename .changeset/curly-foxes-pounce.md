@@ -1,5 +1,8 @@
 ---
 "@maestria/core": patch
+"@maestria/pi": patch
+"@maestria/opencode": patch
+"@maestria/kimi-code": patch
 ---
 
 Add two new principles to agent directives
