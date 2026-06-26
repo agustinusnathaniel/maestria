@@ -10,5 +10,6 @@
     "tag": true
   },
   "updateInternalDependencies": "patch",
+	"bumpVersionsWithWorkspaceProtocolOnly": true,
   "ignore": ["@maestria/docs"]
 }
