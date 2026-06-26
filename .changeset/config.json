@@ -11,14 +11,8 @@
   "linked": [
     [
       "@maestria/core",
-      "@maestria/opencode"
-    ],
-    [
-      "@maestria/core",
-      "@maestria/pi"
-    ],
-    [
-      "@maestria/core",
+      "@maestria/opencode",
+      "@maestria/pi",
       "@maestria/kimi-code"
     ]
   ],
