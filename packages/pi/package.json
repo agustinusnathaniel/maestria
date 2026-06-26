@@ -40,6 +40,7 @@
     "@gotgenes/pi-subagents": "^17.0.0"
   },
   "devDependencies": {
+    "@maestria/core": "workspace:",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
