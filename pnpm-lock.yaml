@@ -118,10 +118,11 @@ importers:
         version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.13.2)(@vitest/browser-preview@4.1.9)(vite@8.0.16(@types/node@24.13.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
 
   packages/kimi-code:
-    devDependencies:
+    dependencies:
       '@maestria/core':
         specifier: 'workspace:'
         version: link:../core
+    devDependencies:
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2
@@ -131,6 +132,9 @@ importers:
 
   packages/opencode:
     dependencies:
+      '@maestria/core':
+        specifier: 'workspace:'
+        version: link:../core
       es-toolkit:
         specifier: ^1.47.1
         version: 1.48.1
@@ -141,9 +145,6 @@ importers:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
-      '@maestria/core':
-        specifier: 'workspace:'
-        version: link:../core
       '@opencode-ai/plugin':
         specifier: ^1.17.0
         version: 1.17.3
@@ -168,13 +169,13 @@ importers:
       '@gotgenes/pi-subagents':
         specifier: ^17.0.0
         version: 17.2.0(@earendil-works/pi-ai@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-coding-agent@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-tui@0.79.9)
+      '@maestria/core':
+        specifier: 'workspace:'
+        version: link:../core
       typebox:
         specifier: '*'
         version: 1.2.18
     devDependencies:
-      '@maestria/core':
-        specifier: 'workspace:'
-        version: link:../core
       '@types/node':
         specifier: 'catalog:'
         version: 24.13.2

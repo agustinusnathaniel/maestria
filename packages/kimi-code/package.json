@@ -32,8 +32,10 @@
   "scripts": {
     "test": "vp test"
   },
+  "dependencies": {
+    "@maestria/core": "workspace:"
+  },
   "devDependencies": {
-    "@maestria/core": "workspace:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }

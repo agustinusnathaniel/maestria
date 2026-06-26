@@ -37,10 +37,10 @@
     "validate": "npm run validate-prompts && npm run validate-skills"
   },
   "dependencies": {
-    "@gotgenes/pi-subagents": "^17.0.0"
+    "@gotgenes/pi-subagents": "^17.0.0",
+    "@maestria/core": "workspace:"
   },
   "devDependencies": {
-    "@maestria/core": "workspace:",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
