@@ -8,14 +8,6 @@
   ],
   "commit": false,
   "fixed": [],
-  "linked": [
-    [
-      "@maestria/core",
-      "@maestria/opencode",
-      "@maestria/pi",
-      "@maestria/kimi-code"
-    ]
-  ],
   "access": "public",
   "baseBranch": "main",
   "privatePackages": {
