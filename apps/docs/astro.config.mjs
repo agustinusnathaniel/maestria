@@ -86,6 +86,7 @@ export default defineConfig({
               label: 'Getting Started',
               items: [{ autogenerate: { directory: 'opencode/getting-started' } }],
             },
+            { label: 'Configuration', link: '/opencode/configuration/' },
             { label: 'Changelog', link: '/opencode/changelog/' },
             { label: 'Contributing', link: '/opencode/contributing/' },
           ],
