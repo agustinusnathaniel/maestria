@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
   "changelog": ["@changesets/changelog-github", { "repo": "agustinusnathaniel/maestria" }],
   "commit": false,
   "fixed": [],
@@ -11,5 +11,8 @@
   },
   "updateInternalDependencies": "patch",
 	"bumpVersionsWithWorkspaceProtocolOnly": true,
-  "ignore": ["@maestria/docs"]
+  "ignore": ["@maestria/docs"],
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "updateInternalDependents": "always"
+  }
 }

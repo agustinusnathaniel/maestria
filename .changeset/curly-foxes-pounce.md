@@ -1,5 +1,5 @@
 ---
-"@maestria/core": minor
+"@maestria/core": patch
 ---
 
 Add two new principles to agent directives
