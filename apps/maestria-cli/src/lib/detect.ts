@@ -50,10 +50,3 @@ function detectOne(platform: PlatformHandler): Effect.Effect<PlatformStatus, nev
 export function detectInstalled(): Effect.Effect<PlatformStatus[], never> {
   return detectAll().pipe(Effect.map((stats) => stats.filter((s) => s.available && s.installed)));
 }
-
-/**
- * Get only the platforms that are available (CLI tool exists).
- */
-export function detectAvailable(): Effect.Effect<PlatformStatus[], never> {
-  return detectAll().pipe(Effect.map((stats) => stats.filter((s) => s.available)));
-}

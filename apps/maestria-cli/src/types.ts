@@ -1,13 +1,4 @@
 // ── Types ────────────────────────────────────────────
-export interface PlatformInfo {
-  /** Short id used in CLI args */
-  readonly id: string;
-  /** Human-readable label */
-  readonly label: string;
-  /** npm package name (if published) */
-  readonly npmPackage?: string;
-}
-
 export interface PlatformStatus {
   readonly id: string;
   readonly label: string;
