@@ -44,7 +44,6 @@
     "test": "vp test"
   },
   "dependencies": {
-    "@maestria/core": "workspace:",
     "es-toolkit": "^1.47.1",
     "yaml": "^2.7.0",
     "zod": "^3.24.0"

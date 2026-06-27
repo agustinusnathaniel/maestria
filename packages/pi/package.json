@@ -37,8 +37,7 @@
     "validate": "npm run validate-prompts && npm run validate-skills"
   },
   "dependencies": {
-    "@gotgenes/pi-subagents": "^17.0.0",
-    "@maestria/core": "workspace:"
+    "@gotgenes/pi-subagents": "^17.0.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
