@@ -1,7 +1,6 @@
 {
   "name": "maestria",
   "version": "0.1.0",
-  "private": true,
   "description": "Maestria CLI — manage maestria plugins across coding agent platforms",
   "license": "MIT",
   "bin": {
@@ -11,6 +10,10 @@
     "dist"
   ],
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
