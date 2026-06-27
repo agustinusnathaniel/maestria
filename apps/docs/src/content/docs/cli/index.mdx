@@ -1,0 +1,64 @@
+---
+title: 'maestria'
+description: Manage maestria plugins across all coding agent platforms from a single command - install, update, and check status for OpenCode, Kimi Code, and Pi.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: 'One CLI to Manage Them All'
+  tagline: 'Install, update, and check the status of maestria plugins across OpenCode, Kimi Code, and Pi — from a single command.'
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /cli/getting-started/
+    - text: Command Reference
+      icon: external
+      variant: minimal
+      link: /cli/commands/
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Maestria ships the same AI engineering methodology to three coding agent platforms. Each has its own install commands, update paths, and version management. `maestria` wraps them all behind a single interface.
+
+## Why a CLI?
+
+Without the CLI, managing maestria means remembering per-platform commands:
+
+| Platform  | Install                                      | Update                                       |
+| --------- | -------------------------------------------- | -------------------------------------------- |
+| OpenCode  | `opencode plugin @maestria/opencode@latest`  | Re-run with `--force`                        |
+| Kimi Code | `kimi plugins install <git-url>`             | Re-run the install command                   |
+| Pi        | `pi install npm:@maestria/pi`                | `pi install npm:@maestria/pi@latest`         |
+
+With the CLI, one command does it all:
+
+```bash
+npx maestria install --all
+```
+
+No more context-switching between platform CLIs. No more hunting through READMEs for the right command.
+
+## How It Works
+
+1. **Run `npx maestria`** — no install required, thanks to the bundled single-file `.mjs` distribution
+2. **Platform detection** — the CLI checks which coding agent CLIs are on your `$PATH` (opencode, kimi, pi)
+3. **Parallel checks** — for each detected platform, it checks whether maestria is installed and what version is available
+4. **Action** — install, update, or inspect as needed
+
+All commands support `--json` for script consumption and `--quiet` for CI environments.
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Installation and common usage patterns - status checks, installs, and updates."
+    href="/cli/getting-started/"
+  />
+  <LinkCard
+    title="Command Reference"
+    description="Full reference for status, install, and update commands with flags."
+    href="/cli/commands/"
+  />
+</CardGrid>

@@ -1,0 +1,166 @@
+---
+title: Command Reference
+description: Complete reference for all maestria commands - status, install, update - with flags, options, and examples.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Global Flags
+
+These flags work on every command:
+
+| Flag        | Description                                  |
+| ----------- | -------------------------------------------- |
+| `--json`    | Output results as JSON instead of formatted text |
+| `--quiet`   | Suppress spinner animations                  |
+
+Running `maestria` with no arguments is equivalent to `maestria status`.
+
+---
+
+## `status`
+
+Show what's installed and version information for all platforms.
+
+```bash
+maestria status [--json] [--quiet]
+```
+
+Detects which coding agent CLIs are available on `$PATH`, checks whether maestria is installed for each, and reports the installed and latest versions. Platform detection runs in parallel.
+
+### Flags
+
+| Flag      | Description                               |
+| --------- | ----------------------------------------- |
+| `--json`  | Output as JSON (see schema below)         |
+| `--quiet` | Suppress non-essential output             |
+
+### JSON schema
+
+```json
+{
+  "platforms": [
+    {
+      "id": "opencode",
+      "label": "OpenCode",
+      "available": true,
+      "installed": true,
+      "installedVersion": "0.6.0",
+      "latestVersion": "0.6.2"
+    }
+  ]
+}
+```
+
+Each platform object:
+
+| Field              | Type      | Description                                     |
+| ------------------ | --------- | ----------------------------------------------- |
+| `id`               | string    | Platform identifier (`opencode`, `pi`, `kimi-code`) |
+| `label`            | string    | Human-readable name                             |
+| `available`        | boolean   | CLI tool detected on `$PATH`                    |
+| `installed`        | boolean   | Maestria is installed for this platform         |
+| `installedVersion` | string    | Version string from the installed package       |
+| `latestVersion`    | string    | Latest version available on npm                 |
+
+### Example
+
+```bash
+npx maestria status
+```
+
+---
+
+## `install`
+
+Install maestria plugins for one or more coding agent platforms.
+
+```bash
+maestria install [platform] [--all] [--json] [--quiet]
+```
+
+### Flags
+
+| Flag        | Description                                |
+| ----------- | ------------------------------------------ |
+| `platform`  | Positional arg — platform to install (omit for interactive picker) |
+| `--all`, `-a` | Install for all detected platforms      |
+| `--json`    | Output results as JSON                     |
+| `--quiet`   | Suppress spinner animations                |
+
+### Behavior
+
+| Invocation                          | What happens                                         |
+| ----------------------------------- | ---------------------------------------------------- |
+| `maestria install`                  | Detects platforms, shows an interactive picker of uninstalled ones |
+| `maestria install opencode`         | Installs for OpenCode only                           |
+| `maestria install --all`            | Installs for every detected platform that lacks maestria |
+| `maestria install opencode --json`  | Installs OpenCode, outputs JSON result               |
+
+### Platform identifiers
+
+| ID          | Platform  | npm package            |
+| ----------- | --------- | ---------------------- |
+| `opencode`  | OpenCode  | `@maestria/opencode`   |
+| `pi`        | Pi        | `@maestria/pi`         |
+| `kimi-code` | Kimi Code | `@maestria/kimi-code`  |
+
+### Error handling
+
+If a platform's CLI tool is not available on `$PATH`, the CLI shows a clear error:
+
+```
+Unknown platform: cursor
+Available: opencode, pi, kimi-code
+```
+
+If a platform command fails (e.g., network error), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
+
+```
+✔ OpenCode: Installed
+✗ Pi: Command failed: pi install npm:@maestria/pi
+```
+
+### Example
+
+```bash
+npx maestria install --all
+```
+
+---
+
+## `update`
+
+Update maestria plugins to the latest version.
+
+```bash
+maestria update [platform] [--all] [--json] [--quiet]
+```
+
+### Flags
+
+| Flag        | Description                                |
+| ----------- | ------------------------------------------ |
+| `platform`  | Positional arg — platform to update (omit for interactive picker) |
+| `--all`, `-a` | Update all installed platforms          |
+| `--json`    | Output results as JSON                     |
+| `--quiet`   | Suppress spinner animations                |
+
+### Behavior
+
+Same logic as `install` but targets platforms where maestria is already installed. Before-and-after version numbers are shown when available:
+
+```
+✔ OpenCode: Updated: v0.5.0 → v0.6.0
+✔ Pi: Already up to date (v0.4.1)
+```
+
+### Example
+
+```bash
+npx maestria update --all
+```
+
+<Aside type="tip">
+  Use `maestria status` before `maestria update --all` to see which platforms have updates available.
+</Aside>
