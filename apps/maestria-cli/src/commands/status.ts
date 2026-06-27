@@ -15,11 +15,6 @@ export const statusCommand = defineCommand({
       description: 'Output as JSON',
       default: false,
     },
-    quiet: {
-      type: 'boolean',
-      description: 'Suppress non-essential output',
-      default: false,
-    },
   },
   run: async ({ args }) => {
     const output = await Effect.runPromise(detectAll());

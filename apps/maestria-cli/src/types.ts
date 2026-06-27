@@ -1,18 +1,3 @@
-import { Data } from 'effect';
-
-// ── Errors ───────────────────────────────────────────
-export class PlatformError extends Data.TaggedError('PlatformError')<{
-  readonly platformId: string;
-  readonly message: string;
-  readonly cause?: unknown;
-}> {}
-
-export class VersionError extends Data.TaggedError('VersionError')<{
-  readonly platformId: string;
-  readonly message: string;
-  readonly cause?: unknown;
-}> {}
-
 // ── Types ────────────────────────────────────────────
 export interface PlatformInfo {
   /** Short id used in CLI args */

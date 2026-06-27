@@ -62,8 +62,17 @@ export const installCommand = defineCommand({
       const spinner = createSpinner(args.quiet as boolean);
       spinner.start('Preparing...');
       for (const p of toInstall) {
+        const platform = getPlatform(p.id);
+        if (!platform) {
+          results.push({
+            id: p.id,
+            label: p.label,
+            ok: false,
+            message: 'Platform definition not found. This is a bug.',
+          } satisfies PlatformResult);
+          continue;
+        }
         spinner.message(`Installing ${p.label}...`);
-        const platform = getPlatform(p.id)!;
         const result = await Effect.runPromise(
           Effect.gen(function* () {
             yield* platform.install;
@@ -112,9 +121,18 @@ export const installCommand = defineCommand({
         return;
       }
 
-      const platform = getPlatform(String(selected))!;
-      const result = await Effect.runPromise(installOne(platform, args.quiet as boolean));
-      results.push(result);
+      const platform = getPlatform(String(selected));
+      if (!platform) {
+        results.push({
+          id: String(selected),
+          label: String(selected),
+          ok: false,
+          message: 'Platform definition not found. This is a bug.',
+        } satisfies PlatformResult);
+      } else {
+        const result = await Effect.runPromise(installOne(platform, args.quiet as boolean));
+        results.push(result);
+      }
     }
 
     if (args.json) {

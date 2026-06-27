@@ -2,16 +2,16 @@
 
 ## Status
 
-Draft
+Accepted
 
 ## Context
 
 Maestria ships the same AI engineering methodology to 3 coding agent platforms — OpenCode, Kimi Code, and Pi — each with different installation and update mechanics:
 
-| Platform  | Install method                              | Update method                       |
-| --------- | ------------------------------------------- | ----------------------------------- |
-| OpenCode  | `opencode plugin @maestria/opencode@latest` | Same command with `--force`         |
-| Kimi Code | `kimi plugins install <git-url>`            | Same command (re-install)           |
+| Platform  | Install method                              | Update method                        |
+| --------- | ------------------------------------------- | ------------------------------------ |
+| OpenCode  | `opencode plugin @maestria/opencode@latest` | Same command with `--force`          |
+| Kimi Code | `kimi plugins install <git-url>`            | Same command (re-install)            |
 | Pi        | `pi install npm:@maestria/pi`               | `pi install npm:@maestria/pi@latest` |
 
 Users who work across platforms — or teams that standardize on maestria — must remember these commands, check which platforms they have installed, and manage versions manually. Install knowledge is scattered across README files. There is no single command to see what's installed or update everything at once.
@@ -44,14 +44,14 @@ apps/maestria-cli/
 
 ### 2. Technology choices
 
-| Concern                | Choice                        | Rationale                                                                          |
-| ---------------------- | ----------------------------- | ---------------------------------------------------------------------------------- |
-| Programming model      | Effect v4 (beta.70)           | Typed errors, structured concurrency, consistent async — same family as maestria   |
-| CLI routing            | citty                         | Lightweight (< 1KB), typed arg parsing with `defineCommand`, no build step         |
-| Interactive prompts    | @clack/prompts                | Declarative spinner, select, confirm — well-maintained, accessible                 |
-| Terminal output        | picocolors                    | Minimal (< 1KB), fast ANSI coloring                                                |
-| Build/bundling         | vite-plus                     | Single self-contained `.mjs` via `vp pack` — matches monorepo tooling              |
-| Shell execution        | `child_process.execFile`      | Wrapped in `Effect.tryPromise` — no external dependencies needed                   |
+| Concern | Choice | Rationale |
+| --- | --- | --- |
+| Programming model | Effect v4 (beta.70) | Typed errors, structured concurrency, consistent async — same family as maestria |
+| CLI routing | citty | Lightweight (< 1KB), typed arg parsing with `defineCommand`, no build step |
+| Interactive prompts | @clack/prompts | Declarative spinner, select, confirm — well-maintained, accessible |
+| Terminal output | picocolors | Minimal (< 1KB), fast ANSI coloring |
+| Build/bundling | vite-plus | Single self-contained `.mjs` via `vp pack` — matches monorepo tooling |
+| Shell execution | `child_process.execFile` | Wrapped in `Effect.tryPromise` — no external dependencies needed |
 
 ### 3. Effect v4 patterns used
 
@@ -61,14 +61,14 @@ The codebase uses idiomatic Effect patterns:
 
 ```typescript
 export class CommandError extends Data.TaggedError('CommandError')<{
-  readonly command: string
-  readonly message: string
+  readonly command: string;
+  readonly message: string;
 }> {}
 
 export class PlatformError extends Data.TaggedError('PlatformError')<{
-  readonly platformId: string
-  readonly message: string
-  readonly cause?: unknown
+  readonly platformId: string;
+  readonly message: string;
+  readonly cause?: unknown;
 }> {}
 ```
 
@@ -76,16 +76,16 @@ export class PlatformError extends Data.TaggedError('PlatformError')<{
 
 ```typescript
 interface PlatformHandler {
-  readonly id: string
-  readonly label: string
-  readonly npmPackage?: string
-  readonly detect: Effect.Effect<boolean, never>
-  readonly isInstalled: Effect.Effect<boolean, never>
-  readonly getInstalledVersion: Effect.Effect<string, CommandError>
-  readonly getLatestVersion: Effect.Effect<string, CommandError>
-  readonly install: Effect.Effect<void, CommandError>
-  readonly update: Effect.Effect<void, CommandError>
-  readonly uninstall: Effect.Effect<void, CommandError>
+  readonly id: string;
+  readonly label: string;
+  readonly npmPackage?: string;
+  readonly detect: Effect.Effect<boolean, never>;
+  readonly isInstalled: Effect.Effect<boolean, never>;
+  readonly getInstalledVersion: Effect.Effect<string, CommandError>;
+  readonly getLatestVersion: Effect.Effect<string, CommandError>;
+  readonly install: Effect.Effect<void, CommandError>;
+  readonly update: Effect.Effect<void, CommandError>;
+  readonly uninstall: Effect.Effect<void, CommandError>;
 }
 ```
 
@@ -98,7 +98,7 @@ export function detectAll(): Effect.Effect<PlatformStatus[], never> {
   return Effect.all(
     platforms.map((p) => detectOne(p)),
     { concurrency: 'unbounded' },
-  )
+  );
 }
 ```
 
@@ -107,11 +107,12 @@ Detecting CLI tool availability across 3 platforms happens in parallel, not sequ
 **Error recovery with catchTag/catchCause:**
 
 ```typescript
-yield* platform.install.pipe(
-  Effect.catchTag("CommandError", (error) =>
-    Effect.succeed({ ok: false, message: error.message } satisfies PlatformResult),
-  ),
-)
+yield *
+  platform.install.pipe(
+    Effect.catchTag('CommandError', (error) =>
+      Effect.succeed({ ok: false, message: error.message } satisfies PlatformResult),
+    ),
+  );
 ```
 
 ### 4. Platform definitions as data, not abstractions
@@ -130,7 +131,7 @@ const opencode: PlatformHandler = {
   ),
   install: run('opencode', ['plugin', '@maestria/opencode@latest']).pipe(Effect.as(void 0)),
   // ...
-}
+};
 ```
 
 A new platform is added by appending one object to the `platforms` array. No base class, no registration step, no interface to implement globally.
@@ -143,18 +144,18 @@ A new platform is added by appending one object to the `platforms` array. No bas
 function run(cmd: string, args: string[]): Effect.Effect<string, CommandError> {
   return Effect.tryPromise({
     try: async () => {
-      const { execFile } = await import('node:child_process')
-      const { promisify } = await import('node:util')
-      const execFileAsync = promisify(execFile)
-      const { stdout } = await execFileAsync(cmd, args)
-      return stdout.trim()
+      const { execFile } = await import('node:child_process');
+      const { promisify } = await import('node:util');
+      const execFileAsync = promisify(execFile);
+      const { stdout } = await execFileAsync(cmd, args);
+      return stdout.trim();
     },
     catch: (error) =>
       new CommandError({
         command: `${cmd} ${args.join(' ')}`,
         message: error instanceof Error ? error.message : String(error),
       }),
-  })
+  });
 }
 ```
 
@@ -175,7 +176,7 @@ export default defineConfig({
     fixedExtension: false,
   },
   resolve: { tsconfigPaths: true },
-})
+});
 ```
 
 The `bin` field in `package.json` points to the bundled output:
@@ -190,17 +191,17 @@ Users can run it directly with `npx maestria` or install it globally.
 
 ### 7. CLI surface
 
-| Command                       | Behavior                                                      |
-| ----------------------------- | ------------------------------------------------------------- |
-| `maestria`                    | Default: show status                                          |
-| `maestria status`             | Show installed plugins and version info                       |
-| `maestria status --json`      | Same, as JSON                                                 |
-| `maestria install`            | Interactive: pick a platform to install                       |
-| `maestria install --all`      | Install for all detected platforms                            |
-| `maestria install opencode`   | Install for a specific platform                               |
-| `maestria update`             | Interactive: pick a platform to update                        |
-| `maestria update --all`       | Update all installed platforms                                |
-| `maestria update opencode`    | Update a specific platform                                    |
+| Command                     | Behavior                                |
+| --------------------------- | --------------------------------------- |
+| `maestria`                  | Default: show status                    |
+| `maestria status`           | Show installed plugins and version info |
+| `maestria status --json`    | Same, as JSON                           |
+| `maestria install`          | Interactive: pick a platform to install |
+| `maestria install --all`    | Install for all detected platforms      |
+| `maestria install opencode` | Install for a specific platform         |
+| `maestria update`           | Interactive: pick a platform to update  |
+| `maestria update --all`     | Update all installed platforms          |
+| `maestria update opencode`  | Update a specific platform              |
 
 All commands accept `--json` for machine-readable output and `--quiet` to suppress spinner animations.
 

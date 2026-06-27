@@ -1,6 +1,5 @@
 {
   "name": "maestria",
-  "type": "module",
   "version": "0.1.0",
   "private": true,
   "description": "Maestria CLI — manage maestria plugins across coding agent platforms",
@@ -11,6 +10,7 @@
   "files": [
     "dist"
   ],
+  "type": "module",
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",

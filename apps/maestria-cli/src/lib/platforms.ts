@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 import { homedir } from 'os';
 import picocolors from 'picocolors';
-import type { PlatformStatus, PlatformResult } from '../types.js';
+
 import { run, commandExists, npmViewVersion, CommandError } from './shell.js';
 
 // ── Platform definitions ─────────────────────────────
@@ -56,12 +56,7 @@ const opencode: PlatformHandler = {
     } else {
       yield* run('opencode', ['plugin', '@maestria/opencode@latest', '--force']);
     }
-  }).pipe(
-    Effect.catchTag(
-      'CommandError',
-      (e: CommandError) => Effect.fail(e) as Effect.Effect<never, CommandError>,
-    ),
-  ),
+  }),
 
   uninstall: Effect.sync(() => {
     console.log(
@@ -152,16 +147,10 @@ const kimiCode: PlatformHandler = {
             `\n  ${picocolors.yellow('⚠')} Plugin installed but rules copy failed.\n` +
               `  Manually copy: cp "${homedir()}/.local/share/kimi/plugins/maestria/rules/AGENTS.md" "${homedir()}/.kimi-code/AGENTS.md"\n`,
           );
-          return '';
         }),
       ),
     );
-  }).pipe(
-    Effect.catchTag(
-      'CommandError',
-      (e: CommandError) => Effect.fail(e) as Effect.Effect<never, CommandError>,
-    ),
-  ),
+  }),
 
   update: run('kimi', [
     'plugins',

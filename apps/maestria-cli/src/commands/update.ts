@@ -3,7 +3,7 @@ import { Effect } from 'effect';
 import { select, isCancel, cancel } from '@clack/prompts';
 import { platforms, getPlatform } from '../lib/platforms.js';
 import type { PlatformHandler } from '../lib/platforms.js';
-import { detectInstalled, detectAll } from '../lib/detect.js';
+import { detectInstalled } from '../lib/detect.js';
 import { createSpinner, renderResults } from '../lib/output.js';
 import type { PlatformResult } from '../types.js';
 
@@ -57,7 +57,16 @@ export const updateCommand = defineCommand({
       }
 
       for (const p of installed) {
-        const platform = getPlatform(p.id)!;
+        const platform = getPlatform(p.id);
+        if (!platform) {
+          results.push({
+            id: p.id,
+            label: p.label,
+            ok: false,
+            message: 'Platform definition not found. This is a bug.',
+          } satisfies PlatformResult);
+          continue;
+        }
         const result = await Effect.runPromise(updateOne(platform, args.quiet as boolean));
         results.push(result);
       }
@@ -83,9 +92,18 @@ export const updateCommand = defineCommand({
         return;
       }
 
-      const platform = getPlatform(String(selected))!;
-      const result = await Effect.runPromise(updateOne(platform, args.quiet as boolean));
-      results.push(result);
+      const platform = getPlatform(String(selected));
+      if (!platform) {
+        results.push({
+          id: String(selected),
+          label: String(selected),
+          ok: false,
+          message: 'Platform definition not found. This is a bug.',
+        } satisfies PlatformResult);
+      } else {
+        const result = await Effect.runPromise(updateOne(platform, args.quiet as boolean));
+        results.push(result);
+      }
     }
 
     if (args.json) {
@@ -108,7 +126,19 @@ function updateOne(
     const spinner = createSpinner(quiet);
     spinner.start(`Updating ${platform.label}...`);
 
-    yield* platform.update;
+    const errorMessage: string | void = yield* platform.update.pipe(
+      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
+    );
+
+    if (errorMessage !== undefined) {
+      spinner.stop(`Failed: ${errorMessage}`);
+      return {
+        id: platform.id,
+        label: platform.label,
+        ok: false,
+        message: errorMessage,
+      } satisfies PlatformResult;
+    }
 
     const nextVersion = yield* platform.getInstalledVersion.pipe(
       Effect.catchCause(() => Effect.succeed('unknown')),
@@ -124,18 +154,7 @@ function updateOne(
       prevVersion,
       nextVersion,
     } satisfies PlatformResult;
-  }).pipe(
-    Effect.catchTag('CommandError', (error) =>
-      Effect.succeed({
-        id: platform.id,
-        label: platform.label,
-        ok: false,
-        message: error.message,
-        prevVersion: undefined,
-        nextVersion: undefined,
-      } satisfies PlatformResult),
-    ),
-  );
+  });
 }
 
 function previewVersionDiff(before: string, after: string): string {
