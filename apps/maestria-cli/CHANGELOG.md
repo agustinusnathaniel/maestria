@@ -1,5 +1,11 @@
 # maestria
 
+## 0.2.1
+
+### Patch Changes
+
+- [`29c1a36`](https://github.com/agustinusnathaniel/maestria/commit/29c1a36818f854380c6d8cee7fb8780f25c8c495) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: skip update when installed version already matches target
+
 ## 0.2.0
 
 ### Minor Changes
