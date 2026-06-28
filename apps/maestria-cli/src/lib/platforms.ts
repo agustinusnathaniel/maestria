@@ -2,7 +2,7 @@ import { Effect } from 'effect';
 import { homedir } from 'os';
 import picocolors from 'picocolors';
 
-import { run, sh, commandExists, npmViewVersion, CommandError } from './shell.js';
+import { run, sh, commandExists, npmViewVersion, CommandError } from '@/lib/shell.js';
 
 // ── Shared helpers ───────────────────────────────────
 

@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
-import { platforms } from './platforms.js';
-import type { PlatformHandler } from './platforms.js';
-import type { PlatformStatus } from '../types.js';
+import { platforms } from '@/lib/platforms.js';
+import type { PlatformHandler } from '@/lib/platforms.js';
+import type { PlatformStatus } from '@/types.js';
 
 /**
  * Check availability + installation + versions for all platforms.

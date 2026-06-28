@@ -1,18 +1,18 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 import { select, isCancel, cancel } from '@clack/prompts';
-import { platforms, getPlatform } from '../lib/platforms.js';
-import type { PlatformHandler } from '../lib/platforms.js';
-import { detectInstalled } from '../lib/detect.js';
-import { invalidateVersionCache } from '../lib/shell.js';
-import { createSpinner, renderResults } from '../lib/output.js';
+import { platforms, getPlatform } from '@/lib/platforms.js';
+import type { PlatformHandler } from '@/lib/platforms.js';
+import { detectInstalled } from '@/lib/detect.js';
+import { invalidateVersionCache } from '@/lib/shell.js';
+import { createSpinner, renderResults } from '@/lib/output.js';
 import {
   validatePlatform,
   validateVersion,
   validateNotAllAndPlatform,
   validateOrExit,
-} from '../lib/validation.js';
-import type { PlatformResult } from '../types.js';
+} from '@/lib/validation.js';
+import type { PlatformResult } from '@/types.js';
 
 export const updateCommand = defineCommand({
   meta: {

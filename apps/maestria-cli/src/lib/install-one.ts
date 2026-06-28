@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
-import { createSpinner } from './output.js';
-import type { PlatformHandler } from './platforms.js';
-import type { PlatformResult } from '../types.js';
+import { createSpinner } from '@/lib/output.js';
+import type { PlatformHandler } from '@/lib/platforms.js';
+import type { PlatformResult } from '@/types.js';
 
 export function installOne(
   platform: PlatformHandler,

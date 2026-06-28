@@ -1,8 +1,8 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { detectAll } from '../lib/detect.js';
-import { createSpinner, renderStatusTable, formatStatusJson } from '../lib/output.js';
-import type { StatusOutput } from '../types.js';
+import { detectAll } from '@/lib/detect.js';
+import { createSpinner, renderStatusTable, formatStatusJson } from '@/lib/output.js';
+import type { StatusOutput } from '@/types.js';
 
 export const statusCommand = defineCommand({
   meta: {

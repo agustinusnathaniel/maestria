@@ -1,6 +1,6 @@
 import picocolors from 'picocolors';
 import { spinner as clackSpinner } from '@clack/prompts';
-import type { PlatformStatus, StatusOutput, PlatformResult } from '../types.js';
+import type { PlatformStatus, StatusOutput, PlatformResult } from '@/types.js';
 
 /** Wrapper around @clack/prompts spinner that respects --quiet */
 export function createSpinner(quiet: boolean) {
