@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2
+
+### Patch Changes
+
+- [`3babd4b`](https://github.com/agustinusnathaniel/maestria/commit/3babd4b2ef95be59f1e0157eeb8a6cf2b7b05f65) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix dependency issues
+
 ## 0.5.1
 
 ### Patch Changes
