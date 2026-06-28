@@ -11,12 +11,18 @@ import type { PlatformResult } from '../types.js';
 export const updateCommand = defineCommand({
   meta: {
     name: 'update',
-    description: 'Update maestria plugins to the latest version',
+    description: 'Update maestria plugins to the latest (or specified) version',
   },
   args: {
     platform: {
       type: 'positional',
       description: 'Platform to update. Omit for interactive selection.',
+      required: false,
+    },
+    version: {
+      type: 'string',
+      description: 'Specific version to install (e.g., 0.5.0). Defaults to latest.',
+      alias: 'V',
       required: false,
     },
     all: {
@@ -47,7 +53,9 @@ export const updateCommand = defineCommand({
         return;
       }
 
-      const result = await Effect.runPromise(updateOne(platform, args.quiet as boolean));
+      const result = await Effect.runPromise(
+        updateOne(platform, args.quiet as boolean, args.version as string | undefined),
+      );
       results.push(result);
     } else if (args.all) {
       const spinner = createSpinner(args.quiet as boolean);
@@ -71,7 +79,9 @@ export const updateCommand = defineCommand({
           } satisfies PlatformResult);
           continue;
         }
-        const result = await Effect.runPromise(updateOne(platform, args.quiet as boolean));
+        const result = await Effect.runPromise(
+          updateOne(platform, args.quiet as boolean, args.version as string | undefined),
+        );
         results.push(result);
       }
     } else {
@@ -108,7 +118,9 @@ export const updateCommand = defineCommand({
           message: 'Platform definition not found. This is a bug.',
         } satisfies PlatformResult);
       } else {
-        const result = await Effect.runPromise(updateOne(platform, args.quiet as boolean));
+        const result = await Effect.runPromise(
+          updateOne(platform, args.quiet as boolean, args.version as string | undefined),
+        );
         results.push(result);
       }
     }
@@ -125,18 +137,24 @@ export const updateCommand = defineCommand({
 function updateOne(
   platform: PlatformHandler,
   quiet: boolean,
+  version?: string,
 ): Effect.Effect<PlatformResult, never> {
   return Effect.gen(function* () {
     const prevVersion = yield* platform.getInstalledVersion.pipe(
       Effect.catchCause(() => Effect.succeed('unknown')),
     );
 
-    const spinner = createSpinner(quiet);
-    spinner.start(`Updating ${platform.label}...`);
+    // Determine target version: explicit arg, or fetch latest from npm
+    const targetVersion =
+      version ??
+      (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
 
-    const errorMessage: string | void = yield* platform.update.pipe(
-      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
-    );
+    const spinner = createSpinner(quiet);
+    spinner.start(`Updating ${platform.label}: ${prevVersion} → ${targetVersion}...`);
+
+    const errorMessage: string | void = yield* platform
+      .update(version)
+      .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)));
 
     if (errorMessage !== undefined) {
       spinner.stop(`Failed: ${errorMessage}`);

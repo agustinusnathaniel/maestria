@@ -26,7 +26,7 @@ export interface PlatformHandler {
   readonly getInstalledVersion: Effect.Effect<string, CommandError>;
   readonly getLatestVersion: Effect.Effect<string, never>;
   readonly install: Effect.Effect<void, CommandError>;
-  readonly update: Effect.Effect<void, CommandError>;
+  readonly update: (version?: string) => Effect.Effect<void, CommandError>;
   readonly uninstall: Effect.Effect<void, CommandError>;
 }
 
@@ -64,21 +64,21 @@ const opencode: PlatformHandler = {
     yield* run('opencode', ['plugin', '@maestria/opencode@latest', '--force']);
   }).pipe(Effect.as(void 0)),
 
-  update: Effect.gen(function* () {
-    // Clear cache to ensure fresh install from npm
-    yield* sh(`rm -rf ${homedir()}/.cache/opencode/packages/@maestria/opencode*`);
+  update: (version?: string) =>
+    Effect.gen(function* () {
+      const tag = version ?? 'latest';
 
-    // Check if installed globally or at project level
-    const globalConfig = yield* readOpenCodeConfig().pipe(
-      Effect.map((out) => out.includes('@maestria/opencode')),
-      Effect.catchCause(() => Effect.succeed(false)),
-    );
-    if (globalConfig) {
-      yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g', '--force']);
-    } else {
-      yield* run('opencode', ['plugin', '@maestria/opencode@latest', '--force']);
-    }
-  }),
+      // Clear cache to ensure fresh install from npm
+      yield* sh(`rm -rf ${homedir()}/.cache/opencode/packages/@maestria/opencode*`);
+
+      // Check if installed globally or at project level
+      const globalConfig = yield* readOpenCodeConfig().pipe(
+        Effect.map((out) => out.includes('@maestria/opencode')),
+        Effect.catchCause(() => Effect.succeed(false)),
+      );
+      const flag = globalConfig ? ['-g', '--force'] : ['--force'];
+      yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag]);
+    }),
 
   uninstall: Effect.sync(() => {
     console.log(
@@ -124,7 +124,10 @@ const pi: PlatformHandler = {
 
   install: run('pi', ['install', 'npm:@maestria/pi']).pipe(Effect.as(void 0)),
 
-  update: run('pi', ['install', 'npm:@maestria/pi@latest']).pipe(Effect.as(void 0)),
+  update: (version?: string) => {
+    const tagged = version ? `npm:@maestria/pi@${version}` : 'npm:@maestria/pi@latest';
+    return run('pi', ['install', tagged]).pipe(Effect.as(void 0));
+  },
 
   uninstall: run('pi', ['uninstall', '@maestria/pi']).pipe(Effect.as(void 0)),
 };
@@ -178,11 +181,12 @@ const kimiCode: PlatformHandler = {
     );
   }),
 
-  update: run('kimi', [
-    'plugins',
-    'install',
-    'https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code',
-  ]).pipe(Effect.as(void 0)),
+  update: (_version?: string) =>
+    run('kimi', [
+      'plugins',
+      'install',
+      'https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code',
+    ]).pipe(Effect.as(void 0)),
 
   uninstall: run('kimi', ['plugins', 'uninstall', 'maestria']).pipe(
     Effect.andThen(run('rm', [`${homedir()}/.kimi-code/AGENTS.md`])),
