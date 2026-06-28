@@ -6,6 +6,12 @@ import type { PlatformHandler } from '../lib/platforms.js';
 import { detectInstalled } from '../lib/detect.js';
 import { invalidateVersionCache } from '../lib/shell.js';
 import { createSpinner, renderResults } from '../lib/output.js';
+import {
+  validatePlatform,
+  validateVersion,
+  validateNotAllAndPlatform,
+  validateOrExit,
+} from '../lib/validation.js';
 import type { PlatformResult } from '../types.js';
 
 export const updateCommand = defineCommand({
@@ -43,6 +49,17 @@ export const updateCommand = defineCommand({
     },
   },
   run: async ({ args }) => {
+    // Validate CLI args
+    if (args.platform) {
+      await validateOrExit(validatePlatform(args.platform as string));
+    }
+    if (args.version) {
+      await validateOrExit(validateVersion(args.version as string));
+    }
+    await validateOrExit(
+      validateNotAllAndPlatform(args.all as boolean, args.platform as string | undefined),
+    );
+
     const results: PlatformResult[] = [];
 
     if (args.platform) {

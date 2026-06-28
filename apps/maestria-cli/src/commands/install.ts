@@ -5,6 +5,7 @@ import { platforms, getPlatform } from '../lib/platforms.js';
 import { detectAll } from '../lib/detect.js';
 import { installOne } from '../lib/install-one.js';
 import { createSpinner, renderResults } from '../lib/output.js';
+import { validatePlatform, validateNotAllAndPlatform, validateOrExit } from '../lib/validation.js';
 import type { PlatformResult } from '../types.js';
 
 export const installCommand = defineCommand({
@@ -36,6 +37,14 @@ export const installCommand = defineCommand({
     },
   },
   run: async ({ args }) => {
+    // Validate CLI args
+    if (args.platform) {
+      await validateOrExit(validatePlatform(args.platform as string));
+    }
+    await validateOrExit(
+      validateNotAllAndPlatform(args.all as boolean, args.platform as string | undefined),
+    );
+
     const results: PlatformResult[] = [];
 
     if (args.platform) {
