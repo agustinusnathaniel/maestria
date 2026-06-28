@@ -75,7 +75,7 @@ const pi: PlatformHandler = {
 
   detect: commandExists('pi'),
 
-  isInstalled: run('pi', ['extensions', 'list']).pipe(
+  isInstalled: run('pi', ['extensions', 'list'], 5_000).pipe(
     Effect.map((out: string) => out.includes('@maestria/pi')),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
@@ -109,7 +109,7 @@ const kimiCode: PlatformHandler = {
 
   detect: commandExists('kimi').pipe(
     Effect.catchCause(() =>
-      run('ls', [`${homedir()}/.kimi-code/AGENTS.md`]).pipe(
+      run('ls', [`${homedir()}/.kimi-code/AGENTS.md`], 5_000).pipe(
         Effect.map(() => true),
         Effect.catchCause(() => Effect.succeed(false)),
       ),

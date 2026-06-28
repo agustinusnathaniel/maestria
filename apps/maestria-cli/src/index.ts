@@ -7,6 +7,10 @@ import { statusCommand } from './commands/status.js';
 import { detectAll } from './lib/detect.js';
 import { renderStatusTable } from './lib/output.js';
 
+// Ensure clean exit on signals — prevents Effect runtime from keeping process alive
+process.on('SIGINT', () => process.exit(0));
+process.on('SIGTERM', () => process.exit(0));
+
 const main = defineCommand({
   meta: {
     name: 'maestria',
@@ -20,7 +24,11 @@ const main = defineCommand({
   run: async () => {
     const output = await Effect.runPromise(detectAll());
     console.log(renderStatusTable(output));
+    process.exit(0);
   },
 });
 
-void runMain(main);
+runMain(main).catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

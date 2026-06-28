@@ -140,5 +140,6 @@ export const installCommand = defineCommand({
     } else {
       console.log(renderResults(results));
     }
+    process.exit(0);
   },
 });

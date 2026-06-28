@@ -25,5 +25,6 @@ export const statusCommand = defineCommand({
     } else {
       console.log(renderStatusTable(output));
     }
+    process.exit(0);
   },
 });

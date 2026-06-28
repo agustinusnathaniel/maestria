@@ -111,6 +111,7 @@ export const updateCommand = defineCommand({
     } else {
       console.log(renderResults(results));
     }
+    process.exit(0);
   },
 });
 
