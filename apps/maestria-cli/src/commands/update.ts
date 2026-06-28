@@ -4,6 +4,7 @@ import { select, isCancel, cancel } from '@clack/prompts';
 import { platforms, getPlatform } from '../lib/platforms.js';
 import type { PlatformHandler } from '../lib/platforms.js';
 import { detectInstalled } from '../lib/detect.js';
+import { invalidateVersionCache } from '../lib/shell.js';
 import { createSpinner, renderResults } from '../lib/output.js';
 import type { PlatformResult } from '../types.js';
 
@@ -152,6 +153,11 @@ function updateOne(
     );
 
     spinner.stop(previewVersionDiff(prevVersion, nextVersion));
+
+    // Invalidate version cache so next status sees the correct latest version
+    if (platform.npmPackage) {
+      yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
+    }
 
     return {
       id: platform.id,

@@ -100,3 +100,30 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
     return version;
   });
 }
+
+/** Invalidate the version cache for a package (called after successful update) */
+export function invalidateVersionCache(pkg: string): Effect.Effect<void, never> {
+  const cacheDir = `${homedir()}/.cache/maestria`;
+  const cacheFile = `${cacheDir}/versions.json`;
+
+  return Effect.gen(function* () {
+    yield* run('cat', [cacheFile], 2_000).pipe(
+      Effect.flatMap((out) => {
+        try {
+          const cache = JSON.parse(out);
+          delete cache[pkg];
+          return Effect.tryPromise({
+            try: async () => {
+              const { writeFile } = await import('node:fs/promises');
+              await writeFile(cacheFile, JSON.stringify(cache));
+            },
+            catch: () => {},
+          });
+        } catch {
+          return Effect.void;
+        }
+      }),
+      Effect.catchCause(() => Effect.void),
+    );
+  });
+}
