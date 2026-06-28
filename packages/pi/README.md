@@ -18,6 +18,8 @@ A [Pi coding agent](https://pi.software/) extension that brings Maestria's struc
 pi install npm:@maestria/pi
 ```
 
+Alternatively, use the [maestria CLI](https://maestria.sznm.dev/cli/) to manage installation across all platforms from a single command.
+
 ## Commands
 
 | Command | Description |

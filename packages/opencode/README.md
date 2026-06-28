@@ -174,6 +174,8 @@ You can also optionally delete the cached package:
 rm -rf ~/.cache/opencode/packages/@maestria/opencode*
 ```
 
+Alternatively, use the [maestria CLI](https://maestria.sznm.dev/cli/) to manage installation across all platforms from a single command.
+
 ## License
 
 MIT
