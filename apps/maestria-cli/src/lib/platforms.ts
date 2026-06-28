@@ -58,9 +58,16 @@ const opencode: PlatformHandler = {
 
   getLatestVersion: npmViewVersion('@maestria/opencode'),
 
-  install: run('opencode', ['plugin', '@maestria/opencode@latest']).pipe(Effect.as(void 0)),
+  install: Effect.gen(function* () {
+    // Clear cache to ensure fresh install from npm
+    yield* run('rm', ['-rf', `${homedir()}/.cache/opencode/packages/@maestria/opencode*`]);
+    yield* run('opencode', ['plugin', '@maestria/opencode@latest', '--force']);
+  }).pipe(Effect.as(void 0)),
 
   update: Effect.gen(function* () {
+    // Clear cache to ensure fresh install from npm
+    yield* run('rm', ['-rf', `${homedir()}/.cache/opencode/packages/@maestria/opencode*`]);
+
     // Check if installed globally or at project level
     const globalConfig = yield* readOpenCodeConfig().pipe(
       Effect.map((out) => out.includes('@maestria/opencode')),
