@@ -24,6 +24,11 @@ export const RULES_CONTENT: string = `<!-- Auto-generated from @maestria/core. D
   1. \`webfetch\` - fetch a specific known URL (for docs, pages)
   2. \`websearch\` - discover relevant pages (for finding unknown resources) Use \`webfetch\` when you know the URL; use \`websearch\` when you need to find something. \`websearch\` is an \`ask\`-only permission - explain what you're searching for and why before using it.
 
+## Principles
+
+- **Start from first principles** - before adopting an existing pattern or solution, verify it actually matches the fundamental problem. Prior art is a reference, not a constraint.
+- **Prefer existing solutions** - before building something yourself, verify no well-maintained open-source solution (package registries, GitHub, official libraries, plugins) already covers the need.
+
 ## Delegation
 
 When delegating work via \`maestria_subagent()\`, use only the 7 specialists below. **Never delegate to \`explore\` or \`general\`** - they are built-in agents, not part of the pipeline.
