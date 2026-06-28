@@ -97,8 +97,12 @@ const pi: PlatformHandler = {
 
   detect: commandExists('pi'),
 
-  isInstalled: run('pi', ['extensions', 'list'], 2_000).pipe(
-    Effect.map((out: string) => out.includes('@maestria/pi')),
+  isInstalled: run(
+    'ls',
+    [`${homedir()}/.local/share/pi/extensions/node_modules/@maestria/pi/package.json`],
+    2_000,
+  ).pipe(
+    Effect.map(() => true),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
 
