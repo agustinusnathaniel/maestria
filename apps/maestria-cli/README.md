@@ -12,15 +12,15 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 
 ## Commands
 
-| Command                            | What it does                              |
-| ---------------------------------- | ----------------------------------------- |
-| `maestria`                         | Show status (default)                     |
-| `maestria status`                  | Show installed plugins and version info   |
-| `maestria install`                 | Interactive platform install              |
-| `maestria install --all`           | Install for all detected platforms        |
-| `maestria install opencode`        | Install for a specific platform           |
-| `maestria update`                  | Interactive platform update               |
-| `maestria update --all`            | Update all installed platforms            |
+| Command                     | What it does                            |
+| --------------------------- | --------------------------------------- |
+| `maestria`                  | Show status (default)                   |
+| `maestria status`           | Show installed plugins and version info |
+| `maestria install`          | Interactive platform install            |
+| `maestria install --all`    | Install for all detected platforms      |
+| `maestria install opencode` | Install for a specific platform         |
+| `maestria update`           | Interactive platform update             |
+| `maestria update --all`     | Update all installed platforms          |
 
 All commands accept `--json` (machine-readable) and `--quiet` (suppress spinners).
 
@@ -50,11 +50,11 @@ npx maestria status --json --quiet
 
 ## Supported Platforms
 
-| ID          | Platform  | npm package            |
-| ----------- | --------- | ---------------------- |
-| `opencode`  | OpenCode  | `@maestria/opencode`   |
-| `pi`        | Pi        | `@maestria/pi`         |
-| `kimi-code` | Kimi Code | `@maestria/kimi-code`  |
+| ID          | Platform  | npm package           |
+| ----------- | --------- | --------------------- |
+| `opencode`  | OpenCode  | `@maestria/opencode`  |
+| `pi`        | Pi        | `@maestria/pi`        |
+| `kimi-code` | Kimi Code | `@maestria/kimi-code` |
 
 ## Tech Stack
 
