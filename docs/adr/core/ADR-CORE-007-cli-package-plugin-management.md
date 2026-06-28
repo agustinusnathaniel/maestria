@@ -263,6 +263,24 @@ Rejected because: the CLI's work is I/O-bound (shelling out to platform CLIs, qu
 - ADR-PI-001 (rules injection) — Pi install/update mechanics that the CLI wraps
 - ADR-KC-001 (kimi-code architecture) — Kimi Code's plugin installation path that the CLI wraps
 
+## Revisions
+
+### 2026-06-29
+
+The following changes were made after the initial ADR was accepted:
+
+| Change | Description |
+| --- | --- |
+| Version caching | `npmViewVersion` caches `npm view` results in `~/.cache/maestria/versions.json` with a 1-hour TTL. The cache is invalidated after a successful update via `invalidateVersionCache`. |
+| Input validation | `src/lib/validation.ts` added with `ValidationError`, `validatePlatform`, `validateVersion`, and `validateOrExit` for early return on bad input. |
+| `--version`/`-V` flag | The `update` command accepts `--version`/`-V` to pin a specific version (e.g., `maestria update opencode --version 0.5.0`). |
+| Shell glob support | `src/lib/shell.ts` split from `platforms.ts`; adds `sh()` helper that wraps `run()` via `sh -c`, enabling glob patterns, pipes, and redirects. |
+| Spinner UX | All commands show an `⠋ Detecting platforms...` spinner while working. The `createSpinner` wrapper respects `--quiet`. |
+| Pi detection | Pi's `isInstalled` uses a local file check (`ls` on `package.json`) instead of an HTTP call — faster and more reliable. |
+| OpenCode config | `isInstalled` reads `opencode.jsonc` first, falling back to `opencode.json`. |
+| Process lifecycle | `SIGINT`/`SIGTERM` handlers and explicit `process.exit(0)` calls ensure clean termination. |
+| Architecture | `lib/shell.ts`, `lib/validation.ts`, and `lib/install-one.ts` were added. `types.ts` was simplified to interface definitions only (tagged errors live in their respective modules: `CommandError` in `shell.ts`, `ValidationError` in `validation.ts`). |
+
 ## Date
 
 2026-06-28

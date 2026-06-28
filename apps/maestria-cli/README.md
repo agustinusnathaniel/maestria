@@ -12,17 +12,18 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 
 ## Commands
 
-| Command                     | What it does                            |
-| --------------------------- | --------------------------------------- |
-| `maestria`                  | Show status (default)                   |
-| `maestria status`           | Show installed plugins and version info |
-| `maestria install`          | Interactive platform install            |
-| `maestria install --all`    | Install for all detected platforms      |
-| `maestria install opencode` | Install for a specific platform         |
-| `maestria update`           | Interactive platform update             |
-| `maestria update --all`     | Update all installed platforms          |
+| Command                                    | What it does                                       |
+| ------------------------------------------ | -------------------------------------------------- |
+| `maestria`                                 | Show status (default)                              |
+| `maestria status`                          | Show installed plugins and version info             |
+| `maestria install`                         | Interactive platform install                        |
+| `maestria install --all`                   | Install for all detected platforms                  |
+| `maestria install opencode`                | Install for a specific platform                     |
+| `maestria update`                          | Interactive platform update                         |
+| `maestria update --all`                    | Update all installed platforms                      |
+| `maestria update opencode --version 0.5.0` | Update to a specific version                        |
 
-All commands accept `--json` (machine-readable) and `--quiet` (suppress spinners).
+All commands accept `--json` (machine-readable) and `--quiet` (suppress spinners). The `update` command additionally accepts `--version`/`-V` to pin a specific version.
 
 ## Usage
 
@@ -39,8 +40,34 @@ npx maestria install --all
 # Update everything
 npx maestria update --all
 
+# Update to a specific version
+npx maestria update opencode --version 0.5.0
+
 # JSON output for CI
 npx maestria status --json --quiet
+```
+
+### Input validation
+
+Invalid arguments are caught early:
+
+```bash
+$ npx maestria update unknown
+Unknown platform 'unknown'. Valid platforms: opencode, pi, kimi-code
+
+$ npx maestria update opencode --version 2.0
+Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
+
+$ npx maestria install opencode --all
+Cannot use --all with a specific platform. Choose one.
+```
+
+### Version caching
+
+npm version lookups are cached for 1 hour in `~/.cache/maestria/versions.json`. Delete the cache to force a fresh check, or run an update (which invalidates the cache automatically).
+
+```bash
+rm ~/.cache/maestria/versions.json
 ```
 
 ## Prerequisites

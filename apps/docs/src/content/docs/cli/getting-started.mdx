@@ -78,6 +78,12 @@ npx maestria update --all
 npx maestria update opencode
 ```
 
+**Update to a specific version:**
+
+```bash
+npx maestria update opencode --version 0.5.0
+```
+
 ## Prerequisites
 
 - **Node.js 22+** — required for the bundled `.mjs` distribution
@@ -124,6 +130,44 @@ npx maestria install --all --quiet
 <Aside type="tip">
   Combine `--quiet` with `--json` for clean CI output: `npx maestria status --json --quiet`
 </Aside>
+
+## Input Validation
+
+The CLI catches invalid input early with clear error messages:
+
+**Unknown platform:**
+```bash
+npx maestria update unknown-platform
+# > Unknown platform 'unknown-platform'. Valid platforms: opencode, pi, kimi-code
+```
+
+**Invalid version format:**
+```bash
+npx maestria update opencode --version 2.0
+# > Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
+```
+
+**Conflicting flags:**
+```bash
+npx maestria install opencode --all
+# > Cannot use --all with a specific platform. Choose one.
+```
+
+## Version Caching
+
+The CLI caches version lookups from npm for 1 hour in `~/.cache/maestria/versions.json`:
+
+```bash
+cat ~/.cache/maestria/versions.json
+# {"@maestria/opencode":{"version":"0.6.2","cachedAt":1719600000000}}
+```
+
+To force a fresh version check, delete the cache:
+```bash
+rm ~/.cache/maestria/versions.json
+```
+
+The cache is automatically invalidated after a successful update, ensuring `maestria status` always shows the correct latest version after an upgrade.
 
 ## Next Steps
 

@@ -107,14 +107,15 @@ maestria install [platform] [--all] [--json] [--quiet]
 
 ### Error handling
 
-If a platform's CLI tool is not available on `$PATH`, the CLI shows a clear error:
+**Input validation** — the CLI catches invalid arguments before any platform work begins:
 
-```
-Unknown platform: cursor
-Available: opencode, pi, kimi-code
-```
+| Scenario | Error message |
+| --- | --- |
+| Unknown platform ID | `Unknown platform 'cursor'. Valid platforms: opencode, pi, kimi-code` |
+| Invalid version format | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.` |
+| `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.` |
 
-If a platform command fails (e.g., network error), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
+**Runtime errors** — if a platform command fails (e.g., network error, missing binary), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
 
 ```
 ✔ OpenCode: Installed
@@ -131,20 +132,21 @@ npx maestria install --all
 
 ## `update`
 
-Update maestria plugins to the latest version.
+Update maestria plugins to the latest (or specified) version.
 
 ```bash
-maestria update [platform] [--all] [--json] [--quiet]
+maestria update [platform] [--version <semver>] [--all] [--json] [--quiet]
 ```
 
 ### Flags
 
-| Flag          | Description                                                       |
-| ------------- | ----------------------------------------------------------------- |
-| `platform`    | Positional arg — platform to update (omit for interactive picker) |
-| `--all`, `-a` | Update all installed platforms                                    |
-| `--json`      | Output results as JSON                                            |
-| `--quiet`     | Suppress spinner animations                                       |
+| Flag                     | Description                                                       |
+| ------------------------ | ----------------------------------------------------------------- |
+| `platform`               | Positional arg — platform to update (omit for interactive picker) |
+| `--version`, `-V`        | Specific version to install (e.g., `0.5.0`). Defaults to latest.  |
+| `--all`, `-a`            | Update all installed platforms                                    |
+| `--json`                 | Output results as JSON                                            |
+| `--quiet`                | Suppress spinner animations                                       |
 
 ### Behavior
 
@@ -154,6 +156,39 @@ Same logic as `install` but targets platforms where maestria is already installe
 ✔ OpenCode: Updated: v0.5.0 → v0.6.0
 ✔ Pi: Already up to date (v0.4.1)
 ```
+
+Use `--version` to pin a specific version instead of the latest:
+
+```bash
+maestria update opencode --version 0.5.0
+```
+
+| Invocation                                   | What happens                                                      |
+| -------------------------------------------- | ----------------------------------------------------------------- |
+| `maestria update`                            | Detects installed platforms, shows interactive picker             |
+| `maestria update opencode`                   | Updates OpenCode to the latest version                            |
+| `maestria update opencode --version 0.5.0`   | Updates OpenCode to v0.5.0 specifically                           |
+| `maestria update --all`                      | Updates all installed platforms to latest                         |
+| `maestria update --all --version 0.5.0`      | Updates all installed platforms to v0.5.0                         |
+
+### Version caching
+
+The CLI caches `npm view <package> version` results for 1 hour in `~/.cache/maestria/versions.json`:
+
+```json
+{
+  "@maestria/opencode": { "version": "0.6.2", "cachedAt": 1719600000000 }
+}
+```
+
+To force a fresh version check before running a command:
+
+```bash
+rm ~/.cache/maestria/versions.json
+npx maestria status
+```
+
+The cache is automatically invalidated after a successful update, so `maestria status` always shows the correct latest version after an upgrade.
 
 ### Example
 
