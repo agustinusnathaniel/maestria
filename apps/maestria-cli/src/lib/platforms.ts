@@ -4,6 +4,17 @@ import picocolors from 'picocolors';
 
 import { run, commandExists, npmViewVersion, CommandError } from './shell.js';
 
+// ── Shared helpers ───────────────────────────────────
+
+/** Read OpenCode config file, trying .jsonc first then .json */
+function readOpenCodeConfig(): Effect.Effect<string, CommandError> {
+  const jsoncPath = `${homedir()}/.config/opencode/opencode.jsonc`;
+  const jsonPath = `${homedir()}/.config/opencode/opencode.json`;
+  return run('cat', [jsoncPath], 5_000).pipe(
+    Effect.catchCause(() => run('cat', [jsonPath], 5_000)),
+  );
+}
+
 // ── Platform definitions ─────────────────────────────
 
 export interface PlatformHandler {
@@ -26,7 +37,7 @@ const opencode: PlatformHandler = {
 
   detect: commandExists('opencode'),
 
-  isInstalled: run('cat', [`${homedir()}/.config/opencode/opencode.jsonc`], 5_000).pipe(
+  isInstalled: readOpenCodeConfig().pipe(
     Effect.map((out) => out.includes('@maestria/opencode')),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
@@ -51,7 +62,7 @@ const opencode: PlatformHandler = {
 
   update: Effect.gen(function* () {
     // Check if installed globally or at project level
-    const globalConfig = yield* run('cat', [`${homedir()}/.config/opencode/opencode.jsonc`]).pipe(
+    const globalConfig = yield* readOpenCodeConfig().pipe(
       Effect.map((out) => out.includes('@maestria/opencode')),
       Effect.catchCause(() => Effect.succeed(false)),
     );
