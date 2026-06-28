@@ -166,6 +166,18 @@ function updateOne(
       version ??
       (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
 
+    // Skip if already on the target version
+    if (prevVersion !== 'unknown' && prevVersion === targetVersion) {
+      return {
+        id: platform.id,
+        label: platform.label,
+        ok: true,
+        message: 'Already up to date',
+        prevVersion,
+        nextVersion: prevVersion,
+      } satisfies PlatformResult;
+    }
+
     const spinner = createSpinner(quiet);
     spinner.start(`Updating ${platform.label}: ${prevVersion} → ${targetVersion}...`);
 
