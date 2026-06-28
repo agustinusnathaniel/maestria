@@ -26,13 +26,13 @@ const opencode: PlatformHandler = {
 
   detect: commandExists('opencode'),
 
-  isInstalled: run('opencode', ['config', 'get', 'plugins']).pipe(
-    Effect.map((out: string) => out.includes('@maestria/opencode')),
+  isInstalled: run('cat', [`${homedir()}/.config/opencode/opencode.jsonc`], 5_000).pipe(
+    Effect.map((out) => out.includes('@maestria/opencode')),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
 
   getInstalledVersion: run('cat', [
-    `${homedir()}/.cache/opencode/packages/@maestria/opencode/package.json`,
+    `${homedir()}/.cache/opencode/packages/@maestria/opencode@latest/node_modules/@maestria/opencode/package.json`,
   ]).pipe(
     Effect.map((out: string) => {
       try {
@@ -42,6 +42,7 @@ const opencode: PlatformHandler = {
         return 'unknown';
       }
     }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/opencode'),
@@ -49,9 +50,12 @@ const opencode: PlatformHandler = {
   install: run('opencode', ['plugin', '@maestria/opencode@latest']).pipe(Effect.as(void 0)),
 
   update: Effect.gen(function* () {
-    const plugins = yield* run('opencode', ['config', 'get', 'plugins']);
-    const isGlobal = plugins.includes('@maestria/opencode');
-    if (isGlobal) {
+    // Check if installed globally or at project level
+    const globalConfig = yield* run('cat', [`${homedir()}/.config/opencode/opencode.jsonc`]).pipe(
+      Effect.map((out) => out.includes('@maestria/opencode')),
+      Effect.catchCause(() => Effect.succeed(false)),
+    );
+    if (globalConfig) {
       yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g', '--force']);
     } else {
       yield* run('opencode', ['plugin', '@maestria/opencode@latest', '--force']);
@@ -75,7 +79,7 @@ const pi: PlatformHandler = {
 
   detect: commandExists('pi'),
 
-  isInstalled: run('pi', ['extensions', 'list'], 5_000).pipe(
+  isInstalled: run('pi', ['extensions', 'list'], 2_000).pipe(
     Effect.map((out: string) => out.includes('@maestria/pi')),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
@@ -109,7 +113,7 @@ const kimiCode: PlatformHandler = {
 
   detect: commandExists('kimi').pipe(
     Effect.catchCause(() =>
-      run('ls', [`${homedir()}/.kimi-code/AGENTS.md`], 5_000).pipe(
+      run('ls', [`${homedir()}/.kimi-code/AGENTS.md`], 2_000).pipe(
         Effect.map(() => true),
         Effect.catchCause(() => Effect.succeed(false)),
       ),
