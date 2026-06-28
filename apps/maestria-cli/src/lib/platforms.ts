@@ -24,7 +24,7 @@ export interface PlatformHandler {
   readonly detect: Effect.Effect<boolean, never>;
   readonly isInstalled: Effect.Effect<boolean, never>;
   readonly getInstalledVersion: Effect.Effect<string, CommandError>;
-  readonly getLatestVersion: Effect.Effect<string, CommandError>;
+  readonly getLatestVersion: Effect.Effect<string, never>;
   readonly install: Effect.Effect<void, CommandError>;
   readonly update: Effect.Effect<void, CommandError>;
   readonly uninstall: Effect.Effect<void, CommandError>;

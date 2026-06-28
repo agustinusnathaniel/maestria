@@ -1,4 +1,5 @@
 import { Effect, Data } from 'effect';
+import { homedir } from 'os';
 
 // ── Errors ───────────────────────────────────────────
 export class CommandError extends Data.TaggedError('CommandError')<{
@@ -36,6 +37,61 @@ export function commandExists(cmd: string): Effect.Effect<boolean, never> {
   );
 }
 
-export function npmViewVersion(pkg: string): Effect.Effect<string, CommandError> {
-  return run('npm', ['view', pkg, 'version']);
+export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
+  const TTL = 60 * 60 * 1000; // 1 hour
+  const cacheDir = `${homedir()}/.cache/maestria`;
+  const cacheFile = `${cacheDir}/versions.json`;
+
+  return Effect.gen(function* () {
+    const now = Date.now();
+
+    // Check cache first
+    const cached = yield* run('cat', [cacheFile], 2_000)
+      .pipe(
+        Effect.map((out) => {
+          try {
+            const cache = JSON.parse(out);
+            const entry = cache[pkg];
+            if (entry && now - entry.cachedAt < TTL) return entry.version;
+          } catch {
+            /* empty */
+          }
+          return null;
+        }),
+      )
+      .pipe(Effect.catchCause(() => Effect.succeed(null)));
+
+    if (cached) return cached;
+
+    // Fetch from npm
+    const version = yield* run('npm', ['view', pkg, 'version'], 5_000).pipe(
+      Effect.catchCause(() => Effect.succeed('')),
+    );
+
+    if (!version) return version;
+
+    // Update cache (fire-and-forget — never fail the effect)
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { mkdir, readFile, writeFile } = await import('node:fs/promises');
+        await mkdir(cacheDir, { recursive: true });
+
+        let cache: Record<string, { version: string; cachedAt: number }> = {};
+        try {
+          const existing = await readFile(cacheFile, 'utf-8');
+          cache = JSON.parse(existing);
+        } catch {
+          /* file doesn't exist or is invalid */
+        }
+
+        cache[pkg] = { version, cachedAt: now };
+        await writeFile(cacheFile, JSON.stringify(cache));
+      },
+      catch: () => {
+        /* cache write failure is non-fatal */
+      },
+    }).pipe(Effect.catchCause(() => Effect.succeed(undefined)));
+
+    return version;
+  });
 }

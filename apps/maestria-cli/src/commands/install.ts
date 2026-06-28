@@ -51,7 +51,10 @@ export const installCommand = defineCommand({
       results.push(result);
     } else if (args.all) {
       // Install for all detected platforms
+      const spinner = createSpinner(args.quiet as boolean);
+      spinner.start('Detecting platforms...');
       const allPlatforms = await Effect.runPromise(detectAll());
+      spinner.stop('Done');
       const toInstall = allPlatforms.filter((s) => s.available && !s.installed);
 
       if (toInstall.length === 0) {
@@ -59,7 +62,6 @@ export const installCommand = defineCommand({
         return;
       }
 
-      const spinner = createSpinner(args.quiet as boolean);
       spinner.start('Preparing...');
       for (const p of toInstall) {
         const platform = getPlatform(p.id);
@@ -96,7 +98,10 @@ export const installCommand = defineCommand({
       spinner.stop('Done');
     } else {
       // Interactive: ask which platform
+      const spinner = createSpinner(args.quiet as boolean);
+      spinner.start('Detecting platforms...');
       const allPlatforms = await Effect.runPromise(detectAll());
+      spinner.stop('Done');
       const installable = allPlatforms.filter((s) => s.available && !s.installed);
 
       if (installable.length === 0) {

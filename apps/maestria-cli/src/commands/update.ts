@@ -49,7 +49,10 @@ export const updateCommand = defineCommand({
       const result = await Effect.runPromise(updateOne(platform, args.quiet as boolean));
       results.push(result);
     } else if (args.all) {
+      const spinner = createSpinner(args.quiet as boolean);
+      spinner.start('Detecting platforms...');
       const installed = await Effect.runPromise(detectInstalled());
+      spinner.stop('Done');
 
       if (installed.length === 0) {
         console.log('No maestria installations found to update.');
@@ -71,7 +74,10 @@ export const updateCommand = defineCommand({
         results.push(result);
       }
     } else {
+      const spinner = createSpinner(args.quiet as boolean);
+      spinner.start('Detecting platforms...');
       const installed = await Effect.runPromise(detectInstalled());
+      spinner.stop('Done');
 
       if (installed.length === 0) {
         console.log('No maestria installations found to update.');

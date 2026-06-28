@@ -5,7 +5,7 @@ import { installCommand } from './commands/install.js';
 import { updateCommand } from './commands/update.js';
 import { statusCommand } from './commands/status.js';
 import { detectAll } from './lib/detect.js';
-import { renderStatusTable } from './lib/output.js';
+import { createSpinner, renderStatusTable } from './lib/output.js';
 
 // Ensure clean exit on signals — prevents Effect runtime from keeping process alive
 process.on('SIGINT', () => process.exit(0));
@@ -22,7 +22,12 @@ const main = defineCommand({
     status: statusCommand,
   },
   run: async () => {
+    const spinner = createSpinner(false);
+    spinner.start('Detecting platforms...');
+
     const output = await Effect.runPromise(detectAll());
+
+    spinner.stop('Done');
     console.log(renderStatusTable(output));
     process.exit(0);
   },
