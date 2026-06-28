@@ -27,10 +27,10 @@ function detectOne(platform: PlatformHandler): Effect.Effect<PlatformStatus, nev
         installedVersion = yield* platform.getInstalledVersion.pipe(
           Effect.catchCause(() => Effect.succeed('unknown')),
         );
-        latestVersion = yield* platform.getLatestVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('')),
-        );
       }
+      latestVersion = yield* platform.getLatestVersion.pipe(
+        Effect.catchCause(() => Effect.succeed('')),
+      );
     }
 
     return {

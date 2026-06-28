@@ -2,7 +2,7 @@ import { Effect } from 'effect';
 import { homedir } from 'os';
 import picocolors from 'picocolors';
 
-import { run, commandExists, npmViewVersion, CommandError } from './shell.js';
+import { run, sh, commandExists, npmViewVersion, CommandError } from './shell.js';
 
 // ── Shared helpers ───────────────────────────────────
 
@@ -60,13 +60,13 @@ const opencode: PlatformHandler = {
 
   install: Effect.gen(function* () {
     // Clear cache to ensure fresh install from npm
-    yield* run('rm', ['-rf', `${homedir()}/.cache/opencode/packages/@maestria/opencode*`]);
+    yield* sh(`rm -rf ${homedir()}/.cache/opencode/packages/@maestria/opencode*`);
     yield* run('opencode', ['plugin', '@maestria/opencode@latest', '--force']);
   }).pipe(Effect.as(void 0)),
 
   update: Effect.gen(function* () {
     // Clear cache to ensure fresh install from npm
-    yield* run('rm', ['-rf', `${homedir()}/.cache/opencode/packages/@maestria/opencode*`]);
+    yield* sh(`rm -rf ${homedir()}/.cache/opencode/packages/@maestria/opencode*`);
 
     // Check if installed globally or at project level
     const globalConfig = yield* readOpenCodeConfig().pipe(

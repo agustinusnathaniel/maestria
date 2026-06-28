@@ -30,6 +30,11 @@ export function run(
   });
 }
 
+/** Run a command through a shell (supports globs, pipes, redirects) */
+export function sh(command: string, timeoutMs = 30_000): Effect.Effect<string, CommandError> {
+  return run('sh', ['-c', command], timeoutMs);
+}
+
 export function commandExists(cmd: string): Effect.Effect<boolean, never> {
   return run('which', [cmd]).pipe(
     Effect.map((out: string) => out.length > 0),
