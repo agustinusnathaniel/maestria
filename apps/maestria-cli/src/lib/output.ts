@@ -1,0 +1,56 @@
+import picocolors from 'picocolors';
+import { spinner as clackSpinner } from '@clack/prompts';
+import type { PlatformStatus, StatusOutput, PlatformResult } from '@/types.js';
+
+/** Wrapper around @clack/prompts spinner that respects --quiet */
+export function createSpinner(quiet: boolean) {
+  if (quiet) {
+    return { start: () => {}, stop: () => {}, message: () => {} };
+  }
+  return clackSpinner();
+}
+
+/** Render a status table to terminal */
+export function renderStatusTable(platforms: PlatformStatus[]): string {
+  const lines: string[] = [];
+  lines.push(picocolors.bold('\n  Maestria Status'));
+  lines.push(picocolors.dim('  ─────────────────────────────────────'));
+
+  for (const p of platforms) {
+    const available = p.available ? picocolors.green('✓') : picocolors.red('✗');
+    const installed = p.installed ? picocolors.green('✓') : picocolors.dim('—');
+    const version = p.installed ? p.installedVersion : picocolors.dim('not installed');
+    const latest =
+      p.latestVersion === 'check-failed'
+        ? picocolors.yellow('check failed')
+        : p.latestVersion
+          ? p.latestVersion
+          : picocolors.dim('unknown');
+
+    lines.push(`  ${picocolors.bold(p.label)}`);
+    lines.push(`    Available:  ${available}`);
+    lines.push(`    Installed:  ${installed} ${version}`);
+    lines.push(`    Latest:     ${latest}`);
+  }
+
+  return lines.join('\n') + '\n';
+}
+
+/** Render result lines after install/update */
+export function renderResults(results: PlatformResult[]): string {
+  const lines = results.map((r) => {
+    const status = r.ok ? picocolors.green('✓') : picocolors.red('✗');
+    const msg = r.ok
+      ? r.prevVersion
+        ? `  ${r.label}: ${r.prevVersion} → ${r.nextVersion}`
+        : `  ${r.label}: ${r.message}`
+      : `  ${r.label}: ${picocolors.red(r.message)}`;
+    return `${status} ${msg}`;
+  });
+  return lines.join('\n') + '\n';
+}
+
+/** JSON output for status */
+export function formatStatusJson(output: StatusOutput): string {
+  return JSON.stringify(output, null, 2);
+}

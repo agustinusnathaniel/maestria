@@ -11,6 +11,8 @@ See [INSTALL.md](./INSTALL.md) for the full checklist. Quick start:
 mkdir -p ~/.kimi-code && cp rules/AGENTS.md ~/.kimi-code/AGENTS.md
 ```
 
+Alternatively, use the [maestria CLI](https://maestria.sznm.dev/cli/) to manage installation across all platforms from a single command.
+
 ## The 8 Skills at a Glance
 
 | Skill | Subagent | Purpose |

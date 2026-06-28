@@ -1,0 +1,178 @@
+---
+title: Getting Started
+description: Install and use maestria to manage maestria plugins across OpenCode, Kimi Code, and Pi.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+`maestria` runs anywhere Node.js 22+ is available. No install required — use `npx` to run it directly from npm.
+
+## Quick Start
+
+### Check what's installed
+
+```bash
+npx maestria status
+```
+
+This detects which coding agent platforms are available on your machine and shows the install status for each:
+
+```
+  Maestria Status
+  ─────────────────────────────────────
+  OpenCode
+    Available:  ✓
+    Installed:  ✓ v0.6.0
+    Latest:     0.6.2
+  Pi
+    Available:  ✓
+    Installed:  — not installed
+    Latest:     0.4.1
+  Kimi Code
+    Available:  ✗
+    Installed:  — not installed
+    Latest:     unknown
+```
+
+Run `npx maestria` with no arguments — it defaults to `status`.
+
+### Install for a platform
+
+**Interactive install** (pick from a list of detected platforms):
+
+```bash
+npx maestria install
+```
+
+**Install for all detected platforms:**
+
+```bash
+npx maestria install --all
+```
+
+**Install for a specific platform:**
+
+```bash
+npx maestria install opencode
+npx maestria install pi
+npx maestria install kimi-code
+```
+
+### Update to the latest version
+
+**Interactive update:**
+
+```bash
+npx maestria update
+```
+
+**Update all:**
+
+```bash
+npx maestria update --all
+```
+
+**Update a specific platform:**
+
+```bash
+npx maestria update opencode
+```
+
+**Update to a specific version:**
+
+```bash
+npx maestria update opencode --version 0.5.0
+```
+
+## Prerequisites
+
+- **Node.js 22+** — required for the bundled `.mjs` distribution
+- **Platform CLI tool** — the CLI detects platforms by checking for their binary on `$PATH`. The platform must be installed before maestria can be installed for it:
+  - [OpenCode](https://opencode.ai) — `opencode` binary
+  - [Pi](https://pi.ai) — `pi` binary
+  - [Kimi Code](https://kimi.ai) — `kimi` binary
+
+## JSON Output
+
+All commands accept `--json` for machine-readable output. Useful for CI scripts, dashboards, or IDE integrations:
+
+```bash
+npx maestria status --json
+```
+
+```json
+{
+  "platforms": [
+    {
+      "id": "opencode",
+      "label": "OpenCode",
+      "available": true,
+      "installed": true,
+      "installedVersion": "0.6.0",
+      "latestVersion": "0.6.2"
+    }
+  ]
+}
+```
+
+```bash
+npx maestria install --all --json
+```
+
+## Quiet Mode
+
+Use `--quiet` to suppress spinner animations. Commands still print final output:
+
+```bash
+npx maestria install --all --quiet
+```
+
+<Aside type="tip">
+  Combine `--quiet` with `--json` for clean CI output: `npx maestria status --json --quiet`
+</Aside>
+
+## Input Validation
+
+The CLI catches invalid input early with clear error messages:
+
+**Unknown platform:**
+
+```bash
+npx maestria update unknown-platform
+# > Unknown platform 'unknown-platform'. Valid platforms: opencode, pi, kimi-code
+```
+
+**Invalid version format:**
+
+```bash
+npx maestria update opencode --version 2.0
+# > Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
+```
+
+**Conflicting flags:**
+
+```bash
+npx maestria install opencode --all
+# > Cannot use --all with a specific platform. Choose one.
+```
+
+## Version Caching
+
+The CLI caches version lookups from npm for 1 hour in `~/.cache/maestria/versions.json`:
+
+```bash
+cat ~/.cache/maestria/versions.json
+# {"@maestria/opencode":{"version":"0.6.2","cachedAt":1719600000000}}
+```
+
+To force a fresh version check, delete the cache:
+
+```bash
+rm ~/.cache/maestria/versions.json
+```
+
+The cache is automatically invalidated after a successful update, ensuring `maestria status` always shows the correct latest version after an upgrade.
+
+## Next Steps
+
+- [Command Reference](/cli/commands/) — full reference for all commands and flags
