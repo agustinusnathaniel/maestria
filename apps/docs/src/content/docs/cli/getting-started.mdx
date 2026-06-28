@@ -136,18 +136,21 @@ npx maestria install --all --quiet
 The CLI catches invalid input early with clear error messages:
 
 **Unknown platform:**
+
 ```bash
 npx maestria update unknown-platform
 # > Unknown platform 'unknown-platform'. Valid platforms: opencode, pi, kimi-code
 ```
 
 **Invalid version format:**
+
 ```bash
 npx maestria update opencode --version 2.0
 # > Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
 ```
 
 **Conflicting flags:**
+
 ```bash
 npx maestria install opencode --all
 # > Cannot use --all with a specific platform. Choose one.
@@ -163,6 +166,7 @@ cat ~/.cache/maestria/versions.json
 ```
 
 To force a fresh version check, delete the cache:
+
 ```bash
 rm ~/.cache/maestria/versions.json
 ```

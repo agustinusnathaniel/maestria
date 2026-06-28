@@ -12,16 +12,16 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 
 ## Commands
 
-| Command                                    | What it does                                       |
-| ------------------------------------------ | -------------------------------------------------- |
-| `maestria`                                 | Show status (default)                              |
-| `maestria status`                          | Show installed plugins and version info             |
-| `maestria install`                         | Interactive platform install                        |
-| `maestria install --all`                   | Install for all detected platforms                  |
-| `maestria install opencode`                | Install for a specific platform                     |
-| `maestria update`                          | Interactive platform update                         |
-| `maestria update --all`                    | Update all installed platforms                      |
-| `maestria update opencode --version 0.5.0` | Update to a specific version                        |
+| Command                                    | What it does                            |
+| ------------------------------------------ | --------------------------------------- |
+| `maestria`                                 | Show status (default)                   |
+| `maestria status`                          | Show installed plugins and version info |
+| `maestria install`                         | Interactive platform install            |
+| `maestria install --all`                   | Install for all detected platforms      |
+| `maestria install opencode`                | Install for a specific platform         |
+| `maestria update`                          | Interactive platform update             |
+| `maestria update --all`                    | Update all installed platforms          |
+| `maestria update opencode --version 0.5.0` | Update to a specific version            |
 
 All commands accept `--json` (machine-readable) and `--quiet` (suppress spinners). The `update` command additionally accepts `--version`/`-V` to pin a specific version.
 
