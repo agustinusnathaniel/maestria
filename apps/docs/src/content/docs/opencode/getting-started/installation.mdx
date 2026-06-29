@@ -12,7 +12,23 @@ import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components
 - [OpenCode](https://opencode.ai) CLI (latest version)
 - **Node.js 22.12+** - Required for plugin resolution. Earlier versions are not supported.
 
-## Installation
+## Installation via CLI (Recommended)
+
+The [maestria CLI](/cli/) provides a unified interface for installing and managing
+maestria plugins across all supported platforms:
+
+```bash
+# Install for this platform
+npx maestria install opencode
+
+# Verify installation
+npx maestria status
+```
+
+See the [CLI documentation](/cli/) for more commands and options.
+
+<details>
+<summary>Alternative: Manual setup</summary>
 
 Install the plugin with a single command:
 
@@ -51,6 +67,8 @@ Or, add it manually to your OpenCode config:
 
 </Steps>
 
+</details>
+
 ## Verify Installation
 
 Start a new OpenCode session. The 8 agents are ready for delegation via `@` mention. Try typing `@orchestrator` to kick off your first task - the manager agent decomposes it and hands pieces to the right specialist.
@@ -58,6 +76,15 @@ Start a new OpenCode session. The 8 agents are ready for delegation via `@` ment
 The global workflow rules are active in every prompt. You will see them reflected in how agents respond, delegate, and structure their output.
 
 ## Updating
+
+To update via the maestria CLI:
+
+```bash
+npx maestria update opencode
+```
+
+<details>
+<summary>Alternative: Platform-native update</summary>
 
 OpenCode does not auto-update plugins. Packages are cached locally in
 `~/.cache/opencode/packages/<name>@<version>/` - the npm registry is not consulted if the
@@ -99,23 +126,7 @@ Run `opencode debug paths` to see the cache directory resolved for your platform
   `"@maestria/opencode@latest"`.
 </Aside>
 
-### Using the Maestria CLI
-
-The [maestria CLI](/cli/) provides a unified interface for managing maestria
-across all supported platforms:
-
-```bash
-# Install for this platform
-npx maestria install opencode
-
-# Update to latest
-npx maestria update opencode
-
-# Check current status
-npx maestria status
-```
-
-See the [CLI documentation](/cli/) for more commands and options.
+</details>
 
 ## Configuring Workflow Modes
 

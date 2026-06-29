@@ -12,7 +12,21 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 - [Pi](https://pi.ai) CLI - the Pi coding agent (latest version)
 - **Node.js 22.12+** - Required for npm-based extension resolution
 
-## Installation
+## Installation via CLI (Recommended)
+
+The [maestria CLI](/cli/) provides a unified interface for installing and managing
+maestria plugins across all supported platforms:
+
+```bash
+# Install for this platform
+npx maestria install pi
+
+# Verify installation
+npx maestria status
+```
+
+<details>
+<summary>Alternative: Manual setup</summary>
 
 There are two ways to install `@maestria/pi`.
 
@@ -59,6 +73,8 @@ pi config extensions add @maestria/pi
 pi config prompts add node_modules/@maestria/pi/prompts
 ```
 
+</details>
+
 ## Verify Installation
 
 Start a new Pi session. Try activating a workflow mode:
@@ -79,6 +95,15 @@ You should see `@maestria/pi` in the output.
 
 ## Updating
 
+To update via the maestria CLI:
+
+```bash
+npx maestria update pi
+```
+
+<details>
+<summary>Alternative: Manual update</summary>
+
 To update `@maestria/pi` to the latest version:
 
 ```bash
@@ -87,26 +112,10 @@ pi install npm:@maestria/pi@latest
 
 <Aside type="tip">
   To pin a specific version, use `pi install npm:@maestria/pi@0.1.0`. Check the
-  [changelog](/opencode/changelog/) for version history.
+  [changelog](/pi/changelog/) for version history.
 </Aside>
 
-### Using the Maestria CLI
-
-The [maestria CLI](/cli/) provides a unified interface for managing maestria
-across all supported platforms:
-
-```bash
-# Install for this platform
-npx maestria install pi
-
-# Update to latest
-npx maestria update pi
-
-# Check current status
-npx maestria status
-```
-
-See the [CLI documentation](/cli/) for more commands and options.
+</details>
 
 ## Uninstalling
 

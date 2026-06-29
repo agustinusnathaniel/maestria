@@ -12,7 +12,27 @@ import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
 - **Kimi Code v0.12.0+** - required for first-class `AgentSwarm` support. On older versions, the orchestrator skill still works, but the swarm guidance falls back to single `Agent` calls.
 - **No Node toolchain required** - the plugin is purely declarative files (manifest + markdown).
 
-## Installation
+## Installation via CLI (Recommended)
+
+The [maestria CLI](/cli/) provides a unified interface for installing and managing
+maestria plugins across all supported platforms:
+
+```bash
+# Install for this platform
+npx maestria install kimi-code
+
+# Verify installation
+npx maestria status
+```
+
+<Aside type="caution" title="Additional setup required">
+  The CLI installs the plugin manifest. You still need to copy the global rules to
+  `~/.kimi-code/AGENTS.md` and add the recommended hooks and permission rules to
+  `~/.kimi-code/config.toml`. See the manual setup section below for the complete steps.
+</Aside>
+
+<details>
+<summary>Alternative: Manual setup</summary>
 
 <Steps>
 
@@ -238,6 +258,8 @@ import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
 
 </Steps>
 
+</details>
+
 ## Troubleshooting
 
 ### Orchestrator not loading
@@ -256,6 +278,15 @@ import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
 
 ## Updating
 
+To update via the maestria CLI:
+
+```bash
+npx maestria update kimi-code
+```
+
+<details>
+<summary>Alternative: Manual update</summary>
+
 Kimi Code installs from a branch URL track the branch. To pick up a new release, re-run the install command:
 
 ```
@@ -273,23 +304,7 @@ Or pin to a specific commit:
   the repository or back up your changes before re-installing.
 </Aside>
 
-### Using the Maestria CLI
-
-The [maestria CLI](/cli/) provides a unified interface for managing maestria
-across all supported platforms:
-
-```bash
-# Install for this platform
-npx maestria install kimi-code
-
-# Update to latest
-npx maestria update kimi-code
-
-# Check current status
-npx maestria status
-```
-
-See the [CLI documentation](/cli/) for more commands and options.
+</details>
 
 ## Uninstalling
 
