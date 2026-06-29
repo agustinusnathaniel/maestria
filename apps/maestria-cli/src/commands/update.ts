@@ -1,3 +1,4 @@
+import picocolors from 'picocolors';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 import { select, isCancel, cancel } from '@clack/prompts';
@@ -102,44 +103,76 @@ export const updateCommand = defineCommand({
         results.push(result);
       }
     } else {
-      const spinner = createSpinner(args.quiet as boolean);
-      spinner.start('Detecting platforms...');
+      // Interactive — check versions before showing picker
       const installed = await Effect.runPromise(detectInstalled());
-      spinner.stop('Done');
 
       if (installed.length === 0) {
         console.log('No maestria installations found to update.');
-        return;
+        process.exit(0);
       }
 
+      // Check which platforms actually need updating
+      const statuses: Array<{
+        id: string;
+        label: string;
+        installedVersion: string;
+        latestVersion: string;
+        needsUpdate: boolean;
+      }> = [];
+      for (const p of installed) {
+        const platform = getPlatform(p.id);
+        if (!platform) continue;
+
+        const prevVersion = platform.getInstalledVersion.pipe(
+          Effect.catchCause(() => Effect.succeed('unknown')),
+        );
+        const latestVersion = platform.getLatestVersion.pipe(
+          Effect.catchCause(() => Effect.succeed('unknown')),
+        );
+        const [pv, lv] = await Effect.runPromise(
+          Effect.all([prevVersion, latestVersion], { concurrency: 2 }),
+        );
+
+        statuses.push({
+          id: p.id,
+          label: p.label,
+          installedVersion: pv,
+          latestVersion: lv,
+          needsUpdate: pv !== 'unknown' && lv !== 'unknown' && pv !== lv,
+        });
+      }
+
+      const needsUpdate = statuses.filter((s) => s.needsUpdate);
+      const upToDate = statuses.filter((s) => !s.needsUpdate);
+
+      if (needsUpdate.length === 0) {
+        const lines = upToDate
+          .map((s) => `  ${picocolors.green('✓')} ${s.label}: ${s.installedVersion}`)
+          .join('\n');
+        console.log(`\nAll platforms are up to date.\n${lines}\n`);
+        process.exit(0);
+      }
+
+      // Only show platforms that need updating
       const selected = await select({
         message: 'Which platform do you want to update?',
-        options: installed.map((p) => ({
-          value: p.id,
-          label: p.label,
-          hint: p.latestVersion ? `latest: ${p.latestVersion}` : undefined,
+        options: needsUpdate.map((s) => ({
+          value: s.id,
+          label: s.label,
+          hint: `${s.installedVersion} → ${s.latestVersion}`,
         })),
       });
 
       if (isCancel(selected) || !selected) {
         cancel('Update cancelled.');
-        return;
+        process.exit(0);
       }
 
-      const platform = getPlatform(String(selected));
-      if (!platform) {
-        results.push({
-          id: String(selected),
-          label: String(selected),
-          ok: false,
-          message: 'Platform definition not found. This is a bug.',
-        } satisfies PlatformResult);
-      } else {
-        const result = await Effect.runPromise(
-          updateOne(platform, args.quiet as boolean, args.version as string | undefined),
-        );
-        results.push(result);
-      }
+      const platform = getPlatform(String(selected))!;
+      const result = await Effect.runPromise(
+        updateOne(platform, args.quiet as boolean, args.version as string | undefined),
+      );
+      results.push(result);
     }
 
     if (args.json) {

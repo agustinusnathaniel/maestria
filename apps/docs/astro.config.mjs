@@ -118,6 +118,14 @@ export default defineConfig({
             { label: 'Contributing', link: '/pi/contributing/' },
           ],
         },
+        {
+          label: 'CLI',
+          items: [
+            { label: 'Overview', link: '/cli/' },
+            { label: 'Getting Started', link: '/cli/getting-started/' },
+            { label: 'Commands', link: '/cli/commands/' },
+          ],
+        },
       ],
     }),
   ],
