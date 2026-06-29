@@ -119,6 +119,28 @@ npx maestria status --json
 npx maestria install --all --json
 ```
 
+## Compact Output
+
+Use `--compact` for minimal machine-friendly text output suitable for AI agents
+and token-sensitive environments:
+
+```bash
+npx maestria status --compact
+```
+
+```
+opencode: available installed=0.2.1 latest=0.2.1
+pi: not-available not-installed
+```
+
+Compact output works on `install` and `update` too, showing one line per platform result:
+
+```
+opencode: installed 0.2.1
+```
+
+The compact flag implies `--quiet` (no spinner animations).
+
 ## Quiet Mode
 
 Use `--quiet` to suppress spinner animations. Commands still print final output:
@@ -130,6 +152,21 @@ npx maestria install --all --quiet
 <Aside type="tip">
   Combine `--quiet` with `--json` for clean CI output: `npx maestria status --json --quiet`
 </Aside>
+
+## Exit Codes
+
+| Code  | Meaning                                    |
+| ----- | ------------------------------------------ |
+| `0`   | Success                                    |
+| `1`   | Validation or command error                |
+| `130` | User cancelled (interactive mode only)     |
+
+The `install` and `update` commands detect non-interactive terminals (e.g., CI
+pipelines) and exit with code `1` showing a clear error message instead of
+attempting an interactive prompt.
+
+Run any command with `--help` to see in-terminal examples, exit code documentation,
+and a TIP FOR AI AGENTS section with usage guidance for automated pipelines.
 
 ## Input Validation
 

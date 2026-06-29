@@ -9,10 +9,11 @@ import { Aside } from '@astrojs/starlight/components';
 
 These flags work on every command:
 
-| Flag      | Description                                      |
-| --------- | ------------------------------------------------ |
-| `--json`  | Output results as JSON instead of formatted text |
-| `--quiet` | Suppress spinner animations                      |
+| Flag        | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| `--json`    | Output results as JSON instead of formatted text     |
+| `--quiet`   | Suppress spinner animations                          |
+| `--compact` | Machine-friendly text output — one line per platform |
 
 Running `maestria` with no arguments is equivalent to `maestria status`.
 
@@ -23,17 +24,18 @@ Running `maestria` with no arguments is equivalent to `maestria status`.
 Show what's installed and version information for all platforms.
 
 ```bash
-maestria status [--json] [--quiet]
+maestria status [--json] [--quiet] [--compact]
 ```
 
 Detects which coding agent CLIs are available on `$PATH`, checks whether maestria is installed for each, and reports the installed and latest versions. Platform detection runs in parallel.
 
 ### Flags
 
-| Flag      | Description                       |
-| --------- | --------------------------------- |
-| `--json`  | Output as JSON (see schema below) |
-| `--quiet` | Suppress non-essential output     |
+| Flag        | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| `--json`    | Output as JSON (see schema below)                    |
+| `--quiet`   | Suppress non-essential output                        |
+| `--compact` | Machine-friendly text — one line per platform        |
 
 ### JSON schema
 
@@ -63,6 +65,18 @@ Each platform object:
 | `installedVersion` | string  | Version string from the installed package           |
 | `latestVersion`    | string  | Latest version available on npm                     |
 
+### Compact output
+
+With `--compact`, status outputs one line per platform with no colors or decorative formatting:
+
+```
+opencode: available installed=0.2.1 latest=0.2.1
+pi: not-available not-installed
+kimi-code: available installed=0.1.0 latest=0.2.1
+```
+
+Ideal for AI agents and token-sensitive environments. Implies `--quiet` (no spinner animations).
+
 ### Example
 
 ```bash
@@ -76,7 +90,7 @@ npx maestria status
 Install maestria plugins for one or more coding agent platforms.
 
 ```bash
-maestria install [platform] [--all] [--json] [--quiet]
+maestria install [platform] [--all] [--json] [--quiet] [--compact]
 ```
 
 ### Flags
@@ -87,6 +101,7 @@ maestria install [platform] [--all] [--json] [--quiet]
 | `--all`, `-a` | Install for all detected platforms                                 |
 | `--json`      | Output results as JSON                                             |
 | `--quiet`     | Suppress spinner animations                                        |
+| `--compact`   | Machine-friendly text output — one line per result                 |
 
 ### Behavior
 
@@ -135,7 +150,7 @@ npx maestria install --all
 Update maestria plugins to the latest (or specified) version.
 
 ```bash
-maestria update [platform] [--version <semver>] [--all] [--json] [--quiet]
+maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--compact]
 ```
 
 ### Flags
@@ -147,6 +162,7 @@ maestria update [platform] [--version <semver>] [--all] [--json] [--quiet]
 | `--all`, `-a`     | Update all installed platforms                                    |
 | `--json`          | Output results as JSON                                            |
 | `--quiet`         | Suppress spinner animations                                       |
+| `--compact`       | Machine-friendly text output — one line per result                |
 
 ### Behavior
 
@@ -200,3 +216,19 @@ npx maestria update --all
   Use `maestria status` before `maestria update --all` to see which platforms have updates
   available.
 </Aside>
+
+<Aside type="tip">
+  Run `maestria <command> --help` for in-terminal examples and exit code documentation,
+  including a TIP FOR AI AGENTS section with usage guidance for automated environments.
+</Aside>
+
+### Exit Codes
+
+| Code  | Meaning                                    |
+| ----- | ------------------------------------------ |
+| `0`   | Success                                    |
+| `1`   | Validation or command error                |
+| `130` | User cancelled (interactive mode only)     |
+
+The `install` and `update` commands detect non-interactive terminals and exit with code `1`
+showing a clear error message instead of attempting an interactive prompt.

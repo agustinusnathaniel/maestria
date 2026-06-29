@@ -4,7 +4,7 @@ import { select, isCancel, cancel } from '@clack/prompts';
 import { platforms, getPlatform } from '@/lib/platforms.js';
 import { detectAll } from '@/lib/detect.js';
 import { installOne } from '@/lib/install-one.js';
-import { createSpinner, renderResults } from '@/lib/output.js';
+import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
 import { validatePlatform, validateNotAllAndPlatform, validateOrExit } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
@@ -16,27 +16,38 @@ export const installCommand = defineCommand({
   args: {
     platform: {
       type: 'positional',
-      description: 'Platform to install (opencode, pi, kimi-code). Omit for interactive selection.',
+      description:
+        'Platform to install. One of: opencode, pi, kimi-code. Pass directly to skip interactive selection.',
       required: false,
     },
     all: {
       type: 'boolean',
-      description: 'Install for all detected platforms',
+      description: 'Install for all detected platforms that are not yet installed',
       alias: 'a',
       default: false,
     },
     json: {
       type: 'boolean',
-      description: 'Output as JSON',
+      description:
+        'Output results as JSON — structured machine-readable format optimized for AI agents and CI pipelines',
       default: false,
     },
     quiet: {
       type: 'boolean',
-      description: 'Suppress spinners',
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      default: false,
+    },
+    compact: {
+      type: 'boolean',
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       default: false,
     },
   },
   run: async ({ args }) => {
+    const isQuiet = (args.quiet || args.compact) as boolean;
+    const isCompact = args.compact as boolean;
+
     // Validate CLI args
     if (args.platform) {
       await validateOrExit(validatePlatform(args.platform as string));
@@ -53,14 +64,14 @@ export const installCommand = defineCommand({
       if (!platform) {
         console.error(`Unknown platform: ${args.platform}`);
         console.error(`Available: ${platforms.map((p) => p.id).join(', ')}`);
-        return;
+        process.exit(1);
       }
 
-      const result = await Effect.runPromise(installOne(platform, args.quiet as boolean));
+      const result = await Effect.runPromise(installOne(platform, isQuiet));
       results.push(result);
     } else if (args.all) {
       // Install for all detected platforms
-      const spinner = createSpinner(args.quiet as boolean);
+      const spinner = createSpinner(isQuiet);
       spinner.start('Detecting platforms...');
       const allPlatforms = await Effect.runPromise(detectAll());
       spinner.stop('Done');
@@ -68,7 +79,7 @@ export const installCommand = defineCommand({
 
       if (toInstall.length === 0) {
         console.log('All detected platforms already have maestria installed.');
-        return;
+        process.exit(0);
       }
 
       spinner.start('Preparing...');
@@ -106,8 +117,16 @@ export const installCommand = defineCommand({
       }
       spinner.stop('Done');
     } else {
+      // Non-TTY guard: don't try interactive prompts
+      if (!process.stdout.isTTY || !process.stdin.isTTY) {
+        console.error('No platform specified and not in an interactive terminal.');
+        console.error('Usage: maestria install <platform> or maestria install --all');
+        console.error("Run 'maestria install --help' for details.");
+        process.exit(1);
+      }
+
       // Interactive: ask which platform
-      const spinner = createSpinner(args.quiet as boolean);
+      const spinner = createSpinner(isQuiet);
       spinner.start('Detecting platforms...');
       const allPlatforms = await Effect.runPromise(detectAll());
       spinner.stop('Done');
@@ -119,7 +138,7 @@ export const installCommand = defineCommand({
         } else {
           console.log('Maestria is already installed for all detected platforms.');
         }
-        return;
+        process.exit(0);
       }
 
       const selected = await select({
@@ -132,7 +151,7 @@ export const installCommand = defineCommand({
 
       if (isCancel(selected) || !selected) {
         cancel('Install cancelled.');
-        return;
+        process.exit(130);
       }
 
       const platform = getPlatform(String(selected));
@@ -144,13 +163,15 @@ export const installCommand = defineCommand({
           message: 'Platform definition not found. This is a bug.',
         } satisfies PlatformResult);
       } else {
-        const result = await Effect.runPromise(installOne(platform, args.quiet as boolean));
+        const result = await Effect.runPromise(installOne(platform, isQuiet));
         results.push(result);
       }
     }
 
     if (args.json) {
       console.log(JSON.stringify(results, null, 2));
+    } else if (isCompact) {
+      console.log(renderCompactResults(results));
     } else {
       console.log(renderResults(results));
     }

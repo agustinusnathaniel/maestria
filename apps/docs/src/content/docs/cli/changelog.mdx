@@ -5,6 +5,37 @@ description: Release history for the maestria CLI.
 
 # Changelog
 
+## v0.3.0
+
+_June 29, 2026_
+
+### Agent-friendly CLI
+
+Major improvements to make the CLI more suitable for AI agents and CI pipelines.
+
+**New flags:**
+
+- `--compact` — Minimal machine-friendly text output. Strips colors and decorative formatting.
+  Supports status, install, and update commands.
+- `--version` — Print the CLI version and exit.
+- Root `--json` — The `maestria` command (no subcommand) now supports `--json`.
+- `--quiet` on status — Decoupled from `--json`; each flag works independently.
+
+**Enhanced `--help`:**
+
+All commands now show EXAMPLES, EXIT CODES, and TIP FOR AI AGENTS sections
+in addition to the standard flag documentation.
+
+**Proper exit codes:**
+
+The CLI now exits with `0` (success), `1` (validation/command error), or
+`130` (user cancelled in interactive mode).
+
+**Non-interactive safety:**
+
+`install` and `update` commands detect non-TTY environments and print a
+clear error message instead of attempting an interactive prompt.
+
 ## v0.2.1
 
 _June 29, 2026_

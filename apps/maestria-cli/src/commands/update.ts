@@ -6,7 +6,7 @@ import { platforms, getPlatform } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { invalidateVersionCache } from '@/lib/shell.js';
-import { createSpinner, renderResults } from '@/lib/output.js';
+import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
 import {
   validatePlatform,
   validateVersion,
@@ -23,12 +23,13 @@ export const updateCommand = defineCommand({
   args: {
     platform: {
       type: 'positional',
-      description: 'Platform to update. Omit for interactive selection.',
+      description:
+        'Platform to update. One of: opencode, pi, kimi-code. Pass directly to skip interactive selection.',
       required: false,
     },
     version: {
       type: 'string',
-      description: 'Specific version to install (e.g., 0.5.0). Defaults to latest.',
+      description: 'Target version to install (e.g., 0.5.0). Defaults to latest available version.',
       alias: 'V',
       required: false,
     },
@@ -40,16 +41,26 @@ export const updateCommand = defineCommand({
     },
     json: {
       type: 'boolean',
-      description: 'Output as JSON',
+      description:
+        'Output results as JSON — structured machine-readable format optimized for AI agents and CI pipelines',
       default: false,
     },
     quiet: {
       type: 'boolean',
-      description: 'Suppress spinners',
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      default: false,
+    },
+    compact: {
+      type: 'boolean',
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       default: false,
     },
   },
   run: async ({ args }) => {
+    const isQuiet = (args.quiet || args.compact) as boolean;
+    const isCompact = args.compact as boolean;
+
     // Validate CLI args
     if (args.platform) {
       await validateOrExit(validatePlatform(args.platform as string));
@@ -68,22 +79,22 @@ export const updateCommand = defineCommand({
       if (!platform) {
         console.error(`Unknown platform: ${args.platform}`);
         console.error(`Available: ${platforms.map((p) => p.id).join(', ')}`);
-        return;
+        process.exit(1);
       }
 
       const result = await Effect.runPromise(
-        updateOne(platform, args.quiet as boolean, args.version as string | undefined),
+        updateOne(platform, isQuiet, args.version as string | undefined),
       );
       results.push(result);
     } else if (args.all) {
-      const spinner = createSpinner(args.quiet as boolean);
+      const spinner = createSpinner(isQuiet);
       spinner.start('Detecting platforms...');
       const installed = await Effect.runPromise(detectInstalled());
       spinner.stop('Done');
 
       if (installed.length === 0) {
         console.log('No maestria installations found to update.');
-        return;
+        process.exit(0);
       }
 
       for (const p of installed) {
@@ -98,11 +109,19 @@ export const updateCommand = defineCommand({
           continue;
         }
         const result = await Effect.runPromise(
-          updateOne(platform, args.quiet as boolean, args.version as string | undefined),
+          updateOne(platform, isQuiet, args.version as string | undefined),
         );
         results.push(result);
       }
     } else {
+      // Non-TTY guard: don't try interactive prompts
+      if (!process.stdout.isTTY || !process.stdin.isTTY) {
+        console.error('No platform specified and not in an interactive terminal.');
+        console.error('Usage: maestria update <platform> or maestria update --all');
+        console.error("Run 'maestria update --help' for details.");
+        process.exit(1);
+      }
+
       // Interactive — check versions before showing picker
       const installed = await Effect.runPromise(detectInstalled());
 
@@ -165,18 +184,20 @@ export const updateCommand = defineCommand({
 
       if (isCancel(selected) || !selected) {
         cancel('Update cancelled.');
-        process.exit(0);
+        process.exit(130);
       }
 
       const platform = getPlatform(String(selected))!;
       const result = await Effect.runPromise(
-        updateOne(platform, args.quiet as boolean, args.version as string | undefined),
+        updateOne(platform, isQuiet, args.version as string | undefined),
       );
       results.push(result);
     }
 
     if (args.json) {
       console.log(JSON.stringify(results, null, 2));
+    } else if (isCompact) {
+      console.log(renderCompactResults(results));
     } else {
       console.log(renderResults(results));
     }

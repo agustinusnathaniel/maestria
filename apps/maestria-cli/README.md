@@ -23,7 +23,7 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 | `maestria update --all`                    | Update all installed platforms          |
 | `maestria update opencode --version 0.5.0` | Update to a specific version            |
 
-All commands accept `--json` (machine-readable) and `--quiet` (suppress spinners). The `update` command additionally accepts `--version`/`-V` to pin a specific version.
+All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text — ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version.
 
 ## Usage
 
@@ -45,6 +45,12 @@ npx maestria update opencode --version 0.5.0
 
 # JSON output for CI
 npx maestria status --json --quiet
+
+# Compact output (AI agents, token-sensitive pipelines)
+npx maestria status --compact
+
+# Check version
+npx maestria --version
 ```
 
 ### Input validation
@@ -61,6 +67,16 @@ Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
 $ npx maestria install opencode --all
 Cannot use --all with a specific platform. Choose one.
 ```
+
+### Exit Codes
+
+| Code  | Meaning                                    |
+| ----- | ------------------------------------------ |
+| `0`   | Success                                    |
+| `1`   | Validation or command error                |
+| `130` | User cancelled (interactive mode only)     |
+
+Run any command with `--help` to see in-terminal examples and exit code documentation, including a TIP FOR AI AGENTS section with usage guidance for automated environments.
 
 ### Version caching
 
