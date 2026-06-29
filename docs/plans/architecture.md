@@ -180,21 +180,21 @@ apps/maestria-agent/
 The root agent lives at `src/agents/maestria.ts`. It uses Flue's `createAgent` with the `src/` source layout:
 
 ```ts
-import { createAgent } from "@flue/runtime";
-import { telegram } from "@flue/telegram";
-import { github } from "@flue/github";
+import { createAgent } from '@flue/runtime';
+import { telegram } from '@flue/telegram';
+import { github } from '@flue/github';
 
-import maintainSkill from "../skills/maintain.md" with { type: "skill" };
-import shipSkill from "../skills/ship.md" with { type: "skill" };
-import learnSkill from "../skills/learn.md" with { type: "skill" };
+import maintainSkill from '../skills/maintain.md' with { type: 'skill' };
+import shipSkill from '../skills/ship.md' with { type: 'skill' };
+import learnSkill from '../skills/learn.md' with { type: 'skill' };
 
-import { vpInstall } from "../tools/vp-install";
-import { vpCheck } from "../tools/vp-check";
+import { vpInstall } from '../tools/vp-install';
+import { vpCheck } from '../tools/vp-check';
 // ... all other tool imports
-import { baseInstructions } from "../lib/base-instructions";
+import { baseInstructions } from '../lib/base-instructions';
 
 export default createAgent(() => ({
-  model: "anthropic/claude-opus-4-8",
+  model: 'anthropic/claude-opus-4-8',
   instructions: baseInstructions,
   skills: [maintainSkill, shipSkill, learnSkill],
   tools: [
@@ -386,7 +386,7 @@ Each workflow is a thin shell around `flue run <workflow>`:
 name: Daily Check
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: '0 6 * * *'
   workflow_dispatch: # Manual trigger for testing
 jobs:
   check:
@@ -397,7 +397,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
       - run: pnpm install
       - run: pnpm flue run daily-check
         env:
