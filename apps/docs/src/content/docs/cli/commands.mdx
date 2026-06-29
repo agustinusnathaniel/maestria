@@ -31,11 +31,11 @@ Detects which coding agent CLIs are available on `$PATH`, checks whether maestri
 
 ### Flags
 
-| Flag        | Description                                          |
-| ----------- | ---------------------------------------------------- |
-| `--json`    | Output as JSON (see schema below)                    |
-| `--quiet`   | Suppress non-essential output                        |
-| `--compact` | Machine-friendly text — one line per platform        |
+| Flag        | Description                                   |
+| ----------- | --------------------------------------------- |
+| `--json`    | Output as JSON (see schema below)             |
+| `--quiet`   | Suppress non-essential output                 |
+| `--compact` | Machine-friendly text — one line per platform |
 
 ### JSON schema
 
@@ -224,11 +224,11 @@ npx maestria update --all
 
 ### Exit Codes
 
-| Code  | Meaning                                    |
-| ----- | ------------------------------------------ |
-| `0`   | Success                                    |
-| `1`   | Validation or command error                |
-| `130` | User cancelled (interactive mode only)     |
+| Code  | Meaning                                |
+| ----- | -------------------------------------- |
+| `0`   | Success                                |
+| `1`   | Validation or command error            |
+| `130` | User cancelled (interactive mode only) |
 
 The `install` and `update` commands detect non-interactive terminals and exit with code `1`
 showing a clear error message instead of attempting an interactive prompt.

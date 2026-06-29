@@ -155,11 +155,11 @@ npx maestria install --all --quiet
 
 ## Exit Codes
 
-| Code  | Meaning                                    |
-| ----- | ------------------------------------------ |
-| `0`   | Success                                    |
-| `1`   | Validation or command error                |
-| `130` | User cancelled (interactive mode only)     |
+| Code  | Meaning                                |
+| ----- | -------------------------------------- |
+| `0`   | Success                                |
+| `1`   | Validation or command error            |
+| `130` | User cancelled (interactive mode only) |
 
 The `install` and `update` commands detect non-interactive terminals (e.g., CI
 pipelines) and exit with code `1` showing a clear error message instead of

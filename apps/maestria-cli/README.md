@@ -70,11 +70,11 @@ Cannot use --all with a specific platform. Choose one.
 
 ### Exit Codes
 
-| Code  | Meaning                                    |
-| ----- | ------------------------------------------ |
-| `0`   | Success                                    |
-| `1`   | Validation or command error                |
-| `130` | User cancelled (interactive mode only)     |
+| Code  | Meaning                                |
+| ----- | -------------------------------------- |
+| `0`   | Success                                |
+| `1`   | Validation or command error            |
+| `130` | User cancelled (interactive mode only) |
 
 Run any command with `--help` to see in-terminal examples and exit code documentation, including a TIP FOR AI AGENTS section with usage guidance for automated environments.
 
