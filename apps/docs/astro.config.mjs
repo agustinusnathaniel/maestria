@@ -78,6 +78,14 @@ export default defineConfig({
           ],
         },
         {
+          label: 'CLI',
+          items: [
+            { label: 'Overview', link: '/cli/' },
+            { label: 'Getting Started', link: '/cli/getting-started/' },
+            { label: 'Commands', link: '/cli/commands/' },
+          ],
+        },
+        {
           label: '@maestria/opencode',
           collapsed: true,
           items: [
@@ -116,14 +124,6 @@ export default defineConfig({
             { label: 'Pi Reference', link: '/pi/reference/' },
             { label: 'Changelog', link: '/pi/changelog/' },
             { label: 'Contributing', link: '/pi/contributing/' },
-          ],
-        },
-        {
-          label: 'CLI',
-          items: [
-            { label: 'Overview', link: '/cli/' },
-            { label: 'Getting Started', link: '/cli/getting-started/' },
-            { label: 'Commands', link: '/cli/commands/' },
           ],
         },
       ],
