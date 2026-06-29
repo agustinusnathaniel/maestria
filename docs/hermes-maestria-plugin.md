@@ -16,6 +16,16 @@
 > **Direction confirmed:** Option A (Full Plugin) remains correct. The plugin provides the methodology layer; the existing opencode skill handles Hermes→OpenCode CLI delegation for coding tasks.
 >
 > Existing callouts (`✅ SHIPPED`, `📋 NOT SHIPPED`, `⚠️ Diverged`) are preserved throughout. New June 22 findings are marked `> **UPDATE (June 22, 2026):**`.
+>
+> **UPDATE [2026-06-29]:** Since the June 22 session, `origin/main` shipped five major infrastructure pieces that reshape the Hermes plugin's skill creation strategy:
+>
+> 1. **core-sync (ADR-CORE-005)** — Config-driven pipeline (`packages/core/scripts/sync.ts`) that derives plugin-specific agent files from canonical Markdown sources at `packages/core/agent-directives/specialists/`. All 3 shipped plugins use it. See "Skill Derivation via core-sync" below for how to set up Hermes `sync.config.ts`.
+> 2. **`@maestria/pi`** — Full 8-agent orchestration on the Pi platform, proving the 7-specialist + mode system pattern works on a second platform. Config at `packages/pi/sync.config.ts` (29 lines — simplest reference for Hermes).
+> 3. **`@maestria/kimi-code`** — 8-agent pack on a purely declarative platform (JSON manifest, no plugin entry point). Config at `packages/kimi-code/sync.config.ts` (357 lines — most complex reference with prepend/append/frontmatter).
+> 4. **maestria CLI** — Cross-platform plugin management CLI at `apps/maestria-cli/`. Supports opencode, pi, kimi-code (no hermes yet). See "maestria CLI Integration" below.
+> 5. **`.maestria/` Project Workflow Protocol (ADR-CORE-006)** — Projects define `.maestria/workflow.md` and `.maestria/rules.md` for custom delegation workflows. See "`.maestria/` Project Workflow Protocol" below.
+>
+> These updates are marked `> **UPDATE [2026-06-29]:**` throughout the document.
 
 ---
 
@@ -78,6 +88,19 @@ Detection is per-turn via `chat.message` hook (word-boundary regex), most-restri
 
 > **UPDATE: ✅ SHIPPED on main.** ADR-009 added a 5-step commit protocol to the orchestrator: Inspect → Propose via `question()` → Execute via @builder → Stop (dispatch @reviewer) → Push (separate approval). Global rules enforce that only the orchestrator authorizes commits, subagents must refuse commit requests, and plans must not include implicit commit steps.
 
+### `.maestria/` Project Workflow Protocol — ADR-CORE-006 (Shipped on main)
+
+> **UPDATE [2026-06-29]: ✅ SHIPPED on main.** ADR-CORE-006 defines a protocol where projects create `.maestria/workflow.md` and `.maestria/rules.md` for custom delegation sequencing and project-specific rules. The orchestrator loads them on startup.
+
+The protocol works identically across all platforms (OpenCode, Pi, Kimi Code) — it is prompt-based, not platform-code-based. The Hermes orchestrator specialist should include the same `.maestria/` loading logic described in the canonical `orchestrator.md`:
+
+- **`.maestria/workflow.md`** — Delegation sequencing guidance for the orchestrator
+- **`.maestria/rules.md`** — Project-specific non-negotiable rules (supplements core rules)
+- **Loading:** Orchestrator delegates to adventurer to check for these files on project start
+- **Precedence:** Core rules always win over project rules
+
+> **For the Hermes plugin:** The orchestrator skill (`maestria-orchestrator/SKILL.md`) should include this protocol. No special plugin hooks needed — the orchestrator's methodology prompt handles it. The `.maestria/` files are read via standard `read`/`glob` Hermes tools.
+
 ### Project North Star: VISION.md
 
 This plan follows the direction set in **VISION.md** (repo root):
@@ -104,6 +127,8 @@ Below, each pattern is adapted to Hermes primitives.
 | Platform | Primitive | Implementation |
 | --- | --- | --- |
 | **@maestria/opencode (shipped)** | `task()` tool + YAML frontmatter permissions | Orchestrator delegates via `task()`. Each agent has explicit permission blocks in frontmatter. Pipeline stages enforced by orchestrator prompt rules. |
+| **@maestria/pi (shipped)** | `maestria_subagent()` tool + YAML frontmatter | Same pipeline patterns, adapted for Pi's `maestria_subagent()` API. Sync config at `packages/pi/sync.config.ts`. |
+| **@maestria/kimi-code (shipped)** | `Agent()` tool + declarative manifest | Same pipeline patterns, adapted for Kimi Code's `Agent()`/`AgentSwarm()` API. Sync config at `packages/kimi-code/sync.config.ts`. |
 | **Hermes (planned)** | `delegate_task` tool + `pre_llm_call` hooks | Dispatcher routes to specialists via a single `delegate_task` tool with an enum of specialist names. Pipeline stages are enforced through the dispatcher skill prompt (not runtime — the LLM follows the methodology). Handoff contracts flow as structured delegation briefings. Permissions are gated per specialist by `pre_tool_call` hook. Maker/checker enforced by denying edit to reviewer specialist at the hook level. |
 
 > **UPDATE:** The shipped `@maestria/opencode` uses `task()` as the native delegation mechanism (not `delegate_task`). YAML frontmatter parsing in `src/index.ts` provides declarative permissions — no Python hooks. The Hermes adaptation should reference `task()` as the canonical name, not `delegate_task`.
@@ -115,9 +140,11 @@ Below, each pattern is adapted to Hermes primitives.
 | Platform | Primitive | Implementation |
 | --- | --- | --- |
 | **@maestria/opencode (shipped)** | YAML frontmatter `permission.edit: deny` | Reviewer has `edit: deny` in its YAML frontmatter. OpenCode's runtime enforces this at the tool level. Builder has `edit: allow`. Enforcement is declarative, not imperative. |
+| **@maestria/pi (shipped)** | YAML frontmatter + `rules.ts` hook | Same pattern — declarative frontmatter with `pre_agent_start` hook for runtime enforcement. |
+| **@maestria/kimi-code (shipped)** | Declarative manifest + subagent profile | Profile-based enforcement via `explore` (read-only) vs `coder` (full access) subagent types. |
 | **Hermes (planned)** | `pre_tool_call` hook | Reviewer specialist has `edit: deny` enforced by the `pre_tool_call` hook. The reviewer cannot modify files — only read and report. Builder has `edit: allow` with `bash: allow`. Enforcement is plugin-level, not permission-file level. |
 
-> **UPDATE:** The shipped code uses YAML-based declarative permissions, not Python hook-based enforcement. A Hermes plugin would still need hook-based enforcement since Hermes has no native YAML permission model.
+> **UPDATE:** The shipped code uses YAML-based declarative permissions, not Python hook-based enforcement. A Hermes plugin would still need hook-based enforcement since Hermes has no native YAML permission model. The pi and kimi-code entries above show how the same pattern adapts to each platform's primitives — confirming that the Hermes hook-based approach follows the established multi-platform pattern.
 
 ### Mapping: `@maestria/opencode` Concepts → Hermes Equivalents
 
@@ -130,6 +157,51 @@ Below, each pattern is adapted to Hermes primitives.
 | `session.compacting` | `on_session_start/end` hooks | More hooks available in Hermes |
 
 > **UPDATE (June 22, 2026):** The `pre_llm_call` hook returns context that Hermes injects into the **user message**, not the system prompt. This is because Hermes caches the system prompt (including tool definitions) across turns; changing the system prompt per-turn would invalidate the cache. Mode context, rules, and specialist instructions go into the user message instead.
+
+### maestria CLI Integration (OPTIONAL)
+
+> **UPDATE [2026-06-29]: ✅ SHIPPED on main.** A cross-platform management CLI lives at `apps/maestria-cli/`. It currently manages 3 platforms: opencode, pi, kimi-code — no hermes support yet.
+
+The CLI provides lifecycle management (install, update, uninstall, status) for all maestria plugins through a unified `PlatformHandler` interface (defined in `src/lib/platforms.ts`). Adding Hermes as a 4th platform would require:
+
+1. A new `PlatformHandler` object for the `hermes` platform in `apps/maestria-cli/src/lib/platforms.ts`
+2. The `detect` function checks for the `hermes` CLI binary
+3. The `install` function runs `hermes plugins install /opt/data/hermes/plugins/hermes-maestria`
+4. The `uninstall` function runs `hermes plugins uninstall hermes-maestria`
+5. Register the handler in the `platforms` array
+
+**Status:** 📋 NOT IMPLEMENTED. Adding Hermes to the CLI is optional but preferred — it keeps the user experience consistent across all maestria platform plugins. The effort is small (one file, ~50 lines) and can be done in Phase 1 after the plugin is functional.
+
+```typescript
+// Sketch of the hermes PlatformHandler (in apps/maestria-cli/src/lib/platforms.ts)
+const hermes: PlatformHandler = {
+  id: 'hermes',
+  label: 'Hermes',
+
+  detect: commandExists('hermes'),
+
+  isInstalled: run('ls', [
+    `/opt/data/hermes/plugins/hermes-maestria/plugin.yaml`,
+  ]).pipe(
+    Effect.map(() => true),
+    Effect.catchCause(() => Effect.succeed(false)),
+  ),
+
+  install: run('hermes', [
+    'plugins', 'install', '/opt/data/hermes/plugins/hermes-maestria',
+  ]).pipe(Effect.as(void 0)),
+
+  uninstall: run('hermes', [
+    'plugins', 'uninstall', 'hermes-maestria',
+  ]).pipe(Effect.as(void 0)),
+
+  update: (_version?: string) =>
+    run('hermes', ['plugins', 'update', 'hermes-maestria']).pipe(Effect.as(void 0)),
+
+  getInstalledVersion: /* read version from plugin.yaml or package.json */,
+  getLatestVersion: /* npm view or GitHub release tag */,
+};
+```
 
 ## OpenCode Composition
 
@@ -377,8 +449,10 @@ The Composition section in each skill declares its dependencies and interactions
 - **ADR-008**: **Keyword-Triggered Workflow Modes** (shipped on main) — fein/sonar/blitz mode detection via `chat.message` hook.
 - **ADR-009**: **Commit Authorization Rules** (shipped on main) — 5-step commit protocol, orchestrator-only authorization.
 - **ADR-010**: Domain-agnostic specialist roster — names describe function, not domain (using 7 OpenCode names).
+- **ADR-CORE-005**: **Shared Agent Directives via core-sync** (shipped June 2026) — config-driven pipeline for deriving plugin-specific agent files from canonical Markdown sources. Replaces manual skill porting. See "Skill Derivation via core-sync" section.
+- **ADR-CORE-006**: **`.maestria/` Project Workflow Protocol** (shipped June 2026) — projects define `.maestria/workflow.md` and `.maestria/rules.md` for custom delegation. See "`.maestria/` Project Workflow Protocol" section.
 
-> **UPDATE:** ADR-008 and ADR-009 now refer to shipped features on main, not planned concepts. The plan's original ADR-008 (General-Purpose Specialist Roster) has been renumbered to ADR-010.
+> **UPDATE:** ADR-008 and ADR-009 now refer to shipped features on main, not planned concepts. The plan's original ADR-008 (General-Purpose Specialist Roster) has been renumbered to ADR-010. ADR-CORE-005 and ADR-CORE-006 are new infrastructure ADRs from the core package.
 
 ---
 
@@ -941,6 +1015,15 @@ self.ctx.register_tool(
 
 **Handler:** Loads the specialist's skill file, composes a delegation message with briefing + specialist instructions + handoff template, returns it.
 
+> **UPDATE [2026-06-29]:** For the `delegate_task` handler implementation, reference patterns from `packages/pi/src/subagent.ts`:
+>
+> - **Handoff validation** — 6-field contract (Goal, Context, Requirements, Known problems, Success criteria, Next step)
+> - **Timeout with polling** — 60s timeout, 500ms interval, max-polls guard
+> - **Parallel fan-out** — Spawn N agents, poll all, aggregate results
+> - **Chain mode** — `{previous}` token substitution for sequential task handoffs
+> - **Graceful fallback** — Return structured handoff text when SDK unavailable
+> - **Agent whitelist** — 7-specialist roster enforcement (ALLOWED_AGENTS const)
+
 **Success criteria:** `delegate_task(specialist="adventurer", briefing="Research X")` loads adventurer skill and returns complete delegation with briefing, instructions, and handoff format.
 
 #### 2.2 — Add 5 New Skills
@@ -1186,7 +1269,206 @@ After Phase 3: full feature set. Can ship as v0.3.0.
 
 ---
 
+## Skill Derivation via core-sync
+
+> **UPDATE [2026-06-29]:** This section describes the core-sync pipeline (ADR-CORE-005), which shipped on `origin/main` on June 23, 2026. It supersedes the manual 7-step migration process described in the next section. The manual process is retained for reference but is now **deprecated** for standard skill creation — it should only be used for Hermes-specific additions not covered by canonical source content.
+
+### What core-sync solves
+
+The core-sync pipeline (`packages/core/scripts/sync.ts`) is a config-driven content derivation tool. It reads canonical Markdown from `packages/core/agent-directives/specialists/` (8 files: 7 specialists + orchestrator) and a shared `rules.md`, then derives plugin-specific agent files by applying transforms declared in a `sync.config.ts`.
+
+Each plugin declares its transforms in a `sync.config.ts`:
+
+- **Source path** — `'../core/agent-directives/specialists'`
+- **Output path** — e.g., `'skills'` for Hermes (vs `'agents'` for OpenCode, `'prompts'` for Pi)
+- **Replace rules** — string-based `{from, to}` pairs for tool names, role prefixes, syntax
+- **Frontmatter** — static YAML object per file (format depends on platform)
+- **Prepend/append** — content to inject at start or end of each derived file
+
+Three plugins already use this pipeline:
+
+| Plugin | Config | Lines | Complexity |
+| --- | --- | --- | --- |
+| `@maestria/opencode` | `packages/opencode/sync.config.ts` | 237 | Per-file frontmatter, replaces only |
+| `@maestria/pi` | `packages/pi/sync.config.ts` | 29 | Default replaces only — simplest |
+| `@maestria/kimi-code` | `packages/kimi-code/sync.config.ts` | 357 | Per-file frontmatter + prepend + append + custom replace blocks |
+
+The pipeline supports `--check` (CI mode, exit 1 on drift), `--diff` (preview changes), `--dry-run`, and auto-clean of stale output files. Every generated file starts with an auto-generated comment marking its provenance.
+
+### Hermes sync.config.ts (Phase 1)
+
+For the Hermes plugin, the `sync.config.ts` would look like this:
+
+```typescript
+// packages/hermes-maestria/sync.config.ts
+// Sync config: derives Hermes SKILL.md files from canonical core directives
+
+import type { SyncConfig } from '../core/scripts/lib/config.js';
+
+export default {
+  source: '../core/agent-directives/specialists',
+  output: 'skills',
+
+  default: {
+    replace: [
+      // Role prefixes: @specialist → maestria-specialist (Hermes skill name)
+      { from: '@adventurer', to: 'maestria-adventurer' },
+      { from: '@architect', to: 'maestria-architect' },
+      { from: '@builder', to: 'maestria-builder' },
+      { from: '@diagnose', to: 'maestria-diagnose' },
+      { from: '@planner', to: 'maestria-planner' },
+      { from: '@reviewer', to: 'maestria-reviewer' },
+      { from: '@writer', to: 'maestria-writer' },
+      { from: '@orchestrator', to: 'maestria-orchestrator' },
+      // Delegation API
+      { from: 'task(', to: 'delegate_task(' },
+      // Tool name adaptation — Hermes-specific
+      { from: '`lsp`', to: 'grep with broader patterns' },
+      // Section references
+      { from: 'Related Agents', to: 'Related Specialists' },
+      { from: 'via `task()`', to: 'via `delegate_task()`' },
+    ],
+  },
+
+  files: {
+    'adventurer.md': {
+      output: 'maestria-adventurer/SKILL.md',
+      prepend:
+        '**Subagent profile:** `explore` — read and research only. Cannot write or edit files.\n\n',
+      frontmatter: {
+        name: 'maestria-adventurer',
+        description: `Codebase reconnaissance — maps unknown territory, traces call chains,
+gathers context. Read-only.`,
+        type: 'skill',
+        whenToUse: `Understanding unfamiliar code, tracing dependencies,
+gathering context before implementation.`,
+      },
+    },
+    // One entry per specialist (architect, builder, diagnose, planner, reviewer, writer)
+    // ... each with matching prepend and frontmatter
+
+    'orchestrator.md': {
+      output: 'maestria-orchestrator/SKILL.md',
+      prepend:
+        '**Subagent profile:** `manager` — coordinates specialists, never executes work.\n\n',
+      frontmatter: {
+        name: 'maestria-orchestrator',
+        description: `Pipeline manager — decomposes work, delegates to specialists,
+integrates results. Does not execute.`,
+        type: 'skill',
+        whenToUse: `Multi-step tasks, cross-domain work, any task requiring
+3+ specialist delegations.`,
+      },
+      append: `
+## Hermes-Specific Routing
+
+| Slash Command | Delegates To |
+| --- | --- |
+| /fein | Full pipeline |
+| /sonar | Research only |
+| /blitz | Builder directly |
+| /review | Reviewer specialist |
+| /plan | Planner specialist |
+`,
+    },
+
+    'rules.md': {
+      output: 'skills/maestria-global-rules/SKILL.md',
+      replace: [
+        { from: '# Global Agent Rules', to: '# Hermes-Maestria Global Rules' },
+        { from: '`task()`', to: '`delegate_task()`' },
+        { from: '@adventurer', to: 'maestria-adventurer' },
+        // ... other rule-level replacements
+      ],
+    },
+  },
+} satisfies SyncConfig;
+```
+
+> **IMPORTANT:** The `sync.config.ts` must be placed in the Hermes plugin package root so `scripts/sync-all` (the root-level bash driver) discovers it automatically via the `packages/*/sync.config.ts` glob.
+>
+> **NOTE [2026-06-29]:** The `SyncConfig` type also has a `preserve?: string[]` field for excluding files from auto-clean (`packages/core/scripts/lib/config.ts` line 29). Not needed for Phase 1 but useful when the plugin accumulates custom files that the sync pipeline should not delete.
+
+### Reference: packages/pi/sync.config.ts
+
+The simplest shipped config is `packages/pi/sync.config.ts` (29 lines). It uses only `default.replace` without per-file frontmatter — ideal as a starting template for Hermes:
+
+```typescript
+// packages/pi/sync.config.ts (simplest reference)
+import type { SyncConfig } from '../core/scripts/lib/config.js';
+
+export default {
+  source: '../core/agent-directives/specialists',
+  output: 'prompts',
+
+  default: {
+    replace: [
+      { from: '@adventurer', to: '/adventurer' },
+      { from: '@architect', to: '/architect' },
+      { from: '@builder', to: '/builder' },
+      { from: '@diagnose', to: '/diagnose' },
+      { from: '@planner', to: '/planner' },
+      { from: '@reviewer', to: '/reviewer' },
+      { from: '@writer', to: '/writer' },
+      { from: 'task(', to: 'maestria_subagent(' },
+      { from: '@orchestrator', to: '/orchestrator' },
+    ],
+  },
+
+  files: {
+    'rules.md': {
+      output: '../rules/AGENTS.md',
+    },
+  },
+} satisfies SyncConfig;
+```
+
+### What core-sync does NOT cover
+
+Core-sync derives **skill content only** — the methodology, process, rules, and handoff formats for each specialist. It does **not** generate plugin infrastructure code:
+
+| Area               | File(s)                                         | Must write manually |
+| ------------------ | ----------------------------------------------- | ------------------- |
+| Mode state machine | `src/modes.py`                                  | Yes                 |
+| Hooks              | `src/hooks/pre_llm.py`, `src/hooks/pre_tool.py` | Yes                 |
+| Tools              | `src/tools/mode.py`, `src/tools/delegate.py`    | Yes                 |
+| Slash commands     | Registration in `src/plugin.py`                 | Yes                 |
+| Plugin entry       | `src/__init__.py`, `src/plugin.py`              | Yes                 |
+| Manifest           | `plugin.yaml`                                   | Yes                 |
+
+These remain manual tasks as described in Phases 1-3. Core-sync handles only the specialist skill files (`skills/maestria-*/SKILL.md`) and the global rules file.
+
+### Running the pipeline
+
+```bash
+# Run once to generate skills (from Hermes plugin package root)
+npx tsx ../../core/scripts/sync.ts --verbose
+
+# Preview changes before writing
+npx tsx ../../core/scripts/sync.ts --diff
+
+# CI mode — exit 1 if output would differ
+npx tsx ../../core/scripts/sync.ts --check
+
+# Full project sync (from repo root)
+bash scripts/sync-all
+```
+
+### Editing canonical sources
+
+After core-sync is set up, canonical edits go to `packages/core/agent-directives/specialists/*.md`. Plugin-specific overrides go in the `sync.config.ts` replace/prepend/append rules. **Never edit generated skill files directly** — the auto-generated header on each file reminds developers of this. The `scripts/check-sync` CI guard catches accidental edits.
+
+> **NOTE [2026-06-29]:** The file `packages/core/agent-directives/README.md` still references a `rules/` subdirectory with files `context-management.md`, `commit-policy.md`, and `pipeline-patterns.md`. These files don't exist — all rules are consolidated in `rules.md`. This is a documentation issue in the parent codebase, not in this plan, but Hermes plugin authors should be aware that only `rules.md` exists when referencing canonical sources.
+
+---
+
 ## Migration Path: maestria Prompts → Hermes Skills
+
+> **UPDATE [2026-06-29]:** The 7-step manual process below is now **partially superseded** by the core-sync pipeline described above. Use core-sync for deriving specialist skill content from canonical sources. The manual process below is retained for:
+>
+> - Hermes-specific additions not covered by canonical source (mode injection, Hermes tool names, Kanban patterns)
+> - Understanding the transformation logic that core-sync automates
+> - Manual customization of generated files that need deeper adaptation
 
 ### Important: Skills Follow PATTERNS.md, Not Direct Ports
 
@@ -1194,7 +1476,7 @@ The source of truth for implementation is **PATTERNS.md** (repo root), not the `
 
 Skills are **designed from scratch** following PATTERNS.md. The maestria agent prompts are useful reference material (they demonstrate the patterns in practice) but are NOT source material to copy.
 
-> **UPDATE:** The shipped `@maestria/opencode` agents on main are the most evolved form of the methodology. Any Hermes plugin should reference them as the primary source of truth for how methodology patterns work in practice, while adapting to Hermes-specific primitives.
+> **UPDATE:** The shipped `@maestria/opencode` agents on main are the most evolved form of the methodology. `@maestria/pi` and `@maestria/kimi-code` are additional shipped implementations — together all three provide cross-platform evidence of what the methodology looks like in practice. Any Hermes plugin should reference them as reference implementations while adapting to Hermes-specific primitives.
 
 > **UPDATE (June 22, 2026):** The original plan's migration process assumed compressing from 114-295 lines to 50-80 lines. The corrected approach keeps lengths in the 100-250 range with YAML frontmatter and identity statements intact.
 
@@ -1206,7 +1488,9 @@ Key differences:
 - **Skill Prescription embedded** — Each skill has Always load / Load on trigger / Defer to specialist / Skip if sections
 - **Related Agents section** — Replaces the original Composition section
 
-### Process
+### Process (partially superseded)
+
+> **UPDATE [2026-06-29]:** Steps 1-5 below are now automated by the core-sync pipeline. Only step 6 (Hermes-specific additions) and step 7 (validation of generated output) remain manual. See the "Skill Derivation via core-sync" section above.
 
 For each agent prompt in `packages/opencode/agents/*.md`:
 
@@ -1229,6 +1513,15 @@ For each agent prompt in `packages/opencode/agents/*.md`:
 - Commit protocol rules (per ADR-009)
 - Mode system awareness (per ADR-008)
 - YAML frontmatter _structure_ (description, mode, permission blocks)
+
+> **UPDATE [2026-06-29]:** Additional patterns from the shipped orchestrator that the Hermes plugin should also preserve:
+>
+> | Keep | Rationale |
+> | --- | --- |
+> | **`.maestria/` project workflow protocol** | On session start, delegate to adventurer to check for `.maestria/workflow.md` and `.maestria/rules.md`. Include workflow context in delegation prompts under "Access list" and "Context". When `.maestria/rules.md` is present, include contents in "Known problems". Cache across turns; reload if compacted. See orchestrator.md lines 67-77 and ADR-CORE-006. |
+> | **Skill injection workflow** | Before every `task()` call, check skill prescription (Always load / Load on trigger / Defer to specialist / Skip if), verify availability, install if needed. Scan `<available_skills>` for matching project skills. Log and flag repeated misses for prescription update. See orchestrator.md lines 165-194. |
+> | **Anti-patterns awareness** | Documented anti-patterns to avoid: agent ping-pong, coordination overhead, unclear ownership, silent failures, builder bias (defaulting to `@builder`), auto-committing. See orchestrator.md lines 215-222. |
+> | **Parallel Fan-Out pattern** | Call `task()` multiple times in a single response (max 3-5 subtasks per turn). This is the actual dispatch pattern used by all shipped plugins. Examples: pure recon/design (`adventurer` + `architect`), mixed (`adventurer` + `builder` + `reviewer`). See orchestrator.md lines 156-163. |
 
 ### What to Adapt from `@maestria/opencode` Prompts
 
@@ -1347,10 +1640,14 @@ Note these as useful for future phases:
 
 > **Status recap:**
 >
-> - ✅ **SHIPPED on main**: Mode system (ADR-008), commit protocol (ADR-009), YAML frontmatter agents, Skill Prescription in all agents, rewritten orchestrator (295 lines), common rules patterns
-> - 📋 **NOT SHIPPED (Hermes-specific future)**: 7-specialist Hermes plugin, mode state machine, sonar guard, `delegate_task` tool, shared prompt library, MCP integration, automation, memory
+> - ✅ **SHIPPED on main**: Mode system (ADR-008), commit protocol (ADR-009), YAML frontmatter agents, Skill Prescription in all agents, rewritten orchestrator (222 lines — canonical source at `packages/core/agent-directives/specialists/orchestrator.md`), common rules patterns, **core-sync pipeline (ADR-CORE-005)**, **`@maestria/pi`** (8-agent Pi platform), **`@maestria/kimi-code`** (8-agent declarative pack), **`.maestria/` project workflow protocol (ADR-CORE-006)**, **maestria CLI** (cross-platform management)
+> - 📋 **NOT SHIPPED (Hermes-specific future)**: 7-specialist Hermes plugin, mode state machine, sonar guard, `delegate_task` tool, shared prompt library, MCP integration, automation, memory, Hermes in maestria CLI
 > - ⚠️ **Diverged (corrected June 2026)**: Specialist names (now 7 OpenCode names), skill format (now YAML frontmatter + identity, 100-250 lines), mode injection (now user message), plugin loading (now opt-in), Kanban hooks (deferred to methodology skill), OpenCode composition (two-layer architecture)
 >
+> **Dependencies:** The Hermes plugin should depend on `packages/core` (for the sync pipeline config). The `sync.config.ts` expects `packages/core/scripts/lib/config.js` to be resolvable. Do NOT bundle or fork the sync tool — reference the canonical location. See the "Skill Derivation via core-sync" section for setup.
+>
 > **Session summary (June 22, 2026):** The fein-pipeline verification confirmed Option A (Full Plugin) is the right direction. Six corrections were applied: specialist names (9→7 OpenCode), skill format (50-80 no-frontmatter → 100-250 YAML frontmatter), mode injection (system prompt → user message), Kanban hooks (removed — doesn't exist), plugin loading (auto → opt-in), and architecture (single-layer → two-layer with OpenCode CLI composition). Phase 1 now focuses on the mode system as the core loop, with delegation deferred to Phase 2.
+>
+> **UPDATE [2026-06-29]:** Added core-sync pipeline as a dependency for skill derivation. The manual 7-step migration process is superseded by core-sync. `@maestria/pi` and `@maestria/kimi-code` are now live reference implementations alongside `@maestria/opencode`. The maestria CLI can optionally manage the Hermes plugin lifecycle. The `.maestria/` protocol should be incorporated into the orchestrator skill.
 
 **Termination condition:** All phases have success criteria, all dependencies mapped, all rollback points identified, all assumptions documented, all 7 specialists have permission profiles (Phase 2). All skills use the corrected format (YAML frontmatter, identity, 100-250 lines). PATTERNS.md contains Hermes adaptation rows for both design patterns. All shipped divergences and June 2026 corrections documented and cross-referenced.
