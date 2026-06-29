@@ -1,0 +1,76 @@
+---
+title: Changelog
+description: Release history for the maestria CLI.
+---
+
+# Changelog
+
+## v0.3.0
+
+_June 29, 2026_
+
+### Agent-friendly CLI
+
+Major improvements to make the CLI more suitable for AI agents and CI pipelines.
+
+**New flags:**
+
+- `--compact` — Minimal machine-friendly text output. Strips colors and decorative formatting.
+  Supports status, install, and update commands.
+- `--version` — Print the CLI version and exit.
+- Root `--json` — The `maestria` command (no subcommand) now supports `--json`.
+- `--quiet` on status — Decoupled from `--json`; each flag works independently.
+
+**Enhanced `--help`:**
+
+All commands now show EXAMPLES, EXIT CODES, and TIP FOR AI AGENTS sections
+in addition to the standard flag documentation.
+
+**Proper exit codes:**
+
+The CLI now exits with `0` (success), `1` (validation/command error), or
+`130` (user cancelled in interactive mode).
+
+**Non-interactive safety:**
+
+`install` and `update` commands detect non-TTY environments and print a
+clear error message instead of attempting an interactive prompt.
+
+## v0.2.1
+
+_June 29, 2026_
+
+### Idempotent updates
+
+The `update` command now detects when the installed version already matches
+the target version and skips the update gracefully. Previously, running
+`npx maestria update <platform>` when already on the latest version would
+re-run the install unnecessarily.
+
+## v0.2.0
+
+_June 22, 2026_
+
+### Cross-platform plugin management
+
+Initial release of the `maestria` CLI — a unified interface for managing
+maestria plugins across OpenCode, Pi, and Kimi Code from a single command.
+
+**Three subcommands:**
+
+- **`install`** — Install maestria for one or all detected platforms. Supports
+  interactive mode (pick from a list), `--all` flag, and per-platform targets.
+- **`update`** — Update installed plugins to the latest (or specified) version.
+  Accepts `--version` for pinned updates and `--all` for bulk updates.
+- **`status`** — Show installation status across platforms. Detects available
+  coding agents on `$PATH` and reports installed vs. latest versions.
+
+**Key features:**
+
+- No `npm install` required — run via `npx` thanks to the bundled single-file
+  `.mjs` distribution
+- `--json` flag on all commands for CI/script consumption
+- `--quiet` flag to suppress spinner animations
+- Version caching (1-hour TTL in `~/.cache/maestria/versions.json`)
+- Input validation with clear error messages for unknown platforms, invalid
+  versions, and conflicting flags

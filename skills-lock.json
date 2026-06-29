@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "architecture-decision-framework": {
+      "source": "agustinusnathaniel/skills",
+      "sourceType": "github",
+      "skillPath": "skills/software-engineering/architecture-decision-framework/SKILL.md",
+      "computedHash": "f7b7503f61a9619398a46a82977cc37460d4aaa208b3e15bbae5e75adddc7665"
+    }
+  }
+}

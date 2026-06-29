@@ -1,0 +1,96 @@
+---
+---
+
+<script>
+function track(event: string, data?: Record<string, string>) {
+  window.umami?.track(event, data);
+}
+
+function getText(el: Element | null): string {
+  return (el?.textContent ?? '').trim();
+}
+
+function getHref(el: Element | null): string {
+  return (el as HTMLAnchorElement)?.href ?? '';
+}
+
+const TRACKED_EXTERNAL_DOMAINS = [
+  'github.com',
+  'opencode.ai',
+  'viteplus.dev',
+  'astro.build',
+  'typescriptlang.org',
+  'biomejs.dev',
+];
+
+function isTrackedDomain(hostname: string): boolean {
+  return TRACKED_EXTERNAL_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
+}
+
+document.addEventListener('click', (e) => {
+  const target = e.target as HTMLElement;
+
+  const heroLink = target.closest('.hero a');
+  if (heroLink) {
+    const text = getText(heroLink);
+    if (text.includes('Get Started')) track('hero_cta_get_started');
+    else track('hero_cta', { text: text.slice(0, 60) });
+    return;
+  }
+
+  const actionBtn = target.closest('.action-button');
+  if (actionBtn) {
+    track('page_action', { action: 'copy' });
+    return;
+  }
+
+  const dropdownItem = target.closest('.dropdown-item');
+  if (dropdownItem) {
+    const text = getText(dropdownItem);
+    if (text.includes('Share')) track('page_action', { action: 'share' });
+    else if (text.includes('Open')) track('page_action', { action: 'ai_prompt' });
+    return;
+  }
+
+  const socialLink = target.closest('a[rel="me"]');
+  if (socialLink) {
+    const href = getHref(socialLink);
+    const domain = href.includes('github.com') ? 'github' : 'other';
+    track('social_click', { domain });
+    return;
+  }
+
+  const searchBtn = target.closest('button[data-open-modal]');
+  if (searchBtn) {
+    track('search_open');
+    return;
+  }
+
+  const searchResult = target.closest('.pagefind-ui__result-link');
+  if (searchResult) {
+    const text = getText(searchResult);
+    track('search_result_click', { title: text.slice(0, 120) });
+    return;
+  }
+
+  const extLink = target.closest('a[href^="http"]');
+  if (extLink && !extLink.hasAttribute('data-umami-event')) {
+    const href = getHref(extLink);
+    try {
+      const { hostname, pathname } = new URL(href);
+      if (isTrackedDomain(hostname)) {
+        track('external_link', { domain: hostname, path: pathname });
+      }
+    } catch {
+      // invalid URL, skip
+    }
+  }
+});
+
+document.addEventListener('change', (e) => {
+  const select = (e.target as HTMLElement).closest('starlight-theme-select select') as HTMLSelectElement | null;
+  if (select?.value) {
+    track('theme_toggle', { theme: select.value });
+  }
+});
+</script>

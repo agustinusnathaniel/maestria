@@ -1,0 +1,16 @@
+{
+  "name": "@maestria/core",
+  "version": "0.3.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "diff": "^7.0.0",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/diff": "^7.0.0",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

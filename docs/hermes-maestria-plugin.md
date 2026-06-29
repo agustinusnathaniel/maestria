@@ -64,11 +64,11 @@ The original maestria roster (7 coding-focused agents) is too narrow for Hermes,
 
 > **UPDATE: ✅ SHIPPED on main.** The real ADR-008 implemented **keyword-triggered workflow modes** — `fein` (full pipeline), `sonar` (research only), `blitz` (fast implementation). These are part of `@maestria/opencode` and any future Hermes plugin should integrate a similar concept.
 
-| Mode    | Pipeline                                                   | Meaning                         |
-| ------- | ---------------------------------------------------------- | ------------------------------- |
-| `fein`  | `@adventurer → @architect/@planner → @builder → @reviewer` | Full pipeline, mandatory gates  |
-| `sonar` | `@adventurer → @architect/@planner → STOP`                 | Research only, no code          |
-| `blitz` | `@builder` directly                                        | Fast implementation, skip gates |
+| Mode | Pipeline | Meaning |
+| --- | --- | --- |
+| `fein` | `@adventurer → @architect/@planner → @builder → @reviewer` | Full pipeline, mandatory gates |
+| `sonar` | `@adventurer → @architect/@planner → STOP` | Research only, no code |
+| `blitz` | `@builder` directly | Fast implementation, skip gates |
 
 Detection is per-turn via `chat.message` hook (word-boundary regex), most-restrictive wins, denylist config.
 
@@ -101,10 +101,10 @@ Below, each pattern is adapted to Hermes primitives.
 
 #### Pipeline Composition — Hermes Adaptation
 
-| Platform                         | Primitive                                    | Implementation                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| -------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **@maestria/opencode (shipped)** | `task()` tool + YAML frontmatter permissions | Orchestrator delegates via `task()`. Each agent has explicit permission blocks in frontmatter. Pipeline stages enforced by orchestrator prompt rules.                                                                                                                                                                                                                                                                            |
-| **Hermes (planned)**             | `delegate_task` tool + `pre_llm_call` hooks  | Dispatcher routes to specialists via a single `delegate_task` tool with an enum of specialist names. Pipeline stages are enforced through the dispatcher skill prompt (not runtime — the LLM follows the methodology). Handoff contracts flow as structured delegation briefings. Permissions are gated per specialist by `pre_tool_call` hook. Maker/checker enforced by denying edit to reviewer specialist at the hook level. |
+| Platform | Primitive | Implementation |
+| --- | --- | --- |
+| **@maestria/opencode (shipped)** | `task()` tool + YAML frontmatter permissions | Orchestrator delegates via `task()`. Each agent has explicit permission blocks in frontmatter. Pipeline stages enforced by orchestrator prompt rules. |
+| **Hermes (planned)** | `delegate_task` tool + `pre_llm_call` hooks | Dispatcher routes to specialists via a single `delegate_task` tool with an enum of specialist names. Pipeline stages are enforced through the dispatcher skill prompt (not runtime — the LLM follows the methodology). Handoff contracts flow as structured delegation briefings. Permissions are gated per specialist by `pre_tool_call` hook. Maker/checker enforced by denying edit to reviewer specialist at the hook level. |
 
 > **UPDATE:** The shipped `@maestria/opencode` uses `task()` as the native delegation mechanism (not `delegate_task`). YAML frontmatter parsing in `src/index.ts` provides declarative permissions — no Python hooks. The Hermes adaptation should reference `task()` as the canonical name, not `delegate_task`.
 
@@ -112,22 +112,22 @@ Below, each pattern is adapted to Hermes primitives.
 
 #### Maker/Checker Split — Hermes Adaptation
 
-| Platform                         | Primitive                                | Implementation                                                                                                                                                                                                                            |
-| -------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **@maestria/opencode (shipped)** | YAML frontmatter `permission.edit: deny` | Reviewer has `edit: deny` in its YAML frontmatter. OpenCode's runtime enforces this at the tool level. Builder has `edit: allow`. Enforcement is declarative, not imperative.                                                             |
-| **Hermes (planned)**             | `pre_tool_call` hook                     | Reviewer specialist has `edit: deny` enforced by the `pre_tool_call` hook. The reviewer cannot modify files — only read and report. Builder has `edit: allow` with `bash: allow`. Enforcement is plugin-level, not permission-file level. |
+| Platform | Primitive | Implementation |
+| --- | --- | --- |
+| **@maestria/opencode (shipped)** | YAML frontmatter `permission.edit: deny` | Reviewer has `edit: deny` in its YAML frontmatter. OpenCode's runtime enforces this at the tool level. Builder has `edit: allow`. Enforcement is declarative, not imperative. |
+| **Hermes (planned)** | `pre_tool_call` hook | Reviewer specialist has `edit: deny` enforced by the `pre_tool_call` hook. The reviewer cannot modify files — only read and report. Builder has `edit: allow` with `bash: allow`. Enforcement is plugin-level, not permission-file level. |
 
 > **UPDATE:** The shipped code uses YAML-based declarative permissions, not Python hook-based enforcement. A Hermes plugin would still need hook-based enforcement since Hermes has no native YAML permission model.
 
 ### Mapping: `@maestria/opencode` Concepts → Hermes Equivalents
 
-| `@maestria/opencode` Concept           | Hermes Equivalent            | Notes                                            |
-| -------------------------------------- | ---------------------------- | ------------------------------------------------ |
-| YAML frontmatter permissions           | `pre_tool_call` hook         | Different primitives — declarative vs imperative |
-| `task()` delegation                    | `delegate_task` tool         | Tool-based in both, but different names          |
-| `input.instructions` (rules injection) | `pre_llm_call` hook          | Returns context string                           |
-| Agent modes (subagent/primary/all)     | No equivalent                | All "agents" are skills loaded on demand         |
-| `session.compacting`                   | `on_session_start/end` hooks | More hooks available in Hermes                   |
+| `@maestria/opencode` Concept | Hermes Equivalent | Notes |
+| --- | --- | --- |
+| YAML frontmatter permissions | `pre_tool_call` hook | Different primitives — declarative vs imperative |
+| `task()` delegation | `delegate_task` tool | Tool-based in both, but different names |
+| `input.instructions` (rules injection) | `pre_llm_call` hook | Returns context string |
+| Agent modes (subagent/primary/all) | No equivalent | All "agents" are skills loaded on demand |
+| `session.compacting` | `on_session_start/end` hooks | More hooks available in Hermes |
 
 > **UPDATE (June 22, 2026):** The `pre_llm_call` hook returns context that Hermes injects into the **user message**, not the system prompt. This is because Hermes caches the system prompt (including tool definitions) across turns; changing the system prompt per-turn would invalidate the cache. Mode context, rules, and specialist instructions go into the user message instead.
 
@@ -163,15 +163,15 @@ Hermes Agent
 
 **When to delegate to OpenCode vs. handle in-Hermes:**
 
-| Task Type                              | Handler               | Reason                                                                     |
-| -------------------------------------- | --------------------- | -------------------------------------------------------------------------- |
-| Research / information gathering       | Hermes direct         | Use adventurer skill with webfetch/grep — faster than spinning up OpenCode |
-| Architecture decisions / trade-offs    | Hermes direct         | Architect skill uses Hermes tools — no CLI needed                          |
-| Coding — single file, known patterns   | Hermes direct         | Builder skill with edit/grep — fast for simple changes                     |
+| Task Type | Handler | Reason |
+| --- | --- | --- |
+| Research / information gathering | Hermes direct | Use adventurer skill with webfetch/grep — faster than spinning up OpenCode |
+| Architecture decisions / trade-offs | Hermes direct | Architect skill uses Hermes tools — no CLI needed |
+| Coding — single file, known patterns | Hermes direct | Builder skill with edit/grep — fast for simple changes |
 | Coding — multi-file, complex, or novel | OpenCode CLI delegate | OpenCode's full pipeline (adventurer→architect→builder→reviewer) for rigor |
-| PR review                              | OpenCode CLI delegate | `opencode pr 42` handles the review loop natively                          |
-| Documentation                          | Hermes direct         | Writer skill — docs are prose, not code                                    |
-| Parallel tasks                         | OpenCode worktrees    | Isolated worktrees prevent cross-contamination                             |
+| PR review | OpenCode CLI delegate | `opencode pr 42` handles the review loop natively |
+| Documentation | Hermes direct | Writer skill — docs are prose, not code |
+| Parallel tasks | OpenCode worktrees | Isolated worktrees prevent cross-contamination |
 
 ### OpenCode vs Hermes: When to Use Which
 
@@ -192,15 +192,15 @@ Uncertain?
 
 > **UPDATE (June 22, 2026):** This table replaces the original 9-specialist mapping (which had researcher/analyst/implementer/diagnostician/communicator/ideator). The 7 OpenCode names are the canonical roster. No communicator or ideator specialists — those functions are covered by methodology composition of the existing 7.
 
-| Name (`@maestria/opencode` shipped) | Role                                       | Core Methodology                                                |
-| ----------------------------------- | ------------------------------------------ | --------------------------------------------------------------- |
-| `adventurer`                        | Information gathering, analysis, synthesis | Scope → source → extract → verify → report                      |
-| `architect`                         | Decisions, evaluation, trade-off analysis  | Context → options → compare → recommend → document              |
-| `builder`                           | Focused execution — code, config, content  | Read → execute → verify → report                                |
-| `diagnose`                          | Root cause analysis, systematic tracing    | Error → environment → history → blast radius → fix → prevention |
-| `planner`                           | Phased plans, roadmaps, prioritization     | Goal → phases → tasks → verification → rollback                 |
-| `reviewer`                          | Quality gates, validation, feedback        | Checklist → inspect → classify → recommend                      |
-| `writer`                            | Structured documentation, content          | Purpose → usage → details → proofread                           |
+| Name (`@maestria/opencode` shipped) | Role | Core Methodology |
+| --- | --- | --- |
+| `adventurer` | Information gathering, analysis, synthesis | Scope → source → extract → verify → report |
+| `architect` | Decisions, evaluation, trade-off analysis | Context → options → compare → recommend → document |
+| `builder` | Focused execution — code, config, content | Read → execute → verify → report |
+| `diagnose` | Root cause analysis, systematic tracing | Error → environment → history → blast radius → fix → prevention |
+| `planner` | Phased plans, roadmaps, prioritization | Goal → phases → tasks → verification → rollback |
+| `reviewer` | Quality gates, validation, feedback | Checklist → inspect → classify → recommend |
+| `writer` | Structured documentation, content | Purpose → usage → details → proofread |
 
 ## Skill File Design
 
@@ -223,8 +223,9 @@ The 7 agents on `@maestria/opencode` main use this structure:
 ```yaml
 ---
 description: >
-  Focused implementation agent for atomic tasks.
-  Executes one verifiable unit of work with minimal context.
+  Focused implementation agent for atomic tasks. Executes one verifiable unit of work with minimal context.
+
+
 mode: subagent
 permission:
   read: allow
@@ -278,8 +279,9 @@ Hermes skills should mirror the shipped `@maestria/opencode` format:
 ```markdown
 ---
 description: >
-  One-paragraph description of the specialist's role.
-  What they do, when they're used.
+  One-paragraph description of the specialist's role. What they do, when they're used.
+
+
 mode: subagent
 permission:
   read: allow
@@ -336,16 +338,16 @@ You are a [specialist description]. [Identity statement about your role.]
 
 ### What Would Be Different from shipped `@maestria/opencode`
 
-| `@maestria/opencode` Agent Prompts (shipped) | hermes-maestria Skills (corrected)        | Original Plan (superseded)  |
-| -------------------------------------------- | ----------------------------------------- | --------------------------- |
-| 114–295 lines                                | 100-250 lines (matching shipped pattern)  | 50-80 lines                 |
-| "You are a focused implementation agent"     | Same pattern — identity statement         | No identity — approach only |
-| YAML frontmatter with permissions            | YAML frontmatter with permissions         | No frontmatter — hooks only |
-| References opensrc, lsp, task()              | References read, grep, webfetch, terminal | Same as corrected           |
-| Related agents section                       | Related agents section                    | Composition section         |
-| Always active per session                    | Opt-in, loaded on demand                  | Same as corrected           |
-| One agent = one session                      | One skill = one session                   | Multiple skills composable  |
-| Skill Prescription section embedded          | Skill Prescription section embedded       | Handled by dispatcher       |
+| `@maestria/opencode` Agent Prompts (shipped) | hermes-maestria Skills (corrected) | Original Plan (superseded) |
+| --- | --- | --- |
+| 114–295 lines | 100-250 lines (matching shipped pattern) | 50-80 lines |
+| "You are a focused implementation agent" | Same pattern — identity statement | No identity — approach only |
+| YAML frontmatter with permissions | YAML frontmatter with permissions | No frontmatter — hooks only |
+| References opensrc, lsp, task() | References read, grep, webfetch, terminal | Same as corrected |
+| Related agents section | Related agents section | Composition section |
+| Always active per session | Opt-in, loaded on demand | Same as corrected |
+| One agent = one session | One skill = one session | Multiple skills composable |
+| Skill Prescription section embedded | Skill Prescription section embedded | Handled by dispatcher |
 
 > **UPDATE (June 22, 2026):** The original plan's assumptions about shorter skills, no frontmatter, and no identity statements were invalidated by the shipped code. The corrected template above brings Hermes skills in line with the proven format.
 
@@ -386,12 +388,12 @@ The Composition section in each skill declares its dependencies and interactions
 
 > **UPDATE (June 22, 2026):** Pipeline names updated to use 7 OpenCode specialist names. Communication and Creative pipelines removed — those domains are handled by composing the existing 7 specialists with appropriate methodology.
 
-| Pipeline       | Sequence                                      | Use Case                                          |
-| -------------- | --------------------------------------------- | ------------------------------------------------- |
+| Pipeline | Sequence | Use Case |
+| --- | --- | --- |
 | Implementation | `adventurer → architect → builder → reviewer` | Building features, writing code, creating configs |
-| Bug fix        | `diagnose → builder → reviewer`               | Fixing failures, regressions, errors              |
-| Planning       | `adventurer → planner → reviewer`             | Roadmaps, migrations, prioritization              |
-| Content        | `adventurer → writer → reviewer`              | Documentation, READMEs, changelogs                |
+| Bug fix | `diagnose → builder → reviewer` | Fixing failures, regressions, errors |
+| Planning | `adventurer → planner → reviewer` | Roadmaps, migrations, prioritization |
+| Content | `adventurer → writer → reviewer` | Documentation, READMEs, changelogs |
 
 **Shipped equivalent (fein mode):** `@adventurer → @architect/@planner → @builder → @reviewer`
 
@@ -779,12 +781,12 @@ async def handle_maestria_mode(args: dict) -> str:
 
 **Skills to create:**
 
-| Skill                   | Role                                              | Key Permissions                 |
-| ----------------------- | ------------------------------------------------- | ------------------------------- |
+| Skill | Role | Key Permissions |
+| --- | --- | --- |
 | `maestria-orchestrator` | Pipeline manager — decomposes, delegates, reviews | `read: deny`, `delegate: allow` |
-| `maestria-builder`      | Focused implementation for atomic tasks           | `edit: allow`, `bash: allow`    |
-| `maestria-reviewer`     | Quality gates and validation                      | `edit: deny`, `read: allow`     |
-| `maestria-global-rules` | Cross-cutting methodology rules injected always   | `read: deny` (rules only)       |
+| `maestria-builder` | Focused implementation for atomic tasks | `edit: allow`, `bash: allow` |
+| `maestria-reviewer` | Quality gates and validation | `edit: deny`, `read: allow` |
+| `maestria-global-rules` | Cross-cutting methodology rules injected always | `read: deny` (rules only) |
 
 **maestria-orchestrator/SKILL.md — Key design points:**
 
@@ -893,14 +895,7 @@ Phase 1 complete.
 
 ```
 
-src/tools/
-└── delegate.py # delegate_task tool for specialist routing
-skills/
-├── maestria-adventurer/SKILL.md # Information gathering and synthesis
-├── maestria-architect/SKILL.md # Decisions, evaluation, trade-offs
-├── maestria-diagnose/SKILL.md # Systematic root cause analysis
-├── maestria-planner/SKILL.md # Phased plans, roadmaps
-└── maestria-writer/SKILL.md # Structured documentation
+src/tools/ └── delegate.py # delegate_task tool for specialist routing skills/ ├── maestria-adventurer/SKILL.md # Information gathering and synthesis ├── maestria-architect/SKILL.md # Decisions, evaluation, trade-offs ├── maestria-diagnose/SKILL.md # Systematic root cause analysis ├── maestria-planner/SKILL.md # Phased plans, roadmaps └── maestria-writer/SKILL.md # Structured documentation
 
 ```
 
@@ -908,9 +903,7 @@ skills/
 
 ```
 
-src/**init**.py # Register delegate_task tool, new skills, new commands
-src/plugin.py # Register new skills/commands
-src/hooks/pre_tool.py # Full permission profiles for all specialists
+src/**init**.py # Register delegate_task tool, new skills, new commands src/plugin.py # Register new skills/commands src/hooks/pre_tool.py # Full permission profiles for all specialists
 
 ````
 
@@ -954,13 +947,13 @@ self.ctx.register_tool(
 
 Create skills for the remaining 5 specialists, all using the corrected format:
 
-| Skill                 | Lines   | Identity Statement                                | Key Permissions            |
-| --------------------- | ------- | ------------------------------------------------- | -------------------------- |
-| `maestria-adventurer` | 100-250 | "You are a codebase reconnaissance agent."        | `edit: deny`, `bash: ask`  |
-| `maestria-architect`  | 100-250 | "You make architecture decisions systematically." | `edit: deny`, `bash: ask`  |
-| `maestria-diagnose`   | 100-250 | "You trace bugs systematically."                  | `edit: ask`, `bash: ask`   |
-| `maestria-planner`    | 100-250 | "You create implementation plans."                | `edit: ask`, `bash: ask`   |
-| `maestria-writer`     | 100-250 | "You write documentation."                        | `edit: allow`, `bash: ask` |
+| Skill | Lines | Identity Statement | Key Permissions |
+| --- | --- | --- | --- |
+| `maestria-adventurer` | 100-250 | "You are a codebase reconnaissance agent." | `edit: deny`, `bash: ask` |
+| `maestria-architect` | 100-250 | "You make architecture decisions systematically." | `edit: deny`, `bash: ask` |
+| `maestria-diagnose` | 100-250 | "You trace bugs systematically." | `edit: ask`, `bash: ask` |
+| `maestria-planner` | 100-250 | "You create implementation plans." | `edit: ask`, `bash: ask` |
+| `maestria-writer` | 100-250 | "You write documentation." | `edit: allow`, `bash: ask` |
 
 Each skill follows the corrected template: YAML frontmatter, identity, Process, Rules, Handoff Format, Iteration Limits, Skill Prescription, Related Agents.
 
@@ -983,16 +976,16 @@ self.ctx.register_command("write", handler=..., description="Route to writer spe
 
 **Spec (adapted from shipped `@maestria/opencode` frontmatter, using Hermes hook primitives):**
 
-| Specialist       | read     | glob     | grep     | edit     | bash                                                      | skill | webfetch | delegate_task |
-| ---------------- | -------- | -------- | -------- | -------- | --------------------------------------------------------- | ----- | -------- | ------------- |
-| **orchestrator** | **deny** | **deny** | **deny** | **deny** | **deny**                                                  | allow | deny     | **allow**     |
-| adventurer       | allow    | allow    | allow    | deny     | deny (git log/diff/which: allow)                          | allow | allow    | —             |
-| architect        | allow    | allow    | allow    | deny     | deny (which: allow)                                       | allow | allow    | —             |
-| builder          | allow    | allow    | allow    | allow    | allow                                                     | allow | —        | —             |
-| diagnose         | allow    | allow    | allow    | ask      | ask (git status/diff/log/blame/show/which/env/pwd: allow) | allow | allow    | —             |
-| planner          | allow    | allow    | allow    | ask      | ask (git status/diff/log: allow)                          | allow | allow    | —             |
-| reviewer         | allow    | allow    | allow    | deny     | allow (git status/diff/log: allow)                        | allow | —        | —             |
-| writer           | allow    | allow    | allow    | allow    | ask (git status: allow)                                   | allow | allow    | —             |
+| Specialist | read | glob | grep | edit | bash | skill | webfetch | delegate_task |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **orchestrator** | **deny** | **deny** | **deny** | **deny** | **deny** | allow | deny | **allow** |
+| adventurer | allow | allow | allow | deny | deny (git log/diff/which: allow) | allow | allow | — |
+| architect | allow | allow | allow | deny | deny (which: allow) | allow | allow | — |
+| builder | allow | allow | allow | allow | allow | allow | — | — |
+| diagnose | allow | allow | allow | ask | ask (git status/diff/log/blame/show/which/env/pwd: allow) | allow | allow | — |
+| planner | allow | allow | allow | ask | ask (git status/diff/log: allow) | allow | allow | — |
+| reviewer | allow | allow | allow | deny | allow (git status/diff/log: allow) | allow | — | — |
+| writer | allow | allow | allow | allow | ask (git status: allow) | allow | allow | — |
 
 **Note:** `ask` is not a native Hermes hook return value. Implement as `allow` with a log warning (future: prompt user before execution).
 
@@ -1010,14 +1003,14 @@ self.ctx.register_command("write", handler=..., description="Route to writer spe
 
 ### Phase 2 Verification
 
-| Check               | How                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| All skills load     | `hermes skill list` shows all 7                                                       |
-| delegate_task works | Invoke with each specialist, verify correct skill loads + briefing is complete        |
-| All commands work   | `/adventure`, `/architect`, `/diagnose`, `/write`, `/review`, `/plan` route correctly |
-| Permission profiles | `pre_tool_call` enforces correct permissions for all 7; orchestrator is strictest     |
-| Session persistence | Restart Hermes, verify mode and active specialist restored                            |
-| Global rules        | Rules injection includes full 7-specialist table and mode system rules                |
+| Check | How |
+| --- | --- |
+| All skills load | `hermes skill list` shows all 7 |
+| delegate_task works | Invoke with each specialist, verify correct skill loads + briefing is complete |
+| All commands work | `/adventure`, `/architect`, `/diagnose`, `/write`, `/review`, `/plan` route correctly |
+| Permission profiles | `pre_tool_call` enforces correct permissions for all 7; orchestrator is strictest |
+| Session persistence | Restart Hermes, verify mode and active specialist restored |
+| Global rules | Rules injection includes full 7-specialist table and mode system rules |
 
 ### Rollback Point
 
@@ -1288,16 +1281,16 @@ For each agent prompt in `packages/opencode/agents/*.md`:
 
 > **UPDATE (June 22, 2026):** Risks updated for Phase 1 scope. Divergence risk downgraded — session verification confirmed the corrected direction.
 
-| Risk                                               | Likelihood | Impact | Mitigation                                                                                                                                                                                                  |
-| -------------------------------------------------- | ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hermes `register(ctx)` API changes                 | Medium     | High   | Pin Hermes version in `plugin.yaml`. Monitor Hermes changelog.                                                                                                                                              |
-| Skill loading mechanism differs from spec          | Medium     | High   | Validate `ctx.register_skill` signature early in Phase 1.                                                                                                                                                   |
-| `pre_tool_call` hook signature wrong               | Medium     | Medium | Verify hook contract with Hermes docs before implementation.                                                                                                                                                |
-| `pre_llm_call` context injection mechanism differs | Medium     | Medium | Test early — inject a test string, verify it appears in user message.                                                                                                                                       |
-| Mode file persistence conflicts with Kanban state  | Low        | Medium | Use separate namespace (`.maestria-state.json`) vs Kanban state file.                                                                                                                                       |
-| Permission profiles too restrictive/lenient        | Low        | Medium | Start permissive (ADR-006), tighten based on real usage. Sonar guard is the only restriction in Phase 1.                                                                                                    |
-| OpenCode CLI not available when builder delegates  | Low        | High   | Check `which opencode` before delegation. Fall back to in-Hermes builder skill if CLI unavailable.                                                                                                          |
-| **Divergence from shipped methodology**            | Low        | Medium | **Session verification corrected the major divergences (names, format, injection, hooks, loading). Remaining divergence (Python hooks vs YAML frontmatter) is inherent to Hermes platform and acceptable.** |
+| Risk | Likelihood | Impact | Mitigation |
+| --- | --- | --- | --- |
+| Hermes `register(ctx)` API changes | Medium | High | Pin Hermes version in `plugin.yaml`. Monitor Hermes changelog. |
+| Skill loading mechanism differs from spec | Medium | High | Validate `ctx.register_skill` signature early in Phase 1. |
+| `pre_tool_call` hook signature wrong | Medium | Medium | Verify hook contract with Hermes docs before implementation. |
+| `pre_llm_call` context injection mechanism differs | Medium | Medium | Test early — inject a test string, verify it appears in user message. |
+| Mode file persistence conflicts with Kanban state | Low | Medium | Use separate namespace (`.maestria-state.json`) vs Kanban state file. |
+| Permission profiles too restrictive/lenient | Low | Medium | Start permissive (ADR-006), tighten based on real usage. Sonar guard is the only restriction in Phase 1. |
+| OpenCode CLI not available when builder delegates | Low | High | Check `which opencode` before delegation. Fall back to in-Hermes builder skill if CLI unavailable. |
+| **Divergence from shipped methodology** | Low | Medium | **Session verification corrected the major divergences (names, format, injection, hooks, loading). Remaining divergence (Python hooks vs YAML frontmatter) is inherent to Hermes platform and acceptable.** |
 
 ---
 
@@ -1345,11 +1338,11 @@ Note these as useful for future phases:
 
 > **UPDATE (June 22, 2026):** Summary updated with corrected 7-specialist roster, revised Phase 1 scope, and adjusted targets.
 
-| Phase        | Milestone     | Deliverables                                                                                                                                                                                                                                                                                | Version    |
-| ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Phase 1      | Core Loop     | plugin.yaml, src/\_\_init\_\_.py, src/plugin.py, src/modes.py, 2 hooks (pre_llm, pre_tool), 1 tool (maestria_mode), 5 slash commands (/fein /sonar /blitz /review /plan), 4 skills (orchestrator, builder, reviewer, global-rules) in corrected format (YAML frontmatter, 100-250 lines)    | v0.1.0     |
-| Phase 2      | Full Roster   | delegate_task tool, 5 more skills (adventurer, architect, diagnose, planner, writer), 4 more commands (/adventure /architect /diagnose /write), session persistence, full permission profiles for all 7 + orchestrator                                                                      | v0.2.0     |
-| Phase 3      | Advanced      | Parallel delegation, MCP, automation (schedule_task), skill prescription enforcement, shared prompts, memory integration, observability                                                                                                                                                     | v0.3.0     |
+| Phase | Milestone | Deliverables | Version |
+| --- | --- | --- | --- |
+| Phase 1 | Core Loop | plugin.yaml, src/\_\_init\_\_.py, src/plugin.py, src/modes.py, 2 hooks (pre_llm, pre_tool), 1 tool (maestria_mode), 5 slash commands (/fein /sonar /blitz /review /plan), 4 skills (orchestrator, builder, reviewer, global-rules) in corrected format (YAML frontmatter, 100-250 lines) | v0.1.0 |
+| Phase 2 | Full Roster | delegate_task tool, 5 more skills (adventurer, architect, diagnose, planner, writer), 4 more commands (/adventure /architect /diagnose /write), session persistence, full permission profiles for all 7 + orchestrator | v0.2.0 |
+| Phase 3 | Advanced | Parallel delegation, MCP, automation (schedule_task), skill prescription enforcement, shared prompts, memory integration, observability | v0.3.0 |
 | Skill Design | Cross-cutting | All skills follow the corrected format: YAML frontmatter with permission blocks, identity statements, 100-250 lines, Skill Prescription sections. Skills are composable, domain-agnostic, and opt-in. All skills satisfy PATTERNS.md contracts (Pipeline Composition, Maker/Checker Split). | All phases |
 
 > **Status recap:**

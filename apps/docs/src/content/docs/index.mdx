@@ -10,18 +10,18 @@ hero:
   actions:
     - text: Get Started
       icon: right-arrow
-      link: /opencode/getting-started/quick-start/
+      link: /cli/getting-started/
     - text: Browse Agents
       icon: external
       variant: minimal
-      link: /opencode/agents/
+      link: /core/agents/
 ---
 
 import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
 ## Why Maestria?
 
-Every AI coding tool needs agent configuration — prompts, rules, permissions, and workflows. Maestria encodes effective AI-engineering patterns into installable, self-wiring plugins. No manual setup. No copy-pasting configs. Just install and go.
+Every AI coding tool needs agent configuration - prompts, rules, permissions, and workflows. Maestria encodes effective AI-engineering patterns into installable, self-wiring plugins. No manual setup. No copy-pasting configs. Just install and go.
 
 <div class="features-grid">
   <div class="feature-card">
@@ -44,17 +44,45 @@ Every AI coding tool needs agent configuration — prompts, rules, permissions, 
     <div class="feature-icon">📋</div>
     <h3>Global Rules Injection</h3>
     <p>
-      Cross-cutting rules appended to every session. Consistent AI behavior — no drift between
+      Cross-cutting rules appended to every session. Consistent AI behavior - no drift between
       projects or sessions.
     </p>
   </div>
 </div>
 
+## Why It Works
+
+Maestria's **Harness Engineering** approach uses a dispatcher that routes work to
+7 specialists instead of one session that handles everything. The pipeline
+structures work into stages: reconnaissance, design, implementation, and review.
+
+**Primary benefits.** Global rules keep behavior consistent across projects. The
+maker/checker split prevents self-approval bias. The mode system (fein, sonar,
+blitz) lets you choose quality or speed per turn. Portable plugins work across
+OpenCode, Kimi Code, and Pi.
+
+**Emergent benefits.** Context engineering allocates a fresh session per
+specialist instead of sharing one window. Parallel fan-out shrinks wall-clock
+time. One-shot work catches mistakes before they compound. Bounded failure
+replaces infinite loops with structured escalation.
+
+→ [Learn how and why Maestria works](/core/how-it-works/)
+
 ## The Ecosystem
+
+Maestria provides the same AI engineering methodology across three platforms:
+
+| Plugin                  | Platform        | Best for                                             |
+| ----------------------- | --------------- | ---------------------------------------------------- |
+| **@maestria/opencode**  | OpenCode SDK    | Full subagent support, mature plugin ecosystem       |
+| **@maestria/kimi-code** | Kimi Code       | Declarative setup, swarm fan-out, no build step      |
+| **@maestria/pi**        | Pi coding agent | Review mode, session persistence, rich extension API |
+
+**Which should I install?** Choose the plugin that matches your AI coding agent platform. The methodology is identical - each plugin adapts the same agent prompts and workflow rules to its platform's native primitives. If you switch platforms, your workflow patterns carry over.
 
 <div class="product-grid">
   <a href="/opencode/" class="product-card">
-    <h2>
+    <h3>
       <svg
         width="28"
         height="28"
@@ -72,10 +100,65 @@ Every AI coding tool needs agent configuration — prompts, rules, permissions, 
       <span style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.15rem 0.55rem;border-radius:6px;font-size:0.7rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;background:#f97316;color:#fff;vertical-align:middle;">
         plugin
       </span>
-    </h2>
+    </h3>
     <p>
       OpenCode plugin that registers 8 specialized agents and injects global rules into every
       session. Available now on npm.
+    </p>
+    <span class="product-card-link">Learn more →</span>
+  </a>
+  <a href="/kimi-code/" class="product-card">
+    <h3>
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="5" r="2" />
+        <circle cx="5" cy="19" r="2" />
+        <circle cx="19" cy="19" r="2" />
+        <line x1="12" y1="7" x2="5" y2="17" />
+        <line x1="12" y1="7" x2="19" y2="17" />
+        <line x1="7" y1="19" x2="17" y2="19" />
+      </svg>
+      @maestria/kimi-code
+      <span style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.15rem 0.55rem;border-radius:6px;font-size:0.7rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;background:#3b82f6;color:#fff;vertical-align:middle;">
+        plugin
+      </span>
+    </h3>
+    <p>
+      Declarative Kimi Code plugin - 8 specialized skills with swarm-aware orchestration. No build
+      step, no SDK hooks. Install via <code>/plugins install</code>.
+    </p>
+    <span class="product-card-link">Learn more →</span>
+  </a>
+  <a href="/pi/" class="product-card">
+    <h3>
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polygon points="5 3 19 12 5 21 5 3" />
+      </svg>
+      @maestria/pi
+      <span style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.15rem 0.55rem;border-radius:6px;font-size:0.7rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;background:#8b5cf6;color:#fff;vertical-align:middle;">
+        extension
+      </span>
+    </h3>
+    <p>
+      Pi Coding Agent extension - 7 specialist subagents with spec-driven orchestration and
+      session-tree integration. Install via <code>pi.json</code> or the Pi CLI.
     </p>
     <span class="product-card-link">Learn more →</span>
   </a>
@@ -85,12 +168,12 @@ Every AI coding tool needs agent configuration — prompts, rules, permissions, 
 
 Maestria plugins are built on a simple architecture:
 
-1. **Config hook** — Reads bundled agent definitions and registers them with the coding agent
-2. **Rules injection** — Global directives appended to every session's system prompt
-3. **Session hooks** — Preserves task state across compaction events
+1. **Config hook** - Reads bundled agent definitions and registers them with the coding agent
+2. **Rules injection** - Global directives appended to every session's system prompt
+3. **Session hooks** - Preserves task state across compaction events
 
-This means you get consistent behavior from the first prompt — no manual agent configuration required.
+This means you get consistent behavior from the first prompt - no manual agent configuration required.
 
-<LinkButton href="/opencode/getting-started/quick-start/" size="lg">
-  Get started with @maestria/opencode →
+<LinkButton href="/cli/getting-started/" size="lg">
+  Get started with the maestria CLI →
 </LinkButton>

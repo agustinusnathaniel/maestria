@@ -17,8 +17,10 @@ export default defineConfig({
         starlightLlmsTxt({
           projectName: 'maestria',
           description:
-            'Portable AI engineering praxis plugins for OpenCode and beyond. ' +
-            'Includes @maestria/opencode with 8 agents and global rules injection.',
+            'Portable AI engineering praxis plugins for OpenCode, Kimi Code, and Pi. ' +
+            'Includes @maestria/opencode (8 agents, global rules injection), ' +
+            '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), and ' +
+            '@maestria/pi (full agent orchestration for Pi Coding Agent).',
         }),
         starlightPageActions({
           share: true,
@@ -29,12 +31,15 @@ export default defineConfig({
         }),
         starlightAutoSidebar(),
       ],
+      components: {
+        Head: './src/components/StarlightHead.astro',
+      },
       head: [
         {
           tag: 'meta',
           attrs: {
             property: 'og:title',
-            content: 'Maestria — Portable AI Engineering Praxis Plugins',
+            content: 'Maestria - Portable AI Engineering Praxis Plugins',
           },
         },
         {
@@ -63,20 +68,63 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          label: 'Core Concepts',
+          items: [
+            { label: 'Specialist Reference', link: '/core/agents/' },
+            { label: 'Pipeline & Roles', link: '/core/pipeline/' },
+            { label: 'How It Works', link: '/core/how-it-works/' },
+            { label: 'Workflow Patterns', link: '/core/workflow-patterns/' },
+            { label: 'Contributing', link: '/core/contributing/' },
+          ],
+        },
+        {
+          label: 'CLI',
+          items: [
+            { label: 'Overview', link: '/cli/' },
+            { label: 'Getting Started', link: '/cli/getting-started/' },
+            { label: 'Commands', link: '/cli/commands/' },
+            { label: 'Changelog', link: '/cli/changelog/' },
+          ],
+        },
+        {
           label: '@maestria/opencode',
+          collapsed: true,
           items: [
             { label: 'Overview', link: '/opencode/' },
             {
               label: 'Getting Started',
               items: [{ autogenerate: { directory: 'opencode/getting-started' } }],
             },
-            { label: 'Workflow Patterns', link: '/opencode/guide/workflow-patterns/' },
-            {
-              label: 'Agents',
-              items: [{ label: 'Agent Reference', link: '/opencode/agents/' }],
-            },
+            { label: 'Configuration', link: '/opencode/configuration/' },
             { label: 'Changelog', link: '/opencode/changelog/' },
             { label: 'Contributing', link: '/opencode/contributing/' },
+          ],
+        },
+        {
+          label: '@maestria/kimi-code',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/kimi-code/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'kimi-code/getting-started' } }],
+            },
+            { label: 'Changelog', link: '/kimi-code/changelog/' },
+            { label: 'Contributing', link: '/kimi-code/contributing/' },
+          ],
+        },
+        {
+          label: '@maestria/pi',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/pi/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'pi/getting-started' } }],
+            },
+            { label: 'Pi Reference', link: '/pi/reference/' },
+            { label: 'Changelog', link: '/pi/changelog/' },
+            { label: 'Contributing', link: '/pi/contributing/' },
           ],
         },
       ],

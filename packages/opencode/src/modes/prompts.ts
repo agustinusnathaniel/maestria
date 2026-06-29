@@ -4,15 +4,15 @@ import type { ModeKeyword } from '@/modes/types.js';
  * Mode prompt text for each keyword.
  * These are injected into the turn when a mode is detected.
  *
- * @see ADR-008 (section "Mode Prompts")
+ * @see ADR-OC-003 (section "Mode Prompts")
  */
 export const MODE_PROMPTS: Record<ModeKeyword, string> = {
   fein: [
     '## MODE: fein (Full Pipeline)',
     '',
-    'Execute the complete fein pipeline: mandatory reconnaissance',
-    '(@adventurer) → design/plan (@architect or @planner) →',
-    'implementation (@builder) → review (@reviewer).',
+    'Default role-based pipeline: thinker (recon/design/plan) → worker (implementation) → verifier (review).',
+    'Verifier acceptance terminates the pipeline for that unit of work.',
+    'Roles and order may adapt to task needs - this is the default, not a fixed requirement.',
     'Do NOT skip any phase unless the user explicitly overrides',
     'in the same turn.',
   ].join('\n'),

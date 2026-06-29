@@ -1,0 +1,106 @@
+---
+title: How Maestria Works
+description: How Harness Engineering structures AI agent work through a dispatcher, 7 specialists, and a staged pipeline, and the benefits that emerge from this design.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Maestria is built on **Harness Engineering**: the principle that **Agent = Model + Harness**. The model provides raw capability. The harness provides reliability through methodology, rules, and quality gates. This page describes how the harness works, why that design is effective, and what benefits it produces, both designed and emergent.
+
+As stated in the project's [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md): "Most agent failures are harness failures, not model failures."
+
+## How It Works
+
+The harness is built around a dispatcher that delegates work to 7 specialized agents. Each agent handles one domain — reconnaissance, architecture, implementation, planning, diagnosis, review, or documentation. Work flows through pipeline stages with structured handoffs between them.
+
+See [Pipeline & Roles](/core/pipeline/) for the full pipeline breakdown.
+
+## Why It Works
+
+The dispatcher architecture addresses a core problem in AI-assisted development: a single agent trying to be good at everything ends up average at everything. A single context window carries reconnaissance data, design decisions, implementation details, and review criteria. Compressing all of this into one window degrades performance on every front.
+
+**Single-responsibility agents.** Each specialist masters one role. The adventurer focuses on codebase reconnaissance. The architect evaluates trade-offs. The reviewer checks completed work. Each has prompts and tools sized to its domain.
+
+**Fresh context per stage.** Each specialist starts with a clean context window loaded with relevant prompts. The reviewer does not carry the builder's assumptions. The adventurer does not inherit the architect's biases. Every stage gets a focused session.
+
+**Stage gating.** Each pipeline stage catches a specific type of error before it reaches the next stage. Design mistakes are caught before implementation starts. Implementation issues are caught before review. The error is stopped where it is cheapest to fix.
+
+**Iteration limits.** Without bounds, an agent can loop indefinitely on an unsolvable problem. The pipeline enforces a hard limit of three attempts per loop, then escalates with a structured report. This prevents infinite token burn.
+
+## Primary Benefits
+
+These benefits were explicit design goals. The harness was built to deliver them.
+
+**Global rules.** Cross-cutting directives are injected into every session. Rules about commit policies, tool selection, and escalation format apply consistently across projects and sessions. No drift, no manual setup.
+
+**Maker/checker split.** The builder and reviewer are structurally different agents with different prompts, tools, and permissions. The specialist that writes the code never reviews it. A model grading its own work is too lenient.
+
+<Aside type="caution">
+  The maker/checker split is non-negotiable. Always use a different specialist for review. See
+  [Pipeline & Roles](/core/pipeline/#makerchecker-split) for details.
+</Aside>
+
+**Mode system.** Three workflow modes make the quality-speed trade-off explicit per turn. `fein` runs all pipeline stages for production work. `sonar` runs only the research stage. `blitz` runs only implementation. Each mode is a deliberate choice about how many gates to run.
+
+**Portable plugins.** The same methodology adapts to OpenCode, Kimi Code, and Pi. The agent prompts and workflow rules are platform-agnostic. Each plugin maps them to its platform's native primitives.
+
+## Emergent Benefits
+
+These benefits were not design goals. They are structural side effects of the dispatcher architecture. They fell out of the design, not into it.
+
+### Context Engineering
+
+A typical AI coding session starts with a single large context window. Every action competes for the same limited space. As the window fills, the model's ability to reason about any single concern degrades.
+
+The dispatcher model solves this through allocation. The orchestrator's context stays lean because it only makes routing decisions. Each specialist starts with a fresh window loaded with relevant prompts and tools.
+
+| Property                 | Monolithic session                  | Maestria pipeline               |
+| ------------------------ | ----------------------------------- | ------------------------------- |
+| Context allocation       | One window for all roles            | One window per specialist       |
+| Role contamination       | Build assumptions carry into review | Clean separation between stages |
+| Effective work per token | Degrades as window fills            | Stays consistent per specialist |
+
+Total token usage may be comparable to or slightly higher than a monolithic session. But effective work per token is higher because each token reaches the specialist best suited to handle it.
+
+**Handoff contracts** between stages structure each transition. Each stage produces a focused artifact that preserves what matters for the next stage rather than forwarding raw context.
+
+### Parallel Fan-Out
+
+The orchestrator delegates 3-5 independent tasks to specialists in a single turn. A monolithic agent does this sequentially: explore first, then design, then plan. Each step waits for the previous one to finish.
+
+The dispatcher runs independent stages at the same time. The adventurer maps the codebase, the architect evaluates approaches, and the planner scopes milestones. All run at the same time. Wall-clock time shrinks because independent work runs in parallel.
+
+Each specialist operates in a separate session. The adventurer's assumptions do not leak into the architect's evaluation. Zero cross-contamination between specialists.
+
+### One-Shot Work
+
+One-shot work means the pipeline is designed to get things right on the first pass through each stage, without expensive rework loops.
+
+**Stage gating.** Each pipeline stage prevents a specific class of errors from propagating:
+
+- **Reconnaissance** (Adventurer) catches design misunderstandings before code is written.
+- **Design** (Architect, Planner) validates the approach before implementation starts.
+- **Implementation** (Builder) produces the artifact against a clear spec.
+- **Review** (Reviewer) catches implementation issues before they merge.
+
+The cost of fixing a bug increases by about an order of magnitude at each stage. The pipeline catches each error class at its cheapest correction point.
+
+The mode system controls which pipeline stages run. There are three modes: `fein` (full pipeline), `sonar` (research only), and `blitz` (implementation only). See [Primary Benefits](#primary-benefits) for how the mode system works.
+
+### Bounded Failure
+
+One-Shot Work aims to get things right the first time. Bounded Failure governs what happens when things go wrong: fail fast, fail informatively.
+
+The pipeline does not just prevent errors. It bounds them. Every delegated loop has a hard limit of three attempts. If a reviewer rejects output three times, the pipeline stops and escalates.
+
+The escalation follows a fixed format: "Tried X, Y, Z. Blocked by cause. Need input." This converts what would be a silent failure into a structured signal. The system does not burn tokens on impossible tasks.
+
+Without bounds, agent systems can loop indefinitely on unsolvable problems. A builder might rewrite the same module ten times, each attempt as confident as the first. The bound makes the system predictable in failure mode. It stops and asks for help instead of consuming resources on a hopeless iteration.
+
+## See Also
+
+- [Pipeline & Roles](/core/pipeline/): the Thinker-Worker-Verifier pipeline
+- [Specialist Reference](/core/agents/): the 7 specialists and their domains
+- [Workflow Patterns](/core/workflow-patterns/): practical patterns for using the pipeline

@@ -1,0 +1,48 @@
+---
+title: Specialist Reference
+description: The 8 specialists in the Maestria methodology - orchestrator and 7 domain experts. Roles, responsibilities, and when to call each one.
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+The Maestria methodology defines 8 specialists. One is the **orchestrator** - a manager that never implements directly. The remaining 7 are domain experts, each with a focused scope, clear permissions, and a specific place in the pipeline.
+
+This page describes each specialist, their role, and when to delegate to them. It is platform-agnostic - the mapping to your platform's invocation syntax lives in the plugin documentation.
+
+## Orchestration Model
+
+The orchestrator is the manager. It decomposes complex tasks into atomic units, delegates each unit to the appropriate specialist, integrates the results, and verifies completion. It never implements directly - its job is coordination.
+
+The default pipeline for non-trivial work groups the remaining 7 specialists into three roles:
+
+- **Thinker** - reconnaissance, design, planning, analysis
+- **Worker** - implementation, documentation
+- **Verifier** - validation, quality gates
+
+The orchestrator routes work dynamically based on task needs. The pipeline terminates when the verifier accepts the result.
+
+Three workflow modes control pipeline depth:
+
+| Mode      | Full Form           | Pipeline                                          | Use Case                                    |
+| --------- | ------------------- | ------------------------------------------------- | ------------------------------------------- |
+| **fein**  | Full pipeline       | Thinker → Worker → Verifier (adaptive sequencing) | Production-grade work, mandatory validation |
+| **sonar** | Research            | Thinker only - STOP after analysis/design         | Understanding before committing             |
+| **blitz** | Fast implementation | Worker only - skip recon and review               | Quick fixes, known territory                |
+
+## Specialist Reference
+
+| Specialist       | Role                                                                                                        | When to Use                                                                                          | Key Constraints                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Orchestrator** | Manager - decomposes complex tasks, delegates to specialists, integrates results, never implements directly | Multi-step tasks, cross-specialist workflows, anything requiring structured coordination             | Cannot implement or edit directly; delegates to the 7 specialists only |
+| **Adventurer**   | Codebase reconnaissance - maps unfamiliar code, traces dependencies, finds key files                        | Before implementing in unfamiliar code, understanding how something works, finding where logic lives | Read/search only - no editing                                          |
+| **Architect**    | Architecture decisions - evaluates options through trade-off analysis, documents decisions                  | Choosing between technologies, making design decisions, evaluating implementation approaches         | No state-mutating work; may research external sources                  |
+| **Builder**      | Focused implementation - one atomic task per invocation                                                     | Bug fixes, feature work, tests, refactors - after reconnaissance and design are complete             | Full edit access; requires explicit approval for shell commands        |
+| **Diagnose**     | Systematic debugging - traces errors from symptom to root cause                                             | Bugs, regressions, crashes, mysterious errors, failing tests                                         | Edit access only for confirmed fixes                                   |
+| **Planner**      | Implementation plans - phased milestones with verification criteria                                         | Complex features needing structured rollout, migration plans, multi-phase work                       | No shell access; pure planning output                                  |
+| **Reviewer**     | Code review - correctness, edge cases, security, performance, maintainability                               | Pre-merge review, security audit, post-implementation validation                                     | Read-only - cannot edit; uses structured review format                 |
+| **Writer**       | Documentation - structured patterns for READMEs, API docs, changelogs, decision records                     | Documenting code, writing READMEs, API docs, changelogs, architecture decisions                      | Full edit access for documentation files only                          |
+
+## See Also
+
+- [Pipeline & Roles](/core/pipeline/)
+- [Workflow Patterns](/core/workflow-patterns/)

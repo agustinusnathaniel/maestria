@@ -1,0 +1,126 @@
+---
+title: Pipeline & Roles
+description: The Thinker-Worker-Verifier pipeline model - how specialists are sequenced through cognitive roles for disciplined, verifiable work.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The Maestria methodology structures complex work through a **three-role pipeline**: Thinker, Worker, and Verifier. Each role is staffed by one or more specialists with focused expertise. An orchestrator (manager) sequences these roles adaptively, decomposing high-level goals into atomic tasks and routing each to the right specialist.
+
+## Overview
+
+The pipeline separates three fundamentally different cognitive modes:
+
+- **Thinker** - analyzes, designs, plans. Asks "what should we do and why?" before any code is written.
+- **Worker** - executes, produces artifacts. Carries out the plan, one atomic task at a time.
+- **Verifier** - validates output against quality criteria. Catches what the worker missed.
+
+This separation prevents a single agent from grading its own homework. By enforcing distinct roles with different permissions and incentives, the pipeline produces higher-quality output with fewer hidden defects.
+
+## The Three Roles
+
+### Thinker
+
+Thinkers gather information, evaluate options, and produce designs or plans. They are **read-heavy, write-light** - they consume context, produce analysis, and shape direction, but rarely modify production artifacts directly.
+
+| Specialist     | Function            | Scope                                                                            |
+| -------------- | ------------------- | -------------------------------------------------------------------------------- |
+| **Adventurer** | Reconnaissance      | Maps unfamiliar code, traces dependencies, gathers context before implementation |
+| **Architect**  | Design & decisions  | Evaluates trade-offs, selects approaches, documents architecture decisions       |
+| **Planner**    | Phased plans        | Breaks complex features into sequenced milestones with verification criteria     |
+| **Diagnose**   | Root cause analysis | Traces bugs from symptom to cause, determines the correct fix                    |
+
+### Worker
+
+Workers execute. They take a clear specification (from a Thinker) and produce the corresponding artifact. Workers are **write-heavy** - they edit files, run commands, and ship changes.
+
+| Specialist  | Function       | Scope                                                                   |
+| ----------- | -------------- | ----------------------------------------------------------------------- |
+| **Builder** | Implementation | One atomic task per invocation - bug fix, feature slice, test, refactor |
+| **Writer**  | Documentation  | Structured docs - READMEs, API docs, changelogs, architecture decisions |
+
+### Verifier
+
+Verifiers validate. They inspect artifacts produced by Workers against quality criteria - correctness, edge cases, security, performance, and maintainability. Verifiers are **read-only**: they can flag issues but cannot edit.
+
+| Specialist   | Function    | Scope                                                            |
+| ------------ | ----------- | ---------------------------------------------------------------- |
+| **Reviewer** | Review / QA | Pre-merge validation, security audit, post-implementation review |
+
+## Pipeline Flow Diagram
+
+```
+Orchestrator (manager)
+  ├─ Thinker (analysis/design/planning)
+  │   ├─ Adventurer    → Reconnaissance
+  │   ├─ Architect     → Design & decisions
+  │   ├─ Planner       → Phased plans
+  │   └─ Diagnose      → Root cause analysis
+  ├─ Worker (implementation/documentation)
+  │   ├─ Builder       → Implementation
+  │   └─ Writer        → Documentation
+  └─ Verifier (validation)
+      └─ Reviewer      → Quality gates
+```
+
+## Dynamic Sequencing
+
+The default pipeline order is **thinker → worker → verifier**. A Thinker produces a plan or specification, a Worker executes it, and a Verifier confirms the result is correct.
+
+However, the order is not fixed. The orchestrator adapts it to the task:
+
+- **High-risk changes** - consider **think → verify → work**. Validate the design before investing in implementation. If the design is flawed, the Worker never builds the wrong thing.
+- **Rejected output** - if the Verifier rejects a Worker's output, the orchestrator routes back:
+  - **Back to Worker** - the issue is an implementation defect; the Worker fixes and resubmits.
+  - **Back to Thinker** - the issue is a design flaw; the scope or approach needs rethinking.
+- **Accepted output** - the pipeline terminates. The artifact is ready for integration.
+
+<Aside type="caution">
+  The orchestrator must define a verifiable termination condition before starting any delegated
+  loop. Without one, the pipeline can cycle indefinitely between Worker and Verifier.
+</Aside>
+
+## Maker/Checker Split
+
+The specialist that wrote the code must not be the same specialist that reviews it. This is non-negotiable.
+
+<Aside type="caution">
+  **Maker/Checker Split** - The agent that produced an artifact must not validate it. A model
+  grading its own work is too lenient. Always use a different specialist for review. If the reviewer
+  is blocked on context they lack, the Thinker (e.g. Adventurer or Architect) provides that context
+  - but the reviewer remains independent from the implementer.
+</Aside>
+
+The maker/checker split is why the pipeline defines separate specialists for Workers and Verifiers. A Builder never reviews their own output. A Reviewer is an independent specialist with different instructions, incentives, and permissions.
+
+## Iteration Limits
+
+Any delegated loop between specialists must define hard iteration limits up front. This prevents agent ping-pong - where two specialists pass work back and forth without converging.
+
+Define before delegating:
+
+- **Maximum rounds** - the upper bound on fix-attempt iterations (e.g., 3).
+- **Escalation criteria** - what constitutes "stuck" and how to escalate (e.g., "after 3 failed attempts, surface the blocker with what was tried, what failed, and what input is needed to proceed").
+- **Termination condition** - the verifiable state that ends the loop (e.g., "type check passes, tests pass, diff is focused on task scope").
+
+<Aside>
+  Without iteration limits, automated loops can consume excessive rounds on unsolvable problems.
+  Always set a max before delegating, and escalate instead of retrying when the limit is reached.
+</Aside>
+
+## Workflow Modes
+
+The pipeline supports three modes that control its depth. Each mode is suited to a different class of work.
+
+| Mode                    | Pipeline                                          | Use Case                                                                                              |
+| ----------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Full pipeline**       | Thinker → Worker → Verifier (adaptive sequencing) | Production-grade work where correctness matters. Default for non-trivial changes.                     |
+| **Research**            | Thinker only - STOP after analysis/design         | Understanding before committing. Reconnaissance, architecture evaluation, planning without execution. |
+| **Fast implementation** | Worker only - skip recon and review               | Quick fixes in known territory where the design is obvious and risk is low.                           |
+
+The orchestrator selects the mode based on task risk, novelty, and team context. A task can also escalate from one mode to another - if a fast implementation hits unexpected complexity, the orchestrator can fall back to the full pipeline.
+
+## See Also
+
+- [Specialist Reference](/core/agents/)
+- [Workflow Patterns](/core/workflow-patterns/)
