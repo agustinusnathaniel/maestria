@@ -1,0 +1,66 @@
+{
+  "name": "@maestria/pi",
+  "version": "0.3.2",
+  "description": "Maestria extension for the Pi coding agent",
+  "keywords": [
+    "agent-orchestration",
+    "coding-agent",
+    "maestria",
+    "pi-package"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/pi"
+  },
+  "files": [
+    "dist",
+    "prompts",
+    "rules",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "prebuild": "node --experimental-strip-types scripts/build-rules.ts",
+    "test": "vp test",
+    "lint": "vp check",
+    "validate-prompts": "node --experimental-strip-types scripts/validate-prompts.ts",
+    "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
+    "validate": "npm run validate-prompts && npm run validate-skills"
+  },
+  "dependencies": {
+    "@gotgenes/pi-subagents": "^17.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "pi": {
+    "extensions": [
+      "./dist/extension.mjs"
+    ],
+    "prompts": [
+      "./prompts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  }
+}

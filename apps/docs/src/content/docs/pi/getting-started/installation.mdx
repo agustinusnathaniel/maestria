@@ -1,0 +1,136 @@
+---
+title: Installation & Setup
+description: How to install @maestria/pi and what you get - 7 specialist subagents, 3 workflow modes, and spec-driven orchestration for the Pi coding agent.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+`@maestria/pi` is a Pi extension that turns the [Pi coding agent](https://pi.ai) into a disciplined engineering workstation. It registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration - all with a single extension entry.
+
+## Prerequisites
+
+- [Pi](https://pi.ai) CLI - the Pi coding agent (latest version)
+- **Node.js 22.12+** - Required for npm-based extension resolution
+
+## Installation via CLI (Recommended)
+
+The [maestria CLI](/cli/) provides a unified interface for installing and managing
+maestria plugins across all supported platforms:
+
+```bash
+# Install for this platform
+npx maestria install pi
+
+# Verify installation
+npx maestria status
+```
+
+<details>
+<summary>Alternative: Manual setup</summary>
+
+There are two ways to install `@maestria/pi`.
+
+<Steps>
+
+1. **Open your Pi config**
+
+   ```bash
+   ~/.config/pi/pi.json
+   ```
+
+2. **Add the extension**
+
+   ```json
+   {
+     "extensions": ["@maestria/pi"],
+     "prompts": ["node_modules/@maestria/pi/prompts"]
+   }
+   ```
+
+   This tells Pi to load the extension package and its bundled subagent prompts on startup.
+
+3. **Install the npm package**
+
+   ```bash
+   pi install npm:@maestria/pi
+   ```
+
+   Pi resolves npm packages from its built-in registry bridge. The `npm:@maestria/pi` syntax installs the package from npm.
+
+4. **Restart Pi**
+
+   The extension loads on the next session. Subagents and mode commands are available immediately.
+
+</Steps>
+
+### Alternative: Install via Pi CLI directly
+
+Skip the config file step - install and register in one command:
+
+```bash
+pi install npm:@maestria/pi
+pi config extensions add @maestria/pi
+pi config prompts add node_modules/@maestria/pi/prompts
+```
+
+</details>
+
+## Verify Installation
+
+Start a new Pi session. Try activating a workflow mode:
+
+```
+/fein explore the project structure and document the architecture
+```
+
+Pi should respond with the mode marker `[MODE: fein]` and begin the reconnaissance phase. If you see the mode prompt injected into the agent's context, the extension is active.
+
+You can also verify by listing installed extensions:
+
+```bash
+pi extensions list
+```
+
+You should see `@maestria/pi` in the output.
+
+## Updating
+
+To update via the maestria CLI:
+
+```bash
+npx maestria update pi
+```
+
+<details>
+<summary>Alternative: Manual update</summary>
+
+To update `@maestria/pi` to the latest version:
+
+```bash
+pi install npm:@maestria/pi@latest
+```
+
+<Aside type="tip">
+  To pin a specific version, use `pi install npm:@maestria/pi@0.1.0`. Check the
+  [changelog](/pi/changelog/) for version history.
+</Aside>
+
+</details>
+
+## Uninstalling
+
+To remove the extension:
+
+1. Open your `~/.config/pi/pi.json` config file
+2. Remove `"@maestria/pi"` from the `"extensions"` array
+3. Remove `"node_modules/@maestria/pi/prompts"` from the `"prompts"` array
+4. Run: `pi uninstall @maestria/pi`
+5. Restart Pi
+
+This will unregister all agents and restore the default configuration.
+
+## Next Steps
+
+- [Quick Start](/pi/getting-started/quick-start/) - Your first session with the extension
+- [Pi Reference](/pi/reference/) - Commands, dispatch modes, and review mode
+- Explore the [workflow modes](/pi/getting-started/quick-start/) - `/fein`, `/sonar`, `/blitz`

@@ -1,0 +1,52 @@
+{
+  "name": "maestria",
+  "version": "0.3.0",
+  "description": "Maestria CLI — manage maestria plugins across coding agent platforms",
+  "keywords": [
+    "ai-agent",
+    "cli",
+    "kimi-code",
+    "maestria",
+    "opencode",
+    "pi"
+  ],
+  "homepage": "https://maestria.sznm.dev/cli/",
+  "bugs": "https://github.com/agustinusnathaniel/maestria/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "apps/maestria-cli"
+  },
+  "bin": {
+    "maestria": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "typecheck": "tsc --noEmit",
+    "check": "vp check"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.1",
+    "citty": "^0.2.2",
+    "effect": "4.0.0-beta.70",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

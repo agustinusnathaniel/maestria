@@ -20,8 +20,8 @@ const MODE_PRIORITY: Record<ModeKeyword, number> = {
  * Used to exclude keyword matches inside code spans.
  */
 // Note: Unclosed fenced code blocks (``` without closing ```) are not
-// excluded — the regex requires matching fences. This is an accepted
-// false-positive risk (see ADR-008 consequences).
+// excluded - the regex requires matching fences. This is an accepted
+// false-positive risk (see ADR-OC-003 consequences).
 const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/g;
 
 /**
@@ -55,7 +55,7 @@ function buildKeywordRegex(keyword: string): RegExp {
 /**
  * Detect a workflow mode keyword in the given text.
  *
- * Detection rules (per ADR-008):
+ * Detection rules (per ADR-OC-003):
  * - Word-boundary regex matching (`\bfein\b`, `\bsonar\b`, `\bblitz\b`)
  * - Most restrictive match wins (fein > sonar > blitz)
  * - Case-insensitive

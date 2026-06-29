@@ -1,0 +1,79 @@
+---
+title: '@maestria/kimi-code'
+description: Declarative Kimi Code plugin that ships 8 specialized skills with swarm-aware orchestration - no build step, no SDK hooks.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: 'Engineering Workflows for Kimi Code'
+  tagline: 'Install one plugin. Get 8 specialized skills, swarm-aware orchestration, and global rules - all from a declarative manifest, no build step.'
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /kimi-code/getting-started/installation/
+    - text: View Skills
+      icon: external
+      variant: minimal
+      link: /core/agents/
+---
+
+import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+## How It Works
+
+1. **Plugin loads** - Kimi Code parses `kimi.plugin.json` from the installed location and discovers `skills/`
+2. **Orchestrator auto-loads** - `sessionStart.skill: "orchestrator"` injects the full methodology and delegation rules into every session start
+3. **Global rules load** - `rules/AGENTS.md` is auto-loaded by Kimi Code from `~/.kimi-code/AGENTS.md` (one-time copy)
+4. **Safety enforced** - Optional `[[hooks]]` and `[[permission.rules]]` blocks in `config.toml` enforce persona boundaries at the tool layer
+
+## Quick Install
+
+In a Kimi Code session:
+
+```
+/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
+```
+
+That is the entire install. No `npm install`, no build step. The plugin is just a manifest and a directory of markdown files.
+
+> Kimi Code only looks for `kimi.plugin.json` at the archive root, so the
+> CI workflow maintains a `release/kimi-code` branch where the manifest
+> sits at the root. The plugin lives at `packages/kimi-code/` in a
+> monorepo; pushing a `@maestria/kimi-code@v<version>` tag triggers a
+> `git subtree split` that updates the release branch. Re-installing
+> picks up the latest version automatically. See
+> [ADR-KC-000](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/kimi-code/ADR-KC-000-kimi-code-distribution.md) for the rationale.
+
+<LinkButton href="/kimi-code/getting-started/installation/" size="lg">
+  Full Installation Guide →
+</LinkButton>
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Installation, setup, and your first session with the plugin."
+    href="/kimi-code/getting-started/installation/"
+  />
+  <LinkCard
+    title="Skill Reference"
+    description="The 8 skills, mapped to Kimi Code's 3 built-in subagent profiles."
+    href="/core/agents/"
+  />
+  <LinkCard
+    title="Workflow Patterns"
+    description="Practical skill usage patterns - from recon to full build pipelines, plus swarm fan-out."
+    href="/core/workflow-patterns/"
+  />
+  <LinkCard
+    title="Changelog"
+    description="Version history and release notes."
+    href="/kimi-code/changelog/"
+  />
+  <LinkCard
+    title="Contributing"
+    description="Project structure, editing skills, and how to extend the plugin."
+    href="/kimi-code/contributing/"
+  />
+</CardGrid>

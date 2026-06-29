@@ -1,0 +1,74 @@
+---
+title: '@maestria/pi'
+description: Extend the Pi coding agent with spec-driven orchestration, workflow modes, and session-tree integration.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: 'Portable Pi Engineering Workflows'
+  tagline: 'Extend the Pi coding agent with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration - configured in seconds.'
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /pi/getting-started/installation/
+    - text: View on GitHub
+      icon: external
+      variant: minimal
+      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/pi
+---
+
+import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+## How It Works
+
+1. **Install the extension** - `pi install npm:@maestria/pi` or add to `pi.json`
+2. **Extension activates** - Pi loads the extension, registers mode commands (`/fein`, `/sonar`, `/blitz`) and 7 specialist subagents
+3. **Mode commands drive the pipeline** - `/fein` (full pipeline), `/sonar` (research), `/blitz` (fast impl) - each activates the right subagents in sequence
+4. **Orchestrator dispatches** - The orchestrator subagent decomposes work, delegates to specialists, and enforces phase gates
+5. **Session tree tracks state** - Each subagent invocation records its parent task ID, preserving the full session tree across turns
+
+## Quick Install
+
+Add `@maestria/pi` as a Pi extension in your `pi.json`:
+
+```json
+{
+  "extensions": ["@maestria/pi"],
+  "prompts": ["node_modules/@maestria/pi/prompts"]
+}
+```
+
+Or install via the Pi CLI:
+
+```bash
+pi install npm:@maestria/pi
+```
+
+<LinkButton href="/pi/getting-started/installation/" size="lg">
+  Installation Guide →
+</LinkButton>
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Installation, setup, and your first session with the Pi extension."
+    href="/pi/getting-started/installation/"
+  />
+  <LinkCard
+    title="Pi Reference"
+    description="Commands, subagent dispatch modes, review mode, and session management."
+    href="/pi/reference/"
+  />
+  <LinkCard
+    title="Changelog"
+    description="Version history and release notes."
+    href="/pi/changelog/"
+  />
+  <LinkCard
+    title="Contributing"
+    description="Project structure and how to extend the plugin."
+    href="/pi/contributing/"
+  />
+</CardGrid>

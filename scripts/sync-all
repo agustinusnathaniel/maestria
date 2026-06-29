@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SYNC_SCRIPT="$ROOT/packages/core/scripts/sync.ts"
+HAD_ERROR=0
+
+for config in "$ROOT"/packages/*/sync.config.ts; do
+  [ -f "$config" ] || continue
+  PKG_DIR="$(dirname "$config")"
+  PKG_NAME="$(basename "$PKG_DIR")"
+
+  echo ""
+  echo "=== Syncing $PKG_NAME ==="
+  (cd "$PKG_DIR" && npx tsx "$SYNC_SCRIPT" --verbose) || HAD_ERROR=1
+done
+
+echo ""
+if [ "$HAD_ERROR" -eq 0 ]; then
+  echo "=== All syncs complete ==="
+else
+  echo "=== Some syncs failed ==="
+fi
+exit $HAD_ERROR
