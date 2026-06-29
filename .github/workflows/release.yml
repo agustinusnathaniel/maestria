@@ -20,7 +20,9 @@ on:
         description: 'Version bump type (major, minor, patch). Leave empty for changeset-defined.'
         required: false
         type: choice
+        default: ''
         options:
+          - ''
           - major
           - minor
           - patch
