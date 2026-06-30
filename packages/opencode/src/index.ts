@@ -78,8 +78,11 @@ function loadAgents(): Record<string, Record<string, unknown>> {
 
     return agents;
   } catch (err) {
-    console.warn(`[maestria] Failed to read agents directory:`, err);
-    return {};
+    console.error(`[maestria] Failed to read agents directory:`, err);
+    throw new Error(
+      `[maestria] Failed to load agents from "${agentsDir}": ` +
+        (err instanceof Error ? err.message : String(err)),
+    );
   }
 }
 
