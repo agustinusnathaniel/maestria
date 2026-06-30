@@ -29,7 +29,6 @@
   },
   "scripts": {
     "build": "vp pack",
-    "prebuild": "node --experimental-strip-types scripts/build-rules.ts",
     "test": "vp test",
     "lint": "vp check",
     "validate-prompts": "node --experimental-strip-types scripts/validate-prompts.ts",
