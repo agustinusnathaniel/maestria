@@ -26,7 +26,7 @@ Replace the `pnpm build` step with `pnpm check` in `.github/workflows/release.ym
 
 ### Cost
 
-~2 seconds per run added (measured). `vp check` consists of `vp fmt --check` (~0.3s), `vp lint` with type-aware checks (~0.5s), and the check-sync guard (~0.1s). The remaining time is process overhead.
+~2 seconds per run added (measured). `vp check` runs `vp fmt --check` (~0.3s) and `vp lint` with type-aware checks (~0.5s). The check-sync guard runs via npm's prebuild lifecycle hook before `pnpm build`. The remaining time is process overhead.
 
 ### Alternatives Considered
 
@@ -103,6 +103,11 @@ A composite action (see Decision 5) eliminates setup duplication between the two
 
 The `release.yml` workflow sets `cancel-in-progress: false` to prevent a subsequent push from cancelling an in-progress publish. The `ci.yml` workflow sets `cancel-in-progress: true` so that a new push on the same PR cancels the stale run.
 
+### Notes
+
+- **`workflow_dispatch` inputs:** The `workflow_dispatch` trigger accepts no inputs. Version bump type inputs (major/minor/patch) were intentionally removed to simplify the manual trigger. Changesets determines the version bump from changeset files.
+- **Timeout increase:** `release.yml` uses a 15-minute timeout (up from 10 minutes in `ci.yml`) to accommodate the additional check and test steps running before the publish step.
+
 ## Decision 6: Generate Astro Types Before Typecheck
 
 ### Context
@@ -156,7 +161,7 @@ The sync step is the minimal addition required to make the existing typecheck pi
 
 ## Decision 5: Extract shared setup into composite action
 
-Created `.github/actions/setup/action.yml` combining checkout (`actions/checkout@v7`), Node.js setup (`actions/setup-node@v4` with `.node-version`), pnpm install (`pnpm/action-setup@v6`), vp task cache restore (`actions/cache@v6`), and `pnpm install --frozen-lockfile`.
+Created `.github/actions/setup/action.yml` combining Node.js setup (`actions/setup-node@v4` with `.node-version`), `pnpm/setup@v1` (handles install automatically), and vp task cache restore (`actions/cache@v6`). Checkout remains in the calling workflow.
 
 This eliminates the 6-line setup block that was duplicated across `release.yml` and `release-kimi-code.yml`, following the pattern used by chakra-ui, radix-ui, and gitify.
 
@@ -170,7 +175,7 @@ This eliminates the 6-line setup block that was duplicated across `release.yml` 
 - `.github/workflows/ci.yml` — PR check workflow (check + test, cancel-in-progress)
 - `.github/workflows/release.yml` — release workflow (check + test + changesets publish)
 - `.github/actions/setup/action.yml` — shared composite action for checkout + pnpm setup + cache
-- `package.json` — defines `"check": "vp check && vp run build"`
+- `package.json` — defines `"check": "vp check && pnpm build && pnpm test"`
 - `vite.config.ts` — defines the `vp` tasks (fmt, lint, run) that `vp check` invokes
 - [actions/cache documentation](https://github.com/actions/cache) — cache action reference
 - [changesets/action documentation](https://github.com/changesets/action) — changesets publishing action

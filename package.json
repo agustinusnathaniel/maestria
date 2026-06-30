@@ -15,7 +15,7 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
-    "check": "vp check && vp run build && vp run test",
+    "check": "vp check && pnpm build && pnpm test",
     "clean": "vp cache clean",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",

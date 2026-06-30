@@ -39,7 +39,11 @@ jobs:
       - name: Check (format + lint + typecheck + test) and Build
         run: pnpm check
 
-      - name: Create Release Pull Request or Publish
+      # Note: The `if: github.ref == 'refs/heads/main'` guard was intentionally
+      # removed — this workflow only triggers on main pushes. If adding a new
+      # trigger (e.g., pull_request), re-add the guard to prevent accidental
+      # publishing.
+      - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
           version: pnpm version-packages
