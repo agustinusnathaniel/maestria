@@ -10,7 +10,7 @@ runs:
       with:
         version: latest
     - name: Restore vp task cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: node_modules/.vite/task-cache
         key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
