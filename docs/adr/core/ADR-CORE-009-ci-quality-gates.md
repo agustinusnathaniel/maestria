@@ -64,13 +64,13 @@ If the docs build becomes slow — 100+ pages, or if caching breaks and the buil
 
 ### Change
 
-Added `actions/cache@v4` to restore and save `node_modules/.vite/task-cache` in both workflows (`release.yml` and `release-kimi-code.yml`).
+Added `actions/cache@v6` to restore and save `node_modules/.vite/task-cache` in both workflows (`release.yml` and `release-kimi-code.yml`).
 
 ### Cache Key
 
 ```yaml
 - name: Restore vp task cache
-  uses: actions/cache@v4
+  uses: actions/cache@v6
   with:
     path: node_modules/.vite/task-cache
     key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -84,7 +84,7 @@ Before: every CI run executed all tests from scratch because the cache directory
 
 ### Rationale
 
-This fix is a one-time cost: a 5-line cache step. The vp task cache is designed to be persisted between runs — not caching it was an oversight. The `actions/cache@v4` action handles upload at the end of the job automatically; no explicit `save` step is needed.
+This fix is a one-time cost: a 5-line cache step. The vp task cache is designed to be persisted between runs — not caching it was an oversight. The `actions/cache@v6` action handles upload at the end of the job automatically; no explicit `save` step is needed.
 
 ## Decision 4: Split into CI (`ci.yml`) and Release (`release.yml`) workflows
 
@@ -127,7 +127,7 @@ The `release.yml` workflow sets `cancel-in-progress: false` to prevent a subsequ
 
 ## Decision 5: Extract shared setup into composite action
 
-Created `.github/actions/setup/action.yml` combining checkout (`actions/checkout@v7`), Node.js setup (`actions/setup-node@v4` with `.node-version`), pnpm install (`pnpm/action-setup@v6`), vp task cache restore (`actions/cache@v4`), and `pnpm install --frozen-lockfile`.
+Created `.github/actions/setup/action.yml` combining checkout (`actions/checkout@v7`), Node.js setup (`actions/setup-node@v4` with `.node-version`), pnpm install (`pnpm/action-setup@v6`), vp task cache restore (`actions/cache@v6`), and `pnpm install --frozen-lockfile`.
 
 This eliminates the 6-line setup block that was duplicated across `release.yml` and `release-kimi-code.yml`, following the pattern used by chakra-ui, radix-ui, and gitify.
 
