@@ -6,12 +6,12 @@ runs:
     - uses: actions/setup-node@v4
       with:
         node-version-file: '.node-version'
-    - uses: pnpm/action-setup@v6
+    - uses: pnpm/setup@v1
+      with:
+        cache: true
     - name: Restore vp task cache
       uses: actions/cache@v6
       with:
         path: node_modules/.vite/task-cache
         key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-    - name: Install dependencies
-      shell: bash
-      run: pnpm install --frozen-lockfile
+
