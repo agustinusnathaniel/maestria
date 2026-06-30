@@ -1,11 +1,8 @@
 name: 'Maestria Setup'
-description: 'Checkout, install dependencies with pnpm, and restore vp task cache'
+description: 'Install dependencies with pnpm and restore vp task cache'
 runs:
   using: 'composite'
   steps:
-    - uses: actions/checkout@v7
-      with:
-        fetch-depth: 0
     - uses: actions/setup-node@v4
       with:
         node-version-file: '.node-version'
