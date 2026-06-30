@@ -42,7 +42,15 @@ export default defineConfig({
     tasks: {
       'check-sync': {
         command: 'bash scripts/check-sync',
-        cache: false,
+        cache: true,
+        input: [
+          { auto: false },
+          'scripts/check-sync',
+          'packages/core/scripts/**/*.ts',
+          'packages/core/agent-directives/**/*.md',
+          'packages/*/sync.config.ts',
+        ],
+        output: ['packages/*/agents/**', 'packages/*/prompts/**', 'packages/*/rules/**'],
       },
     },
     cache: { scripts: true, tasks: true },
