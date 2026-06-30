@@ -8,6 +8,9 @@ export default defineConfig({
     minify: true,
     fixedExtension: false,
   },
+  test: {
+    include: ['tests/**/*.test.ts'],
+  },
   resolve: {
     tsconfigPaths: true,
   },

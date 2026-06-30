@@ -350,8 +350,9 @@ export function installSubagentTool(
 
         // Should not reach here - all modes are handled above
         throw new Error('Unknown dispatch mode');
-      } catch {
-        // Return handoff payload as structured text when SDK unavailable
+      } catch (err) {
+        console.warn('[maestria] Subagent dispatch failed:', err);
+        // Return handoff payload as structured text when dispatch fails
         const agentName = params.agent ?? params.tasks?.[0]?.agent ?? 'unknown';
         const taskDesc = params.task ?? params.tasks?.map((t) => t.task).join('; ') ?? 'unknown';
         const handoffInfo = [
@@ -361,7 +362,7 @@ export function installSubagentTool(
           `**To:** ${agentName}`,
           `**Task:** ${taskDesc}`,
           ``,
-          `Subagent SDK not available. Please delegate this work manually.`,
+          `Subagent dispatch failed. Please delegate this work manually.`,
         ].join('\n');
 
         return {
