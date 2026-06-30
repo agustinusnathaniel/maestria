@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 
+// Suppress expected console.error noise from ENOENT error path
+vi.spyOn(console, 'error').mockImplementation(() => {});
+
 // Mock fs to simulate a missing agents directory.
 // This must be in a separate file because vi.mock is hoisted and would
 // affect the normal tests in index.test.ts.

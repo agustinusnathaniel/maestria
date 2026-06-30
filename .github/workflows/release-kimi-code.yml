@@ -14,14 +14,10 @@ jobs:
     name: Update release branch via subtree split
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - uses: pnpm/setup@v1
-        with:
-          cache: true
+      - uses: ./.github/actions/setup
 
       - name: Run tests
         run: pnpm exec vp run --filter @maestria/kimi-code test
