@@ -10,7 +10,7 @@ The maestria CI pipeline, defined in `.github/workflows/release.yml`, ran on eve
 
 The pipeline had three problems:
 
-1. **No static analysis in CI.** The `pnpm build` step compiled packages but did not check formatting, run the linter, or typecheck TypeScript. Format and lint violations could merge and only surface as pre-commit hook failures on other developers' machines — or not at all if hooks were bypassed. The project already had `pnpm check` (which is `vp check && vp run build`), covering format check via `vp fmt --check`, type-aware lint via `vp lint` (oxlint with type checking), and `vp run build`. The check and the build commands existed but CI only ran the latter.
+1. **No static analysis in CI.** The `pnpm build` step compiled packages but did not check formatting, run the linter, or typecheck TypeScript. Format and lint violations could merge and only surface as pre-commit hook failures on other developers' machines — or not at all if hooks were bypassed. The project already had `pnpm check` (which is `vp check && vp run build && vp run test`), covering format check via `vp fmt --check`, type-aware lint via `vp lint` (oxlint with type checking), and `vp run build`. The check and the build commands existed but CI only ran the latter.
 
 2. **Zero test cache hit rate.** The task cache in vp (`node_modules/.vite/task-cache`) is a SQLite database that tracks per-task output hashes. If a task's inputs haven't changed, vp skips re-execution. But the cache is ephemeral — it lives in `node_modules` which is not persisted between CI runs. Every CI run started with a cold cache, running all tests from scratch even when nothing had changed.
 
@@ -22,7 +22,7 @@ A secondary, pre-existing question was whether the single-workflow layout (one `
 
 ### Change
 
-Replace the `pnpm build` step with `pnpm check` in `.github/workflows/release.yml`. This adds format checking, type-aware oxlint linting, and TypeScript type checking to every PR run. The build still happens because `pnpm check` expands to `vp check && vp run build`.
+Replace the `pnpm build` step with `pnpm check` in `.github/workflows/release.yml`. This adds format checking, type-aware oxlint linting, and TypeScript type checking to every PR run. The build still happens because `pnpm check` expands to `vp check && vp run build && vp run test`.
 
 ### Cost
 
