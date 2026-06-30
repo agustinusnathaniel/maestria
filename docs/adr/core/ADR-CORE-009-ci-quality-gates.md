@@ -26,7 +26,7 @@ Replace the `pnpm build` step with `pnpm check` in `.github/workflows/release.ym
 
 ### Cost
 
-~2 seconds per run added (measured). `vp check` runs `vp fmt --check` (~0.3s) and `vp lint` with type-aware checks (~0.5s). The check-sync guard runs via npm's prebuild lifecycle hook before `pnpm build`. The remaining time is process overhead.
+~2 seconds per run added (measured). `vp check` consists of `vp fmt --check` (~0.3s), `vp lint` with type-aware checks (~0.5s), and the check-sync guard (~0.1s). The remaining time is process overhead.
 
 ### Alternatives Considered
 
@@ -175,7 +175,7 @@ This eliminates the 6-line setup block that was duplicated across `release.yml` 
 - `.github/workflows/ci.yml` — PR check workflow (check + test, cancel-in-progress)
 - `.github/workflows/release.yml` — release workflow (check + test + changesets publish)
 - `.github/actions/setup/action.yml` — shared composite action for checkout + pnpm setup + cache
-- `package.json` — defines `"check": "vp check && pnpm build && pnpm test"`
+- `package.json` — defines `"check": "vp check && vp run build && vp run test"`
 - `vite.config.ts` — defines the `vp` tasks (fmt, lint, run) that `vp check` invokes
 - [actions/cache documentation](https://github.com/actions/cache) — cache action reference
 - [changesets/action documentation](https://github.com/changesets/action) — changesets publishing action
