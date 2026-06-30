@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.3
+
+### Patch Changes
+
+- [#44](https://github.com/agustinusnathaniel/maestria/pull/44) [`b57c259`](https://github.com/agustinusnathaniel/maestria/commit/b57c25906207c6a77ce6fb2650a53c4d759e7c1d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix subagent dispatch error handling: catch block now logs the actual error instead of always reporting "Subagent SDK not available"
+
+  Add null guard in tool interceptor to prevent crashes on malformed bash events
+
+  Remove redundant build-rules.ts codegen step: rules are now read directly from rules/AGENTS.md
+
 ## 0.3.2
 
 ### Patch Changes
