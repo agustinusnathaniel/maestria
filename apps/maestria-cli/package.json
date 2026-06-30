@@ -36,14 +36,12 @@
     "check": "vp check",
     "test": "vp test"
   },
-  "dependencies": {
+  "devDependencies": {
     "@clack/prompts": "^0.10.1",
+    "@types/node": "catalog:",
     "citty": "^0.2.2",
     "effect": "4.0.0-beta.92",
-    "picocolors": "^1.1.1"
-  },
-  "devDependencies": {
-    "@types/node": "catalog:",
+    "picocolors": "^1.1.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
