@@ -40,6 +40,7 @@ export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState):
 
     // Block dangerous bash patterns regardless of mode
     if (isToolCallEventType('bash', event)) {
+      if (!event.input || typeof event.input !== 'object') return undefined;
       const command = event.input.command;
       if (command) {
         for (const pattern of DANGEROUS_PATTERNS) {
