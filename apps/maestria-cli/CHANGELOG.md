@@ -1,5 +1,11 @@
 # maestria
 
+## 0.3.1
+
+### Patch Changes
+
+- [#44](https://github.com/agustinusnathaniel/maestria/pull/44) [`b57c259`](https://github.com/agustinusnathaniel/maestria/commit/b57c25906207c6a77ce6fb2650a53c4d759e7c1d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Upgrade Effect dependency from 4.0.0-beta.70 to 4.0.0-beta.92 with pnpm overrides for version deduplication
+
 ## 0.3.0
 
 ### Minor Changes
