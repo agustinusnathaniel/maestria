@@ -8,6 +8,9 @@ import {
 import { createInitialState } from '@/state.js';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 
+// Suppress expected console.warn noise from SDK-unavailable fallback paths
+vi.spyOn(console, 'warn').mockImplementation(() => {});
+
 describe('MAX_PARALLEL_TASKS', () => {
   it('is exported as 8', () => {
     expect(MAX_PARALLEL_TASKS).toBe(8);

@@ -1,0 +1,22 @@
+name: 'Maestria Setup'
+description: 'Checkout, install dependencies with pnpm, and restore vp task cache'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.node-version'
+    - uses: pnpm/action-setup@v6
+      with:
+        version: latest
+    - name: Restore vp task cache
+      uses: actions/cache@v4
+      with:
+        path: node_modules/.vite/task-cache
+        key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
