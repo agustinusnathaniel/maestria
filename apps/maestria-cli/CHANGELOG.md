@@ -1,5 +1,11 @@
 # maestria
 
+## 0.3.2
+
+### Patch Changes
+
+- [`b3465d7`](https://github.com/agustinusnathaniel/maestria/commit/b3465d738b63ec3e79af006a0d2e1d7a732ffeea) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Bundle CLI runtime dependencies (effect, @clack/prompts, citty, picocolors) into output instead of externalizing them. End users no longer download 8.2 MB of transitive dependencies at install time, and the `msgpackr-extract` build script warning is eliminated.
+
 ## 0.3.1
 
 ### Patch Changes
