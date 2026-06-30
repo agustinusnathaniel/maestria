@@ -7,6 +7,9 @@ export default defineConfig({
     sourcemap: true,
     minify: true,
     fixedExtension: false,
+    deps: {
+      alwaysBundle: ['@clack/prompts', 'citty', 'effect', 'picocolors'],
+    },
   },
   test: {
     include: ['tests/**/*.test.ts'],

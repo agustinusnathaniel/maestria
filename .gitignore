@@ -26,3 +26,6 @@ dist-ssr
 
 .plans
 plans
+
+# Package archives
+*.tgz
