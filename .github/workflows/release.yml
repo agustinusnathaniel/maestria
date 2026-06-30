@@ -33,6 +33,9 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
 
+      - name: Generate Astro types
+        run: pnpm sync:docs
+
       - name: Check (format + lint + typecheck + test) and Build
         run: pnpm check
 
