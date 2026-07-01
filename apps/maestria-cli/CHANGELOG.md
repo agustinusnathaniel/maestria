@@ -1,5 +1,11 @@
 # maestria
 
+## 0.3.5
+
+### Patch Changes
+
+- [`f992fdd`](https://github.com/agustinusnathaniel/maestria/commit/f992fddc445b9caf4687dcd4451280e570e12d50) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - ci: optimize pipeline
+
 ## 0.3.4
 
 ### Patch Changes
