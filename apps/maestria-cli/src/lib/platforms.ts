@@ -62,7 +62,7 @@ const opencode: PlatformHandler = {
     // Clear cache to ensure fresh install from npm
     yield* sh(`rm -rf ${homedir()}/.cache/opencode/packages/@maestria/opencode*`);
     // Install globally by default — install is a setup command, not per-project
-    yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g', '--force']);
+    yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g']);
   }).pipe(Effect.as(void 0)),
 
   update: (version?: string) =>

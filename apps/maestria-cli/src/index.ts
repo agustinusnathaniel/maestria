@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { version } from '^/package.json';
 import { defineCommand, runMain, renderUsage } from 'citty';
 import { Effect } from 'effect';
 import type { CommandDef, ArgsDef } from 'citty';
@@ -144,8 +145,7 @@ const main = defineCommand({
   },
   run: async ({ args }) => {
     if (args.version) {
-      // TODO: source from package.json at build time
-      console.log('0.2.1');
+      console.log(version);
       process.exit(0);
     }
 
