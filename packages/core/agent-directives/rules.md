@@ -17,6 +17,7 @@
 - **Tool hierarchy for external information:**
   1. `webfetch` - fetch a specific known URL (for docs, pages)
   2. `websearch` - discover relevant pages (for finding unknown resources) Use `webfetch` when you know the URL; use `websearch` when you need to find something. `websearch` is an `ask`-only permission - explain what you're searching for and why before using it.
+- **Prefer code intelligence tools for codebase exploration** - when available, use them before falling back to grep/read loops.
 
 ## Principles
 

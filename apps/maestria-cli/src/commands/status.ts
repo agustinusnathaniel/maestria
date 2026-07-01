@@ -18,7 +18,7 @@ export const statusCommand = defineCommand({
     json: {
       type: 'boolean',
       description:
-        'Output status as JSON — structured machine-readable format optimized for AI agents and CI pipelines',
+        'Output status as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
       default: false,
     },
     quiet: {

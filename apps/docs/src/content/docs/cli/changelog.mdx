@@ -15,11 +15,11 @@ Major improvements to make the CLI more suitable for AI agents and CI pipelines.
 
 **New flags:**
 
-- `--compact` — Minimal machine-friendly text output. Strips colors and decorative formatting.
+- `--compact` - Minimal machine-friendly text output. Strips colors and decorative formatting.
   Supports status, install, and update commands.
-- `--version` — Print the CLI version and exit.
-- Root `--json` — The `maestria` command (no subcommand) now supports `--json`.
-- `--quiet` on status — Decoupled from `--json`; each flag works independently.
+- `--version` - Print the CLI version and exit.
+- Root `--json` - The `maestria` command (no subcommand) now supports `--json`.
+- `--quiet` on status - Decoupled from `--json`; each flag works independently.
 
 **Enhanced `--help`:**
 
@@ -53,21 +53,21 @@ _June 22, 2026_
 
 ### Cross-platform plugin management
 
-Initial release of the `maestria` CLI — a unified interface for managing
+Initial release of the `maestria` CLI - a unified interface for managing
 maestria plugins across OpenCode, Pi, and Kimi Code from a single command.
 
 **Three subcommands:**
 
-- **`install`** — Install maestria for one or all detected platforms. Supports
+- **`install`** - Install maestria for one or all detected platforms. Supports
   interactive mode (pick from a list), `--all` flag, and per-platform targets.
-- **`update`** — Update installed plugins to the latest (or specified) version.
+- **`update`** - Update installed plugins to the latest (or specified) version.
   Accepts `--version` for pinned updates and `--all` for bulk updates.
-- **`status`** — Show installation status across platforms. Detects available
+- **`status`** - Show installation status across platforms. Detects available
   coding agents on `$PATH` and reports installed vs. latest versions.
 
 **Key features:**
 
-- No `npm install` required — run via `npx` thanks to the bundled single-file
+- No `npm install` required - run via `npx` thanks to the bundled single-file
   `.mjs` distribution
 - `--json` flag on all commands for CI/script consumption
 - `--quiet` flag to suppress spinner animations

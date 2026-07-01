@@ -29,7 +29,7 @@ export const installCommand = defineCommand({
     json: {
       type: 'boolean',
       description:
-        'Output results as JSON — structured machine-readable format optimized for AI agents and CI pipelines',
+        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
       default: false,
     },
     quiet: {

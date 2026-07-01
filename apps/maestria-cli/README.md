@@ -1,6 +1,6 @@
 # maestria
 
-A single CLI to manage maestria plugins across all coding agent platforms — OpenCode, Kimi Code, and Pi.
+A single CLI to manage maestria plugins across all coding agent platforms - OpenCode, Kimi Code, and Pi.
 
 ```bash
 npx maestria status
@@ -8,7 +8,7 @@ npx maestria status
 
 ## Why
 
-Each coding agent platform installs maestria differently. `maestria` wraps them all behind one interface. Check what's installed, install for a platform, or update everything — no more hunting through READMEs for the right command.
+Each coding agent platform installs maestria differently. `maestria` wraps them all behind one interface. Check what's installed, install for a platform, or update everything - no more hunting through READMEs for the right command.
 
 ## Commands
 
@@ -23,7 +23,7 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 | `maestria update --all`                    | Update all installed platforms          |
 | `maestria update opencode --version 0.5.0` | Update to a specific version            |
 
-All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text — ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version.
+All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text - ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version.
 
 ## Usage
 
@@ -101,11 +101,11 @@ rm ~/.cache/maestria/versions.json
 
 ## Tech Stack
 
-- **Effect v4** — typed errors, structured concurrency, Effect-based platform operations
-- **citty** — lightweight CLI routing with typed arg definitions
-- **@clack/prompts** — interactive spinners and selection prompts
-- **picocolors** — terminal output coloring
-- **vite-plus** — bundles to a single self-contained `.mjs` file
+- **Effect v4** - typed errors, structured concurrency, Effect-based platform operations
+- **citty** - lightweight CLI routing with typed arg definitions
+- **@clack/prompts** - interactive spinners and selection prompts
+- **picocolors** - terminal output coloring
+- **vite-plus** - bundles to a single self-contained `.mjs` file
 
 ## Development
 
@@ -126,4 +126,4 @@ node dist/index.js status
 ## Related
 
 - [Maestria CLI documentation](https://maestria.sznm.dev/cli/)
-- [ADR-CORE-007](../../docs/adr/core/ADR-CORE-007-cli-package-plugin-management.md) — Architecture decision for this CLI
+- [ADR-CORE-007](../../docs/adr/core/ADR-CORE-007-cli-package-plugin-management.md) - Architecture decision for this CLI

@@ -8,7 +8,7 @@ import { statusCommand } from '@/commands/status.js';
 import { detectAll } from '@/lib/detect.js';
 import { createSpinner, renderStatusTable, renderCompactStatus } from '@/lib/output.js';
 
-// Ensure clean exit on signals — prevents Effect runtime from keeping process alive
+// Ensure clean exit on signals - prevents Effect runtime from keeping process alive
 process.on('SIGINT', () => process.exit(130));
 process.on('SIGTERM', () => process.exit(0));
 
@@ -133,7 +133,7 @@ const main = defineCommand({
     json: {
       type: 'boolean',
       description:
-        'Output status as JSON — structured machine-readable format optimized for AI agents and CI pipelines',
+        'Output status as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
       default: false,
     },
   },

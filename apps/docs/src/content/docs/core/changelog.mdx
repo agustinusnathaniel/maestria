@@ -1,0 +1,85 @@
+---
+title: Methodology Changelog
+description: Changes to agent directives, global rules, and pipeline methodology across all Maestria platforms.
+---
+
+This changelog tracks meaningful changes to how Maestria-powered agents
+behave - what they do differently, what they're stricter about, and what
+you can expect from them.
+
+## 2026-07-01
+
+- **Code intelligence tool preference.** Agents now prefer code intelligence
+  tools (MCP, CLI, or other) before falling back to grep and read when
+  exploring your codebase. If you use a tool like CodeGraph, agents will
+  route through it automatically.
+
+## 2026-06-26
+
+- **Two new design principles.** Agents now check from first principles before
+  adopting existing patterns, and check for existing solutions before building
+  from scratch. This pushes toward better design decisions with less wasted
+  effort.
+
+## 2026-06-25
+
+- **Anthropomorphism guard added.** Agents no longer bias decisions based on
+  "that would be a lot of work" - they operate at machine scale. The right
+  technical choice wins, regardless of perceived effort.
+- **Output style guidance.** Agents now write output that sounds human -
+  no em dash overuse, inflated language, or promotional phrasing.
+- **Project-level workflow customization.** You can now add
+  `.maestria/workflow.md` and `.maestria/rules.md` to your project root to
+  define custom delegation sequences and project-specific rules. Core rules
+  always take precedence.
+
+## 2026-06-24
+
+- **Single source of truth for agent directives.** Agent prompts and global
+  rules now live in one canonical location and sync automatically to all
+  platform plugins (OpenCode, Kimi Code, Pi). No more drift between
+  platforms.
+
+## 2026-06-23
+
+- **Pipeline redesigned.** Roles and their order now adapt to task needs
+  instead of running a fixed sequence. The pipeline stops as soon as the
+  verifier accepts - no unnecessary refinement loops.
+
+## 2026-06-22
+
+- **Strict commit protocol.** Agents now follow inspect → propose → execute →
+  stop for every commit. Commit and push authorization are separate - no
+  autonomous pushes without explicit approval.
+
+## 2026-06-20
+
+- **Workflow modes introduced.** Prefix your message with `fein`, `sonar`, or
+  `blitz` to control pipeline depth per turn:
+  - **fein** - full pipeline, no shortcuts
+  - **sonar** - reconnaissance only, no implementation
+  - **blitz** - straight to implementation, skip preamble
+
+## 2026-06-18
+
+- **Permission model overhaul.** Fixed a bug where some agents couldn't read
+  the files they needed despite having permissions configured. Full audit
+  closed gaps across all specialists. Delegation scoping strictly enforced.
+
+## 2026-06-13
+
+- **Skill system.** Agents now load skills based on what the current task
+  needs, not a static preload. Four buckets: always load, load on trigger,
+  defer to specialist, skip if. Skills stay out of context until they're
+  relevant.
+- **Tool access hierarchy.** Established clear rules for how agents find
+  information: local tools first, then webfetch for known URLs, websearch
+  only for discovery (with explicit justification).
+
+## 2026-06-12
+
+- **Initial release.** 7 specialist agents (orchestrator + adventurer +
+  architect + builder + diagnose + planner + reviewer + writer) with global
+  rules injection. Key patterns from day one: makers don't review their own
+  work, all delegation goes through the orchestrator, structured handoff
+  contracts between agents.

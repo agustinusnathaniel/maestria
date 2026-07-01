@@ -13,7 +13,7 @@ These flags work on every command:
 | ----------- | ---------------------------------------------------- |
 | `--json`    | Output results as JSON instead of formatted text     |
 | `--quiet`   | Suppress spinner animations                          |
-| `--compact` | Machine-friendly text output — one line per platform |
+| `--compact` | Machine-friendly text output - one line per platform |
 
 Running `maestria` with no arguments is equivalent to `maestria status`.
 
@@ -35,7 +35,7 @@ Detects which coding agent CLIs are available on `$PATH`, checks whether maestri
 | ----------- | --------------------------------------------- |
 | `--json`    | Output as JSON (see schema below)             |
 | `--quiet`   | Suppress non-essential output                 |
-| `--compact` | Machine-friendly text — one line per platform |
+| `--compact` | Machine-friendly text - one line per platform |
 
 ### JSON schema
 
@@ -97,11 +97,11 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 
 | Flag          | Description                                                        |
 | ------------- | ------------------------------------------------------------------ |
-| `platform`    | Positional arg — platform to install (omit for interactive picker) |
+| `platform`    | Positional arg - platform to install (omit for interactive picker) |
 | `--all`, `-a` | Install for all detected platforms                                 |
 | `--json`      | Output results as JSON                                             |
 | `--quiet`     | Suppress spinner animations                                        |
-| `--compact`   | Machine-friendly text output — one line per result                 |
+| `--compact`   | Machine-friendly text output - one line per result                 |
 
 ### Behavior
 
@@ -122,7 +122,7 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 
 ### Error handling
 
-**Input validation** — the CLI catches invalid arguments before any platform work begins:
+**Input validation** - the CLI catches invalid arguments before any platform work begins:
 
 | Scenario                    | Error message                                                         |
 | --------------------------- | --------------------------------------------------------------------- |
@@ -130,7 +130,7 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 | Invalid version format      | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.` |
 | `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.`              |
 
-**Runtime errors** — if a platform command fails (e.g., network error, missing binary), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
+**Runtime errors** - if a platform command fails (e.g., network error, missing binary), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
 
 ```
 ✔ OpenCode: Installed
@@ -157,12 +157,12 @@ maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--co
 
 | Flag              | Description                                                       |
 | ----------------- | ----------------------------------------------------------------- |
-| `platform`        | Positional arg — platform to update (omit for interactive picker) |
+| `platform`        | Positional arg - platform to update (omit for interactive picker) |
 | `--version`, `-V` | Specific version to install (e.g., `0.5.0`). Defaults to latest.  |
 | `--all`, `-a`     | Update all installed platforms                                    |
 | `--json`          | Output results as JSON                                            |
 | `--quiet`         | Suppress spinner animations                                       |
-| `--compact`       | Machine-friendly text output — one line per result                |
+| `--compact`       | Machine-friendly text output - one line per result                |
 
 ### Behavior
 
