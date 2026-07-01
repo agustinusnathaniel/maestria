@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.7
+
+### Patch Changes
+
+- [#52](https://github.com/agustinusnathaniel/maestria/pull/52) [`cc81ff1`](https://github.com/agustinusnathaniel/maestria/commit/cc81ff16c0395e3834c623a93e9826e8dbff2c2f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add code intelligence tool preference to global rules - agents are now directed to prefer code intelligence tools (when available) before falling back to grep/read for codebase exploration
+
 ## 0.3.6
 
 ### Patch Changes
