@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "types": ["node"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "^/*": ["./*"]
     },
     "noEmit": true
   },
