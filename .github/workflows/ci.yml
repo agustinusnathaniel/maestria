@@ -1,11 +1,17 @@
 name: CI
 
 on:
-  pull_request:
-    types: [opened, synchronize]
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'apps/docs/**'
+      - 'docs/**'
+      - '.changeset/**'
+      - '.maestria/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,4 +30,4 @@ jobs:
       - name: Generate Astro types
         run: pnpm sync:docs
       - name: Check (format + lint + typecheck + test) and Build
-        run: pnpm check
+        run: pnpm check:ci
