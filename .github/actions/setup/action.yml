@@ -13,4 +13,6 @@ runs:
       uses: actions/cache@v6
       with:
         path: node_modules/.vite/task-cache
-        key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        key: vp-task-cache-${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          vp-task-cache-${{ runner.os }}-
