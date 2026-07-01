@@ -18,11 +18,11 @@ The pipeline had three problems:
 
 A secondary, pre-existing question was whether the single-workflow layout (one `release.yml` handling both PR checks and main-branch release) should be split into `ci.yml` + `release.yml` for clarity.
 
-## Decision 1: Replace `pnpm build` with `pnpm check`
+## Decision 1: Use `pnpm check:ci` for CI Verification
 
 ### Change
 
-Replace the `pnpm build` step with `pnpm check` in `.github/workflows/release.yml`. This adds format checking, type-aware oxlint linting, and TypeScript type checking to every PR run. The build still happens because `pnpm check` expands to `vp check && vp run build && vp run test`.
+Use `pnpm check:ci` in `.github/workflows/ci.yml`. This adds format checking, type-aware oxlint linting, TypeScript type checking, package builds, and tests to every CI run. The package build uses `pnpm build:ci`, which excludes the docs static build while retaining the sync guard through `prebuild:ci`.
 
 ### Cost
 
@@ -32,33 +32,42 @@ Replace the `pnpm build` step with `pnpm check` in `.github/workflows/release.ym
 
 | Option | Assessment | Verdict |
 | --- | --- | --- |
-| **Separate step** (`pnpm check` as a distinct step before build) | Adds no value over the script swap; the script already sequences check before build. Same total time, more YAML. | Rejected |
+| **Separate step** (`pnpm check` as a distinct step before build) | Adds no value over the script swap; the script already sequences check before package build. Same total time, more YAML. | Rejected |
 | **Parallel job** (check in one job, build+test in another) | Wastes ~30s on duplicate checkout, pnpm setup, and dependency install for a 2s check. | Rejected |
 | **Pre-merge status check** (require a separate `ci-check` job as required status) | Same cost as parallel job with more config. Also requires repository settings changes to mark the new check as required. | Rejected |
 
 ### Rationale
 
-The script swap is the minimal change that brings static analysis into CI. It costs ~2s per run, adds zero maintenance burden, and requires no workflow restructuring. The alternatives add complexity for no meaningful gain.
+The script swap is the minimal change that brings static analysis into CI. It costs ~2s per run, adds zero maintenance burden, and keeps the workflow readable. The alternatives add complexity for no meaningful gain.
 
-## Decision 2: Accept Current Docs Build Behavior
+## Decision 2: Exclude Docs Build from CI/Release Package Builds
 
 ### Change
 
-Do NOT exclude `@maestria/docs` from PR builds. Keep the existing `pnpm check` command as-is, building all packages including the documentation site.
+Add a dedicated `pnpm build:ci` script that builds all packages except `@maestria/docs`, plus a matching `prebuild:ci` lifecycle hook for the sync guard:
+
+```json
+"prebuild:ci": "vp run check-sync",
+"build:ci": "vp run --filter './packages/*' --filter ./apps/maestria-cli build"
+```
+
+`pnpm build --filter "!@maestria/docs"` was tested and rejected: pnpm appends the filter after the `build` task name, so `vp run` forwards it to each package script instead of treating it as a workspace selector. The result still built `@maestria/docs`.
+
+`vp run --filter "!@maestria/docs" build` was also rejected: the negated filter includes the workspace root, whose `build` script recursively builds all packages, including docs. The final script selects package directories directly and includes the CLI app explicitly.
+
+This matches Vite+ documentation and source behavior: `vp run --filter <selector> build` is the documented filtered form, arguments after the task name are passed through to the task command, and Vite Task rejects combining `--filter` with `--recursive`.
+
+Use `build:ci` from `pnpm check:ci` and from `release.yml`.
 
 ### Rationale
 
-The docs build is fast. It is a 28-page Astro site with minimal dependencies. With the vp task cache (see Decision 3), the docs build is essentially free on subsequent runs — Astro's own caching reuses previous output.
+The docs app is still checked by `vp check` after the `Generate Astro types` step, so TypeScript and lint coverage remain in CI. The expensive part for the release path is the Astro static build, which does not produce publishable npm artifacts and is not needed before `changeset publish`.
 
-The `--filter` approach (`pnpm exec vp run --filter '!@maestria/docs' -r build`) would:
+Release builds only need to prove that publishable packages can produce fresh dist output. Keeping this as a named script avoids repeating a non-obvious negated filter in workflow YAML.
 
-- Couple CI logic to the internal package name `@maestria/docs`
-- Add a non-obvious `--filter` negation that future maintainers would need to understand
-- Save zero measurable time at the current docs size
+### Trade-off
 
-### Deferred Trigger
-
-If the docs build becomes slow — 100+ pages, or if caching breaks and the build takes 30s+ — switch to the filtered approach. The one-liner is documented in this ADR for that future maintainer.
+Docs static rendering failures are no longer caught by `pnpm check:ci`. They are still caught by local `pnpm build`, and a docs-specific workflow can be added later if docs deployment becomes part of CI.
 
 ## Decision 3: Cache vp Task Cache in CI
 
@@ -73,14 +82,18 @@ Added `actions/cache@v6` to restore and save `node_modules/.vite/task-cache` in 
   uses: actions/cache@v6
   with:
     path: node_modules/.vite/task-cache
-    key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+    key: vp-task-cache-${{ runner.os }}-${{ github.sha }}
+    restore-keys: |
+      vp-task-cache-${{ runner.os }}-
 ```
 
-The key uses `hashFiles('pnpm-lock.yaml')` because the task cache is invalidated when dependency versions change (which changes the lockfile hash).
+The key uses the commit SHA so every run can save an updated task cache. `restore-keys` lets later runs restore the most recent cache for the same OS.
 
 ### Impact
 
 Before: every CI run executed all tests from scratch because the cache directory was destroyed between runs. After: unchanged tasks are skipped entirely by vp's hash-based invalidation. The test step time drops to ~0 when no test inputs have changed.
+
+An earlier lockfile-only key produced cache hits but prevented cache updates: GitHub Actions does not save a cache when the primary key already hit. In practice that left stale task metadata restored across runs, followed by avoidable task misses when workspace files changed.
 
 ### Rationale
 
@@ -94,8 +107,8 @@ The single workflow conflated two concerns with different requirements: CI check
 
 | Workflow | Triggers | Cancel in-progress | Behaviour |
 | --- | --- | --- | --- |
-| **ci.yml** | PRs (opened, synchronize) | Yes | Run check + test. Fast feedback, no publish. |
-| **release.yml** | Push to main (path-filtered), workflow_dispatch | No | Run check + test + changesets publish. Must not cancel mid-publish. |
+| **ci.yml** | PRs and pushes to main | Yes | Run check + package build + test. Fast feedback, no publish. |
+| **release.yml** | Push to main (path-filtered), workflow_dispatch | No | Run fresh package build + changesets publish. Must not cancel mid-publish. |
 
 A composite action (see Decision 5) eliminates setup duplication between the two workflows, removing the main objection to the split.
 
@@ -106,7 +119,8 @@ The `release.yml` workflow sets `cancel-in-progress: false` to prevent a subsequ
 ### Notes
 
 - **`workflow_dispatch` inputs:** The `workflow_dispatch` trigger accepts no inputs. Version bump type inputs (major/minor/patch) were intentionally removed to simplify the manual trigger. Changesets determines the version bump from changeset files.
-- **Timeout increase:** `release.yml` uses a 15-minute timeout (up from 10 minutes in `ci.yml`) to accommodate the additional check and test steps running before the publish step.
+- **Timeout increase:** `release.yml` uses a 15-minute timeout (up from 10 minutes in `ci.yml`) to accommodate fresh package builds before the publish step.
+- **Main-push CI retained:** `ci.yml` still runs on `main` pushes because `release.yml` is path-filtered to release-related files. Removing main-push CI would make non-release main pushes lose their post-merge validation.
 
 ## Decision 6: Generate Astro Types Before Typecheck
 
@@ -119,7 +133,7 @@ Before Decision 1 (when CI ran `pnpm build` instead of `pnpm check`), this was i
 ### Change
 
 1. Added `"sync": "astro sync"` to `apps/docs/package.json` scripts.
-2. Added a `Generate Astro types` step in both `ci.yml` and `release.yml`, running `pnpm exec vp run --filter @maestria/docs sync` between the setup step and the check step.
+2. Added a `Generate Astro types` step in `ci.yml`, running `pnpm exec vp run --filter @maestria/docs sync` between the setup step and the check step.
 
 ### Cost
 
@@ -143,21 +157,22 @@ The sync step is the minimal addition required to make the existing typecheck pi
 
 - **Static analysis on every PR.** Format, lint, and type errors are caught in CI before merging. Developers get faster feedback than relying on pre-commit hooks alone.
 - **Faster CI on repeat runs.** The vp task cache makes test re-runs nearly instant when no test code changed. This matters for PRs where only source or docs changed.
+- **Release package builds skip docs.** Publishable packages are still built from scratch before publish without paying the Astro static-site cost.
 - **Clear separation of concerns.** The `ci.yml` workflow handles PR feedback; the `release.yml` workflow handles publishing. Different policies for concurrency, trigger paths, and cancellation are enforced at the workflow level rather than with inline `if:` guards.
 - **Parallel with major monorepo conventions.** The two-workflow layout matches chakra-ui, radix-ui, and gitify — reducing onboarding friction for contributors accustomed to those patterns.
-- **Docs build stays included.** PR builders see docs build failures immediately, not after merge.
+- **Docs checks stay included.** PR builders see docs type and lint failures immediately after Astro types are generated.
 
 ### Negative
 
 - **~2s added to every CI run** for `vp check` on top of the build time. This is negligible in absolute terms but proportionally large relative to the build time itself.
 - **Two workflow files to maintain instead of one.** The split introduces a second file plus the shared composite action. A future maintainer must understand three files (two workflows + one action) instead of one.
-- **Cache key tied to lockfile.** If the lockfile changes frequently (dependency bumps), the cache is invalidated more often than strictly needed. In practice this is rare — lockfile changes are infrequent.
-- **`--filter '!@maestria/docs'` is deferred, not documented as code.** The deferred approach is in this ADR rather than in a comment in the workflow file. If someone encounters the slow-docs scenario without reading this ADR, they will re-invent the approach. Mitigation: the trigger condition (100+ pages or 30s+ build) is concrete enough that a maintainer investigating docs build time will likely research prior decisions.
+- **Cache storage increases.** The vp task cache now saves per commit instead of per lockfile. The cache is small (~1 MB in measured runs), so the storage trade-off is acceptable.
+- **Docs static build is not part of CI.** A broken static docs render can pass `pnpm check:ci`. Mitigation: local `pnpm build` still builds docs, and docs-specific CI can be added when docs deployment becomes a gated workflow.
 
 ### Risks
 
 - **Cache poisoning.** A corrupted local task cache could be uploaded and restored across CI runs. Mitigation: vp's task cache is keyed by content hashes; a corrupted entry produces a cache miss, not a false positive. The risk is limited to wasted compute.
-- **Docs build breaks on unrelated PRs.** Including docs in the build means a docs-only build failure (e.g., a broken import in an Astro component) blocks a PR that didn't touch docs. Mitigation: this is by design — docs are part of the monorepo and should not break on any branch.
+- **Docs build drift.** Excluding docs from `build:ci` can let a docs-only static-rendering issue reach `main`. Mitigation: docs type/lint checks still run, and docs build remains covered by local `pnpm build`.
 
 ## Decision 5: Extract shared setup into composite action
 
@@ -172,8 +187,8 @@ This eliminates the 6-line setup block that was duplicated across `release.yml` 
 
 ## References
 
-- `.github/workflows/ci.yml` — PR check workflow (check + test, cancel-in-progress)
-- `.github/workflows/release.yml` — release workflow (check + test + changesets publish)
+- `.github/workflows/ci.yml` — PR and main check workflow (check + package build + test, cancel-in-progress)
+- `.github/workflows/release.yml` — release workflow (fresh package build + changesets publish)
 - `.github/actions/setup/action.yml` — shared composite action for checkout + pnpm setup + cache
 - `package.json` — defines `"check": "vp check && vp run build && vp run test"`
 - `vite.config.ts` — defines the `vp` tasks (fmt, lint, run) that `vp check` invokes

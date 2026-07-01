@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - name: Build
-        run: pnpm build
+        run: pnpm build:ci
       - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
