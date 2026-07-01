@@ -1,5 +1,18 @@
 # maestria
 
+## 0.3.6
+
+### Patch Changes
+
+- [`b4e1262`](https://github.com/agustinusnathaniel/maestria/commit/b4e12621826488326fd9950608719f160ab6535d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - opencode install: always use `-g` flag
+
+  The `install` handler for OpenCode omitted the `-g` flag, so it always tried
+  to install at project level — which fails on machines where OpenCode is
+  configured globally. Since `install` is a one-time setup command, it should
+  default to global installation.
+
+  Now passes `-g --force` to `opencode plugin` on install.
+
 ## 0.3.5
 
 ### Patch Changes
