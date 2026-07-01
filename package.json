@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "ready": "vp run check && vp run test && vp run build",
     "dev": "vp run @maestria/docs#dev",
     "prepare": "vp config",
     "preview": "vp run @maestria/docs#preview",
