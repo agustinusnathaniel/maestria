@@ -87,6 +87,14 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Ecosystem',
+          items: [
+            { label: 'Overview', link: '/ecosystem/' },
+            { label: 'CodeGraph', link: '/ecosystem/codegraph/' },
+            { label: 'RTK', link: '/ecosystem/rtk/' },
+          ],
+        },
+        {
           label: '@maestria/opencode',
           collapsed: true,
           items: [
