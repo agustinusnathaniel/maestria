@@ -15,6 +15,7 @@
     "version-packages": "changeset version",
     "release": "changeset publish",
     "check": "vp check && vp run build && vp run test",
+    "check:ci": "vp check && vp run build --filter \"!@maestria/docs\" && vp run test",
     "clean": "vp cache clean",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",

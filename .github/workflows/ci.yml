@@ -30,4 +30,4 @@ jobs:
       - name: Generate Astro types
         run: pnpm sync:docs
       - name: Check (format + lint + typecheck + test) and Build
-        run: pnpm check
+        run: pnpm check:ci
