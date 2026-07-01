@@ -42,7 +42,7 @@ export const updateCommand = defineCommand({
     json: {
       type: 'boolean',
       description:
-        'Output results as JSON — structured machine-readable format optimized for AI agents and CI pipelines',
+        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
       default: false,
     },
     quiet: {
@@ -122,7 +122,7 @@ export const updateCommand = defineCommand({
         process.exit(1);
       }
 
-      // Interactive — check versions before showing picker
+      // Interactive - check versions before showing picker
       const installed = await Effect.runPromise(detectInstalled());
 
       if (installed.length === 0) {

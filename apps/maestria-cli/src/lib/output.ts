@@ -18,7 +18,7 @@ export function renderStatusTable(platforms: PlatformStatus[]): string {
 
   for (const p of platforms) {
     const available = p.available ? picocolors.green('✓') : picocolors.red('✗');
-    const installed = p.installed ? picocolors.green('✓') : picocolors.dim('—');
+    const installed = p.installed ? picocolors.green('✓') : picocolors.dim('-');
     const version = p.installed ? p.installedVersion : picocolors.dim('not installed');
     const latest =
       p.latestVersion === 'check-failed'
@@ -55,7 +55,7 @@ export function formatStatusJson(output: StatusOutput): string {
   return JSON.stringify(output, null, 2);
 }
 
-/** Compact status output — one line per platform, no colors */
+/** Compact status output - one line per platform, no colors */
 export function renderCompactStatus(platforms: PlatformStatus[]): string {
   return (
     platforms
@@ -74,7 +74,7 @@ export function renderCompactStatus(platforms: PlatformStatus[]): string {
   );
 }
 
-/** Compact result output — one line per platform, no colors */
+/** Compact result output - one line per platform, no colors */
 export function renderCompactResults(results: PlatformResult[]): string {
   return (
     results

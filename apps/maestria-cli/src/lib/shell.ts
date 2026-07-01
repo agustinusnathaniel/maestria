@@ -75,7 +75,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
 
     if (!version) return version;
 
-    // Update cache (fire-and-forget — never fail the effect)
+    // Update cache (fire-and-forget - never fail the effect)
     yield* Effect.tryPromise({
       try: async () => {
         const { mkdir, readFile, writeFile } = await import('node:fs/promises');
