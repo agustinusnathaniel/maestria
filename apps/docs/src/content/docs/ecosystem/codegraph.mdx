@@ -1,0 +1,64 @@
+---
+title: CodeGraph
+description: Local-first code intelligence with a SQLite knowledge graph. A natural companion for AI coding agents using structured workflows.
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+CodeGraph is an independent project under the MIT license, created and maintained
+by Colby McHenry. It is not part of Maestria.
+
+## What It Is
+
+CodeGraph is a local-first code intelligence tool. It parses your codebase into
+a queryable SQLite knowledge graph using tree-sitter WASM parsers. The index
+auto-syncs via an OS file watcher as you edit files.
+
+Accessing the graph requires no network; everything runs locally. CodeGraph
+exposes an MCP server with a `codegraph_explore` tool that agents query instead
+of running grep or read loops. One call returns the verbatim source of relevant
+symbols, the call path among them, and a blast-radius summary.
+
+It supports 20+ languages including TypeScript, JavaScript, Python, Go, Rust,
+Java, and C#.
+
+## Why Use It Alongside Maestria
+
+CodeGraph gives any AI coding agent a faster, cheaper way to understand
+codebases — one `codegraph_explore` call replaces 5-10 separate grep and read
+operations. For Maestria-powered agents that follow the reconnaissance-first
+pipeline, this means quicker context gathering before design and implementation
+work.
+
+The two projects are independent but complementary. Maestria provides the
+disciplined workflow; CodeGraph provides efficient codebase access within that
+workflow.
+
+## Installation
+
+Three options:
+
+1. **npm global install:** `npm i -g @colbymchenry/codegraph`
+2. **Run without install:** `npx @colbymchenry/codegraph`
+3. **Standalone installer:** Download from the GitHub releases page
+
+## Quick Start
+
+Run `codegraph init` in your project root directory. CodeGraph builds the
+knowledge graph index. Once indexed, agents can query CodeGraph via its MCP
+server for efficient codebase exploration.
+
+## Resources
+
+<CardGrid>
+  <LinkCard
+    title="Official Docs"
+    description="Full documentation for CodeGraph: configuration, language support, and API reference."
+    href="https://colbymchenry.github.io/codegraph/"
+  />
+  <LinkCard
+    title="GitHub Repository"
+    description="Source code, issues, and releases."
+    href="https://github.com/colbymchenry/codegraph"
+  />
+</CardGrid>

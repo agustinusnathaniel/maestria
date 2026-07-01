@@ -1,0 +1,62 @@
+---
+title: RTK (Rust Token Killer)
+description: A CLI proxy that filters command output to save 60-90% tokens. Pairs well with Maestria-powered agents for longer effective context.
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+RTK is an independent project under the Apache 2.0 license, created and
+maintained by Patrick Szymkowiak and contributors. It is not part of Maestria.
+
+## What It Is
+
+RTK (Rust Token Killer) is a CLI proxy that sits between your AI coding agent
+and the shell. It intercepts commands, executes them, and filters or compresses
+the output before it reaches the LLM context window.
+
+Typical token savings range from 60-90% on command output. RTK ships with
+support for 100+ commands across git, test runners, build tools, package
+managers, and cloud CLIs. It also includes a dedicated OpenCode plugin.
+
+## Why Use It With Maestria
+
+Maestria-powered agents use shell commands for builds, tests, git operations,
+and deployment tasks. Each command's output consumes tokens in the context
+window. RTK reduces the token cost of these operations, keeping context windows
+from filling with verbose output.
+
+Less token burn on tool output means more room for reasoning,
+instruction following, and code generation. For long agent sessions running many
+commands, the savings add up.
+
+## Installation
+
+**macOS (Homebrew):**
+
+```bash
+brew install rtk
+```
+
+**Other platforms:** Download the standalone installer from the GitHub releases
+page.
+
+## Quick Start
+
+Run `rtk init -g` to set up global shell hooks. RTK works with OpenCode, Claude
+Code, Cursor, Copilot, and other AI coding agents; no per-agent configuration
+needed.
+
+## Resources
+
+<CardGrid>
+  <LinkCard
+    title="Official Site"
+    description="Documentation, guides, and download links."
+    href="https://www.rtk-ai.app"
+  />
+  <LinkCard
+    title="GitHub Repository"
+    description="Source code, issues, and releases."
+    href="https://github.com/rtk-ai/rtk"
+  />
+</CardGrid>

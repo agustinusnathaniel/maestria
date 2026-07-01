@@ -1,0 +1,25 @@
+---
+title: Ecosystem
+description: Optional tools you can pair with Maestria to enhance your development workflow.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Maestria works great on its own, but these complementary tools can enhance
+your experience when paired with Maestria-powered agents.
+
+Both tools are independent projects with their own communities and maintainers.
+Maestria does not depend on either; they are optional enhancements.
+
+<CardGrid>
+  <LinkCard
+    title="CodeGraph"
+    description="Local-first code intelligence that builds a SQLite knowledge graph of your codebase. A natural companion for AI coding agents using structured workflows."
+    href="/ecosystem/codegraph/"
+  />
+  <LinkCard
+    title="RTK"
+    description="A CLI proxy that filters command output to save 60-90% tokens. Popular companion for AI coding agents, reduces context burn from verbose tool output."
+    href="/ecosystem/rtk/"
+  />
+</CardGrid>
