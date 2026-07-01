@@ -1,5 +1,11 @@
 # maestria
 
+## 0.3.3
+
+### Patch Changes
+
+- [`63593e0`](https://github.com/agustinusnathaniel/maestria/commit/63593e051208b57e2bf17a73660a3b08b3fe7006) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - ci: ensure release is pure and fresh build
+
 ## 0.3.2
 
 ### Patch Changes
