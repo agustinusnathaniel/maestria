@@ -22,11 +22,15 @@ export function run(
       const { stdout } = await execFileAsync(cmd, args, { timeout: timeoutMs });
       return stdout.trim();
     },
-    catch: (error) =>
-      new CommandError({
+    catch: (error) => {
+      const err = error as Error & { stderr?: string; code?: number; signal?: string };
+      const stderr = err.stderr?.trim() ?? '';
+      const message = stderr || err.message;
+      return new CommandError({
         command: `${cmd} ${args.join(' ')}`,
-        message: error instanceof Error ? error.message : String(error),
-      }),
+        message,
+      });
+    },
   });
 }
 

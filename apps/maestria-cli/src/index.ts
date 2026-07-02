@@ -5,6 +5,7 @@ import { Effect } from 'effect';
 import type { CommandDef, ArgsDef } from 'citty';
 import { installCommand } from '@/commands/install.js';
 import { updateCommand } from '@/commands/update.js';
+import { uninstallCommand } from '@/commands/uninstall.js';
 import { statusCommand } from '@/commands/status.js';
 import { detectAll } from '@/lib/detect.js';
 import { createSpinner, renderStatusTable, renderCompactStatus } from '@/lib/output.js';
@@ -141,6 +142,7 @@ const main = defineCommand({
   subCommands: {
     install: installCommand,
     update: updateCommand,
+    uninstall: uninstallCommand,
     status: statusCommand,
   },
   run: async ({ args }) => {
