@@ -16,6 +16,7 @@ export default defineConfig({
       'packages/*/rules/**',
       'packages/*/skills/**',
       '.agents',
+      'CHANGELOG.md',
     ],
     overrides: [
       {
