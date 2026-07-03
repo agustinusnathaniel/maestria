@@ -13,6 +13,7 @@ import {
   validateNotAllAndPlatform,
   validateOrExit,
 } from '@/lib/validation.js';
+import { isVersionEq, isVersionDifferent } from '@/lib/version.js';
 import type { PlatformResult } from '@/types.js';
 
 export const updateCommand = defineCommand({
@@ -157,7 +158,7 @@ export const updateCommand = defineCommand({
           label: p.label,
           installedVersion: pv,
           latestVersion: lv,
-          needsUpdate: pv !== 'unknown' && lv !== 'unknown' && pv !== lv,
+          needsUpdate: isVersionDifferent(pv, lv),
         });
       }
 
@@ -221,7 +222,7 @@ function updateOne(
       (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
 
     // Skip if already on the target version
-    if (prevVersion !== 'unknown' && prevVersion === targetVersion) {
+    if (isVersionEq(prevVersion, targetVersion)) {
       return {
         id: platform.id,
         label: platform.label,
