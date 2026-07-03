@@ -1,6 +1,6 @@
 {
   "name": "maestria",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Maestria CLI - manage maestria plugins across coding agent platforms",
   "keywords": [
     "ai-agent",

@@ -1,5 +1,17 @@
 # maestria
 
+## 0.3.9
+
+### Patch Changes
+
+- [#57](https://github.com/agustinusnathaniel/maestria/pull/57) [`555e58f`](https://github.com/agustinusnathaniel/maestria/commit/555e58f30b2e1fa88db5124e4a8445bbeeda0799) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: detect opencode installed version when a pinned version specifier is in config
+
+- [#57](https://github.com/agustinusnathaniel/maestria/pull/57) [`555e58f`](https://github.com/agustinusnathaniel/maestria/commit/555e58f30b2e1fa88db5124e4a8445bbeeda0799) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat: add semver-compliant version comparison using localeCompare with numeric option
+
+  Replaces string-based version comparison with localeCompare-based utilities
+  that handle numeric segment ordering (0.10.0 > 0.9.0) and prerelease ordering
+  (1.0.0-alpha < 1.0.0) correctly per the semver specification.
+
 ## 0.3.8
 
 ### Patch Changes
