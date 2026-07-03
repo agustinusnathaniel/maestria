@@ -1,5 +1,5 @@
 ---
-'@maestria/maestria-cli': patch
+'maestria': patch
 ---
 
 feat: add semver-compliant version comparison using localeCompare with numeric option
