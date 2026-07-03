@@ -1,4 +1,5 @@
 import { Data, Effect, Exit, Cause } from 'effect';
+import { isValidVersion } from './version.js';
 
 // ── Errors ───────────────────────────────────────────
 export class ValidationError extends Data.TaggedError('ValidationError')<{
@@ -9,8 +10,6 @@ export class ValidationError extends Data.TaggedError('ValidationError')<{
 
 const VALID_PLATFORMS = ['opencode', 'pi', 'kimi-code'] as const;
 export type ValidPlatform = (typeof VALID_PLATFORMS)[number];
-
-const SEMVER_PATTERN = /^\d+\.\d+\.\d+$/;
 
 /**
  * Validate a platform ID string.
@@ -34,8 +33,7 @@ export function validatePlatform(input: string): Effect.Effect<ValidPlatform, Va
  */
 export function validateVersion(input: string): Effect.Effect<string, ValidationError> {
   const trimmed = input.trim();
-  if (trimmed === 'latest') return Effect.succeed(trimmed);
-  if (SEMVER_PATTERN.test(trimmed)) return Effect.succeed(trimmed);
+  if (isValidVersion(trimmed)) return Effect.succeed(trimmed);
   return Effect.fail(
     new ValidationError({
       message: `Invalid version '${input}'. Use semver format (e.g., 0.5.0) or 'latest'.`,

@@ -42,16 +42,25 @@ const opencode: PlatformHandler = {
     Effect.catchCause(() => Effect.succeed(false)),
   ),
 
-  getInstalledVersion: run('cat', [
-    `${homedir()}/.cache/opencode/packages/@maestria/opencode@latest/node_modules/@maestria/opencode/package.json`,
-  ]).pipe(
-    Effect.map((out: string) => {
-      try {
-        const pkg: { version?: string } = JSON.parse(out);
-        return pkg.version ?? 'unknown';
-      } catch {
-        return 'unknown';
-      }
+  getInstalledVersion: readOpenCodeConfig().pipe(
+    Effect.map((config) => {
+      const match = config.match(/@maestria\/opencode@(.+?)"/);
+      return match?.[1] ?? null;
+    }),
+    Effect.flatMap((specifier) => {
+      if (!specifier) return Effect.succeed('unknown');
+      return run('cat', [
+        `${homedir()}/.cache/opencode/packages/@maestria/opencode@${specifier}/node_modules/@maestria/opencode/package.json`,
+      ]).pipe(
+        Effect.map((out) => {
+          try {
+            const pkg: { version?: string } = JSON.parse(out);
+            return pkg.version ?? 'unknown';
+          } catch {
+            return 'unknown';
+          }
+        }),
+      );
     }),
     Effect.catchCause(() => Effect.succeed('unknown')),
   ),
