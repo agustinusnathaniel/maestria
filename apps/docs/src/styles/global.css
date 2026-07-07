@@ -64,6 +64,12 @@ body .hero h1,
    LANDING PAGE - HERO SECTION
    ============================================ */
 
+/* Hide Starlight's default Hero component on pages that set `hero` in frontmatter.
+   We use our own custom hero via <slot /> instead. */
+[data-has-hero] main > .content-panel > .sl-container > .hero:first-child {
+  display: none;
+}
+
 .hero {
   position: relative;
   text-align: center;
@@ -83,17 +89,49 @@ body .hero .tagline {
   color: var(--sl-color-gray-2);
   max-width: 640px;
   line-height: 1.6;
+  margin: 0 auto 2rem;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hero-cta .sl-link-button {
+  font-size: 1.05rem;
+  padding: 0.65rem 1.5rem;
+  margin-inline-end: 0;
+}
+
+.hero-cta .sl-link-button:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
 }
 
 /* ============================================
    FEATURE CARDS
    ============================================ */
 
+.features {
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+}
+
+.features h2 {
+  font-family: var(--sl-font);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--sl-color-white);
+}
+
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  margin: 2.5rem 0;
+  margin: 2.5rem 0 0;
 }
 
 .feature-card {
@@ -125,12 +163,6 @@ body .hero .tagline {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-.feature-icon {
-  font-size: 1.75rem;
-  margin-bottom: 1rem;
-  line-height: 1;
-}
-
 .feature-card h3 {
   font-size: 1.05rem;
   margin: 0 0 0.5rem;
@@ -159,6 +191,143 @@ body .hero .tagline {
 }
 
 /* ============================================
+   AGENT SHOWCASE
+   ============================================ */
+
+.agent-showcase {
+  margin: 4rem auto;
+  max-width: 800px;
+  padding: 0 1.5rem;
+}
+
+.agent-showcase h2 {
+  font-family: var(--sl-font);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--sl-color-white);
+}
+
+.agent-showcase > p {
+  color: var(--sl-color-gray-2);
+  margin-bottom: 2rem;
+}
+
+.agent-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Override Starlight's .sl-markdown-content margin rule that adds
+   unwanted margin-top between block-level elements. */
+.sl-markdown-content .agent-tabs {
+  margin-top: 0;
+}
+
+.sl-markdown-content .agent-tab + .agent-tab {
+  margin-top: 0;
+}
+
+.agent-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--sl-color-gray-2);
+  font-family: var(--sl-font);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agent-tab:hover {
+  border-color: var(--sl-color-accent-high);
+  color: var(--sl-color-white);
+}
+
+.agent-tab[aria-selected='true'] {
+  background: var(--sl-color-gray-6);
+  border-color: var(--sl-color-accent);
+  color: var(--sl-color-white);
+  font-weight: 500;
+}
+
+.agent-tab:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+
+.agent-tab-icon {
+  font-size: 1rem;
+}
+
+.agent-panel {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  min-height: 120px;
+  background: var(--sl-color-gray-6);
+}
+
+.agent-panel h3 {
+  font-family: var(--sl-font);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--sl-color-white);
+}
+
+.agent-panel .agent-role {
+  color: var(--sl-color-accent-high);
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.agent-panel p:last-child {
+  color: var(--sl-color-gray-2);
+  line-height: 1.6;
+}
+
+/* Mobile: icon only */
+@media (max-width: 600px) {
+  .agent-tab .agent-tab-name {
+    display: none;
+  }
+  .agent-tab {
+    padding: 0.5rem;
+  }
+}
+
+/* ============================================
+   PLATFORMS SECTION
+   ============================================ */
+
+.platforms {
+  margin: 4rem auto;
+  max-width: 800px;
+  padding: 0 1.5rem;
+}
+
+.platforms h2 {
+  font-family: var(--sl-font);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--sl-color-white);
+}
+
+.platforms > p {
+  color: var(--sl-color-gray-2);
+  margin-bottom: 2rem;
+}
+
+/* ============================================
    PRODUCT CARDS (ecosystem section)
    ============================================ */
 
@@ -180,6 +349,7 @@ body .hero .tagline {
   gap: 0.75rem;
   text-decoration: none;
   color: inherit;
+  height: 100%;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,

@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 import starlightAutoSidebar from 'starlight-auto-sidebar';
@@ -7,6 +9,11 @@ import starlightPageActions from 'starlight-page-actions';
 
 export default defineConfig({
   site: 'https://maestria.sznm.dev',
+  vite: {
+    resolve: {
+      alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    },
+  },
   integrations: [
     starlight({
       title: 'Maestria',
