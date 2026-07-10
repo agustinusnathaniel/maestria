@@ -567,24 +567,169 @@ def retrieve_decisions(ctx, specialist):
     })
 ```
 
-## Open Questions
+## Open Questions (Resolved)
 
-1. Does @maestria/opencode load automatically when OpenCode CLI is invoked, or must the Hermes plugin configure it explicitly?
+All questions answered against Hermes Agent source code (v0.17.0, July 2026).
 
-2. Can `ctx.llm` be used for multi-turn reasoning (multiple LLM calls sharing a context) within a single specialist?
+### Q1: @maestria/opencode auto-loading
 
-3. How does delegate_task handle structured output from subagents? Is there an output schema enforcement mechanism?
+**Resolved: No. The Hermes plugin must configure it explicitly.**
 
-4. What is the fallback when OpenCode CLI is not installed? Builder should degrade gracefully to Hermes-native tools.
+The Hermes codebase has zero references to @maestria/opencode. The bundled opencode skill (`skills/autonomous-ai-agents/opencode/SKILL.md`) is for the `opencode` CLI tool (opencode.ai) -- a different product. The Hermes plugin's OpenCode routing tool must check/configure @maestria/opencode in the target OpenCode instance before delegating.
 
-5. Can transform_llm_output distinguish which specialist produced which part of the response?
+**Implementation guidance:** Before delegating to OpenCode CLI, the Builder specialist should verify that @maestria/opencode is in the OpenCode plugin configuration. This can be done by checking `cat ~/.config/opencode/opencode.json` for the presence of `@maestria/opencode` in the plugins list, or by running `opencode config get plugins` if such a command exists.
 
-6. Does Hermes support toolset-based grouping (namespacing plugin tools separately from built-in tools)?
+### Q2: Multi-turn reasoning with ctx.llm
 
-7. How does the Kanban system interact with mode switching and pipeline execution?
+**Resolved: Yes. `ctx.llm.complete()` accepts the standard OpenAI messages array.**
 
-8. Does `ctx.llm.complete_structured()` support streaming structured output or only complete JSON responses?
+```python
+# Multi-turn reasoning within a specialist:
+messages = [
+    {"role": "system", "content": "You are a strategist analyzing options."},
+    {"role": "user", "content": "Here is the context: ..."},
+]
+result1 = ctx.llm.complete(messages=messages)
+messages.append({"role": "assistant", "content": result1.text})
+messages.append({"role": "user", "content": "Now evaluate the trade-offs."})
+result2 = ctx.llm.complete(messages=messages)
+```
 
-9. Can the plugin register custom tool definitions in tool discovery, or are plugins limited to hooks and middleware?
+The specialist skill is responsible for accumulating and managing the conversation history across calls. There is no built-in context management in PluginLlm -- it's a stateless facade.
 
-10. How do pre_gateway_dispatch and subagent_start/stop interact? Do gateway messages reach subagents?
+### Q3: delegate_task structured output
+
+**Resolved: Returns `json.dumps({"results": [...], "total_duration_seconds": N})`. No output schema enforcement.**
+
+The results array contains one entry per task with the subagent's final output (conversation summary). There is no built-in output schema enforcement or validation. The orchestrator can include output format requirements in the delegation brief (as part of the `goal` or `context` parameters), and use `ctx.llm.complete_structured()` on the return value to parse and validate structured handoffs.
+
+**Signature (`tools/delegate_tool.py` line 2065):**
+
+```python
+def delegate_task(
+    goal: Optional[str] = None,
+    context: Optional[str] = None,
+    toolsets: Optional[List[str]] = None,
+    tasks: Optional[List[Dict[str, Any]]] = None,
+    max_iterations: Optional[int] = None,
+    role: Optional[str] = None,        # "leaf" (default) or "orchestrator"
+    background: Optional[bool] = None,
+) -> str:
+```
+
+Supports single and batch modes. `role="orchestrator"` allows the child to further delegate (bounded by `delegation.max_spawn_depth`). `background=True` dispatches async and re-enters via the completion queue.
+
+### Q4: OpenCode CLI fallback
+
+**Resolved: No built-in fallback. The plugin must handle this.**
+
+The bundled opencode skill has no graceful degradation -- it documents prerequisites but doesn't check availability before invocation. Other Hermes skills (e.g., GitHub skills) use the pattern:
+
+```python
+if command -v gh &>/dev/null; then
+    # use gh
+else
+    # fallback or error
+fi
+```
+
+**Implementation guidance:** The Builder specialist should check `which opencode` at the start of any OpenCode-routing path. If unavailable, fall back to Hermes-native tools (edit, write, bash) for simple tasks, or report the missing dependency for complex tasks that genuinely need OpenCode's sandbox.
+
+### Q5: transform_llm_output specialist identification
+
+**Resolved: No native specialist identification. The hook receives `(response_text, session_id, model, platform)`.**
+
+```python
+# Hook callback kwargs (from test at tests/test_transform_llm_output_hook.py line 51):
+#   response_text: str
+#   session_id: str
+#   model: str
+#   platform: str
+```
+
+To distinguish which specialist produced which part of the response, the plugin would need either:
+
+1. **Session-level tracking**: Each specialist runs as a delegate_task subagent, so `session_id` identifies the subagent session. Map session_ids to specialist names.
+2. **Text markers**: Inject specialist identifiers into the response text and strip them before delivery.
+
+The first approach (session_id mapping) is cleaner and doesn't pollute output.
+
+### Q6: Toolset-based grouping
+
+**Resolved: Yes, full support.**
+
+- `ToolEntry.toolset` is a required field (registry.py line 81)
+- `registry.get_registered_toolset_names()` returns all unique toolsets
+- `registry.get_tool_names_for_toolset(name)` returns tools in a toolset
+- `registry.register_toolset_alias(alias, toolset)` creates aliases
+- `hermes_cli/plugins.get_plugin_toolsets()` returns plugin toolsets for the TUI
+
+Plugin tools register with any toolset string via `ctx.register_tool(name=..., toolset="maestria", ...)`. The Hermes TUI surfaces plugin toolsets via `hermes tools`.
+
+### Q7: Kanban and mode interaction
+
+**Resolved: No direct integration. Kanban is orthogonal to agent modes.**
+
+The 3 kanban lifecycle hooks (`kanban_task_claimed`, `kanban_task_completed`, `kanban_task_blocked`) are observer-only and process-aware:
+
+- `claimed` fires in the kanban DISPATCHER process (before spawning a worker)
+- `completed` fires in the WORKER process (when the task finishes)
+- `blocked` fires in the WORKER process (when the task is blocked)
+
+There is no concept of agent modes (fein/sonar/blitz) in the kanban system. The multi-gateway deployment feature uses gateway profiles (default, writer, coder, researcher) that could align with maestria modes, but this requires plugin-level logic -- there is no built-in integration.
+
+**Future consideration:** The Hermes plugin could use `kanban_task_claimed` to detect which mode the worker should run in, by including mode information in the kanban task metadata. This is not built-in but is technically feasible.
+
+### Q8: ctx.llm.complete_structured streaming
+
+**Resolved: No. Neither `complete_structured` nor `acomplete_structured` support streaming.**
+
+Both methods return complete `PluginLlmStructuredResult` objects:
+
+```python
+@dataclass
+class PluginLlmStructuredResult:
+    text: str
+    provider: str
+    model: str
+    agent_id: str
+    usage: PluginLlmUsage
+    parsed: Optional[Any] = None    # JSON-parsed if json_schema or json_mode used
+    content_type: str = "text"
+    audit: Dict[str, Any] = field(default_factory=dict)
+```
+
+The word "stream" does not appear in `agent/plugin_llm.py`. All LLM calls are synchronous-or-async-complete, not streaming. For specialist reasoning, this is fine -- specialists produce discrete structured outputs, not streaming content.
+
+### Q9: Plugin custom tool definitions
+
+**Resolved: Yes, fully supported.**
+
+`PluginContext.register_tool()` (plugins.py line 367) delegates to `ToolRegistry.register()` (registry.py line 234). The full signature:
+
+```python
+ctx.register_tool(
+    name="maestria_investigate",          # tool name
+    toolset="maestria",                   # toolset for grouping
+    schema={...},                         # JSON schema
+    handler=my_handler,                   # Callable
+    check_fn=None,                        # availability check
+    requires_env=None,                    # required env vars
+    is_async=False,
+    description="Investigate a research question",
+    emoji="🔍",
+    override=False,                       # replace built-in tool
+)
+```
+
+Plugin tools enter the global registry alongside built-in tools, appear in `get_all_tool_names()`, and are available for tool discovery. The `override=True` flag allows plugins to replace built-in tools (e.g., swap `browser_navigate` for a custom implementation).
+
+### Q10: pre_gateway_dispatch and subagent_start/stop interaction
+
+**Resolved: Independent hooks at different lifecycle phases. Gateway messages do not reach subagents.**
+
+- `pre_gateway_dispatch` fires in `gateway/run.py._handle_message()` (line 7292) for non-internal gateway events, BEFORE the message reaches the agent. Returns `{"action": "skip" | "rewrite" | "allow"}`. Runs BEFORE user authorization.
+- `subagent_start` fires in `delegate_task` (delegate_tool.py line 1292) when a child agent spawns. Receives child session_id, role, status.
+- `subagent_stop` fires in `delegate_task` (delegate_tool.py line 2440) when a child agent completes. Receives child session_id, role, summary, status, duration.
+
+Subagents spawned via `delegate_task` are children of an existing session -- they are NOT reached directly by gateway messages. The pre_gateway_dispatch hook gates messages before they enter the conversation at all.
