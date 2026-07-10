@@ -21,10 +21,7 @@ agent-directives/
     planner.md       - Implementation plans
     reviewer.md      - Code review with quality gates
     writer.md        - Documentation writing
-  rules/             - Shared rules used across agents
-    context-management.md  - Progressive disclosure, checkpointing, pruning
-    commit-policy.md       - Orchestrator-only commit authorization
-    pipeline-patterns.md   - Role-Based Pipeline with thinker/worker/verifier
+  rules.md           - Shared rules used across all agents
 ```
 
 ## How to Add a New Specialist

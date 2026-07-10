@@ -66,7 +66,7 @@ export const agents: Agent[] = [
     name: 'Reviewer',
     role: 'Code review with quality gates',
     description:
-      "Reviews code for quality, correctness, security, and maintainability. Enforces the maker/checker split by ensuring the agent that wrote code doesn't QA it.",
+      'Reviews code for quality, correctness, security, and maintainability. Uses multi-lens review swarms for non-trivial changes, prioritizes observation over reasoning, and categorizes issues with [fix]/[dismiss]/[escalate] triage. Enforces the maker/checker split.',
     icon: '✅',
   },
   {
