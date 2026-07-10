@@ -116,7 +116,9 @@ export function pypiViewVersion(packageName: string): Effect.Effect<string, Comm
     Effect.catchCause(() =>
       Effect.succeed('unknown').pipe(
         Effect.flatMap(() =>
-          Effect.fail(new CommandError({ message: `Failed to fetch PyPI version for ${packageName}` })),
+          Effect.fail(
+            new CommandError({ message: `Failed to fetch PyPI version for ${packageName}` }),
+          ),
         ),
       ),
     ),
