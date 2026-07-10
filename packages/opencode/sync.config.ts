@@ -103,6 +103,8 @@ Use for: targeted fixes, feature implementation, refactors, adding tests.`,
             // Package manager (project uses pnpm; npm covered too)
             'pnpm*': 'allow',
             'npm*': 'allow',
+            // pnpx/npx-like commands can execute arbitrary code; always ask
+            'pnpx*': 'ask',
             // Build, test, lint tools
             'tsc*': 'allow',
             'vitest*': 'allow',
@@ -110,10 +112,6 @@ Use for: targeted fixes, feature implementation, refactors, adding tests.`,
             'rtk*': 'allow',
             'eslint*': 'allow',
             'prettier*': 'allow',
-            // Project scripts
-            'bash scripts/*': 'allow',
-            // TypeScript execution for sync pipeline
-            'npx tsx*': 'allow',
             // Catch-all — unusual/dangerous commands still ask
             '*': 'ask',
           },

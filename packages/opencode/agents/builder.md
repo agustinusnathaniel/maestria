@@ -35,14 +35,13 @@ permission:
     git*: allow
     pnpm*: allow
     npm*: allow
+    pnpx*: ask
     tsc*: allow
     vitest*: allow
     vp*: allow
     rtk*: allow
     eslint*: allow
     prettier*: allow
-    bash scripts/*: allow
-    npx tsx*: allow
     "*": ask
 ---
 
