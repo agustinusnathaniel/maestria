@@ -15,8 +15,8 @@ The commit protocol is now fully autonomous. The orchestrator reads git log for 
 
 Push behavior is now conditional on the branch:
 
-- **Feature branches** — push happens automatically after a successful commit
-- **main/master** — the orchestrator asks for approval before pushing
+- **Feature branches** - push happens automatically after a successful commit
+- **main/master** - the orchestrator asks for approval before pushing
 
 PR creation remains a separate question.
 
@@ -24,8 +24,8 @@ PR creation remains a separate question.
 
 Builder and diagnose agent permissions have been updated to match the new "exhaust data, document assumptions, proceed" philosophy:
 
-- **Builder** — shell permissions expanded from 5 narrow patterns to a comprehensive allow-list: read-only file operations (`ls`, `cat`, `grep`, `find`, etc.), git operations, package managers (`pnpm`, `npm`), build/test/lint tools (`tsc`, `vitest`, `vp`, `rtk`, `eslint`, `prettier`). Catch-all `*: ask` remains for unusual or dangerous commands.
-- **Diagnose** — `edit` permission changed from `ask` to `allow`. Read-only file operations added to bash allow-list. Diagnosis can now apply fixes without friction.
+- **Builder** - shell permissions expanded from 5 narrow patterns to a comprehensive allow-list: read-only file operations (`ls`, `cat`, `grep`, `find`, etc.), git operations, package managers (`pnpm`, `npm`), build/test/lint tools (`tsc`, `vitest`, `vp`, `rtk`, `eslint`, `prettier`). Catch-all `*: ask` remains for unusual or dangerous commands.
+- **Diagnose** - `edit` permission changed from `ask` to `allow`. Read-only file operations added to bash allow-list. Diagnosis can now apply fixes without friction.
 
 ### Structured work result summaries
 
@@ -33,22 +33,22 @@ After builder tasks complete, the orchestrator now presents a concise file-by-fi
 
 ### Cross-platform directive improvements
 
-Knowledge base patterns synced from core agent directives:
+New capabilities synced from core agent directives:
 
-- **Complexity-Based Routing** — orchestrator classifies tasks as SIMPLE (direct to builder) or COMPLEX (architect design first with documented assumptions)
-- **Session Flow** — orchestrator proactively proposes next steps after each task instead of going silent
-- **Recognizing User Frustration** — 5-level escalation ladder (polite nudge → escape hatch) with prescribed responses
-- **Anti-Patterns enriched** — named patterns (Agent Ping-Pong, Builder Bias, Silent Failures) with concrete fixes
-- **`!!!` Convention** — non-negotiable rules are scar tissue from past mistakes, not preferences
-- **"Never delete" rule** — existing code must be adapted, not removed. Collateral deletions are a trust killer
-- **COMPOSITION.md** — proven directive combos for feature implementation, autonomous mode, cross-platform sync
+- **Complexity-Based Routing** - orchestrator classifies tasks as SIMPLE (direct to builder) or COMPLEX (architect design first with documented assumptions)
+- **Session Flow** - orchestrator proactively proposes next steps after each task instead of going silent
+- **Recognizing User Frustration** - 5-level escalation ladder (polite nudge → escape hatch) with prescribed responses
+- **Anti-Patterns enriched** - named patterns (Agent Ping-Pong, Builder Bias, Silent Failures) with concrete fixes
+- **`!!!` Convention** - non-negotiable rules are scar tissue from past mistakes, not preferences
+- **"Never delete" rule** - existing code must be adapted, not removed. Collateral deletions are a trust killer
+- **COMPOSITION.md** - proven directive combos for feature implementation, autonomous mode, cross-platform sync
 
 ### Affected files
 
-- `packages/opencode/sync.config.ts` — permission definitions
-- `packages/opencode/agents/builder.md` — bash allow-list
-- `packages/opencode/agents/diagnose.md` — edit permission + bash allow-list
-- `docs/adr/core/ADR-CORE-011-eliminate-questions-autonomy.md` — decision record
+- `packages/opencode/sync.config.ts` - permission definitions
+- `packages/opencode/agents/builder.md` - bash allow-list
+- `packages/opencode/agents/diagnose.md` - edit permission + bash allow-list
+- `docs/adr/core/ADR-CORE-011-eliminate-questions-autonomy.md` - decision record
 
 ## v0.5.0
 
