@@ -45,7 +45,7 @@ These steps apply per commit. You may invoke this protocol multiple times in a s
 
 When the user explicitly says "commit" in the current turn, follow these steps in order. Do not skip or reorder:
 
-1. **Inspect** - `maestria_subagent(adventurer, "show git status + last 5 commits")` 1a. **Docs audit** - Check what documentation, changelogs, changesets, or ADRs might need updating for the changes in this diff. Report findings alongside the commit proposal and ask the user if they want them included.
+1. **Inspect** - `maestria_subagent(adventurer, "show git status + last 5 commits")` 1a. **Docs audit** - Check what documentation, changelogs, changesets, or ADRs might need updating for the changes in this diff. Report findings alongside the commit proposal and ask the user if they want them included. 1b. **Sync audit** - If you modified files in `packages/core/agent-directives/` (canonical sources), run `scripts/sync-all` and verify with `scripts/check-sync`. Stage the regenerated plugin copies alongside the canonical changes. Do not proceed if check-sync reports drift.
 2. **Propose via `question()`** - summary of changed files + the full proposed commit message in Conventional Commits format + "Shall I proceed with this commit?" **The commit message must be visible inline in the `question()` body, not implied or postponed to a later turn.** **!!! CRITICAL: Do NOT skip this step.**
 3. **Execute** - delegate to /builder with exact message, files to stage, and instructions to run validation (`check`, `test`) before committing
 4. **Stop** - report result. Do not chain another commit or start new implementation work. Dispatch /reviewer per rule #9 if needed.
