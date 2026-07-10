@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- [#59](https://github.com/agustinusnathaniel/maestria/pull/59) [`9c0746e`](https://github.com/agustinusnathaniel/maestria/commit/9c0746e611afb6e79b071a14629fbd5b925338e9) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add multi-lens review swarm, observation-first principle, and triage pipeline
+
+  Three review methodology patterns adopted from PostHog's code review research:
+
+  - **Multi-lens review swarm** - orchestrator can dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General) for non-trivial changes, with exclusive lenses and cross-referenced etiquette rules
+  - **Observation over reasoning** - reviewer principle shifted from "verify without running" to "what command produces visible proof?", prioritizing observable behavior over logical argument
+  - **Review triage pipeline** - issues categorized [fix]/[dismiss]/[escalate] by reviewer, then validated by orchestrator with conflict resolution (conservative wins); iteration terminates when no actionable threads remain
+
+  Rule [#9](https://github.com/agustinusnathaniel/maestria/issues/9) (single @reviewer after @builder) remains the default; multi-lens is an enhancement for changes touching multiple concerns.
+
+- [#61](https://github.com/agustinusnathaniel/maestria/pull/61) [`9e06eee`](https://github.com/agustinusnathaniel/maestria/commit/9e06eee83f32a33c248715130ed8b1c7e3f57747) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Eliminate questions - autonomous philosophy across core methodology
+
+  Shift from "ask when unsure" to "exhaust data, document assumptions,
+  proceed - reviewer catches mistakes". Based on analysis of 1,133 real
+  question() calls across 5,675 sessions.
+
+  **Mid-phase questions eliminated** - architect, planner, diagnose no
+  longer ask design/permission questions. They exhaust data sources and
+  document assumptions instead.
+
+  **Autonomous commit protocol** - agent reads git log for past corrections,
+  composes correct conventional commit message, commits autonomously.
+  Push is automatic on feature branches, asks only on main/master.
+
+  **Work result summary** - orchestrator presents completed work as
+  structured file/signature table, not verbatim handoff dump.
+
+  - !!! Convention, "Never delete" rule, escalation ladder, anti-patterns,
+    Session Flow, Commit Completeness Check, and Automatic Review Loop added.
+
+  See ADR-CORE-011 for full decision record.
+
 ## 0.3.5
 
 ### Patch Changes
