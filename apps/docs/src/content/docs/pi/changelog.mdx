@@ -22,7 +22,7 @@ Complete re-architecture of how maestria behavioral content flows into Pi sessio
 ### Details
 
 - Refactored `sync.config.ts` to generate `agents/*.md` with pi-subagents YAML frontmatter
-- Added `sync-skills.config.ts` to generate `skills/*/SKILL.md` with Pi skill frontmatter
+- Unified `sync.config.ts` to generate both agents and skills in a single pass (no separate sync-skills config)
 - Added `packages/pi/src/agents.ts` - deploys agent files to `~/.pi/agent/agents/` on session start
 - Simplified `rules.ts` - removed static file loading, renamed `createModePromptHandler` for mode-only injection
 - Removed `pi.prompts` manifest field (misleading - registered template dirs, not for auto-injection)

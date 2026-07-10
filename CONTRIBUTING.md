@@ -109,7 +109,7 @@ Each plugin defines its transforms in `sync.config.ts`:
 | --- | --- | --- |
 | **opencode** | Adds YAML frontmatter with `mode`, `permission` blocks | `agents/<name>.md` - agent files with tool permissions |
 | **kimi-code** | 18 string replacements (`task(` → `Agent(`, `webfetch` → `FetchURL`, etc.) + prepend subagent profile + append routing/swarm docs | `skills/<name>/SKILL.md` - Kimi Code skills |
-| **pi** | Dual-config: `sync.config.ts` (9 replacements: `task(` → `maestria_subagent(`, `@` → `/`) + `sync-skills.config.ts` (skill rewrite + frontmatter) | `agents/<name>.md` - subagent agent files + `skills/<name>/SKILL.md` - Pi skill files |
+| **pi** | Unified `sync.config.ts` (9 replacements: `task(` → `maestria_subagent(`, `@` → `/`) with dual output paths for agents + skills | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
 
 ### Commands
 

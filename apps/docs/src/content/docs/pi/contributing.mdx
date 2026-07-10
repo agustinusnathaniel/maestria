@@ -33,61 +33,36 @@ maestria/
 
 ## Sync Pipeline
 
-All behavioral content is derived from canonical sources in `packages/core/agent-directives/`. Two sync configurations generate the Pi-specific artifacts:
+All behavioral content is derived from canonical sources in `packages/core/agent-directives/`. A single unified `sync.config.ts` generates all Pi artifacts in one pass:
 
-### `sync.config.ts` (specialist agents for pi-subagents)
-
-- **Source:** `packages/core/agent-directives/specialists/`
-- **Output:** `packages/pi/agents/*.md` (7 specialist files with pi-subagents YAML frontmatter)
-- **Transforms:** Strips canonical frontmatter, applies Pi replacements (`@agent` -> `/agent`, `task()` -> `maestria_subagent()`), wraps in pi-subagents agent format (`description`, `tools`, `prompt_mode: append`, `inherit_context: true`)
-- **Usage:** Deployed to `~/.pi/agent/agents/` at extension startup for pi-subagents discovery
-
-### `sync-skills.config.ts` (Pi skills for auto-injection)
-
-- **Source:** `packages/core/agent-directives/specialists/orchestrator.md` + `packages/core/agent-directives/rules.md`
-- **Output:** `packages/pi/skills/orchestrator/SKILL.md`, `packages/pi/skills/global-rules/SKILL.md`
-- **Transforms:** Same replacements, wrapped in Pi skill `SKILL.md` frontmatter (`name`, `description`)
-- **Usage:** Auto-injected by Pi's resource loader from `pi.skills` manifest field into every session's system prompt
+- **Source:** `packages/core/agent-directives/specialists/` (7 specialist prompts) + `packages/core/agent-directives/rules.md` (global rules)
+- **Output:** `packages/pi/agents/*.md` (7 specialist agent files for pi-subagents) + `packages/pi/skills/orchestrator/SKILL.md` + `packages/pi/skills/global-rules/SKILL.md`
+- **Transforms:** Strips canonical frontmatter, applies Pi replacements (`@agent` -> `/agent`, `task()` -> `maestria_subagent()`), wraps in pi-subagents agent format or Pi skill `SKILL.md` frontmatter depending on output path
+- **Usage:** Agent files are deployed to `~/.pi/agent/agents/` at extension startup for pi-subagents discovery; skill files are auto-injected by Pi's resource loader from the `pi.skills` manifest field into every session's system prompt
 
 ### Running the sync
 
-Agent syncs and skill syncs are separate commands:
-
 ```bash
-# Agent syncs - runs sync for every platform's sync.config.ts
-# Auto-checked by CI via scripts/check-sync
-bash scripts/sync-all
-
-# Skill syncs - runs separately (not checked by CI)
-pnpm --filter @maestria/pi sync-skills
-
-# Validate generated skill artifacts
-pnpm --filter @maestria/pi validate
+# Regenerate all generated artifacts from canonical sources
+pnpm --filter @maestria/pi sync
 ```
 
-Or run individual agent syncs per package:
+Orchestrator, global rules, and all 7 specialist agent files are generated in a single pass by `sync.config.ts`. The sync is auto-checked by CI via `scripts/check-sync`.
+
+Generated artifacts are validated:
 
 ```bash
-pnpm --filter @maestria/pi sync-agents      # agent files for pi-subagents
+pnpm --filter @maestria/pi validate
 ```
 
 ## Making Changes
 
-### Modifying Specialist Prompts
+### Modifying Specialist Prompts, Global Rules, or Orchestrator Prompt
 
-Each specialist's prompt is authored in the canonical source under `packages/core/agent-directives/specialists/`. After editing, run the sync pipeline to regenerate the Pi artifacts:
-
-```bash
-pnpm --filter @maestria/pi sync-agents
-pnpm --filter @maestria/pi validate
-```
-
-### Modifying Global Rules or Orchestrator Prompt
-
-Global rules and orchestrator prompt follow the same canonical-source workflow. Edit `packages/core/agent-directives/rules.md` or `packages/core/agent-directives/specialists/orchestrator.md`, then regenerate:
+All specialist prompts, global rules, and the orchestrator prompt are authored in canonical sources under `packages/core/agent-directives/`. After editing, regenerate all Pi artifacts in a single step:
 
 ```bash
-pnpm --filter @maestria/pi sync-skills
+pnpm --filter @maestria/pi sync
 pnpm --filter @maestria/pi validate
 ```
 
@@ -95,7 +70,7 @@ pnpm --filter @maestria/pi validate
 
 Skills fall into two categories:
 
-**Canonical skills** (orchestrator, global-rules) - these are synced from core via `sync-skills.config.ts`. Edit the canonical source, then run `pnpm sync-skills`.
+**Canonical skills** (orchestrator, global-rules) - these are synced from core via `sync.config.ts`. Edit the canonical source, then run `pnpm sync`.
 
 **Pi-only methodology skills** (handoff, iteration-limits) - these live in `packages/pi/skills/` and have no canonical source. Each skill directory contains a `SKILL.md` file. To add a new Pi-only skill, create a directory under `skills/` with a valid `SKILL.md` (frontmatter with `name` and `description`). Validate with:
 
