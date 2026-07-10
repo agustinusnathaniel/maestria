@@ -2,7 +2,14 @@ import { Effect } from 'effect';
 import { homedir } from 'os';
 import picocolors from 'picocolors';
 
-import { run, sh, commandExists, npmViewVersion, pypiViewVersion, CommandError } from '@/lib/shell.js';
+import {
+  run,
+  sh,
+  commandExists,
+  npmViewVersion,
+  pypiViewVersion,
+  CommandError,
+} from '@/lib/shell.js';
 
 // ── Shared helpers ───────────────────────────────────
 
