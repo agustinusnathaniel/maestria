@@ -8,7 +8,7 @@ Proposed
 
 ### The Question
 
-Should the orchestrator agent's MCP tool access be blocked? The orchestrator is a pure dispatcher — its job is to decompose tasks and delegate to the seven specialists via `task()` and `question()`. By design, it should not read files, grep contents, fetch web pages, or run arbitrary bash commands. But MCP tools like `codegraph_explore` offer powerful code intelligence that cuts across those boundaries: they read source code, trace call paths, and surface blast radius information. For a dispatcher that should never do its own reconnaissance, MCP access is a potential workaround.
+Should the orchestrator agent's MCP tool access be blocked? The orchestrator is a pure dispatcher - its job is to decompose tasks and delegate to the seven specialists via `task()` and `question()`. By design, it should not read files, grep contents, fetch web pages, or run arbitrary bash commands. But MCP tools like `codegraph_explore` offer powerful code intelligence that cuts across those boundaries: they read source code, trace call paths, and surface blast radius information. For a dispatcher that should never do its own reconnaissance, MCP access is a potential workaround.
 
 ### Current State
 
@@ -27,7 +27,7 @@ permission:
     'npx --yes skills@latest *': allow
 ```
 
-These permissions control OpenCode's built-in tools. MCP tools are not built-in — they are registered separately via the `mcp` config key in `opencode.jsonc`. The user's config has a single MCP server:
+These permissions control OpenCode's built-in tools. MCP tools are not built-in - they are registered separately via the `mcp` config key in `opencode.jsonc`. The user's config has a single MCP server:
 
 ```jsonc
 "mcp": {
@@ -39,7 +39,7 @@ These permissions control OpenCode's built-in tools. MCP tools are not built-in 
 }
 ```
 
-OpenCode's permission system defaults to `"allow"` for any tool not explicitly listed. Since MCP tools are not built-in tools, none of the orchestrator's `deny` rules apply to them. The orchestrator implicitly has full access to `codegraph_explore` — the same structural bypass that motivated the OC-001 read-side lockdown.
+OpenCode's permission system defaults to `"allow"` for any tool not explicitly listed. Since MCP tools are not built-in tools, none of the orchestrator's `deny` rules apply to them. The orchestrator implicitly has full access to `codegraph_explore` - the same structural bypass that motivated the OC-001 read-side lockdown.
 
 ### Precedent from ADR OC-001
 
@@ -47,7 +47,7 @@ During the OC-001 session, the orchestrator was briefly granted `read/glob/grep:
 
 > "Structural permission denial is the only reliable enforcement for an LLM-based orchestrator."
 
-This same pattern applies to MCP tools. If the orchestrator can `codegraph_explore` its way through a codebase, it has little incentive to delegate — and the entire pipeline architecture (dispatcher -> specialist -> verifier) breaks down.
+This same pattern applies to MCP tools. If the orchestrator can `codegraph_explore` its way through a codebase, it has little incentive to delegate - and the entire pipeline architecture (dispatcher -> specialist -> verifier) breaks down.
 
 ## Investigation
 
@@ -65,9 +65,9 @@ OpenCode fully supports per-agent MCP tool restrictions. Three mechanisms exist:
 
 MCP tools are registered with the server name as a prefix joined by underscore. For the `codegraph` server, the tool is exposed as `codegraph_explore`. This means glob patterns work naturally:
 
-- `codegraph_*: deny` — blocks all tools from the codegraph server
-- `codegraph_explore: ask` — prompts on each use (not recommended for a dispatcher)
-- `codegraph_explore: deny` — blocks a specific tool
+- `codegraph_*: deny` - blocks all tools from the codegraph server
+- `codegraph_explore: ask` - prompts on each use (not recommended for a dispatcher)
+- `codegraph_explore: deny` - blocks a specific tool
 
 This pattern applies to any MCP server: a server named `my-server` exposes tools as `my-server_tool_name`.
 
@@ -95,19 +95,19 @@ permission:
     'npx --yes skills@latest *': allow
 ```
 
-Pro: Structural enforcement — matches OC-001's conclusion. Con: Adds a config dependency on the MCP server name. If the server is renamed or replaced, the deny rule becomes stale. Con: Would not cover any future MCP servers unless each is added explicitly.
+Pro: Structural enforcement - matches OC-001's conclusion. Con: Adds a config dependency on the MCP server name. If the server is renamed or replaced, the deny rule becomes stale. Con: Would not cover any future MCP servers unless each is added explicitly.
 
 **Option B: Plugin-level blanket denial via permission hook**
 
 Implement a `permission.ask` plugin hook in `@maestria/opencode` that denies MCP tool calls for the orchestrator agent. This could use a broader heuristic (e.g., deny any tool whose name contains an underscore and matches no built-in tool).
 
-Pro: Covers all MCP servers automatically, past and future. Con: High complexity for a theoretical problem. Plugin hooks are advanced API surface. The heuristic is fragile — OpenCode may add new built-in tools that happen to contain underscores. Con: Premature abstraction for a single MCP server.
+Pro: Covers all MCP servers automatically, past and future. Con: High complexity for a theoretical problem. Plugin hooks are advanced API surface. The heuristic is fragile - OpenCode may add new built-in tools that happen to contain underscores. Con: Premature abstraction for a single MCP server.
 
 **Option C: Prompt-level prohibition only (current approach)**
 
 Rely on the orchestrator's prompt and rules to discourage MCP tool use. No structural changes.
 
-Pro: Zero config overhead. No risk of breaking MCP-dependent workflows. Con: Behavioral enforcement only — same pattern that failed for read/glob/grep in OC-001.
+Pro: Zero config overhead. No risk of breaking MCP-dependent workflows. Con: Behavioral enforcement only - same pattern that failed for read/glob/grep in OC-001.
 
 ## Decision
 
@@ -115,7 +115,7 @@ No structural change at this time. The current configuration (implicit allow for
 
 Two reasons support this decision:
 
-1. **Only one MCP server is in play.** The user's config has a single MCP server (`codegraph`). The orchestrator's prompt-level constraints — it is told to delegate, not investigate — have been sufficient so far. The blast radius concern from OC-001 (read-side tools being used to avoid delegation) is real, but the current MCP surface is small enough that prompt-level guidance is a reasonable default.
+1. **Only one MCP server is in play.** The user's config has a single MCP server (`codegraph`). The orchestrator's prompt-level constraints - it is told to delegate, not investigate - have been sufficient so far. The blast radius concern from OC-001 (read-side tools being used to avoid delegation) is real, but the current MCP surface is small enough that prompt-level guidance is a reasonable default.
 
 2. **The OC-001 read-side experiment's lesson is noted but scoped differently.** The orchestrator's read/glob/grep bypass was systematic and happened within a single session. MCP tool access is narrower: `codegraph_explore` is a single tool, not a family of general-purpose capabilities. If the orchestrator is observed using `codegraph_explore` to investigate code instead of delegating to `@adventurer`, this decision should be revisited with Option A.
 
@@ -125,7 +125,7 @@ If revisited, **Option A (per-server explicit blocking via `codegraph_*: deny`)*
 
 ### Positive
 
-- No config changes needed — the sync pipeline and agent frontmatter remain untouched.
+- No config changes needed - the sync pipeline and agent frontmatter remain untouched.
 - No risk of breaking MCP-dependent workflows for other agents that legitimately use `codegraph_explore`.
 - The decision is easy to revisit: one line in `sync.config.ts`.
 
@@ -145,7 +145,7 @@ If the orchestrator is observed using `codegraph_explore` to bypass `@adventurer
 
 2. **`serverName_toolName` is the permission key for MCP tools.** OpenCode registers MCP tools with the server name as a prefix joined by underscore. Glob patterns like `codegraph_*: deny` work naturally against this convention. The same pattern applies to any MCP server: `my-server_*` blocks all tools from that server.
 
-3. **No generic `"mcp": "deny"` key exists.** Unlike `read`, `edit`, or `bash`, there is no single permission key for "all MCP tools." Each server must be denied explicitly. This is by design — MCP servers are named entities — but it means blocking a new MCP server always requires an explicit config change.
+3. **No generic `"mcp": "deny"` key exists.** Unlike `read`, `edit`, or `bash`, there is no single permission key for "all MCP tools." Each server must be denied explicitly. This is by design - MCP servers are named entities - but it means blocking a new MCP server always requires an explicit config change.
 
 4. **Plugin hooks are an option but not warranted yet.** Option B (plugin-level blanket denial) is technically possible but premature for a single MCP server. It should be revisited if the number of MCP servers grows or if the orchestrator demonstrates systematic MCP workaround behavior.
 

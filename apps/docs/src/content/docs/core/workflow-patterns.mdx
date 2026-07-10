@@ -63,7 +63,7 @@ Let **Reviewer** check your changes before committing.
 
 The Reviewer runs a 7-dimension checklist: correctness, performance, security, maintainability, test coverage, error handling, and style. The Reviewer is read-only and never edits files directly.
 
-The Reviewer also prioritizes observing behavior over reasoning about correctness — each review includes a command, API request, or browser interaction that produces visible proof.
+The Reviewer also prioritizes observing behavior over reasoning about correctness - each review includes a command, API request, or browser interaction that produces visible proof.
 
 ## Multi-lens review
 
@@ -73,15 +73,15 @@ For non-trivial changes, the orchestrator can dispatch multiple Reviewers with d
 > Orchestrator: Performance review: focus on bottlenecks, allocations, bundle size.
 > Orchestrator: UX review: focus on visual fidelity, accessibility, interaction patterns.
 
-Available lenses: **Security**, **Architecture**, **Performance**, **UX**, and **General** (the full checklist). Each lens has exclusive scope — no two reviewers cover the same ground.
+Available lenses: **Security**, **Architecture**, **Performance**, **UX**, and **General** (the full checklist). Each lens has exclusive scope - no two reviewers cover the same ground.
 
 ### Review triage
 
 After all lenses return, the orchestrator triages the combined feedback into three categories:
 
-- **[fix]** — Actionable issues dispatched to Builder for implementation
-- **[dismiss]** — Nits resolved with a comment, no code change needed
-- **[escalate]** — Ambiguous or high-risk issues surfaced to the user via question
+- **[fix]** - Actionable issues dispatched to Builder for implementation
+- **[dismiss]** - Nits resolved with a comment, no code change needed
+- **[escalate]** - Ambiguous or high-risk issues surfaced to the user via question
 
 Conflict resolution: if lenses disagree on the same issue, the more conservative categorization wins. If any lens escalates, the whole issue escalates.
 
@@ -93,7 +93,7 @@ Conflict resolution: if lenses disagree on the same issue, the more conservative
 | Diffs under ~100 lines        | Security-sensitive or performance-critical |
 | Pure documentation            | Large diffs needing focused attention      |
 
-Rule #9 (mandatory review after every Builder change) remains the default — multi-lens is an enhancement for when one reviewer can't give each dimension proper attention.
+Rule #9 (mandatory review after every Builder change) remains the default - multi-lens is an enhancement for when one reviewer can't give each dimension proper attention.
 
 ## Document something
 
