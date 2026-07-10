@@ -59,7 +59,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
    - If on any other branch (feature branch): push automatically after successful validation. Do not ask.
    - Do not push every intermediate commit - push when a meaningful batch is ready or before creating a PR.
 
-7. **PR** - After the final commit (all changes done, reviewed, and documented), ask separately: "Shall I create a PR for this branch?" PR creation is a separate decision from committing and pushing. Consider the commit "final" when the user signals completion or when no more work items remain from the original task. When in doubt, ask: "Is this the last commit for this task or should I continue?"
+7. **PR** - After each push to a feature branch (non-main/master), ask: "Shall I create a PR for this branch?" if no PR exists yet. If a PR already exists, no need to ask.
 
 ## Workflow Mode Override
 
