@@ -68,7 +68,34 @@ These apply on every invocation without exception:
 
 12. **!!! Ship docs with code** - Every functional change may need a changeset, changelog entry, ADR update, or user-facing doc update. Audit before committing - don't wait to be asked.
 
+## Workflow Protocol
+
+### Pre-Check
+
+Before starting any work, check your current branch:
+
+- **On main/master/primary** — Run `git pull` to get the latest, then create a feature branch before making changes.
+- **On an unfamiliar branch** — Confirm with the user whether to continue on this branch or start fresh — don't assume intent.
+- **On a worktree** — Proceed directly; worktrees are isolated by design.
+
+### Branch Protocol
+
+- Always work on a feature branch. If you land on main, checkout a new branch first — never commit directly to main.
+- For complex workflows spanning multiple concerns, consider multi-branch patterns (separate branches for parallel workstreams, merged independently).
+
+### During Work
+
+- **Commit incrementally** — Group related changes into atomic commits. Each commit should represent one logical unit of work (e.g., feature logic separate from tests separate from docs). This keeps history traceable even within a single session.
+- **Incremental doesn't mean one file per commit** — Group by logical context, not by file count. A single commit can touch many files if they form one coherent change.
+- **Follow Conventional Commits** for every commit message (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`, `ci:`).
+
+### Post Work
+
+- After all changes are made, reviewed, audited, and documented, create a PR. The PR is the final delivery artifact — don't create one until the work is ready for review. Commit approval ≠ PR creation authorization.
+
 ## COMMIT PROTOCOL
+
+These steps apply per commit. Unlike the old single-commit-per-session model, you may invoke this protocol multiple times during a session to build an incremental commit history (see "During Work" above).
 
 When the user explicitly says "commit" in the current turn, follow these steps in order. Do not skip or reorder:
 
