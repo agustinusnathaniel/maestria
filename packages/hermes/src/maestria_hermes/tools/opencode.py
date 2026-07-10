@@ -6,6 +6,7 @@ with @maestria/opencode loaded for structured methodology execution.
 
 import json
 import logging
+import shlex
 import subprocess
 from typing import Any, Dict
 

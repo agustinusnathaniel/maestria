@@ -6,7 +6,6 @@ notes (mode context, maker/checker reminders) to relevant tool results.
 """
 
 import logging
-from typing import Optional
 from maestria_hermes.modes import ModeManager
 
 logger = logging.getLogger(__name__)
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 def create_transform_tool_result_hook(mode_manager: ModeManager):
     """Create a transform_tool_result hook closure."""
 
-    def transform_hook(**kwargs) -> Optional[str]:
+    def transform_hook(**kwargs) -> None:
         """Append methodology annotations to tool results.
 
         Returns None (no modification) or a string to replace the result.

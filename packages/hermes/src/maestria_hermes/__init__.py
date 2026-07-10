@@ -2,27 +2,70 @@
 
 Brings pipeline composition, maker/checker split, specialist delegation,
 and mode-based workflows to the general-purpose Hermes AI agent.
+
+Phases:
+- Phase 1: Mode system, sonar guard, core hooks, basic skills
+- Phase 2: Full specialist roster, permission profiles, memory, session state
+- Phase 3: MCP, middleware, parallel delegation, kanban integration
 """
 
 from maestria_hermes._version import __version__
 from maestria_hermes.modes import ModeManager
+from maestria_hermes.memory import MemoryManager
+from maestria_hermes.session import SessionManager, create_session_hooks
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
 from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
+from maestria_hermes.hooks.transform import create_transform_tool_result_hook
+from maestria_hermes.middleware.llm_output import create_llm_output_middleware
+from maestria_hermes.tools.opencode import (
+    opencode_route_tool_schema,
+    opencode_route_handler,
+)
 
 
 def register(ctx):
     """Plugin entry point -- called by Hermes during plugin discovery.
 
-    Registers hooks, slash commands, and skills for the maestria methodology.
+    Registers hooks, middleware, tools, commands, and skills for the
+    maestria methodology.
     """
-    # Initialize mode manager (singleton -- persists across hook invocations)
+    # Initialize singletons
     mode_manager = ModeManager()
+    memory_manager = MemoryManager()
+    session_manager = SessionManager()
 
-    # Register lifecycle hooks
-    ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager))
+    # -- Phase 1: Core hooks ------------------------------------------------
+
+    ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager, memory_manager))
     ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
 
-    # Register slash commands
+    # -- Phase 2: Full lifecycle hooks --------------------------------------
+
+    on_start, on_end = create_session_hooks(session_manager)
+    ctx.register_hook("on_session_start", on_start)
+    ctx.register_hook("on_session_end", on_end)
+    ctx.register_hook("transform_tool_result", create_transform_tool_result_hook(mode_manager))
+
+    # -- Phase 3: Middleware ------------------------------------------------
+
+    ctx.register_middleware(
+        "llm_execution",
+        create_llm_output_middleware(mode_manager),
+    )
+
+    # -- Phase 2: Tools -----------------------------------------------------
+
+    ctx.register_tool(
+        name="opencode_route",
+        toolset="maestria",
+        schema=opencode_route_tool_schema(),
+        handler=opencode_route_handler,
+        description="Delegate a complex coding task to OpenCode CLI",
+        emoji="🔧",
+    )
+
+    # -- Phase 1: Slash commands --------------------------------------------
+
     ctx.register_command(
         "fein",
         _cmd_set_mode(mode_manager, "fein"),
@@ -44,17 +87,23 @@ def register(ctx):
         description="Show current maestria mode and status",
     )
 
+    # -- Phase 2: Skills ---------------------------------------------------
+
     import pathlib
     _skills_dir = pathlib.Path(__file__).parent / "skills"
 
-    # Register plugin skills (namespaced as maestria-hermes:<name>)
-    skill_files = [
+    _skill_registrations = [
         ("orchestrator", _skills_dir / "orchestrator" / "SKILL.md"),
-        ("builder", _skills_dir / "builder" / "SKILL.md"),
-        ("reviewer", _skills_dir / "reviewer" / "SKILL.md"),
+        ("builder",      _skills_dir / "builder" / "SKILL.md"),
+        ("reviewer",     _skills_dir / "reviewer" / "SKILL.md"),
         ("global-rules", _skills_dir / "global-rules" / "SKILL.md"),
+        ("adventurer",   _skills_dir / "adventurer" / "SKILL.md"),
+        ("architect",    _skills_dir / "architect" / "SKILL.md"),
+        ("diagnose",     _skills_dir / "diagnose" / "SKILL.md"),
+        ("planner",      _skills_dir / "planner" / "SKILL.md"),
+        ("writer",       _skills_dir / "writer" / "SKILL.md"),
     ]
-    for name, path in skill_files:
+    for name, path in _skill_registrations:
         if path.exists():
             ctx.register_skill(name, path)
 
