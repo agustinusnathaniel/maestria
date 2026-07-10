@@ -105,13 +105,15 @@ def register(ctx):
     ]
     for name, path in _skill_registrations:
         if path.exists():
-            ctx.register_skill(name, path)
+            try:
+                content = path.read_text(encoding="utf-8")
+                ctx.register_skill(name, content)
+            except OSError:
+                pass  # Best-effort skill registration
 
 
 def _cmd_set_mode(mode_manager, mode):
     """Return a slash command handler that switches modes."""
-    from functools import partial
-
     def handler(_raw_args: str) -> str:
         mode_manager.set_mode(mode)
         pipeline = {

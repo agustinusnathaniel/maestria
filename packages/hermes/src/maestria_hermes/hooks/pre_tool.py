@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from maestria_hermes.modes import ModeManager
-from maestria_hermes.permissions import get_profile, block_message
+from maestria_hermes.permissions import get_profile, block_message, _WRITE_TOOLS
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +25,7 @@ def create_pre_tool_hook(mode_manager: ModeManager):
 
         # Sonar mode: block ALL write tools regardless of specialist
         if mode == "sonar":
-            _write_tools = {
-                "write", "write_file", "edit", "edit_file", "patch",
-                "create", "delete", "delete_file", "rename", "rename_file",
-                "mkdir", "make_directory", "move", "copy",
-            }
-            if tool_name in _write_tools:
+            if tool_name in _WRITE_TOOLS:
                 logger.info("sonar mode blocked tool=%s", tool_name)
                 return {
                     "action": "block",
