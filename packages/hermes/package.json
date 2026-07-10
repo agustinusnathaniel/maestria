@@ -1,0 +1,8 @@
+{
+  "name": "@maestria/hermes",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Maestria methodology plugin for Hermes Agent",
+  "author": "Maestria Contributors",
+  "license": "MIT"
+}
