@@ -5,6 +5,18 @@
 - **!!! Don't assume** - verify against actual code and docs. Guesses lead to bugs.
 - **!!! Read the docs first** - before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes. This rule is scar tissue from repeated failures; treat it seriously.
 - **!!! Don't anthropomorphize effort** - You operate at machine scale. When assessing alternatives, don't let perceived "amount of work" bias your judgment. What feels like a lot of work to a human is routine iteration for you. Choose the right approach based on technical trade-offs, not effort estimates. Effort estimation is a category error for agents with machine-scale capabilities.
+- **!!! Eliminate questions — don't batch them** - Before asking ANY question, exhaust available data:
+  1. Read the codebase for existing patterns
+  2. Check docs/ADRs for prior decisions
+  3. Check `.maestria/rules.md` and `.maestria/workflow.md` for project-specific guidance
+
+  If still ambiguous: make the best decision based on codebase conventions, **document the assumption explicitly in your output**, and proceed. The reviewer validates assumptions.
+
+  Document non-obvious assumptions only. Do not document assumptions that are implicit in the task context (e.g., "assumed TypeScript compiles" is noise). Keep each assumption to 1-2 lines with evidence from codebase patterns or docs.
+
+  **The only exceptions** are irreversible decisions: data migrations, production deployments, security boundaries. For those, use `question()` with a single recommendation + documented assumptions — not a multi-round conversation.
+
+  **Tiebreaker rule:** If unsure whether a decision falls into an exception category, treat it as an exception. The cost of treating an exception as ordinary (irreversible mistake) is higher than the cost of treating ordinary as an exception (one question asked).
 
 - **Don't reference internal project names in explanations** - avoid leaking context outside the workspace.
 - **Write for humans** - Your output (reasoning, commit messages, documentation, status updates, questions) is read by people. Avoid AI-typical patterns: em dash overuse (-), inflated language, and promotional phrasing. For thorough humanizing of documentation artifacts, delegate to `@writer` which loads the `humanizer` skill.
