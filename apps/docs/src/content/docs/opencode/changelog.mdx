@@ -5,6 +5,39 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.6.0
+
+_July 10, 2026_
+
+### Autonomous commit protocol
+
+The commit protocol is now fully autonomous. The orchestrator reads git log for past correction patterns, composes the correct conventional commit message, and commits without asking for approval. Per-turn commit authorization requirement has been removed.
+
+Push behavior is now conditional on the branch:
+
+- **Feature branches** — push happens automatically after a successful commit
+- **main/master** — the orchestrator asks for approval before pushing
+
+PR creation remains a separate question.
+
+### Aligned agent permissions with autonomous philosophy
+
+Builder and diagnose agent permissions have been updated to match the new "exhaust data, document assumptions, proceed" philosophy:
+
+- **Builder** — shell permissions expanded from 5 narrow patterns to a comprehensive allow-list: read-only file operations (`ls`, `cat`, `grep`, `find`, etc.), git operations, package managers (`pnpm`, `npm`), build/test/lint tools (`tsc`, `vitest`, `vp`, `rtk`, `eslint`, `prettier`). Catch-all `*: ask` remains for unusual or dangerous commands.
+- **Diagnose** — `edit` permission changed from `ask` to `allow`. Read-only file operations added to bash allow-list. Diagnosis can now apply fixes without friction.
+
+### Structured work result summaries
+
+After builder tasks complete, the orchestrator now presents a concise file-by-file table focusing on signatures and interfaces (not function body details). Builder reports changes at the signature level. Users can scan the summary and spot issues in 1-2 prompts instead of reading the full diff.
+
+### Affected files
+
+- `packages/opencode/sync.config.ts` — permission definitions
+- `packages/opencode/agents/builder.md` — bash allow-list
+- `packages/opencode/agents/diagnose.md` — edit permission + bash allow-list
+- `docs/adr/core/ADR-CORE-011-eliminate-questions-autonomy.md` — decision record
+
 ## v0.5.0
 
 _June 24, 2026_
