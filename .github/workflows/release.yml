@@ -22,6 +22,7 @@ permissions:
   packages: write
   id-token: write
   pull-requests: write
+  actions: write
 
 jobs:
   release:
@@ -38,6 +39,7 @@ jobs:
       - name: Build
         run: pnpm build:ci
       - name: Create Release PR or Publish
+        id: changesets
         uses: changesets/action@v1
         with:
           version: pnpm version-packages
@@ -46,3 +48,10 @@ jobs:
           commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger kimi-code release
+        if: steps.changesets.outputs.published == 'true'
+        continue-on-error: true
+        run: gh workflow run release-kimi-code.yml --ref ${{ github.ref_name }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
