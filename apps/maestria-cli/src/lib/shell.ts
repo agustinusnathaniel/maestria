@@ -100,17 +100,27 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
  * Fetch the latest version of a PyPI package.
  * Uses the PyPI JSON API (no pip required).
  */
-export function pypiViewVersion(packageName: string): Effect.Effect<string, never> {
+export function pypiViewVersion(packageName: string): Effect.Effect<string, CommandError> {
   return Effect.gen(function* () {
     const url = `https://pypi.org/pypi/${packageName}/json`;
     const out = yield* run('curl', ['-sS', url], 10_000);
     const data: { info?: { version?: string } } = JSON.parse(out);
     const version = data?.info?.version;
     if (!version) {
-      return 'unknown';
+      return yield* Effect.fail(
+        new CommandError({ message: `Could not parse PyPI version for ${packageName}` }),
+      );
     }
     return version;
-  }).pipe(Effect.catchCause(() => Effect.succeed('unknown')));
+  }).pipe(
+    Effect.catchCause(() =>
+      Effect.succeed('unknown').pipe(
+        Effect.flatMap(() =>
+          Effect.fail(new CommandError({ message: `Failed to fetch PyPI version for ${packageName}` })),
+        ),
+      ),
+    ),
+  );
 }
 
 /** Invalidate the version cache for a package (called after successful update) */
