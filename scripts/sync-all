@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SYNC_SCRIPT="$ROOT/packages/core/scripts/sync.ts"
 HAD_ERROR=0
 
-for config in "$ROOT"/packages/*/sync*.config.ts; do
+for config in "$ROOT"/packages/*/sync.config.ts; do
   [ -f "$config" ] || continue
   PKG_DIR="$(dirname "$config")"
   PKG_NAME="$(basename "$PKG_DIR")"

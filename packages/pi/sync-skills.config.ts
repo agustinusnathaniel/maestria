@@ -1,26 +1,19 @@
 // packages/pi/sync-skills.config.ts
-// Sync config: generates Pi skill files from canonical agent directives
+// Sync config: generates Pi skill files from canonical agent directives.
 //
 // Skills are Pi's standard mechanism for injecting behavioral instructions
 // into the system prompt. See https://pi.dev/docs/latest/skills
 //
-// This config processes only orchestrator.md and rules.md from the canonical
-// sources and wraps them in SKILL.md format with proper frontmatter.
+// Only orchestrator.md and rules.md produce skill outputs. All other
+// specialist files are redirected to .sync-temp/ since they are handled
+// by sync.config.ts as pi-subagents agent type files.
 
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 export default {
-  // Source is the core agent-directives directory (parent dir of specialists/)
-  // which contains both the specialists/ subdir and rules.md at root level.
-  // walkDir does recursive enumeration, so specialists/orchestrator.md will
-  // be found and matched by basename (orchestrator.md) against config.files.
-  source: '../core/agent-directives',
-
-  // Temp dir for non-skill files from the source that get processed with defaults
-  // (adventurer.md, architect.md, etc. - we only want orchestrator.md and rules.md)
+  source: '../core/agent-directives/specialists',
   output: '.sync-temp/skills',
 
-  // Default processing for non-explicit files (they go to .sync-temp/ and are ignored)
   default: {
     stripFrontmatter: true,
     replace: [
@@ -36,10 +29,8 @@ export default {
     ],
   },
 
-  // Explicit file entries - these are the ones we actually want as skills
   files: {
-    // orchestrator.md comes from specialists/orchestrator.md (in source dir)
-    // We navigate up from .sync-temp/skills to packages/pi root then into skills/
+    // orchestrator.md -> skills/orchestrator/SKILL.md (Pi skill)
     'orchestrator.md': {
       output: '../../skills/orchestrator/SKILL.md',
       prepend:
@@ -54,7 +45,8 @@ export default {
         '\n',
     },
 
-    // rules.md comes from ../core/agent-directives/rules.md (secondary source)
+    // rules.md -> skills/global-rules/SKILL.md (Pi skill)
+    // Found via secondary source loop from dirname(source) = ../core/agent-directives/
     'rules.md': {
       output: '../../skills/global-rules/SKILL.md',
       prepend:
