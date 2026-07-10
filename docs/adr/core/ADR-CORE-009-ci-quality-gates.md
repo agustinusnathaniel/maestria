@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-29)
+Accepted (2026-06-29); amended (2026-07-10)
 
 ## Context
 
@@ -82,18 +82,20 @@ Added `actions/cache@v6` to restore and save `node_modules/.vite/task-cache` in 
   uses: actions/cache@v6
   with:
     path: node_modules/.vite/task-cache
-    key: vp-task-cache-${{ runner.os }}-${{ github.sha }}
+    key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
     restore-keys: |
       vp-task-cache-${{ runner.os }}-
 ```
 
-The key uses the commit SHA so every run can save an updated task cache. `restore-keys` lets later runs restore the most recent cache for the same OS.
+The key uses a hash of `pnpm-lock.yaml` so the cache is reused across all runs that share the same dependency lock file. The `restore-keys` fallback matches the most recent cache for the same OS when the exact key misses (e.g., after a dependency update).
 
 ### Impact
 
 Before: every CI run executed all tests from scratch because the cache directory was destroyed between runs. After: unchanged tasks are skipped entirely by vp's hash-based invalidation. The test step time drops to ~0 when no test inputs have changed.
 
-An earlier lockfile-only key produced cache hits but prevented cache updates: GitHub Actions does not save a cache when the primary key already hit. In practice that left stale task metadata restored across runs, followed by avoidable task misses when workspace files changed.
+Amended (2026-07-10): The original SHA-based key (committed as part of this ADR) was replaced with the lockfile-hash key shown above. The SHA key produced a unique cache per commit, achieving near-zero cache hit rate across runs. The lockfile key avoids this by persisting across commits that share the same dependency lock.
+
+The lockfile-only approach was considered and rejected during the original ADR because GitHub Actions does not save a cache entry when the primary key already hits, risking stale task metadata. In practice this concern proved less impactful than the zero-hit-rate problem: vp's content-addressed invalidation detects stale entries at the per-task level and re-runs only affected tasks. The cost of occasional task re-verification on a lockfile cache hit is far lower than a full cold start every run.
 
 ### Rationale
 
@@ -166,7 +168,7 @@ The sync step is the minimal addition required to make the existing typecheck pi
 
 - **~2s added to every CI run** for `vp check` on top of the build time. This is negligible in absolute terms but proportionally large relative to the build time itself.
 - **Two workflow files to maintain instead of one.** The split introduces a second file plus the shared composite action. A future maintainer must understand three files (two workflows + one action) instead of one.
-- **Cache storage increases.** The vp task cache now saves per commit instead of per lockfile. The cache is small (~1 MB in measured runs), so the storage trade-off is acceptable.
+- **Cache storage is minimal.** The vp task cache uses a lockfile-hash key, so only one cache entry exists per lockfile change (~1 MB per entry in measured runs).
 - **Docs static build is not part of CI.** A broken static docs render can pass `pnpm check:ci`. Mitigation: local `pnpm build` still builds docs, and docs-specific CI can be added when docs deployment becomes a gated workflow.
 
 ### Risks
