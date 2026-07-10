@@ -21,6 +21,12 @@ you can expect from them.
 - **Review triage pipeline.** Issues are now categorized [fix]/[dismiss]/[escalate] by the reviewer, then validated by the orchestrator with conservative conflict resolution (when lenses disagree, the stricter categorization wins).
 - **Docs audit before commits.** Agents now check what docs need updating before every commit — no more waiting to be reminded.
 
+## 2026-07-10
+
+- **KB pattern incorporations.** The `!!!` convention formalized — non-negotiable rules are scar tissue from past failures, not preferences. New "Never delete what you didn't create" rule — existing code must be adapted, not removed. Recognizing User Frustration escalation ladder (5 levels: polite nudge → direct question → frustration → criticism → escape hatch) with prescribed responses. Anti-Patterns enriched with named patterns (Agent Ping-Pong, Silent Failures, Builder Bias) and concrete fixes. Complexity-Based Routing classifies tasks as SIMPLE (direct to builder) or COMPLEX (architect design first with documented assumptions). Session Flow section added — orchestrator proactively proposes next steps instead of going silent after task completion. Proven directive combos documented in COMPOSITION.md.
+
+- **Em dash enforcement.** 97 em dashes replaced with standard hyphens across all canonical directive files. The "Write for humans" rule hardened from "avoid em dash overuse" to "never use em dashes", elevated to `!!!` non-negotiable. humanizer skill added as always-load for orchestrator. Reviewer gained Writing Style checklist item 9 to catch violations.
+
 ## 2026-07-01
 
 - **Code intelligence tool preference.** Agents now prefer code intelligence

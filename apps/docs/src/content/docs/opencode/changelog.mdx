@@ -31,6 +31,22 @@ Builder and diagnose agent permissions have been updated to match the new "exhau
 
 After builder tasks complete, the orchestrator now presents a concise file-by-file table focusing on signatures and interfaces (not function body details). Builder reports changes at the signature level. Users can scan the summary and spot issues in 1-2 prompts instead of reading the full diff.
 
+### KB pattern incorporations
+
+Knowledge base patterns synced from core agent directives:
+
+- **Complexity-Based Routing** — orchestrator classifies tasks as SIMPLE (direct to builder) or COMPLEX (architect design first with documented assumptions)
+- **Session Flow** — orchestrator proactively proposes next steps after each task instead of going silent
+- **Recognizing User Frustration** — 5-level escalation ladder (polite nudge → escape hatch) with prescribed responses
+- **Anti-Patterns enriched** — named patterns (Agent Ping-Pong, Builder Bias, Silent Failures) with concrete fixes
+- **`!!!` Convention** — non-negotiable rules are scar tissue from past mistakes, not preferences
+- **"Never delete" rule** — existing code must be adapted, not removed. Collateral deletions are a trust killer
+- **COMPOSITION.md** — proven directive combos for feature implementation, autonomous mode, cross-platform sync
+
+### Em dash enforcement
+
+All 7 opencode agent files had em dashes replaced with standard hyphens. The "Write for humans" rule is now non-negotiable (`!!!`) — agents never use em dashes in user-facing output. The humanizer skill is now an always-load for the orchestrator. Reviewer gained a Writing Style checklist item to catch violations.
+
 ### Affected files
 
 - `packages/opencode/sync.config.ts` — permission definitions

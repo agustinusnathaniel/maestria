@@ -18,3 +18,7 @@ Shift from "ask when unsure" to "exhaust data, document assumptions, proceed —
 **Work result summary** — orchestrator presents completed work as structured file/signature table, not verbatim handoff dump.
 
 See ADR-CORE-011 for full decision record.
+
+**KB pattern incorporations.** `!!!` Convention formalized as non-negotiable scar tissue. "Never delete what you didn't create" rule hardened. Recognizing User Frustration escalation ladder (5 levels). Anti-Patterns enriched with named patterns and fixes. Complexity-Based Routing (SIMPLE/COMPLEX classification). Session Flow added (proactive next-step proposing). COMPOSITION.md with proven directive combos.
+
+**Em dash enforcement.** 97 em dashes replaced with standard hyphens across canonical directives. "Write for humans" hardened from "avoid" to "never use" em dashes, elevated to `!!!`. humanizer as always-load skill for orchestrator. Reviewer Writing Style checklist item 9.
