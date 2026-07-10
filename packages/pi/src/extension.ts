@@ -1,5 +1,6 @@
 import type { ExtensionAPI, SessionStartEvent } from '@earendil-works/pi-coding-agent';
 import { createInitialState } from '@/state.js';
+import { deploySpecialistAgents } from '@/agents.js';
 import { installModeCommands } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
 import { installCompactionHandlers } from '@/compaction.js';
@@ -21,8 +22,11 @@ export default function (pi: ExtensionAPI): void {
     return handleModePrompt(event, ctx);
   });
 
-  // Restore persisted state on session start (reload/resume/fork)
+  // Deploy specialist agent files for pi-subagents discovery
   pi.on('session_start', (_event: SessionStartEvent, ctx) => {
+    deploySpecialistAgents(ctx);
+
+    // Restore persisted state on session start (reload/resume/fork)
     if (!ctx.sessionManager?.getEntries) return;
     const entries = ctx.sessionManager.getEntries();
     // Walk from newest to oldest, find the last persisted maestria_state entry

@@ -1,3 +1,14 @@
+---
+description: >-
+  Codebase reconnaissance specialist. Maps unknown territory, traces
+  call chains and dependencies, discovers module relationships, and
+  produces structured recon reports for downstream specialists.
+tools: read, bash, grep, find, ls, glob
+prompt_mode: append
+inherit_context: true
+---
+
+
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 

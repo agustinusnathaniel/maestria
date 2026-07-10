@@ -15,6 +15,7 @@
     "directory": "packages/pi"
   },
   "files": [
+    "agents",
     "dist",
     "skills",
     "README.md",
@@ -30,7 +31,6 @@
     "test": "vp test",
     "lint": "vp check",
     "sync-skills": "npx tsx ../core/scripts/sync.ts --config sync-skills.config.ts",
-    "validate-prompts": "node --experimental-strip-types scripts/validate-prompts.ts",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },

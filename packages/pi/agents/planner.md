@@ -1,3 +1,14 @@
+---
+description: >-
+  Implementation planning specialist. Breaks complex features into
+  phased milestones with dependencies, timelines, verification criteria,
+  and rollback points.
+tools: read, bash, grep, find, ls
+prompt_mode: append
+inherit_context: true
+---
+
+
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
