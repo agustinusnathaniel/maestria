@@ -21,9 +21,6 @@ Push is automatic on feature branches, asks only on main/master.
 **Work result summary** - orchestrator presents completed work as
 structured file/signature table, not verbatim handoff dump.
 
-**Em dash enforcement** - 97 em dashes replaced with standard hyphens.
-"Write for humans" hardened from "avoid" to "never use", elevated to !!!.
-
 - !!! Convention, "Never delete" rule, escalation ladder, anti-patterns,
   Session Flow, Commit Completeness Check, and Automatic Review Loop added.
 
