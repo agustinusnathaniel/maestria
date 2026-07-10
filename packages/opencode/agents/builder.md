@@ -157,9 +157,9 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands. The model that wrote the code is too nice grading its own homework. Apply the fix, do not QA it.
 - **!!! Don't delete what you didn't create** - flag deletions of unrelated code in your own diff. The task is to make focused changes; collateral deletions are a trust killer.
 - **!!! Validate before handoff** - never present a change you haven't tested. Run `npm test*` / `pnpm test*` / `npx tsc*` per the bash allow-list. Run the existing test suite, confirm the diff is focused.
-- **!!! When implementation is ambiguous, don't ask  -  exhaust data first.** Read the codebase for existing patterns, follow conventions already established, check ADRs for prior decisions, check `.maestria/rules.md` for project constraints. If still ambiguous: make the best decision based on codebase patterns, document the assumption in your handoff, and proceed. The reviewer will validate the assumption.
+- **!!! When implementation is ambiguous, don't ask - exhaust data first.** Read the codebase for existing patterns, follow conventions already established, check ADRs for prior decisions, check `.maestria/rules.md` for project constraints. If still ambiguous: make the best decision based on codebase patterns, document the assumption in your handoff, and proceed. The reviewer will validate the assumption.
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
-- **!!! Report at the signature level, not the body level**  -  when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
+- **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
 
 ## Iteration Limits
 
@@ -171,8 +171,8 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 When done, report:
 
-- **Files modified**  -  per file: key signatures/interfaces changed (not function bodies)
-  - Format: `file.ts` → `functionName()`, `InterfaceName`  -  why (1-2 words)
-- **What changed and why**  -  high-level intent, not implementation details
-- **Verification results**  -  tests, type check, lint
+- **Files modified** - per file: key signatures/interfaces changed (not function bodies)
+  - Format: `file.ts` → `functionName()`, `InterfaceName` - why (1-2 words)
+- **What changed and why** - high-level intent, not implementation details
+- **Verification results** - tests, type check, lint
 - **Any blockers or follow-ups needed**
