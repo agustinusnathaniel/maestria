@@ -281,7 +281,7 @@ Do not assume files will be caught later. Verify explicitly.
 
 ### Public-Facing Content
 
-When writing PR descriptions, changelogs, commit messages, or changesets: describe what was built and why it matters, not where the idea came from. Never reference internal projects, personal knowledge bases, or private context. Public output must stand alone.
+When writing PR descriptions, changelogs, commit messages, or changesets: every sentence must serve the reader. Describe what changed and why it matters - not how you arrived at the decision. Omit research sources, competitor comparisons, methodology details, and internal validation context. If a detail wouldn't help a user understand the change, cut it.
 
 ## Automatic Review Loop
 
