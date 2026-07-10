@@ -56,7 +56,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
    - If on any other branch (feature branch): push automatically after successful validation. Do not ask.
    - Do not push every intermediate commit - push when a meaningful batch is ready or before creating a PR.
 
-7. **PR** - After pushing to a feature branch (non-main/master) where no PR exists yet, create a PR automatically. Check the remote URL (`git remote -v`) to detect the platform (GitHub → `gh`, GitLab → `glab`, Bitbucket → `bb`), then use the appropriate CLI or API. Do not ask — just create it. The user can edit after creation.
+7. **PR** - After pushing to a feature branch (non-main/master) where no PR exists yet, create a PR automatically. Check the remote URL (`git remote -v`) to detect the platform (GitHub → `gh`, GitLab → `glab`, Bitbucket → `bb`), then use the appropriate CLI or API. Do not ask - just create it. The user can edit after creation.
 
 ## Workflow Mode Override
 
