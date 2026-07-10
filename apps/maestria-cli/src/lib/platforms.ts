@@ -70,7 +70,7 @@ const opencode: PlatformHandler = {
   install: Effect.gen(function* () {
     // Clear cache to ensure fresh install from npm
     yield* sh(`rm -rf ${homedir()}/.cache/opencode/packages/@maestria/opencode*`);
-    // Install globally by default — install is a setup command, not per-project
+    // Install globally by default - install is a setup command, not per-project
     yield* sh('opencode plugin @maestria/opencode@latest -g', 120_000);
   }).pipe(Effect.as(void 0)),
 

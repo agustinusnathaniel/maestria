@@ -17,17 +17,16 @@
 ### Patch Changes
 
 - [`6ec1c1c`](https://github.com/agustinusnathaniel/maestria/commit/6ec1c1c1fdde6acf0d4353ed664ff53c4139c61b) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix opencode install, add uninstall command, resolve typecheck warnings
-
-  - Use `sh()` instead of `execFile` for opencode plugin install — fixes
+  - Use `sh()` instead of `execFile` for opencode plugin install - fixes
     failures when the binary is only reachable through a shell-initialized PATH.
-  - Capture stderr in `CommandError` messages — reveals the actual error instead
+  - Capture stderr in `CommandError` messages - reveals the actual error instead
     of generic "Command failed: ...".
-  - Remove `--force` flag from install — `opencode plugin` doesn't support it on
+  - Remove `--force` flag from install - `opencode plugin` doesn't support it on
     first install.
-  - Use `-g` flag on install — defaults to global scope.
-  - Add `maestria uninstall` command — supports positional, `--all`, and
+  - Use `-g` flag on install - defaults to global scope.
+  - Add `maestria uninstall` command - supports positional, `--all`, and
     interactive modes.
-  - Replace hardcoded version string with `^/package.json` import — `maestria --version`
+  - Replace hardcoded version string with `^/package.json` import - `maestria --version`
     now reflects the real package version.
   - Fix `unbound-method` typecheck warnings in pi extension tests.
 
@@ -38,7 +37,7 @@
 - [`c0c1673`](https://github.com/agustinusnathaniel/maestria/commit/c0c1673a4dfe6de2c15f43abe7fd2cea1a10ffa3) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - opencode install: use `-g` flag, drop `--force`
 
   The `install` handler for OpenCode omitted the `-g` flag, so it tried to
-  install at project level — which fails when OpenCode is configured globally.
+  install at project level - which fails when OpenCode is configured globally.
   Also passed `--force` which the `plugin` subcommand doesn't support on first
   install, causing the command to always fail.
 
@@ -51,7 +50,7 @@
 - [`b4e1262`](https://github.com/agustinusnathaniel/maestria/commit/b4e12621826488326fd9950608719f160ab6535d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - opencode install: always use `-g` flag
 
   The `install` handler for OpenCode omitted the `-g` flag, so it always tried
-  to install at project level — which fails on machines where OpenCode is
+  to install at project level - which fails on machines where OpenCode is
   configured globally. Since `install` is a one-time setup command, it should
   default to global installation.
 

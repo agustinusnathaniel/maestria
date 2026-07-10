@@ -112,7 +112,7 @@ Use for: targeted fixes, feature implementation, refactors, adding tests.`,
             'rtk*': 'allow',
             'eslint*': 'allow',
             'prettier*': 'allow',
-            // Catch-all — unusual/dangerous commands still ask
+            // Catch-all - unusual/dangerous commands still ask
             '*': 'ask',
           },
         },
@@ -160,7 +160,7 @@ Use for: cryptic errors, regressions, production bugs.`,
             // Environment inspection
             env: 'allow',
             pwd: 'allow',
-            // Catch-all — unusual/dangerous commands still ask
+            // Catch-all - unusual/dangerous commands still ask
             '*': 'ask',
           },
         },

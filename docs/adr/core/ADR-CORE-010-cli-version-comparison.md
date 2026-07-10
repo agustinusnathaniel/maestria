@@ -8,11 +8,11 @@ Accepted (2026-07-03)
 
 The maestria CLI (`apps/maestria-cli/`) needs to compare semver version strings in three scenarios:
 
-1. **Validating user-provided version strings** — the `--version` flag accepts a target version to install or update to
-2. **Checking if an installed plugin version differs from the latest available version** — to decide whether an update is needed
-3. **Checking if a plugin is already at the target version** — to skip redundant update operations
+1. **Validating user-provided version strings** - the `--version` flag accepts a target version to install or update to
+2. **Checking if an installed plugin version differs from the latest available version** - to decide whether an update is needed
+3. **Checking if a plugin is already at the target version** - to skip redundant update operations
 
-Initially, the CLI used basic string equality (`===`) and a simple regex for validation. As the CLI evolved to support version-aware update logic, correct ordering became necessary — `0.10.0 > 0.9.0` must hold, which naive string comparison breaks.
+Initially, the CLI used basic string equality (`===`) and a simple regex for validation. As the CLI evolved to support version-aware update logic, correct ordering became necessary - `0.10.0 > 0.9.0` must hold, which naive string comparison breaks.
 
 We evaluated three approaches for adding correct semver comparison:
 
@@ -22,7 +22,7 @@ We evaluated three approaches for adding correct semver comparison:
 | `compare-versions` | ~4 kB | Unmaintained (~2 years) | Comparison + validation only |
 | `localeCompare` with `{ numeric: true }` | 0 bytes (built-in) | N/A (standard API) | Correct except prerelease edge case |
 
-The CLI targets **self-contained distribution** (see ADR-CORE-008) — it bundles all runtime code into a single artifact with zero runtime dependencies. Adding a 60 kB dependency conflicts with that goal, especially when we would use roughly 10% of its feature surface (comparison + validation only).
+The CLI targets **self-contained distribution** (see ADR-CORE-008) - it bundles all runtime code into a single artifact with zero runtime dependencies. Adding a 60 kB dependency conflicts with that goal, especially when we would use roughly 10% of its feature surface (comparison + validation only).
 
 ## Decision
 
@@ -43,7 +43,7 @@ Use `String.prototype.localeCompare` with the `{ numeric: true }` option for ver
 
 ```
 "1.0.0-alpha".localeCompare("1.0.0", undefined, { numeric: true })
-// → 1  (incorrect per semver spec — prereleases should be LESS than release)
+// → 1  (incorrect per semver spec - prereleases should be LESS than release)
 ```
 
 The semver specification defines `1.0.0-alpha < 1.0.0`. The fix: if two versions share the same `MAJOR.MINOR.PATCH` base and exactly one has a prerelease tag, reverse the `localeCompare` result.
@@ -73,23 +73,23 @@ The CLI also works with two non-semver values:
 
 ### Validation Regex
 
-Version validation uses a regex (`/^\d+\.\d+\.\d+(-[\w]+(\.[\w]+)*)?(\+[\w]+(\.[\w]+)*)?$/`) that covers the npm semver subset we encounter — `MAJOR.MINOR.PATCH` with optional prerelease and build metadata identifiers. The special values `'latest'` and `''` (empty string) bypass regex validation.
+Version validation uses a regex (`/^\d+\.\d+\.\d+(-[\w]+(\.[\w]+)*)?(\+[\w]+(\.[\w]+)*)?$/`) that covers the npm semver subset we encounter - `MAJOR.MINOR.PATCH` with optional prerelease and build metadata identifiers. The special values `'latest'` and `''` (empty string) bypass regex validation.
 
 ## Consequences
 
 ### Positive
 
-- **Zero runtime dependencies** — version comparison adds no weight to the bundled CLI artifact. Consistent with the self-contained distribution goal from ADR-CORE-008.
-- **No supply-chain risk** — no third-party package to audit, update, or be affected by for version comparison logic.
-- **Small surface area** — ~50 lines of code in a single module. Readable, testable, and auditable in one sitting.
-- **Correct ordering for standard semver** — `localeCompare` with `{ numeric: true }` handles MAJOR.MINOR.PATCH ordering correctly out of the box. The prerelease fix is well-isolated and tested.
-- **Node.js built-in** — stable across Node.js versions. No breaking changes expected from a standard language feature.
+- **Zero runtime dependencies** - version comparison adds no weight to the bundled CLI artifact. Consistent with the self-contained distribution goal from ADR-CORE-008.
+- **No supply-chain risk** - no third-party package to audit, update, or be affected by for version comparison logic.
+- **Small surface area** - ~50 lines of code in a single module. Readable, testable, and auditable in one sitting.
+- **Correct ordering for standard semver** - `localeCompare` with `{ numeric: true }` handles MAJOR.MINOR.PATCH ordering correctly out of the box. The prerelease fix is well-isolated and tested.
+- **Node.js built-in** - stable across Node.js versions. No breaking changes expected from a standard language feature.
 
 ### Negative
 
-- **Prerelease handling requires custom code** — the `localeCompare` edge case is subtle and could be overlooked during maintenance. The fix is documented inline and covered by tests.
-- **Not a general-purpose semver library** — this implementation handles comparison and validation only. If future needs include version ranges (`^1.0.0`), sorting lists, or coercion, the module would need significant extension or replacement.
-- **Validation regex is npm-opinionated** — the regex covers npm-originated version strings. Non-standard version formats (e.g., leading `v`, date-based versions) would require regex changes. This is acceptable because the CLI only handles packages from npm registries.
+- **Prerelease handling requires custom code** - the `localeCompare` edge case is subtle and could be overlooked during maintenance. The fix is documented inline and covered by tests.
+- **Not a general-purpose semver library** - this implementation handles comparison and validation only. If future needs include version ranges (`^1.0.0`), sorting lists, or coercion, the module would need significant extension or replacement.
+- **Validation regex is npm-opinionated** - the regex covers npm-originated version strings. Non-standard version formats (e.g., leading `v`, date-based versions) would require regex changes. This is acceptable because the CLI only handles packages from npm registries.
 
 ### Before/After Comparison
 
@@ -105,7 +105,7 @@ Version validation uses a regex (`/^\d+\.\d+\.\d+(-[\w]+(\.[\w]+)*)?(\+[\w]+(\.[
 
 ### Option A: `semver` npm package
 
-The official npm semver implementation. Comprehensive — supports ranges, coercion, prerelease comparisons, and sorting out of the box.
+The official npm semver implementation. Comprehensive - supports ranges, coercion, prerelease comparisons, and sorting out of the box.
 
 Rejected because:
 
@@ -119,10 +119,10 @@ A lightweight (~4 kB) alternative focused on comparison and validation.
 
 Rejected because:
 
-- **Unmaintained for ~2 years** — no recent updates, no response to issues or PRs. Adopting an unmaintained library for a core validation path is a maintenance risk.
+- **Unmaintained for ~2 years** - no recent updates, no response to issues or PRs. Adopting an unmaintained library for a core validation path is a maintenance risk.
 - Even at 4 kB, it adds unnecessary weight when a built-in API handles the primary use case correctly.
 
 ## Related Decisions
 
-- ADR-CORE-008 (CLI Dependency Bundling) — established the self-contained distribution principle that motivated avoiding runtime dependencies
-- ADR-CORE-007 (CLI Package for Plugin Management) — defined the CLI's architecture and version-aware update scenarios that require correct semver comparison
+- ADR-CORE-008 (CLI Dependency Bundling) - established the self-contained distribution principle that motivated avoiding runtime dependencies
+- ADR-CORE-007 (CLI Package for Plugin Management) - defined the CLI's architecture and version-aware update scenarios that require correct semver comparison
