@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.1
+
+### Patch Changes
+
+- [#63](https://github.com/agustinusnathaniel/maestria/pull/63) [`0085920`](https://github.com/agustinusnathaniel/maestria/commit/00859201f49aae3d792730091b9109fdc3d3381c) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Reordered conventional commit prefixes
+
+  `refactor` is now the default prefix instead of `feat`. `feat` is
+  reserved for user-facing features only.
+
 ## 0.4.0
 
 ### Minor Changes
