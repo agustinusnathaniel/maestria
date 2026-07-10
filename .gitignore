@@ -29,3 +29,6 @@ plans
 
 # Package archives
 *.tgz
+
+# Plan artifacts (local execution plans)
+packages/core/agent-directives/PLAN-*.md
