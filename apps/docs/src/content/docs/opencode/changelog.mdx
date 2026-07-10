@@ -5,6 +5,25 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.7.0
+
+_July 10, 2026_
+
+### Expanded bash allow-lists for all subagents
+
+Following the same data-driven approach used for builder in v0.6.0, all 5 remaining subagents (adventurer, architect, planner, reviewer, writer) received expanded bash permissions:
+
+- **Base read-only operations** — `ls`, `cat`, `echo`, `head`, `tail`, `grep`, `rg`, `wc`, `which`, `diff`, `stat`, `pwd`, `cd`, `find`, `printf` are now pre-allowed for all agents
+- **Agent-specific tools** — each agent gained role-specific tool access (e.g., adventurer can run `opensrc` and `agent-browser`; reviewer can run `vp`, `rtk`, `node`)
+- **Catch-all remains** — `*: ask` still guards unusual or dangerous commands for all agents
+
+This reduces user friction from 70-88% of commands prompting for approval down to only genuinely unusual or dangerous commands.
+
+### Affected files
+
+- `packages/opencode/sync.config.ts` — expanded bash allow-lists for all 5 agents
+- `packages/opencode/agents/{adventurer,architect,planner,reviewer,writer}.md` — generated from sync
+
 ## v0.6.0
 
 _July 10, 2026_
