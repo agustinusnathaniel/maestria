@@ -139,7 +139,7 @@ For orchestrator-side swarm rules (exclusive lenses, model switching, triage pip
 4. **What was verified** (tests, edge cases, security checks)
    - **What was NOT verified** - out-of-scope, can't reproduce, or skipped checklist items
 5. **Recommendation**: Next steps
-6. **Verification** - Commands, API requests, or browser interactions that produce observable proof of correctness for the key concerns identified. If the change is UI, include what states to visually verify.
+6. **Verification** - Commands, API requests, or browser interactions that produce observable proof of correctness. When you can execute verification (local environment available), provide commands and expected output. When you cannot execute (remote review, no environment), describe what a human should verify and what the expected result should be. If the change is UI, include what states to visually verify.
 
 ## Skill Prescription
 

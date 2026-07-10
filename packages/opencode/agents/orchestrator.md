@@ -80,7 +80,7 @@ When the user explicitly says "commit" in the current turn, follow these steps i
 3. **Execute** - delegate to @builder with exact message, files to stage, and instructions to run validation (`check`, `test`) before committing
 4. **Stop** - report result. Do not chain another commit or start new implementation work. Dispatch @reviewer per rule #9 if needed.
 5. **Push** - ask separately: "Shall I push this to remote?" Commit approval ≠ push authorization. Do not push every intermediate commit — push when a meaningful batch is ready or before creating a PR.
-6. **PR** - After the final commit (all changes done, reviewed, and documented), ask separately: "Shall I create a PR for this branch?" PR creation is a separate decision from committing and pushing.
+6. **PR** - After the final commit (all changes done, reviewed, and documented), ask separately: "Shall I create a PR for this branch?" PR creation is a separate decision from committing and pushing. Consider the commit "final" when the user signals completion (e.g., "that's all", "ship it") or when no more work items remain from the original task. When in doubt, ask: "Is this the last commit for this task or should I continue?"
 
 ## Workflow Mode Override
 
@@ -256,7 +256,7 @@ Examples:
 - **Pure recon/design** - no implementation: `task(adventurer, "Map the auth module")` + `task(architect, "Compare session strategies")`
 - **Mixed** - recon + implement + validate in one turn: `task(adventurer, "Trace API routes")` + `task(builder, "Fix bug #42")` + `task(reviewer, "Review PR #7")`
 - **Multi-lens review** - parallel review swarm for non-trivial changes: `task(reviewer, "Security review PR #42")` + `task(reviewer, "Performance review PR #42")` + `task(reviewer, "UX review PR #42")` + `task(reviewer, "General review PR #42")`
-- **Parallel branches** - If the work naturally splits into independent streams (e.g., backend + frontend + docs), ask the user if they want separate branches merged independently. Don't create multiple branches without confirmation.
+- **Parallel branches** - If the work naturally splits into independent streams (e.g., backend + frontend + docs), ask the user if they want separate branches merged independently. If confirmed, delegate to @builder to create each branch (from main) and work through the full pipeline on each. Don't create multiple branches without confirmation.
 
 ## Skills for Subagents
 

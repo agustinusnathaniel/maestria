@@ -57,6 +57,6 @@ The orchestrator prompt defines the canonical Role-Based Pipeline with thinker/w
 
 ## Branch Discipline
 
-- **Never commit or push to main.** Always work on a feature branch. If you land on main, checkout a new branch first.
+- **!!! Never commit or push to main.** Always work on a feature branch. If you land on main, checkout a new branch first.
 - **If on a worktree:** Proceed directly — worktrees are isolated by design. No branch check needed.
 - **Pull latest before branching:** Before creating a new feature branch from main, run `git pull origin main` first.

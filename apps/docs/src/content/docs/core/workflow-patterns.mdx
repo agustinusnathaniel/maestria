@@ -63,6 +63,8 @@ Let **Reviewer** check your changes before committing.
 
 The Reviewer runs a 7-dimension checklist: correctness, performance, security, maintainability, test coverage, error handling, and style. The Reviewer is read-only and never edits files directly.
 
+The Reviewer also prioritizes observing behavior over reasoning about correctness — each review includes a command, API request, or browser interaction that produces visible proof.
+
 ## Multi-lens review
 
 For non-trivial changes, the orchestrator can dispatch multiple Reviewers with different focus areas in parallel. This catches more issues than a single general review.
