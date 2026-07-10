@@ -1,5 +1,5 @@
 ---
-'@maestria/opencode': minor
+'@maestria/opencode': patch
 ---
 
 Expand bash allow-lists for all subagents
