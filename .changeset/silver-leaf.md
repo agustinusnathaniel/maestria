@@ -11,7 +11,3 @@ vp, rtk, eslint, prettier). Both builder and diagnose keep *: ask
 catch-all for unusual commands.
 
 Diagnose edit permission changed from ask to allow.
-
-Based on Claude Code's documented read-only command baseline and
-maestria project's actual tooling needs (17,929 builder bash
-invocations analyzed across 2,611 sessions).
