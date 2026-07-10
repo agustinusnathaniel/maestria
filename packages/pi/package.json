@@ -30,8 +30,7 @@
     "build": "vp pack",
     "test": "vp test",
     "lint": "vp check",
-    "sync-agents": "npx tsx ../core/scripts/sync.ts --config sync.config.ts",
-    "sync-skills": "npx tsx ../core/scripts/sync.ts --config sync-skills.config.ts",
+    "sync": "npx tsx ../core/scripts/sync.ts --config sync.config.ts",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },

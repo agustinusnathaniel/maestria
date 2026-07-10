@@ -1,13 +1,10 @@
 // packages/pi/sync.config.ts
-// Sync config: generates pi-subagents agent .md files from canonical core directives.
+// Unified sync config: generates both pi-subagents agent files AND Pi skill files
+// from canonical core directives in a single pass.
 //
-// Each canonical specialist prompt is wrapped in pi-subagents YAML frontmatter
-// (description, tools, prompt_mode, inherit_context) and output to the agents/
-// directory. These files are deployed to ~/.pi/agent/agents/ at extension startup
-// where pi-subagents discovers them as registered agent types.
-//
-// Only orchestrator.md goes to .sync-temp/ (it's handled by sync-skills.config.ts
-// as a Pi skill for auto-injection into every session).
+// - agents/*.md (7 specialists): deployed to ~/.pi/agent/agents/ for pi-subagents
+// - skills/orchestrator/SKILL.md: Pi skill auto-injected into every session
+// - skills/global-rules/SKILL.md: Pi skill auto-injected into every session
 
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
@@ -31,15 +28,8 @@ export default {
   },
 
   files: {
-    // Redirect orchestrator to temp (handled by sync-skills.config.ts as a skill)
-    'orchestrator.md': {
-      output: '../.sync-temp/agents/orchestrator.md',
-    },
-
-    // 7 specialist agents with pi-subagents-compatible frontmatter
-    // Each uses prompt_mode: append so the role-specific prompt merges on top
-    // of the inherited orchestrator prompt from the parent session.
-    // inherit_context: true passes the parent's system prompt to the subagent.
+    // --- Pi-subagents agent types (7 specialists) ---
+    // Each gets role-specific frontmatter with tool isolation
 
     'adventurer.md': {
       prepend:
@@ -134,6 +124,37 @@ export default {
         'tools: read, bash, grep, find, ls, write, edit\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
+        '---\n' +
+        '\n',
+    },
+
+    // --- Pi skills (orchestrator + global rules) ---
+    // Redirected to skills/ with Pi skill frontmatter
+
+    'orchestrator.md': {
+      output: '../skills/orchestrator/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: orchestrator\n' +
+        'description: >-\n' +
+        '  Maestria agent orchestration dispatcher. Delegates work to 7 specialist\n' +
+        '  subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer)\n' +
+        '  using spec-driven handoffs. Enforces maker/checker split, commit protocol,\n' +
+        '  and role-based pipeline sequencing.\n' +
+        '---\n' +
+        '\n',
+    },
+
+    // rules.md found via secondary source loop from dirname(source) = ../core/agent-directives/
+    'rules.md': {
+      output: '../skills/global-rules/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: global-rules\n' +
+        'description: >-\n' +
+        '  Global behavioral constraints and best practices for maestria-powered\n' +
+        '  Pi agents. Covers orchestration conventions, delegation rules, context\n' +
+        '  management, commit policy, pipeline patterns, and branch discipline.\n' +
         '---\n' +
         '\n',
     },

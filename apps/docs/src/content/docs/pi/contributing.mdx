@@ -51,16 +51,24 @@ All behavioral content is derived from canonical sources in `packages/core/agent
 
 ### Running the sync
 
+Agent syncs and skill syncs are separate commands:
+
 ```bash
-# Sync all generated artifacts
+# Agent syncs - runs sync for every platform's sync.config.ts
+# Auto-checked by CI via scripts/check-sync
 bash scripts/sync-all
 
-# Or individually:
-pnpm --filter @maestria/pi sync-agents      # agent files for pi-subagents
-pnpm --filter @maestria/pi sync-skills      # skill files for Pi auto-injection
+# Skill syncs - runs separately (not checked by CI)
+pnpm --filter @maestria/pi sync-skills
 
-# Validate generated artifacts
+# Validate generated skill artifacts
 pnpm --filter @maestria/pi validate
+```
+
+Or run individual agent syncs per package:
+
+```bash
+pnpm --filter @maestria/pi sync-agents      # agent files for pi-subagents
 ```
 
 ## Making Changes
