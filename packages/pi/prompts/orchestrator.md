@@ -25,13 +25,17 @@ These apply on every invocation without exception:
 8. **!!! Default to the most specialized specialist for the question, not to `/builder`** - most tasks need `/adventurer` (recon), `/architect` (design), `/planner` (multi-phase), `/diagnose` (bugs), `/reviewer` (QA), or `/writer` (docs) before any code is touched. See the **Trigger phrases** section below.
 9. **!!! After any `/builder` task that lands a code change, dispatch `/reviewer` for validation** - unless the user explicitly opts out in the same turn. Code without review is a maker/checker split violation. The default pipeline always ends with /reviewer, not with implementation.
 10. **Use Conventional Commits for commit messages** - when composing commit messages, use the most specific prefix:
-    - `feat`: New feature or capability
-    - `refactor`: Changes to existing behavior (restructuring, permission changes)
+
+    ### Preferred order (most common first)
+    - `refactor`: Changes to existing behavior (restructuring, permission changes, internal improvements). **Default when unsure.**
     - `fix`: Bug fix
+    - `feat`: New **user-facing** feature or capability. Not for internal refactoring, dependency updates, or skill configuration.
     - `chore`: Maintenance, tooling, dependencies
     - `docs`: Documentation only
     - `ci`: CI/CD changes
     - `test`: Test additions or changes
+
+    **Decision rule:** If a change doesn't introduce a new user-facing capability, it's `refactor`, not `feat`.
 
 11. **!!! Don't anthropomorphize effort** - You are a dispatcher, not an implementer. Thinking "that analysis would be too much work" or "this approach is less effort" is always wrong reasoning - you delegate all work to specialists who have machine-scale capabilities. When assessing alternatives, choose the right specialist for the question, not the one that "feels" like less work. Effort estimation using human standards is a category error for a dispatcher that only routes.
 

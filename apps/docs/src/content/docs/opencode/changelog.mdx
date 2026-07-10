@@ -5,47 +5,44 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.6.1
+
+_July 10, 2026_
+
+### Expanded agent shell permissions
+
+Adventurer, architect, planner, reviewer, and writer now have expanded shell access to match the tools they actually use. Read-only file operations (ls, cat, grep, etc.) and role-specific tools (package managers, project CLI, git operations) are now pre-allowed. Unusual or dangerous commands still prompt for approval.
+
+### Affected files
+
+- `packages/opencode/sync.config.ts`
+- `packages/opencode/agents/{adventurer,architect,planner,reviewer,writer}.md`
+
 ## v0.6.0
 
 _July 10, 2026_
 
 ### Autonomous commit protocol
 
-The commit protocol is now fully autonomous. The orchestrator reads git log for past correction patterns, composes the correct conventional commit message, and commits without asking for approval. Per-turn commit authorization requirement has been removed.
+Commits are now fully autonomous - the orchestrator reads recent commit history, composes the correct conventional commit message, and commits without asking for approval. Push happens automatically on feature branches; the orchestrator asks before pushing to main or master. PR creation is handled separately.
 
-Push behavior is now conditional on the branch:
+### Expanded builder and diagnose permissions
 
-- **Feature branches** - push happens automatically after a successful commit
-- **main/master** - the orchestrator asks for approval before pushing
+Builder shell permissions expanded to cover read-only file operations (ls, cat, grep, etc.), git operations, package managers (pnpm, npm), and build/test/lint tools (tsc, vitest, vp, rtk, eslint, prettier). Unusual or dangerous commands still prompt for approval.
 
-PR creation remains a separate question.
+Diagnose can now apply fixes without asking for edit permission. Read-only investigation commands are pre-allowed.
 
-### Aligned agent permissions with autonomous philosophy
+### Structured work results
 
-Builder and diagnose agent permissions have been updated to match the new "exhaust data, document assumptions, proceed" philosophy:
+After completing work, the orchestrator now presents a file-by-file summary focused on what changed at the signature and interface level - not function body details. Users can review changes in 1-2 prompts instead of reading the full diff.
 
-- **Builder** - shell permissions expanded from 5 narrow patterns to a comprehensive allow-list: read-only file operations (`ls`, `cat`, `grep`, `find`, etc.), git operations, package managers (`pnpm`, `npm`), build/test/lint tools (`tsc`, `vitest`, `vp`, `rtk`, `eslint`, `prettier`). Catch-all `*: ask` remains for unusual or dangerous commands.
-- **Diagnose** - `edit` permission changed from `ask` to `allow`. Read-only file operations added to bash allow-list. Diagnosis can now apply fixes without friction.
+### Smarter agent behavior
 
-### Structured work result summaries
-
-After builder tasks complete, the orchestrator now presents a concise file-by-file table focusing on signatures and interfaces (not function body details). Builder reports changes at the signature level. Users can scan the summary and spot issues in 1-2 prompts instead of reading the full diff.
-
-### Cross-platform directive improvements
-
-New capabilities synced from core agent directives:
-
-- **Complexity-Based Routing** - orchestrator classifies tasks as SIMPLE (direct to builder) or COMPLEX (architect design first with documented assumptions)
-- **Session Flow** - orchestrator proactively proposes next steps after each task instead of going silent
-- **Recognizing User Frustration** - 5-level escalation ladder (polite nudge → escape hatch) with prescribed responses
-- **Anti-Patterns enriched** - named patterns (Agent Ping-Pong, Builder Bias, Silent Failures) with concrete fixes
-- **`!!!` Convention** - non-negotiable rules are scar tissue from past mistakes, not preferences
-- **"Never delete" rule** - existing code must be adapted, not removed. Collateral deletions are a trust killer
-- **COMPOSITION.md** - proven directive combos for feature implementation, autonomous mode, cross-platform sync
-
-### Writing style improvements
-
-The "Write for humans" rule is now non-negotiable (`!!!`). The humanizer skill is now an always-load for the orchestrator. Reviewer gained a Writing Style checklist item to catch violations.
+- Orchestrator classifies tasks by complexity before dispatching - simple tasks go directly to builder, complex ones get an architecture review first
+- Agents proactively suggest next steps instead of going silent after completing work
+- Agents stop and re-evaluate after repeated user corrections instead of iterating in the wrong direction
+- Agents never delete existing code without understanding what it does - they adapt rather than remove
+- Agent writing style is cleaner - the "Write for humans" rule is now enforced as a hard requirement
 
 ### Affected files
 
