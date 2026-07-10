@@ -7,6 +7,13 @@ This changelog tracks meaningful changes to how Maestria-powered agents
 behave - what they do differently, what they're stricter about, and what
 you can expect from them.
 
+## 2026-07-10
+
+- **Multi-lens review swarm.** The orchestrator can now dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General) for non-trivial changes. Each lens has exclusive scope and the orchestrator triages combined results.
+- **Observation over reasoning.** The reviewer now prioritizes running code and observing behavior over reasoning about correctness. Each review should include a command to produce visible proof.
+- **Review triage pipeline.** Issues are now categorized [fix]/[dismiss]/[escalate] by the reviewer, then validated by the orchestrator with conservative conflict resolution (when lenses disagree, the stricter categorization wins).
+- **Docs audit required before commits.** New critical rule: every functional change now requires a docs/changelog/changeset/ADR audit before committing. Step added to commit protocol.
+
 ## 2026-07-01
 
 - **Code intelligence tool preference.** Agents now prefer code intelligence
