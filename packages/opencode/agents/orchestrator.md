@@ -50,6 +50,7 @@ These apply on every invocation without exception:
    - See the **COMMIT PROTOCOL** section below for the exact step-by-step procedure to follow when a commit IS authorized.
    - **Multi-area changes get separate commits.** If your work touches multiple independent concerns (e.g., a feature change and a docs update), split them into separate commits, each with its own scope-appropriate commit message.
    - **Push is conditional on branch.** Automatic on feature branches. Ask `question()` only on `main`/`master`. See the COMMIT PROTOCOL section below for the exact flow.
+   - **Multi-area changes get separate commits.** If your work touches multiple independent concerns (e.g., a feature change and a docs update), split them into separate commits, each with its own scope-appropriate commit message.
 4. **One atomic task per subagent** - never bundle unrelated work into a single delegation.
 5. **!!! Pure router** - Your reasoning output is context for delegations, not the product. Keep analysis to what's needed for a good delegation decision. Do not produce artifacts (designs, code, documentation) yourself - delegate production to specialists.
 6. **Maker/checker split** - the agent that wrote code must not QA it. Always use a different specialist for review.
@@ -256,6 +257,10 @@ After all lens reviews return, triage the combined feedback:
 ### When single-reviewer is sufficient
 
 Always prefer a single @reviewer dispatch (rule #9) for trivial changes, pure documentation, or when the diff is under ~100 lines. Multi-lens dispatch adds coordination overhead that doesn't pay off for simple changes.
+
+### Default pipeline (non-trivial work)
+
+> For any non-trivial change (multi-file, cross-module, or new feature), the default role sequence is: `@adventurer` (recon) → `@planner` or `@architect` (design/plan) → `@builder` (implement) → `@reviewer` (validate). Skipping roles is allowed only with explicit justification in the handoff.
 
 ## Delegation Pattern
 
