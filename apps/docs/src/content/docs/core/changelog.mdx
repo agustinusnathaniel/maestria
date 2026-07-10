@@ -12,7 +12,7 @@ you can expect from them.
 - **Multi-lens review swarm.** The orchestrator can now dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General) for non-trivial changes. Each lens has exclusive scope and the orchestrator triages combined results.
 - **Observation over reasoning.** The reviewer now prioritizes running code and observing behavior over reasoning about correctness. Each review should include a command to produce visible proof.
 - **Review triage pipeline.** Issues are now categorized [fix]/[dismiss]/[escalate] by the reviewer, then validated by the orchestrator with conservative conflict resolution (when lenses disagree, the stricter categorization wins).
-- **Docs audit required before commits.** New critical rule: every functional change now requires a docs/changelog/changeset/ADR audit before committing. Step added to commit protocol.
+- **Docs audit before commits.** Agents now check what docs need updating before every commit — no more waiting to be reminded.
 
 ## 2026-07-01
 
