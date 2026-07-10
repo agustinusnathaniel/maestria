@@ -52,7 +52,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 5. **Stop** - report result. Do not chain another commit or start new implementation work. Dispatch @reviewer per rule #9 if needed.
 
 6. **Push** - Check current branch name first: `git branch --show-current`
-   - If on `main` or `master`: ask via `question()` — primary branch only.
+   - If on `main` or `master`: ask via `question()` - primary branch only.
    - If on any other branch (feature branch): push automatically after successful validation. Do not ask.
    - Do not push every intermediate commit - push when a meaningful batch is ready or before creating a PR.
 
@@ -271,11 +271,11 @@ Rules:
 
 Before declaring a unit of work complete, verify everything is committed:
 
-1. **Check git status** — run `git status` to see all modified files
-2. **Review each file** — is every modified file intentionally part of this work? Exclude anything that isn't (generated artifacts, personal notes, execution plans).
-3. **Commit** — stage and commit per the COMMIT PROTOCOL
-4. **Verify clean state** — after committing, run `git status` again. If files remain, they are either intentional exclusions or forgotten work. Investigate and handle each one.
-5. **Push** — per the push rules (automatic on feature branches, ask on main/master)
+1. **Check git status** - run `git status` to see all modified files
+2. **Review each file** - is every modified file intentionally part of this work? Exclude anything that isn't (generated artifacts, personal notes, execution plans).
+3. **Commit** - stage and commit per the COMMIT PROTOCOL
+4. **Verify clean state** - after committing, run `git status` again. If files remain, they are either intentional exclusions or forgotten work. Investigate and handle each one.
+5. **Push** - per the push rules (automatic on feature branches, ask on main/master)
 
 Do not assume files will be caught later. Verify explicitly.
 
@@ -287,14 +287,14 @@ When writing PR descriptions, changelogs, commit messages, or changesets: descri
 
 After every builder task completes, automatically run the review loop. Do not wait for the user to request it.
 
-1. **Build** — after builder finishes its task, run validation (`vp check`, tests)
-2. **Review** — dispatch `@reviewer` for a quality review of the changes
+1. **Build** - after builder finishes its task, run validation (`vp check`, tests)
+2. **Review** - dispatch `@reviewer` for a quality review of the changes
 3. **Triage results**:
    - If reviewer approves (no critical issues) → proceed to commit
    - If reviewer flags fixable issues → route back to `@builder`, then re-review
    - If reviewer flags ambiguous issues → document them and proceed (the loop must terminate)
-4. **Iteration limit** — max 3 review cycles per unit of work. If after 3 rounds the same issues persist, escalate: "Tried X, Y, Z. Persistent issue: [cause]. Need [input] to proceed."
-5. **Document** — include review verdict and any unresolved issues in the session summary
+4. **Iteration limit** - max 3 review cycles per unit of work. If after 3 rounds the same issues persist, escalate: "Tried X, Y, Z. Persistent issue: [cause]. Need [input] to proceed."
+5. **Document** - include review verdict and any unresolved issues in the session summary
 
 The user should not have to say "review this" or "check this". The loop runs automatically after every implementation task.
 
@@ -302,8 +302,8 @@ The user should not have to say "review this" or "check this". The loop runs aut
 
 After each task:
 
-1. Update the todo list — mark done, check pending items
-2. Propose the next step — if items remain, suggest the next one. Do not wait for the user to remember.
+1. Update the todo list - mark done, check pending items
+2. Propose the next step - if items remain, suggest the next one. Do not wait for the user to remember.
 3. If nothing is pending, ask "Is there anything else?" or summarize what was accomplished.
 
 If you identified follow-up work during the task, mention it explicitly and ask if they want to proceed.
