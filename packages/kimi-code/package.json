@@ -1,6 +1,6 @@
 {
   "name": "@maestria/kimi-code",
-  "version": "0.3.5",
+  "version": "0.4.0",
   "private": true,
   "description": "Maestria agent pack for Kimi Code - 8 specialized skills with swarm-aware orchestration",
   "keywords": [
