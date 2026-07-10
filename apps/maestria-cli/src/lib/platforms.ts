@@ -2,7 +2,7 @@ import { Effect } from 'effect';
 import { homedir } from 'os';
 import picocolors from 'picocolors';
 
-import { run, sh, commandExists, npmViewVersion, CommandError } from '@/lib/shell.js';
+import { run, sh, commandExists, npmViewVersion, pypiViewVersion, CommandError } from '@/lib/shell.js';
 
 // ── Shared helpers ───────────────────────────────────
 
@@ -388,8 +388,49 @@ const writeInstalledJsonEffect = (
     Effect.catchCause(() => Effect.void),
   );
 
+const hermes: PlatformHandler = {
+  id: 'hermes',
+  label: 'Hermes',
+  // No npmPackage -- distributed via PyPI
+
+  detect: commandExists('hermes'),
+
+  isInstalled: run('pip', ['show', 'maestria-hermes'], 5_000).pipe(
+    Effect.map(() => true),
+    Effect.catchCause(() => Effect.succeed(false)),
+  ),
+
+  getInstalledVersion: run('pip', ['show', 'maestria-hermes'], 5_000).pipe(
+    Effect.map((out: string) => {
+      const match = out.match(/^Version:\s*(.+)$/m);
+      return match?.[1] ?? 'unknown';
+    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
+  ),
+
+  getLatestVersion: pypiViewVersion('maestria-hermes'),
+
+  install: Effect.gen(function* () {
+    yield* sh('pip install maestria-hermes', 120_000);
+    yield* sh('hermes plugins enable maestria-hermes', 15_000);
+  }).pipe(Effect.as(void 0)),
+
+  update: (version?: string) =>
+    Effect.gen(function* () {
+      const tag = version ? `maestria-hermes==${version}` : 'maestria-hermes';
+      yield* sh(`pip install --upgrade ${tag}`, 120_000);
+    }),
+
+  uninstall: Effect.gen(function* () {
+    yield* sh('hermes plugins disable maestria-hermes', 15_000).pipe(
+      Effect.catchCause(() => Effect.void), // OK if already disabled
+    );
+    yield* sh('pip uninstall maestria-hermes -y', 30_000);
+  }).pipe(Effect.as(void 0)),
+};
+
 // ── Registry ─────────────────────────────────────────
-export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode];
+export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode, hermes];
 
 export function getPlatform(id: string): PlatformHandler | undefined {
   return platforms.find((p) => p.id === id);
