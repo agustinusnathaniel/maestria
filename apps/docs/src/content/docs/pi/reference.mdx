@@ -102,6 +102,52 @@ Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are block
 
 **Session persistence.** Mode and delegation state survive session compaction, resume, and fork operations. Run `/maestria-status` to view the current state at any time.
 
+## Specialist Agent Registration
+
+The 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer) are registered with pi-subagents via the **file-based agent type system** -- the standard mechanism used by all pi-subagents extensions.
+
+### How it works
+
+1. **Sync pipeline** generates `agents/*.md` files from canonical maestria directives with pi-subagents YAML frontmatter, including role-specific tool allowlists and `prompt_mode: append` / `inherit_context: true`
+2. **Extension startup** (`session_start` handler) deploys the agent files to `~/.pi/agent/agents/` -- pi-subagents' designated agent discovery directory
+3. **Subagent dispatch** (`maestria_subagent` tool) calls `registry.reload()` which discovers the files and registers each as an agent type
+4. **`service.spawn("adventurer", task)`** looks up the registered type, merges the role-specific prompt on top of the inherited parent context via `prompt_mode: append`, and spawns the subagent with correct tools and instructions
+
+### Agent file format
+
+Each specialist agent file uses pi-subagents' standard YAML frontmatter format:
+
+```yaml
+---
+description: Role description for discovery UI
+tools: read, bash, grep, find, ls # tool allowlist
+prompt_mode: append # append to inherited parent prompt
+inherit_context: true # pass parent session context
+---
+```
+
+The `prompt_mode: append` field is critical -- it ensures the specialist prompt merges on top of the inherited orchestrator prompt, so every subagent has both the dispatcher methodology and its role-specific guidance.
+
+### Tool isolation
+
+Each specialist has an appropriate tool allowlist matching its role:
+
+| Agent      | Tools                                   | Purpose                             |
+| ---------- | --------------------------------------- | ----------------------------------- |
+| adventurer | read, bash, grep, find, ls, glob        | Codebase reconnaissance (read-only) |
+| architect  | read, bash, grep, find, ls              | Architecture analysis (read-only)   |
+| builder    | read, bash, grep, find, ls, write, edit | Implementation (full access)        |
+| diagnose   | read, bash, grep, find, ls              | Bug tracing (read-only)             |
+| planner    | read, bash, grep, find, ls              | Planning (read-only)                |
+| reviewer   | read, bash, grep, find, ls, glob        | Code review (read-only)             |
+| writer     | read, bash, grep, find, ls, write, edit | Documentation (full access)         |
+
+This enforces the maker/checker split at the subagent tool level -- builder and writer have write access, everyone else is read-only.
+
+### Persistence
+
+Agent files are deployed once per session and never overwrite existing files in `~/.pi/agent/agents/`, respecting any user-customized agents with the same name. To reset to maestria defaults, remove the files from `~/.pi/agent/agents/` and restart Pi.
+
 ## See Also
 
 - [Specialist Reference](/core/agents/)

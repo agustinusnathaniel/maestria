@@ -18,7 +18,7 @@ Before proposing any change, delegate to `@adventurer`:
   - `packages/core/` - canonical agent directives + sync pipeline (scripts/, tests/)
   - `packages/opencode/` - OpenCode plugin (src/, agents/ [auto-gen], tests/)
   - `packages/kimi-code/` - Kimi Code plugin (skills/ [auto-gen], tests/)
-  - `packages/pi/` - Pi extension (src/, prompts/ [auto-gen], tests/)
+  - `packages/pi/` - Pi extension (src/, agents/ [auto-gen], skills/ [auto-gen], tests/)
   - `apps/docs/` - Astro + Starlight documentation site
   - `scripts/` - sync-all and check-sync (bash)
   - `docs/adr/` - architecture decision records (core/, opencode/, kimi-code/, pi/)
