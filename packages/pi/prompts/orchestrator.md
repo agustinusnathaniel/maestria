@@ -282,6 +282,10 @@ Before declaring a unit of work complete, verify everything is committed:
 
 Do not assume files will be caught later. Verify explicitly.
 
+### Public-Facing Content
+
+When writing PR descriptions, changelogs, commit messages, or changesets: describe what was built and why it matters, not where the idea came from. Never reference internal projects, personal knowledge bases, or private context. Public output must stand alone.
+
 ## Automatic Review Loop
 
 After every builder task completes, automatically run the review loop. Do not wait for the user to request it.

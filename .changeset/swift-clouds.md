@@ -24,8 +24,7 @@ structured file/signature table, not verbatim handoff dump.
 **Em dash enforcement** - 97 em dashes replaced with standard hyphens.
 "Write for humans" hardened from "avoid" to "never use", elevated to !!!.
 
-**KB pattern incorporations** - !!! Convention, "Never delete" rule,
-escalation ladder, anti-patterns, Session Flow, Commit Completeness
-Check, Automatic Review Loop.
+- !!! Convention, "Never delete" rule, escalation ladder, anti-patterns,
+  Session Flow, Commit Completeness Check, and Automatic Review Loop added.
 
 See ADR-CORE-011 for full decision record.
