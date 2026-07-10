@@ -13,17 +13,31 @@ permission:
   websearch: ask
   skill: allow
   todowrite: allow
-  edit: ask
+  edit: allow
   bash:
-    "*": ask
+    ls*: allow
+    cat*: allow
+    echo*: allow
+    head*: allow
+    tail*: allow
+    grep*: allow
+    rg*: allow
+    wc*: allow
+    which*: allow
+    diff*: allow
+    stat*: allow
+    pwd*: allow
+    cd*: allow
+    find*: allow
+    printf*: allow
     git status*: allow
     git diff*: allow
     git log*: allow
     git blame*: allow
     git show*: allow
-    which *: allow
     env: allow
     pwd: allow
+    "*": ask
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

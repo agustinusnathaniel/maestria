@@ -14,14 +14,36 @@ permission:
   todowrite: allow
   skill: allow
   bash:
+    ls*: allow
+    cat*: allow
+    echo*: allow
+    head*: allow
+    tail*: allow
+    grep*: allow
+    rg*: allow
+    wc*: allow
+    which*: allow
+    diff*: allow
+    stat*: allow
+    du*: allow
+    pwd*: allow
+    cd*: allow
+    find*: allow
+    printf*: allow
+    test*: allow
+    sort*: allow
+    git*: allow
+    pnpm*: allow
+    npm*: allow
+    tsc*: allow
+    vitest*: allow
+    vp*: allow
+    rtk*: allow
+    eslint*: allow
+    prettier*: allow
+    bash scripts/*: allow
+    npx tsx*: allow
     "*": ask
-    git status*: allow
-    git diff*: allow
-    git log*: allow
-    npm test*: allow
-    pnpm test*: allow
-    npx tsc*: allow
-    npm view *: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
