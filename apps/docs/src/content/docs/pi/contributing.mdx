@@ -52,11 +52,12 @@ All behavioral content is derived from canonical sources in `packages/core/agent
 ### Running the sync
 
 ```bash
-# Sync specialist agent files
-pnpm --filter @maestria/pi sync-agents
+# Sync all generated artifacts
+bash scripts/sync-all
 
-# Sync skill files
-pnpm --filter @maestria/pi sync-skills
+# Or individually:
+pnpm --filter @maestria/pi sync-agents      # agent files for pi-subagents
+pnpm --filter @maestria/pi sync-skills      # skill files for Pi auto-injection
 
 # Validate generated artifacts
 pnpm --filter @maestria/pi validate
