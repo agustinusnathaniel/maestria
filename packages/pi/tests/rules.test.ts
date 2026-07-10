@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { createBeforeAgentStartHandler } from '@/rules.js';
+import { createModePromptHandler } from '@/rules.js';
 import { createInitialState } from '@/state.js';
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
 } from '@earendil-works/pi-coding-agent';
 
-describe('createBeforeAgentStartHandler', () => {
+describe('createModePromptHandler', () => {
   const baseEvent: BeforeAgentStartEvent = {
     type: 'before_agent_start',
     prompt: 'build the feature',
@@ -14,19 +14,18 @@ describe('createBeforeAgentStartHandler', () => {
     systemPromptOptions: {} as any,
   };
 
-  it('when mode is null, still prepends RULES_CONTENT to the system prompt', () => {
+  it('when mode is null, returns void (no modification)', () => {
     const state = createInitialState();
-    const handler = createBeforeAgentStartHandler(state);
+    const handler = createModePromptHandler(state);
 
-    const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
-    expect(result.systemPrompt!).toContain('# Global Agent Rules');
-    expect(result.systemPrompt!).toContain('You are an AI assistant.');
+    const result = handler(baseEvent, {} as any);
+    expect(result).toBeUndefined();
   });
 
   it('when mode is "fein", returns a result with systemPrompt containing the mode marker', () => {
     const state = createInitialState();
     state.mode = 'fein';
-    const handler = createBeforeAgentStartHandler(state);
+    const handler = createModePromptHandler(state);
 
     const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
     expect(result.systemPrompt!).toContain('[MODE: fein]');
@@ -35,25 +34,23 @@ describe('createBeforeAgentStartHandler', () => {
   it('when mode is "sonar", returns a result with systemPrompt containing "Research Only"', () => {
     const state = createInitialState();
     state.mode = 'sonar';
-    const handler = createBeforeAgentStartHandler(state);
+    const handler = createModePromptHandler(state);
 
     const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
     expect(result.systemPrompt!).toContain('Research Only');
   });
 
-  it('the returned systemPrompt starts with RULES_CONTENT, then appends existing systemPrompt and mode', () => {
+  it('the returned systemPrompt starts with original systemPrompt, followed by the mode prompt', () => {
     const state = createInitialState();
     state.mode = 'blitz';
-    const handler = createBeforeAgentStartHandler(state);
+    const handler = createModePromptHandler(state);
 
     const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
-    // RULES_CONTENT should come first
-    expect(result.systemPrompt!.indexOf('# Global Agent Rules')).toBeLessThan(
+    // Original system prompt should come first
+    expect(result.systemPrompt!.startsWith('You are an AI assistant.')).toBe(true);
+    // Mode prompt should follow
+    expect(result.systemPrompt!.indexOf('[MODE: blitz]')).toBeGreaterThan(
       result.systemPrompt!.indexOf('You are an AI assistant.'),
-    );
-    // Original system prompt should precede mode
-    expect(result.systemPrompt!.indexOf('You are an AI assistant.')).toBeLessThan(
-      result.systemPrompt!.indexOf('[MODE: blitz]'),
     );
   });
 });

@@ -16,8 +16,6 @@
   },
   "files": [
     "dist",
-    "prompts",
-    "rules",
     "skills",
     "README.md",
     "LICENSE"
@@ -31,9 +29,10 @@
     "build": "vp pack",
     "test": "vp test",
     "lint": "vp check",
+    "sync-skills": "npx tsx ../core/scripts/sync.ts --config sync-skills.config.ts",
     "validate-prompts": "node --experimental-strip-types scripts/validate-prompts.ts",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
-    "validate": "npm run validate-prompts && npm run validate-skills"
+    "validate": "npm run validate-skills"
   },
   "dependencies": {
     "@gotgenes/pi-subagents": "^17.0.0"
@@ -54,9 +53,6 @@
   "pi": {
     "extensions": [
       "./dist/extension.mjs"
-    ],
-    "prompts": [
-      "./prompts"
     ],
     "skills": [
       "./skills"

@@ -1,7 +1,7 @@
 import type { ExtensionAPI, SessionStartEvent } from '@earendil-works/pi-coding-agent';
 import { createInitialState } from '@/state.js';
 import { installModeCommands } from '@/modes.js';
-import { createBeforeAgentStartHandler } from '@/rules.js';
+import { createModePromptHandler } from '@/rules.js';
 import { installCompactionHandlers } from '@/compaction.js';
 import { installSubagentTool } from '@/subagent.js';
 import { installCommands } from '@/commands.js';
@@ -14,11 +14,11 @@ export default function (pi: ExtensionAPI): void {
   // Install mode commands: /fein, /sonar, /blitz
   installModeCommands(pi, state);
 
-  // Inject mode prompts when a mode is active
-  const handleBeforeAgentStart = createBeforeAgentStartHandler(state);
+  // Inject mode prompt when a workflow mode is active
+  const handleModePrompt = createModePromptHandler(state);
 
   pi.on('before_agent_start', (event, ctx) => {
-    return handleBeforeAgentStart(event, ctx);
+    return handleModePrompt(event, ctx);
   });
 
   // Restore persisted state on session start (reload/resume/fork)

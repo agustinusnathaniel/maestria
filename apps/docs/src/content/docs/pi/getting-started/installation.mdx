@@ -42,12 +42,11 @@ There are two ways to install `@maestria/pi`.
 
    ```json
    {
-     "extensions": ["@maestria/pi"],
-     "prompts": ["node_modules/@maestria/pi/prompts"]
+     "extensions": ["@maestria/pi"]
    }
    ```
 
-   This tells Pi to load the extension package and its bundled subagent prompts on startup.
+   This tells Pi to load the extension package at startup. Methodology skills are auto-discovered from the package manifest - no additional config needed.
 
 3. **Install the npm package**
 
@@ -70,22 +69,17 @@ Skip the config file step - install and register in one command:
 ```bash
 pi install npm:@maestria/pi
 pi config extensions add @maestria/pi
-pi config prompts add node_modules/@maestria/pi/prompts
 ```
 
 </details>
 
 ## Verify Installation
 
-Start a new Pi session. Try activating a workflow mode:
+Start a new Pi session. The `@maestria/pi` extension loads automatically from the package manifest. Pi's resource loader discovers its four methodology skills (orchestrator dispatcher, global agent rules, handoff contract, iteration limits) from the `pi.skills` manifest field and injects them into the system prompt as `<skill>` blocks -- the same standard mechanism used by all major Pi extensions.
 
-```
-/fein explore the project structure and document the architecture
-```
+You should notice Pi behaving as a maestria dispatcher from the first turn: it responds to requests by decomposing tasks, delegating to specialist subagents, and following the spec-driven orchestration protocol -- all guided by the auto-injected orchestrator skill.
 
-Pi should respond with the mode marker `[MODE: fein]` and begin the reconnaissance phase. If you see the mode prompt injected into the agent's context, the extension is active.
-
-You can also verify by listing installed extensions:
+You can also list installed extensions to verify:
 
 ```bash
 pi extensions list
@@ -123,9 +117,8 @@ To remove the extension:
 
 1. Open your `~/.config/pi/pi.json` config file
 2. Remove `"@maestria/pi"` from the `"extensions"` array
-3. Remove `"node_modules/@maestria/pi/prompts"` from the `"prompts"` array
-4. Run: `pi uninstall @maestria/pi`
-5. Restart Pi
+3. Run: `pi uninstall @maestria/pi`
+4. Restart Pi
 
 This will unregister all agents and restore the default configuration.
 
