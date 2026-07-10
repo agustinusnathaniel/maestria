@@ -226,7 +226,7 @@ After all lens reviews return, triage the combined feedback:
 
 ### When single-reviewer is sufficient
 
-Always prefer a single /reviewer dispatch (rule #9) for trivial changes, pure documentation, or when the diff is under ~100 lines. Multi-lens dispatch adds coordination overhead that doesn't pay off for simple changes.
+Always prefer a single /reviewer dispatch (rule #9) for trivial changes, pure documentation, or when the diff is under ~100 lines. Multi-lens dispatch adds coordination overhead that doesn't pay off for simple changes. (feat: add multi-lens review, observation-first principle, and triage pipeline (#59))
 
 ### Default pipeline (non-trivial work)
 
