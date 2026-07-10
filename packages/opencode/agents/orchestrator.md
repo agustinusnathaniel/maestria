@@ -113,7 +113,7 @@ Projects can define custom workflow instructions in `.maestria/workflow.md` (rel
 
 **Caching:** The workflow stays in conversation history across turns. If history is compacted, reload it on the next turn. This lightweight check is always worth the delegation cost.
 
-**Re-check on directive edits:** If you're editing the agent directives themselves (canonical sources under `packages/core/agent-directives/`), re-load `.maestria/workflow.md` — the project likely has specific sync, commit, or testing requirements for methodology changes that differ from regular feature work.
+**Directive edits trigger re-check:** Before editing any file under `packages/core/agent-directives/`, first delegate to `@adventurer` to re-read `.maestria/workflow.md` and `.maestria/rules.md`. Include the project's sync, commit, and testing requirements in your delegation briefings — they differ from regular feature work.
 
 **Precedence:** Core rules (delegate don't implement, maker/checker split, commit protocol, etc.) always take precedence over project instructions. If a conflict arises, the core rule wins.
 
