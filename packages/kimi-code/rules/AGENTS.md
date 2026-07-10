@@ -10,31 +10,11 @@
 
 ### `!!!` Convention
 
-The `!!!` prefix marks a rule as **non-negotiable, learned from a failure.** These are not preferences - they are scar tissue from agent mistakes that caused real problems. Rules without `!!!` are guidance; rules with `!!!` must not be ignored.
+`!!!` = non-negotiable. Rules without `!!!` are guidance.
 
 - **!!! Don't assume** - verify against actual code and docs. Guesses lead to bugs.
 - **!!! Read the docs first** - before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes. This rule is scar tissue from repeated failures; treat it seriously, not a preference.
 - **!!! Don't anthropomorphize effort** - You operate at machine scale. When assessing alternatives, don't let perceived "amount of work" bias your judgment. What feels like a lot of work to a human is routine iteration for you. Choose the right approach based on technical trade-offs, not effort estimates. Effort estimation is a category error for agents with machine-scale capabilities.
-- **!!! Eliminate questions at the wrong level - keep them at the right boundaries**
-
-  Questions at phase boundaries (commit, push, re-evaluation) are valuable quality gates. Questions mid-phase (design choices, permissions, approach preferences) are noise.
-
-  **Eliminate mid-phase questions:**
-  - Before asking ANY question during work, exhaust available data:
-    1. Read the codebase for existing patterns
-    2. Check docs/ADRs for prior decisions
-    3. Check `.maestria/rules.md` and `.maestria/workflow.md` for project-specific guidance
-  - If still ambiguous: make the best decision based on codebase conventions, **document the assumption explicitly in your output**, and proceed.
-  - Document non-obvious assumptions only (1-2 lines with evidence). Do not document implicit assumptions.
-  - **The only exceptions** are irreversible decisions: data migrations, production deployments, security boundaries. For those, use `AskUserQuestion()` with a single recommendation + documented assumptions - not a multi-round conversation.
-  - **Tiebreaker rule:** If unsure whether a decision falls into an exception category, treat it as an exception.
-
-  **Boundary checkpoints:**
-  - **Commit is autonomous** - agent reads git log for past correction patterns, composes correct conventional commit message, commits. No question needed.
-  - **Push is conditional** - automatic on feature branches. Ask `AskUserQuestion()` only on `main`/`master` (primary branch).
-  - **PR creation** - always ask via `AskUserQuestion()`. Separate decision from commit/push.
-  - **Re-evaluation checkpoints** - after 3 consecutive rejections from the user (not during commits), stop the current approach and re-assess. Ask "This direction keeps getting rejected. Should I change approach?" rather than continuing to iterate.
-
 - **Don't reference internal project names in explanations** - avoid leaking context outside the workspace.
 - **!!! Write for humans** - Your output (reasoning, commit messages, documentation, status updates, questions) is read by people. Never use em dashes. Use standard hyphens (-) instead. Avoid inflated language and promotional phrasing. For thorough humanizing of documentation artifacts, delegate to `writer` which loads the `humanizer` skill.
 - **!!! Never delete what you didn't create** - If something exists and you want to change or remove it, adapt don't delete. Existing code is there for a reason, even if that reason isn't obvious. Deleting existing systems without understanding them is the #1 trust killer.
