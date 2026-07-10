@@ -1,22 +1,31 @@
 ---
 '@maestria/core': minor
-'@maestria/opencode': minor
 '@maestria/kimi-code': minor
 '@maestria/pi': minor
 ---
 
-Eliminate questions — autonomous philosophy across all layers
+Eliminate questions - autonomous philosophy across core methodology
 
-Shift from "ask when unsure" to "exhaust data, document assumptions, proceed — reviewer catches mistakes". Based on analysis of 1,133 real question() calls across 5,675 sessions.
+Shift from "ask when unsure" to "exhaust data, document assumptions,
+proceed - reviewer catches mistakes". Based on analysis of 1,133 real
+question() calls across 5,675 sessions.
 
-**Mid-phase questions eliminated** — architect, planner, diagnose no longer ask design/permission questions. They exhaust data sources and document assumptions instead.
+**Mid-phase questions eliminated** - architect, planner, diagnose no
+longer ask design/permission questions. They exhaust data sources and
+document assumptions instead.
 
-**Autonomous commit protocol** — agent reads git log for past corrections, composes correct conventional commit message, commits autonomously. Push is automatic on feature branches, asks only on main/master.
+**Autonomous commit protocol** - agent reads git log for past corrections,
+composes correct conventional commit message, commits autonomously.
+Push is automatic on feature branches, asks only on main/master.
 
-**OpenCode permission alignment** — builder shell permissions expanded to comprehensive allow-list (read-only file ops, git, pnpm, build/test tools). Both builder and diagnose keep `*: ask` catch-all for unusual commands.
+**Work result summary** - orchestrator presents completed work as
+structured file/signature table, not verbatim handoff dump.
 
-**Work result summary** — orchestrator presents completed work as structured file/signature table, not verbatim handoff dump.
+**Em dash enforcement** - 97 em dashes replaced with standard hyphens.
+"Write for humans" hardened from "avoid" to "never use", elevated to !!!.
+
+**KB pattern incorporations** - !!! Convention, "Never delete" rule,
+escalation ladder, anti-patterns, Session Flow, Commit Completeness
+Check, Automatic Review Loop.
 
 See ADR-CORE-011 for full decision record.
-
-**KB pattern incorporations.** `!!!` Convention formalized as non-negotiable scar tissue. "Never delete what you didn't create" rule hardened. Recognizing User Frustration escalation ladder (5 levels). Anti-Patterns enriched with named patterns and fixes. Complexity-Based Routing (SIMPLE/COMPLEX classification). Session Flow added (proactive next-step proposing). COMPOSITION.md with proven directive combos.
