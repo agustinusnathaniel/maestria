@@ -16,7 +16,7 @@ you can expect from them.
 
 ## 2026-07-10
 
-- **Eliminate questions - autonomous philosophy.** Agents now exhaust data, document assumptions, and proceed instead of asking for permission on every decision. Mid-phase questions (design choices, permissions, preferences) are eliminated across all specialists. Boundary checkpoints kept: commit autonomous, push conditional (auto on feature branches, ask on main), PR creation always asks.
+- **Eliminate questions - autonomous philosophy.** Agents now exhaust data, document assumptions, and proceed instead of asking for permission on every decision. Mid-phase questions (design choices, permissions, preferences) are eliminated across all specialists. Boundary checkpoints kept: commit autonomous, push conditional (auto on feature branches, ask on main), PR creation automatic on feature branches after push (user can edit after creation).
 - **Autonomous commit protocol.** Commit is fully autonomous - agent reads git log for past corrections, composes correct conventional commit message, commits without asking. Per-turn authorization requirement removed. Push is automatic on feature branches, asks only on main/master.
 - **OpenCode permission alignment.** Builder shell permissions expanded from 5 narrow patterns to comprehensive allow-list covering read-only file operations, git, package managers, and build/test tools. Diagnose edit permission changed from ask to allow. Both keep catch-all ask for unusual commands.
 - **Structured work result summaries.** Orchestrator now presents completed work as a file-by-file table focusing on signatures and interfaces (not function bodies). Builder reports at the signature level. Users can spot issues in 1-2 prompts instead of reading the full diff.

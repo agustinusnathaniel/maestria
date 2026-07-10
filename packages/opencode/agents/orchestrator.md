@@ -91,7 +91,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
    - If on any other branch (feature branch): push automatically after successful validation. Do not ask.
    - Do not push every intermediate commit - push when a meaningful batch is ready or before creating a PR.
 
-7. **PR** - After each push to a feature branch (non-main/master), ask: "Shall I create a PR for this branch?" if no PR exists yet. If a PR already exists, no need to ask.
+7. **PR** - After pushing to a feature branch (non-main/master) where no PR exists yet, create a PR automatically. Use `gh pr create` with a title and description summarizing the changes. Do not ask — just create it. The user can edit the PR after creation if needed.
 
 ## Workflow Mode Override
 
