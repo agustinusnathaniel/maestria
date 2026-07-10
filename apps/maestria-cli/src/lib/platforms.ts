@@ -132,12 +132,24 @@ const pi: PlatformHandler = {
 
   getLatestVersion: npmViewVersion('@maestria/pi'),
 
-  install: run('pi', ['install', 'npm:@maestria/pi']).pipe(Effect.as(void 0)),
+  install: Effect.gen(function* () {
+    // Install prerequisite: @gotgenes/pi-subagents for subagent dispatch
+    yield* run('pi', ['install', '@gotgenes/pi-subagents'], 60_000).pipe(
+      Effect.catchCause(() => Effect.void),
+    );
+    // Install main package
+    yield* run('pi', ['install', 'npm:@maestria/pi'], 120_000);
+  }).pipe(Effect.as(void 0)),
 
-  update: (version?: string) => {
-    const tagged = version ? `npm:@maestria/pi@${version}` : 'npm:@maestria/pi@latest';
-    return run('pi', ['install', tagged]).pipe(Effect.as(void 0));
-  },
+  update: (version?: string) =>
+    Effect.gen(function* () {
+      const tagged = version ? `npm:@maestria/pi@${version}` : 'npm:@maestria/pi@latest';
+      // Ensure pi-subagents is installed (may not be for users who installed before v0.4.1)
+      yield* run('pi', ['install', '@gotgenes/pi-subagents'], 60_000).pipe(
+        Effect.catchCause(() => Effect.void),
+      );
+      yield* run('pi', ['install', tagged], 120_000);
+    }),
 
   uninstall: run('pi', ['uninstall', '@maestria/pi']).pipe(Effect.as(void 0)),
 };

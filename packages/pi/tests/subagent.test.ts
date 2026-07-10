@@ -110,7 +110,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
       undefined,
       {},
     );
-    expect(result.content[0].text).toContain('## Subagent Handoff Required');
+    expect(result.content[0].text).toContain('## Subagent Dispatch Unavailable');
   });
 
   it('works with explicit mode=single', async () => {
@@ -126,7 +126,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
       undefined,
       {},
     );
-    expect(result.content[0].text).toContain('## Subagent Handoff Required');
+    expect(result.content[0].text).toContain('## Subagent Dispatch Unavailable');
   });
 });
 
@@ -231,7 +231,7 @@ describe('installSubagentTool - parallel mode', () => {
       undefined,
       {},
     );
-    expect(result.content[0].text).toContain('## Subagent Handoff Required');
+    expect(result.content[0].text).toContain('## Subagent Dispatch Unavailable');
   });
 });
 
@@ -298,7 +298,7 @@ describe('installSubagentTool - chain mode', () => {
       undefined,
       {},
     );
-    expect(result.content[0].text).toContain('## Subagent Handoff Required');
+    expect(result.content[0].text).toContain('## Subagent Dispatch Unavailable');
   });
 });
 

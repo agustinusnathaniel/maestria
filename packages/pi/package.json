@@ -34,9 +34,7 @@
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },
-  "dependencies": {
-    "@gotgenes/pi-subagents": "^17.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:",
@@ -45,6 +43,7 @@
   "peerDependencies": {
     "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
+    "@gotgenes/pi-subagents": "^17.0.0",
     "typebox": "*"
   },
   "engines": {

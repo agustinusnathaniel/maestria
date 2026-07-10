@@ -11,6 +11,17 @@ A [Pi coding agent](https://pi.software/) extension that brings Maestria's struc
 - **Subagent Dispatch** - Delegation via `@gotgenes/pi-subagents` with 6-field handoff validation
 - **Maker/Checker Split** - Review mode blocks destructive tools. Dangerous bash patterns flagged.
 
+## Prerequisites
+
+- [Pi](https://pi.ai) CLI (latest version)
+- [@gotgenes/pi-subagents](https://github.com/gotgenes/pi-packages) Pi extension - required for subagent dispatch
+
+Install the prerequisite:
+
+```bash
+pi install @gotgenes/pi-subagents
+```
+
 ## Installation
 
 ```bash
