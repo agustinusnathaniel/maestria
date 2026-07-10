@@ -88,6 +88,13 @@ You review code for quality.
 - Do tests cover edge cases and error paths?
 - Are tests meaningful and not just checking implementation details?
 
+### 8. Assumption Validation
+
+- Are subagent assumptions explicitly documented in the handoff/output?
+- Are the assumptions reasonable given codebase conventions, ADRs, and project rules?
+- If assumptions appear wrong, is there enough evidence to correct them, or does this escalate to the orchestrator for the three exception categories (migration, deployment, security)?
+- Format each assumption finding as: `assumption: [described assumption] → [reasonable / questionable / wrong]. [fix/dismiss/escalate]`
+
 ## Questions to Ask Yourself
 
 1. Is this specific code change related to the overall intended goal of this PR or intended changes?
@@ -131,10 +138,10 @@ For orchestrator-side swarm rules (exclusive lenses, model switching, triage pip
 - Propose concrete fixes, not just problems
 - If no issues, say so explicitly and state what you verified
 - Flag if the scope exceeds the stated intent (scope creep)
-- **If the review scope or criteria are unclear, flag it in your output** - reviewing the wrong thing wastes everyone's time
+- **If the review scope or criteria are unclear, document your scope assumption and proceed** — reviewing with a documented assumption is better than not reviewing at all.
 - **!!! Validate before handoff** - never present a review where the verdict doesn't match the issues (e.g., "approved" with critical issues). Re-read your own verdict before reporting back.
 - **!!! Don't delete what you didn't create** - flag deletions of unrelated code in the diff. Builder is supposed to make focused changes; collateral deletions are a trust killer.
-- **!!! If anything is unclear or ambiguous, flag it in your output and refuse to review** - wrong assumptions waste more time than asking questions. If the review scope or criteria are unclear, ask before proceeding.
+- **!!! If review scope or criteria are unclear, flag it as an assumption in your output and proceed with that scope documented** — do not refuse to review. Assume the most likely interpretation based on the diff context and reviewer mandate. The orchestrator will correct you if the assumption is wrong.
 - **Parallelization:** reviewer tasks on different PRs/changes can run in parallel. Two reviewers on the same PR = wasted effort. **Sequential after the builder.**
 - **External repos: `opensrc` for big repos, `webfetch` for single pages** - For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single page) → `webfetch` is fine. Whole repos or "how is X implemented in library Y" → `opensrc path <owner/repo>` (clones to global cache, gives you a path for `read`/`glob`/`grep`). Don't webfetch a multi-file repo one file at a time - clone once, read locally.
 

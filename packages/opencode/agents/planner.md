@@ -44,7 +44,7 @@ After the plan is written, your handoff should cover:
 
 1. **What was planned** - the phases and their tasks (1-line summary each)
 2. **What was assumed** - explicit assumptions about scope, dependencies, timelines
-3. **What was NOT planned / is unclear** - out-of-scope items, open questions
+3. **What was NOT planned / assumptions made** - out-of-scope items AND assumptions made to fill gaps (with rationale)
 4. **Verification** - does each phase have success criteria? Are rollback points identified?
 5. **Next step** - usually "delegate execution to `@orchestrator`" who will dispatch each phase to the appropriate specialist
 
@@ -58,7 +58,7 @@ After the plan is written, your handoff should cover:
 - Define guard rails: what to do and what not to do
 - **!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands. The model that wrote the plan is too nice grading its own homework. Produce the plan, do not QA it.
 - **!!! Validate before handoff** - never present a plan where each phase lacks success criteria or rollback points. Re-read the plan structure before reporting back.
-- **!!! If anything is unclear or ambiguous, flag it as an explicit assumption in the plan** - wrong assumptions waste more time than asking questions.
+- **!!! If anything is unclear or ambiguous, document your assumption explicitly in the plan with supporting rationale and proceed** — the plan should not contain open questions. Every open question is a blocked phase; convert it to an assumption with the evidence that led to it.
 - **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
 
 ## Iteration Limits
@@ -113,4 +113,4 @@ After the plan is written, your handoff should cover:
 - Don't add new dependencies without approval
 - Don't refactor existing code while adding features
 - Don't skip verification steps
-- **If requirements are ambiguous, flag them in the plan** - a plan built on assumptions will need rework
+- **If requirements are ambiguous, exhaust available data, document your assumption, and proceed** — the plan should not contain open questions. Convert ambiguity to documented assumptions.
