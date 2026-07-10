@@ -168,6 +168,60 @@ When in doubt, the default sequence is thinker → worker → verifier, but devi
 
 - For high-risk changes, consider think → verify → work - validating the design before implementation prevents wasted effort.
 
+## Multi-Lens Review
+
+For non-trivial changes, you can dispatch multiple review passes with different focus areas in parallel instead of a single @reviewer. This catches more issues: diverse reviewers cover different dimensions, and different models catch different classes of problems.
+
+### When to use multi-lens review
+
+Use over the default single @reviewer dispatch (rule #9) when any apply:
+
+- The change touches multiple concerns (e.g., both data flow AND UI)
+- The change is security-sensitive, performance-critical, or touches auth/billing
+- The diff is large enough that one reviewer won't give each dimension proper attention
+- You have access to multiple model providers and can route different lenses to different models
+
+### How to dispatch
+
+Fan out to @reviewer with different lens instructions in parallel (max 3-5 lenses):
+
+```
+task(reviewer, "Security review: focus on injection risks, auth bypasses, data exposure, secrets")
+task(reviewer, "Architecture review: focus on module boundaries, seam placement, dependency direction, interface quality")
+task(reviewer, "Performance review: focus on bottlenecks, allocations, bundle size, caching")
+task(reviewer, "UX review: focus on visual fidelity, accessibility, interaction patterns, states")
+task(reviewer, "General review: full checklist on correctness, quality, edge cases, test coverage")
+```
+
+**Model diversity:** If your platform supports per-agent model selection, assign different lenses to different model providers or sizes (e.g., a more capable model for security/architecture, a faster one for general/UX). Different models catch different things.
+
+### Swarm rules for reviewers
+
+- Each lens stays in its lane. If a reviewer finds an issue outside their lens, flag it briefly and move on
+- No two reviewers on the same lens for the same change - enforce exclusivity
+- When the orchestration platform supports review model switching, the orchestrator may switch to a designated review model before dispatching lenses
+
+For reviewer-side etiquette (staying in lane, noting unchecked items, output format), see the Multi-Lens Review Swarm section in the reviewer prompt.
+
+### Review triage
+
+After all lens reviews return, triage the combined feedback:
+
+1. **Collect** - Gather all issues into a unified list, deduplicating across lenses
+2. **Categorize by action:** Leverage the triage suggestions each reviewer already provided on each issue — validate the suggestion and override only if the combined (multi-lens) view changes the severity.
+   - `[fix]` - Actionable issues → dispatch @builder with concrete fix instructions. Bundle related fixes into one task when safe.
+   - `[dismiss]` - Nits and suggestions → resolve with a comment, no code change needed
+   - `[escalate]` - Ambiguous or high-risk issues → flag to the user via `question()` with context and recommended next steps
+
+   **Conflict resolution:** If `[fix]` and `[dismiss]` conflict on the same issue, the more conservative categorization wins (`fix`). If `[escalate]` is raised by any lens, escalate — conservatism applies across all lenses.
+
+3. **Iterate** - After fix-tasks complete, re-review the changes via @reviewer. Max 3 iterations or until no new actionable threads remain.
+4. **Terminate** - When all lenses pass or only dismiss/escalate items remain, the review pipeline is complete.
+
+### When single-reviewer is sufficient
+
+Always prefer a single @reviewer dispatch (rule #9) for trivial changes, pure documentation, or when the diff is under ~100 lines. Multi-lens dispatch adds coordination overhead that doesn't pay off for simple changes.
+
 ## Delegation Pattern
 
 Every delegation must be a complete briefing. Include each element:
@@ -194,6 +248,7 @@ Examples:
 
 - **Pure recon/design** - no implementation: `task(adventurer, "Map the auth module")` + `task(architect, "Compare session strategies")`
 - **Mixed** - recon + implement + validate in one turn: `task(adventurer, "Trace API routes")` + `task(builder, "Fix bug #42")` + `task(reviewer, "Review PR #7")`
+- **Multi-lens review** - parallel review swarm for non-trivial changes: `task(reviewer, "Security review PR #42")` + `task(reviewer, "Performance review PR #42")` + `task(reviewer, "UX review PR #42")` + `task(reviewer, "General review PR #42")`
 
 ## Skills for Subagents
 
