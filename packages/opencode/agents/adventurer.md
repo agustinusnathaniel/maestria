@@ -19,10 +19,35 @@ permission:
   edit: deny
   bash:
     "*": ask
+    ls*: allow
+    cat*: allow
+    echo*: allow
+    head*: allow
+    tail*: allow
+    grep*: allow
+    rg*: allow
+    wc*: allow
+    which*: allow
+    diff*: allow
+    stat*: allow
+    pwd*: allow
+    cd*: allow
+    find*: allow
+    printf*: allow
     git log*: allow
     git diff*: allow
     git status*: allow
-    which *: allow
+    git show*: allow
+    git branch*: allow
+    git rev-parse*: allow
+    git remote*: allow
+    git stash*: allow
+    git config*: allow
+    pnpm*: allow
+    npm*: allow
+    opensrc*: allow
+    agent-browser*: allow
+    rtk*: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

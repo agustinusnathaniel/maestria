@@ -18,10 +18,32 @@ permission:
   edit: deny
   bash:
     "*": ask
+    ls*: allow
+    cat*: allow
+    echo*: allow
+    head*: allow
+    tail*: allow
+    grep*: allow
+    rg*: allow
+    wc*: allow
+    which*: allow
+    diff*: allow
+    stat*: allow
+    pwd*: allow
+    cd*: allow
+    find*: allow
+    printf*: allow
     git status*: allow
     git diff*: allow
     git log*: allow
     git show*: allow
+    git branch*: allow
+    git rev-parse*: allow
+    pnpm*: allow
+    npm*: allow
+    vp*: allow
+    rtk*: allow
+    node*: allow
   webfetch: allow
 ---
 
