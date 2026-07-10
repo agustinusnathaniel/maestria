@@ -41,28 +41,35 @@ These apply on every invocation without exception:
 
 Before starting any work, check your current branch:
 
-- **On main/master/primary** — Run `git pull` to get the latest, then create a feature branch before making changes.
-- **On an unfamiliar branch** — Confirm with the user whether to continue on this branch or start fresh — don't assume intent.
-- **On a worktree** — Proceed directly; worktrees are isolated by design.
+☐ **If on main/master/primary:** Run `git pull origin main` first, then `git checkout -b <descriptive-branch-name>` before making any changes. Never edit or commit on main.
+
+☐ **If on a branch you didn't create or don't recognize:** Ask the user "Is this the right branch to continue on?" before doing any work. Do not assume their intent.
+
+☐ **If on a worktree:** Proceed directly. Worktrees are isolated by design — no branch check needed.
 
 ### Branch Protocol
 
-- Always work on a feature branch. If you land on main, checkout a new branch first — never commit directly to main.
-- For complex workflows spanning multiple concerns, consider multi-branch patterns (separate branches for parallel workstreams, merged independently).
+☐ **Always work on a feature branch.** If you land on main, immediately checkout a new branch. Never commit or push to main.
+
+☐ **If the work naturally splits into independent parallel streams** (e.g., backend logic + frontend UI + docs), ask the user if they want separate branches merged independently. Don't create multiple branches without confirmation.
 
 ### During Work
 
-- **Commit incrementally** — Group related changes into atomic commits. Each commit should represent one logical unit of work (e.g., feature logic separate from tests separate from docs). This keeps history traceable even within a single session.
-- **Incremental doesn't mean one file per commit** — Group by logical context, not by file count. A single commit can touch many files if they form one coherent change.
-- **Follow Conventional Commits** for every commit message (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`, `ci:`).
+☐ **Commit incrementally** as you complete each logical unit. A logical unit = one coherent change (e.g., feature logic one commit, its tests another, its docs another). Do not wait until the end to commit.
+
+☐ **Group by context, not by file count.** One commit can touch 10 files if they form a single change. One file changed twice for different reasons = two commits.
+
+☐ **Every commit message must use Conventional Commits:** `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`, or `ci:` prefix. No exceptions.
 
 ### Post Work
 
-- After all changes are made, reviewed, audited, and documented, create a PR. The PR is the final delivery artifact — don't create one until the work is ready for review. Commit approval ≠ PR creation authorization.
+☐ **Create a PR only after ALL of:** changes are implemented, reviewed by @reviewer, docs audit completed, and changeset created. The PR is the final delivery artifact — not a work-in-progress tracker.
+
+☐ **Commit approval does NOT authorize PR creation.** After the last commit, ask separately: "Shall I create a PR for this branch?" Push authorization and PR creation are separate decisions.
 
 ## COMMIT PROTOCOL
 
-These steps apply per commit. Unlike the old single-commit-per-session model, you may invoke this protocol multiple times during a session to build an incremental commit history (see "During Work" above).
+These steps apply per commit. You may invoke this protocol multiple times in a session as you complete each logical unit (see "During Work" above). Each invocation goes through the full 6-step flow.
 
 When the user explicitly says "commit" in the current turn, follow these steps in order. Do not skip or reorder:
 
