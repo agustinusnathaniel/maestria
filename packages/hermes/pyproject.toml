@@ -7,8 +7,10 @@ name = "maestria-hermes"
 dynamic = ["version"]
 description = "Maestria methodology plugin for Hermes Agent"
 readme = "README.md"
-authors = [{ name = "Maestria Contributors" }]
-license = { text = "MIT" }
+authors = [
+    {name = "Maestria Contributors"},
+]
+license = {text = "MIT"}
 keywords = ["hermes", "maestria", "ai-agent", "methodology"]
 requires-python = ">=3.10"
 dependencies = []
@@ -24,4 +26,4 @@ include = ["maestria_hermes*"]
 "maestria_hermes" = ["skills/**/*"]
 
 [tool.setuptools.dynamic]
-version = { attr = "maestria_hermes._version.__version__" }
+version = {attr = "maestria_hermes._version.__version__"}
