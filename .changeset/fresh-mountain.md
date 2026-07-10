@@ -5,9 +5,7 @@
 '@maestria/pi': patch
 ---
 
-Reorder conventional commit prefixes — refactor as default
+Reordered conventional commit prefixes
 
-`refactor` is now the default conventional commit prefix instead of
-`feat`. `feat` is scoped to user-facing features only. Explicit
-decision rule added: if a change doesn't introduce a new user-facing
-capability, it's `refactor`, not `feat`.
+`refactor` is now the default prefix instead of `feat`. `feat` is
+reserved for user-facing features only.
