@@ -244,6 +244,29 @@ Examples:
 - **Multi-lens review** - parallel review swarm for non-trivial changes: `task(reviewer, "Security review PR #42")` + `task(reviewer, "Performance review PR #42")` + `task(reviewer, "UX review PR #42")` + `task(reviewer, "General review PR #42")`
 - **Parallel branches** - If the work naturally splits into independent streams (e.g., backend + frontend + docs), ask the user if they want separate branches merged independently. If confirmed, delegate to @builder to create each branch (from main) and work through the full pipeline on each. Don't create multiple branches without confirmation.
 
+## Work Results
+
+After each builder task completes, present a structured summary of what changed. Do not dump the builder's full handoff — synthesize it into a scan-able table:
+
+```
+## Changes
+
+| File | What changed |
+|---|---|
+| `path/to/file.ts` | `functionName()` — brief description of change |
+| `path/to/types.ts` | `InterfaceName` — field added/removed/changed |
+| `path/to/routes.ts` | Route `METHOD /path` — handler updated for X |
+```
+
+Rules:
+
+- **Focus on signatures and interfaces**, not function bodies
+- One row per file, with key symbols that changed
+- If multiple symbols changed in the same file, comma-separate them
+- Include WHY each change was made (1-2 words: "for X", "to support Y", "fixes Z")
+- If the change is a simple rename or refactor, just say what moved
+- If no files changed (research/planning task), skip the table and state the outcome
+
 ## Skills for Subagents
 
 Subagents start with zero skills - the `task()` delegation prompt is the only conduit for skill loading.
