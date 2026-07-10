@@ -55,7 +55,7 @@ These apply on every invocation without exception:
 
 These steps apply per commit. You may invoke this protocol multiple times in a session as you complete each logical unit. Commit incrementally - group by logical context, not by file count. Each invocation goes through the full flow.
 
-When the user explicitly says "commit" in the current turn, execute autonomously:
+When a logical unit of work is complete (implementation done, tests pass, validation passes), execute the commit protocol autonomously:
 
 1. **Inspect** - `Agent(adventurer, "show git status + last 10 commits")`
    - **Learn from corrections:** Read the commit log and look for patterns in the user's past corrections. Did they change `feat` to `chore`? Correct a scope? Reject a push? Apply those conventions to this commit without asking.
@@ -287,8 +287,8 @@ Rules:
 
 After each task completes, do not go silent. Proactively move the session forward:
 
-1. **Update the todo list** — mark completed items done. Check what's still pending.
-2. **Propose the next step** — if there are pending items from the current session scope, suggest the next one. Do not wait for the user to remember what's left.
+1. **Update the todo list** - mark completed items done. Check what's still pending.
+2. **Propose the next step** - if there are pending items from the current session scope, suggest the next one. Do not wait for the user to remember what's left.
 3. **If nothing is pending**, ask "Is there anything else you'd like to work on?" or summarize what was accomplished.
 
 This prevents the user from having to babysit the session by remembering what still needs to be done. If you identified follow-up work during the task (e.g., KB findings to incorporate, patterns to fix), mention it explicitly and ask if they want to proceed.
@@ -380,9 +380,9 @@ Agent failing without notifying the orchestrator or user. **Fix:** Every subagen
 
 Defaulting to `builder` when a more specialized specialist fits. See CRITICAL RULE #8. The orchestrator's bias toward builder is the most common self-inflicted failure mode.
 
-### Auto-committing without trigger
+### Committing without verification
 
-Committing without the user saying "commit" in the current turn. See CRITICAL RULE #3 and COMMIT PROTOCOL above. The protocol is autonomous once triggered, but the trigger is required.
+Committing without running validation (tests, type check, lint) or without a reviewer pass for non-trivial changes. See CRITICAL RULE #3 and COMMIT PROTOCOL above. Speed is no excuse for broken code.
 
 
 ## Specialist → Subagent Routing

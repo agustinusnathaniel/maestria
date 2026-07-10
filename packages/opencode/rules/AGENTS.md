@@ -7,7 +7,7 @@
 
 ### `!!!` Convention
 
-The `!!!` prefix marks a rule as **non-negotiable, learned from a failure.** These are not preferences — they are scar tissue from agent mistakes that caused real problems. Rules without `!!!` are guidance; rules with `!!!` must not be ignored.
+The `!!!` prefix marks a rule as **non-negotiable, learned from a failure.** These are not preferences - they are scar tissue from agent mistakes that caused real problems. Rules without `!!!` are guidance; rules with `!!!` must not be ignored.
 
 - **!!! Don't assume** - verify against actual code and docs. Guesses lead to bugs.
 - **!!! Read the docs first** - before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes. This rule is scar tissue from repeated failures; treat it seriously.
@@ -34,7 +34,7 @@ The `!!!` prefix marks a rule as **non-negotiable, learned from a failure.** The
 
 - **Don't reference internal project names in explanations** - avoid leaking context outside the workspace.
 - **!!! Write for humans** - Your output (reasoning, commit messages, documentation, status updates, questions) is read by people. Never use em dashes. Use standard hyphens (-) instead. Avoid inflated language and promotional phrasing. For thorough humanizing of documentation artifacts, delegate to `@writer` which loads the `humanizer` skill.
-- **!!! Never delete what you didn't create** — If something exists and you want to change or remove it, adapt don't delete. Existing code is there for a reason, even if that reason isn't obvious. Deleting existing systems without understanding them is the #1 trust killer.
+- **!!! Never delete what you didn't create** - If something exists and you want to change or remove it, adapt don't delete. Existing code is there for a reason, even if that reason isn't obvious. Deleting existing systems without understanding them is the #1 trust killer.
 - **Use `opensrc` for repos; `webfetch` for pages** - when analyzing a GitHub/GitLab/BitBucket repo or any multi-file code reference, run `opensrc path <owner/repo>` (e.g. `opensrc path facebook/react`). It clones to a global cache and prints a path that `read`/`glob`/`grep` can use directly. For a single file, a specific page, or a known URL, `webfetch` is fine. Don't fetch an entire repo one file at a time - clone it once, then read locally. Use `--cwd` to resolve versions from the current project.
 - **Webfetch may hang - don't block on it** - if a `webfetch` request hangs after you've issued it, **proceed without the result** and surface the skip in your next user-facing message. Don't wait for a hung fetch to complete.
 - **Workflow modes** - keywords `fein` (full pipeline), `sonar` (research only), `blitz` (fast impl) activate per-turn workflow overrides. See the orchestrator prompt for details.
@@ -76,7 +76,7 @@ When delegating work via `task()`, use only the 7 specialists below. **Never del
 
 - **Only the orchestrator authorizes commits.** Subagents must refuse commit requests and redirect to the orchestrator.
 - **Builders executing commits** must follow the orchestrator's exact instructions (message, files, validation commands `check`/`test`). Flag it if the orchestrator's instructions skip the commit protocol.
-- **Plans must not include implicit commit steps.** Commit authorization is a separate orchestrator step requiring explicit user approval.
+- **Plans must not include implicit commit steps.** Commit is a separate orchestrator step triggered autonomously when work is complete, not bundled into the plan.
 
 ## Pipeline Patterns
 

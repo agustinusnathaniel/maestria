@@ -9,13 +9,6 @@ you can expect from them.
 
 ## 2026-07-10
 
-- **Eliminate questions — autonomous philosophy.** Agents now exhaust data, document assumptions, and proceed instead of asking for permission on every decision. Mid-phase questions (design choices, permissions, preferences) are eliminated across all specialists. Boundary checkpoints kept: commit autonomous, push conditional (auto on feature branches, ask on main), PR creation always asks.
-- **Autonomous commit protocol.** Commit is fully autonomous — agent reads git log for past corrections, composes correct conventional commit message, commits without asking. Per-turn authorization requirement removed. Push is automatic on feature branches, asks only on main/master.
-- **OpenCode permission alignment.** Builder shell permissions expanded from 5 narrow patterns to comprehensive allow-list covering read-only file operations, git, package managers, and build/test tools. Diagnose edit permission changed from ask to allow. Both keep catch-all ask for unusual commands.
-- **Structured work result summaries.** Orchestrator now presents completed work as a file-by-file table focusing on signatures and interfaces (not function bodies). Builder reports at the signature level. Users can spot issues in 1-2 prompts instead of reading the full diff.
-
-## 2026-07-10
-
 - **Multi-lens review swarm.** The orchestrator can now dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General) for non-trivial changes. Each lens has exclusive scope and the orchestrator triages combined results.
 - **Observation over reasoning.** The reviewer now prioritizes running code and observing behavior over reasoning about correctness. Each review should include a command to produce visible proof.
 - **Review triage pipeline.** Issues are now categorized [fix]/[dismiss]/[escalate] by the reviewer, then validated by the orchestrator with conservative conflict resolution (when lenses disagree, the stricter categorization wins).
@@ -23,9 +16,12 @@ you can expect from them.
 
 ## 2026-07-10
 
-- **KB pattern incorporations.** The `!!!` convention formalized — non-negotiable rules are scar tissue from past failures, not preferences. New "Never delete what you didn't create" rule — existing code must be adapted, not removed. Recognizing User Frustration escalation ladder (5 levels: polite nudge → direct question → frustration → criticism → escape hatch) with prescribed responses. Anti-Patterns enriched with named patterns (Agent Ping-Pong, Silent Failures, Builder Bias) and concrete fixes. Complexity-Based Routing classifies tasks as SIMPLE (direct to builder) or COMPLEX (architect design first with documented assumptions). Session Flow section added — orchestrator proactively proposes next steps instead of going silent after task completion. Proven directive combos documented in COMPOSITION.md.
-
-- **Em dash enforcement.** 97 em dashes replaced with standard hyphens across all canonical directive files. The "Write for humans" rule hardened from "avoid em dash overuse" to "never use em dashes", elevated to `!!!` non-negotiable. humanizer skill added as always-load for orchestrator. Reviewer gained Writing Style checklist item 9 to catch violations.
+- **Eliminate questions — autonomous philosophy.** Agents now exhaust data, document assumptions, and proceed instead of asking for permission on every decision. Mid-phase questions (design choices, permissions, preferences) are eliminated across all specialists. Boundary checkpoints kept: commit autonomous, push conditional (auto on feature branches, ask on main), PR creation always asks.
+- **Autonomous commit protocol.** Commit is fully autonomous — agent reads git log for past corrections, composes correct conventional commit message, commits without asking. Per-turn authorization requirement removed. Push is automatic on feature branches, asks only on main/master.
+- **OpenCode permission alignment.** Builder shell permissions expanded from 5 narrow patterns to comprehensive allow-list covering read-only file operations, git, package managers, and build/test tools. Diagnose edit permission changed from ask to allow. Both keep catch-all ask for unusual commands.
+- **Structured work result summaries.** Orchestrator now presents completed work as a file-by-file table focusing on signatures and interfaces (not function bodies). Builder reports at the signature level. Users can spot issues in 1-2 prompts instead of reading the full diff.
+- **KB pattern incorporations.** The `!!!` convention formalized — non-negotiable rules are scar tissue from past failures, not preferences. New "Never delete what you didn't create" rule. Recognizing User Frustration escalation ladder (5 levels with prescribed responses). Anti-Patterns enriched with named patterns and concrete fixes. Complexity-Based Routing (SIMPLE/COMPLEX classification). Session Flow section added — orchestrator proactively proposes next steps instead of going silent. Proven directive combos documented in COMPOSITION.md.
+- **Em dash enforcement.** 97 em dashes replaced with standard hyphens across all canonical directive files. The "Write for humans" rule hardened from "avoid" to "never use" em dashes, elevated to `!!!` non-negotiable. humanizer skill added as always-load for orchestrator. Reviewer gained Writing Style checklist item 9.
 
 ## 2026-07-01
 

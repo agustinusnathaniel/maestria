@@ -14,7 +14,7 @@ commit, split if applicable
 
 ```
 leverage any relevant skills and documentation
-!!! verify before handoff — never present broken code
+!!! verify before handoff - never present broken code
 !!! run full check suite before committing
 ```
 
@@ -23,7 +23,7 @@ leverage any relevant skills and documentation
 ```
 exhaust data before asking questions
 document assumptions with evidence
-proceed — reviewer will validate
+proceed - reviewer will validate
 commit each logical unit autonomously
 ```
 
@@ -37,4 +37,4 @@ run scripts/check-sync to verify
 
 ## Reference
 
-These patterns emerged from scar tissue — repeated failures that taught us what works. They are not preferences. See `rules.md` for the `!!!` convention.
+These patterns emerged from scar tissue - repeated failures that taught us what works. They are not preferences. See `rules.md` for the `!!!` convention.
