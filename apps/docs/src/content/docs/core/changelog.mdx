@@ -14,6 +14,15 @@ you can expect from them.
 - **Review triage pipeline.** Issues are now categorized [fix]/[dismiss]/[escalate] by the reviewer, then validated by the orchestrator with conservative conflict resolution (when lenses disagree, the stricter categorization wins).
 - **Docs audit before commits.** Agents now check what docs need updating before every commit — no more waiting to be reminded.
 
+## 2026-07-10
+
+- **Eliminate questions — autonomous philosophy.** Agents now exhaust data, document assumptions, and proceed instead of asking for permission on every decision. Mid-phase questions (design choices, permissions, preferences) are eliminated across all specialists. Boundary checkpoints kept: commit autonomous, push conditional (auto on feature branches, ask on main), PR creation always asks.
+- **Autonomous commit protocol.** Commit is fully autonomous — agent reads git log for past corrections, composes correct conventional commit message, commits without asking. Per-turn authorization requirement removed. Push is automatic on feature branches, asks only on main/master.
+- **OpenCode permission alignment.** Builder shell permissions expanded from 5 narrow patterns to comprehensive allow-list covering read-only file operations, git, package managers, and build/test tools. Diagnose edit permission changed from ask to allow. Both keep catch-all ask for unusual commands.
+- **Structured work result summaries.** Orchestrator now presents completed work as a file-by-file table focusing on signatures and interfaces (not function bodies). Builder reports at the signature level. Users can spot issues in 1-2 prompts instead of reading the full diff.
+- **`!!!` Convention formalized.** Non-negotiable rules are scar tissue from past failures, not preferences. New "Never delete what you didn't create" rule. Recognizing User Frustration escalation ladder (5 levels with prescribed responses). Anti-Patterns enriched with named patterns and concrete fixes. Complexity-Based Routing (SIMPLE/COMPLEX classification). Session Flow section added — orchestrator proactively proposes next steps instead of going silent. Proven directive combos documented in COMPOSITION.md.
+- **Writing style improvements.** The "Write for humans" rule hardened to non-negotiable (`!!!`). humanizer skill added as always-load for orchestrator. Reviewer gained Writing Style checklist item 9 to catch violations.
+
 ## 2026-07-01
 
 - **Code intelligence tool preference.** Agents now prefer code intelligence
@@ -33,8 +42,6 @@ you can expect from them.
 - **Anthropomorphism guard added.** Agents no longer bias decisions based on
   "that would be a lot of work" - they operate at machine scale. The right
   technical choice wins, regardless of perceived effort.
-- **Output style guidance.** Agents now write output that sounds human -
-  no em dash overuse, inflated language, or promotional phrasing.
 - **Project-level workflow customization.** You can now add
   `.maestria/workflow.md` and `.maestria/rules.md` to your project root to
   define custom delegation sequences and project-specific rules. Core rules

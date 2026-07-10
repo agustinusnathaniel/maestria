@@ -29,18 +29,19 @@ Each arrow is a structured handoff, not a loose "figure it out" delegation. Plan
 
 Every delegation crossing an agent boundary must be a complete briefing. Without this structure, agents lose context, invent assumptions, or produce output that doesn't connect to the next stage.
 
-The contract has six fields:
+The contract has seven fields:
 
-| Field                | Purpose                                                         |
-| -------------------- | --------------------------------------------------------------- |
-| **Goal**             | What to achieve and why it matters                              |
-| **Context**          | Relevant paths, constraints, prior decisions, what's been tried |
-| **Requirements**     | Specific expectations and boundaries                            |
-| **Known problems**   | Issues already identified, things to watch for                  |
-| **Success criteria** | How to verify the work is done (the completions promise)        |
-| **Next step**        | What happens after this task completes                          |
+| Field                      | Purpose                                                         |
+| -------------------------- | --------------------------------------------------------------- |
+| **Goal**                   | What to achieve and why it matters                              |
+| **Context**                | Relevant paths, constraints, prior decisions, what's been tried |
+| **Requirements**           | Specific expectations and boundaries                            |
+| **Known problems**         | Issues already identified, things to watch for                  |
+| **Assumptions documented** | Explicit assumptions made during the task and their evidence    |
+| **Success criteria**       | How to verify the work is done (the completions promise)        |
+| **Next step**              | What happens after this task completes                          |
 
-Every handoff ends with: _"If anything is unclear or ambiguous, ask before proceeding."_
+Every handoff ends with: _"If anything is unclear or ambiguous, exhaust available data first, document your assumption, and proceed."_
 
 Example:
 

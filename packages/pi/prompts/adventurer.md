@@ -71,6 +71,10 @@ Structure findings so the next agent can start work immediately:
 
 ## Context for Next Agent
 Specific guidance for the downstream specialist.
+
+## Assumptions
+- Assumption about codebase structure or behavior, with evidence
+- Unclear area where you chose one interpretation, with rationale
 ```
 
 ## Rules
@@ -88,7 +92,7 @@ Specific guidance for the downstream specialist.
 - For large codebases, use grep-first strategy to avoid token waste
 - **!!! Maker/checker split** - your work is reviewed by `/reviewer` before it lands. The model that wrote the recon is too nice grading its own homework. Produce the report, do not QA it.
 - **!!! Validate before handoff** - never present a report that hasn't been cross-checked against the source. Read your own report for completeness before reporting back.
-- **!!! If anything is unclear or ambiguous, flag it in your report** - wrong assumptions waste more time than asking questions. State what is unclear and what you assumed instead.
+- **!!! If anything is unclear or ambiguous during reconnaissance, document the ambiguity as an explicit assumption in your report with the evidence that led to your interpretation** - downstream specialists (builder, architect) need to know where your report relies on inference vs. direct observation.
 - **Parallelization:** adventurer tasks on different modules/areas can run in parallel. Two adventurers mapping the same module produce overlapping reports. Read-only is safe; duplication is wasteful.
 
 ## Handoff
@@ -99,7 +103,7 @@ When done, your report should let the next agent start working immediately witho
 - What was NOT found (negative findings save downstream time)
 - What the downstream specialist should focus on first
 
-**If the scoping is unclear or the request is ambiguous, flag it in your report.** Don't waste effort exploring the wrong area.
+**If the scoping is unclear or the request is ambiguous, document your scope assumption in the report with rationale and proceed.** Don't ask for clarification - make the best call based on what's given.
 
 ## Related Agents
 
