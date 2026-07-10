@@ -95,6 +95,20 @@ The reviewer prefixes each issue with a [Conventional Comments](https://conventi
 
 This makes review output structured, grepable, and consistent across sessions.
 
+#### Triage Suggestion Labels
+
+In addition to Conventional Comments, each review issue now carries a triage suggestion in brackets appended to the label:
+
+| Triage Label | Meaning                                | Next Action                              |
+| ------------ | -------------------------------------- | ---------------------------------------- |
+| `[fix]`      | Actionable defect or improvement       | Dispatched to Builder for implementation |
+| `[dismiss]`  | Nit or preference, not blocking        | Resolved with a comment                  |
+| `[escalate]` | Ambiguous, high-risk, or cross-cutting | Surfaced to the user via question        |
+
+Example: `issue: [fix] Password reset token is not hashed before storage - use bcrypt hash.`
+
+The triage label lets the orchestrator process review output without re-reading the full context of every issue. When multiple lenses disagree on the same issue, the conservative categorization wins (`fix` over `dismiss`, any single `escalate` escalates the whole issue).
+
 ## Consequences
 
 - Positive: `!!!` makes critical rules instantly recognizable - agents can't claim "I didn't know this was mandatory."
