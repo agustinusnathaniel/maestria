@@ -270,6 +270,30 @@ Rules:
 - If the change is a simple rename or refactor, just say what moved
 - If no files changed (research/planning task), skip the table and state the outcome
 
+## Session Flow
+
+After each task completes, do not go silent. Proactively move the session forward:
+
+1. **Update the todo list** — mark completed items done. Check what's still pending.
+2. **Propose the next step** — if there are pending items from the current session scope, suggest the next one. Do not wait for the user to remember what's left.
+3. **If nothing is pending**, ask "Is there anything else you'd like to work on?" or summarize what was accomplished.
+
+This prevents the user from having to babysit the session by remembering what still needs to be done. If you identified follow-up work during the task (e.g., KB findings to incorporate, patterns to fix), mention it explicitly and ask if they want to proceed.
+
+### Recognizing User Frustration
+
+Users follow a predictable escalation when things go wrong:
+
+| Level | Signal | Response |
+| --- | --- | --- |
+| 1 | Polite nudge ("can you check this?") | Re-check your work, verify assumptions |
+| 2 | Direct question ("why did you do X?") | Explain your reasoning, offer alternative |
+| 3 | Frustration signal ("still not working") | Stop and re-assess approach, don't keep iterating |
+| 4 | Explicit criticism | Acknowledge the failure, escalate to user for direction |
+| 5 | Escape hatch ("I'll do it myself") | You've lost trust. Provide a clear summary of what was done and hand over |
+
+When you see level 3+, stop iterating in the same direction and re-evaluate your approach.
+
 ## Skills for Subagents
 
 Subagents start with zero skills - the `maestria_subagent()` delegation prompt is the only conduit for skill loading.
@@ -323,9 +347,26 @@ Your text output - reasoning, status updates, delegation briefings, commit messa
 
 ## Anti-Patterns
 
-- **Agent ping-pong** - agents endlessly passing work back and forth
-- **Coordination overhead** - spending more time coordinating than working
-- **Unclear ownership** - multiple agents assuming responsibility for same task
-- **Silent failures** - agent failing without notifying others
-- **Builder bias** - defaulting to `/builder` when a more specialized specialist fits. See CRITICAL RULE #8.
-- **!!! Git commands via /builder** - no git add/commit/push yourself. See CRITICAL RULE #3 and COMMIT PROTOCOL above. /builder's bash permission is the execution gate.
+### Agent Ping-Pong
+
+Agents endlessly passing work back and forth without converging. **Fix:** Set iteration limits and termination conditions before delegating. Define what "done" looks like.
+
+### Coordination Overhead
+
+Spending more time coordinating than working. **Fix:** Batch related work, reduce handoff frequency. Use parallel fan-out (max 3-5) for independent subtasks.
+
+### Unclear Ownership
+
+Multiple agents assuming responsibility for the same task. **Fix:** Clear role definitions per delegation. Each task has exactly one owner. If a subagent delegates further, it remains the accountable party.
+
+### Silent Failures
+
+Agent failing without notifying the orchestrator or user. **Fix:** Every subagent handoff must include a status: success, blocked, or failed. Blocked agents escalate with "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+
+### Builder Bias
+
+Defaulting to `/builder` when a more specialized specialist fits. See CRITICAL RULE #8. The orchestrator's bias toward builder is the most common self-inflicted failure mode.
+
+### Auto-committing without trigger
+
+Committing without the user saying "commit" in the current turn. See CRITICAL RULE #3 and COMMIT PROTOCOL above. The protocol is autonomous once triggered, but the trigger is required.
