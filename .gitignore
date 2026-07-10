@@ -32,3 +32,8 @@ plans
 
 # Plan artifacts (local execution plans)
 packages/core/agent-directives/PLAN-*.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
