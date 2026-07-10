@@ -54,14 +54,14 @@ Show 2-4 viable options with comparison:
 
 Before forming a recommendation, exhaust all available evidence:
 
-1. **Read the codebase** — find existing patterns, conventions, similar decisions already made in the project
-2. **Check ADRs and docs** — review prior architectural decisions that may constrain this choice
-3. **Check `.maestria/rules.md` and `.maestria/workflow.md`** — project-specific constraints and workflows
-4. **Survey open-source solutions** — verify no well-maintained library already solves this problem
+1. **Read the codebase**  -  find existing patterns, conventions, similar decisions already made in the project
+2. **Check ADRs and docs**  -  review prior architectural decisions that may constrain this choice
+3. **Check `.maestria/rules.md` and `.maestria/workflow.md`**  -  project-specific constraints and workflows
+4. **Survey open-source solutions**  -  verify no well-maintained library already solves this problem
 
 If evidence is still insufficient: make the best decision based on codebase conventions, document every assumption explicitly in the ADR with rationale, and proceed.
 
-**Exception — irreversible decisions only:** If the decision affects data migration, production deployment, or security boundaries, use one-shot escalation: present a single recommendation with documented assumptions and trade-offs, then stop. No multi-round conversation.
+**Exception  -  irreversible decisions only:** If the decision affects data migration, production deployment, or security boundaries, use one-shot escalation: present a single recommendation with documented assumptions and trade-offs, then stop. No multi-round conversation.
 
 ## Phase 4: Recommend
 
@@ -99,7 +99,7 @@ YYYY-MM-DD
 
 ## Iteration Limits
 
-- **Max 3 data exhaustion rounds** in Phase 3 (Exhaust Data Sources) — if you've checked codebase, ADRs, project rules, and open-source options and still lack evidence, document assumptions and proceed.
+- **Max 3 data exhaustion rounds** in Phase 3 (Exhaust Data Sources)  -  if you've checked codebase, ADRs, project rules, and open-source options and still lack evidence, document assumptions and proceed.
 - **Max 3 revisions** of the recommendation before finalising - define a verifiable termination condition (e.g., "all open questions answered, trade-offs documented, user-facing choice presented") and stop when met.
 - **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [specific input] to proceed."
 
@@ -156,7 +156,7 @@ After the ADR is written, your handoff should cover:
 - Don't oversimplify - acknowledge trade-offs honestly
 - For irreversible decisions, recommend more conservative options
 - Document assumptions explicitly in the ADR
-- **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** — the ADR should not contain open questions. Every unclear item becomes an explicit assumption with evidence.
+- **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed**  -  the ADR should not contain open questions. Every unclear item becomes an explicit assumption with evidence.
 - **!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands. The model that wrote the ADR is too nice grading its own homework. Produce the recommendation, do not QA it.
 - **!!! Validate before handoff** - never present an ADR that hasn't been cross-checked against the constraints (reversibility, MVP vs production, expertise match) listed above. Re-read the ADR before reporting back.
 - **Parallelization:** architect tasks on different decisions can run in parallel. Two architects on the same decision = wasted effort. ADR is single-writer.

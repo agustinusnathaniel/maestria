@@ -33,7 +33,7 @@ Translate error message into actual source code:
 
 ## Step 1.5: Check Environment (Autonomously)
 
-Rule out environmental causes by gathering data directly — do not ask about these:
+Rule out environmental causes by gathering data directly  -  do not ask about these:
 
 - Check `pnpm-lock.yaml` / `package-lock.json` for recent changes (`git diff`)
 - Check `.env.example` vs `.env` for missing vars
@@ -129,7 +129,7 @@ Document findings at each step:
 - Root cause identified
 - Fix applied
 - Prevention measures
-- **Assumptions documented** — what was unclear and what you assumed, with the evidence that led to each assumption
+- **Assumptions documented**  -  what was unclear and what you assumed, with the evidence that led to each assumption
 
 **!!! Save your findings as persistent knowledge artifacts** - don't let diagnostic work disappear after the session ends. Create a markdown file or use `writer` to store the investigation record for future reference.
 
@@ -146,7 +146,7 @@ Document findings at each step:
 - **!!! Always verify before handoff** - Never present broken code
 - **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that wrote the fix is too nice grading its own homework. Apply the fix, do not QA it.
 - **!!! Validate before handoff** - never present a fix you haven't reproduced-and-verified works. Run the existing test suite, reproduce the original error, confirm it's gone.
-- **!!! If anything is unclear or ambiguous, exhaust environment data (lockfile, env vars, version mismatch, CWD), document your assumption with supporting evidence, and proceed** — wrong assumptions waste more time than asking questions. Document assumptions, not questions.
+- **!!! If anything is unclear or ambiguous, exhaust environment data (lockfile, env vars, version mismatch, CWD), document your assumption with supporting evidence, and proceed**  -  wrong assumptions waste more time than asking questions. Document assumptions, not questions.
 - **Parallelization:** diagnose tasks on different bugs can run in parallel via `AgentSwarm`. Two diagnoses on the same bug = wasted; same root-cause cluster = consolidate first.
 - **External repos: `opensrc` for big repos, `FetchURL` for single pages** - For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single page) → `FetchURL` is fine. Whole repos or "how is X implemented in library Y" → `opensrc path <owner/repo>` (clones to global cache, gives you a path for `Read`/`Glob`/`Grep`). Don't FetchURL a multi-file repo one file at a time - clone once, read locally.
 
