@@ -33,16 +33,23 @@ _MODE_CONTEXT = {
 }
 
 
-def create_pre_llm_hook(mode_manager: ModeManager):
-    """Create a pre_llm_call hook closure bound to the given mode manager."""
+def create_pre_llm_hook(mode_manager: ModeManager, memory_manager=None):
+    """Create a pre_llm_call hook closure bound to mode and memory managers."""
 
     def pre_llm_hook(**kwargs) -> dict:
-        """Inject mode context into the user message."""
+        """Inject mode context and relevant memory into the user message."""
         mode = mode_manager.get_mode()
         context = _MODE_CONTEXT.get(
             mode,
             f"[MAESTRIA MODE: {mode}]\nNo specific mode instructions defined.",
         )
+
+        # Append recent memory context if available
+        if memory_manager:
+            mem = memory_manager.recall_context()
+            if mem:
+                context = f"{context}\n\n{mem}"
+
         return {"context": context}
 
     return pre_llm_hook
