@@ -13,3 +13,5 @@ opensrc, vp, rtk, git extended operations, etc.).
 
 All agents keep the *: ask catch-all for unusual or dangerous commands.
 Builder and diagnose were expanded in a previous release.
+
+**Conventional commit prefix reordered.** `refactor` is now the default prefix instead of `feat`. `feat` is scoped to user-facing features only. Explicit decision rule added: if a change doesn't introduce a new user-facing capability, it's `refactor`, not `feat`.
