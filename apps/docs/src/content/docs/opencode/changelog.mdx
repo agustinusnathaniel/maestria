@@ -43,10 +43,6 @@ Knowledge base patterns synced from core agent directives:
 - **"Never delete" rule** — existing code must be adapted, not removed. Collateral deletions are a trust killer
 - **COMPOSITION.md** — proven directive combos for feature implementation, autonomous mode, cross-platform sync
 
-### Em dash enforcement
-
-All 7 opencode agent files had em dashes replaced with standard hyphens. The "Write for humans" rule is now non-negotiable (`!!!`) — agents never use em dashes in user-facing output. The humanizer skill is now an always-load for the orchestrator. Reviewer gained a Writing Style checklist item to catch violations.
-
 ### Affected files
 
 - `packages/opencode/sync.config.ts` — permission definitions
@@ -79,7 +75,6 @@ instructions.
 The orchestrator and all specialists now include explicit guardrails against two common failure modes:
 
 - **Don't anthropomorphize effort** - A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
-- **Write for humans** - The orchestrator and all specialists are guided to avoid AI-typical writing patterns (em dash overuse, inflated language, promotional phrasing) in user-facing output. Documentation artifacts can be delegated to `@writer` for thorough humanizing via the `humanizer` skill.
 
 ## v0.4.6
 
