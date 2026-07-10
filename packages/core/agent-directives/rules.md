@@ -19,10 +19,11 @@
   - **The only exceptions** are irreversible decisions: data migrations, production deployments, security boundaries. For those, use `question()` with a single recommendation + documented assumptions — not a multi-round conversation.
   - **Tiebreaker rule:** If unsure whether a decision falls into an exception category, treat it as an exception.
 
-  **Keep boundary questions:**
-  - Commit proposals — user corrects prefix/scope on ~12% of commits. This is a real quality gate.
-  - Push proposals — user defers ~17% of pushes. Users want control over what goes remote.
-  - **Add: Re-evaluation checkpoints** — after 3 consecutive rejections from the user (not during commits), stop the current approach and re-assess. Ask "This direction keeps getting rejected. Should I change approach?" rather than continuing to iterate.
+  **Boundary checkpoints:**
+  - **Commit is autonomous** — agent reads git log for past correction patterns, composes correct conventional commit message, commits. No question needed.
+  - **Push is conditional** — automatic on feature branches. Ask `question()` only on `main`/`master` (primary branch).
+  - **PR creation** — always ask via `question()`. Separate decision from commit/push.
+  - **Re-evaluation checkpoints** — after 3 consecutive rejections from the user (not during commits), stop the current approach and re-assess. Ask "This direction keeps getting rejected. Should I change approach?" rather than continuing to iterate.
 
 - **Don't reference internal project names in explanations** - avoid leaking context outside the workspace.
 - **Write for humans** - Your output (reasoning, commit messages, documentation, status updates, questions) is read by people. Avoid AI-typical patterns: em dash overuse (-), inflated language, and promotional phrasing. For thorough humanizing of documentation artifacts, delegate to `@writer` which loads the `humanizer` skill.
