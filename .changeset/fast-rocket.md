@@ -1,5 +1,8 @@
 ---
+'@maestria/core': patch
 '@maestria/opencode': patch
+'@maestria/kimi-code': patch
+'@maestria/pi': patch
 ---
 
 Expand bash allow-lists for all subagents
