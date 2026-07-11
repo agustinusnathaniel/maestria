@@ -4,6 +4,14 @@
 
 Accepted
 
+## Terminology
+
+**Pi extension** — a `.ts`/`.js` file that exports a default function `(pi: ExtensionAPI) => void`. It hooks into Pi's lifecycle by registering tools (`pi.registerTool()`), commands (`pi.registerCommand()`), and event handlers (`pi.on()`). The extension IS the code that runs.
+
+**Pi package** — an npm/git/local package with a `pi` manifest field in `package.json`. A package can contain extensions, skills, prompts, themes, and other resources. The package IS the container; the extension IS the code.
+
+A single Pi package can ship multiple extensions (e.g., `shitty-extensions` ships 14 extensions from one package). An extension always lives inside a package.
+
 ## Context
 
 The `@maestria/pi` plan (Phase 0) originally assumed building the subagent dispatch tool, workflow engine, and specialist isolation from scratch. The design in the package-design plan (§4.5) specified a custom `subagent` tool that spawns `pi` subprocesses directly via `node:child_process.spawn`.
@@ -21,9 +29,9 @@ The following packages were evaluated:
 
 | Package | Downloads/mo | Approach | Viability |
 | --- | --- | --- | --- |
-| `@gotgenes/pi-subagents` | 21.5K | In-process via Pi SDK | ⭐ Selected |
+| `@gotgenes/pi-subagents` | 21.5K | In-process via Pi SDK | ⭐ Selected. Typed `SubagentsService` cross-extension API (`getSubagentsService()`) enables other Pi extensions to dispatch subagents through `@maestria/pi`. Layered settings design provides workspace-provider seam for future isolation. |
 | `@tintinweb/pi-subagents` | 23.1K | In-process (original) | Similar; `@gotgenes` fork preferred for typed API |
-| `pi-subagents` (nicobailon) | 92.2K | Unknown (likely subprocess) | Most popular; not evaluated in depth |
+| `pi-subagents` (nicobailon) | 92.2K | Self-contained extension registering its own `subagent` tool via `pi.registerTool()` | Not suitable. Exposes no programmatic API (`getSubagentsService()`) for other extensions to dispatch subagents. Events are internal strings not exported. No mechanism to register custom agent types from another extension. Designed for end-users, not extension authors. |
 | `pi-subagentura` | ~500 | In-process | Smaller, less maintained |
 | `pi-crew` | 12.4K | Multi-agent orchestration | Evaluated; defers to v1.1 |
 | `@juicesharp/rpiv-pi` | 11.4K | Skill-based dev workflow | Different approach; overlaps in scope |
