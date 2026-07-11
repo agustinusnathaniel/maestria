@@ -151,7 +151,12 @@ const pi: PlatformHandler = {
       yield* run('pi', ['install', tagged], 120_000);
     }),
 
-  uninstall: run('pi', ['uninstall', '@maestria/pi']).pipe(Effect.as(void 0)),
+  uninstall: Effect.gen(function* () {
+    yield* run('pi', ['uninstall', '@maestria/pi']).pipe(Effect.catchCause(() => Effect.void));
+    yield* run('pi', ['uninstall', '@gotgenes/pi-subagents']).pipe(
+      Effect.catchCause(() => Effect.void),
+    );
+  }).pipe(Effect.as(void 0)),
 };
 
 const kimiCode: PlatformHandler = {
