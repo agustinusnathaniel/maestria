@@ -34,7 +34,62 @@ The following options were evaluated for subagent dispatch:
 | **D: `@tintinweb/pi-subagents`** (23.1K) | Original upstream of `@gotgenes/pi-subagents`. Same in-process architecture, similar API surface. Published as `@tintinweb/pi-subagents` on npm. | ⚠️ **Not selected.** `@gotgenes` fork was preferred because it has a more active maintenance cadence, additional features (layered settings, workspace provider seam), and better cross-extension compatibility. The API is similar enough that switching would be straightforward if maintenance shifts. |
 | **C: Build own subagent dispatch** | Use Pi SDK's `createAgentSession()` to spawn subagents directly. Implement polling, timeout, concurrency, abort, lifecycle events from scratch. No external peer dependency. | ⚠️ **Possible but higher cost.** Estimates ~200-300 lines of new code for basic dispatch, plus ongoing maintenance for edge cases (timeouts, cancellation, resource cleanup) that pi-subagents already handles. No agent type registry — would need to build one or embed prompts directly. Concurrency limits, recursion guards, and workspace isolation would need custom implementation. |
 
-**Rationale:** Option A was selected because maestria's architecture requires programmatic subagent dispatch — the `maestria_subagent` tool in `subagent.ts` calls `service.spawn()` from code, not from an LLM tool call. Option B lacks this capability entirely. Option D (the upstream `@tintinweb/pi-subagents`) offers the same programmatic API as Option A but the `@gotgenes` fork was preferred for its more active maintenance cadence, additional features (layered settings, workspace provider seam), and better cross-extension compatibility. Option C is feasible but would duplicate mature functionality: concurrency limiting, timeout handling, abort propagation, lifecycle events, recursion guards, and the agent type registry (which we already leverage for our 7 specialist prompts via file-based agents). The 60% code reduction from Option A is real but not the primary driver — the deciding factor is the **programmatic API surface** that no other Pi subagent package provides.
+## Evaluation
+
+### Assessment criteria
+
+| Criterion | Weight | Why |
+| --- | --- | --- |
+| Programmatic API (spawn from code, not just LLM tool) | Critical | maestria_subagent tool calls service.spawn() from execute() |
+| Custom agent types (our 7 specialists with role prompts) | Critical | adventurer, builder, etc. need separate system prompts |
+| Tool restriction per specialist | Critical | builder=write, reviewer=read-only (maker/checker split) |
+| Lifecycle event tracking | Critical | session state needs subagent start/complete/fail events |
+| Synchronous spawn + status polling | Critical | spawn-and-poll loop in subagent.ts (getRecord() called every 500ms) |
+| In-process (no subprocess overhead) | Hard requirement | ~0ms cold start vs 100-500ms subprocess |
+| Production quality | High | timeouts, abort, error handling, concurrency limits |
+| Low user friction | Medium | auto-install via CLI mitigates extra peer dep |
+
+### Option comparison
+
+| Need | A: @gotgenes | B: nicobailon | C: Build own | D: @tintinweb |
+| --- | --- | --- | --- | --- |
+| Typed programmatic API | ✅ getSubagentsService() | ❌ RPC-only async | N/A (would build) | ❌ Symbol.for() global |
+| Sync spawn + status | ✅ spawn() returns ID, getRecord() sync | ❌ async event reply | Would build | ❌ Symbol global access |
+| Custom agent types | ✅ .md files in ~/.pi/agent/agents/ | ✅ .md files | Would build | ✅ .md files |
+| Tool restriction | ✅ tools: frontmatter | ✅ tools: frontmatter | Would build | ✅ tools: + disallowed_tools: |
+| Lifecycle events | ✅ SUBAGENT_EVENTS.\* | ❌ subagents:rpc:\* events | Would build | ✅ subagents:\* events |
+| Code to write | 0 (already wired) | 200-400 lines wrapper | 800-1200+ lines engine | 100-200 lines adapter |
+| Dependency risk | Low (1 dep, semver, active) | Low (active) | High (SDK internals) | Low (active) |
+| Community adoption | ~446/week | ~92K total | None | ~7K/week |
+| Pi ecosystem fit | Designed for extension authors | End-user tool | Non-standard | Event-bus RPC |
+
+### Verdict
+
+**Option A: @gotgenes/pi-subagents is objectively the best choice for maestria.**
+
+The decisive factor is the typed programmatic API. Maestria's entire dispatch model depends on:
+
+1. Synchronous `service.spawn("builder", task)` returning an ID immediately
+2. Synchronous `service.getRecord(id)` for polling in the `pollSubagent` loop (called every 500ms)
+3. Synchronous `service.abort(id)` for cancellation
+4. Typed `SubagentRecord` with `status`, `result`, `error` fields
+5. `SUBAGENT_EVENTS` constants for lifecycle subscription (start, complete, fail, steer)
+
+No other option provides this without wrapping an asynchronous event protocol that breaks the synchronous spawn-and-poll loop.
+
+Options B and D require wrapping async event-bus RPC — the spawn ID comes back on a reply channel, status is delivered as events, and there is no synchronous `getRecord(id)` equivalent. This fundamentally conflicts with how maestria's dispatch loop works: spawn synchronously, then poll every 500ms.
+
+Option C (build own) is a false economy. The `createAgentSession()` Pi SDK primitive is a low-level LLM session factory, not a managed subagent engine. A production-worthy implementation requires: session lifecycle management, concurrency limiter with queue (up to 8), agent type registry (parse .md files with YAML frontmatter), tool restriction per agent type, lifecycle event emission, abort propagation, error handling/recovery, and timeout with cleanup. The estimated 800-1200+ lines is conservative — @gotgenes/pi-subagents itself is thousands of lines covering exactly these concerns.
+
+The @gotgenes fork exists precisely because the upstream (D) lacked the typed API that extension authors need. Its README states: "A focused, in-process sub-agent core for pi — autonomous agents plus a typed API and lifecycle events other extensions build on." This is maestria's exact use case. The `getSubagentsService()` / `Symbol.for()` cross-extension pattern is the Pi ecosystem standard for extension-to-extension communication.
+
+**Key tradeoffs acknowledged:**
+
+- Lower download count than upstream (~446 vs ~7K/week) — but actively maintained (135 versions, latest 17 days ago)
+- The fork lags upstream on some features (memory, worktree isolation, scheduling, fleet view) — maestria doesn't need these
+- Adding an npm peer dependency for what could use Pi SDK primitives — the SDK is a lower level than claimed; a production engine is an order of magnitude more code than a thin wrapper
+
+**Long-term consideration:** If @gotgenes/pi-subagents becomes unmaintained, Option C (build own) becomes viable. At that point, maestria would dedicate the engineering effort to build a minimal subagent engine specialized for its own dispatch patterns, rather than depending on an external package. The current integration provides a clean seam for this migration: `subagent.ts` already wraps `service.spawn()` behind the `maestria_subagent` tool abstraction, and `agents.ts` owns the agent file deployment independently of how those files are consumed.
 
 ## Decision
 
