@@ -31,6 +31,19 @@ pi install npm:@gotgenes/pi-subagents
 pi install npm:@maestria/pi
 ```
 
+### Uninstall
+
+```bash
+# Via maestria CLI (removes @maestria/pi)
+pnpx maestria@latest uninstall pi
+```
+
+Note: `@gotgenes/pi-subagents` is a shared dependency that other Pi extensions may use. Only remove it if no other extensions need it:
+
+```bash
+pi uninstall @gotgenes/pi-subagents
+```
+
 ## Commands
 
 | Command | Description |

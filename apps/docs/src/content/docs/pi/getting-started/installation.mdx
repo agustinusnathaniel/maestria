@@ -89,14 +89,27 @@ pi install npm:@maestria/pi@latest
 
 ## Uninstalling
 
-To remove the extension:
+### Via maestria CLI
 
-1. Open your `~/.config/pi/pi.json` config file
-2. Remove `"@maestria/pi"` from the `"extensions"` array
-3. Run: `pi uninstall @maestria/pi`
+```bash
+pnpx maestria@latest uninstall pi
+```
+
+This removes `@maestria/pi`. The `@gotgenes/pi-subagents` peer dependency is left
+in place because other Pi extensions may depend on it.
+
+### Manual removal
+
+1. Remove from Pi config: edit `~/.config/pi/pi.json` and remove `"@maestria/pi"` from the `"extensions"` array
+2. Uninstall:
+   ```bash
+   pi uninstall @maestria/pi
+   ```
+3. Optionally, remove `@gotgenes/pi-subagents` if no other extensions need it:
+   ```bash
+   pi uninstall @gotgenes/pi-subagents
+   ```
 4. Restart Pi
-
-This will unregister all agents and restore the default configuration.
 
 ## Next Steps
 
