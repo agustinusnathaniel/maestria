@@ -109,7 +109,7 @@ const pi: PlatformHandler = {
 
   isInstalled: run(
     'ls',
-    [`${homedir()}/.local/share/pi/extensions/node_modules/@maestria/pi/package.json`],
+    [`${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`],
     2_000,
   ).pipe(
     Effect.map(() => true),
@@ -117,7 +117,7 @@ const pi: PlatformHandler = {
   ),
 
   getInstalledVersion: run('cat', [
-    `${homedir()}/.local/share/pi/extensions/node_modules/@maestria/pi/package.json`,
+    `${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`,
   ]).pipe(
     Effect.map((out: string) => {
       try {
