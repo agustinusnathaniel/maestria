@@ -1,5 +1,11 @@
 # maestria
 
+## 0.3.11
+
+### Patch Changes
+
+- [#69](https://github.com/agustinusnathaniel/maestria/pull/69) [`b778a71`](https://github.com/agustinusnathaniel/maestria/commit/b778a7156c4cae9d129ca40e28f57113211cbcd1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: correct Pi extension detection path for version check
+
 ## 0.3.10
 
 ### Patch Changes
