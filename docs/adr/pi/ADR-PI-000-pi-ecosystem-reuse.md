@@ -25,17 +25,15 @@ During a pre-implementation survey of the Pi ecosystem, we discovered:
 
 Building from scratch would duplicate mature, tested, well-documented functionality. The key differentiator of `@maestria/pi` is **spec-driven orchestration** (phase gates, agent contracts, handoff validation) plus **session tree integration**, not basic subagent dispatch.
 
-The following packages were evaluated:
+The following options were evaluated for subagent dispatch:
 
-| Package | Downloads/mo | Approach | Viability |
-| --- | --- | --- | --- |
-| `@gotgenes/pi-subagents` | 21.5K | In-process via Pi SDK | ⭐ Selected. Typed `SubagentsService` cross-extension API (`getSubagentsService()`) enables other Pi extensions to dispatch subagents through `@maestria/pi`. Layered settings design provides workspace-provider seam for future isolation. |
-| `@tintinweb/pi-subagents` | 23.1K | In-process (original) | Similar; `@gotgenes` fork preferred for typed API |
-| `pi-subagents` (nicobailon) | 92.2K | Self-contained extension registering its own `subagent` tool via `pi.registerTool()` | Not suitable. Exposes no programmatic API (`getSubagentsService()`) for other extensions to dispatch subagents. Events are internal strings not exported. No mechanism to register custom agent types from another extension. Designed for end-users, not extension authors. |
-| `pi-subagentura` | ~500 | In-process | Smaller, less maintained |
-| `pi-crew` | 12.4K | Multi-agent orchestration | Evaluated; defers to v1.1 |
-| `@juicesharp/rpiv-pi` | 11.4K | Skill-based dev workflow | Different approach; overlaps in scope |
-| `@quintinshaw/pi-dynamic-workflows` | 11.3K | Workflow fan-out | Evaluated; defers to v1.1 |
+| Option | Approach | Viability |
+| --- | --- | --- |
+| **A: `@gotgenes/pi-subagents`** (21.5K) | In-process via Pi SDK. `SubagentsService` cross-extension API: `spawn()`, `getRecord()`, `SUBAGENT_EVENTS`. File-based agent type registry from `~/.pi/agent/agents/*.md`. Layered settings, recursion guard, workspace providers, concurrency limiter. | ✅ **Selected.** Provides the programmatic dispatch API (`spawn()`) and agent type registration mechanism (`.md` files) that maestria needs. 60% less code vs building from scratch. |
+| **B: `pi-subagents` (nicobailon)** (92.2K) | Self-contained extension registering `subagent` tool via `pi.registerTool()`. No programmatic API exported (`getSubagentsService()` absent). Events are unexported strings. Agent types are internal registry with no custom registration mechanism. | ❌ **Not suitable.** Cannot dispatch subagents programmatically from `maestria_subagent` tool. Cannot register custom agent types (adventurer, builder, etc.). Designed for end-users calling `/subagent`, not for extension authors. Switching would require rewriting `subagent.ts` to not use programmatic dispatch. |
+| **C: Build own subagent dispatch** | Use Pi SDK's `createAgentSession()` to spawn subagents directly. Implement polling, timeout, concurrency, abort, lifecycle events from scratch. No external peer dependency. | ⚠️ **Possible but higher cost.** Estimates ~200-300 lines of new code for basic dispatch, plus ongoing maintenance for edge cases (timeouts, cancellation, resource cleanup) that pi-subagents already handles. No agent type registry — would need to build one or embed prompts directly. Concurrency limits, recursion guards, and workspace isolation would need custom implementation. |
+
+**Rationale:** Option A was selected because maestria's architecture requires programmatic subagent dispatch — the `maestria_subagent` tool in `subagent.ts` calls `service.spawn()` from code, not from an LLM tool call. Option B lacks this capability entirely. Option C is feasible but would duplicate mature functionality: concurrency limiting, timeout handling, abort propagation, lifecycle events, recursion guards, and the agent type registry (which we already leverage for our 7 specialist prompts via file-based agents). The 60% code reduction from Option A is real but not the primary driver — the deciding factor is the **programmatic API surface** that no other Pi subagent package provides.
 
 ## Decision
 
