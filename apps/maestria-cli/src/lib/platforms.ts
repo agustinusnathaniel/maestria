@@ -134,7 +134,7 @@ const pi: PlatformHandler = {
 
   install: Effect.gen(function* () {
     // Install prerequisite: @gotgenes/pi-subagents for subagent dispatch
-    yield* run('pi', ['install', '@gotgenes/pi-subagents'], 60_000).pipe(
+    yield* run('pi', ['install', 'npm:@gotgenes/pi-subagents'], 60_000).pipe(
       Effect.catchCause(() => Effect.void),
     );
     // Install main package
@@ -145,7 +145,7 @@ const pi: PlatformHandler = {
     Effect.gen(function* () {
       const tagged = version ? `npm:@maestria/pi@${version}` : 'npm:@maestria/pi@latest';
       // Ensure pi-subagents is installed (may not be for users who installed before v0.4.1)
-      yield* run('pi', ['install', '@gotgenes/pi-subagents'], 60_000).pipe(
+      yield* run('pi', ['install', 'npm:@gotgenes/pi-subagents'], 60_000).pipe(
         Effect.catchCause(() => Effect.void),
       );
       yield* run('pi', ['install', tagged], 120_000);
