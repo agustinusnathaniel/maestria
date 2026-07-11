@@ -11,24 +11,25 @@ A [Pi coding agent](https://pi.software/) extension that brings Maestria's struc
 - **Subagent Dispatch** - Delegation via `@gotgenes/pi-subagents` with 6-field handoff validation
 - **Maker/Checker Split** - Review mode blocks destructive tools. Dangerous bash patterns flagged.
 
-## Prerequisites
-
-- [Pi](https://pi.ai) CLI (latest version)
-- [@gotgenes/pi-subagents](https://github.com/gotgenes/pi-packages) Pi extension - required for subagent dispatch
-
-Install the prerequisite:
-
-```bash
-pi install npm:@gotgenes/pi-subagents
-```
-
 ## Installation
 
+### Recommended: via maestria CLI
+
 ```bash
-pi install npm:@maestria/pi
+pnpx maestria@latest install pi
 ```
 
-Alternatively, use the [maestria CLI](https://maestria.sznm.dev/cli/) to manage installation across all platforms from a single command.
+The CLI automatically installs both `@gotgenes/pi-subagents` (required peer dependency for subagent dispatch) and `@maestria/pi` in the correct order.
+
+### Alternative: manual Pi CLI
+
+```bash
+# Install required peer dependency first
+pi install npm:@gotgenes/pi-subagents
+
+# Install the extension
+pi install npm:@maestria/pi
+```
 
 ## Commands
 

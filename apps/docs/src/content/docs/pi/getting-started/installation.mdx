@@ -3,7 +3,7 @@ title: Installation & Setup
 description: How to install @maestria/pi and what you get - 7 specialist subagents, 3 workflow modes, and spec-driven orchestration for the Pi coding agent.
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
 
 `@maestria/pi` is a Pi extension that turns the [Pi coding agent](https://pi.ai) into a disciplined engineering workstation. It registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration - all with a single extension entry.
 
@@ -13,64 +13,39 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 - **Node.js 22.12+** - Required for npm-based extension resolution
 - [@gotgenes/pi-subagents](https://github.com/gotgenes/pi-packages) Pi extension - Required for subagent dispatch. Install with `pi install npm:@gotgenes/pi-subagents`
 
-## Installation via CLI (Recommended)
+## Installation via maestria CLI (Recommended)
 
 The [maestria CLI](/cli/) provides a unified interface for installing and managing
 maestria plugins across all supported platforms:
 
 ```bash
 # Install for this platform
-npx maestria install pi
+pnpx maestria@latest install pi
 
 # Verify installation
-npx maestria status
+pnpx maestria@latest status
 ```
 
+The CLI automatically installs the `@gotgenes/pi-subagents` peer dependency (required for subagent dispatch) alongside the main extension.
+
 <details>
-<summary>Alternative: Manual setup</summary>
+<summary>Alternative: manual Pi CLI setup</summary>
 
-There are two ways to install `@maestria/pi`.
+If you prefer not to use the maestria CLI:
 
-<Steps>
-
-1. **Open your Pi config**
+1. **Install the peer dependency:**
 
    ```bash
-   ~/.config/pi/pi.json
+   pi install npm:@gotgenes/pi-subagents
    ```
 
-2. **Add the extension**
-
-   ```json
-   {
-     "extensions": ["@maestria/pi"]
-   }
-   ```
-
-   This tells Pi to load the extension package at startup. Methodology skills are auto-discovered from the package manifest - no additional config needed.
-
-3. **Install the npm package**
+2. **Install the extension:**
 
    ```bash
    pi install npm:@maestria/pi
    ```
 
-   Pi resolves npm packages from its built-in registry bridge. The `npm:@maestria/pi` syntax installs the package from npm.
-
-4. **Restart Pi**
-
-   The extension loads on the next session. Subagents and mode commands are available immediately.
-
-</Steps>
-
-### Alternative: Install via Pi CLI directly
-
-Skip the config file step - install and register in one command:
-
-```bash
-pi install npm:@maestria/pi
-pi config extensions add @maestria/pi
-```
+3. **Restart Pi** for both extensions to load.
 
 </details>
 
@@ -93,7 +68,7 @@ You should see `@maestria/pi` in the output.
 To update via the maestria CLI:
 
 ```bash
-npx maestria update pi
+pnpx maestria@latest update pi
 ```
 
 <details>

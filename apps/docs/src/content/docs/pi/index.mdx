@@ -21,7 +21,7 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
 ## How It Works
 
-1. **Install the extension** - `pi install npm:@maestria/pi` or add to `pi.json`
+1. **Install the extension** - `pnpx maestria@latest install pi` or add to `pi.json`
 2. **Extension activates** - Pi loads the extension, auto-discovers 4 methodology skills (orchestrator dispatcher, global agent rules, handoff contract, iteration limits) via the package manifest and injects them into every session's system prompt. Registers mode commands (`/fein`, `/sonar`, `/blitz`), and activates 7 specialist subagents.
 3. **Mode commands drive the pipeline** - `/fein` (full pipeline), `/sonar` (research), `/blitz` (fast impl) - each activates the right subagents in sequence
 4. **Orchestrator dispatches** - The orchestrator subagent decomposes work, delegates to specialists, and enforces phase gates
@@ -29,7 +29,11 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
 ## Quick Install
 
-Install via the Pi CLI:
+```bash
+pnpx maestria@latest install pi
+```
+
+The maestria CLI automatically handles peer dependencies. Alternatively:
 
 ```bash
 pi install npm:@maestria/pi
