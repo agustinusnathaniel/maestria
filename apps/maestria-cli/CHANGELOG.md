@@ -1,5 +1,11 @@
 # maestria
 
+## 0.3.10
+
+### Patch Changes
+
+- [`e898e7e`](https://github.com/agustinusnathaniel/maestria/commit/e898e7ef80eb615cf9ffaa32bf125919fdbde138) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - adjust Pi package install and uninstall
+
 ## 0.3.9
 
 ### Patch Changes
