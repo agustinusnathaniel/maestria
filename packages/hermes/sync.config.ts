@@ -200,6 +200,30 @@ export default {
         name: 'maestria-planner',
         description: 'Planning -- breaks down work into ordered, verifiable steps',
       },
+      replace: [
+        {
+          from: 'Write tests for new functionality',
+          to: 'Verify each output meets its success criteria',
+        },
+        { from: 'Run type checking after changes', to: 'Run validation checks after each change' },
+        {
+          from: 'Commit with conventional commits',
+          to: 'Document changes following project conventions',
+        },
+        {
+          from: "Don't change architecture unless explicitly asked",
+          to: "Don't change scope unless explicitly asked",
+        },
+        {
+          from: "Don't add new dependencies without approval",
+          to: "Don't introduce new tools or approaches without justification",
+        },
+        {
+          from: "Don't refactor existing code while adding features",
+          to: "Don't restructure existing work while adding new work",
+        },
+        { from: "Don't skip verification steps", to: "Don't skip validation or review steps" },
+      ],
     },
 
     // -- Reviewer: quality validation --

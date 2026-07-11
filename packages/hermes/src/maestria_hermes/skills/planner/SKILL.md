@@ -81,14 +81,14 @@ After the plan is written, your handoff should cover:
 ### What to Do
 
 - Follow existing code conventions
-- Write tests for new functionality
-- Run type checking after changes
-- Commit with conventional commits
+- Verify each output meets its success criteria
+- Run validation checks after each change
+- Document changes following project conventions
 
 ### What NOT to Do
 
-- Don't change architecture unless explicitly asked
-- Don't add new dependencies without approval
-- Don't refactor existing code while adding features
-- Don't skip verification steps
+- Don't change scope unless explicitly asked
+- Don't introduce new tools or approaches without justification
+- Don't restructure existing work while adding new work
+- Don't skip validation or review steps
 - **If requirements are ambiguous, exhaust available data, document your assumption, and proceed** - the plan should not contain open questions. Convert ambiguity to documented assumptions.
