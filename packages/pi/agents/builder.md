@@ -1,3 +1,13 @@
+---
+description: >-
+  Focused implementation specialist. Executes one atomic, verifiable
+  unit of work per invocation with minimal context and clean diffs.
+tools: read, bash, grep, find, ls, write, edit
+prompt_mode: append
+inherit_context: true
+---
+
+
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 

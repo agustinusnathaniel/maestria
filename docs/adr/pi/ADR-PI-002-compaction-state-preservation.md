@@ -88,7 +88,7 @@ The raw `MaestriaState` object is also serialized into the `compaction.details` 
 
 ### ✅ Orchestrator Prompt Includes "Post-Compaction Recovery" Section
 
-The orchestrator prompt template (`packages/pi/src/prompts/orchestrator.md`) includes a "Post-Compaction Recovery" section that instructs the LLM to:
+The orchestrator prompt template (`packages/pi/skills/orchestrator/SKILL.md`) includes a "Post-Compaction Recovery" section that instructs the LLM to:
 
 1. Read the state block from the compaction summary
 2. Restore the active task

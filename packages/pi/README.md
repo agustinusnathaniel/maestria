@@ -4,21 +4,45 @@ A [Pi coding agent](https://pi.software/) extension that brings Maestria's struc
 
 ## Features
 
-- **8 Specialist Prompts** - Orchestrator, Adventurer, Architect, Builder, Diagnose, Planner, Reviewer, Writer
+- **4 Methodology Skills** - Orchestrator dispatcher, global agent rules, handoff contract, and iteration limits - automatically injected into every session via Pi's standard skill system (`SKILL.md` files registered in `pi.skills`)
 - **3 Workflow Modes** - `fein` (full pipeline), `sonar` (research only), `blitz` (fast implementation)
-- **Global Rules Injection** - Automatically injects orchestration rules via `before_agent_start`
+- **Skill-Based Prompt Injection** - Behavioral instructions injected via Pi's native skill mechanism, not custom event hooks. Skills are auto-discovered from the package manifest and loaded into the system prompt by Pi's resource loader - the standard pattern used by all major Pi extensions.
 - **Compaction Preservation** - Session state survives compaction with structured summaries
 - **Subagent Dispatch** - Delegation via `@gotgenes/pi-subagents` with 6-field handoff validation
 - **Maker/Checker Split** - Review mode blocks destructive tools. Dangerous bash patterns flagged.
-- **2 Methodology Skills** - Handoff contract + iteration limits
 
 ## Installation
 
+### Recommended: via maestria CLI
+
 ```bash
+pnpx maestria@latest install pi
+```
+
+The CLI automatically installs both `@gotgenes/pi-subagents` (required peer dependency for subagent dispatch) and `@maestria/pi` in the correct order.
+
+### Alternative: manual Pi CLI
+
+```bash
+# Install required peer dependency first
+pi install npm:@gotgenes/pi-subagents
+
+# Install the extension
 pi install npm:@maestria/pi
 ```
 
-Alternatively, use the [maestria CLI](https://maestria.sznm.dev/cli/) to manage installation across all platforms from a single command.
+### Uninstall
+
+```bash
+# Via maestria CLI (removes @maestria/pi)
+pnpx maestria@latest uninstall pi
+```
+
+Note: `@gotgenes/pi-subagents` is a shared dependency that other Pi extensions may use. Only remove it if no other extensions need it:
+
+```bash
+pi uninstall @gotgenes/pi-subagents
+```
 
 ## Commands
 

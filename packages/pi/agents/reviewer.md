@@ -1,3 +1,14 @@
+---
+description: >-
+  Code review specialist. Reviews for correctness, edge cases, security,
+  performance, and maintainability. Supports multi-lens review swarms
+  with fix/dismiss/escalate triage.
+tools: read, bash, grep, find, ls, glob
+prompt_mode: append
+inherit_context: true
+---
+
+
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 

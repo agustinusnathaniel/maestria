@@ -163,14 +163,33 @@ export function installSubagentTool(
         }
       }
 
-      // Attempt to dispatch via @gotgenes/pi-subagents; fallback gracefully
-      try {
-        const { getSubagentsService } = await import('@gotgenes/pi-subagents');
-        const service = getSubagentsService()!;
-        if (typeof service.spawn !== 'function') {
-          throw new Error('Subagents service unavailable or incomplete');
-        }
+      // Attempt to dispatch via @gotgenes/pi-subagents; handle missing service
+      const { getSubagentsService } = await import('@gotgenes/pi-subagents');
+      const service = getSubagentsService();
+      if (!service || typeof service.spawn !== 'function') {
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: [
+                '## Subagent Dispatch Unavailable',
+                '',
+                'The `@gotgenes/pi-subagents` extension is required for subagent dispatch but has not been loaded.',
+                '',
+                'Install it as a Pi extension:',
+                '',
+                '```',
+                'pi install npm:@gotgenes/pi-subagents',
+                '```',
+                '',
+                'Then restart your Pi session.',
+              ].join('\n'),
+            },
+          ],
+        };
+      }
 
+      try {
         // Helper: poll a single subagent until terminal or timeout
         async function pollSubagent(
           id: string,
@@ -179,11 +198,11 @@ export function installSubagentTool(
         ): Promise<{ status: string; result?: string; error?: string }> {
           const maxPolls = POLL_TIMEOUT_MS / POLL_INTERVAL_MS;
           let polls = 0;
-          let record = service.getRecord(id);
+          let record = service!.getRecord(id);
           while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
             if (signal?.aborted) throw new Error('Maestria subagent call aborted');
             await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
-            record = service.getRecord(id);
+            record = service!.getRecord(id);
             polls++;
             if (sendUpdates) {
               onUpdate?.({

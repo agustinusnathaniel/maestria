@@ -23,7 +23,7 @@ maestria/
 │   ├── core/              Canonical agent directives + sync pipeline (private, v0.2.0)
 │   ├── opencode/          OpenCode plugin (published, v0.4.9)
 │   ├── kimi-code/         Kimi Code plugin (private, v0.2.1)
-│   └── pi/                Pi extension (published, v0.2.1)
+│   └── pi/                Pi extension (published, v0.4.1)
 ├── apps/
 │   └── docs/              Starlight documentation site (private)
 ├── scripts/
@@ -109,7 +109,7 @@ Each plugin defines its transforms in `sync.config.ts`:
 | --- | --- | --- |
 | **opencode** | Adds YAML frontmatter with `mode`, `permission` blocks | `agents/<name>.md` - agent files with tool permissions |
 | **kimi-code** | 18 string replacements (`task(` → `Agent(`, `webfetch` → `FetchURL`, etc.) + prepend subagent profile + append routing/swarm docs | `skills/<name>/SKILL.md` - Kimi Code skills |
-| **pi** | 9 replacements (`task(` → `maestria_subagent(`, `@` → `/`) | `prompts/<name>.md` - prompt files |
+| **pi** | Unified `sync.config.ts` (9 replacements: `task(` → `maestria_subagent(`, `@` → `/`) with dual output paths for agents + skills | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
 
 ### Commands
 

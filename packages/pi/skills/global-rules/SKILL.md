@@ -1,3 +1,12 @@
+---
+name: global-rules
+description: >-
+  Global behavioral constraints and best practices for maestria-powered
+  Pi agents. Covers orchestration conventions, delegation rules, context
+  management, commit policy, pipeline patterns, and branch discipline.
+---
+
+
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 

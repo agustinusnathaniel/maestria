@@ -1,3 +1,14 @@
+---
+description: >-
+  Systematic bug tracing specialist. Follows a 6-step regression protocol
+  from error message to root cause to prevention, covering blast radius
+  and similar-problem scanning.
+tools: read, bash, grep, find, ls
+prompt_mode: append
+inherit_context: true
+---
+
+
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 

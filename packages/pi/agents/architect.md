@@ -1,3 +1,14 @@
+---
+description: >-
+  Architecture decision specialist. Evaluates implementation approaches
+  with trade-off analysis, produces Architecture Decision Records (ADRs),
+  and documents technical decisions with business context.
+tools: read, bash, grep, find, ls
+prompt_mode: append
+inherit_context: true
+---
+
+
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 

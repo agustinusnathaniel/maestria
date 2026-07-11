@@ -5,7 +5,7 @@ import { join } from 'node:path';
 const __dirname = import.meta.dirname;
 const root = join(__dirname, '..');
 
-const skills = ['handoff', 'iteration-limits'];
+const skills = ['orchestrator', 'global-rules', 'handoff', 'iteration-limits'];
 let allValid = true;
 
 for (const name of skills) {

@@ -15,42 +15,64 @@ maestria/
 │   └── docs/                 # Documentation site
 └── packages/
     └── pi/                   # @maestria/pi extension
-        ├── prompts/          # Agent prompt templates (8 agents)
-        ├── rules/            # Global agent rules (AGENTS.md)
-        ├── skills/           # Methodology skills (handoff, iteration-limits)
+        ├── agents/           # 7 specialist agent .md files for pi-subagents
+        ├── skills/           # 4 Pi skills (orchestrator, global-rules, handoff, iteration-limits)
         ├── src/              # Extension source code
-        │   ├── extension.ts  # Extension entry point
-        │   ├── modes.ts      # Agent mode definitions
-        │   ├── rules.ts      # Rule resolution logic
-        │   ├── rules-content.ts  # In-memory rules content
+        │   ├── extension.ts  # Extension entry point, wires lifecycle hooks
+        │   ├── agents.ts     # Agent file deployment to ~/.pi/agent/agents/
+        │   ├── rules.ts      # Mode prompt injection (before_agent_start handler)
+        │   ├── modes.ts      # Agent mode definitions (/fein, /sonar, /blitz)
         │   ├── state.ts      # Session state management
-        │   ├── compaction.ts # Context compaction
-        │   ├── subagent.ts   # Subagent orchestration
-        │   ├── commands.ts   # Pi commands
-        │   └── tools.ts      # Tool definitions
+        │   ├── compaction.ts # Context compaction preservation
+        │   ├── subagent.ts   # maestria_subagent tool + cross-extension events
+        │   ├── commands.ts   # Pi slash commands (/orchestrate, /review, etc.)
+        │   └── tools.ts      # Tool call interceptors (review mode, dangerous patterns)
         ├── scripts/          # Validation and build scripts
-        └── tests/            # Vitest test suite (9 test files, ~63 tests)
+        └── tests/            # Vitest test suite (10 test files, ~63 tests)
+```
+
+## Sync Pipeline
+
+All behavioral content is derived from canonical sources in `packages/core/agent-directives/`. A single unified `sync.config.ts` generates all Pi artifacts in one pass:
+
+- **Source:** `packages/core/agent-directives/specialists/` (7 specialist prompts) + `packages/core/agent-directives/rules.md` (global rules)
+- **Output:** `packages/pi/agents/*.md` (7 specialist agent files for pi-subagents) + `packages/pi/skills/orchestrator/SKILL.md` + `packages/pi/skills/global-rules/SKILL.md`
+- **Transforms:** Strips canonical frontmatter, applies Pi replacements (`@agent` -> `/agent`, `task()` -> `maestria_subagent()`), wraps in pi-subagents agent format or Pi skill `SKILL.md` frontmatter depending on output path
+- **Usage:** Agent files are deployed to `~/.pi/agent/agents/` at extension startup for pi-subagents discovery; skill files are auto-injected by Pi's resource loader from the `pi.skills` manifest field into every session's system prompt
+
+### Running the sync
+
+```bash
+# Regenerate all generated artifacts from canonical sources
+pnpm --filter @maestria/pi sync
+```
+
+Orchestrator, global rules, and all 7 specialist agent files are generated in a single pass by `sync.config.ts`. The sync is auto-checked by CI via `scripts/check-sync`.
+
+Generated artifacts are validated:
+
+```bash
+pnpm --filter @maestria/pi validate
 ```
 
 ## Making Changes
 
-### Adding or Modifying Prompts
+### Modifying Specialist Prompts, Global Rules, or Orchestrator Prompt
 
-Each specialist's prompt is authored in the canonical source and synced to Pi's prompt format via the sync pipeline. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide.
+All specialist prompts, global rules, and the orchestrator prompt are authored in canonical sources under `packages/core/agent-directives/`. After editing, regenerate all Pi artifacts in a single step:
 
-### Modifying Global Rules
-
-Global rules follow the same canonical-source workflow as prompts. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide.
-
-**Never edit `packages/pi/rules/AGENTS.md` directly.**
+```bash
+pnpm --filter @maestria/pi sync
+pnpm --filter @maestria/pi validate
+```
 
 ### Adding or Modifying Skills
 
 Skills fall into two categories:
 
-**Canonical skills** (the 8 specialist agents: adventurer, architect, builder, diagnose, planner, reviewer, writer, orchestrator) - these are authored at `packages/core/agent-directives/specialists/<name>.md` and synced to `packages/pi/prompts/<name>.md`. See [Adding or Modifying Prompts](#adding-or-modifying-prompts) above.
+**Canonical skills** (orchestrator, global-rules) - these are synced from core via `sync.config.ts`. Edit the canonical source, then run `pnpm sync`.
 
-**Pi-only methodology skills** (handoff, iteration-limits) - these live in `packages/pi/skills/` and have no canonical source. Each skill directory contains a SKILL.md and any supporting files. To add a new Pi-only skill, create a directory under `skills/` with a SKILL.md file. Validate your changes with:
+**Pi-only methodology skills** (handoff, iteration-limits) - these live in `packages/pi/skills/` and have no canonical source. Each skill directory contains a `SKILL.md` file. To add a new Pi-only skill, create a directory under `skills/` with a valid `SKILL.md` (frontmatter with `name` and `description`). Validate with:
 
 ```bash
 pnpm --filter @maestria/pi validate-skills
@@ -58,23 +80,19 @@ pnpm --filter @maestria/pi validate-skills
 
 ### Modifying Extension Code
 
-The extension source is in `packages/pi/src/`. The entry point is `extension.ts` which registers modes, rules, commands, tools, and skills with the Pi runtime. Other source files cover specific concerns:
-
-| File               | Purpose                           |
-| ------------------ | --------------------------------- |
-| `extension.ts`     | Extension entry, registers agents |
-| `modes.ts`         | Agent mode definitions            |
-| `rules.ts`         | Rule resolution at session start  |
-| `rules-content.ts` | Compiled rule content in memory   |
-| `state.ts`         | Session state tracking            |
-| `compaction.ts`    | Context compaction for long runs  |
-| `subagent.ts`      | Subagent delegation logic         |
-| `commands.ts`      | Custom Pi commands                |
-| `tools.ts`         | Tool definitions and permissions  |
+| File            | Purpose                                                      |
+| --------------- | ------------------------------------------------------------ |
+| `extension.ts`  | Extension entry point, registers all lifecycle hooks         |
+| `agents.ts`     | Deploys specialist agent files to pi-subagents discovery dir |
+| `rules.ts`      | Mode prompt injection via `before_agent_start`               |
+| `modes.ts`      | Workflow mode definitions and commands                       |
+| `state.ts`      | Session state tracking and persistence                       |
+| `compaction.ts` | Context compaction for long sessions                         |
+| `subagent.ts`   | `maestria_subagent` tool, cross-extension events             |
+| `commands.ts`   | Pi slash commands                                            |
+| `tools.ts`      | Tool call interceptors and dangerous pattern detection       |
 
 ## Building and Testing
-
-The build uses Rolldown (`vp pack`) rather than tsc:
 
 ```bash
 # Build the Pi package
@@ -83,7 +101,7 @@ pnpm --filter @maestria/pi build
 # Run tests (Vitest)
 pnpm --filter @maestria/pi test
 
-# Validate prompts and skills
+# Validate generated artifacts
 pnpm --filter @maestria/pi validate
 
 # Format, lint, and type-check
