@@ -19,7 +19,7 @@ A [Pi coding agent](https://pi.software/) extension that brings Maestria's struc
 Install the prerequisite:
 
 ```bash
-pi install @gotgenes/pi-subagents
+pi install npm:@gotgenes/pi-subagents
 ```
 
 ## Installation

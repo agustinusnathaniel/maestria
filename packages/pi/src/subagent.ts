@@ -179,7 +179,7 @@ export function installSubagentTool(
                 'Install it as a Pi extension:',
                 '',
                 '```',
-                'pi install @gotgenes/pi-subagents',
+                'pi install npm:@gotgenes/pi-subagents',
                 '```',
                 '',
                 'Then restart your Pi session.',
