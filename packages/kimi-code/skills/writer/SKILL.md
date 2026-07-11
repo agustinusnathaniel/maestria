@@ -1,12 +1,9 @@
 ---
 name: writer
-description: >-
+description: |-
   Documentation writing following structured patterns.
-
   Creates clear, comprehensive docs for code, APIs, systems.
-
-  Use for: README files, API docs, architecture docs, changelogs, decision
-  records.
+  Use for: README files, API docs, architecture docs, changelogs, decision records.
 type: prompt
 whenToUse: |-
   "Document this", "write README", "ADR", "changelog", "API docs",

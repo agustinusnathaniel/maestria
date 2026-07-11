@@ -27,7 +27,7 @@ export function serializeFrontmatter(data: Record<string, unknown> | string | nu
     if (data.startsWith('---')) return data;
     return `---\n${data}\n---\n`;
   }
-  return `---\n${yamlStringify(data)}---\n`;
+  return `---\n${yamlStringify(data, { lineWidth: 0 })}---\n`;
 }
 
 export function stripSourceComment(content: string): string {
