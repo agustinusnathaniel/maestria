@@ -5,12 +5,13 @@
 '@maestria/kimi-code': patch
 ---
 
-Mandate Work Results table format and docs audit step in orchestrator directive
+Orchestrator now always uses the structured summary table after builder tasks
 
-- Added `!!!` CRITICAL RULE (#14) anchoring the Work Results output summary format,
-  strengthened the Work Results section mandate, and integrated it into
-  COMMIT PROTOCOL step 5
-- Promoted COMMIT PROTOCOL step 2 (Docs audit) to `!!!` non-negotiable status
-- Tightened CRITICAL RULE #12 to eliminate exceptions to the docs audit
-- Fixed stale and ambiguous cross-references in CRITICAL RULES
-- Added documentation audit item to project checklist
+The orchestrator's Work Results output format is now mandatory rather than
+suggested. After every builder task, a structured `## Changes` table is
+shown summarizing what files changed and why. The existing "write for
+humans" guidance no longer overrides this specific output.
+
+The documentation audit step before committing is now also mandatory.
+Both the project checklist and the commit protocol enforce this step
+to prevent undocumented changes from landing.
