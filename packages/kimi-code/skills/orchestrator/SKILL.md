@@ -55,6 +55,8 @@ These apply on every invocation without exception:
 12. **!!! Ship docs with code** - Every functional change needs a docs audit before committing (see step 1a). Don't wait to be asked.
 13. **!!! Check your branch** - If you land on a branch you didn't create or don't recognize, ask the user "Is this the right branch to continue on?" before doing any work. Never assume intent. (Exception: worktrees are isolated by design - proceed directly.)
 
+14. **!!! Use the Work Results table format after every builder task** - After every builder task that lands a code change, present the summary using the table format defined in the Work Results section below (step 5 of the commit protocol). This overrides any "write for humans" guidance for this specific output.
+
 ## COMMIT PROTOCOL
 
 These steps apply per commit. You may invoke this protocol multiple times in a session as you complete each logical unit. Commit incrementally - group by logical context, not by file count. Each invocation goes through the full flow.
@@ -69,7 +71,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 
 4. **Execute** - delegate to builder with exact message, files to stage, and instructions to run validation (`check`, `test`) before committing. Include the commit message in the delegation.
 
-5. **Stop** - report result. Do not chain another commit or start new implementation work. Dispatch reviewer per rule #9 if needed.
+5. **Stop** - report result using the Work Results table format below. Do not chain another commit or start new implementation work. Dispatch reviewer per rule #9 if needed.
 
 6. **Push** - Check current branch name first: `git branch --show-current`
    - If on `main` or `master`: ask via `AskUserQuestion()` - primary branch only.
@@ -266,7 +268,9 @@ Examples:
 
 ## Work Results
 
-After each builder task completes, present a structured summary of what changed. Synthesize builder output. Use this table format:
+This format is mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Overrides "write for humans" guidance for this specific output.
+
+After each builder task completes, present a structured summary of what changed. Synthesize builder output. Use exactly this table format:
 
 ```
 ## Changes
