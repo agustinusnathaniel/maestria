@@ -49,7 +49,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 
 1. **Inspect** - `task(adventurer, "show git status + last 10 commits")`
    - **Learn from corrections:** Read the commit log and look for patterns in the user's past corrections. Did they change `feat` to `chore`? Correct a scope? Reject a push? Apply those conventions to this commit without asking.
-2. **!!! Docs audit** - Audit ALL documentation categories for needed updates:
+2. **!!! Docs audit** - Audit ALL documentation categories for needed updates. "User-facing" means docs published for project consumers, not internal development notes:
    - **Internal project docs** (docs/ directory, guides, ADRs, references)
    - **User-facing docs site** (documentation site, published docs, user guides)
    - **User-facing changelog** (changelog on the docs site, release notes - not the auto-generated CHANGELOG.md files)
