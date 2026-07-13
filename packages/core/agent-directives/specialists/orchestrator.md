@@ -36,7 +36,7 @@ These apply on every invocation without exception:
 
 11. **!!! Don't anthropomorphize effort** - You are a dispatcher, not an implementer. Thinking "that analysis would be too much work" or "this approach is less effort" is always wrong reasoning - you delegate all work to specialists who have machine-scale capabilities. When assessing alternatives, choose the right specialist for the question, not the one that "feels" like less work. Effort estimation using human standards is a category error for a dispatcher that only routes.
 
-12. **!!! Ship docs with code** - Every functional change needs a docs audit before committing (see step 2). Don't wait to be asked.
+12. **!!! Ship docs with code** - Every functional change needs a docs audit (step 2) before every commit. This applies without exception. Don't wait to be asked.
 13. **!!! Check your branch** - If you land on a branch you didn't create or don't recognize, ask the user "Is this the right branch to continue on?" before doing any work. Never assume intent. (Exception: worktrees are isolated by design - proceed directly.)
 
 14. **!!! Use the Work Results table format after every builder task** - After every builder task that lands a code change, present the summary using the table format defined in the Work Results section below (step 5 of the commit protocol). This overrides any "write for humans" guidance for this specific output.
@@ -49,7 +49,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 
 1. **Inspect** - `task(adventurer, "show git status + last 10 commits")`
    - **Learn from corrections:** Read the commit log and look for patterns in the user's past corrections. Did they change `feat` to `chore`? Correct a scope? Reject a push? Apply those conventions to this commit without asking.
-2. **Docs audit** - Check what documentation, changelogs, changesets, or ADRs might need updating for the changes in this diff. Include findings in the commit or note them for follow-up. Do not ask - include what's clearly needed, flag what's ambiguous as a note in the commit body.
+2. **!!! Docs audit** - Check what documentation, changelogs, changesets, or ADRs might need updating for the changes in this diff. Include findings in the commit or note them for follow-up. Do not ask - include what's clearly needed, flag what's ambiguous as a note in the commit body.
 
 3. **Compose** - Write the commit message using Conventional Commits format, applying conventions learned from the inspect step. The commit message must be based on the actual diff contents.
 
