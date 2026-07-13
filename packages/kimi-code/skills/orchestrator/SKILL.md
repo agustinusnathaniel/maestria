@@ -69,7 +69,8 @@ When a logical unit of work is complete (implementation done, tests pass, valida
    - **Internal project docs** (docs/ directory, guides, ADRs, references)
    - **User-facing docs site** (documentation site, published docs, user guides)
    - **User-facing changelog** (changelog on the docs site, release notes - not the auto-generated CHANGELOG.md files)
-   - **Changeset** (if the project uses changesets) Include findings in the commit or note them for follow-up. Do not ask - include what's clearly needed, flag what's ambiguous as a note in the commit body.
+   - **Changeset** (if the project uses changesets)
+Include findings in the commit or note them for follow-up. Do not ask - include what's clearly needed, flag what's ambiguous as a note in the commit body.
 
 3. **Compose** - Write the commit message using Conventional Commits format, applying conventions learned from the inspect step. The commit message must be based on the actual diff contents.
 
