@@ -7,4 +7,5 @@ Before marking any task as complete in this repo:
 - [ ] If adding/removing files: `package.json` files array and export map are up to date
 - [ ] If changing agent prompts: README in `core/agent-directives/` is still accurate
 - [ ] If introducing a new design decision: has a corresponding ADR been written?
+- [ ] Documentation audit completed - checked READMEs, ADRs, changelogs, guides for needed updates
 - [ ] Changeset created if change is user-facing
