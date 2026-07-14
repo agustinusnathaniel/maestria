@@ -183,38 +183,210 @@ const kimiCode: PlatformHandler = {
   getLatestVersion: Effect.succeed('see GitHub releases'),
 
   install: Effect.gen(function* () {
-    yield* run('kimi', [
-      'plugins',
-      'install',
-      'https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code',
-    ]);
-    yield* run('cp', [
-      `${homedir()}/.local/share/kimi/plugins/maestria/rules/AGENTS.md`,
-      `${homedir()}/.kimi-code/AGENTS.md`,
-    ]).pipe(
+    const home = homedir();
+    const kimiHome = `${home}/.kimi-code`;
+    const managedDir = `${kimiHome}/plugins/managed/maestria`;
+    const pluginsDir = `${kimiHome}/plugins`;
+    const installUrl = 'https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code';
+
+    // Create managed directory
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { mkdir } = await import('node:fs/promises');
+        await mkdir(managedDir, { recursive: true });
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `mkdir -p ${managedDir}`,
+          message: String(error),
+        }),
+    });
+
+    // Download and extract plugin from GitHub using codeload
+    yield* sh(
+      `curl -sL "https://codeload.github.com/agustinusnathaniel/maestria/tar.gz/release/kimi-code" | tar xz -C /tmp`,
+      60_000,
+    );
+
+    const tmpExtractDir = '/tmp/maestria-release-kimi-code';
+    yield* sh(`cp -r "${tmpExtractDir}/packages/kimi-code/"* "${managedDir}/"`);
+    yield* sh(`rm -rf "${tmpExtractDir}"`);
+
+    // Copy AGENTS.md rules
+    yield* run('cp', [`${managedDir}/rules/AGENTS.md`, `${kimiHome}/AGENTS.md`]).pipe(
       Effect.catchTag('CommandError', () =>
         Effect.sync(() => {
           console.log(
-            `\n  ${picocolors.yellow('⚠')} Plugin installed but rules copy failed.\n` +
-              `  Manually copy: cp "${homedir()}/.local/share/kimi/plugins/maestria/rules/AGENTS.md" "${homedir()}/.kimi-code/AGENTS.md"\n`,
+            `  ${picocolors.yellow('⚠')} Plugin files copied but rules/AGENTS.md not found.\n` +
+              `  The plugin is installed. Restarting Kimi Code should pick it up.\n`,
           );
         }),
       ),
     );
-  }),
+
+    // Write installed.json
+    const installed = yield* readInstalledJsonEffect(pluginsDir);
+    installed.plugins = installed.plugins.filter((p) => p.id !== 'maestria');
+    installed.plugins.push({
+      id: 'maestria',
+      root: managedDir,
+      source: 'github',
+      enabled: true,
+      installedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      originalSource: installUrl,
+      github: {
+        owner: 'agustinusnathaniel',
+        repo: 'maestria',
+        ref: { kind: 'branch', value: 'release/kimi-code' },
+      },
+    });
+    yield* writeInstalledJsonEffect(pluginsDir, installed);
+  }).pipe(Effect.as(void 0)),
 
   update: (_version?: string) =>
-    run('kimi', [
-      'plugins',
-      'install',
-      'https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code',
-    ]).pipe(Effect.as(void 0)),
+    Effect.gen(function* () {
+      const home = homedir();
+      const kimiHome = `${home}/.kimi-code`;
+      const managedDir = `${kimiHome}/plugins/managed/maestria`;
+      const pluginsDir = `${kimiHome}/plugins`;
+      const installUrl = 'https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code';
 
-  uninstall: run('kimi', ['plugins', 'uninstall', 'maestria']).pipe(
-    Effect.andThen(run('rm', [`${homedir()}/.kimi-code/AGENTS.md`])),
-    Effect.as(void 0),
-  ),
+      // Read existing installed.json to preserve installedAt
+      const installed = yield* readInstalledJsonEffect(pluginsDir);
+      const existing = installed.plugins.find((p) => p.id === 'maestria');
+      const installedAt = existing?.installedAt ?? new Date().toISOString();
+
+      // Create managed directory
+      yield* Effect.tryPromise({
+        try: async () => {
+          const { mkdir } = await import('node:fs/promises');
+          await mkdir(managedDir, { recursive: true });
+        },
+        catch: (error) =>
+          new CommandError({
+            command: `mkdir -p ${managedDir}`,
+            message: String(error),
+          }),
+      });
+
+      // Download and extract plugin from GitHub using codeload
+      yield* sh(
+        `curl -sL "https://codeload.github.com/agustinusnathaniel/maestria/tar.gz/release/kimi-code" | tar xz -C /tmp`,
+        60_000,
+      );
+
+      const tmpExtractDir = '/tmp/maestria-release-kimi-code';
+      yield* sh(`cp -r "${tmpExtractDir}/packages/kimi-code/"* "${managedDir}/"`);
+      yield* sh(`rm -rf "${tmpExtractDir}"`);
+
+      // Copy AGENTS.md rules
+      yield* run('cp', [`${managedDir}/rules/AGENTS.md`, `${kimiHome}/AGENTS.md`]).pipe(
+        Effect.catchTag('CommandError', () =>
+          Effect.sync(() => {
+            console.log(
+              `  ${picocolors.yellow('⚠')} Plugin files copied but rules/AGENTS.md not found.\n` +
+                `  The plugin is updated. Restarting Kimi Code should pick it up.\n`,
+            );
+          }),
+        ),
+      );
+
+      // Update installed.json
+      installed.plugins = installed.plugins.filter((p) => p.id !== 'maestria');
+      installed.plugins.push({
+        id: 'maestria',
+        root: managedDir,
+        source: 'github',
+        enabled: true,
+        installedAt,
+        updatedAt: new Date().toISOString(),
+        originalSource: installUrl,
+        github: {
+          owner: 'agustinusnathaniel',
+          repo: 'maestria',
+          ref: { kind: 'branch', value: 'release/kimi-code' },
+        },
+      });
+      yield* writeInstalledJsonEffect(pluginsDir, installed);
+    }).pipe(Effect.as(void 0)),
+
+  uninstall: Effect.gen(function* () {
+    const home = homedir();
+    const kimiHome = `${home}/.kimi-code`;
+    const pluginsDir = `${kimiHome}/plugins`;
+    const managedDir = `${kimiHome}/plugins/managed/maestria`;
+
+    // Remove from installed.json
+    const installed = yield* readInstalledJsonEffect(pluginsDir);
+    installed.plugins = installed.plugins.filter((p) => p.id !== 'maestria');
+    yield* writeInstalledJsonEffect(pluginsDir, installed);
+
+    // Remove managed directory
+    yield* sh(`rm -rf "${managedDir}"`);
+
+    // Remove AGENTS.md
+    yield* run('rm', ['-f', `${kimiHome}/AGENTS.md`]).pipe(Effect.catchCause(() => Effect.void));
+  }).pipe(Effect.as(void 0)),
 };
+
+// ── Kimi Code helpers ─────────────────────────────────
+
+interface InstalledRecord {
+  id: string;
+  root: string;
+  source: string;
+  enabled: boolean;
+  installedAt: string;
+  updatedAt?: string;
+  originalSource?: string;
+  capabilities?: Record<string, unknown>;
+  github?: {
+    owner: string;
+    repo: string;
+    ref: { kind: string; value: string };
+    installedSha?: string;
+  };
+}
+
+interface InstalledFile {
+  version: 1;
+  plugins: InstalledRecord[];
+}
+
+async function readInstalledJson(pluginsDir: string): Promise<InstalledFile> {
+  try {
+    const { readFile } = await import('node:fs/promises');
+    const content = await readFile(`${pluginsDir}/installed.json`, 'utf-8');
+    return JSON.parse(content) as InstalledFile;
+  } catch {
+    return { version: 1, plugins: [] };
+  }
+}
+
+async function writeInstalledJson(pluginsDir: string, data: InstalledFile): Promise<void> {
+  const { mkdir, writeFile, rename } = await import('node:fs/promises');
+  await mkdir(pluginsDir, { recursive: true });
+  const tmpPath = `${pluginsDir}/installed.json.tmp`;
+  const finalPath = `${pluginsDir}/installed.json`;
+  await writeFile(tmpPath, JSON.stringify(data, null, 2) + '\n');
+  await rename(tmpPath, finalPath);
+}
+
+const readInstalledJsonEffect = (pluginsDir: string): Effect.Effect<InstalledFile, never> =>
+  Effect.tryPromise(() => readInstalledJson(pluginsDir)).pipe(
+    Effect.catchCause(() =>
+      Effect.succeed({ version: 1 as const, plugins: [] as InstalledRecord[] }),
+    ),
+  );
+
+const writeInstalledJsonEffect = (
+  pluginsDir: string,
+  data: InstalledFile,
+): Effect.Effect<void, never> =>
+  Effect.tryPromise(() => writeInstalledJson(pluginsDir, data)).pipe(
+    Effect.catchCause(() => Effect.void),
+  );
 
 // ── Registry ─────────────────────────────────────────
 export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode];

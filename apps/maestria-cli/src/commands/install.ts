@@ -1,6 +1,7 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { multiselect, isCancel, cancel } from '@clack/prompts';
+import { isCancel, cancel } from '@clack/prompts';
+import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { detectAll } from '@/lib/detect.js';
 import { installOne } from '@/lib/install-one.js';
@@ -144,12 +145,15 @@ export const installCommand = defineCommand({
         process.exit(0);
       }
 
-      const selected = await multiselect({
+      const selected = await groupMultiselect({
         message: 'Which platforms do you want to install maestria for?',
-        options: installable.map((p) => ({
-          value: p.id,
-          label: p.label,
-        })),
+        options: {
+          'All platforms': installable.map((p) => ({
+            value: p.id,
+            label: p.label,
+          })),
+        },
+        selectableGroups: true,
         required: true,
       });
 

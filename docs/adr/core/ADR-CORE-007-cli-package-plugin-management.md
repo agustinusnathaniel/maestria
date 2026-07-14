@@ -11,8 +11,10 @@ Maestria ships the same AI engineering methodology to 3 coding agent platforms -
 | Platform  | Install method                              | Update method                        |
 | --------- | ------------------------------------------- | ------------------------------------ |
 | OpenCode  | `opencode plugin @maestria/opencode@latest` | Same command with `--force`          |
-| Kimi Code | `kimi plugins install <git-url>`            | Same command (re-install)            |
+| Kimi Code | codeload + `installed.json`                 | Direct file install                  |
 | Pi        | `pi install npm:@maestria/pi`               | `pi install npm:@maestria/pi@latest` |
+
+> **Note:** As of Kimi Code v0.23.6 the `kimi plugins` CLI subcommand was removed. The CLI now installs via direct file operations (codeload download + `installed.json` registry write), matching the approach used internally by Kimi Code's own `/plugins install` session command.
 
 Users who work across platforms - or teams that standardize on maestria - must remember these commands, check which platforms they have installed, and manage versions manually. Install knowledge is scattered across README files. There is no single command to see what's installed or update everything at once.
 
