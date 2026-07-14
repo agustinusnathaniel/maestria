@@ -12,16 +12,18 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 
 ## Commands
 
-| Command                                    | What it does                            |
-| ------------------------------------------ | --------------------------------------- |
-| `maestria`                                 | Show status (default)                   |
-| `maestria status`                          | Show installed plugins and version info |
-| `maestria install`                         | Interactive platform install            |
-| `maestria install --all`                   | Install for all detected platforms      |
-| `maestria install opencode`                | Install for a specific platform         |
-| `maestria update`                          | Interactive platform update             |
-| `maestria update --all`                    | Update all installed platforms          |
-| `maestria update opencode --version 0.5.0` | Update to a specific version            |
+| Command                                    | What it does                                   |
+| ------------------------------------------ | ---------------------------------------------- |
+| `maestria`                                 | Show status (default)                          |
+| `maestria status`                          | Show installed plugins and version info        |
+| `maestria install`                         | Interactive platform install (multiselect)     |
+| `maestria install --all`                   | Install for all detected platforms             |
+| `maestria install opencode`                | Install for a specific platform                |
+| `maestria install opencode,pi`             | Install for multiple comma-separated platforms |
+| `maestria update`                          | Interactive platform update (multiselect)      |
+| `maestria update --all`                    | Update all installed platforms                 |
+| `maestria update opencode,pi`              | Update multiple comma-separated platforms      |
+| `maestria update opencode --version 0.5.0` | Update to a specific version                   |
 
 All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text - ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version.
 
@@ -37,8 +39,14 @@ npx maestria install
 # Install for all platforms
 npx maestria install --all
 
+# Install for multiple specific platforms
+npx maestria install opencode,pi
+
 # Update everything
 npx maestria update --all
+
+# Update multiple platforms simultaneously
+npx maestria update opencode,pi
 
 # Update to a specific version
 npx maestria update opencode --version 0.5.0

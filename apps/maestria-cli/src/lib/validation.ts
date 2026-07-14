@@ -28,6 +28,41 @@ export function validatePlatform(input: string): Effect.Effect<ValidPlatform, Va
 }
 
 /**
+ * Validate a comma-separated list of platform IDs.
+ * Splits on comma, trims whitespace, validates each.
+ * Returns an array of validated platform IDs or fails on the first invalid one.
+ */
+export function validatePlatforms(input: string): Effect.Effect<ValidPlatform[], ValidationError> {
+  const parts = [
+    ...new Set(
+      input
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
+  if (parts.length === 0) {
+    return Effect.fail(
+      new ValidationError({
+        message: 'No platforms specified.',
+      }),
+    );
+  }
+  const results: ValidPlatform[] = [];
+  for (const part of parts) {
+    if (!VALID_PLATFORMS.includes(part as ValidPlatform)) {
+      return Effect.fail(
+        new ValidationError({
+          message: `Unknown platform '${part}'. Valid platforms: ${VALID_PLATFORMS.join(', ')}`,
+        }),
+      );
+    }
+    results.push(part as ValidPlatform);
+  }
+  return Effect.succeed(results);
+}
+
+/**
  * Validate a version string.
  * Accepts semver (0.5.0) or 'latest'.
  */

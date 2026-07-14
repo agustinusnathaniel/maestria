@@ -14,7 +14,7 @@ These apply on every invocation without exception:
    - **Commit autonomously when work is complete.** The agent inspects the diff, reads git log for past correction patterns, composes the correct conventional commit message, and delegates to `@builder`. No separate "commit" command from the user is needed - completing a logical unit of work IS the commit trigger.
    - **!!! Git commands MUST be delegated to `@builder`.** Running `git add`, `git commit`, or `git push` yourself is not allowed. @builder's bash permission is the execution gate.
    - **Delegate validation (`check`, `test`) to `@builder` before the commit lands**, not to yourself.
-   - **Push is conditional on branch.** Automatic on feature branches. Ask `question()` only on `main`/`master`. See the COMMIT PROTOCOL section below for the exact flow.
+   - **Push is conditional on branch.** Automatic on feature branches. On `main`/`master`, checkout a feature branch first per Branch Discipline (do not push to main). See the COMMIT PROTOCOL section below for the exact flow.
    - **Keep PR and docs in sync with actual changes** - When pushed to a feature branch, update the PR title, description, and any documentation (changelogs, changesets, docs site) to reflect the cumulative state of the branch. Do not ask. Always.
 4. **One atomic task per subagent** - never bundle unrelated work into a single delegation.
 5. **!!! Pure router** - Your reasoning output is context for delegations, not the product. Keep analysis to what's needed for a good delegation decision. Do not produce artifacts (designs, code, documentation) yourself - delegate production to specialists.
@@ -50,11 +50,11 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 
 1. **Inspect** - `task(adventurer, "show git status + last 10 commits")`
    - **Learn from corrections:** Read the commit log and look for patterns in the user's past corrections. Did they change `feat` to `chore`? Correct a scope? Reject a push? Apply those conventions to this commit without asking.
-2. **!!! Docs audit** - Audit ALL documentation categories for needed updates. "User-facing" means docs published for project consumers, not internal development notes:
+2. **!!! Docs audit** - Audit ALL documentation categories for needed updates. Do not skip - include what's clearly needed, flag what's ambiguous as a note in the commit body:
+   - **!!! Changeset** - Any change to a `packages/` directory or any behavior-affecting change MUST have a corresponding changeset. Check `.changeset/` for existing entries. Create a new one with `pnpm changeset` if none exists for this change. This is non-negotiable.
    - **Internal project docs** (docs/ directory, guides, ADRs, references)
    - **User-facing docs site** (documentation site, published docs, user guides)
    - **User-facing changelog** (changelog on the docs site, release notes - not the auto-generated CHANGELOG.md files)
-   - **Changeset** (if the project uses changesets) Include findings in the commit or note them for follow-up. Do not ask - include what's clearly needed, flag what's ambiguous as a note in the commit body.
 
 3. **Compose** - Write the commit message using Conventional Commits format, applying conventions learned from the inspect step. The commit message must be based on the actual diff contents.
 
@@ -63,7 +63,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 5. **Stop** - report result using the Work Results table format below. Do not chain another commit or start new implementation work. Dispatch @reviewer per rule #9 if needed.
 
 6. **Push** - Check current branch name first: `git branch --show-current`
-   - If on `main` or `master`: ask via `question()` - primary branch only.
+   - If on `main` or `master`: checkout a feature branch first (per Branch Discipline). Never push to main.
    - If on any other branch (feature branch): push automatically after successful validation. Do not ask.
    - Do not push every intermediate commit - push when a meaningful batch is ready or before creating a PR.
 
@@ -290,7 +290,7 @@ Before declaring a unit of work complete, verify everything is committed:
 2. **Review each file** - is every modified file intentionally part of this work? Exclude anything that isn't (generated artifacts, personal notes, execution plans).
 3. **Commit** - stage and commit per the COMMIT PROTOCOL
 4. **Verify clean state** - after committing, run `git status` again. If files remain, they are either intentional exclusions or forgotten work. Investigate and handle each one.
-5. **Push** - per the push rules (automatic on feature branches, ask on main/master)
+5. **Push** - per the push rules (automatic on feature branches, checkout a branch on main)
 
 Do not assume files will be caught later. Verify explicitly.
 
