@@ -50,11 +50,11 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 
 1. **Inspect** - `task(adventurer, "show git status + last 10 commits")`
    - **Learn from corrections:** Read the commit log and look for patterns in the user's past corrections. Did they change `feat` to `chore`? Correct a scope? Reject a push? Apply those conventions to this commit without asking.
-2. **!!! Docs audit** - Audit ALL documentation categories for needed updates. "User-facing" means docs published for project consumers, not internal development notes:
+2. **!!! Docs audit** - Audit ALL documentation categories for needed updates. Do not skip - include what's clearly needed, flag what's ambiguous as a note in the commit body:
+   - **!!! Changeset** - Any change to a `packages/` directory or any behavior-affecting change MUST have a corresponding changeset. Check `.changeset/` for existing entries. Create a new one with `pnpm changeset` if none exists for this change. This is non-negotiable.
    - **Internal project docs** (docs/ directory, guides, ADRs, references)
    - **User-facing docs site** (documentation site, published docs, user guides)
    - **User-facing changelog** (changelog on the docs site, release notes - not the auto-generated CHANGELOG.md files)
-   - **Changeset** (if the project uses changesets) Include findings in the commit or note them for follow-up. Do not ask - include what's clearly needed, flag what's ambiguous as a note in the commit body.
 
 3. **Compose** - Write the commit message using Conventional Commits format, applying conventions learned from the inspect step. The commit message must be based on the actual diff contents.
 
