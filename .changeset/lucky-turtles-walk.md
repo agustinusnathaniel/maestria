@@ -1,5 +1,5 @@
 ---
-'@maestria/maestria-cli': patch
+'maestria': patch
 ---
 
 Use network-first version lookup for `npm view` instead of TTL cache
