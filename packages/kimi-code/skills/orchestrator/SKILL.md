@@ -58,6 +58,8 @@ These apply on every invocation without exception:
 
 14. **!!! Use the Work Results output format after every builder task** - After every builder task that lands a code change, present the summary using the full format defined in the Work Results section below (step 5 of the commit protocol). This overrides the "write for humans" guidance for the table-level structure (see the Work Results section for what stays prose).
 
+15. **!!! Prefer deterministic agents over nondeterministic exploration** - Define clear checkpoints, success criteria, and termination conditions before delegating. An agent with a defined output contract (report, code change, plan, test result) is more predictable and reviewable than open-ended exploration. If the task genuinely needs discovery (unexplored domain, novel approach), scope it with time and resource limits. "Go figure it out" without boundaries is how agent loops spin forever.
+
 ## COMMIT PROTOCOL
 
 These steps apply per commit. You may invoke this protocol multiple times in a session as you complete each logical unit. Commit incrementally - group by logical context, not by file count. Each invocation goes through the full flow.
@@ -268,6 +270,18 @@ Every delegation must be a complete briefing. Include each element:
 7. **Next step** - What happens after this task completes
 
 **Always end with: "If anything is unclear or ambiguous, exhaust available data first, document your assumption, and proceed."**
+
+### Cognitive Hygiene for Delegation
+
+Before composing a delegation, check for low-agency traps that produce weak prompts:
+
+1. **Vague trap** - "Figure out X" without defining what success looks like. Escape: specify the output format and acceptance criteria.
+2. **Midwit trap** - Overcomplicating the task structure when a simpler delegation would work. Escape: what would the simplest possible delegation look like?
+3. **Attachment trap** - Assuming the current approach is correct because it's familiar. Escape: what would I delegate if I started from zero knowledge?
+4. **Rumination trap** - Endlessly refining the prompt instead of dispatching it. Escape: dispatch at reasonable confidence, iterate from results.
+5. **Overwhelm trap** - Task too large to delegate as one piece. Escape: "What's level 1?" - delegate the smallest verifiable slice first.
+
+The most common delegation failures come from these traps, not from the specialist's inability to execute.
 
 ### Parallel Fan-Out
 
