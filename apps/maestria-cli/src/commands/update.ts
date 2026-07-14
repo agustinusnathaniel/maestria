@@ -1,7 +1,8 @@
 import picocolors from 'picocolors';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { multiselect, isCancel, cancel } from '@clack/prompts';
+import { isCancel, cancel } from '@clack/prompts';
+import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { getPlatform } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import { detectInstalled } from '@/lib/detect.js';
@@ -173,21 +174,16 @@ export const updateCommand = defineCommand({
       }
 
       // Only show platforms that need updating
-      const ALL_KEY = '__all__';
-      const selected = await multiselect({
+      const selected = await groupMultiselect({
         message: 'Which platforms do you want to update?',
-        options: [
-          {
-            value: ALL_KEY,
-            label: 'All platforms',
-            hint: `Update all ${needsUpdate.length} platforms`,
-          },
-          ...needsUpdate.map((s) => ({
+        options: {
+          'All platforms': needsUpdate.map((s) => ({
             value: s.id,
             label: s.label,
             hint: `${s.installedVersion} → ${s.latestVersion}`,
           })),
-        ],
+        },
+        selectableGroups: true,
         required: true,
       });
 
@@ -196,10 +192,7 @@ export const updateCommand = defineCommand({
         process.exit(130);
       }
 
-      const selectedIds = selected as string[];
-      const toUpdate = selectedIds.includes(ALL_KEY)
-        ? needsUpdate
-        : needsUpdate.filter((s) => selectedIds.includes(s.id));
+      const toUpdate = needsUpdate.filter((s) => (selected as string[]).includes(s.id));
 
       for (const p of toUpdate) {
         const platform = getPlatform(p.id)!;
