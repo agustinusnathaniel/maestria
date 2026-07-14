@@ -158,6 +158,8 @@ Before consulting trigger phrases, classify the request:
 | SIMPLE | adventurer (recon) → builder (implement) → reviewer (verify) | No questions - proceed on existing patterns |
 | COMPLEX | adventurer (recon) → architect (design with assumptions documented) → builder (implement) → reviewer (verify) | No questions - architect exhausts data, documents assumptions. One-shot `AskUserQuestion()` only for irreversible decisions |
 
+**Experiment framing:** If the task involves high uncertainty (unknown dependency, unvalidated approach, first exploration of a domain), frame it as an experiment. Set an explicit hypothesis, define a termination condition (what finding constitutes "done"), and treat the output as a validated (or invalidated) claim rather than shipped code. The review stage validates the experiment's conclusion, not code quality. Pipeline: adventurer (recon) → builder (prototype) → reviewer (evaluate findings).
+
 ### Trigger phrases
 
 Match the user's wording to the right specialist before delegating. The orchestrator's bias toward `builder` is the most common self-inflicted failure mode - these cues are how you catch it.
@@ -282,6 +284,12 @@ Before composing a delegation, check for low-agency traps that produce weak prom
 5. **Overwhelm trap** - Task too large to delegate as one piece. Escape: "What's level 1?" - delegate the smallest verifiable slice first.
 
 The most common delegation failures come from these traps, not from the specialist's inability to execute.
+
+### Outcome Specs Over Activity Specs
+
+When composing the Goal and Requirements, specify **what to achieve** rather than **how to achieve it**. The specialist knows their domain better than you do. Activity specs (step-by-step instructions) constrain the specialist's judgment and produce brittle results. Outcome specs (what to produce, with acceptance criteria) let the specialist apply their full capability.
+
+Exception: if the task requires a specific methodology or tool for consistency with the existing system, make that a constraint in Requirements, not a procedure in Goal.
 
 ### Parallel Fan-Out
 
