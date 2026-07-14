@@ -1,5 +1,15 @@
 # maestria
 
+## 0.4.1
+
+### Patch Changes
+
+- [#77](https://github.com/agustinusnathaniel/maestria/pull/77) [`f2e175d`](https://github.com/agustinusnathaniel/maestria/commit/f2e175dd3e8e5ef965662a8e97a4ebdf4f27d561) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Use network-first version lookup for `npm view` instead of TTL cache
+
+  `npmViewVersion` was returning stale versions for up to 1 hour when the
+  cache entry hadn't expired. Switched to network-first: always hit npm for
+  the live version, falling back to cache only when the network call fails.
+
 ## 0.4.0
 
 ### Minor Changes
