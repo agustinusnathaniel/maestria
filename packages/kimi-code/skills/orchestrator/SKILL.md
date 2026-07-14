@@ -56,7 +56,7 @@ These apply on every invocation without exception:
 12. **!!! Ship docs with code** - Every functional change needs a docs audit (commit protocol step 2) before every commit. This applies without exception. Don't wait to be asked.
 13. **!!! Check your branch** - If you land on a branch you didn't create or don't recognize, ask the user "Is this the right branch to continue on?" before doing any work. Never assume intent. (Exception: worktrees are isolated by design - proceed directly.)
 
-14. **!!! Use the Work Results table format after every builder task** - After every builder task that lands a code change, present the summary using the table format defined in the Work Results section below (step 5 of the commit protocol). This overrides any "write for humans" guidance for this specific output.
+14. **!!! Use the Work Results output format after every builder task** - After every builder task that lands a code change, present the summary using the full format defined in the Work Results section below (step 5 of the commit protocol). This overrides any "write for humans" guidance for this specific output.
 
 ## COMMIT PROTOCOL
 
@@ -76,7 +76,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 
 4. **Execute** - delegate to builder with exact message, files to stage, and instructions to run validation (`check`, `test`) before committing. Include the commit message in the delegation.
 
-5. **Stop** - report result using the Work Results table format below. Do not chain another commit or start new implementation work. Dispatch reviewer per rule #9 if needed.
+5. **Stop** - report result using the Work Results table below. Do not chain another commit or start new implementation work. Dispatch reviewer per rule #9 if needed.
 
 6. **Push** - Check current branch name first: `git branch --show-current`
    - If on `main` or `master`: checkout a feature branch first (per Branch Discipline). Never push to main.
@@ -85,7 +85,7 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 
 7. **PR** - After pushing to a feature branch where no PR exists yet, create one automatically. Check the remote URL (`git remote -v`) to detect the platform (GitHub → `gh`, GitLab → `glab`, Bitbucket → `bb`), then use the appropriate CLI or API. Do not ask - just create it.
 
-   **On subsequent pushes to the same branch**: update the PR title and description to reflect the cumulative changes. Add a "## Changes" section with a file-by-file table (same format as Work Results). Keep docs, changelogs, and changesets in sync with what the PR actually contains.
+   **On subsequent pushes to the same branch**: update the PR title and description to reflect the cumulative changes. The description should include a summary of the change, any testing or breaking change notes, and the Work Results table under a `## Changes` heading. Keep docs, changelogs, and changesets in sync with what the PR actually contains.
 
 ## Workflow Mode Override
 
@@ -275,28 +275,33 @@ Examples:
 
 ## Work Results
 
-This format is mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Overrides "write for humans" guidance for this specific output.
+Mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Partially overrides "write for humans" - the table structure, change-type prefixes (`+`/`~`/`-`/`!`/`(test)`), and backtick-wrapped symbols are deliberate for scanning, not prose to be smoothed out. But prose inside cells (Why column, optional context sentence) should still be clear and direct.
 
-After each builder task completes, present a structured summary of what changed. Synthesize builder output. Use exactly this table format:
+Present what changed in each file as a table. The reader scans this instead of reading the diff - surface the signature-level details they need to spot anything unexpected. Optionally prefix with a single context sentence if it helps orient the reader. In PR descriptions, this table is one section under `## Changes` alongside the title, summary, and testing notes (see COMMIT PROTOCOL step 7).
 
 ```
 ## Changes
 
-| File | What changed |
-|---|---|
-| `path/to/file.ts` | `functionName()`  -  brief description of change |
-| `path/to/types.ts` | `InterfaceName`  -  field added/removed/changed |
-| `path/to/routes.ts` | Route `METHOD /path`  -  handler updated for X |
+| File | What changed | Why |
+|---|---|---|
+| `path/to/routes.ts` | !~ `createSession(userId, orgId)` - added `orgId` param | For org-scoped sessions (breaking) |
+| `path/to/types.ts` | ~ `Session.orgId: string` - added field | Required by new session shape |
+| `path/to/middleware.ts` | + `requireOrg(role)` | Validates org membership |
+| `path/to/old-routes.ts` | - `deprecatedHandler()` | Superseded by new auth layer |
+| `tests/routes.test.ts` | ~ (test) `testCreateSession` - updated for `orgId` | Covers org-scoped path |
 ```
 
-Rules:
+Columns:
 
-- **Focus on signatures and interfaces**, not function bodies
-- One row per file, with key symbols that changed
-- If multiple symbols changed in the same file, comma-separate them
-- Include WHY each change was made (1-2 words: "for X", "to support Y", "fixes Z")
-- If the change is a simple rename or refactor, just say what moved
-- If no files changed (research/planning task), skip the table and state the outcome
+- **File**: Relative path, backtick-wrapped
+- **What changed**: Symbol signatures and identifiers added/modified/removed, prefixed with the change type for at-a-glance scanning: `+` for new, `~` for modified, `-` for deleted. Prefix with `!` for breaking changes (e.g. `!~`, `!+`). Append `(test)` for test files (e.g. `~ (test)`, `+ (test)`). Use signature-style notation: `functionName(param)` for functions, `Interface.field: type` for fields, `METHOD /path` for routes. Multiple changes comma-separated.
+- **Why**: Reason for this specific change (5-15 words). Required. A wrong Why is the fastest sign something needs attention.
+
+### Rules
+
+- Focus on **signatures and interfaces**, not function bodies. Enough signal to scan and catch weirdness without opening the diff.
+- If no files changed (research/planning task), skip the table and state the outcome.
+- For renames or refactors, describe what moved and why.
 
 ## Commit Completeness Check
 
