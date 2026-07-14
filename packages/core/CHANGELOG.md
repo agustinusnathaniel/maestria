@@ -1,5 +1,11 @@
 # @maestria/core
 
+## 0.4.5
+
+### Patch Changes
+
+- [#83](https://github.com/agustinusnathaniel/maestria/pull/83) [`db2e845`](https://github.com/agustinusnathaniel/maestria/commit/db2e845c7aebaf8c1a865df1f41bd18d39b89241) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Added structural assumption-verification tags to specialist outputs, deterministic agent principle, cognitive hygiene delegation checklist, outcome-specs principle, experiment-framing routing, unprompted observations rule, parallel speculation pattern, and first-principles decomposition principle
+
 ## 0.4.4
 
 ### Patch Changes
