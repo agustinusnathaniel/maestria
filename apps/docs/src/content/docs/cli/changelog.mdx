@@ -5,6 +5,24 @@ description: Release history for the maestria CLI.
 
 # Changelog
 
+## v0.4.0
+
+_July 14, 2026_
+
+### Network-first version lookup
+
+`maestria update` and `maestria status` no longer serve stale cached
+versions. The CLI always fetches the latest version from npm, falling
+back to the cache only when the network is unavailable.
+
+**Improvements:**
+
+- **No stale version window** — Previously, published versions were
+  missed for up to 1 hour due to TTL-based caching. Now the live npm
+  version is fetched every time the network is available.
+- **Offline fallback** — If the npm registry is unreachable, the CLI
+  falls back to the last known cached version instead of failing.
+
 ## v0.3.0
 
 _June 29, 2026_
