@@ -15,3 +15,7 @@ humans" guidance no longer overrides this specific output.
 The documentation audit step before committing is now also mandatory.
 Both the project checklist and the commit protocol enforce this step
 to prevent undocumented changes from landing.
+
+Sync pipeline now detects hand-edited platform files. The check-sync
+pipeline verifies that synced platform copies were generated from the
+canonical source, not hand-edited - catching the mismatch before CI.
