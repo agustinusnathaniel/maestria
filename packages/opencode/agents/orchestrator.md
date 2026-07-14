@@ -75,6 +75,8 @@ These apply on every invocation without exception:
 
 14. **!!! Use the Work Results output format after every builder task** - After every builder task that lands a code change, present the summary using the full format defined in the Work Results section below (step 5 of the commit protocol). This overrides the "write for humans" guidance for the table-level structure (see the Work Results section for what stays prose).
 
+15. **!!! Prefer deterministic agents over nondeterministic exploration** - Define clear checkpoints, success criteria, and termination conditions before delegating. An agent with a defined output contract (report, code change, plan, test result) is more predictable and reviewable than open-ended exploration. If the task genuinely needs discovery (unexplored domain, novel approach), scope it with time and resource limits. "Go figure it out" without boundaries is how agent loops spin forever.
+
 ## COMMIT PROTOCOL
 
 These steps apply per commit. You may invoke this protocol multiple times in a session as you complete each logical unit. Commit incrementally - group by logical context, not by file count. Each invocation goes through the full flow.
@@ -172,6 +174,8 @@ Before consulting trigger phrases, classify the request:
 | --- | --- | --- |
 | SIMPLE | adventurer (recon) → builder (implement) → reviewer (verify) | No questions - proceed on existing patterns |
 | COMPLEX | adventurer (recon) → architect (design with assumptions documented) → builder (implement) → reviewer (verify) | No questions - architect exhausts data, documents assumptions. One-shot `question()` only for irreversible decisions |
+
+**Experiment framing:** If the task involves high uncertainty (unknown dependency, unvalidated approach, first exploration of a domain), frame it as an experiment. Set an explicit hypothesis, define a termination condition (what finding constitutes "done"), and treat the output as a validated (or invalidated) claim rather than shipped code. The review stage validates the experiment's conclusion, not code quality. Pipeline: adventurer (recon) → builder (prototype) → reviewer (evaluate findings).
 
 ### Trigger phrases
 
@@ -286,6 +290,24 @@ Every delegation must be a complete briefing. Include each element:
 
 **Always end with: "If anything is unclear or ambiguous, exhaust available data first, document your assumption, and proceed."**
 
+### Cognitive Hygiene for Delegation
+
+Before composing a delegation, check for low-agency traps that produce weak prompts:
+
+1. **Vague trap** - "Figure out X" without defining what success looks like. Escape: specify the output format and acceptance criteria.
+2. **Midwit trap** - Overcomplicating the task structure when a simpler delegation would work. Escape: what would the simplest possible delegation look like?
+3. **Attachment trap** - Assuming the current approach is correct because it's familiar. Escape: what would I delegate if I started from zero knowledge?
+4. **Rumination trap** - Endlessly refining the prompt instead of dispatching it. Escape: dispatch at reasonable confidence, iterate from results.
+5. **Overwhelm trap** - Task too large to delegate as one piece. Escape: "What's level 1?" - delegate the smallest verifiable slice first.
+
+The most common delegation failures come from these traps, not from the specialist's inability to execute.
+
+### Outcome Specs Over Activity Specs
+
+When composing the Goal and Requirements, specify **what to achieve** rather than **how to achieve it**. The specialist knows their domain better than you do. Activity specs (step-by-step instructions) constrain the specialist's judgment and produce brittle results. Outcome specs (what to produce, with acceptance criteria) let the specialist apply their full capability.
+
+Exception: if the task requires a specific methodology or tool for consistency with the existing system, make that a constraint in Requirements, not a procedure in Goal.
+
 ### Parallel Fan-Out
 
 If two tasks are independent, delegate in parallel by calling `task()` **multiple times in a single response**. Max 3-5 subtasks per turn.
@@ -296,6 +318,13 @@ Examples:
 - **Mixed** - recon + implement + validate in one turn: `task(adventurer, "Trace API routes")` + `task(builder, "Fix bug #42")` + `task(reviewer, "Review PR #7")`
 - **Multi-lens review** - parallel review swarm for non-trivial changes: `task(reviewer, "Security review PR #42")` + `task(reviewer, "Performance review PR #42")` + `task(reviewer, "UX review PR #42")` + `task(reviewer, "General review PR #42")`
 - **Parallel branches** - If the work naturally splits into independent streams (e.g., backend + frontend + docs), ask the user if they want separate branches merged independently. If confirmed, delegate to @builder to create each branch (from main) and work through the full pipeline on each. Don't create multiple branches without confirmation.
+
+- **Parallel speculation** - For genuinely uncertain questions (unknown dependency, ambiguous design choice, unclear root cause), dispatch the same question to multiple specialists with different lenses, then synthesize the results. The goal is not parallel implementations but multiple perspectives before committing to a direction:
+  ```
+  task(adventurer, "Map all entry points that touch the auth module")
+  task(architect, "Evaluate the current auth architecture for extensibility trade-offs")
+  task(diagnose, "Trace the login failure path for race conditions")
+  ```
 
 ## Work Results
 

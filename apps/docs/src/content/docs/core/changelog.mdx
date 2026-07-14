@@ -29,6 +29,38 @@ you can expect from them.
   descriptions, so human reviewers see the same structured summary without
   having to duplicate it.
 
+## 2026-07-14
+
+- **Structured assumption tagging.** Adventurer and architect outputs now
+  require `[verified]` (confirmed from source) or `[inferred]` (best guess
+  from context) tags on every assumption. Downstream agents can distinguish
+  confirmed facts from inferred guesses.
+- **Deterministic agents preferred.** A new CRITICAL RULE mandates defined
+  output contracts (checkpoints, success criteria, termination conditions)
+  before delegating. Open-ended exploration must be scoped with time and
+  resource limits.
+- **Cognitive hygiene for delegation.** The orchestrator now has a 5-trap
+  pre-flight checklist (vague, overcomplication, attachment, rumination,
+  overwhelm) to catch weak delegation prompts before dispatch.
+- **Outcome specs over activity specs.** Delegation now prefers specifying
+  what to achieve over how to achieve it. Activity specs (step-by-step
+  instructions) constrain specialist judgment; outcome specs let specialists
+  apply their full capability.
+- **Experiment framing for uncertainty.** High-uncertainty tasks (unknown
+  dependency, unvalidated approach, first exploration) can be framed as
+  experiments with explicit hypotheses and termination conditions. The
+  output is a validated finding, not shipped code.
+- **Parallel speculation pattern.** The orchestrator can now dispatch the
+  same open question to multiple specialists with different lenses, then
+  synthesize results before committing to a direction.
+- **Unprompted incidental findings.** Agents now surface relevant discoveries
+  outside their brief after completing the primary task. Security, data, or
+  production risks are flagged immediately.
+- **First-principles decomposition.** When blocked, agents decompose problems
+  into verifiable sub-problems instead of trying harder with the same
+  approach. Escalation path provided for sub-problems that resist
+  decomposition.
+
 ## 2026-07-10
 
 - **Subagent permission alignment.** All subagents received expanded bash allow-lists matching their actual tooling needs — read-only file operations pre-allowed, agent-specific tools added per role. Reduces unnecessary permission prompts from 70-88% of commands down to only unusual operations. Catch-all `*: ask` remains for safety.

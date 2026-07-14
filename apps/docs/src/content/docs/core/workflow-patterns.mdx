@@ -103,6 +103,43 @@ Delegate READMEs, ADRs, changelogs, and API docs to **Writer**.
 
 The Writer follows structured patterns matched to the document type - purpose, usage, details. Description in, complete document out.
 
+## Investigate an uncertain problem
+
+Use **Parallel speculation** when the right approach isn't clear and you need
+multiple perspectives before committing to a direction.
+
+> Orchestrator: I need to understand why the auth module keeps failing under
+> load. Adventurer, map the entry points. Architect, evaluate the auth
+> architecture. Diagnose, trace the failure path.
+
+The orchestrator dispatches the same question to multiple specialists with
+different lenses, then synthesizes the results before choosing a direction.
+Use this pattern when:
+
+- The root cause of a problem is genuinely unknown
+- A design decision has ambiguous trade-offs
+- You need to explore an unfamiliar domain from multiple angles
+
+This is different from parallel exploration (which fans out independent
+tasks). Parallel speculation fans out the _same_ question to get different
+perspectives on it.
+
+## Test an uncertain approach
+
+Use **Experiment framing** when a task has high uncertainty - unknown
+dependency, unvalidated approach, first exploration of a domain. Frame it
+as an experiment rather than a delivery.
+
+> Orchestrator: Experiment: Can we replace the in-memory cache with Redis
+> without increasing p99 latency? Hypothesis: Redis will add < 5ms to
+> cache lookups. Termination: if latency exceeds 5ms, revert.
+
+The orchestrator sets an explicit hypothesis and termination condition. The
+output is a validated (or invalidated) claim, not shipped code. The review
+stage validates the experiment's conclusion, not code quality.
+
+Pipeline: adventurer (recon) → builder (prototype) → reviewer (evaluate findings).
+
 ## Parallel exploration
 
 Fan out multiple Adventurers to understand several areas at once.
