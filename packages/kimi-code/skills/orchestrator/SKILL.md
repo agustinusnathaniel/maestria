@@ -285,9 +285,7 @@ Begin with a brief paragraph (2-4 sentences) describing the overall goal of the 
 
 ### File-by-file changes
 
-Use this table to detail what changed in each file. When embedded in a PR
-under `## Changes` (see step 7), this table is preceded by the Overview
-paragraph and followed by the Cohesion paragraph:
+Use this table to detail what changed in each file. When embedded in a PR under `## Changes` (see step 7), this table is preceded by the Overview paragraph and followed by the Cohesion paragraph:
 
 ```
 ## Changes
