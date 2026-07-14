@@ -1,11 +1,11 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { select, isCancel, cancel } from '@clack/prompts';
-import { platforms, getPlatform } from '@/lib/platforms.js';
+import { multiselect, isCancel, cancel } from '@clack/prompts';
+import { getPlatform } from '@/lib/platforms.js';
 import { detectAll } from '@/lib/detect.js';
 import { installOne } from '@/lib/install-one.js';
 import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
-import { validatePlatform, validateNotAllAndPlatform, validateOrExit } from '@/lib/validation.js';
+import { validatePlatforms, validateOrExit } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
 export const installCommand = defineCommand({
@@ -17,7 +17,8 @@ export const installCommand = defineCommand({
     platform: {
       type: 'positional',
       description:
-        'Platform to install. One of: opencode, pi, kimi-code. Pass directly to skip interactive selection.',
+        'Platform(s) to install. Comma-separated for multiple (e.g., opencode,pi). ' +
+        'One of: opencode, pi, kimi-code. Pass directly to skip interactive selection.',
       required: false,
     },
     all: {
@@ -49,26 +50,28 @@ export const installCommand = defineCommand({
     const isCompact = args.compact as boolean;
 
     // Validate CLI args
+    let platformIds: string[] | undefined;
     if (args.platform) {
-      await validateOrExit(validatePlatform(args.platform as string));
+      platformIds = await validateOrExit(validatePlatforms(args.platform as string));
     }
-    await validateOrExit(
-      validateNotAllAndPlatform(args.all as boolean, args.platform as string | undefined),
-    );
 
     const results: PlatformResult[] = [];
 
-    if (args.platform) {
-      // Install a specific platform
-      const platform = getPlatform(args.platform as string);
-      if (!platform) {
-        console.error(`Unknown platform: ${args.platform}`);
-        console.error(`Available: ${platforms.map((p) => p.id).join(', ')}`);
-        process.exit(1);
+    if (platformIds && platformIds.length > 0) {
+      for (const id of platformIds) {
+        const platform = getPlatform(id);
+        if (!platform) {
+          results.push({
+            id,
+            label: id,
+            ok: false,
+            message: 'Platform definition not found. This is a bug.',
+          } satisfies PlatformResult);
+          continue;
+        }
+        const result = await Effect.runPromise(installOne(platform, isQuiet));
+        results.push(result);
       }
-
-      const result = await Effect.runPromise(installOne(platform, isQuiet));
-      results.push(result);
     } else if (args.all) {
       // Install for all detected platforms
       const spinner = createSpinner(isQuiet);
@@ -141,28 +144,31 @@ export const installCommand = defineCommand({
         process.exit(0);
       }
 
-      const selected = await select({
-        message: 'Which platform do you want to install maestria for?',
+      const selected = await multiselect({
+        message: 'Which platforms do you want to install maestria for?',
         options: installable.map((p) => ({
           value: p.id,
           label: p.label,
         })),
+        required: true,
       });
 
-      if (isCancel(selected) || !selected) {
+      if (isCancel(selected) || !selected || (Array.isArray(selected) && selected.length === 0)) {
         cancel('Install cancelled.');
         process.exit(130);
       }
 
-      const platform = getPlatform(String(selected));
-      if (!platform) {
-        results.push({
-          id: String(selected),
-          label: String(selected),
-          ok: false,
-          message: 'Platform definition not found. This is a bug.',
-        } satisfies PlatformResult);
-      } else {
+      for (const id of selected as string[]) {
+        const platform = getPlatform(id);
+        if (!platform) {
+          results.push({
+            id,
+            label: id,
+            ok: false,
+            message: 'Platform definition not found. This is a bug.',
+          } satisfies PlatformResult);
+          continue;
+        }
         const result = await Effect.runPromise(installOne(platform, isQuiet));
         results.push(result);
       }

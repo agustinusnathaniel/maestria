@@ -1,18 +1,13 @@
 import picocolors from 'picocolors';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { select, isCancel, cancel } from '@clack/prompts';
-import { platforms, getPlatform } from '@/lib/platforms.js';
+import { multiselect, isCancel, cancel } from '@clack/prompts';
+import { getPlatform } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { invalidateVersionCache } from '@/lib/shell.js';
 import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
-import {
-  validatePlatform,
-  validateVersion,
-  validateNotAllAndPlatform,
-  validateOrExit,
-} from '@/lib/validation.js';
+import { validatePlatforms, validateVersion, validateOrExit } from '@/lib/validation.js';
 import { isVersionEq, isVersionDifferent } from '@/lib/version.js';
 import type { PlatformResult } from '@/types.js';
 
@@ -25,7 +20,8 @@ export const updateCommand = defineCommand({
     platform: {
       type: 'positional',
       description:
-        'Platform to update. One of: opencode, pi, kimi-code. Pass directly to skip interactive selection.',
+        'Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). ' +
+        'One of: opencode, pi, kimi-code. Pass directly to skip interactive selection.',
       required: false,
     },
     version: {
@@ -63,30 +59,33 @@ export const updateCommand = defineCommand({
     const isCompact = args.compact as boolean;
 
     // Validate CLI args
+    let platformIds: string[] | undefined;
     if (args.platform) {
-      await validateOrExit(validatePlatform(args.platform as string));
+      platformIds = await validateOrExit(validatePlatforms(args.platform as string));
     }
     if (args.version) {
       await validateOrExit(validateVersion(args.version as string));
     }
-    await validateOrExit(
-      validateNotAllAndPlatform(args.all as boolean, args.platform as string | undefined),
-    );
 
     const results: PlatformResult[] = [];
 
-    if (args.platform) {
-      const platform = getPlatform(args.platform as string);
-      if (!platform) {
-        console.error(`Unknown platform: ${args.platform}`);
-        console.error(`Available: ${platforms.map((p) => p.id).join(', ')}`);
-        process.exit(1);
+    if (platformIds && platformIds.length > 0) {
+      for (const id of platformIds) {
+        const platform = getPlatform(id);
+        if (!platform) {
+          results.push({
+            id,
+            label: id,
+            ok: false,
+            message: 'Platform definition not found. This is a bug.',
+          } satisfies PlatformResult);
+          continue;
+        }
+        const result = await Effect.runPromise(
+          updateOne(platform, isQuiet, args.version as string | undefined),
+        );
+        results.push(result);
       }
-
-      const result = await Effect.runPromise(
-        updateOne(platform, isQuiet, args.version as string | undefined),
-      );
-      results.push(result);
     } else if (args.all) {
       const spinner = createSpinner(isQuiet);
       spinner.start('Detecting platforms...');
@@ -174,13 +173,22 @@ export const updateCommand = defineCommand({
       }
 
       // Only show platforms that need updating
-      const selected = await select({
-        message: 'Which platform do you want to update?',
-        options: needsUpdate.map((s) => ({
-          value: s.id,
-          label: s.label,
-          hint: `${s.installedVersion} → ${s.latestVersion}`,
-        })),
+      const ALL_KEY = '__all__';
+      const selected = await multiselect({
+        message: 'Which platforms do you want to update?',
+        options: [
+          {
+            value: ALL_KEY,
+            label: 'All platforms',
+            hint: `Update all ${needsUpdate.length} platforms`,
+          },
+          ...needsUpdate.map((s) => ({
+            value: s.id,
+            label: s.label,
+            hint: `${s.installedVersion} → ${s.latestVersion}`,
+          })),
+        ],
+        required: true,
       });
 
       if (isCancel(selected) || !selected) {
@@ -188,11 +196,18 @@ export const updateCommand = defineCommand({
         process.exit(130);
       }
 
-      const platform = getPlatform(String(selected))!;
-      const result = await Effect.runPromise(
-        updateOne(platform, isQuiet, args.version as string | undefined),
-      );
-      results.push(result);
+      const selectedIds = selected as string[];
+      const toUpdate = selectedIds.includes(ALL_KEY)
+        ? needsUpdate
+        : needsUpdate.filter((s) => selectedIds.includes(s.id));
+
+      for (const p of toUpdate) {
+        const platform = getPlatform(p.id)!;
+        const result = await Effect.runPromise(
+          updateOne(platform, isQuiet, args.version as string | undefined),
+        );
+        results.push(result);
+      }
     }
 
     if (args.json) {

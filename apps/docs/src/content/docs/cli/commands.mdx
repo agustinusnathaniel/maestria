@@ -95,22 +95,23 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 
 ### Flags
 
-| Flag          | Description                                                        |
-| ------------- | ------------------------------------------------------------------ |
-| `platform`    | Positional arg - platform to install (omit for interactive picker) |
-| `--all`, `-a` | Install for all detected platforms                                 |
-| `--json`      | Output results as JSON                                             |
-| `--quiet`     | Suppress spinner animations                                        |
-| `--compact`   | Machine-friendly text output - one line per result                 |
+| Flag          | Description                                                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `platform`    | Positional arg - platform to install. Comma-separated for multiple (e.g., `opencode,pi`). Omit for interactive picker. |
+| `--all`, `-a` | Install for all detected platforms                                                                                     |
+| `--json`      | Output results as JSON                                                                                                 |
+| `--quiet`     | Suppress spinner animations                                                                                            |
+| `--compact`   | Machine-friendly text output - one line per result                                                                     |
 
 ### Behavior
 
-| Invocation                         | What happens                                                       |
-| ---------------------------------- | ------------------------------------------------------------------ |
-| `maestria install`                 | Detects platforms, shows an interactive picker of uninstalled ones |
-| `maestria install opencode`        | Installs for OpenCode only                                         |
-| `maestria install --all`           | Installs for every detected platform that lacks maestria           |
-| `maestria install opencode --json` | Installs OpenCode, outputs JSON result                             |
+| Invocation                         | What happens                                                            |
+| ---------------------------------- | ----------------------------------------------------------------------- |
+| `maestria install`                 | Detects platforms, shows an interactive multiselect picker (checkboxes) |
+| `maestria install opencode`        | Installs for OpenCode only                                              |
+| `maestria install opencode,pi`     | Installs for OpenCode and Pi simultaneously                             |
+| `maestria install --all`           | Installs for every detected platform that lacks maestria                |
+| `maestria install opencode --json` | Installs OpenCode, outputs JSON result                                  |
 
 ### Platform identifiers
 
@@ -155,14 +156,14 @@ maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--co
 
 ### Flags
 
-| Flag              | Description                                                       |
-| ----------------- | ----------------------------------------------------------------- |
-| `platform`        | Positional arg - platform to update (omit for interactive picker) |
-| `--version`, `-V` | Specific version to install (e.g., `0.5.0`). Defaults to latest.  |
-| `--all`, `-a`     | Update all installed platforms                                    |
-| `--json`          | Output results as JSON                                            |
-| `--quiet`         | Suppress spinner animations                                       |
-| `--compact`       | Machine-friendly text output - one line per result                |
+| Flag              | Description                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `platform`        | Positional arg - platform to update. Comma-separated for multiple (e.g., `opencode,pi`). Omit for interactive picker. |
+| `--version`, `-V` | Specific version to install (e.g., `0.5.0`). Defaults to latest.                                                      |
+| `--all`, `-a`     | Update all installed platforms                                                                                        |
+| `--json`          | Output results as JSON                                                                                                |
+| `--quiet`         | Suppress spinner animations                                                                                           |
+| `--compact`       | Machine-friendly text output - one line per result                                                                    |
 
 ### Behavior
 
@@ -179,13 +180,14 @@ Use `--version` to pin a specific version instead of the latest:
 maestria update opencode --version 0.5.0
 ```
 
-| Invocation                                 | What happens                                          |
-| ------------------------------------------ | ----------------------------------------------------- |
-| `maestria update`                          | Detects installed platforms, shows interactive picker |
-| `maestria update opencode`                 | Updates OpenCode to the latest version                |
-| `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically               |
-| `maestria update --all`                    | Updates all installed platforms to latest             |
-| `maestria update --all --version 0.5.0`    | Updates all installed platforms to v0.5.0             |
+| Invocation                                 | What happens                                                                                    |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `maestria update`                          | Detects installed platforms, shows interactive multiselect picker with "All platforms" shortcut |
+| `maestria update opencode`                 | Updates OpenCode to the latest version                                                          |
+| `maestria update opencode,pi`              | Updates OpenCode and Pi simultaneously                                                          |
+| `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically                                                         |
+| `maestria update --all`                    | Updates all installed platforms to latest                                                       |
+| `maestria update --all --version 0.5.0`    | Updates all installed platforms to v0.5.0                                                       |
 
 ### Version caching
 
