@@ -268,15 +268,16 @@ Present what changed in each file as a table. The reader scans this instead of r
 
 | File | What changed | Why |
 |---|---|---|
-| `path/to/routes.ts` | ~ `createSession(userId, orgId)` - added `orgId` param | For org-scoped sessions |
+| `path/to/routes.ts` | !~ `createSession(userId, orgId)` - added `orgId` param | For org-scoped sessions (breaking) |
 | `path/to/types.ts` | ~ `Session.orgId: string` - added field | Required by new session shape |
 | `path/to/middleware.ts` | + `requireOrg(role)` | Validates org membership |
+| `tests/routes.test.ts` | ~ (test) `testCreateSession` - updated for `orgId` | Covers org-scoped path |
 ```
 
 Columns:
 
 - **File**: Relative path, backtick-wrapped
-- **What changed**: Symbol signatures and identifiers added/modified/removed, prefixed with the change type for at-a-glance scanning: `+` for new, `~` for modified, `-` for deleted. Use signature-style notation: `functionName(param)` for functions, `Interface.field: type` for fields, `METHOD /path` for routes. Multiple changes comma-separated.
+- **What changed**: Symbol signatures and identifiers added/modified/removed, prefixed with the change type for at-a-glance scanning: `+` for new, `~` for modified, `-` for deleted. Prefix with `!` for breaking changes (e.g. `!~`, `!+`). Append `(test)` for test files (e.g. `~ (test)`, `+ (test)`). Use signature-style notation: `functionName(param)` for functions, `Interface.field: type` for fields, `METHOD /path` for routes. Multiple changes comma-separated.
 - **Why**: Reason for this specific change (5-15 words). Required. A wrong Why is the fastest sign something needs attention.
 
 ### Rules
