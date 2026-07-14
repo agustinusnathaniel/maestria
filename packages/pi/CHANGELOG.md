@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.1
+
+### Patch Changes
+
+- [#72](https://github.com/agustinusnathaniel/maestria/pull/72) [`22bf9a5`](https://github.com/agustinusnathaniel/maestria/commit/22bf9a585fee04696f4af191e790cd3d3bb982d5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Orchestrator now always uses the structured summary table after builder tasks
+
+  The orchestrator's Work Results output format is now mandatory rather than
+  suggested. After every builder task, a structured `## Changes` table is
+  shown summarizing what files changed and why. The existing "write for
+  humans" guidance no longer overrides this specific output.
+
+  The documentation audit step before committing is now also mandatory.
+  Both the project checklist and the commit protocol enforce this step
+  to prevent undocumented changes from landing.
+
 ## 0.5.0
 
 ### Minor Changes
