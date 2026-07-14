@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.3
+
+### Patch Changes
+
+- [#74](https://github.com/agustinusnathaniel/maestria/pull/74) [`6fdd0ee`](https://github.com/agustinusnathaniel/maestria/commit/6fdd0ee63aed1252fb32784f62a10020ad08c264) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Align orchestrator push rules with Branch Discipline
+
+  Remove the question() call when the commit protocol lands on main/master.
+  The Branch Discipline rule already states to never push to main - the
+  commit protocol now auto-checkouts a feature branch instead of asking.
+  Synced to all platform plugins.
+
+- [#76](https://github.com/agustinusnathaniel/maestria/pull/76) [`cadd9b6`](https://github.com/agustinusnathaniel/maestria/commit/cadd9b6a5239fe268488d0df57634bfb1876cd67) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: improve Work Results output format for scanning and PR reuse
+
+  Restructured the Work Results section from a 3-part narrative format (Overview, File-by-file, Cohesion) to a lean table-first format optimized for scanning instead of reading the diff. Added signature-style notation, change-type prefixes (+/~/-), breaking change markers (!), and test file annotations ((test)). The Work Results table is now reused as the `## Changes` section in PR descriptions per existing COMMIT PROTOCOL step 7.
+
 ## 0.6.2
 
 ### Patch Changes

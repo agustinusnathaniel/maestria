@@ -1,5 +1,16 @@
 # maestria
 
+## 0.4.0
+
+### Minor Changes
+
+- [#74](https://github.com/agustinusnathaniel/maestria/pull/74) [`6fdd0ee`](https://github.com/agustinusnathaniel/maestria/commit/6fdd0ee63aed1252fb32784f62a10020ad08c264) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat: support comma-separated platforms, multiselect, and "All platforms" in update/install
+
+  - `maestria update opencode,pi` and `maestria install opencode,pi` now accept comma-separated platform IDs
+  - Interactive mode uses multiselect (checkboxes) instead of single-select picker
+  - `maestria update` interactive mode adds an "All platforms" shortcut option
+  - `maestria install` interactive mode now supports selecting multiple platforms
+
 ## 0.3.11
 
 ### Patch Changes
