@@ -7,28 +7,11 @@
 //
 // Drop-in replacement for @clack/prompts's groupMultiselect.
 
-import { createRequire } from 'node:module';
+import { GroupMultiSelectPrompt } from '@clack/core';
 import { styleText } from 'node:util';
 import type { Option } from '@clack/prompts';
 
-// @clack/core is a transitive dependency (not direct), so we access it
-// through @clack/prompts's dependency chain (pnpm virtual store).
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const promptsRequire = createRequire(import.meta.resolve('@clack/prompts'));
-const GroupMultiSelectPromptCtor: new (opts: Record<string, unknown>) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on(event: string, cb: (...args: any[]) => void): void;
-  options: unknown[];
-  value: unknown;
-  cursor: number;
-  state: string;
-  prompt(): Promise<unknown>;
-  isGroupSelected(group: string): boolean;
-  error: string;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-} = promptsRequire('@clack/core').GroupMultiSelectPrompt;
-
-// ── Visual symbols (mirrors @clack/prompts internals) ────────────
+// ── Visual symbols ────────────────────────────────────
 
 const S_BAR = '\u2502';
 const S_BAR_END = '\u2514';
@@ -41,7 +24,7 @@ const S_SYMBOL_CANCEL = '\u25A0';
 const S_SYMBOL_ERROR = '\u25B2';
 const S_SYMBOL_SUBMIT = '\u25C6';
 
-// ── Public API ──────────────────────────────────────────────────
+// ── Public API ────────────────────────────────────────
 
 export interface GroupMultiSelectOptions<Value> {
   message: string;
@@ -59,7 +42,7 @@ export interface GroupMultiSelectOptions<Value> {
   withGuide?: boolean;
 }
 
-// ── Color utility ───────────────────────────────────────────────
+// ── Color utility ─────────────────────────────────────
 
 function symbol(state: string): string {
   switch (state) {
@@ -77,21 +60,52 @@ function symbol(state: string): string {
   }
 }
 
-interface PromptInstance {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on(event: string, cb: (...args: any[]) => void): void;
-  options: unknown[];
-  value: unknown;
-  cursor: number;
-  state: string;
-  error: string;
-  prompt(): Promise<unknown>;
-  isGroupSelected(group: string): boolean;
+// ── Instructions with toggle-all hint ──────────────────
+
+const ENHANCED_INSTRUCTIONS = [
+  '\u2191/\u2193 to navigate',
+  'Space: select',
+  'a: toggle all',
+  'Enter: confirm',
+];
+
+function formatInstructions(hasGuide: boolean): string[] {
+  const prefix = hasGuide ? `${styleText('cyan', S_BAR)}  ` : '';
+  const lastPrefix = hasGuide ? `${styleText('cyan', S_BAR_END)}` : '';
+  return ENHANCED_INSTRUCTIONS.map((text, i) => {
+    const p = i === ENHANCED_INSTRUCTIONS.length - 1 ? lastPrefix : prefix;
+    return `${p}${styleText('dim', styleText('gray', text))}`;
+  });
 }
 
-// ── Option renderer (adapted from @clack/prompts internals) ─────
+// ── Extended prompt class with a key toggle-all ────────
 
-function createOptionRenderer<Value>() {
+class TogglableGroupMultiSelectPrompt<
+  T extends { value: string },
+> extends GroupMultiSelectPrompt<T> {
+  constructor(opts: ConstructorParameters<typeof GroupMultiSelectPrompt<T>>[0]) {
+    super(opts);
+    // Register after construction so super's constructor has already set up the event system
+    this.on('key', (char: string | undefined) => {
+      if (char === 'a') {
+        this._toggleAll();
+      }
+    });
+  }
+
+  private _toggleAll() {
+    const allItems = this.options.filter(
+      (o): o is T & { group: string } =>
+        typeof o.group === 'string' && (o as Record<string, unknown>).disabled !== true,
+    );
+    const allSelected = this.value !== undefined && this.value.length === allItems.length;
+    this.value = allSelected ? ([] as T['value'][]) : allItems.map((o) => o.value);
+  }
+}
+
+// ── Option renderer ──────────────────────────────────
+
+function createOptionRenderer<Value>(selectableGroups: boolean) {
   return (
     option: Option<Value> & { group: string | boolean },
     state:
@@ -103,7 +117,6 @@ function createOptionRenderer<Value>() {
       | 'group-active-selected'
       | 'submitted'
       | 'cancelled',
-    selectableGroups: boolean,
     options: (Option<Value> & { group: string | boolean })[] = [],
   ) => {
     const label = option.label ?? String(option.value);
@@ -148,25 +161,7 @@ function createOptionRenderer<Value>() {
   };
 }
 
-// ── Instructions with toggle-all hint ───────────────────────────
-
-const ENHANCED_INSTRUCTIONS = [
-  '\u2191/\u2193 to navigate',
-  'Space: select',
-  'a: toggle all',
-  'Enter: confirm',
-];
-
-function formatInstructions(hasGuide: boolean): string[] {
-  const prefix = hasGuide ? `${styleText('cyan', S_BAR)}  ` : '';
-  const lastPrefix = hasGuide ? `${styleText('cyan', S_BAR_END)}` : '';
-  return ENHANCED_INSTRUCTIONS.map((text, i) => {
-    const p = i === ENHANCED_INSTRUCTIONS.length - 1 ? lastPrefix : prefix;
-    return `${p}${styleText('dim', styleText('gray', text))}`;
-  });
-}
-
-// ── Enhanced group multiselect function ─────────────────────────
+// ── Enhanced group multiselect function ────────────────
 
 export async function groupMultiselect<Value>(
   opts: GroupMultiSelectOptions<Value>,
@@ -174,9 +169,10 @@ export async function groupMultiselect<Value>(
   const { selectableGroups = true } = opts;
   const required = opts.required ?? true;
   const showInstructions = opts.showInstructions ?? true;
-  const opt = createOptionRenderer<Value>();
+  const opt = createOptionRenderer<Value>(selectableGroups);
 
-  const prompt = new GroupMultiSelectPromptCtor({
+  // Build the render function options
+  const renderOptions = {
     options: opts.options,
     signal: opts.signal,
     input: opts.input,
@@ -190,69 +186,57 @@ export async function groupMultiselect<Value>(
         return `Please select at least one option.\n${styleText('reset', styleText('dim', `Press ${styleText('gray', styleText('bgWhite', styleText('inverse', ' space ')))} to select, ${styleText('gray', styleText('bgWhite', styleText('inverse', ' enter ')))} to submit`))}`;
       }
     },
-    render(this: Record<string, unknown>) {
-      const self = this as unknown as PromptInstance;
+    render(this: GroupMultiSelectPrompt<{ value: Value }>) {
       const guide = opts.withGuide ?? true;
-      const title = `${guide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(self.state)}  ${opts.message}\n`;
-      const value: Value[] = (self.value ?? []) as Value[];
+      const title = `${guide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(this.state)}  ${opts.message}\n`;
+      const value: Value[] = (this.value ?? []) as Value[];
 
-      const styleOption = (
-        option: Option<Value> & { group: string | boolean },
-        active: boolean,
-      ) => {
-        const options = self.options as (Option<Value> & { group: string | boolean })[];
+      // Restore group headers that may have been lost in serialization
+      type FlatOption = { value: Value; group: string | boolean; label?: string; hint?: string };
+      // Regenerate group headers from the flat options
+      // The options are stored as flat array with group markers
+      const rawOptions = this.options as FlatOption[];
+
+      const styleOption = (option: FlatOption, active: boolean) => {
         const groupActive =
           !active &&
           typeof option.group === 'string' &&
-          options[self.cursor]?.value === option.group;
+          rawOptions[this.cursor]?.value === (option as Record<string, unknown>).value;
         const selected =
           value.includes(option.value) ||
-          (option.group === true && self.isGroupSelected(String(option.value)));
+          (option.group === true && this.isGroupSelected(String(option.value)));
         if (groupActive) {
           return opt(
-            option,
+            option as unknown as Option<Value> & { group: string | boolean },
             selected ? 'group-active-selected' : 'group-active',
-            selectableGroups,
-            options,
+            rawOptions as unknown as (Option<Value> & { group: string | boolean })[],
           );
         }
-        if (active && selected) return opt(option, 'active-selected', selectableGroups, options);
-        if (selected) return opt(option, 'selected', selectableGroups, options);
-        return opt(option, active ? 'active' : 'inactive', selectableGroups, options);
+        if (active && selected) return opt(option as any, 'active-selected', rawOptions as any);
+        if (selected) return opt(option as any, 'selected', rawOptions as any);
+        return opt(option as any, active ? 'active' : 'inactive', rawOptions as any);
       };
 
-      switch (self.state) {
+      switch (this.state) {
         case 'submit': {
-          const selectedOptions = (self.options as { value: Value }[])
+          const selectedOptions = rawOptions
             .filter(({ value: v }) => value.includes(v))
-            .map((optItem) =>
-              opt(
-                optItem as unknown as Option<Value> & { group: string | boolean },
-                'submitted',
-                selectableGroups,
-              ),
-            );
+            .map((optItem) => opt(optItem as any, 'submitted'));
           const optionsText =
             selectedOptions.length === 0 ? '' : `  ${selectedOptions.join(styleText('dim', ', '))}`;
           return `${title}${guide ? styleText('gray', S_BAR) : ''}${optionsText}`;
         }
         case 'cancel': {
-          const label = (self.options as { value: Value }[])
+          const label = rawOptions
             .filter(({ value: v }) => value.includes(v))
-            .map((optItem) =>
-              opt(
-                optItem as unknown as Option<Value> & { group: string | boolean },
-                'cancelled',
-                selectableGroups,
-              ),
-            )
+            .map((optItem) => opt(optItem as any, 'cancelled'))
             .join(styleText('dim', ', '));
           return `${title}${guide ? `${styleText('gray', S_BAR)}  ` : ''}${
             label.trim() ? `${label}${guide ? `\n${styleText('gray', S_BAR)}` : ''}` : ''
           }`;
         }
         case 'error': {
-          const footer = self.error
+          const footer = this.error
             .split('\n')
             .map((ln: string, i: number) =>
               i === 0
@@ -261,9 +245,8 @@ export async function groupMultiselect<Value>(
             )
             .join('\n');
           const guidePrefix = guide ? `${styleText('yellow', S_BAR)}  ` : '';
-          const options = self.options as (Option<Value> & { group: string | boolean })[];
-          const optionsText = options
-            .map((option, idx) => styleOption(option, idx === self.cursor))
+          const optionsText = rawOptions
+            .map((option, idx) => styleOption(option, idx === this.cursor))
             .join(`\n${guidePrefix}`);
           return `${title}${guidePrefix}${optionsText}\n${footer}\n`;
         }
@@ -275,32 +258,15 @@ export async function groupMultiselect<Value>(
               ? [styleText('cyan', S_BAR_END)]
               : [];
           const footerText = footerLines.join('\n');
-          const options = self.options as (Option<Value> & { group: string | boolean })[];
-          const optionsText = options
-            .map((option, idx) => styleOption(option, idx === self.cursor))
+          const optionsText = rawOptions
+            .map((option, idx) => styleOption(option, idx === this.cursor))
             .join(`\n${guidePrefix}`);
           return `${title}${guidePrefix}${optionsText}\n${footerText}\n`;
         }
       }
     },
-  }) as unknown as PromptInstance;
+  };
 
-  // Attach the toggle-all key handler
-  prompt.on('key', (_char: unknown, key: Record<string, unknown>) => {
-    if ((key as { name: string }).name === 'a') {
-      const allItems = (prompt.options as { group: string | boolean }[]).filter(
-        (o) => typeof o.group === 'string' && (o as Record<string, unknown>).disabled !== true,
-      );
-      const allSelected =
-        prompt.value !== undefined &&
-        Array.isArray(prompt.value) &&
-        (prompt.value as unknown[]).length === allItems.length;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      prompt.value = allSelected
-        ? []
-        : (allItems as unknown as { value: Value }[]).map((o) => o.value);
-    }
-  });
-
+  const prompt = new TogglableGroupMultiSelectPrompt(renderOptions as any);
   return prompt.prompt() as Promise<Value[] | symbol>;
 }
