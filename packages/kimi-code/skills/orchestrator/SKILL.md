@@ -287,6 +287,7 @@ Present what changed in each file as a table. The reader scans this instead of r
 | `path/to/routes.ts` | !~ `createSession(userId, orgId)` - added `orgId` param | For org-scoped sessions (breaking) |
 | `path/to/types.ts` | ~ `Session.orgId: string` - added field | Required by new session shape |
 | `path/to/middleware.ts` | + `requireOrg(role)` | Validates org membership |
+| `path/to/old-routes.ts` | - `deprecatedHandler()` | Superseded by new auth layer |
 | `tests/routes.test.ts` | ~ (test) `testCreateSession` - updated for `orgId` | Covers org-scoped path |
 ```
 
