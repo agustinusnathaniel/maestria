@@ -14,6 +14,42 @@ import { unifiedDiff } from './diff.js';
 import { atomicWrite } from './file.js';
 import type { ResolvedFileConfig } from './config.js';
 import type { SyncFileResult } from './sync.js';
+import { execSync } from 'node:child_process';
+
+// ── Git provenance check ──
+
+/**
+ * Check that a synced output file wasn't modified without changing the
+ * corresponding canonical source. Uses git to detect uncommitted changes.
+ * Silently skips if not in a git repo or git is unavailable.
+ */
+function checkProvenance(sourcePath: string, outputPath: string): boolean {
+  try {
+    const hasChanges = (filePath: string): boolean => {
+      const unstaged = execSync(`git diff --name-only "${filePath}"`, {
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+      if (unstaged.length > 0) return true;
+      const staged = execSync(`git diff --cached --name-only "${filePath}"`, {
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+      return staged.length > 0;
+    };
+
+    const outputChanged = hasChanges(outputPath);
+    if (!outputChanged) return true; // No uncommitted changes to output file - fine
+
+    const sourceChanged = hasChanges(sourcePath);
+    if (sourceChanged) return true; // Both changed - legitimate workflow
+
+    // Output changed but source didn't - provenance violation
+    return false;
+  } catch {
+    return true; // Not a git repo or git unavailable - skip check
+  }
+}
 
 // ── Types ──
 
@@ -109,6 +145,21 @@ export async function processFile(
     }
 
     if (existingContent === content) {
+      if (check && !checkProvenance(sourcePath, fileCfg.output)) {
+        const relOutput = relative(process.cwd(), fileCfg.output);
+        const relSource = relative(process.cwd(), sourcePath);
+        if (verbose) {
+          logger(
+            `[check] Provenance violation: ${relOutput} was modified without changing ${relSource}`,
+          );
+        }
+        return {
+          source: sourcePath,
+          output: fileCfg.output,
+          status: 'error',
+          error: `Provenance violation: ${relOutput} was modified without changing canonical source at ${relSource}`,
+        };
+      }
       if (verbose) {
         logger(`[${report}] Unchanged: ${relative(process.cwd(), fileCfg.output)}`);
       }
