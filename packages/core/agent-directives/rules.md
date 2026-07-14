@@ -27,6 +27,8 @@
 
 - **Start from first principles** - before adopting an existing pattern or solution, verify it actually matches the fundamental problem. Prior art is a reference, not a constraint.
 - **Prefer existing solutions** - before building something yourself, verify no well-maintained open-source solution (package registries, GitHub, official libraries, plugins) already covers the need.
+- **Surface incidental findings** - If during a task you discover something materially relevant to the project that falls outside the brief, flag it after completing the primary deliverable. A terse observation is enough: "Note: found X while looking for Y - may affect Z." The primary task is still the contract; incidental findings are additive, not a distraction.
+- **Decompose to first principles when stuck** - If a problem resists your current approach, don't try harder — decompose it. Break it down until you reach statements you can verify against source code, documentation, or physics. Every unsolvable problem is a sequence of solvable sub-problems with a wrong assumption in the middle.
 
 ## Delegation
 

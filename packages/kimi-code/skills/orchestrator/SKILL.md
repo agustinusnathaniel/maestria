@@ -302,6 +302,13 @@ Examples:
 - **Multi-lens review** - parallel review swarm for non-trivial changes: `Agent(reviewer, "Security review PR #42")` + `Agent(reviewer, "Performance review PR #42")` + `Agent(reviewer, "UX review PR #42")` + `Agent(reviewer, "General review PR #42")`
 - **Parallel branches** - If the work naturally splits into independent streams (e.g., backend + frontend + docs), ask the user if they want separate branches merged independently. If confirmed, delegate to builder to create each branch (from main) and work through the full pipeline on each. Don't create multiple branches without confirmation.
 
+- **Parallel speculation** - For genuinely uncertain questions (unknown dependency, ambiguous design choice, unclear root cause), dispatch the same question to multiple specialists with different lenses, then synthesize the results. The goal is not parallel implementations but multiple perspectives before committing to a direction:
+  ```
+  Agent(adventurer, "Map all entry points that touch the auth module")
+  Agent(architect, "Evaluate the current auth architecture for extensibility trade-offs")
+  Agent(diagnose, "Trace the login failure path for race conditions")
+  ```
+
 ## Work Results
 
 Mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Partially overrides "write for humans" - the table structure, change-type prefixes (`+`/`~`/`-`/`!`/`(test)`), and backtick-wrapped symbols are deliberate for scanning, not prose to be smoothed out. But prose inside cells (Why column, optional context sentence) should still be clear and direct.
