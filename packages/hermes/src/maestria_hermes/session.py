@@ -8,7 +8,7 @@ import json
 import os
 import logging
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class SessionManager:
         self._session_id = session_id
         state = {
             "session_id": session_id,
-            "started_at": datetime.utcnow().isoformat(),
+            "started_at": datetime.now(timezone.utc).isoformat(),
             "model": kwargs.get("model", ""),
             "platform": kwargs.get("platform", ""),
         }
@@ -52,7 +52,7 @@ class SessionManager:
         try:
             state = {
                 "session_id": session_id,
-                "ended_at": datetime.utcnow().isoformat(),
+                "ended_at": datetime.now(timezone.utc).isoformat(),
                 "completed": completed,
             }
             self._path.write_text(

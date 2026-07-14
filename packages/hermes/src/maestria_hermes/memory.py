@@ -8,7 +8,7 @@ holographic/mem0 providers later.
 import json
 import os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
@@ -30,7 +30,7 @@ class MemoryManager:
     def record(self, category: str, content: Dict[str, Any]) -> None:
         """Record a memory entry (decision, preference, fact, etc.)."""
         entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "category": category,
             **content,
         }
