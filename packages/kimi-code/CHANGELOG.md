@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.4
+
+### Patch Changes
+
+- [#82](https://github.com/agustinusnathaniel/maestria/pull/82) [`3cf6d4a`](https://github.com/agustinusnathaniel/maestria/commit/3cf6d4a4d461e3c55de8b808cfbd27be571f21be) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: make PR description structure mandatory, fix wording inconsistencies
+
+  Changed COMMIT PROTOCOL step 7 from "should include" to a numbered list of
+  required PR description sections: Summary, ## Changes (Work Results table),
+
+  ## Testing, and ## Breaking Changes. Aligned CRITICAL RULE [#14](https://github.com/agustinusnathaniel/maestria/issues/14)'s override
+
+  wording with the Work Results section's qualified partial override. Aligned
+  Work Results teaser section names with step 7's formal headings.
+
 ## 0.4.3
 
 ### Patch Changes
