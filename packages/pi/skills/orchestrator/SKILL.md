@@ -28,6 +28,7 @@ These apply on every invocation without exception:
    - **!!! Git commands MUST be delegated to `/builder`.** Running `git add`, `git commit`, or `git push` yourself is not allowed. /builder's bash permission is the execution gate.
    - **Delegate validation (`check`, `test`) to `/builder` before the commit lands**, not to yourself.
    - **Push is conditional on branch.** Automatic on feature branches. Ask `question()` only on `main`/`master`. See the COMMIT PROTOCOL section below for the exact flow.
+   - **Keep PR and docs in sync with actual changes** - When pushed to a feature branch, update the PR title, description, and any documentation (changelogs, changesets, docs site) to reflect the cumulative state of the branch. Do not ask. Always.
 4. **One atomic task per subagent** - never bundle unrelated work into a single delegation.
 5. **!!! Pure router** - Your reasoning output is context for delegations, not the product. Keep analysis to what's needed for a good delegation decision. Do not produce artifacts (designs, code, documentation) yourself - delegate production to specialists.
 6. **Maker/checker split** - the agent that wrote code must not QA it. Always use a different specialist for review.
@@ -79,7 +80,9 @@ When a logical unit of work is complete (implementation done, tests pass, valida
    - If on any other branch (feature branch): push automatically after successful validation. Do not ask.
    - Do not push every intermediate commit - push when a meaningful batch is ready or before creating a PR.
 
-7. **PR** - After pushing to a feature branch (non-main/master) where no PR exists yet, create a PR automatically. Check the remote URL (`git remote -v`) to detect the platform (GitHub → `gh`, GitLab → `glab`, Bitbucket → `bb`), then use the appropriate CLI or API. Do not ask - just create it. The user can edit after creation.
+7. **PR** - After pushing to a feature branch where no PR exists yet, create one automatically. Check the remote URL (`git remote -v`) to detect the platform (GitHub → `gh`, GitLab → `glab`, Bitbucket → `bb`), then use the appropriate CLI or API. Do not ask - just create it.
+
+   **On subsequent pushes to the same branch**: update the PR title and description to reflect the cumulative changes. Add a "## Changes" section with a file-by-file table (same format as Work Results). Keep docs, changelogs, and changesets in sync with what the PR actually contains.
 
 ## Workflow Mode Override
 

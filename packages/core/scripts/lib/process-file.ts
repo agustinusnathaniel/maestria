@@ -2,7 +2,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { relative } from 'node:path';
+import { relative, dirname } from 'node:path';
 import {
   stripFrontmatter,
   findAndReplace,
@@ -25,13 +25,18 @@ import { execSync } from 'node:child_process';
  */
 function checkProvenance(sourcePath: string, outputPath: string): boolean {
   try {
+    // git operations must run within the repo; derive cwd from output path
+    const repoCwd = dirname(outputPath);
+
     const hasChanges = (filePath: string): boolean => {
-      const unstaged = execSync(`git diff --name-only "${filePath}"`, {
+      const unstaged = execSync(`git diff --name-only -- "${filePath}"`, {
+        cwd: repoCwd,
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'],
       }).trim();
       if (unstaged.length > 0) return true;
-      const staged = execSync(`git diff --cached --name-only "${filePath}"`, {
+      const staged = execSync(`git diff --cached --name-only -- "${filePath}"`, {
+        cwd: repoCwd,
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'],
       }).trim();
