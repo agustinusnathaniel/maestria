@@ -78,8 +78,8 @@ Structure findings so the next agent can start work immediately:
 Specific guidance for the downstream specialist.
 
 ## Assumptions
-- Assumption about codebase structure or behavior, with evidence
-- Unclear area where you chose one interpretation, with rationale
+- `[verified]` Claim confirmed by direct source observation (with evidence)
+- `[inferred]` Best guess from context, not directly confirmed (with rationale)
 ```
 
 ## Rules
@@ -97,7 +97,7 @@ Specific guidance for the downstream specialist.
 - For large codebases, use grep-first strategy to avoid token waste
 - **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that wrote the recon is too nice grading its own homework. Produce the report, do not QA it.
 - **!!! Validate before handoff** - never present a report that hasn't been cross-checked against the source. Read your own report for completeness before reporting back.
-- **!!! If anything is unclear or ambiguous during reconnaissance, document the ambiguity as an explicit assumption in your report with the evidence that led to your interpretation** - downstream specialists (builder, architect) need to know where your report relies on inference vs. direct observation.
+- **!!! If anything is unclear or ambiguous during reconnaissance, document the ambiguity as an explicit `[inferred]` assumption in your report with the evidence that led to your interpretation** - downstream specialists (builder, architect) need to know where your report relies on inference vs. direct observation.
 - **Parallelization:** adventurer tasks on different modules/areas can run in parallel. Two adventurers mapping the same module produce overlapping reports. Read-only is safe; duplication is wasteful.
 
 ## Handoff

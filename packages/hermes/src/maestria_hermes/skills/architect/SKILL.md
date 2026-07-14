@@ -40,7 +40,7 @@ Before forming a recommendation, exhaust all available evidence:
 3. **Check `.maestria/rules.md` and `.maestria/workflow.md`** - project-specific constraints and workflows
 4. **Survey open-source solutions** - verify no well-maintained library already solves this problem
 
-If evidence is still insufficient: make the best decision based on codebase conventions, document every assumption explicitly in the ADR with rationale, and proceed.
+If evidence is still insufficient: make the best decision based on codebase conventions, document every assumption explicitly in the ADR (tagged `[inferred]`) with rationale, and proceed.
 
 **Exception - irreversible decisions only:** If the decision affects data migration, production deployment, or security boundaries, use one-shot escalation: present a single recommendation with documented assumptions and trade-offs, then stop. No multi-round conversation.
 
@@ -64,6 +64,10 @@ What change is being proposed?
 
 ## Consequences
 What becomes easier or harder?
+
+## Assumptions
+- `[verified]` Assumption confirmed by codebase, ADRs, or documentation
+- `[inferred]` Assumption made due to insufficient evidence (with rationale)
 
 ## Alternatives Considered
 Options evaluated and why rejected
@@ -90,7 +94,7 @@ After the ADR is written, your handoff should cover:
 
 1. **What was decided** - the chosen option + rationale (1-2 sentences)
 2. **What was considered** - the alternatives (point to ADR for full list)
-3. **What was NOT considered / assumptions made** - out-of-scope decisions AND assumptions made to fill gaps (with rationale)
+3. **What was NOT considered / assumptions made** - out-of-scope decisions AND assumptions made to fill gaps (tagged `[inferred]`, with rationale)
 4. **Verification** - was the user presented with the recommendation? Did they accept?
 5. **Next step** - usually "delegate transcription to `writer`" for the ADR doc, or "proceed to `planner`" for the implementation plan
 
@@ -136,7 +140,7 @@ After the ADR is written, your handoff should cover:
 - Don't assume - verify against official docs and references
 - Don't oversimplify - acknowledge trade-offs honestly
 - For irreversible decisions, recommend more conservative options
-- Document assumptions explicitly in the ADR
+- Tag every assumption in the ADR as `[verified]` or `[inferred]`
 - **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - the ADR should not contain open questions. Every unclear item becomes an explicit assumption with evidence.
 - **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that wrote the ADR is too nice grading its own homework. Produce the recommendation, do not QA it.
 - **!!! Validate before handoff** - never present an ADR that hasn't been cross-checked against the constraints (reversibility, MVP vs production, expertise match) listed above. Re-read the ADR before reporting back.
