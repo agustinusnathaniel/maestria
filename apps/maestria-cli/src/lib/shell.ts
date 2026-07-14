@@ -63,32 +63,31 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
       Effect.catchCause(() => Effect.succeed('')),
     );
 
-  const updateCache = (version: string, cachedAt: number): Effect.Effect<void, never> =>
+  const updateCache = (version: string): Effect.Effect<void, never> =>
     Effect.tryPromise({
       try: async () => {
         const { mkdir, readFile, writeFile } = await import('node:fs/promises');
         await mkdir(cacheDir, { recursive: true });
-        let cache: Record<string, { version: string; cachedAt: number }> = {};
+        let cache: Record<string, { version: string }> = {};
         try {
           const existing = await readFile(cacheFile, 'utf-8');
           cache = JSON.parse(existing);
         } catch {
           /* file doesn't exist or is invalid */
         }
-        cache[pkg] = { version, cachedAt }; // cachedAt written for backward compat with old readers
+        cache[pkg] = { version };
         await writeFile(cacheFile, JSON.stringify(cache));
       },
       catch: () => {},
     }).pipe(Effect.catchCause(() => Effect.void));
 
   return Effect.gen(function* () {
-    const now = Date.now();
     const version = yield* run('npm', ['view', pkg, 'version'], 5_000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
     );
 
     if (version) {
-      yield* updateCache(version, now).pipe(Effect.catchCause(() => Effect.void));
+      yield* updateCache(version).pipe(Effect.catchCause(() => Effect.void));
       return version;
     }
 
