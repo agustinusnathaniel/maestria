@@ -88,7 +88,7 @@ Run any command with `--help` to see in-terminal examples and exit code document
 
 ### Version caching
 
-npm version lookups are cached for 1 hour in `~/.cache/maestria/versions.json`. Delete the cache to force a fresh check, or run an update (which invalidates the cache automatically).
+npm version lookups use a **network-first** strategy: the CLI always fetches the latest version from npm, falling back to `~/.cache/maestria/versions.json` only when the network call fails. The cache is updated automatically after every successful fetch. Delete the cache to force a fresh start:
 
 ```bash
 rm ~/.cache/maestria/versions.json

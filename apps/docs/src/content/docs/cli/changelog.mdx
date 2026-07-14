@@ -5,6 +5,43 @@ description: Release history for the maestria CLI.
 
 # Changelog
 
+## v0.4.1
+
+_July 14, 2026_
+
+### Network-first version lookup
+
+`maestria update` and `maestria status` no longer serve stale cached
+versions. The CLI always fetches the latest version from npm, falling
+back to the cache only when the network is unavailable.
+
+**Improvements:**
+
+- **No stale version window** — Previously, published versions were
+  missed for up to 1 hour due to TTL-based caching. Now the live npm
+  version is fetched every time the network is available.
+- **Offline fallback** — If the npm registry is unreachable, the CLI
+  falls back to the last known cached version instead of failing.
+
+## v0.4.0
+
+_July 14, 2026_
+
+### Multi-platform selection
+
+`maestria update` and `maestria install` now support comma-separated
+platform IDs (e.g., `maestria update opencode,pi`) and interactive
+multiselect with checkboxes instead of single-option pickers.
+
+**Improvements:**
+
+- **Comma-separated platforms** — Target multiple platforms in one command:
+  `maestria install opencode,pi,kimi-code`
+- **Multiselect in interactive mode** — Checkbox-style picker replaces
+  the old single-select for both install and update commands
+- **All platforms shortcut** — Interactive `maestria update` includes a
+  convenient "All platforms" option to update everything at once
+
 ## v0.3.0
 
 _June 29, 2026_
