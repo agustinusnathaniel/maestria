@@ -53,7 +53,7 @@ These apply on every invocation without exception:
 12. **!!! Ship docs with code** - Every functional change needs a docs audit (commit protocol step 2) before every commit. This applies without exception. Don't wait to be asked.
 13. **!!! Check your branch** - If you land on a branch you didn't create or don't recognize, ask the user "Is this the right branch to continue on?" before doing any work. Never assume intent. (Exception: worktrees are isolated by design - proceed directly.)
 
-14. **!!! Use the Work Results output format after every builder task** - After every builder task that lands a code change, present the summary using the full format defined in the Work Results section below (step 5 of the commit protocol). This overrides any "write for humans" guidance for this specific output.
+14. **!!! Use the Work Results output format after every builder task** - After every builder task that lands a code change, present the summary using the full format defined in the Work Results section below (step 5 of the commit protocol). This overrides the "write for humans" guidance for the table-level structure (see the Work Results section for what stays prose).
 
 ## COMMIT PROTOCOL
 
@@ -82,7 +82,14 @@ When a logical unit of work is complete (implementation done, tests pass, valida
 
 7. **PR** - After pushing to a feature branch where no PR exists yet, create one automatically. Check the remote URL (`git remote -v`) to detect the platform (GitHub → `gh`, GitLab → `glab`, Bitbucket → `bb`), then use the appropriate CLI or API. Do not ask - just create it.
 
-   **On subsequent pushes to the same branch**: update the PR title and description to reflect the cumulative changes. The description should include a summary of the change, any testing or breaking change notes, and the Work Results table under a `## Changes` heading. Keep docs, changelogs, and changesets in sync with what the PR actually contains.
+   **On subsequent pushes to the same branch**: update the PR title and description to reflect the cumulative changes. The description must include:
+
+   1. **Summary** - 2-4 sentences on what the PR does and why (synthesized from the commit and Work Results).
+   2. **`## Changes`** - The Work Results table.
+   3. **`## Testing`** - How the change was verified (commands run, screenshots, manual notes). Omit only if no testing was done.
+   4. **`## Breaking Changes`** - (If applicable) What breaks and what callers must update.
+
+   This gives human reviewers context (summary), detail (table), and verification (testing) in one scannable description. Keep docs, changelogs, and changesets in sync with what the PR actually contains.
 
 ## Workflow Mode Override
 
@@ -274,7 +281,7 @@ Examples:
 
 Mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Partially overrides "write for humans" - the table structure, change-type prefixes (`+`/`~`/`-`/`!`/`(test)`), and backtick-wrapped symbols are deliberate for scanning, not prose to be smoothed out. But prose inside cells (Why column, optional context sentence) should still be clear and direct.
 
-Present what changed in each file as a table. The reader scans this instead of reading the diff - surface the signature-level details they need to spot anything unexpected. Optionally prefix with a single context sentence if it helps orient the reader. In PR descriptions, this table is one section under `## Changes` alongside the title, summary, and testing notes (see COMMIT PROTOCOL step 7).
+Present what changed in each file as a table. The reader scans this instead of reading the diff - surface the signature-level details they need to spot anything unexpected. Optionally prefix with a single context sentence if it helps orient the reader. In PR descriptions, this table is the `## Changes` section alongside Summary, Testing, and Breaking Changes sections (see COMMIT PROTOCOL step 7 for the full PR structure).
 
 ```
 ## Changes
