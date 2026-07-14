@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { execSync } from 'node:child_process';
 
 // ── Imports ──
 
@@ -15,8 +16,9 @@ import {
 
 import { loadConfig, ConfigError } from '../scripts/lib/config.js';
 import { runSync } from '../scripts/lib/sync.js';
+import { processFile } from '../scripts/lib/process-file.js';
 
-import type { ReplaceOp, ResolvedSyncConfig } from '../scripts/lib/config.js';
+import type { ReplaceOp, ResolvedSyncConfig, ResolvedFileConfig } from '../scripts/lib/config.js';
 
 // ═══════════════════════════════════════════════
 // Transforms
@@ -469,5 +471,173 @@ describe('preserve option', () => {
 
     const removed = results.filter((r) => r.status === 'removed');
     expect(removed.length).toBe(2);
+  });
+});
+
+// ═══════════════════════════════════════
+// Provenance check
+// ═══════════════════════════════════════
+
+describe('checkProvenance', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'core-sync-provenance-'));
+    // Initialize a minimal git repo in tmpDir
+    execSync('git init', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git config user.name test', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git config user.email test@test', { cwd: tmpDir, stdio: 'ignore' });
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('passes when output file is unchanged', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    // Generate output via processFile (includes auto-generated header)
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    // Commit so git state is clean
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m init', { cwd: tmpDir, stdio: 'ignore' });
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('unchanged');
+    expect(result.error).toBeUndefined();
+  });
+
+  it('detects when output was modified without changing source', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    // Generate output from source (includes auto-generated header)
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    // Commit so git state is clean
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
+
+    // Save the correct output content (what processFile generates)
+    const correctContent = readFileSync(outputPath, 'utf-8');
+
+    // Stage a different version so git sees output as modified
+    writeFileSync(outputPath, '# Wrong content', 'utf-8');
+    execSync('git add output.md', { cwd: tmpDir, stdio: 'ignore' });
+
+    // Restore the correct content in the working tree
+    writeFileSync(outputPath, correctContent, 'utf-8');
+
+    // Check should detect provenance violation
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('Provenance violation');
+  });
+
+  it('passes when both source and output are modified', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    // Generate output (includes auto-generated header)
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    // Commit both
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
+
+    // Edit source
+    writeFileSync(sourcePath, '# Source updated', 'utf-8');
+
+    // Re-generate output from updated source (legitimate workflow - both now dirty)
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    // Both files have uncommitted changes - check should pass
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('unchanged');
+  });
+
+  it('skips check when not in a git repo', async () => {
+    const nonGitDir = mkdtempSync(join(tmpdir(), 'core-sync-nongit-'));
+    try {
+      const sourcePath = join(nonGitDir, 'source.md');
+      const outputPath = join(nonGitDir, 'output.md');
+
+      writeFileSync(sourcePath, '# Source', 'utf-8');
+
+      const fileCfg: ResolvedFileConfig = {
+        output: outputPath,
+        stripFrontmatter: false,
+        replace: [],
+        prepend: '',
+        append: '',
+      };
+
+      await processFile(sourcePath, fileCfg, {
+        report: 'sync',
+        logger: () => {},
+      });
+
+      // Hand-edit output (no git repo, so check should skip gracefully)
+      writeFileSync(outputPath, '# Hand edited', 'utf-8');
+
+      const result = await processFile(sourcePath, fileCfg, {
+        check: true,
+        report: 'check',
+        logger: () => {},
+      });
+
+      // Without git, the check skips and falls through to content comparison
+      expect(result.status).toBe('error');
+      expect(result.error).toBe('Output differs from expected');
+    } finally {
+      rmSync(nonGitDir, { recursive: true, force: true });
+    }
   });
 });

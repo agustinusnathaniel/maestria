@@ -7,6 +7,17 @@ This changelog tracks meaningful changes to how Maestria-powered agents
 behave - what they do differently, what they're stricter about, and what
 you can expect from them.
 
+## 2026-07-14
+
+- **Mandated structured work results.** The `## Changes` summary table after
+  builder tasks is now enforced by a non-negotiable CRITICAL RULE, overriding
+  "write for humans" guidance for this specific output.
+- **Mandated documentation audit before committing.** The docs audit step is
+  now a `!!!` rule covering four categories: internal docs, user-facing docs
+  site, user-facing changelog, and changesets.
+- **Fixed stale cross-references in CRITICAL RULES.** Rule #12 now correctly
+  references commit protocol step 2 and uses unambiguous language.
+
 ## 2026-07-10
 
 - **Subagent permission alignment.** All subagents received expanded bash allow-lists matching their actual tooling needs — read-only file operations pre-allowed, agent-specific tools added per role. Reduces unnecessary permission prompts from 70-88% of commands down to only unusual operations. Catch-all `*: ask` remains for safety.
