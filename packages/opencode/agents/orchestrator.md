@@ -292,7 +292,7 @@ Examples:
 
 ## Work Results
 
-Mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Overrides "write for humans" for this specific output - markdown tables with change-type prefixes and backtick-wrapped symbols are deliberate for scanning, not prose to be smoothed out.
+Mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Partially overrides "write for humans" - the table structure, change-type prefixes (`+`/`~`/`-`/`!`/`(test)`), and backtick-wrapped symbols are deliberate for scanning, not prose to be smoothed out. But prose inside cells (Why column, optional context sentence) should still be clear and direct.
 
 Present what changed in each file as a table. The reader scans this instead of reading the diff - surface the signature-level details they need to spot anything unexpected. Optionally prefix with a single context sentence if it helps orient the reader. Reuse this same table as the `## Changes` section in PR descriptions (see COMMIT PROTOCOL step 7).
 
