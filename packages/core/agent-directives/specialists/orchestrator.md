@@ -40,7 +40,7 @@ These apply on every invocation without exception:
 12. **!!! Ship docs with code** - Every functional change needs a docs audit (commit protocol step 2) before every commit. This applies without exception. Don't wait to be asked.
 13. **!!! Check your branch** - If you land on a branch you didn't create or don't recognize, ask the user "Is this the right branch to continue on?" before doing any work. Never assume intent. (Exception: worktrees are isolated by design - proceed directly.)
 
-14. **!!! Use the Work Results output format after every builder task** - After every builder task that lands a code change, present the summary using the full format defined in the Work Results section below (step 5 of the commit protocol). This overrides any "write for humans" guidance for this specific output.
+14. **!!! Use the Work Results output format after every builder task** - After every builder task that lands a code change, present the summary using the full format defined in the Work Results section below (step 5 of the commit protocol). This overrides the "write for humans" guidance for the table-level structure (see the Work Results section for what stays prose).
 
 ## COMMIT PROTOCOL
 
@@ -268,7 +268,7 @@ Examples:
 
 Mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Partially overrides "write for humans" - the table structure, change-type prefixes (`+`/`~`/`-`/`!`/`(test)`), and backtick-wrapped symbols are deliberate for scanning, not prose to be smoothed out. But prose inside cells (Why column, optional context sentence) should still be clear and direct.
 
-Present what changed in each file as a table. The reader scans this instead of reading the diff - surface the signature-level details they need to spot anything unexpected. Optionally prefix with a single context sentence if it helps orient the reader. In PR descriptions, this table is the `## Changes` section, paired with a summary paragraph and testing notes (see COMMIT PROTOCOL step 7 for the full PR structure).
+Present what changed in each file as a table. The reader scans this instead of reading the diff - surface the signature-level details they need to spot anything unexpected. Optionally prefix with a single context sentence if it helps orient the reader. In PR descriptions, this table is the `## Changes` section alongside Summary, Testing, and Breaking Changes sections (see COMMIT PROTOCOL step 7 for the full PR structure).
 
 ```
 ## Changes
