@@ -272,7 +272,7 @@ Examples:
 
 ## Work Results
 
-Mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Overrides "write for humans" for this specific output.
+Mandatory after every builder task that lands a code change (see CRITICAL RULE #14). Overrides "write for humans" for this specific output - markdown tables with change-type prefixes and backtick-wrapped symbols are deliberate for scanning, not prose to be smoothed out.
 
 Present what changed in each file as a table. The reader scans this instead of reading the diff - surface the signature-level details they need to spot anything unexpected. Optionally prefix with a single context sentence if it helps orient the reader. Reuse this same table as the `## Changes` section in PR descriptions (see COMMIT PROTOCOL step 7).
 
