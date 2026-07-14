@@ -269,7 +269,7 @@ Begin with a brief paragraph (2-4 sentences) describing the overall goal of the 
 
 ### File-by-file changes
 
-Use this table to detail what changed in each file:
+Use this table to detail what changed in each file. When embedded in a PR under `## Changes` (see step 7), this table is preceded by the Overview paragraph and followed by the Cohesion paragraph:
 
 ```
 ## Changes
@@ -284,7 +284,7 @@ Use this table to detail what changed in each file:
 Each row captures one file. The columns:
 
 - **File**: Path relative to project root, backtick-wrapped
-- **What changed**: Key symbols (functions, classes, interfaces, routes, exports, types) that changed, with enough context to understand the nature of each change. Include parameters added/removed, fields changed, structural modifications. Multiple changes in the same file, comma-separate them.
+- **What changed**: Key symbols (functions, classes, interfaces, routes, exports, types), config keys, dependencies, or other meaningful identifiers that were added, modified, or removed, with enough context to understand the nature of each change. Include parameters added/removed, fields changed, structural modifications, config changes, or dependency updates. Multiple changes in the same file, comma-separate them.
 - **Why**: The reason for this specific file change (5-15 words). Required.
 
 ### Cohesion
