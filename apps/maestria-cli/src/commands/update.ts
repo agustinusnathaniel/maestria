@@ -271,7 +271,7 @@ function updateOne(
 
     spinner.stop(previewVersionDiff(prevVersion, nextVersion));
 
-    // Invalidate version cache so next status sees the correct latest version
+    // Invalidate version cache so offline fallback doesn't return the old version
     if (platform.npmPackage) {
       yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
     }

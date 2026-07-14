@@ -50,56 +50,50 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
   const cacheDir = `${homedir()}/.cache/maestria`;
   const cacheFile = `${cacheDir}/versions.json`;
 
+  const readCache = (): Effect.Effect<string, never> =>
+    run('cat', [cacheFile], 2_000).pipe(
+      Effect.map((out) => {
+        try {
+          const cache: Record<string, { version: string }> = JSON.parse(out);
+          return cache[pkg]?.version ?? '';
+        } catch {
+          return '';
+        }
+      }),
+      Effect.catchCause(() => Effect.succeed('')),
+    );
+
+  const updateCache = (version: string, cachedAt: number): Effect.Effect<void, never> =>
+    Effect.tryPromise({
+      try: async () => {
+        const { mkdir, readFile, writeFile } = await import('node:fs/promises');
+        await mkdir(cacheDir, { recursive: true });
+        let cache: Record<string, { version: string; cachedAt: number }> = {};
+        try {
+          const existing = await readFile(cacheFile, 'utf-8');
+          cache = JSON.parse(existing);
+        } catch {
+          /* file doesn't exist or is invalid */
+        }
+        cache[pkg] = { version, cachedAt }; // cachedAt written for backward compat with old readers
+        await writeFile(cacheFile, JSON.stringify(cache));
+      },
+      catch: () => {},
+    }).pipe(Effect.catchCause(() => Effect.void));
+
   return Effect.gen(function* () {
     const now = Date.now();
-
-    // Fetch from npm (network-first)
     const version = yield* run('npm', ['view', pkg, 'version'], 5_000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
     );
 
     if (version) {
-      // Update cache (fire-and-forget - never fail the effect)
-      yield* updateCache().pipe(Effect.catchCause(() => Effect.void));
+      yield* updateCache(version, now).pipe(Effect.catchCause(() => Effect.void));
       return version;
     }
 
     // Network failed — fall back to cached version (any age)
-    const cached = yield* readCache().pipe(Effect.catchCause(() => Effect.succeed('')));
-    return cached;
-
-    function readCache(): Effect.Effect<string, never> {
-      return run('cat', [cacheFile], 2_000).pipe(
-        Effect.map((out) => {
-          try {
-            const cache: Record<string, { version: string }> = JSON.parse(out);
-            return cache[pkg]?.version ?? '';
-          } catch {
-            return '';
-          }
-        }),
-        Effect.catchCause(() => Effect.succeed('')),
-      );
-    }
-
-    function updateCache(): Effect.Effect<void, never> {
-      return Effect.tryPromise({
-        try: async () => {
-          const { mkdir, readFile, writeFile } = await import('node:fs/promises');
-          await mkdir(cacheDir, { recursive: true });
-          let cache: Record<string, { version: string; cachedAt: number }> = {};
-          try {
-            const existing = await readFile(cacheFile, 'utf-8');
-            cache = JSON.parse(existing);
-          } catch {
-            /* file doesn't exist or is invalid */
-          }
-          cache[pkg] = { version, cachedAt: now };
-          await writeFile(cacheFile, JSON.stringify(cache));
-        },
-        catch: () => {},
-      }).pipe(Effect.catchCause(() => Effect.void));
-    }
+    return yield* readCache().pipe(Effect.catchCause(() => Effect.succeed('')));
   });
 }
 
