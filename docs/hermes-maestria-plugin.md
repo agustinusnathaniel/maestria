@@ -6,6 +6,32 @@ Bring the maestria methodology (7-specialist pipeline, maker/checker split, mode
 
 Coding-specific work routes to the OpenCode CLI as an optional power-up, not a hard dependency.
 
+## Design Philosophy
+
+Five principles that govern every decision in this plugin:
+
+### 1. Methodology portable, adapter thin
+
+The maestria methodology (7 specialists + pipeline + maker/checker) lives in `packages/core/agent-directives/` and is sync'd to every platform. The Hermes plugin is just the **adapter** — it maps the methodology to Hermes' native Plugin API. Keep plugin code lean; the real logic is in canonical sources.
+
+### 2. Hermes-native first
+
+Hermes has built-in features that solve the problems the plugin would otherwise need to reimplement — `delegate_task` for subagent dispatch, `kanban_*` tools for task orchestration, `/goal` for persistent objectives, Mnemosyne for agent memory, SessionDB for state persistence. Use them. Don't reinvent them. The plugin's job is to wire the methodology into these existing subsystems, not duplicate them.
+
+Only fall back to custom implementations (JSONL, JSON files) when the host Hermes doesn't have the relevant feature.
+
+### 3. General agent, not a coding tool
+
+Hermes is a general-purpose AI agent platform, not a coding CLI like OpenCode. The plugin's specialists must work across domains — research, content, analysis, strategy, operations — not just software engineering. The coding path routes to OpenCode CLI as an optional power-up, never a hard dependency.
+
+### 4. Graceful detection & fallback
+
+Different Hermes instances have different tools and providers configured. The plugin probes at startup and selects the best available backend for each capability. Users get the best experience their Hermes supports, without configuration burden.
+
+### 5. Feel native to Hermes users
+
+Commands, hooks, tools, and skills follow Hermes Plugin API conventions. Config lives in `config.yaml`. Users interact with `/fein`, `/sonar`, `/blitz` the same way they interact with `/goal`. The plugin should feel like it belongs, not like a foreign methodology bolted on.
+
 ## Architecture
 
 Hermes has a native `delegate_task` tool (~139K lines of implementation) for spawning subagents. The maestria pipeline model works natively - no custom subagent mechanism needed.
@@ -251,10 +277,14 @@ Trust gates in plugin.yaml control LLM access: `plugins.entries.<name>.llm.allow
 
 | Provider | Type | Use Case |
 | --- | --- | --- |
-| holographic | Local SQLite FTS5 | Offline-first, no server |
+| **Mnemosyne** | **Agent memory** | **Recommended — working memories, canonical facts, recall/sleep cycles** |
+| Uteke (MCP) | Knowledge base | For permanent reference docs, specs, decision records |
+| holographic | Local SQLite FTS5 | Alternative — offline-first, no server |
 | mem0 | Server-side | Cross-session persistent memory |
 | supermemory | Server-side | Long-term knowledge base |
 | retaindb, openviking, hindsight, byterover, honcho | Server-side | Various backends |
+
+**Mnemosyne is the recommended memory backend for maestria** because it's designed for agent memory — working memories, canonical facts, recall, sleep cycles, and graph edges for linking related decisions. Use Uteke for permanent reference docs (architectural specs, decision records) that benefit from structured wiki-style organization.
 
 The plugin can register its own provider or use existing ones. Works with `ctx.llm.complete_structured()` for fact extraction across sessions.
 
@@ -458,23 +488,33 @@ def register():
 - Builder routes coding tasks to OpenCode CLI and captures results
 - Reviewer inspects output and reports findings
 
-## Phase 2 (v0.2): Full Roster
+## Phase 2 (v0.2): Full Roster + Hermes-Native Subsystems
 
-All 7 specialists with full skill files and Hermes-native features.
+All 7 specialists with full skill files, replacing custom JSON file persistence with Hermes' built-in subsystems.
 
 ### Deliverables
 
 - Adventurer, architect, diagnose, planner, writer skill files
-- Permission profiles in pre_tool_call (per specialist and per mode)
+- Permission **roles** in pre_tool_call (rename from "profiles" to avoid collision with Hermes Agent Profiles feature)
 - Each specialist uses `ctx.llm.complete_structured()` for reasoning
 - delegate_task for subagent dispatch (native Hermes tool)
 - subagent_start/stop hooks for pipeline tracking
 - OpenCode lifecycle management (install check, config sync)
-- Memory integration (store decisions, user preferences, project context)
+- Memory via **Mnemosyne** (not custom JSONL)
+- Mode + state via **SessionDB.state_meta** (not custom JSON files)
 - transform_tool_result hook for methodology annotations
-- Session state persistence
 
-### Permission Profiles
+### Key Changes: Custom Files → Hermes-Native APIs
+
+| Before (standalone) | After (Hermes-native) | Why |
+| --- | --- | --- |
+| `~/.hermes/maestria-memory.jsonl` | `mnemosyne_remember()` / `mnemosyne_recall()` | Dedicated agent memory — recall, forget, sleep, canonical facts |
+| `~/.hermes/maestria-mode.json` | `session.state_meta["maestria:mode"]` | Survives `/resume`, `/goal resume`, session restart — no separate file |
+| `~/.hermes/maestria-session.json` | SessionDB (built-in) | Already tracks session_id, timestamps — redundant file removed |
+| `PermissionProfile` class name | `PermissionRole` | "Profile" is a Hermes Agent concept for isolated agent configs — rename to avoid confusion |
+| Hardcoded tool-name lists in Python | Config-driven role→tool mappings in `config.yaml` `maestria:` key | Users customize roles without editing plugin code |
+
+### Permission Roles
 
 | Tool           | fein    | sonar   | blitz   |
 | -------------- | ------- | ------- | ------- |
@@ -489,6 +529,48 @@ All 7 specialists with full skill files and Hermes-native features.
 | delegate_task  | allowed | allowed | blocked |
 | opencode (CLI) | allowed | blocked | allowed |
 
+### Memory via Mnemosyne
+
+Replace the append-only JSONL backend with Hermes' built-in memory system:
+
+```python
+# Instead of: maestria-memory.jsonl append
+# Use Mnemosyne — dedicated agent memory with recall, forget, and sleep cycles
+mnemosyne_remember(
+    content="Decision: use PostgreSQL for persistence layer",
+    type="decision",
+    tags=["maestria", "architecture"],
+)
+
+# Instead of: maestria-memory.jsonl tail
+results = mnemosyne_recall(
+    query="recent architecture decisions",
+    tags=["maestria"],
+    limit=10,
+)
+```
+
+Benefits: cross-session semantic recall, canonical facts (for stable preferences like user's framework choices), sleep cycle for compaction, and graph edges for linking related decisions.
+
+For long-term reference docs (architectural specs, decision records), use **Uteke** (knowledge base). For agent memory (session context, preferences, decisions), use **Mnemosyne** — that's its designed purpose.
+
+### Mode + State via SessionDB.state_meta
+
+Replace JSON file persistence with session metadata stored in the SessionDB:
+
+```python
+# Set mode (instead of writing to maestria-mode.json)
+session.state_meta["maestria:mode"] = "fein"
+
+# Set current role
+session.state_meta["maestria:role"] = "builder"
+
+# Read anywhere — survives resume and restart
+mode = session.state_meta.get("maestria:mode", "fein")
+```
+
+The `ModeManager` becomes a thin accessor over `state_meta` instead of a JSON file handler. No separate file I/O, no concurrency concerns.
+
 ### Pipeline Orchestration
 
 ```python
@@ -500,7 +582,7 @@ def orchestrate_pipeline(ctx, pipeline, task):
         result = ctx.dispatch_tool("delegate_task", {
             "task": specialist.prompt + brief,
             "tools": specialist.allowed_tools,
-            "context": {"mode": read_mode_file()},
+            "context": {"mode": session.state_meta.get("maestria:mode")},
         })
         results[specialist_name] = result
     return synthesize(ctx, results)
@@ -509,33 +591,135 @@ def orchestrate_pipeline(ctx, pipeline, task):
 ### Success Criteria
 
 - All 7 specialists dispatch from orchestrator
-- Permission profiles enforce correct tool access per mode
+- Permission **roles** enforce correct tool access per mode (class renamed, config-driven)
 - Each specialist uses `ctx.llm.complete_structured()` for reasoning
 - subagent_start/stop hooks track pipeline progression
 - Multi-specialist pipelines complete end-to-end
-- Session state persists across conversations
+- Mode state survives `/resume` via SessionDB.state_meta (no JSON files)
 - OpenCode routing works with @maestria/opencode loaded
-- Memory stores and retrieves decisions across sessions
+- Memory uses Uteke MCP — decisions retrievable by semantic query
 
-## Phase 3 (v0.3): Advanced
+## Phase 3 (v0.3): Advanced + Kanban & Goals Integration
 
-Polished multi-tool orchestration with all Hermes features.
+Polished multi-tool orchestration with all Hermes features. Integrates with built-in Kanban task board and Goals system.
 
 ### Deliverables
 
-| Feature                        | Detail                                                 |
-| ------------------------------ | ------------------------------------------------------ |
-| Memory provider integration    | holographic or mem0 for persistent context             |
-| MCP server integration         | Expose plugin tools as MCP, consume external MCP tools |
-| llm_request middleware         | Inject methodology context into every LLM request      |
-| llm_execution middleware       | Structured output enforcement                          |
-| transform_llm_output synthesis | Specialist attribution in responses                    |
-| Parallel delegation            | Concurrent specialist dispatch                         |
-| Auxiliary tasks                | Background reasoning for architect, diagnose, planner  |
-| ctx.inject_message()           | Progress reporting during long pipelines               |
-| Kanban task hooks              | Pipeline state via claimed/completed/blocked           |
-| Performance monitoring         | Per-specialist metrics (duration, tool calls, tokens)  |
-| Plugin trust gates             | LLM access restrictions per specialist                 |
+| Feature | Detail |
+| --- | --- |
+| Uteke knowledge base integration | Decisions stored as structured Uteke docs for long-term reference |
+| MCP server integration | Expose plugin tools as MCP, consume external MCP tools |
+| llm_request middleware | Inject methodology context into every LLM request |
+| llm_execution middleware | Structured output enforcement |
+| transform_llm_output synthesis | Specialist attribution in responses |
+| Parallel delegation | Concurrent specialist dispatch via parallel delegate_task |
+| Auxiliary tasks | Background reasoning for architect, diagnose, planner |
+| ctx.inject_message() | Progress reporting during long pipelines |
+| **Kanban integration** | Pipeline state pushed to kanban board — claimed/completed/blocked |
+| **Goals integration** | Set `/goal` from maestria pipelines for multi-turn continuity |
+| Performance monitoring | Per-specialist metrics (duration, tool calls, tokens) |
+| Plugin trust gates | LLM access restrictions per specialist |
+
+### Kanban Integration
+
+Each pipeline step maps to a kanban task lifecycle. Use the `kanban_*` toolset — not just lifecycle hooks:
+
+```python
+# Orchestrator creates kanban tasks for each pipeline step:
+ctx.dispatch_tool("kanban_create", {
+    "title": f"Pipeline: {task_id} — Phase: {specialist}",
+    "description": f"Run {specialist} specialist on {task_id}",
+    "lane": "ready",
+    "tags": ["maestria", pipeline_id, specialist],
+})
+
+# Specialists claim, update, and complete tasks:
+ctx.dispatch_tool("kanban_claim", {"task_id": task_id})
+ctx.dispatch_tool("kanban_show", {"task_id": task_id})  # read task state
+ctx.dispatch_tool("kanban_block", {
+    "task_id": task_id,
+    "reason": "Missing dependency: architect output not ready",
+})
+ctx.dispatch_tool("kanban_heartbeat", {"task_id": task_id})  # keep-alive
+ctx.dispatch_tool("kanban_comment", {
+    "task_id": task_id,
+    "comment": "Found root cause in auth middleware. See result brief.",
+})
+ctx.dispatch_tool("kanban_complete", {
+    "task_id": task_id,
+    "result_summary": "Authentication refactored, tests passing",
+})
+ctx.dispatch_tool("kanban_link", {
+    "task_id": task_id,
+    "linked_task_id": next_step_task_id,
+    "relationship": "triggers",
+})
+```
+
+The orchestrator reads the kanban board to decide which specialists to activate, which pipelines to resume, and what artifacts exist from prior work:
+
+```python
+# Orchestrator checks board state:
+board = ctx.dispatch_tool("kanban_list", {"lane": "done", "tags": [pipeline_id]})
+for task in board:
+    # Read completed task summaries to feed next specialist
+    pass
+```
+
+Kanban lifecycle hooks (`kanban_task_claimed`, `kanban_task_completed`, `kanban_task_blocked`) fire automatically in the dispatcher/worker processes and can be used for observability (logging, Uteke event recording, notifications).
+
+This replaces ad-hoc pipeline tracking with the production-grade kanban subsystem — durable, board-visible, and inspectable via `hermes kanban dashboard`.
+
+### Goals Integration
+
+Map long-running maestria pipelines to Hermes Goals for `/resume` and multi-turn continuity:
+
+```python
+# When a multi-step pipeline starts, set a goal with a completion contract:
+# The goal survives session boundaries and auto-continues until done.
+#
+# Pipeline name + mode stored in session.state_meta is restored on /goal resume.
+# Goals add: turn budget, judge evaluation, auto-continuation.
+```
+
+The ideal setup is `/goal draft` — let the LLM structure a completion contract from a plain-language objective:
+
+```
+/goal draft Run the fein pipeline to implement user authentication
+```
+
+This produces a contract with outcome, verification, constraints, boundaries, and stop_when — which maps naturally to the maestria model:
+
+| Goal contract field | Maestria equivalent                                     |
+| ------------------- | ------------------------------------------------------- |
+| `outcome`           | Pipeline deliverable (e.g., "User auth implemented")    |
+| `verification`      | Reviewer specialist check + test results                |
+| `constraints`       | "Don't change existing API contract", "FFU only"        |
+| `boundaries`        | Scope limit for this pipeline (e.g., a specific module) |
+| `stop_when`         | Escalation: DB migration needed, dependency not met     |
+
+For long-running specialists (e.g., OpenCode complex coding), use `/goal wait <pid>` to park the goal loop while the specialist works:
+
+```python
+# Builder delegates to OpenCode, parks the goal:
+pid = spawn_opencode(task)
+ctx.dispatch_tool("/goal", {"action": "wait", "pid": pid, "reason": "OpenCode building"})
+# Goal auto-resumes when OpenCode exits
+```
+
+The maestria mode + role in `state_meta` integrate naturally: when a Goal resumes via `/goal resume`, the mode and role are restored automatically from SessionDB. No separate goal mechanism needed in the plugin — just leverage the built-in Goals system for multi-turn task continuity.
+
+### Mode + Goals Alignment
+
+| Hermes Feature | Maestria Integration |
+| --- | --- |
+| `/goal` | Set as persistent pipeline objective. Mode restored on `/goal resume` via state_meta |
+| `/goal draft` | Auto-generate completion contract from pipeline description |
+| Goal turn budget | Maps to pipeline step count. Exceeded → escalate to orchestrator |
+| Goal judge evaluation | Reviewer specialist evaluates goal completion criteria |
+| Goals Dashboard | Pipeline progress visible in `hermes goal list` |
+| `/goal wait <pid>` | Park loop during OpenCode or long-running specialist tasks |
+| Completion contract | Maps to pipeline scope: outcome→deliverable, verification→reviewer check |
 
 ### Middleware Example: llm_request
 
@@ -550,21 +734,206 @@ def methodology_context_middleware(ctx, llm_request):
     return llm_request
 ```
 
-### Memory Integration
+### Memory Integration (Mnemosyne)
 
 ```python
 def store_decision(ctx, specialist, decision):
-    ctx.dispatch_tool("memory.store", {
-        "provider": "holographic",
-        "key": f"decision:{specialist}:{timestamp()}",
-        "value": {"specialist": specialist, "decision": decision}
+    ctx.dispatch_tool("mnemosyne_remember", {
+        "content": f"Decision by {specialist}: {decision}",
+        "type": "decision",
+        "tags": ["maestria", specialist],
     })
 
 def retrieve_decisions(ctx, specialist):
-    return ctx.dispatch_tool("memory.search", {
-        "provider": "holographic",
-        "query": f"decision:{specialist}", "limit": 10
+    return ctx.dispatch_tool("mnemosyne_recall", {
+        "query": f"decisions by {specialist}",
+        "tags": ["maestria", specialist],
+        "limit": 10,
     })
+```
+
+For long-term reference documents (architecture specs, ADRs), use Uteke to create structured wiki pages that persist independently of agent sessions.
+
+## Distribution & Environment Adaptation
+
+The plugin ships as a pip package for `pip install maestria-hermes`, then enabled via `hermes plugins enable maestria-hermes`. Different Hermes instances will have different tools and providers configured.
+
+For a turnkey experience, the maestria methodology can also be distributed as a **Hermes Profile Distribution** — a git repo users install with one command, giving them the complete agent with all skills, config, and optional add-ons pre-configured.
+
+### Two Distribution Channels
+
+| Channel | Install | What you get | Best for |
+| --- | --- | --- | --- |
+| **pip plugin** | `pip install maestria-hermes` + `hermes plugins enable maestria-hermes` | Methodology hooks, commands, tools, skills loaded into existing Hermes instance | Users who already have Hermes set up and want maestria methodology |
+| **Profile distribution** | `hermes profile install gh:agustinusnathaniel/maestria-dist` | A complete, isolated Hermes agent with maestria config + skills + cron pre-loaded | Users who want a dedicated maestria agent, or quick evaluation |
+
+### Profile Distribution Contents
+
+A profile distribution repo (`maestria-dist`) packages the whole agent:
+
+```
+maestria-dist/
+├── distribution.yaml    # manifest: name, version, env-var requirements
+├── config.yaml          # maestria-optimized Hermes config
+│                        #   - delegation configured for pipeline dispatch
+│                        #   - kanban enabled for task orchestration
+│                        #   - plugin maestria-hermes pre-enabled
+├── SOUL.md              # maestria methodology personality prompt
+├── skills/              # bundled skills (orchestrator, builder, etc.)
+├── plugins/             # maestria-hermes plugin (or declared as dependency)
+├── cron/                # optional: pipeline cron jobs
+└── .env.EXAMPLE         # API key template
+```
+
+Users install:
+
+```bash
+hermes profile install gh:agustinusnathaniel/maestria-dist
+cp ~/.hermes/profiles/maestria/.env.EXAMPLE ~/.hermes/profiles/maestria/.env
+# Edit .env with their own keys
+maestria chat
+```
+
+Updates push via:
+
+```bash
+hermes profile update maestria
+```
+
+The user's sessions, memories, and API keys stay untouched on update.
+
+## Orchestrator Profile (Kanban Deployment)
+
+For multi-agent setups, the maestria orchestrator can run as a dedicated Hermes **profile** with a kanban description. This lets it dispatch pipeline steps to worker profiles automatically.
+
+### Setup
+
+```bash
+hermes profile create maestria-orch \
+  --description "Maestria pipeline orchestrator — decomposes work, assigns specialists, reviews output"
+```
+
+The orchestrator profile has:
+
+- The `maestria-hermes` plugin loaded (hooks, commands, skills)
+- The `kanban` toolset enabled (create, assign, complete tasks)
+- `delegate_task` for spawning specialist subagents
+- `delegation.orchestrator_enabled: true` in its config
+
+Worker profiles (one per specialist role) register with role descriptions:
+
+```bash
+hermes profile create maestria-builder \
+  --description "Maestria builder specialist — implements solutions, edits files"
+```
+
+### Pipeline Flow
+
+```
+User → maestria-orch (profile)
+  │
+  ├─ kanban_create(task="research", lane="ready")
+  ├─ kanban_create(task="design", lane="blocked", blocked_by=1)
+  ├─ kanban_create(task="implement", lane="blocked", blocked_by=2)
+  ├─ kanban_create(task="review", lane="blocked", blocked_by=3)
+  │
+  └─ Kanban dispatcher assigns tasks to matching profiles
+       ├─ maestria-adventurer claims "research" → completes → "done"
+       ├─ maestria-architect claims "design" → review → completes
+       ├─ maestria-builder claims "implement" → OpenCode → completes
+       └─ maestria-reviewer claims "review" → blocks if fails
+```
+
+Each specialist is a real OS-level Hermes profile, coordinated via the durable kanban board rather than in-process `delegate_task` calls. The plugin runs on each profile, limiting tools via permission roles.
+
+### When to Use
+
+| Pattern                         | Best for                                            |
+| ------------------------------- | --------------------------------------------------- |
+| **Plugin-only** (delegate_task) | Single-user, same machine, quick pipelines          |
+| **Profile + kanban**            | Multi-user, multi-machine, durable queue, dashboard |
+
+### Detection Strategy
+
+At startup (`register()`), the plugin probes the environment and selects backends:
+
+| Feature | Preferred | Fallback 1 | Fallback 2 | Fallback 3 |
+| --- | --- | --- | --- | --- |
+| Memory | Mnemosyne tool | Uteke (KB docs) | Custom JSONL | No-op (skip) |
+| Mode persistence | SessionDB.state_meta | Custom JSON file | In-memory (session-only) | — |
+| Kanban integration | `kanban_*` toolset | Lifecycle hooks only | Uteke event tracking | No-op (skip) |
+| Goals integration | Built-in `/goal` command | Pipeline only (no goals) | — | — |
+| OpenCode routing | `which opencode` available | Hermes native tools only | — | — |
+| Parallel dispatch | `delegate_task(tasks=[...])` batched mode | Sequential `delegate_task` calls | In-process tool calls | — |
+| Profile distribution | Available as pop profile | Plugin only (no profile) | — | — |
+
+### Strategy Implementation
+
+```python
+def detect_backends(ctx):
+    """Probe available backends and select the best chain."""
+    backends = {
+        "memory": "jsonl",       # default fallback
+        "mode": "json_file",     # default fallback
+        "kanban": None,
+        "goals": None,
+        "opencode": False,
+    }
+
+    # Check for Mnemosyne
+    if has_tool(ctx, "mnemosyne_remember"):
+        backends["memory"] = "mnemosyne"
+
+    # Check for SessionDB.state_meta (mode persistence)
+    if has_session_state_meta(ctx):
+        backends["mode"] = "state_meta"
+
+    # Check for kanban hooks
+    if has_hook(ctx, "kanban_task_claimed"):
+        backends["kanban"] = "kanban"
+
+    # Check for OpenCode CLI
+    if which("opencode"):
+        backends["opencode"] = True
+
+    return backends
+```
+
+Users can override detection via `config.yaml`:
+
+```yaml
+maestria:
+  memory_backend: uteke # force Uteke over auto-detected Mnemosyne
+  mode_backend: json_file # force JSON file over state_meta
+  kanban: false # disable kanban integration
+```
+
+### What Gets Bundled
+
+| Component | Bundled? | Why |
+| --- | --- | --- |
+| Plugin Python code (`maestria_hermes/`) | ✅ pip package | Core plugin |
+| 9 SKILL.md files | ✅ pip package | Specialist methodology guides |
+| Mode system | ✅ pip package | Standalone Python, no deps |
+| Mnemosyne | ❌ Not bundled | External tool, user installs separately |
+| Uteke | ❌ Not bundled | External MCP server, user configures separately |
+| OpenCode CLI | ❌ Not bundled | External CLI tool |
+| maestria-dist profile | ✅ Separate git repo | Completely optional, for turnkey setup |
+| JSONL fallback | ✅ pip package | Zero-dependency, always works |
+
+### User Installation Docs
+
+```
+# Minimal (file-based backends, no external deps)
+pip install maestria-hermes
+hermes plugins enable maestria-hermes
+
+# Full (Mnemosyne for memory, kanban for orchestration)
+pip install maestria-hermes
+hermes plugins enable maestria-hermes
+# Configure Mnemosyne in config.yaml
+# Configure kanban in config.yaml
+# Install OpenCode CLI for Builder routing
 ```
 
 ## Open Questions (Resolved)
