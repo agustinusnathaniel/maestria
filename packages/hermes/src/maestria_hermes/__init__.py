@@ -53,6 +53,8 @@ def register(ctx):
     on_start, on_end = create_session_hooks(session_manager)
     ctx.register_hook("on_session_start", on_start)
     ctx.register_hook("on_session_end", on_end)
+    ctx.register_hook("subagent_start", _on_subagent_start)
+    ctx.register_hook("subagent_stop", _on_subagent_stop)
     ctx.register_hook("transform_tool_result", create_transform_tool_result_hook(mode_manager))
 
     # -- Phase 3: Middleware ------------------------------------------------
@@ -186,3 +188,22 @@ def _cmd_status(mode_manager):
             f"Read-only: {'Yes' if mode_manager.is_read_only() else 'No'}"
         )
     return handler
+
+
+def _on_subagent_start(**kwargs) -> None:
+    """Log when a subagent is spawned for pipeline tracking."""
+    session_id = kwargs.get("session_id", "unknown")
+    role = kwargs.get("role", "unknown")
+    logger.info("maestria subagent started: role=%s session=%s", role, session_id)
+
+
+def _on_subagent_stop(**kwargs) -> None:
+    """Log when a subagent completes for pipeline tracking."""
+    session_id = kwargs.get("session_id", "unknown")
+    role = kwargs.get("role", "unknown")
+    status = kwargs.get("status", "unknown")
+    duration = kwargs.get("duration", 0)
+    logger.info(
+        "maestria subagent stopped: role=%s session=%s status=%s duration=%ss",
+        role, session_id, status, duration,
+    )
