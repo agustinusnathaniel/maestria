@@ -10,6 +10,7 @@ Phases:
 """
 
 import logging
+import os
 
 from maestria_hermes._version import __version__
 from maestria_hermes.modes import ModeManager
@@ -163,6 +164,32 @@ def _detect_backends(ctx):
             )
         else:
             logger.debug("Kanban toolset detected — pipeline can use task board.")
+    except Exception:
+        pass
+
+    # Check @maestria/opencode plugin (needed for opencode_route tool)
+    try:
+        import subprocess
+        oc_check = subprocess.run(
+            ["which", "opencode"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if oc_check.returncode == 0:
+            # OpenCode CLI is installed; check for plugin
+            from maestria_hermes.tools.opencode import _check_maestria_plugin
+            plugin_err = _check_maestria_plugin(os.getcwd())
+            if plugin_err:
+                logger.warning(
+                    "OpenCode CLI found but %s missing. "
+                    "The opencode_route tool will require install. "
+                    "Run: npm i -g @maestria/opencode",
+                    "@maestria/opencode",
+                )
+            else:
+                logger.debug(
+                    "@maestria/opencode plugin found — "
+                    "opencode_route tool is fully operational."
+                )
     except Exception:
         pass
 

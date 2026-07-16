@@ -1,15 +1,87 @@
 """OpenCode CLI routing tool for Builder specialist.
 
-Provides a tool that delegates complex coding tasks to OpenCode CLI
-with @maestria/opencode loaded for structured methodology execution.
+Provides a tool that delegates complex coding tasks to OpenCode CLI.
+Before delegating, it verifies @maestria/opencode is also available
+so the OpenCode instance follows Maestria methodology.
 """
 
 import json
 import logging
+import os
 import subprocess
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
+
+MAESTRIA_PLUGIN_PKG = "@maestria/opencode"
+MAESTRIA_PLUGIN_MARKER = "opencode"  # The key in package.json
+
+
+def _check_maestria_plugin(workdir: str) -> Optional[str]:
+    """Check if @maestria/opencode is installed.
+
+    Returns an error message string if the plugin is missing, or None if found.
+    Checks multiple locations: project node_modules, global node_modules.
+    """
+    # Check 1: Resolve the package via node require path resolution.
+    #          This catches both local (project) and global installs.
+    check_paths = []
+
+    # Project-local node_modules
+    if workdir and workdir != ".":
+        check_paths.append(os.path.join(workdir, "node_modules"))
+    cwd = Path.cwd()
+    for parent in [cwd, *cwd.parents]:
+        nm = parent / "node_modules"
+        if nm.is_dir():
+            check_paths.append(str(nm))
+            break
+
+    # Global node_modules (npm prefix)
+    try:
+        prefix = subprocess.run(
+            ["npm", "prefix", "-g"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if prefix.returncode == 0:
+            global_nm = os.path.join(prefix.stdout.strip(), "lib", "node_modules")
+            if os.path.isdir(global_nm):
+                check_paths.append(global_nm)
+    except Exception:
+        pass
+
+    # NVM / Node version manager locations
+    nvm_path = os.path.expanduser("~/.nvm/versions/node/*/lib/node_modules")
+    try:
+        import glob
+        for path in glob.glob(nvm_path):
+            check_paths.append(path)
+    except Exception:
+        pass
+
+    for nm_dir in check_paths:
+        pkg_dir = os.path.join(nm_dir, *MAESTRIA_PLUGIN_PKG.split("/"))
+        pkg_json = os.path.join(pkg_dir, "package.json")
+        if os.path.isfile(pkg_json):
+            try:
+                with open(pkg_json) as f:
+                    meta = json.load(f)
+                if meta.get("opencode", {}).get("type") == "plugin":
+                    logger.debug(
+                        "Found %s at %s (version %s)",
+                        MAESTRIA_PLUGIN_PKG, pkg_dir,
+                        meta.get("version", "unknown"),
+                    )
+                    return None  # Found it
+            except Exception:
+                continue
+
+    return (
+        f"{MAESTRIA_PLUGIN_PKG} is not installed. "
+        f"The delegated OpenCode session will NOT follow Maestria methodology. "
+        f"Install it with: npm i -g {MAESTRIA_PLUGIN_PKG}"
+    )
 
 
 def opencode_route_tool_schema() -> Dict[str, Any]:
@@ -18,6 +90,7 @@ def opencode_route_tool_schema() -> Dict[str, Any]:
         "name": "opencode_route",
         "description": (
             "Delegate a complex coding task to OpenCode CLI. "
+            "Requires @maestria/opencode plugin for methodology consistency. "
             "Use for multi-file changes, complex refactors, or tasks "
             "that benefit from OpenCode's dedicated coding sandbox. "
             "Simple single-file edits can use direct edit/write tools."
@@ -37,6 +110,11 @@ def opencode_route_tool_schema() -> Dict[str, Any]:
                     "type": "string",
                     "description": "Additional context or constraints",
                 },
+                "skip_plugin_check": {
+                    "type": "boolean",
+                    "description": "Skip @maestria/opencode plugin check (default: false). "
+                                   "Use only if you're sure the plugin is available.",
+                },
             },
             "required": ["goal"],
         },
@@ -46,12 +124,16 @@ def opencode_route_tool_schema() -> Dict[str, Any]:
 def opencode_route_handler(args: Dict[str, Any], **kwargs) -> str:
     """Execute a coding task via OpenCode CLI.
 
-    Checks that OpenCode is available, then runs a one-shot
-    `opencode run` with the given goal.
+    Before running, checks that:
+    1. OpenCode CLI is on PATH
+    2. @maestria/opencode plugin is installed (unless skip_plugin_check=True)
+
+    Then runs a one-shot `opencode run` with the given goal.
     """
     goal = args.get("goal", "")
     workdir = args.get("workdir", ".")
     context = args.get("context", "")
+    skip_plugin_check = args.get("skip_plugin_check", False)
 
     # Build the prompt
     prompt = goal
@@ -72,6 +154,20 @@ def opencode_route_handler(args: Dict[str, Any], **kwargs) -> str:
                     "Install it with: npm i -g opencode-ai@latest"
                 ),
             })
+
+        # Check @maestria/opencode plugin
+        if not skip_plugin_check:
+            plugin_error = _check_maestria_plugin(workdir)
+            if plugin_error:
+                return json.dumps({
+                    "status": "error",
+                    "message": (
+                        f"{plugin_error}\n\n"
+                        "The delegated task was NOT started. "
+                        "Install the plugin first, or set "
+                        "skip_plugin_check=true if you're sure it's available."
+                    ),
+                })
 
         # Run opencode in one-shot mode
         logger.info("opencode_route: running in %s", workdir)
