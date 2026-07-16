@@ -95,6 +95,16 @@ def register(ctx):
         _cmd_status(mode_manager),
         description="Show current maestria mode and status",
     )
+    ctx.register_command(
+        "review",
+        _cmd_set_mode(mode_manager, "fein"),
+        description="Trigger review of the last output (sets fein mode)",
+    )
+    ctx.register_command(
+        "plan",
+        _cmd_set_mode(mode_manager, "fein"),
+        description="Trigger a planning session (sets fein mode)",
+    )
 
     # -- Phase 2: Skills ---------------------------------------------------
 
