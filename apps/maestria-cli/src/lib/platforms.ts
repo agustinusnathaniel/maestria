@@ -7,7 +7,6 @@ import {
   sh,
   commandExists,
   npmViewVersion,
-  pypiViewVersion,
   CommandError,
 } from '@/lib/shell.js';
 
@@ -398,41 +397,41 @@ const writeInstalledJsonEffect = (
 const hermes: PlatformHandler = {
   id: 'hermes',
   label: 'Hermes',
-  // No npmPackage -- distributed via PyPI
+  // No npmPackage — distributed via hermes plugins install (git-based)
 
   detect: commandExists('hermes'),
 
-  isInstalled: run('pip', ['show', 'maestria-hermes'], 5_000).pipe(
+  isInstalled: run('ls', [`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`], 5_000).pipe(
     Effect.map(() => true),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
 
-  getInstalledVersion: run('pip', ['show', 'maestria-hermes'], 5_000).pipe(
+  getInstalledVersion: run('cat', [
+    `${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`,
+  ]).pipe(
     Effect.map((out: string) => {
-      const match = out.match(/^Version:\s*(.+)$/m);
+      const match = out.match(/^version:\s*["']?(.+?)["']?\s*$/m);
       return match?.[1] ?? 'unknown';
     }),
     Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
-  getLatestVersion: pypiViewVersion('maestria-hermes'),
+  getLatestVersion: Effect.succeed('see GitHub releases'),
 
   install: Effect.gen(function* () {
-    yield* sh('pip install maestria-hermes', 120_000);
-    yield* sh('hermes plugins enable maestria-hermes', 15_000);
+    yield* sh(
+      'hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable',
+      120_000,
+    );
   }).pipe(Effect.as(void 0)),
 
-  update: (version?: string) =>
+  update: (_version?: string) =>
     Effect.gen(function* () {
-      const tag = version ? `maestria-hermes==${version}` : 'maestria-hermes';
-      yield* sh(`pip install --upgrade ${tag}`, 120_000);
+      yield* sh('hermes plugins update maestria-hermes', 60_000);
     }),
 
   uninstall: Effect.gen(function* () {
-    yield* sh('hermes plugins disable maestria-hermes', 15_000).pipe(
-      Effect.catchCause(() => Effect.void), // OK if already disabled
-    );
-    yield* sh('pip uninstall maestria-hermes -y', 30_000);
+    yield* sh('hermes plugins remove maestria-hermes', 15_000);
   }).pipe(Effect.as(void 0)),
 };
 
