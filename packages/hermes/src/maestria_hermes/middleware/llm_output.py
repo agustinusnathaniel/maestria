@@ -7,8 +7,11 @@ The mode footer is disabled by default to avoid noise. Enable via:
   MAESTRIA_MODE_FOOTER=1  (environment variable)
 """
 
+from __future__ import annotations
+
 import logging
 import os
+from typing import Any
 from maestria_hermes.modes import ModeManager
 
 logger = logging.getLogger(__name__)
@@ -20,15 +23,22 @@ _MODE_FOOTER_ENABLED = os.environ.get("MAESTRIA_MODE_FOOTER", "0") == "1"
 def create_llm_output_middleware(mode_manager: ModeManager):
     """Create LLM execution middleware that adds methodology context.
 
-    Wraps the LLM response to ensure mode and methodology are reflected
-    in the final output when appropriate. Disabled by default; enable with
-    MAESTRIA_MODE_FOOTER=1 environment variable.
+    Follows the Hermes middleware contract:
+      - Receives **kwargs with next_call and request
+      - Calls next_call(request) to continue the chain
+      - Returns the LLM response (possibly modified)
     """
 
-    def middleware(next_call, **context):
+    def middleware(**kwargs: Any) -> Any:
         """Wrap LLM execution to annotate responses."""
+        next_call = kwargs.get("next_call")
+        request = kwargs.get("request") or {}
+
         # Let the LLM call proceed normally
-        result = next_call(**context)
+        if callable(next_call):
+            result = next_call(request)
+        else:
+            result = request
 
         # Add methodology footer for mode awareness (opt-in)
         if _MODE_FOOTER_ENABLED and isinstance(result, str) and "[MAESTRIA" not in result:

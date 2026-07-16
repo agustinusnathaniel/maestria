@@ -127,8 +127,7 @@ def register(ctx):
     for name, path in _skill_registrations:
         if path.exists():
             try:
-                content = path.read_text(encoding="utf-8")
-                ctx.register_skill(name, content)
+                ctx.register_skill(name, path)
             except OSError:
                 pass  # Best-effort skill registration
 
@@ -137,26 +136,33 @@ def _detect_backends(ctx):
     """Probe environment for optional backends and log guidance.
 
     Never blocks, installs, or modifies config. Just informs.
+    Uses the tool registry to check for tool availability at startup.
     """
     try:
-        # Check if Mnemosyne tools are available
-        tools = ctx.get_registered_tool_names()
-        if "mnemosyne_remember" not in tools:
+        from tools.registry import registry
+        all_tools = registry.get_all_tool_names()
+
+        if "mnemosyne_remember" not in all_tools:
             logger.info(
                 "Mnemosyne not detected. Memory will use JSONL fallback. "
                 "See docs/hermes-maestria-plugin.md for optional setup."
             )
+        else:
+            logger.debug("Mnemosyne detected — memory can use semantic recall.")
     except Exception:
         pass  # Probe failed silently -- not critical
 
     try:
-        # Check if kanban toolset is available
-        toolsets = ctx.get_registered_toolset_names()
+        from tools.registry import registry
+        toolsets = registry.get_registered_toolset_names()
+
         if "kanban" not in toolsets:
             logger.info(
                 "Kanban toolset not detected. Pipeline tracking uses in-memory state. "
                 "Enable via `hermes config set kanban.enabled true`."
             )
+        else:
+            logger.debug("Kanban toolset detected — pipeline can use task board.")
     except Exception:
         pass
 
@@ -191,19 +197,44 @@ def _cmd_status(mode_manager):
 
 
 def _on_subagent_start(**kwargs) -> None:
-    """Log when a subagent is spawned for pipeline tracking."""
-    session_id = kwargs.get("session_id", "unknown")
-    role = kwargs.get("role", "unknown")
-    logger.info("maestria subagent started: role=%s session=%s", role, session_id)
+    """Log when a subagent is spawned for pipeline tracking.
+
+    Kwargs (from delegate_tool.py):
+        child_session_id: str — spawned agent's session id
+        child_role: str — specialist role (builder, reviewer, etc.)
+        child_goal: str — the task goal
+        parent_session_id: str — orchestrator's session id
+    """
+    child_session_id = kwargs.get("child_session_id", "unknown")
+    child_role = kwargs.get("child_role", "unknown")
+    child_goal = kwargs.get("child_goal", "")
+
+    if child_role and child_role != "unknown":
+        logger.info(
+            "maestria subagent started: role=%s session=%s",
+            child_role, child_session_id,
+        )
+    if child_goal:
+        logger.debug("maestria subagent goal: %s", child_goal[:200])
 
 
 def _on_subagent_stop(**kwargs) -> None:
-    """Log when a subagent completes for pipeline tracking."""
-    session_id = kwargs.get("session_id", "unknown")
-    role = kwargs.get("role", "unknown")
-    status = kwargs.get("status", "unknown")
-    duration = kwargs.get("duration", 0)
+    """Log when a subagent completes for pipeline tracking.
+
+    Kwargs (from delegate_tool.py):
+        child_session_id: str — completed agent's session id
+        child_role: str — specialist role
+        child_summary: str — result summary
+        child_status: str — completion status
+        duration_ms: int — wall-clock duration in milliseconds
+        parent_session_id: str — orchestrator's session id
+    """
+    child_session_id = kwargs.get("child_session_id", "unknown")
+    child_role = kwargs.get("child_role", "unknown")
+    child_status = kwargs.get("child_status", "unknown")
+    duration_ms = kwargs.get("duration_ms", 0)
+
     logger.info(
-        "maestria subagent stopped: role=%s session=%s status=%s duration=%ss",
-        role, session_id, status, duration,
+        "maestria subagent stopped: role=%s session=%s status=%s duration=%.1fs",
+        child_role, child_session_id, child_status, duration_ms / 1000.0,
     )
