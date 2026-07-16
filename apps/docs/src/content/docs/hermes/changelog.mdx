@@ -1,0 +1,24 @@
+---
+title: Changelog
+description: Release history for @maestria/hermes.
+---
+
+## 0.1.0 (2026-07-16)
+
+Initial release.
+
+### Added
+
+- Plugin scaffold with `plugin.yaml` + `register()` entry point
+- 9 skills: 7 specialists + orchestrator + global rules
+- Mode system with file persistence (`/fein`, `/sonar`, `/blitz`)
+- `pre_llm_call` hook for mode injection into user message
+- `pre_tool_call` hook for role-based tool gating (admin, engineer, reviewer, researcher)
+- `tool_request` middleware for mode gating (block edit/write in sonar)
+- 9 slash commands: `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`, `/role`, `/session`, `/clear`
+- Mnemosyne memory integration (falls back to JSONL if absent)
+- OpenCode CLI detection and routing tool with `skip_plugin_check` escape hatch
+- Session state tracking via SessionDB `state_meta`
+- Subagent lifecycle hooks (pipeline tracking)
+- Plugin detection probes at startup
+- Distribution via `hermes plugins install`

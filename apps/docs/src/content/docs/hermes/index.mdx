@@ -1,0 +1,77 @@
+---
+title: '@maestria/hermes'
+description: Hermes Agent plugin that brings the Maestria methodology — 7 specialists, pipeline orchestration, and mode system — to any domain.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: 'Methodology for Any Agent'
+  tagline: 'Install one plugin. Get 7 specialists, role-gated tool access, and discipline-aware mode switching — on the Hermes Agent platform.'
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /hermes/getting-started/installation/
+    - text: View on GitHub
+      icon: external
+      variant: minimal
+      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/hermes
+---
+
+import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+## How It Works
+
+1. **Install the plugin** — `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`
+2. **Plugin activates** — Registers 9 methodology skills, 6 slash commands, permission roles, and lifecycle hooks. Detection probes check for Mnemosyne, kanban, and OpenCode CLI at startup.
+3. **Pick your mode** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation) — each enables the right specialists and tool gates
+4. **Dispatch specialists** — The orchestrator decomposes work via `delegate_task`, routes complex coding to OpenCode CLI, and enforces maker/checker separation
+5. **Review before delivery** — Reviewer validates output before anything reaches you
+
+## Quick Install
+
+```bash
+hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
+```
+
+The plugin is fully self-configuring — Hermes discovers its hooks, commands, and skills from `plugin.yaml`. No manual setup needed.
+
+<LinkButton href="/hermes/getting-started/installation/" size="lg">
+  Installation Guide →
+</LinkButton>
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Installation, setup, and your first session with the Hermes plugin."
+    href="/hermes/getting-started/installation/"
+  />
+  <LinkCard
+    title="Commands"
+    description="Reference for all slash commands: modes, review, plan, session management."
+    href="/hermes/commands/"
+  />
+  <LinkCard
+    title="Changelog"
+    description="Version history and release notes."
+    href="/hermes/changelog/"
+  />
+  <LinkCard
+    title="Contributing"
+    description="Project structure and how to extend the plugin."
+    href="/hermes/contributing/"
+  />
+</CardGrid>
+
+## Comparison: Hermes vs Other Platforms
+
+| Aspect            | @maestria/opencode   | @maestria/hermes                         |
+| ----------------- | -------------------- | ---------------------------------------- |
+| Primary domain    | Software engineering | Any domain                               |
+| Distribution      | npm plugin           | Git-based (`hermes plugins install`)     |
+| Subagent dispatch | `task()` function    | `delegate_task` (Hermes native)          |
+| Tool gating       | YAML frontmatter     | `pre_tool_call` hook                     |
+| Mode switching    | Keyword detection    | Slash commands `/fein` `/sonar` `/blitz` |
+| Coding path       | Built-in             | Routes to OpenCode CLI (optional)        |
+| Permissions       | Agent-level          | Role-based (`PermissionRole`)            |

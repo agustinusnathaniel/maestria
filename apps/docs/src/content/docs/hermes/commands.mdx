@@ -1,0 +1,127 @@
+---
+title: Commands
+description: Complete reference for all @maestria/hermes slash commands — modes, review, planning, session management, and roles.
+---
+
+The plugin registers 9 slash commands that are available in every Hermes session.
+
+## Mode Commands
+
+### `/fein`
+
+Set the plugin to **fein** (full pipeline) mode. The orchestrator runs the complete specialist pipeline: adventurer → architect → builder → reviewer.
+
+```
+/fein
+→ Mode set to fein
+```
+
+In fein mode, all stages are mandatory — the orchestrator does not skip phases.
+
+### `/sonar`
+
+Set the plugin to **sonar** (research) mode. Only the adventurer and architect/planner run. No output is created.
+
+```
+/sonar
+→ Mode set to sonar
+```
+
+The `pre_tool_call` hook blocks `edit`, `write`, and `bash` in sonar mode — read-only guarantees.
+
+### `/blitz`
+
+Set the plugin to **blitz** (fast execution) mode. The builder runs directly with minimal overhead. No adventurer exploration or reviewer validation.
+
+```
+/blitz
+→ Mode set to blitz
+```
+
+Use for quick fixes on known territory where you trust the outcome.
+
+### `/mode`
+
+Show the current mode and role.
+
+```
+/mode
+→ Current mode: fein | Current role: engineer
+```
+
+## Workflow Commands
+
+### `/review`
+
+Trigger the reviewer specialist to examine the last output. The reviewer runs with read-only tool access (edit/write blocked by the `pre_tool_call` hook).
+
+```
+/review
+→ Reviewer inspects last output...
+→ Review complete: 2 findings (1 structure, 1 correctness)
+```
+
+### `/plan`
+
+Trigger the planning specialist to produce a structured plan. The planner uses `ctx.llm.complete_structured()` with dependency analysis and milestone breakdown.
+
+```
+/plan Build a CLI tool for batch file renaming
+→ Planner produces structured plan...
+```
+
+## Session Management
+
+### `/session`
+
+Display current session state — mode, role, pipeline status.
+
+```
+/session
+→ Session:
+  Mode: fein
+  Role: engineer
+  Pipelines: 0 active, 3 completed today
+```
+
+### `/clear`
+
+Reset the plugin's session state (mode, role, pipeline tracking). Does not affect Hermes' own session state.
+
+```
+/clear
+→ Session state cleared. Mode reset to fein, role reset to engineer.
+```
+
+## Role Command
+
+### `/role <name>`
+
+Set the current permission role. Available roles:
+
+| Role         | What they can do                |
+| ------------ | ------------------------------- |
+| `admin`      | All tools, all operations       |
+| `engineer`   | Edit, write, bash, read, search |
+| `reviewer`   | Read, search, diff only         |
+| `researcher` | Read, search, web, browser only |
+
+```
+/role reviewer
+→ Role set to reviewer. Edit/write tools are blocked.
+```
+
+## Hermes Core Commands
+
+These are available in every Hermes session regardless of plugin:
+
+| Command        | What it does                                        |
+| -------------- | --------------------------------------------------- |
+| `/goal <text>` | Set a standing objective that survives across turns |
+| `/goal pause`  | Pause auto-continuation without clearing the goal   |
+| `/goal resume` | Resume the goal loop                                |
+| `/goal clear`  | Drop the goal entirely                              |
+| `/stop`        | Interrupt the current turn                          |
+| `/resume`      | Resume a compacted session                          |
+
+See the [Hermes Goals documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) for details.

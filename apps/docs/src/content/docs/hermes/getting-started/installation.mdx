@@ -1,0 +1,97 @@
+---
+title: Installation & Setup
+description: How to install @maestria/hermes on your Hermes Agent and what you get — 9 methodology skills, 6 slash commands, and role-based tool gating.
+---
+
+import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components';
+
+`@maestria/hermes` is a git-based Hermes plugin that turns your Hermes Agent into a disciplined methodology worker. It registers 9 skills, 6 slash commands, permission roles, and lifecycle hooks — all installed with a single `hermes plugins install` command.
+
+## Prerequisites
+
+- [Hermes Agent](https://hermes-agent.nousresearch.com) (latest version)
+- **Git CLI** — required for plugin resolution from the GitHub repository
+
+## Installation
+
+The maestria CLI provides a unified interface for installing and managing maestria plugins:
+
+<Steps>
+
+1. **Install via the maestria CLI**
+
+   ```bash
+   pnpx maestria@latest install opencode
+   ```
+
+   This runs the equivalent Hermes command automatically.
+
+2. **Verify installation**
+
+   ```bash
+   hermes plugins list
+   ```
+
+   You should see `maestria-hermes` in the list with status `enabled`.
+
+</Steps>
+
+### Manual installation
+
+If you prefer to install directly:
+
+```bash
+hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
+```
+
+This clones the maestria repo, extracts `packages/hermes/` into `~/.hermes/plugins/maestria-hermes/`, and enables the plugin in your Hermes config.
+
+## What Gets Installed
+
+| Resource          | What                                                                                                                         |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 9 skills          | Specialist prompts (adventurer, architect, builder, diagnose, planner, reviewer, writer), orchestrator routing, global rules |
+| 6 commands        | `/fein`, `/sonar`, `/blitz`, `/review`, `/plan`, `/role`, `/mode`, `/session`, `/clear`                                      |
+| Permission roles  | `admin`, `engineer`, `reviewer`, `researcher` — each with gated tool access                                                  |
+| Hooks             | `pre_llm_call`, `pre_tool_call`, `post_tool_call`, `subagent_start/stop`, `transform_*`                                      |
+| Middleware        | `tool_request` (mode gating), `tool_execution` (timing/logging)                                                              |
+| Backend detection | Probes for Mnemosyne, kanban, OpenCode CLI at startup                                                                        |
+
+## Verifying Installation
+
+Start a new Hermes session and type `/mode`:
+
+```
+[MODE: fein]
+Full pipeline: explore context, design, implement, review.
+Do not skip stages.
+```
+
+If you see the mode directive injected into your messages, the plugin is active.
+
+## Updating
+
+```bash
+pnpx maestria@latest update opencode
+```
+
+Or directly:
+
+```bash
+hermes plugins update maestria-hermes
+```
+
+This pulls the latest version from the git repository and refreshes the plugin files.
+
+## Uninstalling
+
+```bash
+hermes plugins remove maestria-hermes
+```
+
+The plugin files are removed from `~/.hermes/plugins/maestria-hermes/` and the entry is removed from your Hermes config. Other plugins remain unaffected.
+
+## Next Steps
+
+- [Quick Start](/hermes/getting-started/quick-start/) — Your first session with the plugin
+- [Commands](/hermes/commands/) — Full reference for all slash commands

@@ -1,0 +1,60 @@
+---
+title: Quick Start
+description: Your first session with @maestria/hermes — switching modes, using slash commands, and dispatching specialists.
+---
+
+Once you've installed the plugin, all skills, commands, and hooks are loaded automatically in every Hermes session.
+
+## Start a Session
+
+Launch Hermes as usual. The plugin wires itself in at startup — you'll see detection probes log available backends.
+
+## Try the Commands
+
+All features are accessible via slash commands:
+
+```bash
+/mode        # Show current mode and role
+/fein        # Full pipeline: explore → design → build → review
+/sonar       # Research only: explore → analyze → stop
+/blitz       # Fast execution: build directly
+/review      # Trigger review of last output
+/plan        # Trigger a planning session
+```
+
+**Example workflow:**
+
+```
+You:          /fein
+Hermes:       Mode set to fein
+You:          Research the auth patterns in this codebase
+Hermes:       [Adventurer explores, Architect designs, Builder implements, Reviewer checks]
+```
+
+## Modes at a Glance
+
+| Mode    | Pipeline                                          | When to Use                                               |
+| ------- | ------------------------------------------------- | --------------------------------------------------------- |
+| `fein`  | Full: adventurer → architect → builder → reviewer | Production work, new features, anything that needs review |
+| `sonar` | Research: adventurer → architect → stop           | Understanding a codebase, exploring options, no creation  |
+| `blitz` | Build direct: builder only                        | Quick fixes, known territory, trivial changes             |
+
+The mode directive is injected into every message automatically — no manual prompting needed.
+
+## Permission Roles
+
+The plugin ships with four permission roles that control which tools each agent can use:
+
+| Role         | Tool Access                     | Use Case                         |
+| ------------ | ------------------------------- | -------------------------------- |
+| `admin`      | All tools                       | Full system access               |
+| `engineer`   | Edit, write, bash, read, search | Implementing changes             |
+| `reviewer`   | Read, search, diff              | Code review (edit/write blocked) |
+| `researcher` | Read, search, web, browser      | Research only                    |
+
+Switch roles with `/role <name>`.
+
+## Next Steps
+
+- [Commands](/hermes/commands/) — Full reference for all slash commands
+- [Core Concepts](/core/agents/) — Specialist reference and pipeline patterns
