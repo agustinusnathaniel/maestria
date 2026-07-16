@@ -56,14 +56,14 @@ Detects which coding agent CLIs are available on `$PATH`, checks whether maestri
 
 Each platform object:
 
-| Field              | Type    | Description                                         |
-| ------------------ | ------- | --------------------------------------------------- |
+| Field              | Type    | Description                                                   |
+| ------------------ | ------- | ------------------------------------------------------------- |
 | `id`               | string  | Platform identifier (`opencode`, `pi`, `kimi-code`, `hermes`) |
-| `label`            | string  | Human-readable name                                 |
-| `available`        | boolean | CLI tool detected on `$PATH`                        |
-| `installed`        | boolean | Maestria is installed for this platform             |
-| `installedVersion` | string  | Version string from the installed package           |
-| `latestVersion`    | string  | Latest version available on npm                     |
+| `label`            | string  | Human-readable name                                           |
+| `available`        | boolean | CLI tool detected on `$PATH`                                  |
+| `installed`        | boolean | Maestria is installed for this platform                       |
+| `installedVersion` | string  | Version string from the installed package                     |
+| `latestVersion`    | string  | Latest version available on npm                               |
 
 ### Compact output
 
@@ -115,22 +115,22 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 
 ### Platform identifiers
 
-| ID          | Platform  | Distribution                                         |
-| ----------- | --------- | ---------------------------------------------------- |
-| `opencode`  | OpenCode  | `@maestria/opencode` (npm)                           |
-| `pi`        | Pi        | `@maestria/pi` (npm)                                 |
-| `kimi-code` | Kimi Code | `@maestria/kimi-code` (git, via `scripts/sync-all`)  |
-| `hermes`    | Hermes    | Git-based via `hermes plugins install`               |
+| ID          | Platform  | Distribution                                        |
+| ----------- | --------- | --------------------------------------------------- |
+| `opencode`  | OpenCode  | `@maestria/opencode` (npm)                          |
+| `pi`        | Pi        | `@maestria/pi` (npm)                                |
+| `kimi-code` | Kimi Code | `@maestria/kimi-code` (git, via `scripts/sync-all`) |
+| `hermes`    | Hermes    | Git-based via `hermes plugins install`              |
 
 ### Error handling
 
 **Input validation** - the CLI catches invalid arguments before any platform work begins:
 
-| Scenario                    | Error message                                                         |
-| --------------------------- | --------------------------------------------------------------------- |
-| Unknown platform ID | `Unknown platform 'cursor'. Valid platforms: opencode, pi, kimi-code, hermes` |
-| Invalid version format      | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.` |
-| `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.`              |
+| Scenario                    | Error message                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| Unknown platform ID         | `Unknown platform 'cursor'. Valid platforms: opencode, pi, kimi-code, hermes` |
+| Invalid version format      | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.`         |
+| `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.`                      |
 
 **Runtime errors** - if a platform command fails (e.g., network error, missing binary), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
 

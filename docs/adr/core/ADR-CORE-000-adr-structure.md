@@ -32,7 +32,8 @@ ADRs use **prefix-scoped numbering** with one subdirectory per namespace:
 
 | Prefix | Name      | Subdirectory          | ADR Range |
 | ------ | --------- | --------------------- | --------- |
-| CORE   | Core      | `docs/adr/core/`      | 000–004   |
+| CORE   | Core      | `docs/adr/core/`      | 000–011   |
+| HM     | Hermes    | `docs/adr/hermes/`    | 000–000   |
 | OC     | Opencode  | `docs/adr/opencode/`  | 000–004   |
 | KC     | Kimi Code | `docs/adr/kimi-code/` | 000–001   |
 | PI     | Pi        | `docs/adr/pi/`        | 000–002   |
