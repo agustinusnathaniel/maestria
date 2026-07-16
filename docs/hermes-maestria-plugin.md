@@ -917,72 +917,35 @@ maestria:
 | Plugin Python code (`maestria_hermes/`) | ✅ pip package | Core plugin |
 | 9 SKILL.md files | ✅ pip package | Specialist methodology guides |
 | Mode system | ✅ pip package | Standalone Python, no deps |
-| Mnemosyne | ❌ Not bundled | External package at `github.com/mnemosyne-oss/mnemosyne` |
-| Uteke | ❌ Not bundled | External MCP server, user installs separately |
+| Mnemosyne | ❌ Not bundled | External — [github.com/mnemosyne-oss/mnemosyne](https://github.com/mnemosyne-oss/mnemosyne) |
+| Uteke | ❌ Not bundled | External — [github.com/codecoradev/uteke](https://github.com/codecoradev/uteke) |
 | OpenCode CLI | ❌ Not bundled | External CLI tool |
 | maestria-dist profile | ✅ Separate git repo | Completely optional, for turnkey setup |
 | JSONL fallback | ✅ pip package | Zero-dependency, always works |
 
-### Auto-Setup on Plugin Load
+### Detection & Guidance on Plugin Load
 
-The plugin's `register()` function probes for optional backends and can guide the user through first-time setup:
+The plugin's `register()` function probes for optional backends and logs actionable hints if something popular is missing. It never blocks, installs, or modifies config:
 
-```python
-def register(ctx):
-    backends = detect_backends(ctx)
+```
+# Example: if Mnemosyne is absent
+ℹ Mnemosyne not detected. Memory will use JSONL fallback.
+  See docs/hermes-maestria-plugin.md#setup-mnemosyne for optional setup.
 
-    if backends["memory"] == "jsonl":
-        # Mnemosyne not installed — user would need to add it separately
-        logger.info(
-            "Mnemosyne not detected. For persistent cross-session memory, "
-            "install mnemosyne from github.com/mnemosyne-oss/mnemosyne "
-            "and configure `memory.provider: mnemosyne` in config.yaml."
-        )
-
-    if backends["mode"] == "json_file":
-        # SessionDB.state_meta unavailable — using JSON file fallback
-        logger.info("SessionDB.state_meta unavailable — using JSON file for mode persistence.")
-
-    if backends["kanban"] is None:
-        logger.info(
-            "Kanban toolset not detected. "
-            "Run `hermes config set kanban.enabled true` "
-            "for kanban-based task orchestration."
-        )
-
-    if backends["opencode"] is False:
-        logger.info(
-            "OpenCode CLI not found. Builder will use Hermes native tools. "
-            "Install via `npm i -g opencode-ai` for advanced coding sandbox."
-        )
+# Example: if kanban toolset is absent
+ℹ Kanban not detected. Pipeline tracking will use in-memory state only.
 ```
 
-Users see these messages on first load and can act on them. The plugin never blocks — it adapts and informs.
+### User-Facing Docs (apps/docs/)
 
-### maestria CLI Setup Command
+Setup guides for Mnemosyne, Uteke, kanban, and OpenCode live in the existing `apps/docs/` site — not in the plugin code:
 
-The maestria CLI (`maestria install hermes`) can be extended with a `setup` subcommand that configures recommended backends:
-
-```bash
-# Install + configure everything
-maestria install hermes
-maestria setup hermes
-
-# Or one-shot:
-maestria setup hermes --with-mnemosyne --with-kanban
-```
-
-What `maestria setup hermes` does:
-
-| Step | Action | Required? |
+| Guide | Location | Content |
 | --- | --- | --- |
-| 1. Enable plugin | `hermes plugins enable maestria-hermes` | ✅ Yes |
-| 2. Guide Mnemosyne install | Print instructions for `github.com/mnemosyne-oss/mnemosyne` | ⬜ Optional |
-| 3. Guide Uteke install | Print instructions for `github.com/codecoradev/uteke` | ⬜ Optional |
-| 4. Enable kanban | Set `kanban.enabled: true` in config | ⬜ Optional |
-| 5. Verify tool availability | Check delegate*task, kanban*\_, mnemosyne\_\_ | ✅ Informational |
-
-Each step is idempotent and skips if already configured. Steps 2-3 are guidance-only — the CLI can't install external packages without user approval.
+| Mnemosyne setup | `apps/docs/src/content/docs/hermes/setup-mnemosyne.mdx` | Install, config, verify |
+| Uteke setup | `apps/docs/src/content/docs/hermes/setup-uteke.mdx` | MCP server config, verify |
+| Kanban setup | Existing kanban docs | Enable, configure workers |
+| Full maestria stack | `apps/docs/src/content/docs/hermes/getting-started.mdx` | Plugin install + optional extras |
 
 ## Open Questions (Resolved)
 
