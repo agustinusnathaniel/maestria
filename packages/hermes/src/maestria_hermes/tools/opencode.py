@@ -80,7 +80,7 @@ def _check_maestria_plugin(workdir: str) -> Optional[str]:
     return (
         f"{MAESTRIA_PLUGIN_PKG} is not installed. "
         f"The delegated OpenCode session will NOT follow Maestria methodology. "
-        f"Install it with: npm i -g {MAESTRIA_PLUGIN_PKG}"
+        f"Install it with: pnpx maestria@latest install opencode"
     )
 
 

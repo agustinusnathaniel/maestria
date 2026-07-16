@@ -182,7 +182,7 @@ def _detect_backends(ctx):
                 logger.warning(
                     "OpenCode CLI found but %s missing. "
                     "The opencode_route tool will require install. "
-                    "Run: npm i -g @maestria/opencode",
+                    "Run: pnpx maestria@latest install opencode",
                     "@maestria/opencode",
                 )
             else:
