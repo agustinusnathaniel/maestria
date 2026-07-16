@@ -277,14 +277,16 @@ Trust gates in plugin.yaml control LLM access: `plugins.entries.<name>.llm.allow
 
 | Provider | Type | Use Case |
 | --- | --- | --- |
-| **Mnemosyne** | **Agent memory** | **Recommended — working memories, canonical facts, recall/sleep cycles** |
-| Uteke (MCP) | Knowledge base | For permanent reference docs, specs, decision records |
+| **Mnemosyne** ([mnemosyne-oss/mnemosyne](https://github.com/mnemosyne-oss/mnemosyne)) | **Agent memory** | **Recommended — working memories, canonical facts, recall/sleep cycles** |
+| Uteke ([codecoradev/uteke](https://github.com/codecoradev/uteke)) | Knowledge base wiki | For permanent reference docs, specs, decision records |
 | holographic | Local SQLite FTS5 | Alternative — offline-first, no server |
 | mem0 | Server-side | Cross-session persistent memory |
 | supermemory | Server-side | Long-term knowledge base |
 | retaindb, openviking, hindsight, byterover, honcho | Server-side | Various backends |
 
-**Mnemosyne is the recommended memory backend for maestria** because it's designed for agent memory — working memories, canonical facts, recall, sleep cycles, and graph edges for linking related decisions. Use Uteke for permanent reference docs (architectural specs, decision records) that benefit from structured wiki-style organization.
+**Mnemosyne is the recommended memory backend for maestria** because it's designed for agent memory — working memories, canonical facts, recall, sleep cycles, and graph edges for linking related decisions. Use **Uteke** for permanent reference docs (architectural specs, decision records) that benefit from structured wiki-style organization.
+
+Both are external projects: [github.com/mnemosyne-oss/mnemosyne](https://github.com/mnemosyne-oss/mnemosyne) and [github.com/codecoradev/uteke](https://github.com/codecoradev/uteke). The plugin never bundles or requires either — it detects availability and falls back to JSONL if absent.
 
 The plugin can register its own provider or use existing ones. Works with `ctx.llm.complete_structured()` for fact extraction across sessions.
 
@@ -535,19 +537,19 @@ Replace the append-only JSONL backend with Hermes' built-in memory system:
 
 ```python
 # Instead of: maestria-memory.jsonl append
-# Use Mnemosyne — dedicated agent memory with recall, forget, and sleep cycles
-mnemosyne_remember(
-    content="Decision: use PostgreSQL for persistence layer",
-    type="decision",
-    tags=["maestria", "architecture"],
-)
+# Use Mnemosyne via Hermes tool dispatch
+ctx.dispatch_tool("mnemosyne_remember", {
+    "content": "Decision: use PostgreSQL for persistence layer",
+    "type": "decision",
+    "tags": ["maestria", "architecture"],
+})
 
 # Instead of: maestria-memory.jsonl tail
-results = mnemosyne_recall(
-    query="recent architecture decisions",
-    tags=["maestria"],
-    limit=10,
-)
+results = ctx.dispatch_tool("mnemosyne_recall", {
+    "query": "recent architecture decisions",
+    "tags": ["maestria"],
+    "limit": 10,
+})
 ```
 
 Benefits: cross-session semantic recall, canonical facts (for stable preferences like user's framework choices), sleep cycle for compaction, and graph edges for linking related decisions.
@@ -915,7 +917,7 @@ maestria:
 | Plugin Python code (`maestria_hermes/`) | ✅ pip package | Core plugin |
 | 9 SKILL.md files | ✅ pip package | Specialist methodology guides |
 | Mode system | ✅ pip package | Standalone Python, no deps |
-| Mnemosyne | ❌ Not bundled | Built into Hermes — already present |
+| Mnemosyne | ❌ Not bundled | External package at `github.com/mnemosyne-oss/mnemosyne` |
 | Uteke | ❌ Not bundled | External MCP server, user installs separately |
 | OpenCode CLI | ❌ Not bundled | External CLI tool |
 | maestria-dist profile | ✅ Separate git repo | Completely optional, for turnkey setup |
@@ -930,11 +932,11 @@ def register(ctx):
     backends = detect_backends(ctx)
 
     if backends["memory"] == "jsonl":
-        # Mnemosyne tools not detected — user may need to configure it
+        # Mnemosyne not installed — user would need to add it separately
         logger.info(
-            "Mnemosyne not detected. "
-            "Run `hermes config set memory.provider mnemosyne` "
-            "for persistent cross-session memory."
+            "Mnemosyne not detected. For persistent cross-session memory, "
+            "install mnemosyne from github.com/mnemosyne-oss/mnemosyne "
+            "and configure `memory.provider: mnemosyne` in config.yaml."
         )
 
     if backends["mode"] == "json_file":
@@ -972,15 +974,15 @@ maestria setup hermes --with-mnemosyne --with-kanban
 
 What `maestria setup hermes` does:
 
-| Step                        | Action                                        | Required?        |
-| --------------------------- | --------------------------------------------- | ---------------- |
-| 1. Enable plugin            | `hermes plugins enable maestria-hermes`       | ✅ Yes           |
-| 2. Configure Mnemosyne      | Set `memory.provider: mnemosyne` in config    | ⬜ Auto-detect   |
-| 3. Configure Uteke          | Add MCP server entry + ensure binary          | ⬜ Auto-detect   |
-| 4. Enable kanban            | Set `kanban.enabled: true` in config          | ⬜ Optional      |
+| Step | Action | Required? |
+| --- | --- | --- |
+| 1. Enable plugin | `hermes plugins enable maestria-hermes` | ✅ Yes |
+| 2. Guide Mnemosyne install | Print instructions for `github.com/mnemosyne-oss/mnemosyne` | ⬜ Optional |
+| 3. Guide Uteke install | Print instructions for `github.com/codecoradev/uteke` | ⬜ Optional |
+| 4. Enable kanban | Set `kanban.enabled: true` in config | ⬜ Optional |
 | 5. Verify tool availability | Check delegate*task, kanban*\_, mnemosyne\_\_ | ✅ Informational |
 
-Each step is idempotent and skips if already configured.
+Each step is idempotent and skips if already configured. Steps 2-3 are guidance-only — the CLI can't install external packages without user approval.
 
 ## Open Questions (Resolved)
 
