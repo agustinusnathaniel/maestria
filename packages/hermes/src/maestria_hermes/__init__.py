@@ -74,6 +74,7 @@ def register(ctx):
         handler=opencode_route_handler,
         description="Delegate a complex coding task to OpenCode CLI",
         emoji="🔧",
+        check_fn=_opencode_available,
     )
 
     # -- Phase 1: Slash commands --------------------------------------------
@@ -131,6 +132,19 @@ def register(ctx):
                 ctx.register_skill(name, path)
             except OSError:
                 pass  # Best-effort skill registration
+
+
+def _opencode_available() -> bool:
+    """Check_fn for opencode_route: hide tool when OpenCode CLI is missing."""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["which", "opencode"],
+            capture_output=True, text=True, timeout=5,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
 
 
 def _detect_backends(ctx):
