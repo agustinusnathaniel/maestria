@@ -1,12 +1,20 @@
 """Memory integration for the maestria methodology.
 
 Stores decisions, user preferences, and project context across sessions.
-Uses a simple append-only JSON log as the default backend, swappable for
-holographic/mem0 providers later.
+Uses append-only JSONL as the bundled fallback (zero deps, always works).
+
+When Mnemosyne is available, the plugin should dispatch to it instead:
+  ctx.dispatch_tool("mnemosyne_remember", {
+      "content": "...", "type": "decision", "tags": ["maestria"]
+  })
+
+Detection + fallback is handled at register() time (see __init__.py).
 """
+from __future__ import annotations
 
 import json
 import os
+import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -19,16 +27,23 @@ def _get_memory_path() -> Path:
 
 
 class MemoryManager:
-    """Append-only memory log for storing methodology-relevant context.
+    """Append-only memory log (JSONL), with Mnemosyne dispatch planned.
 
     Each entry is a JSON line with timestamp, category, and content.
+    The bundled JSONL fallback works everywhere. When Mnemosyne is
+    detected at register(), methods should dispatch to Mnemosyne tools
+    for semantic recall, canonical facts, and sleep-cycle compaction.
     """
 
     def __init__(self):
         self._path = _get_memory_path()
 
     def record(self, category: str, content: Dict[str, Any]) -> None:
-        """Record a memory entry (decision, preference, fact, etc.)."""
+        """Record a memory entry (decision, preference, fact, etc.).
+
+        Future: when Mnemosyne is available, dispatch to:
+          ctx.dispatch_tool("mnemosyne_remember", {content, type=category, tags})
+        """
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "category": category,
@@ -42,7 +57,11 @@ class MemoryManager:
             pass  # Best-effort
 
     def recall(self, category: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
-        """Retrieve recent memory entries, optionally filtered by category."""
+        """Retrieve recent memory entries, optionally filtered by category.
+
+        Future: when Mnemosyne is available, dispatch to:
+          ctx.dispatch_tool("mnemosyne_recall", {query, tags, limit})
+        """
         if not self._path.exists():
             return []
         try:

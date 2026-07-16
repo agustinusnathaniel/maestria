@@ -105,7 +105,7 @@ export default {
         '## Hermes-Specific Notes',
         '',
         '- Use `delegate_task` to dispatch specialists (Hermes built-in)',
-        '- Each specialist has a `PermissionProfile` restricting its tools',
+        '- Each specialist has a `PermissionRole` restricting its tools',
         '- Mode context is injected via pre_llm_call hook automatically',
         '- Sonar mode blocks write tools via pre_tool_call hook',
         '- Set child_role parameter in delegate_task for permission enforcement',
@@ -168,7 +168,7 @@ export default {
         '',
         "For complex multi-file coding tasks that benefit from OpenCode's dedicated sandbox, use the `opencode_route` tool. Simple tasks use Hermes built-in tools (edit, write, bash) directly.",
         '',
-        'The PermissionProfile for builder grants full access (read + write + bash + llm + coding).',
+        'The PermissionRole for builder grants full access (read + write + bash + llm + coding).',
       ].join('\n'),
     },
 

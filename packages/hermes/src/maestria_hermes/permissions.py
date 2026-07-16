@@ -1,7 +1,7 @@
-"""Permission profiles for each maestria specialist.
+"""Permission roles for each maestria specialist.
 
-Each profile defines allowed and blocked tools per specialist role.
-The pre_tool_call hook checks the current specialist's profile and
+Each role defines allowed and blocked tools per specialist role.
+The pre_tool_call hook checks the current specialist's role and
 blocks disallowed tools.
 """
 
@@ -48,9 +48,9 @@ _DATA_TOOLS: Set[str] = {
 }
 
 
-# -- Specialist profiles -----------------------------------------------------
+# -- Specialist roles --------------------------------------------------------
 
-class PermissionProfile:
+class PermissionRole:
     """Tool permissions for one specialist role."""
 
     def __init__(
@@ -104,11 +104,11 @@ class PermissionProfile:
         return False
 
 
-# -- Predefined profiles -----------------------------------------------------
+# -- Predefined roles --------------------------------------------------------
 
-PROFILES: dict = {
+ROLES: dict = {
     # Orchestrator: only delegates, no direct execution
-    "orchestrator": PermissionProfile(
+    "orchestrator": PermissionRole(
         name="orchestrator",
         allow_read=False,
         allow_write=False,
@@ -117,7 +117,7 @@ PROFILES: dict = {
         allow_coding=True,   # delegate_task
     ),
     # Adventurer: read-only research
-    "adventurer": PermissionProfile(
+    "adventurer": PermissionRole(
         name="adventurer",
         allow_read=True,
         allow_write=False,
@@ -126,7 +126,7 @@ PROFILES: dict = {
         allow_browser=True,
     ),
     # Architect: research + LLM reasoning
-    "architect": PermissionProfile(
+    "architect": PermissionRole(
         name="architect",
         allow_read=True,
         allow_write=False,
@@ -135,7 +135,7 @@ PROFILES: dict = {
         allow_browser=True,
     ),
     # Builder: full access for implementation
-    "builder": PermissionProfile(
+    "builder": PermissionRole(
         name="builder",
         allow_read=True,
         allow_write=True,
@@ -146,7 +146,7 @@ PROFILES: dict = {
         allow_data=True,
     ),
     # Diagnose: investigation tools + LLM reasoning
-    "diagnose": PermissionProfile(
+    "diagnose": PermissionRole(
         name="diagnose",
         allow_read=True,
         allow_write=False,
@@ -155,7 +155,7 @@ PROFILES: dict = {
         allow_coding=True,   # delegate complex debugging
     ),
     # Planner: read + LLM reasoning
-    "planner": PermissionProfile(
+    "planner": PermissionRole(
         name="planner",
         allow_read=True,
         allow_write=False,
@@ -163,7 +163,7 @@ PROFILES: dict = {
         allow_llm=True,
     ),
     # Reviewer: read-only validation
-    "reviewer": PermissionProfile(
+    "reviewer": PermissionRole(
         name="reviewer",
         allow_read=True,
         allow_write=False,
@@ -171,7 +171,7 @@ PROFILES: dict = {
         allow_llm=True,
     ),
     # Writer: read + LLM + basic bash for grepping
-    "writer": PermissionProfile(
+    "writer": PermissionRole(
         name="writer",
         allow_read=True,
         allow_write=False,  # Writer creates content via LLM, not file tools
@@ -182,9 +182,9 @@ PROFILES: dict = {
 }
 
 
-def get_profile(role: str) -> PermissionProfile:
-    """Get the permission profile for a specialist role."""
-    return PROFILES.get(role, PROFILES["orchestrator"])
+def get_role(role: str) -> PermissionRole:
+    """Get the permission role for a specialist role."""
+    return ROLES.get(role, ROLES["orchestrator"])
 
 
 def block_message(role: str, tool_name: str) -> str:

@@ -5,11 +5,14 @@ Supports three modes:
 - sonar: Research only -- read-only tools, no edits
 - blitz: Fast execution -- skip recon and review gates
 
-Mode persists across sessions via a JSON state file.
+Mode persists across sessions via a JSON state file (bundled fallback).
+When Mnemosyne is available, mode can be stored as a canonical fact.
 """
+from __future__ import annotations
 
 import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Optional
 
@@ -25,11 +28,15 @@ def _get_state_path() -> Path:
 
 
 class ModeManager:
-    """Singleton-ish mode manager with file persistence.
+    """Mode state machine with file persistence.
 
     The instance is created once in register() and captured by each
     hook closure, so state is consistent across hook invocations within
     a session.
+
+    Persists via JSON file (works everywhere, no deps). Future: detect
+    Mnemosyne at register() and use canonical facts for cross-session
+    mode persistence.
     """
 
     def __init__(self):
@@ -75,13 +82,18 @@ class ModeManager:
         self._mode = DEFAULT_MODE
 
     def _save(self) -> None:
-        """Persist current mode to the state file."""
+        """Persist current mode to the state file (atomic write)."""
         path = _get_state_path()
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(
-                json.dumps({"mode": self._mode}, indent=2),
-                encoding="utf-8",
-            )
+            # Atomic write: write to temp, then rename
+            fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    json.dump({"mode": self._mode}, f, indent=2)
+                os.replace(tmp, path)
+            except Exception:
+                os.unlink(tmp)
+                raise
         except OSError:
             pass  # Best-effort persistence

@@ -1,14 +1,14 @@
-"""pre_tool_call hook -- enforces per-specialist permission profiles.
+"""pre_tool_call hook -- enforces per-specialist permission roles.
 
 In sonar mode, all write tools are blocked regardless of specialist.
-In fein/blitz mode, each specialist has its own permission profile.
+In fein/blitz mode, each specialist has its own permission role.
 """
 
 from __future__ import annotations
 
 import logging
 from maestria_hermes.modes import ModeManager
-from maestria_hermes.permissions import get_profile, block_message, _WRITE_TOOLS
+from maestria_hermes.permissions import get_role, block_message, _WRITE_TOOLS
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +37,12 @@ def create_pre_tool_hook(mode_manager: ModeManager):
                 }
             return None  # Read tools allowed in sonar mode
 
-        # Fein/Blitz mode: check permission profile
+        # Fein/Blitz mode: check permission role
         # The role is passed as 'child_role' in kwargs for subagents
         role = kwargs.get("child_role", "orchestrator")
-        profile = get_profile(role)
+        perm_role = get_role(role)
 
-        if not profile.is_tool_allowed(tool_name):
+        if not perm_role.is_tool_allowed(tool_name):
             logger.info("blocked tool=%s for role=%s", tool_name, role)
             return {
                 "action": "block",

@@ -5,9 +5,11 @@ and mode-based workflows to the general-purpose Hermes AI agent.
 
 Phases:
 - Phase 1: Mode system, sonar guard, core hooks, basic skills
-- Phase 2: Full specialist roster, permission profiles, memory, session state
+- Phase 2: Full specialist roster, permission roles, memory, session state
 - Phase 3: MCP, middleware, parallel delegation, kanban integration
 """
+
+import logging
 
 from maestria_hermes._version import __version__
 from maestria_hermes.modes import ModeManager
@@ -22,13 +24,20 @@ from maestria_hermes.tools.opencode import (
     opencode_route_handler,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def register(ctx):
     """Plugin entry point -- called by Hermes during plugin discovery.
 
     Registers hooks, middleware, tools, commands, and skills for the
-    maestria methodology.
+    maestria methodology. Probes environment and logs guidance for
+    optional backends (Mnemosyne, kanban, OpenCode).
     """
+    # -- Probe environment and log guidance ----------------------------------
+
+    _detect_backends(ctx)
+
     # Initialize singletons
     mode_manager = ModeManager()
     memory_manager = MemoryManager()
@@ -110,6 +119,34 @@ def register(ctx):
                 ctx.register_skill(name, content)
             except OSError:
                 pass  # Best-effort skill registration
+
+
+def _detect_backends(ctx):
+    """Probe environment for optional backends and log guidance.
+
+    Never blocks, installs, or modifies config. Just informs.
+    """
+    try:
+        # Check if Mnemosyne tools are available
+        tools = ctx.get_registered_tool_names()
+        if "mnemosyne_remember" not in tools:
+            logger.info(
+                "Mnemosyne not detected. Memory will use JSONL fallback. "
+                "See docs/hermes-maestria-plugin.md for optional setup."
+            )
+    except Exception:
+        pass  # Probe failed silently -- not critical
+
+    try:
+        # Check if kanban toolset is available
+        toolsets = ctx.get_registered_toolset_names()
+        if "kanban" not in toolsets:
+            logger.info(
+                "Kanban toolset not detected. Pipeline tracking uses in-memory state. "
+                "Enable via `hermes config set kanban.enabled true`."
+            )
+    except Exception:
+        pass
 
 
 def _cmd_set_mode(mode_manager, mode):
