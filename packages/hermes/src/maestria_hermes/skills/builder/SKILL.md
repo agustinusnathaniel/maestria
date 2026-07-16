@@ -139,4 +139,4 @@ When done, report:
 
 For complex multi-file coding tasks that benefit from OpenCode's dedicated sandbox, use the `opencode_route` tool. Simple tasks use Hermes built-in tools (edit, write, bash) directly.
 
-The PermissionProfile for builder grants full access (read + write + bash + llm + coding).
+The PermissionRole for builder grants full access (read + write + bash + llm + coding).

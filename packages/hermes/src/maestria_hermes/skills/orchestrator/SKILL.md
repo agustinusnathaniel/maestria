@@ -439,7 +439,7 @@ Your text output - reasoning, status updates, delegation briefings, commit messa
 ## Hermes-Specific Notes
 
 - Use `delegate_task` to dispatch specialists (Hermes built-in)
-- Each specialist has a `PermissionProfile` restricting its tools
+- Each specialist has a `PermissionRole` restricting its tools
 - Mode context is injected via pre_llm_call hook automatically
 - Sonar mode blocks write tools via pre_tool_call hook
 - Set child_role parameter in delegate_task for permission enforcement
