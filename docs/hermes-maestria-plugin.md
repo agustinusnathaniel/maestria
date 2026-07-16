@@ -915,26 +915,72 @@ maestria:
 | Plugin Python code (`maestria_hermes/`) | ✅ pip package | Core plugin |
 | 9 SKILL.md files | ✅ pip package | Specialist methodology guides |
 | Mode system | ✅ pip package | Standalone Python, no deps |
-| Mnemosyne | ❌ Not bundled | External tool, user installs separately |
-| Uteke | ❌ Not bundled | External MCP server, user configures separately |
+| Mnemosyne | ❌ Not bundled | Built into Hermes — already present |
+| Uteke | ❌ Not bundled | External MCP server, user installs separately |
 | OpenCode CLI | ❌ Not bundled | External CLI tool |
 | maestria-dist profile | ✅ Separate git repo | Completely optional, for turnkey setup |
 | JSONL fallback | ✅ pip package | Zero-dependency, always works |
 
-### User Installation Docs
+### Auto-Setup on Plugin Load
 
-```
-# Minimal (file-based backends, no external deps)
-pip install maestria-hermes
-hermes plugins enable maestria-hermes
+The plugin's `register()` function probes for optional backends and can guide the user through first-time setup:
 
-# Full (Mnemosyne for memory, kanban for orchestration)
-pip install maestria-hermes
-hermes plugins enable maestria-hermes
-# Configure Mnemosyne in config.yaml
-# Configure kanban in config.yaml
-# Install OpenCode CLI for Builder routing
+```python
+def register(ctx):
+    backends = detect_backends(ctx)
+
+    if backends["memory"] == "jsonl":
+        # Mnemosyne tools not detected — user may need to configure it
+        logger.info(
+            "Mnemosyne not detected. "
+            "Run `hermes config set memory.provider mnemosyne` "
+            "for persistent cross-session memory."
+        )
+
+    if backends["mode"] == "json_file":
+        # SessionDB.state_meta unavailable — using JSON file fallback
+        logger.info("SessionDB.state_meta unavailable — using JSON file for mode persistence.")
+
+    if backends["kanban"] is None:
+        logger.info(
+            "Kanban toolset not detected. "
+            "Run `hermes config set kanban.enabled true` "
+            "for kanban-based task orchestration."
+        )
+
+    if backends["opencode"] is False:
+        logger.info(
+            "OpenCode CLI not found. Builder will use Hermes native tools. "
+            "Install via `npm i -g opencode-ai` for advanced coding sandbox."
+        )
 ```
+
+Users see these messages on first load and can act on them. The plugin never blocks — it adapts and informs.
+
+### maestria CLI Setup Command
+
+The maestria CLI (`maestria install hermes`) can be extended with a `setup` subcommand that configures recommended backends:
+
+```bash
+# Install + configure everything
+maestria install hermes
+maestria setup hermes
+
+# Or one-shot:
+maestria setup hermes --with-mnemosyne --with-kanban
+```
+
+What `maestria setup hermes` does:
+
+| Step                        | Action                                        | Required?        |
+| --------------------------- | --------------------------------------------- | ---------------- |
+| 1. Enable plugin            | `hermes plugins enable maestria-hermes`       | ✅ Yes           |
+| 2. Configure Mnemosyne      | Set `memory.provider: mnemosyne` in config    | ⬜ Auto-detect   |
+| 3. Configure Uteke          | Add MCP server entry + ensure binary          | ⬜ Auto-detect   |
+| 4. Enable kanban            | Set `kanban.enabled: true` in config          | ⬜ Optional      |
+| 5. Verify tool availability | Check delegate*task, kanban*\_, mnemosyne\_\_ | ✅ Informational |
+
+Each step is idempotent and skips if already configured.
 
 ## Open Questions (Resolved)
 
