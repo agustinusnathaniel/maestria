@@ -17,7 +17,6 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
-
 VALID_MODES = {"fein", "sonar", "blitz"}
 DEFAULT_MODE = "fein"
 

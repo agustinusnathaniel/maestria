@@ -9,10 +9,11 @@ Update TOOL_CATEGORIES when Hermes adds or renames tools.
 """
 
 from __future__ import annotations
+
 import json
-import os
 import logging
-from typing import Dict, List, Optional, Set
+import os
+from typing import Dict, List, Set
 
 logger = logging.getLogger(__name__)
 

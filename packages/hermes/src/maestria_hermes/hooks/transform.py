@@ -7,6 +7,7 @@ notes (mode context, maker/checker reminders) to relevant tool results.
 
 import logging
 from typing import Optional
+
 from maestria_hermes.modes import ModeManager
 
 logger = logging.getLogger(__name__)

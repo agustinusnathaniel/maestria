@@ -1,7 +1,12 @@
-# Fail fast if Python 3 is missing (used by check-python quality gate)
+# Fail fast if Python 3 or ruff is missing (used by check-python quality gate)
 if ! command -v python3 >/dev/null 2>&1; then
   echo "ERROR: python3 is required for 'vp run check-python'."
   echo "  Install Python 3.11+ from https://python.org or your package manager."
+  exit 1
+fi
+if ! python3 -c "import ruff" 2>/dev/null && ! command -v ruff >/dev/null 2>&1; then
+  echo "ERROR: ruff is required for 'vp run check-python'."
+  echo "  Install it with: pip install ruff"
   exit 1
 fi
 

@@ -7,8 +7,9 @@ In fein/blitz mode, each specialist has its own permission role.
 from __future__ import annotations
 
 import logging
+
 from maestria_hermes.modes import ModeManager
-from maestria_hermes.permissions import get_role, block_message, TOOL_CATEGORIES
+from maestria_hermes.permissions import TOOL_CATEGORIES, block_message, get_role
 
 logger = logging.getLogger(__name__)
 

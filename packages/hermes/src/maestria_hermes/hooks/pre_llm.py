@@ -12,7 +12,6 @@ one independently. The plugin must not add a memory layer on top.
 
 from maestria_hermes.modes import ModeManager
 
-
 _MODE_CONTEXT = {
     "fein": (
         "[MAESTRIA MODE: fein]\n"

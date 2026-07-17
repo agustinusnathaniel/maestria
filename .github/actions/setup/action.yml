@@ -1,5 +1,5 @@
 name: 'Maestria Setup'
-description: 'Install dependencies with pnpm, setup Python, restore vp task cache'
+description: 'Install dependencies with pnpm, setup Python + ruff, restore vp task cache'
 runs:
   using: 'composite'
   steps:
@@ -9,6 +9,9 @@ runs:
     - uses: actions/setup-python@v5
       with:
         python-version-file: 'packages/hermes/pyproject.toml'
+    - name: Install Python checks
+      run: pip install ruff
+      shell: bash
     - uses: pnpm/setup@v1
       with:
         cache: true

@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 import os
 from typing import Any
+
 from maestria_hermes.modes import ModeManager
 
 logger = logging.getLogger(__name__)
