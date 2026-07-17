@@ -304,15 +304,15 @@ The plugin uses hooks to implement the methodology:
 | Hook | Phase | Plugin Use |
 | --- | --- | --- |
 | `pre_llm_call` | Before LLM | Mode injection into user message |
-| `post_llm_call` | After LLM | *(not implemented)* Tag output with specialist metadata |
+| `post_llm_call` | After LLM | _(not implemented)_ Tag output with specialist metadata |
 | `pre_tool_call` | Before tool | Permission gating by mode and specialist |
-| `post_tool_call` | After tool | *(not implemented)* Audit logging, result capture |
-| `pre_gateway_dispatch` | Gateway | *(not implemented)* Message interception |
+| `post_tool_call` | After tool | _(not implemented)_ Audit logging, result capture |
+| `pre_gateway_dispatch` | Gateway | _(not implemented)_ Message interception |
 | `subagent_start/stop` | Subagent lifecycle | Pipeline tracking, duration logging |
-| `transform_llm_output` | Output | *(not implemented)* Multi-specialist synthesis |
+| `transform_llm_output` | Output | _(not implemented)_ Multi-specialist synthesis |
 | `transform_tool_result` | Tool output | Security annotations, methodology markers |
-| `transform_terminal_output` | Terminal | *(not implemented)* Shell output sanitization |
-| `kanban_task_*` | Kanban | *(not implemented)* Task lifecycle tracking |
+| `transform_terminal_output` | Terminal | _(not implemented)_ Shell output sanitization |
+| `kanban_task_*` | Kanban | _(not implemented)_ Task lifecycle tracking |
 | (plus 9 standard session and agent lifecycle hooks) |  |  |
 
 ### Middleware (4 Kinds)
@@ -378,11 +378,12 @@ def delegate_to_opencode(task_brief, cwd):
 
 ### Pipeline Composition via delegate_task
 
-The orchestrator dispatches specialists via delegate_task. The brief contains role, tool access list, context from prior stages, output format spec, and iteration limits. Each specialist runs as 
+The orchestrator dispatches specialists via delegate_task. The brief contains role, tool access list, context from prior stages, output format spec, and iteration limits. Each specialist runs as
 
 ... [OUTPUT TRUNCATED - 2028 chars omitted out of 52028 total] ...
 
 w, /plan
+
 - OpenCode CLI routing (optional)
 
 ### Project Structure
@@ -430,35 +431,9 @@ skills:
 
 ### register() (Actual API)
 
+See for the full implementation.```python def register(ctx): return { "name": "maestria-hermes", "version": "0.1.0", "hooks": { "pre_llm_call": inject_mode_directive, "post_llm_call": tag_llm_output, "pre_tool_call": check_permissions, "post_tool_call": record_dispatch, "transform_llm_output": synthesize_output, }, "commands": { "/fein": lambda ctx: set_mode(ctx, "fein"), "/sonar": lambda ctx: set_mode(ctx, "sonar"), "/blitz": lambda ctx: set_mode(ctx, "blitz"), "/review": lambda ctx: trigger_review(ctx), "/plan": lambda ctx: trigger_plan(ctx), }, "skills": [ "orchestrator.md", "builder.md", "reviewer.md", "global-rules.md", ], }
 
-
-See  for the full implementation.```python
-def register(ctx):
-    return {
-        "name": "maestria-hermes",
-        "version": "0.1.0",
-        "hooks": {
-            "pre_llm_call": inject_mode_directive,
-            "post_llm_call": tag_llm_output,
-            "pre_tool_call": check_permissions,
-            "post_tool_call": record_dispatch,
-            "transform_llm_output": synthesize_output,
-        },
-        "commands": {
-            "/fein": lambda ctx: set_mode(ctx, "fein"),
-            "/sonar": lambda ctx: set_mode(ctx, "sonar"),
-            "/blitz": lambda ctx: set_mode(ctx, "blitz"),
-            "/review": lambda ctx: trigger_review(ctx),
-            "/plan": lambda ctx: trigger_plan(ctx),
-        },
-        "skills": [
-            "orchestrator.md",
-            "builder.md",
-            "reviewer.md",
-            "global-rules.md",
-        ],
-    }
-```
+````
 
 ### Success Criteria
 
@@ -536,7 +511,7 @@ session.state_meta["maestria:role"] = "builder"
 
 # Read anywhere — survives resume and restart
 mode = session.state_meta.get("maestria:mode", "fein")
-```
+````
 
 The `ModeManager` becomes a thin accessor over `state_meta` instead of a JSON file handler. No separate file I/O, no concurrency concerns.
 
@@ -566,7 +541,6 @@ def orchestrate_pipeline(ctx, pipeline, task):
 - Multi-specialist pipelines complete end-to-end
 - Mode state survives `/resume` via SessionDB.state_meta (no JSON files)
 - OpenCode routing works with @maestria/opencode loaded
-
 
 ## Phase 3 (v0.3): Advanced Features (Future)
 
