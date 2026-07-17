@@ -14,7 +14,7 @@
     "build:ci": "vp run --filter './packages/*' --filter ./apps/maestria-cli build",
     "test": "vp run -r test",
     "changeset": "changeset",
-    "version-packages": "changeset version",
+    "version-packages": "changeset version && python scripts/sync-hermes-version.py",
     "release": "changeset publish",
     "check": "vp check && vp run build && vp run test",
     "check:ci": "vp check && pnpm build:ci && vp run test",
