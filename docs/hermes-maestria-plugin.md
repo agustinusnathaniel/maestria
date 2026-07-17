@@ -514,9 +514,10 @@ All 7 specialists with full skill files, replacing custom JSON file persistence 
 - delegate_task for subagent dispatch (native Hermes tool)
 - subagent_start/stop hooks for pipeline tracking
 - OpenCode lifecycle management (install check, config sync)
-- Memory via **Mnemosyne** (not custom JSONL)
 - Mode + state via **SessionDB.state_meta** (not custom JSON files)
 - transform_tool_result hook for methodology annotations
+
+> Memory is deliberately excluded from Phase 2. The plugin is memory-agnostic — no memory integration is planned. Hermes provides 8 memory providers at the platform level.
 
 ### Key Changes: Custom Files → Hermes-Native APIs
 
@@ -886,15 +887,6 @@ def minimal_probe():
         backends["opencode"] = True
 
     return backends
-```
-
-Users can override detection via `config.yaml`:
-
-```yaml
-maestria:
-  memory_backend: uteke # force Uteke over auto-detected Mnemosyne
-  mode_backend: json_file # force JSON file over state_meta
-  kanban: false # disable kanban integration
 ```
 
 ### What Gets Bundled

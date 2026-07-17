@@ -6,7 +6,8 @@ Supports three modes:
 - blitz: Fast execution -- skip recon and review gates
 
 Mode persists across sessions via a JSON state file (bundled fallback).
-When Mnemosyne is available, mode can be stored as a canonical fact.
+The plugin is memory-engine agnostic — no memory backend is required or
+assumed for mode state to work correctly.
 """
 from __future__ import annotations
 
@@ -34,9 +35,9 @@ class ModeManager:
     hook closure, so state is consistent across hook invocations within
     a session.
 
-    Persists via JSON file (works everywhere, no deps). Future: detect
-    Mnemosyne at register() and use canonical facts for cross-session
-    mode persistence.
+    Persists via JSON file (works everywhere, no deps). Memory backend
+    integration is deliberately not pursued — see Principle #2 (memory-
+    engine agnostic) in the design doc.
     """
 
     def __init__(self):
