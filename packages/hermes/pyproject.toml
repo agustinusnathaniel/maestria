@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [{ name = "Maestria Contributors" }]
 license = { text = "MIT" }
 keywords = ["hermes", "maestria", "ai-agent", "methodology"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = []
 
 [project.entry-points."hermes_agent.plugins"]

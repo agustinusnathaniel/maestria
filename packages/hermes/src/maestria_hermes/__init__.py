@@ -8,7 +8,6 @@ Design docs at docs/hermes-maestria-plugin.md.
 """
 
 import logging
-import os
 import shutil
 
 from maestria_hermes._version import __version__
@@ -169,7 +168,7 @@ def _detect_backends(ctx):
         if shutil.which("opencode"):
             # OpenCode CLI is installed; check for plugin
             from maestria_hermes.tools.opencode import _check_maestria_plugin
-            plugin_err = _check_maestria_plugin(os.getcwd())
+            plugin_err = _check_maestria_plugin()
             if plugin_err:
                 logger.warning(
                     "OpenCode CLI found but %s missing. "
