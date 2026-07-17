@@ -1,5 +1,20 @@
 # @maestria/hermes
 
+## 0.1.2
+
+### Patch Changes
+
+- [`72f6628`](https://github.com/agustinusnathaniel/maestria/commit/72f6628b1e02a8ddea20200b18ba26087109da27) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix plugin loading failure due to src/ layout
+
+  Hermes plugin discovery expects `__init__.py` at the plugin root directory,
+  but the package uses a `src/` layout (code under `src/maestria_hermes/`).
+  Added a root-level `__init__.py` shim that adds `src/` to `sys.path` and
+  re-exports `register` from the actual package.
+
+  Without this, `hermes plugins install` silently fails to load the plugin
+  — none of its slash commands (`/fein`, `/sonar`, `/blitz`, etc.), hooks,
+  or skills are available.
+
 ## 0.1.1
 
 ### Patch Changes
