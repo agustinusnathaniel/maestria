@@ -7,7 +7,6 @@ so the OpenCode instance follows Maestria methodology.
 
 import json
 import logging
-import os
 import shutil
 import subprocess
 from typing import Any, Dict, Optional
@@ -15,52 +14,48 @@ from typing import Any, Dict, Optional
 logger = logging.getLogger(__name__)
 
 MAESTRIA_PLUGIN_PKG = "@maestria/opencode"
-MAESTRIA_PLUGIN_MARKER = "opencode"  # The key in package.json
 
 
-def _check_maestria_plugin(workdir: str) -> Optional[str]:
-    """Check if @maestria/opencode is installed using Node's module resolution.
+def _check_maestria_plugin() -> Optional[str]:
+    """Check if @maestria/opencode is installed using the maestria CLI.
 
-    Uses ``node -e "require('@maestria/opencode')"`` which resolves correctly
-    under npm, pnpm, yarn (with node_modules), and bun. Falls back to
-    checking the global npm prefix if require() fails.
+    Calls ``maestria check opencode --json --quiet`` which reads OpenCode's
+    plugin config (``~/.config/opencode/opencode.jsonc``) to verify the plugin
+    is registered. This is the single source of truth — the maestria CLI knows
+    where each platform stores its plugin configuration.
 
     Returns an error message string if the plugin is missing, or None if found.
     """
-    # Primary: Node.js require() resolves local installs (npm, pnpm, yarn, bun)
     try:
         result = subprocess.run(
-            ["node", "-e", "require('@maestria/opencode')"],
-            capture_output=True, text=True, timeout=10,
-            cwd=workdir,
+            ["maestria", "check", "opencode", "--json", "--quiet"],
+            capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0:
             return None
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass
-
-    # Fallback: global npm install
-    try:
-        npm_root = subprocess.run(
-            ["npm", "root", "-g"],
-            capture_output=True, text=True, timeout=5,
+        # Parse JSON to get the error message
+        try:
+            data = json.loads(result.stdout)
+            msg = data.get("message", "")
+        except (json.JSONDecodeError, KeyError):
+            msg = ""
+        return (
+            msg
+            or f"{MAESTRIA_PLUGIN_PKG} is not installed. "
+            f"The delegated OpenCode session will NOT follow Maestria methodology. "
+            f"Install it with: pnpx maestria@latest install opencode"
         )
-        if npm_root.returncode == 0:
-            global_pkg = os.path.join(
-                npm_root.stdout.strip(),
-                *MAESTRIA_PLUGIN_PKG.split("/"),
-                "package.json",
-            )
-            if os.path.isfile(global_pkg):
-                return None
-    except Exception:
-        pass
-
-    return (
-        f"{MAESTRIA_PLUGIN_PKG} is not installed. "
-        f"The delegated OpenCode session will NOT follow Maestria methodology. "
-        f"Install it with: pnpx maestria@latest install opencode"
-    )
+    except FileNotFoundError:
+        return (
+            "maestria CLI is not on PATH. "
+            f"Cannot verify {MAESTRIA_PLUGIN_PKG} status. "
+            "Install it with: npm i -g maestria"
+        )
+    except subprocess.TimeoutExpired:
+        return (
+            f"Timeout checking {MAESTRIA_PLUGIN_PKG} status. "
+            "Proceeding without verification."
+        )
 
 
 def opencode_route_tool_schema() -> Dict[str, Any]:
@@ -132,7 +127,7 @@ def opencode_route_handler(args: Dict[str, Any], **kwargs) -> str:
 
         # Check @maestria/opencode plugin
         if not skip_plugin_check:
-            plugin_error = _check_maestria_plugin(workdir)
+            plugin_error = _check_maestria_plugin()
             if plugin_error:
                 return json.dumps({
                     "status": "error",
