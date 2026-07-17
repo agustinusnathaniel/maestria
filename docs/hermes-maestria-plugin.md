@@ -375,18 +375,24 @@ The orchestrator dispatches specialists via delegate_task. The brief contains ro
 
 ### Maker/Checker Split via pre_tool_call
 
-The Reviewer's pre_tool_call hook blocks edit/write:
+The Reviewer's pre_tool_call hook ideally blocks edit/write for review subagents:
 
 ```python
-def pre_tool_call(ctx, tool_name, tool_args):
-    if ctx.current_subagent == "reviewer" and tool_name in ("edit", "write"):
-        return {"action": "block",
-                "message": "Reviewers cannot modify output."}
-    if read_mode_file() == "sonar" and tool_name in ("edit", "write", "bash"):
-        return {"action": "block",
-                "message": "Sonar mode: read only."}
-    return {"action": "allow"}
+def pre_tool_hook(tool_name: str, **kwargs) -> None | dict:
+    # Sonar mode: block ALL write tools (reliable — no subagent context needed)
+    if mode == "sonar" and tool_name in _WRITE_TOOLS:
+        return {"action": "block", "message": "..."}
+    # Role-based gating below is currently UNUSABLE — Hermes does not pass
+    # ``child_role`` to ``pre_tool_call`` hooks.  The kwarg is absent from
+    # ``invoke_hook("pre_tool_call", ...)`` in hermes_cli/plugins.py:2145,
+    # so we can never tell which specialist is making the call.
+    role = kwargs.get("child_role", "")
+    if not role:
+        return None  # Allow — cannot determine caller
+    ...
 ```
+
+> **Platform limitation (v0.1):** Hermes' `pre_tool_call` hook dispatch does not include the subagent's role. Subagent-level tool gating cannot be implemented from a plugin until Hermes provides this context. The mode-level gate (sonar blocks writes, fein/blitz allow everything) is the reliable enforcement mechanism. See `hooks/pre_tool.py` for the documented fallback and `ADR-HM-001` for the scope decision to keep `/goal` as a separate concern.
 
 ### Specialist Reasoning via ctx.llm
 
