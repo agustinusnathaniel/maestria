@@ -213,7 +213,7 @@ Modes describe work style, not domain.
 | sonar | Explore - design/analyze - stop                   | Research only, no creation        |
 | blitz | Build directly                                    | Fast execution on known territory |
 
-Mode state persists to `.hermes-maestria/mode` and is injected into the user message by `pre_llm_call` (not system prompt - preserves prompt cache).
+Mode state persists to `$HERMES_HOME/maestria-mode.json` and is injected into the user message by `pre_llm_call` (not system prompt - preserves prompt cache).
 
 ### Hook Injection Format
 
@@ -230,6 +230,7 @@ Do not skip stages.
 | `/fein`   | Set fein mode                 |
 | `/sonar`  | Set sonar mode                |
 | `/blitz`  | Set blitz mode                |
+| `/mode`   | Show current mode and status  |
 | `/review` | Trigger review of last output |
 | `/plan`   | Trigger planning session      |
 
@@ -303,15 +304,15 @@ The plugin uses hooks to implement the methodology:
 | Hook | Phase | Plugin Use |
 | --- | --- | --- |
 | `pre_llm_call` | Before LLM | Mode injection into user message |
-| `post_llm_call` | After LLM | Tag output with specialist metadata |
+| `post_llm_call` | After LLM | *(not implemented)* Tag output with specialist metadata |
 | `pre_tool_call` | Before tool | Permission gating by mode and specialist |
-| `post_tool_call` | After tool | Audit logging, result capture |
-| `pre_gateway_dispatch` | Gateway | Message interception |
+| `post_tool_call` | After tool | *(not implemented)* Audit logging, result capture |
+| `pre_gateway_dispatch` | Gateway | *(not implemented)* Message interception |
 | `subagent_start/stop` | Subagent lifecycle | Pipeline tracking, duration logging |
-| `transform_llm_output` | Output | Multi-specialist synthesis |
+| `transform_llm_output` | Output | *(not implemented)* Multi-specialist synthesis |
 | `transform_tool_result` | Tool output | Security annotations, methodology markers |
-| `transform_terminal_output` | Terminal | Shell output sanitization |
-| `kanban_task_claimed/completed/blocked` | Kanban | Task lifecycle tracking |
+| `transform_terminal_output` | Terminal | *(not implemented)* Shell output sanitization |
+| `kanban_task_*` | Kanban | *(not implemented)* Task lifecycle tracking |
 | (plus 9 standard session and agent lifecycle hooks) |  |  |
 
 ### Middleware (4 Kinds)
@@ -377,49 +378,14 @@ def delegate_to_opencode(task_brief, cwd):
 
 ### Pipeline Composition via delegate_task
 
-The orchestrator dispatches specialists via delegate_task. The brief contains role, tool access list, context from prior stages, output format spec, and iteration limits. Each specialist runs as a Hermes subagent with restricted tool access.
+The orchestrator dispatches specialists via delegate_task. The brief contains role, tool access list, context from prior stages, output format spec, and iteration limits. Each specialist runs as 
 
-### Maker/Checker Split via pre_tool_call
+... [OUTPUT TRUNCATED - 2028 chars omitted out of 52028 total] ...
 
-The Reviewer's pre_tool_call hook ideally blocks edit/write for review subagents:
-
-```python
-def pre_tool_hook(tool_name: str, **kwargs) -> None | dict:
-    # Sonar mode: block ALL write tools (reliable — no subagent context needed)
-    if mode == "sonar" and tool_name in _WRITE_TOOLS:
-        return {"action": "block", "message": "..."}
-    # Role-based gating below is currently UNUSABLE — Hermes does not pass
-    # ``child_role`` to ``pre_tool_call`` hooks.  The kwarg is absent from
-    # ``invoke_hook("pre_tool_call", ...)`` in hermes_cli/plugins.py:2145,
-    # so we can never tell which specialist is making the call.
-    role = kwargs.get("child_role", "")
-    if not role:
-        return None  # Allow — cannot determine caller
-    ...
-```
-
-> **Platform limitation (v0.1):** Hermes' `pre_tool_call` hook dispatch does not include the subagent's role. Subagent-level tool gating cannot be implemented from a plugin until Hermes provides this context. The mode-level gate (sonar blocks writes, fein/blitz allow everything) is the reliable enforcement mechanism. See `hooks/pre_tool.py` for the documented fallback and `ADR-HM-001` for the scope decision to keep `/goal` as a separate concern.
-
-### Specialist Reasoning via ctx.llm
-
-Each specialist uses `ctx.llm.complete_structured()` instead of verbose tool-based reasoning. Structured JSON schemas ensure machine-readable handoffs. This reduces token usage and provides cleaner output.
-
-## Phase 1 (v0.1): Core Loop
-
-Minimum viable plugin proving the methodology works in Hermes.
-
-### Deliverables
-
-- Plugin scaffold (plugin.yaml + **init**.py with register())
-- Mode system with file persistence
-- pre_llm_call hook for mode injection into user message
-- pre_tool_call hook for sonar guard (block edit/write in research mode)
-- tool_request middleware for mode gating
-- 4 skills: orchestrator, builder, reviewer, global-rules
-- Slash commands: /fein, /sonar, /blitz, /review, /plan
+w, /plan
 - OpenCode CLI routing (optional)
 
-### Scaffold Layout
+### Project Structure
 
 ```
 .hermes-maestria/
@@ -438,10 +404,10 @@ plugin/
   opencode_bridge.py   # OpenCode CLI delegation
 ```
 
-### plugin.yaml
+### plugin.yaml (Actual)
 
 ```yaml
-name: hermes-maestria
+name: maestria-hermes
 version: 0.1.0
 hooks:
   - pre_llm_call
@@ -462,12 +428,14 @@ skills:
   - global-rules.md
 ```
 
-### register()
+### register() (Actual API)
 
-```python
-def register():
+
+
+See  for the full implementation.```python
+def register(ctx):
     return {
-        "name": "hermes-maestria",
+        "name": "maestria-hermes",
         "version": "0.1.0",
         "hooks": {
             "pre_llm_call": inject_mode_directive,
@@ -514,7 +482,7 @@ All 7 specialists with full skill files, replacing custom JSON file persistence 
 - delegate_task for subagent dispatch (native Hermes tool)
 - subagent_start/stop hooks for pipeline tracking
 - OpenCode lifecycle management (install check, config sync)
-- Mode + state via **SessionDB.state_meta** (not custom JSON files)
+- Mode + state via **SessionDB.state_meta** (not custom JSON files) — **not yet implemented** (still uses JSON file) — **not yet implemented** (still uses JSON file)
 - transform_tool_result hook for methodology annotations
 
 > Memory is deliberately excluded from Phase 2. The plugin is memory-agnostic — no memory integration is planned. Hermes provides 8 memory providers at the platform level.
@@ -598,9 +566,9 @@ def orchestrate_pipeline(ctx, pipeline, task):
 - Multi-specialist pipelines complete end-to-end
 - Mode state survives `/resume` via SessionDB.state_meta (no JSON files)
 - OpenCode routing works with @maestria/opencode loaded
-- Memory uses Uteke MCP — decisions retrievable by semantic query
 
-## Phase 3 (v0.3): Advanced + Kanban & Goals Integration
+
+## Phase 3 (v0.3): Advanced Features (Future)
 
 Polished multi-tool orchestration with all Hermes features. Integrates with built-in Kanban task board and Goals system.
 
@@ -621,7 +589,7 @@ Polished multi-tool orchestration with all Hermes features. Integrates with buil
 | Performance monitoring | Per-specialist metrics (duration, tool calls, tokens) |
 | Plugin trust gates | LLM access restrictions per specialist |
 
-### Kanban Integration
+### Kanban Integration (Future)
 
 Each pipeline step maps to a kanban task lifecycle. Use the `kanban_*` toolset — not just lifecycle hooks:
 
@@ -671,7 +639,7 @@ Kanban lifecycle hooks (`kanban_task_claimed`, `kanban_task_completed`, `kanban_
 
 This replaces ad-hoc pipeline tracking with the production-grade kanban subsystem — durable, board-visible, and inspectable via `hermes kanban dashboard`.
 
-### Goals Integration
+### Goals Integration (Future)
 
 Map long-running maestria pipelines to Hermes Goals for `/resume` and multi-turn continuity:
 
@@ -710,7 +678,7 @@ ctx.dispatch_tool("/goal", {"action": "wait", "pid": pid, "reason": "OpenCode bu
 
 The maestria mode + role in `state_meta` integrate naturally: when a Goal resumes via `/goal resume`, the mode and role are restored automatically from SessionDB. No separate goal mechanism needed in the plugin — just leverage the built-in Goals system for multi-turn task continuity.
 
-### Mode + Goals Alignment
+### Mode + Goals Alignment (Future)
 
 | Hermes Feature | Maestria Integration |
 | --- | --- |
@@ -735,29 +703,11 @@ def methodology_context_middleware(ctx, llm_request):
     return llm_request
 ```
 
-### Memory Integration (Mnemosyne)
-
-```python
-def store_decision(ctx, specialist, decision):
-    ctx.dispatch_tool("mnemosyne_remember", {
-        "content": f"Decision by {specialist}: {decision}",
-        "type": "decision",
-        "tags": ["maestria", specialist],
-    })
-
-def retrieve_decisions(ctx, specialist):
-    return ctx.dispatch_tool("mnemosyne_recall", {
-        "query": f"decisions by {specialist}",
-        "tags": ["maestria", specialist],
-        "limit": 10,
-    })
-```
-
-For long-term reference documents (architecture specs, ADRs), use Uteke to create structured wiki pages that persist independently of agent sessions.
+> **Not implemented (deliberately).** The plugin is memory-engine agnostic — see Principle #2. Memory is a platform concern managed by Hermes' 8 built-in providers. The plugin never reads, writes, or probes for any memory backend.
 
 ## Distribution & Environment Adaptation
 
-The plugin ships as a pip package for `pip install maestria-hermes`, then enabled via `hermes plugins enable maestria-hermes`. Different Hermes instances will have different tools and providers configured.
+The plugin uses **git-based distribution** via `hermes plugins install`, then enabled via `hermes plugins enable maestria-hermes`. Different Hermes instances will have different tools and providers configured.
 
 For a turnkey experience, the maestria methodology can also be distributed as a **Hermes Profile Distribution** — a git repo users install with one command, giving them the complete agent with all skills, config, and optional add-ons pre-configured.
 
@@ -765,12 +715,12 @@ For a turnkey experience, the maestria methodology can also be distributed as a 
 
 | Channel | Install | What you get | Best for |
 | --- | --- | --- | --- |
-| **pip plugin** | `pip install maestria-hermes` + `hermes plugins enable maestria-hermes` | Methodology hooks, commands, tools, skills loaded into existing Hermes instance | Users who already have Hermes set up and want maestria methodology |
+| **Git plugin** | `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable` | Plugin hooks, tools, commands, and skills loaded into existing Hermes instance |
 | **Profile distribution** | `hermes profile install gh:agustinusnathaniel/maestria-dist` | A complete, isolated Hermes agent with maestria config + skills + cron pre-loaded | Users who want a dedicated maestria agent, or quick evaluation |
 
 ### Profile Distribution Contents
 
-A profile distribution repo (`maestria-dist`) packages the whole agent:
+A profile distribution repo (`maestria-dist`) could package the whole agent (future):
 
 ```
 maestria-dist/
@@ -803,7 +753,7 @@ hermes profile update maestria
 
 The user's sessions, memories, and API keys stay untouched on update.
 
-## Orchestrator Profile (Kanban Deployment)
+## Orchestrator Profile (Kanban Deployment) (Future)
 
 For multi-agent setups, the maestria orchestrator can run as a dedicated Hermes **profile** with a kanban description. This lets it dispatch pipeline steps to worker profiles automatically.
 
@@ -893,9 +843,9 @@ def minimal_probe():
 
 | Component | Bundled? | Why |
 | --- | --- | --- |
-| Plugin Python code (`maestria_hermes/`) | ✅ pip package | Core plugin |
-| 9 SKILL.md files | ✅ pip package | Specialist methodology guides |
-| Mode system | ✅ pip package | Standalone Python, no deps |
+| Plugin Python code (`maestria_hermes/`) | ✅ Git package | Core plugin |
+| 9 SKILL.md files | ✅ Git package | Specialist methodology guides |
+| Mode system | ✅ Git package | Standalone Python, no deps |
 | OpenCode CLI | ❌ Not bundled | External CLI tool |
 | maestria-dist profile | ✅ Separate git repo | Completely optional, for turnkey setup |
 
