@@ -1,1 +1,1 @@
-vp run check
+vp run check && vp run check-python

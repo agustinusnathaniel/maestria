@@ -53,6 +53,12 @@ export default defineConfig({
         ],
         output: ['packages/*/agents/**', 'packages/*/prompts/**', 'packages/*/rules/**'],
       },
+      'check-python': {
+        command: 'python3 scripts/check-python.py',
+        cache: true,
+        input: ['packages/hermes/src/**/*.py', 'scripts/check-python.py'],
+        output: [],
+      },
     },
     cache: { scripts: true, tasks: true },
   },
