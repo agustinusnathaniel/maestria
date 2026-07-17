@@ -46,8 +46,10 @@ This is not a theoretical distinction — during development we found and fixed 
 A plugin requires PyPI publishing. This adds:
 
 - A PyPI account and API token
-- CI/CD publishing step (`.github/workflows/release.yml`, lines 73-82)
+- CI/CD publishing step (`.github/workflows/release.yml`)
 - Version management via `setuptools-scm`
+
+> **Note (2026-07-16):** The distribution model was later pivoted to **git-based** via `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`. PyPI was abandoned because the plugin is mostly markdown and configuration — PyPI's versioning and publishing machinery was unnecessary overhead. The PyPI-based consequences below applied to the original design but were resolved by the distribution pivot.
 
 The alternative — users cloning the repo and loading skills manually — is documented as an option but is not the primary distribution path.
 
@@ -62,10 +64,10 @@ The alternative — users cloning the repo and loading skills manually — is do
 
 ### Negative
 
-- **PyPI dependency** — requires an account, token, and CI publishing step that skills-only avoids
-- **Python knowledge required** — contributing to the enforcement layer requires Python, not just Markdown
-- **Version coupling** — the plugin must stay compatible with Hermes Agent's hook signatures (validated against source at `github.com/nousresearch/hermes-agent`)
-- **Larger surface area** — more code to maintain than 9 Markdown files
+- ~~PyPI dependency~~ _(resolved — switched to git-based distribution)_
+- Python knowledge required — contributing to the enforcement layer requires Python, not just Markdown
+- Version coupling — the plugin must stay compatible with Hermes Agent's hook signatures (validated against source at `github.com/nousresearch/hermes-agent`)
+- Larger surface area — more code to maintain than 9 Markdown files
 
 ### Mitigations
 

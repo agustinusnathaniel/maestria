@@ -421,6 +421,12 @@ const hermes: PlatformHandler = {
 
   update: (_version?: string) =>
     Effect.gen(function* () {
+      if (_version) {
+        console.log(
+          `  ${picocolors.yellow('⚠')} Version pinning is not supported for git-based Hermes plugins. ` +
+            `Updating to latest from git.`,
+        );
+      }
       yield* sh('hermes plugins update maestria-hermes', 60_000);
     }),
 

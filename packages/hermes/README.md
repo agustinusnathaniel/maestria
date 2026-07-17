@@ -7,10 +7,12 @@ Brings maestria's proven agent methodology -- pipeline composition, maker/checke
 ## Installation
 
 ```bash
-pip install maestria-hermes
-hermes plugins enable maestria-hermes
+hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
 ```
+
+This clones the maestria monorepo, extracts `packages/hermes/`, and enables the plugin. See the [user-facing docs](https://maestria.sznm.dev/hermes/getting-started/installation/) for details.
 
 ## Documentation
 
-See [docs/hermes-maestria-plugin.md](/docs/hermes-maestria-plugin.md) in the maestria monorepo for the full implementation plan.
+- [User-facing docs](https://maestria.sznm.dev/hermes/) -- installation, commands, quick start
+- [Design doc](https://github.com/agustinusnathaniel/maestria/blob/main/docs/hermes-maestria-plugin.md) -- architecture and implementation plan
