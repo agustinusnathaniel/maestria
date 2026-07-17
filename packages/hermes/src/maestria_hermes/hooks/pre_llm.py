@@ -3,6 +3,11 @@
 The returned context dict is appended to the user message before it
 reaches the LLM, preserving the Hermes prompt cache (system prompt
 is not modified).
+
+The hook only injects mode context. Memory injection was removed in
+v0.1-memory-agnostic because memory is a platform concern, not a plugin
+concern — Hermes has 8 built-in memory providers and the user chooses
+one independently. The plugin must not add a memory layer on top.
 """
 
 from maestria_hermes.modes import ModeManager
@@ -33,22 +38,21 @@ _MODE_CONTEXT = {
 }
 
 
-def create_pre_llm_hook(mode_manager: ModeManager, memory_manager=None):
-    """Create a pre_llm_call hook closure bound to mode and memory managers."""
+def create_pre_llm_hook(mode_manager: ModeManager):
+    """Create a pre_llm_call hook closure bound to the mode manager.
+
+    Returns a hook that injects the current maestria mode directive into
+    the user message on every turn. No memory context is appended — memory
+    is a platform concern managed by Hermes' built-in providers.
+    """
 
     def pre_llm_hook(**kwargs) -> dict:
-        """Inject mode context and relevant memory into the user message."""
+        """Inject mode context into the user message."""
         mode = mode_manager.get_mode()
         context = _MODE_CONTEXT.get(
             mode,
             f"[MAESTRIA MODE: {mode}]\nNo specific mode instructions defined.",
         )
-
-        # Append recent memory context if available
-        if memory_manager:
-            mem = memory_manager.recall_context()
-            if mem:
-                context = f"{context}\n\n{mem}"
 
         return {"context": context}
 

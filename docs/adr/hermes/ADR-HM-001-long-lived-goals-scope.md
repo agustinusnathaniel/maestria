@@ -58,9 +58,13 @@ Attempting plugin-specific goal functionality would:
 
 ### 4. Aligns with existing Design Philosophy
 
-This decision is a direct application of **Design Principle #2: Hermes-native first** (from `docs/hermes-maestria-plugin.md`):
+This decision is a direct application of **Design Principle #2: Hermes-native first + memory-agnostic** (from `docs/hermes-maestria-plugin.md`):
 
-> Hermes has built-in features that solve the problems the plugin would otherwise need to reimplement — `delegate_task` for subagent dispatch, `kanban_*` tools for task orchestration, `/goal` for persistent objectives, Mnemosyne for agent memory, SessionDB for state persistence. Use them. Don't reinvent them. The plugin's job is to wire the methodology into these existing subsystems, not duplicate them.
+> Hermes has built-in features that solve the problems the plugin would otherwise need to reimplement — `delegate_task` for subagent dispatch, `kanban_*` tools for task orchestration, `/goal` for persistent objectives, and 8 memory providers (Mnemosyne, holographic, mem0, supermemory, etc.). Use them. Don't reinvent them. The plugin's job is to wire the methodology into these existing subsystems, not duplicate them.
+>
+> **The plugin is memory-engine agnostic.** It never reads, writes, or cares which memory provider Hermes has configured. Memory is a platform concern — the user chooses their provider independently. The plugin does not add a memory layer on top.
+
+`/goal` and memory follow the same logic: both are core Hermes features. The plugin doesn't wrap `/goal` and doesn't touch memory. Users invoke both at the Hermes level — `/goal` for multi-turn tasks, Mnemosyne/mem0/etc. for cross-session recall.
 
 `/goal` is a core primitive. The plugin surfaces methodology concepts (modes, roles, specialists). These are orthogonal concerns:
 

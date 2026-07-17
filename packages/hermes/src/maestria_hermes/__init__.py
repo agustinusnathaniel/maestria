@@ -3,9 +3,31 @@
 Brings pipeline composition, maker/checker split, specialist delegation,
 and mode-based workflows to the general-purpose Hermes AI agent.
 
+Design principles that govern this module:
+
+1. **Methodology portable, adapter thin** — the real logic lives in canonical
+   skill files (packages/core/agent-directives/). Plugin code is just the Hermes
+   adapter.
+
+2. **Memory-engine agnostic** — the plugin never reads, writes, or cares which
+   memory provider Hermes has configured (Mnemosyne, holographic, mem0, etc.).
+   Memory is a platform concern, not a plugin concern. The user's Hermes instance
+   already has a memory provider; adding a plugin layer on top would duplicate
+   functionality, couple to a specific backend, and violate the "use built-in
+   features" principle.
+
+3. **Hermes-native first** — use Hermes built-in features (delegate_task, hooks,
+   tools, Skills) instead of reinventing them. Only fall back to custom
+   implementations (JSON files for mode persistence) when the plugin API doesn't
+   expose the relevant subsystem.
+
+4. **General agent, not a coding tool** — specialists must work across domains
+   (research, content, analysis, strategy, operations). The coding path routes to
+   OpenCode CLI as an optional power-up, never a hard dependency.
+
 Phases:
 - Phase 1: Mode system, sonar guard, core hooks, basic skills
-- Phase 2: Full specialist roster, permission roles, memory, session state
+- Phase 2: Full specialist roster, permission roles, session state
 - Phase 3: MCP, middleware, parallel delegation, kanban integration
 """
 
@@ -14,7 +36,6 @@ import os
 
 from maestria_hermes._version import __version__
 from maestria_hermes.modes import ModeManager
-from maestria_hermes.memory import MemoryManager
 from maestria_hermes.session import SessionManager, create_session_hooks
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
 from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
@@ -32,21 +53,16 @@ def register(ctx):
     """Plugin entry point -- called by Hermes during plugin discovery.
 
     Registers hooks, middleware, tools, commands, and skills for the
-    maestria methodology. Probes environment and logs guidance for
-    optional backends (Mnemosyne, kanban, OpenCode).
+    maestria methodology.
     """
-    # -- Probe environment and log guidance ----------------------------------
-    # NOTE: Detection is deferred to on_session_start (see below) so other
-    #       plugins (Mnemosyne, kanban) have registered their tools first.
 
     # Initialize singletons
     mode_manager = ModeManager()
-    memory_manager = MemoryManager()
     session_manager = SessionManager()
 
     # ...
 
-    ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager, memory_manager))
+    ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager))
     ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
 
     # -- Phase 2: Full lifecycle hooks --------------------------------------
@@ -119,7 +135,7 @@ def register(ctx):
         description="Activate full methodology pipeline (fein mode) with planning phase",
     )
 
-    # -- Phase 2: Skills ---------------------------------------------------
+    # -- Phase 2: Skills ----------------------------------------------------
 
     import pathlib
     _skills_dir = pathlib.Path(__file__).parent / "skills"
@@ -157,39 +173,23 @@ def _opencode_available() -> bool:
 
 
 def _detect_backends(ctx):
-    """Probe environment for optional backends and log guidance.
+    """Probe environment for the optional OpenCode CLI and log guidance.
 
-    Never blocks, installs, or modifies config. Just informs.
-    Uses the tool registry to check for tool availability at startup.
+    This is the only backend probe the plugin performs. Memory (Mnemosyne,
+    holographic, etc.) and kanban are deliberately NOT probed:
+
+    - **Memory is a platform concern.** Hermes has 8 built-in memory providers.
+      The user chooses one independently. The plugin must not care which is
+      configured — adding a probe or fallback would couple the plugin to a
+      specific backend and duplicate platform functionality.
+
+    - **Kanban is a platform feature.** Available via kanban_* tools when
+      enabled in the user's config. The plugin doesn't need to know.
+
+    OpenCode CLI is the exception: it's an external tool the plugin can optionally
+    route to. The probe checks availability so the opencode_route tool is only
+    visible when the CLI is actually installed.
     """
-    try:
-        from tools.registry import registry
-        all_tools = registry.get_all_tool_names()
-
-        if "mnemosyne_remember" not in all_tools:
-            logger.info(
-                "Mnemosyne not detected. Memory will use JSONL fallback. "
-                "See docs/hermes-maestria-plugin.md for optional setup."
-            )
-        else:
-            logger.debug("Mnemosyne detected — memory can use semantic recall.")
-    except Exception:
-        pass  # Probe failed silently -- not critical
-
-    try:
-        from tools.registry import registry
-        toolsets = registry.get_registered_toolset_names()
-
-        if "kanban" not in toolsets:
-            logger.info(
-                "Kanban toolset not detected. Pipeline tracking uses in-memory state. "
-                "Enable via `hermes config set kanban.enabled true`."
-            )
-        else:
-            logger.debug("Kanban toolset detected — pipeline can use task board.")
-    except Exception:
-        pass
-
     # Check @maestria/opencode plugin (needed for opencode_route tool)
     try:
         import subprocess

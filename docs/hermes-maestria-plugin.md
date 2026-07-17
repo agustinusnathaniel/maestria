@@ -14,19 +14,27 @@ Five principles that govern every decision in this plugin:
 
 The maestria methodology (7 specialists + pipeline + maker/checker) lives in `packages/core/agent-directives/` and is sync'd to every platform. The Hermes plugin is just the **adapter** — it maps the methodology to Hermes' native Plugin API. Keep plugin code lean; the real logic is in canonical sources.
 
-### 2. Hermes-native first
+### 2. Hermes-native first + memory-agnostic
 
-Hermes has built-in features that solve the problems the plugin would otherwise need to reimplement — `delegate_task` for subagent dispatch, `kanban_*` tools for task orchestration, `/goal` for persistent objectives, Mnemosyne for agent memory, SessionDB for state persistence. Use them. Don't reinvent them. The plugin's job is to wire the methodology into these existing subsystems, not duplicate them.
+Hermes has built-in features that solve the problems the plugin would otherwise need to reimplement — `delegate_task` for subagent dispatch, `kanban_*` tools for task orchestration, `/goal` for persistent objectives, and 8 memory providers (Mnemosyne, holographic, mem0, supermemory, etc.). Use them. Don't reinvent them. The plugin's job is to wire the methodology into these existing subsystems, not duplicate them.
 
-Only fall back to custom implementations (JSONL, JSON files) when the host Hermes doesn't have the relevant feature.
+**The plugin is memory-engine agnostic.** It never reads, writes, or cares which memory provider Hermes has configured. Memory is a platform concern — the user chooses their provider independently. The plugin does not add a memory layer on top, because:
+
+- Doing so would couple the plugin to a specific backend
+- Hermes already has dedicated memory infrastructure (8 providers)
+- The methodology is about _how to work_ (pipeline, modes, maker/checker), not _what to remember_
+
+Only fall back to custom implementations (JSON file for mode persistence) when the Hermes plugin API doesn't expose the relevant subsystem directly.
 
 ### 3. General agent, not a coding tool
 
 Hermes is a general-purpose AI agent platform, not a coding CLI like OpenCode. The plugin's specialists must work across domains — research, content, analysis, strategy, operations — not just software engineering. The coding path routes to OpenCode CLI as an optional power-up, never a hard dependency.
 
-### 4. Graceful detection & fallback
+### 4. Minimal detection — only for external tooling
 
-Different Hermes instances have different tools and providers configured. The plugin probes at startup and selects the best available backend for each capability. Users get the best experience their Hermes supports, without configuration burden.
+Different Hermes instances have different tools and providers configured. The plugin probes at startup only for the one external dependency — the **OpenCode CLI** (an optional power-up for complex coding tasks). Memory backends and platform features like kanban are deliberately not probed: Hermes provides them natively and the plugin doesn't need to know which ones are active.
+
+The probe never blocks, installs, or modifies config. It just logs guidance.
 
 ### 5. Feel native to Hermes users
 
@@ -273,22 +281,20 @@ result = ctx.llm.complete_structured(
 
 Trust gates in plugin.yaml control LLM access: `plugins.entries.<name>.llm.allow_provider_override`, `allow_model_override`, `allow_agent_id_override`, `allow_profile_override`.
 
-### Memory Providers (8 Built-in)
+### Memory Providers (Platform Concern)
 
-| Provider | Type | Use Case |
-| --- | --- | --- |
-| **Mnemosyne** ([mnemosyne-oss/mnemosyne](https://github.com/mnemosyne-oss/mnemosyne)) | **Agent memory** | **Recommended — working memories, canonical facts, recall/sleep cycles** |
-| Uteke ([codecoradev/uteke](https://github.com/codecoradev/uteke)) | Knowledge base wiki | For permanent reference docs, specs, decision records |
-| holographic | Local SQLite FTS5 | Alternative — offline-first, no server |
-| mem0 | Server-side | Cross-session persistent memory |
-| supermemory | Server-side | Long-term knowledge base |
-| retaindb, openviking, hindsight, byterover, honcho | Server-side | Various backends |
+Hermes ships with 8 built-in memory providers:
 
-**Mnemosyne is the recommended memory backend for maestria** because it's designed for agent memory — working memories, canonical facts, recall, sleep cycles, and graph edges for linking related decisions. Use **Uteke** for permanent reference docs (architectural specs, decision records) that benefit from structured wiki-style organization.
+- **Mnemosyne** — agent memory with recall, sleep cycles, canonical facts, graph edges
+- **Uteke** — knowledge base wiki for permanent reference docs
+- **holographic** — local SQLite FTS5 (offline-first)
+- **mem0, supermemory, retaindb, openviking, hindsight, byterover, honcho** — various server-side backends
 
-Both are external projects: [github.com/mnemosyne-oss/mnemosyne](https://github.com/mnemosyne-oss/mnemosyne) and [github.com/codecoradev/uteke](https://github.com/codecoradev/uteke). The plugin never bundles or requires either — it detects availability and falls back to JSONL if absent.
+The maestria plugin is intentionally **memory-engine agnostic**. It never reads from, writes to, or checks for any memory provider. Memory is a platform concern — the user configures their preferred provider at the Hermes level, and the plugin doesn't add a layer on top.
 
-The plugin can register its own provider or use existing ones. Works with `ctx.llm.complete_structured()` for fact extraction across sessions.
+For users who want cross-session memory: configure Mnemosyne or another provider in your Hermes config. The plugin's methodology (modes, pipeline, maker/checker) works regardless of which provider — or none — is active.
+
+See [Hermes Memory documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) for setup guides.
 
 ### All Lifecycle Hooks (22)
 
@@ -516,11 +522,12 @@ All 7 specialists with full skill files, replacing custom JSON file persistence 
 
 | Before (standalone) | After (Hermes-native) | Why |
 | --- | --- | --- |
-| `~/.hermes/maestria-memory.jsonl` | `mnemosyne_remember()` / `mnemosyne_recall()` | Dedicated agent memory — recall, forget, sleep, canonical facts |
 | `~/.hermes/maestria-mode.json` | `session.state_meta["maestria:mode"]` | Survives `/resume`, `/goal resume`, session restart — no separate file |
 | `~/.hermes/maestria-session.json` | SessionDB (built-in) | Already tracks session_id, timestamps — redundant file removed |
 | `PermissionProfile` class name | `PermissionRole` | "Profile" is a Hermes Agent concept for isolated agent configs — rename to avoid confusion |
 | Hardcoded tool-name lists in Python | Config-driven role→tool mappings in `config.yaml` `maestria:` key | Users customize roles without editing plugin code |
+
+> **Memory deliberately excluded from this table.** The plugin is memory-engine agnostic — it never had a custom memory file and never will. Hermes has 8 built-in memory providers; the user chooses one independently. See "Memory Providers (Platform Concern)" below.
 
 ### Permission Roles
 
@@ -537,30 +544,15 @@ All 7 specialists with full skill files, replacing custom JSON file persistence 
 | delegate_task  | allowed | allowed | blocked |
 | opencode (CLI) | allowed | blocked | allowed |
 
-### Memory via Mnemosyne
+### Memory (Platform Concern — No Plugin Integration)
 
-Replace the append-only JSONL backend with Hermes' built-in memory system:
+The plugin is memory-engine agnostic. There is no plugin-level memory integration because:
 
-```python
-# Instead of: maestria-memory.jsonl append
-# Use Mnemosyne via Hermes tool dispatch
-ctx.dispatch_tool("mnemosyne_remember", {
-    "content": "Decision: use PostgreSQL for persistence layer",
-    "type": "decision",
-    "tags": ["maestria", "architecture"],
-})
+1. **Hermes provides it.** 8 memory providers are available at the platform level. Users configure one independently.
+2. **The methodology doesn't require it.** Maestria defines _how to work_ (pipeline, modes, maker/checker split). Remembering decisions across sessions is a platform capability.
+3. **No custom JSONL fallback.** Previous versions of this doc described a JSONL fallback that was never wired — `MemoryManager.record()` was never called, and `recall_context()` always returned empty. This was dead code and has been removed.
 
-# Instead of: maestria-memory.jsonl tail
-results = ctx.dispatch_tool("mnemosyne_recall", {
-    "query": "recent architecture decisions",
-    "tags": ["maestria"],
-    "limit": 10,
-})
-```
-
-Benefits: cross-session semantic recall, canonical facts (for stable preferences like user's framework choices), sleep cycle for compaction, and graph edges for linking related decisions.
-
-For long-term reference docs (architectural specs, decision records), use **Uteke** (knowledge base). For agent memory (session context, preferences, decisions), use **Mnemosyne** — that's its designed purpose.
+If users want cross-session memory, they configure Mnemosyne or another provider at the Hermes level. The plugin works identically regardless.
 
 ### Mode + State via SessionDB.state_meta
 
@@ -867,9 +859,9 @@ At startup (`register()`), the plugin probes the environment and selects backend
 
 | Feature | Preferred | Fallback 1 | Fallback 2 | Fallback 3 |
 | --- | --- | --- | --- | --- |
-| Memory | Mnemosyne tool | Uteke (KB docs) | Custom JSONL | No-op (skip) |
+| Memory | **Not probed — platform concern.** Hermes has 8 built-in providers; user chooses independently. Plugin doesn't care which is active. | — | — | — |
 | Mode persistence | SessionDB.state_meta | Custom JSON file | In-memory (session-only) | — |
-| Kanban integration | `kanban_*` toolset | Lifecycle hooks only | Uteke event tracking | No-op (skip) |
+| Kanban integration | **Not probed — platform feature.** Available via kanban\_\* tools when enabled. Plugin doesn't need to know. | — | — | — |
 | Goals integration | Built-in `/goal` command | Pipeline only (no goals) | — | — |
 | OpenCode routing | `which opencode` available | Hermes native tools only | — | — |
 | Parallel dispatch | `delegate_task(tasks=[...])` batched mode | Sequential `delegate_task` calls | In-process tool calls | — |
@@ -878,29 +870,18 @@ At startup (`register()`), the plugin probes the environment and selects backend
 ### Strategy Implementation
 
 ```python
-def detect_backends(ctx):
-    """Probe available backends and select the best chain."""
+def minimal_probe():
+    """The only probe the plugin performs is OpenCode CLI availability.
+
+    Memory, kanban, and other platform features are deliberately not probed:
+    Hermes provides them natively and the plugin doesn't need to know which
+    ones are active. See Principle #2 (memory-agnostic) above.
+    """
     backends = {
-        "memory": "jsonl",       # default fallback
-        "mode": "json_file",     # default fallback
-        "kanban": None,
-        "goals": None,
         "opencode": False,
     }
 
-    # Check for Mnemosyne
-    if has_tool(ctx, "mnemosyne_remember"):
-        backends["memory"] = "mnemosyne"
-
-    # Check for SessionDB.state_meta (mode persistence)
-    if has_session_state_meta(ctx):
-        backends["mode"] = "state_meta"
-
-    # Check for kanban hooks
-    if has_hook(ctx, "kanban_task_claimed"):
-        backends["kanban"] = "kanban"
-
-    # Check for OpenCode CLI
+    # Check for OpenCode CLI (only external dependency)
     if which("opencode"):
         backends["opencode"] = True
 
@@ -923,34 +904,28 @@ maestria:
 | Plugin Python code (`maestria_hermes/`) | ✅ pip package | Core plugin |
 | 9 SKILL.md files | ✅ pip package | Specialist methodology guides |
 | Mode system | ✅ pip package | Standalone Python, no deps |
-| Mnemosyne | ❌ Not bundled | External — [github.com/mnemosyne-oss/mnemosyne](https://github.com/mnemosyne-oss/mnemosyne) |
-| Uteke | ❌ Not bundled | External — [github.com/codecoradev/uteke](https://github.com/codecoradev/uteke) |
 | OpenCode CLI | ❌ Not bundled | External CLI tool |
 | maestria-dist profile | ✅ Separate git repo | Completely optional, for turnkey setup |
-| JSONL fallback | ✅ pip package | Zero-dependency, always works |
+
+> Memory backends (Mnemosyne, Uteke, etc.) are deliberately not listed here — they are platform concerns, not plugin concerns. Users configure their preferred memory provider at the Hermes level independently of this plugin.
 
 ### Detection & Guidance on Plugin Load
 
-The plugin's `register()` function probes for optional backends and logs actionable hints if something popular is missing. It never blocks, installs, or modifies config:
+The plugin's `register()` function only logs guidance about the one external dependency — OpenCode CLI. Memory and kanban are not probed (they're platform concerns; see Principle #2). The probe never blocks, installs, or modifies config.
 
 ```
-# Example: if Mnemosyne is absent
-ℹ Mnemosyne not detected. Memory will use JSONL fallback.
-  See docs/hermes-maestria-plugin.md#setup-mnemosyne for optional setup.
-
-# Example: if kanban toolset is absent
-ℹ Kanban not detected. Pipeline tracking will use in-memory state only.
+# Example: if OpenCode CLI is installed but @maestria/opencode plugin is missing
+⚠ OpenCode CLI found but @maestria/opencode missing.
+  The opencode_route tool will require install.
+  Run: pnpx maestria@latest install opencode
 ```
 
 ### User-Facing Docs (apps/docs/)
 
-Setup guides for Mnemosyne, Uteke, kanban, and OpenCode live in the existing `apps/docs/` site — not in the plugin code:
+Setup guides for OpenCode live in the existing `apps/docs/` site — not in the plugin code:
 
 | Guide | Location | Content |
 | --- | --- | --- |
-| Mnemosyne setup | `apps/docs/src/content/docs/hermes/setup-mnemosyne.mdx` | Install, config, verify |
-| Uteke setup | `apps/docs/src/content/docs/hermes/setup-uteke.mdx` | MCP server config, verify |
-| Kanban setup | Existing kanban docs | Enable, configure workers |
 | Full maestria stack | `apps/docs/src/content/docs/hermes/getting-started.mdx` | Plugin install + optional extras |
 
 ## Open Questions (Resolved)

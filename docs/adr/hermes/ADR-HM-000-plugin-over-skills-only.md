@@ -21,9 +21,9 @@ The question: could we ship the methodology as skills-only (zero Python code, ze
 The methodology layer has two distinct parts:
 
 | Layer | What it is | Can be a skill? |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | **Methodology guidance** | Specialist prompts, rules, routing advice | ✅ Yes — these are the 9 SKILL.md files |
-| **Enforcement layer** | Tool gating, mode switching, backend detection, subagent tracking, OpenCode plugin verification | ❌ No — requires hooks, middleware, tools, commands |
+|  | **Enforcement layer** | Tool gating, mode switching, subagent tracking, OpenCode plugin verification | ❌ No — requires hooks, middleware, tools, commands |
 
 Skills alone deliver ~60-70% of the value for a disciplined agent who manually follows the patterns. But the remaining 30-40% — the automated enforcement that makes the methodology reliable without depending on agent discipline — requires plugin-level APIs.
 
@@ -35,9 +35,10 @@ Skills alone deliver ~60-70% of the value for a disciplined agent who manually f
 | Inject mode/role context | `pre_llm_call` hook | Avoids repetitive prompting |
 | `/fein` `/sonar` `/blitz` commands | `register_command()` | Instant mode switching without manual prompt edits |
 | Persist mode across sessions | Python state management | Mode survives `/resume` and session restarts |
-| Detect Mnemosyne/kanban at startup | Python filesystem + tool registry probes | Graceful fallback instead of silent failure |
 | Verify `@maestria/opencode` plugin | `subprocess` + filesystem checks | Prevents silent methodology drift in delegated tasks |
 | Track subagent pipeline | `subagent_start/stop` hooks | Observability into specialist lifecycle |
+
+> **Note (2026-07-17):** The "Detect Mnemosyne/kanban at startup" row was removed in this revision. The plugin is now **memory-engine agnostic** — it never probes for, reads from, or writes to any memory provider. Memory is a platform concern (Hermes has 8 built-in providers), not a plugin concern. See Principle #2 in `docs/hermes-maestria-plugin.md` and the memory agnosticism audit that led to this change.
 
 This is not a theoretical distinction — during development we found and fixed **6 bugs** that only existed because we had plugin-level access to the Hermes API (wrong kwarg names from `delegate_tool.py`, missing `Path`-vs-string type mismatch in `register_skill`, non-existent `PluginContext` methods in detection code). A skills-only approach would have encountered the same methodology mismatches with no way to detect or fix them.
 
@@ -58,7 +59,7 @@ The alternative — users cloning the repo and loading skills manually — is do
 ### Positive
 
 - **Reliable enforcement** — methodology gates cannot be skipped by an agent that "forgets" to follow instructions
-- **Fail-fast detection** — missing backends (Mnemosyne, kanban, `@maestria/opencode`) are reported at startup, not discovered mid-task
+- **Fail-fast detection** — missing `@maestria/opencode` is reported at startup, not discovered mid-task. Memory and kanban are deliberately not probed (see the memory engine agnosticism note above).
 - **First-class integration** — slash commands, mode persistence, and lifecycle hooks feel native to Hermes rather than bolted on
 - **Discoverability** — `pip install maestria-hermes` with an entry point is the standard Hermes plugin distribution model
 
@@ -72,7 +73,7 @@ The alternative — users cloning the repo and loading skills manually — is do
 ### Mitigations
 
 - Skills are still shipped as part of the plugin (under `src/maestria_hermes/skills/`) — users get both layers in one package
-- The plugin's Python code is minimal (~900 lines total across 10 files) — a thin adapter that dispatches to Hermes-native subsystems
+- The plugin's Python code is minimal (~800 lines across 9 files including the removed `memory.py` — see the v0.1 memory agnosticism cleanup) — a thin adapter that dispatches to Hermes-native subsystems
 - All hook and middleware signatures were validated against actual Hermes source code before merge
 
 ## Related Decisions
