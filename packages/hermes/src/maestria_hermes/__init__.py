@@ -8,7 +8,9 @@ Design docs at docs/hermes-maestria-plugin.md.
 """
 
 import logging
+import pathlib
 
+from maestria_hermes.hooks.pre_gateway import create_pre_gateway_hook
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
 from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
 from maestria_hermes.hooks.transform import create_transform_tool_result_hook
@@ -36,7 +38,13 @@ def register(ctx):
     session_manager = SessionManager()
     init_roles()  # Load role permissions (from file or defaults)
 
-    # ...
+    # -- Phase 0: Pre-gateway command dispatch (runs before agent-busy check) --
+    ctx.register_hook(
+        "pre_gateway_dispatch",
+        create_pre_gateway_hook(mode_manager),
+    )
+
+    # -- Phase 2: LLM lifecycle hooks --------------------------------------
 
     ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager))
     ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
@@ -104,7 +112,6 @@ def register(ctx):
 
     # -- Phase 2: Skills ----------------------------------------------------
 
-    import pathlib
     _skills_dir = pathlib.Path(__file__).parent / "skills"
 
     _skill_registrations = [
@@ -158,6 +165,11 @@ def _cmd_status(mode_manager):
 def _on_subagent_start(**kwargs) -> None:
     """Log when a subagent is spawned for pipeline tracking.
 
+    Role registration for permission enforcement is handled by the
+    pre_llm_call hook, which parses [MAESTRIA_ROLE: <role>] from the
+    delegate_task context on the subagent's first turn.  This hook
+    exists solely for observability.
+
     Kwargs (from delegate_tool.py):
         child_session_id: str — spawned agent's session id
         child_subagent_id: str — spawned agent's unique id
@@ -170,7 +182,6 @@ def _on_subagent_start(**kwargs) -> None:
     child_session_id = kwargs.get("child_session_id", "unknown")
     child_role = kwargs.get("child_role", "unknown")
     child_goal = kwargs.get("child_goal", "")
-
     if child_role and child_role != "unknown":
         logger.info(
             "maestria subagent started: role=%s session=%s",
@@ -182,6 +193,10 @@ def _on_subagent_start(**kwargs) -> None:
 
 def _on_subagent_stop(**kwargs) -> None:
     """Log when a subagent completes for pipeline tracking.
+
+    Role cleanup is unnecessary — the pre_llm_call hook manages
+    session->role registration per-turn.  This hook exists solely
+    for observability.
 
     Kwargs (from delegate_tool.py):
         child_session_id: str — completed agent's session id
@@ -195,7 +210,6 @@ def _on_subagent_stop(**kwargs) -> None:
     child_role = kwargs.get("child_role", "unknown")
     child_status = kwargs.get("child_status", "unknown")
     duration_ms = kwargs.get("duration_ms", 0)
-
     logger.info(
         "maestria subagent stopped: role=%s session=%s status=%s duration=%.1fs",
         child_role, child_session_id, child_status, duration_ms / 1000.0,

@@ -1,16 +1,33 @@
-"""pre_llm_call hook -- injects mode context into every user message.
+"""pre_llm_call hook -- injects mode context and registers maestria specialist roles.
 
-The returned context dict is appended to the user message before it
-reaches the LLM, preserving the Hermes prompt cache (system prompt
-is not modified).
+Mode context is injected into every user message preserving the Hermes
+prompt cache (system prompt is not modified).
 
-The hook only injects mode context. Memory injection was removed in
-v0.1-memory-agnostic because memory is a platform concern, not a plugin
-concern — Hermes has 8 built-in memory providers and the user chooses
-one independently. The plugin must not add a memory layer on top.
+Maestria specialist roles (builder, reviewer, adventurer, etc.) are parsed
+from the user message on the subagent's first turn and registered in the
+session_id -> role mapping for permission enforcement.  The orchestrator
+includes [MAESTRIA_ROLE: <role>] in the context parameter of delegate_task.
 """
 
+from __future__ import annotations
+
+import logging
+import re
+
 from maestria_hermes.modes import ModeManager
+from maestria_hermes.session import set_role_for_session
+
+logger = logging.getLogger(__name__)
+
+# Matches [MAESTRIA_ROLE: builder] or [MAESTRIA_ROLE: reviewer] at the
+# start of a message.  The role name is captured as group 1.
+_ROLE_PATTERN = re.compile(r"^\s*\[MAESTRIA_ROLE:\s*(\w+)\s*\]", re.IGNORECASE)
+
+# Valid maestria specialist roles
+_VALID_ROLES = {
+    "orchestrator", "adventurer", "architect", "builder",
+    "diagnose", "planner", "reviewer", "writer",
+}
 
 _MODE_CONTEXT = {
     "fein": (
@@ -40,14 +57,41 @@ _MODE_CONTEXT = {
 def create_pre_llm_hook(mode_manager: ModeManager):
     """Create a pre_llm_call hook closure bound to the mode manager.
 
-    Returns a hook that injects the current maestria mode directive into
-    the user message on every turn. No memory context is appended — memory
-    is a platform concern managed by Hermes' built-in providers.
+    Injects the current maestria mode directive into every user message.
+    On the subagent's first turn, also parses [MAESTRIA_ROLE: <role>]
+    from the user message and registers the specialist role for
+    permission enforcement in pre_tool_call.
     """
 
     def pre_llm_hook(**kwargs) -> dict:
-        """Inject mode context into the user message."""
+        """Inject mode context into the user message.
+
+        Also registers maestria specialist roles on subagent first turn.
+        """
         mode = mode_manager.get_mode()
+
+        # -- Register maestria specialist role (subagent first turn) --------
+        session_id = kwargs.get("session_id", "")
+        user_message = kwargs.get("user_message", "")
+        is_first_turn = kwargs.get("is_first_turn", False)
+
+        if is_first_turn and session_id and user_message:
+            m = _ROLE_PATTERN.search(user_message)
+            if m:
+                role = m.group(1).lower()
+                if role in _VALID_ROLES:
+                    set_role_for_session(session_id, role)
+                    logger.info(
+                        "maestria role registered: session=%s role=%s",
+                        session_id, role,
+                    )
+                else:
+                    logger.debug(
+                        "maestria role '%s' not in valid set, ignored", role,
+                    )
+
+        # -- Inject mode context -------------------------------------------
+
         context = _MODE_CONTEXT.get(
             mode,
             f"[MAESTRIA MODE: {mode}]\nNo specific mode instructions defined.",

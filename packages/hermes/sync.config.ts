@@ -108,7 +108,7 @@ export default {
         '- Each specialist has a `PermissionRole` restricting its tools',
         '- Mode context is injected via pre_llm_call hook automatically',
         '- Sonar mode blocks write tools via pre_tool_call hook',
-        '- Set child_role parameter in delegate_task for permission enforcement',
+        '- Include `[MAESTRIA_ROLE: <role>]` in the `context` parameter of every `delegate_task` call so the subagent permission role is enforced',
         '- After builder completes, dispatch reviewer for validation',
       ].join('\n'),
     },
