@@ -57,6 +57,18 @@ This clones the maestria repo, extracts `packages/hermes/` into `~/.hermes/plugi
 | Middleware        | `llm_execution` (mode footer annotation, opt-in via `MAESTRIA_MODE_FOOTER=1`)                                                          |
 | Backend detection | Probes only for OpenCode CLI at startup (memory and kanban are platform concerns, not probed)                                          |
 
+## Recommended Setup
+
+The plugin works standalone — install and go. For the best experience, pair it with these Hermes platform features:
+
+| Feature                             | What it adds                                                                                                                                    | Why pair with maestria                                                                                                                          | Links                                                                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Mnemosyne** (agent memory)        | Cross-session memory with semantic recall, sleep cycles, and canonical facts. Remembers preferences, decisions, and task state across sessions. | Your mode preference and pipeline context carry across sessions. The agent learns your working style and recalls past pipeline outcomes.        | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/nousresearch/hermes) |
+| **Uteke** (knowledge base)          | Local-first semantic wiki for project docs, architecture decisions, and reference material. Single Rust binary, zero config, fully offline.     | Specialist findings and pipeline decisions can be saved as searchable knowledge-base documents for long-term project memory.                    | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/codecoradev/uteke)   |
+| **`/goal`** (persistent objectives) | Multi-turn objectives with auto-continuation, turn budgets, and judge evaluation. Survives session boundaries.                                  | Long pipelines survive `/resume`. Mode and pipeline state restore on `/goal resume`. Pair with `/fein` for production-grade multi-session work. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) · [GitHub](https://github.com/nousresearch/hermes)  |
+
+Configure Mnemosyne or Uteke in your Hermes `config.yaml` under `memory:`. The plugin is memory-engine agnostic — it works identically regardless of which provider (or none) is active.
+
 ## Verifying Installation
 
 If you see the mode directive injected into your messages, the plugin is active:

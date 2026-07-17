@@ -58,6 +58,18 @@ The plugin ships with permission roles for each of the 8 specialists, controllin
 
 Roles are assigned automatically when the orchestrator dispatches a specialist. The `pre_tool_call` hook enforces tool restrictions — no manual role switching needed.
 
+## Pairing with Platform Features
+
+For multi-turn or long-running work, pair maestria pipelines with Hermes platform features:
+
+| Feature                      | How it helps                                                                                                                                                                       | Links                                                                                                                            |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **`/goal`**                  | Set a persistent objective (`/goal draft Run the fein pipeline to implement OAuth`). The goal loop survives session boundaries; mode and pipeline state restore on `/goal resume`. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) · [GitHub](https://github.com/nousresearch/hermes)  |
+| **Mnemosyne** (agent memory) | Cross-session agent memory remembers your mode preference, past pipeline context, and working patterns across sessions.                                                            | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/nousresearch/hermes) |
+| **Uteke** (knowledge base)   | Store specialist findings and pipeline decisions as searchable wiki documents for long-term project reference.                                                                     | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/codecoradev/uteke)   |
+
+Configure Mnemosyne or Uteke in `config.yaml` under `memory:`. See the [Installation Guide](/hermes/getting-started/installation/) for details.
+
 ## Next Steps
 
 - [Commands](/hermes/commands/) — Full reference for all slash commands
