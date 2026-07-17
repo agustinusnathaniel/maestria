@@ -1,5 +1,17 @@
 # maestria
 
+## 0.6.0
+
+### Minor Changes
+
+- [#9](https://github.com/agustinusnathaniel/maestria/pull/9) [`17c6816`](https://github.com/agustinusnathaniel/maestria/commit/17c6816c602c9c40b96b28a1a574fc2c387cca56) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat: add `maestria check <platform>` command for plugin installation verification
+
+  New subcommand that checks whether a maestria plugin is installed on a given
+  platform by reading the platform's own configuration (e.g.
+  `~/.config/opencode/opencode.jsonc` for OpenCode). Exits 0 if installed, 1 if
+  not. Machine-readable JSON output by default — optimized for AI agent
+  consumption.
+
 ## 0.5.0
 
 ### Minor Changes
