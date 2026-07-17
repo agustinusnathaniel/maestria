@@ -46,7 +46,10 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
                 return
             loop = asyncio.get_event_loop()
             if loop.is_running():
-                loop.create_task(adapter.send(source.chat_id, text))
+                metadata = {}
+                if hasattr(source, "thread_id") and source.thread_id:
+                    metadata["thread_id"] = source.thread_id
+                loop.create_task(adapter.send(source.chat_id, text, metadata=metadata))
             else:
                 logger.warning("pre_gateway: no running event loop, can't send response")
         except Exception as e:
