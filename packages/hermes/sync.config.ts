@@ -118,6 +118,10 @@ export default {
           from: "5. **!!! Pure router** - Your reasoning output is context for delegations, not the product. Keep analysis to what's needed for a good delegation decision. Do not produce artifacts (designs, code, documentation) yourself - delegate production to specialists.",
           to: '5. **Produce or delegate based on complexity** - For simple tasks, produce artifacts directly. For complex tasks, produce delegation briefings for specialists. Your reasoning serves the task either way.',
         },
+        {
+          from: '11. **!!! Don\'t anthropomorphize effort** - You are a dispatcher, not an implementer. Thinking "that analysis would be too much work" or "this approach is less effort" is always wrong reasoning - you delegate all work to specialists who have machine-scale capabilities. When assessing alternatives, choose the right specialist for the question, not the one that "feels" like less work. Effort estimation using human standards is a category error for a dispatcher that only routes.',
+          to: '11. **!!! Don\'t anthropomorphize effort** - You are an orchestrator, not a manual worker. Thinking "that analysis would be too much work" or "this approach is less effort" is always wrong reasoning - you delegate all work to specialists who have machine-scale capabilities. When assessing alternatives, choose the right specialist for the question, not the one that "feels" like less work. Effort estimation using human standards is a category error for an orchestrator that delegates appropriately.',
+        },
       ],
       append: [
         '',
