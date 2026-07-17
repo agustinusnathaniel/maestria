@@ -69,4 +69,3 @@ jobs:
       - name: Sync Hermes Python version
         if: steps.changesets.outputs.published == 'true'
         run: python scripts/sync-hermes-version.py
-
