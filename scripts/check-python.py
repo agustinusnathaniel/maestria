@@ -6,11 +6,18 @@ Verifies all Python source files in packages/hermes/:
   2. Module imports resolve correctly
 
 Exits non-zero on any failure. Designed to run as a `vp run` task.
+
+Prerequisite: Python 3.11+ (invoked via the shebang or `python3`).
 """
 
 import subprocess
 import sys
 from pathlib import Path
+
+# Self-test: fail early with a helpful message if python3 can't run this
+if sys.version_info < (3, 11):
+    print(f"ERROR: Python 3.11+ required, got {sys.version}")
+    sys.exit(1)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 HERMES_SRC = REPO_ROOT / "packages" / "hermes" / "src"
