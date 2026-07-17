@@ -23,7 +23,7 @@ The methodology layer has two distinct parts:
 | Layer | What it is | Can be a skill? |
 | --- | --- | --- | --- |
 | **Methodology guidance** | Specialist prompts, rules, routing advice | ✅ Yes — these are the 9 SKILL.md files |
-|  | **Enforcement layer** | Tool gating, mode switching, subagent tracking, OpenCode plugin verification | ❌ No — requires hooks, middleware, tools, commands |
+|  | **Enforcement layer** | Tool gating, mode switching, subagent tracking, OpenCode CLI routing | ❌ No — requires hooks, middleware, tools, commands |
 
 Skills alone deliver ~60-70% of the value for a disciplined agent who manually follows the patterns. But the remaining 30-40% — the automated enforcement that makes the methodology reliable without depending on agent discipline — requires plugin-level APIs.
 
@@ -40,6 +40,8 @@ Skills alone deliver ~60-70% of the value for a disciplined agent who manually f
 
 > **Note (2026-07-17):** The "Detect Mnemosyne/kanban at startup" row was removed in this revision. The plugin is now **memory-engine agnostic** — it never probes for, reads from, or writes to any memory provider. Memory is a platform concern (Hermes has 8 built-in providers), not a plugin concern. See Principle #2 in `docs/hermes-maestria-plugin.md` and the memory agnosticism audit that led to this change.
 
+> **Note (2026-07-17):** The "Verify `@maestria/opencode` plugin" row was removed in this revision (and the corresponding `_detect_backends()` startup probe and `_check_maestria_plugin()` function were deleted). The plugin now has no startup probes for any external tool. The `opencode_route` tool is a simple CLI delegator — it calls `opencode run <goal>` and fails clearly if the CLI is missing. Responsibility for the OpenCode plugin's methodology consistency is owned by the OpenCode platform, not by the Hermes plugin.
+
 This is not a theoretical distinction — during development we found and fixed **6 bugs** that only existed because we had plugin-level access to the Hermes API (wrong kwarg names from `delegate_tool.py`, missing `Path`-vs-string type mismatch in `register_skill`, non-existent `PluginContext` methods in detection code). A skills-only approach would have encountered the same methodology mismatches with no way to detect or fix them.
 
 ### Distribution consequences
@@ -53,7 +55,7 @@ The alternative — users cloning the repo and loading skills manually — is do
 ### Positive
 
 - **Reliable enforcement** — methodology gates cannot be skipped by an agent that "forgets" to follow instructions
-- **Fail-fast detection** — missing `@maestria/opencode` is reported at startup, not discovered mid-task. Memory and kanban are deliberately not probed (see the memory engine agnosticism note above).
+- **Clean responsibility boundary** — the plugin owns methodology enforcement (modes, roles, gates) without probing or verifying external tools. The `opencode_route` tool is a simple CLI delegator — if OpenCode CLI is not installed, it reports the error clearly. It does not check for `@maestria/opencode` or any other npm package.
 - **First-class integration** — slash commands, mode persistence, and lifecycle hooks feel native to Hermes rather than bolted on
 - **Discoverability** — `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable` is the standard Hermes plugin install flow
 

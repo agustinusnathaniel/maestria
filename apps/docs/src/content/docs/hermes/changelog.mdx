@@ -16,7 +16,7 @@ Initial release.
 - `pre_tool_call` hook for mode-based tool gating (sonar write-block)
 - `llm_execution` middleware (opt-in mode footer via `MAESTRIA_MODE_FOOTER=1`)
 - 6 slash commands: `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`
-- OpenCode CLI detection and routing tool with `skip_plugin_check` escape hatch
+- OpenCode CLI routing tool (`opencode_route`) for delegating complex coding tasks
 - Subagent lifecycle hooks (`subagent_start`/`stop` for pipeline tracking)
 - Session lifecycle hooks (`on_session_start`/`end`)
 - `transform_tool_result` hook (observer-mode write logging)

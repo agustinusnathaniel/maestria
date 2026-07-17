@@ -32,7 +32,7 @@ Hermes is a general-purpose AI agent platform, not a coding CLI like OpenCode. T
 
 ### 4. Minimal detection — only for external tooling
 
-Different Hermes instances have different tools and providers configured. The plugin probes at startup only for the one external dependency — the **OpenCode CLI** (an optional power-up for complex coding tasks). Memory backends and platform features like kanban are deliberately not probed: Hermes provides them natively and the plugin doesn't need to know which ones are active.
+Different Hermes instances have different tools and providers configured. The plugin does not probe for any external tool at startup — the `opencode_route` tool is a simple CLI delegator that fails clearly if OpenCode CLI is not installed. Memory backends and platform features like kanban are deliberately not probed: Hermes provides them natively and the plugin doesn't need to know which ones are active.
 
 The probe never blocks, installs, or modifies config. It just logs guidance.
 
@@ -359,7 +359,7 @@ OpenCode CLI is a tool available to specialists, not a separate layer:
 1. Builder (or Diagnose) evaluates task complexity
 2. Simple tasks: use Hermes tools directly (edit, write, bash)
 3. Complex/multi-file/risky: route to OpenCode CLI with structured brief
-4. Verify @maestria/opencode is configured in the target OpenCode instance
+4. Delegate via `opencode run <goal>` — the tool reports clearly if the CLI is missing
 5. Results flow back for review and integration
 
 ```python
@@ -406,7 +406,7 @@ plugin/
   __init__.py          # register() entry point
   hooks.py             # Hook handlers
   modes.py             # Mode system with persistence
-  opencode_bridge.py   # OpenCode CLI delegation
+  opencode.py          # OpenCode CLI delegation tool
 ```
 
 ### plugin.yaml (Actual)
@@ -490,7 +490,7 @@ All 7 specialists with full skill files, replacing custom JSON file persistence 
 - Each specialist uses `ctx.llm.complete_structured()` for reasoning
 - delegate_task for subagent dispatch (native Hermes tool)
 - subagent_start/stop hooks for pipeline tracking
-- OpenCode lifecycle management (install check, config sync)
+- OpenCode CLI routing (simple `opencode run <goal>` delegator)
 - Mode + state via **SessionDB.state_meta** (not custom JSON files) — **not yet implemented** (still uses JSON file)
 - transform_tool_result hook for methodology annotations
 

@@ -61,7 +61,7 @@ ln -s /path/to/maestria/packages/hermes ~/.hermes/plugins/maestria-hermes
 
 1. **Methodology portable, adapter thin** — Plugin code is the Hermes adapter; the real methodology lives in `packages/core/agent-directives/`
 2. **Hermes-native first + memory-agnostic** — Use Hermes' built-in subsystems (`delegate_task`, `ctx.llm`, `/goal`, `kanban_*`) rather than reimplementing them. Memory is a platform concern (8 providers), not a plugin concern.
-3. **Minimal detection** — Startup probes only for OpenCode CLI (optional power-up). Memory and kanban are platform features, not probed.
+3. **Self-contained** — The plugin has no startup probes for external tools or packages. The `opencode_route` tool delegates to OpenCode CLI if installed, but does not verify or probe for it at startup.
 4. **Feel native** — Commands, hooks, and config follow Hermes Plugin API conventions
 
 See the [ADR-HM-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/hermes/ADR-HM-001-long-lived-goals-scope.md) for the design rationale behind specific scope decisions.
