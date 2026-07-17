@@ -33,6 +33,7 @@ Phases:
 
 import logging
 import os
+import shutil
 
 from maestria_hermes._version import __version__
 from maestria_hermes.modes import ModeManager
@@ -162,12 +163,7 @@ def register(ctx):
 def _opencode_available() -> bool:
     """Check_fn for opencode_route: hide tool when OpenCode CLI is missing."""
     try:
-        import subprocess
-        result = subprocess.run(
-            ["which", "opencode"],
-            capture_output=True, text=True, timeout=5,
-        )
-        return result.returncode == 0
+        return shutil.which("opencode") is not None
     except Exception:
         return False
 
@@ -192,12 +188,7 @@ def _detect_backends(ctx):
     """
     # Check @maestria/opencode plugin (needed for opencode_route tool)
     try:
-        import subprocess
-        oc_check = subprocess.run(
-            ["which", "opencode"],
-            capture_output=True, text=True, timeout=5,
-        )
-        if oc_check.returncode == 0:
+        if shutil.which("opencode"):
             # OpenCode CLI is installed; check for plugin
             from maestria_hermes.tools.opencode import _check_maestria_plugin
             plugin_err = _check_maestria_plugin(os.getcwd())

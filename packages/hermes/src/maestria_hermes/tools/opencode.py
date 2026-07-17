@@ -8,6 +8,7 @@ so the OpenCode instance follows Maestria methodology.
 import json
 import logging
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -19,63 +20,42 @@ MAESTRIA_PLUGIN_MARKER = "opencode"  # The key in package.json
 
 
 def _check_maestria_plugin(workdir: str) -> Optional[str]:
-    """Check if @maestria/opencode is installed.
+    """Check if @maestria/opencode is installed using Node's module resolution.
+
+    Uses ``node -e "require('@maestria/opencode')"`` which resolves correctly
+    under npm, pnpm, yarn (with node_modules), and bun. Falls back to
+    checking the global npm prefix if require() fails.
 
     Returns an error message string if the plugin is missing, or None if found.
-    Checks multiple locations: project node_modules, global node_modules.
     """
-    # Check 1: Resolve the package via node require path resolution.
-    #          This catches both local (project) and global installs.
-    check_paths = []
-
-    # Project-local node_modules
-    if workdir and workdir != ".":
-        check_paths.append(os.path.join(workdir, "node_modules"))
-    cwd = Path.cwd()
-    for parent in [cwd, *cwd.parents]:
-        nm = parent / "node_modules"
-        if nm.is_dir():
-            check_paths.append(str(nm))
-            break
-
-    # Global node_modules (npm prefix)
+    # Primary: Node.js require() resolves local installs (npm, pnpm, yarn, bun)
     try:
-        prefix = subprocess.run(
-            ["npm", "prefix", "-g"],
+        result = subprocess.run(
+            ["node", "-e", "require('@maestria/opencode')"],
+            capture_output=True, text=True, timeout=10,
+            cwd=workdir,
+        )
+        if result.returncode == 0:
+            return None
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+
+    # Fallback: global npm install
+    try:
+        npm_root = subprocess.run(
+            ["npm", "root", "-g"],
             capture_output=True, text=True, timeout=5,
         )
-        if prefix.returncode == 0:
-            global_nm = os.path.join(prefix.stdout.strip(), "lib", "node_modules")
-            if os.path.isdir(global_nm):
-                check_paths.append(global_nm)
+        if npm_root.returncode == 0:
+            global_pkg = os.path.join(
+                npm_root.stdout.strip(),
+                *MAESTRIA_PLUGIN_PKG.split("/"),
+                "package.json",
+            )
+            if os.path.isfile(global_pkg):
+                return None
     except Exception:
         pass
-
-    # NVM / Node version manager locations
-    nvm_path = os.path.expanduser("~/.nvm/versions/node/*/lib/node_modules")
-    try:
-        import glob
-        for path in glob.glob(nvm_path):
-            check_paths.append(path)
-    except Exception:
-        pass
-
-    for nm_dir in check_paths:
-        pkg_dir = os.path.join(nm_dir, *MAESTRIA_PLUGIN_PKG.split("/"))
-        pkg_json = os.path.join(pkg_dir, "package.json")
-        if os.path.isfile(pkg_json):
-            try:
-                with open(pkg_json) as f:
-                    meta = json.load(f)
-                if meta.get("opencode", {}).get("type") == "plugin":
-                    logger.debug(
-                        "Found %s at %s (version %s)",
-                        MAESTRIA_PLUGIN_PKG, pkg_dir,
-                        meta.get("version", "unknown"),
-                    )
-                    return None  # Found it
-            except Exception:
-                continue
 
     return (
         f"{MAESTRIA_PLUGIN_PKG} is not installed. "
@@ -142,11 +122,7 @@ def opencode_route_handler(args: Dict[str, Any], **kwargs) -> str:
 
     try:
         # Check OpenCode is available
-        result = subprocess.run(
-            ["which", "opencode"],
-            capture_output=True, text=True, timeout=5,
-        )
-        if result.returncode != 0:
+        if not shutil.which("opencode"):
             return json.dumps({
                 "status": "error",
                 "message": (
