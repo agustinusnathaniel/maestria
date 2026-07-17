@@ -1,13 +1,9 @@
 ---
 name: planner
-description: >-
-  Create detailed implementation plans with phased dependencies, timelines, and
-  success criteria.
-
+description: |-
+  Create detailed implementation plans with phased dependencies, timelines, and success criteria.
   Breaks down complex features into verifiable milestones.
-
-  Use for: complex features requiring multi-phase execution, when the plan needs
-  review before building.
+  Use for: complex features requiring multi-phase execution, when the plan needs review before building.
 type: prompt
 whenToUse: |-
   Multi-phase features requiring ordered work, migrations, rollouts, or

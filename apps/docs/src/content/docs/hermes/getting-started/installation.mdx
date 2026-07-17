@@ -1,0 +1,112 @@
+---
+title: Installation & Setup
+description: How to install @maestria/hermes on your Hermes Agent and what you get — 9 methodology skills, 6 slash commands, and role-based tool gating.
+---
+
+import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components';
+
+`@maestria/hermes` is a git-based Hermes plugin that turns your Hermes Agent into a disciplined methodology worker. It registers 9 skills, 6 slash commands, permission roles, and lifecycle hooks — all installed with a single `hermes plugins install` command.
+
+## Prerequisites
+
+- [Hermes Agent](https://hermes-agent.nousresearch.com) (latest version)
+- **Git CLI** — required for plugin resolution from the GitHub repository
+
+## Installation
+
+The maestria CLI provides a unified interface for installing and managing maestria plugins:
+
+<Steps>
+
+1. **Install via the maestria CLI**
+
+   ```bash
+   pnpx maestria@latest install hermes
+   ```
+
+   This runs the equivalent Hermes command automatically.
+
+2. **Verify installation**
+
+   ```bash
+   hermes plugins list
+   ```
+
+   You should see `maestria-hermes` in the list with status `enabled`.
+
+</Steps>
+
+### Manual installation
+
+If you prefer to install directly:
+
+```bash
+hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
+```
+
+This clones the maestria repo, extracts `packages/hermes/` into `~/.hermes/plugins/maestria-hermes/`, and enables the plugin in your Hermes config.
+
+## What Gets Installed
+
+| Resource         | What                                                                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 9 skills         | Specialist prompts (adventurer, architect, builder, diagnose, planner, reviewer, writer), orchestrator routing, global rules           |
+| 6 commands       | `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`                                                                               |
+| Permission roles | 8 specialist roles (orchestrator, adventurer, architect, builder, diagnose, planner, reviewer, writer) — gated by `pre_tool_call` hook |
+| Hooks            | `pre_llm_call`, `pre_tool_call`, `on_session_start`, `on_session_end`, `subagent_start`, `subagent_stop`, `transform_tool_result`      |
+| Middleware       | `llm_execution` (mode footer annotation, opt-in via `MAESTRIA_MODE_FOOTER=1`)                                                          |
+| External probes  | None — the plugin does not probe for any external CLI or package at startup                                                            |
+
+## Recommended Setup
+
+The plugin works standalone — install and go. For the best experience, pair it with these Hermes platform features:
+
+| Feature                             | What it adds                                                                                                                                    | Why pair with maestria                                                                                                                          | Links                                                                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Mnemosyne** (agent memory)        | Cross-session memory with semantic recall, sleep cycles, and canonical facts. Remembers preferences, decisions, and task state across sessions. | Your mode preference and pipeline context carry across sessions. The agent learns your working style and recalls past pipeline outcomes.        | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/nousresearch/hermes) |
+| **Uteke** (knowledge base)          | Local-first semantic wiki for project docs, architecture decisions, and reference material. Single Rust binary, zero config, fully offline.     | Specialist findings and pipeline decisions can be saved as searchable knowledge-base documents for long-term project memory.                    | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/codecoradev/uteke)   |
+| **`/goal`** (persistent objectives) | Multi-turn objectives with auto-continuation, turn budgets, and judge evaluation. Survives session boundaries.                                  | Long pipelines survive `/resume`. Mode and pipeline state restore on `/goal resume`. Pair with `/fein` for production-grade multi-session work. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) · [GitHub](https://github.com/nousresearch/hermes)  |
+
+Configure Mnemosyne or Uteke in your Hermes `config.yaml` under `memory:`. The plugin is memory-engine agnostic — it works identically regardless of which provider (or none) is active.
+
+## Verifying Installation
+
+If you see the mode directive injected into your messages, the plugin is active:
+
+```
+[MAESTRIA MODE: fein]
+Full methodology pipeline is active. All stages execute:
+1. Reconnaissance (adventurer)
+2. Design / planning (architect / planner)
+3. Implementation (builder)
+4. Review (reviewer)
+```
+
+To check status, type `/mode`:
+
+## Updating
+
+```bash
+pnpx maestria@latest update hermes
+```
+
+Or directly:
+
+```bash
+hermes plugins update maestria-hermes
+```
+
+This pulls the latest version from the git repository and refreshes the plugin files.
+
+## Uninstalling
+
+```bash
+hermes plugins remove maestria-hermes
+```
+
+The plugin files are removed from `~/.hermes/plugins/maestria-hermes/` and the entry is removed from your Hermes config. Other plugins remain unaffected.
+
+## Next Steps
+
+- [Quick Start](/hermes/getting-started/quick-start/) — Your first session with the plugin
+- [Commands](/hermes/commands/) — Full reference for all slash commands

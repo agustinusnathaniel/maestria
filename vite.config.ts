@@ -53,6 +53,12 @@ export default defineConfig({
         ],
         output: ['packages/*/agents/**', 'packages/*/prompts/**', 'packages/*/rules/**'],
       },
+      'check-python': {
+        command: 'ruff check packages/hermes/src && python3 -m compileall -q packages/hermes/src',
+        cache: true,
+        input: ['packages/hermes/src/**/*.py', 'packages/hermes/pyproject.toml'],
+        output: [],
+      },
     },
     cache: { scripts: true, tasks: true },
   },

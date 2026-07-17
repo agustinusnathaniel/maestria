@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "maestria-hermes"
+dynamic = ["version"]
+description = "Maestria methodology plugin for Hermes Agent"
+readme = "README.md"
+authors = [{ name = "Maestria Contributors" }]
+license = { text = "MIT" }
+keywords = ["hermes", "maestria", "ai-agent", "methodology"]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.entry-points."hermes_agent.plugins"]
+maestria-hermes = "maestria_hermes:register"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["maestria_hermes*"]
+
+[tool.setuptools.package-data]
+"maestria_hermes" = ["skills/**/*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "maestria_hermes._version.__version__" }
+
+[tool.ruff]
+target-version = "py311"
+src = ["src"]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

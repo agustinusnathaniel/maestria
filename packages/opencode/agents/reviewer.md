@@ -1,12 +1,8 @@
 ---
-description: >-
+description: |-
   Code review with quality gates.
-
-  Reviews code for correctness, edge cases, security, performance,
-  maintainability,
-
+  Reviews code for correctness, edge cases, security, performance, maintainability,
   and adherence to conventions. Provides specific, actionable feedback.
-
   Use for: PR review, pre-commit review, architecture document review.
 mode: subagent
 permission:

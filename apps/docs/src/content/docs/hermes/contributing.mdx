@@ -1,0 +1,97 @@
+---
+title: Contributing
+description: Project structure, development setup, and how to extend @maestria/hermes.
+---
+
+`@maestria/hermes` lives in the [maestria monorepo](https://github.com/agustinusnathaniel/maestria) under `packages/hermes/`. It is a Python Hermes plugin using the Hermes Plugin API.
+
+## Project Structure
+
+```
+packages/hermes/
+├── plugin.yaml                  # Plugin manifest (hooks, commands, tools)
+├── __init__.py                  # register() entry point + all handlers
+├── permissions.py               # PermissionRole class and ROLES dict
+├── modes.py                     # Mode persistence (atomic JSON writes)
+├── plugins.py                   # (future) Plugin lifecycle
+├── session.py                   # Session lifecycle hooks via SessionDB
+├── _version.py                  # Single source of truth for version
+├── hooks/
+│   ├── pre_llm.py              # Mode injection into user messages
+│   ├── pre_tool.py             # Role-based tool gating
+│   └── transform.py            # Tool result annotations
+├── middleware/
+│   └── llm_output.py           # LLM execution wrapper (opt-in mode footer)
+├── tools/
+│   └── opencode.py             # OpenCode CLI routing tool
+├── skills/                      # SKILL.md files (7 specialists + orchestrator + global)
+└── sync.config.ts              # Sync configuration for agent directives
+```
+
+## Development Setup
+
+```bash
+# Clone the monorepo
+git clone https://github.com/agustinusnathaniel/maestria
+cd maestria
+
+# Install dependencies
+pnpm install
+
+# Build
+pnpm build
+```
+
+## Installing Local Changes
+
+To test local changes without publishing:
+
+```bash
+# Point the hermes plugin to your local clone
+hermes plugins install /path/to/maestria/packages/hermes --enable
+```
+
+Or symlink the plugin directory:
+
+```bash
+ln -s /path/to/maestria/packages/hermes ~/.hermes/plugins/maestria-hermes
+```
+
+## Design Principles
+
+1. **Methodology portable, adapter thin** — Plugin code is the Hermes adapter; the real methodology lives in `packages/core/agent-directives/`
+2. **Hermes-native first + memory-agnostic** — Use Hermes' built-in subsystems (`delegate_task`, `ctx.llm`, `/goal`, `kanban_*`) rather than reimplementing them. Memory is a platform concern (8 providers), not a plugin concern.
+3. **Self-contained** — The plugin has no startup probes for external tools or packages. The `opencode_route` tool delegates to OpenCode CLI if installed, but does not verify or probe for it at startup.
+4. **Feel native** — Commands, hooks, and config follow Hermes Plugin API conventions
+
+See the [ADR-HM-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/hermes/ADR-HM-001-long-lived-goals-scope.md) for the design rationale behind specific scope decisions.
+
+## Testing
+
+```bash
+# Run plugin-specific tests
+pytest packages/hermes/
+
+# Run the full monorepo quality gates
+vp check
+```
+
+## Extending
+
+### Adding a command
+
+1. Create `commands/<name>.py` with an async function `async def cmd_<name>(ctx, args):`
+2. Register it in `__init__.py`'s `register()` via `ctx.register_command()`
+3. Add the command name to `plugin.yaml`'s `commands` list
+
+### Adding a hook
+
+1. Create `hooks/<name>.py` with the handler function
+2. Wire it in `__init__.py`'s `register()` via `ctx.register_hook()`
+3. Add the hook name to `plugin.yaml`'s `hooks` list
+
+### Adding a skill
+
+1. Create the `SKILL.md` file in `skills/`
+2. Register it via `ctx.register_skill()` in `__init__.py`
+3. Skills are namespaced as `hermes-maestria:<name>` in Hermes

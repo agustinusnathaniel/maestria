@@ -1,0 +1,76 @@
+---
+title: Quick Start
+description: Your first session with @maestria/hermes — switching modes, using slash commands, and dispatching specialists.
+---
+
+Once you've installed the plugin, all skills, commands, and hooks are loaded automatically in every Hermes session.
+
+## Start a Session
+
+Launch Hermes as usual. The plugin wires itself in at startup — you'll see detection probes log available backends.
+
+## Try the Commands
+
+All features are accessible via slash commands:
+
+```bash
+/mode        # Show current mode and role
+/fein        # Full pipeline: explore → design → build → review
+/sonar       # Research only: explore → analyze → stop
+/blitz       # Fast execution: build directly
+/review      # Trigger review of last output
+/plan        # Trigger a planning session
+```
+
+**Example workflow:**
+
+```
+You:          /fein
+Hermes:       Mode set to fein
+You:          Research the auth patterns in this codebase
+Hermes:       [Adventurer explores, Architect designs, Builder implements, Reviewer checks]
+```
+
+## Modes at a Glance
+
+| Mode    | Pipeline                                          | When to Use                                               |
+| ------- | ------------------------------------------------- | --------------------------------------------------------- |
+| `fein`  | Full: adventurer → architect → builder → reviewer | Production work, new features, anything that needs review |
+| `sonar` | Research: adventurer → architect → stop           | Understanding a codebase, exploring options, no creation  |
+| `blitz` | Build direct: builder only                        | Quick fixes, known territory, trivial changes             |
+
+The mode directive is injected into every message automatically — no manual prompting needed.
+
+## Specialist Roles
+
+The plugin ships with permission roles for each of the 8 specialists, controlling which tools they can use:
+
+| Specialist     | Tool Access                                          | Use Case                               |
+| -------------- | ---------------------------------------------------- | -------------------------------------- |
+| `orchestrator` | LLM reasoning + `delegate_task` only                 | Task decomposition and dispatch        |
+| `adventurer`   | Read, search, browser, LLM                           | Exploring codebases and gathering info |
+| `architect`    | Read, search, browser, LLM                           | Designing solutions                    |
+| `builder`      | All tools (read, write, bash, browser, data, coding) | Implementing changes                   |
+| `diagnose`     | Read, bash, LLM, `delegate_task`                     | Root cause analysis                    |
+| `planner`      | Read, LLM                                            | Multi-step planning                    |
+| `reviewer`     | Read, LLM                                            | Code review (edit/write blocked)       |
+| `writer`       | Read, LLM, browser                                   | Documentation and content              |
+
+Roles are assigned automatically when the orchestrator dispatches a specialist. The `pre_tool_call` hook enforces tool restrictions — no manual role switching needed.
+
+## Pairing with Platform Features
+
+For multi-turn or long-running work, pair maestria pipelines with Hermes platform features:
+
+| Feature                      | How it helps                                                                                                                                                                       | Links                                                                                                                            |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **`/goal`**                  | Set a persistent objective (`/goal draft Run the fein pipeline to implement OAuth`). The goal loop survives session boundaries; mode and pipeline state restore on `/goal resume`. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) · [GitHub](https://github.com/nousresearch/hermes)  |
+| **Mnemosyne** (agent memory) | Cross-session agent memory remembers your mode preference, past pipeline context, and working patterns across sessions.                                                            | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/nousresearch/hermes) |
+| **Uteke** (knowledge base)   | Store specialist findings and pipeline decisions as searchable wiki documents for long-term project reference.                                                                     | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/codecoradev/uteke)   |
+
+Configure Mnemosyne or Uteke in `config.yaml` under `memory:`. See the [Installation Guide](/hermes/getting-started/installation/) for details.
+
+## Next Steps
+
+- [Commands](/hermes/commands/) — Full reference for all slash commands
+- [Core Concepts](/core/agents/) — Specialist reference and pipeline patterns

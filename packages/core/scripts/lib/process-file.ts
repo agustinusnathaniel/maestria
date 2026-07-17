@@ -130,6 +130,11 @@ export async function processFile(
 
     content = normalizeLineEndings(content);
 
+    // 7. Ensure trailing newline (basic text file convention, no external tool needed)
+    if (!content.endsWith('\n')) {
+      content += '\n';
+    }
+
     // ── Mode dispatch ──
 
     if (dryRun) {

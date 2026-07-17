@@ -3,7 +3,7 @@
 ## 1. Development Setup
 
 ```bash
-# Prerequisites: Node 24.16+, pnpm 11.8+
+# Prerequisites: Node 24.16+, pnpm 11.8+, Python 3.11+, ruff (pip install ruff)
 # Install dependencies
 vp install
 

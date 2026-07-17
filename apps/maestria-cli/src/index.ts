@@ -7,6 +7,7 @@ import { installCommand } from '@/commands/install.js';
 import { updateCommand } from '@/commands/update.js';
 import { uninstallCommand } from '@/commands/uninstall.js';
 import { statusCommand } from '@/commands/status.js';
+import { checkCommand } from '@/commands/check.js';
 import { detectAll } from '@/lib/detect.js';
 import { createSpinner, renderStatusTable, renderCompactStatus } from '@/lib/output.js';
 
@@ -30,6 +31,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update pi                Update Pi platform to latest',
       'maestria update opencode -V 0.5.0 Update to specific version',
       'maestria update opencode,pi       Update multiple platforms at once',
+      'maestria install hermes           Install for Hermes agent',
       'maestria --help                   Show this help',
     ],
     tip: [
@@ -46,6 +48,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria install --all            Install for all detected platforms',
       'maestria install --json           Output results as JSON',
       'maestria install --quiet          Suppress spinner output',
+      'maestria install hermes           Install for a specific platform',
       'maestria install --compact        Minimal machine-friendly output',
     ],
   },
@@ -56,6 +59,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update --all             Update all installed platforms',
       'maestria update opencode,pi       Update multiple platforms at once',
       'maestria update --json            Output results as JSON',
+      'maestria update hermes            Update Hermes to latest',
       'maestria update --compact         Minimal machine-friendly output',
     ],
   },
@@ -65,6 +69,14 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria status --json            Show status as JSON',
       'maestria status --compact         Minimal machine-friendly output',
       'maestria status --quiet           Suppress spinner output',
+    ],
+  },
+  check: {
+    examples: [
+      'maestria check opencode           Check if @maestria/opencode is installed',
+      'maestria check hermes             Check if @maestria/hermes is installed',
+      'maestria check opencode --json    Output as JSON (default)',
+      'maestria check opencode --quiet   Exit code only (for scripts)',
     ],
   },
 };
@@ -148,6 +160,7 @@ const main = defineCommand({
     update: updateCommand,
     uninstall: uninstallCommand,
     status: statusCommand,
+    check: checkCommand,
   },
   run: async ({ args }) => {
     if (args.version) {

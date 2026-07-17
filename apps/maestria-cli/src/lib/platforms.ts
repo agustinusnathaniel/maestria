@@ -388,8 +388,55 @@ const writeInstalledJsonEffect = (
     Effect.catchCause(() => Effect.void),
   );
 
+const hermes: PlatformHandler = {
+  id: 'hermes',
+  label: 'Hermes',
+  // No npmPackage — distributed via hermes plugins install (git-based)
+
+  detect: commandExists('hermes'),
+
+  isInstalled: run('ls', [`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`], 5_000).pipe(
+    Effect.map(() => true),
+    Effect.catchCause(() => Effect.succeed(false)),
+  ),
+
+  getInstalledVersion: run('cat', [
+    `${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`,
+  ]).pipe(
+    Effect.map((out: string) => {
+      const match = out.match(/^version:\s*["']?(.+?)["']?\s*$/m);
+      return match?.[1] ?? 'unknown';
+    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
+  ),
+
+  getLatestVersion: Effect.succeed('see GitHub releases'),
+
+  install: Effect.gen(function* () {
+    yield* sh(
+      'hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable',
+      120_000,
+    );
+  }).pipe(Effect.as(void 0)),
+
+  update: (_version?: string) =>
+    Effect.gen(function* () {
+      if (_version) {
+        console.log(
+          `  ${picocolors.yellow('⚠')} Version pinning is not supported for git-based Hermes plugins. ` +
+            `Updating to latest from git.`,
+        );
+      }
+      yield* sh('hermes plugins update maestria-hermes', 60_000);
+    }),
+
+  uninstall: Effect.gen(function* () {
+    yield* sh('hermes plugins remove maestria-hermes', 15_000);
+  }).pipe(Effect.as(void 0)),
+};
+
 // ── Registry ─────────────────────────────────────────
-export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode];
+export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode, hermes];
 
 export function getPlatform(id: string): PlatformHandler | undefined {
   return platforms.find((p) => p.id === id);
