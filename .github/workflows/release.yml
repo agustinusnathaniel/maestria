@@ -70,13 +70,3 @@ jobs:
         if: steps.changesets.outputs.published == 'true'
         run: python scripts/sync-hermes-version.py
 
-      - name: Publish @maestria/hermes to PyPI
-        if: steps.changesets.outputs.published == 'true'
-        working-directory: packages/hermes
-        run: |
-          pip install build twine
-          python -m build
-          python -m twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
