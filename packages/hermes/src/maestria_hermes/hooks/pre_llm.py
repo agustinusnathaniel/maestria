@@ -11,8 +11,8 @@ includes [MAESTRIA_ROLE: <role>] in the context parameter of delegate_task.
 
 from __future__ import annotations
 
-import re
 import logging
+import re
 
 from maestria_hermes.modes import ModeManager
 from maestria_hermes.session import set_role_for_session
