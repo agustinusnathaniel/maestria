@@ -2,6 +2,10 @@
 
 In sonar mode, all write tools are blocked regardless of specialist.
 In fein/blitz mode, each specialist has its own permission role.
+
+Role context is obtained from the session_id -> role mapping populated
+by subagent_start (see session.py).  This works around the Hermes API
+limitation that pre_tool_call hooks do not receive child_role.
 """
 
 from __future__ import annotations
@@ -10,6 +14,7 @@ import logging
 
 from maestria_hermes.modes import ModeManager
 from maestria_hermes.permissions import TOOL_CATEGORIES, block_message, get_role
+from maestria_hermes.session import get_role_for_session
 
 logger = logging.getLogger(__name__)
 
@@ -18,13 +23,8 @@ def create_pre_tool_hook(mode_manager: ModeManager):
     """Create a pre_tool_call hook closure bound to the given mode manager.
 
     In sonar mode all write tools are blocked regardless of specialist.
-    In fein/blitz mode the hook checks the caller's permission role.
-
-    NOTE: Hermes does NOT pass ``child_role`` to ``pre_tool_call`` hooks
-    (the kwarg does not exist in the hook dispatch chain).  Role-based
-    subagent gating cannot be enforced until Hermes provides this context.
-    When the role is absent we fall back to allowing the tool — the sonar
-    mode write-block is the reliable primary gate.
+    In fein/blitz mode the hook checks the caller's permission role,
+    resolved from the session_id -> role mapping.
     """
 
     def pre_tool_hook(tool_name: str, **kwargs) -> None | dict:
@@ -48,18 +48,18 @@ def create_pre_tool_hook(mode_manager: ModeManager):
                 }
             return None  # Read tools allowed in sonar mode
 
-        # Fein/Blitz mode: check permission role
-        # Hermes does not currently pass ``child_role`` to pre_tool_call
-        # hooks, so subagent-level gating is unavailable.  When absent we
-        # allow the tool; mode-based gating (sonar write-block above) is
-        # the reliable primary enforcement mechanism.
-        role = kwargs.get("child_role", "")
+        # Fein/Blitz mode: check permission role from session mapping
+        session_id = kwargs.get("session_id", "")
+        role = get_role_for_session(session_id) if session_id else ""
+
         if not role:
-            return None  # Allow — role context unavailable
+            # No role mapping -- session may not be a subagent (e.g. direct chat).
+            # Allow the tool; the sonar mode gate above is the reliable fallback.
+            return None
 
         perm_role = get_role(role)
         if not perm_role.is_tool_allowed(tool_name):
-            logger.info("blocked tool=%s for role=%s", tool_name, role)
+            logger.info("blocked tool=%s for role=%s (session=%s)", tool_name, role, session_id)
             return {
                 "action": "block",
                 "message": block_message(role, tool_name),

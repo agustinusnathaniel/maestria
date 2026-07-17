@@ -8,14 +8,21 @@ Design docs at docs/hermes-maestria-plugin.md.
 """
 
 import logging
+import pathlib
 
+from maestria_hermes.hooks.pre_gateway import create_pre_gateway_hook
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
 from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
 from maestria_hermes.hooks.transform import create_transform_tool_result_hook
 from maestria_hermes.middleware.llm_output import create_llm_output_middleware
 from maestria_hermes.modes import ModeManager
 from maestria_hermes.permissions import init_roles
-from maestria_hermes.session import SessionManager, create_session_hooks
+from maestria_hermes.session import (
+    SessionManager,
+    clear_role_for_session,
+    create_session_hooks,
+    set_role_for_session,
+)
 from maestria_hermes.tools.opencode import (
     opencode_route_handler,
     opencode_route_tool_schema,
@@ -36,7 +43,13 @@ def register(ctx):
     session_manager = SessionManager()
     init_roles()  # Load role permissions (from file or defaults)
 
-    # ...
+    # -- Phase 0: Pre-gateway command dispatch (runs before agent-busy check) --
+    ctx.register_hook(
+        "pre_gateway_dispatch",
+        create_pre_gateway_hook(mode_manager),
+    )
+
+    # -- Phase 2: LLM lifecycle hooks --------------------------------------
 
     ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager))
     ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
@@ -104,7 +117,6 @@ def register(ctx):
 
     # -- Phase 2: Skills ----------------------------------------------------
 
-    import pathlib
     _skills_dir = pathlib.Path(__file__).parent / "skills"
 
     _skill_registrations = [
@@ -158,6 +170,10 @@ def _cmd_status(mode_manager):
 def _on_subagent_start(**kwargs) -> None:
     """Log when a subagent is spawned for pipeline tracking.
 
+    Stores the parent_session_id -> child_role mapping so the
+    pre_tool_call hook can enforce per-specialist permissions even
+    though Hermes does not pass child_role to tool-execution hooks.
+
     Kwargs (from delegate_tool.py):
         child_session_id: str — spawned agent's session id
         child_subagent_id: str — spawned agent's unique id
@@ -170,6 +186,15 @@ def _on_subagent_start(**kwargs) -> None:
     child_session_id = kwargs.get("child_session_id", "unknown")
     child_role = kwargs.get("child_role", "unknown")
     child_goal = kwargs.get("child_goal", "")
+    parent_session_id = kwargs.get("parent_session_id", "")
+
+    # Store the mapping so pre_tool_call can look it up
+    if child_role and child_role != "unknown" and parent_session_id:
+        set_role_for_session(parent_session_id, child_role)
+        logger.debug(
+            "maestria role mapping: session=%s role=%s",
+            parent_session_id, child_role,
+        )
 
     if child_role and child_role != "unknown":
         logger.info(
@@ -183,6 +208,8 @@ def _on_subagent_start(**kwargs) -> None:
 def _on_subagent_stop(**kwargs) -> None:
     """Log when a subagent completes for pipeline tracking.
 
+    Cleans up the session -> role mapping.
+
     Kwargs (from delegate_tool.py):
         child_session_id: str — completed agent's session id
         child_role: str — specialist role
@@ -195,6 +222,11 @@ def _on_subagent_stop(**kwargs) -> None:
     child_role = kwargs.get("child_role", "unknown")
     child_status = kwargs.get("child_status", "unknown")
     duration_ms = kwargs.get("duration_ms", 0)
+    parent_session_id = kwargs.get("parent_session_id", "")
+
+    # Clean up role mapping
+    if parent_session_id:
+        clear_role_for_session(parent_session_id)
 
     logger.info(
         "maestria subagent stopped: role=%s session=%s status=%s duration=%.1fs",
