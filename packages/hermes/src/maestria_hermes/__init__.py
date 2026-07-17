@@ -8,7 +8,6 @@ Design docs at docs/hermes-maestria-plugin.md.
 """
 
 import logging
-import shutil
 
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
 from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
@@ -43,18 +42,10 @@ def register(ctx):
     ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
 
     # -- Phase 2: Full lifecycle hooks --------------------------------------
-    # Backend detection runs on first session start so all plugins are loaded.
 
     on_start, on_end = create_session_hooks(session_manager)
-    _detection_run = [False]
 
-    def _on_session_start_wrapped(**kwargs):
-        if not _detection_run[0]:
-            _detect_backends(ctx)
-            _detection_run[0] = True
-        on_start(**kwargs)
-
-    ctx.register_hook("on_session_start", _on_session_start_wrapped)
+    ctx.register_hook("on_session_start", on_start)
     ctx.register_hook("on_session_end", on_end)
     ctx.register_hook("subagent_start", _on_subagent_start)
     ctx.register_hook("subagent_stop", _on_subagent_stop)
@@ -76,7 +67,6 @@ def register(ctx):
         handler=opencode_route_handler,
         description="Delegate a complex coding task to OpenCode CLI",
         emoji="🔧",
-        check_fn=_opencode_available,
     )
 
     # -- Phase 1: Slash commands --------------------------------------------
@@ -134,54 +124,6 @@ def register(ctx):
                 ctx.register_skill(name, path)
             except OSError:
                 pass  # Best-effort skill registration
-
-
-def _opencode_available() -> bool:
-    """Check_fn for opencode_route: hide tool when OpenCode CLI is missing."""
-    try:
-        return shutil.which("opencode") is not None
-    except Exception:
-        return False
-
-
-def _detect_backends(ctx):
-    """Probe environment for the optional OpenCode CLI and log guidance.
-
-    This is the only backend probe the plugin performs. Memory (Mnemosyne,
-    holographic, etc.) and kanban are deliberately NOT probed:
-
-    - **Memory is a platform concern.** Hermes has 8 built-in memory providers.
-      The user chooses one independently. The plugin must not care which is
-      configured — adding a probe or fallback would couple the plugin to a
-      specific backend and duplicate platform functionality.
-
-    - **Kanban is a platform feature.** Available via kanban_* tools when
-      enabled in the user's config. The plugin doesn't need to know.
-
-    OpenCode CLI is the exception: it's an external tool the plugin can optionally
-    route to. The probe checks availability so the opencode_route tool is only
-    visible when the CLI is actually installed.
-    """
-    # Check @maestria/opencode plugin (needed for opencode_route tool)
-    try:
-        if shutil.which("opencode"):
-            # OpenCode CLI is installed; check for plugin
-            from maestria_hermes.tools.opencode import _check_maestria_plugin
-            plugin_err = _check_maestria_plugin()
-            if plugin_err:
-                logger.warning(
-                    "OpenCode CLI found but %s missing. "
-                    "The opencode_route tool will require install. "
-                    "Run: pnpx maestria@latest install opencode",
-                    "@maestria/opencode",
-                )
-            else:
-                logger.debug(
-                    "@maestria/opencode plugin found — "
-                    "opencode_route tool is fully operational."
-                )
-    except Exception:
-        pass
 
 
 def _cmd_set_mode(mode_manager, mode):
