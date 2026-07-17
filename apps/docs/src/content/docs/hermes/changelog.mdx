@@ -7,10 +7,7 @@ description: Release history for @maestria/hermes.
 
 ### Changed
 
-- **Orchestration policy**: Default to single-thread execution. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode").
-- `sync.config.ts`: 5 replace rules adapting the "pure dispatcher" mandate for Hermes' full-tool orchestrator
-- `pre_llm.py`: fein mode context updated — "Default: single-thread execution. Maker/checker split applies when delegation is used."
-- `orchestrator/SKILL.md`: "Never implement yourself" → "Default to direct implementation"
+- **Orchestrator behavior**: Simple tasks now run directly instead of always being delegated to subagents. Complex tasks (multi-file, cross-domain, risky) still use specialist routing. Routine changes are faster with less overhead — no action needed on your part.
 
 ## 0.1.3 (2026-07-17)
 
