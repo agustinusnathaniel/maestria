@@ -55,7 +55,7 @@ This clones the maestria repo, extracts `packages/hermes/` into `~/.hermes/plugi
 | Permission roles  | 8 specialist roles (orchestrator, adventurer, architect, builder, diagnose, planner, reviewer, writer) — gated by `pre_tool_call` hook |
 | Hooks             | `pre_llm_call`, `pre_tool_call`, `on_session_start`, `on_session_end`, `subagent_start`, `subagent_stop`, `transform_tool_result`      |
 | Middleware        | `llm_execution` (mode footer annotation, opt-in via `MAESTRIA_MODE_FOOTER=1`)                                                          |
-| Backend detection | Probes for Mnemosyne, kanban, OpenCode CLI at startup                                                                                  |
+| Backend detection | Probes only for OpenCode CLI at startup (memory and kanban are platform concerns, not probed)                                            |
 
 ## Verifying Installation
 

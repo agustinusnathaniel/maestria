@@ -9,16 +9,22 @@ Initial release.
 
 ### Added
 
-- Plugin scaffold with `plugin.yaml` + `register()` entry point
+- Plugin scaffold with `plugin.yaml` + `register(ctx)` entry point
 - 9 skills: 7 specialists + orchestrator + global rules
-- Mode system with file persistence (`/fein`, `/sonar`, `/blitz`)
+- Mode system with file persistence (`/fein`, `/sonar`, `/blitz`, `/mode`)
 - `pre_llm_call` hook for mode injection into user message
-- `pre_tool_call` hook for role-based tool gating (admin, engineer, reviewer, researcher)
-- `tool_request` middleware for mode gating (block edit/write in sonar)
-- 9 slash commands: `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`, `/role`, `/session`, `/clear`
-- Mnemosyne memory integration (falls back to JSONL if absent)
+- `pre_tool_call` hook for mode-based tool gating (sonar write-block)
+- `llm_execution` middleware (opt-in mode footer via `MAESTRIA_MODE_FOOTER=1`)
+- 6 slash commands: `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`
 - OpenCode CLI detection and routing tool with `skip_plugin_check` escape hatch
-- Session state tracking via SessionDB `state_meta`
-- Subagent lifecycle hooks (pipeline tracking)
-- Plugin detection probes at startup
-- Distribution via `hermes plugins install`
+- Subagent lifecycle hooks (`subagent_start`/`stop` for pipeline tracking)
+- Session lifecycle hooks (`on_session_start`/`end`)
+- `transform_tool_result` hook (observer-mode write logging)
+- Distribution via `hermes plugins install` (git-based, not PyPI)
+
+### Changed (post-release design doc alignment)
+
+- Memory engine agnosticism — removed stale Mnemosyne integration claim, removed memory/kanban probes
+- Dead code removed: `memory.py` (MemoryManager.record() never called)
+- Cross-platform detection: `shutil.which()` replaces `subprocess.run(["which", ...])`
+- Plugin check: `node -e "require(...)"` replaces fragile npm filesystem walker

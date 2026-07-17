@@ -16,7 +16,7 @@ The question: could we ship the methodology as skills-only (zero Python code, ze
 
 ## Decision
 
-**Ship as a full Hermes plugin (Python package on PyPI), not skills-only.**
+**Ship as a full Hermes plugin (git-based distribution), not skills-only.**
 
 The methodology layer has two distinct parts:
 
@@ -44,13 +44,7 @@ This is not a theoretical distinction — during development we found and fixed 
 
 ### Distribution consequences
 
-A plugin requires PyPI publishing. This adds:
-
-- A PyPI account and API token
-- CI/CD publishing step (`.github/workflows/release.yml`)
-- Version management via `setuptools-scm`
-
-> **Note (2026-07-16):** The distribution model was later pivoted to **git-based** via `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`. PyPI was abandoned because the plugin is mostly markdown and configuration — PyPI's versioning and publishing machinery was unnecessary overhead. The PyPI-based consequences below applied to the original design but were resolved by the distribution pivot.
+The plugin uses **git-based distribution** via `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`. No PyPI publishing is involved.
 
 The alternative — users cloning the repo and loading skills manually — is documented as an option but is not the primary distribution path.
 
@@ -65,7 +59,6 @@ The alternative — users cloning the repo and loading skills manually — is do
 
 ### Negative
 
-- ~~PyPI dependency~~ _(resolved — switched to git-based distribution)_
 - Python knowledge required — contributing to the enforcement layer requires Python, not just Markdown
 - Version coupling — the plugin must stay compatible with Hermes Agent's hook signatures (validated against source at `github.com/nousresearch/hermes-agent`)
 - Larger surface area — more code to maintain than 9 Markdown files
@@ -73,7 +66,7 @@ The alternative — users cloning the repo and loading skills manually — is do
 ### Mitigations
 
 - Skills are still shipped as part of the plugin (under `src/maestria_hermes/skills/`) — users get both layers in one package
-- The plugin's Python code is minimal (~800 lines across 9 files including the removed `memory.py` — see the v0.1 memory agnosticism cleanup) — a thin adapter that dispatches to Hermes-native subsystems
+- The plugin's Python code is minimal (~650 lines across 12 files — see the v0.1 memory agnosticism cleanup) — a thin adapter that dispatches to Hermes-native subsystems
 - All hook and middleware signatures were validated against actual Hermes source code before merge
 
 ## Related Decisions
