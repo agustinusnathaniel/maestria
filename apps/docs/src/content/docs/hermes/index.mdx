@@ -22,7 +22,7 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 ## How It Works
 
 1. **Install the plugin** — `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`
-2. **Plugin activates** — Registers 9 methodology skills, 6 slash commands, permission roles, and lifecycle hooks. Detection probes check for Mnemosyne, kanban, and OpenCode CLI at startup.
+2. **Plugin activates** — Registers 9 methodology skills, 6 slash commands, permission roles, and lifecycle hooks. Startup probes check only for OpenCode CLI (optional power-up). Memory and kanban are platform features, not probed.
 3. **Pick your mode** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation) — each enables the right specialists and tool gates
 4. **Dispatch specialists** — The orchestrator decomposes work via `delegate_task`, routes complex coding to OpenCode CLI, and enforces maker/checker separation
 5. **Review before delivery** — Reviewer validates output before anything reaches you

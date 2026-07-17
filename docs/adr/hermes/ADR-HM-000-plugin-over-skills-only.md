@@ -55,7 +55,7 @@ The alternative — users cloning the repo and loading skills manually — is do
 - **Reliable enforcement** — methodology gates cannot be skipped by an agent that "forgets" to follow instructions
 - **Fail-fast detection** — missing `@maestria/opencode` is reported at startup, not discovered mid-task. Memory and kanban are deliberately not probed (see the memory engine agnosticism note above).
 - **First-class integration** — slash commands, mode persistence, and lifecycle hooks feel native to Hermes rather than bolted on
-- **Discoverability** — `pip install maestria-hermes` with an entry point is the standard Hermes plugin distribution model
+- **Discoverability** — `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable` is the standard Hermes plugin install flow
 
 ### Negative
 
