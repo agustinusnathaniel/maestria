@@ -7,6 +7,7 @@ in sync for PyPI wheel builds.
 """
 
 import json
+import re
 from pathlib import Path
 
 
@@ -27,14 +28,16 @@ def main() -> None:
         print(f"SKIP: no version in {PKG_JSON}")
         return
 
-    VERSION_PY.write_text(f'"""Package version -- single source of truth."""\n__version__ = "{version}"\n')
+    VERSION_PY.write_text(
+        f'"""Package version -- single source of truth."""\n__version__ = "{version}"\n'
+    )
     print(f"OK: synced version {version} to {VERSION_PY}")
 
     # Also sync plugin.yaml so changeset bumps propagate to the Hermes manifest
     if PLUGIN_YAML.exists():
         lines = PLUGIN_YAML.read_text(encoding="utf-8").splitlines(keepends=True)
         for i, line in enumerate(lines):
-            if line.startswith("version:") or line.startswith("version: "):
+            if re.match(r"^version:\s+\S", line):
                 lines[i] = f"version: {version}\n"
                 break
         PLUGIN_YAML.write_text("".join(lines), encoding="utf-8")
