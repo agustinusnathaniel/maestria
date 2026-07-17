@@ -36,23 +36,32 @@ def register(ctx):
     optional backends (Mnemosyne, kanban, OpenCode).
     """
     # -- Probe environment and log guidance ----------------------------------
-
-    _detect_backends(ctx)
+    # NOTE: Detection is deferred to on_session_start (see below) so other
+    #       plugins (Mnemosyne, kanban) have registered their tools first.
 
     # Initialize singletons
     mode_manager = ModeManager()
     memory_manager = MemoryManager()
     session_manager = SessionManager()
 
-    # -- Phase 1: Core hooks ------------------------------------------------
+    # ...
 
     ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager, memory_manager))
     ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
 
     # -- Phase 2: Full lifecycle hooks --------------------------------------
+    # Backend detection runs on first session start so all plugins are loaded.
 
     on_start, on_end = create_session_hooks(session_manager)
-    ctx.register_hook("on_session_start", on_start)
+    _detection_run = [False]
+
+    def _on_session_start_wrapped(**kwargs):
+        if not _detection_run[0]:
+            _detect_backends(ctx)
+            _detection_run[0] = True
+        on_start(**kwargs)
+
+    ctx.register_hook("on_session_start", _on_session_start_wrapped)
     ctx.register_hook("on_session_end", on_end)
     ctx.register_hook("subagent_start", _on_subagent_start)
     ctx.register_hook("subagent_stop", _on_subagent_stop)
@@ -242,9 +251,12 @@ def _on_subagent_start(**kwargs) -> None:
 
     Kwargs (from delegate_tool.py):
         child_session_id: str — spawned agent's session id
+        child_subagent_id: str — spawned agent's unique id
         child_role: str — specialist role (builder, reviewer, etc.)
         child_goal: str — the task goal
         parent_session_id: str — orchestrator's session id
+        parent_turn_id: str — orchestrator's turn id
+        parent_subagent_id: str — orchestrator's subagent id
     """
     child_session_id = kwargs.get("child_session_id", "unknown")
     child_role = kwargs.get("child_role", "unknown")
