@@ -48,14 +48,14 @@ This clones the maestria repo, extracts `packages/hermes/` into `~/.hermes/plugi
 
 ## What Gets Installed
 
-| Resource          | What                                                                                                                         |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 9 skills          | Specialist prompts (adventurer, architect, builder, diagnose, planner, reviewer, writer), orchestrator routing, global rules |
-| 6 commands        | `/fein`, `/sonar`, `/blitz`, `/review`, `/plan`, `/role`, `/mode`, `/session`, `/clear`                                      |
-| Permission roles  | `admin`, `engineer`, `reviewer`, `researcher` — each with gated tool access                                                  |
-| Hooks             | `pre_llm_call`, `pre_tool_call`, `post_tool_call`, `subagent_start/stop`, `transform_*`                                      |
-| Middleware        | `tool_request` (mode gating), `tool_execution` (timing/logging)                                                              |
-| Backend detection | Probes for Mnemosyne, kanban, OpenCode CLI at startup                                                                        |
+| Resource          | What                                                                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 9 skills          | Specialist prompts (adventurer, architect, builder, diagnose, planner, reviewer, writer), orchestrator routing, global rules           |
+| 6 commands        | `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`                                                                               |
+| Permission roles  | 8 specialist roles (orchestrator, adventurer, architect, builder, diagnose, planner, reviewer, writer) — gated by `pre_tool_call` hook |
+| Hooks             | `pre_llm_call`, `pre_tool_call`, `on_session_start`, `on_session_end`, `subagent_start`, `subagent_stop`, `transform_tool_result`      |
+| Middleware        | `llm_execution` (mode footer annotation, opt-in via `MAESTRIA_MODE_FOOTER=1`)                                                          |
+| Backend detection | Probes for Mnemosyne, kanban, OpenCode CLI at startup                                                                                  |
 
 ## Verifying Installation
 

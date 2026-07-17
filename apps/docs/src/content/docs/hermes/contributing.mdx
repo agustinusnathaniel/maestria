@@ -10,21 +10,18 @@ description: Project structure, development setup, and how to extend @maestria/h
 ```
 packages/hermes/
 ├── plugin.yaml                  # Plugin manifest (hooks, commands, tools)
-├── __init__.py                  # register() entry point
-├── permissions.py               # PermissionRole enum and ROLES dict
+├── __init__.py                  # register() entry point + all handlers
+├── permissions.py               # PermissionRole class and ROLES dict
 ├── modes.py                     # Mode persistence (atomic JSON writes)
-├── memory.py                    # JSONL memory backend with Mnemosyne dispatch
-├── session.py                   # Session state via SessionDB.state_meta
+├── memory.py                    # JSONL memory backend with Mnemosyne dispatch path
+├── session.py                   # Session lifecycle hooks via SessionDB
+├── _version.py                  # Single source of truth for version
 ├── hooks/
+│   ├── pre_llm.py              # Mode injection into user messages
 │   ├── pre_tool.py             # Role-based tool gating
-│   ├── post_tool.py            # Dispatch auditing
-│   └── subagent.py             # Pipeline lifecycle tracking
+│   └── transform.py            # Tool result annotations
 ├── middleware/
-│   ├── tool_request.py         # Mode gating
-│   └── tool_execution.py       # Timing and logging
-├── commands/
-│   ├── review.py               # /review command
-│   └── plan.py                 # /plan command
+│   └── llm_output.py           # LLM execution wrapper (opt-in mode footer)
 ├── tools/
 │   └── opencode.py             # OpenCode CLI routing tool
 ├── skills/                      # SKILL.md files (7 specialists + orchestrator + global)

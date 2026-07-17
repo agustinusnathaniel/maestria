@@ -3,7 +3,7 @@ title: Commands
 description: Complete reference for all @maestria/hermes slash commands — modes, review, planning, session management, and roles.
 ---
 
-The plugin registers 9 slash commands that are available in every Hermes session.
+The plugin registers 6 slash commands that are available in every Hermes session.
 
 ## Mode Commands
 
@@ -53,62 +53,37 @@ Show the current mode and role.
 
 ### `/review`
 
-Trigger the reviewer specialist to examine the last output. The reviewer runs with read-only tool access (edit/write blocked by the `pre_tool_call` hook).
+Set the methodology pipeline to **fein** mode, enabling the full pipeline with review gate.
 
 ```
 /review
-→ Reviewer inspects last output...
-→ Review complete: 2 findings (1 structure, 1 correctness)
+→ Switched to fein mode. Pipeline: adventurer / architect -> builder -> reviewer
 ```
+
+In the current implementation, `/review` activates the full pipeline mode. Dedicated review-trigger behavior is planned for a future release.
 
 ### `/plan`
 
-Trigger the planning specialist to produce a structured plan. The planner uses `ctx.llm.complete_structured()` with dependency analysis and milestone breakdown.
+Set the methodology pipeline to **fein** mode, enabling the full pipeline with planning phase.
 
 ```
-/plan Build a CLI tool for batch file renaming
-→ Planner produces structured plan...
+/plan
+→ Switched to fein mode. Pipeline: adventurer / architect -> builder -> reviewer
 ```
 
-## Session Management
+In the current implementation, `/plan` activates the full pipeline mode. Dedicated planning-trigger behavior is planned for a future release.
 
-### `/session`
+## Mode Status
 
-Display current session state — mode, role, pipeline status.
+### `/mode`
 
-```
-/session
-→ Session:
-  Mode: fein
-  Role: engineer
-  Pipelines: 0 active, 3 completed today
-```
-
-### `/clear`
-
-Reset the plugin's session state (mode, role, pipeline tracking). Does not affect Hermes' own session state.
+Show the current mode and read-only status.
 
 ```
-/clear
-→ Session state cleared. Mode reset to fein, role reset to engineer.
-```
-
-## Role Command
-
-### `/role <name>`
-
-Set the current permission role. Available roles:
-
-| Role         | What they can do                |
-| ------------ | ------------------------------- |
-| `admin`      | All tools, all operations       |
-| `engineer`   | Edit, write, bash, read, search |
-| `reviewer`   | Read, search, diff only         |
-| `researcher` | Read, search, web, browser only |
-
-```
-/role reviewer
-→ Role set to reviewer. Edit/write tools are blocked.
+/mode
+→ **Maestria Status**
+  Mode: **fein**
+  Read-only: No
 ```
 
 ## Hermes Core Commands

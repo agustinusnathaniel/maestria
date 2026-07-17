@@ -41,18 +41,22 @@ Hermes:       [Adventurer explores, Architect designs, Builder implements, Revie
 
 The mode directive is injected into every message automatically — no manual prompting needed.
 
-## Permission Roles
+## Specialist Roles
 
-The plugin ships with four permission roles that control which tools each agent can use:
+The plugin ships with permission roles for each of the 8 specialists, controlling which tools they can use:
 
-| Role         | Tool Access                     | Use Case                         |
-| ------------ | ------------------------------- | -------------------------------- |
-| `admin`      | All tools                       | Full system access               |
-| `engineer`   | Edit, write, bash, read, search | Implementing changes             |
-| `reviewer`   | Read, search, diff              | Code review (edit/write blocked) |
-| `researcher` | Read, search, web, browser      | Research only                    |
+| Specialist     | Tool Access                                          | Use Case                               |
+| -------------- | ---------------------------------------------------- | -------------------------------------- |
+| `orchestrator` | LLM reasoning + `delegate_task` only                 | Task decomposition and dispatch        |
+| `adventurer`   | Read, search, browser, LLM                           | Exploring codebases and gathering info |
+| `architect`    | Read, search, browser, LLM                           | Designing solutions                    |
+| `builder`      | All tools (read, write, bash, browser, data, coding) | Implementing changes                   |
+| `diagnose`     | Read, bash, LLM, `delegate_task`                     | Root cause analysis                    |
+| `planner`      | Read, LLM                                            | Multi-step planning                    |
+| `reviewer`     | Read, LLM                                            | Code review (edit/write blocked)       |
+| `writer`       | Read, LLM, browser                                   | Documentation and content              |
 
-Switch roles with `/role <name>`.
+Roles are assigned automatically when the orchestrator dispatches a specialist. The `pre_tool_call` hook enforces tool restrictions — no manual role switching needed.
 
 ## Next Steps
 

@@ -37,19 +37,16 @@ Every Hermes session — with or without any plugin — has `/goal`, `/goal stat
 
 The plugin's current and planned slash commands all produce output in one turn:
 
-| Command    | Shape              |
-| ---------- | ------------------ |
-| `/fein`    | Set mode, respond  |
-| `/sonar`   | Set mode, respond  |
-| `/blitz`   | Set mode, respond  |
-| `/review`  | Review last output |
-| `/plan`    | Produce a plan     |
-| `/mode`    | Show current mode  |
-| `/role`    | Set or show role   |
-| `/session` | Show session state |
-| `/clear`   | Clear context      |
+| Command   | Shape                                      |
+| --------- | ------------------------------------------ |
+| `/fein`   | Set mode, respond                          |
+| `/sonar`  | Set mode, respond                          |
+| `/blitz`  | Set mode, respond                          |
+| `/mode`   | Show current mode                          |
+| `/review` | Activate full pipeline with review gate    |
+| `/plan`   | Activate full pipeline with planning phase |
 
-None of these need a multi-turn "keep going" loop. If a user wants autonomous iteration toward a plan, they type `/goal Execute the plan from your last message` — a core Hermes command, not a plugin concern.
+None of these need a multi-turn "keep going" loop. If a user wants autonomous iteration toward a plan, they type `/goal Execute the plan from your last message` — a core Hermes command, not a plugin concern. (`/review` and `/plan` are currently mode switches to fein; dedicated review/plan dispatch is planned for a future release.)
 
 ### 3. Wrapping `/goal` would create feature overlap
 

@@ -102,12 +102,12 @@ def register(ctx):
     ctx.register_command(
         "review",
         _cmd_set_mode(mode_manager, "fein"),
-        description="Trigger review of the last output (sets fein mode)",
+        description="Activate full methodology pipeline (fein mode) with review gate",
     )
     ctx.register_command(
         "plan",
         _cmd_set_mode(mode_manager, "fein"),
-        description="Trigger a planning session (sets fein mode)",
+        description="Activate full methodology pipeline (fein mode) with planning phase",
     )
 
     # -- Phase 2: Skills ---------------------------------------------------
