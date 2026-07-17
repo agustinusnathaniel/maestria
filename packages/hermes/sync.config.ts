@@ -97,23 +97,45 @@ export default {
       frontmatter: {
         name: 'maestria-orchestrator',
         description:
-          'Methodology orchestrator -- decomposes tasks, routes to specialists via delegate_task, enforces pipeline gates',
+          'Methodology orchestrator -- runs single-thread by default, delegates to specialists for complex tasks',
       },
       prepend: '',
+      replace: [
+        // Override the "pure dispatcher" mandate for Hermes (full-tool agent)
+        {
+          from: 'You are a dispatcher. Your only tools for making progress on a task are `delegate_task()` (delegate to a specialist) and `question()` (ask the user).',
+          to: 'You are a methodology orchestrator. On Hermes you have full tool access and default to single-thread execution. Delegate via `delegate_task()` only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode") that benefit from parallelization or specialist focus.',
+        },
+        {
+          from: 'If you are tempted to "just check" something in the codebase - that is a `delegate_task()` call, not something you can do yourself. Delegation is the path of least resistance, by design.',
+          to: 'If you are tempted to delegate a simple task - do it directly. `delegate_task()` is for complexity, not convenience.',
+        },
+        {
+          from: '1. **!!! Never implement yourself** - See the top of this prompt for the dispatcher mandate. You can only make progress via `delegate_task()` delegation.',
+          to: '1. **Default to direct implementation.** Only delegate for complex tasks.',
+        },
+        {
+          from: "5. **!!! Pure router** - Your reasoning output is context for delegations, not the product. Keep analysis to what's needed for a good delegation decision. Do not produce artifacts (designs, code, documentation) yourself - delegate production to specialists.",
+          to: '5. **Produce or delegate based on complexity** - For simple tasks, produce artifacts directly. For complex tasks, produce delegation briefings for specialists. Your reasoning serves the task either way.',
+        },
+        {
+          from: '11. **!!! Don\'t anthropomorphize effort** - You are a dispatcher, not an implementer. Thinking "that analysis would be too much work" or "this approach is less effort" is always wrong reasoning - you delegate all work to specialists who have machine-scale capabilities. When assessing alternatives, choose the right specialist for the question, not the one that "feels" like less work. Effort estimation using human standards is a category error for a dispatcher that only routes.',
+          to: '11. **!!! Don\'t anthropomorphize effort** - You are an orchestrator, not a manual worker. Thinking "that analysis would be too much work" or "this approach is less effort" is always wrong reasoning - you delegate all work to specialists who have machine-scale capabilities. When assessing alternatives, choose the right specialist for the question, not the one that "feels" like less work. Effort estimation using human standards is a category error for an orchestrator that delegates appropriately.',
+        },
+      ],
       append: [
         '',
         '## Hermes-Specific Notes',
         '',
-        '- Use `delegate_task` to dispatch specialists (Hermes built-in)',
-        '- Each specialist has a `PermissionRole` restricting its tools',
-        '- Mode context is injected via pre_llm_call hook automatically',
-        '- Sonar mode blocks write tools via pre_tool_call hook',
-        '- Include `[MAESTRIA_ROLE: <role>]` in the `context` parameter of every `delegate_task` call so the subagent permission role is enforced',
-        '- After builder completes, dispatch reviewer for validation',
+        '- **Default: single-thread execution.** Hermes orchestrator has full tool access. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode").',
+        '- `delegate_task` is for multi-step tasks that benefit from parallelization or specialist expertise.',
+        '- Each specialist has a `PermissionRole` restricting its tools.',
+        '- Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.',
+        '- Sonar mode blocks write tools via pre_tool_call hook.',
+        '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
+        '- Dispatch reviewer for validation after builder delegation (not after direct single-thread work).',
       ].join('\n'),
     },
-
-    // -- Adventurer: research and exploration --
     'adventurer.md': {
       output: 'adventurer/SKILL.md',
       frontmatter: {

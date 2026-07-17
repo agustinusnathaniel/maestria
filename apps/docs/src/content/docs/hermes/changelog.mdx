@@ -3,9 +3,35 @@ title: Changelog
 description: Release history for @maestria/hermes.
 ---
 
-## 0.1.0 (2026-07-16)
+## 0.1.4 (2026-07-17)
 
-Initial release.
+### Changed
+
+- **Orchestrator behavior**: Simple tasks now run directly instead of always being delegated to subagents. Complex tasks (multi-file, cross-domain, risky) still use specialist routing. Routine changes are faster with less overhead — no action needed on your part.
+
+## 0.1.3 (2026-07-17)
+
+### Added
+
+- **pre_gateway_dispatch hook**: Intercepts `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan` commands before the agent-busy check
+- **Role-based permission enforcement**: `[MAESTRIA_ROLE: <specialist>]` in `delegate_task` context enforces per-specialist tool restrictions
+- **Transform hook**: Write operations in fein/blitz mode append methodology annotation to tool results
+
+### Fixed
+
+- Telegram forum topic responses now route to the correct thread instead of General
+
+## 0.1.2 (2026-07-16)
+
+### Fixed
+
+- Plugin loading failure due to `src/` layout — added root `__init__.py` shim
+
+## 0.1.1 (2026-07-16)
+
+Initial release — same as 0.1.0 (versioning alignment).
+
+## 0.1.0 (2026-07-16)
 
 ### Added
 
