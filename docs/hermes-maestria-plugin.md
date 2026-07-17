@@ -378,7 +378,11 @@ def delegate_to_opencode(task_brief, cwd):
 
 ### Pipeline Composition via delegate_task
 
-The orchestrator dispatches specialists via delegate_task. The brief contains role, tool access list, context from prior stages, output format spec, and iteration limits. Each specialist runs as
+The orchestrator dispatches specialists via
+
+... [OUTPUT TRUNCATED - 47 chars omitted out of 50047 total] ...
+
+ccess list, context from prior stages, output format spec, and iteration limits. Each specialist runs as
 
 ... [OUTPUT TRUNCATED - 2028 chars omitted out of 52028 total] ...
 
@@ -431,9 +435,39 @@ skills:
 
 ### register() (Actual API)
 
-See for the full implementation.```python def register(ctx): return { "name": "maestria-hermes", "version": "0.1.0", "hooks": { "pre_llm_call": inject_mode_directive, "post_llm_call": tag_llm_output, "pre_tool_call": check_permissions, "post_tool_call": record_dispatch, "transform_llm_output": synthesize_output, }, "commands": { "/fein": lambda ctx: set_mode(ctx, "fein"), "/sonar": lambda ctx: set_mode(ctx, "sonar"), "/blitz": lambda ctx: set_mode(ctx, "blitz"), "/review": lambda ctx: trigger_review(ctx), "/plan": lambda ctx: trigger_plan(ctx), }, "skills": [ "orchestrator.md", "builder.md", "reviewer.md", "global-rules.md", ], }
+The plugin uses the v2 Plugin API -- see `packages/hermes/src/maestria_hermes/__init__.py` for the full implementation:
 
-````
+```python
+def register(ctx):
+    mode_manager = ModeManager()
+    session_manager = SessionManager()
+
+    ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager))
+    ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
+    ctx.register_hook("on_session_start", ...)
+    ctx.register_hook("on_session_end", ...)
+    ctx.register_hook("subagent_start", _on_subagent_start)
+    ctx.register_hook("subagent_stop", _on_subagent_stop)
+    ctx.register_hook(
+        "transform_tool_result",
+        create_transform_tool_result_hook(mode_manager),
+    )
+    ctx.register_middleware(
+        "llm_execution",
+        create_llm_output_middleware(mode_manager),
+    )
+    ctx.register_tool(
+        name="opencode_route",
+        toolset="maestria",
+        ...
+    )
+    ctx.register_command("fein", ...)
+    ctx.register_command("sonar", ...)
+    ctx.register_command("blitz", ...)
+    ctx.register_command("mode", ...)
+    ctx.register_command("review", ...)
+    ctx.register_command("plan", ...)
+```
 
 ### Success Criteria
 
@@ -457,7 +491,7 @@ All 7 specialists with full skill files, replacing custom JSON file persistence 
 - delegate_task for subagent dispatch (native Hermes tool)
 - subagent_start/stop hooks for pipeline tracking
 - OpenCode lifecycle management (install check, config sync)
-- Mode + state via **SessionDB.state_meta** (not custom JSON files) — **not yet implemented** (still uses JSON file) — **not yet implemented** (still uses JSON file)
+- Mode + state via **SessionDB.state_meta** (not custom JSON files) — **not yet implemented** (still uses JSON file)
 - transform_tool_result hook for methodology annotations
 
 > Memory is deliberately excluded from Phase 2. The plugin is memory-agnostic — no memory integration is planned. Hermes provides 8 memory providers at the platform level.
@@ -511,7 +545,7 @@ session.state_meta["maestria:role"] = "builder"
 
 # Read anywhere — survives resume and restart
 mode = session.state_meta.get("maestria:mode", "fein")
-````
+```
 
 The `ModeManager` becomes a thin accessor over `state_meta` instead of a JSON file handler. No separate file I/O, no concurrency concerns.
 
