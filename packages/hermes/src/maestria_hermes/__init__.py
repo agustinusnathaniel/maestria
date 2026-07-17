@@ -1,34 +1,10 @@
-"""Maestria methodology plugin for Hermes Agent.
+"""@maestria/hermes — Maestria methodology adapter for Hermes Agent.
 
-Brings pipeline composition, maker/checker split, specialist delegation,
-and mode-based workflows to the general-purpose Hermes AI agent.
+Registers mode system (fein/sonar/blitz), 9 specialist skill files,
+permission roles, pipeline lifecycle hooks, and OpenCode CLI routing tool.
+Entry point: register(ctx) — loaded via plugin.yaml discovery.
 
-Design principles that govern this module:
-
-1. **Methodology portable, adapter thin** — the real logic lives in canonical
-   skill files (packages/core/agent-directives/). Plugin code is just the Hermes
-   adapter.
-
-2. **Memory-engine agnostic** — the plugin never reads, writes, or cares which
-   memory provider Hermes has configured (Mnemosyne, holographic, mem0, etc.).
-   Memory is a platform concern, not a plugin concern. The user's Hermes instance
-   already has a memory provider; adding a plugin layer on top would duplicate
-   functionality, couple to a specific backend, and violate the "use built-in
-   features" principle.
-
-3. **Hermes-native first** — use Hermes built-in features (delegate_task, hooks,
-   tools, Skills) instead of reinventing them. Only fall back to custom
-   implementations (JSON files for mode persistence) when the plugin API doesn't
-   expose the relevant subsystem.
-
-4. **General agent, not a coding tool** — specialists must work across domains
-   (research, content, analysis, strategy, operations). The coding path routes to
-   OpenCode CLI as an optional power-up, never a hard dependency.
-
-Phases:
-- Phase 1: Mode system, sonar guard, core hooks, basic skills
-- Phase 2: Full specialist roster, permission roles, session state
-- Phase 3: MCP, middleware, parallel delegation, kanban integration
+Design docs at docs/hermes-maestria-plugin.md.
 """
 
 import logging
