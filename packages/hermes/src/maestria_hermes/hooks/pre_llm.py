@@ -32,12 +32,13 @@ _VALID_ROLES = {
 _MODE_CONTEXT = {
     "fein": (
         "[MAESTRIA MODE: fein]\n"
-        "Full methodology pipeline is active. All stages execute:\n"
-        "1. Reconnaissance (adventurer)\n"
-        "2. Design / planning (architect / planner)\n"
-        "3. Implementation (builder)\n"
-        "4. Review (reviewer)\n"
-        "All gates are enforced. Maker/checker split applies."
+        "Full methodology pipeline is active:\n"
+        "1. Reconnaissance\n"
+        "2. Design / planning\n"
+        "3. Implementation\n"
+        "4. Review\n"
+        "All gates are enforced. Default: single-thread execution.\n"
+        "Maker/checker split applies when delegation is used."
     ),
     "sonar": (
         "[MAESTRIA MODE: sonar]\n"
