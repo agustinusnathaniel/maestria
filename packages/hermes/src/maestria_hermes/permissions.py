@@ -1,190 +1,174 @@
-"""Permission roles for each maestria specialist.
+"""Config-driven permission roles for each maestria specialist.
 
-Each role defines allowed and blocked tools per specialist role.
-The pre_tool_call hook checks the current specialist's role and
-blocks disallowed tools.
+Roles are loaded from ~/.hermes/maestria-roles.json (if present) with
+fallback to built-in defaults. Each role defines which tool categories
+a specialist can use — the pre_tool_call hook checks these at runtime.
+
+Tool categories map semantic groups to actual Hermes tool names.
+Update TOOL_CATEGORIES when Hermes adds or renames tools.
 """
 
 from __future__ import annotations
-from typing import Set, Optional
+import json
+import os
+import logging
+from typing import Dict, List, Optional, Set
 
-# -- Tool categories ---------------------------------------------------------
+logger = logging.getLogger(__name__)
 
-_READ_TOOLS: Set[str] = {
-    "read", "read_file", "glob", "grep", "search_files",
-    "list", "ls", "stat", "file_info",
+
+# -- Canonical tool category definitions -----------------------------------
+# The single source of truth mapping category names to Hermes tool names.
+# Update this when Hermes adds/renames tools.
+
+TOOL_CATEGORIES: Dict[str, Set[str]] = {
+    "read": {
+        "read", "read_file", "glob", "grep", "search_files",
+        "list", "ls", "stat", "file_info",
+    },
+    "write": {
+        "write", "write_file", "edit", "edit_file", "patch",
+        "create", "delete", "delete_file", "rename", "rename_file",
+        "mkdir", "make_directory", "move", "copy",
+    },
+    "bash": {
+        "bash", "terminal", "shell", "run",
+        "process", "command",
+    },
+    "llm": {
+        "complete", "complete_structured",
+        "think", "reason",
+    },
+    "coding": {
+        "delegate_task",   # Subagent dispatch
+        "opencode",        # OpenCode CLI routing
+    },
+    "browser": {
+        "webfetch", "web_search", "web_extract",
+        "browser_navigate", "browser_click", "browser_screenshot",
+        "browser_evaluate",
+    },
+    "data": {
+        "code_execution", "execute_code", "python_repl",
+        "jupyter", "notebook",
+    },
 }
 
-_WRITE_TOOLS: Set[str] = {
-    "write", "write_file", "edit", "edit_file", "patch",
-    "create", "delete", "delete_file", "rename", "rename_file",
-    "mkdir", "make_directory", "move", "copy",
-}
 
-_BASH_TOOLS: Set[str] = {
-    "bash", "terminal", "shell", "run",
-    "process", "command",
-}
+# -- Built-in default roles ------------------------------------------------
+# Used when no ~/.hermes/maestria-roles.json override exists.
 
-_LLM_TOOLS: Set[str] = {
-    "complete", "complete_structured",
-    "think", "reason",
-}
-
-_CODING_TOOLS: Set[str] = {
-    "delegate_task",  # Subagent dispatch
-    "opencode",       # OpenCode CLI routing
-}
-
-_BROWSER_TOOLS: Set[str] = {
-    "webfetch", "web_search", "web_extract",
-    "browser_navigate", "browser_click", "browser_screenshot",
-    "browser_evaluate",
-}
-
-_DATA_TOOLS: Set[str] = {
-    "code_execution", "execute_code", "python_repl",
-    "jupyter", "notebook",
+_DEFAULT_ROLE_CATEGORIES: Dict[str, List[str]] = {
+    "orchestrator": ["llm", "coding"],            # delegates only
+    "adventurer":   ["read", "llm", "browser"],   # research only
+    "architect":    ["read", "llm", "browser"],    # design + research
+    "builder":      ["read", "write", "bash", "llm", "coding", "browser", "data"],  # full access
+    "diagnose":     ["read", "bash", "llm", "coding"],   # investigation
+    "planner":      ["read", "llm"],                     # planning only
+    "reviewer":     ["read", "llm"],                     # read-only validation
+    "writer":       ["read", "llm", "browser"],           # content creation
 }
 
 
-# -- Specialist roles --------------------------------------------------------
+# -- Role class -------------------------------------------------------------
 
 class PermissionRole:
-    """Tool permissions for one specialist role."""
+    """Tool permissions for one specialist role, resolved at startup."""
 
-    def __init__(
-        self,
-        name: str,
-        allowed: Optional[Set[str]] = None,
-        blocked: Optional[Set[str]] = None,
-        allow_read: bool = True,
-        allow_write: bool = False,
-        allow_bash: bool = False,
-        allow_llm: bool = True,
-        allow_coding: bool = False,
-        allow_browser: bool = False,
-        allow_data: bool = False,
-    ):
+    def __init__(self, name: str, categories: List[str]):
         self.name = name
-        self._allowed = allowed or set()
-        self._blocked = blocked or set()
-        self._allow_read = allow_read
-        self._allow_write = allow_write
-        self._allow_bash = allow_bash
-        self._allow_llm = allow_llm
-        self._allow_coding = allow_coding
-        self._allow_browser = allow_browser
-        self._allow_data = allow_data
+        self._allowed_tools: Set[str] = set()
+        for cat in categories:
+            self._allowed_tools |= TOOL_CATEGORIES.get(cat, set())
 
     def is_tool_allowed(self, tool_name: str) -> bool:
         """Check if a tool is allowed for this specialist."""
-        # Explicit block takes precedence
-        if tool_name in self._blocked:
-            return False
-        # Explicit allow overrides category rules
-        if tool_name in self._allowed:
-            return True
-        # Category checks
-        if tool_name in _READ_TOOLS and self._allow_read:
-            return True
-        if tool_name in _WRITE_TOOLS and self._allow_write:
-            return True
-        if tool_name in _BASH_TOOLS and self._allow_bash:
-            return True
-        if tool_name in _LLM_TOOLS and self._allow_llm:
-            return True
-        if tool_name in _CODING_TOOLS and self._allow_coding:
-            return True
-        if tool_name in _BROWSER_TOOLS and self._allow_browser:
-            return True
-        if tool_name in _DATA_TOOLS and self._allow_data:
-            return True
-        # Default: block
-        return False
+        return tool_name in self._allowed_tools
 
 
-# -- Predefined roles --------------------------------------------------------
+# -- Config loading ---------------------------------------------------------
 
-ROLES: dict = {
-    # Orchestrator: only delegates, no direct execution
-    "orchestrator": PermissionRole(
-        name="orchestrator",
-        allow_read=False,
-        allow_write=False,
-        allow_bash=False,
-        allow_llm=True,
-        allow_coding=True,   # delegate_task
-    ),
-    # Adventurer: read-only research
-    "adventurer": PermissionRole(
-        name="adventurer",
-        allow_read=True,
-        allow_write=False,
-        allow_bash=False,
-        allow_llm=True,
-        allow_browser=True,
-    ),
-    # Architect: research + LLM reasoning
-    "architect": PermissionRole(
-        name="architect",
-        allow_read=True,
-        allow_write=False,
-        allow_bash=False,
-        allow_llm=True,
-        allow_browser=True,
-    ),
-    # Builder: full access for implementation
-    "builder": PermissionRole(
-        name="builder",
-        allow_read=True,
-        allow_write=True,
-        allow_bash=True,
-        allow_llm=True,
-        allow_coding=True,   # delegate_task + OpenCode
-        allow_browser=True,
-        allow_data=True,
-    ),
-    # Diagnose: investigation tools + LLM reasoning
-    "diagnose": PermissionRole(
-        name="diagnose",
-        allow_read=True,
-        allow_write=False,
-        allow_bash=True,
-        allow_llm=True,
-        allow_coding=True,   # delegate complex debugging
-    ),
-    # Planner: read + LLM reasoning
-    "planner": PermissionRole(
-        name="planner",
-        allow_read=True,
-        allow_write=False,
-        allow_bash=False,
-        allow_llm=True,
-    ),
-    # Reviewer: read-only validation
-    "reviewer": PermissionRole(
-        name="reviewer",
-        allow_read=True,
-        allow_write=False,
-        allow_bash=False,
-        allow_llm=True,
-    ),
-    # Writer: read + LLM + basic bash for grepping
-    "writer": PermissionRole(
-        name="writer",
-        allow_read=True,
-        allow_write=False,  # Writer creates content via LLM, not file tools
-        allow_bash=False,
-        allow_llm=True,
-        allow_browser=True,
-    ),
-}
+def _hermes_home() -> str:
+    """Get the Hermes home directory."""
+    return os.path.expanduser(
+        os.environ.get("HERMES_HOME", "~/.hermes")
+    )
 
 
-def get_role(role: str) -> PermissionRole:
-    """Get the permission role for a specialist role."""
-    return ROLES.get(role, ROLES["orchestrator"])
+def _load_roles_override() -> Dict[str, List[str]]:
+    """Load role overrides from ~/.hermes/maestria-roles.json.
+
+    Returns a dict of role_name -> category list, or empty dict if the
+    file doesn't exist. Validates that all referenced categories exist
+    in TOOL_CATEGORIES.
+    """
+    path = os.path.join(_hermes_home(), "maestria-roles.json")
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return {}
+    except (json.JSONDecodeError, PermissionError) as e:
+        logger.warning("maestria-roles.json: %s — using defaults", e)
+        return {}
+
+    roles = data.get("roles", {})
+    if not isinstance(roles, dict):
+        logger.warning("maestria-roles.json: 'roles' must be a dict — using defaults")
+        return {}
+
+    # Validate categories
+    valid = set(TOOL_CATEGORIES.keys())
+    cleaned: Dict[str, List[str]] = {}
+    for role_name, cats in roles.items():
+        if not isinstance(cats, list):
+            logger.warning("maestria-roles.json: skipping '%s' — value must be a list", role_name)
+            continue
+        unknown = [c for c in cats if c not in valid]
+        if unknown:
+            logger.warning(
+                "maestria-roles.json: role '%s' has unknown categories: %s — ignoring them",
+                role_name, unknown,
+            )
+        cleaned[role_name] = [c for c in cats if c in valid]
+
+    return cleaned
+
+
+def resolve_roles() -> Dict[str, PermissionRole]:
+    """Build the final role map: user overrides merged over defaults.
+
+    Users can override individual roles in ~/.hermes/maestria-roles.json
+    without having to redefine every role. Roles not mentioned in the
+    override file keep their default category lists.
+    """
+    overrides = _load_roles_override()
+
+    roles: Dict[str, PermissionRole] = {}
+    # Start with defaults, apply overrides on top
+    merged_categories = dict(_DEFAULT_ROLE_CATEGORIES)
+    for role_name, cats in overrides.items():
+        merged_categories[role_name] = cats
+
+    for name, cats in merged_categories.items():
+        roles[name] = PermissionRole(name=name, categories=cats)
+
+    return roles
+
+
+# -- Public API -------------------------------------------------------------
+
+# Singleton — resolved once at plugin registration
+_ROLES: Dict[str, PermissionRole] = {}
+
+def init_roles() -> None:
+    """Initialize the role map. Called once during plugin registration."""
+    global _ROLES
+    _ROLES = resolve_roles()
+
+def get_role(name: str) -> PermissionRole:
+    """Get a permission role by name. Falls back to orchestrator (most restrictive)."""
+    return _ROLES.get(name, _ROLES.get("orchestrator", PermissionRole("orchestrator", [])))
 
 
 def block_message(role: str, tool_name: str) -> str:

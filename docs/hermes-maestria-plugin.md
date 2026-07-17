@@ -503,7 +503,7 @@ All 7 specialists with full skill files, replacing custom JSON file persistence 
 | `~/.hermes/maestria-mode.json` | `session.state_meta["maestria:mode"]` | Survives `/resume`, `/goal resume`, session restart — no separate file |
 | `~/.hermes/maestria-session.json` | SessionDB (built-in) | Already tracks session_id, timestamps — redundant file removed |
 | `PermissionProfile` class name | `PermissionRole` | "Profile" is a Hermes Agent concept for isolated agent configs — rename to avoid confusion |
-| Hardcoded tool-name lists in Python | Config-driven role→tool mappings in `config.yaml` `maestria:` key | Users customize roles without editing plugin code |
+| Hardcoded tool-name lists in Python | Config-driven role→tool mappings via `~/.hermes/maestria-roles.json` | Users customize roles without editing plugin code |
 
 > **Memory deliberately excluded from this table.** The plugin is memory-engine agnostic — it never had a custom memory file and never will. Hermes has 8 built-in memory providers; the user chooses one independently. See "Memory Providers (Platform Concern)" below.
 

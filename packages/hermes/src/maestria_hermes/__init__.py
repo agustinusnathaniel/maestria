@@ -13,6 +13,7 @@ import shutil
 
 from maestria_hermes._version import __version__
 from maestria_hermes.modes import ModeManager
+from maestria_hermes.permissions import init_roles
 from maestria_hermes.session import SessionManager, create_session_hooks
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
 from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
@@ -36,6 +37,7 @@ def register(ctx):
     # Initialize singletons
     mode_manager = ModeManager()
     session_manager = SessionManager()
+    init_roles()  # Load role permissions (from file or defaults)
 
     # ...
 
