@@ -147,15 +147,15 @@ export default {
 
     'commands/fein.md': {
       output: 'commands/fein.md',
-      stripFrontmatter: false,
+      stripFrontmatter: true,
     },
     'commands/sonar.md': {
       output: 'commands/sonar.md',
-      stripFrontmatter: false,
+      stripFrontmatter: true,
     },
     'commands/blitz.md': {
       output: 'commands/blitz.md',
-      stripFrontmatter: false,
+      stripFrontmatter: true,
     },
 
     // rules.md found via secondary source loop from dirname(source) = ../core/agent-directives/

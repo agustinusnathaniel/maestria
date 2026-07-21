@@ -402,12 +402,15 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
     },
     'commands/fein.md': {
       output: 'commands/fein.md',
+      stripFrontmatter: true,
     },
     'commands/sonar.md': {
       output: 'commands/sonar.md',
+      stripFrontmatter: true,
     },
     'commands/blitz.md': {
       output: 'commands/blitz.md',
+      stripFrontmatter: true,
     },
     'rules.md': {
       output: '../rules/AGENTS.md',
