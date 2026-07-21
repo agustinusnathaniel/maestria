@@ -1,5 +1,11 @@
 # @maestria/cursor
 
+## 0.1.2
+
+### Patch Changes
+
+- [#106](https://github.com/agustinusnathaniel/maestria/pull/106) [`ba91d36`](https://github.com/agustinusnathaniel/maestria/commit/ba91d36ba612cd2c634e3a73071047a5f50f46b4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Updated dependencies across packages: diff ^9.0.0, zod ^4.4.3, @clack v1.x, effect beta.100, astro 7.1.3, and more
+
 ## 0.1.1
 
 ### Patch Changes
