@@ -48,20 +48,3 @@ jobs:
           commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check if kimi-code was published
-        id: check-kimi
-        run: |
-          JSON='${{ steps.changesets.outputs.publishedPackages }}'
-          if [ -z "$JSON" ] || [ "$JSON" = "null" ]; then
-            echo "kimi_published=0" >> "$GITHUB_OUTPUT"
-          else
-            echo "kimi_published=$(echo "$JSON" | jq -r 'map(select(.name == "@maestria/kimi-code")) | length')" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Trigger kimi-code release
-        if: steps.check-kimi.outputs.kimi_published != '0'
-        continue-on-error: true
-        run: gh workflow run release-kimi-code.yml --ref ${{ github.ref_name }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
