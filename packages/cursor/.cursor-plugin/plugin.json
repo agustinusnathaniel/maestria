@@ -8,5 +8,6 @@
   "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/cursor",
   "repository": "https://github.com/agustinusnathaniel/maestria",
   "license": "MIT",
-  "keywords": ["maestria", "orchestration", "pipeline", "specialists"]
+  "keywords": ["maestria", "orchestration", "pipeline", "specialists"],
+  "logo": "assets/logo.svg"
 }
