@@ -31,10 +31,7 @@ Three workflow modes control pipeline depth:
 
 ## When to Use the Orchestrator
 
-The orchestrator adds structure and validation at the cost of coordination overhead. It excels in two situations:
-
-- **Long-running or complex tasks** that benefit from dedicated exploration, design, implementation, and review phases
-- **Multi-step workflows** where the built-in commit discipline and progress tracking prevent drift across sessions
+The orchestrator adds structure and validation at the cost of coordination overhead. It is most valuable for work that spans multiple phases or sessions - tasks that benefit from dedicated exploration before implementation, or multi-step processes where built-in commit discipline and progress tracking prevent drift.
 
 If you mostly use frontier models and already have a clear, well-scoped goal that doesn't require deep exploration, going without the orchestrator is often faster and cheaper. Direct execution or a single pass with the right specialist avoids the overhead of delegation round-trips, context transfers, and review loops. The orchestrator trades raw speed for structure and validation - choose the approach that fits your task.
 
