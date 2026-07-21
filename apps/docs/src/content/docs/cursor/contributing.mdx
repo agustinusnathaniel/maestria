@@ -1,0 +1,51 @@
+---
+title: Contributing
+description: How to contribute to @maestria/cursor — sync config, agents, and commands.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Thank you for contributing to `@maestria/cursor`. For general setup and PR workflow, see the [Contributing Guide](/core/contributing/).
+
+## Project structure
+
+```
+packages/cursor/
+├── .cursor-plugin/plugin.json   # Manifest
+├── sync.config.ts               # Transforms from core directives
+├── agents/                      # Generated specialists (do not edit)
+├── skills/orchestrator/         # Generated (do not edit)
+├── rules/                       # Generated (do not edit)
+├── commands/                    # Hand-authored workflow commands
+├── tests/
+├── INSTALL.md
+├── README.md
+└── CHANGELOG.md
+```
+
+<Aside type="caution">
+  Never edit generated files under `agents/`, `skills/`, or `rules/` directly. Edit
+  `packages/core/agent-directives/` and run sync.
+</Aside>
+
+## Editing methodology
+
+1. Change canonical files in `packages/core/agent-directives/`
+2. Adjust `packages/cursor/sync.config.ts` if Cursor-specific transforms are needed
+3. Run sync:
+
+   ```bash
+   cd packages/cursor && npx tsx ../core/scripts/sync.ts --verbose
+   # or from repo root
+   ./scripts/sync-all
+   ```
+
+4. Verify: `./scripts/check-sync` and `pnpm --filter @maestria/cursor test`
+
+## Editing commands
+
+Workflow commands in `commands/` are hand-authored (not synced). Keep them thin: mode marker + pipeline instructions that point at the orchestrator skill and `Task` agents.
+
+## ADR
+
+Architecture decisions: [ADR-CR-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/cursor/ADR-CR-001-cursor-plugin-architecture.md).

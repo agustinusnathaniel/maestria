@@ -207,6 +207,20 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 | Peer deps | `@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `typebox` |
 | Key transforms | `task(` → `maestria_subagent(`, `@` → `/` |
 
+### cursor
+
+| Concern        | Details                                                           |
+| -------------- | ----------------------------------------------------------------- |
+| Format         | Declarative Cursor plugin - no build step (no `dist/`)            |
+| Manifest       | `.cursor-plugin/plugin.json`                                      |
+| Agents         | Auto-generated in `agents/*.md` from sync (7 specialists)         |
+| Skills         | Auto-generated `skills/orchestrator/SKILL.md`                     |
+| Rules          | Auto-generated `rules/maestria-global.mdc` (`alwaysApply: true`)  |
+| Commands       | Hand-authored `commands/{fein,sonar,blitz,orchestrate}.md`        |
+| Test           | `pnpm --filter @maestria/cursor test`                             |
+| Install        | CLI copies to `~/.cursor/plugins/local/maestria`                  |
+| Key transforms | `task(` → `Task(`, `@name` → bare name, tools → Cursor PascalCase |
+
 ---
 
 ## 7. Testing Philosophy

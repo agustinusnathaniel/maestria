@@ -16,7 +16,7 @@ export const uninstallCommand = defineCommand({
     platform: {
       type: 'positional',
       description:
-        'Platform to uninstall. One of: opencode, pi, kimi-code. Pass directly to skip interactive selection.',
+        'Platform to uninstall. One of: opencode, pi, kimi-code, hermes, cursor. Pass directly to skip interactive selection.',
       required: false,
     },
     all: {

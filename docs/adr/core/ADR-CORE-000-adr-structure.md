@@ -19,6 +19,7 @@ ADRs use **prefix-scoped numbering** with one subdirectory per namespace:
 | `docs/adr/core/`      | CORE   | Cross-cutting decisions (global rules, architecture, etc.) |
 | `docs/adr/opencode/`  | OC     | `@maestria/opencode` plugin-specific decisions             |
 | `docs/adr/kimi-code/` | KC     | `@maestria/kimi-code` plugin-specific decisions            |
+| `docs/adr/cursor/`    | CR     | `@maestria/cursor` plugin-specific decisions               |
 | `docs/adr/pi/`        | PI     | `@maestria/pi` extension-specific decisions                |
 
 ### Numbering Rules
@@ -33,6 +34,7 @@ ADRs use **prefix-scoped numbering** with one subdirectory per namespace:
 | Prefix | Name      | Subdirectory          | ADR Range |
 | ------ | --------- | --------------------- | --------- |
 | CORE   | Core      | `docs/adr/core/`      | 000–011   |
+| CR     | Cursor    | `docs/adr/cursor/`    | 001–0xx   |
 | HM     | Hermes    | `docs/adr/hermes/`    | 000–001   |
 | OC     | Opencode  | `docs/adr/opencode/`  | 000–004   |
 | KC     | Kimi Code | `docs/adr/kimi-code/` | 000–001   |

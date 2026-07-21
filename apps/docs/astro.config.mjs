@@ -24,9 +24,10 @@ export default defineConfig({
         starlightLlmsTxt({
           projectName: 'maestria',
           description:
-            'Portable AI engineering praxis plugins for OpenCode, Kimi Code, Pi, and Hermes. ' +
+            'Portable AI engineering praxis plugins for OpenCode, Kimi Code, Cursor, Pi, and Hermes. ' +
             'Includes @maestria/opencode (8 agents, global rules injection), ' +
             '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), ' +
+            '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
             '@maestria/pi (full agent orchestration for Pi Coding Agent), and ' +
             '@maestria/hermes (methodology layer for Hermes Agent).',
         }),
@@ -129,6 +130,19 @@ export default defineConfig({
             },
             { label: 'Changelog', link: '/kimi-code/changelog/' },
             { label: 'Contributing', link: '/kimi-code/contributing/' },
+          ],
+        },
+        {
+          label: '@maestria/cursor',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/cursor/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'cursor/getting-started' } }],
+            },
+            { label: 'Changelog', link: '/cursor/changelog/' },
+            { label: 'Contributing', link: '/cursor/contributing/' },
           ],
         },
         {

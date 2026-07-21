@@ -1,0 +1,13 @@
+{
+  "name": "maestria",
+  "version": "0.1.0",
+  "description": "Maestria methodology for Cursor — pipeline specialists, orchestrator skill, and workflow commands",
+  "author": {
+    "name": "agustinusnathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/cursor",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": ["maestria", "orchestration", "pipeline", "specialists"],
+  "logo": "assets/logo.svg"
+}

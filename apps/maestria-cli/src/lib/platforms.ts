@@ -2,7 +2,14 @@ import { Effect } from 'effect';
 import { homedir } from 'os';
 import picocolors from 'picocolors';
 
-import { run, sh, commandExists, npmViewVersion, CommandError } from '@/lib/shell.js';
+import {
+  run,
+  sh,
+  commandExists,
+  npmViewVersion,
+  invalidateVersionCache,
+  CommandError,
+} from '@/lib/shell.js';
 
 // ── Shared helpers ───────────────────────────────────
 
@@ -435,8 +442,86 @@ const hermes: PlatformHandler = {
   }).pipe(Effect.as(void 0)),
 };
 
+const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
+const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
+
+const cursor: PlatformHandler = {
+  id: 'cursor',
+  label: 'Cursor',
+  npmPackage: '@maestria/cursor',
+
+  detect: commandExists('agent').pipe(
+    Effect.catchCause(() =>
+      run('ls', [`${homedir()}/.cursor`], 2_000).pipe(
+        Effect.map(() => true),
+        Effect.catchCause(() => Effect.succeed(false)),
+      ),
+    ),
+  ),
+
+  isInstalled: run('ls', [CURSOR_PLUGIN_JSON], 2_000).pipe(
+    Effect.map(() => true),
+    Effect.catchCause(() => Effect.succeed(false)),
+  ),
+
+  getInstalledVersion: run('cat', [`${CURSOR_PLUGIN_DIR}/package.json`]).pipe(
+    Effect.map((out: string) => {
+      try {
+        const pkg: { version?: string } = JSON.parse(out);
+        return pkg.version ?? 'unknown';
+      } catch {
+        return 'unknown';
+      }
+    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
+  ),
+
+  getLatestVersion: npmViewVersion('@maestria/cursor'),
+
+  install: Effect.gen(function* () {
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { mkdir } = await import('node:fs/promises');
+        await mkdir(`${homedir()}/.cursor/plugins/local`, { recursive: true });
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `mkdir -p ${homedir()}/.cursor/plugins/local`,
+          message: String(error),
+        }),
+    });
+    yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);
+    yield* sh(
+      `npm pack @maestria/cursor@latest --pack-destination /tmp && ` +
+        `mkdir -p "${CURSOR_PLUGIN_DIR}" && ` +
+        `tar -xzf /tmp/maestria-cursor-*.tgz -C "${CURSOR_PLUGIN_DIR}" --strip-components=1 && ` +
+        `rm -f /tmp/maestria-cursor-*.tgz`,
+      120_000,
+    );
+  }).pipe(Effect.as(void 0)),
+
+  update: (version?: string) =>
+    Effect.gen(function* () {
+      const tag = version ?? 'latest';
+      yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);
+      yield* sh(
+        `npm pack @maestria/cursor@${tag} --pack-destination /tmp && ` +
+          `mkdir -p "${CURSOR_PLUGIN_DIR}" && ` +
+          `tar -xzf /tmp/maestria-cursor-*.tgz -C "${CURSOR_PLUGIN_DIR}" --strip-components=1 && ` +
+          `rm -f /tmp/maestria-cursor-*.tgz`,
+        120_000,
+      );
+      // Invalidate version cache so npmViewVersion doesn't return stale data
+      yield* invalidateVersionCache('@maestria/cursor').pipe(Effect.catchCause(() => Effect.void));
+    }).pipe(Effect.as(void 0)),
+
+  uninstall: Effect.gen(function* () {
+    yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);
+  }).pipe(Effect.as(void 0)),
+};
+
 // ── Registry ─────────────────────────────────────────
-export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode, hermes];
+export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode, hermes, cursor];
 
 export function getPlatform(id: string): PlatformHandler | undefined {
   return platforms.find((p) => p.id === id);

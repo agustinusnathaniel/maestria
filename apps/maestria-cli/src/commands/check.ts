@@ -12,7 +12,7 @@ export const checkCommand = defineCommand({
   args: {
     platform: {
       type: 'positional',
-      description: 'Platform to check (opencode, pi, hermes, kimi-code)',
+      description: 'Platform to check (opencode, pi, hermes, kimi-code, cursor)',
       required: true,
     },
     json: {
@@ -35,7 +35,7 @@ export const checkCommand = defineCommand({
     if (!platform) {
       if (!args.quiet) {
         console.error(`Unknown platform: ${platformId}`);
-        console.error('Available: opencode, pi, hermes, kimi-code');
+        console.error('Available: opencode, pi, hermes, kimi-code, cursor');
       }
       process.exit(1);
     }

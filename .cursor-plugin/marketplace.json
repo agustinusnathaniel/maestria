@@ -1,0 +1,17 @@
+{
+  "name": "maestria",
+  "owner": {
+    "name": "Agustinus Nathaniel",
+    "email": "agustinus.nathaniel@gmail.com"
+  },
+  "metadata": {
+    "description": "Maestria methodology plugin for Cursor — pipeline specialists, orchestrator skill, and workflow commands"
+  },
+  "plugins": [
+    {
+      "name": "maestria",
+      "source": "./packages/cursor",
+      "description": "Maestria methodology plugin for Cursor — 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer), orchestrator skill with Task-based routing, global rules, and workflow commands (/fein, /sonar, /blitz)"
+    }
+  ]
+}

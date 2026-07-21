@@ -67,7 +67,7 @@ Invalid arguments are caught early:
 
 ```bash
 $ npx maestria update unknown
-Unknown platform 'unknown'. Valid platforms: opencode, pi, kimi-code, hermes
+Unknown platform 'unknown'. Valid platforms: opencode, pi, kimi-code, hermes, cursor
 
 $ npx maestria update opencode --version 2.0
 Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
@@ -97,7 +97,7 @@ rm ~/.cache/maestria/versions.json
 ## Prerequisites
 
 - Node.js 22+
-- The platform CLI must be on `$PATH` (`opencode`, `pi`, `kimi`, or `hermes`)
+- The platform CLI must be on `$PATH` (`opencode`, `pi`, `kimi`, `hermes`, or `agent` for Cursor)
 
 ## Supported Platforms
 
