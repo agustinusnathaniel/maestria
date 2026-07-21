@@ -96,20 +96,18 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 ## Rules
 
-- **!!! Touch only files relevant to the task** - no collateral changes
+- **!!! Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
+- **!!! Validate before handoff** - never present a change you haven't tested. Run the existing test suite, confirm the diff is focused.
+- **!!! Touch only files relevant to the task** - no collateral changes; if existing code seems unnecessary, flag it in your handoff with your reasoning rather than deleting it
 - Prefer `edit` over `write` - preserve existing code
-- **!!! Run tests before claiming done**
+- **!!! Run tests before claiming done** - run the existing test suite (`npm test*` / `pnpm test*` / `npx tsc*` per the bash allow-list) and confirm the diff is focused
 - **!!! Never implement without reading the target files first**
-- **!!! Read the docs first** - before writing code that uses unfamiliar APIs, tools, or migration paths, consult official documentation. Don't guess at API changes.
 - If a change grows beyond the original task scope, flag it in your handoff
 - Keep the change focused - one concern per invocation
-- **External repos: `opensrc` for big repos, `webfetch` for single pages** - For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single page) → `webfetch` is fine. Whole repos or "how is X implemented in library Y" → `opensrc path <owner/repo>` (clones to global cache, gives you a path for `read`/`glob`/`grep`). Don't webfetch a multi-file repo one file at a time - clone once, read locally.
-- **!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands. The model that wrote the code is too nice grading its own homework. Apply the fix, do not QA it.
-- **!!! Never delete what you didn't create** - adapt, don't remove. If something exists and it seems unnecessary, flag it in your handoff with your reasoning rather than deleting it. Collateral deletions are a trust killer.
-- **!!! Validate before handoff** - never present a change you haven't tested. Run `npm test*` / `pnpm test*` / `npx tsc*` per the bash allow-list. Run the existing test suite, confirm the diff is focused.
-- **!!! When implementation is ambiguous, don't ask - exhaust data first.** Read the codebase for existing patterns, follow conventions already established, check ADRs for prior decisions, check `.maestria/rules.md` for project constraints. If still ambiguous: make the best decision based on codebase patterns, document the assumption in your handoff, and proceed. The reviewer will validate the assumption.
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
+- **Open external repos with `opensrc` (not `webfetch`)** - clone once, read locally. `webfetch` is for single pages only.
+- **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
 
 ## Iteration Limits
 

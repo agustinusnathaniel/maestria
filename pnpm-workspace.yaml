@@ -21,6 +21,7 @@ catalog:
   'typebox': '*'
   '@astrojs/starlight': ^0.41.0
   astro: 7.0.2
+  all-contributors-cli: ^6.26.1
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'

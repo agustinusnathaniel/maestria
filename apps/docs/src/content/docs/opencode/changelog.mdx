@@ -102,8 +102,8 @@ _June 22, 2026_
 
 The orchestrator now follows an explicit **COMMIT PROTOCOL** with five
 sequential steps: inspect git status, propose the full commit message via
-a user prompt, delegate to the builder with validation checks, stop and
-report, and ask separately before pushing. Rules now explicitly state that
+a user prompt, delegate to the builder with validation checks, report
+results, and ask separately before pushing. Rules now explicitly state that
 commit authorization resets to zero after each commit, preventing
 auto-committing on subsequent work instructions.
 
@@ -245,7 +245,7 @@ _June 17, 2026_
 
 ### Stronger orchestrator delegation rules
 
-Rule #1 expanded to explicitly forbid using shell for implementation. New Rule #2: "Shell is not a workaround" - catches the common failure mode of substituting shell commands for delegation.
+The rule against shell-for-implementation was expanded. A new rule, "Shell is not a workaround", catches the common failure mode of substituting shell commands for delegation.
 
 ## v0.3.1
 
