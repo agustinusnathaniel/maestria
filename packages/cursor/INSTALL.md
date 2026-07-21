@@ -12,7 +12,7 @@ pnpx maestria@latest install cursor
 pnpx maestria@latest status
 ```
 
-This downloads `packages/cursor` from GitHub `main` into:
+The CLI pulls `@maestria/cursor` from npm (`npm pack @maestria/cursor@latest`) and extracts it into:
 
 ```text
 ~/.cursor/plugins/local/maestria
@@ -24,17 +24,17 @@ Restart Cursor IDE so Customize → Plugins picks up the local plugin. For CLI:
 agent --plugin-dir ~/.cursor/plugins/local/maestria
 ```
 
-## Manual install from a monorepo checkout
+### Updating
 
 ```bash
-mkdir -p ~/.cursor/plugins/local/maestria
-cp -a packages/cursor/. ~/.cursor/plugins/local/maestria/
+pnpx maestria@latest update cursor
+pnpx maestria@latest status
 ```
 
-Or run without installing:
+To pin to a specific version:
 
 ```bash
-agent --plugin-dir ./packages/cursor
+pnpx maestria@latest update cursor@0.1.0
 ```
 
 ## Verify

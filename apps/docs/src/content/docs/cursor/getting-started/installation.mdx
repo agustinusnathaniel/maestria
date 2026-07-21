@@ -19,7 +19,21 @@ pnpx maestria@latest install cursor
 pnpx maestria@latest status
 ```
 
-The CLI copies the plugin from GitHub `main` into `~/.cursor/plugins/local/maestria`.
+The CLI pulls `@maestria/cursor` from npm (`npm pack @maestria/cursor@latest`)
+and extracts it into `~/.cursor/plugins/local/maestria`.
+
+### Updating
+
+```bash
+pnpx maestria@latest update cursor
+pnpx maestria@latest status
+```
+
+To pin to a specific version:
+
+```bash
+pnpx maestria@latest update cursor@0.1.0
+```
 
 <Aside type="tip" title="Restart required">
   Restart Cursor IDE after install so Customize → Plugins picks up the local plugin. For CLI, pass
@@ -51,6 +65,20 @@ The CLI copies the plugin from GitHub `main` into `~/.cursor/plugins/local/maest
 </Steps>
 
 </details>
+
+### CLI Agent Invocation
+
+When running Cursor CLI (`agent`) with the plugin:
+
+```bash
+agent --plugin-dir ~/.cursor/plugins/local/maestria
+```
+
+For non-interactive usage (CI, scripts):
+
+```bash
+echo "your prompt" | agent --plugin-dir ~/.cursor/plugins/local/maestria --cli-mode
+```
 
 ## What gets installed
 

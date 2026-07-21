@@ -2,7 +2,14 @@ import { Effect } from 'effect';
 import { homedir } from 'os';
 import picocolors from 'picocolors';
 
-import { run, sh, commandExists, npmViewVersion, CommandError } from '@/lib/shell.js';
+import {
+  run,
+  sh,
+  commandExists,
+  npmViewVersion,
+  invalidateVersionCache,
+  CommandError,
+} from '@/lib/shell.js';
 
 // ── Shared helpers ───────────────────────────────────
 
@@ -438,46 +445,10 @@ const hermes: PlatformHandler = {
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
 
-function installCursorPluginFromGitHub(): Effect.Effect<void, CommandError> {
-  return Effect.gen(function* () {
-    const tmpRoot = '/tmp/maestria-main';
-    const localDir = CURSOR_PLUGIN_DIR;
-
-    yield* Effect.tryPromise({
-      try: async () => {
-        const { mkdir } = await import('node:fs/promises');
-        await mkdir(`${homedir()}/.cursor/plugins/local`, { recursive: true });
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `mkdir -p ${homedir()}/.cursor/plugins/local`,
-          message: String(error),
-        }),
-    });
-
-    yield* sh(`rm -rf "${tmpRoot}" "${localDir}"`, 15_000);
-    yield* sh(
-      `curl -sL "https://codeload.github.com/agustinusnathaniel/maestria/tar.gz/main" | tar xz -C /tmp`,
-      60_000,
-    );
-    // Trailing `/.` copies hidden dirs (e.g. .cursor-plugin) that glob `*` skips
-    yield* sh(
-      `mkdir -p "${localDir}" && cp -a "${tmpRoot}/packages/cursor/." "${localDir}/"`,
-      15_000,
-    );
-    yield* sh(`rm -rf "${tmpRoot}"`, 15_000);
-
-    console.log(
-      `  ${picocolors.green('✓')} Installed Cursor plugin to ${localDir}\n` +
-        `  Restart Cursor IDE or run: agent --plugin-dir ${localDir}\n`,
-    );
-  }).pipe(Effect.as(void 0));
-}
-
 const cursor: PlatformHandler = {
   id: 'cursor',
   label: 'Cursor',
-  // Declarative plugin — no npm package publish required for v1
+  npmPackage: '@maestria/cursor',
 
   detect: commandExists('agent').pipe(
     Effect.catchCause(() =>
@@ -493,7 +464,7 @@ const cursor: PlatformHandler = {
     Effect.catchCause(() => Effect.succeed(false)),
   ),
 
-  getInstalledVersion: run('cat', [CURSOR_PLUGIN_JSON]).pipe(
+  getInstalledVersion: run('cat', [`${CURSOR_PLUGIN_DIR}/package.json`]).pipe(
     Effect.map((out: string) => {
       try {
         const pkg: { version?: string } = JSON.parse(out);
@@ -505,20 +476,44 @@ const cursor: PlatformHandler = {
     Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
-  getLatestVersion: Effect.succeed('see GitHub main'),
+  getLatestVersion: npmViewVersion('@maestria/cursor'),
 
-  install: installCursorPluginFromGitHub(),
+  install: Effect.gen(function* () {
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { mkdir } = await import('node:fs/promises');
+        await mkdir(`${homedir()}/.cursor/plugins/local`, { recursive: true });
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `mkdir -p ${homedir()}/.cursor/plugins/local`,
+          message: String(error),
+        }),
+    });
+    yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);
+    yield* sh(
+      `npm pack @maestria/cursor@latest --pack-destination /tmp && ` +
+        `mkdir -p "${CURSOR_PLUGIN_DIR}" && ` +
+        `tar -xzf /tmp/maestria-cursor-*.tgz -C "${CURSOR_PLUGIN_DIR}" --strip-components=1 && ` +
+        `rm -f /tmp/maestria-cursor-*.tgz`,
+      120_000,
+    );
+  }).pipe(Effect.as(void 0)),
 
-  update: (_version?: string) =>
+  update: (version?: string) =>
     Effect.gen(function* () {
-      if (_version) {
-        console.log(
-          `  ${picocolors.yellow('⚠')} Version pinning is not supported for the Cursor plugin. ` +
-            `Updating from GitHub main.`,
-        );
-      }
-      yield* installCursorPluginFromGitHub();
-    }),
+      const tag = version ?? 'latest';
+      yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);
+      yield* sh(
+        `npm pack @maestria/cursor@${tag} --pack-destination /tmp && ` +
+          `mkdir -p "${CURSOR_PLUGIN_DIR}" && ` +
+          `tar -xzf /tmp/maestria-cursor-*.tgz -C "${CURSOR_PLUGIN_DIR}" --strip-components=1 && ` +
+          `rm -f /tmp/maestria-cursor-*.tgz`,
+        120_000,
+      );
+      // Invalidate version cache so npmViewVersion doesn't return stale data
+      yield* invalidateVersionCache('@maestria/cursor').pipe(Effect.catchCause(() => Effect.void));
+    }).pipe(Effect.as(void 0)),
 
   uninstall: Effect.gen(function* () {
     yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);

@@ -1,7 +1,7 @@
 {
   "name": "@maestria/cursor",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "description": "Maestria methodology plugin for Cursor IDE and Cursor CLI - specialists, orchestrator, and workflow commands",
   "keywords": [
     "agents",
