@@ -29,6 +29,18 @@ Three workflow modes control pipeline depth:
 | **sonar** | Research            | Thinker only - STOP after analysis/design         | Understanding before committing             |
 | **blitz** | Fast implementation | Worker only - skip recon and review               | Quick fixes, known territory                |
 
+## When to Use the Orchestrator
+
+The orchestrator adds structure and validation at the cost of coordination overhead. It excels in three situations:
+
+- **Long-running or complex tasks** that benefit from dedicated exploration, design, implementation, and review phases
+- **Multi-step workflows** where the built-in commit discipline and progress tracking prevent drift across sessions
+- **Heterogeneous model setups** where you want to preserve frontier model budget by routing recon and thinking to less expensive agents
+
+For simple, well-scoped tasks with a capable model, the orchestrator adds latency without corresponding benefit. If you already know what needs to be done and have the model to do it, going directly to a specialist or handling the task in a single pass is faster and cheaper.
+
+This is a design trade-off, not a limitation. The orchestrator trades raw speed for reliability and validation. Choose the approach that fits your task.
+
 ## Specialist Reference
 
 | Specialist       | Role                                                                                                        | When to Use                                                                                          | Key Constraints                                                                                                                                      |
