@@ -1,6 +1,6 @@
 {
   "name": "@maestria/hermes",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "description": "Version tracking for changeset only. NOT published to npm. PyPI distribution at maestria-hermes."
 }
