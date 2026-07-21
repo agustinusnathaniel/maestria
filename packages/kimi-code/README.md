@@ -6,12 +6,12 @@ A declarative, manifest-based Kimi Code plugin that ships 8 specialized skills (
 
 See [INSTALL.md](./INSTALL.md) for the full checklist. Quick start:
 
-```
-/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
-mkdir -p ~/.kimi-code && cp rules/AGENTS.md ~/.kimi-code/AGENTS.md
+```bash
+pnpx maestria@latest install kimi-code
+pnpx maestria@latest status
 ```
 
-Alternatively, use the [maestria CLI](https://maestria.sznm.dev/cli/) to manage installation across all platforms from a single command.
+The CLI pulls `@maestria/kimi-code` from npm and extracts it into `~/.kimi-code/plugins/managed/maestria`.
 
 ## The 8 Skills at a Glance
 
@@ -62,15 +62,21 @@ Unlike OpenCode's plugin SDK, Kimi Code's plugin system is **declarative** - no 
 - **No programmatic hooks** - the orchestrator skill carries the methodology, and Kimi Code's `[[hooks]]` blocks (user-managed) cover the rest.
 - **No custom subagent identity** - Kimi Code hardcodes `coder`/`explore`/`plan`. The 7 specialist identities are encoded as persona content in prompt templates.
 
-See [ADR-KC-001](../../docs/adr/kimi-code/ADR-KC-001-kimi-code-architecture.md) for the full design rationale.
+See the [architecture documentation](https://maestria.sznm.dev/kimi-code/architecture/) for the full design rationale.
 
 ## Updating
 
-```
-/plugins install https://github.com/agustinusnathaniel/maestria
+```bash
+pnpx maestria@latest update kimi-code
 ```
 
-Updates follow the latest release by default. Pin via tag or SHA for production work (see [INSTALL.md](./INSTALL.md)).
+Updates follow the latest release by default. Pin to a specific version with:
+
+```bash
+pnpx maestria@latest update kimi-code@0.4.6
+```
+
+See [INSTALL.md](./INSTALL.md) for details.
 
 ## Contributing
 
@@ -83,4 +89,3 @@ MIT
 ## Related
 
 - [`@maestria/opencode`](../opencode/README.md) - the OpenCode variant of this plugin (TypeScript SDK, programmatic hooks).
-- [ADR-KC-001](../../docs/adr/kimi-code/ADR-KC-001-kimi-code-architecture.md) - the architecture decision record for the Kimi Code plugin.

@@ -135,4 +135,3 @@ node dist/index.js status
 ## Related
 
 - [Maestria CLI documentation](https://maestria.sznm.dev/cli/)
-- [ADR-CORE-007](../../docs/adr/core/ADR-CORE-007-cli-package-plugin-management.md) - Architecture decision for this CLI

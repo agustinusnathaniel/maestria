@@ -1,38 +1,52 @@
-# Installation - @maestria/kimi-code
+# Installing @maestria/kimi-code
 
-`@maestria/kimi-code` is a declarative Kimi Code plugin - a manifest, a directory of skill files, and a global rules file. There is no `npm install`, no build step. The plugin is loaded by Kimi Code at session start, and the orchestrator skill auto-injects the methodology.
+## Prerequisites
 
-## Quick Install
+- **Kimi Code v0.12.0+** - required for first-class `AgentSwarm` support. On older versions, fallback to single `Agent` calls.
 
-In a Kimi Code session:
+## Via maestria CLI (recommended)
 
+```bash
+pnpx maestria@latest install kimi-code
+pnpx maestria@latest status
 ```
-/plugins install https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code
+
+The CLI pulls `@maestria/kimi-code` from npm (`npm pack @maestria/kimi-code@latest`) and extracts it into:
+
+```text
+~/.kimi-code/plugins/managed/maestria
 ```
 
-## Post-Install Checklist
+It also copies the global rules to `~/.kimi-code/AGENTS.md`.
 
-1. **Copy global rules** - Kimi Code auto-loads `~/.kimi-code/AGENTS.md` at session start, but the plugin cannot install it there. Copy manually:
+After install, add the recommended `[[hooks]]` and `[[permission.rules]]` blocks to `~/.kimi-code/config.toml` (see the [full installation guide](https://maestria.dev/kimi-code/getting-started/installation/)).
 
-   ```bash
-   mkdir -p ~/.kimi-code
-   cp rules/AGENTS.md ~/.kimi-code/AGENTS.md
-   ```
+### Updating
 
-   Verify with `ls ~/.kimi-code/AGENTS.md`.
+```bash
+pnpx maestria@latest update kimi-code
+pnpx maestria@latest status
+```
 
-2. **Add hooks and permission rules** - see the [full installation guide](https://maestria.dev/kimi-code/getting-started/installation/) for the required `[[hooks]]` and `[[permission.rules]]` blocks to add to `~/.kimi-code/config.toml`.
+To pin to a specific version:
 
-3. **Reload and start a new session** - `/reload` then `/new`.
+```bash
+pnpx maestria@latest update kimi-code@0.4.6
+```
 
-## Troubleshooting
+## Verify
 
-- **Orchestrator not loading**: Check `/plugins list` - maestria should show `enabled: true`. Run `/reload` then `/new`.
-- **AgentSwarm not available**: Requires Kimi Code v0.12.0+. On older versions, falls back to parallel Agent calls.
-- **AGENTS.md gets truncated**: Kimi Code enforces a 32 KB budget. Keep rules concise.
+1. Start a new Kimi Code session (`/new`)
+2. Ask: "List your available specialists"
+3. The orchestrator should respond listing builder, adventurer, architect, planner, reviewer, writer, and diagnose.
+4. Confirm `ls ~/.kimi-code/AGENTS.md` exists.
 
-## Full Guide
+## Uninstall
 
-For the complete installation walkthrough with hooks, permission rules, and verification steps, see:
+```bash
+pnpx maestria@latest uninstall kimi-code
+# or
+rm -rf ~/.kimi-code/plugins/managed/maestria ~/.kimi-code/AGENTS.md
+```
 
-[https://maestria.dev/kimi-code/getting-started/installation/](https://maestria.dev/kimi-code/getting-started/installation/)
+Optionally remove the `[[hooks]]` and `[[permission.rules]]` blocks from `~/.kimi-code/config.toml`.

@@ -3,10 +3,7 @@
   "projectOwner": "agustinusnathaniel",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": [
-    "README.md",
-    "apps/docs/src/content/docs/core/contributors.md"
-  ],
+  "files": ["README.md", "apps/docs/src/content/docs/core/contributors.md"],
   "imageSize": 100,
   "commit": false,
   "commitConvention": "angular",
@@ -16,24 +13,14 @@
       "name": "Agustinus Nathaniel",
       "avatar_url": "https://avatars.githubusercontent.com/u/17046154?v=4",
       "profile": "https://agustinusnathaniel.com/",
-      "contributions": [
-        "code",
-        "doc",
-        "design",
-        "infra",
-        "ideas",
-        "test"
-      ]
+      "contributions": ["code", "doc", "design", "infra", "ideas", "test"]
     },
     {
       "login": "iyansr",
       "name": "I Putu Saputrayana",
       "avatar_url": "https://avatars.githubusercontent.com/u/42711013?v=4",
       "profile": "https://links.iyansr.id",
-      "contributions": [
-        "code",
-        "doc"
-      ]
+      "contributions": ["code", "doc"]
     }
   ],
   "contributorsPerLine": 7,
