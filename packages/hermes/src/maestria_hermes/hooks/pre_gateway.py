@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import pathlib
+import re
 from typing import Any, Optional
 
 from maestria_hermes.modes import ModeManager
@@ -22,10 +24,41 @@ logger = logging.getLogger(__name__)
 # Commands this hook handles
 _MAESTRIA_COMMANDS = {"fein", "sonar", "blitz", "mode", "review", "plan"}
 
+_FM_DESC_RE = re.compile(r'^description:\s*"(.+)"', re.MULTILINE)
+_COMMANDS_DIR = pathlib.Path(__file__).parent.parent / "skills" / "commands"
+
+
+def _load_pipeline_desc(name: str, fallback: str) -> str:
+    """Load pipeline description from synced command SKILL.md frontmatter."""
+    path = _COMMANDS_DIR / name / "SKILL.md"
+    if path.exists():
+        try:
+            content = path.read_text(encoding="utf-8")
+            if content.startswith("---"):
+                end = content.find("---\n", 3)
+                if end != -1:
+                    fm = content[3:end]
+                    m = _FM_DESC_RE.search(fm)
+                    if m:
+                        return m.group(1)
+        except OSError:
+            pass
+    return fallback
+
+
 _PIPELINE_DESC = {
-    "fein": "adventurer / architect -> builder -> reviewer",
-    "sonar": "adventurer / architect -> STOP (read-only)",
-    "blitz": "builder (skip recon and review)",
+    "fein": _load_pipeline_desc(
+        "fein",
+        "Full pipeline mode: reconnaissance, design, implementation, review",
+    ),
+    "sonar": _load_pipeline_desc(
+        "sonar",
+        "Research-only mode: reconnaissance and design only, no implementation",
+    ),
+    "blitz": _load_pipeline_desc(
+        "blitz",
+        "Fast implementation mode: skip gates, go directly to implementation",
+    ),
 }
 
 
