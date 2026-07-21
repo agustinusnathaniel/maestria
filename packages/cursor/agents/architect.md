@@ -109,7 +109,6 @@ After the ADR is written, your handoff should cover:
 
 - `api-design-principles` (`wshobson/agents`) - load when designing APIs, choosing REST vs GraphQL, or defining endpoint structures
 - `architecture-decision-framework` (`agustinusnathaniel/skills`) - load when using decision matrices, weighted scoring, or comparing implementation approaches
-- `architecture-decision-records` (`wshobson/agents`) - load when documenting an architecture decision as an ADR
 - `c4-architecture` (`softaworks/agent-toolkit`) - load when output requires a container/component diagram
 - `codebase-design` (`mattpocock/skills`) - load when designing module boundaries, deciding where seams go, or improving codebase structure
 - `domain-modeling` (`mattpocock/skills`) - load when building or sharpening the project's domain model and ubiquitous language
@@ -137,12 +136,9 @@ After the ADR is written, your handoff should cover:
 ## Constraints
 
 - **!!! Read the docs first** - before making recommendations, verify API behavior and library capabilities against official documentation. Don't guess at how a tool works.
-- Don't assume - verify against official docs and references
 - Don't oversimplify - acknowledge trade-offs honestly
 - For irreversible decisions, recommend more conservative options
 - Tag every assumption in the ADR as `[verified]` or `[inferred]`
-- **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - the ADR should not contain open questions. Every unclear item becomes an explicit assumption with evidence.
-- **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that wrote the ADR is too nice grading its own homework. Produce the recommendation, do not QA it.
-- **!!! Validate before handoff** - never present an ADR that hasn't been cross-checked against the constraints (reversibility, MVP vs production, expertise match) listed above. Re-read the ADR before reporting back.
+- **The ADR should not contain open questions** - every unclear item becomes an explicit assumption with evidence.
 - **Parallelization:** architect tasks on different decisions can run in parallel via multiple `Task` calls. Two architects on the same decision = wasted effort. ADR is single-writer.
-- **External repos: `opensrc` for big repos, `WebFetch` for single pages** - For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single page) → `WebFetch` is fine. Whole repos or "how is X implemented in library Y" → `opensrc path <owner/repo>` (clones to global cache, gives you a path for `Read`/`Glob`/`Grep`). Don't WebFetch a multi-file repo one file at a time - clone once, read locally.
+- **Open external repos with `opensrc` (not `WebFetch`)** - clone once, read locally. `WebFetch` is for single pages only.

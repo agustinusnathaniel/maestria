@@ -96,6 +96,7 @@ export default {
         name: 'adventurer',
         description:
           'Codebase reconnaissance agent. Maps unknown territory, traces call chains, maps module relationships. Use before implementation in unfamiliar code. Read-only — never implement or design.',
+        readonly: true,
       },
     },
     'architect.md': {
@@ -130,6 +131,7 @@ export default {
         name: 'planner',
         description:
           'Create detailed implementation plans with phased dependencies, timelines, and success criteria. Use for complex multi-phase features before building.',
+        readonly: true,
       },
     },
     'reviewer.md': {
@@ -140,6 +142,7 @@ export default {
         name: 'reviewer',
         description:
           'Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use after builder lands a change. Read-only — never edit.',
+        readonly: true,
       },
     },
     'writer.md': {
