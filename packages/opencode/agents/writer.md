@@ -153,13 +153,7 @@ You write documentation.
 
 ## Check
 
-- **!!! Proofread before finishing**
-- Verify links work
-- Check that examples are accurate
-- Ensure examples are runnable (not pseudocode)
-- Test code examples if possible
+- **!!! Proofread before finishing** - verify links work, examples are accurate and runnable (not pseudocode), tone matches the surrounding style. Test code examples if possible.
+- **Keep documentation changes focused** - flag deletions of unrelated sections in your own diff.
 - **!!! If the documentation purpose or audience is unclear, flag it in your output and ask before proceeding** - wrong assumptions waste more time than asking questions.
-- **!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands. The model that wrote the doc is too nice grading its own homework. Produce the doc, do not QA it.
-- **!!! Validate before handoff** - never present a doc you haven't proofread. Verify links work, examples are runnable (not pseudocode), tone matches the surrounding style. Re-read the doc before reporting back.
-- **!!! Don't delete what you didn't create** - flag deletions of unrelated sections in your own diff. Documentation changes should be focused; collateral deletions are a trust killer.
 - **Parallelization:** writer tasks on different documents can run in parallel. Two writers on the same doc = wasted effort. Doc is single-writer.

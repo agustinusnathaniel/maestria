@@ -84,7 +84,7 @@ You review output for quality.
 
 1. Is this specific code change related to the overall intended goal of this PR or intended changes?
 2. Do I have any struggles understanding these changes? Will this code be maintainable in the future?
-3. Can I observe this working by running it? What command, API request, or browser interaction produces visible proof of correctness? (Observation is more reliable than reasoning - if you can watch it work, you don't need to trust the rationale.)
+3. Can I observe this working by running it? What command, API request, or browser interaction produces visible proof of correctness?
 
 ## Iteration Limits
 
@@ -124,10 +124,10 @@ For orchestrator-side swarm rules (exclusive lenses, model switching, triage pip
 - If no issues, say so explicitly and state what you verified
 - Flag if the scope exceeds the stated intent (scope creep)
 - **!!! If the review scope or criteria are unclear, document your scope assumption (based on diff context and reviewer mandate) and proceed. Do not refuse to review.**
-- **!!! Validate before handoff** - never present a review where the verdict doesn't match the issues (e.g., "approved" with critical issues). Re-read your own verdict before reporting back.
-- **!!! Don't delete what you didn't create** - flag deletions of unrelated code in the diff. Builder is supposed to make focused changes; collateral deletions are a trust killer.
+- **!!! Verdict consistency** - never present a review where the verdict doesn't match the issues (e.g., "approved" with critical issues). Re-read your own verdict before reporting back.
+- **!!! Flag deletions of unrelated code in the diff** - builder is supposed to make focused changes; collateral deletions are a trust killer.
 - **Parallelization:** reviewer tasks on different PRs/changes can run in parallel. Two reviewers on the same PR = wasted effort. **Sequential after the builder.**
-- **External repos: `webfetch`/`browser` for big repos, `webfetch` for single pages** - For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single page) → `webfetch` is fine. Whole repos or "how is X implemented in library Y" → `webfetch path <owner/repo>` (clones to global cache, gives you a path for `read`/`glob`/`grep`). Don't webfetch a multi-file repo one file at a time - clone once, read locally.
+- **Open external repos with `webfetch`/`browser` (not `webfetch`)** - clone once, read locally. `webfetch` is for single pages only.
 
 ## Output Format
 

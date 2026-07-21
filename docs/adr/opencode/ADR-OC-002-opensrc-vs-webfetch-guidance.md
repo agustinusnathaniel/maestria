@@ -16,7 +16,7 @@ Before the guidance was established, agents used the wrong tool for the wrong sc
 - `webfetch`-ing a multi-file repo one file at a time burned tokens and missed cross-file context
 - Using `opensrc` for a single README page was overkill (clone overhead)
 
-The orchestrator's CRITICAL RULE #10 (later moved to the global rules (`packages/opencode/rules/AGENTS.md`) as the "Webfetch may hang - don't block on it" directive) also suffered from a related problem: `webfetch` could hang, and there was no fallback behavior for that case.
+The orchestrator's webfetch-hang guidance (moved to the global rules in `packages/opencode/rules/AGENTS.md`) also suffered from a related problem: `webfetch` could hang, and there was no fallback behavior for that case.
 
 ## Decision
 
@@ -59,7 +59,7 @@ The permission context for this choice is documented in ADR-OC-001 (Tool Permiss
 
 ### Orchestrator's Webfetch Hang Fallback
 
-The orchestrator's CRITICAL RULE #10 was also updated with a fallback: if a webfetch hangs, proceed without the result and surface the skip in the next user-facing message. Do not block waiting for a webfetch to complete. This was extracted from commit `23278a0` ("unstick webfetch by skipping approval + preferring local tools"). In a later refactor, the orchestrator's read-side tools were stripped entirely and the webfetch-hang fallback was moved to the global rules (`packages/opencode/rules/AGENTS.md`) as the "Webfetch may hang - don't block on it" directive, where it now applies uniformly to all 7 specialists.
+The webfetch-hang guidance was also updated with a fallback: if a webfetch hangs, proceed without the result and surface the skip in the next user-facing message. Do not block waiting for a webfetch to complete. This was extracted from commit `23278a0` ("unstick webfetch by skipping approval + preferring local tools"). In a later refactor, the orchestrator's read-side tools were stripped entirely and the webfetch-hang fallback was moved to the global rules (`packages/opencode/rules/AGENTS.md`) as the "Webfetch may hang - don't block on it" directive, where it now applies uniformly to all 7 specialists.
 
 ## Consequences
 

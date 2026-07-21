@@ -36,10 +36,10 @@ See [VISION.md](VISION.md) for the project's guiding philosophy and long-term go
 
 | Package | Description | README |
 | --- | --- | --- |
-| [@maestria/opencode](packages/opencode/) | 7 specialist subagents + orchestrator + workflow modes | [README](packages/opencode/README.md) |
-| [@maestria/kimi-code](packages/kimi-code/) | 2 specialist subagents + skills for Kimi Code | [README](packages/kimi-code/README.md) |
-| [@maestria/hermes](packages/hermes/) | Hermes agent plugin | [README](packages/hermes/README.md) |
-| [@maestria/pi](packages/pi/) | Pi coding agent extension: 7 specialists + 3 workflow modes | [README](packages/pi/README.md) |
+| [@maestria/opencode](packages/opencode/) | Maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
+| [@maestria/kimi-code](packages/kimi-code/) | Maestria methodology plugin for Kimi Code | [README](packages/kimi-code/README.md) |
+| [@maestria/hermes](packages/hermes/) | Maestria methodology plugin for Hermes | [README](packages/hermes/README.md) |
+| [@maestria/pi](packages/pi/) | Maestria methodology plugin for Pi | [README](packages/pi/README.md) |
 
 ## Development
 
