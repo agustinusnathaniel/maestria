@@ -1,6 +1,6 @@
 ---
-name: blitz
-description: Fast Maestria implementation via builder (skip recon/design unless unknown)
+name: maestria-command-blitz
+description: "Fast implementation mode: skip gates, go directly to implementation"
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
@@ -11,7 +11,3 @@ description: Fast Maestria implementation via builder (skip recon/design unless 
 ## MODE: blitz (Fast Implementation)
 
 Speed mode: skip reconnaissance and design gates. Go directly to builder for implementation. Only use adventurer if the codebase context is genuinely unknown (not as a default step). Skip reviewer unless the user explicitly requests review.
-
-Load the `orchestrator` skill if coordination is needed. Prefer a single `Task` to `builder` with a clear handoff.
-
-If the user provided a goal after `/blitz`, implement that goal now.

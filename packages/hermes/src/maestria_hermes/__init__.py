@@ -9,6 +9,7 @@ Design docs at docs/hermes-maestria-plugin.md.
 
 import logging
 import pathlib
+import re
 
 from maestria_hermes.hooks.pre_gateway import create_pre_gateway_hook
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
@@ -24,6 +25,26 @@ from maestria_hermes.tools.opencode import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Matches `description: "..."` in YAML frontmatter
+_FM_DESC_RE = re.compile(r'^description:\s*"(.+)"', re.MULTILINE)
+
+
+def _load_cmd_description(skill_path: pathlib.Path, fallback: str) -> str:
+    """Load command description from synced SKILL.md frontmatter."""
+    if skill_path.exists():
+        try:
+            content = skill_path.read_text(encoding="utf-8")
+            if content.startswith("---"):
+                end = content.find("---\n", 3)
+                if end != -1:
+                    fm = content[3:end]
+                    m = _FM_DESC_RE.search(fm)
+                    if m:
+                        return m.group(1)
+        except OSError:
+            pass
+    return fallback
 
 
 def register(ctx):
@@ -79,20 +100,31 @@ def register(ctx):
 
     # -- Phase 1: Slash commands --------------------------------------------
 
+    _skills_dir = pathlib.Path(__file__).parent / "skills"
+
     ctx.register_command(
         "fein",
         _cmd_set_mode(mode_manager, "fein"),
-        description="Full methodology pipeline with all gates",
+        description=_load_cmd_description(
+            _skills_dir / "commands" / "fein" / "SKILL.md",
+            "Full pipeline mode: reconnaissance, design, implementation, review",
+        ),
     )
     ctx.register_command(
         "sonar",
         _cmd_set_mode(mode_manager, "sonar"),
-        description="Research only -- read-only tools, no edits",
+        description=_load_cmd_description(
+            _skills_dir / "commands" / "sonar" / "SKILL.md",
+            "Research-only mode: reconnaissance and design only, no implementation",
+        ),
     )
     ctx.register_command(
         "blitz",
         _cmd_set_mode(mode_manager, "blitz"),
-        description="Fast execution -- skip recon and review gates",
+        description=_load_cmd_description(
+            _skills_dir / "commands" / "blitz" / "SKILL.md",
+            "Fast implementation mode: skip gates, go directly to implementation",
+        ),
     )
     ctx.register_command(
         "mode",
@@ -112,8 +144,6 @@ def register(ctx):
 
     # -- Phase 2: Skills ----------------------------------------------------
 
-    _skills_dir = pathlib.Path(__file__).parent / "skills"
-
     _skill_registrations = [
         ("orchestrator", _skills_dir / "orchestrator" / "SKILL.md"),
         ("builder",      _skills_dir / "builder" / "SKILL.md"),
@@ -124,6 +154,11 @@ def register(ctx):
         ("diagnose",     _skills_dir / "diagnose" / "SKILL.md"),
         ("planner",      _skills_dir / "planner" / "SKILL.md"),
         ("writer",       _skills_dir / "writer" / "SKILL.md"),
+
+        # Command workflow modes (fein/sonar/blitz)
+        ("command-fein",   _skills_dir / "commands" / "fein" / "SKILL.md"),
+        ("command-sonar",  _skills_dir / "commands" / "sonar" / "SKILL.md"),
+        ("command-blitz",  _skills_dir / "commands" / "blitz" / "SKILL.md"),
     ]
     for name, path in _skill_registrations:
         if path.exists():

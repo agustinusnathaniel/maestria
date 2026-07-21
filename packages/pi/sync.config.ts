@@ -145,6 +145,19 @@ export default {
         '\n',
     },
 
+    'commands/fein.md': {
+      output: 'commands/fein.md',
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      output: 'commands/sonar.md',
+      stripFrontmatter: true,
+    },
+    'commands/blitz.md': {
+      output: 'commands/blitz.md',
+      stripFrontmatter: true,
+    },
+
     // rules.md found via secondary source loop from dirname(source) = ../core/agent-directives/
     'rules.md': {
       output: '../skills/global-rules/SKILL.md',

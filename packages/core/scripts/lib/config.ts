@@ -17,6 +17,7 @@ export interface FileConfig {
   replace?: ReplaceOp[];
   prepend?: string;
   append?: string;
+  autoGenComment?: string;
   frontmatter?: Record<string, unknown> | string | null;
 }
 
@@ -45,6 +46,7 @@ export interface ResolvedFileConfig {
   prepend: string;
   append: string;
   frontmatter?: Record<string, unknown> | string | null;
+  autoGenComment?: string;
 }
 
 export class ConfigError extends Error {
@@ -120,9 +122,18 @@ function resolveFileConfig(
   const append = fileCfg.append ?? defaultCfg?.append ?? '';
   const frontmatter =
     fileCfg.frontmatter !== undefined ? fileCfg.frontmatter : defaultCfg?.frontmatter;
+  const autoGenComment = fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? '';
 
   const baseDir = outputDir || configDir;
   const fileOutput = fileCfg.output ? resolve(baseDir, fileCfg.output) : resolve(baseDir, filename);
 
-  return { output: fileOutput, stripFrontmatter, replace, prepend, append, frontmatter };
+  return {
+    output: fileOutput,
+    stripFrontmatter,
+    replace,
+    prepend,
+    append,
+    frontmatter,
+    autoGenComment,
+  };
 }

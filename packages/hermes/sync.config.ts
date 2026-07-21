@@ -91,6 +91,32 @@ export default {
   },
 
   files: {
+    // -- Command workflow modes (fein/sonar/blitz) --
+    'commands/fein.md': {
+      output: 'commands/fein/SKILL.md',
+      stripFrontmatter: true,
+      frontmatter: {
+        name: 'maestria-command-fein',
+        description: 'Full pipeline mode: reconnaissance, design, implementation, review',
+      },
+    },
+    'commands/sonar.md': {
+      output: 'commands/sonar/SKILL.md',
+      stripFrontmatter: true,
+      frontmatter: {
+        name: 'maestria-command-sonar',
+        description: 'Research-only mode: reconnaissance and design only, no implementation',
+      },
+    },
+    'commands/blitz.md': {
+      output: 'commands/blitz/SKILL.md',
+      stripFrontmatter: true,
+      frontmatter: {
+        name: 'maestria-command-blitz',
+        description: 'Fast implementation mode: skip gates, go directly to implementation',
+      },
+    },
+
     // -- Orchestrator: the methodology dispatcher --
     'orchestrator.md': {
       output: 'orchestrator/SKILL.md',

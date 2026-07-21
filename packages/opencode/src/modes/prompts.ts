@@ -1,4 +1,22 @@
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ModeKeyword } from '@/modes/types.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const COMMANDS_DIR = resolve(__dirname, '../../agents/commands');
+
+function loadModePrompt(name: string): string {
+  const content = readFileSync(resolve(COMMANDS_DIR, `${name}.md`), 'utf-8');
+  // Find the `## MODE:` heading which marks the start of the actual prompt text.
+  // The synced command files start with an HTML comment (`<!-- Auto-generated... -->`),
+  // not YAML frontmatter (`---`), so a frontmatter regex would never match.
+  const modeIdx = content.indexOf('## MODE:');
+  if (modeIdx !== -1) {
+    return content.slice(modeIdx).replace(/\s+$/, '') + '\n';
+  }
+  return content.replace(/\s+$/, '') + '\n';
+}
 
 /**
  * Mode prompt text for each keyword.
@@ -7,33 +25,9 @@ import type { ModeKeyword } from '@/modes/types.js';
  * @see ADR-OC-003 (section "Mode Prompts")
  */
 export const MODE_PROMPTS: Record<ModeKeyword, string> = {
-  fein: [
-    '## MODE: fein (Full Pipeline)',
-    '',
-    'Default role-based pipeline: thinker (recon/design/plan) → worker (implementation) → verifier (review).',
-    'Verifier acceptance terminates the pipeline for that unit of work.',
-    'Roles and order may adapt to task needs - this is the default, not a fixed requirement.',
-    'Do NOT skip any phase unless the user explicitly overrides',
-    'in the same turn.',
-  ].join('\n'),
-
-  sonar: [
-    '## MODE: sonar (Research Only)',
-    '',
-    'Research mode: reconnaissance and design only. Delegate to',
-    '@adventurer (recon) followed by @architect or @planner',
-    '(analysis/design). STOP after delivering findings and design.',
-    'Do NOT implement, write code, or create any production files.',
-  ].join('\n'),
-
-  blitz: [
-    '## MODE: blitz (Fast Implementation)',
-    '',
-    'Speed mode: skip reconnaissance and design gates. Go directly',
-    'to @builder for implementation. Only use @adventurer if the',
-    'codebase context is genuinely unknown (not as a default step).',
-    'Skip @reviewer unless the user explicitly requests review.',
-  ].join('\n'),
+  fein: loadModePrompt('fein'),
+  sonar: loadModePrompt('sonar'),
+  blitz: loadModePrompt('blitz'),
 };
 
 /**
