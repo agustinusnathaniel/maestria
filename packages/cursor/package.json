@@ -32,6 +32,10 @@
     "README.md"
   ],
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "test": "vp test"
   },
