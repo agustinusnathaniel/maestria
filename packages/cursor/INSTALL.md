@@ -54,5 +54,5 @@ rm -rf ~/.cursor/plugins/local/maestria
 
 ## Notes
 
-- v1 maker/checker is **prompt-level** (reviewer/adventurer/planner instruct read-only). Hard tool deny is not available yet.
+- v1 maker/checker uses **two-layer enforcement**: runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools at the Cursor runtime level, with prompt-level instructions as a backup layer.
 - Marketplace publish is out of scope for v1; local plugin install is the supported path.

@@ -36,7 +36,10 @@ OpenCode-style TypeScript hooks do not apply. Cursor plugins are declarative fil
 
 ### Maker/checker (v1)
 
-Cursor custom agents do not expose OpenCode-style `edit: deny` permissions. v1 enforces maker/checker **in prompts** (reviewer/adventurer/planner prepends forbid writes). Hard tool deny via hooks is deferred.
+Cursor native plugin agent schema supports `readonly: true` in agent frontmatter. v1 enforces maker/checker with **two layers**:
+
+1. **Runtime enforcement** — `readonly: true` flag on `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
+2. **Prompt-level guidance** — Agent prepends and descriptions also include explicit read-only instructions as a backup.
 
 ### IDE and CLI parity
 
@@ -61,7 +64,7 @@ One plugin bundle serves both:
 - Positive: Same declarative pattern as Kimi Code; sync pipeline already supports it.
 - Positive: Custom agents give specialist isolation via Task (closer to OpenCode than Kimi's 3 built-in profiles).
 - Positive: One install path for IDE and CLI.
-- Negative: Maker/checker is prompt-only until Cursor exposes per-agent tool gates or we add hooks.
+- Mixed: Maker/checker is two-layer (runtime `readonly: true` flag + prompt instructions) — stronger than prompt-only, but not yet matching OpenCode's hard `edit: deny` at the agent definition level.
 - Negative: Until Marketplace listing, distribution is local-plugin copy from GitHub `main` / monorepo path.
 
 ## Related Decisions

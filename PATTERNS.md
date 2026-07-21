@@ -157,5 +157,5 @@ Self-review fails for three reasons, each documented from real sessions:
 | --- | --- | --- |
 | **OpenCode** | `edit: deny` in frontmatter | Reviewer agent YAML sets `permission.edit: deny` and restricts bash to git inspection only. No write tool access at the agent definition level. |
 | **Kimi Code** | Safety constraints + persona | Reviewer persona includes `[[permission.rules]]` block that denies file modification. Runtime enforcement via `builtin_safety_constraint`. |
-| **Cursor** | Prompt-level constraints (v1) | Reviewer/adventurer/planner agents instruct read-only behavior. No per-agent tool deny API yet; hooks deferred. |
+| **Cursor** | Two-layer enforcement (v1) | Runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools (Write, StrReplace, Delete). Prompt-level instructions serve as a backup layer. |
 | **Claude Code** | Read-only tool access | Reviewer is spawned via `new Agent({ tools: { Edit: false, Read: true, Bash: false } })` or equivalent tool-level permission gating. No hooks can escalate write access. |
