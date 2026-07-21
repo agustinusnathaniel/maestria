@@ -48,7 +48,7 @@ A new **COMMIT PROTOCOL** section was added with a 5-step checklist:
 1. Inspect - check git status via `@adventurer`
 2. Propose - present full commit message inline in `question()` - **!!! Do NOT skip**
 3. Execute - delegate to `@builder` with exact message + `vp check` + `vp test`
-4. Stop - report, do not chain another commit; dispatch `@reviewer` per rule #8
+4. Stop - report, do not chain another commit; dispatch `@reviewer` per rule #6
 5. Push - ask separately (commit approval ≠ push authorization)
 
 The auto-committing anti-pattern was marked `!!!` as the most commonly violated rule, with cross-references to rule #3 and the protocol.
