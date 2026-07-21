@@ -41,9 +41,8 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
-    "@gotgenes/pi-subagents": "^17.0.0",
+    "@gotgenes/pi-subagents": "^18.0.0",
     "typebox": "*"
   },
   "engines": {

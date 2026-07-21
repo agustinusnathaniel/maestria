@@ -7,7 +7,7 @@ export default defineConfig({
     sourcemap: true,
     minify: true,
     deps: {
-      neverBundle: ['@earendil-works/pi-coding-agent', '@earendil-works/pi-ai', 'typebox'],
+      neverBundle: ['@earendil-works/pi-coding-agent', 'typebox'],
     },
   },
   test: {
