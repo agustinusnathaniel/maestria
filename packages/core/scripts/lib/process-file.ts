@@ -111,8 +111,9 @@ export async function processFile(
     }
 
     // 6. Auto-generated header with optional frontmatter
-    const autoGenComment = `<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->\n\n`;
+    const defaultComment = `<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->`;
+    const autoGenComment = (fileCfg.autoGenComment || defaultComment) + '\n\n';
 
     if (fileCfg.frontmatter !== undefined) {
       const fm = serializeFrontmatter(fileCfg.frontmatter);
