@@ -37,13 +37,13 @@
     "test": "vp test"
   },
   "dependencies": {
-    "@clack/core": "^0.4.2"
+    "@clack/core": "^1.4.3"
   },
   "devDependencies": {
-    "@clack/prompts": "^0.10.1",
+    "@clack/prompts": "^1.7.0",
     "@types/node": "catalog:",
     "citty": "^0.2.2",
-    "effect": "4.0.0-beta.92",
+    "effect": "4.0.0-beta.100",
     "picocolors": "^1.1.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
@@ -53,7 +53,7 @@
   },
   "pnpm": {
     "overrides": {
-      "effect": "4.0.0-beta.92"
+      "effect": "4.0.0-beta.100"
     }
   }
 }

@@ -44,18 +44,18 @@
     "test": "vp test"
   },
   "dependencies": {
-    "es-toolkit": "^1.47.1",
-    "yaml": "^2.7.0",
-    "zod": "^3.24.0"
+    "es-toolkit": "^1.49.0",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.17.0",
+    "@opencode-ai/plugin": "^1.18.4",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": "^1.17.0"
+    "@opencode-ai/plugin": "^1.18.4"
   },
   "engines": {
     "node": ">=22.12.0"

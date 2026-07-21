@@ -241,9 +241,7 @@ describe('MaestriaPlugin config validation', () => {
       MaestriaPlugin({} as never, {
         modes: { disabledKeywords: ['invalid'] as any },
       }),
-    ).rejects.toThrow(
-      "Invalid enum value. Expected 'fein' | 'sonar' | 'blitz', received 'invalid'",
-    );
+    ).rejects.toThrow('Invalid option: expected one of');
   });
 
   it('accepts valid config with disabled keywords', async () => {
@@ -273,7 +271,7 @@ describe('MaestriaPlugin config validation', () => {
       MaestriaPlugin({} as never, {
         modes: { disabledKeywords: 'fein' as any },
       }),
-    ).rejects.toThrow('Expected array, received string');
+    ).rejects.toThrow('Invalid input: expected array, received string');
   });
 });
 
