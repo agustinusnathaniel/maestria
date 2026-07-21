@@ -263,7 +263,6 @@ type: prompt
 whenToUse: >
   Feature implementation, bug fixing, test writing, refactoring within a single task scope
 
-
 disableModelInvocation: false
 safe: true
 arguments:

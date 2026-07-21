@@ -83,6 +83,7 @@ export default defineConfig({
             { label: 'How It Works', link: '/core/how-it-works/' },
             { label: 'Workflow Patterns', link: '/core/workflow-patterns/' },
             { label: 'Contributing', link: '/core/contributing/' },
+            { label: 'Contributors', link: '/core/contributors/' },
             { label: 'Changelog', link: '/core/changelog/' },
           ],
         },

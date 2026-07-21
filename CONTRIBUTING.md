@@ -268,3 +268,29 @@ The docs site auto-generates sidebar navigation via `starlight-auto-sidebar`. Af
 ---
 
 _Before committing agent directive changes, always run `scripts/check-sync` to verify synced plugins are up-to-date._
+
+## 11. Contributor Recognition
+
+This project uses [all-contributors](https://all-contributors.js.org/) to recognize all contributors, not just those who write code.
+
+### How to add a contributor
+
+After your PR is merged, comment on the merged PR:
+
+```
+@all-contributors please add @<your-username>
+```
+
+This triggers the @all-contributors GitHub App to automatically create a PR adding you to the contributors list.
+
+### Manual management
+
+Maintainers can also manage contributors locally:
+
+```bash
+pnpm contributors:add <username> <contributionType>
+pnpm contributors:generate
+pnpm contributors:check  # Verify README matches config
+```
+
+Contribution types include: `code`, `doc`, `design`, `infra`, `ideas`, `test`, `bug`, `review`, `tool`, `translation`, and more. See the [all-contributors specification](https://allcontributors.org/docs/en/emoji-key) for the full list.
