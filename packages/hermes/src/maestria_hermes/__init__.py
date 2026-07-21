@@ -124,6 +124,11 @@ def register(ctx):
         ("diagnose",     _skills_dir / "diagnose" / "SKILL.md"),
         ("planner",      _skills_dir / "planner" / "SKILL.md"),
         ("writer",       _skills_dir / "writer" / "SKILL.md"),
+
+        # Command workflow modes (fein/sonar/blitz)
+        ("command-fein",   _skills_dir / "commands" / "fein" / "SKILL.md"),
+        ("command-sonar",  _skills_dir / "commands" / "sonar" / "SKILL.md"),
+        ("command-blitz",  _skills_dir / "commands" / "blitz" / "SKILL.md"),
     ]
     for name, path in _skill_registrations:
         if path.exists():

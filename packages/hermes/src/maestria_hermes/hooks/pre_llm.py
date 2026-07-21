@@ -12,6 +12,7 @@ includes [MAESTRIA_ROLE: <role>] in the context parameter of delegate_task.
 from __future__ import annotations
 
 import logging
+import pathlib
 import re
 
 from maestria_hermes.modes import ModeManager
@@ -29,29 +30,33 @@ _VALID_ROLES = {
     "diagnose", "planner", "reviewer", "writer",
 }
 
+# Load mode context from synced SKILL.md files
+_COMMANDS_DIR = pathlib.Path(__file__).parent.parent / "skills" / "commands"
+
+
+def _load_mode_context(name: str) -> str:
+    """Load mode context from synced command SKILL.md file.
+
+    Falls back to a generic message if the file is missing.
+    """
+    path = _COMMANDS_DIR / name / "SKILL.md"
+    if path.exists():
+        content = path.read_text(encoding="utf-8")
+        # Strip YAML frontmatter
+        if content.startswith("---"):
+            parts = content.split("---\n", 2)
+            if len(parts) >= 3:
+                content = parts[2]
+        return content.strip()
+    return (
+        f"[MAESTRIA MODE: {name}]\n"
+        f"No specific mode instructions defined."
+    )
+
+
 _MODE_CONTEXT = {
-    "fein": (
-        "[MAESTRIA MODE: fein]\n"
-        "Full methodology pipeline is active:\n"
-        "1. Reconnaissance\n"
-        "2. Design / planning\n"
-        "3. Implementation\n"
-        "4. Review\n"
-        "All gates are enforced. Default: single-thread execution.\n"
-        "Maker/checker split applies when delegation is used."
-    ),
-    "sonar": (
-        "[MAESTRIA MODE: sonar]\n"
-        "Research-only mode. You may read, search, and explore, but you "
-        "MUST NOT edit, write, or create any files or make any changes. "
-        "Gather information, analyze, and report findings."
-    ),
-    "blitz": (
-        "[MAESTRIA MODE: blitz]\n"
-        "Fast execution mode. Skip reconnaissance and design phases. "
-        "Go directly to implementation. Review is optional unless "
-        "explicitly requested."
-    ),
+    name: _load_mode_context(name)
+    for name in ["fein", "sonar", "blitz"]
 }
 
 
