@@ -93,6 +93,7 @@ How each platform implements this pattern:
 | --- | --- | --- |
 | **OpenCode** | `task()` subagents | Orchestrator delegates to specialist agents via the 7-agent pipeline. Each agent is a markdown file with frontmatter permissions. Orchestrator has `edit: deny`. Bash allow-listed for git inspection (`git status`, `git diff`, `git log`), runtime queries (`which`, `pwd`), and skill installation (`npx --yes skills@latest *`). All other commands denied. |
 | **Kimi Code** | AgentSwarm with persona-per-stage | Each pipeline stage is a persona in the swarm. Handoff contracts flow as structured messages between personas. Permissions enforced via `[[permission.rules]]` blocks. |
+| **Cursor** | Task subagents + skills/commands | Specialists ship as plugin `agents/*.md`; orchestrator as a skill; workflow modes as `commands/` (`fein`/`sonar`/`blitz`). Global rules via `alwaysApply` `.mdc`. Same bundle for IDE and CLI. |
 | **Claude Code** | Hooks and agent extensions | Stages are implemented as hooks that load agent definitions and tool configurations per phase. Handoff contracts pass through context variables. |
 
 ---
@@ -156,4 +157,5 @@ Self-review fails for three reasons, each documented from real sessions:
 | --- | --- | --- |
 | **OpenCode** | `edit: deny` in frontmatter | Reviewer agent YAML sets `permission.edit: deny` and restricts bash to git inspection only. No write tool access at the agent definition level. |
 | **Kimi Code** | Safety constraints + persona | Reviewer persona includes `[[permission.rules]]` block that denies file modification. Runtime enforcement via `builtin_safety_constraint`. |
+| **Cursor** | Prompt-level constraints (v1) | Reviewer/adventurer/planner agents instruct read-only behavior. No per-agent tool deny API yet; hooks deferred. |
 | **Claude Code** | Read-only tool access | Reviewer is spawned via `new Agent({ tools: { Edit: false, Read: true, Bash: false } })` or equivalent tool-level permission gating. No hooks can escalate write access. |

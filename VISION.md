@@ -44,6 +44,7 @@ Maestria packages are pure plugins - no postinstall scripts, no file system side
 | ----------------------- | ------------------- | ------------------ |
 | `@maestria/opencode`    | OpenCode            | Published (v0.3.3) |
 | `@maestria/kimi-code`   | Kimi Code           | In development     |
+| `@maestria/cursor`      | Cursor IDE & CLI    | In development     |
 | `@maestria/claude-code` | Claude Code & Codex | Planned            |
 | `@maestria/hermes`      | Hermes              | In development     |
 | `@maestria/pi`          | Pi                  | Shipping (v0.1.0)  |

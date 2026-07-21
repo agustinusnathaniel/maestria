@@ -1,0 +1,73 @@
+---
+title: Installation & Setup
+description: Install @maestria/cursor for Cursor IDE and Cursor CLI. Declarative plugin — no build step.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+`@maestria/cursor` is a declarative Cursor plugin: a manifest, agents, an orchestrator skill, global rules, and slash commands. There is no `npm install` of a runtime SDK for end users.
+
+## Prerequisites
+
+- **Cursor IDE** and/or **Cursor CLI** (`agent` on `$PATH`)
+- No Node toolchain required for end-user install
+
+## Installation via CLI (Recommended)
+
+```bash
+pnpx maestria@latest install cursor
+pnpx maestria@latest status
+```
+
+The CLI copies the plugin from GitHub `main` into `~/.cursor/plugins/local/maestria`.
+
+<Aside type="tip" title="Restart required">
+  Restart Cursor IDE after install so Customize → Plugins picks up the local plugin. For CLI, pass
+  `--plugin-dir` or rely on the local plugins directory.
+</Aside>
+
+<details>
+<summary>Alternative: Manual setup from a monorepo checkout</summary>
+
+<Steps>
+
+1. **Copy the plugin**
+
+   ```bash
+   mkdir -p ~/.cursor/plugins/local/maestria
+   cp -a packages/cursor/. ~/.cursor/plugins/local/maestria/
+   ```
+
+2. **Or run without installing**
+
+   ```bash
+   agent --plugin-dir ./packages/cursor
+   ```
+
+3. **Verify**
+
+   In Agent chat, confirm `/fein`, `/sonar`, `/blitz`, `/orchestrate` appear, and that specialist agents (builder, reviewer, …) are available.
+
+</Steps>
+
+</details>
+
+## What gets installed
+
+| Path                           | Purpose                  |
+| ------------------------------ | ------------------------ |
+| `.cursor-plugin/plugin.json`   | Plugin manifest          |
+| `agents/*.md`                  | 7 specialist Task agents |
+| `skills/orchestrator/SKILL.md` | Dispatcher methodology   |
+| `rules/maestria-global.mdc`    | Always-on global rules   |
+| `commands/*.md`                | Workflow slash commands  |
+
+## Uninstall
+
+```bash
+pnpx maestria@latest uninstall cursor
+```
+
+## Next steps
+
+Continue to the [Quick Start](/cursor/getting-started/quick-start/) to run your first pipeline.

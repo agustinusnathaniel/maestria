@@ -20,10 +20,7 @@ The question: could we ship the methodology as skills-only (zero Python code, ze
 
 The methodology layer has two distinct parts:
 
-| Layer | What it is | Can be a skill? |
-| --- | --- | --- | --- |
-| **Methodology guidance** | Specialist prompts, rules, routing advice | ✅ Yes — these are the 9 SKILL.md files |
-|  | **Enforcement layer** | Tool gating, mode switching, subagent tracking, OpenCode CLI routing | ❌ No — requires hooks, middleware, tools, commands |
+| Layer | What it is | Can be a skill? | | --- | --- | --- | --- | | **Methodology guidance** | Specialist prompts, rules, routing advice | ✅ Yes — these are the 9 SKILL.md files | | | **Enforcement layer** | Tool gating, mode switching, subagent tracking, OpenCode CLI routing | ❌ No — requires hooks, middleware, tools, commands |
 
 Skills alone deliver ~60-70% of the value for a disciplined agent who manually follows the patterns. But the remaining 30-40% — the automated enforcement that makes the methodology reliable without depending on agent discipline — requires plugin-level APIs.
 

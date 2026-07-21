@@ -4,7 +4,7 @@
 
 ## Project Snapshot
 
-Maestria is a meta-project: it builds the **agent methodology** (dispatcher + 7 specialists) that AI agents use. The canonical agent directives live in `packages/core/agent-directives/` and are synced to platform-specific plugins (OpenCode, Kimi Code, Pi) via `scripts/sync-all`.
+Maestria is a meta-project: it builds the **agent methodology** (dispatcher + 7 specialists) that AI agents use. The canonical agent directives live in `packages/core/agent-directives/` and are synced to platform-specific plugins (OpenCode, Kimi Code, Pi, Cursor, Hermes) via `scripts/sync-all`.
 
 See [VISION.md](VISION.md) for the project's motivation and [PATTERNS.md](PATTERNS.md) for the two core design patterns (Pipeline Composition + Maker/Checker Split).
 

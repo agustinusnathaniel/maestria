@@ -1,0 +1,42 @@
+{
+  "name": "@maestria/cursor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Maestria methodology plugin for Cursor IDE and Cursor CLI - specialists, orchestrator, and workflow commands",
+  "keywords": [
+    "agents",
+    "cursor",
+    "maestria",
+    "orchestration",
+    "pipeline",
+    "skills"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/cursor#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/cursor"
+  },
+  "files": [
+    ".cursor-plugin",
+    "agents",
+    "skills",
+    "rules",
+    "commands",
+    "INSTALL.md",
+    "README.md"
+  ],
+  "type": "module",
+  "scripts": {
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

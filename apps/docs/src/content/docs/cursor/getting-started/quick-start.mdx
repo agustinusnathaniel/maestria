@@ -1,0 +1,52 @@
+---
+title: Quick Start
+description: Your first session with @maestria/cursor — specialists, orchestration, and workflow modes.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Once the plugin is installed, global rules apply to every Agent session. Use the orchestrator skill and specialist agents for structured work.
+
+## Try a workflow command
+
+In Agent chat (IDE or CLI):
+
+```text
+/fein Fix the flaky auth test and review the fix
+```
+
+That runs the full pipeline: adventurer → architect/planner → builder → reviewer.
+
+Other modes:
+
+| Command               | Behavior                                   |
+| --------------------- | ------------------------------------------ |
+| `/sonar <goal>`       | Research only — stop before implementation |
+| `/blitz <goal>`       | Builder-first fast path                    |
+| `/orchestrate <goal>` | Explicit dispatcher mode                   |
+
+## Try a single specialist
+
+> "Use the builder agent to add a JSDoc comment to the `add` function in `src/math.ts`."
+
+The main agent should spawn `builder` via `Task` with a complete handoff.
+
+## Try maker/checker
+
+> "The login flow throws on empty email. Trace the bug, fix it, and review the fix."
+
+Expected sequence:
+
+1. `diagnose` — root cause
+2. `builder` — minimal fix
+3. `reviewer` — validation (read-only; must not edit)
+
+<Aside type="caution" title="Prompt-level maker/checker">
+  Cursor agents do not hard-deny write tools yet. Reviewer/adventurer/planner prompts forbid edits;
+  do not ask the same agent that implemented to review its own work.
+</Aside>
+
+## Next
+
+- [Agent reference](/core/agents/) — specialist responsibilities
+- [Pipeline & roles](/core/pipeline/) — handoff contracts and iteration limits

@@ -1,0 +1,68 @@
+---
+title: '@maestria/cursor'
+description: Declarative Cursor plugin that ships specialist agents, an orchestrator skill, global rules, and workflow commands for Cursor IDE and Cursor CLI.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: 'Engineering Workflows for Cursor'
+  tagline: 'Install one plugin. Get 7 specialist agents, an orchestrator skill, always-on rules, and fein/sonar/blitz commands — same bundle for IDE and CLI.'
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /cursor/getting-started/installation/
+    - text: View Agents
+      icon: external
+      variant: minimal
+      link: /core/agents/
+---
+
+import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+## How It Works
+
+1. **Plugin loads** — Cursor discovers `.cursor-plugin/plugin.json` and auto-loads `rules/`, `agents/`, `skills/`, `commands/`
+2. **Global rules apply** — `rules/maestria-global.mdc` uses `alwaysApply: true`
+3. **Orchestrator skill** — available when relevant or via `/orchestrate`
+4. **Specialists run as Task agents** — adventurer, architect, builder, diagnose, planner, reviewer, writer
+
+## Quick Install
+
+```bash
+pnpx maestria@latest install cursor
+```
+
+Then restart Cursor IDE, or:
+
+```bash
+agent --plugin-dir ~/.cursor/plugins/local/maestria
+```
+
+<LinkButton href="/cursor/getting-started/installation/" size="lg">
+  Full Installation Guide →
+</LinkButton>
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Installation, setup, and your first session with the plugin."
+    href="/cursor/getting-started/installation/"
+  />
+  <LinkCard
+    title="Agent Reference"
+    description="The 7 specialists and orchestrator methodology."
+    href="/core/agents/"
+  />
+  <LinkCard
+    title="Changelog"
+    description="Release history for @maestria/cursor."
+    href="/cursor/changelog/"
+  />
+  <LinkCard
+    title="Contributing"
+    description="How to edit sync config and regenerate plugin files."
+    href="/cursor/contributing/"
+  />
+</CardGrid>
