@@ -249,64 +249,6 @@ const kimiCode: PlatformHandler = {
   }).pipe(Effect.as(void 0)),
 };
 
-// ── Kimi Code helpers ─────────────────────────────────
-
-interface InstalledRecord {
-  id: string;
-  root: string;
-  source: string;
-  enabled: boolean;
-  installedAt: string;
-  updatedAt?: string;
-  originalSource?: string;
-  capabilities?: Record<string, unknown>;
-  github?: {
-    owner: string;
-    repo: string;
-    ref: { kind: string; value: string };
-    installedSha?: string;
-  };
-}
-
-interface InstalledFile {
-  version: 1;
-  plugins: InstalledRecord[];
-}
-
-async function readInstalledJson(pluginsDir: string): Promise<InstalledFile> {
-  try {
-    const { readFile } = await import('node:fs/promises');
-    const content = await readFile(`${pluginsDir}/installed.json`, 'utf-8');
-    return JSON.parse(content) as InstalledFile;
-  } catch {
-    return { version: 1, plugins: [] };
-  }
-}
-
-async function writeInstalledJson(pluginsDir: string, data: InstalledFile): Promise<void> {
-  const { mkdir, writeFile, rename } = await import('node:fs/promises');
-  await mkdir(pluginsDir, { recursive: true });
-  const tmpPath = `${pluginsDir}/installed.json.tmp`;
-  const finalPath = `${pluginsDir}/installed.json`;
-  await writeFile(tmpPath, JSON.stringify(data, null, 2) + '\n');
-  await rename(tmpPath, finalPath);
-}
-
-const readInstalledJsonEffect = (pluginsDir: string): Effect.Effect<InstalledFile, never> =>
-  Effect.tryPromise(() => readInstalledJson(pluginsDir)).pipe(
-    Effect.catchCause(() =>
-      Effect.succeed({ version: 1 as const, plugins: [] as InstalledRecord[] }),
-    ),
-  );
-
-const writeInstalledJsonEffect = (
-  pluginsDir: string,
-  data: InstalledFile,
-): Effect.Effect<void, never> =>
-  Effect.tryPromise(() => writeInstalledJson(pluginsDir, data)).pipe(
-    Effect.catchCause(() => Effect.void),
-  );
-
 const hermes: PlatformHandler = {
   id: 'hermes',
   label: 'Hermes',
