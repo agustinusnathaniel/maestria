@@ -164,6 +164,7 @@ const pi: PlatformHandler = {
 const kimiCode: PlatformHandler = {
   id: 'kimi-code',
   label: 'Kimi Code',
+  npmPackage: '@maestria/kimi-code',
 
   detect: commandExists('kimi').pipe(
     Effect.catchCause(() =>
@@ -179,161 +180,72 @@ const kimiCode: PlatformHandler = {
     Effect.catchCause(() => Effect.succeed(false)),
   ),
 
-  getInstalledVersion: run('cat', [`${homedir()}/.kimi-code/AGENTS.md`]).pipe(
-    Effect.map((content: string) => {
-      const match = content.match(/@maestria\/kimi-code@(\S+)/);
-      return match?.[1] ?? 'unknown';
+  getInstalledVersion: run('cat', [
+    `${homedir()}/.kimi-code/plugins/managed/maestria/kimi.plugin.json`,
+  ]).pipe(
+    Effect.map((out: string) => {
+      try {
+        return JSON.parse(out).version ?? 'unknown';
+      } catch {
+        return 'unknown';
+      }
     }),
     Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
-  getLatestVersion: Effect.succeed('see GitHub releases'),
+  getLatestVersion: npmViewVersion('@maestria/kimi-code'),
 
   install: Effect.gen(function* () {
-    const home = homedir();
-    const kimiHome = `${home}/.kimi-code`;
-    const managedDir = `${kimiHome}/plugins/managed/maestria`;
-    const pluginsDir = `${kimiHome}/plugins`;
-    const installUrl = 'https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code';
-
-    // Create managed directory
     yield* Effect.tryPromise({
       try: async () => {
         const { mkdir } = await import('node:fs/promises');
-        await mkdir(managedDir, { recursive: true });
+        await mkdir(`${homedir()}/.kimi-code/plugins/managed/maestria`, { recursive: true });
       },
       catch: (error) =>
         new CommandError({
-          command: `mkdir -p ${managedDir}`,
+          command: `mkdir -p ${homedir()}/.kimi-code/plugins/managed/maestria`,
           message: String(error),
         }),
     });
-
-    // Download and extract plugin from GitHub using codeload
     yield* sh(
-      `curl -sL "https://codeload.github.com/agustinusnathaniel/maestria/tar.gz/release/kimi-code" | tar xz -C /tmp`,
-      60_000,
+      `rm -rf /tmp/maestria-kimi-code* "${homedir()}/.kimi-code/plugins/managed/maestria"`,
+      15_000,
     );
-
-    const tmpExtractDir = '/tmp/maestria-release-kimi-code';
-    yield* sh(`cp -r "${tmpExtractDir}/packages/kimi-code/"* "${managedDir}/"`);
-    yield* sh(`rm -rf "${tmpExtractDir}"`);
-
-    // Copy AGENTS.md rules
-    yield* run('cp', [`${managedDir}/rules/AGENTS.md`, `${kimiHome}/AGENTS.md`]).pipe(
-      Effect.catchTag('CommandError', () =>
-        Effect.sync(() => {
-          console.log(
-            `  ${picocolors.yellow('⚠')} Plugin files copied but rules/AGENTS.md not found.\n` +
-              `  The plugin is installed. Restarting Kimi Code should pick it up.\n`,
-          );
-        }),
-      ),
+    yield* sh(
+      `mkdir -p "${homedir()}/.kimi-code/plugins/managed/maestria" && ` +
+        `npm pack @maestria/kimi-code@latest --pack-destination /tmp && ` +
+        `tar -xzf /tmp/maestria-kimi-code-*.tgz -C "${homedir()}/.kimi-code/plugins/managed/maestria" --strip-components=1 && ` +
+        `cp "${homedir()}/.kimi-code/plugins/managed/maestria/rules/AGENTS.md" "${homedir()}/.kimi-code/AGENTS.md" && ` +
+        `rm -f /tmp/maestria-kimi-code-*.tgz`,
+      120_000,
     );
-
-    // Write installed.json
-    const installed = yield* readInstalledJsonEffect(pluginsDir);
-    installed.plugins = installed.plugins.filter((p) => p.id !== 'maestria');
-    installed.plugins.push({
-      id: 'maestria',
-      root: managedDir,
-      source: 'github',
-      enabled: true,
-      installedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      originalSource: installUrl,
-      github: {
-        owner: 'agustinusnathaniel',
-        repo: 'maestria',
-        ref: { kind: 'branch', value: 'release/kimi-code' },
-      },
-    });
-    yield* writeInstalledJsonEffect(pluginsDir, installed);
   }).pipe(Effect.as(void 0)),
 
-  update: (_version?: string) =>
+  update: (version?: string) =>
     Effect.gen(function* () {
-      const home = homedir();
-      const kimiHome = `${home}/.kimi-code`;
-      const managedDir = `${kimiHome}/plugins/managed/maestria`;
-      const pluginsDir = `${kimiHome}/plugins`;
-      const installUrl = 'https://github.com/agustinusnathaniel/maestria/tree/release/kimi-code';
-
-      // Read existing installed.json to preserve installedAt
-      const installed = yield* readInstalledJsonEffect(pluginsDir);
-      const existing = installed.plugins.find((p) => p.id === 'maestria');
-      const installedAt = existing?.installedAt ?? new Date().toISOString();
-
-      // Create managed directory
-      yield* Effect.tryPromise({
-        try: async () => {
-          const { mkdir } = await import('node:fs/promises');
-          await mkdir(managedDir, { recursive: true });
-        },
-        catch: (error) =>
-          new CommandError({
-            command: `mkdir -p ${managedDir}`,
-            message: String(error),
-          }),
-      });
-
-      // Download and extract plugin from GitHub using codeload
+      const tag = version ?? 'latest';
       yield* sh(
-        `curl -sL "https://codeload.github.com/agustinusnathaniel/maestria/tar.gz/release/kimi-code" | tar xz -C /tmp`,
-        60_000,
+        `rm -rf /tmp/maestria-kimi-code* "${homedir()}/.kimi-code/plugins/managed/maestria"`,
+        15_000,
       );
-
-      const tmpExtractDir = '/tmp/maestria-release-kimi-code';
-      yield* sh(`cp -r "${tmpExtractDir}/packages/kimi-code/"* "${managedDir}/"`);
-      yield* sh(`rm -rf "${tmpExtractDir}"`);
-
-      // Copy AGENTS.md rules
-      yield* run('cp', [`${managedDir}/rules/AGENTS.md`, `${kimiHome}/AGENTS.md`]).pipe(
-        Effect.catchTag('CommandError', () =>
-          Effect.sync(() => {
-            console.log(
-              `  ${picocolors.yellow('⚠')} Plugin files copied but rules/AGENTS.md not found.\n` +
-                `  The plugin is updated. Restarting Kimi Code should pick it up.\n`,
-            );
-          }),
-        ),
+      yield* sh(
+        `mkdir -p "${homedir()}/.kimi-code/plugins/managed/maestria" && ` +
+          `npm pack @maestria/kimi-code@${tag} --pack-destination /tmp && ` +
+          `tar -xzf /tmp/maestria-kimi-code-*.tgz -C "${homedir()}/.kimi-code/plugins/managed/maestria" --strip-components=1 && ` +
+          `cp "${homedir()}/.kimi-code/plugins/managed/maestria/rules/AGENTS.md" "${homedir()}/.kimi-code/AGENTS.md" && ` +
+          `rm -f /tmp/maestria-kimi-code-*.tgz`,
+        120_000,
       );
-
-      // Update installed.json
-      installed.plugins = installed.plugins.filter((p) => p.id !== 'maestria');
-      installed.plugins.push({
-        id: 'maestria',
-        root: managedDir,
-        source: 'github',
-        enabled: true,
-        installedAt,
-        updatedAt: new Date().toISOString(),
-        originalSource: installUrl,
-        github: {
-          owner: 'agustinusnathaniel',
-          repo: 'maestria',
-          ref: { kind: 'branch', value: 'release/kimi-code' },
-        },
-      });
-      yield* writeInstalledJsonEffect(pluginsDir, installed);
+      yield* invalidateVersionCache('@maestria/kimi-code').pipe(
+        Effect.catchCause(() => Effect.void),
+      );
     }).pipe(Effect.as(void 0)),
 
   uninstall: Effect.gen(function* () {
-    const home = homedir();
-    const kimiHome = `${home}/.kimi-code`;
-    const pluginsDir = `${kimiHome}/plugins`;
-    const managedDir = `${kimiHome}/plugins/managed/maestria`;
-
-    // Remove from installed.json
-    const installed = yield* readInstalledJsonEffect(pluginsDir);
-    installed.plugins = installed.plugins.filter((p) => p.id !== 'maestria');
-    yield* writeInstalledJsonEffect(pluginsDir, installed);
-
-    // Remove managed directory
-    yield* sh(`rm -rf "${managedDir}"`);
-
-    // Remove AGENTS.md
-    yield* run('rm', ['-f', `${kimiHome}/AGENTS.md`]).pipe(Effect.catchCause(() => Effect.void));
+    yield* sh(
+      `rm -rf "${homedir()}/.kimi-code/plugins/managed/maestria" "${homedir()}/.kimi-code/AGENTS.md"`,
+      15_000,
+    );
   }).pipe(Effect.as(void 0)),
 };
 

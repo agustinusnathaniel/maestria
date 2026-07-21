@@ -269,7 +269,7 @@ describe('package.json', () => {
   it('has the expected name, private flag, and files', async () => {
     const pkg = await readJson<Record<string, unknown>>('package.json');
     expect(pkg.name).toBe('@maestria/kimi-code');
-    expect(pkg.private).toBe(true);
+    expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');
   });
 });
