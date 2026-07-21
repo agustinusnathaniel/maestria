@@ -2,17 +2,19 @@
 
 ## Status
 
-Accepted (Revised 2026-06-18)
+**Superseded** (see Revision below)
+
+> This ADR is superseded by the switch to npm-based distribution. The plugin is now installed via `npx maestria install kimi-code`, which pulls `@maestria/kimi-code` from npm instead of using the subtree-split release branch approach described below.
 
 ## Context
 
-Kimi Code v0.13.1's plugin system only finds `kimi.plugin.json` at the root of the extracted archive. The kimi-code plugin lives at `packages/kimi-code/` in a monorepo, which Kimi Code cannot extract as a subpath. Its URL parser interprets any `/tree/<ref>/<subpath>` as a git ref, not a path. Subpath URLs are not supported; neither is npm install (Kimi Code's installer only fetches via codeload.github.com).
+Kimi Code v0.13.1's plugin system only finds `kimi.plugin.json` at the root of the extracted archive. The kimi-code plugin lives at `packages/kimi-code/` in a monorepo, which Kimi Code cannot extract as a subpath. Its URL parser interprets any `/tree/<ref>/<subpath>` as a git ref, not a path. ~~Subpath URLs are not supported; neither is npm install (Kimi Code's installer only fetches via codeload.github.com).~~
 
 This ADR records the distribution mechanism chosen to ship the plugin from a monorepo. The full plugin architecture (manifest, skills, subagent mapping, orchestrator) is captured in ADR-KC-001.
 
 ## Decision Drivers
 
-- **Kimi Code's installer only accepts archive URLs** - it fetches via codeload.github.com, extracts the zip, and looks for `kimi.plugin.json` at the archive root. Subpath URLs and npm installs are not supported.
+- ~~**Kimi Code's installer only accepts archive URLs** - it fetches via codeload.github.com, extracts the zip, and looks for `kimi.plugin.json` at the archive root. Subpath URLs and npm installs are not supported.~~
 - **The monorepo root must stay clean** - there are multiple top-level packages (opencode, kimi-code, docs) plus ADRs and a docs site. Putting `kimi.plugin.json` at the root would make the whole repo look like a Kimi Code plugin even though it ships other consumers, and the manifest's `skills: "./skills/"` would not resolve.
 - **Auto-update is the right default UX** - users should not need to track plugin versions or copy new URLs. A stable install URL that always points at the latest version is preferable to a pinned URL that needs manual updates.
 - **CI complexity budget is low** - the simplest solution that satisfies the constraints is preferred, but complexity is acceptable if it buys auto-update.
@@ -131,6 +133,18 @@ Kimi Code's marketplace UI shows `update <local> → <latest>` when a newer vers
 
 - **ADR-KC-001** - Kimi Code plugin architecture. Documents the manifest, skills, and subagent mapping. The distribution mechanism is downstream of the manifest's "root-of-archive" constraint.
 - **ADR-OC-002** - Opensrc vs. webfetch guidance. Not directly related, but the `opensrc path <owner/repo>` pattern reads from a GitHub repository; this ADR documents how to install plugins from a GitHub repository.
+
+## Revisions
+
+### 2026-07-21 - Superseded by npm-based distribution
+
+The plugin distribution was switched from subtree-split release branch to npm-based distribution. The maestria CLI (`npx maestria install kimi-code`) now pulls `@maestria/kimi-code` from npm via `npm pack` and extracts it directly—no git operations, no release branch, no codeload dependency.
+
+Key changes:
+
+- The `.github/workflows/release-kimi-code.yml` workflow is deprecated and no longer needed
+- Install no longer requires the `tree/release/kimi-code` URL; `npx maestria install kimi-code` handles everything
+- The CLI manages the plugin at `~/.kimi-code/plugins/managed/maestria` directly
 
 ## Date
 
