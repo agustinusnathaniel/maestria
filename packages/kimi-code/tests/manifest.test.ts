@@ -20,6 +20,15 @@ const EXPECTED_SKILLS = [
   'diagnose',
 ] as const;
 
+const COMMAND_SKILLS = ['fein', 'sonar', 'blitz'] as const;
+
+const ALL_SKILLS = [...EXPECTED_SKILLS, ...COMMAND_SKILLS] as const;
+
+/** Resolve the subdirectory for a given skill (command skills live under `commands/`). */
+function skillDir(skill: string): string {
+  return (COMMAND_SKILLS as readonly string[]).includes(skill) ? `commands/${skill}` : skill;
+}
+
 interface RawManifest {
   name?: string;
   version?: string;
@@ -165,17 +174,18 @@ describe('kimi.plugin.json manifest', () => {
 });
 
 describe('skills directory', () => {
-  it('contains all 8 expected skills', async () => {
-    for (const skill of EXPECTED_SKILLS) {
-      const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+  it('contains all expected skills (8 specialist + 3 command)', async () => {
+    for (const skill of ALL_SKILLS) {
+      const skillPath = path.join(PACKAGE_ROOT, 'skills', skillDir(skill), 'SKILL.md');
       expect(await pathExists(skillPath)).toBe(true);
     }
   });
 
-  for (const skill of EXPECTED_SKILLS) {
-    describe(`skills/${skill}/SKILL.md`, () => {
+  for (const skill of ALL_SKILLS) {
+    const relDir = `skills/${skillDir(skill)}`;
+    describe(`${relDir}/SKILL.md`, () => {
       it('parses with valid frontmatter', async () => {
-        const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+        const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
         const text = await readFile(skillPath, 'utf8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.name).toBe('string');
@@ -187,7 +197,7 @@ describe('skills directory', () => {
       });
 
       it('has a whenToUse field', async () => {
-        const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+        const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
         const text = await readFile(skillPath, 'utf8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.whenToUse).toBe('string');
@@ -323,9 +333,10 @@ describe('tool name PascalCase compliance', () => {
     'curl', // CLI commands
   ]);
 
-  for (const skill of EXPECTED_SKILLS) {
-    it(`skills/${skill}/SKILL.md has PascalCase tool references`, async () => {
-      const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+  for (const skill of ALL_SKILLS) {
+    const relDir = `skills/${skillDir(skill)}`;
+    it(`${relDir}/SKILL.md has PascalCase tool references`, async () => {
+      const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
       const text = await readFile(skillPath, 'utf8');
       // Find all backtick-quoted words
       const backtickWords = text.match(/`([A-Za-z][A-Za-z0-9_-]*)`/g) || [];

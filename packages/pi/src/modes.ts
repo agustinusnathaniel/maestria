@@ -8,11 +8,16 @@ import { persistState, restoreOriginalState } from '@/state.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
 
-const FRONTMATTER_RE = /^---[\s\S]*?\n---\n*/;
-
 function loadModePrompt(name: string): string {
   const content = readFileSync(resolve(COMMANDS_DIR, `${name}.md`), 'utf-8');
-  return content.replace(FRONTMATTER_RE, '').replace(/\s+$/, '') + '\n';
+  // Find the `## MODE:` heading which marks the start of the actual prompt text.
+  // The synced command files start with an HTML comment (`<!-- Auto-generated... -->`),
+  // not YAML frontmatter (`---`), so a frontmatter regex would never match.
+  const modeIdx = content.indexOf('## MODE:');
+  if (modeIdx !== -1) {
+    return content.slice(modeIdx).replace(/\s+$/, '') + '\n';
+  }
+  return content.replace(/\s+$/, '') + '\n';
 }
 
 export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
