@@ -214,15 +214,12 @@ importers:
 
   packages/pi:
     dependencies:
-      '@earendil-works/pi-ai':
-        specifier: '*'
-        version: 0.79.9(ws@8.21.0)(zod@3.25.76)
       '@earendil-works/pi-coding-agent':
         specifier: '*'
         version: 0.79.9(ws@8.21.0)(zod@3.25.76)
       '@gotgenes/pi-subagents':
-        specifier: ^17.0.0
-        version: 17.2.0(@earendil-works/pi-ai@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-coding-agent@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-tui@0.79.9)
+        specifier: ^18.0.0
+        version: 18.1.0(@earendil-works/pi-ai@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-coding-agent@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-tui@0.79.9)
       typebox:
         specifier: '*'
         version: 1.2.18
@@ -886,8 +883,8 @@ packages:
       '@modelcontextprotocol/sdk':
         optional: true
 
-  '@gotgenes/pi-subagents@17.2.0':
-    resolution: {integrity: sha512-yRIjCpnHAul/spy+YA5dpyqTteopYYH3+YqMhoHqZ47IUW0+dabUGTybE5Dsr+TyrNAvGjRl36Tn6UDeWsr8fg==}
+  '@gotgenes/pi-subagents@18.1.0':
+    resolution: {integrity: sha512-k+2DHNIbXOCoUqF5FbrPT9ws1/1kNwxUXBzoeHGz9fjqIVlDehh+nPM1UnxoFfBaLP0sTyLYlkRoyQ4XI4/P0A==}
     engines: {node: '>=22'}
     peerDependencies:
       '@earendil-works/pi-ai': '>=0.75.0'
@@ -6543,7 +6540,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@gotgenes/pi-subagents@17.2.0(@earendil-works/pi-ai@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-coding-agent@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-tui@0.79.9)':
+  '@gotgenes/pi-subagents@18.1.0(@earendil-works/pi-ai@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-coding-agent@0.79.9(ws@8.21.0)(zod@3.25.76))(@earendil-works/pi-tui@0.79.9)':
     dependencies:
       '@earendil-works/pi-ai': 0.79.9(ws@8.21.0)(zod@3.25.76)
       '@earendil-works/pi-coding-agent': 0.79.9(ws@8.21.0)(zod@3.25.76)

@@ -21,6 +21,7 @@ ADRs use **prefix-scoped numbering** with one subdirectory per namespace:
 | `docs/adr/kimi-code/` | KC     | `@maestria/kimi-code` plugin-specific decisions            |
 | `docs/adr/cursor/`    | CR     | `@maestria/cursor` plugin-specific decisions               |
 | `docs/adr/pi/`        | PI     | `@maestria/pi` extension-specific decisions                |
+| `docs/adr/omp/`       | OMP    | `@maestria/omp` Oh My Pi-specific decisions                |
 
 ### Numbering Rules
 
@@ -31,14 +32,15 @@ ADRs use **prefix-scoped numbering** with one subdirectory per namespace:
 
 ### Current Prefix Assignments
 
-| Prefix | Name      | Subdirectory          | ADR Range |
-| ------ | --------- | --------------------- | --------- |
-| CORE   | Core      | `docs/adr/core/`      | 000–011   |
-| CR     | Cursor    | `docs/adr/cursor/`    | 001–0xx   |
-| HM     | Hermes    | `docs/adr/hermes/`    | 000–001   |
-| OC     | Opencode  | `docs/adr/opencode/`  | 000–004   |
-| KC     | Kimi Code | `docs/adr/kimi-code/` | 000–001   |
-| PI     | Pi        | `docs/adr/pi/`        | 000–002   |
+| Prefix | Name          | Subdirectory          | ADR Range    |
+| ------ | ------------- | --------------------- | ------------ |
+| CORE   | Core          | `docs/adr/core/`      | 000–011      |
+| CR     | Cursor        | `docs/adr/cursor/`    | 001–0xx      |
+| HM     | Hermes        | `docs/adr/hermes/`    | 000–001      |
+| OC     | Opencode      | `docs/adr/opencode/`  | 000–004      |
+| KC     | Kimi Code     | `docs/adr/kimi-code/` | 000–001      |
+| PI     | Pi            | `docs/adr/pi/`        | 000–002      |
+| OMP    | @maestria/omp | (unassigned)          | (unassigned) |
 
 A new plugin (e.g. Cursor) gets its own subdirectory and prefix (e.g. `docs/adr/cursor/`, prefix `CR`, range 000–0xx) without disturbing existing ADRs.
 

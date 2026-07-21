@@ -1,0 +1,60 @@
+---
+title: '@maestria/omp'
+description: Extend the Oh My Pi coding agent with spec-driven orchestration, workflow modes, and 7 specialist subagents.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: 'Portable Oh My Pi Engineering Workflows'
+  tagline: 'Extend the Oh My Pi coding agent with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration - powered by omp`s built-in task() dispatch, configured in seconds.'
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /omp/getting-started/installation/
+    - text: View on GitHub
+      icon: external
+      variant: minimal
+      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/omp
+---
+
+import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+## How It Works
+
+1. **Install the extension** - `omp install npm:@maestria/omp`
+2. **Extension activates** - omp loads the extension, deploys 7 specialist agent files to `~/.omp/agent/agents/`, auto-discovers 4 methodology skills (orchestrator dispatcher, global agent rules, handoff contract, iteration limits) via the package manifest, and registers mode commands (`/fein`, `/sonar`, `/blitz`).
+3. **Mode commands drive the pipeline** - `/fein` (full pipeline), `/sonar` (research), `/blitz` (fast impl) - each activates the right subagents in sequence
+4. **Orchestrator dispatches via omp`s built-in `task()`** - The orchestrator decomposes work, delegates to specialists using omp's native `task()` tool, and enforces phase gates
+5. **Session tree tracks state** - Each subagent invocation records its parent task ID, preserving the full session tree across turns
+
+## Quick Install
+
+```bash
+omp install npm:@maestria/omp
+```
+
+The extension is fully self-configuring - omp discovers its methodology skills, commands, and specialist agents from the package manifest. No manual config editing needed. Unlike Pi, omp has a built-in `task()` tool - no separate subagent package required.
+
+<LinkButton href="/omp/getting-started/installation/" size="lg">
+  Installation Guide →
+</LinkButton>
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Installation, setup, and your first session with the omp extension."
+    href="/omp/getting-started/installation/"
+  />
+  <LinkCard
+    title="Changelog"
+    description="Version history and release notes."
+    href="/omp/changelog/"
+  />
+  <LinkCard
+    title="Contributing"
+    description="Project structure and how to extend the plugin."
+    href="/omp/contributing/"
+  />
+</CardGrid>

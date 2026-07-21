@@ -8,7 +8,7 @@ export class ValidationError extends Data.TaggedError('ValidationError')<{
 
 // ── Validators ───────────────────────────────────────
 
-const VALID_PLATFORMS = ['opencode', 'pi', 'kimi-code', 'hermes', 'cursor'] as const;
+const VALID_PLATFORMS = ['opencode', 'omp', 'pi', 'kimi-code', 'hermes', 'cursor'] as const;
 export type ValidPlatform = (typeof VALID_PLATFORMS)[number];
 
 /**

@@ -105,7 +105,7 @@ Six additional Pi gallery packages were evaluated in a follow-up survey (July 20
 
 ### Depend on `@gotgenes/pi-subagents` for subagent dispatch
 
-**Package:** `@gotgenes/pi-subagents@^17.0.0` **License:** MIT **Approach:** In-process subagent spawning via Pi SDK
+**Package:** `@gotgenes/pi-subagents@^18.0.0` **License:** MIT **Approach:** In-process subagent spawning via Pi SDK
 
 `@gotgenes/pi-subagents` provides:
 
@@ -142,9 +142,9 @@ Smaller ecosystem, less active maintenance, and `@gotgenes/pi-subagents` already
 - Positive: `SubagentsService` cross-extension API enables other Pi extensions to interoperate with `@maestria/pi`'s subagent dispatches.
 - Positive: In-process model means shared session context and no cold-start subprocess overhead (~0ms vs 100-500ms).
 - Neutral: Recursion guard prevents subagents from spawning their own subagents - `@maestria/pi`'s orchestration sits above the subagent layer, which is the correct architecture.
-- Negative: Peer dependency on `@gotgenes/pi-subagents` (which does not bundle Pi core). Must be listed in `dependencies` with `^17.0.0` range.
+- Negative: Peer dependency on `@gotgenes/pi-subagents` (which does not bundle Pi core). Must be listed in `dependencies` with `^18.0.0` range.
 - Negative: If Pi's API changes, both `@gotgenes/pi-subagents` and `@maestria/pi` may need updates. Mitigated by pinning to a minor range.
-- Risk: `@gotgenes/pi-subagents` v17 is pre-1.0; API may change. Mitigation: pin to `^17.0.0` and treat as any pre-1.0 transitive dependency. Source is MIT-licensed; can fork as last resort.
+- Risk: `@gotgenes/pi-subagents` v18 is still pre-1.0; API may change. Mitigation: pin to `^18.0.0` and treat as any pre-1.0 transitive dependency. Source is MIT-licensed; can fork as last resort.
 
 ## References
 
@@ -159,7 +159,7 @@ Smaller ecosystem, less active maintenance, and `@gotgenes/pi-subagents` already
 
 ### ✅ `@gotgenes/pi-subagents@17.2.0` Confirmed Working
 
-The package was tested with `@earendil-works/pi-coding-agent@0.79.9`. The `SubagentsService` API (`getSubagentsService()`, `spawn()`) works as documented. Version pinned to `^17.0.0` in `package.json`.
+The package was tested with `@earendil-works/pi-coding-agent@0.79.9`. The `SubagentsService` API (`getSubagentsService()`, `spawn()`) works as documented. Version pinned to `^18.0.0` in `package.json`.
 
 ### ⚠️ Tool Name Collision Discovered and Resolved
 

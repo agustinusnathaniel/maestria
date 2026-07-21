@@ -1,0 +1,22 @@
+---
+title: Changelog
+description: Release history for @maestria/omp.
+---
+
+# Changelog
+
+## v0.1.0
+
+_July 21, 2026_
+
+### Features
+
+Initial release of `@maestria/omp` - a Maestria extension for the Oh My Pi coding agent.
+
+- **7 specialist agents** deployed to `~/.omp/agent/agents/`
+- **4 maestria skills** - orchestrator dispatcher, global rules, handoff contract, iteration limits
+- **3 workflow modes** - `/fein`, `/sonar`, `/blitz`
+- **Review mode** - `/review`, `/restore-model`, `/review-model` with read-only tool restrictions
+- **Session state tracking** - compaction preservation, handoff history, blockers
+- **Structured handoff** - `/handoff <goal>` with 6-field contract
+- **Built-in task dispatch** - uses omp's native `task()` tool (no separate subagent package needed)

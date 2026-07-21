@@ -23,6 +23,7 @@ maestria/
 │   ├── core/              Canonical agent directives + sync pipeline (private, v0.2.0)
 │   ├── opencode/          OpenCode plugin (published, v0.4.9)
 │   ├── kimi-code/         Kimi Code plugin (private, v0.2.1)
+│   ├── omp/               Oh My Pi plugin (published, v0.1.0)
 │   └── pi/                Pi extension (published, v0.4.1)
 ├── apps/
 │   └── docs/              Starlight documentation site (private)
@@ -31,6 +32,7 @@ maestria/
 │   └── check-sync         CI verification: fail if any output differs
 ├── docs/
 │   ├── adr/               Architecture Decision Records by area
+│   │   └── omp/          - @maestria/omp decisions (ADR-OMP-*)
 │   ├── testing.md         Testing philosophy
 │   └── checklist.md       Pre-commit verification gates
 ├── AGENTS.md              AI agent guidance
@@ -46,6 +48,7 @@ maestria/
 | `@maestria/opencode` | Yes | 7 specialist subagents + orchestrator + workflow modes for OpenCode |
 | `@maestria/kimi-code` | No | 7 specialist skills with swarm-aware orchestration for Kimi Code |
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
+| `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
 | `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
 
 ### Data Flow
@@ -54,7 +57,7 @@ maestria/
 packages/core/agent-directives/  (canonical source)
     │
     ▼ (scripts/sync-all iterates packages/*/sync.config.ts)
-packages/{opencode,kimi-code,pi}/
+packages/{opencode,kimi-code,omp,pi}/
     sync.config.ts defines:
       • source (where canonical files live)
       • output (where generated files go)
@@ -110,6 +113,7 @@ Each plugin defines its transforms in `sync.config.ts`:
 | **opencode** | Adds YAML frontmatter with `mode`, `permission` blocks | `agents/<name>.md` - agent files with tool permissions |
 | **kimi-code** | 18 string replacements (`task(` → `Agent(`, `webfetch` → `FetchURL`, etc.) + prepend subagent profile + append routing/swarm docs | `skills/<name>/SKILL.md` - Kimi Code skills |
 | **pi** | Unified `sync.config.ts` (9 replacements: `task(` → `maestria_subagent(`, `@` → `/`) with dual output paths for agents + skills | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
+| **omp** | Unified `sync.config.ts` (replacements: `@agent` → bare name, omp has built-in `task()` so no rewrite needed) | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
 
 ### Commands
 
@@ -204,8 +208,20 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 | Build | `vp pack` (Rolldown) - outputs to `dist/` |
 | Validate | `pnpm --filter @maestria/pi validate` |
 | Prebuild | `node --experimental-strip-types scripts/build-rules.ts` |
-| Peer deps | `@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `typebox` |
+| Peer deps | `@earendil-works/pi-coding-agent`, `typebox` |
 | Key transforms | `task(` → `maestria_subagent(`, `@` → `/` |
+
+### omp
+
+| Concern | Details |
+| --- | --- |
+| Entry point | `packages/omp/src/extension.ts` |
+| Source modules | `extension.ts`, `agents.ts`, `state.ts`, `commands.ts`, `compaction.ts`, `modes.ts`, `rules.ts`, `subagent.ts`, `tools.ts` |
+| Test | `pnpm --filter @maestria/omp test` |
+| Build | `vp pack` (Rolldown) - outputs to `dist/` |
+| Validate | `pnpm --filter @maestria/omp validate` |
+| Peer deps | `@oh-my-pi/pi-coding-agent` |
+| Key transforms | `@agent` → bare name (`adventurer`), omp has built-in `task()` (no rewrite needed) |
 
 ### cursor
 
@@ -272,7 +288,7 @@ Create a changeset whenever you make a user-facing change to a published package
 | Area | Location | How to run |
 | --- | --- | --- |
 | User-facing docs | `apps/docs/` (Astro + Starlight) | `vp run @maestria/docs#dev` |
-| Architecture decisions | `docs/adr/{core,opencode,kimi-code,pi}/` | Read as markdown |
+| Architecture decisions | `docs/adr/{core,opencode,kimi-code,omp,pi}/` | Read as markdown |
 | Testing guide | `docs/testing.md` | Read as markdown |
 | Completion checklist | `docs/checklist.md` | Read as markdown |
 | Root project docs | `AGENTS.md`, `PATTERNS.md`, `VISION.md`, `README.md` | Read as markdown |
