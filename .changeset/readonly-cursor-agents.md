@@ -1,6 +1,5 @@
 ---
 '@maestria/cursor': patch
-'@maestria/core': patch
 'maestria': patch
 ---
 
