@@ -51,7 +51,6 @@ pi uninstall @gotgenes/pi-subagents
 | `/fein <goal>` | Set workflow mode to full pipeline (recon → design → impl → review) |
 | `/sonar <goal>` | Set workflow mode to research only (recon → design → stop) |
 | `/blitz <goal>` | Set workflow mode to fast implementation (builder directly) |
-| `/orchestrate <goal>` | Start a full pipeline by delegating to the orchestrator |
 | `/review <target>` | Enter review mode - blocks destructive tools, sets read-only toolset |
 | `/restore-model` | Restore the original model and tools active before review mode |
 | `/handoff <goal>` | Generate a structured handoff prompt for a new task context |

@@ -21,38 +21,6 @@ import { MAESTRIA_EVENTS } from '@/subagent.js';
 const READ_ONLY_TOOLS = ['read', 'grep', 'find', 'ls', 'glob'];
 
 export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
-  pi.registerCommand('orchestrate', {
-    description: 'Start a full pipeline by delegating to the orchestrator',
-    handler: async (args: string, ctx) => {
-      if (!args.trim()) {
-        ctx.ui.notify('Usage: /orchestrate <goal> - describe what to accomplish');
-        return;
-      }
-
-      // Exit review mode if active (restore original model/tools)
-      if (state.reviewMode) {
-        const prevOriginalModel = state.originalModel;
-        await restoreOriginalState(pi, ctx, state);
-        persistState(pi, state);
-        pi.events?.emit(MAESTRIA_EVENTS.REVIEW_DEACTIVATED, {
-          originalModel: prevOriginalModel,
-          source: 'orchestrate',
-          timestamp: Date.now(),
-        });
-      }
-
-      pi.sendUserMessage(
-        [
-          `[ORCHESTRATE: ${args}]`,
-          '',
-          `Orchestrate the full maestria pipeline to: ${args}`,
-          'Use the orchestrator prompt template for subagent delegation.',
-        ].join('\n'),
-        { deliverAs: 'steer' },
-      );
-    },
-  });
-
   pi.registerCommand('maestria-status', {
     description: 'Show current maestria session state including handoff history',
     handler: async (_args: string, ctx) => {

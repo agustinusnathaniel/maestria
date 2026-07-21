@@ -61,7 +61,6 @@ describe('extension entry point', () => {
     const extension = await import('../src/extension.js');
     extension.default(pi as unknown as ExtensionAPI);
     const { registerCommand } = pi;
-    expect(registerCommand).toHaveBeenCalledWith('orchestrate', expect.any(Object));
     expect(registerCommand).toHaveBeenCalledWith('maestria-status', expect.any(Object));
     expect(registerCommand).toHaveBeenCalledWith('review', expect.any(Object));
     expect(registerCommand).toHaveBeenCalledWith('restore-model', expect.any(Object));
