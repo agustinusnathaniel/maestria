@@ -37,9 +37,7 @@ The orchestrator adds structure and validation at the cost of coordination overh
 - **Multi-step workflows** where the built-in commit discipline and progress tracking prevent drift across sessions
 - **Heterogeneous model setups** where you want to preserve frontier model budget by routing recon and thinking to less expensive agents
 
-For simple, well-scoped tasks with a capable model, the orchestrator adds latency without corresponding benefit. If you already know what needs to be done and have the model to do it, going directly to a specialist or handling the task in a single pass is faster and cheaper.
-
-This is a design trade-off, not a limitation. The orchestrator trades raw speed for reliability and validation. Choose the approach that fits your task.
+If you mostly use frontier models and already have a clear, well-scoped goal that doesn't require deep exploration, going without the orchestrator is often faster and cheaper. Direct execution or a single pass with the right specialist avoids the overhead of delegation round-trips, context transfers, and review loops. The orchestrator trades raw speed for structure and validation - choose the approach that fits your task.
 
 ## Specialist Reference
 
