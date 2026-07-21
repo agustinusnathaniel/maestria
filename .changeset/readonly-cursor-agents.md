@@ -1,7 +1,7 @@
 ---
-'@maestria/cursor': minor
+'@maestria/cursor': patch
 '@maestria/core': patch
-'maestria': minor
+'maestria': patch
 ---
 
 feat: @maestria/cursor plugin v0.1 — declarative Cursor IDE and CLI plugin
