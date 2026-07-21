@@ -95,6 +95,7 @@ How each platform implements this pattern:
 | **Kimi Code** | AgentSwarm with persona-per-stage | Each pipeline stage is a persona in the swarm. Handoff contracts flow as structured messages between personas. Permissions enforced via `[[permission.rules]]` blocks. |
 | **Cursor** | Task subagents + skills/commands | Specialists ship as plugin `agents/*.md`; orchestrator as a skill; workflow modes as `commands/` (`fein`/`sonar`/`blitz`). Global rules via `alwaysApply` `.mdc`. Same bundle for IDE and CLI. |
 | **Claude Code** | Hooks and agent extensions | Stages are implemented as hooks that load agent definitions and tool configurations per phase. Handoff contracts pass through context variables. |
+| **Oh My Pi** | `task()` | Agent routing via name prefix stripping (`@adventurer` → `adventurer`), tool allowlists in frontmatter, `systemPrompt: string[]` for prompt injection, state compaction same as Pi |
 
 ---
 
@@ -159,3 +160,4 @@ Self-review fails for three reasons, each documented from real sessions:
 | **Kimi Code** | Safety constraints + persona | Reviewer persona includes `[[permission.rules]]` block that denies file modification. Runtime enforcement via `builtin_safety_constraint`. |
 | **Cursor** | Two-layer enforcement (v1) | Runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools (Write, StrReplace, Delete). Prompt-level instructions serve as a backup layer. |
 | **Claude Code** | Read-only tool access | Reviewer is spawned via `new Agent({ tools: { Edit: false, Read: true, Bash: false } })` or equivalent tool-level permission gating. No hooks can escalate write access. |
+| **Oh My Pi** | Read-only tools for reviewers, built-in `task()` isolation | Same as Pi |

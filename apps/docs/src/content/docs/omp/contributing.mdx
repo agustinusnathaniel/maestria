@@ -1,0 +1,119 @@
+---
+title: Contributing
+description: How to contribute to @maestria/omp - development setup, making changes, and submitting PRs.
+---
+
+# Contributing
+
+> For general development setup, changesets, and pull request workflow, see the [Contributing Guide](/core/contributing/).
+
+## Project Structure
+
+```
+maestria/
+├── apps/
+│   └── docs/                 # Documentation site
+└── packages/
+    └── omp/                  # @maestria/omp extension
+        ├── agents/           # 7 specialist agent .md files for omp subagent dispatch
+        ├── skills/           # 4 omp skills (orchestrator, global-rules, handoff, iteration-limits)
+        ├── src/              # Extension source code
+        │   ├── extension.ts  # Extension entry point, wires lifecycle hooks
+        │   ├── agents.ts     # Agent file deployment to ~/.omp/agent/agents/
+        │   ├── rules.ts      # Mode prompt injection
+        │   ├── modes.ts      # Agent mode definitions (/fein, /sonar, /blitz)
+        │   ├── state.ts      # Session state management
+        │   ├── compaction.ts # Context compaction preservation
+        │   ├── subagent.ts   # Subagent dispatch via omp's native task() tool
+        │   ├── commands.ts   # omp slash commands (/review, /handoff, etc.)
+        │   └── tools.ts      # Tool call interceptors (review mode, dangerous patterns)
+        ├── scripts/          # Validation scripts
+        └── tests/            # Vitest test suite (11 test files, 134 tests)
+```
+
+## Sync Pipeline
+
+All behavioral content is derived from canonical sources in `packages/core/agent-directives/`. A single unified `sync.config.ts` generates all omp artifacts in one pass:
+
+- **Source:** `packages/core/agent-directives/specialists/` (7 specialist prompts) + `packages/core/agent-directives/rules.md` (global rules)
+- **Output:** `packages/omp/agents/*.md` (7 specialist agent files) + `packages/omp/skills/orchestrator/SKILL.md` + `packages/omp/skills/global-rules/SKILL.md`
+- **Transforms:** Strips canonical frontmatter, replaces `@agent` references with bare names (e.g., `@adventurer` → `adventurer`). Unlike Pi, no `task()` to `maestria_subagent()` rewrite is needed - omp uses its native `task()` tool directly.
+- **Usage:** Agent files are deployed to `~/.omp/agent/agents/` at extension startup for omp subagent discovery; skill files are auto-injected by omp's resource loader from the `omp.skills` manifest field into every session's system prompt
+
+### Running the sync
+
+```bash
+# Regenerate all generated artifacts from canonical sources
+pnpm --filter @maestria/omp sync
+```
+
+Orchestrator, global rules, and all 7 specialist agent files are generated in a single pass by `sync.config.ts`. The sync is auto-checked by CI via `scripts/check-sync`.
+
+Generated artifacts are validated:
+
+```bash
+pnpm --filter @maestria/omp validate
+```
+
+## Making Changes
+
+### Modifying Specialist Prompts, Global Rules, or Orchestrator Prompt
+
+All specialist prompts, global rules, and the orchestrator prompt are authored in canonical sources under `packages/core/agent-directives/`. After editing, regenerate all omp artifacts in a single step:
+
+```bash
+pnpm --filter @maestria/omp sync
+pnpm --filter @maestria/omp validate
+```
+
+### Adding or Modifying Skills
+
+Skills fall into two categories:
+
+**Canonical skills** (orchestrator, global-rules) - these are synced from core via `sync.config.ts`. Edit the canonical source, then run `pnpm sync`.
+
+**Omp-only methodology skills** (handoff, iteration-limits) - these live in `packages/omp/skills/` and have no canonical source. Each skill directory contains a `SKILL.md` file. To add a new omp-only skill, create a directory under `skills/` with a valid `SKILL.md` (frontmatter with `name` and `description`). Validate with:
+
+```bash
+pnpm --filter @maestria/omp validate-skills
+```
+
+### Modifying Extension Code
+
+| File            | Purpose                                                      |
+| --------------- | ------------------------------------------------------------ |
+| `extension.ts`  | Extension entry point, registers all lifecycle hooks         |
+| `agents.ts`     | Deploys specialist agent files to omp subagent discovery dir |
+| `rules.ts`      | Mode prompt injection                                        |
+| `modes.ts`      | Workflow mode definitions and commands                       |
+| `state.ts`      | Session state tracking and persistence                       |
+| `compaction.ts` | Context compaction for long sessions                         |
+| `subagent.ts`   | Subagent dispatch via omp's native `task()` tool             |
+| `commands.ts`   | omp slash commands                                           |
+| `tools.ts`      | Tool call interceptors and dangerous pattern detection       |
+
+## Building and Testing
+
+```bash
+# Build the omp package (vp pack)
+pnpm --filter @maestria/omp build
+
+# Run tests (Vitest - 11 test files, 134 tests)
+pnpm --filter @maestria/omp test
+
+# Validate generated artifacts
+pnpm --filter @maestria/omp validate
+
+# Format, lint, and type-check
+vp check
+```
+
+Tests are written with Vitest and live in `packages/omp/tests/`. You can run individual test files:
+
+```bash
+pnpm --filter @maestria/omp test -- tests/commands.test.ts
+```
+
+## See Also
+
+- [Contributing Guide](/core/contributing/) - General setup, changesets, and PR process

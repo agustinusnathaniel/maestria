@@ -46,7 +46,7 @@ Negative:
 
 - Skills and agent files must be published in the npm package (increases unpacked size by ~80KB)
 - Agent files write to user's `~/.pi/agent/agents/` directory at startup (but never overwrite user customizations)
-- Requires pi-subagents 17.x for agent type file discovery
+- Requires pi-subagents 18.x for agent type file discovery
 
 ## Alternatives Considered
 

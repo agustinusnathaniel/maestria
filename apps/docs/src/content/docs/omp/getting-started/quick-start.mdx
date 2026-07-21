@@ -1,0 +1,63 @@
+---
+title: Quick Start
+description: Get started with @maestria/omp in minutes
+template: splash
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Now that you have `@maestria/omp` installed, here's how to start your first session.
+
+## Start a Session
+
+Open a new omp session in any project directory:
+
+```bash
+omp
+```
+
+Once the session starts, the `@maestria/omp` extension activates automatically and omp injects its methodology skills into the system prompt.
+
+## Pick a Workflow Mode
+
+The extension provides three workflow mode commands. Use them to tell the agent how to handle your request:
+
+- **`/fein`** - Full pipeline: reconnaissance → design → implementation → review. Use for production-grade changes.
+- **`/sonar`** - Research only: reconnaissance → design → STOP. No implementation. Use for discovery and feasibility.
+- **`/blitz`** - Fast implementation: skip recon and review. Use for quick fixes in known territory.
+
+You can invoke a mode with or without a task description:
+
+```bash
+/fein Add user authentication
+# or
+/fein
+Mode set to fein. Describe what you'd like to work on.
+```
+
+## How Dispatch Works
+
+Unlike `@maestria/pi` which requires the `@gotgenes/pi-subagents` extension for subagent dispatch, omp has a built-in `task()` tool. The orchestrator dispatches specialists directly using bare agent names:
+
+```
+task(agent: "adventurer", task: "Map the authentication flow")
+```
+
+No `maestria_subagent` wrapper is needed - omp's native `task()` handles all subagent lifecycle, tool isolation, and context inheritance.
+
+## Your First Task
+
+Try `@maestria/omp` with a simple request:
+
+1. Start an omp session.
+2. Type `/fein` followed by your task.
+3. The extension activates the spec-driven orchestration pipeline:
+   - The orchestrator receives your request and breaks it into phases.
+   - Specialists (`adventurer`, `architect`, `builder`, `reviewer`) execute each phase using omp's built-in `task()` dispatch.
+   - Phase gates validate completion before the next stage begins.
+4. Review the session tree output to see how each specialist contributed.
+
+## What's Next?
+
+- Read the [Installation Guide](/omp/getting-started/installation/) for setup options.
+- Learn about the [specialist subagents](/core/agents/) and their roles.

@@ -1,0 +1,67 @@
+---
+title: Installation & Setup
+description: How to install @maestria/omp and what you get - 7 specialist subagents, 3 workflow modes, and spec-driven orchestration for the Oh My Pi coding agent.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+`@maestria/omp` is an omp extension that turns the [Oh My Pi](https://ohmy.ai) coding agent into a disciplined engineering workstation. It registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration - all with a single extension entry.
+
+## Prerequisites
+
+- [Oh My Pi](https://ohmy.ai) CLI - the omp coding agent (latest version)
+- **Node.js 22.12+** - Required for omp extension resolution
+
+Unlike `@maestria/pi`, omp has a built-in `task()` tool for subagent dispatch. No additional peer dependency needed.
+
+## Installation
+
+Install the extension via the omp CLI:
+
+```bash
+omp install npm:@maestria/omp
+```
+
+omp loads the extension from the package manifest on startup. It auto-discovers the 4 methodology skills (orchestrator dispatcher, global agent rules, handoff contract, iteration limits) from the `omp.skills` manifest field and injects them into the system prompt, and deploys the 7 specialist agent files to `~/.omp/agent/agents/` for subagent dispatch.
+
+Restart omp for the extension to activate.
+
+## Verify Installation
+
+Start a new omp session. The `@maestria/omp` extension loads automatically from the package manifest. omp's resource loader discovers its four methodology skills and injects them into the system prompt.
+
+You should notice the agent behaving as a maestria dispatcher from the first turn: it responds to requests by decomposing tasks, delegating to specialist subagents, and following the spec-driven orchestration protocol - all guided by the auto-injected orchestrator skill.
+
+You can also list installed extensions to verify:
+
+```bash
+omp extensions list
+```
+
+You should see `@maestria/omp` in the output.
+
+## Updating
+
+To update to the latest version:
+
+```bash
+omp install npm:@maestria/omp@latest
+```
+
+<Aside type="tip">
+  To pin a specific version, use `omp install npm:@maestria/omp@0.1.0`. Check the
+  [changelog](/omp/changelog/) for version history.
+</Aside>
+
+## Uninstalling
+
+```bash
+omp uninstall @maestria/omp
+```
+
+Restart omp for the changes to take effect.
+
+## Next Steps
+
+- [Quick Start](/omp/getting-started/quick-start/) - Your first session with the extension
+- Explore the [workflow modes](/omp/getting-started/quick-start/) - `/fein`, `/sonar`, `/blitz`

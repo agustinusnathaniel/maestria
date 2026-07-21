@@ -1,6 +1,6 @@
 # maestria
 
-A single CLI to manage maestria plugins across all coding agent platforms - OpenCode, Kimi Code, Pi, and Hermes.
+A single CLI to manage maestria plugins across all coding agent platforms - OpenCode, Oh My Pi, Kimi Code, Pi, Hermes, and Cursor.
 
 ```bash
 npx maestria status
@@ -67,7 +67,7 @@ Invalid arguments are caught early:
 
 ```bash
 $ npx maestria update unknown
-Unknown platform 'unknown'. Valid platforms: opencode, pi, kimi-code, hermes, cursor
+Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor
 
 $ npx maestria update opencode --version 2.0
 Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
@@ -104,6 +104,7 @@ rm ~/.cache/maestria/versions.json
 | ID          | Platform  | Package               |
 | ----------- | --------- | --------------------- |
 | `opencode`  | OpenCode  | `@maestria/opencode`  |
+| `omp`       | Oh My Pi  | `@maestria/omp`       |
 | `pi`        | Pi        | `@maestria/pi`        |
 | `kimi-code` | Kimi Code | `@maestria/kimi-code` |
 | `hermes`    | Hermes    | `maestria-hermes`     |

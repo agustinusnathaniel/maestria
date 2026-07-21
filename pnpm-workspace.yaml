@@ -16,8 +16,7 @@ catalog:
   '@fontsource-variable/noto-serif': ^5.2.9
   '@fontsource-variable/sn-pro': ^5.2.1
   '@earendil-works/pi-coding-agent': '*'
-  '@earendil-works/pi-ai': '*'
-  '@gotgenes/pi-subagents': '^17.0.0'
+  '@gotgenes/pi-subagents': '^18.0.0'
   'typebox': '*'
   '@astrojs/starlight': ^0.41.0
   astro: 7.0.2
@@ -36,6 +35,7 @@ allowBuilds:
   '@google/genai': true
   esbuild: true
   msgpackr-extract: false
+  onnxruntime-node: true
   protobufjs: true
   sharp: true
 minimumReleaseAgeExclude:

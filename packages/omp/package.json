@@ -1,18 +1,18 @@
 {
-  "name": "@maestria/pi",
-  "version": "0.5.6",
-  "description": "Maestria extension for the Pi coding agent",
+  "name": "@maestria/omp",
+  "version": "0.1.0",
+  "description": "Maestria extension for the Oh My Pi coding agent",
   "keywords": [
     "agent-orchestration",
     "coding-agent",
     "maestria",
-    "pi-package"
+    "omp-package"
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/agustinusnathaniel/maestria.git",
-    "directory": "packages/pi"
+    "directory": "packages/omp"
   },
   "files": [
     "agents",
@@ -41,12 +41,18 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*",
-    "@gotgenes/pi-subagents": "^18.0.0",
-    "typebox": "*"
+    "@oh-my-pi/pi-coding-agent": "*"
   },
   "engines": {
     "node": ">=22.12.0"
+  },
+  "omp": {
+    "extensions": [
+      "./dist/extension.mjs"
+    ],
+    "skills": [
+      "./skills"
+    ]
   },
   "pi": {
     "extensions": [

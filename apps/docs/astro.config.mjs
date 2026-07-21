@@ -29,7 +29,8 @@ export default defineConfig({
             '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), ' +
             '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
             '@maestria/pi (full agent orchestration for Pi Coding Agent), and ' +
-            '@maestria/hermes (methodology layer for Hermes Agent).',
+            '@maestria/hermes (methodology layer for Hermes Agent), and ' +
+            '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX).',
         }),
         starlightPageActions({
           share: true,
@@ -171,6 +172,19 @@ export default defineConfig({
             { label: 'Commands', link: '/hermes/commands/' },
             { label: 'Changelog', link: '/hermes/changelog/' },
             { label: 'Contributing', link: '/hermes/contributing/' },
+          ],
+        },
+        {
+          label: '@maestria/omp',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/omp/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'omp/getting-started' } }],
+            },
+            { label: 'Changelog', link: '/omp/changelog/' },
+            { label: 'Contributing', link: '/omp/contributing/' },
           ],
         },
       ],
