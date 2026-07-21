@@ -241,7 +241,7 @@ describe('MaestriaPlugin config validation', () => {
       MaestriaPlugin({} as never, {
         modes: { disabledKeywords: ['invalid'] as any },
       }),
-    ).rejects.toThrow('Invalid option: expected one of');
+    ).rejects.toThrow(/Invalid option: expected one of \\"fein\\"\|\\"sonar\\"\|\\"blitz\\"/);
   });
 
   it('accepts valid config with disabled keywords', async () => {
