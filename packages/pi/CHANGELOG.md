@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.7
+
+### Patch Changes
+
+- [#104](https://github.com/agustinusnathaniel/maestria/pull/104) [`040f23a`](https://github.com/agustinusnathaniel/maestria/commit/040f23ad223a455b8095cb1edc9dca0a7a0a1fc7) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: remove unused @earendil-works/pi-ai peer dep, bump @gotgenes/pi-subagents to ^18.0.0
+
 ## 0.5.6
 
 ### Patch Changes
