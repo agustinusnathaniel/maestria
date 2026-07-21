@@ -404,14 +404,5 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
       output: '../rules/AGENTS.md',
       // No transforms needed - opencode IS the canonical format
     },
-    'commands/fein.md': {
-      output: 'commands/fein.md',
-    },
-    'commands/sonar.md': {
-      output: 'commands/sonar.md',
-    },
-    'commands/blitz.md': {
-      output: 'commands/blitz.md',
-    },
   },
 } satisfies SyncConfig;

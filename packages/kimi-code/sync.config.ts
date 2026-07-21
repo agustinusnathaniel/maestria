@@ -301,65 +301,6 @@ This should appear at the end of your response when the user asks for a handoff,
 `,
     },
 
-    'commands/fein.md': {
-      output: 'commands/fein/SKILL.md',
-      stripFrontmatter: true,
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@builder', to: 'builder' },
-        { from: '@planner', to: 'planner' },
-        { from: '@reviewer', to: 'reviewer' },
-      ],
-      prepend:
-        '**Skill profile:** `plan` - sets workflow mode to fein. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
-      frontmatter: {
-        name: 'fein',
-        description: 'Full pipeline mode: recon, design, implement, review',
-        type: 'prompt',
-        whenToUse:
-          'When the user types /fein or includes "fein" in their message to run the complete maestria pipeline.',
-        arguments: [],
-      },
-    },
-    'commands/sonar.md': {
-      output: 'commands/sonar/SKILL.md',
-      stripFrontmatter: true,
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@planner', to: 'planner' },
-      ],
-      prepend:
-        '**Skill profile:** `plan` - sets workflow mode to sonar. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
-      frontmatter: {
-        name: 'sonar',
-        description: 'Research-only mode: recon and design, no implementation',
-        type: 'prompt',
-        whenToUse:
-          'When the user types /sonar or includes "sonar" in their message for research-only work.',
-        arguments: [],
-      },
-    },
-    'commands/blitz.md': {
-      output: 'commands/blitz/SKILL.md',
-      stripFrontmatter: true,
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@builder', to: 'builder' },
-        { from: '@reviewer', to: 'reviewer' },
-      ],
-      prepend:
-        '**Skill profile:** `plan` - sets workflow mode to blitz. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
-      frontmatter: {
-        name: 'blitz',
-        description: 'Fast implementation mode: skip recon/design unless unknown',
-        type: 'prompt',
-        whenToUse:
-          'When the user types /blitz or includes "blitz" in their message for fast implementation.',
-        arguments: [],
-      },
-    },
     'rules.md': {
       output: '../rules/AGENTS.md',
       prepend:

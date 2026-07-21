@@ -158,22 +158,6 @@ export default {
         '---\n' +
         '\n',
     },
-
-    // --- Workflow commands (fein/sonar/blitz) ---
-    // Synced as-is, keeping canonical frontmatter for reference metadata
-
-    'commands/fein.md': {
-      output: 'commands/fein.md',
-      stripFrontmatter: false,
-    },
-    'commands/sonar.md': {
-      output: 'commands/sonar.md',
-      stripFrontmatter: false,
-    },
-    'commands/blitz.md': {
-      output: 'commands/blitz.md',
-      stripFrontmatter: false,
-    },
   },
 
   preserve: ['.gitkeep'],
