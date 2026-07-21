@@ -1,5 +1,28 @@
 # maestria
 
+## 0.6.1
+
+### Patch Changes
+
+- [#102](https://github.com/agustinusnathaniel/maestria/pull/102) [`7634e84`](https://github.com/agustinusnathaniel/maestria/commit/7634e84cd4bace900bbfef6cf34902edfdb1b762) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: switch kimi-code to npm-based install; sync plugin manifest version
+
+  - Switch from git-based codeload to npm-based install (`npm pack @maestria/kimi-code`)
+  - Fix `maestria update kimi-code` version comparison (was always re-downloading)
+  - Sync `kimi.plugin.json` version with `package.json` (0.1.0 → 0.4.6)
+  - Add `publishConfig` for npm publish readiness
+
+- [#92](https://github.com/agustinusnathaniel/maestria/pull/92) [`e861360`](https://github.com/agustinusnathaniel/maestria/commit/e8613603e43315b403f87e66f428dfe4c1b62def) Thanks [@iyansr](https://github.com/iyansr)! - feat: @maestria/cursor plugin v0.1 — declarative Cursor IDE and CLI plugin
+
+  Initial release of the Cursor platform plugin:
+
+  - **7 specialist agents** synced from core (`agents/*.md`) with Cursor-adapted tool names (Read, Glob, Grep, StrReplace, Shell, Write)
+  - **Orchestrator skill** (`skills/orchestrator/SKILL.md`) with Task-based routing, handoff contracts, and maker/checker enforcement
+  - **Global rules** (`rules/maestria-global.mdc`, `alwaysApply: true`)
+  - **Workflow commands** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation)
+  - **Two-layer maker/checker** — `readonly: true` runtime flag on adventurer/planner/reviewer agents blocks write tools at the Cursor runtime level, with prompt-level instructions as backup
+  - **CLI support** — `maestria install cursor`, `maestria update cursor`, `maestria uninstall cursor`, `maestria check cursor` via npm (`@maestria/cursor`)
+  - **Documentation** — installation guide, quick start, changelog, contributing guide, and ADR-CR-001
+
 ## 0.6.0
 
 ### Minor Changes
@@ -176,6 +199,7 @@
 - [#39](https://github.com/agustinusnathaniel/maestria/pull/39) [`fa2353b`](https://github.com/agustinusnathaniel/maestria/commit/fa2353b294c5ea16153bd244fe8c3726f910cf60) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat: add maestria CLI for cross-platform plugin management
 
   Introduce `maestria` CLI with three subcommands:
+
   - install: install maestria for detected coding agent platforms
   - update: update installed maestria plugins to latest version
   - status: show installation status across platforms

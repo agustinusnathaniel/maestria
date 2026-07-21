@@ -1,5 +1,11 @@
 # @maestria/core
 
+## 0.4.7
+
+### Patch Changes
+
+- [#103](https://github.com/agustinusnathaniel/maestria/pull/103) [`886dbd0`](https://github.com/agustinusnathaniel/maestria/commit/886dbd0b92256110d89f1549d7a96849950a2e82) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Sync workflow mode commands (fein/sonar/blitz) through canonical source pipeline, including Hermes
+
 ## 0.4.6
 
 ### Patch Changes
