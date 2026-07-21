@@ -113,8 +113,6 @@ Confirm it works:
 - Check for unintended side effects
 - Prepare rollback plan
 
-**!!! Always verify before handoff** - Never present broken code.
-
 ## Skill Prescription
 
 ### Always load
@@ -126,7 +124,6 @@ Confirm it works:
 - `agent-browser` (`vercel-labs/agent-browser`) - load when bug involves UI behavior, network requests, performance profiling, or needs visual reproduction (skip if backend-only)
 - `dependency-updater` (`softaworks/agent-toolkit`) - load when investigating dependency-related bugs, lockfile issues, or version conflicts
 - `resolving-merge-conflicts` (`mattpocock/skills`) - load when debugging regressions introduced by a merge or rebase
-- `diagnosing-bugs` (`mattpocock/skills`) - load when using the diagnose methodology for systematic debugging
 - `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) - load when investigating pattern-level bugs
 - `logging-best-practices` (`boristane/agent-skills`) - load when bug surfaces in logs or you need to add logging
 - `opensrc` (`vercel-labs/opensrc`) - load when root cause is in an external library
@@ -157,8 +154,6 @@ Document findings at each step:
 - Prevention measures
 - **Assumptions documented** - what was unclear and what you assumed, with the evidence that led to each assumption
 
-**!!! Save your findings as persistent knowledge artifacts** - don't let diagnostic work disappear after the session ends. Create a markdown file or use `@writer` to store the investigation record for future reference.
-
 ## Iteration Limits
 
 - **Max 3 fix attempts** (Step 4) before escalating with the audit table.
@@ -169,11 +164,7 @@ Document findings at each step:
 
 - **!!! Document your diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix applied. Don't let findings disappear when the session ends. Use `@writer` or a markdown file if no knowledge base exists yet.
 - **!!! Edit and bash permissions are `ask`** - explain why before any change
-- **!!! Always verify before handoff** - Never present broken code
-- **!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands. The model that wrote the fix is too nice grading its own homework. Apply the fix, do not QA it.
-- **!!! Validate before handoff** - never present a fix you haven't reproduced-and-verified works. Run the existing test suite, reproduce the original error, confirm it's gone.
-- **!!! If anything is unclear or ambiguous, exhaust environment data (lockfile, env vars, version mismatch, CWD), document your assumption with supporting evidence, and proceed** - wrong assumptions waste more time than asking questions. Document assumptions, not questions.
+- **!!! Never present a fix you haven't reproduced-and-verified** - run the existing test suite, reproduce the original error, confirm it's gone.
+- **!!! Exhaust environment data before concluding** - lockfile, env vars, version mismatches, CWD. If the error description or reproduction is vague, attempt reproduction with available information and document what you assumed about environment or inputs.
 - **Parallelization:** diagnose tasks on different bugs can run in parallel. Two diagnoses on the same bug = wasted; same root-cause cluster = consolidate first.
-- **External repos: `opensrc` for big repos, `webfetch` for single pages** - For GitHub/GitLab/BitBucket URLs, scoped queries (single file, single page) → `webfetch` is fine. Whole repos or "how is X implemented in library Y" → `opensrc path <owner/repo>` (clones to global cache, gives you a path for `read`/`glob`/`grep`). Don't webfetch a multi-file repo one file at a time - clone once, read locally.
-
-**If the error description is vague or the reproduction is unclear, attempt to reproduce with available information, document what you assumed about the environment or inputs, and proceed.** The reviewer will validate whether the assumptions were reasonable.
+- **Open external repos with `opensrc` (not `webfetch`)** - clone once, read locally. `webfetch` is for single pages only.
