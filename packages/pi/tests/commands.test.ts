@@ -56,7 +56,6 @@ describe('installCommands', () => {
     const registeredNames = (pi.registerCommand.mock.calls as Array<[string, unknown]>).map(
       (c) => c[0],
     );
-    expect(registeredNames).toContain('orchestrate');
     expect(registeredNames).toContain('maestria-status');
     expect(registeredNames).toContain('review');
     expect(registeredNames).toContain('restore-model');
@@ -188,107 +187,6 @@ describe('/review command', () => {
       expect.objectContaining({
         originalModel: 'claude-sonnet-4-20250514',
         reviewModel: 'gpt-4o',
-        timestamp: expect.any(Number),
-      }),
-    );
-  });
-});
-
-describe('/orchestrate command', () => {
-  it('restores original model and tools when exiting review mode', async () => {
-    const pi = createMockPi();
-    const state: MaestriaState = {
-      ...createInitialState(),
-      reviewMode: true,
-      originalModel: 'gpt-4o',
-      originalTools: ['read', 'grep', 'bash', 'edit'],
-    };
-    installCommands(pi as any, state);
-
-    const handler = getHandler(pi, 'orchestrate')!;
-    const ctx = createMockCtx({
-      modelRegistry: {
-        getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o', name: 'GPT-4o' }]),
-      },
-    });
-    await handler('build feature', ctx);
-
-    // Should restore tools
-    expect(pi.setActiveTools).toHaveBeenCalledWith(['read', 'grep', 'bash', 'edit']);
-    // Should restore model
-    expect(pi.setModel).toHaveBeenCalled();
-    // Should clear review mode
-    expect(state.reviewMode).toBe(false);
-    expect(state.originalModel).toBeNull();
-    expect(state.originalTools).toBeNull();
-  });
-
-  it('clears review mode even when no originals were saved', async () => {
-    const pi = createMockPi();
-    const state: MaestriaState = {
-      ...createInitialState(),
-      reviewMode: true,
-      originalModel: null,
-      originalTools: null,
-    };
-    installCommands(pi as any, state);
-
-    const handler = getHandler(pi, 'orchestrate')!;
-    const ctx = createMockCtx();
-    await handler('quick task', ctx);
-
-    // setActiveTools should NOT have been called (no original tools to restore)
-    // but we also shouldn't pass null/empty
-    expect(state.reviewMode).toBe(false);
-  });
-
-  it('persists state via appendEntry after exiting review mode', async () => {
-    const pi = createMockPi();
-    const state: MaestriaState = {
-      ...createInitialState(),
-      reviewMode: true,
-      originalModel: 'gpt-4o',
-      originalTools: ['read', 'grep', 'bash'],
-    };
-    installCommands(pi as any, state);
-
-    const handler = getHandler(pi, 'orchestrate')!;
-    const ctx = createMockCtx({
-      modelRegistry: {
-        getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]),
-      },
-    });
-    await handler('build feature', ctx);
-
-    expect(pi.appendEntry).toHaveBeenCalledWith(
-      'maestria_state',
-      expect.objectContaining({ reviewMode: false }),
-    );
-  });
-
-  it('emits maestria:review:deactivated when exiting review mode', async () => {
-    const pi = { ...createMockPi(), events: { emit: vi.fn() } };
-    const state: MaestriaState = {
-      ...createInitialState(),
-      reviewMode: true,
-      originalModel: 'gpt-4o',
-      originalTools: ['read', 'grep', 'bash'],
-    };
-    installCommands(pi as any, state);
-
-    const handler = getHandler(pi, 'orchestrate')!;
-    const ctx = createMockCtx({
-      modelRegistry: {
-        getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]),
-      },
-    });
-    await handler('build feature', ctx);
-
-    expect(pi.events.emit).toHaveBeenCalledWith(
-      MAESTRIA_EVENTS.REVIEW_DEACTIVATED,
-      expect.objectContaining({
-        originalModel: 'gpt-4o',
-        source: 'orchestrate',
         timestamp: expect.any(Number),
       }),
     );

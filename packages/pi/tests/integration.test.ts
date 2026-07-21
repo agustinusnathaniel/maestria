@@ -52,7 +52,6 @@ describe('extension smoke tests', () => {
       'fein',
       'sonar',
       'blitz',
-      'orchestrate',
       'maestria-status',
       'review',
       'restore-model',
