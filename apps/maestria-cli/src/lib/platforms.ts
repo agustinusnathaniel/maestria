@@ -374,8 +374,54 @@ const cursor: PlatformHandler = {
   }).pipe(Effect.as(void 0)),
 };
 
+const omp: PlatformHandler = {
+  id: 'omp',
+  label: 'Oh My Pi',
+  npmPackage: '@maestria/omp',
+
+  detect: commandExists('omp'),
+
+  isInstalled: run(
+    'ls',
+    [`${homedir()}/.omp/agent/npm/node_modules/@maestria/omp/package.json`],
+    2_000,
+  ).pipe(
+    Effect.map(() => true),
+    Effect.catchCause(() => Effect.succeed(false)),
+  ),
+
+  getInstalledVersion: run('cat', [
+    `${homedir()}/.omp/agent/npm/node_modules/@maestria/omp/package.json`,
+  ]).pipe(
+    Effect.map((out: string) => {
+      try {
+        const pkg: { version?: string } = JSON.parse(out);
+        return pkg.version ?? 'unknown';
+      } catch {
+        return 'unknown';
+      }
+    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
+  ),
+
+  getLatestVersion: npmViewVersion('@maestria/omp'),
+
+  install: Effect.gen(function* () {
+    // omp has built-in task dispatch — no subagent prerequisite needed
+    yield* run('omp', ['install', 'npm:@maestria/omp'], 120_000);
+  }).pipe(Effect.as(void 0)),
+
+  update: (version?: string) =>
+    Effect.gen(function* () {
+      const tagged = version ? `npm:@maestria/omp@${version}` : 'npm:@maestria/omp@latest';
+      yield* run('omp', ['install', tagged], 120_000);
+    }),
+
+  uninstall: run('omp', ['uninstall', '@maestria/omp']).pipe(Effect.as(void 0)),
+};
+
 // ── Registry ─────────────────────────────────────────
-export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode, hermes, cursor];
+export const platforms: readonly PlatformHandler[] = [opencode, pi, kimiCode, hermes, cursor, omp];
 
 export function getPlatform(id: string): PlatformHandler | undefined {
   return platforms.find((p) => p.id === id);

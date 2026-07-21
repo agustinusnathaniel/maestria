@@ -36,6 +36,7 @@ allowBuilds:
   '@google/genai': true
   esbuild: true
   msgpackr-extract: false
+  onnxruntime-node: true
   protobufjs: true
   sharp: true
 minimumReleaseAgeExclude:
