@@ -40,7 +40,7 @@ agent --plugin-dir ./packages/cursor
 ## Verify
 
 1. Open **Customize → Plugins** (IDE) and confirm `maestria` is listed, **or**
-2. In Agent chat, confirm `/fein`, `/sonar`, `/blitz`, `/orchestrate` appear
+2. In Agent chat, confirm `/fein`, `/sonar`, `/blitz` appear
 3. Confirm specialists are available as agents (adventurer, builder, reviewer, …)
 4. Confirm global rules include Maestria content (`alwaysApply`)
 

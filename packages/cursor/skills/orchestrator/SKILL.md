@@ -316,7 +316,6 @@ Users can trigger modes with slash commands from this plugin:
 | `/fein` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | `/sonar` | Research only: adventurer → architect/planner → STOP |
 | `/blitz` | Fast path: builder directly (skip recon/design unless unknown) |
-| `/orchestrate` | Start full orchestration for the given goal |
 
 ## Related Agents
 

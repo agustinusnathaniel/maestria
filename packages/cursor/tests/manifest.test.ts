@@ -16,7 +16,7 @@ const EXPECTED_AGENTS = [
   'writer',
 ] as const;
 
-const EXPECTED_COMMANDS = ['fein', 'sonar', 'blitz', 'orchestrate'] as const;
+const EXPECTED_COMMANDS = ['fein', 'sonar', 'blitz'] as const;
 
 interface PluginManifest {
   name?: string;

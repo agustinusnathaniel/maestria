@@ -7,7 +7,7 @@ A [Cursor](https://cursor.com/) plugin that brings Maestria's structured agent o
 - **7 specialist agents** — adventurer, architect, builder, diagnose, planner, reviewer, writer (Task subagents)
 - **Orchestrator skill** — dispatcher methodology, handoff contracts, maker/checker guidance
 - **Always-on global rules** — `rules/maestria-global.mdc` with `alwaysApply: true`
-- **Workflow commands** — `/fein`, `/sonar`, `/blitz`, `/orchestrate`
+- **Workflow commands** — `/fein`, `/sonar`, `/blitz`
 - **IDE + CLI parity** — one plugin bundle for both surfaces
 
 ## Installation
@@ -36,12 +36,11 @@ See [INSTALL.md](./INSTALL.md) for the full checklist.
 
 ## Commands
 
-| Command        | Description                                        |
-| -------------- | -------------------------------------------------- |
-| `/fein`        | Full pipeline: recon → design → implement → review |
-| `/sonar`       | Research only: recon → design → stop               |
-| `/blitz`       | Fast implementation via builder                    |
-| `/orchestrate` | Start orchestration for a goal                     |
+| Command  | Description                                        |
+| -------- | -------------------------------------------------- |
+| `/fein`  | Full pipeline: recon → design → implement → review |
+| `/sonar` | Research only: recon → design → stop               |
+| `/blitz` | Fast implementation via builder                    |
 
 ## Development
 
