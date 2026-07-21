@@ -1,0 +1,24 @@
+{
+  "projectName": "maestria",
+  "projectOwner": "agustinusnathaniel",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["README.md"],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "agustinusnathaniel",
+      "name": "Agustinus Nathaniel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17046154?v=4",
+      "profile": "https://agustinusnathaniel.com/",
+      "contributions": ["code", "doc", "design", "infra", "ideas", "test"]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": true,
+  "skipCi": true,
+  "contributorsSortAlphabetically": false,
+  "badge": true
+}

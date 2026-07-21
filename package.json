@@ -23,12 +23,16 @@
     "fmt:check": "vp fmt --check",
     "lint": "vp lint",
     "lint:fix": "vp lint --fix",
-    "typecheck": "vp check --no-fmt --no-lint"
+    "typecheck": "vp check --no-fmt --no-lint",
+    "contributors:add": "all-contributors add",
+    "contributors:generate": "all-contributors generate",
+    "contributors:check": "all-contributors check"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
     "@changesets/cli": "catalog:",
     "@types/node": "catalog:",
+    "all-contributors-cli": "catalog:",
     "vite-plus": "catalog:"
   },
   "devEngines": {
