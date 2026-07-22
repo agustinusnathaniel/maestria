@@ -5,13 +5,6 @@ description: Release history for @maestria/pi.
 
 # Changelog
 
-## v0.5.7
-
-_July 22, 2026_
-
-- Removed unused `@earendil-works/pi-ai` peer dependency
-- Bumped `@gotgenes/pi-subagents` to ^18.0.0
-
 ## v0.5.6
 
 _July 21, 2026_
@@ -74,39 +67,34 @@ Restructured from a 3-part narrative to a lean table-first format with change-ty
 
 _July 14, 2026_
 
-### Mandated work results format
+### Structured work results are now mandatory
 
-The structured `## Changes` summary table after builder tasks is now a
-hard requirement enforced by a non-negotiable CRITICAL RULE. This replaces
-the previous suggested behavior with a mandated format.
+After every task, the agent must produce a `## Changes` summary table instead
+of a free-form description.
 
-### Mandated documentation audit before commits
+### Documentation audit before every commit
 
-The documentation audit step before every commit is now explicitly required,
-covering four categories: internal docs, user-facing docs site, user-facing
-changelog, and changesets.
+The agent now checks internal docs, the user-facing docs site, the user-facing
+changelog, and changesets before committing.
 
 ## v0.4.1
 
 _July 11, 2026_
 
-### Architecture refactor: skill-based injection + pi-subagents agent registration
+### Standard Pi skill mechanism for agent content
 
-Complete re-architecture of how maestria behavioral content flows into Pi sessions:
+The orchestrator dispatcher prompt and global agent rules now load as Pi
+skills (`.md` files in `skills/`). This is the same mechanism used by
+pi-web-access, pi-messenger, and other Pi extensions. The old custom
+file-loading approach is removed.
 
-**Standard Pi skill mechanism:** The orchestrator dispatcher prompt and global agent rules now ship as Pi `SKILL.md` files in `skills/`, auto-discovered from the `pi.skills` manifest field and injected by Pi's resource loader -- the same standard pattern used by pi-web-access, pi-messenger, pi-intercom, and other major Pi extensions. The old `before_agent_start` + `readFileSync` approach is removed.
+### Specialist agents registered with pi-subagents
 
-**Pi-subagents agent type registration:** The 7 specialist prompts (adventurer, architect, builder, diagnose, planner, reviewer, writer) are registered with `@gotgenes/pi-subagents` as proper agent types via `.md` files with YAML frontmatter, deployed to `~/.pi/agent/agents/` at extension startup. Each specialist gets role-specific tool isolation via `tools` allowlists in the frontmatter (builder/writer have write access, all others read-only), enforcing the maker/checker split at the subagent level.
-
-**Removed dead weight:** The `prompts/` and `rules/` directories were synced from canonical sources but never consumed by any extension code. They have been replaced by the `agents/` and `skills/` directories.
-
-### Details
-
-- Refactored `sync.config.ts` to generate `agents/*.md` with pi-subagents YAML frontmatter
-- Unified `sync.config.ts` to generate both agents and skills in a single pass (no separate sync-skills config)
-- Added `packages/pi/src/agents.ts` - deploys agent files to `~/.pi/agent/agents/` on session start
-- Simplified `rules.ts` - removed static file loading, renamed `createModePromptHandler` for mode-only injection
-- Removed `pi.prompts` manifest field (misleading - registered template dirs, not for auto-injection)
+All 7 specialist agent types (adventurer, architect, builder, diagnose,
+planner, reviewer, writer) are now registered as proper agent types. Each
+specialist has the right tool permissions read-only specialists (adventurer,
+architect, planner, reviewer, diagnose) can't write files; builder and
+writer can.
 
 ## v0.4.0
 

@@ -11,7 +11,7 @@ _July 22, 2026_
 
 ### Fixed
 
-- Fix mode prompts failing to load when plugin is installed from npm. The prompt files path didn't resolve correctly after bundling.
+- Mode keywords (fein/sonar/blitz) no longer fail silently after installing the plugin from npm.
 
 ## v0.6.9
 
@@ -19,13 +19,13 @@ _July 22, 2026_
 
 ### Fixed
 
-- Fix mode prompts (fein/sonar/blitz) not loading after plugin install. Mode keywords would fail silently when loaded from an installed package.
+- Mode keywords (fein/sonar/blitz) now work after installing the plugin from a package.
 
 ## v0.6.7
 
 _July 21, 2026_
 
-- Sync workflow mode commands (fein/sonar/blitz) through canonical source pipeline, ensuring consistent behavior across all platform plugins including Hermes.
+- Mode commands (fein/sonar/blitz) now behave identically across all platforms including Hermes.
 
 ## v0.6.6
 
@@ -33,11 +33,11 @@ _July 21, 2026_
 
 ### Compact agent directives
 
-Agent directives compressed to cut context usage by ~38% on the orchestrator prompt without removing rules or intent. The orchestrator consolidates 15 critical rules into 11, merges commit/review/routing guidance into single sections. Shared specialist rules now live once in global rules instead of being repeated per specialist.
+Agent directives compressed to cut orchestrator context usage by ~38% without removing rules or intent. Sections for commit, review, and routing are now merged instead of spread across the prompt. Rules shared by all specialists now live in one place instead of being repeated.
 
 ### Fixes
 
-- Fix duplicate skill prescriptions in diagnose and architect
+- Fix duplicate skill recommendations in diagnose and architect
 - Fix formatting bug in global rules
 - Fix stale cross-references
 
@@ -81,21 +81,28 @@ When blocked, agents decompose problems into verifiable sub-problems instead of 
 
 _July 14, 2026_
 
-### Mandatory PR description structure
+### Structured PR descriptions
 
-COMMIT PROTOCOL step 7 now requires a numbered list of PR description sections: Summary, ## Changes (Work Results table), ## Testing, and ## Breaking Changes. Aligned CRITICAL RULE wording with Work Results section.
+Pull request descriptions now follow a consistent format with Summary, Changes, Testing, and Breaking Changes sections. Reviews are faster when every PR uses the same structure.
 
 ## v0.6.3
 
 _July 14, 2026_
 
-### Aligned orchestrator push rules with Branch Discipline
+### Auto-create feature branch when landing on main
 
-The `question()` call when landing on main/master is removed. The Branch Discipline rule already states to never push to main - the commit protocol now auto-checkouts a feature branch instead of asking.
+The agent no longer asks for confirmation before creating a feature branch
+when it lands on main. It just creates the branch and continues.
 
-### Improved Work Results output format
+### Work results format streamlined
 
-Restructured from a 3-part narrative format (Overview, File-by-file, Cohesion) to a lean table-first format optimized for scanning. Added change-type prefixes (+/~/-), breaking change markers (!), and test file annotations ((test)). The Work Results table is now reused as the `## Changes` section in PR descriptions.
+The post-task summary has been redesigned:
+- Table-first format replaces the old multi-paragraph structure
+- Every change is prefixed with `+` (added), `~` (modified), or `-` (deleted)
+- Breaking changes are marked with `!`
+- Test file changes are annotated with `(test)`
+- The same table is reused in PR descriptions, so you see the same structured
+  summary without anyone writing it twice
 
 ## v0.6.2
 

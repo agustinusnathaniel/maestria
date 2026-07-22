@@ -26,7 +26,7 @@ _July 17, 2026_
 
 ### New `maestria check` command
 
-New subcommand that checks whether a maestria plugin is installed on a given platform by reading the platform's own configuration. Exits 0 if installed, 1 if not. Machine-readable JSON output by default -- optimized for AI agent consumption.
+Check whether a maestria plugin is installed on any platform. Returns the installation status of each plugin so you can verify your setup.
 
 ## v0.5.0
 
@@ -34,7 +34,7 @@ _July 14, 2026_
 
 ### Enhanced interactive prompts
 
-`update` and `install` commands now use a grouped multiselect prompt with an "All platforms" toggle header and `a` keyboard shortcut to select/deselect all. Fixed `maestria install kimi-code` - the old `kimi plugins` CLI subcommand was removed in Kimi Code v0.23.6; the installer now writes plugin files directly to disk.
+`update` and `install` commands now use a grouped multiselect prompt with an "All platforms" toggle and `a` keyboard shortcut to select/deselect all. `maestria install kimi-code` now works with the latest Kimi Code versions -- the installer writes plugin files directly instead of relying on a removed CLI command.
 
 ## v0.4.1
 
@@ -77,41 +77,29 @@ multiselect with checkboxes instead of single-option pickers.
 
 _July 11, 2026_
 
-- Fix Pi extension detection path for version check
-- Add semver-compliant version comparison using localeCompare with numeric option
+- Pi extension detection no longer fails during version checks
+- Version comparison between releases is now more reliable
 
 ## v0.3.10
 
 _July 11, 2026_
 
-- Adjust Pi package install and uninstall behavior
+- Pi package install and uninstall now work correctly
 
 ## v0.3.9
 
 _July 3, 2026_
 
-- Fix Pi extension detection path for version check
+- Pi extension detection no longer fails during version checks
 
 ## v0.3.8
 
 _July 2, 2026_
 
-- Fix opencode install: use `sh()` instead of `execFile` for shell-initialized PATH
-- Capture stderr in `CommandError` messages
-- Add `maestria uninstall` command with `--all` and interactive modes
-- Fix `maestria --version` to reflect real package version
-
-## v0.3.7
-
-_July 2, 2026_
-
-- OpenCode install: use `-g` flag, drop `--force` (not supported on first install)
-
-## v0.3.6
-
-_July 2, 2026_
-
-- OpenCode install: always use `-g` flag to install globally
+- OpenCode install no longer fails when tools are on a non-standard PATH.
+- New `maestria uninstall` command with `--all` and interactive mode support.
+- `maestria --version` now shows the correct package version.
+- Error messages now include command output for easier debugging.
 
 ## v0.3.2
 

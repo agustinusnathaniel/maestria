@@ -9,31 +9,27 @@ you can expect from them.
 
 ## 2026-07-21
 
-- **Sync workflow mode commands through canonical source.** The fein/sonar/blitz mode command templates are now synced through the canonical pipeline, ensuring consistent behavior across all platform plugins including Hermes.
+- **Mode commands behave consistently across platforms.** The fein/sonar/blitz mode commands now work the same way on OpenCode, Kimi Code, Pi, Cursor, and Hermes.
 
-- **Compact agent directives.** Agent directives compressed to cut context usage by ~38% on the orchestrator prompt without removing rules or intent. The orchestrator consolidates 15 critical rules into 11 and merges commit, review, and routing guidance into single sections. Shared specialist rules (maker/checker split, handoff validation, ambiguity handling, escalation format, tool routing) now live once in the global rules instead of being repeated per specialist. Fixes duplicate skill prescriptions in diagnose and architect, a formatting bug in the global rules, and stale cross-references.
+- **Compact agent directives.** Agent directives compressed to cut orchestrator context usage by ~38% without removing rules or intent. Commit, review, and routing instructions are now grouped together. Rules shared by all specialists now live in one place instead of being repeated seven times. Fixes duplicate skill recommendations in diagnose and architect, a formatting bug, and stale cross-references.
 
 ## 2026-07-14
 
-- **Mandated structured work results.** The `## Changes` summary table after
-  builder tasks is now enforced by a non-negotiable CRITICAL RULE, overriding
-  "write for humans" guidance for this specific output.
-- **Mandated documentation audit before committing.** The docs audit step is
-  now a `!!!` rule covering four categories: internal docs, user-facing docs
-  site, user-facing changelog, and changesets.
-- **Fixed stale cross-references in CRITICAL RULES.** The docs-audit mandate now correctly
-  references commit protocol step 2 and uses unambiguous language.
-- **Streamlined work results format.** The `## Changes` output was simplified
-  from a mandatory 3-part narrative (Overview, File-by-file, Cohesion) to a table-first format
-  where the table is the primary artifact. Context paragraphs became optional.
-- **Change-type prefixes added to work results.** Every "What changed" entry
-  now uses `+` (added), `~` (modified), or `-` (deleted) for at-a-glance
-  scanning. Breaking changes are marked with `!` (e.g. `!~`). Test files are
-  annotated with `(test)`.
-- **Work results embedded in PR descriptions.** The COMMIT PROTOCOL now
-  includes the full Work Results table as the `## Changes` section in PR
-  descriptions, so human reviewers see the same structured summary without
-  having to duplicate it.
+- **Structured work results are now mandatory.** After every task, the agent
+  must produce a `## Changes` summary table instead of a free-form description.
+  This overrides the usual "write for humans" guidance for this specific output.
+- **Documentation audit before every commit.** The agent now checks four areas
+  before committing: internal docs, the user-facing docs site, the user-facing
+  changelog, and changesets.
+- **Work results format simplified.** The old 3-part narrative format (Overview,
+  File-by-file, Cohesion) is replaced by a table-first format. Context paragraphs
+  are now optional.
+- **Change-type prefixes for easier scanning.** Every entry now uses `+` (added),
+  `~` (modified), or `-` (deleted). Breaking changes are marked with `!` (e.g.
+  `!~`). Test files are annotated with `(test)`.
+- **Work results appear in PR descriptions.** The `## Changes` section of every
+  PR now includes the structured work results table, so human reviewers see the
+  same summary without anyone having to write it twice.
 
 ## 2026-07-14
 

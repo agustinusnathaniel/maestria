@@ -11,7 +11,7 @@ _July 21, 2026_
 
 ### Switch to npm-based install
 
-The plugin now installs via `npm pack @maestria/kimi-code` instead of git-based codeload. Fixes `maestria update kimi-code` version comparison (was always re-downloading). Plugin manifest version now syncs with `package.json`.
+The plugin now installs via `npm pack @maestria/kimi-code` instead of git-based codeload. `maestria update kimi-code` no longer re-downloads the same version.
 
 ## v0.4.6
 
@@ -37,29 +37,33 @@ Additional methodology improvements including cognitive hygiene checklist, outco
 
 _July 14, 2026_
 
-### Mandatory PR description structure
+### Structured PR descriptions
 
-COMMIT PROTOCOL step 7 now requires a numbered list of PR description sections: Summary, ## Changes, ## Testing, and ## Breaking Changes.
+Pull request descriptions now follow a consistent format with Summary, Changes, Testing, and Breaking Changes sections. Reviews are faster when every PR uses the same structure.
 
 ## v0.4.3
 
 _July 14, 2026_
 
-### Aligned orchestrator push rules with Branch Discipline
+### Auto-create feature branch when landing on main
 
-The `question()` call when landing on main/master is removed. The commit protocol now auto-checkouts a feature branch.
+The agent no longer asks for confirmation before creating a feature branch
+when it lands on main.
 
-### Improved Work Results output format
+### Work results format streamlined
 
-Restructured to a lean table-first format with change-type prefixes (+/~/-), breaking change markers (!), and test file annotations ((test)).
+The post-task summary now uses a table-first format. Changes are prefixed
+with `+` (added), `~` (modified), or `-` (deleted). Breaking changes are
+marked with `!`, and test file changes are annotated with `(test)`.
 
 ## v0.4.2
 
 _July 14, 2026_
 
-### Mandated work results format
+### Structured work results are now mandatory
 
-The structured `## Changes` summary table after builder tasks is now a hard requirement enforced by a non-negotiable CRITICAL RULE. Documentation audit before committing is also now mandatory.
+After every task, the agent must produce a `## Changes` summary table.
+Documentation audit before every commit is also now required.
 
 ## v0.4.1
 
