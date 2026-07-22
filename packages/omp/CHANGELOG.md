@@ -1,5 +1,11 @@
 # @maestria/omp
 
+## 0.2.4
+
+### Patch Changes
+
+- [#120](https://github.com/agustinusnathaniel/maestria/pull/120) [`5c18e3c`](https://github.com/agustinusnathaniel/maestria/commit/5c18e3c6abb32a439a6ae705422f2ab3ce2c305d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: remove npm: prefix from omp package specifiers to avoid bun self-alias dependency loop
+
 ## 0.2.3
 
 ### Patch Changes
