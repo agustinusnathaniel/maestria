@@ -1,11 +1,10 @@
 import { readFileSync } from 'node:fs';
-import { resolve, dirname, join } from 'node:path';
-import { findPackageJSON } from 'node:module';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ModeKeyword } from '@/modes/types.js';
 
-const pkgRoot = findPackageJSON(new URL('.', import.meta.url));
-if (!pkgRoot) throw new Error('Could not find package.json');
-const COMMANDS_DIR = join(dirname(pkgRoot), 'agents', 'commands');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
 
 function loadModePrompt(name: string): string {
   const content = readFileSync(resolve(COMMANDS_DIR, `${name}.md`), 'utf-8');
