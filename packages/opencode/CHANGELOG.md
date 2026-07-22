@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.10
+
+### Patch Changes
+
+- [#111](https://github.com/agustinusnathaniel/maestria/pull/111) [`4d2d58d`](https://github.com/agustinusnathaniel/maestria/commit/4d2d58d200dbddd752d3fd31fded21de92537458) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix mode prompts failing to load when plugin is installed from npm
+
 ## 0.6.9
 
 ### Patch Changes
