@@ -7,6 +7,12 @@ This changelog tracks meaningful changes to how Maestria-powered agents
 behave - what they do differently, what they're stricter about, and what
 you can expect from them.
 
+## 2026-07-21
+
+- **Sync workflow mode commands through canonical source.** The fein/sonar/blitz mode command templates are now synced through the canonical pipeline, ensuring consistent behavior across all platform plugins including Hermes.
+
+- **Compact agent directives.** Agent directives compressed to cut context usage by ~38% on the orchestrator prompt without removing rules or intent. The orchestrator consolidates 15 critical rules into 11 and merges commit, review, and routing guidance into single sections. Shared specialist rules (maker/checker split, handoff validation, ambiguity handling, escalation format, tool routing) now live once in the global rules instead of being repeated per specialist. Fixes duplicate skill prescriptions in diagnose and architect, a formatting bug in the global rules, and stale cross-references.
+
 ## 2026-07-14
 
 - **Mandated structured work results.** The `## Changes` summary table after

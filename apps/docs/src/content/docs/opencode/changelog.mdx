@@ -5,6 +5,98 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.6.10
+
+_July 22, 2026_
+
+### Fixed
+
+- Fix mode prompts failing to load when plugin is installed from npm. The prompt files path didn't resolve correctly after bundling.
+
+## v0.6.9
+
+_July 22, 2026_
+
+### Fixed
+
+- Fix mode prompts (fein/sonar/blitz) not loading after plugin install. Mode keywords would fail silently when loaded from an installed package.
+
+## v0.6.7
+
+_July 21, 2026_
+
+- Sync workflow mode commands (fein/sonar/blitz) through canonical source pipeline, ensuring consistent behavior across all platform plugins including Hermes.
+
+## v0.6.6
+
+_July 21, 2026_
+
+### Compact agent directives
+
+Agent directives compressed to cut context usage by ~38% on the orchestrator prompt without removing rules or intent. The orchestrator consolidates 15 critical rules into 11, merges commit/review/routing guidance into single sections. Shared specialist rules now live once in global rules instead of being repeated per specialist.
+
+### Fixes
+
+- Fix duplicate skill prescriptions in diagnose and architect
+- Fix formatting bug in global rules
+- Fix stale cross-references
+
+## v0.6.5
+
+_July 14, 2026_
+
+### Structured assumption tagging
+
+Adventurer and architect outputs now require `[verified]` or `[inferred]` tags on every assumption. Downstream agents can distinguish confirmed facts from guesses.
+
+### Deterministic agents preferred
+
+New CRITICAL RULE mandates defined output contracts before delegating. Open-ended exploration must be scoped with time and resource limits.
+
+### Cognitive hygiene for delegation
+
+The orchestrator now has a 5-trap pre-flight checklist (vague, overcomplication, attachment, rumination, overwhelm) to catch weak delegation prompts.
+
+### Outcome specs over activity specs
+
+Delegation now prefers specifying what to achieve over how to achieve it. Activity specs (step-by-step instructions) constrain specialist judgment.
+
+### Experiment framing for uncertainty
+
+High-uncertainty tasks can be framed as experiments with explicit hypotheses and termination conditions. Output is a validated finding, not shipped code.
+
+### Parallel speculation pattern
+
+The orchestrator can now dispatch the same open question to multiple specialists with different lenses, then synthesize results.
+
+### Incidental findings
+
+Agents now surface relevant discoveries outside their brief after completing the primary task.
+
+### First-principles decomposition
+
+When blocked, agents decompose problems into verifiable sub-problems instead of trying harder with the same approach.
+
+## v0.6.4
+
+_July 14, 2026_
+
+### Mandatory PR description structure
+
+COMMIT PROTOCOL step 7 now requires a numbered list of PR description sections: Summary, ## Changes (Work Results table), ## Testing, and ## Breaking Changes. Aligned CRITICAL RULE wording with Work Results section.
+
+## v0.6.3
+
+_July 14, 2026_
+
+### Aligned orchestrator push rules with Branch Discipline
+
+The `question()` call when landing on main/master is removed. The Branch Discipline rule already states to never push to main - the commit protocol now auto-checkouts a feature branch instead of asking.
+
+### Improved Work Results output format
+
+Restructured from a 3-part narrative format (Overview, File-by-file, Cohesion) to a lean table-first format optimized for scanning. Added change-type prefixes (+/~/-), breaking change markers (!), and test file annotations ((test)). The Work Results table is now reused as the `## Changes` section in PR descriptions.
+
 ## v0.6.2
 
 _July 14, 2026_
@@ -68,6 +160,30 @@ After completing work, the orchestrator now presents a file-by-file summary focu
 - `packages/opencode/agents/diagnose.md` - edit permission + bash allow-list
 - `docs/adr/core/ADR-CORE-011-eliminate-questions-autonomy.md` - decision record
 
+## v0.5.7
+
+_July 1, 2026_
+
+### Code intelligence tool preference
+
+Agents now prefer code intelligence tools (MCP, CLI, or other) before falling back to grep and read when exploring the codebase. If you use a tool like CodeGraph, agents will route through it automatically.
+
+## v0.5.3
+
+_June 30, 2026_
+
+### Fixed
+
+- Plugin now throws an error when the agents directory is missing or unreadable, instead of silently loading zero agents.
+
+## v0.5.1
+
+_June 27, 2026_
+
+### Two new design principles
+
+Agents now check from first principles before adopting existing patterns, and check for existing solutions before building from scratch. This pushes toward better design decisions with less wasted effort.
+
 ## v0.5.0
 
 _June 24, 2026_
@@ -93,6 +209,34 @@ instructions.
 The orchestrator and all specialists now include explicit guardrails against two common failure modes:
 
 - **Don't anthropomorphize effort** - A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
+
+## v0.4.9
+
+_June 24, 2026_
+
+### Single source of truth for agent directives
+
+Agent prompts and global rules now live in one canonical location (`packages/core/agent-directives/`) and sync automatically to all platform plugins (OpenCode, Kimi Code, Pi). The `scripts/sync-all` and `scripts/check-sync` tools handle the pipeline. No more drift between platforms.
+
+## v0.4.8
+
+_June 23, 2026_
+
+- Moved `@opencode-ai/plugin` to peerDependencies (community convention)
+- Added graceful error handling in `loadAgents()` with per-file try/catch
+- Added opencode metadata block to `package.json` for plugin discovery
+
+## v0.4.7
+
+_June 23, 2026_
+
+### Pipeline redesigned
+
+The orchestrator pipeline refactored to use role-based abstraction (thinker/worker/verifier) with dynamic sequencing. The pipeline stops as soon as the verifier accepts - no unnecessary refinement loops.
+
+### Removed toolchain-specific CLI references
+
+Replaced hard-coded `vp check` / `vp test` references with generic validation language so the plugin is toolchain-agnostic.
 
 ## v0.4.6
 
@@ -124,6 +268,14 @@ _June 22, 2026_
 _June 20, 2026_
 
 - Infrastructure improvements and bug fixes
+
+## v0.4.1
+
+_June 21, 2026_
+
+### Fixed
+
+- Fix ESM compatibility: added `.js` extensions to relative imports, preventing `ERR_MODULE_NOT_FOUND` in Node ESM environments.
 
 ## v0.4.0
 

@@ -5,6 +5,37 @@ description: Release history for the maestria CLI.
 
 # Changelog
 
+## v0.7.0
+
+_July 22, 2026_
+
+### Oh My Pi (omp) platform support
+
+New `@maestria/omp` package adds maestria support for the Oh My Pi coding agent. CLI integration: `maestria install omp`, `maestria update omp`.
+
+## v0.6.1
+
+_July 21, 2026_
+
+- Switch kimi-code to npm-based install (fixes `maestria update kimi-code` version comparison)
+- Add Cursor plugin support: `maestria install cursor`, `maestria update cursor`
+
+## v0.6.0
+
+_July 17, 2026_
+
+### New `maestria check` command
+
+New subcommand that checks whether a maestria plugin is installed on a given platform by reading the platform's own configuration. Exits 0 if installed, 1 if not. Machine-readable JSON output by default -- optimized for AI agent consumption.
+
+## v0.5.0
+
+_July 14, 2026_
+
+### Enhanced interactive prompts
+
+`update` and `install` commands now use a grouped multiselect prompt with an "All platforms" toggle header and `a` keyboard shortcut to select/deselect all. Fixed `maestria install kimi-code` - the old `kimi plugins` CLI subcommand was removed in Kimi Code v0.23.6; the installer now writes plugin files directly to disk.
+
 ## v0.4.1
 
 _July 14, 2026_
@@ -41,6 +72,54 @@ multiselect with checkboxes instead of single-option pickers.
   the old single-select for both install and update commands
 - **All platforms shortcut** — Interactive `maestria update` includes a
   convenient "All platforms" option to update everything at once
+
+## v0.3.11
+
+_July 11, 2026_
+
+- Fix Pi extension detection path for version check
+- Add semver-compliant version comparison using localeCompare with numeric option
+
+## v0.3.10
+
+_July 11, 2026_
+
+- Adjust Pi package install and uninstall behavior
+
+## v0.3.9
+
+_July 3, 2026_
+
+- Fix Pi extension detection path for version check
+
+## v0.3.8
+
+_July 2, 2026_
+
+- Fix opencode install: use `sh()` instead of `execFile` for shell-initialized PATH
+- Capture stderr in `CommandError` messages
+- Add `maestria uninstall` command with `--all` and interactive modes
+- Fix `maestria --version` to reflect real package version
+
+## v0.3.7
+
+_July 2, 2026_
+
+- OpenCode install: use `-g` flag, drop `--force` (not supported on first install)
+
+## v0.3.6
+
+_July 2, 2026_
+
+- OpenCode install: always use `-g` flag to install globally
+
+## v0.3.2
+
+_July 1, 2026_
+
+### Bundle CLI runtime dependencies
+
+Bundled `effect`, `@clack/prompts`, `citty`, `picocolors` into output instead of externalizing them. End users no longer download 8.2 MB of transitive dependencies at install time.
 
 ## v0.3.0
 
