@@ -116,6 +116,7 @@ export default defineConfig({
               items: [{ autogenerate: { directory: 'opencode/getting-started' } }],
             },
             { label: 'Configuration', link: '/opencode/configuration/' },
+            { label: 'Reference', link: '/opencode/reference/' },
             { label: 'Changelog', link: '/opencode/changelog/' },
             { label: 'Contributing', link: '/opencode/contributing/' },
           ],
