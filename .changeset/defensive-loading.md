@@ -1,6 +1,7 @@
-@maestria/opencode: patch
-@maestria/pi: patch
-@maestria/omp: patch
+---
+'@maestria/opencode': patch
+'@maestria/pi': patch
+'@maestria/omp': patch
 ---
 refactor: defer module-level file I/O to prevent fatal-yet-silent plugin loading failures
 
