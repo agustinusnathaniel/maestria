@@ -35,8 +35,8 @@ error: Package "@maestria/omp@0.2.3" has a dependency loop
 
 Use bare package names without the `npm:` prefix:
 
-- `omp install @maestria/omp` (correct)
-- `omp install npm:@maestria/omp` (incorrect - causes self-alias)
+- `omp plugin install @maestria/omp` (correct)
+- `omp plugin install npm:@maestria/omp` (incorrect - causes self-alias)
 
 The `npm:` prefix is never used in OMP's official documentation and is a parser compatibility shim, not a documented CLI feature.
 
@@ -52,11 +52,11 @@ This replaces the stale alias with a normal semver range like `"^0.2.3"`.
 
 All OMP package operations delegate to the `omp` CLI:
 
-| Operation | Command                               | Notes                                       |
-| --------- | ------------------------------------- | ------------------------------------------- |
-| Install   | `omp install @maestria/omp`           | No subagent prerequisite needed (unlike Pi) |
-| Update    | `omp install @maestria/omp@<version>` | Version tag appended to package name        |
-| Uninstall | `omp uninstall @maestria/omp`         | Delegates entirely to omp                   |
+| Operation | Command | Notes |
+| --- | --- | --- |
+| Install | `omp plugin install @maestria/omp` | No subagent prerequisite needed (unlike Pi) |
+| Update | `omp plugin install @maestria/omp@<version>` | Version tag appended to package name |
+| Uninstall | `omp plugin uninstall @maestria/omp` | Delegates entirely to omp |
 
 The `omp` CLI handles all npm resolution internally via `bun install`.
 
