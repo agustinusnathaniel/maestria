@@ -379,19 +379,17 @@ This should appear at the end of your response when the user asks for a handoff,
         {
           from: `## Delegation
 
-When delegating work via \`Agent()\`, use only the 7 specialists below.
-**Never delegate to \`explore\` or \`general\`** - they are built-in agents,
-not part of the pipeline.
+Never delegate to built-in \`explore\` or \`general\` agents. Use only the 7 pipeline specialists:
 
-| Agent         | Role                                             | When to Delegate                                                                             |
-| ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| Agent | Role | When to Delegate |
+| --- | --- | --- |
 | \`adventurer\` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| \`architect\`  | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation                                           |
-| \`builder\`    | Focused implementation, single-task execution    | Feature work, bug fixes, test writing, refactors                                             |
-| \`diagnose\`   | Systematic bug tracing, root cause analysis      | Debugging regressions, production incidents, cryptic errors                                  |
-| \`planner\`    | Implementation plans with phased milestones      | Complex features requiring structured execution                                              |
-| \`reviewer\`   | Code review with quality gates                   | Pre-merge review, security audit, post-implementation QA                                     |
-| \`writer\`     | Documentation following structured patterns      | READMEs, API docs, changelogs, ADR transcription                                             |
+| \`architect\` | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation |
+| \`builder\` | Focused implementation, single-task execution | Feature work, bug fixes, test writing, refactors |
+| \`diagnose\` | Systematic bug tracing, root cause analysis | Debugging regressions, production incidents, cryptic errors |
+| \`planner\` | Implementation plans with phased milestones | Complex features requiring structured execution |
+| \`reviewer\` | Code review with quality gates | Pre-merge review, security audit, post-implementation QA |
+| \`writer\` | Documentation following structured patterns | READMEs, API docs, changelogs, ADR transcription |
 
 `,
           to: `## Delegation

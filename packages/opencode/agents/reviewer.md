@@ -132,3 +132,13 @@ Then produce:
 - `userinterface-wiki` (`raphaelsalaja/userinterface-wiki`) - UI patterns review
 - `web-design-guidelines` (`antfu/skills`) - UI guidelines compliance
 - `webapp-testing` (`anthropics/skills`) - test suite review
+
+### Defer to specialist
+
+- `improve` -> `@architect`, `emil-design-eng` -> `@architect`
+
+## References
+
+- [Google's Code Review Guidelines](https://google.github.io/eng-practices/review/)
+- [The Standard of Code Review](https://google.github.io/eng-practices/review/reviewer/)
+- [What to Look For in a Code Review](https://google.github.io/eng-practices/review/reviewer/looking-for.html)

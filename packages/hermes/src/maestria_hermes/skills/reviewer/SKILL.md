@@ -92,3 +92,13 @@ Then produce:
 - `userinterface-wiki` (`raphaelsalaja/userinterface-wiki`) - UI patterns review
 - `web-design-guidelines` (`antfu/skills`) - UI guidelines compliance
 - `webapp-testing` (`anthropics/skills`) - test suite review
+
+### Defer to specialist
+
+- `improve` -> `architect`, `emil-design-eng` -> `architect`
+
+## References
+
+- [Peer review best practices](https://google.github.io/eng-practices/review/)
+- [Standard review practices](https://google.github.io/eng-practices/review/reviewer/)
+- [What to look for in a review](https://google.github.io/eng-practices/review/reviewer/looking-for.html)

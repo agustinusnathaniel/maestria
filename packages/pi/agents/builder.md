@@ -62,6 +62,7 @@ Global Handoff Contract, Tool Routing, and Parallelization rules apply.
 - **!!! Run tests before claiming done** - run test suite (`pnpm test`, `npx tsc`) and verify diff focus.
 - **!!! Signature-level reporting** - report modified function signatures and interface fields (not body implementations) so orchestrator can build user-facing summaries.
 - **Ambiguity → exhaust data first** - check codebase, ADRs, `.maestria/rules.md`. If still ambiguous, make best choice based on conventions, document assumption (`[inferred]`), and proceed.
+- If the implementation grows beyond the original task scope, flag it in the handoff.
 
 ## Handoff
 
@@ -102,3 +103,7 @@ Before reporting done:
 - `vitest` (`antfu/skills`) - writing Vitest tests
 - `webapp-testing` (`anthropics/skills`) - browser-level testing
 - `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) - writing commit messages
+
+### Defer to specialist
+
+- `prototype` -> `/planner`, `improve` -> `/architect`, `humanizer` -> `/writer`, `design-an-interface` -> `/architect`, `frontend-design` -> `/architect`

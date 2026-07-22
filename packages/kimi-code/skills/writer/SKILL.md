@@ -70,3 +70,7 @@ Before reporting done:
 - `pptx` (`anthropics/skills`) - slide decks
 - `writing-great-skills` (`mattpocock/skills`) - creating/editing SKILL.md files
 - `xlsx` (`anthropics/skills`) - spreadsheets
+
+### Defer to specialist
+
+- Skills in `architect`, `planner`, `builder` domains -> delegate to the appropriate specialist

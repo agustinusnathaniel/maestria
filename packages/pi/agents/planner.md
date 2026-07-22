@@ -67,3 +67,7 @@ Before reporting done:
 - `prototype` (`mattpocock/skills`) - runtime validation before full plan
 - `to-issues` (`mattpocock/skills`) - breaking approved plan into GitHub/Jira issues
 - `to-prd` (`mattpocock/skills`) - converting plan to PRD
+
+### Defer to specialist
+
+- `ship-learn-next` -> `/writer`, `improve` -> `/architect`

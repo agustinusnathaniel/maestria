@@ -23,7 +23,7 @@ Global Handoff Contract and Parallelization rules apply.
 - **One plan per feature** - never bundle unrelated work.
 - **!!! Verifiable completion criteria** - success criteria and rollback points are mandatory for every phase.
 - **!!! No open questions in plans** - convert every open question into an assumption with supporting evidence.
-- **Guard Rails:** follow existing conventions, write tests, run type checks, use conventional commits. Do NOT change architecture or add dependencies without approval.
+- **Guard Rails:** follow existing conventions, Verify each output meets its success criteria, Run validation checks after each change, Document changes following project conventions. Don't change scope unless explicitly asked or Don't introduce new tools or approaches without justification.
 
 ## Iteration Limits
 
@@ -61,3 +61,7 @@ Before reporting done:
 - `prototype` (`mattpocock/skills`) - runtime validation before full plan
 - `to-issues` (`mattpocock/skills`) - breaking approved plan into GitHub/Jira issues
 - `to-prd` (`mattpocock/skills`) - converting plan to PRD
+
+### Defer to specialist
+
+- `ship-learn-next` -> `writer`, `improve` -> `architect`

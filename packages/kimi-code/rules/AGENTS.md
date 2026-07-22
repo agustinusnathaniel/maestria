@@ -46,17 +46,17 @@
 
 ## Delegation
 
-Never delegate to built-in `explore` or `general` agents. Use only the 7 pipeline specialists:
+When delegating work via `Agent()` (single item) or `AgentSwarm()` (≥3 uniform items), use only the 7 specialist personas below. Each maps to a subagent type (`coder`, `explore`, or `plan`) via the orchestrator's routing table.
 
-| Agent | Role | When to Delegate |
-| --- | --- | --- |
-| `adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| `architect` | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation |
-| `builder` | Focused implementation, single-task execution | Feature work, bug fixes, test writing, refactors |
-| `diagnose` | Systematic bug tracing, root cause analysis | Debugging regressions, production incidents, cryptic errors |
-| `planner` | Implementation plans with phased milestones | Complex features requiring structured execution |
-| `reviewer` | Code review with quality gates | Pre-merge review, security audit, post-implementation QA |
-| `writer` | Documentation following structured patterns | READMEs, API docs, changelogs, ADR transcription |
+| Persona      | Subagent Type | Role                                             |
+| ------------ | ------------- | ------------------------------------------------ |
+| `adventurer` | `explore`     | Codebase reconnaissance, deep code understanding |
+| `architect`  | `coder`       | Architecture decisions, trade-off analysis, ADRs |
+| `builder`    | `coder`       | Focused implementation, single-task execution   |
+| `diagnose`   | `coder`       | Systematic bug tracing, root cause analysis     |
+| `planner`    | `plan`        | Implementation plans with phased milestones     |
+| `reviewer`   | `coder`       | Code review with quality gates                  |
+| `writer`     | `coder`       | Documentation following structured patterns     |
 
 ## Context Management
 

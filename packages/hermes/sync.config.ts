@@ -168,17 +168,7 @@ export default {
         name: 'maestria-adventurer',
         description: 'Research and exploration -- gathers information from any source',
       },
-      replace: [
-        // The canonical adventurer references code-specific tools; Hermes has a broader toolset
-        {
-          from: 'Trace code paths, find key files, map relationships',
-          to: 'Trace paths, find key sources, map relationships across any domain',
-        },
-        {
-          from: 'Scan first, plan second, implement third',
-          to: 'Research first, analyze second, act third',
-        },
-      ],
+      replace: [],
     },
 
     // -- Architect: design and decision --
@@ -206,7 +196,7 @@ export default {
       },
       replace: [
         {
-          from: 'single configuration change',
+          from: 'or configuration change',
           to: 'single configuration change or content update',
         },
       ],
@@ -252,27 +242,22 @@ export default {
       },
       replace: [
         {
-          from: 'Write tests for new functionality',
+          from: 'write tests',
           to: 'Verify each output meets its success criteria',
         },
-        { from: 'Run type checking after changes', to: 'Run validation checks after each change' },
+        { from: 'run type checks', to: 'Run validation checks after each change' },
         {
-          from: 'Commit with conventional commits',
+          from: 'use conventional commits',
           to: 'Document changes following project conventions',
         },
         {
-          from: "Don't change architecture unless explicitly asked",
+          from: 'Do NOT change architecture',
           to: "Don't change scope unless explicitly asked",
         },
         {
-          from: "Don't add new dependencies without approval",
+          from: 'add dependencies without approval',
           to: "Don't introduce new tools or approaches without justification",
         },
-        {
-          from: "Don't refactor existing code while adding features",
-          to: "Don't restructure existing work while adding new work",
-        },
-        { from: "Don't skip verification steps", to: "Don't skip validation or review steps" },
       ],
     },
 
@@ -288,8 +273,6 @@ export default {
         { from: "Google's Code Review Guidelines", to: 'Peer review best practices' },
         { from: 'The Standard of Code Review', to: 'Standard review practices' },
         { from: 'What to Look For in a Code Review', to: 'What to look for in a review' },
-        { from: 'Implement recommended fixes', to: 'Implement recommended changes' },
-        { from: 'Investigate deeply', to: 'Investigate root causes' },
       ],
     },
 
@@ -300,14 +283,7 @@ export default {
         name: 'maestria-writer',
         description: 'Content creation -- produces clear, structured documentation and prose',
       },
-      replace: [
-        {
-          from: 'README, API Documentation, ADRs, Changelogs',
-          to: 'README, API documentation, ADRs, changelogs, reports, articles',
-        },
-        { from: 'Verify examples', to: 'Verify examples and references' },
-        { from: 'Capture ADRs', to: 'Document decisions as ADRs' },
-      ],
+      replace: [],
     },
 
     // -- Rules: cross-cutting methodology rules --

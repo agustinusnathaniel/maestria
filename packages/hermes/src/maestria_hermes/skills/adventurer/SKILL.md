@@ -98,3 +98,7 @@ Before reporting done:
 - `resolving-merge-conflicts` (`mattpocock/skills`) - investigating merge conflict history
 - `webfetch`/`browser` (`vercel-labs/webfetch`) - external library internals affect findings
 - `session-handoff` (`softaworks/agent-toolkit`) - creating formal handoff artifacts
+
+### Defer to specialist
+
+- `improve-codebase-architecture` -> `architect`
