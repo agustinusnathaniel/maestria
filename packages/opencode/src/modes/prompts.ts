@@ -1,10 +1,25 @@
-import { readFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ModeKeyword } from '@/modes/types.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
+/** Walk up from the module's directory to find the package root (where package.json lives). */
+function findPackageRoot(fromUrl: string): string | null {
+  let dir = dirname(fileURLToPath(fromUrl));
+  while (true) {
+    if (existsSync(join(dir, 'package.json'))) {
+      return dir;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break; // reached filesystem root
+    dir = parent;
+  }
+  return null;
+}
+
+const pkgRoot = findPackageRoot(import.meta.url);
+if (!pkgRoot) throw new Error('Could not find @maestria/opencode package root');
+const COMMANDS_DIR = join(pkgRoot, 'agents', 'commands');
 
 function loadModePrompt(name: string): string {
   const content = readFileSync(resolve(COMMANDS_DIR, `${name}.md`), 'utf-8');
