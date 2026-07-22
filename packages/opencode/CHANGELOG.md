@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.9
+
+### Patch Changes
+
+- [#110](https://github.com/agustinusnathaniel/maestria/pull/110) [`256f427`](https://github.com/agustinusnathaniel/maestria/commit/256f4270553fa74725c09f7c4f80afb54c11d249) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix mode prompts not loading after plugin install
+
+  Mode keywords (fein/sonar/blitz) would fail silently when the plugin was loaded from an installed package because the prompt files path didn't resolve correctly after bundling. Now uses Node's built-in package detection to always find the right directory.
+
 ## 0.6.8
 
 ### Patch Changes
