@@ -1,14 +1,10 @@
 import type { Plugin } from '@opencode-ai/plugin';
 import { readFileSync, readdirSync } from 'fs';
-import { join, dirname, basename } from 'path';
+import { join, basename } from 'path';
 import { parse as parseYaml } from 'yaml';
-import { fileURLToPath } from 'url';
 import { type MaestriaPluginOptions, maestriaOptionsSchema } from '@/modes/types.js';
 import { detectMode, stripKeyword, getModeMarker, getModePrompt } from '@/modes/index.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const agentsDir = join(__dirname, '..', 'agents');
-const rulesPath = join(__dirname, '..', 'rules', 'AGENTS.md');
+import { AGENTS_DIR, RULES_PATH } from '@/root.js';
 
 interface AgentFrontmatter {
   description: string;
@@ -64,12 +60,12 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
  */
 function loadAgents(): Record<string, Record<string, unknown>> {
   try {
-    const files = readdirSync(agentsDir).filter((f) => f.endsWith('.md'));
+    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith('.md'));
     const agents: Record<string, Record<string, unknown>> = {};
 
     for (const file of files) {
       try {
-        const { name, config } = parseAgentFile(join(agentsDir, file));
+        const { name, config } = parseAgentFile(join(AGENTS_DIR, file));
         agents[name] = config;
       } catch (err) {
         console.warn(`[maestria] Failed to parse agent file "${file}":`, err);
@@ -80,7 +76,7 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   } catch (err) {
     console.error(`[maestria] Failed to read agents directory:`, err);
     throw new Error(
-      `[maestria] Failed to load agents from "${agentsDir}": ` +
+      `[maestria] Failed to load agents from "${AGENTS_DIR}": ` +
         (err instanceof Error ? err.message : String(err)),
     );
   }
@@ -100,7 +96,7 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
         ...input.agent,
         ...agents,
       };
-      input.instructions = [...(input.instructions ?? []), rulesPath];
+      input.instructions = [...(input.instructions ?? []), RULES_PATH];
     },
     'experimental.session.compacting': async (_input, output) => {
       output.context.push(
