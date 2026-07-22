@@ -22,7 +22,7 @@ export const updateCommand = defineCommand({
       type: 'positional',
       description:
         'Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). ' +
-        'One of: opencode, pi, kimi-code, hermes, cursor. Pass directly to skip interactive selection.',
+        'One of: opencode, pi, kimi-code, hermes, cursor, omp. Pass directly to skip interactive selection.',
       required: false,
     },
     version: {
