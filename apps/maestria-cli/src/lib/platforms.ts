@@ -408,12 +408,12 @@ const omp: PlatformHandler = {
 
   install: Effect.gen(function* () {
     // omp has built-in task dispatch — no subagent prerequisite needed
-    yield* run('omp', ['install', 'npm:@maestria/omp'], 120_000);
+    yield* run('omp', ['install', '@maestria/omp'], 120_000);
   }).pipe(Effect.as(void 0)),
 
   update: (version?: string) =>
     Effect.gen(function* () {
-      const tagged = version ? `npm:@maestria/omp@${version}` : 'npm:@maestria/omp@latest';
+      const tagged = version ? `@maestria/omp@${version}` : '@maestria/omp@latest';
       yield* run('omp', ['install', tagged], 120_000);
     }),
 

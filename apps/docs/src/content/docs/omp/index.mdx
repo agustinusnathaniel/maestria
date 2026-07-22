@@ -21,7 +21,7 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
 ## How It Works
 
-1. **Install the extension** - `omp install npm:@maestria/omp`
+1. **Install the extension** - `omp install @maestria/omp`
 2. **Extension activates** - omp loads the extension, deploys 7 specialist agent files to `~/.omp/agent/agents/`, auto-discovers 4 methodology skills (orchestrator dispatcher, global agent rules, handoff contract, iteration limits) via the package manifest, and registers mode commands (`/fein`, `/sonar`, `/blitz`).
 3. **Mode commands drive the pipeline** - `/fein` (full pipeline), `/sonar` (research), `/blitz` (fast impl) - each activates the right subagents in sequence
 4. **Orchestrator dispatches via omp`s built-in `task()`** - The orchestrator decomposes work, delegates to specialists using omp's native `task()` tool, and enforces phase gates
@@ -30,7 +30,7 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 ## Quick Install
 
 ```bash
-omp install npm:@maestria/omp
+omp install @maestria/omp
 ```
 
 The extension is fully self-configuring - omp discovers its methodology skills, commands, and specialist agents from the package manifest. No manual config editing needed. Unlike Pi, omp has a built-in `task()` tool - no separate subagent package required.
