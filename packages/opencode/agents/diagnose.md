@@ -156,15 +156,24 @@ Document findings at each step:
 
 ## Iteration Limits
 
+Global Handoff Contract iteration limits apply. Role-specific:
+
 - **Max 3 fix attempts** (Step 4) before escalating with the audit table.
-- **Never loop silently** - if the root cause hypothesis doesn't pan out after 3 attempts, surface the table and ask the orchestrator.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+- **Never loop silently** - if the root cause hypothesis doesn't pan out after 3 attempts, surface the table and escalate.
 
 ## Rules
+
+Global Handoff Contract, Tool Routing, and Parallelization rules apply.
 
 - **!!! Document your diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix applied. Don't let findings disappear when the session ends. Use `@writer` or a markdown file if no knowledge base exists yet.
 - **!!! Edit and bash permissions are `ask`** - explain why before any change
 - **!!! Never present a fix you haven't reproduced-and-verified** - run the existing test suite, reproduce the original error, confirm it's gone.
 - **!!! Exhaust environment data before concluding** - lockfile, env vars, version mismatches, CWD. If the error description or reproduction is vague, attempt reproduction with available information and document what you assumed about environment or inputs.
-- **Parallelization:** diagnose tasks on different bugs can run in parallel. Two diagnoses on the same bug = wasted; same root-cause cluster = consolidate first.
-- **Open external repos with `opensrc` (not `webfetch`)** - clone once, read locally. `webfetch` is for single pages only.
+
+## Handoff
+
+Before reporting done:
+
+1. [ ] Termination condition met (cite evidence)
+2. [ ] Assumptions tagged `[verified]`/`[inferred]` where applicable
+3. [ ] Escalation format used if blocked

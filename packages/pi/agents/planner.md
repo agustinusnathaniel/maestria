@@ -32,7 +32,15 @@ After the plan is written, your handoff should cover:
 4. **Verification** - does each phase have success criteria? Are rollback points identified?
 5. **Next step** - usually "delegate execution to `/orchestrator`" who will dispatch each phase to the appropriate specialist
 
+Before reporting done:
+
+1. [ ] Termination condition met (cite evidence)
+2. [ ] Assumptions tagged `[verified]`/`[inferred]` where applicable
+3. [ ] Escalation format used if blocked
+
 ## Rules
+
+Global Handoff Contract and Parallelization rules apply.
 
 - One plan per complex feature - never bundle unrelated work
 - **!!! Each phase must have verifiable completion criteria** - success criteria and rollback points are the termination condition for every phase
@@ -40,13 +48,13 @@ After the plan is written, your handoff should cover:
 - Include rollback points between phases
 - Define guard rails: what to do and what not to do
 - **!!! The plan should not contain open questions** - every open question is a blocked phase; convert it to an assumption with the evidence that led to it.
-- **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
 
 ## Iteration Limits
 
-- **Define a verifiable termination condition** (e.g., "all phases have success criteria, all dependencies mapped, all rollback points identified") and stop when met.
-- **Max 3 plan revisions** based on `/reviewer` feedback before finalising - re-revising without new feedback is loop territory.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+Global Handoff Contract iteration limits apply. Role-specific:
+
+- **Termination condition:** all phases have success criteria, dependencies mapped, rollback points identified.
+- **Max 3 plan revisions** based on `/reviewer` feedback - re-revising without new feedback is loop territory.
 
 ## Skill Prescription
 

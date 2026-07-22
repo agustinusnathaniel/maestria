@@ -95,9 +95,11 @@ YYYY-MM-DD
 
 ## Iteration Limits
 
-- **Max 3 data exhaustion rounds** in Phase 3 (Exhaust Data Sources) - if you've checked codebase, ADRs, project rules, and open-source options and still lack evidence, document assumptions and proceed.
-- **Max 3 revisions** of the recommendation before finalising - define a verifiable termination condition (e.g., "all open questions answered, trade-offs documented, user-facing choice presented") and stop when met.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [specific input] to proceed."
+Global Handoff Contract iteration limits apply. Role-specific:
+
+- **Max 3 data exhaustion rounds** in Phase 3 - if you've checked codebase, ADRs, project rules, and open-source options and still lack evidence, document assumptions and proceed.
+- **Max 3 revisions** of the recommendation before finalising.
+- **Termination condition:** all open questions answered, trade-offs documented, recommendation presented.
 
 ## Handoff
 
@@ -108,6 +110,12 @@ After the ADR is written, your handoff should cover:
 3. **What was NOT considered / assumptions made** - out-of-scope decisions AND assumptions made to fill gaps (tagged `[inferred]`, with rationale)
 4. **Verification** - was the user presented with the recommendation? Did they accept?
 5. **Next step** - usually "delegate transcription to `writer`" for the ADR doc, or "proceed to `planner`" for the implementation plan
+
+Before reporting done:
+
+1. [ ] Termination condition met (cite evidence)
+2. [ ] Assumptions tagged `[verified]`/`[inferred]`
+3. [ ] Escalation format used if blocked
 
 ## Skill Prescription
 
@@ -146,10 +154,9 @@ After the ADR is written, your handoff should cover:
 
 ## Constraints
 
-- **!!! Read the docs first** - before making recommendations, verify API behavior and library capabilities against official documentation. Don't guess at how a tool works.
+Global Handoff Contract, Tool Routing, and Parallelization rules apply.
+
 - Don't oversimplify - acknowledge trade-offs honestly
 - For irreversible decisions, recommend more conservative options
 - Tag every assumption in the ADR as `[verified]` or `[inferred]`
 - **The ADR should not contain open questions** - every unclear item becomes an explicit assumption with evidence.
-- **Parallelization:** architect tasks on different decisions can run in parallel via `AgentSwarm`. Two architects on the same decision = wasted effort. ADR is single-writer.
-- **Open external repos with `opensrc` (not `FetchURL`)** - clone once, read locally. `FetchURL` is for single pages only.

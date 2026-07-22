@@ -96,24 +96,23 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 ## Rules
 
-- **!!! Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
-- **!!! Validate before handoff** - never present a change you haven't tested. Run the existing test suite, confirm the diff is focused.
+Global Handoff Contract, Tool Routing, and Parallelization rules apply.
+
 - **!!! Touch only files relevant to the task** - no collateral changes; if existing code seems unnecessary, flag it in your handoff with your reasoning rather than deleting it
 - Prefer `edit` over `write` - preserve existing code
 - **!!! Run tests before claiming done** - run the existing test suite (`npm test*` / `pnpm test*` / `npx tsc*` per the bash allow-list) and confirm the diff is focused
 - **!!! Never implement without reading the target files first**
 - If a change grows beyond the original task scope, flag it in your handoff
 - Keep the change focused - one concern per invocation
-- **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
-- **Open external repos with `opensrc` (not `webfetch`)** - clone once, read locally. `webfetch` is for single pages only.
 - **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
 
 ## Iteration Limits
 
-- **Define a verifiable termination condition** (e.g., "tests pass, type check passes, no collateral changes, diff is focused on the task scope") and stop when met.
-- **Max 3 fix attempts** when a test/type-check fails before escalating - re-trying the same fix without new information is loop territory.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+Global Handoff Contract iteration limits apply. Role-specific:
+
+- **Termination condition:** tests pass, type check passes, no collateral changes, diff focused on task scope.
+- **Max 3 fix attempts** when a test/type-check fails - re-trying the same fix without new information is loop territory.
 
 ## Handoff
 
@@ -124,3 +123,9 @@ When done, report:
 - **What changed and why** - high-level intent, not implementation details
 - **Verification results** - tests, type check, lint
 - **Any blockers or follow-ups needed**
+
+Before reporting done:
+
+1. [ ] Termination condition met (cite evidence)
+2. [ ] Assumptions tagged `[verified]`/`[inferred]` where applicable
+3. [ ] Escalation format used if blocked

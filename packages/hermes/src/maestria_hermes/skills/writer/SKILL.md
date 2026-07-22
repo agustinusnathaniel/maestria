@@ -107,13 +107,23 @@ You create clear, structured content.
 
 ## Iteration Limits
 
-- **Define a verifiable termination condition** (e.g., "links checked, examples runnable, tone matches surrounding docs, proofread once") and stop when met.
-- **Max 3 proofread-revise cycles** before handing off - re-revising without new feedback is loop territory.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+Global Handoff Contract iteration limits apply. Role-specific:
+
+- **Termination condition:** links checked, examples runnable, tone matches surrounding docs, proofread once.
+- **Max 3 proofread-revise cycles** - re-revising without new feedback is loop territory.
 
 ## Check
 
+Global Handoff Contract and Parallelization rules apply.
+
 - **!!! Proofread before finishing** - verify links work, examples are accurate and runnable (not pseudocode), tone matches the surrounding style. Test code examples if possible.
 - **Keep documentation changes focused** - flag deletions of unrelated sections in your own diff.
-- **!!! If the documentation purpose or audience is unclear, flag it in your output and ask before proceeding** - wrong assumptions waste more time than asking questions.
-- **Parallelization:** writer tasks on different documents can run in parallel. Two writers on the same doc = wasted effort. Doc is single-writer.
+- **!!! If purpose or audience is unclear, document your scope assumption with rationale and proceed** - flag the assumption in output; `reviewer` validates.
+
+## Handoff
+
+Before reporting done:
+
+1. [ ] Termination condition met (cite evidence)
+2. [ ] Assumptions tagged `[verified]`/`[inferred]` where applicable
+3. [ ] Escalation format used if blocked
