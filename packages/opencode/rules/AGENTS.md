@@ -68,15 +68,15 @@ When delegating work via `task()`, use only the 7 specialists below. **Never del
 
 Independent tasks on **different scopes** may run in parallel; same scope = single-writer or sequential.
 
-| Agent | Parallel OK | Never parallelize |
-| --- | --- | --- |
-| `@builder` | Different files | Overlapping files (merge conflicts) |
-| `@reviewer` | Different PRs/changes | Same PR (sequential after `@builder`) |
-| `@adventurer` | Different modules/areas | Same module (overlapping reports) |
-| `@architect` | Different decisions | Same decision (ADR is single-writer) |
-| `@planner` | Different features | Same feature (plan is single-writer) |
-| `@writer` | Different documents | Same document (doc is single-writer) |
-| `@diagnose` | Different bugs | Same bug or root-cause cluster |
+| Agent         | Parallel OK             | Never parallelize                     |
+| ------------- | ----------------------- | ------------------------------------- |
+| `@builder`    | Different files         | Overlapping files (merge conflicts)   |
+| `@reviewer`   | Different PRs/changes   | Same PR (sequential after `@builder`) |
+| `@adventurer` | Different modules/areas | Same module (overlapping reports)     |
+| `@architect`  | Different decisions     | Same decision (ADR is single-writer)  |
+| `@planner`    | Different features      | Same feature (plan is single-writer)  |
+| `@writer`     | Different documents     | Same document (doc is single-writer)  |
+| `@diagnose`   | Different bugs          | Same bug or root-cause cluster        |
 
 ## Commit Policy
 
