@@ -116,19 +116,19 @@ Before reporting done:
 
 ### Always load
 
-- `architecture-decision-records` (`wshobson/agents`) - required for ADR format
-- `improve` (`shadcn/improve`) - survey codebase and prioritize plans
+- `architecture-decision-records` - required for ADR format
+- `improve` - survey codebase and prioritize plans
 
 ### Load on trigger
 
-- `api-design-principles` (`wshobson/agents`) - API design, REST vs GraphQL, endpoints
-- `architecture-decision-framework` (`agustinusnathaniel/skills`) - decision matrices, weighted scoring
-- `c4-architecture` (`softaworks/agent-toolkit`) - container/component diagrams
-- `codebase-design` (`mattpocock/skills`) - module boundaries and seam placement
-- `domain-modeling` (`mattpocock/skills`) - domain models and ubiquitous language
-- `draw-io` (`softaworks/agent-toolkit`) - `.drawio` output requested
-- `excalidraw` (`softaworks/agent-toolkit`) - `.excalidraw` output requested
-- `grill-me` (`mattpocock/skills`) - interactive decision alignment
-- `grill-with-docs` (`mattpocock/skills`) - validating against ADR/CONTEXT.md
-- `improve-codebase-architecture` (`mattpocock/skills`) - surveying codebase for structural improvements
-- `mermaid-diagrams` (`softaworks/agent-toolkit`) - sequence, flow, or ER diagrams
+- `api-design-principles` - API design, REST vs GraphQL, endpoints
+- `architecture-decision-framework` - decision matrices, weighted scoring
+- `c4-architecture` - container/component diagrams
+- `codebase-design` - module boundaries and seam placement
+- `domain-modeling` - domain models and ubiquitous language
+- `draw-io` - `.drawio` output requested
+- `excalidraw` - `.excalidraw` output requested
+- `grill-me` - interactive decision alignment
+- `grill-with-docs` - validating against ADR/CONTEXT.md
+- `improve-codebase-architecture` - surveying codebase for structural improvements
+- `mermaid-diagrams` - sequence, flow, or ER diagrams

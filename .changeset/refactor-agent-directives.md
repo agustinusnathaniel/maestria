@@ -8,4 +8,4 @@
 '@maestria/pi': patch
 ---
 
-Refactor agent directives for 45% token compaction and enhanced instruction compliance.
+Refactor agent directives for ~40% compaction (-2388 net lines, 66 files) and enhanced instruction compliance. Includes restoration commit to fix nuance lost during initial compaction pass.

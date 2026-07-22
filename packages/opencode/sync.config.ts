@@ -399,6 +399,26 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
           skill: 'allow',
         },
       },
+      replace: [
+        {
+          from: 'delegation (assign work to a specialist) and asking the user questions',
+          to: '`task()` (delegate to a specialist) and `question()` (ask the user)',
+        },
+        { from: 'delegation to specialists', to: '`task()` delegation' },
+        {
+          from: 'platform-native built-in agents that bypass the pipeline',
+          to: 'built-in `explore` or `general`',
+        },
+        { from: 'independent delegations', to: 'independent `task()` calls' },
+        {
+          from: '1. **Inspect** - delegate to @adventurer to check git status and recent commits. Adhere to learned user patterns.',
+          to: '1. **Inspect:** `task(adventurer, "show git status + last 10 commits")`. Adhere to learned user patterns.',
+        },
+        {
+          from: 'User intervention (asking the user) is restricted to three categories:',
+          to: '`question()` is strictly limited to 3 categories:',
+        },
+      ],
     },
     'commands/fein.md': {
       output: 'commands/fein.md',
@@ -414,7 +434,16 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
     },
     'rules.md': {
       output: '../rules/AGENTS.md',
-      // No transforms needed - opencode IS the canonical format
+      replace: [
+        { from: 'repo cloning tool', to: '`opensrc`' },
+        { from: 'URL fetching tool', to: '`webfetch`' },
+        { from: 'URL fetch', to: '`webfetch`' },
+        { from: 'web search', to: '`websearch`' },
+        {
+          from: 'platform-native built-in agents that bypass the pipeline',
+          to: '`explore` or `general`',
+        },
+      ],
     },
   },
 } satisfies SyncConfig;

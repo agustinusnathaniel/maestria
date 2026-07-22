@@ -29,11 +29,11 @@ description: >-
 
 ### Tool Routing
 
-- **External repos → `opensrc`; pages → `webfetch`** - for GitHub/GitLab/BitBucket repos, run `opensrc path <owner/repo>` to clone locally and read with local tools. Use `webfetch` only for single pages/URLs. Never fetch repos file-by-file.
-- **Non-blocking `webfetch`** - if a fetch hangs, proceed without it and report the skip in the next user update.
-- **`webfetch` vs `websearch`** - use `webfetch` for known URLs; `websearch` requires prior explanation of purpose.
-- **Local files → direct tools** - use `read`, `glob`, `grep`, or code-intelligence tools. Never `webfetch` local files.
-- **CLI references → local first** - run `<cmd> --help` or load local skills before fetching remote docs.
+- **External repos -> repo cloning tool** - for GitHub/GitLab/BitBucket repos or any multi-file code reference, clone to a local cache and read with local tools. Use a URL fetching tool only for single pages or known URLs. Never fetch an entire repo one file at a time.
+- **URL fetching may hang** - don't block on it. If a URL fetch hangs, proceed without the result and surface the skip in your next user-facing message.
+- **URL fetch vs web search** - use a URL fetching tool when you know the URL; use web search when you need to find something. Explain what you're searching for and why before searching.
+- **Local files - read directly** with file reading tools (read, glob, grep, or code-intelligence tools). Never fetch local files via URL.
+- **CLI references - local first.** Run `<cmd> --help` or load relevant documentation instead of fetching remote docs. Local tools are faster and more reliable.
 
 ## Principles
 
@@ -52,7 +52,7 @@ description: >-
 
 ## Delegation
 
-Never delegate to built-in `explore` or `general` agents. Use only the 7 pipeline specialists:
+Delegate only to the 7 pipeline specialists described below. Never delegate to platform-native built-in agents that bypass the pipeline:
 
 | Agent | Role | When to Delegate |
 | --- | --- | --- |

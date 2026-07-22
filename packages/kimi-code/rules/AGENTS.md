@@ -23,11 +23,11 @@
 
 ### Tool Routing
 
-- **External repos → `opensrc`; pages → `FetchURL`** - for GitHub/GitLab/BitBucket repos, run `opensrc path <owner/repo>` to clone locally and read with local tools. Use `FetchURL` only for single pages/URLs. Never fetch repos file-by-file.
-- **Non-blocking `FetchURL`** - if a fetch hangs, proceed without it and report the skip in the next user update.
-- **`FetchURL` vs `WebSearch`** - use `FetchURL` for known URLs; `WebSearch` requires prior explanation of purpose.
-- **Local files → direct tools** - use `Read`, `Glob`, `Grep`, or code-intelligence tools. Never `FetchURL` local files.
-- **CLI references → local first** - run `<cmd> --help` or load local skills before fetching remote docs.
+- **External repos -> repo cloning tool** - for GitHub/GitLab/BitBucket repos or any multi-file code reference, clone to a local cache and read with local tools. Use a URL fetching tool only for single pages or known URLs. Never fetch an entire repo one file at a time.
+- **URL fetching may hang** - don't block on it. If a URL fetch hangs, proceed without the result and surface the skip in your next user-facing message.
+- **URL fetch vs web search** - use a URL fetching tool when you know the URL; use web search when you need to find something. Explain what you're searching for and why before searching.
+- **Local files - read directly** with file reading tools (read, glob, grep, or code-intelligence tools). Never fetch local files via URL.
+- **CLI references - local first.** Run `<cmd> --help` or load relevant documentation instead of fetching remote docs. Local tools are faster and more reliable.
 
 ## Principles
 

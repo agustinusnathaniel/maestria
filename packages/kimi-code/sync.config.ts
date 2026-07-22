@@ -379,7 +379,7 @@ This should appear at the end of your response when the user asks for a handoff,
         {
           from: `## Delegation
 
-Never delegate to built-in \`explore\` or \`general\` agents. Use only the 7 pipeline specialists:
+Delegate only to the 7 pipeline specialists described below. Never delegate to platform-native built-in agents that bypass the pipeline:
 
 | Agent | Role | When to Delegate |
 | --- | --- | --- |

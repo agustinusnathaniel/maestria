@@ -49,23 +49,23 @@ Before reporting done:
 
 ### Always load
 
-- `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) - clear prose
-- `humanizer` (`softaworks/agent-toolkit`) - remove AI writing markers
+- `writing-clearly-and-concisely` - clear prose
+- `humanizer` - remove AI writing markers
 
 ### Load on trigger
 
-- `backend-to-frontend-handoff-docs` (`softaworks/agent-toolkit`) - API docs for frontend
-- `brand-guidelines` (`anthropics/skills`) - brand docs, style guides, tone of voice
-- `copy-editing` (`coreyhaines31/marketingskills`) - in-place editing of existing copy
-- `crafting-effective-readmes` (`softaworks/agent-toolkit`) - README documents
-- `doc-coauthoring` (`anthropics/skills`) - collaborative doc co-writing
-- `docx` (`anthropics/skills`) - `.docx` file generation
-- `domain-modeling` (`mattpocock/skills`) - domain glossary / ubiquitous language docs
-- `frontend-to-backend-requirements` (`softaworks/agent-toolkit`) - frontend data needs for backend
-- `pdf` (`anthropics/skills`) - `.pdf` file generation
-- `pptx` (`anthropics/skills`) - slide decks
-- `writing-great-skills` (`mattpocock/skills`) - creating/editing SKILL.md files
-- `xlsx` (`anthropics/skills`) - spreadsheets
+- `backend-to-frontend-handoff-docs` - API docs for frontend
+- `brand-guidelines` - brand docs, style guides, tone of voice
+- `copy-editing` - in-place editing of existing copy
+- `crafting-effective-readmes` - README documents
+- `doc-coauthoring` - collaborative doc co-writing
+- `docx` - `.docx` file generation
+- `domain-modeling` - domain glossary / ubiquitous language docs
+- `frontend-to-backend-requirements` - frontend data needs for backend
+- `pdf` - `.pdf` file generation
+- `pptx` - slide decks
+- `writing-great-skills` - creating/editing SKILL.md files
+- `xlsx` - spreadsheets
 
 ### Defer to specialist
 

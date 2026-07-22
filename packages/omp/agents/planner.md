@@ -57,16 +57,16 @@ Before reporting done:
 
 ### Always load
 
-- `requirements-clarity` (`softaworks/agent-toolkit`) - clarify plan ambiguity upfront
+- `requirements-clarity` - clarify plan ambiguity upfront
 
 ### Load on trigger
 
-- `game-changing-features` (`softaworks/agent-toolkit`) - product strategy planning
-- `domain-modeling` (`mattpocock/skills`) - aligning phases with domain boundaries
-- `grill-me` (`mattpocock/skills`) - interactive plan validation
-- `prototype` (`mattpocock/skills`) - runtime validation before full plan
-- `to-issues` (`mattpocock/skills`) - breaking approved plan into GitHub/Jira issues
-- `to-prd` (`mattpocock/skills`) - converting plan to PRD
+- `game-changing-features` - product strategy planning
+- `domain-modeling` - aligning phases with domain boundaries
+- `grill-me` - interactive plan validation
+- `prototype` - runtime validation before full plan
+- `to-issues` - breaking approved plan into GitHub/Jira issues
+- `to-prd` - converting plan to PRD
 
 ### Defer to specialist
 

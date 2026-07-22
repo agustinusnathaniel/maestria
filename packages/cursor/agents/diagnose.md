@@ -79,14 +79,14 @@ Before reporting done:
 
 ### Always load
 
-- `diagnosing-bugs` (`mattpocock/skills`) - core diagnostic methodology
+- `diagnosing-bugs` - core diagnostic methodology
 
 ### Load on trigger
 
-- `agent-browser` (`vercel-labs/agent-browser`) - UI behavior, network requests, performance profiling, visual reproduction
-- `dependency-updater` (`softaworks/agent-toolkit`) - dependency bugs, lockfile issues, version conflicts
-- `resolving-merge-conflicts` (`mattpocock/skills`) - regressions introduced by merge/rebase
-- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) - pattern-level bugs
-- `logging-best-practices` (`boristane/agent-skills`) - log-based bugs or adding logging
-- `opensrc` (`vercel-labs/opensrc`) - root cause in external library
-- `webapp-testing` (`anthropics/skills`) - UI reproduction
+- `agent-browser` - UI behavior, network requests, performance profiling, visual reproduction
+- `dependency-updater` - dependency bugs, lockfile issues, version conflicts
+- `resolving-merge-conflicts` - regressions introduced by merge/rebase
+- `karpathy-guidelines` - pattern-level bugs
+- `logging-best-practices` - log-based bugs or adding logging
+- `repo exploration tool` - root cause in external library
+- `webapp-testing` - UI reproduction

@@ -82,27 +82,27 @@ Before reporting done:
 
 ### Load on trigger
 
-- `agent-browser` (`vercel-labs/agent-browser`) - UI verification, visual references, web app interaction, Electron automation
-- `ai-sdk` (`vercel/ai`) - AI SDK implementation
-- `codebase-design` (`mattpocock/skills`) - implementing designed interfaces or module boundaries
-- `commit-work` (`softaworks/agent-toolkit`) - committing, staging, crafting commit messages
-- `database-schema-designer` (`softaworks/agent-toolkit`) - database schemas, tables, data models
-- `frontend-design` (`anthropics/skills`) - UI/visual design
-- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) - non-trivial logic design
-- `mcp-builder` (`anthropics/skills`) - building or modifying MCP servers
-- `naming-analyzer` (`softaworks/agent-toolkit`) - introducing new identifiers
-- `opensrc` (`vercel-labs/opensrc`) - library internals reference
-- `pnpm` (`antfu/skills`) - `package.json` or lockfile changes
-- `react-dev` (`softaworks/agent-toolkit`) - React component implementation
-- `react-useeffect` (`softaworks/agent-toolkit`) - modifying `useEffect` hooks
-- `resolving-merge-conflicts` (`mattpocock/skills`) - merge conflicts or rebase resolution
-- `tdd` (`mattpocock/skills`) - explicitly requested TDD
-- `vercel-composition-patterns` (`vercel-labs/agent-skills`) - React composition patterns
-- `vercel-react-best-practices` (`vercel-labs/agent-skills`) - React best practices
-- `vite` (`antfu/skills`) - `vite.config` or build modifications
-- `vitest` (`antfu/skills`) - writing Vitest tests
-- `webapp-testing` (`anthropics/skills`) - browser-level testing
-- `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) - writing commit messages
+- `agent-browser` - UI verification, visual references, web app interaction, Electron automation
+- `ai-sdk` - AI SDK implementation
+- `codebase-design` - implementing designed interfaces or module boundaries
+- `commit-work` - committing, staging, crafting commit messages
+- `database-schema-designer` - database schemas, tables, data models
+- `frontend-design` - UI/visual design
+- `karpathy-guidelines` - non-trivial logic design
+- `mcp-builder` - building or modifying MCP servers
+- `naming-analyzer` - introducing new identifiers
+- `repo exploration tool` - library internals reference
+- `pnpm` - `package.json` or lockfile changes
+- `react-dev` - React component implementation
+- `react-useeffect` - modifying `useEffect` hooks
+- `resolving-merge-conflicts` - merge conflicts or rebase resolution
+- `tdd` - explicitly requested TDD
+- `vercel-composition-patterns` - React composition patterns
+- `vercel-react-best-practices` - React best practices
+- `vite` - `vite.config` or build modifications
+- `vitest` - writing Vitest tests
+- `webapp-testing` - browser-level testing
+- `writing-clearly-and-concisely` - writing commit messages
 
 ### Defer to specialist
 

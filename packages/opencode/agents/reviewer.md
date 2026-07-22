@@ -116,22 +116,22 @@ Then produce:
 
 ### Always load
 
-- `naming-analyzer` (`softaworks/agent-toolkit`) - identifier analysis for every review
+- `naming-analyzer` - identifier analysis for every review
 
 ### Load on trigger
 
-- `agent-browser` (`vercel-labs/agent-browser`) - UI changes, visual fidelity, interactive flows
-- `baseline-ui` (`ibelick/ui-skills`) - UI component review
-- `fixing-accessibility` (`ibelick/ui-skills`) - WCAG accessibility audit
-- `fixing-metadata` (`ibelick/ui-skills`) - SEO / metadata review
-- `fixing-motion-performance` (`ibelick/ui-skills`) - animation performance audit
-- `logging-best-practices` (`boristane/agent-skills`) - code adding or modifying logging
-- `codebase-design` (`mattpocock/skills`) - module boundaries and seam placement
-- `review-logging-patterns` (`hugorcd/evlog`) - logging pattern review
-- `skill-judge` (`softaworks/agent-toolkit`) - reviewing SKILL.md files
-- `userinterface-wiki` (`raphaelsalaja/userinterface-wiki`) - UI patterns review
-- `web-design-guidelines` (`antfu/skills`) - UI guidelines compliance
-- `webapp-testing` (`anthropics/skills`) - test suite review
+- `agent-browser` - UI changes, visual fidelity, interactive flows
+- `baseline-ui` - UI component review
+- `fixing-accessibility` - WCAG accessibility audit
+- `fixing-metadata` - SEO / metadata review
+- `fixing-motion-performance` - animation performance audit
+- `logging-best-practices` - code adding or modifying logging
+- `codebase-design` - module boundaries and seam placement
+- `review-logging-patterns` - logging pattern review
+- `skill-judge` - reviewing SKILL.md files
+- `userinterface-wiki` - UI patterns review
+- `web-design-guidelines` - UI guidelines compliance
+- `webapp-testing` - test suite review
 
 ### Defer to specialist
 

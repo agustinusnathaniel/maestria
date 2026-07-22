@@ -318,8 +318,8 @@ export default {
 
         // Generalize delegation rules for Hermes
         {
-          from: 'Never delegate to `explore` or `general`',
-          to: 'Delegate only to the 7 specialists',
+          from: 'platform-native built-in agents that bypass the pipeline',
+          to: 'built-in `explore` or `general`',
         },
         {
           from: '`@adventurer` for any codebase context',

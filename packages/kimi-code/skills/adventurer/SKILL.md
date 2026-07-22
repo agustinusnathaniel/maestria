@@ -105,13 +105,13 @@ Before reporting done:
 
 ### Load on trigger
 
-- `agent-browser` (`vercel-labs/agent-browser`) - exploring running web apps, visual references, or Electron apps
-- `c4-architecture` (`softaworks/agent-toolkit`) - diagram output requested (context/container)
-- `domain-modeling` (`mattpocock/skills`) - mapping domain concepts and ubiquitous language
-- `mermaid-diagrams` (`softaworks/agent-toolkit`) - sequence, flow, or ER diagrams requested
-- `resolving-merge-conflicts` (`mattpocock/skills`) - investigating merge conflict history
-- `opensrc` (`vercel-labs/opensrc`) - external library internals affect findings
-- `session-handoff` (`softaworks/agent-toolkit`) - creating formal handoff artifacts
+- `agent-browser` - exploring running web apps, visual references, or Electron apps
+- `c4-architecture` - diagram output requested (context/container)
+- `domain-modeling` - mapping domain concepts and ubiquitous language
+- `mermaid-diagrams` - sequence, flow, or ER diagrams requested
+- `resolving-merge-conflicts` - investigating merge conflict history
+- `repo exploration tool` - external library internals affect findings
+- `session-handoff` - creating formal handoff artifacts
 
 ### Defer to specialist
 
