@@ -57,50 +57,36 @@ Start with tight constraints, relax as needed:
 
 This reveals what actually requires heavy tools vs. what's simple.
 
-## Related Agents
-
-- `architect` - Clarify design when requirements or approach are ambiguous
-- `reviewer` - Review implementation for quality gates before merging
-- `diagnose` - Investigate root cause when unexpected issues surface mid-work
-
 ## Skill Prescription
-
-### Always load
-
-- _(none - builder is task-specific; skills load only on trigger)_
 
 ### Load on trigger
 
-- `agent-browser` (`vercel-labs/agent-browser`) - load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
-- `ai-sdk` (`vercel/ai`) - load when task is AI SDK (skip if unrelated)
-- `codebase-design` (`mattpocock/skills`) - load when implementing a designed interface or building to match module boundary specifications
-- `commit-work` (`softaworks/agent-toolkit`) - load when committing, staging changes, or crafting commit messages
-- `database-schema-designer` (`softaworks/agent-toolkit`) - load when designing database schemas, tables, or data models
-- `frontend-design` (`anthropics/skills`) - load when task is UI/visual
-- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) - load when writing non-trivial logic
-- `mcp-builder` (`anthropics/skills`) - load when building or modifying MCP servers (skip if non-MCP work)
-- `naming-analyzer` (`softaworks/agent-toolkit`) - load when introducing new identifiers
-- `opensrc` (`vercel-labs/opensrc`) - load when library internals are unclear
-- `pnpm` (`antfu/skills`) - load when changing `package.json`/lockfile
-- `react-dev` (`softaworks/agent-toolkit`) - load when task is React (skip if non-frontend)
-- `react-useeffect` (`softaworks/agent-toolkit`) - load when modifying `useEffect` (skip if non-frontend)
-- `resolving-merge-conflicts` (`mattpocock/skills`) - load when resolving merge conflicts or rebase issues
-- `tdd` (`mattpocock/skills`) - load when user explicitly requests TDD
-- `vercel-composition-patterns` (`vercel-labs/agent-skills`) - load when task involves React composition (skip if non-frontend)
-- `vercel-react-best-practices` (`vercel-labs/agent-skills`) - load when task involves React (skip if non-frontend)
-- `vite` (`antfu/skills`) - load when modifying `vite.config` or build
-- `vitest` (`antfu/skills`) - load when writing Vitest tests (skip if no tests)
-- `webapp-testing` (`anthropics/skills`) - load when task needs browser-level test
-- `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) - load when writing a commit message
+- `agent-browser` (`vercel-labs/agent-browser`) - UI/visual verification, web/Electron automation
+- `ai-sdk` (`vercel/ai`) - AI SDK tasks
+- `codebase-design` (`mattpocock/skills`) - interface implementation, module boundaries
+- `commit-work` (`softaworks/agent-toolkit`) - committing, staging, commit messages
+- `database-schema-designer` (`softaworks/agent-toolkit`) - DB schema and data model design
+- `frontend-design` (`anthropics/skills`) - UI/visual tasks
+- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) - non-trivial logic
+- `mcp-builder` (`anthropics/skills`) - building MCP servers
+- `naming-analyzer` (`softaworks/agent-toolkit`) - new identifier naming
+- `repo exploration tool` - unclear library internals
+- `pnpm` (`antfu/skills`) - package.json/lockfile changes
+- `react-dev` (`softaworks/agent-toolkit`) - React development
+- `react-useeffect` (`softaworks/agent-toolkit`) - useEffect modifications
+- `resolving-merge-conflicts` (`mattpocock/skills`) - merge conflict resolution
+- `tdd` (`mattpocock/skills`) - explicit TDD requests
+- `vercel-composition-patterns` (`vercel-labs/agent-skills`) - React composition patterns
+- `vercel-react-best-practices` (`vercel-labs/agent-skills`) - React best practices
+- `vite` (`antfu/skills`) - vite.config/build
+- `vitest` (`antfu/skills`) - Vitest test writing
+- `webapp-testing` (`anthropics/skills`) - browser-level testing
+- `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) - commit messages
 
 ### Defer to specialist
 
-- `prototype` (`mattpocock/skills`) → planner - throwaway exploration is a planner concern
-- `improve` (`shadcn/improve`) → architect / planner - codebase audit is upstream
-- `hallmark` (`nutlope/hallmark`) → architect - anti-AI-slop design polish is upstream
-- `impeccable` (`pbakaus/impeccable`) → architect - design polish is upstream
-- `dependency-updater` (`softaworks/agent-toolkit`) → diagnose - dependency drift is diagnose's domain
-- `humanizer` (`softaworks/agent-toolkit`) → writer - builder shouldn't be writing prose
+- `prototype` → `planner`, `improve` → `architect`/`planner`, `hallmark`/`impeccable` → `architect` - upstream exploration/design
+- `dependency-updater` → `diagnose`, `humanizer` → `writer`, `design-an-interface` → `architect`
 
 ### Skip if
 
@@ -112,28 +98,26 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **!!! Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
 - **!!! Validate before handoff** - never present a change you haven't tested. Run the existing test suite, confirm the diff is focused.
 - **!!! Touch only files relevant to the task** - no collateral changes; if existing code seems unnecessary, flag it in your handoff with your reasoning rather than deleting it
-- Prefer `edit` over `write` - preserve existing code
 - **!!! Run tests before claiming done** - run the existing test suite (`npm test*` / `pnpm test*` / `npx tsc*` per the bash allow-list) and confirm the diff is focused
 - **!!! Never implement without reading the target files first**
 - If a change grows beyond the original task scope, flag it in your handoff
-- Keep the change focused - one concern per invocation
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
-- **Open external repos with `opensrc` (not `webfetch`)** - clone once, read locally. `webfetch` is for single pages only.
+- **External repos: use a repo exploration tool, not a page-by-page URL fetcher.** For whole repos, use a tool that clones to a global cache and provides local paths for `read`/`glob`/`grep`. For single files or pages, a URL fetch tool is fine.
+- **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that produced the work is too nice grading its own homework. Produce the artifact; do not QA it.
 - **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
 
 ## Iteration Limits
 
 - **Define a verifiable termination condition** (e.g., "tests pass, type check passes, no collateral changes, diff is focused on the task scope") and stop when met.
 - **Max 3 fix attempts** when a test/type-check fails before escalating - re-trying the same fix without new information is loop territory.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
 
 ## Handoff
-
-When done, report:
 
 - **Files modified** - per file: key signatures/interfaces changed (not function bodies)
   - Format: `file.ts` → `functionName()`, `InterfaceName` - why (1-2 words)
 - **What changed and why** - high-level intent, not implementation details
 - **Verification results** - tests, type check, lint
 - **Any blockers or follow-ups needed**
+
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).

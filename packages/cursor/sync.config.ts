@@ -175,11 +175,7 @@ export default {
       },
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/cursor' },
-        { from: '`bash --help`', to: '`Shell` help / skill docs' },
-        {
-          from: 'When delegating work via `Task()`, use only the 7 specialists below. **Never delegate to `explore` or `general`** - they are built-in agents, not part of the pipeline.',
-          to: 'When delegating work via the `Task` tool, use only the 7 specialist agents below (plugin `agents/`). Do not use built-in general-purpose agents for pipeline work.',
-        },
+        { from: '<cmd> --help', to: '`Shell` help / skill docs' },
       ],
     },
     'commands/fein.md': {
