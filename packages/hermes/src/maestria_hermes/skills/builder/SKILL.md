@@ -98,7 +98,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - If a change grows beyond the original task scope, flag it in your handoff
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
-- **External repos: use a repo exploration tool, not webfetch page-by-page.** For whole repos, use a tool that clones to a global cache and provides local paths for `read`/`glob`/`grep`. For single files or pages, `webfetch` is fine.
+- **External repos: use a repo exploration tool, not a page-by-page URL fetcher.** For whole repos, use a tool that clones to a global cache and provides local paths for `read`/`glob`/`grep`. For single files or pages, a URL fetch tool is fine.
 - **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that produced the work is too nice grading its own homework. Produce the artifact; do not QA it.
 - **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
 
