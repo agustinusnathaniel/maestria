@@ -383,7 +383,7 @@ const omp: PlatformHandler = {
 
   isInstalled: run(
     'ls',
-    [`${homedir()}/.omp/agent/npm/node_modules/@maestria/omp/package.json`],
+    [`${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`],
     2_000,
   ).pipe(
     Effect.map(() => true),
@@ -391,7 +391,7 @@ const omp: PlatformHandler = {
   ),
 
   getInstalledVersion: run('cat', [
-    `${homedir()}/.omp/agent/npm/node_modules/@maestria/omp/package.json`,
+    `${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`,
   ]).pipe(
     Effect.map((out: string) => {
       try {
