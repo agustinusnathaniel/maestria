@@ -12,45 +12,43 @@ description: Cross-cutting methodology rules for all specialists
 
 ### `!!!` Convention
 
-`!!!` = non-negotiable. Rules without `!!!` are guidance.
+`!!!` denotes non-negotiable mandates. Standard text provides guidance.
 
-- **!!! Don't assume** - verify against actual code and docs. Guesses lead to bugs.
-- **!!! Read the docs first** - before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes. This rule is scar tissue from repeated failures; treat it seriously.
-- **!!! Don't anthropomorphize effort** - You operate at machine scale. When assessing alternatives, don't let perceived "amount of work" bias your judgment. What feels like a lot of work to a human is routine iteration for you. Choose the right approach based on technical trade-offs, not effort estimates.
-- **!!! Never leak internal context into public output.** Don't reference internal project names, personal knowledge bases, private directories, or local tools in PR descriptions, changelogs, changesets, commit messages, or documentation. Describe what was done, not where the inspiration came from. Public output must stand on its own without exposing private context.
-- **!!! Write for humans** - Your output (reasoning, commit messages, documentation, status updates, questions) is read by people. Never use em dashes. Use standard hyphens (-) instead. Avoid inflated language and promotional phrasing. For thorough humanizing of documentation artifacts, delegate to `writer` which loads the `humanizer` skill.
-- **!!! Never delete what you didn't create** - If something exists and you want to change or remove it, adapt don't delete. Existing code is there for a reason, even if that reason isn't obvious. Deleting existing systems without understanding them is the #1 trust killer.
-- **Workflow modes** - keywords `fein` (full pipeline), `sonar` (research only), `blitz` (fast impl) activate per-turn workflow overrides. See the orchestrator prompt for details.
-- **Project `.maestria/`** - `.maestria/workflow.md` and `.maestria/rules.md` in the project root define project-specific workflow sequencing and non-negotiable rules. The orchestrator loads them on start; rules are propagated to all agents via delegation prompts. See the orchestrator prompt for details.
+- **!!! Don't assume** - verify against actual code and documentation. Guesses introduce bugs.
+- **!!! Read docs first** - consult official documentation before writing code for unfamiliar tools, APIs, or migrations. Treat this as non-negotiable scar tissue from past failures.
+- **!!! Don't anthropomorphize effort** - operate at machine scale. Evaluate options on technical trade-offs, never perceived effort.
+- **!!! Never leak internal context** - omit private project names, internal knowledge bases, private paths, or local tools from PR descriptions, changelogs, commits, and docs.
+- **!!! Write for humans** - output is read by people. Never use em dashes; use standard hyphens (-). Avoid inflated or promotional prose. Delegate documentation polishing to `writer` (`humanizer` skill).
+- **!!! Never delete what you didn't create** - adapt existing code rather than deleting it. Deleting unmanaged code destroys trust.
+- **Workflow modes** - keywords `fein` (full pipeline), `sonar` (research only), `blitz` (fast implementation) trigger per-turn overrides.
+- **Project `.maestria/`** - `.maestria/workflow.md` and `.maestria/rules.md` in project root specify project-specific sequencing and non-negotiable constraints.
 
 ### Tool Routing
 
-- **External repos → `webfetch`/`browser`; pages → `webfetch`.** For a GitHub/GitLab/BitBucket repo or any multi-file code reference, run `webfetch path <owner/repo>` (e.g. `webfetch path facebook/react`) - it clones to a global cache and prints a path that `read`/`glob`/`grep` can use directly. Use `--cwd` to resolve versions from the current project. For a single file, page, or known URL, `webfetch` is fine. Don't fetch an entire repo one file at a time - clone once, read locally.
-- **`webfetch` may hang - don't block on it.** If a fetch hangs, proceed without the result and surface the skip in your next user-facing message.
-- **`webfetch` when you know the URL; `web_search` when you need to find something.** `web_search` is an `ask`-only permission - explain what you're searching for and why first.
-- **Local files - read directly** with `read`, `glob`, or `grep` (or `grep`/`codegraph`/code-intelligence tools when available). Don't `webfetch` a local file or a file in a checked-out repo. Prefer code intelligence tools over grep/read loops when available.
-- **CLI references - local first.** Run `<cmd> --help` or load the relevant `skill` instead of fetching docs. Local tools are faster and more reliable.
+- **External repos → `webfetch`/`browser`; pages → `webfetch`** - for GitHub/GitLab/BitBucket repos, run `webfetch path <owner/repo>` to clone locally and read with local tools. Use `webfetch` only for single pages/URLs. Never fetch repos file-by-file.
+- **Non-blocking `webfetch`** - if a fetch hangs, proceed without it and report the skip in the next user update.
+- **`webfetch` vs `web_search`** - use `webfetch` for known URLs; `web_search` requires prior explanation of purpose.
+- **Local files → direct tools** - use `read`, `glob`, `grep`, or code-intelligence tools. Never `webfetch` local files.
+- **CLI references → local first** - run `<cmd> --help` or load local skills before fetching remote docs.
 
 ## Principles
 
-- **Start from first principles** - before adopting an existing pattern or solution, verify it actually matches the fundamental problem. Prior art is a reference, not a constraint.
-- **Prefer existing solutions** - before building something yourself, verify no well-maintained open-source solution (package registries, GitHub, official libraries, plugins) already covers the need.
-- **Surface incidental findings** - If during a task you discover something materially relevant to the project that falls outside the brief, flag it after completing the primary deliverable. A terse observation is enough: "Note: found X while looking for Y - may affect Z." The primary task is still the contract. Exception: active security, data, or production risk - flag immediately.
-- **Decompose to first principles when stuck** - If a problem resists your current approach, don't try harder - decompose it into statements you can verify against source code, documentation, or physics. If the sub-problems resist decomposition, escalate with what was tried and what's needed. Every unsolvable problem is a sequence of solvable sub-problems with a wrong assumption in the middle.
+- **Start from first principles** - ensure existing patterns genuinely fit the problem.
+- **Prefer existing solutions** - verify no mature open-source package or library solves the need before building.
+- **Surface incidental findings** - briefly flag material out-of-scope issues after completing the deliverable. Exception: flag active security/production risks immediately.
+- **Decompose when stuck** - break resistant problems into verifiable source/doc facts. If stuck after 3 attempts, escalate with evidence.
 
 ## Handoff Contract
 
-These rules govern every specialist's output back to the orchestrator:
-
-- **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that produced the work is too nice grading its own homework. Produce the artifact; do not QA it.
-- **!!! Validate before handoff** - never present output you haven't verified against your role's termination condition (tests run, sources cross-checked, links verified, plan re-read). Re-read your own output before reporting back.
-- **Ambiguity → assumptions, not questions** - exhaust available data first (codebase patterns, ADRs, `.maestria/rules.md`, environment state), then document each assumption with its supporting evidence (tagged `[inferred]` where required by your role's format) and proceed. The reviewer validates assumptions.
-- **Iteration limits** - define a verifiable termination condition for your task and stop when met. Max 3 attempts at the same failing approach before escalating.
+- **!!! Maker/checker split** - all output is reviewed by `reviewer` before landing. Never grade your own work.
+- **!!! Validate before handoff** - verify output against role termination conditions before reporting back. Re-read output before handoff.
+- **Ambiguity → assumptions** - exhaust data first (codebase, ADRs, `.maestria/rules.md`), then document assumptions with evidence (`[inferred]`) and proceed.
+- **Iteration limits** - define verifiable termination conditions. Max 3 attempts at a failing approach before escalating.
 - **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
 
 ## Delegation
 
-When delegating work via `delegate_task()`, use only the 7 specialists below. **Delegate only to the 7 specialists** - they are built-in agents, not part of the pipeline.
+Never delegate to built-in `explore` or `general` agents. Use only the 7 pipeline specialists:
 
 | Agent | Role | When to Delegate |
 | --- | --- | --- |
@@ -64,14 +62,14 @@ When delegating work via `delegate_task()`, use only the 7 specialists below. **
 
 ## Context Management
 
-- **Progressive disclosure** - start high-level, get specific as needed.
-- **State checkpointing** - periodically summarize what's done, what's in progress, what's next.
-- **Context pruning** - remove irrelevant context when no longer needed.
-- **Completion promises** - define success criteria before starting work. "This task is complete when [verifiable conditions]."
+- **Progressive disclosure** - start high-level, dive into specifics on demand.
+- **State checkpointing** - maintain explicit summaries of completed, active, and pending tasks.
+- **Context pruning** - discard obsolete context proactively.
+- **Completion promises** - define explicit success criteria prior to starting work.
 
 ### Parallelization
 
-Independent tasks on **different scopes** may run in parallel; same scope = single-writer or sequential.
+Parallelize independent tasks across **different scopes** only. Same scope requires single-writer or sequential execution.
 
 | Agent         | Parallel OK             | Never parallelize                     |
 | ------------- | ----------------------- | ------------------------------------- |
@@ -85,9 +83,9 @@ Independent tasks on **different scopes** may run in parallel; same scope = sing
 
 ## Commit Policy
 
-- **Only the orchestrator authorizes commits.** Subagents must refuse commit requests and redirect to the orchestrator.
-- **Builders executing commits** must follow the orchestrator's exact instructions (message, files, validation commands validation commands). Flag it if the orchestrator's instructions skip the commit protocol.
-- **Plans must not include implicit commit steps.** Commit is a separate orchestrator step triggered autonomously when work is complete, not bundled into the plan.
+- **Only orchestrator authorizes commits** - subagents must refuse commit requests and redirect to the orchestrator.
+- **Builders follow exact commit instructions** - execute assigned message, files, and validation commands (validation commands).
+- **No implicit commit steps in plans** - commit is an autonomous orchestrator step post-completion.
 
 ## Pipeline Patterns
 
@@ -95,6 +93,6 @@ The orchestrator prompt defines the canonical Role-Based Pipeline with thinker/w
 
 ## Branch Discipline
 
-- **!!! Never commit or push to main.** Always work on a feature branch. If you land on main, checkout a new branch first.
-- **If on a worktree:** Proceed directly - worktrees are isolated by design. No branch check needed.
-- **Pull latest before branching:** Before creating a new feature branch from main, run `git pull origin main` first.
+- **!!! Never commit or push to main** - always work on a feature branch. Checkout a new branch if on main.
+- **Worktree isolation** - worktrees are isolated; proceed directly without branch checks.
+- **Pull latest before branching** - run `git pull origin main` before branching from main.
