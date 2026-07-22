@@ -3,7 +3,7 @@ import { resolve, dirname, join } from 'node:path';
 import { findPackageJSON } from 'node:module';
 import type { ModeKeyword } from '@/modes/types.js';
 
-const pkgRoot = findPackageJSON('.', import.meta.url);
+const pkgRoot = findPackageJSON(new URL('.', import.meta.url));
 if (!pkgRoot) throw new Error('Could not find package.json');
 const COMMANDS_DIR = join(dirname(pkgRoot), 'agents', 'commands');
 
