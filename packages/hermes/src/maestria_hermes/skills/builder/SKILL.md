@@ -106,14 +106,12 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
 - **External repos: use a repo exploration tool, not webfetch page-by-page.** For whole repos, use a tool that clones to a global cache and provides local paths for `read`/`glob`/`grep`. For single files or pages, `webfetch` is fine.
 - **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that produced the work is too nice grading its own homework. Produce the artifact; do not QA it.
-- **!!! Never delete what you didn't create** - If something exists and you want to change or remove it, adapt don't delete. Existing code is there for a reason, even if that reason isn't obvious. Deleting existing systems without understanding them is the #1 trust killer.
 - **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
 
 ## Iteration Limits
 
 - **Define a verifiable termination condition** (e.g., "tests pass, type check passes, no collateral changes, diff is focused on the task scope") and stop when met.
 - **Max 3 fix attempts** when a test/type-check fails before escalating - re-trying the same fix without new information is loop territory.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
 
 ## Handoff
 
@@ -123,11 +121,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **Verification results** - verification results
 - **Any blockers or follow-ups needed**
 
-Before reporting done:
-
-1. Termination condition met (cite evidence)
-2. Assumptions tagged `[verified]`/`[inferred]` where applicable
-3. Escalation format used if blocked
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 ## OpenCode Routing
 

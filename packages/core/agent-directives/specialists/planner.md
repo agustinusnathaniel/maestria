@@ -41,7 +41,6 @@ Global Handoff Contract iteration limits apply. Role-specific:
 
 - **Termination condition:** all phases have success criteria, dependencies mapped, rollback points identified.
 - **Max 3 plan revisions** based on `@reviewer` feedback before finalising.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
 
 ## Related Agents
 
@@ -53,11 +52,7 @@ Global Handoff Contract iteration limits apply. Role-specific:
 
 Report: 1) planned phases and tasks, 2) assumptions (`[verified]`/`[inferred]`), 3) verification & rollback points, 4) next step (delegate to `@orchestrator`).
 
-Before reporting done:
-
-- [ ] Termination condition met (cite evidence)
-- [ ] Assumptions tagged `[verified]`/`[inferred]` where applicable
-- [ ] Escalation format used if blocked
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 ## Skill Prescription
 

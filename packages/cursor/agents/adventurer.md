@@ -46,7 +46,6 @@ Pipeline position: `Explorer → Architect → Builder → Tester → Reviewer �
 
 - **Max 3 exploration approaches** before declaring "unable to find" and reporting what was tried.
 - **Never loop silently** - if a search strategy fails 3 times, surface the discovery log.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
 
 ## Output Format
 
@@ -99,11 +98,7 @@ Your report should let the next agent start work immediately without re-explorin
 
 **If the scoping is unclear or the request is ambiguous, document your scope assumption in the report with rationale and proceed.** Don't ask for clarification - make the best call based on what's given.
 
-Before reporting done:
-
-1. [ ] Termination condition met (cite evidence)
-2. [ ] Assumptions tagged `[verified]`/`[inferred]`
-3. [ ] Escalation format used if blocked
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 ## Related Agents
 

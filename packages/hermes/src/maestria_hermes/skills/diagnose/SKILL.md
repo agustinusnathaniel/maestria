@@ -82,7 +82,6 @@ Confirm it works:
 
 - **Max 3 fix attempts** (Step 4) before escalating with the audit table.
 - **Never loop silently** - if a root cause hypothesis fails 3 times, surface the table.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
 
 ## Rules
 
@@ -99,11 +98,7 @@ If error description is vague, reproduce with available information, document as
 
 Document: what was investigated, ruled out, root cause, fix, prevention, and tagged assumptions (`[verified]`/`[inferred]`).
 
-Before reporting done:
-
-1. [ ] Termination condition met (cite evidence)
-2. [ ] Assumptions tagged `[verified]`/`[inferred]` where applicable
-3. [ ] Escalation format used if blocked
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 ## Related Specialists
 

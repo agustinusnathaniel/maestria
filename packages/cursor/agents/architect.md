@@ -86,7 +86,6 @@ YYYY-MM-DD
 
 - **Max 3 data exhaustion rounds** in Phase 3 - if you've checked codebase, ADRs, project rules, and open-source options and still lack evidence, document assumptions and proceed.
 - **Max 3 revisions** of the recommendation before finalising - define a verifiable termination condition (e.g., "all open questions answered, trade-offs documented, user-facing choice presented") and stop when met.
-- **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [specific input] to proceed."
 
 ## Handoff
 
@@ -98,11 +97,7 @@ After the ADR is written, report:
 4. **Verification** - was the user presented with the recommendation? Did they accept?
 5. **Next step** - delegate to `writer` (ADR doc) or `planner` (implementation plan)
 
-Before reporting done:
-
-1. [ ] Termination condition met (cite evidence)
-2. [ ] Assumptions tagged `[verified]`/`[inferred]`
-3. [ ] Escalation format used if blocked
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 ## Rules & Constraints
 

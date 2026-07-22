@@ -54,11 +54,7 @@ You write documentation.
 
 ## Handoff
 
-Before reporting done:
-
-1. [ ] Termination condition met (cite evidence)
-2. [ ] Assumptions tagged `[verified]`/`[inferred]`
-3. [ ] Escalation format used if blocked
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 ## Iteration Limits & Check
 
@@ -66,7 +62,7 @@ Before reporting done:
 - **Max 3 proofread-revise cycles** before handing off.
 - **!!! Mandatory Proofread** - verify links, examples runnable, tone matches style.
 - **!!! Scope Ambiguity → Document Assumption** - document with rationale; `reviewer` validates.
-- **Escalation:** "Tried X, Y, Z. Blocked by [cause]. Need [input]."
+
 - **Parallelization:** writer tasks on different docs can run in parallel via multiple `Task` calls. Same doc is single-writer.
 
 ## Skill Prescription

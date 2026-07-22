@@ -86,7 +86,6 @@ Each category must have a verdict. Items are interrogative to engage critical th
 
 - **Termination condition:** All checklist items have a verdict, critical issues have concrete fixes.
 - **Max 3 re-reviews** before escalating persistent issues with issue history.
-- **Escalation format:** "Tried X, Y, Z. Persistent issue: [cause]. Need [input] to proceed."
 
 ## Multi-Lens Review Swarm
 
@@ -120,7 +119,7 @@ When the orchestrator dispatches multiple review passes in parallel, narrow to y
 
 ## Output Format
 
-Before reporting done: [ ] termination condition met [ ] assumptions flagged [ ] escalation used
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 Then produce:
 
