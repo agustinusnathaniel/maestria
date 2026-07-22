@@ -1,0 +1,63 @@
+---
+title: OpenCode Reference
+description: Platform-specific reference for @maestria/opencode - t3code compatibility, tool permissions, and known limitations.
+---
+
+## t3code Compatibility
+
+[t3code](https://t3.codes) is a desktop application that provides a unified web interface for multiple AI coding agents, including OpenCode. When OpenCode runs through t3code, some of Maestria's agent-level controls behave differently.
+
+### How t3code drives OpenCode
+
+t3code starts OpenCode by spawning `opencode serve` as a child process and communicating through the `@opencode-ai/sdk/v2` HTTP API. Instead of loading OpenCode's normal configuration from `~/.config/opencode/opencode.jsonc`, t3code overrides it with an empty config (`OPENCODE_CONFIG_CONTENT="{}"`) and injects its own permission rules at session creation time. ([source: opencodeRuntime.ts](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/opencodeRuntime.ts))
+
+### Permission architecture
+
+OpenCode's V2 protocol uses an agent-native permission model - tool access is controlled by each agent's `permission` field in its frontmatter, resolved at tool-use time from the agent's config. ([source: session create protocol](https://github.com/anomalyco/opencode/blob/dev/packages/protocol/src/groups/session.ts)) There is no session-level permission override in the V2 protocol; the permission evaluation always resolves from the active agent's configuration. ([source: permission.ts](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/permission.ts))
+
+t3code sends a `permission` parameter in its `session.create()` call via its `buildOpenCodePermissionRules()` function ([source: opencodeRuntime.ts](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/opencodeRuntime.ts)), but this field is a legacy V1 artifact that the V2 server ignores. Agent-level permissions still apply for tool authorization.
+
+### What works
+
+- The Maestria plugin loads and registers all 8 agents (orchestrator + 7 specialists)
+- The orchestrator agent is selectable in t3code's agent dropdown
+- Agent prompts and system instructions are loaded correctly
+- Task delegation between agents works
+- Agent-level tool permissions from frontmatter are honored by OpenCode's V2 runtime
+
+### What behaves differently
+
+| Aspect               | Native OpenCode                                                                                                                      | Under t3code                                                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Config loading**   | `opencode.jsonc` is loaded normally                                                                                                  | Overridden by `OPENCODE_CONFIG_CONTENT="{}"` - file-based config is ignored                                                                      |
+| **Permission model** | Agent-level permissions are authoritative ([source](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/permission.ts)) | t3code injects session-level rules via SDK ([source](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/opencodeRuntime.ts)) |
+| **Permission UI**    | OpenCode's native prompt for approval requests                                                                                       | t3code intercepts `permission.asked` events and shows its own UI                                                                                 |
+| **Runtime mode**     | Agent permissions govern tool access                                                                                                 | t3code's `runtimeMode` setting (full-access / approval-required) affects the approval layer                                                      |
+| **Full-access mode** | Respects agent-level `deny` rules                                                                                                    | Flattens to blanket allow-all at t3code's level - agent denials may not surface correctly                                                        |
+| **Permission flow**  | Permission check -> agent config -> allow/deny/ask -> native UI                                                                      | Permission check -> agent config -> allow/deny/ask -> t3code intercepts -> t3code UI -> mapped back to OpenCode                                  |
+
+### Known limitations
+
+**Approval-required mode renders the orchestrator unusable.** Every tool call generates an approval request through t3code's UI, even tools that Maestria permits freely (like `question` or `task`). The orchestrator's autonomous pipeline breaks because delegation steps need manual approval clicks.
+
+**Full-access mode bypasses agent-level restrictions.** The builder agent gets unrestricted bash access, and reviewer agents lose their read-only enforcement. This defeats Maestria's maker/checker split.
+
+**File-based configuration is ignored.** Any custom settings in `opencode.jsonc` (custom tools, model preferences, agent overrides) are not loaded when OpenCode runs under t3code.
+
+### Why this happens
+
+t3code was designed around OpenCode's V1 permission model, where session-level permissions could override agent defaults. t3code's `buildOpenCodePermissionRules()` function ([source](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/opencodeRuntime.ts)) constructs a `PermissionRuleset` that it passes to `session.create()` ([source: OpenCodeAdapter.ts](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/Layers/OpenCodeAdapter.ts)). OpenCode's V2 protocol moved to an agent-native permission model that doesn't support session-level overrides - the `session.create` endpoint accepts only `{ id, agent, model, location }` with no `permission` field ([source](https://github.com/anomalyco/opencode/blob/dev/packages/protocol/src/groups/session.ts)).
+
+The mismatch is architectural, not a bug in either project. t3code needs a universal permission model across all the agents it supports (Codex, Claude Code, Cursor, Grok, OpenCode), while Maestria relies on OpenCode's V2 agent-native permissions for its pipeline and maker/checker split.
+
+### Future outlook
+
+The most practical fix lies in t3code's integration: instead of overriding permissions at the session level, t3code could omit the `permission` field from `session.create()` and let agent-native permissions flow through. This is a relatively small change in t3code's `OpenCodeAdapter.ts` but would require adapting t3code's approval-required mode to work with per-agent permissions rather than session-level blanket rules.
+
+## See Also
+
+- [Specialist Reference](/core/agents/)
+- [Pipeline & Roles](/core/pipeline/)
+- [Workflow Patterns](/core/workflow-patterns/)
+- [OpenCode Configuration](/opencode/configuration/)
+- [t3code](https://t3.codes)
