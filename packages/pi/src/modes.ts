@@ -10,9 +10,6 @@ const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
 
 function loadModePrompt(name: string): string {
   const content = readFileSync(resolve(COMMANDS_DIR, `${name}.md`), 'utf-8');
-  // Find the `## MODE:` heading which marks the start of the actual prompt text.
-  // The synced command files start with an HTML comment (`<!-- Auto-generated... -->`),
-  // not YAML frontmatter (`---`), so a frontmatter regex would never match.
   const modeIdx = content.indexOf('## MODE:');
   if (modeIdx !== -1) {
     return content.slice(modeIdx).replace(/\s+$/, '') + '\n';
@@ -23,20 +20,25 @@ function loadModePrompt(name: string): string {
 export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
 export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
 
-const MODE_PROMPTS: Record<ModeKeyword, string> = {
-  fein: loadModePrompt('fein'),
-  sonar: loadModePrompt('sonar'),
-  blitz: loadModePrompt('blitz'),
-};
-
 const MODE_MARKERS: Record<ModeKeyword, string> = {
   fein: '[MODE: fein]',
   sonar: '[MODE: sonar]',
   blitz: '[MODE: blitz]',
 };
 
+/** Lazily cached mode prompts — loaded on first access, never throws. */
+const _promptCache: Partial<Record<ModeKeyword, string>> = {};
+
 export function getModePrompt(keyword: ModeKeyword): string {
-  return `${MODE_MARKERS[keyword]}\n\n${MODE_PROMPTS[keyword]}`;
+  if (!(keyword in _promptCache)) {
+    try {
+      _promptCache[keyword] = loadModePrompt(keyword);
+    } catch (e) {
+      console.warn(`[maestria] Failed to load mode prompt "${keyword}":`, e);
+      _promptCache[keyword] = '';
+    }
+  }
+  return `${MODE_MARKERS[keyword]}\n\n${_promptCache[keyword]}`;
 }
 
 export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): void {
@@ -44,7 +46,6 @@ export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): voi
     pi.registerCommand(keyword, {
       description: `Set workflow mode to ${keyword}`,
       handler: async (args, ctx) => {
-        // Exit review mode if active (restore original model/tools)
         if (state.reviewMode) {
           await restoreOriginalState(pi, ctx, state);
         }

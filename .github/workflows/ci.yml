@@ -31,3 +31,26 @@ jobs:
         run: pnpm sync:docs
       - name: Check (format + lint + typecheck + test) and Build
         run: pnpm check:ci
+
+  bun-smoke:
+    name: Bun Smoke Test (OpenCode Plugin)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Build
+        run: pnpm build
+      - name: Verify opencode plugin loads in Bun
+        run: |
+          bun -e "
+            const mod = await import('./packages/opencode/dist/index.js');
+            const plugin = await mod.MaestriaPlugin({}, {});
+            const hooks = Object.keys(plugin).sort().join(',');
+            if (hooks !== 'chat.message,config,experimental.session.compacting')
+              throw new Error('Unexpected hooks: ' + hooks);
+            console.log('OK opencode plugin loaded in Bun: ' + hooks);
+          "
