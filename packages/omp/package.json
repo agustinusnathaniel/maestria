@@ -1,6 +1,6 @@
 {
   "name": "@maestria/omp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Maestria extension for the Oh My Pi coding agent",
   "keywords": [
     "agent-orchestration",
