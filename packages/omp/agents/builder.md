@@ -57,41 +57,35 @@ Start with tight constraints, relax as needed:
 
 This reveals what actually requires heavy tools vs. what's simple.
 
-## Related Agents
-
-- `architect` - Clarify design when requirements or approach are ambiguous
-- `reviewer` - Review implementation for quality gates before merging
-- `diagnose` - Investigate root cause when unexpected issues surface mid-work
-
 ## Skill Prescription
 
 ### Load on trigger
 
-- `agent-browser` (`vercel-labs/agent-browser`) - load when task involves UI verification, visual references, web app interaction, or Electron app automation (skip if backend-only)
-- `ai-sdk` (`vercel/ai`) - load when task is AI SDK (skip if unrelated)
-- `codebase-design` (`mattpocock/skills`) - load when implementing a designed interface or building to match module boundary specifications
-- `commit-work` (`softaworks/agent-toolkit`) - load when committing, staging changes, or crafting commit messages
-- `database-schema-designer` (`softaworks/agent-toolkit`) - load when designing database schemas, tables, or data models
-- `frontend-design` (`anthropics/skills`) - load when task is UI/visual
-- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) - load when writing non-trivial logic
-- `mcp-builder` (`anthropics/skills`) - load when building or modifying MCP servers (skip if non-MCP work)
-- `naming-analyzer` (`softaworks/agent-toolkit`) - load when introducing new identifiers
-- `repo exploration tool` - load when library internals are unclear
-- `pnpm` (`antfu/skills`) - load when changing `package.json`/lockfile
-- `react-dev` (`softaworks/agent-toolkit`) - load when task is React (skip if non-frontend)
-- `react-useeffect` (`softaworks/agent-toolkit`) - load when modifying `useEffect` (skip if non-frontend)
-- `resolving-merge-conflicts` (`mattpocock/skills`) - load when resolving merge conflicts or rebase issues
-- `tdd` (`mattpocock/skills`) - load when user explicitly requests TDD
-- `vercel-composition-patterns` (`vercel-labs/agent-skills`) - load when task involves React composition (skip if non-frontend)
-- `vercel-react-best-practices` (`vercel-labs/agent-skills`) - load when task involves React (skip if non-frontend)
-- `vite` (`antfu/skills`) - load when modifying `vite.config` or build
-- `vitest` (`antfu/skills`) - load when writing Vitest tests (skip if no tests)
-- `webapp-testing` (`anthropics/skills`) - load when task needs browser-level test
-- `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) - load when writing a commit message
+- `agent-browser` (`vercel-labs/agent-browser`) - UI/visual verification, web/Electron automation
+- `ai-sdk` (`vercel/ai`) - AI SDK tasks
+- `codebase-design` (`mattpocock/skills`) - interface implementation, module boundaries
+- `commit-work` (`softaworks/agent-toolkit`) - committing, staging, commit messages
+- `database-schema-designer` (`softaworks/agent-toolkit`) - DB schema and data model design
+- `frontend-design` (`anthropics/skills`) - UI/visual tasks
+- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) - non-trivial logic
+- `mcp-builder` (`anthropics/skills`) - building MCP servers
+- `naming-analyzer` (`softaworks/agent-toolkit`) - new identifier naming
+- `repo exploration tool` - unclear library internals
+- `pnpm` (`antfu/skills`) - package.json/lockfile changes
+- `react-dev` (`softaworks/agent-toolkit`) - React development
+- `react-useeffect` (`softaworks/agent-toolkit`) - useEffect modifications
+- `resolving-merge-conflicts` (`mattpocock/skills`) - merge conflict resolution
+- `tdd` (`mattpocock/skills`) - explicit TDD requests
+- `vercel-composition-patterns` (`vercel-labs/agent-skills`) - React composition patterns
+- `vercel-react-best-practices` (`vercel-labs/agent-skills`) - React best practices
+- `vite` (`antfu/skills`) - vite.config/build
+- `vitest` (`antfu/skills`) - Vitest test writing
+- `webapp-testing` (`anthropics/skills`) - browser-level testing
+- `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) - commit messages
 
 ### Defer to specialist
 
-- `prototype` → `planner`, `improve` → `architect`/`planner`, `hallmark`/`impeccable` → `architect` - exploration/design is upstream
+- `prototype` → `planner`, `improve` → `architect`/`planner`, `hallmark`/`impeccable` → `architect` - upstream exploration/design
 - `dependency-updater` → `diagnose`, `humanizer` → `writer`, `design-an-interface` → `architect`
 
 ### Skip if

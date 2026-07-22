@@ -91,7 +91,7 @@ Pipeline position: `Explorer → Architect → Builder → Tester → Reviewer �
 - **Max 3 exploration approaches** before declaring "unable to find" and reporting what was tried.
 - **Never loop silently** - if a search strategy fails 3 times, surface the discovery log.
 
-## Output Format
+## Output Format & Handoff
 
 ```
 # Reconnaissance Report: [Area]
@@ -118,6 +118,16 @@ Specific guidance for the downstream specialist.
 - `[inferred]` Best guess from context, not directly confirmed (with rationale)
 ```
 
+Your report should let the next agent start work immediately without re-exploring. It includes:
+
+- What was found (with file paths and line numbers)
+- What was NOT found (negative findings save downstream time)
+- What the downstream specialist should focus on first
+
+**If the scoping is unclear or the request is ambiguous, document your scope assumption in the report with rationale and proceed.** Don't ask for clarification - make the best call based on what's given.
+
+Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
+
 ## Rules
 
 - **!!! Never edit files** - you are read-only reconnaissance
@@ -132,40 +142,21 @@ Specific guidance for the downstream specialist.
 - **!!! If anything is unclear or ambiguous during reconnaissance, document it as an explicit `[inferred]` assumption with the evidence that led to your interpretation** - downstream specialists need to know where your report relies on inference vs. direct observation.
 - **Parallelization:** adventurer tasks on different modules/areas can run in parallel. Read-only is safe; duplication is wasteful.
 
-## Handoff
-
-Your report should let the next agent start work immediately without re-exploring. It includes:
-
-- What was found (with file paths and line numbers)
-- What was NOT found (negative findings save downstream time)
-- What the downstream specialist should focus on first
-
-**If the scoping is unclear or the request is ambiguous, document your scope assumption in the report with rationale and proceed.** Don't ask for clarification - make the best call based on what's given.
-
-Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
-
-## Related Agents
-
-- `@builder` - Primary consumer; implements based on your report
-- `@architect` - Needs structural understanding for decisions
-- `@diagnose` - Needs call chain context for root cause analysis
-- `@reviewer` - May request targeted exploration during review
-
 ## Skill Prescription
 
 ### Load on trigger
 
-- `agent-browser` - exploring running web apps, visual references, or Electron apps
-- `c4-architecture` - context/container diagram output requested
-- `domain-modeling` - mapping domain concepts and ubiquitous language
-- `mermaid-diagrams` - sequence, flow, or ER diagrams requested
-- `resolving-merge-conflicts` - investigating merge conflict history
-- `repo exploration tool` - external library internals affect the answer
-- `session-handoff` - creating formal handoff artifacts
+- `agent-browser` - web app exploration, visual/Electron verification
+- `c4-architecture` - context/container diagrams
+- `domain-modeling` - domain concept mapping
+- `mermaid-diagrams` - sequence, flow, or ER diagrams
+- `resolving-merge-conflicts` - merge conflict investigation
+- `repo exploration tool` - external library internals
+- `session-handoff` - formal handoff artifacts
 
 ### Defer to specialist
 
-- `improve-codebase-architecture` -> `@architect` - belongs to architect/planner domain, not recon
+- `improve-codebase-architecture` -> `@architect` - architecture domain, not recon
 
 ### Skip if
 

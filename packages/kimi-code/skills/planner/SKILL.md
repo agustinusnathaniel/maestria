@@ -60,12 +60,6 @@ Global Handoff Contract iteration limits apply. Role-specific:
 - **Termination condition:** all phases have success criteria, dependencies mapped, rollback points identified.
 - **Max 3 plan revisions** based on `reviewer` feedback before finalising.
 
-## Related Skills
-
-- `architect` - Consult for architecture input before detailed planning
-- `orchestrator` - Execute the plan by delegating phases to the appropriate specialists
-- `reviewer` - Review the plan for completeness and blind spots before execution
-
 ## Handoff
 
 Report: 1) planned phases and tasks, 2) assumptions (`[verified]`/`[inferred]`), 3) verification & rollback points, 4) next step (delegate to `orchestrator`).
@@ -76,20 +70,20 @@ Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-
 
 ### Always load
 
-- `requirements-clarity` - plan ambiguity upfront
+- `requirements-clarity` - plan ambiguity resolution
 
 ### Load on trigger
 
 - `game-changing-features` - product strategy
 - `domain-modeling` - domain boundary alignment
 - `grill-me` - interactive validation
-- `prototype` - runtime validation before full plan
-- `to-issues` - break plan into issues
-- `to-prd` - convert plan to PRD
+- `prototype` - pre-plan runtime validation
+- `to-issues` - plan-to-issues conversion
+- `to-prd` - plan-to-PRD conversion
 
 ### Defer to specialist
 
-- `ship-learn-next` -> `writer` (writing skill)
+- `ship-learn-next` -> `writer` (writing-focused)
 - `improve` -> `architect` (codebase audit)
 
 ### Skip if

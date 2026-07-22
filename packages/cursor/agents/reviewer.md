@@ -137,27 +137,27 @@ Then produce:
 
 ### Always load
 
-- `naming-analyzer` - identifier analysis for every review
+- `naming-analyzer` - identifier review analysis
 
 ### Load on trigger (skip when irrelevant)
 
-- `agent-browser` - UI changes, visual fidelity, interactive flows
+- `agent-browser` - UI/visual/interactive review
 - `baseline-ui` - UI component review
 - `fixing-accessibility` - WCAG accessibility audit
-- `fixing-metadata` - SEO / metadata review
+- `fixing-metadata` - SEO/metadata review
 - `fixing-motion-performance` - animation performance audit
-- `logging-best-practices` - code adding or modifying logging
-- `codebase-design` - module boundaries and seam placement
+- `logging-best-practices` - logging code review
+- `codebase-design` - module boundaries, seam placement
 - `review-logging-patterns` - logging pattern review
-- `skill-judge` - reviewing SKILL.md files
-- `userinterface-wiki` - UI patterns review
-- `web-design-guidelines` - UI guidelines compliance
+- `skill-judge` - SKILL.md review
+- `userinterface-wiki` - UI pattern review
+- `web-design-guidelines` - UI guideline compliance
 - `webapp-testing` - test suite review
 
 ### Defer to specialist
 
-- `improve` -> `architect` - codebase audit is upstream
-- `emil-design-eng` -> `architect` - component design philosophy is upstream
+- `improve` -> `architect` - upstream codebase audit
+- `emil-design-eng` -> `architect` - upstream component design
 
 ### Skip if
 
@@ -169,9 +169,3 @@ Then produce:
 - [Google's Code Review Guidelines](https://google.github.io/eng-practices/review/)
 - [The Standard of Code Review](https://google.github.io/eng-practices/review/reviewer/standard.html)
 - [What to Look For in a Code Review](https://google.github.io/eng-practices/review/reviewer/looking-for.html)
-
-## Related Agents
-
-- `builder` - Implement recommended fixes for issues found during review
-- `writer` - Update documentation when gaps or inaccuracies are found
-- `diagnose` - Investigate deeply when issues appear to have unknown root causes

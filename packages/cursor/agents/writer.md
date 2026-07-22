@@ -69,39 +69,33 @@ Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-
 
 ### Always load
 
-- `writing-clearly-and-concisely` - clear prose for all writing tasks
-- `humanizer` - remove AI writing markers (most docs are AI-shaped by default)
+- `writing-clearly-and-concisely` - clear prose for all writing
+- `humanizer` - remove AI writing markers
 
 ### Load on trigger
 
-- `backend-to-frontend-handoff-docs` - API docs for frontend consumers
-- `brand-guidelines` - brand docs, style guides, tone of voice
-- `copy-editing` - in-place editing of existing copy
-- `crafting-effective-readmes` - README output
-- `doc-coauthoring` - collaborative co-writing
-- `docx` - `.docx` file generation
-- `domain-modeling` - domain glossary / ubiquitous language docs
-- `frontend-to-backend-requirements` - frontend data needs for backend
-- `pdf` - `.pdf` file generation
-- `pptx` - slide decks
-- `writing-great-skills` - creating/editing SKILL.md files
-- `xlsx` - spreadsheets
+- `backend-to-frontend-handoff-docs` - API docs for frontend
+- `brand-guidelines` - brand/style guide docs
+- `copy-editing` - in-place copy editing
+- `crafting-effective-readmes` - README creation
+- `doc-coauthoring` - collaborative writing
+- `docx` - `.docx` generation
+- `domain-modeling` - domain glossary/ubiquitous language
+- `frontend-to-backend-requirements` - frontend data requirements
+- `pdf` - `.pdf` generation
+- `pptx` - slide deck creation
+- `writing-great-skills` - SKILL.md creation/editing
+- `xlsx` - spreadsheet creation
 
 ### Defer to specialist
 
-- `internal-comms` → out of scope - not a code/ADRs/API docs task
-- `professional-communication` → out of scope - emails/messaging not in writer's role
-- `template-skill` → out of scope - skill creation is a separate workflow
-- `skill-creator` → out of scope - same as above
-- `copywriting` → out of scope - marketing copy is not documentation
+- `internal-comms` → out of scope - not code/doc work
+- `professional-communication` → out of scope - emails/messaging
+- `template-skill` → out of scope - skill creation workflow
+- `skill-creator` → out of scope - skill creation workflow
+- `copywriting` → out of scope - marketing copy
 
 ### Skip if
 
 - Output is short prose (1-paragraph note); no skill load needed
 - User wants a quick rewrite, not a full document
-
-## Related Agents
-
-- `architect` - Capture ADRs from architecture decisions
-- `reviewer` - Review documentation for clarity and completeness
-- `builder` - Verify documented examples match implementation

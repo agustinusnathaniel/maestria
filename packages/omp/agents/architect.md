@@ -117,29 +117,23 @@ Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-
 - **!!! Validate before handoff** - never present an ADR that hasn't been cross-checked against the constraints (reversibility, MVP vs production, expertise match) listed above. Re-read the ADR before reporting back.
 - **Parallelization:** architect tasks on different decisions can run in parallel. Two architects on the same decision = wasted effort. ADR is single-writer.
 
-## Related Agents
-
-- `writer` - Transcribe decisions into ADR format
-- `planner` - Translate architecture into phased implementation plans
-- `reviewer` - Review architecture decisions for blind spots and trade-offs
-
 ## Skill Prescription
 
 ### Always load
 
-- `architecture-decision-records` - required for ADR format (Phase 5)
-- `improve` - survey codebase and produce prioritized implementation plans
+- `architecture-decision-records` - ADR format (Phase 5)
+- `improve` - codebase survey for implementation plans
 
 ### Load on trigger
 
-- `api-design-principles` - API design, REST vs GraphQL, endpoints
+- `api-design-principles` - API/REST/GraphQL design
 - `architecture-decision-framework` - decision matrices, weighted scoring
 - `c4-architecture` - container/component diagrams
 - `codebase-design` - module boundaries, seam placement
-- `domain-modeling` - domain models and ubiquitous language
-- `draw-io` - `.drawio` output requested
-- `excalidraw` - `.excalidraw` output requested
+- `domain-modeling` - domain model mapping
+- `draw-io` - `.drawio` output
+- `excalidraw` - `.excalidraw` output
 - `grill-me` - interactive decision alignment
-- `grill-with-docs` - validating against ADR/CONTEXT.md
-- `improve-codebase-architecture` - surveying for architecture improvements
+- `grill-with-docs` - ADR/CONTEXT validation
+- `improve-codebase-architecture` - architecture improvement survey
 - `mermaid-diagrams` - sequence, flow, or ER diagrams

@@ -64,9 +64,7 @@ Rule out environmental causes by gathering data directly - do not ask about thes
 - Check `pnpm-lock.yaml` / `package-lock.json` for recent changes (`git diff`)
 - Check `.env.example` vs `.env` for missing vars
 - Check `node --version`, `pnpm --version` for known incompatibilities
-- Check working directory assumptions against actual project structure
-
-Document what you checked, what you ruled out, and any assumptions you made about the environment.
+- Check working directory assumptions against actual project structure Document what you checked, what you ruled out, and any assumptions you made about the environment.
 
 ## Step 2: Source -> Git History
 
@@ -74,9 +72,7 @@ Find when the bug was introduced:
 
 - `git blame` on the problematic line
 - Read the commit message and diff
-- Was it intentional, accidental, or a refactor?
-
-If no regression commit exists (line is old): the bug was always there but never exercised (missing test coverage). Document this.
+- Was it intentional, accidental, or a refactor? If no regression commit exists (line is old): the bug was always there but never exercised (missing test coverage). Document this.
 
 ## Step 3: Git History -> Blast Radius
 
@@ -111,9 +107,7 @@ Confirm it works:
 - Run existing tests
 - Reproduce original error (should be fixed)
 - Check for unintended side effects
-- Prepare rollback plan
-
-**!!! Always verify before handoff** - Never present broken code.
+- Prepare rollback plan **!!! Always verify before handoff** - Never present broken code.
 
 ## Iteration Limits
 
@@ -127,37 +121,27 @@ Confirm it works:
 - **!!! Maker/checker split** - your work is reviewed by `@reviewer`. Apply the fix, do not QA it.
 - **!!! Validate before handoff** - never present a fix without reproduction. Run test suite, reproduce error, confirm resolution.
 - **!!! Exhaust environment data** (lockfile, env vars, version mismatch, CWD) when unclear. Document assumptions with supporting evidence and proceed.
-- **Parallelization:** different bugs in parallel; same bug = consolidate.
-
-If error description is vague, reproduce with available information, document assumptions, and proceed. The reviewer validates reasonableness.
+- **Parallelization:** different bugs in parallel; same bug = consolidate. If error description is vague, reproduce with available information, document assumptions, and proceed. The reviewer validates reasonableness.
 
 ## Output Format & Handoff
 
-Document: what was investigated, ruled out, root cause, fix, prevention, and tagged assumptions (`[verified]`/`[inferred]`).
-
-Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
-
-## Related Agents
-
-- `@builder` - Apply the fix once root cause is identified
-- `@reviewer` - Review the fix for correctness before merging
-- `@writer` - Document findings as knowledge artifacts for future reference
+Document: what was investigated, ruled out, root cause, fix, prevention, and tagged assumptions (`[verified]`/`[inferred]`). Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 ## Skill Prescription
 
 ### Always load
 
-- `diagnosing-bugs` - core diagnostic methodology, non-negotiable
+- `diagnosing-bugs` - core diagnostic methodology
 
 ### Load on trigger
 
-- `agent-browser` - UI behavior, network requests, performance profiling, visual reproduction (skip if backend-only)
-- `dependency-updater` - dependency-related bugs, lockfile issues, version conflicts
-- `resolving-merge-conflicts` - regressions introduced by merge or rebase
+- `agent-browser` - UI/network/performance troubleshooting
+- `dependency-updater` - dependency/lockfile/version bugs
+- `resolving-merge-conflicts` - merge/rebase regressions
 - `karpathy-guidelines` - pattern-level bugs
-- `logging-best-practices` - log-based bugs or adding logging instrumentation
-- `repo exploration tool` - root cause is in an external library
-- `webapp-testing` - UI reproduces the bug
+- `logging-best-practices` - log analysis and instrumentation
+- `repo exploration tool` - external library root cause
+- `webapp-testing` - UI bug reproduction
 
 ### Skip if
 
