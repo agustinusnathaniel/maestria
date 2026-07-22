@@ -2,6 +2,6 @@
 '@maestria/opencode': patch
 ---
 
-Fix mode prompts not loading after plugin install
+fix: use module.findPackageJSON for package-root-relative path resolution
 
-Mode keywords (fein/sonar/blitz) would fail silently when the plugin was loaded from an installed package because the prompt files path didn't resolve correctly after bundling. Now uses Node's built-in package detection to always find the right directory.
+The mode prompt loader used a hardcoded relative path that resolved correctly from source but broke after bundling because the bundler flattens directory structure. Replaced with Node.js built-in `module.findPackageJSON` which finds the package root regardless of where the code is loaded from.
