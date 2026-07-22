@@ -1,5 +1,11 @@
 # maestria
 
+## 0.7.3
+
+### Patch Changes
+
+- [`7681e11`](https://github.com/agustinusnathaniel/maestria/commit/7681e11750c9f16c5f849595f278d361fa2b3bc6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: omp plugin command
+
 ## 0.7.2
 
 ### Patch Changes
