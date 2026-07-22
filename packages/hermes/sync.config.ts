@@ -29,18 +29,13 @@ export default {
       { from: 'task(', to: 'delegate_task(' },
 
       // Domain generalization: broaden coding-specific language for general-purpose agent
-      {
-        from: 'codebase reconnaissance agent for deep code understanding',
-        to: 'research and exploration specialist for deep understanding across any domain',
-      },
       { from: 'Codebase exploration', to: 'Research and exploration' },
       { from: 'code review', to: 'quality review and validation' },
-      { from: 'review this PR', to: 'review this output' },
       { from: 'review PR', to: 'review work' },
       { from: 'code for quality', to: 'output for quality' },
       { from: 'code changes', to: 'changes' },
       { from: 'code review guidelines', to: 'review guidelines' },
-      { from: 'code, not the person', to: 'work, not the person' },
+      { from: 'Critique code, not developers', to: 'Critique work, not the person' },
 
       // Generalize role identities
       {
@@ -48,15 +43,15 @@ export default {
         to: 'You are a research and exploration specialist.',
       },
       {
-        from: 'You are an architecture decision-making agent.',
+        from: 'You make architecture decisions systematically.',
         to: 'You are a design and decision specialist.',
       },
       {
-        from: 'You are a focused implementation agent for atomic tasks.',
+        from: 'You are a focused implementation agent.',
         to: 'You are a production specialist for atomic tasks.',
       },
       {
-        from: 'You are a systematic debugging agent.',
+        from: 'You trace bugs systematically.',
         to: 'You are a root cause analysis specialist.',
       },
       { from: 'You create implementation plans.', to: 'You create plans for any multi-step work.' },
@@ -79,11 +74,10 @@ export default {
 
       // Coding-specific references in rules and processes
       {
-        from: 'run tests or type checks to confirm correctness',
-        to: 'verify correctness through available validation methods',
+        from: 'Run tests or type checks to confirm correctness',
+        to: 'Verify correctness through available validation methods',
       },
       { from: 'tests, type check, lint', to: 'verification results' },
-      { from: 'Test or type check to confirm', to: 'Verify' },
       { from: 'TypeScript errors', to: 'issues or errors' },
       { from: 'tsconfig.json or build output', to: 'configuration or build output' },
       { from: 'Related Agents', to: 'Related Specialists' },
@@ -196,8 +190,8 @@ export default {
       },
       replace: [
         {
-          from: 'or configuration change',
-          to: 'single configuration change or content update',
+          from: 'A single configuration change',
+          to: 'A single configuration change or content update',
         },
       ],
       append: [
@@ -225,10 +219,13 @@ export default {
           to: 'You investigate problems and trace root causes systematically.',
         },
         { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
-        { from: 'Look for recent file changes in git', to: 'Look for recent changes' },
         {
-          from: 'Run type checker to isolate type errors',
-          to: 'Run validation tools to isolate issues',
+          from: 'Check `pnpm-lock.yaml` / `package-lock.json` for recent changes (`git diff`)',
+          to: 'Check for recent changes in configuration or dependencies',
+        },
+        {
+          from: 'Rule out environmental causes by gathering data directly',
+          to: 'Rule out environmental causes before deeper investigation',
         },
       ],
     },
@@ -242,21 +239,24 @@ export default {
       },
       replace: [
         {
-          from: 'write tests',
-          to: 'Verify each output meets its success criteria',
-        },
-        { from: 'run type checks', to: 'Run validation checks after each change' },
-        {
-          from: 'use conventional commits',
-          to: 'Document changes following project conventions',
+          from: '- Write tests for new functionality',
+          to: '- Verify each output meets its success criteria',
         },
         {
-          from: 'Do NOT change architecture',
-          to: "Don't change scope unless explicitly asked",
+          from: '- Run type checking after changes',
+          to: '- Run validation checks after each change',
         },
         {
-          from: 'add dependencies without approval',
-          to: "Don't introduce new tools or approaches without justification",
+          from: '- Commit with conventional commits',
+          to: '- Document changes following project conventions',
+        },
+        {
+          from: "- Don't change architecture unless explicitly asked",
+          to: "- Don't change scope unless explicitly asked",
+        },
+        {
+          from: "- Don't add new dependencies without approval",
+          to: "- Don't introduce new tools or approaches without justification",
         },
       ],
     },
@@ -299,31 +299,22 @@ export default {
       replace: [
         // Generalize coding-specific rules for a general-purpose agent
         {
-          from: 'Reviewer has `edit: deny`',
-          to: 'Reviewer has no write access (maker/checker split)',
-        },
-        { from: 'Builder has `edit: allow`', to: 'Builder has full tool access' },
-        { from: '`check`, `test`', to: 'validation checks' },
-        { from: '`check`/`test`', to: 'validation commands' },
-
-        // Remove platform-specific rules that don't apply
-        {
-          from: '!!! Git commands must go through @builder',
-          to: '!!! Git operations go through builder or OpenCode when coding',
+          from: '**!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands.',
+          to: '**!!! Maker/checker split** - your work is reviewed before it lands. The reviewer has no write access.',
         },
         {
-          from: 'Delegate validation (`check`, `test`) to @builder before the commit lands',
-          to: 'Delegate validation to the appropriate specialist before completing',
+          from: 'validation commands `check`/`test`',
+          to: 'validation commands',
         },
 
         // Generalize delegation rules for Hermes
         {
-          from: 'platform-native built-in agents that bypass the pipeline',
-          to: 'built-in `explore` or `general`',
+          from: '**Never delegate to platform-native built-in agents** - they are built-in, not part of the pipeline.',
+          to: 'Never delegate to built-in `explore` or `general` - they bypass the pipeline.',
         },
         {
-          from: '`@adventurer` for any codebase context',
-          to: '`adventurer` for any research and exploration context',
+          from: '| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |',
+          to: '| `adventurer` | Research and exploration, deep understanding | Understanding unfamiliar code, tracing dependencies, gathering context |',
         },
       ],
     },

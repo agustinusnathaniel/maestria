@@ -175,7 +175,7 @@ export default {
       },
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/cursor' },
-        { from: '`bash --help`', to: '`Shell` help / skill docs' },
+        { from: '<cmd> --help', to: '`Shell` help / skill docs' },
       ],
     },
     'commands/fein.md': {

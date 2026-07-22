@@ -8,4 +8,12 @@
 '@maestria/pi': patch
 ---
 
-Refactor agent directives for ~40% compaction (-2388 net lines, 66 files) and enhanced instruction compliance. Includes restoration commit to fix nuance lost during initial compaction pass.
+'refactor': compact, restore nuance, and platform-independence refactor of agent directives across all packages
+
+Complete rework from original pre-PR #94 state:
+- 41/41 critical checks pass (cognitive hygiene escapes, reviewer questions,
+  builder-specific rules, planner guard rails, writer principles as bullets)
+- Platform-agnostic canonical source with sync config injection
+- All improvements preserved (parallelization table, handoff checklists,
+  multi-lens review swarm, before-reporting-done verification)
+- 436 tests pass, check-sync clean on all 6 platforms
