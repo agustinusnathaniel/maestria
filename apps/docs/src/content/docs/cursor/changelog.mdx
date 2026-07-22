@@ -5,15 +5,23 @@ description: Release history for @maestria/cursor.
 
 # Changelog
 
-## 0.1.0
+## 0.1.1
 
 _July 21, 2026_
 
 ### Minor Changes
 
 - Initial release of `@maestria/cursor` — declarative Cursor plugin for IDE and CLI.
-- **7 specialist agents** synced from core (`agents/*.md`)
-- **Orchestrator skill** with Task-based routing
-- **Global rules** (`alwaysApply: true`)
-- **Workflow commands** — `/fein`, `/sonar`, `/blitz`, `/orchestrate`
-- CLI: `maestria install cursor` → `~/.cursor/plugins/local/maestria`
+- **7 specialist agents** synced from core (`agents/*.md`) with Cursor-adapted tool names
+- **Orchestrator skill** (`skills/orchestrator/SKILL.md`) with Task-based routing, handoff contracts, and maker/checker enforcement
+- **Global rules** (`rules/maestria-global.mdc`, `alwaysApply: true`)
+- **Workflow commands** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation)
+- **Two-layer maker/checker** — `readonly: true` runtime flag on adventurer/planner/reviewer agents
+- **CLI support** — `maestria install cursor`, `maestria update cursor`, `maestria uninstall cursor`, `maestria check cursor`
+- Sync workflow mode commands through canonical source pipeline
+
+## 0.1.0
+
+_July 21, 2026_
+
+Initial release — same as 0.1.0 (versioning alignment).

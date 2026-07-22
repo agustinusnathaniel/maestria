@@ -5,6 +5,37 @@ description: Release history for the maestria CLI.
 
 # Changelog
 
+## v0.7.0
+
+_July 22, 2026_
+
+### Oh My Pi (omp) platform support
+
+New `@maestria/omp` package adds maestria support for the Oh My Pi coding agent. CLI integration: `maestria install omp`, `maestria update omp`.
+
+## v0.6.1
+
+_July 21, 2026_
+
+- Switch kimi-code to npm-based install (fixes `maestria update kimi-code` version comparison)
+- Add Cursor plugin support: `maestria install cursor`, `maestria update cursor`
+
+## v0.6.0
+
+_July 17, 2026_
+
+### New `maestria check` command
+
+Check whether a maestria plugin is installed on any platform. Returns the installation status of each plugin so you can verify your setup.
+
+## v0.5.0
+
+_July 14, 2026_
+
+### Enhanced interactive prompts
+
+`update` and `install` commands now use a grouped multiselect prompt with an "All platforms" toggle and `a` keyboard shortcut to select/deselect all. `maestria install kimi-code` now works with the latest Kimi Code versions -- the installer writes plugin files directly instead of relying on a removed CLI command.
+
 ## v0.4.1
 
 _July 14, 2026_
@@ -41,6 +72,42 @@ multiselect with checkboxes instead of single-option pickers.
   the old single-select for both install and update commands
 - **All platforms shortcut** — Interactive `maestria update` includes a
   convenient "All platforms" option to update everything at once
+
+## v0.3.11
+
+_July 11, 2026_
+
+- Pi extension detection no longer fails during version checks
+- Version comparison between releases is now more reliable
+
+## v0.3.10
+
+_July 11, 2026_
+
+- Pi package install and uninstall now work correctly
+
+## v0.3.9
+
+_July 3, 2026_
+
+- Pi extension detection no longer fails during version checks
+
+## v0.3.8
+
+_July 2, 2026_
+
+- OpenCode install no longer fails when tools are on a non-standard PATH.
+- New `maestria uninstall` command with `--all` and interactive mode support.
+- `maestria --version` now shows the correct package version.
+- Error messages now include command output for easier debugging.
+
+## v0.3.2
+
+_July 1, 2026_
+
+### Bundle CLI runtime dependencies
+
+Bundled `effect`, `@clack/prompts`, `citty`, `picocolors` into output instead of externalizing them. End users no longer download 8.2 MB of transitive dependencies at install time.
 
 ## v0.3.0
 

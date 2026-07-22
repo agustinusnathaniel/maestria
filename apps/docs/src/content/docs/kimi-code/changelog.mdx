@@ -5,6 +5,109 @@ description: Release history for @maestria/kimi-code.
 
 # Changelog
 
+## v0.4.7
+
+_July 21, 2026_
+
+### Switch to npm-based install
+
+The plugin now installs via `npm pack @maestria/kimi-code` instead of git-based codeload. `maestria update kimi-code` no longer re-downloads the same version.
+
+## v0.4.6
+
+_July 21, 2026_
+
+### Compact agent directives
+
+Agent directives compressed to cut context usage by ~38% on the orchestrator prompt without removing rules or intent. Shared specialist rules now live once in global rules instead of being repeated per specialist.
+
+## v0.4.5
+
+_July 14, 2026_
+
+### Structured assumption tagging
+
+Adventurer and architect outputs now require `[verified]` or `[inferred]` tags on every assumption.
+
+### Deterministic agents, cognitive hygiene, outcome specs, and more
+
+Additional methodology improvements including cognitive hygiene checklist, outcome over activity specs, experiment framing, parallel speculation, incidental findings, and first-principles decomposition.
+
+## v0.4.4
+
+_July 14, 2026_
+
+### Structured PR descriptions
+
+Pull request descriptions now follow a consistent format with Summary, Changes, Testing, and Breaking Changes sections. Reviews are faster when every PR uses the same structure.
+
+## v0.4.3
+
+_July 14, 2026_
+
+### Auto-create feature branch when landing on main
+
+The agent no longer asks for confirmation before creating a feature branch
+when it lands on main.
+
+### Work results format streamlined
+
+The post-task summary now uses a table-first format. Changes are prefixed
+with `+` (added), `~` (modified), or `-` (deleted). Breaking changes are
+marked with `!`, and test file changes are annotated with `(test)`.
+
+## v0.4.2
+
+_July 14, 2026_
+
+### Structured work results are now mandatory
+
+After every task, the agent must produce a `## Changes` summary table.
+Documentation audit before every commit is also now required.
+
+## v0.4.1
+
+_July 10, 2026_
+
+- Reordered conventional commit prefixes. `refactor` is now the default prefix instead of `feat`. `feat` is reserved for user-facing features only.
+
+## v0.4.0
+
+_July 10, 2026_
+
+### Multi-lens review swarm
+
+The orchestrator can now dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General). Issues are categorized [fix]/[dismiss]/[escalate].
+
+### Autonomous commit protocol
+
+Commit is fully autonomous - agent reads git log, composes correct conventional commit message, commits without asking. Push is automatic on feature branches, asks only on main/master.
+
+### Eliminate questions - autonomous philosophy
+
+Agents now exhaust data, document assumptions, and proceed instead of asking for permission. Mid-phase questions eliminated across all specialists.
+
+### Review methodology improvements
+
+- **Observation over reasoning** - reviewer prioritizes running code over logical argument.
+- **Review triage pipeline** - issues categorized and validated with conservative conflict resolution.
+
+## v0.3.5
+
+_July 1, 2026_
+
+### Code intelligence tool preference
+
+Agents now prefer code intelligence tools (MCP, CLI, or other) before falling back to grep and read when exploring the codebase.
+
+## v0.3.1
+
+_June 27, 2026_
+
+### Two new design principles
+
+Agents now check from first principles before adopting existing patterns, and check for existing solutions before building from scratch.
+
 ## v0.3.0
 
 _June 24, 2026_
@@ -21,6 +124,14 @@ via `@adventurer` delegation.
 The orchestrator and all specialists now include explicit guardrails against two common failure modes:
 
 - **Don't anthropomorphize effort** - A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
+
+## v0.2.1
+
+_June 24, 2026_
+
+### Single source of truth for agent directives
+
+Agent prompts and global rules now live in one canonical location (`packages/core/agent-directives/`) and sync automatically to all platform plugins. The `scripts/sync-all` and `scripts/check-sync` tools handle the pipeline.
 
 ## 0.1.0
 

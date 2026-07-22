@@ -5,43 +5,133 @@ description: Release history for @maestria/pi.
 
 # Changelog
 
+## v0.5.6
+
+_July 21, 2026_
+
+- Sync workflow mode commands (fein/sonar/blitz) through canonical source pipeline.
+
+## v0.5.5
+
+_July 21, 2026_
+
+### Compact agent directives
+
+Agent directives compressed to cut context usage by ~38% on the orchestrator prompt without removing rules or intent. Shared specialist rules now live once in global rules instead of being repeated per specialist.
+
+## v0.5.4
+
+_July 14, 2026_
+
+### Structured assumption tagging
+
+Adventurer and architect outputs now require `[verified]` or `[inferred]` tags on every assumption.
+
+### Deterministic agents preferred
+
+New CRITICAL RULE mandates defined output contracts before delegating. Open-ended exploration must be scoped with time and resource limits.
+
+### Cognitive hygiene for delegation
+
+The orchestrator now has a 5-trap pre-flight checklist to catch weak delegation prompts.
+
+### Outcome specs over activity specs
+
+Delegation now prefers specifying what to achieve over how to achieve it.
+
+### Experiment framing, parallel speculation, incidental findings, first-principles decomposition
+
+Additional methodology improvements across all specialist agents.
+
+## v0.5.3
+
+_July 14, 2026_
+
+### Mandatory PR description structure
+
+COMMIT PROTOCOL step 7 now requires a numbered list of PR description sections: Summary, ## Changes, ## Testing, and ## Breaking Changes.
+
+## v0.5.2
+
+_July 14, 2026_
+
+### Aligned orchestrator push rules with Branch Discipline
+
+The `question()` call when landing on main/master is removed. The commit protocol now auto-checkouts a feature branch instead of asking.
+
+### Improved Work Results output format
+
+Restructured from a 3-part narrative to a lean table-first format with change-type prefixes (+/~/-), breaking change markers (!), and test file annotations ((test)).
+
 ## v0.5.1
 
 _July 14, 2026_
 
-### Mandated work results format
+### Structured work results are now mandatory
 
-The structured `## Changes` summary table after builder tasks is now a
-hard requirement enforced by a non-negotiable CRITICAL RULE. This replaces
-the previous suggested behavior with a mandated format.
+After every task, the agent must produce a `## Changes` summary table instead
+of a free-form description.
 
-### Mandated documentation audit before commits
+### Documentation audit before every commit
 
-The documentation audit step before every commit is now explicitly required,
-covering four categories: internal docs, user-facing docs site, user-facing
-changelog, and changesets.
+The agent now checks internal docs, the user-facing docs site, the user-facing
+changelog, and changesets before committing.
 
 ## v0.4.1
 
 _July 11, 2026_
 
-### Architecture refactor: skill-based injection + pi-subagents agent registration
+### Standard Pi skill mechanism for agent content
 
-Complete re-architecture of how maestria behavioral content flows into Pi sessions:
+The orchestrator dispatcher prompt and global agent rules now load as Pi
+skills (`.md` files in `skills/`). This is the same mechanism used by
+pi-web-access, pi-messenger, and other Pi extensions. The old custom
+file-loading approach is removed.
 
-**Standard Pi skill mechanism:** The orchestrator dispatcher prompt and global agent rules now ship as Pi `SKILL.md` files in `skills/`, auto-discovered from the `pi.skills` manifest field and injected by Pi's resource loader -- the same standard pattern used by pi-web-access, pi-messenger, pi-intercom, and other major Pi extensions. The old `before_agent_start` + `readFileSync` approach is removed.
+### Specialist agents registered with pi-subagents
 
-**Pi-subagents agent type registration:** The 7 specialist prompts (adventurer, architect, builder, diagnose, planner, reviewer, writer) are registered with `@gotgenes/pi-subagents` as proper agent types via `.md` files with YAML frontmatter, deployed to `~/.pi/agent/agents/` at extension startup. Each specialist gets role-specific tool isolation via `tools` allowlists in the frontmatter (builder/writer have write access, all others read-only), enforcing the maker/checker split at the subagent level.
+All 7 specialist agent types (adventurer, architect, builder, diagnose,
+planner, reviewer, writer) are now registered as proper agent types. Each
+specialist has the right tool permissions read-only specialists (adventurer,
+architect, planner, reviewer, diagnose) can't write files; builder and
+writer can.
 
-**Removed dead weight:** The `prompts/` and `rules/` directories were synced from canonical sources but never consumed by any extension code. They have been replaced by the `agents/` and `skills/` directories.
+## v0.4.0
 
-### Details
+_July 10, 2026_
 
-- Refactored `sync.config.ts` to generate `agents/*.md` with pi-subagents YAML frontmatter
-- Unified `sync.config.ts` to generate both agents and skills in a single pass (no separate sync-skills config)
-- Added `packages/pi/src/agents.ts` - deploys agent files to `~/.pi/agent/agents/` on session start
-- Simplified `rules.ts` - removed static file loading, renamed `createModePromptHandler` for mode-only injection
-- Removed `pi.prompts` manifest field (misleading - registered template dirs, not for auto-injection)
+### Multi-lens review swarm
+
+The orchestrator can now dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General). Issues are categorized [fix]/[dismiss]/[escalate].
+
+### Autonomous commit protocol
+
+Commit is fully autonomous - agent reads git log, composes correct conventional commit message, commits without asking. Push is automatic on feature branches, asks only on main/master.
+
+### Eliminate questions - autonomous philosophy
+
+Agents now exhaust data, document assumptions, and proceed instead of asking for permission. Mid-phase questions eliminated across all specialists.
+
+### Review methodology improvements
+
+- **Observation over reasoning** - reviewer now prioritizes running code over logical argument.
+- **Review triage pipeline** - issues categorized and validated with conservative conflict resolution.
+
+## v0.3.7
+
+_July 1, 2026_
+
+### Code intelligence tool preference
+
+Agents now prefer code intelligence tools (MCP, CLI, or other) before falling back to grep and read when exploring the codebase.
+
+## v0.3.1
+
+_June 27, 2026_
+
+### Two new design principles
+
+Agents now check from first principles before adopting existing patterns, and check for existing solutions before building from scratch.
 
 ## v0.3.0
 
@@ -59,6 +149,31 @@ via `@adventurer` delegation.
 The orchestrator and all specialists now include explicit guardrails against two common failure modes:
 
 - **Don't anthropomorphize effort** - A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
+
+## v0.2.1
+
+_June 24, 2026_
+
+### Single source of truth for agent directives
+
+Agent prompts and global rules now live in one canonical location (`packages/core/agent-directives/`) and sync automatically to all platform plugins. The `scripts/sync-all` and `scripts/check-sync` tools handle the pipeline.
+
+## v0.2.0
+
+_June 23, 2026_
+
+### Features
+
+Initial release of `@maestria/pi` - a portable Pi extension that brings Maestria's spec-driven orchestration, workflow modes, and specialist subagents to the Pi coding agent.
+
+- **8 specialist prompt templates** - one orchestrator plus seven specialist subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer) with structured role definitions, permission boundaries, and delegation triggers
+- **3 workflow modes** - `fein` (full pipeline with gates), `sonar` (research only), `blitz` (fast implementation), each routing to the appropriate subagent pipeline
+- **Global rules injection** - cross-cutting orchestration, delegation, and context-management rules injected into every session via the `before_agent_start` event
+- **Session compaction preservation** - structured state summaries survive compaction events, keeping task tracking and work-in-progress intact across turns
+- **Subagent dispatch via `@gotgenes/pi-subagents`** - 6-field handoff validation ensures every delegation carries the right context, constraints, and completion criteria
+- **`/orchestrate`, `/review`, `/maestria-status` commands** - slash commands for dispatching work, requesting reviews, and inspecting extension state
+- **Maker/checker enforcement** - tool-call interception prevents the orchestrator from implementing its own tasks, enforcing the separation of dispatch from execution
+- **2 methodology skills** - handoff contract (standardized delegation format) and iteration limits (max 3 proofread-revise cycles before escalation)
 
 ## v0.1.0
 
