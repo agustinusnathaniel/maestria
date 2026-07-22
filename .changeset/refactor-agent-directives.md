@@ -8,12 +8,12 @@
 '@maestria/pi': patch
 ---
 
-'refactor': compact, restore nuance, and platform-independence refactor of agent directives across all packages
+Refactored all agent directive prompts for better structure, clarity, and cross-platform consistency:
 
-Complete rework from original pre-PR #94 state:
-- 41/41 critical checks pass (cognitive hygiene escapes, reviewer questions,
-  builder-specific rules, planner guard rails, writer principles as bullets)
-- Platform-agnostic canonical source with sync config injection
-- All improvements preserved (parallelization table, handoff checklists,
-  multi-lens review swarm, before-reporting-done verification)
-- 436 tests pass, check-sync clean on all 6 platforms
+- Restructured core prompts with clearer sections and emphasis on critical rules agents must follow
+- Added structured handoff verification checklists to all specialist agents so handoffs between agents are more reliable
+- Standardized "Before reporting done" completion checks across all agents, reducing premature sign-offs
+- Added Parallelization table for safer multi-agent task execution when builders work in parallel
+- Added Multi-Lens Review Swarm capability for comprehensive code review that catches more issues
+- Made prompt instructions platform-agnostic so agents behave consistently across OpenCode, Cursor, Kimi Code, Pi, and other platforms
+- Fixed several content gaps where important behavioral rules were compressed too aggressively
