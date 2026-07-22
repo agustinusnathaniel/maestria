@@ -1,5 +1,11 @@
 # maestria
 
+## 0.7.1
+
+### Patch Changes
+
+- [#118](https://github.com/agustinusnathaniel/maestria/pull/118) [`6d95df2`](https://github.com/agustinusnathaniel/maestria/commit/6d95df21a6b92a63849ed16cc92c6811a1a3a3e1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: correct omp npm package detection path - omp v17 stores packages under plugins/ not agent/npm/
+
 ## 0.7.0
 
 ### Minor Changes
