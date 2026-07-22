@@ -10,9 +10,6 @@ const __dirname = dirname(__filename);
 /** Source directory for bundled specialist agent files (synced from canonical) */
 const AGENTS_SRC = join(__dirname, '..', 'agents');
 
-/** Destination directory where omp discovers agent types */
-const AGENTS_DEST = join(homedir(), '.omp', 'agent', 'agents');
-
 const SPECIALIST_NAMES = [
   'adventurer',
   'architect',
@@ -25,15 +22,10 @@ const SPECIALIST_NAMES = [
 
 /**
  * Deploy bundled specialist agent .md files to the omp agents directory.
- *
- * omp discovers agent types from ~/.omp/agent/agents/*.md on every
- * session start. This function ensures the files are in place before
- * the first subagent dispatch.
- *
- * Only creates files that don't already exist - never overwrites user-customized agents.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function deploySpecialistAgents(_ctx?: ExtensionContext): void {
+  const AGENTS_DEST = join(homedir(), '.omp', 'agent', 'agents');
   const srcDir = AGENTS_SRC;
 
   if (!existsSync(srcDir)) {
@@ -41,7 +33,6 @@ export function deploySpecialistAgents(_ctx?: ExtensionContext): void {
     return;
   }
 
-  // Ensure destination directory exists
   try {
     mkdirSync(AGENTS_DEST, { recursive: true });
   } catch {
@@ -59,7 +50,6 @@ export function deploySpecialistAgents(_ctx?: ExtensionContext): void {
       continue;
     }
 
-    // Never overwrite existing files - user may have customized them
     if (existsSync(destFile)) continue;
 
     try {

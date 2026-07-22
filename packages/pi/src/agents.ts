@@ -10,9 +10,6 @@ const __dirname = dirname(__filename);
 /** Source directory for bundled specialist agent files (synced from canonical) */
 const AGENTS_SRC = join(__dirname, '..', 'agents');
 
-/** Destination directory where pi-subagents discovers agent types */
-const AGENTS_DEST = join(homedir(), '.pi', 'agent', 'agents');
-
 const SPECIALIST_NAMES = [
   'adventurer',
   'architect',
@@ -34,6 +31,7 @@ const SPECIALIST_NAMES = [
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function deploySpecialistAgents(_ctx?: ExtensionContext): void {
+  const AGENTS_DEST = join(homedir(), '.pi', 'agent', 'agents');
   const srcDir = AGENTS_SRC;
 
   if (!existsSync(srcDir)) {
@@ -59,7 +57,6 @@ export function deploySpecialistAgents(_ctx?: ExtensionContext): void {
       continue;
     }
 
-    // Never overwrite existing files - user may have customized them
     if (existsSync(destFile)) continue;
 
     try {

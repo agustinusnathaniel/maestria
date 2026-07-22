@@ -58,6 +58,7 @@
     "@opencode-ai/plugin": "^1.18.4"
   },
   "engines": {
+    "bun": ">=1.0.0",
     "node": ">=22.12.0"
   },
   "opencode": {
