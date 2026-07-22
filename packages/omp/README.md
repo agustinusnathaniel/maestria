@@ -5,7 +5,7 @@ Maestria extension for the [Oh My Pi](https://omp.sh/) coding agent.
 ## Installation
 
 ```bash
-omp install npm:@maestria/omp
+omp install @maestria/omp
 ```
 
 ## What's Included
