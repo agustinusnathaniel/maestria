@@ -11,6 +11,23 @@ import {
   renderMaestriaSummary,
 } from '@/state.js';
 import type { MaestriaState } from '@/state.js';
+// Sub-module imports — verify the decomposition works
+import {
+  createInitialState as createInitialStateDirect,
+  recordHandoff as recordHandoffDirect,
+  recordFileModified as recordFileModifiedDirect,
+  recordFileRead as recordFileReadDirect,
+  setReviewMode as setReviewModeDirect,
+  exitReviewMode as exitReviewModeDirect,
+} from '@/state/transforms.js';
+import type {
+  MaestriaState as MaestriaStateFromTypes,
+  HandoffEntry,
+  SubagentStatusInfo,
+} from '@/state/types.js';
+import { HANDOFF_HISTORY_CAP, FILE_HISTORY_CAP } from '@/state/types.js';
+import { persistState as persistStateDirect } from '@/state/persistence.js';
+import { renderMaestriaSummary as renderSummaryDirect } from '@/state/render.js';
 
 const NEW_STATE_KEYS = [
   'mode',
@@ -454,5 +471,51 @@ describe('renderMaestriaSummary with reviewModel', () => {
     const summary = renderMaestriaSummary(state);
 
     expect(summary).not.toContain('**Review Model:**');
+  });
+});
+
+describe('sub-module imports (decomposition)', () => {
+  it('imports from transforms.ts match barrel exports', () => {
+    const barrel = createInitialState();
+    const direct = createInitialStateDirect();
+    expect(barrel).toEqual(direct);
+  });
+
+  it('imports constants from types.ts directly', () => {
+    expect(HANDOFF_HISTORY_CAP).toBe(5);
+    expect(FILE_HISTORY_CAP).toBe(10);
+  });
+
+  it('imports persistState directly from persistence.ts', () => {
+    const pi = { appendEntry: vi.fn() };
+    const state = createInitialState();
+    persistStateDirect(pi as any, state);
+    expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', { ...state });
+  });
+
+  it('imports render directly from render.ts', () => {
+    const state = { ...createInitialState(), activeTask: 'test from render.ts' };
+    const summary = renderSummaryDirect(state);
+    expect(summary).toContain('**Goal:** test from render.ts');
+  });
+
+  it('imports types directly from types.ts', () => {
+    const handoff: HandoffEntry = { from: 'a', to: 'b', task: 't', timestamp: 0 };
+    expect(handoff.from).toBe('a');
+    expect(handoff.to).toBe('b');
+    expect(handoff.task).toBe('t');
+    expect(typeof handoff.timestamp).toBe('number');
+
+    const status: SubagentStatusInfo = { type: 'builder', status: 'running', startedAt: 100 };
+    expect(status.type).toBe('builder');
+    expect(status.status).toBe('running');
+    expect(status.startedAt).toBe(100);
+  });
+
+  it('MaestriaState type from types.ts has correct shape', () => {
+    const state: MaestriaStateFromTypes = createInitialState();
+    expect(state.mode).toBeNull();
+    expect(state.handoffHistory).toEqual([]);
+    expect(state.reviewMode).toBe(false);
   });
 });
