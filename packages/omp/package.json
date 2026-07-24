@@ -34,7 +34,9 @@
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@maestria/core": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:",

@@ -3,6 +3,12 @@
   "version": "0.4.9",
   "private": true,
   "type": "module",
+  "exports": {
+    "./subagent-utils": {
+      "import": "./src/subagent-utils.ts",
+      "types": "./src/subagent-utils.ts"
+    }
+  },
   "scripts": {
     "test": "vp test"
   },

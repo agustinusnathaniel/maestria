@@ -3,40 +3,14 @@ import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-a
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 import type { MaestriaState } from '@/state.js';
 import { persistState, recordHandoff } from '@/state.js';
+import {
+  MAESTRIA_EVENTS,
+  assertValidAgent,
+  assertNonEmptyTask,
+} from '@maestria/core/subagent-utils';
 
-/**
- * Maestria cross-extension event names.
- * Other Pi extensions can subscribe via `pi.events?.on(...)`.
- * Convention: `maestria:<domain>:<action>`
- */
-export const MAESTRIA_EVENTS = {
-  REVIEW_ACTIVATED: 'maestria:review:activated',
-  REVIEW_DEACTIVATED: 'maestria:review:deactivated',
-  SUBAGENT_STARTED: 'maestria:subagent:started',
-  SUBAGENT_COMPLETED: 'maestria:subagent:completed',
-  SUBAGENT_FAILED: 'maestria:subagent:failed',
-} as const;
-
-const ALLOWED_AGENTS = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
-type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
-
-// The 6-field handoff contract
-const HANDOFF_FIELDS = [
-  'Goal',
-  'Context',
-  'Requirements',
-  'Known problems',
-  'Success criteria',
-  'Next step',
-] as const;
+// Re-export for backward compatibility with consumers that import from @/subagent.js
+export { MAESTRIA_EVENTS, validateHandoff } from '@maestria/core/subagent-utils';
 
 /** Terminal subagent statuses - agent will produce no more updates. */
 const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
@@ -49,20 +23,6 @@ export const POLL_INTERVAL_MS = 500;
 
 /** Maximum number of tasks allowed in parallel dispatch. */
 export const MAX_PARALLEL_TASKS = 8;
-
-// ── Validation helpers ──────────────────────────────────────────
-
-function assertValidAgent(agent: string): asserts agent is AllowedAgent {
-  if (!ALLOWED_AGENTS.includes(agent as AllowedAgent)) {
-    throw new Error(`Unknown agent: "${agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
-  }
-}
-
-function assertNonEmptyTask(task: string | undefined, label: string): asserts task is string {
-  if (!task || !task.trim()) {
-    throw new Error(label);
-  }
-}
 
 // ── Polling helper ───────────────────────────────────────────────
 
@@ -115,23 +75,6 @@ function recordAndPersist(
   const updatedState = recordHandoff(state, 'orchestrator', agentName, taskText);
   Object.assign(state, updatedState);
   pi.appendEntry('maestria_state', state);
-}
-
-export interface HandoffValidation {
-  valid: boolean;
-  errors: string[];
-}
-
-export function validateHandoff(handoff: string): HandoffValidation {
-  const errors: string[] = [];
-  for (const field of HANDOFF_FIELDS) {
-    // Check for markdown bold field **Field:** followed by at least one non-whitespace character
-    const regex = new RegExp(`\\*\\*${field}:\\*\\*[\\s\\S]*?\\S`, 'i');
-    if (!regex.test(handoff)) {
-      errors.push(`Missing or empty field: "${field}"`);
-    }
-  }
-  return { valid: errors.length === 0, errors };
 }
 
 export function installSubagentTool(
