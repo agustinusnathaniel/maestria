@@ -77,9 +77,12 @@ export function assertNonEmptyTask(
 export function validateHandoff(handoff: string): HandoffValidation {
   const errors: string[] = [];
   for (const field of HANDOFF_FIELDS) {
-    // Check for markdown bold field **Field:** followed by at least one non-whitespace character
-    const regex = new RegExp(`\\*\\*${field}:\\*\\*[\\s\\S]*?\\S`, 'i');
-    if (!regex.test(handoff)) {
+    // Match field header and capture content up to the next field or end of string.
+    // This avoids false positives when an empty field is followed by another field's `**` header.
+    const pattern = `\\*\\*${field}:\\*\\*([\\s\\S]*?)(?=\
+\\*\\*|$)`;
+    const match = handoff.match(new RegExp(pattern, 'i'));
+    if (!match || !match[1] || !match[1].trim()) {
       errors.push(`Missing or empty field: "${field}"`);
     }
   }
