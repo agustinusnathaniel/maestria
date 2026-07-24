@@ -50,9 +50,82 @@ export const POLL_INTERVAL_MS = 500;
 /** Maximum number of tasks allowed in parallel dispatch. */
 export const MAX_PARALLEL_TASKS = 8;
 
-export function validateHandoff(handoff: string): { valid: boolean; errors: string[] } {
+// ── Validation helpers ──────────────────────────────────────────
+
+function assertValidAgent(agent: string): asserts agent is AllowedAgent {
+  if (!ALLOWED_AGENTS.includes(agent as AllowedAgent)) {
+    throw new Error(`Unknown agent: "${agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
+  }
+}
+
+function assertNonEmptyTask(task: string | undefined, label: string): asserts task is string {
+  if (!task || !task.trim()) {
+    throw new Error(label);
+  }
+}
+
+// ── Polling helper ───────────────────────────────────────────────
+
+type SubagentRecord = { status: string; result?: string; error?: string };
+
+async function pollSubagent(
+  id: string,
+  label: string,
+  sendUpdates: boolean,
+  service: { getRecord(id: string): SubagentRecord | undefined },
+  signal: AbortSignal | undefined,
+  onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
+): Promise<SubagentRecord> {
+  const maxPolls = POLL_TIMEOUT_MS / POLL_INTERVAL_MS;
+  let polls = 0;
+  let record = service.getRecord(id);
+  while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
+    if (signal?.aborted) throw new Error('Maestria subagent call aborted');
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    record = service.getRecord(id);
+    polls++;
+    if (sendUpdates) {
+      onUpdate?.({
+        content: [
+          {
+            type: 'text' as const,
+            text: `${label} running... (${Math.round((polls * POLL_INTERVAL_MS) / 1000)}s)`,
+          },
+        ],
+      });
+    }
+  }
+  if (record && !TERMINAL_STATUSES.has(record.status)) {
+    throw new Error(`Subagent ${id} timed out after ${POLL_TIMEOUT_MS}ms`);
+  }
+  if (!record) {
+    throw new Error(`Subagent ${id} was cleaned up before completion`);
+  }
+  return record;
+}
+
+// ── Handoff recording helper ────────────────────────────────────
+
+function recordAndPersist(
+  pi: ExtensionAPI,
+  state: MaestriaState,
+  agentName: string,
+  taskText: string,
+): void {
+  const updatedState = recordHandoff(state, 'orchestrator', agentName, taskText);
+  Object.assign(state, updatedState);
+  pi.appendEntry('maestria_state', state);
+}
+
+export interface HandoffValidation {
+  valid: boolean;
+  errors: string[];
+}
+
+export function validateHandoff(handoff: string): HandoffValidation {
   const errors: string[] = [];
   for (const field of HANDOFF_FIELDS) {
+    // Check for markdown bold field **Field:** followed by at least one non-whitespace character
     const regex = new RegExp(`\\*\\*${field}:\\*\\*[\\s\\S]*?\\S`, 'i');
     if (!regex.test(handoff)) {
       errors.push(`Missing or empty field: "${field}"`);
@@ -123,15 +196,8 @@ export function installSubagentTool(
 
       // Validate parameters based on mode
       if (mode === 'single') {
-        // Backward-compatible validation - must match original error messages exactly
-        if (!ALLOWED_AGENTS.includes(params.agent as AllowedAgent)) {
-          throw new Error(
-            `Unknown agent: "${params.agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`,
-          );
-        }
-        if (!params.task || !params.task.trim()) {
-          throw new Error('Task description is required');
-        }
+        assertValidAgent(params.agent!);
+        assertNonEmptyTask(params.task, 'Task description is required');
       } else if (mode === 'parallel') {
         if (!params.tasks || params.tasks.length < 2) {
           throw new Error(`For parallel mode, tasks array is required with at least 2 items`);
@@ -142,24 +208,16 @@ export function installSubagentTool(
           );
         }
         for (const t of params.tasks) {
-          if (!ALLOWED_AGENTS.includes(t.agent as AllowedAgent)) {
-            throw new Error(`Unknown agent: "${t.agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
-          }
-          if (!t.task || !t.task.trim()) {
-            throw new Error('Task description is required for all tasks');
-          }
+          assertValidAgent(t.agent);
+          assertNonEmptyTask(t.task, 'Task description is required for all tasks');
         }
       } else if (mode === 'chain') {
         if (!params.tasks || params.tasks.length < 2) {
           throw new Error('For chain mode, tasks array is required with at least 2 items');
         }
         for (const t of params.tasks) {
-          if (!ALLOWED_AGENTS.includes(t.agent as AllowedAgent)) {
-            throw new Error(`Unknown agent: "${t.agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
-          }
-          if (!t.task || !t.task.trim()) {
-            throw new Error('Task description is required for all tasks');
-          }
+          assertValidAgent(t.agent);
+          assertNonEmptyTask(t.task, 'Task description is required for all tasks');
         }
       }
 
@@ -190,40 +248,6 @@ export function installSubagentTool(
       }
 
       try {
-        // Helper: poll a single subagent until terminal or timeout
-        async function pollSubagent(
-          id: string,
-          label: string,
-          sendUpdates: boolean,
-        ): Promise<{ status: string; result?: string; error?: string }> {
-          const maxPolls = POLL_TIMEOUT_MS / POLL_INTERVAL_MS;
-          let polls = 0;
-          let record = service!.getRecord(id);
-          while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
-            if (signal?.aborted) throw new Error('Maestria subagent call aborted');
-            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
-            record = service!.getRecord(id);
-            polls++;
-            if (sendUpdates) {
-              onUpdate?.({
-                content: [
-                  {
-                    type: 'text' as const,
-                    text: `${label} running... (${Math.round((polls * POLL_INTERVAL_MS) / 1000)}s)`,
-                  },
-                ],
-              });
-            }
-          }
-          if (record && !TERMINAL_STATUSES.has(record.status)) {
-            throw new Error(`Subagent ${id} timed out after ${POLL_TIMEOUT_MS}ms`);
-          }
-          if (!record) {
-            throw new Error(`Subagent ${id} was cleaned up before completion`);
-          }
-          return record;
-        }
-
         // --- SINGLE MODE ---
         if (mode === 'single') {
           const agent = params.agent!;
@@ -237,12 +261,17 @@ export function installSubagentTool(
           });
 
           // Record handoff in state and persist (only after spawn succeeds)
-          const updatedState = recordHandoff(state, 'orchestrator', agent, task);
-          Object.assign(state, updatedState);
-          pi.appendEntry('maestria_state', state);
+          recordAndPersist(pi, state, agent, task);
 
           // Poll for completion
-          const record = await pollSubagent(id, `Subagent ${agent}`, true);
+          const record = await pollSubagent(
+            id,
+            `Subagent ${agent}`,
+            true,
+            service,
+            signal,
+            onUpdate,
+          );
 
           const resultText = record.result ?? record.error ?? 'No output.';
 
@@ -273,15 +302,20 @@ export function installSubagentTool(
             spawnedIds.push(id);
 
             // Record each handoff
-            const updatedState = recordHandoff(state, 'orchestrator', t.agent, t.task);
-            Object.assign(state, updatedState);
+            recordAndPersist(pi, state, t.agent, t.task);
           }
-          pi.appendEntry('maestria_state', state);
 
           // Poll all concurrently
           const records = await Promise.all(
             spawnedIds.map((id, i) =>
-              pollSubagent(id, `${taskList[i].agent} (${i + 1}/${taskList.length})`, false),
+              pollSubagent(
+                id,
+                `${taskList[i].agent} (${i + 1}/${taskList.length})`,
+                false,
+                service,
+                signal,
+                onUpdate,
+              ),
             ),
           );
 
@@ -331,9 +365,7 @@ export function installSubagentTool(
             });
 
             // Record handoff
-            const updatedState = recordHandoff(state, 'orchestrator', t.agent, taskText);
-            Object.assign(state, updatedState);
-            pi.appendEntry('maestria_state', state);
+            recordAndPersist(pi, state, t.agent, taskText);
 
             onUpdate?.({
               content: [
@@ -345,7 +377,14 @@ export function installSubagentTool(
             });
 
             // Poll for completion
-            const record = await pollSubagent(id, `Chain step ${i + 1}: ${t.agent}`, true);
+            const record = await pollSubagent(
+              id,
+              `Chain step ${i + 1}: ${t.agent}`,
+              true,
+              service,
+              signal,
+              onUpdate,
+            );
 
             previousResult = record.result ?? record.error ?? 'No output.';
 
