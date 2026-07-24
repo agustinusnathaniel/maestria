@@ -6,7 +6,7 @@ import {
   renderMaestriaSummary,
   restoreOriginalState,
 } from '@/state.js';
-import { MAESTRIA_EVENTS } from '@/subagent.js';
+import { MAESTRIA_EVENTS } from '@/events.js';
 
 /**
  * Read-only tools that let a reviewer inspect code without making changes.
