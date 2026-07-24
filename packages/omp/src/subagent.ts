@@ -1,17 +1,7 @@
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
 import { persistState, recordHandoff } from '@/state.js';
-
-/**
- * Maestria cross-extension event names.
- */
-export const MAESTRIA_EVENTS = {
-  REVIEW_ACTIVATED: 'maestria:review:activated',
-  REVIEW_DEACTIVATED: 'maestria:review:deactivated',
-  SUBAGENT_STARTED: 'maestria:subagent:started',
-  SUBAGENT_COMPLETED: 'maestria:subagent:completed',
-  SUBAGENT_FAILED: 'maestria:subagent:failed',
-} as const;
+import { MAESTRIA_EVENTS } from '@/events.js';
 
 const ALLOWED_AGENTS = [
   'adventurer',
