@@ -32,9 +32,15 @@ const HANDOFF_FIELDS = [
   'Next step',
 ] as const;
 
-export function validateHandoff(handoff: string): { valid: boolean; errors: string[] } {
+export interface HandoffValidation {
+  valid: boolean;
+  errors: string[];
+}
+
+export function validateHandoff(handoff: string): HandoffValidation {
   const errors: string[] = [];
   for (const field of HANDOFF_FIELDS) {
+    // Check for markdown bold field **Field:** followed by at least one non-whitespace character
     const regex = new RegExp(`\\*\\*${field}:\\*\\*[\\s\\S]*?\\S`, 'i');
     if (!regex.test(handoff)) {
       errors.push(`Missing or empty field: "${field}"`);
