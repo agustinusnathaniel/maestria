@@ -23,26 +23,6 @@ const ALLOWED_AGENTS = [
   'writer',
 ] as const;
 
-const HANDOFF_FIELDS = [
-  'Goal',
-  'Context',
-  'Requirements',
-  'Known problems',
-  'Success criteria',
-  'Next step',
-] as const;
-
-export function validateHandoff(handoff: string): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  for (const field of HANDOFF_FIELDS) {
-    const regex = new RegExp(`\\*\\*${field}:\\*\\*[\\s\\S]*?\\S`, 'i');
-    if (!regex.test(handoff)) {
-      errors.push(`Missing or empty field: "${field}"`);
-    }
-  }
-  return { valid: errors.length === 0, errors };
-}
-
 export function installSubagentTool(
   pi: ExtensionAPI,
   state: MaestriaState,
