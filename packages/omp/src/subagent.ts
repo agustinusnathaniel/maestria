@@ -1,48 +1,10 @@
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
 import { persistState, recordHandoff } from '@/state.js';
+import { assertValidAgent, assertNonEmptyTask } from '@maestria/core/subagent-utils';
 
-/**
- * Maestria cross-extension event names.
- */
-export const MAESTRIA_EVENTS = {
-  REVIEW_ACTIVATED: 'maestria:review:activated',
-  REVIEW_DEACTIVATED: 'maestria:review:deactivated',
-  SUBAGENT_STARTED: 'maestria:subagent:started',
-  SUBAGENT_COMPLETED: 'maestria:subagent:completed',
-  SUBAGENT_FAILED: 'maestria:subagent:failed',
-} as const;
-
-const ALLOWED_AGENTS = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
-
-const HANDOFF_FIELDS = [
-  'Goal',
-  'Context',
-  'Requirements',
-  'Known problems',
-  'Success criteria',
-  'Next step',
-] as const;
-
-function assertValidAgent(agent: string): asserts agent is (typeof ALLOWED_AGENTS)[number] {
-  if (!ALLOWED_AGENTS.includes(agent as (typeof ALLOWED_AGENTS)[number])) {
-    throw new Error(`Unknown agent: "${agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
-  }
-}
-
-function assertNonEmptyTask(task: string | undefined, label: string): asserts task is string {
-  if (!task || !task.trim()) {
-    throw new Error(label);
-  }
-}
+// Re-export for backward compatibility with consumers that import from @/subagent.js
+export { MAESTRIA_EVENTS, validateHandoff } from '@maestria/core/subagent-utils';
 
 function recordAndPersist(
   pi: ExtensionAPI,
@@ -54,23 +16,6 @@ function recordAndPersist(
   const updatedState = recordHandoff(state, from, to, taskText);
   Object.assign(state, updatedState);
   persistState(pi, state);
-}
-
-export interface HandoffValidation {
-  valid: boolean;
-  errors: string[];
-}
-
-export function validateHandoff(handoff: string): HandoffValidation {
-  const errors: string[] = [];
-  for (const field of HANDOFF_FIELDS) {
-    // Check for markdown bold field **Field:** followed by at least one non-whitespace character
-    const regex = new RegExp(`\\*\\*${field}:\\*\\*[\\s\\S]*?\\S`, 'i');
-    if (!regex.test(handoff)) {
-      errors.push(`Missing or empty field: "${field}"`);
-    }
-  }
-  return { valid: errors.length === 0, errors };
 }
 
 export function installSubagentTool(
