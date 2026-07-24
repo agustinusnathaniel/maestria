@@ -60,5 +60,8 @@
     "skills": [
       "./skills"
     ]
+  },
+  "dependencies": {
+    "@maestria/shared-pi": "workspace:*"
   }
 }
