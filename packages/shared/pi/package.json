@@ -7,6 +7,10 @@
     "./subagent-utils": {
       "import": "./src/subagent-utils.ts",
       "types": "./src/subagent-utils.ts"
+    },
+    "./agent-deployment": {
+      "import": "./src/agent-deployment.ts",
+      "types": "./src/agent-deployment.ts"
     }
   },
   "scripts": {
