@@ -1,10 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
-import {
-  validateHandoff,
-  installSubagentTool,
-  MAX_PARALLEL_TASKS,
-  MAESTRIA_EVENTS,
-} from '@/subagent.js';
+import { installSubagentTool, MAX_PARALLEL_TASKS } from '@/subagent.js';
+import { validateHandoff, MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 import { createInitialState } from '@/state.js';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 

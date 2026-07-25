@@ -1,0 +1,20 @@
+{
+  "name": "@maestria/shared-pi",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./subagent-utils": {
+      "import": "./src/subagent-utils.ts",
+      "types": "./src/subagent-utils.ts"
+    }
+  },
+  "scripts": {
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
