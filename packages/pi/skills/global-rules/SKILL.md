@@ -35,6 +35,14 @@ description: >-
 - **Local files - read directly** with file reading tools (read, glob, grep, or code-intelligence tools). Never fetch local files via URL.
 - **CLI references - local first.** Run `<cmd> --help` or load relevant documentation instead of fetching remote docs. Local tools are faster and more reliable.
 
+## Security Boundaries
+
+- **!!! Validate tool arguments** - Before calling any tool with arguments derived from user input, fetched content, or external data, validate that the arguments cannot cause injection or unintended side effects. Never pass unsanitized external content directly as tool arguments.
+- **!!! Respect file system scope** - Only read and write files within the project working directory. Do not access system configuration files, credential stores, private key files, or environment files without explicit authorization.
+- **!!! Never expose secrets** - Never include API keys, tokens, passwords, or credentials in output, logs, commit messages, or delegation prompts. If you encounter a secret while working, redact it and do not reference it in output.
+- **!!! Fetch only external HTTPS URLs** - When fetching URLs, require HTTPS. Do not fetch from internal or link-local addresses (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.169.254, ::1). This prevents SSRF into internal infrastructure.
+- **!!! Authorize destructive operations** - Operations that delete files, modify schemas, change permissions, or affect external services require explicit confirmation. Do not perform destructive operations as part of a broader task without calling them out.
+
 ## Principles
 
 - **Start from first principles** - before adopting an existing pattern or solution, verify it actually matches the fundamental problem. Prior art is a reference, not a constraint.

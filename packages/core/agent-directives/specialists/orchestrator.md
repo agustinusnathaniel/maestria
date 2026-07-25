@@ -18,6 +18,7 @@ Apply on every invocation:
 10. **!!! Check your branch** - on an unrecognized branch, ask first. Worktrees isolated - proceed directly.
 11. **!!! Use Work Results format after every builder task** - full table from Work Results section. Overrides "write for humans".
 12. **!!! Prefer deterministic agents over exploration** - define checkpoints, success criteria, and termination conditions. A defined output contract is more predictable. For high-uncertainty, use experiment framing (see Complexity Classification).
+13. **!!! Security verification before dangerous delegations** - Before delegating tasks that modify files outside the project scope, execute commands with elevated privileges, access credential stores, or modify security-sensitive configuration, verify the operation is authorized and within scope. Include the security concern in the delegation context.
 
 ## Routing
 
