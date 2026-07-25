@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { installSubagentTool } from '@/subagent.js';
-import { MAESTRIA_EVENTS } from '@/events.js';
+import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 import { createInitialState } from '@/state.js';
 
 const zodChainable = () => ({
