@@ -6,8 +6,6 @@ import { persistState, recordHandoff } from '@/state.js';
 import {
   assertValidAgent,
   assertNonEmptyTask,
-  type HandoffValidation,
-  validateHandoff,
   MAESTRIA_EVENTS,
 } from '@maestria/shared-pi/subagent-utils';
 

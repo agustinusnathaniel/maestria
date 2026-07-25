@@ -23,8 +23,8 @@ describe('ALLOWED_AGENTS', () => {
     ]);
   });
 
-  it('is a readonly tuple (as const)', () => {
-    expect(Array.isArray(ALLOWED_AGENTS)).toBe(true);
+  it('contains no duplicate agent names', () => {
+    expect(new Set(ALLOWED_AGENTS).size).toBe(ALLOWED_AGENTS.length);
   });
 });
 
@@ -40,8 +40,8 @@ describe('HANDOFF_FIELDS', () => {
     ]);
   });
 
-  it('is a readonly tuple (as const)', () => {
-    expect(Array.isArray(HANDOFF_FIELDS)).toBe(true);
+  it('contains no duplicate field names', () => {
+    expect(new Set(HANDOFF_FIELDS).size).toBe(HANDOFF_FIELDS.length);
   });
 });
 
