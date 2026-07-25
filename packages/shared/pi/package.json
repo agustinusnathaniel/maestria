@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "test": "vp test"
-  },
   "exports": {
     "./subagent-utils": {
       "import": "./src/subagent-utils.ts",
       "types": "./src/subagent-utils.ts"
     }
+  },
+  "scripts": {
+    "test": "vp test"
   },
   "devDependencies": {
     "@types/node": "catalog:",
