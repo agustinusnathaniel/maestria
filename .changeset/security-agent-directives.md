@@ -16,3 +16,16 @@ for security verification before dangerous delegations, with a
 
 These rules propagate to all platform plugins (OpenCode, Kimi Code, Pi, Hermes,
 Cursor, OMP) via the sync pipeline.
+
+**Iteration 3 — Enhanced delegation security loop:**
+
+- Expands the Delegation Pattern `## Security Context` template (orchestrator.md)
+  with a concrete trigger list, structured sub-fields (Applicable Rules,
+  Constraints, Forbidden, Escalation), and a mandatory delegate confirmation
+  requirement.
+- Adds a dedicated `## Security` section to the `@builder` specialist prompt
+  with role-specific rules for file system scope, tool argument validation,
+  destructive operation flagging, and security context compliance reporting.
+- Tightens the Handoff Contract's "Validate before handoff" checklist with
+  an explicit security verification step: delegates must state which
+  Security Boundaries were relevant and confirm compliance.

@@ -188,6 +188,7 @@ These rules govern every specialist's output back to the orchestrator:
 
 - **!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands. The model that produced the work is too nice grading its own homework. Produce the artifact; do not QA it.
 - **!!! Validate before handoff** - never present output you haven't verified against your role's termination condition (tests run, sources cross-checked, links verified, plan re-read, [security boundaries](#security-boundaries) respected). Re-read your own output before reporting back.
+  - **Security check:** For each applicable [Security Boundary](#security-boundaries), state in your handoff whether it was respected and how. If a delegation prompt included a `## Security Context` section, explicitly confirm compliance with each listed rule.
 - **Ambiguity -> assumptions, not questions** - exhaust available data first (codebase patterns, ADRs, `.maestria/rules.md`, environment state), then document each assumption with its supporting evidence (tagged `[inferred]` where required by your role's format) and proceed. The reviewer validates assumptions.
 - **Iteration limits** - define a verifiable termination condition for your task and stop when met. Max 3 attempts at the same failing approach before escalating.
 - **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."

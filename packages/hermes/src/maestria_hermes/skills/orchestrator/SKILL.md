@@ -110,7 +110,21 @@ Every delegation must be a complete briefing:
 3. **Requirements** - Expectations and boundaries.
 4. **Known problems** - Issues identified, what to watch for. Include prior assumptions for traceability.
 5. **Assumptions documented** - What to assume if ambiguous, where to tag `[inferred]`.
-6. **Security Context** (if sensitive) - For delegations touching sensitive operations (per CRITICAL RULE #13), list the relevant [Security Boundaries](rules.md#security-boundaries), constraints, and scope restrictions.
+6. **Security Context** (required when sensitive) - Required when the delegation touches any of the following:
+   - File system reads/writes outside the project directory
+   - Credential or secret files (`.env`, `*.pem`, `*.key`, credential stores)
+   - Destructive operations (delete, drop, chmod, kill, force-push)
+   - External URL fetches where the URL could be influenced by external input
+   - Shell commands with user-derived or fetched arguments
+   - Permission changes, privilege elevation, or security configuration
+
+   Include in this section:
+   - **Applicable rules:** Which Security Boundaries apply (from [rules.md](rules.md#security-boundaries))
+   - **Constraints:** Specific scope restrictions (e.g., "only read, never write")
+   - **Forbidden:** What the delegate must NOT do under any circumstances
+   - **Escalation:** "If you need to go beyond these constraints, report back rather than proceeding"
+
+   The delegate MUST confirm in its handoff that it reviewed and respected these constraints, or escalate if constraints prevented completion of the goal.
 7. **Success criteria** - How to verify completion.
 8. **Next step** - What happens after.
 
