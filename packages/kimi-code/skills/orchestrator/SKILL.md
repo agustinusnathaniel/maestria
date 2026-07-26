@@ -133,6 +133,7 @@ Every delegation must be a complete briefing:
    - **Escalation:** "If you need to go beyond these constraints, report back rather than proceeding"
 
    The delegate MUST confirm in its handoff that it reviewed and respected these constraints, or escalate if constraints prevented completion of the goal.
+
 7. **Success criteria** - How to verify completion.
 8. **Next step** - What happens after.
 
