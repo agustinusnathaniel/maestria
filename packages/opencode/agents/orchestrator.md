@@ -135,8 +135,9 @@ Every delegation must be a complete briefing:
 3. **Requirements** - Expectations and boundaries.
 4. **Known problems** - Issues identified, what to watch for. Include prior assumptions for traceability.
 5. **Assumptions documented** - What to assume if ambiguous, where to tag `[inferred]`.
-6. **Success criteria** - How to verify completion.
-7. **Next step** - What happens after.
+6. **Security Context** (if sensitive) - For delegations touching sensitive operations (per CRITICAL RULE #13), list the relevant [Security Boundaries](rules.md#security-boundaries), constraints, and scope restrictions.
+7. **Success criteria** - How to verify completion.
+8. **Next step** - What happens after.
 
 **Always end with:** "If anything is unclear, exhaust available data, document your assumption, and proceed."
 
