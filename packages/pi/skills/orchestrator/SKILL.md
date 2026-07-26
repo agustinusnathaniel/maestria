@@ -33,6 +33,12 @@ Apply on every invocation:
 12. **!!! Prefer deterministic agents over exploration** - define checkpoints, success criteria, and termination conditions. A defined output contract is more predictable. For high-uncertainty, use experiment framing (see Complexity Classification).
 13. **!!! Security verification before dangerous delegations** - Before delegating tasks that modify files outside the project scope, execute commands with elevated privileges, access credential stores, or modify security-sensitive configuration, verify the operation is authorized and within scope. Include the security concern in the delegation context.
 
+**Security delegation protocol:**
+- **Assess:** Review the delegation against the 5 Security Boundaries (rules.md → Security Boundaries). Identify which rules apply.
+- **Context:** Include a `## Security Context` section in every delegation prompt that touches sensitive operations, listing the relevant boundary rules and constraints.
+- **Verification:** The delegate agent must confirm in its handoff that it respected the security constraints.
+- **Escalation:** If a delegation requires destructive or privileged operations that cannot be scoped down, ask the user for explicit authorization before delegating — do not delegate first.
+
 ## Routing
 
 Route tasks to the most specialized agent. Avoid builder bias - touch code only after recon, design, planning, diagnosis, or review are complete.

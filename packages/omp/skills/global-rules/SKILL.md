@@ -37,11 +37,146 @@ description: >-
 
 ## Security Boundaries
 
-- **!!! Validate tool arguments** - Before calling any tool with arguments derived from user input, fetched content, or external data, validate that the arguments cannot cause injection or unintended side effects. Never pass unsanitized external content directly as tool arguments.
-- **!!! Respect file system scope** - Only read and write files within the project working directory. Do not access system configuration files, credential stores, private key files, or environment files without explicit authorization.
-- **!!! Never expose secrets** - Never include API keys, tokens, passwords, or credentials in output, logs, commit messages, or delegation prompts. If you encounter a secret while working, redact it and do not reference it in output.
-- **!!! Fetch only external HTTPS URLs** - When fetching URLs, require HTTPS. Do not fetch from internal or link-local addresses (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.169.254, ::1). This prevents SSRF into internal infrastructure.
-- **!!! Authorize destructive operations** - Operations that delete files, modify schemas, change permissions, or affect external services require explicit confirmation. Do not perform destructive operations as part of a broader task without calling them out.
+### Non-negotiable rules
+
+These rules apply to all agents at all times. Each rule below includes practical guidance for implementing the check.
+
+---
+
+### Rule 1: Validate tool arguments
+
+**Statement:** Before calling any tool with arguments derived from user input, fetched content, or external data, validate that the arguments cannot cause injection or unintended side effects. Never pass unsanitized external content directly as tool arguments.
+
+**Examples:**
+
+| Scenario | ❌ Unsafe | ✅ Safe |
+|----------|-----------|--------|
+| Shell command with user input | `terminal(command=f"git clone {repo_url}")` | Validate URL scheme + host first; use allowlist |
+| File write with derived path | `write_file(path=user_input, content=...)` | Resolve path, verify it's under project root |
+| Delegation prompt with fetched content | `delegate_task(goal=f"analyze {web_text}")` | Truncate, strip control chars, validate encoding |
+| Database query construction | `SELECT * FROM items WHERE name = '{input}'` | Use parameterized queries only |
+
+**Verification checklist:**
+- [ ] Is any part of the argument derived from external input (user, URL, file, LLM output)?
+- [ ] Could the argument be interpreted as a command, path traversal, or injection?
+- [ ] Have you validated the argument against an allowlist (preferred) or blocklist?
+- [ ] For shell commands: does the argument contain shell metacharacters (`;`, `|`, `` ` ``, `$`, `(`, `)`)?
+- [ ] For file paths: does the resolved path start with the project working directory?
+
+---
+
+### Rule 2: Respect file system scope
+
+**Statement:** Only read and write files within the project working directory. Do not access system configuration files, credential stores, private key files, or environment files without explicit authorization.
+
+**Examples:**
+
+| Scenario | ❌ Unsafe | ✅ Safe |
+|----------|-----------|--------|
+| Reading a config file | `read_file(path="/etc/passwd")` or `read_file(path="../../../etc/shadow")` | Use project-relative path, verify resolved path |
+| Writing outside project | `write_file(path="/tmp/output.txt", content=...)` | Write to a project subdirectory like `.maestria/cache/` |
+| Accessing credentials | `read_file(path=".env")` without authorization | Only with explicit user authorization |
+
+**Resolved-path check pattern:**
+```
+// Before reading or writing, verify the resolved absolute path
+// is within the project working directory:
+resolved = path.resolve(projectRoot, relativePath)
+assert(resolved.startsWith(projectRoot), "path traversal blocked")
+```
+
+**Verification checklist:**
+- [ ] Have you resolved the path (including symlinks and `..` segments) to an absolute path?
+- [ ] Does the resolved path start with the project working directory?
+- [ ] Are you accessing `.env`, `.env.*`, `*.pem`, `*.key`, or credential files without explicit authorization?
+- [ ] For `terminal()` commands: does the command read or write files outside the project scope?
+
+---
+
+### Rule 3: Never expose secrets
+
+**Statement:** Never include API keys, tokens, passwords, or credentials in output, logs, commit messages, or delegation prompts. If you encounter a secret while working, redact it and do not reference it in output.
+
+**Examples:**
+
+| Scenario | ❌ Unsafe | ✅ Safe |
+|----------|-----------|--------|
+| Found a token in a file | Include it in the output or delegation context | Redact: `[REDACTED API KEY]` — escalate to orchestrator |
+| Commit message references a key | `"fix: update API_KEY=sk-1234 in config"` | `"fix: update API configuration"` |
+| Logging debug output | `console.log("Response:", { token })` | Log only non-sensitive fields |
+| Delegating a task that encountered secrets | Pass the raw secret in context | Summarize: "task encountered credentials — redacted" |
+
+**If you discover a secret:**
+1. Stop reading the containing file if possible
+2. Do not include the secret in any output, log, commit, or delegation
+3. Replace it with `[REDACTED <type>]` in any context where it must be referenced
+4. If the secret was committed, escalate to the orchestrator (secrets in git history must be rotated)
+
+**Verification checklist:**
+- [ ] Does any output, log, commit message, or delegation context contain text that looks like a secret (long random strings, `sk-`, `ghp_`, `AKIA`, `-----BEGIN`)?
+- [ ] Does the delegation context include any value from a credential store or secret file?
+- [ ] Could a secret be accidentally included via a variable or template expansion?
+
+---
+
+### Rule 4: Fetch only external HTTPS URLs
+
+**Statement:** When fetching URLs, require HTTPS. Do not fetch from internal or link-local addresses. This prevents SSRF into internal infrastructure.
+
+**Examples:**
+
+| Scenario | ❌ Unsafe | ✅ Safe |
+|----------|-----------|--------|
+| Fetching user-supplied URL | `fetch(user_provided_url)` without validation | Validate scheme + host; reject private IPs |
+| Webhook callback | `fetch(callback_url)` where callback_url could point to localhost | Resolve hostname, check all resolved IPs are public |
+| Image proxy | Loading an image from an internal server path | Only allow HTTPS to public hosts |
+
+**URL validation pattern:**
+```
+Before fetching any URL:
+1. Check protocol is https:// — reject http:// and file://
+2. Resolve hostname to IP addresses
+3. Check no resolved IP falls in private/reserved ranges:
+   127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16,
+   169.254.0.0/16 (cloud metadata), ::1, fd00::/8
+4. Set redirect: 'error' to prevent SSRF via redirect to internal host
+```
+
+**Verification checklist:**
+- [ ] Is the URL protocol `https://`?
+- [ ] Could the hostname resolve to a private or internal IP address?
+- [ ] Have you disabled following redirects (to prevent SSRF via redirect)?
+- [ ] Is the URL derived from external input? If so, also validate the host against an allowlist.
+
+---
+
+### Rule 5: Authorize destructive operations
+
+**Statement:** Operations that delete files, modify schemas, change permissions, or affect external services require explicit confirmation. Do not perform destructive operations as part of a broader task without calling them out.
+
+**Examples:**
+
+| Scenario | ❌ Unsafe | ✅ Safe |
+|----------|-----------|--------|
+| Deleting files | `rm -rf node_modules/` as part of a rebuild task | Call it out: "This will delete node_modules/ — confirm?" |
+| Schema changes | `DROP TABLE users` in a migration | State impact: "This drops the users table — confirm?" |
+| Permission changes | `chmod 600 config.json` | Flag the change and its effect |
+| External service mutation | `DELETE /api/resources/42` | State which resource and action |
+
+**Authorization flow:**
+```
+Before destructive operations, provide a clear statement:
+  "I need to [action] on [target]. This will [impact].
+   Confirm before I proceed."
+Wait for explicit confirmation. Do not proceed after "go ahead" or
+"ok" in a broader context — require a specific affirmative response.
+```
+
+**Verification checklist:**
+- [ ] Could this operation cause data loss or service disruption?
+- [ ] Have you explicitly stated what will be affected and the impact?
+- [ ] Have you received an explicit, specific confirmation?
+- [ ] Is the operation within the scope of the current task?
 
 ## Principles
 
