@@ -50,13 +50,14 @@ These rules apply to all agents at all times. Each rule below includes practical
 **Examples:**
 
 | Scenario | ❌ Unsafe | ✅ Safe |
-|----------|-----------|--------|
+| --- | --- | --- |
 | Shell command with user input | `terminal(command=f"git clone {repo_url}")` | Validate URL scheme + host first; use allowlist |
 | File write with derived path | `write_file(path=user_input, content=...)` | Resolve path, verify it's under project root |
 | Delegation prompt with fetched content | `delegate_maestria_subagent(goal=f"analyze {web_text}")` | Truncate, strip control chars, validate encoding |
 | Database query construction | `SELECT * FROM items WHERE name = '{input}'` | Use parameterized queries only |
 
 **Verification checklist:**
+
 - [ ] Is any part of the argument derived from external input (user, URL, file, LLM output)?
 - [ ] Could the argument be interpreted as a command, path traversal, or injection?
 - [ ] Have you validated the argument against an allowlist (preferred) or blocklist?
@@ -72,12 +73,13 @@ These rules apply to all agents at all times. Each rule below includes practical
 **Examples:**
 
 | Scenario | ❌ Unsafe | ✅ Safe |
-|----------|-----------|--------|
+| --- | --- | --- |
 | Reading a config file | `read_file(path="/etc/passwd")` or `read_file(path="../../../etc/shadow")` | Use project-relative path, verify resolved path |
 | Writing outside project | `write_file(path="/tmp/output.txt", content=...)` | Write to a project subdirectory like `.maestria/cache/` |
 | Accessing credentials | `read_file(path=".env")` without authorization | Only with explicit user authorization |
 
 **Resolved-path check pattern:**
+
 ```
 // Before reading or writing, verify the resolved absolute path
 // is within the project working directory:
@@ -86,6 +88,7 @@ assert(resolved.startsWith(projectRoot), "path traversal blocked")
 ```
 
 **Verification checklist:**
+
 - [ ] Have you resolved the path (including symlinks and `..` segments) to an absolute path?
 - [ ] Does the resolved path start with the project working directory?
 - [ ] Are you accessing `.env`, `.env.*`, `*.pem`, `*.key`, or credential files without explicit authorization?
@@ -100,19 +103,21 @@ assert(resolved.startsWith(projectRoot), "path traversal blocked")
 **Examples:**
 
 | Scenario | ❌ Unsafe | ✅ Safe |
-|----------|-----------|--------|
+| --- | --- | --- |
 | Found a token in a file | Include it in the output or delegation context | Redact: `[REDACTED API KEY]` — escalate to orchestrator |
 | Commit message references a key | `"fix: update API_KEY=sk-1234 in config"` | `"fix: update API configuration"` |
 | Logging debug output | `console.log("Response:", { token })` | Log only non-sensitive fields |
 | Delegating a task that encountered secrets | Pass the raw secret in context | Summarize: "task encountered credentials — redacted" |
 
 **If you discover a secret:**
+
 1. Stop reading the containing file if possible
 2. Do not include the secret in any output, log, commit, or delegation
 3. Replace it with `[REDACTED <type>]` in any context where it must be referenced
 4. If the secret was committed, escalate to the orchestrator (secrets in git history must be rotated)
 
 **Verification checklist:**
+
 - [ ] Does any output, log, commit message, or delegation context contain text that looks like a secret (long random strings, `sk-`, `ghp_`, `AKIA`, `-----BEGIN`)?
 - [ ] Does the delegation context include any value from a credential store or secret file?
 - [ ] Could a secret be accidentally included via a variable or template expansion?
@@ -126,12 +131,13 @@ assert(resolved.startsWith(projectRoot), "path traversal blocked")
 **Examples:**
 
 | Scenario | ❌ Unsafe | ✅ Safe |
-|----------|-----------|--------|
+| --- | --- | --- |
 | Fetching user-supplied URL | `fetch(user_provided_url)` without validation | Validate scheme + host; reject private IPs |
 | Webhook callback | `fetch(callback_url)` where callback_url could point to localhost | Resolve hostname, check all resolved IPs are public |
 | Image proxy | Loading an image from an internal server path | Only allow HTTPS to public hosts |
 
 **URL validation pattern:**
+
 ```
 Before fetching any URL:
 1. Check protocol is https:// — reject http:// and file://
@@ -143,6 +149,7 @@ Before fetching any URL:
 ```
 
 **Verification checklist:**
+
 - [ ] Is the URL protocol `https://`?
 - [ ] Could the hostname resolve to a private or internal IP address?
 - [ ] Have you disabled following redirects (to prevent SSRF via redirect)?
@@ -157,13 +164,14 @@ Before fetching any URL:
 **Examples:**
 
 | Scenario | ❌ Unsafe | ✅ Safe |
-|----------|-----------|--------|
+| --- | --- | --- |
 | Deleting files | `rm -rf node_modules/` as part of a rebuild task | Call it out: "This will delete node_modules/ — confirm?" |
 | Schema changes | `DROP TABLE users` in a migration | State impact: "This drops the users table — confirm?" |
 | Permission changes | `chmod 600 config.json` | Flag the change and its effect |
 | External service mutation | `DELETE /api/resources/42` | State which resource and action |
 
 **Authorization flow:**
+
 ```
 Before destructive operations, provide a clear statement:
   "I need to [action] on [target]. This will [impact].
@@ -173,6 +181,7 @@ Wait for explicit confirmation. Do not proceed after "go ahead" or
 ```
 
 **Verification checklist:**
+
 - [ ] Could this operation cause data loss or service disruption?
 - [ ] Have you explicitly stated what will be affected and the impact?
 - [ ] Have you received an explicit, specific confirmation?

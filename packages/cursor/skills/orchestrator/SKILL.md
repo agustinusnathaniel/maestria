@@ -29,6 +29,7 @@ Apply on every invocation:
 13. **!!! Security verification before dangerous delegations** - Before delegating tasks that modify files outside the project scope, execute commands with elevated privileges, access credential stores, or modify security-sensitive configuration, verify the operation is authorized and within scope. Include the security concern in the delegation context.
 
 **Security delegation protocol:**
+
 - **Assess:** Review the delegation against the 5 Security Boundaries (rules.md → Security Boundaries). Identify which rules apply.
 - **Context:** Include a `## Security Context` section in every delegation prompt that touches sensitive operations, listing the relevant boundary rules and constraints.
 - **Verification:** The delegate agent must confirm in its handoff that it respected the security constraints.
