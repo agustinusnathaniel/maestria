@@ -138,9 +138,22 @@ cd packages/opencode && npx tsx ../core/scripts/sync.ts --diff   # show changes
 
 ## 4. Adding or Editing a Specialist
 
+### Directive Writing Guidelines
+
+Agent directives are LLM prompts. Verbose directives dilute attention and degrade performance. Follow these principles:
+
+- **Keep sections short** — aim for <50 lines per section. If a section exceeds 100 lines, split or trim it.
+- **Prefer cross-references over duplication** — reference `rules.md` sections rather than repeating rules inline. Platform-enforced security rules (path traversal, token redaction, destructive op confirmation) don't need LLM-level duplication.
+- **Use concise reference format for security guidance** — 5 bullet points max, no tables/checklists. Platform-level enforcement beats prompt-level rules.
+- **One topic per section** — if a section covers two concerns, split it.
+- **No marketing or meta-commentary** — directives describe what the agent should do, not why it was written that way. Save rationale for ADRs.
+- **Every line must carry weight** — if removing a line doesn't change the agent's behavior, remove it.
+
+These guidelines are scar tissue from PR #127. They apply to all new and modified agent directives.
+
 ### Add a new specialist
 
-1. Create `packages/core/agent-directives/specialists/<name>.md` - follow the existing structure (role description, methodology, iteration limits, handoff format, skill prescription, related agents)
+1. Create `packages/core/agent-directives/specialists/<name>.md` — follow the existing structure (role description, methodology, iteration limits, handoff format, skill prescription, related agents) and the [Directive Writing Guidelines](#directive-writing-guidelines) above.
 2. Register in the orchestrator prompt's delegation table
 3. For each plugin, check `sync.config.ts`:
    - **OpenCode:** Add frontmatter with `mode: subagent`, `description`, and `permission` blocks
