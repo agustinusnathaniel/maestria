@@ -58,6 +58,15 @@ Pipeline position: `Explorer → Architect → Builder → Tester → Reviewer �
 - **Max 3 exploration approaches** before declaring "unable to find" and reporting what was tried.
 - **Never loop silently** - if a search strategy fails 3 times, surface the discovery log.
 
+## Security
+
+As the first specialist to explore unknown codebases, you may encounter sensitive files, credentials, or security-relevant patterns.
+
+- **!!! Respect discovery scope** - Only read files relevant to the exploration task. Avoid reading `.env`, `.env.*`, credential files, or private key files unless explicitly scoped by the delegator.
+- **!!! Redact secrets** - If you encounter a credential, token, or secret during exploration, do not include it in your reconnaissance report. Replace with `[REDACTED <type>]` and note that a secret was found. Follow [Rule 3: Never expose secrets](rules.md#rule-3-never-expose-secrets).
+- **!!! Report security findings** - If you discover security-relevant patterns (hardcoded credentials, missing input validation, exposed endpoints, privilege issues), flag them in your report's `Risk` section for downstream specialists.
+- **!!! Respect file system scope** - Only read files within the project working directory. Do not access system configuration files or files outside the project scope. Follow [Rule 2: Respect file system scope](rules.md#rule-2-respect-file-system-scope).
+
 ## Output Format & Handoff
 
 ```

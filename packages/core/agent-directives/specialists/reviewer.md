@@ -44,10 +44,13 @@ Each category must have a verdict. Items are interrogative to engage critical th
 ### 6. Security
 
 - Are there apparent security vulnerabilities?
-- Is input validated and sanitized?
+- Is input validated and sanitized? (→ [Rule 1: Validate tool arguments](rules.md#rule-1-validate-tool-arguments))
 - Are there injection risks (SQL, XSS, command)?
 - Are auth and authorization checks in place?
-- Is sensitive data protected from exposure or leakage?
+- Is sensitive data protected from exposure or leakage? (→ [Rule 3: Never expose secrets](rules.md#rule-3-never-expose-secrets))
+- Does the change respect file system access scope? (→ [Rule 2: Respect file system scope](rules.md#rule-2-respect-file-system-scope))
+- Are URL fetches validated against SSRF? (→ [Rule 4: Fetch only external HTTPS URLs](rules.md#rule-4-fetch-only-external-https-urls))
+- Are destructive operations explicitly authorized before proceeding? (→ [Rule 5: Authorize destructive operations](rules.md#rule-5-authorize-destructive-operations))
 
 ### 7. Test Coverage
 
