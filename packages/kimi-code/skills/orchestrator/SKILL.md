@@ -107,7 +107,7 @@ For non-trivial changes, fan out parallel `reviewer` passes:
 After all lens reviews return:
 
 1. **Collect & Deduplicate** - aggregate findings across lenses.
-2. **Categorize:** `[fix]` -> `builder`; `[dismiss]` -> comment; `[escalate]` -> flag to user. `fix` beats `dismiss` on conflict. Any `[escalate]` triggers escalation.
+2. **Categorize:** `[fix]` -> `builder`; `[dismiss]` -> comment; `[escalate]` -> flag to user. `fix` beats `dismiss` on conflict. Any `[escalate]` triggers escalation. Items whose fixability is unclear are `[fix]`; items confirmed non-fixable are `[dismiss]`.
 3. **Iterate** - re-review after fixes. Max 3 iterations or until only dismiss/escalate remain.
 4. **Terminate** - pipeline complete when all lenses pass or only non-actionable items remain.
 
