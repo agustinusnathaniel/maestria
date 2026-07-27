@@ -74,9 +74,21 @@ After every `/builder` task, run the review loop automatically:
 
 1. **Build** - run validation (checks, tests) via `/builder`.
 2. **Review** - dispatch `/reviewer` for quality review.
-3. **Triage** - approve -> commit; fixable -> `/builder` then re-review; ambiguous -> document and proceed.
-4. **Max 3 cycles** per unit of work. Persistent issues: escalate with cause.
-5. **Document** - include verdict and unresolved issues in session summary.
+3. **Triage** - approve -> commit; fixable -> `/builder` then re-review.
+4. **Max 3 cycles** per unit of work. After cycle 3 with unresolved `[fix]` items: -> **FAIL LOUD** - block commit, auto-escalate with structured delta. -> User override required to proceed.
+5. **Document** - include verdict, unresolved issues, and failure delta (if applicable) in session summary.
+
+The structured escalation delta follows the format from rules.md:
+
+```
+Tried: [cycle 1 approach], [cycle 2 approach], [cycle 3 approach].
+Blocked by: iteration-limit-reached.
+Unresolved: [list of [fix] items remaining with cycle provenance].
+Diff: [summary of what the last attempted fix changed, not the full diff].
+Need: user override to ship as-is, or architect redesign.
+```
+
+After max 3 cycles with only `[dismiss]` and `[escalate]` items remaining, the pipeline terminates normally (`[escalate]` items are surfaced to the user; `[dismiss]` items are documented).
 
 ### Multi-Lens Review Swarm
 
@@ -102,8 +114,11 @@ Every delegation must be a complete briefing:
 
 1. **Goal** - What to achieve and why.
 2. **Context** - Paths, constraints, prior decisions, what's been tried.
-   - **Access list:** enumerate prior outputs the specialist may reference. Omit biasing outputs, especially for verifiers. Do NOT include full conversation history.
-   - **Rule of thumb:** outputs that constrain/inform belong in access list; outputs that pre-judge are biasing - omit.
+   - **Access list:** enumerate prior outputs the specialist may reference. Do NOT include full conversation history.
+     - **For verifiers (reviewer):**
+       - **REQUIRED to include:** The diff (code changes), the original requirements/spec for the work, and the acceptance criteria (completions promise) set before work began.
+       - **FORBIDDEN to include:** The builder's handoff output or implementation summary; the builder's self-assessment; the builder's test results narrative (pass/fail counts are fine, interpretation is not); any prior access list from the builder's session.
+     - **Rule of thumb:** If the builder authored it as a self-assessment of their work, it is biasing -- omit it. Only include outputs the builder did not author: the spec, the requirements, the acceptance criteria, and the diff.
 3. **Requirements** - Expectations and boundaries.
 4. **Known problems** - Issues identified, what to watch for. Include prior assumptions for traceability.
 5. **Assumptions documented** - What to assume if ambiguous, where to tag `[inferred]`.
@@ -111,6 +126,14 @@ Every delegation must be a complete briefing:
 7. **Next step** - What happens after.
 
 **Always end with:** "If anything is unclear, exhaust available data, document your assumption, and proceed."
+
+### Blind Review for Verifiers
+
+When delegating to `/reviewer`, the reviewer reviews against the acceptance criteria (completions promise) and the diff -- not against the builder's explanation of what was done. The reviewer must be able to answer: "does the code satisfy the requirements?" without having read the builder's claim that it does. If the reviewer cannot determine this from the requirements + diff alone, the requirements are insufficient -- that is a finding, not an excuse to read the builder's narrative.
+
+The reviewer still documents assumptions and flags `[inferred]` items. But the inference is from code to requirements, not from builder narrative to code.
+
+Before delegating to reviewer, verify the access list does not contain biasing builder-authored content.
 
 ### Cognitive Hygiene
 
