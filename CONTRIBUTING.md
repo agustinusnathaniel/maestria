@@ -24,7 +24,11 @@ maestria/
 │   ├── opencode/          OpenCode plugin (published, v0.4.9)
 │   ├── kimi-code/         Kimi Code plugin (private, v0.2.1)
 │   ├── omp/               Oh My Pi plugin (published, v0.1.0)
-│   └── pi/                Pi extension (published, v0.4.1)
+│   ├── pi/                Pi extension (published, v0.4.1)
+│   ├── cursor/            Cursor IDE plugin (published, v0.1.3)
+│   ├── hermes/            Hermes Agent plugin (private, v0.1.7, published on PyPI)
+│   └── shared/
+│       └── pi/            Shared pure-TS utilities for omp/pi (private)
 ├── apps/
 │   └── docs/              Starlight documentation site (private)
 ├── scripts/
@@ -49,6 +53,9 @@ maestria/
 | `@maestria/kimi-code` | No | 7 specialist skills with swarm-aware orchestration for Kimi Code |
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
+| `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
+| `@maestria/hermes` | No | Hermes Agent plugin — methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
+| `@maestria/shared-pi` | No | Shared pure-TS utilities for omp and pi (agent deployment, subagent validation, event constants) |
 | `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
 
 ### Data Flow
@@ -216,7 +223,7 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 | Concern | Details |
 | --- | --- |
 | Entry point | `packages/pi/src/extension.ts` |
-| Source modules | `modes.ts`, `rules.ts`, `compaction.ts`, `subagent.ts`, `commands.ts`, `tools.ts`, `state.ts`, `rules-content.ts` |
+| Source modules | `modes.ts`, `rules.ts`, `compaction.ts`, `subagent.ts`, `commands.ts`, `tools.ts`, `state.ts` |
 | Test | `pnpm --filter @maestria/pi test` |
 | Build | `vp pack` (Rolldown) - outputs to `dist/` |
 | Validate | `pnpm --filter @maestria/pi validate` |
