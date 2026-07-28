@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.5.13
+
+### Patch Changes
+
+- [#136](https://github.com/agustinusnathaniel/maestria/pull/136) [`0bee77c`](https://github.com/agustinusnathaniel/maestria/commit/0bee77ca5d09b3f4000795d761eda473ec12d4bc) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Rule-override conditions and communication conventions for agent directives.
+
+  **When to Break the Rules** - Added 6 explicit override conditions to the
+  orchestrator prompt (user skip request, safety, mode override, frustration
+  escalation, rule conflicts, explanation requests). This prevents rule
+  rigidity by documenting when and how to deviate from defaults.
+
+  **Communication conventions** - Two new shared rules adopted from
+  established communication practice: report errors matter-of-factly
+  (state problem, cause, and fix without hedging or drama) and lead with
+  the action (first line actionable, context follows).
+
+  **Review-commit handoff** - Review Triage now chains directly into the
+  commit flow after approval (guarded against unresolved `[fix]` and
+  `[escalate]` items), replacing the separate "Stop & Report" step.
+
+  **How this affects you:** Agents now have clearer guidance on when to
+  flex the rules and how to communicate. Error messages are more direct.
+  Responses lead with something actionable rather than preamble. No action
+  required on your end - your agents handle the new conventions automatically.
+
 ## 0.5.12
 
 ### Patch Changes
