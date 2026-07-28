@@ -1,5 +1,27 @@
 # @maestria/omp
 
+## 0.2.6
+
+### Patch Changes
+
+- [#129](https://github.com/agustinusnathaniel/maestria/pull/129) [`7dc3df1`](https://github.com/agustinusnathaniel/maestria/commit/7dc3df17dce1707b80a018437bbf0c263c106bc0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Blind review and fail-loud iteration exit for the review protocol.
+
+  **Blind review** - The reviewer agent no longer receives the builder's
+  handoff notes or self-assessment. It now evaluates only the diff,
+  requirements, and acceptance criteria. This removes a bias: the reviewer
+  was previously primed by the builder's own narrative about what changed,
+  rather than judging the code against the spec directly.
+
+  **Fail-loud iteration exit** - When the review loop runs 3 cycles with
+  unresolved issues, instead of silently documenting the gap and proceeding,
+  the pipeline now stops and escalates. It produces a structured report of
+  what's still blocking and requires your explicit override to continue.
+
+  **How this affects you:** Reviews are more objective now. If a review
+  stalls, you'll get a clear report of what's blocking it rather than a
+  quiet pass. No action required on your end - your agents handle the new
+  protocol automatically.
+
 ## 0.2.5
 
 ### Patch Changes
