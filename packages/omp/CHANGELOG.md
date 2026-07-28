@@ -1,5 +1,19 @@
 # @maestria/omp
 
+## 0.2.8
+
+### Patch Changes
+
+- [#138](https://github.com/agustinusnathaniel/maestria/pull/138) [`28f1520`](https://github.com/agustinusnathaniel/maestria/commit/28f15209400e79a7691c923fa63188861199e624) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Move @maestria/shared-pi to devDependencies
+
+  Reclassify the internal `@maestria/shared-pi` dependency from `dependencies` to
+  `devDependencies` in both the pi and omp packages. This shared package is bundled
+  into `dist/extension.mjs` at build time and is never published to npm.
+
+  **Why this matters:** Without this fix, users updating pi or omp encounter npm
+  install failures because `@maestria/shared-pi` is a private package. This is
+  solely a dependency classification fix — no behavioral change for end users.
+
 ## 0.2.7
 
 ### Patch Changes
