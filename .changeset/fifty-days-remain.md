@@ -1,5 +1,10 @@
 ---
 '@maestria/core': minor
+'@maestria/opencode': patch
+'@maestria/pi': patch
+'@maestria/kimi-code': patch
+'@maestria/hermes': patch
+'@maestria/omp': patch
 ---
 
 refactor: harden review protocol with access list rules and fail-loud exit
