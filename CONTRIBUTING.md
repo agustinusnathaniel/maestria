@@ -20,23 +20,29 @@ The project uses [Vite+](https://viteplus.dev) as its unified toolchain. `vp che
 ```
 maestria/
 ├── packages/
-│   ├── core/              Canonical agent directives + sync pipeline (private, v0.2.0)
-│   ├── opencode/          OpenCode plugin (published, v0.4.9)
-│   ├── kimi-code/         Kimi Code plugin (private, v0.2.1)
-│   ├── omp/               Oh My Pi plugin (published, v0.1.0)
-│   ├── pi/                Pi extension (published, v0.4.1)
+│   ├── core/              Canonical agent directives + sync pipeline (private, v0.4.9)
+│   ├── opencode/          OpenCode plugin (published, v0.6.12)
+│   ├── kimi-code/         Kimi Code plugin (published, v0.4.9)
+│   ├── omp/               Oh My Pi plugin (published, v0.2.4)
+│   ├── pi/                Pi extension (published, v0.5.10)
 │   ├── cursor/            Cursor IDE plugin (published, v0.1.3)
 │   ├── hermes/            Hermes Agent plugin (private, v0.1.7, published on PyPI)
 │   └── shared/
 │       └── pi/            Shared pure-TS utilities for omp/pi (private)
 ├── apps/
-│   └── docs/              Starlight documentation site (private)
+│   ├── docs/              Starlight documentation site (private)
+│   └── maestria-cli/      CLI tool (published, v0.7.3)
 ├── scripts/
 │   ├── sync-all           Regenerate all plugin outputs from canonical sources
 │   └── check-sync         CI verification: fail if any output differs
 ├── docs/
 │   ├── adr/               Architecture Decision Records by area
-│   │   └── omp/          - @maestria/omp decisions (ADR-OMP-*)
+│   │   ├── core/         - Core decisions (ADR-CORE-*)
+│   │   ├── cursor/       - Cursor plugin decisions (ADR-CR-*)
+│   │   ├── hermes/       - Hermes plugin decisions (ADR-HM-*)
+│   │   ├── kimi-code/    - Kimi Code decisions (ADR-KC-*)
+│   │   ├── opencode/     - OpenCode decisions (ADR-OC-*)
+│   │   └── pi/           - Pi decisions (ADR-PI-*)
 │   ├── testing.md         Testing philosophy
 │   └── checklist.md       Pre-commit verification gates
 ├── AGENTS.md              AI agent guidance
@@ -50,7 +56,7 @@ maestria/
 | --- | --- | --- |
 | `@maestria/core` | No | Canonical agent prompts in `agent-directives/`, sync pipeline scripts |
 | `@maestria/opencode` | Yes | 7 specialist subagents + orchestrator + workflow modes for OpenCode |
-| `@maestria/kimi-code` | No | 7 specialist skills with swarm-aware orchestration for Kimi Code |
+| `@maestria/kimi-code` | Yes | 7 specialist skills with swarm-aware orchestration for Kimi Code |
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
 | `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
