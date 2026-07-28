@@ -14,7 +14,11 @@
  *
  * Consumers can import from the barrel (@/state.js) or from specific sub-modules.
  */
-export type { MaestriaState, HandoffEntry, SubagentStatusInfo } from '@maestria/shared-pi/state-core';
+export type {
+  MaestriaState,
+  HandoffEntry,
+  SubagentStatusInfo,
+} from '@maestria/shared-pi/state-core';
 export { HANDOFF_HISTORY_CAP, FILE_HISTORY_CAP } from '@maestria/shared-pi/state-core';
 export {
   createInitialState,
