@@ -18,6 +18,9 @@ rigidity by documenting when and how to deviate from defaults.
 matter-of-factly (state problem, cause, and fix without hedging or drama)
 and lead with the action (first line actionable, context follows).
 
+**Review-commit handoff** - Review Triage now chains directly into the
+commit flow after approval, replacing the separate "Stop & Report" step.
+
 **How this affects you:** Agents now have clearer guidance on when to
 flex the rules and how to communicate. Error messages are more direct.
 Responses lead with something actionable rather than preamble. No action
