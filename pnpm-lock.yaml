@@ -173,13 +173,13 @@ importers:
 
   packages/omp:
     dependencies:
-      '@maestria/shared-pi':
-        specifier: workspace:*
-        version: link:../shared/pi
       '@oh-my-pi/pi-coding-agent':
         specifier: '*'
         version: 17.0.5
     devDependencies:
+      '@maestria/shared-pi':
+        specifier: workspace:*
+        version: link:../shared/pi
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
@@ -223,13 +223,13 @@ importers:
       '@gotgenes/pi-subagents':
         specifier: ^18.0.0
         version: 18.1.0(@earendil-works/pi-ai@0.79.9(ws@8.21.0)(zod@4.4.3))(@earendil-works/pi-coding-agent@0.79.9(ws@8.21.0)(zod@4.4.3))(@earendil-works/pi-tui@0.79.9)
-      '@maestria/shared-pi':
-        specifier: workspace:*
-        version: link:../shared/pi
       typebox:
         specifier: '*'
         version: 1.2.18
     devDependencies:
+      '@maestria/shared-pi':
+        specifier: workspace:*
+        version: link:../shared/pi
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
