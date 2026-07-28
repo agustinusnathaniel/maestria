@@ -7,10 +7,20 @@
 '@maestria/omp': patch
 ---
 
-refactor: harden review protocol with access list rules and fail-loud exit
+Blind review and fail-loud iteration exit for the review protocol.
 
-ADR CORE-012 introduces two changes to the orchestrator's review protocol:
+**Blind review** - The reviewer agent no longer receives the builder's
+handoff notes or self-assessment. It now evaluates only the diff,
+requirements, and acceptance criteria. This removes a bias: the reviewer
+was previously primed by the builder's own narrative about what changed,
+rather than judging the code against the spec directly.
 
-1. **Hardened access list for verifiers** - REQUIRED (diff, spec, acceptance criteria) and FORBIDDEN (builder's handoff, self-assessment) items are now explicit, preventing reviewer bias from builder narrative. Adds blind review practice as a separate rule.
+**Fail-loud iteration exit** - When the review loop runs 3 cycles with
+unresolved issues, instead of silently documenting the gap and proceeding,
+the pipeline now stops and escalates. It produces a structured report of
+what's still blocking and requires your explicit override to continue.
 
-2. **Fail-loud iteration limit exit** - Replaces "ambiguous -> document and proceed" with a structured fail-loud exit. At max 3 cycles with unresolved [fix] items, commit is blocked, auto-escalation with structured delta, user override required.
+**How this affects you:** Reviews are more objective now. If a review
+stalls, you'll get a clear report of what's blocking it rather than a
+quiet pass. No action required on your end - your agents handle the new
+protocol automatically.
