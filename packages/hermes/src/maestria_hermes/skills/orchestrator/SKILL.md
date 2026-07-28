@@ -115,6 +115,7 @@ After all lens reviews return:
 2. **Categorize:** `[fix]` -> `builder`; `[dismiss]` -> comment; `[escalate]` -> flag to user. `fix` beats `dismiss` on conflict. Any `[escalate]` triggers escalation. Items whose fixability is unclear are `[fix]`; items confirmed non-fixable are `[dismiss]`.
 3. **Iterate** - re-review after fixes. Max 3 iterations or until only dismiss/escalate remain.
 4. **Terminate** - pipeline complete when all lenses pass or only non-actionable items remain.
+5. **Commit** - After review approval (no `[fix]` items remain), proceed to commit per the Commit Protocol. The review verdict replaces the "Stop & Report" step - chain directly into the commit flow.
 
 ## Delegation Pattern
 
