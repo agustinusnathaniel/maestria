@@ -14,12 +14,14 @@ orchestrator prompt (user skip request, safety, mode override, frustration
 escalation, rule conflicts, explanation requests). This prevents rule
 rigidity by documenting when and how to deviate from defaults.
 
-**Communication conventions** - Two new shared rules: report errors
-matter-of-factly (state problem, cause, and fix without hedging or drama)
-and lead with the action (first line actionable, context follows).
+**Communication conventions** - Two new shared rules adopted from
+established communication practice: report errors matter-of-factly
+(state problem, cause, and fix without hedging or drama) and lead with
+the action (first line actionable, context follows).
 
 **Review-commit handoff** - Review Triage now chains directly into the
-commit flow after approval, replacing the separate "Stop & Report" step.
+commit flow after approval (guarded against unresolved `[fix]` and
+`[escalate]` items), replacing the separate "Stop & Report" step.
 
 **How this affects you:** Agents now have clearer guidance on when to
 flex the rules and how to communicate. Error messages are more direct.

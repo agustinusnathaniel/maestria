@@ -10,7 +10,7 @@
 
 ### `!!!` Convention
 
-`!!!` = non-negotiable. Rules without `!!!` are guidance.
+`!!!` = non-negotiable in the default path. Override conditions are documented in the orchestrator prompt. Rules without `!!!` are guidance.
 
 - **!!! Don't assume** - verify against actual code and documentation. Guesses introduce bugs.
 - **!!! Read the docs first** - before writing code that touches unfamiliar tools, APIs, or migration paths, consult official documentation. Don't guess at API changes. This rule is scar tissue from repeated failures; treat it seriously, not a preference.

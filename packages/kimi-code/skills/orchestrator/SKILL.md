@@ -20,7 +20,7 @@ If you are tempted to "just check" something in the codebase - that is a delegat
 
 ## CRITICAL RULES
 
-Apply on every invocation:
+Apply on every invocation unless overridden (see below):
 
 1. **!!! Never implement yourself** - delegate only to the 7 specialists (see Routing). Never use platform-native built-in agents.
 2. **!!! Git mutations through `builder`** - execution gate. Delegate validation before committing.
@@ -35,11 +35,11 @@ Apply on every invocation:
 11. **!!! Use Work Results format after every builder task** - full table from Work Results section. Overrides "write for humans".
 12. **!!! Prefer deterministic agents over exploration** - define checkpoints, success criteria, and termination conditions. A defined output contract is more predictable. For high-uncertainty, use experiment framing (see Complexity Classification).
 
-### When to Break the Rules
+## When to Break the Rules
 
 The rules above optimize for the common case. Override when:
 
-1. **User explicitly asks to skip a step** - "just implement it", "skip review". Respect the request, flag the risk once, then comply.
+1. **User explicitly asks to skip a step** - "just implement it", "skip review". Flag the risk, ask for explicit confirmation ("Are you sure you want to proceed without review?"), then comply. Confirmation persists for the same skip-request type within the session.
 2. **Safety over speed** - security, data loss, irreversible production changes. Default: pause and ask first.
 3. **Mode keyword active** - workflow mode overrides the pipeline for this turn (see Workflow Mode Override below).
 4. **User frustration detected** - two consecutive rejections means stop the current approach and escalate. Don't iterate harder (see Session Flow rule #4).
@@ -123,7 +123,7 @@ After all lens reviews return:
 2. **Categorize:** `[fix]` -> `builder`; `[dismiss]` -> comment; `[escalate]` -> flag to user. `fix` beats `dismiss` on conflict. Any `[escalate]` triggers escalation. Items whose fixability is unclear are `[fix]`; items confirmed non-fixable are `[dismiss]`.
 3. **Iterate** - re-review after fixes. Max 3 iterations or until only dismiss/escalate remain.
 4. **Terminate** - pipeline complete when all lenses pass or only non-actionable items remain.
-5. **Commit** - After review approval (no `[fix]` or `[escalate]` items remain), proceed to commit per the Commit Protocol. The review verdict replaces the "Stop & Report" step - chain directly into the commit flow.
+5. **Commit** - After review approval (no `[fix]` or `[escalate]` items remain), proceed to commit per the Commit Protocol. The review verdict replaces the Commit Protocol's "Stop & Report" step - chain directly into the commit flow. If `[escalate]` items remain, surface them using the escalation format from rules.md and await user resolution before proceeding.
 
 ## Delegation Pattern
 
@@ -192,7 +192,7 @@ Commit incrementally - group by logical context, not file count. When implementa
    - **User-facing docs site** and **changelog** (release notes, not auto-generated files).
 3. **Compose Commit Message** - Conventional Commits. Default: `refactor`. Use `fix`/`feat` for user-facing only, `chore`/`docs`/`ci`/`test` otherwise. If no new user-facing capability, it's `refactor`, not `feat`. Base on actual diff.
 4. **Execute** - `builder`: exact message, files to stage, run validation before committing.
-5. **Stop & Report** - Work Results table. Don't chain commits. Dispatch `reviewer` per rule #5 if needed.
+5. **Stop & Report** - Work Results table. Don't chain commits. If review already complete (per Review Protocol), skip `reviewer` dispatch - proceed to push.
 6. **Push** - Check branch first: `git branch --show-current`. Never push to main/master - checkout a feature branch. Push automatically on non-main branches when a meaningful batch is ready.
 7. **PR** - Auto-create on first push to a feature branch. Detect platform from remote. Don't ask.
    - **Subsequent pushes:** update title and description. Must include: Summary (2-4 sentences), `## Changes` (Work Results table), `## Testing`, `## Breaking Changes` (if applicable).
