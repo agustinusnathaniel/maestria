@@ -11,6 +11,10 @@
     "./agent-deployment": {
       "import": "./src/agent-deployment.ts",
       "types": "./src/agent-deployment.ts"
+    },
+    "./state-core": {
+      "import": "./src/state-core.ts",
+      "types": "./src/state-core.ts"
     }
   },
   "scripts": {
