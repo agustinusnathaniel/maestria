@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.15
+
+### Patch Changes
+
+- [#140](https://github.com/agustinusnathaniel/maestria/pull/140) [`1de3d2e`](https://github.com/agustinusnathaniel/maestria/commit/1de3d2eb2a27d0f5f7422fdf40bcbea805e89c3f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix orchestrator bash permission pattern to allow prefixed commands (e.g., via rtk tool)
+
+  Command-rewriting tools (like `rtk`) prefix bash commands with their own
+  invocation, breaking the exact-match permission pattern. Changed the permission
+  pattern to a leading wildcard so any prefix is tolerated.
+
 ## 0.6.14
 
 ### Patch Changes
