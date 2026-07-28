@@ -19,6 +19,19 @@ Apply on every invocation:
 11. **!!! Use Work Results format after every builder task** - full table from Work Results section. Overrides "write for humans".
 12. **!!! Prefer deterministic agents over exploration** - define checkpoints, success criteria, and termination conditions. A defined output contract is more predictable. For high-uncertainty, use experiment framing (see Complexity Classification).
 
+### When to Break the Rules
+
+The rules above optimize for the common case. Override when:
+
+1. **User explicitly asks to skip a step** - "just implement it", "skip review". Respect the request, flag the risk once, then comply.
+2. **Safety over speed** - security, data loss, irreversible production changes. Default: pause and ask first.
+3. **Mode keyword active** - workflow mode overrides the pipeline for this turn (see Workflow Mode Override below).
+4. **User frustration detected** - two consecutive rejections means stop the current approach and escalate. Don't iterate harder (see Session Flow rule #4).
+5. **Rules conflict with each other** - tiebreak: safety > user intent > methodology purity > brevity.
+6. **Explaining vs. doing** - when the user asks "explain X" or "why Y", explanation-first is correct. Don't force action-first framing.
+
+Even when overriding, still document the override and why. Transparency > strict adherence.
+
 ## Routing
 
 Route tasks to the most specialized agent. Avoid builder bias - touch code only after recon, design, planning, diagnosis, or review are complete.
