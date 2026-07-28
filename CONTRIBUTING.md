@@ -257,6 +257,21 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 | Install        | CLI copies to `~/.cursor/plugins/local/maestria`                  |
 | Key transforms | `task(` → `Task(`, `@name` → bare name, tools → Cursor PascalCase |
 
+### hermes
+
+| Concern | Details |
+| --- | --- |
+| Format | Python plugin — PyPI distribution (`maestria-hermes`) |
+| Manifest | `plugin.yaml` — standalone Hermes Agent plugin |
+| Skills | Auto-generated in `src/maestria_hermes/skills/<name>/SKILL.md` from sync (7 specialists + orchestrator) |
+| Tools | Hand-authored `src/maestria_hermes/tools/` (provides `opencode_route` tool) |
+| Hooks | Hand-authored `src/maestria_hermes/hooks/` (6 hooks: pre\_llm\_call, pre\_tool\_call, subagent start/stop, etc.) |
+| Middleware | Hand-authored `src/maestria_hermes/middleware/` (llm\_execution) |
+| Commands | Hand-authored `{fein,sonar,blitz,mode,review,plan}` commands |
+| Validate | `ruff check src/` |
+| Install | `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable` or `pip install maestria-hermes` |
+| Key transforms | `task(` → `delegate_task(`, `@name` → bare name, tool generalizations, coding-specific → general-purpose adaptation |
+
 ---
 
 ## 7. Testing Philosophy
