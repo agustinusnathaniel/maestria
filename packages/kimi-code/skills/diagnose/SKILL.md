@@ -88,6 +88,13 @@ Confirm it works:
 - **Max 3 fix attempts** (Step 4) before escalating with the audit table.
 - **Never loop silently** - if a root cause hypothesis fails 3 times, surface the table.
 
+## Security
+
+- **!!! Respect file system scope** - Only read/write within the project directory. Never access `.env`, `*.pem`, `*.key`, or credentials without explicit authorization.
+- **!!! Redact secrets** - If you encounter a credential or token during debugging, do not include it in reports. Replace with `[REDACTED <type>]`.
+- **!!! Validate shell commands** - Before running bash, verify the command cannot cause injection, path traversal, or data destruction.
+- **!!! Call out destructive findings** - Flag deletions, schema changes, or permission risks in handoff. Do not execute recovery measures silently.
+
 ## Rules
 
 - **!!! Document diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix via `writer` or markdown file.
