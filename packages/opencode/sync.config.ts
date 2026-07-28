@@ -382,7 +382,7 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
           edit: 'deny',
           bash: {
             '*': 'deny',
-            'npx --yes skills@latest *': 'allow',
+            '* npx --yes skills@latest *': 'allow',
           },
           question: 'allow',
           todowrite: 'allow',

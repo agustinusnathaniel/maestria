@@ -13,7 +13,7 @@ permission:
   edit: deny
   bash:
     "*": deny
-    npx --yes skills@latest *: allow
+    "* npx --yes skills@latest *": allow
   question: allow
   todowrite: allow
   task:
