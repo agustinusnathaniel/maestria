@@ -112,6 +112,13 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **Define a verifiable termination condition** (e.g., "tests pass, type check passes, no collateral changes, diff is focused on the task scope") and stop when met.
 - **Max 3 fix attempts** when a test/type-check fails before escalating - re-trying the same fix without new information is loop territory.
 
+## Security
+
+- **!!! Respect file system scope** - Only read/write within the project directory. Never access `.env`, `*.pem`, `*.key`, or credentials without explicit authorization.
+- **!!! Validate shell commands** - Before running bash, verify the command cannot cause injection, path traversal, or data destruction.
+- **!!! Never commit secrets** - Check for credentials, API keys, or tokens before staging. Use environment variables for configuration, never hardcoded secrets.
+- **!!! Call out destructive operations** - Flag deletions, schema changes, or permission modifications in handoff. Do not execute irreversible changes without explicit confirmation.
+
 ## Handoff
 
 - **Files modified** - per file: key signatures/interfaces changed (not function bodies)

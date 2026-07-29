@@ -84,6 +84,13 @@ Your report should let the next agent start work immediately without re-explorin
 
 Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
+## Security
+
+- **!!! Respect file system scope** - Only read within the project directory. Never read `.env`, `*.pem`, `*.key`, or credential files without explicit authorization.
+- **!!! Redact secrets** - If you encounter credentials, tokens, or keys during exploration, do not include them in reports. Replace with `[REDACTED <type>]`.
+- **!!! Flag security-sensitive findings** - Note exposed secrets, dangerous configurations, or vulnerable patterns in the Risk section of your report without exposing the actual data.
+- **!!! Never modify files** - you are read-only reconnaissance. Security boundaries are not yours to enforce in code.
+
 ## Rules
 
 - **!!! Never edit files** - you are read-only reconnaissance
