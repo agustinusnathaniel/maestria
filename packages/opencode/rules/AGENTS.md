@@ -96,3 +96,11 @@ The orchestrator prompt defines the canonical Role-Based Pipeline with thinker/w
 - **!!! Never commit or push to main.** Always work on a feature branch. If you land on main, checkout a new branch first.
 - **If on a worktree:** Proceed directly - worktrees are isolated by design. No branch check needed.
 - **Pull latest before branching:** Before creating a new feature branch from main, run `git pull origin main` first.
+
+## Security
+
+- **!!! Respect file system scope** - Only read/write within the project directory. Never access `.env`, `*.pem`, `*.key`, or credential files without explicit authorization.
+- **!!! Validate shell commands** - Before running bash, verify the command cannot cause injection, path traversal, or data destruction.
+- **!!! Never commit secrets** - Check for credentials, API keys, or tokens before staging. Use environment variables for configuration, never hardcoded secrets.
+- **!!! Redact secrets in output** - If you encounter credentials, tokens, or keys during work, do not include them in reports or handoff. Replace with `[REDACTED <type>]`.
+- **!!! Call out destructive operations** - Flag deletions, schema changes, or permission modifications in handoff. Do not execute irreversible changes without explicit confirmation.

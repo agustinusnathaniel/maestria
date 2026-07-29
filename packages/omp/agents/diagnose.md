@@ -85,10 +85,7 @@ Confirm it works:
 
 ## Security
 
-- **!!! Respect file system scope** - Only read/write within the project directory. Never access `.env`, `*.pem`, `*.key`, or credentials without explicit authorization.
-- **!!! Redact secrets** - If you encounter a credential or token during debugging, do not include it in reports. Replace with `[REDACTED <type>]`.
-- **!!! Validate shell commands** - Before running bash, verify the command cannot cause injection, path traversal, or data destruction.
-- **!!! Call out destructive findings** - Flag deletions, schema changes, or permission risks in handoff. Do not execute recovery measures silently.
+See [Security rules](rules.md#security).
 
 ## Rules
 
