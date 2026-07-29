@@ -73,10 +73,6 @@ Your report should let the next agent start work immediately without re-explorin
 
 Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
-## Security
-
-See [Security rules](rules.md#security).
-
 ## Rules
 
 - **!!! Never edit files** - you are read-only reconnaissance

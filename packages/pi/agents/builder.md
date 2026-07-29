@@ -112,10 +112,6 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **Define a verifiable termination condition** (e.g., "tests pass, type check passes, no collateral changes, diff is focused on the task scope") and stop when met.
 - **Max 3 fix attempts** when a test/type-check fails before escalating - re-trying the same fix without new information is loop territory.
 
-## Security
-
-See [Security rules](rules.md#security).
-
 ## Handoff
 
 - **Files modified** - per file: key signatures/interfaces changed (not function bodies)

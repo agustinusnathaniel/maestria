@@ -77,10 +77,6 @@ Confirm it works:
 - **Max 3 fix attempts** (Step 4) before escalating with the audit table.
 - **Never loop silently** - if a root cause hypothesis fails 3 times, surface the table.
 
-## Security
-
-See [Security rules](rules.md#security).
-
 ## Rules
 
 - **!!! Document diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix via `writer` or markdown file.
