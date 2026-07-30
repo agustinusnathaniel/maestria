@@ -14,12 +14,13 @@ describe('MAX_PARALLEL_TASKS', () => {
 });
 
 describe('validateHandoff', () => {
-  it('returns valid for a handoff with all 6 fields', () => {
+  it('returns valid for a handoff with all 7 fields', () => {
     const handoff = [
       '**Goal:** build feature',
       '**Context:** in repo root',
       '**Requirements:** must be fast',
       '**Known problems:** none',
+      '**Assumptions documented:** pipeline must be installed',
       '**Success criteria:** tests pass',
       '**Next step:** merge PR',
     ].join('\n');
@@ -41,6 +42,7 @@ describe('validateHandoff', () => {
       '**Context:** in repo root',
       '**Requirements:** must be fast',
       '**Known problems:** none',
+      '**Assumptions documented:** agent knows the project',
       '**Success criteria:** tests pass',
       '**Next step:** merge PR',
     ].join('\n');

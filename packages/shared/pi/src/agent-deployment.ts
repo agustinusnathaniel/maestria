@@ -10,16 +10,7 @@
 
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-
-const SPECIALIST_NAMES = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
+import { ALLOWED_AGENTS } from './subagent-utils.js';
 
 /**
  * Deploy bundled specialist agent .md files to the given destination directory.
@@ -45,7 +36,7 @@ export function deploySpecialistAgents(agentsSrc: string, agentsDest: string): n
   }
 
   let deployed = 0;
-  for (const name of SPECIALIST_NAMES) {
+  for (const name of ALLOWED_AGENTS) {
     const srcFile = join(agentsSrc, `${name}.md`);
     const destFile = join(agentsDest, `${name}.md`);
 

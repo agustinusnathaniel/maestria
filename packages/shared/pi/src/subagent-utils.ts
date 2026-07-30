@@ -36,6 +36,7 @@ export const HANDOFF_FIELDS = [
   'Context',
   'Requirements',
   'Known problems',
+  'Assumptions documented',
   'Success criteria',
   'Next step',
 ] as const;
