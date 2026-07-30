@@ -1,10 +1,15 @@
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
-import { getModePrompt } from '@/modes.js';
+import { getModePrompt } from '@maestria/shared-pi/modes-core';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
 
 /**
  * Creates a before_agent_start handler that injects workflow mode prompts.
@@ -28,7 +33,7 @@ export function createModePromptHandler(state: MaestriaState) {
     const parts: string[] = [
       event.systemPrompt,
       '',
-      getModePrompt(state.mode),
+      getModePrompt(state.mode, COMMANDS_DIR),
       '',
       `The user has set workflow mode to "${state.mode}". ` +
         'Honor this mode throughout the session until changed via /command.',

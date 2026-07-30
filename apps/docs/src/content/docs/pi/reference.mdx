@@ -37,6 +37,15 @@ Every `maestria_subagent` call records the parent task ID and specialist name in
 | `/handoff <goal>`    | Generate a structured handoff document for task context transfer              |
 | `/maestria-status`   | Show current session state including handoff history                          |
 
+> **Mode keywords work two ways:**
+>
+> - **Slash command** (`/fein`, `/sonar`, `/blitz`) — sets the workflow mode and shows a notification. Use standalone, then describe your task in the follow-up message.
+> - **Bare keyword** (`fein`, `sonar`, `blitz`) — when typed at the start of a message, Pi auto-detects the keyword, sets the mode, and injects the mode prompt inline with your task description. Example: `fein implement login` sets fein mode and dispatches the task in one message.
+
+### Pure dispatcher enforcement
+
+When a workflow mode is active (fein/sonar/blitz), the orchestrator session is restricted to only the `maestria_subagent` delegation tool. This enforces the maker/checker split at the tool level - the orchestrator physically cannot use `bash`, `edit`, `write`, or other implementation tools.
+
 ## Subagent Dispatch
 
 Specialists are dispatched via `maestria_subagent`. The tool supports three dispatch modes:

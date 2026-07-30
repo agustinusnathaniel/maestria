@@ -1,21 +1,26 @@
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
   ExtensionContext,
 } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
-import { getModePrompt } from '@/modes.js';
+import { getModePrompt } from '@maestria/shared-pi/modes-core';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const COMMANDS_DIR = __dirname + '/../agents/commands';
 
 /**
  * Creates a before_agent_start handler that injects workflow mode prompts.
  *
  * This is the only dynamic prompt injection needed from the extension.
  * Static behavioral content (orchestrator prompt + global rules) is
- * auto-injected by Pi's skill system via SKILL.md files registered in
- * the pi.skills manifest field - the standard Pi extension pattern.
+ * auto-injected by the platform's skill system via SKILL.md files registered in
+ * omp's agent discovery mechanism.
  *
  * When no mode is active, the handler returns void (no modification),
- * letting Pi's built-in prompt assembly (skills + context files + tools)
+ * letting the platform's prompt assembly (skills + context files + tools)
  * stand as-is.
  */
 export function createModePromptHandler(state: MaestriaState) {
@@ -28,7 +33,7 @@ export function createModePromptHandler(state: MaestriaState) {
     const parts: string[] = [
       ...event.systemPrompt,
       '',
-      getModePrompt(state.mode),
+      getModePrompt(state.mode, COMMANDS_DIR),
       '',
       `The user has set workflow mode to "${state.mode}". ` +
         'Honor this mode throughout the session until changed via /command.',
