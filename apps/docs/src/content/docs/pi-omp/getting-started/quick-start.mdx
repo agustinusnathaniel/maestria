@@ -1,0 +1,81 @@
+---
+title: Quick Start
+description: Get started with @maestria/pi or @maestria/omp in minutes
+template: splash
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Now that you have `@maestria/pi` or `@maestria/omp` installed, here's how to start your first session.
+
+## Start a Session
+
+Open a new session in any project directory:
+
+```bash
+# Pi
+pi
+
+# OMP
+omp
+```
+
+Once the session starts, the extension activates automatically and your platform's resource loader injects its methodology skills into the system prompt.
+
+## Pick a Workflow Mode
+
+The extension provides three workflow mode commands. Use them to tell the agent how to handle your request:
+
+- **`/fein`** - Full pipeline: reconnaissance → design → implementation → review. Use for production-grade changes.
+- **`/sonar`** - Research only: reconnaissance → design → STOP. No implementation. Use for discovery and feasibility.
+- **`/blitz`** - Fast implementation: skip recon and review. Use for quick fixes in known territory.
+
+You can invoke a mode with or without a task description:
+
+```bash
+fein Add user authentication
+# or
+/fein
+Mode set to fein. Describe what you'd like to work on.
+```
+
+> **Auto-detect mode keywords:** Slash commands (`/fein`, `/sonar`, `/blitz`) set the workflow mode and show a notification. Bare keywords (`fein`, `sonar`, `blitz`) typed at the start of a message set the mode and inject the mode prompt inline with your task description.
+
+> **Note:** Without a mode keyword, the agent operates with the orchestrator prompt as guidance but without tool-level enforcement. The dispatcher restriction activates only when you type `fein`, `sonar`, or `blitz`.
+
+## How Dispatch Works
+
+<Aside type="note">
+  **Pi** dispatches specialists via `maestria_subagent(agent, task)` through the
+  `@gotgenes/pi-subagents` extension. **OMP** dispatches specialists directly via its built-in
+  `task(agent: "...", task: "...")` tool - no external dependency needed.
+</Aside>
+
+Both platforms provide the same three dispatch modes through their respective tools:
+
+- **Single mode** - dispatch one task to one specialist, wait for completion
+- **Parallel mode** - dispatch multiple specialists concurrently (max 8)
+- **Chain mode** - dispatch specialists sequentially, piping each result to the next
+
+The dispatch tool (`maestria_subagent` for Pi, `task()` for OMP) is what enforces the **maker/checker split** at the tool level - when a workflow mode is active, the orchestrator session is restricted to only delegation tools, blocking `bash`, `edit`, `write`, and other implementation tools.
+
+## Your First Task
+
+Try it with a simple request:
+
+1. Start a session (`pi` or `omp`).
+2. Type `fein` followed by your task (e.g. `fein Add user authentication`).
+3. The extension activates the spec-driven orchestration pipeline:
+   - The orchestrator receives your request and breaks it into phases.
+   - Specialists (`adventurer`, `architect`, `builder`, `reviewer`) execute each phase via subagent dispatch.
+   - Phase gates validate completion before the next stage begins.
+4. Review the session tree output to see how each specialist contributed.
+
+## About Agent Switching
+
+Unlike OpenCode (where the orchestrator is a separate agent you switch to via `@orchestrator`), **Pi and OMP are single-agent platforms** - the orchestrator IS the session. The mode keyword (`fein`/`sonar`/`blitz`) is the equivalent of switching to the orchestrator agent. There is no separate "switch to orchestrator" step.
+
+## What's Next?
+
+- Read the [Installation Guide](/pi-omp/getting-started/installation/) for setup options.
+- Learn about the [specialist subagents](/core/agents/) and their roles.

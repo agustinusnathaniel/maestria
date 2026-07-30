@@ -148,17 +148,17 @@ export default defineConfig({
           ],
         },
         {
-          label: '@maestria/pi',
+          label: '@maestria/pi & @maestria/omp',
           collapsed: true,
           items: [
-            { label: 'Overview', link: '/pi/' },
+            { label: 'Overview', link: '/pi-omp/' },
             {
               label: 'Getting Started',
-              items: [{ autogenerate: { directory: 'pi/getting-started' } }],
+              items: [{ autogenerate: { directory: 'pi-omp/getting-started' } }],
             },
-            { label: 'Pi Reference', link: '/pi/reference/' },
-            { label: 'Changelog', link: '/pi/changelog/' },
-            { label: 'Contributing', link: '/pi/contributing/' },
+            { label: 'Reference', link: '/pi-omp/reference/' },
+            { label: 'Changelog', link: '/pi-omp/changelog/' },
+            { label: 'Contributing', link: '/pi-omp/contributing/' },
           ],
         },
         {
@@ -173,19 +173,6 @@ export default defineConfig({
             { label: 'Commands', link: '/hermes/commands/' },
             { label: 'Changelog', link: '/hermes/changelog/' },
             { label: 'Contributing', link: '/hermes/contributing/' },
-          ],
-        },
-        {
-          label: '@maestria/omp',
-          collapsed: true,
-          items: [
-            { label: 'Overview', link: '/omp/' },
-            {
-              label: 'Getting Started',
-              items: [{ autogenerate: { directory: 'omp/getting-started' } }],
-            },
-            { label: 'Changelog', link: '/omp/changelog/' },
-            { label: 'Contributing', link: '/omp/contributing/' },
           ],
         },
       ],

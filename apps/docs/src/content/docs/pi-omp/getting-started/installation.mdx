@@ -1,0 +1,145 @@
+---
+title: Installation & Setup
+description: How to install @maestria/pi or @maestria/omp and what you get - 7 specialist subagents, 3 workflow modes, and spec-driven orchestration.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+`@maestria/pi` and `@maestria/omp` are extensions that turn the [Pi](https://pi.ai) or [Oh My Pi](https://ohmy.ai) coding agents into disciplined engineering workstations. Each registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration - all with a single extension entry.
+
+## Prerequisites
+
+- **Pi** or **Oh My Pi (OMP)** CLI - the latest version of your chosen coding agent
+- **Node.js 22.12+** - Required for npm-based extension resolution
+
+<Aside type="note">
+  **Pi only:** `@maestria/pi` requires the `@gotgenes/pi-subagents` Pi extension for subagent
+  dispatch. Install with `pi install npm:@gotgenes/pi-subagents`. OMP has a built-in `task()` tool -
+  no additional peer dependency needed.
+</Aside>
+
+## Installation
+
+### Pi
+
+The recommended approach uses the [maestria CLI](/cli/), which automatically handles peer dependencies:
+
+```bash
+pnpx maestria@latest install pi
+```
+
+<details>
+<summary>Alternative: manual Pi CLI setup</summary>
+
+```bash
+# 1. Install the peer dependency for subagent dispatch
+pi install npm:@gotgenes/pi-subagents
+
+# 2. Install the extension
+pi install npm:@maestria/pi
+
+# 3. Restart Pi for both extensions to load
+```
+
+</details>
+
+### Oh My Pi
+
+```bash
+omp install @maestria/omp
+```
+
+OMP loads the extension from the package manifest on startup. It auto-discovers the 4 methodology skills and deploys the 7 specialist agent files to `~/.omp/agent/agents/`. Restart OMP for the extension to activate.
+
+## Verify Installation
+
+Start a new session with your platform:
+
+```bash
+# Pi
+pi
+
+# OMP
+omp
+```
+
+The `@maestria/pi` or `@maestria/omp` extension loads automatically from the package manifest. The platform's resource loader discovers its four methodology skills (orchestrator dispatcher, global agent rules, handoff contract, iteration limits) and injects them into the system prompt.
+
+You should notice the agent behaving as a Maestria dispatcher from the first turn: it responds to requests by decomposing tasks, delegating to specialist subagents, and following the spec-driven orchestration protocol.
+
+You can also list installed extensions to verify:
+
+```bash
+# Pi
+pi extensions list
+
+# OMP
+omp extensions list
+```
+
+You should see `@maestria/pi` or `@maestria/omp` in the output.
+
+## Updating
+
+### Pi
+
+```bash
+# Via maestria CLI (recommended)
+pnpx maestria@latest update pi
+
+# Or manually
+pi install npm:@maestria/pi@latest
+```
+
+<Aside type="tip">
+  To pin a specific version for Pi, use `pi install npm:@maestria/pi@0.1.0`. Check the
+  [changelog](/pi-omp/changelog/) for version history.
+</Aside>
+
+### OMP
+
+```bash
+omp install @maestria/omp@latest
+```
+
+<Aside type="tip">
+  To pin a specific version for OMP, use `omp install @maestria/omp@0.1.0`. Check the
+  [changelog](/pi-omp/changelog/) for version history.
+</Aside>
+
+## Uninstalling
+
+### Pi
+
+```bash
+# Via maestria CLI
+pnpx maestria@latest uninstall pi
+```
+
+This removes `@maestria/pi`. The `@gotgenes/pi-subagents` peer dependency is left in place because other Pi extensions may depend on it.
+
+To remove manually:
+
+```bash
+# Remove from config and uninstall
+pi uninstall @maestria/pi
+
+# Optionally remove peer dependency if not needed by other extensions
+pi uninstall @gotgenes/pi-subagents
+
+# Restart Pi
+```
+
+### OMP
+
+```bash
+omp uninstall @maestria/omp
+```
+
+Restart OMP for the changes to take effect.
+
+## Next Steps
+
+- [Quick Start](/pi-omp/getting-started/quick-start/) - Your first session with the extension
+- [Reference](/pi-omp/reference/) - Commands, dispatch modes, and review mode
+- Explore the [workflow modes](/pi-omp/getting-started/quick-start/) - `/fein`, `/sonar`, `/blitz`
