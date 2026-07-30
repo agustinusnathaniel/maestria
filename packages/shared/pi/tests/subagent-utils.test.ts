@@ -29,12 +29,13 @@ describe('ALLOWED_AGENTS', () => {
 });
 
 describe('HANDOFF_FIELDS', () => {
-  it('contains the 6 required handoff fields', () => {
+  it('contains the 7 required handoff fields matching the orchestrator delegation pattern', () => {
     expect(HANDOFF_FIELDS).toEqual([
       'Goal',
       'Context',
       'Requirements',
       'Known problems',
+      'Assumptions documented',
       'Success criteria',
       'Next step',
     ]);
@@ -126,12 +127,13 @@ describe('assertNonEmptyTask', () => {
 // ── validateHandoff ────────────────────────────────────────────────
 
 describe('validateHandoff', () => {
-  it('returns valid=true for a handoff with all 6 fields', () => {
+  it('returns valid=true for a handoff with all 7 fields', () => {
     const handoff = [
       '**Goal:** build feature',
       '**Context:** in repo root',
       '**Requirements:** must be fast',
       '**Known problems:** none',
+      '**Assumptions documented:** pipeline must be installed',
       '**Success criteria:** tests pass',
       '**Next step:** merge PR',
     ].join('\n');
@@ -146,6 +148,7 @@ describe('validateHandoff', () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('Missing or empty field: "Requirements"');
     expect(result.errors).toContain('Missing or empty field: "Known problems"');
+    expect(result.errors).toContain('Missing or empty field: "Assumptions documented"');
     expect(result.errors).toContain('Missing or empty field: "Success criteria"');
     expect(result.errors).toContain('Missing or empty field: "Next step"');
   });
@@ -164,6 +167,7 @@ describe('validateHandoff', () => {
       '**Context:** in repo root',
       '**Requirements:** must be fast',
       '**Known problems:** none',
+      '**Assumptions documented:** agent knows the project',
       '**Success criteria:** tests pass',
       '**Next step:** merge PR',
     ].join('\n');
@@ -184,6 +188,7 @@ describe('validateHandoff', () => {
       '**context:** in repo root',
       '**requirements:** must be fast',
       '**Known problems:** none',
+      '**assumptions documented:** pipeline must be installed',
       '**Success criteria:** tests pass',
       '**Next step:** merge PR',
     ].join('\n');
@@ -203,8 +208,8 @@ describe('validateHandoff', () => {
   it('collects multiple field errors in a single call', () => {
     const handoff = '**Goal:** build feature\n**Context:** in repo root';
     const result = validateHandoff(handoff);
-    // Only Goal and Context present; 4 fields missing
-    expect(result.errors.length).toBe(4);
+    // Only Goal and Context present; 5 fields missing
+    expect(result.errors.length).toBe(5);
   });
 
   it('handles fields with colon in content correctly', () => {
@@ -213,6 +218,7 @@ describe('validateHandoff', () => {
       '**Context:** issue #42: null pointer',
       '**Requirements:** must: handle all cases',
       '**Known problems:** none found',
+      '**Assumptions documented:** assume: standard env',
       '**Success criteria:** all tests: pass',
       '**Next step:** create: PR',
     ].join('\n');
@@ -226,6 +232,7 @@ describe('validateHandoff', () => {
       '**Context:**',
       '**Requirements:** must be fast',
       '**Known problems:** none',
+      '**Assumptions documented:** agent knows the project',
       '**Success criteria:** tests pass',
       '**Next step:** merge PR',
     ].join('\n');
@@ -240,6 +247,7 @@ describe('validateHandoff', () => {
       '**Context:** in repo root',
       '**Requirements:** must be fast',
       '**Known problems:** none',
+      '**Assumptions documented:** agent knows the project',
       '**Success criteria:** tests pass',
       '**Next step:** ',
     ].join('\n');
