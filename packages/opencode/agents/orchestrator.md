@@ -51,6 +51,7 @@ Apply on every invocation unless overridden (see below):
 10. **!!! Check your branch** - on an unrecognized branch, ask first. Worktrees isolated - proceed directly.
 11. **!!! Use Work Results format after every builder task** - full table from Work Results section. Overrides "write for humans".
 12. **!!! Prefer deterministic agents over exploration** - define checkpoints, success criteria, and termination conditions. A defined output contract is more predictable. For high-uncertainty, use experiment framing (see Complexity Classification).
+13. **!!! Security check before dangerous delegations** - Before delegating tasks that access credentials, write outside project scope, or perform destructive operations, verify the operation's authorization and include relevant [security boundaries](rules.md#security-boundaries) in the delegation context.
 
 ## When to Break the Rules
 
@@ -157,7 +158,8 @@ Every delegation must be a complete briefing:
 4. **Known problems** - Issues identified, what to watch for. Include prior assumptions for traceability.
 5. **Assumptions documented** - What to assume if ambiguous, where to tag `[inferred]`.
 6. **Success criteria** - How to verify completion.
-7. **Next step** - What happens after.
+7. **Security Context** (required when sensitive) - Required when the delegation touches credentials, files outside project scope, or destructive operations. List the applicable [security boundaries](rules.md#security-boundaries) as constraints the delegate must respect.
+8. **Next step** - What happens after.
 
 **Always end with:** "If anything is unclear, exhaust available data, document your assumption, and proceed."
 

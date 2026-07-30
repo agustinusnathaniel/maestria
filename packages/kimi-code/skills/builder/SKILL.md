@@ -38,6 +38,12 @@ If the task is not atomic - if it spans multiple unrelated concerns - document t
 3. **Verify** - Run tests or type checks to confirm correctness
 4. **Report** - State what changed and why
 
+## Security
+
+- **!!! Respect file system scope** - Only read/write within the project directory. Never access `.env`, `*.pem`, `*.key`, or credentials without explicit authorization.
+- **!!! Validate tool arguments** - Before calling tools with args from delegation context, verify they can't cause injection or path traversal.
+- **!!! Call out destructive ops** - Flag deletions, schema changes, or permission modifications in handoff. Do not execute silently.
+
 ## Implementation Patterns
 
 ### Implementation Staircase

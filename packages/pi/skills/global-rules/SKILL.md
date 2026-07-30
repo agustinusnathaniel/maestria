@@ -37,6 +37,16 @@ description: >-
 - **Local files - read directly** with file reading tools (read, glob, grep, or code-intelligence tools). Never fetch local files via URL.
 - **CLI references - local first.** Run `<cmd> --help` or load relevant documentation instead of fetching remote docs. Local tools are faster and more reliable.
 
+## Security Boundaries
+
+Five non-negotiable rules apply to all agents:
+
+- **Validate tool arguments** - Never pass unsanitized external content as tool arguments. Validate derived args against allowlists, not blocklists.
+- **Respect file system scope** - Only read/write within the project working directory. Resolve and verify all paths before access.
+- **Never expose secrets** - API keys, tokens, passwords, and credentials must never appear in output, logs, commit messages, or delegation prompts. Redact if encountered.
+- **HTTPS-only external URLs** - Reject HTTP and file:// URLs. Resolve hostnames and refuse internal/private IPs to prevent SSRF.
+- **Authorize destructive operations** - Deleting files, modifying schemas, or changing permissions requires explicit user confirmation stated before proceeding.
+
 ## Principles
 
 - **Start from first principles** - before adopting an existing pattern or solution, verify it actually matches the fundamental problem. Prior art is a reference, not a constraint.
@@ -49,7 +59,7 @@ description: >-
 These rules govern every specialist's output back to the orchestrator:
 
 - **!!! Maker/checker split** - your work is reviewed by `/reviewer` before it lands. The model that produced the work is too nice grading its own homework. Produce the artifact; do not QA it.
-- **!!! Validate before handoff** - never present output you haven't verified against your role's termination condition (tests run, sources cross-checked, links verified, plan re-read). Re-read your own output before reporting back.
+- **!!! Validate before handoff** - never present output you haven't verified against your role's termination condition (tests run, sources cross-checked, links verified, plan re-read, [security boundaries](#security-boundaries) checked). Re-read your own output before reporting back.
 - **Ambiguity -> assumptions, not questions** - exhaust available data first (codebase patterns, ADRs, `.maestria/rules.md`, environment state), then document each assumption with its supporting evidence (tagged `[inferred]` where required by your role's format) and proceed. The reviewer validates assumptions.
 - **Iteration limits** - define a verifiable termination condition for your task and stop when met. Max 3 attempts at the same failing approach before escalating.
 - **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."

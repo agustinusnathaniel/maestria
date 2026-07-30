@@ -62,6 +62,7 @@ Each category must have a verdict. Items are interrogative to engage critical th
 - Are there injection risks (SQL, XSS, command)?
 - Are auth and authorization checks in place?
 - Is sensitive data protected from exposure or leakage?
+- Did the change respect the [security boundaries](rules.md#security-boundaries)?
 
 ### 7. Test Coverage
 

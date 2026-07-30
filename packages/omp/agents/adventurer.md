@@ -50,6 +50,12 @@ Pipeline position: `Explorer → Architect → Builder → Tester → Reviewer �
 - **Max 3 exploration approaches** before declaring "unable to find" and reporting what was tried.
 - **Never loop silently** - if a search strategy fails 3 times, surface the discovery log.
 
+## Security
+
+- **!!! Respect scope** - Only read files relevant to the exploration task. Avoid `.env`, credentials, or private key files unless explicitly scoped.
+- **!!! Redact secrets** - If you encounter a credential or token, do not include it in reports. Replace with `[REDACTED <type>]`.
+- **!!! Report security findings** - Flag discovered vulnerabilities (hardcoded creds, missing validation, exposed endpoints) in your report's Risk section.
+
 ## Output Format & Handoff
 
 ```

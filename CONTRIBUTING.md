@@ -24,25 +24,14 @@ maestria/
 │   ├── opencode/          OpenCode plugin (published, v0.6.12)
 │   ├── kimi-code/         Kimi Code plugin (published, v0.4.9)
 │   ├── omp/               Oh My Pi plugin (published, v0.2.4)
-│   ├── pi/                Pi extension (published, v0.5.10)
-│   ├── cursor/            Cursor IDE plugin (published, v0.1.3)
-│   ├── hermes/            Hermes Agent plugin (private, v0.1.7, published on PyPI)
-│   └── shared/
-│       └── pi/            Shared pure-TS utilities for omp/pi (private)
+│   └── pi/                Pi extension (published, v0.5.10)
 ├── apps/
 │   ├── docs/              Starlight documentation site (private)
-│   └── maestria-cli/      CLI tool (published, v0.7.3)
 ├── scripts/
 │   ├── sync-all           Regenerate all plugin outputs from canonical sources
 │   └── check-sync         CI verification: fail if any output differs
 ├── docs/
 │   ├── adr/               Architecture Decision Records by area
-│   │   ├── core/         - Core decisions (ADR-CORE-*)
-│   │   ├── cursor/       - Cursor plugin decisions (ADR-CR-*)
-│   │   ├── hermes/       - Hermes plugin decisions (ADR-HM-*)
-│   │   ├── kimi-code/    - Kimi Code decisions (ADR-KC-*)
-│   │   ├── opencode/     - OpenCode decisions (ADR-OC-*)
-│   │   └── pi/           - Pi decisions (ADR-PI-*)
 │   ├── testing.md         Testing philosophy
 │   └── checklist.md       Pre-commit verification gates
 ├── AGENTS.md              AI agent guidance
@@ -59,9 +48,7 @@ maestria/
 | `@maestria/kimi-code` | Yes | 7 specialist skills with swarm-aware orchestration for Kimi Code |
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
-| `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
-| `@maestria/hermes` | No | Hermes Agent plugin — methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
-| `@maestria/shared-pi` | No | Shared pure-TS utilities for omp and pi (agent deployment, subagent validation, event constants) |
+
 | `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
 
 ### Data Flow
@@ -262,21 +249,6 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 | Test           | `pnpm --filter @maestria/cursor test`                             |
 | Install        | CLI copies to `~/.cursor/plugins/local/maestria`                  |
 | Key transforms | `task(` → `Task(`, `@name` → bare name, tools → Cursor PascalCase |
-
-### hermes
-
-| Concern | Details |
-| --- | --- |
-| Format | Python plugin — PyPI distribution (`maestria-hermes`) |
-| Manifest | `plugin.yaml` — standalone Hermes Agent plugin |
-| Skills | Auto-generated in `src/maestria_hermes/skills/<name>/SKILL.md` from sync (7 specialists + orchestrator) |
-| Tools | Hand-authored `src/maestria_hermes/tools/` (provides `opencode_route` tool) |
-| Hooks | Hand-authored `src/maestria_hermes/hooks/` (6 hooks: pre\_llm\_call, pre\_tool\_call, subagent start/stop, etc.) |
-| Middleware | Hand-authored `src/maestria_hermes/middleware/` (llm\_execution) |
-| Commands | Hand-authored `{fein,sonar,blitz,mode,review,plan}` commands |
-| Validate | `ruff check src/` |
-| Install | `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable` or `pip install maestria-hermes` |
-| Key transforms | `task(` → `delegate_task(`, `@name` → bare name, tool generalizations, coding-specific → general-purpose adaptation |
 
 ---
 
