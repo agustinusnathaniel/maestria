@@ -1,7 +1,7 @@
 import type { ExtensionAPI, SessionStartEvent } from '@oh-my-pi/pi-coding-agent';
 import { createInitialState } from '@/state.js';
 import { deploySpecialistAgents } from '@/agents.js';
-import { installModeCommands } from '@/modes.js';
+import { installModeCommands, installModeAutoDetect } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
 import { installCompactionHandlers } from '@/compaction.js';
 import { installSubagentTool } from '@/subagent.js';
@@ -14,6 +14,7 @@ export default function (pi: ExtensionAPI): void {
 
   // Install mode commands: /fein, /sonar, /blitz
   installModeCommands(pi, state);
+  installModeAutoDetect(pi, state);
 
   // Inject mode prompt when a workflow mode is active
   const handleModePrompt = createModePromptHandler(state);

@@ -12,9 +12,21 @@
       "import": "./src/agent-deployment.ts",
       "types": "./src/agent-deployment.ts"
     },
+    "./compaction-core": {
+      "import": "./src/compaction-core.ts",
+      "types": "./src/compaction-core.ts"
+    },
     "./state-core": {
       "import": "./src/state-core.ts",
       "types": "./src/state-core.ts"
+    },
+    "./modes-core": {
+      "import": "./src/modes-core.ts",
+      "types": "./src/modes-core.ts"
+    },
+    "./tools-core": {
+      "import": "./src/tools-core.ts",
+      "types": "./src/tools-core.ts"
     }
   },
   "scripts": {

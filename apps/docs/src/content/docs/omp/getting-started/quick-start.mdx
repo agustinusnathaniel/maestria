@@ -26,14 +26,7 @@ The extension provides three workflow mode commands. Use them to tell the agent 
 - **`/sonar`** - Research only: reconnaissance → design → STOP. No implementation. Use for discovery and feasibility.
 - **`/blitz`** - Fast implementation: skip recon and review. Use for quick fixes in known territory.
 
-You can invoke a mode with or without a task description:
-
-```bash
-/fein Add user authentication
-# or
-/fein
-Mode set to fein. Describe what you'd like to work on.
-```
+> **Auto-detect mode keywords:** `/fein`, `/sonar`, and `/blitz` set the workflow mode and show a notification. To set a mode with a task description, type the keyword at the start of any message (e.g. `fein implement login`) and the mode prompt is automatically injected.
 
 ## How Dispatch Works
 
@@ -45,12 +38,14 @@ task(agent: "adventurer", task: "Map the authentication flow")
 
 No `maestria_subagent` wrapper is needed - omp's native `task()` handles all subagent lifecycle, tool isolation, and context inheritance.
 
+> **Dispatcher enforcement:** When a workflow mode is active, the orchestrator session is restricted to only the `task` delegation tool. This enforces the maker/checker split at the tool level - the orchestrator cannot use `bash`, `edit`, `write`, or other implementation tools directly.
+
 ## Your First Task
 
 Try `@maestria/omp` with a simple request:
 
 1. Start an omp session.
-2. Type `/fein` followed by your task.
+2. Type `fein` at the start of your message followed by your task (e.g. `fein Add user authentication`).
 3. The extension activates the spec-driven orchestration pipeline:
    - The orchestrator receives your request and breaks it into phases.
    - Specialists (`adventurer`, `architect`, `builder`, `reviewer`) execute each phase using omp's built-in `task()` dispatch.

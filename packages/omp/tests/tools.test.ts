@@ -69,4 +69,61 @@ describe('installToolInterceptors', () => {
     const result = await handler({ toolName: 'bash', input: { command: 'ls -la' } }, {});
     expect(result).toBeUndefined();
   });
+
+  // ── Dispatcher enforcement tests ──
+
+  it('allows any tool when mode is null (no dispatcher enforcement)', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    const state = createInitialState(); // mode defaults to null
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'bash' }, {});
+    expect(result).toBeUndefined();
+  });
+
+  it('blocks tools other than task/maestria_subagent when orchestrator is in a mode', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write', 'bash']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'bash' }, {});
+    expect(result.block).toBe(true);
+    expect(result.reason).toContain("'bash' is blocked");
+  });
+
+  it('allows task tool when orchestrator is in a mode', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'task' }, {});
+    expect(result).toBeUndefined();
+  });
+
+  it('allows maestria_subagent tool when orchestrator is in a mode', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'maestria_subagent' }, {});
+    expect(result).toBeUndefined();
+  });
+
+  it('bypasses dispatcher enforcement when active tools lack task (subagent session)', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['read', 'write', 'bash']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'bash' }, {});
+    expect(result).toBeUndefined();
+  });
 });

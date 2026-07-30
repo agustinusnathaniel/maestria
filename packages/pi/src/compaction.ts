@@ -1,31 +1,32 @@
-import type {
-  ExtensionAPI,
-  SessionBeforeCompactEvent,
-  SessionBeforeTreeEvent,
-} from '@earendil-works/pi-coding-agent';
+/**
+ * Pi platform compaction handlers.
+ *
+ * Thin wrapper around the shared implementation in
+ * @maestria/shared-pi/compaction-core.
+ *
+ * @module
+ */
+
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
-import { renderMaestriaSummary } from '@/state.js';
+import { installCompactionHandlers as installHandlers } from '@maestria/shared-pi/compaction-core';
 
+/**
+ * Install session compaction and tree event handlers for Pi.
+ * Delegates to the shared implementation which is duck-type compatible
+ * with Pi's ExtensionAPI.
+ */
 export function installCompactionHandlers(pi: ExtensionAPI, state: MaestriaState): void {
-  pi.on('session_before_compact', (event: SessionBeforeCompactEvent) => {
-    return {
-      compaction: {
-        summary: renderMaestriaSummary(state),
-        details: { ...state },
-        firstKeptEntryId: event.preparation.firstKeptEntryId,
-        tokensBefore: event.preparation.tokensBefore,
+  // Bridge: ExtensionAPI.on has overloaded event types incompatible with
+  // the duck-typed { on: (event: string, handler) => void } in the shared
+  // module. The as-never cast is safe at runtime — both SDKs share the same
+  // event shapes.
+  installHandlers(
+    {
+      on: (event, handler) => {
+        pi.on(event as never, handler as never);
       },
-    };
-  });
-
-  pi.on('session_before_tree', (event: SessionBeforeTreeEvent) => {
-    if (event.preparation.userWantsSummary) {
-      return {
-        summary: {
-          summary: renderMaestriaSummary(state),
-        },
-      };
-    }
-    return undefined;
-  });
+    },
+    state,
+  );
 }

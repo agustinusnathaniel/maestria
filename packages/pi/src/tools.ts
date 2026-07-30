@@ -5,24 +5,27 @@ import {
   type ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
-
-const DANGEROUS_PATTERNS = [
-  /rm\s+-rf\s+\//,
-  /dd\s+if=/,
-  />\s*\/dev\/sd/,
-  /chmod\s+-R\s+777\s+\//,
-  /mkfs\.\w+/,
-  /:(){ :\|:& };:/, // fork bomb
-  />\s*\/etc\/(passwd|shadow|sudoers)/,
-  /\beval\b/,
-  /wget\s+-O\s*-\s*\|\s*(bash|sh)/,
-  /curl\s+.*\|\s*(bash|sh)/,
-  /crontab\s+-r/,
-];
+import { DANGEROUS_PATTERNS } from '@maestria/shared-pi/tools-core';
 
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
   pi.on('tool_call', async (event: ToolCallEvent, ctx: ExtensionContext) => {
     if (!event || !event.toolName) return;
+
+    // ── Pure dispatcher enforcement ──
+    // When a maestria workflow mode is active, restrict the root session
+    // (orchestrator) to ONLY the maestria_subagent delegation tool.
+    // Subagent sessions are detected by the absence of the pi-subagents
+    // 'subagent' tool (stripped by applyRecursionGuard in child sessions).
+    if (state.mode !== null && pi.getActiveTools().includes('subagent')) {
+      if (event.toolName !== 'maestria_subagent') {
+        return {
+          block: true,
+          reason:
+            `Tool '${event.toolName}' is blocked for the orchestrator. ` +
+            `Use 'maestria_subagent' to delegate tasks to specialists.`,
+        };
+      }
+    }
 
     // Block destructive tools in review mode
     if (state.reviewMode) {

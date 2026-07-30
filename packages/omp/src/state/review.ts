@@ -1,10 +1,14 @@
-import type { ExtensionAPI, ExtensionCommandContext } from '@oh-my-pi/pi-coding-agent';
+import type {
+  ExtensionAPI,
+  ExtensionCommandContext,
+  ExtensionContext,
+} from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from './types.js';
 import { exitReviewMode } from './transforms.js';
 
 export async function restoreOriginalState(
   pi: ExtensionAPI,
-  ctx: ExtensionCommandContext,
+  ctx: ExtensionContext,
   state: MaestriaState,
 ): Promise<void> {
   const { state: clearedState, originalModel, originalTools } = exitReviewMode(state);

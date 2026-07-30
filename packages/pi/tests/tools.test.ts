@@ -69,4 +69,46 @@ describe('installToolInterceptors', () => {
     const result = await handler({ toolName: 'bash', input: { command: 'ls -la' } }, {});
     expect(result).toBeUndefined();
   });
+
+  describe('dispatcher enforcement', () => {
+    it('does not block when mode is null (no workflow)', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+      const state = { ...createInitialState(), mode: null };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'bash' }, {});
+      expect(result).toBeUndefined();
+    });
+
+    it('blocks non-maestria_subagent tools when workflow mode is active in orchestrator session', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']) };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'bash' }, {});
+      expect(result.block).toBe(true);
+    });
+
+    it('allows maestria_subagent calls when workflow mode is active in orchestrator session', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']) };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'maestria_subagent' }, {});
+      expect(result).toBeUndefined();
+    });
+
+    it('does not block when subagent tool is absent (subagent session)', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['read', 'bash']) };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'bash' }, {});
+      expect(result).toBeUndefined();
+    });
+  });
 });

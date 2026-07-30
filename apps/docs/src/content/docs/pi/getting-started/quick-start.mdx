@@ -29,7 +29,7 @@ The extension provides three workflow mode commands. Use them to tell the agent 
 You can invoke a mode with or without a task description:
 
 ```bash
-/fein Add user authentication
+fein Add user authentication
 # or
 /fein
 Mode set to fein. Describe what you'd like to work on.
@@ -40,7 +40,7 @@ Mode set to fein. Describe what you'd like to work on.
 Try `@maestria/pi` with a simple request:
 
 1. Start a Pi session.
-2. Type `/fein` followed by your task.
+2. Type `fein` followed by your task (e.g. `fein Add user authentication`).
 3. The extension activates the spec-driven orchestration pipeline:
    - The orchestrator receives your request and breaks it into phases.
    - Specialists (`@adventurer`, `@architect`, `@builder`, `@reviewer`) execute each phase.

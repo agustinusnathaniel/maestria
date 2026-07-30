@@ -1,26 +1,30 @@
 import type { ExtensionAPI, ToolCallEvent, ExtensionContext } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
+import { DANGEROUS_PATTERNS } from '@maestria/shared-pi/tools-core';
 
 // Note: omp's @oh-my-pi/pi-coding-agent does not export isToolCallEventType,
 // so we use direct event.toolName string comparison instead.
 
-const DANGEROUS_PATTERNS = [
-  /rm\s+-rf\s+\//,
-  /dd\s+if=/,
-  />\s*\/dev\/sd/,
-  /chmod\s+-R\s+777\s+\//,
-  /mkfs\.\w+/,
-  /:(){ :\|:& };:/,
-  />\s*\/etc\/(passwd|shadow|sudoers)/,
-  /\beval\b/,
-  /wget\s+-O\s*-\s*\|\s*(bash|sh)/,
-  /curl\s+.*\|\s*(bash|sh)/,
-  /crontab\s+-r/,
-];
-
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
   pi.on('tool_call', async (event: ToolCallEvent, ctx: ExtensionContext) => {
     if (!event || !event.toolName) return;
+
+    // ── Pure dispatcher enforcement ──
+    // When a maestria workflow mode is active, restrict sessions that
+    // can delegate (root orchestrator) to only task/maestria_subagent.
+    // Detection: built-in 'task' tool is present in root and any agent
+    // with spawns capability; our specialist agents don't set spawns
+    // so they won't have 'task' auto-added.
+    if (state.mode !== null && pi.getActiveTools().includes('task')) {
+      if (event.toolName !== 'task' && event.toolName !== 'maestria_subagent') {
+        return {
+          block: true,
+          reason:
+            `Tool '${event.toolName}' is blocked for the orchestrator. ` +
+            `Use 'maestria_subagent' or 'task()' to delegate to specialists.`,
+        };
+      }
+    }
 
     // Block destructive tools in review mode
     if (state.reviewMode) {

@@ -1,6 +1,12 @@
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, it, expect, vi } from 'vite-plus/test';
-import { MODE_KEYWORDS, getModePrompt, installModeCommands } from '@/modes.js';
+import { MODE_KEYWORDS, getModePrompt } from '@maestria/shared-pi/modes-core';
+import { installModeCommands } from '@/modes.js';
 import { createInitialState } from '@/state.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const COMMANDS_DIR = __dirname + '/../agents/commands';
 
 // ---------------------------------------------------------------------------
 // MODE_KEYWORDS
@@ -22,30 +28,30 @@ describe('MODE_KEYWORDS', () => {
 describe('getModePrompt', () => {
   it('returns a string containing the marker for each keyword', () => {
     for (const kw of MODE_KEYWORDS) {
-      const prompt = getModePrompt(kw);
+      const prompt = getModePrompt(kw, COMMANDS_DIR);
       expect(prompt).toContain(`[MODE: ${kw}]`);
     }
   });
 
   it('returns the marker at the start of the prompt', () => {
     for (const kw of MODE_KEYWORDS) {
-      const prompt = getModePrompt(kw);
+      const prompt = getModePrompt(kw, COMMANDS_DIR);
       expect(prompt.startsWith(`[MODE: ${kw}]`)).toBe(true);
     }
   });
 
   it('getModePrompt("fein") contains "Full Pipeline"', () => {
-    const prompt = getModePrompt('fein');
+    const prompt = getModePrompt('fein', COMMANDS_DIR);
     expect(prompt).toContain('Full Pipeline');
   });
 
   it('getModePrompt("sonar") contains "Research Only"', () => {
-    const prompt = getModePrompt('sonar');
+    const prompt = getModePrompt('sonar', COMMANDS_DIR);
     expect(prompt).toContain('Research Only');
   });
 
   it('getModePrompt("blitz") contains "Fast Implementation"', () => {
-    const prompt = getModePrompt('blitz');
+    const prompt = getModePrompt('blitz', COMMANDS_DIR);
     expect(prompt).toContain('Fast Implementation');
   });
 });
@@ -90,37 +96,28 @@ describe('installModeCommands', () => {
   });
 
   describe('handler for fein command', () => {
-    it('with args, sets state.mode to "fein" and calls pi.sendUserMessage', async () => {
-      let capturedMessage: string | undefined;
-      let capturedOptions: unknown;
-
-      const pi = {
-        registerCommand: (name: string, config: any) => {
-          pi._commands[name] = config;
-        },
-        sendUserMessage: (message: string, options?: any) => {
-          capturedMessage = message;
-          capturedOptions = options;
-        },
-        appendEntry: vi.fn(),
-        _commands: {} as Record<string, any>,
-      };
-
+    it('with args, sets state.mode to "fein" and calls ctx.ui.notify', async () => {
+      const pi = createMockPi();
       const state = createInitialState();
       installModeCommands(pi as any, state);
 
       const handler = pi._commands.fein.handler;
-      const ctx = { ui: { notify: () => {} } };
+      let notifyMessage: string | undefined;
+      const ctx = {
+        ui: {
+          notify: (msg: string) => {
+            notifyMessage = msg;
+          },
+        },
+      };
+
       await handler('build the feature', ctx);
 
       expect(state.mode).toBe('fein');
-      expect(capturedMessage).toBeDefined();
-      expect(capturedMessage).toContain('[MODE: fein]');
-      expect(capturedMessage).toContain('Run the maestria default pipeline on: build the feature');
-      expect(capturedOptions).toEqual({ deliverAs: 'steer' });
+      expect(notifyMessage).toBe("Mode set to fein. Describe what you'd like to work on.");
     });
 
-    it('without args, sets state.mode but calls ctx.ui.notify instead', async () => {
+    it('without args, sets state.mode but calls ctx.ui.notify', async () => {
       const pi = createMockPi();
       const state = createInitialState();
       installModeCommands(pi as any, state);
@@ -141,7 +138,7 @@ describe('installModeCommands', () => {
       expect(notifyMessage).toBe("Mode set to fein. Describe what you'd like to work on.");
     });
 
-    it('with whitespace-only args is treated as no args', async () => {
+    it('with whitespace-only args, sets state.mode and calls ctx.ui.notify', async () => {
       const pi = createMockPi();
       const state = createInitialState();
       installModeCommands(pi as any, state);
