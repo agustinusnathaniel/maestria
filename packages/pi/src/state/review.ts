@@ -3,8 +3,8 @@ import type {
   ExtensionCommandContext,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from './types.js';
-import { exitReviewMode } from './transforms.js';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import { exitReviewMode } from '@maestria/shared-pi/state-core';
 
 export async function restoreOriginalState(
   pi: ExtensionAPI,
