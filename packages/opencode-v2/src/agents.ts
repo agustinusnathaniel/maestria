@@ -3,27 +3,25 @@ import { join, basename } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { AGENTS_DIR } from '@/root.js';
 
-interface AgentFrontmatter {
+export interface AgentInfo {
   description: string;
   mode: string;
-  prompt: string;
-  permission?: Record<string, unknown>;
+  prompt: string; // the markdown body - this maps to Agent.Info.system
+  steps?: number;
   color?: string;
-  maxSteps?: number;
 }
 
-function parseFrontmatter(yamlStr: string): Omit<AgentFrontmatter, 'prompt'> {
+function parseFrontmatter(yamlStr: string): Omit<AgentInfo, 'prompt'> {
   const result = parseYaml(yamlStr) as Record<string, unknown>;
   return {
     description: (result.description as string) || '',
     mode: (result.mode as string) || 'subagent',
-    permission: result.permission as Record<string, unknown> | undefined,
+    steps: result.steps ? Number(result.steps) : undefined,
     color: result.color as string | undefined,
-    maxSteps: result.maxSteps ? Number(result.maxSteps) : undefined,
   };
 }
 
-function parseAgentFile(filePath: string): { name: string; config: AgentFrontmatter } {
+function parseAgentFile(filePath: string): { name: string; config: AgentInfo } {
   const content = readFileSync(filePath, 'utf-8');
   const name = basename(filePath, '.md');
 
@@ -41,12 +39,12 @@ function parseAgentFile(filePath: string): { name: string; config: AgentFrontmat
   };
 }
 
-export function loadAgents(): Record<string, AgentFrontmatter> {
+export function loadAgents(): Record<string, AgentInfo> {
   try {
     const files = readdirSync(AGENTS_DIR).filter(
       (f) => f.endsWith('.md') && f !== 'orchestrator.md',
     );
-    const agents: Record<string, AgentFrontmatter> = {};
+    const agents: Record<string, AgentInfo> = {};
 
     for (const file of files) {
       try {
@@ -64,10 +62,10 @@ export function loadAgents(): Record<string, AgentFrontmatter> {
   }
 }
 
-export function loadOrchestrator(): AgentFrontmatter | null {
+export function loadOrchestrator(): (AgentInfo & { name: string }) | null {
   try {
-    const { config } = parseAgentFile(join(AGENTS_DIR, 'orchestrator.md'));
-    return config;
+    const { name, config } = parseAgentFile(join(AGENTS_DIR, 'orchestrator.md'));
+    return { ...config, name };
   } catch (err) {
     console.warn('[maestria-v2] Failed to load orchestrator agent:', err);
     return null;

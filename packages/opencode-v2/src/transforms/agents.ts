@@ -1,56 +1,37 @@
-import type { PluginContext } from '@/types.js';
+import type { AgentDraft, Transform } from '@/types.js';
 import { loadAgents, loadOrchestrator } from '@/agents.js';
 
-interface AgentDraft {
-  description?: string;
-  mode?: string;
-  prompt?: string;
-  permission?: Record<string, unknown>;
-  color?: string;
-  maxSteps?: number;
-}
-
-interface AgentRegistry {
-  list(): string[];
-  get(name: string): AgentDraft | undefined;
-  default(name: string): AgentDraft | undefined;
-  update(name: string, updater: (draft: AgentDraft) => void): void;
-  remove(name: string): void;
-}
-
-export async function registerAgentTransforms(ctx: PluginContext): Promise<void> {
+export async function registerAgentTransforms(ctx: {
+  agent: { transform: Transform<AgentDraft> };
+}): Promise<void> {
   const agents = loadAgents();
   const orchestrator = loadOrchestrator();
 
-  await ctx.agent.transform((registry: unknown) => {
-    const reg = registry as AgentRegistry;
-
-    // Register orchestrator first
+  await ctx.agent.transform((registry: AgentDraft) => {
+    // Register orchestrator first (mode: all)
     if (orchestrator) {
       try {
-        reg.update('orchestrator', (draft) => {
+        registry.update(orchestrator.name, (draft) => {
           draft.description = orchestrator.description;
-          draft.mode = orchestrator.mode || 'all';
-          draft.prompt = orchestrator.prompt;
-          draft.permission = orchestrator.permission;
+          draft.system = orchestrator.prompt; // V2 field, was "prompt"
+          draft.mode = (orchestrator.mode as 'all' | 'subagent' | 'primary') || 'all';
+          draft.steps = orchestrator.steps; // V2 field, was "maxSteps"
           if (orchestrator.color) draft.color = orchestrator.color;
-          if (orchestrator.maxSteps) draft.maxSteps = orchestrator.maxSteps;
         });
       } catch (err) {
         console.warn('[maestria-v2] Failed to update orchestrator agent:', err);
       }
     }
 
-    // Register specialist agents
+    // Register specialist agents (mode: subagent)
     for (const [name, config] of Object.entries(agents)) {
       try {
-        reg.update(name, (draft) => {
+        registry.update(name, (draft) => {
           draft.description = config.description;
-          draft.mode = config.mode || 'subagent';
-          draft.prompt = config.prompt;
-          draft.permission = config.permission;
+          draft.system = config.prompt;
+          draft.mode = (config.mode as 'all' | 'subagent' | 'primary') || 'subagent';
+          draft.steps = config.steps;
           if (config.color) draft.color = config.color;
-          if (config.maxSteps) draft.maxSteps = config.maxSteps;
         });
       } catch (err) {
         console.warn(`[maestria-v2] Failed to update agent "${name}":`, err);

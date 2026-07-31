@@ -34,10 +34,3 @@ export function detectMode(text: string, disabledKeywords?: Set<string>): ModeRe
 
   return null;
 }
-
-export function stripKeyword(text: string, result: ModeResult): string {
-  const before = text.slice(0, result.index);
-  const after = text.slice(result.index + result.keyword.length);
-  // Remove the keyword and any trailing colon+space
-  return (before + after).replace(/:?\s*$/, '').trim();
-}
