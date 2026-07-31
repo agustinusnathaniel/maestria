@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import extension from '../src/extension.js';
+import extension from '@/extension.js';
 
 function createMockPi() {
   const handlers = new Map<string, Array<(...args: unknown[]) => unknown>>();
