@@ -11,23 +11,7 @@ import {
   renderMaestriaSummary,
 } from '@/state.js';
 import type { MaestriaState } from '@/state.js';
-// Sub-module imports — verify the decomposition works
-import {
-  createInitialState as createInitialStateDirect,
-  recordHandoff as recordHandoffDirect,
-  recordFileModified as recordFileModifiedDirect,
-  recordFileRead as recordFileReadDirect,
-  setReviewMode as setReviewModeDirect,
-  exitReviewMode as exitReviewModeDirect,
-} from '@/state/transforms.js';
-import type {
-  MaestriaState as MaestriaStateFromTypes,
-  HandoffEntry,
-  SubagentStatusInfo,
-} from '@/state/types.js';
-import { HANDOFF_HISTORY_CAP, FILE_HISTORY_CAP } from '@/state/types.js';
-import { persistState as persistStateDirect } from '@/state/persistence.js';
-import { renderMaestriaSummary as renderSummaryDirect } from '@/state/render.js';
+import { HANDOFF_HISTORY_CAP, FILE_HISTORY_CAP } from '@/state.js';
 
 const NEW_STATE_KEYS = [
   'mode',
