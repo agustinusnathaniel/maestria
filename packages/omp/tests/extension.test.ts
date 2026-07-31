@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
+import extension from '@/extension.js';
 
 function createMockPi() {
   const handlers = new Map<string, Array<(...args: unknown[]) => unknown>>();
@@ -32,8 +33,7 @@ function createMockPi() {
 describe('extension entry point', () => {
   it('registers mode commands', async () => {
     const pi = createMockPi();
-    const extension = await import('../src/extension.js');
-    extension.default(pi as unknown as ExtensionAPI);
+    extension(pi as unknown as ExtensionAPI);
     const { registerCommand } = pi;
     // Three mode commands: fein, sonar, blitz
     expect(registerCommand).toHaveBeenCalledWith('fein', expect.any(Object));
@@ -43,16 +43,14 @@ describe('extension entry point', () => {
 
   it('registers subagent tool', async () => {
     const pi = createMockPi();
-    const extension = await import('../src/extension.js');
-    extension.default(pi as unknown as ExtensionAPI);
+    extension(pi as unknown as ExtensionAPI);
     const { registerTool } = pi;
     expect(registerTool).toHaveBeenCalled();
   });
 
   it('subscribes to session events', async () => {
     const pi = createMockPi();
-    const extension = await import('../src/extension.js');
-    extension.default(pi as unknown as ExtensionAPI);
+    extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
     const onEvents = onCalls.map((c: unknown[]) => c[0]);
@@ -64,8 +62,7 @@ describe('extension entry point', () => {
 
   it('registers orchestration commands', async () => {
     const pi = createMockPi();
-    const extension = await import('../src/extension.js');
-    extension.default(pi as unknown as ExtensionAPI);
+    extension(pi as unknown as ExtensionAPI);
     const { registerCommand } = pi;
     expect(registerCommand).toHaveBeenCalledWith('maestria-status', expect.any(Object));
     expect(registerCommand).toHaveBeenCalledWith('review', expect.any(Object));
@@ -81,8 +78,7 @@ describe('extension entry point', () => {
       { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
     ]);
     const ctx = { sessionManager: { getEntries } };
-    const extension = await import('../src/extension.js');
-    extension.default(pi as unknown as ExtensionAPI);
+    extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
     const sessionStartCall = onCalls.find((c: unknown[]) => c[0] === 'session_start');
