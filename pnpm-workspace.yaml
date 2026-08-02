@@ -18,6 +18,7 @@ catalog:
   '@fontsource-variable/sn-pro': ^5.3.0
   '@earendil-works/pi-coding-agent': '*'
   '@gotgenes/pi-subagents': '^18.1.0'
+  jsonc-parser: ^3.3.1
   'typebox': '*'
   '@astrojs/starlight': ^0.41.3
   astro: 7.1.3

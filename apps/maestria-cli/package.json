@@ -44,6 +44,7 @@
     "@types/node": "catalog:",
     "citty": "^0.2.2",
     "effect": "4.0.0-beta.100",
+    "jsonc-parser": "catalog:",
     "picocolors": "^1.1.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
