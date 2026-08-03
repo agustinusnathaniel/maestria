@@ -3,7 +3,15 @@ title: Quick Start
 description: Your first session with @maestria/opencode - delegating to specialists and using the orchestrator.
 ---
 
+import { Aside } from '@astrojs/starlight/components';
+
 Once you've installed the plugin, all agents and rules are loaded automatically in every session - no extra commands, no manual setup.
+
+<Aside type="caution" title="Choose the workflow before choosing the orchestrator">
+  Maestria adds coordination and review sessions. For small changes or expensive, slow models,
+  direct execution or one specialist is often the better path. Read [When to use
+  Maestria](/core/when-to-use/) first.
+</Aside>
 
 ## Start a Session
 
@@ -17,7 +25,7 @@ Call any of the 7 specialists directly:
 @adventurer Explore the auth module and trace the login flow.
 ```
 
-For multi-step work, hand it to the orchestrator:
+For unfamiliar, multi-file, or high-risk work, hand it to the orchestrator:
 
 ```markdown
 @orchestrator I need to add rate limiting to the API. Plan and implement it.

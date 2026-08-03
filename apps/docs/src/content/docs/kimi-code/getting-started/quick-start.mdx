@@ -7,6 +7,12 @@ import { Aside } from '@astrojs/starlight/components';
 
 Once you've installed the plugin, the orchestrator skill and global rules are loaded automatically in every session - no extra commands, no manual setup.
 
+<Aside type="caution" title="The orchestrator is not always the fastest path">
+  Kimi Code can dispatch several subagents, but every dispatch adds model work and waiting time. Use
+  [the usage decision guide](/core/when-to-use/) before routing a small task or an expensive model
+  through the full pipeline.
+</Aside>
+
 ## What to expect
 
 Launch Kimi Code as usual. At session start, the orchestrator skill auto-loads via `sessionStart.skill` in `kimi.plugin.json`. You'll see a `<plugin_session_start>` block in the system prompt referencing the orchestrator's methodology. The global rules from `~/.kimi-code/AGENTS.md` are also injected by Kimi Code's session-start context preparer.
@@ -31,7 +37,7 @@ The orchestrator decomposes the work:
 
 1. `diagnose` (coder) - 6-step root cause trace
 2. `builder` (coder) - apply the minimal fix
-3. `reviewer` (coder, no-edit) - validate the fix
+3. `reviewer` (coder; no-edit only in a review-only session with Write/Edit denied) - validate the fix
 
 Each step verifies before handing off to the next.
 

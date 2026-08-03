@@ -110,17 +110,17 @@ Define before delegating:
   Always set a max before delegating, and escalate instead of retrying when the limit is reached.
 </Aside>
 
-## Workflow Modes
+## Workflow modes
 
 The pipeline supports three modes that control its depth. Each mode is suited to a different class of work.
 
 | Mode                    | Pipeline                                          | Use Case                                                                                              |
 | ----------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Full pipeline**       | Thinker → Worker → Verifier (adaptive sequencing) | Production-grade work where correctness matters. Default for non-trivial changes.                     |
+| **Full pipeline**       | Thinker → Worker → Verifier (adaptive sequencing) | Explicitly chosen for high-risk or multi-phase work where the extra stages earn their cost.           |
 | **Research**            | Thinker only - STOP after analysis/design         | Understanding before committing. Reconnaissance, architecture evaluation, planning without execution. |
 | **Fast implementation** | Worker only - skip recon and review               | Quick fixes in known territory where the design is obvious and risk is low.                           |
 
-The orchestrator selects the mode based on task risk, novelty, and team context. A task can also escalate from one mode to another - if a fast implementation hits unexpected complexity, the orchestrator can fall back to the full pipeline.
+The available mode names and activation rules depend on the platform. A task can also escalate from one mode to another - if a fast implementation hits unexpected complexity, the agent can fall back to the full pipeline. Strong or expensive models often work better with direct execution or a single specialist; see [When to use Maestria](/core/when-to-use/).
 
 ## See Also
 

@@ -37,11 +37,11 @@ The Planner breaks work into ordered milestones with verification criteria and r
 
 ## Build something
 
-Use the orchestrator for end-to-end feature work. It chains the full pipeline.
+Use the orchestrator for end-to-end feature work when the task is unfamiliar, multi-module, or high risk. For a small, known change, direct execution is usually cheaper and faster.
 
 > Orchestrator: We need a WebSocket-based notification system. Explore, plan, implement, and review.
 
-The orchestrator delegates to the right specialists in sequence, following the pipeline model. Every code change goes through Builder, every review through Reviewer.
+The orchestrator delegates to the right specialists in sequence, following the pipeline model. Inside the full pipeline, code changes go through Builder and reviews through Reviewer. Direct execution skips both when the change does not justify the chain.
 
 ## Fix a bug
 
@@ -93,7 +93,7 @@ Conflict resolution: if lenses disagree on the same issue, the more conservative
 | Diffs under ~100 lines        | Security-sensitive or performance-critical |
 | Pure documentation            | Large diffs needing focused attention      |
 
-Mandatory review after every Builder change remains the default - multi-lens is an enhancement for when one reviewer can't give each dimension proper attention.
+Mandatory review after every Builder change is the default inside the full pipeline. It is an intentional cost: use a direct specialist or a single reviewer when the change does not justify a complete chain.
 
 ## Document something
 
@@ -176,7 +176,7 @@ to `@adventurer`. If found:
 
 ### Precedence
 
-Core rules (delegate don't implement, maker/checker split, commit protocol, etc.) always
+Core rules (never implement routed work yourself, maker/checker split, commit protocol, etc.) always
 take precedence over project instructions. If a conflict arises, the core rule wins.
 
 ### Example

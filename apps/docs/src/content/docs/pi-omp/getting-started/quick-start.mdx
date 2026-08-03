@@ -8,6 +8,12 @@ import { Aside } from '@astrojs/starlight/components';
 
 Now that you have `@maestria/pi` or `@maestria/omp` installed, here's how to start your first session.
 
+<Aside type="caution" title="Full mode has a real coordination cost">
+  Use [the usage decision guide](/core/when-to-use/) before activating `fein`. Direct execution or a
+  single specialist is usually better for small changes, fast iteration, and expensive or slow
+  models.
+</Aside>
+
 ## Start a Session
 
 Open a new session in any project directory:
@@ -51,13 +57,9 @@ Mode set to fein. Describe what you'd like to work on.
   `task(agent: "...", task: "...")` tool - no external dependency needed.
 </Aside>
 
-Both platforms provide the same three dispatch modes through their respective tools:
+Dispatch behavior is platform-specific. Pi uses `maestria_subagent` through `@gotgenes/pi-subagents`; OMP also exposes its native `task()` tool. Their limits, context inheritance, and enforcement behavior are not interchangeable. See the [Pi and OMP reference](/pi-omp/reference/) before designing a workflow around parallel or chained dispatch.
 
-- **Single mode** - dispatch one task to one specialist, wait for completion
-- **Parallel mode** - dispatch multiple specialists concurrently (max 8)
-- **Chain mode** - dispatch specialists sequentially, piping each result to the next
-
-The dispatch tool (`maestria_subagent` for Pi, `task()` for OMP) is what enforces the **maker/checker split** at the tool level - when a workflow mode is active, the orchestrator session is restricted to only delegation tools, blocking `bash`, `edit`, `write`, and other implementation tools.
+When a workflow mode activates enforcement, the current platform can restrict the main session to delegation tools. This is not a universal property of every session: mode-free sessions and specialist sessions have different tool access.
 
 ## Your First Task
 

@@ -23,7 +23,7 @@ The dispatcher architecture addresses a core problem in AI-assisted development:
 
 **Single-responsibility agents.** Each specialist masters one role. The adventurer focuses on codebase reconnaissance. The architect evaluates trade-offs. The reviewer checks completed work. Each has prompts and tools sized to its domain.
 
-**Fresh context per stage.** Each specialist starts with a clean context window loaded with relevant prompts. The reviewer does not carry the builder's assumptions. The adventurer does not inherit the architect's biases. Every stage gets a focused session.
+**Focused context per stage.** Each specialist runs in its own task or session with role-specific prompts. This can reduce role contamination, but the exact context inherited by a subagent depends on the platform. A separate context is not free: it can add prompt tokens, cache reads, and waiting time.
 
 **Stage gating.** Each pipeline stage catches a specific type of error before it reaches the next stage. Design mistakes are caught before implementation starts. Implementation issues are caught before review. The error is stopped where it is cheapest to fix.
 
@@ -42,27 +42,27 @@ These benefits were explicit design goals. The harness was built to deliver them
   [Pipeline & Roles](/core/pipeline/#makerchecker-split) for details.
 </Aside>
 
-**Mode system.** Three workflow modes make the quality-speed trade-off explicit per turn. `fein` runs all pipeline stages for production work. `sonar` runs only the research stage. `blitz` runs only implementation. Each mode is a deliberate choice about how many gates to run.
+**Mode system.** Three workflow modes make the quality-speed trade-off explicit where the platform supports them. `fein` runs the full pipeline, `sonar` runs research only, and `blitz` runs implementation directly. Their activation, persistence, and tool enforcement vary by platform.
 
-**Portable plugins.** The same methodology adapts to OpenCode, Kimi Code, and Pi. The agent prompts and workflow rules are platform-agnostic. Each plugin maps them to its platform's native primitives.
+**Portable plugins.** The same methodology adapts to OpenCode, Kimi Code, Pi, OMP, Cursor, and Hermes. The role contracts are shared, but each plugin maps them to different native primitives. Portability means adapted behavior, not identical runtime behavior.
 
 ## Emergent Benefits
 
-These benefits were not design goals. They are structural side effects of the dispatcher architecture. They fell out of the design, not into it.
+These benefits were not design goals. They are structural side effects of the dispatcher architecture, and they depend on the model and platform in use.
 
 ### Context Engineering
 
 A typical AI coding session starts with a single large context window. Every action competes for the same limited space. As the window fills, the model's ability to reason about any single concern degrades.
 
-The dispatcher model solves this through allocation. The orchestrator's context stays lean because it only makes routing decisions. Each specialist starts with a fresh window loaded with relevant prompts and tools.
+The dispatcher model solves this through allocation. The orchestrator's context stays lean because it only makes routing decisions. Each specialist runs in its own task or session with role-specific prompts, but the exact context inherited by a subagent depends on the platform.
 
-| Property                 | Monolithic session                  | Maestria pipeline               |
-| ------------------------ | ----------------------------------- | ------------------------------- |
-| Context allocation       | One window for all roles            | One window per specialist       |
-| Role contamination       | Build assumptions carry into review | Clean separation between stages |
-| Effective work per token | Degrades as window fills            | Stays consistent per specialist |
+| Property                 | Monolithic session                  | Maestria pipeline                                            |
+| ------------------------ | ----------------------------------- | ------------------------------------------------------------ |
+| Context allocation       | One window for all roles            | Separate tasks, with inheritance varying by platform         |
+| Role contamination       | Build assumptions carry into review | Role prompts reduce it; inherited context can reintroduce it |
+| Effective work per token | Degrades as window fills            | Depends on the model, platform, and task                     |
 
-Total token usage may be comparable to or slightly higher than a monolithic session. But effective work per token is higher because each token reaches the specialist best suited to handle it.
+Total token usage can be substantially higher than a direct session because every delegated stage has its own model turn and context. The trade-off is worthwhile only when focused roles, handoffs, or independent review reduce enough risk to justify that overhead. See [When to use Maestria](/core/when-to-use/) before choosing the full pipeline.
 
 **Handoff contracts** between stages structure each transition. Each stage produces a focused artifact that preserves what matters for the next stage rather than forwarding raw context.
 
@@ -72,7 +72,7 @@ The orchestrator delegates 3-5 independent tasks to specialists in a single turn
 
 The dispatcher runs independent stages at the same time. The adventurer maps the codebase, the architect evaluates approaches, and the planner scopes milestones. All run at the same time. Wall-clock time shrinks because independent work runs in parallel.
 
-Each specialist operates in a separate session. The adventurer's assumptions do not leak into the architect's evaluation. Zero cross-contamination between specialists.
+Separate specialist sessions can reduce cross-contamination, but the degree of isolation depends on the platform. Some runtimes inherit parent context into subagents, so treat the handoff contract as a boundary rather than assuming a clean context.
 
 ### One-Shot Work
 

@@ -3,11 +3,19 @@ title: Quick Start
 description: Your first session with @maestria/hermes — switching modes, using slash commands, and dispatching specialists.
 ---
 
-Once you've installed the plugin, all skills, commands, and hooks are loaded automatically in every Hermes session.
+import { Aside } from '@astrojs/starlight/components';
+
+Once you've installed the plugin, all skills, commands, and hooks are loaded automatically in every Hermes session. Hermes starts with `fein` as its default mode, which describes the full pipeline.
+
+<Aside type="caution" title="Use full mode deliberately">
+  Use `/blitz` for small or well-scoped tasks. Use the default mode when the task benefits from
+  review and specialist handoffs. Read [the usage decision guide](/core/when-to-use/) before
+  choosing a full pipeline, especially with an expensive or slow model.
+</Aside>
 
 ## Start a Session
 
-Launch Hermes as usual. The plugin wires itself in at startup — you'll see detection probes log available backends.
+Launch Hermes as usual. The plugin wires itself in at startup. It does not require startup probes for external tools.
 
 ## Try the Commands
 

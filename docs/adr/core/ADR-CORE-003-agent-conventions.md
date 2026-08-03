@@ -21,13 +21,13 @@ These conventions emerged during implementation and should be documented so futu
 
 Prefix critical, non-negotiable rules with `!!!`. This signals "this is not a suggestion - violating this will produce incorrect or destructive output."
 
-| Context      | Example                                   |
-| ------------ | ----------------------------------------- |
-| Orchestrator | `!!! Never implement yourself - delegate` |
-| Reviewer     | `!!! Never edit files (read-only)`        |
-| Builder      | `!!! Run tests before claiming done`      |
-| Diagnose     | `!!! Always verify before handoff`        |
-| Writer       | `!!! Proofread before finishing`          |
+| Context      | Example                                               |
+| ------------ | ----------------------------------------------------- |
+| Orchestrator | `!!! Never implement routed work yourself - delegate` |
+| Reviewer     | `!!! Never edit files (read-only)`                    |
+| Builder      | `!!! Run tests before claiming done`                  |
+| Diagnose     | `!!! Always verify before handoff`                    |
+| Writer       | `!!! Proofread before finishing`                      |
 
 Rules without `!!!` are advisory or contextual - the agent should follow them unless there's a compelling reason not to.
 

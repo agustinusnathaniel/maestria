@@ -1,6 +1,6 @@
 # Maestria Design Patterns
 
-This document catalogs the two design patterns that every maestria platform package (`@maestria/opencode`, `@maestria/kimi-code`, `@maestria/claude-code`, etc.) implements using its platform's native primitives.
+This document catalogs the two design patterns that Maestria adapts to each platform's native primitives. The patterns are shared; their dispatch, context, and tool enforcement are not identical.
 
 If you're porting maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to OpenCode's subagents, Kimi Code's AgentSwarm, or Claude Code's hooks.
 
@@ -12,7 +12,7 @@ If you're porting maestria to a new platform, this is your implementation guide.
 
 A sequential flow where work passes through specialized stages, each adding value and producing a structured handoff for the next. No stage does the work of another - the adventurer maps code but doesn't edit it, the builder implements but doesn't review, the reviewer validates but doesn't redesign.
 
-The pipeline is the backbone of every non-trivial maestria workflow. It forces discipline: reconnaissance before design, design before implementation, implementation before review. Skipping a stage trades reliability for speed and must be justified explicitly.
+The pipeline is the backbone of a full Maestria workflow. It forces discipline: reconnaissance before design, design before implementation, implementation before review. Select the full pipeline when those stages add enough information or risk reduction to justify their model and latency cost. Direct execution or one specialist is valid for smaller or better-understood work.
 
 **The maestria pipeline:**
 
@@ -79,7 +79,7 @@ Every pipeline stage must have three controls:
 
 1. **One atomic task per stage** - never bundle unrelated work into a single delegation. A bug fix and a feature in the same `@builder` call is a scoping violation. The constraint is conceptual (one concern per invocation), not quantitative (one file per invocation).
 
-2. **Default pipeline is non-negotiable for non-trivial work** - any multi-file, cross-module, or new-feature task follows `adventurer → planner or architect → builder → reviewer`. Skipping a stage requires explicit justification in the handoff. Common acceptable skips: typo fix skips architecture; known codebase skips reconnaissance.
+2. **Full pipeline when selected** - a multi-file, cross-module, or new-feature task may follow `adventurer → planner or architect → builder → reviewer` when the task's risk or uncertainty justifies it. Skipping stages is expected for direct and focused routes. The handoff should state why the selected route is appropriate.
 
 3. **Parallel fan-out is allowed for independent tasks** - max 3-5 subtasks per turn. Examples: `@adventurer` mapping auth + `@adventurer` tracing billing in parallel; `@reviewer` checking PR #7 + `@builder` fixing bug #42 + `@architect` evaluating a dependency decision.
 
@@ -91,11 +91,12 @@ How each platform implements this pattern:
 
 | Platform | Primitive | Implementation |
 | --- | --- | --- |
-| **OpenCode** | `task()` subagents | Orchestrator delegates to specialist agents via the 7-agent pipeline. Each agent is a markdown file with frontmatter permissions. Orchestrator has `edit: deny`. Bash allow-listed for git inspection (`git status`, `git diff`, `git log`), runtime queries (`which`, `pwd`), and skill installation (`npx --yes skills@latest *`). All other commands denied. |
-| **Kimi Code** | AgentSwarm with persona-per-stage | Each pipeline stage is a persona in the swarm. Handoff contracts flow as structured messages between personas. Permissions enforced via `[[permission.rules]]` blocks. |
+| **OpenCode** | `task()` subagents | Orchestrator delegates to specialist agents via the 7-agent pipeline. Each agent is a markdown file with frontmatter permissions. Orchestrator has `read` and `edit` denied, and Bash denied except `npx --yes skills@latest *` for skill installation. Git inspection and runtime queries are delegated to `@adventurer`, which allow-lists read-only shell and git commands. All other shell commands are denied. |
+| **Kimi Code** | AgentSwarm with persona-per-stage | Seven roles map onto three native profiles. Persona boundaries are advisory by default; `[[permission.rules]]` can enforce review-only behavior, but those rules apply to the session rather than one subagent. |
 | **Cursor** | Task subagents + skills/commands | Specialists ship as plugin `agents/*.md`; orchestrator as a skill; workflow modes as `commands/` (`fein`/`sonar`/`blitz`). Global rules via `alwaysApply` `.mdc`. Same bundle for IDE and CLI. |
 | **Claude Code** | Hooks and agent extensions | Stages are implemented as hooks that load agent definitions and tool configurations per phase. Handoff contracts pass through context variables. |
-| **Oh My Pi** | `task()` | Agent routing via name prefix stripping (`@adventurer` → `adventurer`), tool allowlists in frontmatter, `systemPrompt: string[]` for prompt injection, state compaction same as Pi |
+| **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
+| **Oh My Pi** | native `task()` plus wrapper | OMP has a distinct dispatch path and tool behavior. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
 
 ---
 
@@ -103,7 +104,7 @@ How each platform implements this pattern:
 
 ### What It Is
 
-The agent that produces work must not be the agent that validates it. A different agent - with fresh context and a read-only toolset - performs verification. This is the single most important reliability pattern in maestria.
+The agent that produces work should not be the agent that validates it. In a full pipeline, a different agent performs verification. The strength of that boundary depends on the platform: OpenCode enforces it at the tool layer, while other platforms may provide only persona guidance unless users configure review-only permissions or sessions.
 
 The KB (from `loop-engineering.mdx`) puts it bluntly: _"The model that wrote the code is too nice grading its own homework."_ The model that produced a result has committed to it - every subsequent reasoning step is biased toward confirming correctness, not finding flaws. A fresh agent, seeing the work for the first time, catches what the implementer overlooked.
 
@@ -129,7 +130,7 @@ The completions promise is what makes the reviewer's job mechanical instead of i
 
 #### Permission Enforcement
 
-The checker agent has `edit: deny`. It cannot modify files - only read and report. This is technical enforcement of the behavioral split. The checker _physically cannot_ become the writer.
+In OpenCode, the checker agent has `edit: deny`. It cannot modify files - only read and report. This is technical enforcement of the behavioral split. Other platforms must be treated according to their own enforcement guarantees.
 
 OpenCode implementation (from `orchestrator.md` frontmatter):
 
@@ -157,7 +158,8 @@ Self-review fails for three reasons, each documented from real sessions:
 | Platform | Primitive | Implementation |
 | --- | --- | --- |
 | **OpenCode** | `edit: deny` in frontmatter | Reviewer agent YAML sets `permission.edit: deny` and restricts bash to git inspection only. No write tool access at the agent definition level. |
-| **Kimi Code** | Safety constraints + persona | Reviewer persona includes `[[permission.rules]]` block that denies file modification. Runtime enforcement via `builtin_safety_constraint`. |
+| **Kimi Code** | Safety constraints + persona | Reviewer behavior is advisory by default. Review-only sessions can deny Write/Edit with `[[permission.rules]]`, but the session-wide rules also affect builder and writer work. |
 | **Cursor** | Two-layer enforcement (v1) | Runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools (Write, StrReplace, Delete). Prompt-level instructions serve as a backup layer. |
 | **Claude Code** | Read-only tool access | Reviewer is spawned via `new Agent({ tools: { Edit: false, Read: true, Bash: false } })` or equivalent tool-level permission gating. No hooks can escalate write access. |
-| **Oh My Pi** | Read-only tools for reviewers, built-in `task()` isolation | Same as Pi |
+| **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
+| **Oh My Pi** | Native task dispatch and role guidance | OMP has distinct dispatch and context behavior. A direct session does not automatically create a maker/checker pair. |
