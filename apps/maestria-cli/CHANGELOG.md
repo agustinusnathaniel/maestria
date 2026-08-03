@@ -1,5 +1,16 @@
 # maestria
 
+## 0.8.0
+
+### Minor Changes
+
+- [#153](https://github.com/agustinusnathaniel/maestria/pull/153) [`c6176e9`](https://github.com/agustinusnathaniel/maestria/commit/c6176e9cee19e2fe07317ff1aa5eefea5dfccfa1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add `maestria configure <platform>` for per-agent model selection on opencode, pi, and omp.
+
+  - Interactive: group-multiselect of the 7 specialists, then a per-agent model picker with the current model pre-selected and an _Inherit (session model)_ option; model lists fetched live from the platform (`opencode models`, `pi --list-models`, `omp models --json`).
+  - Non-interactive: `--set <agent>=<model>[,...]` with empty values to reset, `--global`/`--project` config levels, and `--json`/`--quiet`/`--compact` output modes.
+  - Writes are surgical: opencode JSONC path edits preserve comments and the `variant` key; pi/omp frontmatter edits preserve the agent body. Models are validated against the platform's live model list before writing.
+  - Bundles jsonc-parser 3.3.1 via its ESM build (the UMD entry cannot be bundled); removing a non-existent model is a no-op.
+
 ## 0.7.3
 
 ### Patch Changes
