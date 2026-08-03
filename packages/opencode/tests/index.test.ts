@@ -41,4 +41,23 @@ describe('plugin structure', () => {
     expect(typeof builder.prompt).toBe('string');
     expect(builder.permission).toBeDefined();
   });
+
+  it('preserves user model and variant overrides on maestria agent entries', async () => {
+    const plugin = await MaestriaPlugin({} as never);
+    const config = {
+      agent: {
+        builder: { model: 'opencode-go/deepseek-v4-pro', variant: 'high' },
+        reviewer: { temperature: 0.1 },
+      },
+    };
+    await plugin.config?.(config);
+
+    const agent = config.agent as Record<string, Record<string, unknown>>;
+    expect(agent.builder.model).toBe('opencode-go/deepseek-v4-pro');
+    expect(agent.builder.variant).toBe('high');
+    expect(agent.builder.mode).toBe('subagent');
+    expect(typeof agent.builder.prompt).toBe('string');
+    expect(agent.reviewer.temperature).toBe(0.1);
+    expect(agent.reviewer.mode).toBe('subagent');
+  });
 });

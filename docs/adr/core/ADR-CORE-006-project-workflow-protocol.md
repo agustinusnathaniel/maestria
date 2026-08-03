@@ -31,9 +31,9 @@ Add a lightweight protocol where projects define workflow instructions in `.maes
 
 - Workflow context goes into the "Access list" and "Context" sections of delegation prompts
 - Project rules go into the "Known problems" section of delegation prompts
-- The orchestrator never implements work itself - it sequences and delegates
+- The orchestrator does not implement work routed to a specialist - it sequences and delegates. Direct-route turns run on the host.
 
-**Precedence:** Core rules (delegate don't implement, maker/checker split, commit protocol, etc.) always take precedence over project instructions. If a conflict arises, the core rule wins.
+**Precedence:** Core rules (never implement routed work yourself, maker/checker split, commit protocol, etc.) always take precedence over project instructions. If a conflict arises, the core rule wins.
 
 ### Canonical Source Changes
 

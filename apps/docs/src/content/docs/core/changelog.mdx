@@ -7,6 +7,11 @@ This changelog tracks meaningful changes to how Maestria-powered agents
 behave - what they do differently, what they're stricter about, and what
 you can expect from them.
 
+## 2026-08-03
+
+- **Selective routing by task class.** Maestria now guides turns through direct, focused, or full routes: explanations and discovery use direct execution, tiny edits use direct execution or a native builder, ordinary code changes use focused delegation, and complex or high-risk work uses the full pipeline with independent review where supported. The full route is selected for that work or for explicit `fein` requests, not forced for every turn.
+- **Explicit modes and route-scaled safeguards.** `fein` selects the full route, `sonar` is research-only, and `blitz` is a low-risk/direct bypass that does not waive safety floors. Delegation and review scale with the route. Maker/checker enforcement varies by platform; where separate sessions or tool controls are unavailable, the split is advisory.
+
 ## 2026-07-21
 
 - **Mode commands behave consistently across platforms.** The fein/sonar/blitz mode commands now work the same way on OpenCode, Kimi Code, Pi, Cursor, and Hermes.

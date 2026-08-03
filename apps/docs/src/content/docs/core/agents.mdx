@@ -5,15 +5,15 @@ description: The 8 specialists in the Maestria methodology - orchestrator and 7 
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-The Maestria methodology defines 8 specialists. One is the **orchestrator** - a manager that never implements directly. The remaining 7 are domain experts, each with a focused scope, clear permissions, and a specific place in the pipeline.
+The Maestria methodology defines 8 specialists. One is the **orchestrator** - a router that delegates focused and full work to specialists, while direct-route turns execute on the host. The remaining 7 are domain experts, each with a focused scope, clear permissions, and a specific place in the pipeline.
 
 This page describes each specialist, their role, and when to delegate to them. It is platform-agnostic - the mapping to your platform's invocation syntax lives in the plugin documentation.
 
 ## Orchestration Model
 
-The orchestrator is the manager. It decomposes complex tasks into atomic units, delegates each unit to the appropriate specialist, integrates the results, and verifies completion. It never implements directly - its job is coordination.
+The orchestrator is the router and manager. It decomposes complex tasks into atomic units, delegates each unit to the appropriate specialist, integrates the results, and verifies completion. It does not implement work it has delegated - its job is coordination. Direct-route turns execute on the host; focused and full work is delegated, and platform enforcement varies.
 
-The default pipeline for non-trivial work groups the remaining 7 specialists into three roles:
+When full orchestration is selected, the default pipeline for non-trivial work groups the remaining 7 specialists into three roles:
 
 - **Thinker** - reconnaissance, design, planning, analysis
 - **Worker** - implementation, documentation
@@ -21,7 +21,7 @@ The default pipeline for non-trivial work groups the remaining 7 specialists int
 
 The orchestrator routes work dynamically based on task needs. The pipeline terminates when the verifier accepts the result.
 
-Three workflow modes control pipeline depth:
+Three workflow modes are available to control pipeline depth. Their activation and enforcement depend on the platform:
 
 | Mode      | Full Form           | Pipeline                                          | Use Case                                    |
 | --------- | ------------------- | ------------------------------------------------- | ------------------------------------------- |
@@ -33,20 +33,20 @@ Three workflow modes control pipeline depth:
 
 The orchestrator adds structure and validation at the cost of coordination overhead. It is most valuable for work that spans multiple phases or sessions - tasks that benefit from dedicated exploration before implementation, or multi-step processes where built-in commit discipline and progress tracking prevent drift.
 
-If you mostly use frontier models and already have a clear, well-scoped goal that doesn't require deep exploration, going without the orchestrator is often faster and cheaper. Direct execution or a single pass with the right specialist avoids the overhead of delegation round-trips, context transfers, and review loops. The orchestrator trades raw speed for structure and validation - choose the approach that fits your task.
+If you mostly use strong, expensive, or slow models and already have a clear, well-scoped goal, going without the orchestrator is often faster and cheaper. Direct execution or a single specialist avoids delegation round-trips, context transfers, and review loops. The orchestrator trades speed and token usage for structure and validation. Choose the approach that fits the task, and start with the [usage decision guide](/core/when-to-use/).
 
 ## Specialist Reference
 
-| Specialist       | Role                                                                                                        | When to Use                                                                                          | Key Constraints                                                                                                                                      |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Orchestrator** | Manager - decomposes complex tasks, delegates to specialists, integrates results, never implements directly | Multi-step tasks, cross-specialist workflows, anything requiring structured coordination             | Cannot implement or edit directly; delegates to the 7 specialists only                                                                               |
-| **Adventurer**   | Codebase reconnaissance - maps unfamiliar code, traces dependencies, finds key files                        | Before implementing in unfamiliar code, understanding how something works, finding where logic lives | Read/search only - no editing                                                                                                                        |
-| **Architect**    | Architecture decisions - evaluates options through trade-off analysis, documents decisions                  | Choosing between technologies, making design decisions, evaluating implementation approaches         | No state-mutating work; may research external sources                                                                                                |
-| **Builder**      | Focused implementation - one atomic task per invocation                                                     | Bug fixes, feature work, tests, refactors - after reconnaissance and design are complete             | Full edit access. One atomic task per invocation. Reports at signature level.                                                                        |
-| **Diagnose**     | Systematic debugging - traces errors from symptom to root cause                                             | Bugs, regressions, crashes, mysterious errors, failing tests                                         | Edit access only for confirmed fixes                                                                                                                 |
-| **Planner**      | Implementation plans - phased milestones with verification criteria                                         | Complex features needing structured rollout, migration plans, multi-phase work                       | No shell access; pure planning output                                                                                                                |
-| **Reviewer**     | Code review - correctness, edge cases, security, performance, maintainability                               | Pre-merge review, security audit, post-implementation validation                                     | Read-only - cannot edit; supports multi-lens review swarms, observation-first verification, and triage output with [fix]/[dismiss]/[escalate] labels |
-| **Writer**       | Documentation - structured patterns for READMEs, API docs, changelogs, decision records                     | Documenting code, writing READMEs, API docs, changelogs, architecture decisions                      | Full edit access for documentation files only                                                                                                        |
+| Specialist       | Role                                                                                                    | When to Use                                                                                          | Key Constraints                                                                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Orchestrator** | Router and manager - decomposes complex tasks, delegates routed work to specialists, integrates results | Multi-step tasks, cross-specialist workflows, anything requiring structured coordination             | Cannot implement work it has delegated; focused and full work goes to the 7 specialists. Direct-route turns execute on the host. Platform enforcement varies. |
+| **Adventurer**   | Codebase reconnaissance - maps unfamiliar code, traces dependencies, finds key files                    | Before implementing in unfamiliar code, understanding how something works, finding where logic lives | Read/search only - no editing                                                                                                                                 |
+| **Architect**    | Architecture decisions - evaluates options through trade-off analysis, documents decisions              | Choosing between technologies, making design decisions, evaluating implementation approaches         | No state-mutating work; may research external sources                                                                                                         |
+| **Builder**      | Focused implementation - one atomic task per invocation                                                 | Bug fixes, feature work, tests, refactors - after reconnaissance and design are complete             | Full edit access. One atomic task per invocation. Reports at signature level.                                                                                 |
+| **Diagnose**     | Systematic debugging - traces errors from symptom to root cause                                         | Bugs, regressions, crashes, mysterious errors, failing tests                                         | Edit access only for confirmed fixes                                                                                                                          |
+| **Planner**      | Implementation plans - phased milestones with verification criteria                                     | Complex features needing structured rollout, migration plans, multi-phase work                       | No shell access; pure planning output                                                                                                                         |
+| **Reviewer**     | Code review - correctness, edge cases, security, performance, maintainability                           | Pre-merge review, security audit, post-implementation validation                                     | Read-only - cannot edit; supports multi-lens review swarms, observation-first verification, and triage output with [fix]/[dismiss]/[escalate] labels          |
+| **Writer**       | Documentation - structured patterns for READMEs, API docs, changelogs, decision records                 | Documenting code, writing READMEs, API docs, changelogs, architecture decisions                      | Full edit access for documentation files only                                                                                                                 |
 
 ## See Also
 

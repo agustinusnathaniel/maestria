@@ -3,8 +3,8 @@ import type {
   ExtensionCommandContext,
   ExtensionContext,
 } from '@oh-my-pi/pi-coding-agent';
-import type { MaestriaState } from './types.js';
-import { exitReviewMode } from './transforms.js';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import { exitReviewMode } from '@maestria/shared-pi/state-core';
 
 export async function restoreOriginalState(
   pi: ExtensionAPI,
@@ -14,7 +14,7 @@ export async function restoreOriginalState(
   const { state: clearedState, originalModel, originalTools } = exitReviewMode(state);
 
   if (originalTools && originalTools.length > 0) {
-    pi.setActiveTools(originalTools);
+    await pi.setActiveTools(originalTools);
   }
 
   if (originalModel) {

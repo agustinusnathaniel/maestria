@@ -8,7 +8,7 @@ export default defineConfig({
     minify: true,
     fixedExtension: false,
     deps: {
-      alwaysBundle: ['@clack/prompts', 'citty', 'effect', 'picocolors'],
+      alwaysBundle: ['@clack/prompts', 'citty', 'effect', 'jsonc-parser', 'picocolors'],
     },
   },
   test: {

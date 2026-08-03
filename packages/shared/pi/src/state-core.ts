@@ -2,8 +2,8 @@
  * Shared state management for Maestria platform packages.
  *
  * Pure TypeScript — no platform-specific dependencies.
- * Imported by both @maestria/omp and @maestria/pi to eliminate
- * duplication in state/types.ts, transforms.ts, persistence.ts, and render.ts.
+ * Provides shared state-management types, transforms, persistence, and rendering
+ * consumed directly by @maestria/omp and @maestria/pi.
  *
  * @module
  */

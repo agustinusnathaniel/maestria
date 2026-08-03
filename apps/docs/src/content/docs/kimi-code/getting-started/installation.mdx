@@ -127,14 +127,14 @@ npx maestria status
    });
    ```
 
-4. **Add permission rules (REQUIRED for safety)**
+4. **Optional: add review-only permission rules**
 
-   <Aside type="caution" title="Persona text alone is not enforcement">
+   <Aside type="caution" title="These rules apply to the whole session">
      By default, the 3 built-in Kimi Code subagents have full tool access. The `reviewer` and
      `adventurer` personas _describe_ safety constraints in their SKILL.md text ("do not edit
-     files", "read-only Bash"), but those constraints are advisory only - they live in the prompt,
-     not the tool layer. The `[[permission.rules]]` blocks below are what actually _enforce_ the
-     persona boundaries. Without them, a misbehaving subagent can still write or edit files.
+     files", "read-only Bash"), but those constraints are advisory only. The deny rules below apply
+     at session scope, so they also block Write/Edit for `builder` and `writer`. Use them only for a
+     review-only session, not as a permanent general-purpose configuration.
    </Aside>
 
    Add the following to `~/.kimi-code/config.toml`:
@@ -180,39 +180,23 @@ npx maestria status
    scope = "session-runtime"
    reason = "Builder: run TypeScript type check"
 
-   # === Adventurer (explore) - read-only persona; deny Write/Edit ===
+   # === Review-only session - deny Write/Edit for every coder subagent ===
+   # Do not use these session-wide denies while running builder or writer work.
 
    [[permission.rules]]
    decision = "deny"
    pattern = "Write"
    scope = "session-runtime"
-   reason = "Adventurer is read-only by persona (explore subagent)"
+   reason = "Review-only session: block all Write tools"
 
    [[permission.rules]]
    decision = "deny"
    pattern = "Edit"
    scope = "session-runtime"
-   reason = "Adventurer is read-only by persona (explore subagent)"
-
-   # === Reviewer (coder) - review-only; deny Write/Edit ===
-   # Reviewer persona opens with !!! DO NOT EDIT FILES. The
-   # persona text is advisory; these rules are the only tool-
-   # layer enforcement (REQUIRED for safety).
-
-   [[permission.rules]]
-   decision = "deny"
-   pattern = "Write"
-   scope = "session-runtime"
-   reason = "Reviewer is read-only by persona (maker/checker)"
-
-   [[permission.rules]]
-   decision = "deny"
-   pattern = "Edit"
-   scope = "session-runtime"
-   reason = "Reviewer is read-only by persona (maker/checker)"
+   reason = "Review-only session: block all Edit tools"
    ```
 
-   The `scope` field controls temporal granularity (`turn-override`, `session-runtime`, `project`, `user`) - it is not per-subagent granularity. Subagent tool lists come from the hardcoded profile (`coder`/`explore`/`plan`), not from per-agent rules. These rules are the **only tool-layer enforcement** of the persona boundaries declared in each specialist's SKILL.md.
+   The `scope` field controls temporal granularity (`turn-override`, `session-runtime`, `project`, `user`) - it is not per-subagent granularity. Subagent tool lists come from the hardcoded profile (`coder`/`explore`/`plan`), not from per-agent rules. These rules provide session-wide tool enforcement for a review-only session; they cannot safely enforce reviewer boundaries while builder or writer work runs in the same session.
 
 5. **Reload plugins and start a new session**
 

@@ -23,7 +23,7 @@ hero:
 
 import { LinkCard, CardGrid, LinkButton, Aside } from '@astrojs/starlight/components';
 
-The same Maestria methodology that works on OpenCode also works on **Pi** and **Oh My Pi (OMP)**. The orchestrator pattern, 7 specialist subagents, workflow modes, and maker/checker enforcement are identical across both platforms. The only differences are the installation command, the subagent dispatch mechanism, and the agent discovery directory.
+The same Maestria methodology that works on OpenCode is adapted for **Pi** and **Oh My Pi (OMP)**. The role names and workflow ideas carry over, but runtime behavior is not identical. Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read [When to use Maestria](/core/when-to-use/) before assuming that a workflow transfers unchanged.
 
 <Aside type="tip">
   **Pi** uses `@gotgenes/pi-subagents` for subagent dispatch via the `maestria_subagent` tool.

@@ -11,6 +11,13 @@ The `@maestria/opencode` plugin registers 8 agents with no model overrides. Each
 
 This page covers how the model hierarchy works and what assignments make sense for each specialist.
 
+<Aside type="caution" title="Model choice affects every delegated stage">
+  The orchestrator's model is inherited by specialists unless you override them. A capable or
+  expensive model on the orchestrator can therefore be used for reconnaissance, implementation,
+  review, and retries. Read [When to use Maestria](/core/when-to-use/) before assigning the same
+  high-cost model to every agent.
+</Aside>
+
 ## Why Set Per-Agent Models
 
 Different specialists benefit from different models. A fast, cheap model works for file-scanning tasks. A more capable model matters where output quality is critical - code generation, review, and architecture.

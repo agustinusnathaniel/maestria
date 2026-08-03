@@ -8,6 +8,7 @@ import { updateCommand } from '@/commands/update.js';
 import { uninstallCommand } from '@/commands/uninstall.js';
 import { statusCommand } from '@/commands/status.js';
 import { checkCommand } from '@/commands/check.js';
+import { configureCommand } from '@/commands/configure.js';
 import { detectAll } from '@/lib/detect.js';
 import { createSpinner, renderStatusTable, renderCompactStatus } from '@/lib/output.js';
 
@@ -32,6 +33,8 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update opencode -V 0.5.0 Update to specific version',
       'maestria update opencode,pi       Update multiple platforms at once',
       'maestria install hermes           Install for Hermes agent',
+      'maestria configure opencode       Choose per-agent models interactively',
+      'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set a model non-interactively',
       'maestria --help                   Show this help',
     ],
     tip: [
@@ -78,6 +81,22 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria check opencode --json    Output as JSON (default)',
       'maestria check opencode --quiet   Exit code only (for scripts)',
     ],
+  },
+  configure: {
+    examples: [
+      'maestria configure opencode       Choose per-agent models interactively',
+      'maestria configure opencode --project  Configure for the current project only',
+      'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set one model',
+      'maestria configure omp --set adventurer=opencode-go/deepseek-v4-flash,writer=opencode-go/deepseek-v4-pro  Set several',
+      'maestria configure pi --set builder=  Reset an agent to inherit the session model',
+      'maestria configure opencode --json   Output the resulting config as JSON',
+      'maestria configure --quiet            Suppress spinner output (for CI)',
+    ],
+    tip: [
+      'Per-agent models are supported for: opencode (config file), pi and omp (agent frontmatter).',
+      'Use --global (default) or --project to choose the config level.',
+      'For CI pipelines, pass --set with --global or --project and add --quiet.',
+    ].join('\n'),
   },
 };
 
@@ -161,6 +180,7 @@ const main = defineCommand({
     uninstall: uninstallCommand,
     status: statusCommand,
     check: checkCommand,
+    configure: configureCommand,
   },
   run: async ({ args }) => {
     if (args.version) {

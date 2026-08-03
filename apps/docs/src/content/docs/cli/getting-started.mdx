@@ -84,6 +84,28 @@ npx maestria update opencode
 npx maestria update opencode --version 0.5.0
 ```
 
+### Configure per-agent models
+
+Give each maestria specialist its own model. Interactively:
+
+```bash
+npx maestria configure opencode
+```
+
+Or non-interactively for CI:
+
+```bash
+npx maestria configure pi --global --quiet --set builder=opencode-go/deepseek-v4-flash
+```
+
+Use an empty value to reset an agent to inherit the session model:
+
+```bash
+npx maestria configure opencode --set reviewer=
+```
+
+Per-agent models are supported on opencode, pi, and omp. See the [command reference](/cli/commands/#configure) for details.
+
 ## Prerequisites
 
 - **Node.js 22+** - required for the bundled `.mjs` distribution

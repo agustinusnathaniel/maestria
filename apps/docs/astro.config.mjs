@@ -80,6 +80,7 @@ export default defineConfig({
         {
           label: 'Core Concepts',
           items: [
+            { label: 'When to Use Maestria', link: '/core/when-to-use/' },
             { label: 'Specialist Reference', link: '/core/agents/' },
             { label: 'Pipeline & Roles', link: '/core/pipeline/' },
             { label: 'How It Works', link: '/core/how-it-works/' },
