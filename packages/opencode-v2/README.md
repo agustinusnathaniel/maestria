@@ -1,6 +1,6 @@
 # @maestria/opencode-v2
 
-> Experimental POC: Maestria methodology on the OpenCode V2 beta plugin API. V2 is beta - APIs change. Verified against `@opencode-ai/plugin@0.0.0-next-16573` (current next tag) and the opencode `dev` branch (2026-07-31).
+> Experimental POC: Maestria methodology on the OpenCode V2 beta plugin API. V2 is beta - APIs change. Verified against `@opencode-ai/plugin@0.0.0-next-16694` (current next tag) and the opencode `dev` branch (2026-07-31).
 
 ## Install
 
@@ -20,7 +20,7 @@ V2 runs as `opencode2`. Add the plugin to your `opencode.json`:
 
 ## Verified API surface (vs docs)
 
-| Domain | Docs say | Package (next-16573) says | Verdict |
+| Domain | Docs say | Package (next-16694) says | Verdict |
 | --- | --- | --- | --- |
 | `ctx.agent.transform` | `update(id, cb)` | `update(id, cb)` - upsert | ✅ match |
 | `ctx.session.hook` | `"request"` event with mutable `system`/`messages`/`tools` | `"context"` (mutable SessionContext) and `"request"` (SessionRequest = HTTP wire format: url/method/headers/body, not prompt state) | ❌ docs stale - docs' request claims don't match SessionRequest |
@@ -32,7 +32,7 @@ V2 runs as `opencode2`. Add the plugin to your `opencode.json`:
 
 Verified by compiling against the installed package types (zero `any` casts) and tracing the runtime consumer in the opencode `dev` branch source.
 
-Note: 16573 added a second session hook event, `request` (SessionRequest = HttpRequest wire format with sessionID/agent/model). It is for HTTP middleware, not prompt editing - the docs' claim that `request` exposes mutable system/messages/tools does not match the package. Verified in dist/promise/session.d.ts.
+Note: the installed package has a second session hook event, `request` (SessionRequest = HttpRequest wire format with sessionID/agent/model). It is for HTTP middleware, not prompt editing - the docs' claim that `request` exposes mutable system/messages/tools does not match the package. Verified in dist/promise/session.d.ts.
 
 ## Development
 
