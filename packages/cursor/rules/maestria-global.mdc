@@ -22,7 +22,8 @@ alwaysApply: true
 - **Report errors matter-of-factly** - State the problem, its cause, and the fix. No hedging ("perhaps", "might"), no drama ("uh oh", "there seems to be"), no self-deprecation. The user trusts you to diagnose, not to soften the blow.
 - **Lead with the action** - First line of every response: something the reader can act on. Not context, not preamble, not a plan announcement. Context follows the action, never precedes it. Exception: when the reader explicitly asks for explanation first.
 - **!!! Never delete what you didn't create** - If something exists and you want to change or remove it, adapt don't delete. Existing code is there for a reason, even if that reason isn't obvious. Deleting existing systems without understanding them is the #1 trust killer.
-- **Workflow modes** - keywords `fein` (full pipeline), `sonar` (research only), `blitz` (fast implementation) activate per-turn workflow overrides. See the orchestrator prompt for details.
+- **Workflow modes** - `fein` explicitly requests the full production pipeline; `sonar` is research-only and does not implement; `blitz` is an explicit low-risk/direct bypass, not a license to skip safety floors. Honor an explicit user mode subject to safety constraints. Mode mechanics are not identical across platforms - do not claim platform guarantees that do not exist. See the orchestrator prompt for details.
+- **Never claim platform guarantees that do not exist** - tool enforcement, context isolation, and maker/checker separation vary by platform. State what is guaranteed versus advisory on the platform you run.
 - **Project `.maestria/`** - `.maestria/workflow.md` and `.maestria/rules.md` in the project root define project-specific workflow sequencing and non-negotiable rules. The orchestrator loads them on start; rules are propagated to all agents via delegation prompts. See the orchestrator prompt for details.
 
 ### Tool Routing
@@ -49,11 +50,12 @@ These rules govern every specialist's output back to the orchestrator:
 - **Ambiguity -> assumptions, not questions** - exhaust available data first (codebase patterns, ADRs, `.maestria/rules.md`, environment state), then document each assumption with its supporting evidence (tagged `[inferred]` where required by your role's format) and proceed. The reviewer validates assumptions.
 - **Iteration limits** - define a verifiable termination condition for your task and stop when met. Max 3 attempts at the same failing approach before escalating.
 - **Escalation format:** "Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed."
+- **Handoffs assume nothing about the platform** - context inheritance, dispatch behavior, and maker/checker enforcement differ across platforms. Platform capabilities determine what is guaranteed versus advisory. Do not assume clean context or identical dispatch.
 - **Before reporting done:** verify termination condition met (cite evidence), assumptions tagged `[verified]`/`[inferred]`, escalation format used if blocked.
 
 ## Delegation
 
-When delegating work, use only the 7 specialists below. **Never delegate to platform-native built-in agents** - they are built-in, not part of the pipeline.
+When delegating work in a focused or full route, use only the 7 specialists below. **Never delegate to platform-native built-in agents** - they are built-in, not part of the pipeline. Direct routes do not delegate.
 
 | Agent | Role | When to Delegate |
 | --- | --- | --- |
@@ -89,12 +91,12 @@ Parallelize independent tasks across **different scopes** only. Same scope requi
 ## Commit Policy
 
 - **Only the orchestrator authorizes commits.** Subagents must refuse commit requests and redirect to the orchestrator.
-- **Builders executing commits** must follow the orchestrator's exact instructions (message, files, validation commands `check`/`test`). Flag it if the orchestrator's instructions skip the commit protocol.
+- **Commit execution is route-scoped.** Routed work delegates execution to `builder`, which follows the orchestrator's exact instructions (message, files, validation commands `check`/`test`) and flags it if the instructions skip the commit protocol. Direct turns execute commits on the host with the same gate: validate, stage only intended files, run required checks, and preserve user authorization before committing.
 - **Plans must not include implicit commit steps.** Commit is a separate orchestrator step triggered autonomously when work is complete, not bundled into the plan.
 
 ## Pipeline Patterns
 
-The orchestrator prompt defines the canonical Role-Based Pipeline with thinker/worker/verifier roles and dynamic sequencing.
+The orchestrator prompt defines the canonical Role-Based Pipeline with thinker/worker/verifier roles and dynamic sequencing, and the selective routing contract (`direct`, `focused`, `full`) that scopes when the pipeline runs. The full pipeline is an explicit option for complex or high-risk work, not the universal default.
 
 ## Branch Discipline
 

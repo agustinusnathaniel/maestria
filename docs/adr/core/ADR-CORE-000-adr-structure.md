@@ -34,7 +34,7 @@ ADRs use **prefix-scoped numbering** with one subdirectory per namespace:
 
 | Prefix | Name      | Subdirectory          | ADR Range |
 | ------ | --------- | --------------------- | --------- |
-| CORE   | Core      | `docs/adr/core/`      | 000–012   |
+| CORE   | Core      | `docs/adr/core/`      | 000–013   |
 | CR     | Cursor    | `docs/adr/cursor/`    | 001–0xx   |
 | HM     | Hermes    | `docs/adr/hermes/`    | 000–002   |
 | OC     | Opencode  | `docs/adr/opencode/`  | 000–005   |

@@ -71,7 +71,7 @@ Or, add it manually to your OpenCode config:
 
 ## Verify Installation
 
-Start a new OpenCode session. The 8 agents are ready for delegation via `@` mention. Try typing `@orchestrator` to kick off your first task - the manager agent decomposes it and hands pieces to the right specialist.
+Start a new OpenCode session. The 8 agents are ready for delegation via `@` mention. Read [When to use Maestria](/core/when-to-use/) before choosing `@orchestrator`: direct execution or one specialist is often better for small tasks and expensive models.
 
 The global workflow rules are active in every prompt. You will see them reflected in how agents respond, delegate, and structure their output.
 
@@ -150,7 +150,7 @@ To disable a mode, set `modes.disabledKeywords` in your plugin configuration:
 
 **Direct delegation.** Any agent can be invoked directly by typing `@agentname` in your prompt. For example, `@reviewer review my latest changes` or `@adventurer find where authentication is handled`.
 
-**Manager delegation.** For complex tasks involving multiple steps, let `@orchestrator` handle the entire pipeline. It decomposes the work and dispatches each piece to the right specialist automatically.
+**Manager delegation.** For complex, unfamiliar, or high-risk tasks involving multiple steps, let `@orchestrator` handle the pipeline. It decomposes the work and dispatches each piece to the right specialist automatically.
 
 ## Uninstalling
 

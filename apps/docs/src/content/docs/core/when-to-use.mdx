@@ -1,0 +1,125 @@
+---
+title: When to use Maestria
+description: Choose between direct execution, a specialist, and the full Maestria pipeline based on task risk, model economics, and platform behavior.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Maestria trades extra delegation for structure. It is not a universal speed or quality upgrade. A specialist can improve focus and review quality, but each delegation also adds model work, context transfer, and latency.
+
+Use this page before choosing full orchestration.
+
+## Quick decision
+
+| Situation                                            | Recommended path                               | Reason                                                               |
+| ---------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------- |
+| One or two known files, obvious change               | Direct or native agent                         | The full pipeline adds coordination without much new information.    |
+| Small bug in unfamiliar code                         | `adventurer` or `diagnose` first               | Get the missing context without starting a full pipeline.            |
+| UI tweak, copy change, or interactive iteration      | Direct or `blitz`                              | Short feedback loops matter more than formal handoffs.               |
+| Multi-file feature in an unfamiliar codebase         | Orchestrator or `fein`                         | Reconnaissance and staged review can prevent expensive rework.       |
+| Security, migration, or other high-risk change       | Full pipeline with review                      | Independent review and explicit assumptions are worth the overhead.  |
+| Research or feasibility question                     | `sonar`                                        | Stop after recon and design instead of creating implementation work. |
+| Strong, expensive, or slow model                     | Direct execution or one specialist plus review | Multiple fresh sessions can multiply cost and waiting time.          |
+| Cheap, fast model that benefits from narrow contexts | Full pipeline can be a good trade              | Delegation overhead is lower, and focused roles may improve results. |
+
+## Route the turn
+
+Use these four classes as the default decision guide. They describe current
+choices, not an automatic router.
+
+| Turn class                  | Route now                                                                                                                 | Escalate when                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Explanation or discovery    | Direct execution for an explanation; `adventurer`, `architect`, `diagnose`, or `sonar` for focused discovery              | The answer depends on several modules, an unclear design, or a consequential decision.       |
+| Tiny edit                   | Direct execution, or `blitz` where the platform supports it                                                               | The edit touches behavior, generated files, security-sensitive code, or an unfamiliar area.  |
+| Ordinary code change        | Direct implementation plus one focused specialist or reviewer; use `builder` when a separate implementation handoff helps | The change spans packages, has unclear requirements, or needs independent design and review. |
+| Complex or high-risk change | Full pipeline when explicitly selected or justified: recon, design, implementation, and review                            | Add a second review or more planning only when the task exposes new risk.                    |
+
+<Aside type="caution" title="Full pipeline is an explicit trade-off">
+  The full pipeline can spawn reconnaissance, design, implementation, review, and retry sessions.
+  Use it when those stages add information or reduce risk, not simply because a task has more than
+  one step.
+</Aside>
+
+## Three ways to work
+
+### Direct execution
+
+Use the platform's normal agent for a task you can scope clearly. This is usually the best path for a small change, a familiar codebase, or rapid iteration.
+
+### Specialist delegation
+
+Use one specialist when you need one kind of help:
+
+- `adventurer` to map unfamiliar code
+- `architect` to compare approaches
+- `diagnose` to trace a failure
+- `reviewer` to check a diff before commit
+- `writer` to produce documentation
+
+You can combine the result with direct implementation instead of delegating every stage.
+
+### Full orchestration
+
+Use the orchestrator when the task benefits from several independent stages. Good candidates include cross-module features, risky changes, unfamiliar systems, and work that needs a durable handoff between people or sessions.
+
+## Model economics
+
+Model capability and model price both matter. The same workflow can be reasonable on a low-cost model and wasteful on a metered frontier model.
+
+Every delegated stage can add:
+
+- A separate model turn
+- Prompt and context tokens
+- Waiting time before the next dependent stage
+- More work when review finds an issue
+
+Cache pricing and context inheritance also vary by provider and platform. Do not assume that a cached or fresh context is free.
+
+If you are unsure, start with direct execution or one specialist. Escalate to the full pipeline when the task reveals real uncertainty or risk.
+
+## Platform differences
+
+Maestria shares a methodology across platforms, not identical runtime behavior. OpenCode, Pi, OMP, Kimi Code, Cursor, and Hermes differ in:
+
+- How specialists are dispatched
+- Whether the orchestrator is a separate agent or the main session
+- Which tools are enforced at runtime
+- Whether parent context is inherited by subagents
+- How modes, compaction, and long-running work behave
+
+| Platform   | Runtime detail                                                                                                  | Practical guidance                                                                                                                                                                                           |
+| ---------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| OpenCode   | The orchestrator is a separate agent. Specialists and tool permissions are registered through the plugin.       | Use direct agents for small work. Choose `@orchestrator` when several stages add value.                                                                                                                      |
+| Pi and OMP | The main session includes the orchestrator guidance. Mode activation and dispatch tools differ by platform.     | Use a mode-free session for normal work, a single specialist for focused help, and `/fein` when full delegation is worth the cost. Read the [Pi and OMP reference](/pi-omp/reference/).                      |
+| Kimi Code  | The orchestrator skill is loaded into the main session and seven roles map onto three native subagent profiles. | Direct execution is not a separate Maestria mode. Use one `Agent` call for focused help, or let the orchestrator route full multi-stage work. Reviewer boundaries require separate permission configuration. |
+| Hermes     | The default mode is `fein`, which describes the full pipeline.                                                  | Use `/blitz` for small tasks. Use the default full mode when the work is complex or risky.                                                                                                                   |
+| Cursor     | The orchestrator skill delegates through Cursor Task agents, with Cursor-specific runtime permissions.          | Use `/fein` when the full pipeline is worth the cost; otherwise use a direct agent or one specialist.                                                                                                        |
+
+Hermes's default `fein` behavior does not mean every direct task receives an
+automatic maker/checker pair. Kimi's reviewer constraints are advisory unless a
+review-only permission/session setup is used. Pi and OMP inherit context and
+dispatch work through distinct paths. OpenCode provides the strongest tool-level
+maker/checker enforcement among the platforms documented here.
+
+Read the platform-specific guide before assuming that a workflow transfers unchanged.
+
+## Examples
+
+| Request                                           | Good starting point                                    |
+| ------------------------------------------------- | ------------------------------------------------------ |
+| "Add a JSDoc comment to this function"            | Direct execution                                       |
+| "Find where authentication tokens are refreshed"  | `adventurer`                                           |
+| "Trace this intermittent login failure"           | `diagnose`, then implement directly or use `builder`   |
+| "Migrate the auth system across several packages" | Full pipeline or `fein`                                |
+| "Review these changed files for security issues"  | `reviewer`, or a review mode supported by the platform |
+
+<Aside type="tip" title="A practical rule">
+  If the task can be described as one atomic edit, do not start with the full pipeline. If the cost
+  of a wrong assumption is high, add a specialist or an independent review.
+</Aside>
+
+## Related documentation
+
+- [Specialist Reference](/core/agents/)
+- [Pipeline & Roles](/core/pipeline/)
+- [Workflow Patterns](/core/workflow-patterns/)

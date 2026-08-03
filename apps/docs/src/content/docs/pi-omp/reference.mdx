@@ -50,13 +50,13 @@ Every subagent dispatch records the parent task ID and specialist name in the se
 
 ## Pure Dispatcher Enforcement
 
-When a workflow mode is active (fein/sonar/blitz), the orchestrator session is restricted to only delegation tools. This enforces the maker/checker split at the tool level - the orchestrator physically cannot use `bash`, `edit`, `write`, or other implementation tools directly.
+When a workflow mode is active (fein/sonar/blitz), the platform may restrict the main session to delegation tools. This can enforce the maker/checker split at the tool level, but the exact restriction differs between Pi and OMP.
 
 <Aside type="note">
   **Pi** restricts the orchestrator to only `maestria_subagent` during enforcement. **OMP** allows
   both `task()` (native) and `maestria_subagent` (structured handoff wrapper) during enforcement.
   The `maestria_subagent` tool validates parameters and constructs a structured handoff, then
-  delegates to native `task()` internally. Subagent sessions (without the `task` tool) are not
+  returns a plan for the native `task()` call. Subagent sessions (without the `task` tool) are not
   restricted and retain their full specialist toolset.
 </Aside>
 
@@ -64,23 +64,23 @@ When a workflow mode is active (fein/sonar/blitz), the orchestrator session is r
 
 When you start a session, the orchestrator prompt and global rules are always active, guiding the AI to delegate work rather than implement directly. However, the tool-level restriction (blocking `bash`/`edit`/`write` etc.) is **not active by default** - it activates only when you set a workflow mode.
 
-This mirrors OpenCode's architecture: in OpenCode, the orchestrator is a separate agent that you switch to via `@orchestrator` or a mode keyword. Pi and OMP are single-agent platforms - the orchestrator IS the session. The mode keyword (`fein`/`sonar`/`blitz`) is the equivalent of switching to the orchestrator agent.
+Unlike OpenCode, Pi and OMP do not have a separate `@orchestrator` agent. The orchestrator skill is present in the main session. A mode keyword adds the mode prompt and, where supported, tool enforcement; it does not switch the session into a different agent.
 
-| Interaction                    | Enforcement | What happens                                        |
-| ------------------------------ | ----------- | --------------------------------------------------- |
-| `implement login` (no keyword) | Inactive    | AI has the orchestrator prompt but full tool access |
-| `fein implement login`         | Active      | AI restricted to delegation tools only              |
-| `/fein` (command)              | Active      | Mode set, enforcement active from next turn         |
+| Interaction                    | Enforcement | What happens                                                                   |
+| ------------------------------ | ----------- | ------------------------------------------------------------------------------ |
+| `implement login` (no keyword) | Inactive    | Orchestrator guidance is present and the main session retains its normal tools |
+| `fein implement login`         | Active      | AI restricted to delegation tools only                                         |
+| `/fein` (command)              | Active      | Mode set, enforcement active from next turn                                    |
 
 The mode persists across turns in the same session. To deactivate enforcement, start a new session.
 
-## Subagent Dispatch
+## Subagent dispatch
 
-Specialists are dispatched via the platform's subagent tool. Both platforms support three dispatch modes:
+Specialist dispatch is not identical between Pi and OMP.
 
-### Single Mode
+### Pi
 
-Dispatch one task to one specialist. The orchestrator waits for completion before proceeding.
+Pi's `maestria_subagent` tool executes single, parallel, and chain dispatch through `@gotgenes/pi-subagents`. Parallel dispatch accepts between 2 and 8 tasks. Subagents inherit the parent context, so the handoff prompt does not guarantee a clean context boundary.
 
 ```json
 {
@@ -89,52 +89,15 @@ Dispatch one task to one specialist. The orchestrator waits for completion befor
 }
 ```
 
-### Parallel Mode
+### OMP
 
-Dispatch multiple specialists concurrently. Useful for independent research or parallel implementation.
+OMP's `maestria_subagent` tool validates the request, records the handoff, and returns a plan for OMP's native `task()` tool. The native tool performs the actual dispatch. The wrapper is a structured planning layer, not an equivalent implementation of Pi's dispatch lifecycle.
 
-```json
-{
-  "mode": "parallel",
-  "tasks": [
-    { "agent": "adventurer", "task": "Find all API route definitions" },
-    { "agent": "architect", "task": "Evaluate database migration options" }
-  ]
-}
-```
-
-### Chain Mode
-
-Dispatch specialists sequentially, piping each result to the next. Use `{previous}` to reference the prior step's output.
-
-```json
-{
-  "mode": "chain",
-  "tasks": [
-    { "agent": "adventurer", "task": "Find the current login implementation" },
-    { "agent": "builder", "task": "Refactor login using findings from: {previous}" }
-  ]
-}
-```
-
-Maximum parallel tasks: 8.
-
-<Aside type="note">
-  **Pi** dispatches exclusively via `maestria_subagent(agent, task)` through the
-  `@gotgenes/pi-subagents` extension. **OMP** has a built-in `task(agent: "...", task: "...")` tool
-  and also exposes `maestria_subagent` as a structured wrapper on top - it validates parameters,
-  records state, and delegates to `task()` internally. You can call either one.
-</Aside>
-
-### Native `task()` availability (OMP only)
-
-OMP's native `task()` tool is always available to the orchestrator. The `maestria_subagent` tool is an additional structured layer that validates, records state, and then delegates to `task()` internally. You can also call `task()` directly:
-
-```
+```text
 task(agent: "builder", task: "Implement the login form")
 ```
 
-Pi uses `maestria_subagent` exclusively via the `@gotgenes/pi-subagents` extension.
+Use the platform's native documentation for task limits and lifecycle behavior. Do not assume that Pi's parallel or chain behavior transfers directly to OMP.
 
 ## Review Mode
 
@@ -149,7 +112,7 @@ Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are block
 
 ## Usage Notes
 
-**Pipeline discipline.** The default flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk - fine for simple changes, not recommended for cross-module work.
+**Pipeline discipline.** When full orchestration is selected, the flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk - fine for simple changes, not recommended for cross-module work.
 
 **Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains all six required fields. Incomplete handoffs are rejected.
 
@@ -170,7 +133,7 @@ The 7 specialist agents (adventurer, architect, builder, diagnose, planner, revi
 1. **Sync pipeline** generates `agents/*.md` files from canonical Maestria directives with platform-specific YAML frontmatter, including role-specific tool allowlists and `prompt_mode: append` / `inherit_context: true`
 2. **Extension startup** (`session_start` handler) deploys the agent files to the platform's agent discovery directory
 3. **Subagent dispatch** discovers the files and registers each as an agent type
-4. **`task(agent: "adventurer", ...)`** or `maestria_subagent(...)` looks up the registered type, merges the role-specific prompt on top of the inherited parent context via `prompt_mode: append`, and spawns the subagent with correct tools and instructions
+4. **Pi's `maestria_subagent(...)` and OMP's native `task(agent: "adventurer", ...)`** look up the registered type, merge the role-specific prompt on top of the inherited parent context via `prompt_mode: append`, and spawn the subagent with the platform's tools and instructions. OMP's `maestria_subagent(...)` validates and records a handoff, then returns a plan for the native call.
 
 <Aside type="note">
   **Pi** deploys agent files to `~/.pi/agent/agents/` (pi-subagents discovery directory). **OMP**
