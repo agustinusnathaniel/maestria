@@ -1,5 +1,5 @@
 ---
-'@maestria/cli': minor
+'maestria': minor
 ---
 
 Add `maestria configure <platform>` for per-agent model selection on opencode, pi, and omp.
