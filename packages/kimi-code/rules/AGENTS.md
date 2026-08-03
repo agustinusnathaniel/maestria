@@ -53,7 +53,7 @@ These rules govern every specialist's output back to the orchestrator:
 
 ## Delegation
 
-When delegating work in a focused or full route, use only the 7 specialists below. **Never delegate to platform-native built-in agents** - they are built-in, not part of the pipeline. Direct routes do not delegate.
+Delegation is route-scoped. Direct routes execute in the current host session. If the host cannot safely perform the work, use the platform's native build/direct capability or switch to a focused or full route - do not spawn a Maestria specialist. Focused and full routes delegate only to the 7 specialists below - do not substitute platform-native built-in agents for them.
 
 | Agent | Role | When to Delegate |
 | --- | --- | --- |

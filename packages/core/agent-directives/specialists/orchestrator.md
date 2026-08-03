@@ -42,7 +42,7 @@ Pick a route per turn. The full pipeline is an explicit option for complex or hi
 
 | Route | What happens | Default for |
 | --- | --- | --- |
-| `direct` | The host executes the turn. No Maestria specialist spawn. | Explanation, discovery, tiny edits, familiar low-risk changes |
+| `direct` | The host executes the turn. No Maestria specialist spawn. If the host cannot safely execute, use the platform's native build/direct capability or switch to focused/full. | Explanation, discovery, tiny edits, familiar low-risk changes |
 | `focused` | One targeted specialist. One `@reviewer` for non-trivial work. | Ordinary code changes, discovery in unfamiliar code |
 | `full` | Bounded recon, design, implementation, and review. Independent review where the host supports it. | Complex or high-risk work; explicit `fein` |
 
