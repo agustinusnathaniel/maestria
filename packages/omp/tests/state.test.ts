@@ -10,7 +10,7 @@ import {
   exitReviewMode,
   renderMaestriaSummary,
 } from '@/state.js';
-import type { MaestriaState } from '@/state.js';
+import type { MaestriaState, HandoffEntry, SubagentStatusInfo } from '@/state.js';
 import { HANDOFF_HISTORY_CAP, FILE_HISTORY_CAP } from '@/state.js';
 
 const NEW_STATE_KEYS = [
@@ -455,5 +455,45 @@ describe('renderMaestriaSummary with reviewModel', () => {
     const summary = renderMaestriaSummary(state);
 
     expect(summary).not.toContain('**Review Model:**');
+  });
+});
+
+describe('barrel re-exports (consolidated)', () => {
+  it('HANDOFF_HISTORY_CAP and FILE_HISTORY_CAP exported from barrel', () => {
+    expect(HANDOFF_HISTORY_CAP).toBe(5);
+    expect(FILE_HISTORY_CAP).toBe(10);
+  });
+
+  it('persistState works via barrel', () => {
+    const pi = { appendEntry: vi.fn() };
+    const state = createInitialState();
+    persistState(pi as any, state);
+    expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', { ...state });
+  });
+
+  it('renderMaestriaSummary works via barrel', () => {
+    const state = { ...createInitialState(), activeTask: 'test from barrel' };
+    const summary = renderMaestriaSummary(state);
+    expect(summary).toContain('**Goal:** test from barrel');
+  });
+
+  it('re-exports types correctly from barrel', () => {
+    const handoff: HandoffEntry = { from: 'a', to: 'b', task: 't', timestamp: 0 };
+    expect(handoff.from).toBe('a');
+    expect(handoff.to).toBe('b');
+    expect(handoff.task).toBe('t');
+    expect(typeof handoff.timestamp).toBe('number');
+
+    const status: SubagentStatusInfo = { type: 'builder', status: 'running', startedAt: 100 };
+    expect(status.type).toBe('builder');
+    expect(status.status).toBe('running');
+    expect(status.startedAt).toBe(100);
+  });
+
+  it('MaestriaState type from barrel has correct shape', () => {
+    const state: MaestriaState = createInitialState();
+    expect(state.mode).toBeNull();
+    expect(state.handoffHistory).toEqual([]);
+    expect(state.reviewMode).toBe(false);
   });
 });

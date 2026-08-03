@@ -14,7 +14,7 @@ export async function restoreOriginalState(
   const { state: clearedState, originalModel, originalTools } = exitReviewMode(state);
 
   if (originalTools && originalTools.length > 0) {
-    pi.setActiveTools(originalTools);
+    await pi.setActiveTools(originalTools);
   }
 
   if (originalModel) {
