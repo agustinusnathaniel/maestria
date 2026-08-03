@@ -26,6 +26,26 @@ catalog:
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'
+  # Dependency-security pins (pnpm 11: overrides live in pnpm-workspace.yaml)
+  # GHSA-mh99-v99m-4gvg (brace-expansion DoS) via minimatch 10.2.5 -> 5.0.6; 10.2.6 declares ^5.0.8
+  minimatch: 10.2.6
+  # js-yaml quadratic merge-key DoS (GHSA-2v9j-7w3m-84pc, GHSA-2p99-v8mh-m8w8): 4.x chain + 3.x chain via read-yaml-file
+  js-yaml: 4.3.1
+  'read-yaml-file>js-yaml': 3.15.0
+  # protobufjs infinite-loop DoS (GHSA-4f6p-2m5m-v7xg)
+  protobufjs: 7.6.5
+  # svgo removeScripts executable-script left behind (GHSA-g4vv-4v2v-9wqh)
+  svgo: 4.0.2
+  # fast-uri host confusion (GHSA-3q8p-8q5v-9g9q, GHSA-5r9g-8p4r-8m4w)
+  fast-uri: 3.1.4
+  # yaml stack overflow via deeply nested collections (GHSA-2c3x-5r88-7gxh); yaml-language-server pins 2.7.1 exactly
+  'yaml-language-server>yaml': 2.9.0
+  # tmp path traversal via unsanitized prefix/postfix (GHSA-83rp-98q9-gj7v); only consumer is external-editor (tmpNameSync)
+  tmp: 0.2.7
+  # adm-zip crafted ZIP 4GB memory (GHSA-4f6p-2m5m-v7xg) and sharp libvips CVEs (GHSA-f88m-g3jw-g9cj)
+  # — deep in @oh-my-pi/pi-coding-agent host runtime; omp imports it type-only so workspace gates verify safety
+  adm-zip: 0.6.0
+  sharp: 0.35.3
 peerDependencyRules:
   allowAny:
     - vite
