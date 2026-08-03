@@ -1,5 +1,23 @@
 # @maestria/hermes
 
+## 0.1.11
+
+### Patch Changes
+
+- [#160](https://github.com/agustinusnathaniel/maestria/pull/160) [`a351ed0`](https://github.com/agustinusnathaniel/maestria/commit/a351ed0e5af4f1c5ea0e960145ee5ff2347e2af4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix the hermes delegation rules adaptation in the synced global rules.
+
+  PR [#157](https://github.com/agustinusnathaniel/maestria/issues/157) rewrote the canonical Delegation section to be route-scoped, which
+  removed the canonical phrase the hermes sync config's replace targeted. The
+  `findAndReplace` transform silently no-ops on a non-matching `from`, so the
+  generated `global-rules/SKILL.md` shipped the raw canonical wording ("do not
+  substitute platform-native built-in agents for them") instead of the hermes
+  adaptation.
+
+  The replace is re-based onto the new route-scoped sentence. Hermes agents
+  again get the correct guidance: when delegating on focused/full routes, use
+  only the 7 maestria specialists and never delegate to Hermes' built-in
+  `explore` or `general` agents, which bypass the pipeline.
+
 ## 0.1.10
 
 ### Patch Changes
