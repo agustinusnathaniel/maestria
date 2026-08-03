@@ -308,9 +308,15 @@ export default {
         },
 
         // Generalize delegation rules for Hermes
+        // [inferred] Re-based onto the PR #157 route-scoped canonical sentence.
+        // The old canonical phrase ("Never delegate to platform-native built-in
+        // agents - they are built-in, not part of the pipeline.") was removed by
+        // PR #157, so the old `from` silently no-oped and raw canonical text shipped.
+        // `explore`/`general` are Hermes' built-in agents - the adaptation intent is
+        // preserved from the pre-PR config.
         {
-          from: '**Never delegate to platform-native built-in agents** - they are built-in, not part of the pipeline.',
-          to: 'Never delegate to built-in `explore` or `general` - they bypass the pipeline.',
+          from: 'Focused and full routes delegate only to the 7 specialists below - do not substitute platform-native built-in agents for them.',
+          to: 'Focused and full routes delegate only to the 7 specialists below - never delegate to built-in `explore` or `general` - they bypass the pipeline.',
         },
         {
           from: '| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |',
