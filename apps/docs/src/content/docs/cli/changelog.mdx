@@ -5,6 +5,23 @@ description: Release history for the maestria CLI.
 
 # Changelog
 
+## v0.8.0
+
+_Upcoming_
+
+### New `maestria configure` command
+
+Choose which model each maestria specialist agent uses, per platform.
+
+- **Supported platforms**: opencode, pi, omp - writes `agent.<name>.model` into opencode configs or the `model:` line into pi/omp agent frontmatter, preserving all other content
+- **Interactive**: group-multiselect of the 7 specialists, then a per-agent model picker with the current model pre-selected and an _Inherit (session model)_ option; model lists are fetched live from the platform
+- **Non-interactive**: `--set <agent>=<model>[,...]` with empty values to reset, `--global`/`--project` levels, `--json`/`--quiet`/`--compact` output modes
+- Models are validated against the platform's live model list before writing
+
+### Fix: per-agent model config now applies on opencode
+
+`@maestria/opencode`'s config hook shallow-merged its bundled agents over the user's config, silently dropping user-set `model`/`variant` keys from `opencode.jsonc`. The hook now deep-merges, so `maestria configure opencode` (and manual `agent.<name>.model` edits) actually take effect - subagents use their configured model instead of inheriting the primary agent's.
+
 ## v0.7.0
 
 _July 22, 2026_

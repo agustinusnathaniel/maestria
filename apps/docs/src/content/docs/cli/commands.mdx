@@ -235,3 +235,76 @@ npx maestria update --all
 
 The `install` and `update` commands detect non-interactive terminals and exit with code `1`
 showing a clear error message instead of attempting an interactive prompt.
+
+---
+
+## `configure`
+
+Choose which model each maestria specialist agent uses, per platform.
+
+```bash
+maestria configure <platform> [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
+```
+
+Supported platforms: `opencode`, `pi`, `omp`. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. Agents without a configured model inherit the session model.
+
+### Interactive (TTY)
+
+```bash
+npx maestria configure opencode
+```
+
+Shows a group-multiselect of the 7 specialists, then a per-agent model picker with the current model pre-selected and an _Inherit (session model)_ option. The model list is fetched live from the platform (`opencode models`, `pi --list-models`, `omp models --json`).
+
+### Non-interactive (CI)
+
+```bash
+npx maestria configure opencode --global --quiet \
+  --set builder=opencode-go/deepseek-v4-pro,reviewer=
+```
+
+- `--set <agent>=<model>[,...]` - comma-separated pairs; an empty value (`reviewer=`) resets the agent to inherit the session model
+- `--global` (default) / `--project` - config level, mutually exclusive; required when `--set` is used or in a non-interactive terminal
+- Models are validated against the platform's live model list before writing
+
+### Flags
+
+| Flag        | Description                                                                              |
+| ----------- | ---------------------------------------------------------------------------------------- |
+| `--global`  | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`, `~/.omp/agent/`) |
+| `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`, `.omp/agents/`)         |
+| `--set`     | Set models non-interactively, e.g. `builder=opencode-go/deepseek-v4-flash`               |
+| `--json`    | Output the resulting config as JSON                                                      |
+| `--quiet`   | Suppress spinner output (recommended for CI)                                             |
+| `--compact` | Minimal machine-friendly text output                                                     |
+
+### JSON schema
+
+```json
+{
+  "platform": "opencode",
+  "label": "OpenCode",
+  "level": "global",
+  "models": {
+    "adventurer": "opencode-go/deepseek-v4-flash",
+    "builder": "opencode-go/deepseek-v4-pro",
+    "reviewer": ""
+  }
+}
+```
+
+An empty string means the agent inherits the session model.
+
+### Where the config is written
+
+| Platform | Global                              | Project                    |
+| -------- | ----------------------------------- | -------------------------- |
+| opencode | `~/.config/opencode/opencode.jsonc` | `.opencode/opencode.jsonc` |
+| pi       | `~/.pi/agent/agents/<name>.md`      | `.pi/agents/<name>.md`     |
+| omp      | `~/.omp/agent/agents/<name>.md`     | `.omp/agents/<name>.md`    |
+
+opencode writes the `agent.<name>.model` key (preserving comments and the `variant` key); pi and omp set the `model:` line in the agent's frontmatter. For pi/omp, a missing project agent file is created from the global one.
+
+<Aside type="tip">
+  Restart the coding agent (or reload its config) for changes to take effect.
+</Aside>
