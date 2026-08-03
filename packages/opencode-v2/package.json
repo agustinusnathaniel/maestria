@@ -1,0 +1,45 @@
+{
+  "name": "@maestria/opencode-v2",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenCode V2 beta plugin — Maestria methodology (POC)",
+  "files": [
+    "dist",
+    "agents",
+    "rules"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp dev",
+    "test": "vp test",
+    "check": "vp check",
+    "sync": "npx tsx ../core/scripts/sync.ts --verbose",
+    "prebuild": "npx tsx ../core/scripts/sync.ts --check"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0",
+    "zod": "^4.4.0"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "0.0.0-next-16694",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=0.0.0-next-0"
+  },
+  "opencode": {
+    "type": "plugin",
+    "v2": true
+  }
+}
