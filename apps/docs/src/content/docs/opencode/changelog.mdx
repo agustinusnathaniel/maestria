@@ -5,6 +5,14 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.6.16
+
+_Upcoming_
+
+### Fixed
+
+- User-set agent config is preserved: `model`, `variant`, and other keys written to `agent.<name>` in `opencode.jsonc` no longer get dropped. The plugin's config hook now deep-merges its bundled agent defaults instead of replacing each agent entry wholesale, so per-agent models actually take effect when spawning subagents.
+
 ## v0.6.10
 
 _July 22, 2026_
