@@ -1,4 +1,5 @@
 import type { Plugin } from '@opencode-ai/plugin';
+import { merge } from 'es-toolkit';
 import { readFileSync, readdirSync } from 'fs';
 import { join, basename } from 'path';
 import { parse as parseYaml } from 'yaml';
@@ -92,10 +93,12 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
 
   return {
     config: async (input) => {
-      input.agent = {
-        ...input.agent,
-        ...agents,
-      };
+      // Deep-merge plugin agent defaults over the user's agent entries. A
+      // shallow `{ ...input.agent, ...agents }` would replace each entry
+      // wholesale, dropping user-set keys (model, variant, temperature) for
+      // the 8 maestria agent names. Plugin defaults win on conflict; user
+      // keys the plugin does not set survive.
+      input.agent = merge(input.agent ?? {}, agents);
       input.instructions = [...(input.instructions ?? []), RULES_PATH];
     },
     'experimental.session.compacting': async (_input, output) => {
