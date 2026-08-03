@@ -16,20 +16,27 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 ```
 maestria/
 ├── apps/
-│   └── docs/            - Documentation site (Astro + Starlight)
+│   ├── docs/            - Documentation site (Astro + Starlight)
+│   └── maestria-cli/    - CLI for managing maestria plugins
 ├── docs/
 │   ├── adr/             - Architecture Decision Records
 │   │   ├── core/        - Cross-cutting decisions (ADR-CORE-*)
 │   │   ├── opencode/    - @maestria/opencode decisions (ADR-OC-*)
 │   │   ├── kimi-code/   - @maestria/kimi-code decisions (ADR-KC-*)
-│   │   ├── omp/         - @maestria/omp decisions (ADR-OMP-*)
-│   │   └── pi/          - @maestria/pi decisions (ADR-PI-*)
+│   │   ├── cursor/      - @maestria/cursor decisions (ADR-CR-*)
+│   │   ├── hermes/      - @maestria/hermes decisions (ADR-HM-*)
+│   │   └── pi/          - @maestria/pi + @maestria/omp decisions (ADR-PI-*)
 │   └── guides/          - Development guides and conventions
 ├── packages/
+│   ├── core/            - Canonical agent directives + sync pipeline (private)
 │   ├── opencode/        - @maestria/opencode plugin
 │   ├── omp/             - @maestria/omp plugin
 │   ├── kimi-code/       - @maestria/kimi-code plugin
-│   └── pi/              - @maestria/pi plugin
+│   ├── cursor/          - @maestria/cursor plugin
+│   ├── hermes/          - @maestria/hermes plugin (Python)
+│   ├── pi/              - @maestria/pi plugin
+│   └── shared/pi/       - Shared pure-TS utilities for omp/pi
+├── scripts/             - Sync and CI verification scripts
 ├── VISION.md            - Project vision and principles
 ├── PATTERNS.md          - Reusable workflow patterns
 └── README.md            - This file
@@ -46,6 +53,7 @@ See [VISION.md](VISION.md) for the project's guiding philosophy and long-term go
 | [@maestria/opencode](packages/opencode/) | Maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
 | [@maestria/omp](packages/omp/) | Maestria methodology plugin for Oh My Pi | [README](packages/omp/README.md) |
 | [@maestria/kimi-code](packages/kimi-code/) | Maestria methodology plugin for Kimi Code | [README](packages/kimi-code/README.md) |
+| [@maestria/cursor](packages/cursor/) | Maestria methodology plugin for Cursor IDE/CLI | [README](packages/cursor/README.md) |
 | [@maestria/hermes](packages/hermes/) | Maestria methodology plugin for Hermes | [README](packages/hermes/README.md) |
 | [@maestria/pi](packages/pi/) | Maestria methodology plugin for Pi | [README](packages/pi/README.md) |
 
@@ -118,5 +126,4 @@ For per-package uninstall instructions, see:
 
 - [@maestria/opencode uninstall](apps/docs/src/content/docs/opencode/getting-started/installation.mdx)
 - [@maestria/kimi-code uninstall](apps/docs/src/content/docs/kimi-code/getting-started/installation.mdx)
-- [@maestria/omp uninstall](apps/docs/src/content/docs/omp/getting-started/installation.mdx)
-- [@maestria/pi uninstall](apps/docs/src/content/docs/pi/getting-started/installation.mdx)
+- [@maestria/pi & @maestria/omp uninstall](apps/docs/src/content/docs/pi-omp/getting-started/installation.mdx)
