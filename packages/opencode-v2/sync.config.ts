@@ -15,10 +15,11 @@ export default {
   },
 
   files: {
-    // Orchestrator — mode: all (the dispatcher)
+    // Orchestrator — mode: all (the router)
     'orchestrator.md': {
       frontmatter: {
-        description: 'Routes tasks to specialists, manages commit protocol',
+        description:
+          'Routes each turn to direct, focused, or full execution; delegates to specialists; manages commit protocol',
         mode: 'all',
       },
     },
