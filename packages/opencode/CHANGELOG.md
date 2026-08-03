@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.16
+
+### Patch Changes
+
+- [#153](https://github.com/agustinusnathaniel/maestria/pull/153) [`c6176e9`](https://github.com/agustinusnathaniel/maestria/commit/c6176e9cee19e2fe07317ff1aa5eefea5dfccfa1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix plugin `config` hook dropping user-set agent config. The hook shallow-merged its bundled agents over the user's config (`{ ...input.agent, ...agents }`), replacing each of the 8 maestria agent entries wholesale and losing user-set keys (`model`, `variant`, `temperature`) from `opencode.jsonc`. It now deep-merges (es-toolkit `merge`), so per-agent `model`/`variant` config takes effect - subagents use their configured model instead of inheriting the primary agent's.
+
 ## 0.6.15
 
 ### Patch Changes
