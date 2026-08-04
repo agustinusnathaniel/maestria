@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@astrojs/starlight": "catalog:",
-    "@fontsource-variable/noto-serif": "catalog:",
+    "@fontsource-variable/alan-sans": "catalog:",
     "@fontsource-variable/sn-pro": "catalog:",
     "astro": "catalog:",
     "starlight-auto-sidebar": "^0.4.0",

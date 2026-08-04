@@ -1,173 +1,469 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import { LinkButton } from '@astrojs/starlight/components';
 import { agents, type Agent } from '../data/agents.js';
+
+/**
+ * Static per-agent metadata for the specialist panel. Derived from the agent
+ * descriptions in src/data/agents.ts (source of truth:
+ * packages/core/agent-directives/specialists/*.md). agents.ts is not modified.
+ */
+const agentMeta: Record<string, { scope: string; artifact: string; constraint: string }> = {
+  orchestrator: {
+    scope: 'Dispatch only - never implements',
+    artifact: 'Route assignments, commit protocol',
+    constraint: 'Maker/checker split enforced',
+  },
+  adventurer: {
+    scope: 'Unfamiliar code territory',
+    artifact: 'Reconnaissance report',
+    constraint: 'Read-only - no edits',
+  },
+  architect: {
+    scope: 'Approach selection, trade-offs',
+    artifact: 'Decision record (ADR)',
+    constraint: 'Decisions documented, not coded',
+  },
+  builder: {
+    scope: 'One atomic task',
+    artifact: 'Implementation + tests',
+    constraint: 'Never reviews its own work',
+  },
+  diagnose: {
+    scope: 'Regressions, incidents',
+    artifact: 'Root cause analysis',
+    constraint: 'Root cause before fix',
+  },
+  planner: {
+    scope: 'Complex, multi-step features',
+    artifact: 'Phased implementation plan',
+    constraint: 'Plan first, build later',
+  },
+  reviewer: {
+    scope: 'Pre-merge quality gates',
+    artifact: 'Review verdict',
+    constraint: 'Sees work fresh - independent',
+  },
+  writer: {
+    scope: 'Documentation and prose',
+    artifact: 'Structured docs',
+    constraint: 'Follows the source of truth',
+  },
+};
+
+/**
+ * Inline SVG role/line marks, 24x24 stroke glyphs rendered locally. Decorative
+ * (aria-hidden), no assets or dependencies, no emoji.
+ */
+const marks: Record<string, string> = {
+  // Specialist role marks.
+  orchestrator:
+    '<circle cx="12" cy="12" r="8.25"/><circle cx="12" cy="12" r="3.25"/><circle cx="12" cy="12" r="0.75" fill="currentColor"/>',
+  adventurer: '<polyline points="4 18 9 18 9 11 15 11 15 6 20 6"/>',
+  architect: '<rect x="4.5" y="4.5" width="15" height="15"/><rect x="9.5" y="9.5" width="5" height="5"/>',
+  builder: '<path d="M10 5.5 4.5 12 10 18.5"/><path d="M14 5.5 19.5 12 14 18.5"/>',
+  diagnose: '<circle cx="10.5" cy="10.5" r="6"/><line x1="15" y1="15" x2="20.5" y2="20.5"/>',
+  planner: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="13" y2="18"/>',
+  reviewer:
+    '<rect x="4.5" y="4.5" width="15" height="15"/><polyline points="8.25 12.25 11.25 15.25 16 9"/>',
+  writer: '<path d="M12 4.5 18.75 18.75 12 16 5.25 18.75 Z"/><line x1="12" y1="4.5" x2="12" y2="16"/>',
+  // Principle marks.
+  pipeline:
+    '<polyline points="4 6 8 6 8 12 12 12 12 18 16 18"/><polyline points="13.5 16.75 16 18 13.5 19.25"/>',
+  makerChecker:
+    '<rect x="3.5" y="7" width="4.5" height="4.5"/><rect x="16" y="7" width="4.5" height="4.5"/><line x1="9.5" y1="9.25" x2="14.5" y2="9.25"/><polyline points="12.5 7.25 14.5 9.25 12.5 11.25"/>',
+  platforms:
+    '<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
+};
+
+/**
+ * Platform adapter cells. All routes verified against src/content/docs and the
+ * sidebar in astro.config.mjs. The ecosystem row completes the 3-column grid
+ * with a real route and describes shared companion tooling.
+ */
+const platforms = [
+  {
+    href: '/opencode/',
+    name: '@maestria/opencode',
+    desc: '8 specialized agents with global rules injected into every session.',
+  },
+  {
+    href: '/kimi-code/',
+    name: '@maestria/kimi-code',
+    desc: '8 specialized skills with swarm-aware orchestration and no build step.',
+  },
+  {
+    href: '/cursor/',
+    name: '@maestria/cursor',
+    desc: 'Specialist agents, orchestrator skill, and workflow commands for Cursor IDE and CLI.',
+  },
+  {
+    href: '/pi-omp/',
+    name: '@maestria/pi & @maestria/omp',
+    desc: '7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.',
+  },
+  {
+    href: '/hermes/',
+    name: '@maestria/hermes',
+    desc: 'Methodology layer for Hermes Agent: 7 specialists, pipeline, and mode system.',
+  },
+  {
+    href: '/ecosystem/',
+    name: 'Shared ecosystem',
+    desc: 'Optional companion tooling: CodeGraph indexing and RTK.',
+  },
+];
+
+/**
+ * Open docs navigation map. Every route is verified against
+ * src/content/docs; omitted routes are never invented.
+ */
+const docsMap = [
+  {
+    group: 'CLI',
+    items: [
+      {
+        href: '/cli/getting-started/',
+        title: 'Getting Started',
+        desc: 'Run maestria via npx anywhere Node 22+ is available - no install step.',
+      },
+    ],
+  },
+  {
+    group: 'Core',
+    items: [
+      {
+        href: '/core/how-it-works/',
+        title: 'How It Works',
+        desc: 'The dispatcher, seven specialists, and the staged pipeline.',
+      },
+      {
+        href: '/core/pipeline/',
+        title: 'Pipeline & Roles',
+        desc: 'Thinker, worker, and verifier roles and the maker/checker split.',
+      },
+      {
+        href: '/core/agents/',
+        title: 'Specialist Reference',
+        desc: 'All eight agents: scope, artifact, and constraint for each.',
+      },
+      {
+        href: '/core/when-to-use/',
+        title: 'When to Use',
+        desc: 'Decide between direct execution, a specialist, or the full pipeline.',
+      },
+    ],
+  },
+  {
+    group: 'Adapters',
+    items: [
+      {
+        href: '/opencode/',
+        title: '@maestria/opencode',
+        desc: 'OpenCode plugin with 8 agents and global rules.',
+      },
+      {
+        href: '/kimi-code/',
+        title: '@maestria/kimi-code',
+        desc: 'Kimi Code plugin with 8 declarative skills.',
+      },
+      {
+        href: '/cursor/',
+        title: '@maestria/cursor',
+        desc: 'Cursor IDE and CLI plugin with specialist agents.',
+      },
+      {
+        href: '/pi-omp/',
+        title: '@maestria/pi & @maestria/omp',
+        desc: 'Pi and Oh My Pi orchestration through subagents.',
+      },
+      {
+        href: '/hermes/',
+        title: '@maestria/hermes',
+        desc: 'Hermes Agent methodology layer and mode system.',
+      },
+    ],
+  },
+];
+
+const markAttrs = {
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': 1.7,
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+  'aria-hidden': 'true',
+} as const;
 ---
 
 <StarlightPage
   frontmatter={{
     title: 'Maestria',
-    description: 'Portable AI engineering praxis plugins for OpenCode and beyond. Installable, self-wiring plugins that encode effective workflows.',
+    description:
+      'A portable harness for AI coding agents. Route complex work through specialists, structured handoffs, and independent review.',
     template: 'splash',
     hero: { tagline: '' },
     editUrl: false,
     lastUpdated: false,
   }}
 >
-  <section class="hero">
-    <h1>Maestria</h1>
-    <p class="tagline">Portable AI engineering praxis, encoded as plugins.</p>
-    <div class="hero-cta">
-      <LinkButton href="/cli/getting-started/" class="sl-link-button">Get Started</LinkButton>
-      <LinkButton href="/core/agents/" class="sl-link-button outline">Browse Agents</LinkButton>
-    </div>
-  </section>
+  <div class="home">
+    <div class="home-inner">
+      <section class="home-hero hero" aria-labelledby="home-title">
+        <p class="hero-eyebrow">MAESTRIA / METHODOLOGY LAYER</p>
+        <h1 id="home-title">Make the work deliberate.</h1>
+        <p class="hero-lede">
+          A portable harness for AI coding agents. Route complex work through
+          specialists, structured handoffs, and independent review.
+        </p>
+        <div class="hero-cta">
+          <a class="cta-primary" href="/cli/getting-started/">Get Started</a>
+          <a class="cta-text" href="#pipeline">
+            Explore the pipeline<span class="cta-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </section>
 
-  <section class="features">
-    <h2>Why Maestria?</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <h3>🔌 Pipeline Composition</h3>
-        <p>Chain specialist agents into adaptive workflows. Each agent handles one cognitive role - thinker, worker, verifier - and the orchestrator sequences them dynamically based on task needs.</p>
-      </div>
-      <div class="feature-card">
-        <h3>🛡️ Maker/Checker Split</h3>
-        <p>The agent that writes code never reviews it. Every implementation passes through a separate reviewer, catching issues that same-agent QA would miss.</p>
-      </div>
-      <div class="feature-card">
-        <h3>🌐 Platform Independence</h3>
-        <p>Core logic lives in platform-agnostic packages. Plugin adapters for OpenCode, Kimi Code, and Pi keep the same agent behavior across different AI platforms.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="agent-showcase">
-    <h2>The Pipeline</h2>
-    <p>Eight specialist agents, each handling one cognitive role. The orchestrator sequences them dynamically.</p>
-
-    <div class="agent-tabs" role="tablist">
-      {agents.map((agent: Agent, index: number) => (
-        <button
-          class="agent-tab"
-          role="tab"
-          aria-selected={index === 0 ? 'true' : 'false'}
-          aria-controls={`panel-${agent.id}`}
-          id={`tab-${agent.id}`}
-        >
-          <span class="agent-tab-icon">{agent.icon}</span>
-          <span class="agent-tab-name">{agent.name}</span>
-        </button>
-      ))}
-    </div>
-
-    {agents.map((agent: Agent, index: number) => (
-      <div
-        class="agent-panel"
-        role="tabpanel"
-        id={`panel-${agent.id}`}
-        aria-labelledby={`tab-${agent.id}`}
-        hidden={index !== 0}
+      <section
+        class="hero-console"
+        aria-label="Example run of the Maestria pipeline: Thinker, Worker, and Verifier stages with handoff inspection"
       >
-        <h3>{agent.name}</h3>
-        <p class="agent-role">{agent.role}</p>
-        <p>{agent.description}</p>
-      </div>
-    ))}
-  </section>
+        <header class="console-head">
+          <span class="console-status">
+            <span class="console-dot" aria-hidden="true"></span>
+            <span>EXAMPLE RUN / READY</span>
+          </span>
+          <span class="console-meta">
+            <span class="console-count">8 ROLES · 3 MODES</span>
+            <span class="console-note">ILLUSTRATIVE, NOT LIVE TELEMETRY</span>
+          </span>
+        </header>
+        <div class="console-body">
+          <div class="console-col console-rail" aria-label="Cognitive stages">
+            <div class="console-stage">
+              <p class="stage-label">Thinker</p>
+              <div class="stage-row">
+                <span class="stage-role">Adventurer</span>
+                <span class="stage-task">context mapped</span>
+                <span class="stage-artifact">recon report</span>
+              </div>
+              <div class="stage-row">
+                <span class="stage-role">Architect</span>
+                <span class="stage-task">approach selected</span>
+                <span class="stage-artifact">decision record</span>
+              </div>
+              <div class="stage-row">
+                <span class="stage-role">Planner</span>
+                <span class="stage-task">scope bounded</span>
+                <span class="stage-artifact">implementation plan</span>
+              </div>
+            </div>
+            <div class="console-stage">
+              <p class="stage-label">Worker</p>
+              <div class="stage-row">
+                <span class="stage-role">Builder</span>
+                <span class="stage-task">artifact produced</span>
+                <span class="stage-artifact">implementation + tests</span>
+              </div>
+            </div>
+            <div class="console-stage">
+              <p class="stage-label">Verifier</p>
+              <div class="stage-row">
+                <span class="stage-role">Reviewer</span>
+                <span class="stage-task">independent check</span>
+                <span class="stage-artifact">review verdict</span>
+              </div>
+            </div>
+          </div>
 
-  <section class="platforms">
-    <h2>Built for Your Stack</h2>
-    <p>Maestria ships as plugins for the AI coding platforms you already use.</p>
+          <div class="console-col console-workspace" aria-label="Workflow workspace">
+            <p class="console-col-label">Workflow</p>
+            <div class="ws-row">
+              <span class="ws-phase">Think</span>
+              <span class="ws-item">Adventurer · recon report</span>
+              <span class="ws-state">done</span>
+            </div>
+            <div class="ws-row">
+              <span class="ws-phase">Route</span>
+              <span class="ws-item">Orchestrator → Builder</span>
+              <span class="ws-state">routed</span>
+            </div>
+            <div class="ws-row">
+              <span class="ws-phase">Build</span>
+              <span class="ws-item">Builder · implementation + tests</span>
+              <span class="ws-state">ready</span>
+            </div>
+            <div class="ws-row">
+              <span class="ws-phase">Review</span>
+              <span class="ws-item">Reviewer · verdict pending</span>
+              <span class="ws-state">queued</span>
+            </div>
+          </div>
 
-    <div class="product-grid">
-      <a href="/opencode/" class="product-card">
-        <h2>
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="4 17 10 11 4 5" />
-            <line x1="12" y1="19" x2="20" y2="19" />
-          </svg>
-          @maestria/opencode
-        </h2>
-        <p>8 specialized agents with global rules injected into every session.</p>
-        <span class="product-card-link">Learn more →</span>
-      </a>
-
-      <a href="/kimi-code/" class="product-card">
-        <h2>
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="5" r="2" />
-            <circle cx="5" cy="19" r="2" />
-            <circle cx="19" cy="19" r="2" />
-            <line x1="12" y1="7" x2="5" y2="17" />
-            <line x1="12" y1="7" x2="19" y2="17" />
-            <line x1="7" y1="19" x2="17" y2="19" />
-          </svg>
-          @maestria/kimi-code
-        </h2>
-        <p>8 specialized skills with swarm-aware orchestration and no build step.</p>
-        <span class="product-card-link">Learn more →</span>
-      </a>
-
-      <a href="/cursor/" class="product-card">
-        <h2>
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M9 9h6v6H9z" />
-          </svg>
-          @maestria/cursor
-        </h2>
-        <p>Specialist agents, orchestrator skill, and workflow commands for Cursor IDE and CLI.</p>
-        <span class="product-card-link">Learn more →</span>
-      </a>
-
-      <a href="/pi-omp/" class="product-card">
-        <h2>
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
-          @maestria/pi
-        </h2>
-        <p>7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.</p>
-        <span class="product-card-link">Learn more →</span>
-      </a>
+          <div class="console-col console-inspector" aria-label="Inspector: handoffs and boundaries">
+            <p class="console-col-label">Inspector</p>
+            <div class="insp-row">
+              <span class="insp-k">Handoff</span>
+              <span class="insp-v">Builder → Reviewer</span>
+            </div>
+            <div class="insp-row">
+              <span class="insp-k">Verdict</span>
+              <span class="insp-v">artifact accepted</span>
+            </div>
+            <div class="insp-row">
+              <span class="insp-k">Boundary</span>
+              <span class="insp-v">maker != checker</span>
+            </div>
+            <div class="insp-row">
+              <span class="insp-k">Termination</span>
+              <span class="insp-v">verifier accepts</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  </section>
+
+    <section class="home-punch" aria-label="Maestria by the numbers">
+      <div class="punch-inner">
+        <div class="punch-metric">
+          <span class="punch-num">8</span>
+          <span class="punch-label">SPECIALISTS</span>
+        </div>
+        <div class="punch-metric">
+          <span class="punch-num">3</span>
+          <span class="punch-label">COGNITIVE ROLES</span>
+        </div>
+        <div class="punch-metric">
+          <span class="punch-num">1</span>
+          <span class="punch-label">ORCHESTRATOR</span>
+        </div>
+        <div class="punch-metric">
+          <span class="punch-num">0</span>
+          <span class="punch-label">VENDOR LOCK-IN</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="home-inner">
+      <section class="home-section principles" aria-labelledby="principles-title">
+        <p class="section-eyebrow">01 / THE METHOD</p>
+        <h2 id="principles-title">Structure beats improvisation.</h2>
+        <div class="principles-cols">
+          <article class="principle">
+            <svg class="principle-mark" {...markAttrs} set:html={marks.pipeline} />
+            <h3>Pipeline composition</h3>
+            <p>
+              Route work through focused stages instead of asking one context
+              to do everything.
+            </p>
+          </article>
+          <article class="principle">
+            <svg class="principle-mark" {...markAttrs} set:html={marks.makerChecker} />
+            <h3>Maker/checker split</h3>
+            <p>The builder produces; the reviewer sees it fresh.</p>
+          </article>
+          <article class="principle">
+            <svg class="principle-mark" {...markAttrs} set:html={marks.platforms} />
+            <h3>Platform independence</h3>
+            <p>
+              Methodology stays consistent while each platform uses native
+              primitives.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="home-section agent-system" id="pipeline" aria-labelledby="agents-title">
+        <p class="section-eyebrow">02 / SPECIALISTS</p>
+        <h2 id="agents-title">The conductor is not the crew.</h2>
+        <div class="agent-layout">
+          <div class="agent-tabs" role="tablist" aria-label="Specialists">
+            {agents.map((agent: Agent, index: number) => (
+              <button
+                class="agent-tab"
+                role="tab"
+                aria-selected={index === 0 ? 'true' : 'false'}
+                aria-controls={`panel-${agent.id}`}
+                id={`tab-${agent.id}`}
+                tabindex={index === 0 ? 0 : -1}
+              >
+                <svg class="agent-mark" {...markAttrs} set:html={marks[agent.id]} />
+                <span class="agent-tab-name">{agent.name}</span>
+              </button>
+            ))}
+          </div>
+          <div class="agent-panels">
+            {agents.map((agent: Agent, index: number) => (
+              <div
+                class="agent-panel"
+                role="tabpanel"
+                id={`panel-${agent.id}`}
+                aria-labelledby={`tab-${agent.id}`}
+                hidden={index !== 0}
+              >
+                <div class="panel-head">
+                  <svg class="panel-mark" {...markAttrs} set:html={marks[agent.id]} />
+                  <div>
+                    <h3>{agent.name}</h3>
+                    <p class="agent-role">{agent.role}</p>
+                  </div>
+                </div>
+                <p class="agent-desc">{agent.description}</p>
+                <dl class="agent-meta">
+                  <div>
+                    <dt>Scope</dt>
+                    <dd>{agentMeta[agent.id].scope}</dd>
+                  </div>
+                  <div>
+                    <dt>Artifact</dt>
+                    <dd>{agentMeta[agent.id].artifact}</dd>
+                  </div>
+                  <div>
+                    <dt>Constraint</dt>
+                    <dd>{agentMeta[agent.id].constraint}</dd>
+                  </div>
+                </dl>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="home-section platforms" aria-labelledby="platforms-title">
+        <p class="section-eyebrow">03 / ADAPTERS</p>
+        <h2 id="platforms-title">One methodology. Native primitives.</h2>
+        <div class="platform-grid">
+          {platforms.map((platform) => (
+            <a class="platform-cell" href={platform.href}>
+              <svg class="cell-mark" {...markAttrs} set:html={marks.platforms} />
+              <span class="cell-name">{platform.name}</span>
+              <span class="cell-desc">{platform.desc}</span>
+              <span class="cell-arrow" aria-hidden="true">→</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="home-section docs-map" aria-labelledby="docs-title">
+        <p class="section-eyebrow">04 / DOCUMENTATION</p>
+        <h2 id="docs-title">Start with the system, then choose your platform.</h2>
+        <div class="docs-map-list">
+          {docsMap.map((group) => (
+            <div class="docs-group">
+              <p class="docs-group-label">{group.group}</p>
+              {group.items.map((item) => (
+                <a class="docs-row" href={item.href}>
+                  <span class="docs-row-title">{item.title}</span>
+                  <span class="docs-row-desc">{item.desc}</span>
+                  <span class="docs-row-arrow" aria-hidden="true">→</span>
+                </a>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
 </StarlightPage>
 
 <script>
@@ -176,10 +472,14 @@ import { agents, type Agent } from '../data/agents.js';
     const panels = document.querySelectorAll('.agent-panel');
 
     function activateTab(tab: Element) {
-      tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+      tabs.forEach(t => {
+        t.setAttribute('aria-selected', 'false');
+        t.setAttribute('tabindex', '-1');
+      });
       panels.forEach(p => p.setAttribute('hidden', ''));
 
       tab.setAttribute('aria-selected', 'true');
+      tab.setAttribute('tabindex', '0');
       const panelId = tab.getAttribute('aria-controls');
       const panel = document.getElementById(panelId!);
       if (panel) panel.removeAttribute('hidden');
