@@ -187,7 +187,9 @@ h6 {
   margin-bottom: 1.25rem;
 }
 
-.home-hero h1 {
+/* Scoped under .home so the homepage heading token out-specifies Starlight's
+   splash hero h1 rule (`.hero h1` / compiled `h1:where(.astro-*)`). */
+.home .home-hero h1 {
   font-size: clamp(2.75rem, 7vw, 4.75rem);
   font-weight: 540;
   line-height: 1.04;
@@ -981,7 +983,7 @@ h6 {
     margin-bottom: 0.5rem;
   }
 
-  .home-hero h1 {
+  .home .home-hero h1 {
     font-size: clamp(1.875rem, 9vw, 2.5rem);
   }
 
@@ -1033,6 +1035,39 @@ h6 {
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
+  }
+}
+
+/* At <=480px the console header would otherwise wrap to three rows, crowding
+   the mobile fold. The "ILLUSTRATIVE, NOT LIVE TELEMETRY" note duplicates the
+   honesty of the status ("EXAMPLE RUN / READY") and the section's aria-label,
+   so visually remove it from layout while keeping it in the accessibility
+   tree for screen readers. */
+@media (max-width: 480px) {
+  .console-note {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Starlight hides the header's theme switcher and social links below 50rem,
+   relying on the sidebar drawer (MobileMenuFooter) to surface them instead.
+   Splash pages such as this homepage have no sidebar, so there is no mobile
+   fallback and the controls become unreachable. Restore them in the header
+   on the homepage only: scoped to the splash shell without a sidebar and a
+   `.home` wrapper, so docs pages and the 404/pi-omp splash pages keep their
+   existing behavior. */
+@media (max-width: 50rem) {
+  :root:not([data-has-sidebar]):has(.home) .right-group {
+    display: flex;
   }
 }
 

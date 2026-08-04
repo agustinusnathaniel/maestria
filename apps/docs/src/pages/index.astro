@@ -385,6 +385,7 @@ const markAttrs = {
                 aria-selected={index === 0 ? 'true' : 'false'}
                 aria-controls={`panel-${agent.id}`}
                 id={`tab-${agent.id}`}
+                tabindex={index === 0 ? 0 : -1}
               >
                 <svg class="agent-mark" {...markAttrs} set:html={marks[agent.id]} />
                 <span class="agent-tab-name">{agent.name}</span>
@@ -471,10 +472,14 @@ const markAttrs = {
     const panels = document.querySelectorAll('.agent-panel');
 
     function activateTab(tab: Element) {
-      tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+      tabs.forEach(t => {
+        t.setAttribute('aria-selected', 'false');
+        t.setAttribute('tabindex', '-1');
+      });
       panels.forEach(p => p.setAttribute('hidden', ''));
 
       tab.setAttribute('aria-selected', 'true');
+      tab.setAttribute('tabindex', '0');
       const panelId = tab.getAttribute('aria-controls');
       const panel = document.getElementById(panelId!);
       if (panel) panel.removeAttribute('hidden');
