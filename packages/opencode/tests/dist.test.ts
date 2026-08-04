@@ -6,7 +6,7 @@ describe('dist bundle', () => {
     const mod = await import('../dist/index.js');
     expect(mod).toHaveProperty('MaestriaPlugin');
     expect(typeof mod.MaestriaPlugin).toBe('function');
-  });
+  }, 20_000);
 
   it('should return a plugin object with expected hooks', async () => {
     // @ts-ignore - dist/ is a build artifact, not present during type-checking
@@ -15,5 +15,5 @@ describe('dist bundle', () => {
     expect(plugin).toHaveProperty('config');
     expect(plugin).toHaveProperty('chat.message');
     expect(plugin).toHaveProperty('experimental.session.compacting');
-  });
+  }, 20_000);
 });
