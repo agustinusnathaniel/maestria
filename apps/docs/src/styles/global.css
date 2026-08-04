@@ -42,7 +42,8 @@
 }
 
 /* ============================================
-   HEADING FONTS
+   HEADING FONTS (documentation pages only;
+   the homepage overrides these below)
    ============================================ */
 
 h1,
@@ -55,58 +56,39 @@ h6 {
 }
 
 /* ============================================
-   LANDING PAGE - SHARED TOKENS & LAYOUT
+   LANDING PAGE - SHELL
    ============================================ */
 
-/* Hide Starlight's default Hero component on pages that set `hero` in frontmatter.
-   We use our own custom hero via <slot /> instead. */
+/* Hide Starlight's default Hero component on pages that set `hero` in
+   frontmatter. We use our own custom hero via <slot /> instead. */
 [data-has-hero] main > .content-panel > .sl-container > .hero:first-child {
   display: none;
 }
 
-/* Widen the content container to 1200px on the homepage only. The homepage
-   wraps its sections in a `.home` div (see src/pages/index.astro); `:has()`
-   keeps every other Starlight page on the default 45rem measure. */
+/* Homepage shell: the page is a full-bleed canvas. The content-panel padding
+   and the Starlight content width are removed only on the homepage; a
+   `.home-inner` wrapper inside `.home` restores the 75rem measure, and the
+   `.home-punch` band breaks out to the full viewport between wrappers. */
+.content-panel:has(.home) {
+  padding: 0;
+}
+
 .sl-container:has(.home) {
-  --sl-content-width: 75rem;
-  max-width: 75rem;
+  max-width: none;
 }
 
-/* Homepage theme tokens. Dark is the default; light is an explicit pair. */
-.home {
-  --home-surface: #1a2116;
-  --home-surface-2: #212a1d;
-  --home-border: #2e3a2a;
-  --home-border-strong: #63775a;
-  --home-text: #eef3ea;
-  --home-text-soft: #c7d2c2;
-  --home-text-muted: #9db197;
-  --home-accent: #8fd67e;
-  --home-accent-strong: #b8e6a6;
-  --home-accent-dim: #27401f;
-  --home-focus: #b8e6a6;
-
-  color: var(--home-text);
-}
-
-:root[data-theme='light'] .home {
-  --home-surface: #ffffff;
-  --home-surface-2: #eef3e9;
-  --home-border: #c9d6c1;
-  --home-border-strong: #7f9278;
-  --home-text: #182414;
-  --home-text-soft: #3d4c38;
-  --home-text-muted: #55654f;
-  --home-accent: #1c6400;
-  --home-accent-strong: #0e3d00;
-  --home-accent-dim: #e2efdc;
-  --home-focus: #0e3d00;
+/* Remove Starlight's sibling gap between the (hidden) default hero, the
+   homepage content, and the footer so the canvas starts flush under the nav. */
+.sl-container:has(.home) > * + * {
+  margin-top: 0;
 }
 
 /* Neutralize Starlight's markdown sibling spacing inside the homepage; the
    homepage controls its own rhythm. The leading context is wrapped in
    :where() so the reset stays unlayered (still beating Starlight's layered
-   rule) but no longer overrides the homepage's own rhythm rules. */
+   rule) but no longer overrides the homepage's own rhythm rules. Homepage
+   vertical rhythm is deliberately built with `margin-bottom` on preceding
+   elements, which this reset never touches. */
 :where(.sl-markdown-content .home)
   :not(a, strong, em, del, span, input, code, br)
   + :not(a, strong, em, del, span, input, code, br) {
@@ -117,8 +99,59 @@ h6 {
   margin-top: 0;
 }
 
+/* ============================================
+   LANDING PAGE - TOKENS
+   ============================================ */
+
 .home {
+  --home-bg: #0b0d0b;
+  --home-surface: #111411;
+  --home-surface-raised: #171b17;
+  --home-border: rgba(240, 245, 239, 0.16);
+  --home-border-strong: rgba(240, 245, 239, 0.34);
+  --home-text: #f1f4ef;
+  --home-text-soft: #c4cbc2;
+  --home-text-muted: #899289;
+  --home-accent: #b7ef5f;
+  --home-accent-strong: #cdf58a;
+  --home-accent-ink: #0b0d0b;
+  --home-focus: #b7ef5f;
+  /* The punch band is the brand's single full-bleed accent: lime with
+     near-black ink in both themes. */
+  --home-punch-bg: #b7ef5f;
+  --home-punch-ink: #0b0d0b;
+  --home-punch-ink-soft: rgba(11, 13, 11, 0.7);
+
+  background: var(--home-bg);
+  color: var(--home-text);
   max-width: 100%;
+  /* Carry the final section gap as canvas padding. Without it, the last
+     section's bottom margin collapses through .home and renders as a
+     body-colored band above the footer. */
+  padding-bottom: clamp(4rem, 9vw, 6rem);
+}
+
+:root[data-theme='light'] .home {
+  --home-bg: #f3f5ef;
+  --home-surface: #ffffff;
+  --home-surface-raised: #e9ede4;
+  --home-border: rgba(15, 20, 13, 0.14);
+  --home-border-strong: rgba(15, 20, 13, 0.32);
+  --home-text: #141713;
+  --home-text-soft: #434a3e;
+  /* 5.30:1 on --home-bg (#f3f5ef), >= 4.5:1 for normal labels. */
+  --home-text-muted: #5f6858;
+  --home-accent: #1c5b1e;
+  --home-accent-strong: #144816;
+  --home-accent-ink: #f3f5ef;
+  --home-focus: #1c5b1e;
+}
+
+.home-inner {
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+  width: 100%;
 }
 
 .home-hero,
@@ -126,296 +159,454 @@ h6 {
   min-width: 0;
 }
 
+/* Homepage typography: SN Pro throughout, no serif heading treatment. */
+.home :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--sl-font);
+}
+
 /* ============================================
    LANDING PAGE - HERO
    ============================================ */
 
 .home-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-  gap: clamp(2.5rem, 6vw, 4.5rem);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 4rem 0 0;
+  text-align: center;
+  padding-top: clamp(3rem, 8vw, 5.5rem);
+  /* Gap from the hero to the console, then to the punch band. */
+  margin-bottom: clamp(4.25rem, 10vw, 7rem);
 }
 
-.hero-copy h1 {
-  font-size: clamp(2.75rem, 5vw, 4.25rem);
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  color: var(--home-text);
+.hero-eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--home-text-muted);
   margin-bottom: 1.25rem;
 }
 
-.hero-copy .tagline {
-  font-size: clamp(1.125rem, 2vw, 1.35rem);
+.home-hero h1 {
+  font-size: clamp(2.75rem, 7vw, 4.75rem);
+  font-weight: 540;
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+  color: var(--home-text);
+  max-width: 18ch;
+}
+
+.hero-lede {
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
   line-height: 1.6;
   color: var(--home-text-soft);
-  max-width: 32rem;
-  margin-bottom: 2rem;
+  max-width: 40rem;
+  margin: 1.5rem auto 0;
+  text-wrap: pretty;
 }
 
 .hero-cta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.hero-cta .sl-link-button {
-  min-height: 44px;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
-  padding: 0.65rem 1.4rem;
-  margin-inline-end: 0;
-  transition: transform 100ms ease-out;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  margin-top: 2.25rem;
 }
 
-.hero-cta .sl-link-button.secondary {
-  background: transparent;
-  border-color: var(--home-border-strong);
-  color: var(--home-text);
+.cta-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.625rem 1.5rem;
+  background: var(--home-accent);
+  color: var(--home-accent-ink);
+  border: 1px solid var(--home-accent);
+  border-radius: 3px;
+  font-family: var(--sl-font);
+  font-size: 0.9375rem;
+  font-weight: 560;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    transform 100ms ease-out;
 }
 
-.hero-cta .sl-link-button:active {
+.cta-primary:hover {
+  background: var(--home-accent-strong);
+  border-color: var(--home-accent-strong);
+}
+
+.cta-primary:active {
   transform: scale(0.98);
 }
 
-/* ============================================
-   LANDING PAGE - METHODOLOGY MAP (artifact)
-   ============================================ */
-
-.hero-artifact {
-  width: 100%;
-  max-width: 34rem;
-  margin-inline: auto;
-  border: 1px solid var(--home-border);
-  border-radius: 16px;
-  background: var(--home-surface);
-  padding: 1.5rem;
+.cta-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.25rem 0.125rem;
+  color: var(--home-text-soft);
+  font-family: var(--sl-font);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid var(--home-border-strong);
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
 }
 
-.artifact-head {
+.cta-text:hover {
+  color: var(--home-text);
+  border-color: var(--home-accent);
+}
+
+.cta-arrow {
+  transition: transform 120ms ease;
+}
+
+.cta-text:hover .cta-arrow {
+  transform: translateX(3px);
+}
+
+/* ============================================
+   HERO CONSOLE
+   ============================================ */
+
+.hero-console {
+  max-width: 1120px;
+  width: 100%;
+  margin-inline: auto;
+  /* Gap from the console to the punch band (collapses through .home-inner). */
+  margin-bottom: clamp(4.25rem, 10vw, 7rem);
+  min-height: 360px;
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  border: 1px solid var(--home-border);
+  border-radius: 3px;
+  background: var(--home-surface);
+}
+
+.console-head {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.875rem;
+  gap: 0.5rem 1.25rem;
+  padding: 0.625rem 1rem;
   border-bottom: 1px solid var(--home-border);
 }
 
-.artifact-label {
-  font-family: var(--sl-font);
+.console-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--home-accent);
+  color: var(--home-text);
 }
 
-.artifact-count {
-  font-family: var(--sl-font);
+.console-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--home-accent);
+}
+
+.console-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
   font-size: 0.75rem;
+}
+
+.console-count {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--home-text-soft);
+}
+
+.console-note {
+  color: var(--home-text-muted);
+}
+
+.console-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.console-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.console-workspace,
+.console-inspector {
+  border-left: 1px solid var(--home-border);
+}
+
+.console-col-label,
+.stage-label {
+  padding: 0.625rem 0.9rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--home-text-muted);
+  border-bottom: 1px solid var(--home-border);
+}
+
+.console-stage + .console-stage {
+  border-top: 1px solid var(--home-border);
+}
+
+.stage-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 0.9rem;
+  font-size: 0.8125rem;
+  min-width: 0;
+}
+
+.stage-row + .stage-row {
+  border-top: 1px solid var(--home-border);
+}
+
+.stage-role {
+  color: var(--home-text);
+  font-weight: 560;
+  white-space: nowrap;
+}
+
+.stage-task {
+  color: var(--home-text-muted);
+  text-align: right;
+}
+
+.stage-artifact {
+  color: var(--home-text-soft);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.ws-row,
+.insp-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 0.9rem;
+  min-width: 0;
+}
+
+.ws-row + .ws-row,
+.insp-row + .insp-row {
+  border-top: 1px solid var(--home-border);
+}
+
+.ws-phase {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--home-accent);
+  white-space: nowrap;
+}
+
+.ws-item {
+  font-size: 0.8125rem;
+  color: var(--home-text-soft);
+  text-align: right;
+}
+
+.ws-state {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--home-text-muted);
   white-space: nowrap;
 }
 
-.artifact-map {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.artifact-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
-  border: 1px solid var(--home-border);
-  border-radius: 12px;
-  background: var(--home-surface-2);
-  padding: 0.875rem 1rem;
-  text-align: center;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.artifact-node-icon {
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
-.artifact-node-name {
-  font-family: var(--sl-font);
-  font-size: 1.25rem; /* 20px */
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--home-text);
-}
-
-.artifact-node-role {
-  font-family: var(--sl-font);
-  font-size: 0.8125rem; /* 13px */
-  line-height: 1.45;
-  color: var(--home-text-muted);
-  overflow-wrap: break-word;
-}
-
-.artifact-orchestrator {
-  border-color: var(--home-accent);
-  background: var(--home-accent-dim);
-  padding-inline: 1.75rem;
-}
-
-.artifact-orchestrator .artifact-node-role {
-  color: var(--home-text-soft);
-}
-
-.artifact-connector {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.artifact-stem {
-  width: 1px;
-  height: 1.5rem;
-  background: var(--home-border-strong);
-}
-
-.artifact-bar {
-  width: 100%;
-  height: 1px;
-  background: var(--home-border-strong);
-}
-
-.artifact-specialists {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
-/* ============================================
-   LANDING PAGE - SECTIONS
-   ============================================ */
-
-.home-section {
-  margin-block: 5rem;
-}
-
-.section-title {
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-  color: var(--home-text);
-}
-
-.section-index {
-  display: block;
-  font-family: var(--sl-font);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--home-accent);
-  margin-bottom: 0.6rem;
-}
-
-/* ============================================
-   FEATURE CARDS
-   ============================================ */
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  margin-top: 2.5rem;
-}
-
-.feature-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin: 0;
-  padding: 1.5rem;
-  border: 1px solid var(--home-border);
-  border-radius: 12px;
-  background: var(--home-surface);
-  font-size: 0.875rem; /* 14px */
-  min-width: 0;
-  transition:
-    transform 180ms ease-out,
-    border-color 180ms ease-out;
-}
-
-.feature-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.25rem;
-}
-
-.feature-card-icon {
-  font-size: 1.375rem;
-  line-height: 1;
-}
-
-.feature-card-num {
-  font-family: var(--sl-font);
+.insp-k {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--home-text-muted);
+  white-space: nowrap;
 }
 
-.feature-card h3 {
-  font-family: var(--sl-font);
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--home-text);
-}
-
-.feature-card p {
-  font-size: inherit;
-  line-height: 1.6;
+.insp-v {
+  font-size: 0.8125rem;
   color: var(--home-text-soft);
-  flex: 1;
+  text-align: right;
 }
 
 /* ============================================
-   AGENT SHOWCASE
+   PUNCH BAND
    ============================================ */
 
-.agent-showcase {
-  max-width: 50rem;
-  margin-inline: auto;
+.home-punch {
+  width: 100%;
+  background: var(--home-punch-bg);
+  color: var(--home-punch-ink);
+  /* Gap from the punch band to the next section (collapses through the
+     following .home-inner). */
+  margin-bottom: clamp(5rem, 12vw, 9rem);
 }
 
-.agent-showcase > p {
+.punch-inner {
+  max-width: 75rem;
+  margin-inline: auto;
+  padding: clamp(2.75rem, 6vw, 4.25rem) clamp(1.25rem, 4vw, 2.5rem);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.punch-num {
+  display: block;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 560;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--home-punch-ink);
+}
+
+.punch-label {
+  display: block;
+  margin-top: 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--home-punch-ink-soft);
+}
+
+/* ============================================
+   SECTIONS - SCAFFOLD
+   ============================================ */
+
+.home-section {
+  width: 100%;
+}
+
+.section-eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--home-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.home-section h2 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 540;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: var(--home-text);
+  margin-bottom: clamp(2.25rem, 4vw, 3rem);
+  text-wrap: balance;
+}
+
+/* Section-to-section rhythm. Deliberately uneven, scaled down on mobile.
+   Each gap is a `margin-bottom` on the preceding section because the
+   homepage reset zeroes `margin-top` between block siblings. The docs-map
+   is the last section; its bottom gap is carried by .home's
+   padding-bottom so it stays on the canvas background. */
+.principles {
+  margin-bottom: clamp(6rem, 14vw, 11rem);
+}
+
+.agent-system {
+  margin-bottom: clamp(4.5rem, 11vw, 8rem);
+  scroll-margin-top: calc(var(--sl-nav-height) + 2rem);
+}
+
+.platforms {
+  margin-bottom: clamp(5.5rem, 13vw, 10rem);
+}
+
+/* ============================================
+   PRINCIPLES
+   ============================================ */
+
+.principles-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.principle {
+  padding: 0 clamp(1.5rem, 3vw, 2.5rem);
+  border-left: 1px solid var(--home-border);
+  min-width: 0;
+}
+
+.principle:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.principle:last-child {
+  padding-right: 0;
+}
+
+.principle-mark {
+  width: 26px;
+  height: 26px;
+  color: var(--home-text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.principle h3 {
+  font-size: 1.125rem;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  color: var(--home-text);
+  margin-bottom: 0.5rem;
+}
+
+.principle p {
+  font-size: 0.9375rem;
+  line-height: 1.65;
   color: var(--home-text-soft);
-  margin-top: 1rem;
-  margin-bottom: 2.5rem;
+}
+
+/* ============================================
+   AGENT SYSTEM
+   ============================================ */
+
+.agent-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
 }
 
 .agent-tabs {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
 }
 
-/* Override Starlight's .sl-markdown-content margin rule that adds
-   unwanted margin-top between block-level elements. */
+/* Override Starlight's .sl-markdown-content margin rule that adds unwanted
+   margin-top between block-level elements. */
 .sl-markdown-content .agent-tabs {
   margin-top: 0;
 }
@@ -425,240 +616,423 @@ h6 {
 }
 
 .agent-tab {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   min-height: 44px;
-  padding: 0.625rem 1rem;
-  border: 1px solid var(--home-border);
-  border-radius: 9999px;
+  padding: 0.5rem 0.625rem 0.5rem 0;
   background: transparent;
-  color: var(--home-text-soft);
+  border: 0;
+  border-top: 1px solid var(--home-border);
+  border-radius: 0;
+  color: var(--home-text-muted);
   font-family: var(--sl-font);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: left;
   cursor: pointer;
-  transition:
-    border-color 150ms ease,
-    background-color 150ms ease,
-    color 150ms ease;
+  transition: color 120ms ease;
+}
+
+.agent-tab:last-child {
+  border-bottom: 1px solid var(--home-border);
+}
+
+.agent-tab:hover {
+  color: var(--home-text);
 }
 
 .agent-tab[aria-selected='true'] {
-  background: var(--home-surface-2);
-  border-color: var(--home-accent);
   color: var(--home-text);
-  font-weight: 500;
+  font-weight: 560;
 }
 
-.agent-tab-icon {
-  font-size: 1rem;
-  line-height: 1;
+.agent-tab[aria-selected='true']::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--home-accent);
+}
+
+.agent-mark {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.agent-tab[aria-selected='true'] .agent-mark {
+  color: var(--home-accent);
+}
+
+.agent-panels {
+  border: 1px solid var(--home-border);
+  border-radius: 3px;
+  background: var(--home-surface);
+  min-height: 24rem;
 }
 
 .agent-panel {
-  border: 1px solid var(--home-border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  min-height: 128px;
-  background: var(--home-surface);
+  padding: clamp(1.5rem, 3vw, 2rem);
 }
 
-.agent-panel h3 {
-  font-family: var(--sl-font);
-  font-size: 1.25rem;
-  font-weight: 600;
+.agent-panel[hidden] {
+  display: none;
+}
+
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.panel-mark {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  color: var(--home-text-muted);
+  margin-top: 0.2rem;
+}
+
+.panel-head h3 {
+  font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+  font-weight: 560;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   color: var(--home-text);
-  margin-bottom: 0.25rem;
+  margin: 0;
 }
 
-.agent-panel .agent-role {
-  color: var(--home-accent-strong);
+.agent-role {
+  margin-top: 0.25rem;
   font-size: 0.875rem;
-  margin-bottom: 0.75rem;
+  font-weight: 550;
+  color: var(--home-accent);
 }
 
-.agent-panel p:last-child {
-  color: var(--home-text-soft);
-  line-height: 1.6;
+.agent-desc {
+  margin-top: 1.25rem;
+  max-width: 46rem;
   font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--home-text-soft);
 }
 
-/* Mobile: icon only */
-@media (max-width: 600px) {
-  .agent-tab .agent-tab-name {
-    display: none;
-  }
-  .agent-tab {
-    padding: 0.5rem;
-    min-width: 44px;
-  }
+.agent-meta {
+  margin: 1.75rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--home-border);
+}
+
+.agent-meta > div {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.8125rem 0;
+  border-bottom: 1px solid var(--home-border);
+}
+
+.agent-meta dt,
+.agent-meta dd {
+  margin: 0;
+  padding-inline-start: 0;
+}
+
+.agent-meta dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--home-text-muted);
+}
+
+.agent-meta dd {
+  font-size: 0.875rem;
+  color: var(--home-text-soft);
 }
 
 /* ============================================
-   PLATFORMS SECTION
+   PLATFORMS
    ============================================ */
 
-.platforms > p {
-  color: var(--home-text-soft);
-  margin-top: 1rem;
-  margin-bottom: 2.5rem;
-}
-
-.product-grid {
+.platform-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--home-border);
+  border-left: 1px solid var(--home-border);
 }
 
-.product-card {
-  margin: 0;
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--home-border);
-  background: var(--home-surface);
+.platform-cell {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-right: 1px solid var(--home-border);
+  border-bottom: 1px solid var(--home-border);
+  background: transparent;
   text-decoration: none;
   color: inherit;
-  height: 100%;
   min-width: 0;
-  font-size: 0.875rem; /* 14px */
-  transition:
-    transform 180ms ease-out,
-    border-color 180ms ease-out;
+  transition: background-color 120ms ease;
 }
 
-.product-card-icon {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 10px;
-  border: 1px solid var(--home-border);
-  background: var(--home-surface-2);
-  display: grid;
-  place-items: center;
-  margin-bottom: 0.25rem;
+.cell-mark {
+  width: 22px;
+  height: 22px;
+  color: var(--home-text-muted);
+  margin-bottom: 0.5rem;
 }
 
-.product-card-icon svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--home-accent);
-}
-
-.product-card h2 {
-  margin: 0;
-  font-family: var(--sl-font);
-  font-size: 1.125rem;
-  font-weight: 700;
+.cell-name {
+  font-size: 1.0625rem;
+  font-weight: 560;
   letter-spacing: -0.01em;
   color: var(--home-text);
+  transition: color 120ms ease;
 }
 
-.product-card p {
-  line-height: 1.6;
-  color: var(--home-text-soft);
-  flex: 1;
-}
-
-.product-card-link {
-  font-family: var(--sl-font);
+.cell-desc {
   font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--home-accent);
+  line-height: 1.6;
+  color: var(--home-text-muted);
 }
 
-.product-card:active {
-  transform: scale(0.99);
+.cell-arrow {
+  margin-top: 0.75rem;
+  color: var(--home-text-muted);
+  transition:
+    color 120ms ease,
+    transform 120ms ease;
 }
 
 /* ============================================
-   LANDING PAGE - RESPONSIVE
+   DOCS MAP
    ============================================ */
 
-@media (max-width: 900px) {
-  .home-hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 3rem;
-  }
-
-  .features-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.docs-group-label {
+  margin: 2.25rem 0 0;
+  padding-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--home-text-muted);
 }
 
-@media (max-width: 640px) {
-  .home-hero {
-    padding-top: 2.5rem;
-  }
+.docs-group:first-child .docs-group-label {
+  margin-top: 0;
+}
 
-  .home-section {
-    margin-block: 3.5rem;
-  }
+.docs-row {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.875rem 0.125rem;
+  border-top: 1px solid var(--home-border);
+  text-decoration: none;
+  min-width: 0;
+}
 
-  .features-grid,
-  .product-grid,
-  .artifact-specialists {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.docs-group .docs-row:last-child {
+  border-bottom: 1px solid var(--home-border);
+}
+
+.docs-row-title {
+  font-size: 0.9375rem;
+  font-weight: 560;
+  color: var(--home-text);
+  transition: color 120ms ease;
+}
+
+.docs-row-desc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--home-text-muted);
+}
+
+.docs-row-arrow {
+  color: var(--home-text-muted);
+  transition:
+    color 120ms ease,
+    transform 120ms ease;
 }
 
 /* ============================================
    LANDING PAGE - INTERACTION & FOCUS
    ============================================ */
 
-/* Restrained hover lift, only for fine pointers. */
 @media (hover: hover) and (pointer: fine) {
-  .feature-card:hover,
-  .product-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--home-border-strong);
+  .platform-cell:hover {
+    background: var(--home-surface);
   }
 
-  .product-card:hover .product-card-link {
-    color: var(--home-accent-strong);
+  .platform-cell:hover .cell-name {
+    color: var(--home-accent);
   }
 
-  .product-card:hover .product-card-icon svg {
-    color: var(--home-accent-strong);
+  .platform-cell:hover .cell-arrow {
+    color: var(--home-accent);
+    transform: translateX(3px);
   }
 
-  .agent-tab:hover {
-    border-color: var(--home-border-strong);
-    color: var(--home-text);
+  .docs-row:hover .docs-row-title {
+    color: var(--home-accent);
   }
 
-  .hero-cta .sl-link-button.secondary:hover {
-    border-color: var(--home-accent);
+  .docs-row:hover .docs-row-arrow {
+    color: var(--home-accent);
+    transform: translateX(3px);
   }
 }
 
-.home :is(.hero-cta .sl-link-button, .agent-tab, .product-card):focus-visible {
+.home :is(.cta-primary, .cta-text, .agent-tab, .platform-cell, .docs-row):focus-visible {
   outline: 2px solid var(--home-focus);
   outline-offset: 2px;
 }
 
-/* One short fade-up for the hero columns on load. Transform/opacity only. */
-@media (prefers-reduced-motion: no-preference) {
-  .home-hero > * {
+/* One short fade-up on first load: the hero statement and the console.
+   No looping, no scroll choreography, no per-card reveals. */
+@keyframes home-reveal {
+  from {
     opacity: 0;
-    transform: translateY(12px);
-    animation: home-reveal 340ms ease-out forwards;
+    transform: translateY(10px);
   }
-
-  .home-hero > .hero-copy {
-    animation-delay: 60ms;
-  }
-
-  .home-hero > .hero-artifact {
-    animation-delay: 150ms;
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-@keyframes home-reveal {
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@media (prefers-reduced-motion: no-preference) {
+  .home-hero {
+    animation: home-reveal 340ms ease-out 40ms both;
+  }
+
+  .hero-console {
+    animation: home-reveal 340ms ease-out 140ms both;
+  }
+}
+
+/* ============================================
+   LANDING PAGE - RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1100px) {
+  .home-hero {
+    padding-top: clamp(2.5rem, 6vw, 4rem);
+    margin-bottom: clamp(3rem, 8vw, 5.5rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .console-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .console-workspace,
+  .console-inspector {
+    border-left: 0;
+    border-top: 1px solid var(--home-border);
+  }
+
+  .agent-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .principles-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .principle {
+    padding: 1.5rem 0;
+    border-left: 0;
+    border-top: 1px solid var(--home-border);
+  }
+
+  .principle:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .principle:last-child {
+    padding-bottom: 0;
+  }
+
+  .platform-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .home-hero {
+    padding-top: 1.5rem;
+    margin-bottom: 1.125rem;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(1.875rem, 9vw, 2.5rem);
+  }
+
+  .hero-lede {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    margin-top: 0.75rem;
+  }
+
+  .hero-cta {
+    margin-top: 1rem;
+    gap: 1.25rem;
+  }
+
+  .hero-console {
+    margin-bottom: 2rem;
+  }
+
+  .console-head {
+    padding: 0.4375rem 0.75rem;
+  }
+
+  .console-col-label,
+  .stage-label {
+    padding: 0.375rem 0.75rem;
+  }
+
+  .stage-row,
+  .ws-row,
+  .insp-row {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .punch-inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  .docs-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .docs-row-desc {
+    grid-column: 1 / -1;
+  }
+
+  .docs-row-arrow {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 }
 
@@ -703,23 +1077,31 @@ html {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  .home-hero,
+  .hero-console {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  /* Homepage surfaces are opaque by design; drop the opacity fade so nothing
-     depends on translucency. */
-  .home-hero > * {
-    animation: none;
+  /* Homepage surfaces are opaque by design; nothing depends on translucency. */
+  .home-hero,
+  .hero-console {
     opacity: 1;
     transform: none;
   }
 }
 
 @media (prefers-contrast: more) {
-  .home .feature-card,
-  .home .product-card,
-  .home .hero-artifact,
-  .home .agent-panel {
-    border-width: 2px;
+  .home {
+    --home-border: rgba(240, 245, 239, 0.4);
+    --home-border-strong: rgba(240, 245, 239, 0.66);
+  }
+
+  :root[data-theme='light'] .home {
+    --home-border: rgba(15, 20, 13, 0.4);
+    --home-border-strong: rgba(15, 20, 13, 0.66);
   }
 }
