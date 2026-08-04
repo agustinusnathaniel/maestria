@@ -340,7 +340,7 @@ describe('/review-model command', () => {
 });
 
 describe('/handoff command', () => {
-  it('generates structured prompt with all 6 field headers', async () => {
+  it('generates structured prompt with all 7 field headers', async () => {
     const pi = createMockPi();
     const state = createInitialState();
     installCommands(pi as any, state);
@@ -354,6 +354,7 @@ describe('/handoff command', () => {
     expect(prompt).toContain('**Context:**');
     expect(prompt).toContain('**Requirements:**');
     expect(prompt).toContain('**Known problems:**');
+    expect(prompt).toContain('**Assumptions documented:**');
     expect(prompt).toContain('**Success criteria:**');
     expect(prompt).toContain('**Next step:**');
   });
