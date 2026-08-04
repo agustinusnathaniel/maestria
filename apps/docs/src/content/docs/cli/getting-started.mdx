@@ -4,7 +4,7 @@ description: Install and use maestria to manage maestria plugins across OpenCode
 ---
 
 import { Aside } from '@astrojs/starlight/components';
-import { PackageManagers } from 'starlight-package-managers';
+import AllPackageManagers from '@/components/AllPackageManagers.astro';
 
 `maestria` runs anywhere Node.js 22+ is available. No install required - use `npx` to run it directly from npm.
 
@@ -12,7 +12,7 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ### Check what's installed
 
-<PackageManagers type="dlx" pkg="maestria" args="status" />
+<AllPackageManagers type="dlx" pkg="maestria" args="status" />
 
 This detects which coding agent platforms are available on your machine and shows the install status for each:
 
@@ -33,51 +33,51 @@ This detects which coding agent platforms are available on your machine and show
     Latest:     unknown
 ```
 
-Run <PackageManagers type="dlx" pkg="maestria" /> with no arguments - it defaults to `status`.
+Run <AllPackageManagers type="dlx" pkg="maestria" /> with no arguments - it defaults to `status`.
 
 ### Install for a platform
 
 **Interactive install** (pick from a list of detected platforms):
 
-<PackageManagers type="dlx" pkg="maestria" args="install" />
+<AllPackageManagers type="dlx" pkg="maestria" args="install" />
 
 **Install for all detected platforms:**
 
-<PackageManagers type="dlx" pkg="maestria" args="install --all" />
+<AllPackageManagers type="dlx" pkg="maestria" args="install --all" />
 
 **Install for a specific platform:**
 
-<PackageManagers type="dlx" pkg="maestria" args="install opencode" />
-<PackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
-<PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria" args="install opencode" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
+<AllPackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
 
 ### Update to the latest version
 
 **Interactive update:**
 
-<PackageManagers type="dlx" pkg="maestria" args="update" />
+<AllPackageManagers type="dlx" pkg="maestria" args="update" />
 
 **Update all:**
 
-<PackageManagers type="dlx" pkg="maestria" args="update --all" />
+<AllPackageManagers type="dlx" pkg="maestria" args="update --all" />
 
 **Update a specific platform:**
 
-<PackageManagers type="dlx" pkg="maestria" args="update opencode" />
+<AllPackageManagers type="dlx" pkg="maestria" args="update opencode" />
 
 **Update to a specific version:**
 
-<PackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
+<AllPackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
 
 ### Configure per-agent models
 
 Give each maestria specialist its own model. Interactively:
 
-<PackageManagers type="dlx" pkg="maestria" args="configure opencode" />
+<AllPackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
 Or non-interactively for CI:
 
-<PackageManagers
+<AllPackageManagers
   type="dlx"
   pkg="maestria"
   args="configure pi --global --quiet --set builder=opencode-go/deepseek-v4-flash"
@@ -85,7 +85,7 @@ Or non-interactively for CI:
 
 Use an empty value to reset an agent to inherit the session model:
 
-<PackageManagers type="dlx" pkg="maestria" args="configure opencode --set reviewer=" />
+<AllPackageManagers type="dlx" pkg="maestria" args="configure opencode --set reviewer=" />
 
 Per-agent models are supported on opencode, pi, and omp. See the [command reference](/cli/commands/#configure) for details.
 
@@ -102,7 +102,7 @@ Per-agent models are supported on opencode, pi, and omp. See the [command refere
 
 All commands accept `--json` for machine-readable output. Useful for CI scripts, dashboards, or IDE integrations:
 
-<PackageManagers type="dlx" pkg="maestria" args="status --json" />
+<AllPackageManagers type="dlx" pkg="maestria" args="status --json" />
 
 ```json
 {
@@ -119,14 +119,14 @@ All commands accept `--json` for machine-readable output. Useful for CI scripts,
 }
 ```
 
-<PackageManagers type="dlx" pkg="maestria" args="install --all --json" />
+<AllPackageManagers type="dlx" pkg="maestria" args="install --all --json" />
 
 ## Compact Output
 
 Use `--compact` for minimal machine-friendly text output suitable for AI agents
 and token-sensitive environments:
 
-<PackageManagers type="dlx" pkg="maestria" args="status --compact" />
+<AllPackageManagers type="dlx" pkg="maestria" args="status --compact" />
 
 ```
 opencode: available installed=0.2.1 latest=0.2.1
@@ -145,11 +145,11 @@ The compact flag implies `--quiet` (no spinner animations).
 
 Use `--quiet` to suppress spinner animations. Commands still print final output:
 
-<PackageManagers type="dlx" pkg="maestria" args="install --all --quiet" />
+<AllPackageManagers type="dlx" pkg="maestria" args="install --all --quiet" />
 
 <Aside type="tip">
   Combine `--quiet` with `--json` for clean CI output:{' '}
-  <PackageManagers type="dlx" pkg="maestria" args="status --json --quiet" />
+  <AllPackageManagers type="dlx" pkg="maestria" args="status --json --quiet" />
 </Aside>
 
 ## Exit Codes
