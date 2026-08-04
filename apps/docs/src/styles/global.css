@@ -2,8 +2,7 @@
    FONTS
    ============================================ */
 
-@import '@fontsource-variable/noto-serif';
-@import '@fontsource-variable/noto-serif/wght-italic.css';
+@import '@fontsource-variable/alan-sans';
 @import '@fontsource-variable/sn-pro';
 @import '@fontsource-variable/sn-pro/wght-italic.css';
 
@@ -52,7 +51,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Noto Serif Variable', serif;
+  font-family: 'Alan Sans Variable', serif;
 }
 
 /* ============================================
@@ -197,6 +196,13 @@ h6 {
   text-wrap: balance;
   color: var(--home-text);
   max-width: 18ch;
+}
+
+.home h1,
+.home h2,
+.home h3,
+.home h4 {
+  font-family: 'Alan Sans Variable', sans-serif;
 }
 
 .hero-lede {
