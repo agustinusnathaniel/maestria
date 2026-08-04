@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
+import tailwindcss from '@tailwindcss/vite';
 import starlightAutoSidebar from 'starlight-auto-sidebar';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
@@ -10,6 +11,7 @@ import starlightPageActions from 'starlight-page-actions';
 export default defineConfig({
   site: 'https://maestria.sznm.dev',
   vite: {
+    plugins: [tailwindcss()],
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },

@@ -209,17 +209,17 @@ const markAttrs = {
 >
   <div class="home">
     <div class="home-inner">
-      <section class="home-hero hero" aria-labelledby="home-title">
-        <p class="hero-eyebrow">MAESTRIA / METHODOLOGY LAYER</p>
-        <h1 id="home-title">Make the work deliberate.</h1>
-        <p class="hero-lede">
+      <section class="flex flex-col items-center text-center pt-[clamp(3rem,8vw,5.5rem)] max-2xl:pt-[clamp(2.5rem,6vw,4rem)] max-md:pt-1.5 mb-[clamp(4.25rem,10vw,7rem)] max-2xl:mb-[clamp(3rem,8vw,5.5rem)] max-md:mb-[1.125rem] min-w-0 home-hero-anim" aria-labelledby="home-title">
+        <p class="text-[0.8125rem] max-md:text-[0.75rem] font-semibold tracking-[0.12em] uppercase text-home-text-muted mb-5 max-md:mb-2">MAESTRIA / METHODOLOGY LAYER</p>
+        <h1 id="home-title" class="text-[clamp(2.75rem,7vw,4.75rem)] max-md:text-[clamp(1.875rem,9vw,2.5rem)] font-[540] leading-[1.04] tracking-[-0.045em] text-balance text-home-text max-w-[18ch]">Make the work deliberate.</h1>
+        <p class="text-[clamp(1.05rem,1.6vw,1.25rem)] max-md:text-[0.875rem] leading-[1.6] max-md:leading-[1.55] text-home-text-soft max-w-40rem mt-6 max-md:mt-3 mx-auto text-pretty">
           A portable harness for AI coding agents. Route complex work through
           specialists, structured handoffs, and independent review.
         </p>
-        <div class="hero-cta">
-          <a class="cta-primary" href="/cli/getting-started/">Get Started</a>
-          <a class="cta-text" href="#pipeline">
-            Explore the pipeline<span class="cta-arrow" aria-hidden="true">→</span>
+        <div class="flex items-center justify-center flex-wrap gap-7 max-md:gap-5 mt-9 max-md:mt-4">
+          <a class="inline-flex items-center justify-center min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98]" href="/cli/getting-started/">Get Started</a>
+          <a class="group inline-flex items-center gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent" href="#pipeline">
+            Explore the pipeline<span class="transition-transform group-hover:translate-x-[3px]" aria-hidden="true">→</span>
           </a>
         </div>
       </section>
@@ -228,144 +228,144 @@ const markAttrs = {
         class="hero-console"
         aria-label="Example run of the Maestria pipeline: Thinker, Worker, and Verifier stages with handoff inspection"
       >
-        <header class="console-head">
-          <span class="console-status">
-            <span class="console-dot" aria-hidden="true"></span>
+        <header class="flex items-center justify-between flex-wrap gap-y-2 gap-x-5 px-4 py-2.5 border-b border-home-border max-md:px-3 max-md:py-[0.4375rem] max-md:gap-x-3.5">
+          <span class="flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-home-text">
+            <span class="w-[7px] h-[7px] rounded-[1px] bg-home-accent" aria-hidden="true"></span>
             <span>EXAMPLE RUN / READY</span>
           </span>
-          <span class="console-meta">
-            <span class="console-count">8 ROLES · 3 MODES</span>
-            <span class="console-note">ILLUSTRATIVE, NOT LIVE TELEMETRY</span>
+          <span class="flex items-center flex-wrap gap-y-1 gap-x-4 text-xs">
+            <span class="font-semibold tracking-wider uppercase text-home-text-soft">8 ROLES · 3 MODES</span>
+            <span class="text-home-text-muted max-sm:absolute max-sm:w-px max-sm:h-px max-sm:-m-px max-sm:p-0 max-sm:overflow-hidden max-sm:clip-[rect(0_0_0_0)] max-sm:clip-path-[inset(50%)] max-sm:whitespace-nowrap max-sm:border-0">ILLUSTRATIVE, NOT LIVE TELEMETRY</span>
           </span>
         </header>
-        <div class="console-body">
-          <div class="console-col console-rail" aria-label="Cognitive stages">
+        <div class="flex-1 grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)] max-xl:grid-cols-1">
+          <div class="flex flex-col min-w-0" aria-label="Cognitive stages">
             <div class="console-stage">
-              <p class="stage-label">Thinker</p>
-              <div class="stage-row">
-                <span class="stage-role">Adventurer</span>
-                <span class="stage-task">context mapped</span>
-                <span class="stage-artifact">recon report</span>
+              <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border stage-label">Thinker</p>
+              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
+                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Adventurer</span>
+                <span class="text-home-text-muted text-right stage-task">context mapped</span>
+                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">recon report</span>
               </div>
-              <div class="stage-row">
-                <span class="stage-role">Architect</span>
-                <span class="stage-task">approach selected</span>
-                <span class="stage-artifact">decision record</span>
+              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
+                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Architect</span>
+                <span class="text-home-text-muted text-right stage-task">approach selected</span>
+                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">decision record</span>
               </div>
-              <div class="stage-row">
-                <span class="stage-role">Planner</span>
-                <span class="stage-task">scope bounded</span>
-                <span class="stage-artifact">implementation plan</span>
+              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
+                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Planner</span>
+                <span class="text-home-text-muted text-right stage-task">scope bounded</span>
+                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">implementation plan</span>
               </div>
             </div>
             <div class="console-stage">
-              <p class="stage-label">Worker</p>
-              <div class="stage-row">
-                <span class="stage-role">Builder</span>
-                <span class="stage-task">artifact produced</span>
-                <span class="stage-artifact">implementation + tests</span>
+              <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border stage-label">Worker</p>
+              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
+                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Builder</span>
+                <span class="text-home-text-muted text-right stage-task">artifact produced</span>
+                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">implementation + tests</span>
               </div>
             </div>
             <div class="console-stage">
-              <p class="stage-label">Verifier</p>
-              <div class="stage-row">
-                <span class="stage-role">Reviewer</span>
-                <span class="stage-task">independent check</span>
-                <span class="stage-artifact">review verdict</span>
+              <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border stage-label">Verifier</p>
+              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
+                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Reviewer</span>
+                <span class="text-home-text-muted text-right stage-task">independent check</span>
+                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">review verdict</span>
               </div>
             </div>
           </div>
 
-          <div class="console-col console-workspace" aria-label="Workflow workspace">
-            <p class="console-col-label">Workflow</p>
-            <div class="ws-row">
-              <span class="ws-phase">Think</span>
-              <span class="ws-item">Adventurer · recon report</span>
-              <span class="ws-state">done</span>
+          <div class="flex flex-col min-w-0 border-l border-home-border max-xl:border-l-0 max-xl:border-t max-xl:border-home-border" aria-label="Workflow workspace">
+            <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border">Workflow</p>
+            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 ws-row">
+              <span class="text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-home-accent whitespace-nowrap ws-phase">Think</span>
+              <span class="text-[0.8125rem] text-home-text-soft text-right ws-item">Adventurer · recon report</span>
+              <span class="text-[0.6875rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted whitespace-nowrap ws-state">done</span>
             </div>
-            <div class="ws-row">
-              <span class="ws-phase">Route</span>
-              <span class="ws-item">Orchestrator → Builder</span>
-              <span class="ws-state">routed</span>
+            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 ws-row">
+              <span class="text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-home-accent whitespace-nowrap ws-phase">Route</span>
+              <span class="text-[0.8125rem] text-home-text-soft text-right ws-item">Orchestrator → Builder</span>
+              <span class="text-[0.6875rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted whitespace-nowrap ws-state">routed</span>
             </div>
-            <div class="ws-row">
-              <span class="ws-phase">Build</span>
-              <span class="ws-item">Builder · implementation + tests</span>
-              <span class="ws-state">ready</span>
+            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 ws-row">
+              <span class="text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-home-accent whitespace-nowrap ws-phase">Build</span>
+              <span class="text-[0.8125rem] text-home-text-soft text-right ws-item">Builder · implementation + tests</span>
+              <span class="text-[0.6875rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted whitespace-nowrap ws-state">ready</span>
             </div>
-            <div class="ws-row">
-              <span class="ws-phase">Review</span>
-              <span class="ws-item">Reviewer · verdict pending</span>
-              <span class="ws-state">queued</span>
+            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 ws-row">
+              <span class="text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-home-accent whitespace-nowrap ws-phase">Review</span>
+              <span class="text-[0.8125rem] text-home-text-soft text-right ws-item">Reviewer · verdict pending</span>
+              <span class="text-[0.6875rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted whitespace-nowrap ws-state">queued</span>
             </div>
           </div>
 
-          <div class="console-col console-inspector" aria-label="Inspector: handoffs and boundaries">
-            <p class="console-col-label">Inspector</p>
-            <div class="insp-row">
-              <span class="insp-k">Handoff</span>
-              <span class="insp-v">Builder → Reviewer</span>
+          <div class="flex flex-col min-w-0 border-l border-home-border max-xl:border-l-0 max-xl:border-t max-xl:border-home-border" aria-label="Inspector: handoffs and boundaries">
+            <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border">Inspector</p>
+            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 insp-row">
+              <span class="text-[0.75rem] font-semibold tracking-[0.04em] uppercase text-home-text-muted whitespace-nowrap insp-k">Handoff</span>
+              <span class="text-[0.8125rem] text-home-text-soft text-right insp-v">Builder → Reviewer</span>
             </div>
-            <div class="insp-row">
-              <span class="insp-k">Verdict</span>
-              <span class="insp-v">artifact accepted</span>
+            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 insp-row">
+              <span class="text-[0.75rem] font-semibold tracking-[0.04em] uppercase text-home-text-muted whitespace-nowrap insp-k">Verdict</span>
+              <span class="text-[0.8125rem] text-home-text-soft text-right insp-v">artifact accepted</span>
             </div>
-            <div class="insp-row">
-              <span class="insp-k">Boundary</span>
-              <span class="insp-v">maker != checker</span>
+            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 insp-row">
+              <span class="text-[0.75rem] font-semibold tracking-[0.04em] uppercase text-home-text-muted whitespace-nowrap insp-k">Boundary</span>
+              <span class="text-[0.8125rem] text-home-text-soft text-right insp-v">maker != checker</span>
             </div>
-            <div class="insp-row">
-              <span class="insp-k">Termination</span>
-              <span class="insp-v">verifier accepts</span>
+            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 insp-row">
+              <span class="text-[0.75rem] font-semibold tracking-[0.04em] uppercase text-home-text-muted whitespace-nowrap insp-k">Termination</span>
+              <span class="text-[0.8125rem] text-home-text-soft text-right insp-v">verifier accepts</span>
             </div>
           </div>
         </div>
       </section>
     </div>
 
-    <section class="home-punch" aria-label="Maestria by the numbers">
-      <div class="punch-inner">
-        <div class="punch-metric">
-          <span class="punch-num">8</span>
-          <span class="punch-label">SPECIALISTS</span>
+    <section class="w-full bg-home-punch text-home-punch-ink mb-[clamp(5rem,12vw,9rem)]" aria-label="Maestria by the numbers">
+      <div class="max-w-7xl mx-auto py-[clamp(2.75rem,6vw,4.25rem)] px-[clamp(1.25rem,4vw,2.5rem)] grid grid-cols-4 gap-6 max-md:grid-cols-2 max-md:gap-8">
+        <div>
+          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">8</span>
+          <span class="block mt-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">SPECIALISTS</span>
         </div>
-        <div class="punch-metric">
-          <span class="punch-num">3</span>
-          <span class="punch-label">COGNITIVE ROLES</span>
+        <div>
+          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">3</span>
+          <span class="block mt-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">COGNITIVE ROLES</span>
         </div>
-        <div class="punch-metric">
-          <span class="punch-num">1</span>
-          <span class="punch-label">ORCHESTRATOR</span>
+        <div>
+          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">1</span>
+          <span class="block mt-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">ORCHESTRATOR</span>
         </div>
-        <div class="punch-metric">
-          <span class="punch-num">0</span>
-          <span class="punch-label">VENDOR LOCK-IN</span>
+        <div>
+          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">0</span>
+          <span class="block mt-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">VENDOR LOCK-IN</span>
         </div>
       </div>
     </section>
 
     <div class="home-inner">
-      <section class="home-section principles" aria-labelledby="principles-title">
+      <section class="home-section mb-[clamp(6rem,14vw,11rem)]" aria-labelledby="principles-title">
         <p class="section-eyebrow">01 / THE METHOD</p>
         <h2 id="principles-title">Structure beats improvisation.</h2>
-        <div class="principles-cols">
-          <article class="principle">
-            <svg class="principle-mark" {...markAttrs} set:html={marks.pipeline} />
-            <h3>Pipeline composition</h3>
-            <p>
+        <div class="grid grid-cols-3 max-lg:grid-cols-1">
+          <article class="pl-[clamp(1.5rem,3vw,2.5rem)] border-l border-home-border min-w-0 max-lg:pl-0 max-lg:pt-6 max-lg:border-l-0 max-lg:border-t first:pl-0 first:border-l-0 first:max-lg:border-t-0 first:max-lg:pt-0 last:pr-0">
+            <svg class="w-[26px] h-[26px] text-home-text-muted mb-5" {...markAttrs} set:html={marks.pipeline} />
+            <h3 class="text-lg font-[560] tracking-[-0.01em] text-home-text mb-2">Pipeline composition</h3>
+            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft">
               Route work through focused stages instead of asking one context
               to do everything.
             </p>
           </article>
-          <article class="principle">
-            <svg class="principle-mark" {...markAttrs} set:html={marks.makerChecker} />
-            <h3>Maker/checker split</h3>
-            <p>The builder produces; the reviewer sees it fresh.</p>
+          <article class="pl-[clamp(1.5rem,3vw,2.5rem)] border-l border-home-border min-w-0 max-lg:pl-0 max-lg:pt-6 max-lg:border-l-0 max-lg:border-t first:pl-0 first:border-l-0 first:max-lg:border-t-0 first:max-lg:pt-0 last:pr-0">
+            <svg class="w-[26px] h-[26px] text-home-text-muted mb-5" {...markAttrs} set:html={marks.makerChecker} />
+            <h3 class="text-lg font-[560] tracking-[-0.01em] text-home-text mb-2">Maker/checker split</h3>
+            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft">The builder produces; the reviewer sees it fresh.</p>
           </article>
-          <article class="principle">
-            <svg class="principle-mark" {...markAttrs} set:html={marks.platforms} />
-            <h3>Platform independence</h3>
-            <p>
+          <article class="pl-[clamp(1.5rem,3vw,2.5rem)] border-l border-home-border min-w-0 max-lg:pl-0 max-lg:pt-6 max-lg:border-l-0 max-lg:border-t first:pl-0 first:border-l-0 first:max-lg:border-t-0 first:max-lg:pt-0 last:pr-0">
+            <svg class="w-[26px] h-[26px] text-home-text-muted mb-5" {...markAttrs} set:html={marks.platforms} />
+            <h3 class="text-lg font-[560] tracking-[-0.01em] text-home-text mb-2">Platform independence</h3>
+            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft">
               Methodology stays consistent while each platform uses native
               primitives.
             </p>
@@ -373,54 +373,54 @@ const markAttrs = {
         </div>
       </section>
 
-      <section class="home-section agent-system" id="pipeline" aria-labelledby="agents-title">
+      <section class="home-section mb-[clamp(4.5rem,11vw,8rem)] scroll-mt-[calc(var(--sl-nav-height)+2rem)]" id="pipeline" aria-labelledby="agents-title">
         <p class="section-eyebrow">02 / SPECIALISTS</p>
         <h2 id="agents-title">The conductor is not the crew.</h2>
-        <div class="agent-layout">
-          <div class="agent-tabs" role="tablist" aria-label="Specialists">
+        <div class="grid grid-cols-[minmax(0,20rem)_minmax(0,1fr)] gap-[clamp(1.5rem,3vw,2.5rem)] items-start max-lg:grid-cols-1">
+          <div class="flex flex-col" role="tablist" aria-label="Specialists">
             {agents.map((agent: Agent, index: number) => (
               <button
-                class="agent-tab"
+                class="agent-tab relative flex items-center gap-3 min-h-[44px] py-2 pr-2.5 bg-transparent border-0 border-t border-home-border rounded-none text-home-text-muted font-sans text-[0.9375rem] font-medium text-left cursor-pointer transition-colors hover:text-home-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
                 role="tab"
                 aria-selected={index === 0 ? 'true' : 'false'}
                 aria-controls={`panel-${agent.id}`}
                 id={`tab-${agent.id}`}
                 tabindex={index === 0 ? 0 : -1}
               >
-                <svg class="agent-mark" {...markAttrs} set:html={marks[agent.id]} />
+                <svg class="w-5 h-5 flex-none" {...markAttrs} set:html={marks[agent.id]} />
                 <span class="agent-tab-name">{agent.name}</span>
               </button>
             ))}
           </div>
-          <div class="agent-panels">
+          <div class="border border-home-border rounded-[3px] bg-home-surface min-h-[24rem]">
             {agents.map((agent: Agent, index: number) => (
               <div
-                class="agent-panel"
+                class="agent-panel p-[clamp(1.5rem,3vw,2rem)]"
                 role="tabpanel"
                 id={`panel-${agent.id}`}
                 aria-labelledby={`tab-${agent.id}`}
                 hidden={index !== 0}
               >
-                <div class="panel-head">
-                  <svg class="panel-mark" {...markAttrs} set:html={marks[agent.id]} />
+                <div class="flex items-start gap-4">
+                  <svg class="w-7 h-7 flex-none text-home-text-muted mt-[0.2rem]" {...markAttrs} set:html={marks[agent.id]} />
                   <div>
-                    <h3>{agent.name}</h3>
-                    <p class="agent-role">{agent.role}</p>
+                    <h3 class="text-[clamp(1.375rem,2.5vw,1.75rem)] font-[560] leading-[1.15] tracking-[-0.02em] text-home-text m-0">{agent.name}</h3>
+                    <p class="mt-1 text-sm font-[550] text-home-accent">{agent.role}</p>
                   </div>
                 </div>
-                <p class="agent-desc">{agent.description}</p>
-                <dl class="agent-meta">
-                  <div>
-                    <dt>Scope</dt>
-                    <dd>{agentMeta[agent.id].scope}</dd>
+                <p class="mt-5 max-w-46rem text-[0.9375rem] leading-[1.7] text-home-text-soft">{agent.description}</p>
+                <dl class="mt-7 mb-0 p-0 border-t border-home-border">
+                  <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
+                    <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Scope</dt>
+                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agentMeta[agent.id].scope}</dd>
                   </div>
-                  <div>
-                    <dt>Artifact</dt>
-                    <dd>{agentMeta[agent.id].artifact}</dd>
+                  <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
+                    <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Artifact</dt>
+                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agentMeta[agent.id].artifact}</dd>
                   </div>
-                  <div>
-                    <dt>Constraint</dt>
-                    <dd>{agentMeta[agent.id].constraint}</dd>
+                  <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
+                    <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Constraint</dt>
+                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agentMeta[agent.id].constraint}</dd>
                   </div>
                 </dl>
               </div>
@@ -429,33 +429,42 @@ const markAttrs = {
         </div>
       </section>
 
-      <section class="home-section platforms" aria-labelledby="platforms-title">
+      <section class="home-section mb-[clamp(5.5rem,13vw,10rem)]" aria-labelledby="platforms-title">
         <p class="section-eyebrow">03 / ADAPTERS</p>
         <h2 id="platforms-title">One methodology. Native primitives.</h2>
-        <div class="platform-grid">
+        <div class="grid grid-cols-3 border-t border-l border-home-border max-lg:grid-cols-1">
           {platforms.map((platform) => (
-            <a class="platform-cell" href={platform.href}>
-              <svg class="cell-mark" {...markAttrs} set:html={marks.platforms} />
-              <span class="cell-name">{platform.name}</span>
-              <span class="cell-desc">{platform.desc}</span>
-              <span class="cell-arrow" aria-hidden="true">→</span>
+            <a class="group flex flex-col items-start gap-[0.4rem] p-[clamp(1.25rem,2.5vw,1.75rem)] border-r border-b border-home-border bg-transparent no-underline text-inherit min-w-0 transition-colors hover:bg-home-surface" href={platform.href}>
+              <svg class="w-[22px] h-[22px] text-home-text-muted mb-2" {...markAttrs} set:html={marks.platforms} />
+              <span class="text-[1.0625rem] font-[560] tracking-[-0.01em] text-home-text transition-colors group-hover:text-home-accent">{platform.name}</span>
+              <span class="text-sm leading-[1.6] text-home-text-muted">{platform.desc}</span>
+              <span class="mt-3 text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px]" aria-hidden="true">→</span>
             </a>
           ))}
         </div>
       </section>
 
-      <section class="home-section docs-map" aria-labelledby="docs-title">
+      <section class="home-section" aria-labelledby="docs-title">
         <p class="section-eyebrow">04 / DOCUMENTATION</p>
         <h2 id="docs-title">Start with the system, then choose your platform.</h2>
-        <div class="docs-map-list">
-          {docsMap.map((group) => (
-            <div class="docs-group">
-              <p class="docs-group-label">{group.group}</p>
-              {group.items.map((item) => (
-                <a class="docs-row" href={item.href}>
-                  <span class="docs-row-title">{item.title}</span>
-                  <span class="docs-row-desc">{item.desc}</span>
-                  <span class="docs-row-arrow" aria-hidden="true">→</span>
+        <div>
+          {docsMap.map((group, gi) => (
+            <div>
+              <p class:list={[
+                "pt-2 pb-2 text-xs font-semibold tracking-[0.1em] uppercase text-home-text-muted",
+                gi === 0 ? "mt-0" : "mt-9"
+              ]}>{group.group}</p>
+              {group.items.map((item, ii) => (
+                <a
+                  class:list={[
+                    "group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto]",
+                    ii === group.items.length - 1 && "border-b"
+                  ]}
+                  href={item.href}
+                >
+                  <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">{item.title}</span>
+                  <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">{item.desc}</span>
+                  <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
                 </a>
               ))}
             </div>
@@ -465,6 +474,97 @@ const markAttrs = {
     </div>
   </div>
 </StarlightPage>
+
+<style>
+  /* Hero animation - moved from global.css */
+  @keyframes home-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .home-hero-anim {
+      animation: home-reveal 340ms ease-out 40ms both;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-hero-anim {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .home-hero-anim {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .stage-row + .stage-row,
+  .ws-row + .ws-row,
+  .insp-row + .insp-row {
+    border-top: 1px solid var(--home-border);
+  }
+
+  .console-stage + .console-stage {
+    border-top: 1px solid var(--home-border);
+  }
+
+  @media (max-width: 900px) {
+    .stage-row + .stage-row,
+    .ws-row + .ws-row,
+    .insp-row + .insp-row {
+      border-top: 1px solid var(--home-border);
+    }
+  }
+
+  /* Agent tab active state: attribute selectors and pseudo-elements
+     that can't be expressed with Tailwind utilities. */
+  .agent-tab[aria-selected='true'] {
+    color: var(--home-text);
+    font-weight: 560;
+  }
+
+  .agent-tab[aria-selected='true']::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--home-accent);
+  }
+
+  .agent-tab[aria-selected='true'] .agent-mark,
+  .agent-tab[aria-selected='true'] svg {
+    color: var(--home-accent);
+  }
+
+  .agent-tab:last-child {
+    border-bottom: 1px solid var(--home-border);
+  }
+
+  .agent-panel[hidden] {
+    display: none;
+  }
+
+  /* Starlight markdown content margin overrides. */
+  .sl-markdown-content .flex.flex-col {
+    margin-top: 0;
+  }
+
+  .sl-markdown-content .flex.flex-col > .agent-tab + .agent-tab {
+    margin-top: 0;
+  }
+</style>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
