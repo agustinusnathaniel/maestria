@@ -68,6 +68,14 @@ export default defineConfig({
           tag: 'link',
           attrs: { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
         },
+        {
+          tag: 'meta',
+          attrs: {
+            property: 'og:image',
+            content:
+              'https://og.sznm.dev/api/generate?heading=maestria&text=Portable%20AI%20Engineering%20Praxis%20Plugins&template=color',
+          },
+        },
       ],
       social: [
         {
