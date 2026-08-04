@@ -46,6 +46,10 @@ overrides:
   # — deep in @oh-my-pi/pi-coding-agent host runtime; omp imports it type-only so workspace gates verify safety
   adm-zip: 0.6.0
   sharp: 0.35.3
+  # undici cookie injection / cache-control parsing / retry desync / CRLF injection
+  # (GHSA-v3r7-h72x-cjcm, GHSA-4cwx-7wf7-3272, GHSA-8xcm-r25x-g524, GHSA-m8rv-5g2x-5cg5, GHSA-jr45-8vmc-qm54)
+  # — via @earendil-works/pi-coding-agent and @gotgenes/pi-subagents (pi runtime, not type-only)
+  undici: 8.9.0
 peerDependencyRules:
   allowAny:
     - vite
