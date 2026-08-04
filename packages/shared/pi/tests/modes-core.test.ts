@@ -154,11 +154,11 @@ describe('detectModeInText', () => {
     expect(result!.strippedText).toBe('investigate auth');
   });
 
-  it('detects blitz in middle of text', () => {
+  it('detects blitz in middle of text, collapsing double spaces', () => {
     const result = detectModeInText('quick blitz fix', tmpDir);
     expect(result).not.toBeNull();
     expect(result!.keyword).toBe('blitz');
-    expect(result!.strippedText).toBe('quick  fix');
+    expect(result!.strippedText).toBe('quick fix');
   });
 
   it('returns null for text without keywords', () => {
@@ -181,10 +181,44 @@ describe('detectModeInText', () => {
     expect(detectModeInText('coffein', tmpDir)).toBeNull();
   });
 
-  it('detects first matching keyword in iteration order (fein > sonar > blitz)', () => {
-    // If multiple keywords appear, the first in iteration order wins
-    const result = detectModeInText('fein sonar blitz', tmpDir);
+  it('most restrictive keyword wins (fein > sonar > blitz)', () => {
+    // If multiple keywords appear, the most restrictive wins regardless of position
+    const r1 = detectModeInText('fein sonar blitz', tmpDir);
+    expect(r1).not.toBeNull();
+    expect(r1!.keyword).toBe('fein');
+
+    const r2 = detectModeInText('blitz sonar', tmpDir);
+    expect(r2).not.toBeNull();
+    expect(r2!.keyword).toBe('sonar');
+
+    const r3 = detectModeInText('blitz sonar fein', tmpDir);
+    expect(r3).not.toBeNull();
+    expect(r3!.keyword).toBe('fein');
+  });
+
+  it('does not match inside fenced code blocks', () => {
+    const result = detectModeInText('```blitz this```', tmpDir);
+    expect(result).toBeNull();
+  });
+
+  it('does not match inside inline backtick content', () => {
+    const result = detectModeInText('run `blitz` command', tmpDir);
+    expect(result).toBeNull();
+  });
+
+  it('detects keyword outside code block correctly', () => {
+    const result = detectModeInText('some code:\n```\nconst x = 1;\n```\nfein then build', tmpDir);
     expect(result).not.toBeNull();
     expect(result!.keyword).toBe('fein');
+    // Code fences are preserved; only the keyword is removed. The keyword sat
+    // after a newline, so the leftover space stays (trim only strips string ends).
+    expect(result!.strippedText).toBe('some code:\n```\nconst x = 1;\n```\n then build');
+  });
+
+  it('strips trailing colon after keyword', () => {
+    const result = detectModeInText('fein: build the feature', tmpDir);
+    expect(result).not.toBeNull();
+    expect(result!.keyword).toBe('fein');
+    expect(result!.strippedText).toBe('build the feature');
   });
 });
