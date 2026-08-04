@@ -4,6 +4,7 @@ description: Complete reference for all maestria commands - status, install, upd
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 ## Global Flags
 
@@ -79,9 +80,7 @@ Ideal for AI agents and token-sensitive environments. Implies `--quiet` (no spin
 
 ### Example
 
-```bash
-npx maestria status
-```
+<PackageManagers type="dlx" pkg="maestria" args="status" />
 
 ---
 
@@ -141,9 +140,7 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 
 ### Example
 
-```bash
-npx maestria install --all
-```
+<PackageManagers type="dlx" pkg="maestria" args="install --all" />
 
 ---
 
@@ -204,16 +201,15 @@ To force a fresh version check before running a command:
 
 ```bash
 rm ~/.cache/maestria/versions.json
-npx maestria status
 ```
+
+<PackageManagers type="dlx" pkg="maestria" args="status" />
 
 The cache is automatically invalidated after a successful update, so `maestria status` always shows the correct latest version after an upgrade.
 
 ### Example
 
-```bash
-npx maestria update --all
-```
+<PackageManagers type="dlx" pkg="maestria" args="update --all" />
 
 <Aside type="tip">
   Use `maestria status` before `maestria update --all` to see which platforms have updates
@@ -250,18 +246,17 @@ Supported platforms: `opencode`, `pi`, `omp`. The 7 specialists (`adventurer`, `
 
 ### Interactive (TTY)
 
-```bash
-npx maestria configure opencode
-```
+<PackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
 Shows a group-multiselect of the 7 specialists, then a per-agent model picker with the current model pre-selected and an _Inherit (session model)_ option. The model list is fetched live from the platform (`opencode models`, `pi --list-models`, `omp models --json`).
 
 ### Non-interactive (CI)
 
-```bash
-npx maestria configure opencode --global --quiet \
-  --set builder=opencode-go/deepseek-v4-pro,reviewer=
-```
+<PackageManagers
+  type="dlx"
+  pkg="maestria"
+  args="configure opencode --global --quiet --set builder=opencode-go/deepseek-v4-pro,reviewer="
+/>
 
 - `--set <agent>=<model>[,...]` - comma-separated pairs; an empty value (`reviewer=`) resets the agent to inherit the session model
 - `--global` (default) / `--project` - config level, mutually exclusive; required when `--set` is used or in a non-interactive terminal

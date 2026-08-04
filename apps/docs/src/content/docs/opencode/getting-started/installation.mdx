@@ -4,6 +4,7 @@ description: How to install @maestria/opencode and what you get - 8 specialized 
 ---
 
 import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 `@maestria/opencode` is an npm plugin for [OpenCode](https://opencode.ai) that turns your AI coding environment into a disciplined engineering workstation. It bundles 8 specialized agents and global workflow rules - all installed with a single line of configuration. No manual setup, no prompt engineering, no forgotten context between sessions.
 
@@ -17,13 +18,13 @@ import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components
 The [maestria CLI](/cli/) provides a unified interface for installing and managing
 maestria plugins across all supported platforms:
 
-```bash
-# Install for this platform
-npx maestria install opencode
-
-# Verify installation
-npx maestria status
-```
+<PackageManagers
+  type="dlx"
+  pkg="maestria"
+  args="install opencode"
+  comment="Install the OpenCode plugin"
+/>
+<PackageManagers type="dlx" pkg="maestria" args="status" comment="Verify installation" />
 
 See the [CLI documentation](/cli/) for more commands and options.
 
@@ -79,9 +80,7 @@ The global workflow rules are active in every prompt. You will see them reflecte
 
 To update via the maestria CLI:
 
-```bash
-npx maestria update opencode
-```
+<PackageManagers type="dlx" pkg="maestria" args="update opencode" />
 
 <details>
 <summary>Alternative: Platform-native update</summary>

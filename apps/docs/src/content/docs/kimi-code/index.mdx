@@ -18,6 +18,7 @@ hero:
 ---
 
 import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 ## How It Works
 
@@ -30,9 +31,7 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
 In a Kimi Code session:
 
-```bash
-npx maestria install kimi-code
-```
+<PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
 
 The CLI pulls `@maestria/kimi-code` from npm and extracts it into `~/.kimi-code/plugins/managed/maestria`, then copies the global rules to `~/.kimi-code/AGENTS.md`.
 
