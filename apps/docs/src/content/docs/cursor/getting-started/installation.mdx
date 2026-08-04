@@ -4,6 +4,7 @@ description: Install @maestria/cursor for Cursor IDE and Cursor CLI. Declarative
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 `@maestria/cursor` is a declarative Cursor plugin: a manifest, agents, an orchestrator skill, global rules, and slash commands. There is no `npm install` of a runtime SDK for end users.
 
@@ -14,26 +15,20 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 
 ## Installation via CLI (Recommended)
 
-```bash
-pnpx maestria@latest install cursor
-pnpx maestria@latest status
-```
+<PackageManagers type="dlx" pkg="maestria@latest" args="install cursor" />
+<PackageManagers type="dlx" pkg="maestria@latest" args="status" />
 
 The CLI pulls `@maestria/cursor` from npm (`npm pack @maestria/cursor@latest`)
 and extracts it into `~/.cursor/plugins/local/maestria`.
 
 ### Updating
 
-```bash
-pnpx maestria@latest update cursor
-pnpx maestria@latest status
-```
+<PackageManagers type="dlx" pkg="maestria@latest" args="update cursor" />
+<PackageManagers type="dlx" pkg="maestria@latest" args="status" />
 
 To pin to a specific version:
 
-```bash
-pnpx maestria@latest update cursor@0.1.0
-```
+<PackageManagers type="dlx" pkg="maestria@latest" args="update cursor@0.1.0" />
 
 <Aside type="tip" title="Restart required">
   Restart Cursor IDE after install so Customize → Plugins picks up the local plugin. For CLI, pass
@@ -92,9 +87,7 @@ echo "your prompt" | agent --plugin-dir ~/.cursor/plugins/local/maestria --cli-m
 
 ## Uninstall
 
-```bash
-pnpx maestria@latest uninstall cursor
-```
+<PackageManagers type="dlx" pkg="maestria@latest" args="uninstall cursor" />
 
 ## Next steps
 

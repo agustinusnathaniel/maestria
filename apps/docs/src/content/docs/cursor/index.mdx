@@ -18,6 +18,7 @@ hero:
 ---
 
 import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 ## How It Works
 
@@ -28,9 +29,7 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
 ## Quick Install
 
-```bash
-pnpx maestria@latest install cursor
-```
+<PackageManagers type="dlx" pkg="maestria@latest" args="install cursor" />
 
 Then restart Cursor IDE, or:
 

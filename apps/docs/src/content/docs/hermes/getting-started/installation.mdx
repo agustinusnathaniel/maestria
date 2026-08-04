@@ -4,6 +4,7 @@ description: How to install @maestria/hermes on your Hermes Agent and what you g
 ---
 
 import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 `@maestria/hermes` is a git-based Hermes plugin that turns your Hermes Agent into a disciplined methodology worker. It registers 9 skills, 6 slash commands, permission roles, and lifecycle hooks — all installed with a single `hermes plugins install` command.
 
@@ -20,9 +21,7 @@ The maestria CLI provides a unified interface for installing and managing maestr
 
 1. **Install via the maestria CLI**
 
-   ```bash
-   pnpx maestria@latest install hermes
-   ```
+   <PackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
 
    This runs the equivalent Hermes command automatically.
 
@@ -86,9 +85,7 @@ To check status, type `/mode`:
 
 ## Updating
 
-```bash
-pnpx maestria@latest update hermes
-```
+<PackageManagers type="dlx" pkg="maestria@latest" args="update hermes" />
 
 Or directly:
 

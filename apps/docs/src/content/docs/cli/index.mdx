@@ -18,6 +18,7 @@ hero:
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 Maestria ships the same AI engineering methodology to three coding agent platforms. Each has its own install commands, update paths, and version management. `maestria` wraps them all behind a single interface.
 
@@ -33,9 +34,7 @@ Without the CLI, managing maestria means remembering per-platform commands:
 
 With the CLI, one command does it all:
 
-```bash
-npx maestria install --all
-```
+<PackageManagers type="dlx" pkg="maestria" args="install --all" />
 
 No more context-switching between platform CLIs. No more hunting through READMEs for the right command.
 

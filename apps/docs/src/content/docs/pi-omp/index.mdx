@@ -22,6 +22,7 @@ hero:
 ---
 
 import { LinkCard, CardGrid, LinkButton, Aside } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 The same Maestria methodology that works on OpenCode is adapted for **Pi** and **Oh My Pi (OMP)**. The role names and workflow ideas carry over, but runtime behavior is not identical. Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read [When to use Maestria](/core/when-to-use/) before assuming that a workflow transfers unchanged.
 
@@ -40,10 +41,9 @@ The same Maestria methodology that works on OpenCode is adapted for **Pi** and *
 
 ## Quick Install
 
-```bash
-# Pi
-pnpx maestria@latest install pi
+<PackageManagers type="dlx" pkg="maestria@latest" args="install pi" comment="Pi" />
 
+```bash
 # Oh My Pi
 omp install @maestria/omp
 ```
