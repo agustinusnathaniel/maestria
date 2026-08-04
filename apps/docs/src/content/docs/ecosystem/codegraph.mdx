@@ -4,6 +4,7 @@ description: Local-first code intelligence with a SQLite knowledge graph. A natu
 ---
 
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 CodeGraph is an independent project under the MIT license, created and maintained
 by Colby McHenry. It is not part of Maestria.
@@ -38,8 +39,8 @@ workflow.
 
 Three options:
 
-1. **npm global install:** `npm i -g @colbymchenry/codegraph`
-2. **Run without install:** `npx @colbymchenry/codegraph`
+1. **npm global install:** <PackageManagers type="global" pkg="@colbymchenry/codegraph" />
+2. **Run without install:** <PackageManagers type="dlx" pkg="@colbymchenry/codegraph" />
 3. **Standalone installer:** Download from the GitHub releases page
 
 ## Quick Start

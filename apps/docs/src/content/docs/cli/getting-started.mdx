@@ -33,7 +33,7 @@ This detects which coding agent platforms are available on your machine and show
     Latest:     unknown
 ```
 
-Run `npx maestria` with no arguments - it defaults to `status`.
+Run <PackageManagers type="dlx" pkg="maestria" /> with no arguments - it defaults to `status`.
 
 ### Install for a platform
 
@@ -148,7 +148,8 @@ Use `--quiet` to suppress spinner animations. Commands still print final output:
 <PackageManagers type="dlx" pkg="maestria" args="install --all --quiet" />
 
 <Aside type="tip">
-  Combine `--quiet` with `--json` for clean CI output: `npx maestria status --json --quiet`
+  Combine `--quiet` with `--json` for clean CI output:{' '}
+  <PackageManagers type="dlx" pkg="maestria" args="status --json --quiet" />
 </Aside>
 
 ## Exit Codes
