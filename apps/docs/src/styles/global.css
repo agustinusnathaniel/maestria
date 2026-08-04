@@ -27,13 +27,18 @@
   --color-home-bg: #0b0d0b;
   --color-home-surface: #111411;
   --color-home-surface-raised: #171b17;
+  --color-home-border: rgba(240, 245, 239, 0.16);
+  --color-home-border-strong: rgba(240, 245, 239, 0.34);
   --color-home-text: #f1f4ef;
   --color-home-text-soft: #c4cbc2;
   --color-home-text-muted: #899289;
   --color-home-accent: #b7ef5f;
   --color-home-accent-strong: #cdf58a;
+  --color-home-accent-ink: #0b0d0b;
+  --color-home-focus: #b7ef5f;
   --color-home-punch: #b7ef5f;
   --color-home-punch-ink: #0b0d0b;
+  --color-home-punch-ink-soft: rgba(11, 13, 11, 0.7);
 
   --breakpoint-sm: 480px;
   --breakpoint-md: 640px;
@@ -74,6 +79,20 @@
   --sl-color-gray-6: #eaf0e8;
   --sl-color-gray-7: #f4f7f3;
   --sl-color-black: #ffffff;
+
+  /* Tailwind theme tokens for light mode */
+  --color-home-bg: #f3f5ef;
+  --color-home-surface: #ffffff;
+  --color-home-surface-raised: #e9ede4;
+  --color-home-border: rgba(15, 20, 13, 0.14);
+  --color-home-border-strong: rgba(15, 20, 13, 0.32);
+  --color-home-text: #141713;
+  --color-home-text-soft: #434a3e;
+  --color-home-text-muted: #5f6858;
+  --color-home-accent: #1c5b1e;
+  --color-home-accent-strong: #144816;
+  --color-home-accent-ink: #f3f5ef;
+  --color-home-focus: #1c5b1e;
 }
 
 /* ============================================
@@ -179,6 +198,20 @@ h6 {
   --home-accent-strong: #144816;
   --home-accent-ink: #f3f5ef;
   --home-focus: #1c5b1e;
+
+  /* Override Tailwind theme tokens for light mode */
+  --color-home-bg: #f3f5ef;
+  --color-home-surface: #ffffff;
+  --color-home-surface-raised: #e9ede4;
+  --color-home-border: rgba(15, 20, 13, 0.14);
+  --color-home-border-strong: rgba(15, 20, 13, 0.32);
+  --color-home-text: #141713;
+  --color-home-text-soft: #434a3e;
+  --color-home-text-muted: #5f6858;
+  --color-home-accent: #1c5b1e;
+  --color-home-accent-strong: #144816;
+  --color-home-accent-ink: #f3f5ef;
+  --color-home-focus: #1c5b1e;
 }
 
 .home-inner {
@@ -350,10 +383,14 @@ html {
   .home {
     --home-border: rgba(240, 245, 239, 0.4);
     --home-border-strong: rgba(240, 245, 239, 0.66);
+    --color-home-border: rgba(240, 245, 239, 0.4);
+    --color-home-border-strong: rgba(240, 245, 239, 0.66);
   }
 
   :root[data-theme='light'] .home {
     --home-border: rgba(15, 20, 13, 0.4);
     --home-border-strong: rgba(15, 20, 13, 0.66);
+    --color-home-border: rgba(15, 20, 13, 0.4);
+    --color-home-border-strong: rgba(15, 20, 13, 0.66);
   }
 }
