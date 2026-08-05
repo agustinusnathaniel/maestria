@@ -478,6 +478,66 @@ describe('preserve option', () => {
 // Provenance check
 // ═══════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════
+// Secondary source loop (canonical files outside the source dir)
+// ═══════════════════════════════════════════════════════════
+
+describe('secondary source loop', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'core-sync-secondary-'));
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('resolves nested keys under the parent of source (e.g. skills/handoff.md)', async () => {
+    const sourceParent = join(tmpDir, 'source');
+    const sourceDir = join(sourceParent, 'specialists');
+    const outputDir = join(tmpDir, 'output');
+    mkdirSync(join(sourceParent, 'skills'), { recursive: true });
+    mkdirSync(sourceDir, { recursive: true });
+    mkdirSync(outputDir, { recursive: true });
+
+    // Canonical source lives in a subdirectory of the parent of source -
+    // the same layout as packages/core/agent-directives/skills/.
+    writeFileSync(
+      join(sourceParent, 'skills', 'handoff.md'),
+      '# Handoff Contract\n\n1. **Goal**\n',
+      'utf-8',
+    );
+
+    const config: ResolvedSyncConfig = {
+      configDir: tmpDir,
+      source: sourceDir,
+      output: outputDir,
+      preserve: [],
+      files: {
+        'skills/handoff.md': {
+          output: join(outputDir, 'handoff', 'SKILL.md'),
+          stripFrontmatter: false,
+          replace: [],
+          prepend: '---\nname: handoff\n---\n\n',
+          append: '',
+        },
+      },
+    };
+
+    const results = await runSync({ config });
+
+    const written = results.filter((r) => r.status === 'written');
+    expect(written).toHaveLength(1);
+
+    const outPath = join(outputDir, 'handoff', 'SKILL.md');
+    expect(existsSync(outPath)).toBe(true);
+    const out = readFileSync(outPath, 'utf-8');
+    expect(out).toContain('name: handoff');
+    expect(out).toContain('# Handoff Contract');
+  });
+});
+
 describe('checkProvenance', () => {
   let tmpDir: string;
 
@@ -601,6 +661,48 @@ describe('checkProvenance', () => {
     });
 
     expect(result.status).toBe('unchanged');
+  });
+
+  it('passes when a new untracked canonical source regenerates an existing output', async () => {
+    // Simulates the canonicalize-skills workflow: output existed before as a
+    // hand-written file, then a brand-new canonical source is added and the
+    // output is regenerated from it. The new source is untracked, so git diff
+    // alone cannot see it — the check must still pass.
+    const sourceDir = join(tmpDir, 'source');
+    const outputPath = join(tmpDir, 'output.md');
+    mkdirSync(sourceDir, { recursive: true });
+
+    // Old hand-written output committed first
+    writeFileSync(outputPath, '# Old hand-written', 'utf-8');
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m init', { cwd: tmpDir, stdio: 'ignore' });
+
+    // New canonical source (untracked)
+    writeFileSync(join(sourceDir, 'handoff.md'), '# Handoff Contract', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    // Regenerate output from the new source
+    await processFile(join(sourceDir, 'handoff.md'), fileCfg, {
+      report: 'sync',
+      logger: () => {},
+    });
+
+    // Check must not flag a provenance violation
+    const result = await processFile(join(sourceDir, 'handoff.md'), fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('unchanged');
+    expect(result.error).toBeUndefined();
   });
 
   it('skips check when not in a git repo', async () => {

@@ -171,6 +171,31 @@ export default {
         '---\n' +
         '\n',
     },
+    'skills/handoff.md': {
+      output: '../skills/handoff/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: handoff\n' +
+        'description: >-\n' +
+        '  The 7-field handoff contract for inter-specialist delegation.\n' +
+        '  Load when receiving a task from another specialist, or when handing off work\n' +
+        '  to the next stage in the pipeline.\n' +
+        '---\n' +
+        '\n',
+    },
+
+    'skills/iteration-limits.md': {
+      output: '../skills/iteration-limits/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: iteration-limits\n' +
+        'description: >-\n' +
+        '  The iteration-limit pattern with verifiable termination and escalation format.\n' +
+        '  Load when defining termination conditions for a loop, or when a loop is at risk of\n' +
+        '  running too long.\n' +
+        '---\n' +
+        '\n',
+    },
   },
 
   preserve: ['.gitkeep'],
