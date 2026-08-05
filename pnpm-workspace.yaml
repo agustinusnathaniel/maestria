@@ -39,8 +39,9 @@ overrides:
   protobufjs: 7.6.5
   # svgo removeScripts executable-script left behind (GHSA-g4vv-4v2v-9wqh)
   svgo: 4.0.2
-  # fast-uri host confusion (GHSA-3q8p-8q5v-9g9q, GHSA-5r9g-8p4r-8m4w)
-  fast-uri: 3.1.4
+  # fast-uri host confusion (GHSA-3q8p-8q5v-9g9q, GHSA-5r9g-8p4r-8m4w, GHSA-7p8r-x3mc-p8w7)
+  # GHSA-7p8r-x3mc-p8w7 (backslash authority introducer) requires >=3.1.5; 3.1.4 was insufficient
+  fast-uri: 3.1.5
   # yaml stack overflow via deeply nested collections (GHSA-2c3x-5r88-7gxh); yaml-language-server pins 2.7.1 exactly
   'yaml-language-server>yaml': 2.9.0
   # tmp path traversal via unsanitized prefix/postfix (GHSA-83rp-98q9-gj7v); only consumer is external-editor (tmpNameSync)
