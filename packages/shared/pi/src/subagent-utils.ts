@@ -30,7 +30,7 @@ export const ALLOWED_AGENTS = [
 /** A valid specialist agent name. */
 export type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
 
-/** The 6-field handoff contract used in delegation. */
+/** The 7-field handoff contract used in delegation. */
 export const HANDOFF_FIELDS = [
   'Goal',
   'Context',

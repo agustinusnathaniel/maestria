@@ -15,7 +15,7 @@ omp install @maestria/omp
 - **Workflow mode commands** — `/fein`, `/sonar`, `/blitz`
 - **Review mode** — `/review`, `/restore-model`, `/review-model` with read-only tool restrictions and dangerous pattern protection
 - **Session state tracking** — handoff history, file tracking, blockers, persistence across compaction
-- **Structured handoff** — `/handoff` with 6-field contract
+- **Structured handoff** — `/handoff` with 7-field contract
 
 ## Usage
 
