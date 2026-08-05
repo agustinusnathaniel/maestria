@@ -40,7 +40,16 @@ function checkProvenance(sourcePath: string, outputPath: string): boolean {
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'],
       }).trim();
-      return staged.length > 0;
+      if (staged.length > 0) return true;
+      // New canonical sources are untracked, so git diff never sees them — but
+      // they are legitimate "changed" inputs to the sync pipeline (e.g. a newly
+      // added agent-directives/skills/*.md). Count untracked files as changed.
+      const porcelain = execSync(`git status --porcelain -- "${filePath}"`, {
+        cwd: repoCwd,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+      return porcelain.length > 0;
     };
 
     const outputChanged = hasChanges(outputPath);

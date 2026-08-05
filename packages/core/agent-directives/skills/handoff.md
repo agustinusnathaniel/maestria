@@ -1,15 +1,3 @@
----
-name: handoff
-description: >-
-  The 7-field handoff contract for inter-specialist delegation.
-  Load when receiving a task from another specialist, or when handing off work
-  to the next stage in the pipeline.
----
-
-
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
-
 # Handoff Contract
 
 A handoff must always include these 7 fields:
