@@ -37,3 +37,12 @@ packages/core/agent-directives/PLAN-*.md
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Environment / secrets (never commit real credentials)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
