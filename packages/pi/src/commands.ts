@@ -110,7 +110,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
         return;
       }
 
-      // Build a structured handoff document with 6 fields
+      // Build a structured handoff document with 7 fields
       const goal = args.trim();
       const handoffPrompt = [
         '**Goal:** ' + goal,
@@ -133,6 +133,9 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
         (state.blockers?.length ?? 0) > 0
           ? state.blockers.map((b: string) => '- ' + b).join('\n')
           : '(no known problems documented)',
+        '',
+        '**Assumptions documented:**',
+        '(document assumptions made, tagged [inferred] where uncertain)',
         '',
         '**Success criteria:**',
         '(fill in how to verify completion)',

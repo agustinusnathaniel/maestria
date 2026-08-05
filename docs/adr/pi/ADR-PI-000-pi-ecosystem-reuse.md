@@ -120,7 +120,7 @@ Six additional Pi gallery packages were evaluated in a follow-up survey (July 20
 
 1. **Spec-driven orchestration** - Each specialist's assigned spec (from the orchestrator's workflow DAG) is passed alongside the handoff contract. Phase gates validate that each specialist completes its spec before the next stage begins.
 2. **Session tree integration** - Each subagent invocation records its parent task ID for session tree reconstruction.
-3. **Structured cross-agent context** - Handoff contracts are validated before dispatch (6-field pre-check), not just advisory.
+3. **Structured cross-agent context** - Handoff contracts are validated before dispatch (7-field pre-check), not just advisory.
 
 ### Defer `pi-crew` and `pi-dynamic-workflows` to v1.1
 
@@ -169,7 +169,7 @@ The package was tested with `@earendil-works/pi-coding-agent@0.79.9`. The `Subag
 
 ### ✅ Handoff Validation Pre-Check Implemented
 
-As designed in the ADR, `src/subagent.ts` implements `validateHandoff()` which checks all 6 handoff fields (Goal, Context, Requirements, Known Problems, Success Criteria, Next Step) before dispatching. Rejects with clear error if a field is missing.
+As designed in the ADR, `validateHandoff()` (from `@maestria/shared-pi/subagent-utils`) checks all 7 handoff fields (Goal, Context, Requirements, Known Problems, Assumptions Documented, Success Criteria, Next Step) before dispatching. Rejects with clear error if a field is missing.
 
 ### ✅ Recursion Guard Respected
 

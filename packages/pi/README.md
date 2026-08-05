@@ -8,7 +8,7 @@ A [Pi coding agent](https://pi.software/) extension that brings Maestria's struc
 - **3 Workflow Modes** - `fein` (full pipeline), `sonar` (research only), `blitz` (fast implementation)
 - **Skill-Based Prompt Injection** - Behavioral instructions injected via Pi's native skill mechanism, not custom event hooks. Skills are auto-discovered from the package manifest and loaded into the system prompt by Pi's resource loader - the standard pattern used by all major Pi extensions.
 - **Compaction Preservation** - Session state survives compaction with structured summaries
-- **Subagent Dispatch** - Delegation via `@gotgenes/pi-subagents` with 6-field handoff validation
+- **Subagent Dispatch** - Delegation via `@gotgenes/pi-subagents` with 7-field handoff validation
 - **Maker/Checker Split** - Review mode blocks destructive tools. Dangerous bash patterns flagged.
 
 ## Installation
