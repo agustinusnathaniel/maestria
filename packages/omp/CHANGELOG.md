@@ -1,5 +1,15 @@
 # @maestria/omp
 
+## 0.3.2
+
+### Patch Changes
+
+- [#171](https://github.com/agustinusnathaniel/maestria/pull/171) [`d4d6f44`](https://github.com/agustinusnathaniel/maestria/commit/d4d6f44ea5ef7657727016e5e91f5bb0b33595e5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - handoff skill now documents the 7-field contract (including Assumptions documented); handoff and iteration-limits skills are generated from canonical sources in @maestria/core
+
+- [#169](https://github.com/agustinusnathaniel/maestria/pull/169) [`d219a87`](https://github.com/agustinusnathaniel/maestria/commit/d219a87394c87bf9b680ef59395cb6eb96a3e0f5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Align `/handoff` command output with the 7-field `HANDOFF_FIELDS` contract.
+
+  The shared handoff validator (`@maestria/shared-pi/subagent-utils`) already required 7 fields including **Assumptions documented**, but the `/handoff` command in `pi` and `omp` still generated a 6-field prompt — so handoffs produced by the command could fail validation. The command now emits the **Assumptions documented** section (with `[inferred]` tagging guidance) before Success criteria, matching the validator and the handoff SKILL.md contract.
+
 ## 0.3.1
 
 ### Patch Changes
