@@ -742,4 +742,48 @@ describe('checkProvenance', () => {
       rmSync(nonGitDir, { recursive: true, force: true });
     }
   });
+
+  it('handles output paths containing shell metacharacters without executing them', async () => {
+    // Regression test: the provenance check used to interpolate file paths
+    // into execSync shell strings. A path like '$(touch PWNED).md' would have
+    // been executed as a command. execFileSync passes it as a literal argument.
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, '$(touch PWNED).md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    // Generate output via processFile (includes auto-generated header)
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    // Commit so git state is clean
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m init', { cwd: tmpDir, stdio: 'ignore' });
+
+    // Save the correct output content, then stage a different version so git
+    // sees output as modified (same pattern as the violation test above)
+    const correctContent = readFileSync(outputPath, 'utf-8');
+    writeFileSync(outputPath, '# Wrong content', 'utf-8');
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    writeFileSync(outputPath, correctContent, 'utf-8');
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    // Provenance violation is detected — and no PWNED file was created by
+    // shell command substitution during the check.
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('Provenance violation');
+    expect(existsSync(join(tmpDir, 'PWNED'))).toBe(false);
+  });
 });
