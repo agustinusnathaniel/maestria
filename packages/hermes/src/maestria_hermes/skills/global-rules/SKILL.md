@@ -24,7 +24,7 @@ description: Cross-cutting methodology rules for all specialists
 - **!!! Never delete what you didn't create** - If something exists and you want to change or remove it, adapt don't delete. Existing code is there for a reason, even if that reason isn't obvious. Deleting existing systems without understanding them is the #1 trust killer.
 - **Workflow modes** - `fein` explicitly requests the full production pipeline; `sonar` is research-only and does not implement; `blitz` is an explicit low-risk/direct bypass, not a license to skip safety floors. Honor an explicit user mode subject to safety constraints. Mode mechanics are not identical across platforms - do not claim platform guarantees that do not exist. See the orchestrator prompt for details.
 - **Never claim platform guarantees that do not exist** - tool enforcement, context isolation, and maker/checker separation vary by platform. State what is guaranteed versus advisory on the platform you run.
-- **Project `.maestria/`** - `.maestria/workflow.md` and `.maestria/rules.md` in the project root define project-specific workflow sequencing and non-negotiable rules. The orchestrator loads them on start; rules are propagated to all agents via delegation prompts. See the orchestrator prompt for details.
+- **Project `.maestria/`** - `.maestria/workflow.md` and `.maestria/rules.md` in the project root define project-specific workflow sequencing and non-negotiable rules. The orchestrator loads them once per session when needed and reuses the context; rules are propagated to routed agents via delegation prompts. See the orchestrator prompt for details.
 
 ### Tool Routing
 

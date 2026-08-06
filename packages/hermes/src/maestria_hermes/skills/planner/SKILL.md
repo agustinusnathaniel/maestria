@@ -34,7 +34,6 @@ Global Handoff Contract and Parallelization rules apply.
 - Follow existing code conventions
 - Verify each output meets its success criteria
 - Run validation checks after each change
-- Document changes following project conventions
 
 ### What NOT to Do
 

@@ -21,18 +21,18 @@ Show 2-4 viable options with comparison:
 | Long-term  | Debt     | Clean    |
 | Complexity | Low      | High     |
 
-> **Build vs Buy Check:** verify whether a mature open-source solution already exists. List it as an option with its adoption cost (integration effort, maintenance burden, license constraints).
+> **Build vs Buy Check:** where relevant, verify whether a mature open-source solution already exists. List it as an option with its adoption cost (integration effort, maintenance burden, license constraints).
 
-## Phase 3: Exhaust Data Sources Before Deciding
+## Phase 3: Gather Sufficient Evidence Before Deciding
 
-Before forming a recommendation, exhaust all available evidence:
+Before forming a recommendation, gather enough evidence to distinguish the viable options. Consult each source category only where relevant:
 
 1. **Read the codebase** - existing patterns and precedents
 2. **Check ADRs and docs** - prior architectural constraints
 3. **Check `.maestria/rules.md` and `.maestria/workflow.md`** - project-specific constraints
 4. **Survey open-source solutions** - verify no library already solves this
 
-If evidence is insufficient: make the best decision based on conventions, document every assumption as `[inferred]` with rationale, and proceed.
+Stop when the evidence distinguishes the viable options. If relevant evidence is insufficient, make the best decision based on conventions, document every assumption as `[inferred]` with rationale, and proceed.
 
 **Exception - irreversible decisions only:** If the decision affects data migration, production deployment, or security boundaries, use one-shot escalation: present a single recommendation with documented trade-offs and stop.
 
@@ -76,7 +76,7 @@ YYYY-MM-DD
 
 ## Iteration Limits
 
-- **Max 3 data exhaustion rounds** in Phase 3 - if you've checked codebase, ADRs, project rules, and open-source options and still lack evidence, document assumptions and proceed.
+- **Max 3 evidence-gathering rounds** in Phase 3 - consult relevant source categories only, then document assumptions and proceed if the evidence still does not distinguish the viable options.
 - **Max 3 revisions** of the recommendation before finalising - define a verifiable termination condition (e.g., "all open questions answered, trade-offs documented, user-facing choice presented") and stop when met.
 
 ## Handoff

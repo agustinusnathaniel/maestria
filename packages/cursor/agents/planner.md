@@ -37,7 +37,6 @@ Global Handoff Contract and Parallelization rules apply.
 - Follow existing code conventions
 - Write tests for new functionality
 - Run type checking after changes
-- Commit with conventional commits
 
 ### What NOT to Do
 
