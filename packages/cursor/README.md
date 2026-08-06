@@ -36,11 +36,11 @@ See [INSTALL.md](./INSTALL.md) for the full checklist.
 
 ## Commands
 
-| Command  | Description                                        |
-| -------- | -------------------------------------------------- |
-| `/fein`  | Full pipeline: recon → design → implement → review |
-| `/sonar` | Research only: recon → design → stop               |
-| `/blitz` | Fast implementation via builder                    |
+| Command  | Description                                                               |
+| -------- | ------------------------------------------------------------------------- |
+| `/fein`  | Full pipeline: recon → design → implement → review                        |
+| `/sonar` | Research only: recon → design → stop                                      |
+| `/blitz` | Direct execution; independent review before shipping if an artifact lands |
 
 ## Development
 

@@ -62,7 +62,7 @@ Global Handoff Contract and Parallelization rules apply.
 - **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
 - **!!! Verifiable completion criteria** - success criteria and rollback points are mandatory for every phase.
 - **!!! No open questions in plans** - convert every open question into an assumption with supporting evidence.
-- **!!! Maker/checker split** - reviewed by `@reviewer`. Produce the plan; do not QA it.
+- **!!! Maker/checker split** - If this plan will land, it requires the route-scoped independent reviewer before landing. Produce the plan and do not self-QA it. Research-only and non-landing work remains review-free unless concrete risk requires review.
 - **!!! Validate before handoff** - never present a plan lacking success criteria or rollback points.
 
 ## Guard Rails
@@ -72,7 +72,7 @@ Global Handoff Contract and Parallelization rules apply.
 - Follow existing code conventions
 - Write tests for new functionality
 - Run type checking after changes
-- Commit with conventional commits
+- State commit requirements only when the orchestrator explicitly authorizes a commit
 
 ### What NOT to Do
 

@@ -5,6 +5,6 @@
 
 ## MODE: blitz (Fast Implementation)
 
-Explicit low-risk/direct bypass: skip reconnaissance and design gates for familiar, low-risk work. Go directly to /builder for implementation (or direct execution where the host supports it). Only use /adventurer if the codebase context is genuinely unknown (not as a default step). Skip /reviewer unless the user explicitly requests review.
+Explicit `direct` route for familiar, low-risk work. Execute on the host or use the platform's native direct capability. Never delegate to `/builder` or any other Maestria specialist from blitz.
 
-Safety floors still apply. Blitz does not waive security review, migration care, permission changes, production impact checks, or user checkpoints for irreversible changes. If the task raises any of these, escalate to the normal route or ask the user first.
+Safety floors still apply. Blitz does not waive security review, migration care, permission changes, production impact checks, or checkpoints for irreversible changes. A direct implementation that will land must escalate to an independent reviewer before landing, while blitz execution itself remains zero-child. Normal implementation requests authorize autonomous shipping unless the user limits the work to research-only, no-commit, or no-ship.

@@ -81,4 +81,45 @@ describe('extension entry point', () => {
     await handler({}, ctx);
     expect(getEntries).toHaveBeenCalled();
   });
+
+  it('resets state and transient mode when a resumed session has no state entry', async () => {
+    const pi = createMockPi();
+    let entries: unknown[] = [
+      {
+        type: 'custom',
+        customType: 'maestria_state',
+        data: { mode: 'fein', activeTask: 'stale task' },
+      },
+    ];
+    const getEntries = vi.fn(() => entries);
+    const ctx = { sessionManager: { getEntries } };
+    extension(pi as unknown as ExtensionAPI);
+
+    const handlers = (pi.on as ReturnType<typeof vi.fn>).mock.calls;
+    const sessionStart = handlers.find((call: unknown[]) => call[0] === 'session_start')![1] as (
+      event: unknown,
+      ctx: unknown,
+    ) => unknown;
+    const input = handlers.find((call: unknown[]) => call[0] === 'input')![1] as (
+      event: unknown,
+      ctx: unknown,
+    ) => unknown;
+    const beforeAgentStart = handlers.find(
+      (call: unknown[]) => call[0] === 'before_agent_start',
+    )![1] as (event: unknown, ctx: unknown) => unknown;
+
+    await sessionStart({ reason: 'startup' }, ctx);
+    await input({ text: 'blitz do this once' }, {});
+    entries = [];
+    await sessionStart({ reason: 'resume' }, ctx);
+
+    expect(beforeAgentStart({ systemPrompt: 'base' }, {})).toBeUndefined();
+
+    const statusHandler = (pi.registerCommand as ReturnType<typeof vi.fn>).mock.calls.find(
+      (call: unknown[]) => call[0] === 'maestria-status',
+    )![1].handler as (args: string, ctx: unknown) => Promise<void>;
+    const notify = vi.fn();
+    await statusHandler('', { ui: { notify } });
+    expect(notify).toHaveBeenCalledWith('No active maestria state to report.');
+  });
 });

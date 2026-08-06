@@ -232,6 +232,19 @@ describe('skills directory', () => {
     expect(head).toMatch(/do not edit/i);
   });
 
+  it('blitz skill describes direct zero-child execution and independent landing review', async () => {
+    const skillPath = path.join(PACKAGE_ROOT, 'skills', 'commands', 'blitz', 'SKILL.md');
+    const text = await readFile(skillPath, 'utf8');
+    const { data } = parseFrontmatter(text);
+
+    expect(data.description).toBe(
+      'Direct zero-child execution with independent landing review before shipping',
+    );
+    expect(text).toContain('Never delegate to `builder` or any other Maestria specialist');
+    expect(text).toContain('independent reviewer before landing');
+    expect(text).not.toContain('skip recon/design');
+  });
+
   it('adventurer skill has the explicit read-only Bash constraint near the top', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'adventurer', 'SKILL.md'),
@@ -268,10 +281,24 @@ describe('rules/AGENTS.md', () => {
     ]) {
       expect(text).toContain(specialist);
     }
-    // All three sections from the opencode rules are preserved.
-    expect(text).toContain('## Orchestration');
-    expect(text).toContain('## Delegation');
-    expect(text).toContain('## Context Management');
+    // The canonical route contract is preserved in the generated rules.
+    expect(text).toContain('## Route contract');
+    expect(text).toContain('| `direct` | Host execution only. No Maestria child and no handoff. |');
+    expect(text).toContain(
+      '| `focused` | One targeted specialist. Add one reviewer only for an explicit risk criterion. |',
+    );
+    expect(text).toContain(
+      '| `full` | One thinker, one worker, and one reviewer by default. Add fan-out only for evidenced risk. |',
+    );
+    expect(text).toContain('## Handoffs and iteration');
+    expect(text).toContain('## Handoff Contract');
+    expect(text).toContain('Focused work uses the compact five-field contract');
+    expect(text).toContain('Full or cross-agent work uses all seven fields');
+    expect(text).toContain('## Specialist routing and skills');
+    expect(text).toContain('## Autonomous shipping and commit protocol');
+    expect(text).toContain(
+      'Do not scan, install, or require skill acknowledgement before every delegation.',
+    );
   });
 });
 

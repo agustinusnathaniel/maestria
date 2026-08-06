@@ -70,7 +70,7 @@ Users can trigger modes with slash commands from this plugin:
 | --- | --- |
 | \`/fein\` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | \`/sonar\` | Research only: adventurer → architect/planner → STOP |
-| \`/blitz\` | Fast path: builder directly (skip recon/design unless unknown) |
+| \`/blitz\` | Direct execution with no Maestria child; independent review before shipping if an artifact lands |
 
 ## Related Agents
 
@@ -235,13 +235,13 @@ export default {
       prepend: [
         '---',
         'name: blitz',
-        'description: Fast Maestria implementation via builder (skip recon/design unless unknown)',
+        'description: Direct Maestria execution with no child delegation; independent review before shipping if an artifact lands',
         '---',
         '',
       ].join('\n'),
       append: [
         '',
-        'Load the `orchestrator` skill if coordination is needed. Prefer a single `Task` to `builder` with a clear handoff.',
+        'Execute directly in the current session. Do not spawn a Maestria child during blitz execution. If the artifact will land, transition to an independent reviewer before shipping.',
         '',
         'If the user provided a goal after `/blitz`, implement that goal now.',
       ].join('\n'),

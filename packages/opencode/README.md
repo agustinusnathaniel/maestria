@@ -36,7 +36,7 @@ To that end, the plugin is built on five design principles:
 - **Does NOT require or provide a specific LLM provider** - Model selection is OpenCode configuration. No provider lock-in, no subscription or API key required. MIT-licensed, open source.
 - **Does NOT work outside OpenCode** - This is an OpenCode plugin. Kimi Code and Hermes adaptations are in development as separate packages under the `@maestria` scope, each independently versioned and maintained.
 - **Does NOT include telemetry, usage tracking, or external data collection** - No data leaves your machine. No analytics. No crash reporting. The plugin has zero network calls of its own.
-- **Does NOT enforce rules programmatically** - Rules are guidance, not gates. The `!!!` convention signals non-negotiable rules, but the agent can still violate them. Enforcement happens through permissions and review, not runtime checks.
+- **Does NOT enforce every rule programmatically** - Prose directives remain guidance, while the root orchestrator's per-turn route and tool availability are enforced at runtime.
 
 ## What It Does
 
@@ -91,7 +91,8 @@ To pin a specific version, use `"@maestria/opencode@0.3.3"` instead of `"@maestr
 2. **Config hook** - The plugin reads bundled agent markdown files, parses their frontmatter, and registers them programmatically with OpenCode
 3. **Rules injected** - `system.transform` hook appends rules to every session
 4. **Agents available** - All 8 agents are available as subagents via `@` mention
-5. **State preserved** - `session.compacting` hook preserves task status across compaction events
+5. **Route gate active** - Root orchestrator turns start fail-closed, select direct/focused/full, and are enforced by the tool hook
+6. **State preserved** - `session.compacting` hook preserves task status across compaction events
 
 ### Design Philosophy
 

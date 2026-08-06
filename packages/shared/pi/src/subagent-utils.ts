@@ -30,7 +30,7 @@ export const ALLOWED_AGENTS = [
 /** A valid specialist agent name. */
 export type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
 
-/** The 7-field handoff contract used in delegation. */
+/** The 7-field handoff contract used in full or cross-agent delegation. */
 export const HANDOFF_FIELDS = [
   'Goal',
   'Context',
@@ -40,6 +40,23 @@ export const HANDOFF_FIELDS = [
   'Success criteria',
   'Next step',
 ] as const;
+
+/** The compact handoff contract used for focused delegation. */
+export const FOCUSED_HANDOFF_FIELDS = [
+  'Goal',
+  'Context/scope',
+  'Constraints/assumptions',
+  'Success criteria',
+  'Next step',
+] as const;
+
+export type HandoffProfile = 'focused' | 'full';
+
+/** Required handoff fields for each supported delegation profile. */
+export const HANDOFF_FIELDS_BY_PROFILE: Record<HandoffProfile, readonly string[]> = {
+  focused: FOCUSED_HANDOFF_FIELDS,
+  full: HANDOFF_FIELDS,
+};
 
 /** Result of validating a handoff document against the contract fields. */
 export interface HandoffValidation {
@@ -75,9 +92,12 @@ export function assertNonEmptyTask(
  * with non-empty content. Each field is expected in markdown bold format:
  * `**Field:** content`.
  */
-export function validateHandoff(handoff: string): HandoffValidation {
+export function validateHandoff(
+  handoff: string,
+  profile: HandoffProfile = 'full',
+): HandoffValidation {
   const errors: string[] = [];
-  for (const field of HANDOFF_FIELDS) {
+  for (const field of HANDOFF_FIELDS_BY_PROFILE[profile]) {
     // Match field header and capture content up to the next field or end of string.
     // This avoids false positives when an empty field is followed by another field's `**` header.
     const pattern = `\\*\\*${field}:\\*\\*([\\s\\S]*?)(?=\

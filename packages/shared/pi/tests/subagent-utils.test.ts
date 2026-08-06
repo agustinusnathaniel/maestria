@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vite-plus/test';
 import {
   ALLOWED_AGENTS,
+  FOCUSED_HANDOFF_FIELDS,
   HANDOFF_FIELDS,
   MAESTRIA_EVENTS,
   assertValidAgent,
@@ -43,6 +44,22 @@ describe('HANDOFF_FIELDS', () => {
 
   it('contains no duplicate field names', () => {
     expect(new Set(HANDOFF_FIELDS).size).toBe(HANDOFF_FIELDS.length);
+  });
+});
+
+describe('FOCUSED_HANDOFF_FIELDS', () => {
+  it('contains exactly the compact focused handoff fields', () => {
+    expect(FOCUSED_HANDOFF_FIELDS).toEqual([
+      'Goal',
+      'Context/scope',
+      'Constraints/assumptions',
+      'Success criteria',
+      'Next step',
+    ]);
+  });
+
+  it('contains no duplicate field names', () => {
+    expect(new Set(FOCUSED_HANDOFF_FIELDS).size).toBe(FOCUSED_HANDOFF_FIELDS.length);
   });
 });
 
@@ -140,6 +157,54 @@ describe('validateHandoff', () => {
     const result = validateHandoff(handoff);
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
+  });
+
+  it('returns valid=true for a focused handoff with exactly 5 fields', () => {
+    const handoff = [
+      '**Goal:** build feature',
+      '**Context/scope:** in repo root',
+      '**Constraints/assumptions:** must be fast; [inferred] no migration',
+      '**Success criteria:** tests pass',
+      '**Next step:** merge PR',
+    ].join('\n');
+    const result = validateHandoff(handoff, 'focused');
+    expect(result).toEqual({ valid: true, errors: [] });
+  });
+
+  it('rejects a focused handoff when any compact field is missing', () => {
+    const handoff = [
+      '**Goal:** build feature',
+      '**Context/scope:** in repo root',
+      '**Success criteria:** tests pass',
+      '**Next step:** merge PR',
+    ].join('\n');
+    const result = validateHandoff(handoff, 'focused');
+    expect(result).toEqual({
+      valid: false,
+      errors: ['Missing or empty field: "Constraints/assumptions"'],
+    });
+  });
+
+  it('keeps the full 7-field contract as the default profile', () => {
+    const focusedHandoff = [
+      '**Goal:** build feature',
+      '**Context/scope:** in repo root',
+      '**Constraints/assumptions:** must be fast',
+      '**Success criteria:** tests pass',
+      '**Next step:** merge PR',
+    ].join('\n');
+
+    const defaultResult = validateHandoff(focusedHandoff);
+    const explicitFullResult = validateHandoff(focusedHandoff, 'full');
+
+    expect(defaultResult).toEqual(explicitFullResult);
+    expect(defaultResult.valid).toBe(false);
+    expect(defaultResult.errors).toEqual([
+      'Missing or empty field: "Context"',
+      'Missing or empty field: "Requirements"',
+      'Missing or empty field: "Known problems"',
+      'Missing or empty field: "Assumptions documented"',
+    ]);
   });
 
   it('returns valid=false and lists missing fields', () => {

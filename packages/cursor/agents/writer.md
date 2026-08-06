@@ -54,7 +54,7 @@ You write documentation.
 
 ## Handoff
 
-Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
+Before reporting done: use the route-appropriate handoff contract in `skills/handoff.md` and verify its success criteria.
 
 ## Iteration Limits & Check
 

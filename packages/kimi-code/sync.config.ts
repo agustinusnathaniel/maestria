@@ -353,7 +353,7 @@ This should appear at the end of your response when the user asks for a handoff,
         '**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
       frontmatter: {
         name: 'blitz',
-        description: 'Fast implementation mode: skip recon/design unless unknown',
+        description: 'Direct zero-child execution with independent landing review before shipping',
         type: 'prompt',
         whenToUse:
           'When the user types /blitz or includes "blitz" in their message for fast implementation.',

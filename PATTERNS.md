@@ -1,165 +1,116 @@
 # Maestria Design Patterns
 
-This document catalogs the two design patterns that Maestria adapts to each platform's native primitives. The patterns are shared; their dispatch, context, and tool enforcement are not identical.
-
-If you're porting maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to OpenCode's subagents, Kimi Code's AgentSwarm, or Claude Code's hooks.
-
----
+Maestria adapts two patterns to each platform's native primitives. Route, context, and tool enforcement are platform-specific and must not be inferred from the pattern alone. Canonical hard rules take precedence over project `.maestria` rules; project rules may add constraints but cannot waive core floors.
 
 ## Pattern: Pipeline Composition
 
 ### What It Is
 
-A sequential flow where work passes through specialized stages, each adding value and producing a structured handoff for the next. No stage does the work of another - the adventurer maps code but doesn't edit it, the builder implements but doesn't review, the reviewer validates but doesn't redesign.
+Pipeline composition gives each specialist one concern and passes a structured result to the next owner when delegation is justified. It is not a ceremony that every task must run.
 
-The pipeline is the backbone of a full Maestria workflow. It forces discipline: reconnaissance before design, design before implementation, implementation before review. Select the full pipeline when those stages add enough information or risk reduction to justify their model and latency cost. Direct execution or one specialist is valid for smaller or better-understood work.
+| Route | Composition |
+| --- | --- |
+| `direct` | Host execution. No child or handoff during execution. |
+| `focused` | One targeted specialist. One reviewer before landing when it will land, or when concrete risk requires review. |
+| `full` | One thinker -> one worker -> one independent reviewer by default. |
 
-**The maestria pipeline:**
+Direct is the default for simple, familiar, low-risk work. Focused is the default for ordinary work needing one owner. Full is for complex or high-risk work and explicit `fein` requests. Extra thinkers, workers, parallel branches, or review lenses require concrete evidence of an additional risk. Do not add startup reconnaissance or require recon/design before every builder task.
 
-```
-Input → @adventurer (recon) → @planner or @architect (plan/design)
-  → @builder (implement) → @reviewer (validate) → Output
-```
+Direct research and non-landing work remain review-free unless risk requires review. Direct implementation that will land escalates to a review-capable route before commit, push, publish, merge, or PR creation. Direct execution itself remains zero-child. Focused research and non-landing work follow the same conditional review rule. Full always retains independent review.
 
-Each arrow is a structured handoff, not a loose "figure it out" delegation. Planner and architect are alternatives at the same pipeline stage - the orchestrator delegates to whichever fits the task. For simple features, one suffices. For complex features, both may participate (planner scopes the work, architect evaluates approach). The output of one stage is the input briefing for the next.
+### Route Selection
 
-### Sub-Elements
+Select the specialist that owns the concern:
 
-#### Handoff Contract
+- `@adventurer` - unfamiliar-code reconnaissance and tracing
+- `@architect` - architecture decisions and trade-offs
+- `@builder` - one atomic implementation task
+- `@diagnose` - root-cause analysis for failures and regressions
+- `@planner` - multi-step implementation plans
+- `@reviewer` - independent quality and correctness review
+- `@writer` - documentation and structured prose
 
-Every delegation crossing an agent boundary must be a complete briefing. Without this structure, agents lose context, invent assumptions, or produce output that doesn't connect to the next stage.
+Do not bundle unrelated concerns or overlap write ownership. `sonar` selects one research specialist and stops before implementation. `blitz` selects direct execution and never delegates to a Maestria child. Platform route gates may enforce these boundaries differently; do not claim guarantees a platform does not provide.
 
-The contract has seven fields:
+### Handoff Contract
 
-| Field                      | Purpose                                                         |
-| -------------------------- | --------------------------------------------------------------- |
-| **Goal**                   | What to achieve and why it matters                              |
-| **Context**                | Relevant paths, constraints, prior decisions, what's been tried |
-| **Requirements**           | Specific expectations and boundaries                            |
-| **Known problems**         | Issues already identified, things to watch for                  |
-| **Assumptions documented** | Explicit assumptions made during the task and their evidence    |
-| **Success criteria**       | How to verify the work is done (the completions promise)        |
-| **Next step**              | What happens after this task completes                          |
+Direct turns have no handoff. A focused handoff contains five fields:
 
-Every handoff ends with: _"If anything is unclear or ambiguous, exhaust available data first, document your assumption, and proceed."_
+1. **Goal**
+2. **Context/scope**
+3. **Constraints/assumptions**
+4. **Success criteria**
+5. **Next step**
 
-Example:
+Full and cross-agent work uses seven fields:
 
-```
-Goal: Map the auth module's session handling paths before we refactor login.
-Context: /src/auth/session.ts (the main file), ADR-CORE-003 in docs/adr/core/.
-  We already know the token refresh path has a race condition (issue #42).
-Requirements: Trace every code path that reads or writes session state.
-  Do not edit any files - read only. List files and line numbers.
-Known problems: The JWT expiration check in session.ts line 89 uses wall
-  clock time instead of server time, which causes intermittent failures
-  across timezones.
-Success criteria: A complete call graph of session operations with file
-  paths, line numbers, and the race condition's entry points documented.
-Next step: @architect receives this map to design the fix strategy.
-```
+1. **Goal**
+2. **Context**
+3. **Requirements**
+4. **Known problems**
+5. **Assumptions documented**
+6. **Success criteria**
+7. **Next step**
 
-#### Iteration Limits
+For ambiguity, exhaust available data, document assumptions with evidence, and proceed. Stop only for a migration/data, production, security, irreversible, or safety-ambiguity checkpoint, or when the success criteria cannot be met.
 
-Every pipeline stage must have three controls:
+### Review Protocol
 
-1. **Verifiable termination condition** - a concrete, measurable state that stops execution. Not "done when it feels right." Done when the success criteria in the handoff contract are met.
+The reviewer receives the original requirements, acceptance criteria, and diff. The reviewer does not receive the maker's handoff, implementation summary, self-assessment, test-results narrative, or prior builder access list. This is blind review against non-maker signals.
 
-2. **Max-N hard limit** - usually 3 attempts before escalation. If a stage fails after N tries, it's not a persistence problem; it's a context, skill, or approach problem that needs human judgment.
+Review findings are triaged as `[fix]`, `[dismiss]`, or `[escalate]`. Full-route review allows up to three bounded fix/review cycles. Unresolved `[fix]` findings after the third cycle block landing and fail loud with the attempted approaches, remaining findings, last diff delta, and required input. Any unresolved `[escalate]` finding blocks landing until its required decision is recorded. Do not silently ship the last attempt or expand the pipeline indefinitely.
 
-3. **Escalation format** - a structured signal so the next stage or the human operator can take over without guessing what went wrong:
+Use multiple review lenses only for evidenced multi-concern, security, performance, or large-diff risk. Use one reviewer for ordinary full work and scale expensive or slow models down to one review pass.
+
+### Iteration Limits
+
+Every loop has:
+
+1. A verifiable termination condition.
+2. A hard limit of three attempts.
+3. An escalation signal:
 
    ```
    Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.
    ```
 
-   Example from the builder: _"Tried three implementation approaches: direct mutation (broke test isolation), event emitter (added 200 lines of glue), and a middleware hook (clean but needs a new dependency). Blocked by decision: is adding `eventemitter3` acceptable, or should we avoid new dependencies? Need architectural guidance from @architect to proceed."_
+After two consecutive user rejections of the current approach, stop that approach and escalate rather than iterating a third time on it.
 
-#### Pipeline Rules
+### Autonomous Shipping
 
-1. **One atomic task per stage** - never bundle unrelated work into a single delegation. A bug fix and a feature in the same `@builder` call is a scoping violation. The constraint is conceptual (one concern per invocation), not quantitative (one file per invocation).
+An ordinary implementation request authorizes the orchestrator's autonomous route-scoped shipping flow unless the user explicitly limits it to research-only, no-commit, or no-ship. Specialists may commit, push, or create a PR only when the orchestrator delegates the exact operation, files, message, and validation. Direct root work follows the same flow. Human checkpoints are restricted to data migrations, production, security, irreversible decisions, and safety ambiguity.
 
-2. **Full pipeline when selected** - a multi-file, cross-module, or new-feature task may follow `adventurer → planner or architect → builder → reviewer` when the task's risk or uncertainty justifies it. Skipping stages is expected for direct and focused routes. The handoff should state why the selected route is appropriate.
-
-3. **Parallel fan-out is allowed for independent tasks** - max 3-5 subtasks per turn. Examples: `@adventurer` mapping auth + `@adventurer` tracing billing in parallel; `@reviewer` checking PR #7 + `@builder` fixing bug #42 + `@architect` evaluating a dependency decision.
-
-4. **Stages are ordered by dependency** - later stages cannot proceed without earlier stages' output. The builder cannot implement what the planner hasn't scoped. The reviewer cannot validate what the builder hasn't built. This seems obvious. It gets violated when someone tries to parallelize dependent work.
-
-### Platform Adaptation
-
-How each platform implements this pattern:
-
-| Platform | Primitive | Implementation |
-| --- | --- | --- |
-| **OpenCode** | `task()` subagents | Orchestrator delegates to specialist agents via the 7-agent pipeline. Each agent is a markdown file with frontmatter permissions. Orchestrator has `read` and `edit` denied, and Bash denied except `npx --yes skills@latest *` for skill installation. Git inspection and runtime queries are delegated to `@adventurer`, which allow-lists read-only shell and git commands. All other shell commands are denied. |
-| **Kimi Code** | AgentSwarm with persona-per-stage | Seven roles map onto three native profiles. Persona boundaries are advisory by default; `[[permission.rules]]` can enforce review-only behavior, but those rules apply to the session rather than one subagent. |
-| **Cursor** | Task subagents + skills/commands | Specialists ship as plugin `agents/*.md`; orchestrator as a skill; workflow modes as `commands/` (`fein`/`sonar`/`blitz`). Global rules via `alwaysApply` `.mdc`. Same bundle for IDE and CLI. |
-| **Claude Code** | Hooks and agent extensions | Stages are implemented as hooks that load agent definitions and tool configurations per phase. Handoff contracts pass through context variables. |
-| **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
-| **Oh My Pi** | native `task()` plus wrapper | OMP has a distinct dispatch path and tool behavior. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
-
----
+Before shipping, inspect status, focused diff, recent history, branch, and worktrees. Every change under `packages/` or any behavior-affecting change requires a changeset; docs-only or internal-only changes follow the repository's actual conventions. Audit internal docs/ADRs, user-facing docs, and changelog entries. Compose a conventional commit message, stage only intended files, verify the staged and clean state, and commit and push meaningful work only on a non-primary feature branch. Never use `main` or `master`. Create or update a PR with Summary, Changes or Work Results, Testing, and Breaking Changes. Worktrees are isolated and proceed after inspection. Preserve unrelated work on unrecognized branches and ask only when ownership or safety remains ambiguous.
 
 ## Pattern: Maker/Checker Split
 
 ### What It Is
 
-The agent that produces work should not be the agent that validates it. In a full pipeline, a different agent performs verification. The strength of that boundary depends on the platform: OpenCode enforces it at the tool layer, while other platforms may provide only persona guidance unless users configure review-only permissions or sessions.
+When a route selects a reviewer, the agent that produces the artifact is not the agent that validates it. Full includes one reviewer by default. Focused landing work includes one reviewer before landing. Direct execution has no child review during execution, but a direct artifact that will land must escalate to a review-capable route first.
 
-The KB (from `loop-engineering.mdx`) puts it bluntly: _"The model that wrote the code is too nice grading its own homework."_ The model that produced a result has committed to it - every subsequent reasoning step is biased toward confirming correctness, not finding flaws. A fresh agent, seeing the work for the first time, catches what the implementer overlooked.
+The reviewer checks the original requirements, acceptance criteria, and diff, not the maker's self-assessment. The boundary is strongest where the platform enforces read-only tools and separate context, and advisory elsewhere.
 
-The maker/checker split applies recursively to _itself_: a fresh model decides if the work is done, not the one that did the work.
+### Completions Promise
 
-### Sub-Elements
-
-#### Completions Promise
-
-Success criteria defined _before_ work begins. The template:
+Define success criteria before work begins:
 
 ```
 This task is complete when [verifiable conditions].
 ```
 
-Examples:
+The reviewer checks this promise rather than substituting a new subjective definition of done.
 
-- _"This task is complete when all tests pass, the new `/sessions` endpoint returns HTTP 201 with a valid session token, and the existing session tests are green."_
+### Permission Enforcement
 
-- _"This task is complete when the refactored module has the same public API, all existing tests pass unchanged, and test coverage is ≥ 90%."_
+Platform enforcement varies:
 
-The completions promise is what makes the reviewer's job mechanical instead of interpretive. The reviewer checks the promise, not their opinion. If the criteria are met, the task passes. If the criteria are wrong, the fix is in the promise, not in the reviewer's subjective judgment.
+| Platform | Enforcement |
+| --- | --- |
+| **OpenCode** | Route gates and reviewer permissions can enforce bounded tools and read-only review. |
+| **Kimi Code** | Review-only behavior depends on configured session permissions. |
+| **Cursor** | Read-only agent settings can block write tools. |
+| **Claude Code** | Agent tool configuration can omit editing tools. |
+| **Pi** | Reviewer role guidance and platform dispatch affect isolation. |
+| **Oh My Pi** | Native task behavior and role guidance affect isolation. |
 
-#### Permission Enforcement
-
-In OpenCode, the checker agent has `edit: deny`. It cannot modify files - only read and report. This is technical enforcement of the behavioral split. Other platforms must be treated according to their own enforcement guarantees.
-
-OpenCode implementation (from `orchestrator.md` frontmatter):
-
-```yaml
-permission:
-  edit: deny
-  bash:
-    '*': deny
-```
-
-The reviewer can run `git status`, `git diff`, `git log` for context, but cannot stage, commit, create files, or modify anything. The review artifact is text - findings, severity levels, and recommendations - that flows back into the pipeline.
-
-#### Why This Matters
-
-Self-review fails for three reasons, each documented from real sessions:
-
-1. **Commitment bias** - the producing model has already decided the output is correct. Its "review" is a confirmation exercise, not a critical one.
-
-2. **Context blindness** - the producing model is deep in implementation details and misses higher-level issues (architecture drift, edge cases, boundary conditions). A fresh agent sees the forest, not just the tree.
-
-3. **Toolset overlap** - if the reviewer has write access, it will eventually use it. The `edit: deny` enforcement is not about trust; it's about removing temptation. An agent with write access that finds a minor issue will fix it, violating the split.
-
-### Platform Adaptation
-
-| Platform | Primitive | Implementation |
-| --- | --- | --- |
-| **OpenCode** | `edit: deny` in frontmatter | Reviewer agent YAML sets `permission.edit: deny` and restricts bash to git inspection only. No write tool access at the agent definition level. |
-| **Kimi Code** | Safety constraints + persona | Reviewer behavior is advisory by default. Review-only sessions can deny Write/Edit with `[[permission.rules]]`, but the session-wide rules also affect builder and writer work. |
-| **Cursor** | Two-layer enforcement (v1) | Runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools (Write, StrReplace, Delete). Prompt-level instructions serve as a backup layer. |
-| **Claude Code** | Read-only tool access | Reviewer is spawned via `new Agent({ tools: { Edit: false, Read: true, Bash: false } })` or equivalent tool-level permission gating. No hooks can escalate write access. |
-| **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
-| **Oh My Pi** | Native task dispatch and role guidance | OMP has distinct dispatch and context behavior. A direct session does not automatically create a maker/checker pair. |
+Do not claim technical maker/checker enforcement where the platform provides only prompt guidance.

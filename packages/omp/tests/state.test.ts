@@ -15,6 +15,10 @@ import { HANDOFF_HISTORY_CAP, FILE_HISTORY_CAP } from '@/state.js';
 
 const NEW_STATE_KEYS = [
   'mode',
+  'landingReview',
+  'landingReviewBinding',
+  'landingReviewFailureReason',
+  'landingReviewShippingStarted',
   'activeTask',
   'completionPromise',
   'specialistsDelegated',
@@ -34,6 +38,7 @@ describe('createInitialState', () => {
   it('should return mode: null', () => {
     const state = createInitialState();
     expect(state.mode).toBeNull();
+    expect(state.landingReview).toBe('execution');
   });
 
   it('should return a state object with the correct shape', () => {

@@ -6,7 +6,8 @@ import {
   renderMaestriaSummary,
   restoreOriginalState,
 } from '@/state.js';
-import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
+import type { ModeController } from '@maestria/shared-pi/modes-core';
+import { MAESTRIA_EVENTS, type HandoffProfile } from '@maestria/shared-pi/subagent-utils';
 
 /**
  * Read-only tools that let a reviewer inspect code without making changes.
@@ -20,7 +21,11 @@ import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
  */
 const READ_ONLY_TOOLS = ['read', 'grep', 'find', 'ls', 'glob'];
 
-export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
+export function installCommands(
+  pi: ExtensionAPI,
+  state: MaestriaState,
+  modeController?: Pick<ModeController, 'getMode'>,
+): void {
   pi.registerCommand('maestria-status', {
     description: 'Show current maestria session state including handoff history',
     handler: async (_args: string, ctx) => {
@@ -110,13 +115,11 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
         return;
       }
 
-      // Build a structured handoff document with 7 fields
       const goal = args.trim();
-      const handoffPrompt = [
-        '**Goal:** ' + goal,
-        '',
-        '**Context:**',
-        '- Mode: ' + (state.mode ?? 'none'),
+      const mode = modeController?.getMode() ?? state.mode;
+      const profile: HandoffProfile = mode === 'sonar' ? 'focused' : 'full';
+      const contextLines = [
+        '- Mode: ' + (mode ?? 'none'),
         '- Active task: ' + (state.activeTask || 'none'),
         '- Specialists delegated: ' +
           ((state.specialistsDelegated?.length ?? 0) > 0
@@ -125,27 +128,57 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaState): void {
         '- Recent handoffs: ' + (state.handoffHistory?.length ?? 0) + ' entries',
         '- Files modified: ' +
           ((state.filesModified?.length ?? 0) > 0 ? state.filesModified.join(', ') : 'none'),
-        '',
-        '**Requirements:**',
-        '(fill in specific requirements)',
-        '',
-        '**Known problems:**',
+      ];
+      const knownProblems =
         (state.blockers?.length ?? 0) > 0
           ? state.blockers.map((b: string) => '- ' + b).join('\n')
-          : '(no known problems documented)',
-        '',
-        '**Assumptions documented:**',
-        '(document assumptions made, tagged [inferred] where uncertain)',
-        '',
-        '**Success criteria:**',
-        '(fill in how to verify completion)',
-        '',
-        '**Next step:**',
-        '(fill in what happens after this task)',
-        '',
-        '---',
-        'Complete the fields above before sending.',
-      ].join('\n');
+          : '(no known problems documented)';
+      const handoffPrompt =
+        profile === 'focused'
+          ? [
+              '**Goal:** ' + goal,
+              '',
+              '**Context/scope:**',
+              ...contextLines,
+              '',
+              '**Constraints/assumptions:**',
+              '- Known problems:',
+              knownProblems,
+              '- (document assumptions made, tagged [inferred] where uncertain)',
+              '',
+              '**Success criteria:**',
+              '(fill in how to verify completion)',
+              '',
+              '**Next step:**',
+              '(fill in what happens after this task)',
+              '',
+              '---',
+              'Complete the fields above before sending.',
+            ].join('\n')
+          : [
+              '**Goal:** ' + goal,
+              '',
+              '**Context:**',
+              ...contextLines,
+              '',
+              '**Requirements:**',
+              '(fill in specific requirements)',
+              '',
+              '**Known problems:**',
+              knownProblems,
+              '',
+              '**Assumptions documented:**',
+              '(document assumptions made, tagged [inferred] where uncertain)',
+              '',
+              '**Success criteria:**',
+              '(fill in how to verify completion)',
+              '',
+              '**Next step:**',
+              '(fill in what happens after this task)',
+              '',
+              '---',
+              'Complete the fields above before sending.',
+            ].join('\n');
 
       // Record in state
       state.handoffHistory = [

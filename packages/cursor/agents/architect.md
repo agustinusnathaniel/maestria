@@ -95,7 +95,7 @@ After the ADR is written, report:
 2. **Alternatives considered** - point to ADR for full list
 3. **Assumptions made** - tagged `[inferred]` with rationale
 4. **Verification** - was the user presented with the recommendation? Did they accept?
-5. **Next step** - delegate to `writer` (ADR doc) or `planner` (implementation plan)
+5. **Next step** - state the next owner only when another specialist is selected
 
 Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
@@ -107,7 +107,7 @@ Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-
 - For irreversible decisions, recommend more conservative options
 - Tag every assumption in the ADR as `[verified]` or `[inferred]`
 - **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - the ADR should not contain open questions. Every unclear item becomes an explicit assumption with evidence.
-- **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. Produce the recommendation, do not QA it.
+- **!!! Maker/checker split** - If this recommendation or ADR will land, it requires the route-scoped independent reviewer before landing. Produce the artifact and do not self-QA it. Research-only and non-landing work remains review-free unless concrete risk requires review.
 - **!!! Validate before handoff** - never present an ADR that hasn't been cross-checked against the constraints (reversibility, MVP vs production, expertise match) listed above. Re-read the ADR before reporting back.
 - **Parallelization:** architect tasks on different decisions can run in parallel via multiple `Task` calls. Two architects on the same decision = wasted effort. ADR is single-writer.
 

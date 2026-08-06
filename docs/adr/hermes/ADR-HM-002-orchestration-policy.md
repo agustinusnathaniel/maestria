@@ -6,13 +6,19 @@ Accepted (2026-07-17)
 
 ## Context
 
-The Maestria orchestrator SKILL.md was ported from `@maestria/opencode`, where the orchestrator is a **pure dispatcher** with no implementation tools — its only actions are `task()` (delegate) and `question()` (ask the user). This design works for OpenCode because the coding agent handles implementation.
+The Maestria orchestrator SKILL.md was ported from `@maestria/opencode`, where the orchestrator is a **pure dispatcher** with no implementation tools - its only actions are `task()` (delegate) and `question()` (ask the user). This design works for OpenCode because the coding agent handles implementation.
 
 On Hermes Agent, the orchestrator has **full tool access** (read, write, bash, LLM, delegation). The "pure dispatcher" mandate is actively harmful because it forces unnecessary `delegate_task()` calls for simple tasks that could be done faster and more reliably in a single turn.
 
 ## Decision
 
-The Hermes orchestrator defaults to **single-thread execution**. It uses `delegate_task()` to spawn specialists only for complex tasks that benefit from parallelization or focused expertise:
+The Hermes orchestrator has no active Maestria mode by default and therefore runs directly. An explicit mode changes the root tool policy:
+
+- **fein**: dispatcher-only root; specialist delegation is available.
+- **sonar**: dispatcher-only root and read-only for every session.
+- **blitz**: direct root execution; specialist dispatch is blocked.
+
+Explicit `/fein`, `/sonar`, and `/blitz` selections persist. Hermes does not infer modes from ordinary message keywords, so direct messages remain direct unless the user selects a mode. In an active mode, it uses `delegate_task()` to spawn specialists only for complex tasks that benefit from parallelization or focused expertise:
 
 - 4+ files requiring coordinated changes
 - Multi-domain work (e.g., frontend + backend + docs)
@@ -31,8 +37,8 @@ The Hermes orchestrator defaults to **single-thread execution**. It uses `delega
 ### What did NOT change
 
 - **Specialist roles** (adventurer, builder, reviewer, etc.) — unchanged. They still describe their roles correctly for when delegation IS used.
-- **Mode system** (fein/sonar/blitz) — unchanged.
-- **Permission enforcement** — unchanged. The main session has no role mapping, so all tools pass through `pre_tool_call`.
+- **Mode system** (fein/sonar/blitz) - explicit selections persist, while the default is direct execution.
+- **Permission enforcement** - specialist role restrictions remain unchanged; root mode policy is enforced by `pre_tool_call`.
 
 ## Consequences
 

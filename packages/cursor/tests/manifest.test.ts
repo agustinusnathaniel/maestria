@@ -156,9 +156,9 @@ describe('rules/maestria-global.mdc', () => {
     expect(typeof data.description).toBe('string');
   });
 
-  it('contains delegation table with 7 specialists', async () => {
+  it('contains specialist routing with 7 specialists', async () => {
     const text = await readFile(path.join(PACKAGE_ROOT, 'rules', 'maestria-global.mdc'), 'utf8');
-    expect(text).toContain('## Delegation');
+    expect(text).toContain('## Specialist routing');
     for (const specialist of EXPECTED_AGENTS) {
       expect(text).toContain(specialist);
     }
@@ -176,6 +176,16 @@ describe('commands', () => {
       expect(typeof data.description).toBe('string');
     });
   }
+
+  it('keeps blitz direct without builder delegation', async () => {
+    const text = await readFile(path.join(PACKAGE_ROOT, 'commands', 'blitz.md'), 'utf8');
+
+    expect(text).toContain('zero-child');
+    expect(text).toContain('independent reviewer before landing');
+    expect(text).not.toMatch(
+      /via builder|builder directly|Task.*builder|single `Task` to `builder`/i,
+    );
+  });
 });
 
 describe('package.json', () => {

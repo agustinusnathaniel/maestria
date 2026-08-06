@@ -104,7 +104,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
 - **External repos: use a repo exploration tool, not a page-by-page URL fetcher.** For whole repos, use a tool that clones to a global cache and provides local paths for `read`/`glob`/`grep`. For single files or pages, a URL fetch tool is fine.
-- **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that produced the work is too nice grading its own homework. Produce the artifact; do not QA it.
+- **!!! Maker/checker split** - If this implementation will land, it requires the route-scoped independent reviewer before landing. Produce the artifact and do not self-QA it. Research-only and non-landing work remains review-free unless concrete risk requires review.
 - **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
 
 ## Iteration Limits
@@ -120,4 +120,4 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **Verification results** - tests, type check, lint
 - **Any blockers or follow-ups needed**
 
-Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
+Before reporting done: use the route-appropriate handoff contract in `skills/handoff.md` and verify its success criteria.

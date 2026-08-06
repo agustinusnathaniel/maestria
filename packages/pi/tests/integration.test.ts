@@ -118,3 +118,17 @@ describe('package.json metadata', () => {
     expect(pkg.keywords).toContain('pi-package');
   });
 });
+
+describe('Blitz documentation', () => {
+  it('describes direct execution without builder delegation', () => {
+    const readme = readFileSync(join(__dirname, '..', 'README.md'), 'utf-8');
+    const command = readFileSync(join(__dirname, '..', 'agents', 'commands', 'blitz.md'), 'utf-8');
+
+    expect(readme).toContain('direct execution');
+    expect(readme).toContain('independent review before shipping');
+    expect(command).toContain('zero-child');
+    expect(command).toContain('independent reviewer before landing');
+    expect(readme).not.toMatch(/builder directly|via builder|Task.*builder/i);
+    expect(command).not.toMatch(/builder directly|via builder|Task.*builder/i);
+  });
+});

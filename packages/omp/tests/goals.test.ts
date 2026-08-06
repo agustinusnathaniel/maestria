@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { installGoalEventHandlers } from '@/goals.js';
+import { createModeController } from '@maestria/shared-pi/modes-core';
 import {
   createInitialState,
   recordHandoff,
@@ -17,8 +18,8 @@ function createMockPi(): MockPi {
   return { on: vi.fn(), appendEntry: vi.fn() };
 }
 
-function install(pi: MockPi, state: MaestriaState) {
-  installGoalEventHandlers(pi as any, state);
+function install(pi: MockPi, state: MaestriaState, modeController = createModeController(state)) {
+  installGoalEventHandlers(pi as any, state, modeController);
   const calls = (pi.on as ReturnType<typeof vi.fn>).mock.calls as Array<
     [string, (...args: unknown[]) => unknown]
   >;
@@ -35,6 +36,7 @@ function install(pi: MockPi, state: MaestriaState) {
     sessionSwitch: sessionSwitchCall![1],
     sessionBranch: sessionBranchCall![1],
     sessionTree: sessionTreeCall![1],
+    modeController,
   };
 }
 
@@ -80,6 +82,18 @@ describe('installGoalEventHandlers', () => {
     expect(events).toContain('session_switch');
     expect(events).toContain('session_branch');
     expect(events).toContain('session_tree');
+  });
+
+  it('clears transient automatic mode at every public session transition', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    const { sessionSwitch, sessionBranch, sessionTree, modeController } = install(pi, state);
+
+    for (const transition of [sessionSwitch, sessionBranch, sessionTree]) {
+      modeController.setAutomaticMode('blitz');
+      await transition({}, sessionContext());
+      expect(modeController.getMode()).toBeNull();
+    }
   });
 
   it('mirrors native goal objective/status into state.nativeGoal', async () => {

@@ -359,6 +359,40 @@ describe('/handoff command', () => {
     expect(prompt).toContain('**Next step:**');
   });
 
+  it('generates the compact focused contract for sonar mode', async () => {
+    const pi = createMockPi();
+    const state = { ...createInitialState(), mode: 'sonar' as const };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'handoff')!;
+    await handler('research login flow', createMockCtx());
+
+    const prompt = pi.sendUserMessage.mock.calls[0][0] as string;
+    expect(prompt.match(/^\*\*[^:\n]+:\*\*/gm)).toEqual([
+      '**Goal:**',
+      '**Context/scope:**',
+      '**Constraints/assumptions:**',
+      '**Success criteria:**',
+      '**Next step:**',
+    ]);
+  });
+
+  it('keeps the full contract for fein mode', async () => {
+    const pi = createMockPi();
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installCommands(pi as any, state);
+
+    const handler = getHandler(pi, 'handoff')!;
+    await handler('implement login flow', createMockCtx());
+
+    const prompt = pi.sendUserMessage.mock.calls[0][0] as string;
+    expect(prompt).toContain('**Requirements:**');
+    expect(prompt).toContain('**Known problems:**');
+    expect(prompt).toContain('**Assumptions documented:**');
+    expect(prompt).not.toContain('**Context/scope:**');
+    expect(prompt).not.toContain('**Constraints/assumptions:**');
+  });
+
   it('shows usage for empty args', async () => {
     const pi = createMockPi();
     const state = createInitialState();

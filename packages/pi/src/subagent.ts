@@ -1,8 +1,21 @@
 import { Type } from 'typebox';
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
-import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
+import {
+  SUBAGENT_EVENTS,
+  type SubagentRecord,
+  type SubagentsService,
+} from '@gotgenes/pi-subagents';
 import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff } from '@/state.js';
+import {
+  armLandingReview,
+  beginLandingReview,
+  LANDING_REVIEW_VERDICT_INSTRUCTIONS,
+  markLandingReviewFailed,
+  persistState,
+  recordHandoff,
+  recordLandingReviewVerdict,
+} from '@/state.js';
+import { captureArtifactManifest, sha256Hex } from '@/tools.js';
 import {
   assertValidAgent,
   assertNonEmptyTask,
@@ -23,13 +36,11 @@ export const MAX_PARALLEL_TASKS = 8;
 
 // ── Polling helper ───────────────────────────────────────────────
 
-type SubagentRecord = { status: string; result?: string; error?: string };
-
 async function pollSubagent(
   id: string,
   label: string,
   sendUpdates: boolean,
-  service: { getRecord(id: string): SubagentRecord | undefined },
+  service: Pick<SubagentsService, 'getRecord'>,
   signal: AbortSignal | undefined,
   onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
 ): Promise<SubagentRecord> {
@@ -165,6 +176,16 @@ export function installSubagentTool(
       const { getSubagentsService } = await import('@gotgenes/pi-subagents');
       const service = getSubagentsService();
       if (!service || typeof service.spawn !== 'function') {
+        if (params.agent === 'reviewer' && params.mode !== 'parallel' && params.mode !== 'chain') {
+          Object.assign(
+            state,
+            markLandingReviewFailed(
+              state,
+              'Pi landing review requires the public @gotgenes/pi-subagents service; it is not loaded.',
+            ),
+          );
+          persistState(pi, state);
+        }
         return {
           content: [
             {
@@ -193,12 +214,53 @@ export function installSubagentTool(
           const agent = params.agent!;
           const task = params.task!;
 
+          const isLandingReview =
+            agent === 'reviewer' &&
+            mode === 'single' &&
+            (state.mode === 'blitz' || state.mode === null) &&
+            typeof pi.getActiveTools === 'function' &&
+            (pi.getActiveTools() ?? []).includes('subagent');
+          let artifactManifest;
+          if (isLandingReview) {
+            artifactManifest = await captureArtifactManifest(pi);
+            if (!artifactManifest) {
+              Object.assign(
+                state,
+                markLandingReviewFailed(
+                  state,
+                  'Pi cannot obtain a trusted git artifact digest through ExtensionAPI.exec.',
+                ),
+              );
+              persistState(pi, state);
+              return {
+                content: [
+                  {
+                    type: 'text' as const,
+                    text: 'Landing review blocked: a trusted artifact digest could not be obtained.',
+                  },
+                ],
+              };
+            }
+          }
+
           // Spawn in foreground - returns subagent ID synchronously
-          const id = service.spawn(agent, task, {
-            description: task.slice(0, 80),
-            foreground: true,
-            inheritContext: true,
-          });
+          const id = service.spawn(
+            agent,
+            isLandingReview
+              ? `${task}\n\n${LANDING_REVIEW_VERDICT_INSTRUCTIONS}\nArtifact digest: ${artifactManifest?.digest}`
+              : task,
+            {
+              description: task.slice(0, 80),
+              foreground: true,
+              inheritContext: true,
+            },
+          );
+
+          if (isLandingReview && artifactManifest) {
+            Object.assign(state, armLandingReview(state, id, artifactManifest));
+            Object.assign(state, beginLandingReview(state, id));
+            persistState(pi, state);
+          }
 
           // Record handoff in state and persist (only after spawn succeeds)
           recordAndPersist(pi, state, agent, task);
@@ -212,6 +274,43 @@ export function installSubagentTool(
             signal,
             onUpdate,
           );
+
+          if (isLandingReview) {
+            if (record.type !== 'reviewer' || record.status !== 'completed' || !record.result) {
+              Object.assign(
+                state,
+                markLandingReviewFailed(
+                  state,
+                  'The trusted reviewer invocation did not complete successfully.',
+                ),
+              );
+              persistState(pi, state);
+            } else {
+              const currentArtifactManifest = await captureArtifactManifest(pi);
+              if (!currentArtifactManifest) {
+                Object.assign(
+                  state,
+                  markLandingReviewFailed(
+                    state,
+                    'Pi cannot revalidate the reviewed artifact through ExtensionAPI.exec.',
+                  ),
+                );
+              } else {
+                let verdict: unknown;
+                try {
+                  verdict = JSON.parse(record.result);
+                } catch {
+                  verdict = undefined;
+                }
+                const resultDigest = await sha256Hex([record.result]);
+                Object.assign(
+                  state,
+                  recordLandingReviewVerdict(state, verdict, currentArtifactManifest, resultDigest),
+                );
+              }
+              persistState(pi, state);
+            }
+          }
 
           const resultText = record.result ?? record.error ?? 'No output.';
 
@@ -350,6 +449,13 @@ export function installSubagentTool(
         throw new Error('Unknown dispatch mode');
       } catch (err) {
         console.warn('[maestria] Subagent dispatch failed:', err);
+        if (state.landingReview === 'armed' || state.landingReview === 'reviewing') {
+          Object.assign(
+            state,
+            markLandingReviewFailed(state, 'The trusted reviewer invocation failed.'),
+          );
+          persistState(pi, state);
+        }
         // Return handoff payload as structured text when dispatch fails
         const agentName = params.agent ?? params.tasks?.[0]?.agent ?? 'unknown';
         const taskDesc = params.task ?? params.tasks?.map((t) => t.task).join('; ') ?? 'unknown';

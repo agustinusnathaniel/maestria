@@ -1,6 +1,16 @@
 import { escapeRegExp } from 'es-toolkit';
 import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from '@/modes/prompts.js';
-import type { ModeKeyword, ModeResult } from '@/modes/types.js';
+import type { ModeKeyword, ModeResult, Route } from '@/modes/types.js';
+
+export const MODE_ROUTES: Record<ModeKeyword, Route> = {
+  fein: 'full',
+  sonar: 'focused',
+  blitz: 'direct',
+};
+
+export function getRouteForMode(mode: ModeKeyword): Route {
+  return MODE_ROUTES[mode];
+}
 
 /**
  * Priority mapping for mode keyword restrictiveness.

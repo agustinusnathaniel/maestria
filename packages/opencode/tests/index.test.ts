@@ -59,5 +59,8 @@ describe('plugin structure', () => {
     expect(typeof agent.builder.prompt).toBe('string');
     expect(agent.reviewer.temperature).toBe(0.1);
     expect(agent.reviewer.mode).toBe('subagent');
+    expect((agent.orchestrator.permission as Record<string, unknown>).maestria_landing_review).toBe(
+      'allow',
+    );
   });
 });
