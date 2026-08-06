@@ -31,6 +31,7 @@ export interface SyncConfig {
 }
 
 export interface ResolvedSyncConfig {
+  configPath: string;
   configDir: string;
   source: string;
   output: string;
@@ -77,10 +78,10 @@ export async function loadConfig(configPath: string): Promise<ResolvedSyncConfig
     throw new ConfigError(`Config file must export a default object: ${absPath}`);
   }
 
-  return resolveConfig(raw, dirname(absPath));
+  return resolveConfig(raw, dirname(absPath), absPath);
 }
 
-function resolveConfig(raw: SyncConfig, configDir: string): ResolvedSyncConfig {
+function resolveConfig(raw: SyncConfig, configDir: string, configPath: string): ResolvedSyncConfig {
   const source = resolve(configDir, raw.source);
   const output = raw.output ? resolve(configDir, raw.output) : '';
 
@@ -99,6 +100,7 @@ function resolveConfig(raw: SyncConfig, configDir: string): ResolvedSyncConfig {
   }
 
   return {
+    configPath,
     configDir,
     source,
     output,

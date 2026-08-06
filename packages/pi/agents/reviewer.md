@@ -1,8 +1,9 @@
 ---
 description: >-
   Code review specialist. Reviews for correctness, edge cases, security,
-  performance, and maintainability. Supports multi-lens review swarms
-  with fix/dismiss/escalate triage.
+  performance, and maintainability in one general review. Adds specialist
+  lenses only for matching security, performance, architecture, or UX risk;
+  preserves blind review, lens exclusivity, and fix/dismiss/escalate triage.
 tools: read, bash, grep, find, ls, glob
 prompt_mode: append
 inherit_context: true

@@ -105,8 +105,9 @@ export default {
         '---\n' +
         'description: >-\n' +
         '  Code review specialist. Reviews for correctness, edge cases, security,\n' +
-        '  performance, and maintainability. Supports multi-lens review swarms\n' +
-        '  with fix/dismiss/escalate triage.\n' +
+        '  performance, and maintainability in one general review. Adds specialist\n' +
+        '  lenses only for matching security, performance, architecture, or UX risk;\n' +
+        '  preserves blind review, lens exclusivity, and fix/dismiss/escalate triage.\n' +
         'tools: read, bash, grep, find, ls, glob\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
