@@ -9,25 +9,19 @@ import { Aside, Code } from '@astrojs/starlight/components';
 
 The `@maestria/opencode` plugin registers 8 agents with no model overrides. Each agent runs on whatever model OpenCode assigns by default. You can change this by setting per-agent models in your OpenCode config.
 
-This page covers how the model hierarchy works and what assignments make sense for each specialist.
+This page covers how the model hierarchy works and how to make selective assignments without choosing a provider-specific preset.
 
 <Aside type="caution" title="Model choice affects every delegated stage">
-  The orchestrator's model is inherited by specialists unless you override them. A capable or
-  expensive model on the orchestrator can therefore be used for reconnaissance, implementation,
-  review, and retries. Read [When to use Maestria](/core/when-to-use/) before assigning the same
-  high-cost model to every agent.
+  The orchestrator's model is inherited by specialists unless you override them. A different model
+  on the orchestrator can therefore be used for reconnaissance, implementation, review, and retries.
+  Read [When to use Maestria](/core/when-to-use/) before assigning the same model to every agent.
 </Aside>
 
 ## Why Set Per-Agent Models
 
-Different specialists benefit from different models. A fast, cheap model works for file-scanning tasks. A more capable model matters where output quality is critical - code generation, review, and architecture.
+Model IDs, availability, pricing, aliases, and platform support vary. Avoid generic cost or quality presets. Instead, choose an explicit model ID from OpenCode's normal, live model list and assign it only where you have a clear reason.
 
-Matching models to agent roles lets you tune cost and latency:
-
-- **Adventurer** - fast and cheap for read-only searches
-- **Builder** - capable for code generation quality
-- **Reviewer** - capable for critical quality gates
-- **Orchestrator** - balanced for task routing and coordination
+You can assign a model to any specialist. Unmentioned specialists keep their existing assignments.
 
 ## How It Works
 
@@ -42,10 +36,8 @@ Add agent model overrides to your OpenCode config:
 ```jsonc
 {
   "agent": {
-    "adventurer": { "model": "anthropic/claude-haiku-4-20250514" },
-    "builder": { "model": "openai/gpt-4o" },
-    "reviewer": { "model": "openai/gpt-4o" },
-    "orchestrator": { "model": "anthropic/claude-sonnet-4-20250514" },
+    "adventurer": { "model": "<model-id>" },
+    "writer": { "model": "<model-id>" },
   },
 }
 ```
@@ -56,11 +48,9 @@ You can edit either `~/.config/opencode/opencode.jsonc` (global) or `.opencode/o
 
 Use `<provider>/<model-id>`.
 
-| Provider  | Example ID                           |
-| --------- | ------------------------------------ |
-| Anthropic | `anthropic/claude-sonnet-4-20250514` |
-| Anthropic | `anthropic/claude-haiku-4-20250514`  |
-| OpenAI    | `openai/gpt-4o`                      |
+| Value        | Description                                     |
+| ------------ | ----------------------------------------------- |
+| `<model-id>` | An explicit ID copied from OpenCode's live list |
 
 ## Subagent Model Inheritance
 
@@ -72,8 +62,8 @@ Maestria's 7 specialists are subagents of the orchestrator. This means they inhe
 
 This matters for your config strategy:
 
-- **Set one model** on the orchestrator. All specialists inherit it. Simple, uniform behavior.
-- **Override selectively** when a specialist needs a different model. For example, use a cheaper model on adventurer and keep the rest on the orchestrator's model.
+- Set one model on the orchestrator when you want all specialists to inherit it.
+- Override selectively when a specialist needs a different model. Unmentioned specialists keep their existing assignments.
 
 <Aside type="tip">
   If you want every specialist on the same model, just set{' '}
@@ -81,25 +71,15 @@ This matters for your config strategy:
   add entries for the agents you want to diverge.
 </Aside>
 
-## Suggested Assignments
+## Selective assignment
 
-These are starting points, not rules. Your optimal config depends on which models you have access to and what trade-offs you prefer between speed and quality.
+Use the CLI to validate the model ID against OpenCode's live model list before writing it:
 
-| Agent        | Suggested model strategy                         | Reason                                                    |
-| ------------ | ------------------------------------------------ | --------------------------------------------------------- |
-| Orchestrator | Balanced (Claude Sonnet 4, GPT-4o)               | Needs good judgment across varied routing decisions       |
-| Adventurer   | Fast/cheap (Claude Haiku 4, GPT-4o-mini)         | Read-only searches, high throughput, latency matters      |
-| Architect    | Capable (Claude Sonnet 4, GPT-4o)                | Trade-off analysis and design reasoning                   |
-| Builder      | Capable (Claude Sonnet 4, GPT-4o)                | Code generation quality is the main output                |
-| Diagnose     | Capable (Claude Sonnet 4, GPT-4o)                | Deep reasoning and long-context tracing                   |
-| Planner      | Capable (Claude Sonnet 4, GPT-4o)                | Structured multi-phase output                             |
-| Reviewer     | Most capable available (Claude Sonnet 4, GPT-4o) | Critical quality gate - correctness, edge cases, security |
-| Writer       | Balanced (Claude Sonnet 4, GPT-4o)               | Prose quality with moderate latency                       |
+```bash
+maestria configure opencode --global --set adventurer=<model-id>,writer=<model-id>
+```
 
-<Aside>
-  The model IDs above are examples. Check OpenCode's documentation for the latest available models
-  and their exact identifiers. Model availability depends on your API provider and plan.
-</Aside>
+The CLI changes only the named agents. Configuration through `maestria configure` currently supports OpenCode, Pi, and OMP.
 
 ## Model Field in Markdown Frontmatter
 
@@ -108,7 +88,7 @@ For custom agents you define locally, you can also set the model directly in the
 ```markdown
 ---
 name: my-custom-agent
-model: openai/gpt-4o
+model: <model-id>
 ---
 ```
 
@@ -118,4 +98,4 @@ This works the same as the `agent.<name>.model` config entry. Frontmatter is use
 
 You can keep different model configs for different projects. Project-level config (`.opencode/opencode.jsonc`) merges with global config (`~/.config/opencode/opencode.jsonc`). Project settings take precedence.
 
-This lets you use expensive models for your main project and cheaper models for side projects, all from the same global install.
+This lets you use different explicit model IDs for different projects from the same global install.

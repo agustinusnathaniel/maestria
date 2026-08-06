@@ -257,12 +257,21 @@ Shows a group-multiselect of the 7 specialists, then a per-agent model picker wi
 <PackageManagers
   type="dlx"
   pkg="maestria"
-  args="configure opencode --global --quiet --set builder=opencode-go/deepseek-v4-pro,reviewer="
+  args="configure opencode --global --quiet --set adventurer=<model-id>,writer=<model-id>"
 />
 
 - `--set <agent>=<model>[,...]` - comma-separated pairs; an empty value (`reviewer=`) resets the agent to inherit the session model
-- `--global` (default) / `--project` - config level, mutually exclusive; required when `--set` is used or in a non-interactive terminal
-- Models are validated against the platform's live model list before writing
+- `--global` / `--project` - config level, mutually exclusive; `--set` and other non-interactive usage require exactly one of these flags
+- Choose each explicit model ID from the platform's normal, live model list. Models are validated against that list before writing.
+- `--set` changes only the agents you name. Unmentioned agents keep their existing assignments.
+
+For a partial assignment, set a model for any role you want to change:
+
+```bash
+maestria configure <platform> --global --set planner=<model-id>
+```
+
+Unmentioned agents remain unchanged. Configuration currently supports OpenCode, Pi, and OMP.
 
 ### Flags
 
@@ -270,7 +279,7 @@ Shows a group-multiselect of the 7 specialists, then a per-agent model picker wi
 | ----------- | ---------------------------------------------------------------------------------------- |
 | `--global`  | Configure the user-level config (`~/.config/opencode/`, `~/.pi/agent/`, `~/.omp/agent/`) |
 | `--project` | Configure the project-level config (`.opencode/`, `.pi/agents/`, `.omp/agents/`)         |
-| `--set`     | Set models non-interactively, e.g. `builder=opencode-go/deepseek-v4-flash`               |
+| `--set`     | Set models non-interactively, e.g. `planner=<model-id>`                                  |
 | `--json`    | Output the resulting config as JSON                                                      |
 | `--quiet`   | Suppress spinner output (recommended for CI)                                             |
 | `--compact` | Minimal machine-friendly text output                                                     |
@@ -283,8 +292,8 @@ Shows a group-multiselect of the 7 specialists, then a per-agent model picker wi
   "label": "OpenCode",
   "level": "global",
   "models": {
-    "adventurer": "opencode-go/deepseek-v4-flash",
-    "builder": "opencode-go/deepseek-v4-pro",
+    "adventurer": "<model-id>",
+    "builder": "<model-id>",
     "reviewer": ""
   }
 }

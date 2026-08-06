@@ -5,7 +5,7 @@ Some directive combinations are known to work well together. These are "proven c
 ## Feature Implementation
 
 ```
-!!! ensure to check, test rigorously, then commit one-by-one per task
+!!! ensure to check, test rigorously, then commit one-by-one per task under the separate commit protocol
 kindly update documentation
 commit, split if applicable
 ```
@@ -24,7 +24,7 @@ leverage any relevant skills and documentation
 exhaust data before asking questions
 document assumptions with evidence
 proceed - reviewer will validate
-commit each logical unit autonomously
+commit each logical unit autonomously under the separate commit protocol
 ```
 
 ## Cross-Platform Sync Work

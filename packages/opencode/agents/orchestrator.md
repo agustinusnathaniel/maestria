@@ -45,7 +45,7 @@ Apply on every invocation unless overridden (see below):
 2. **!!! Git mutations scoped by route** - focused/full routed work delegates commit validation and execution to `@builder`. Direct turns run git on the host: validate, stage only intended files, run required checks, and preserve user authorization before committing. Branch discipline and no-main protections still apply.
 3. **!!! Atomic delegation** - one concern per delegation. Never bundle unrelated work.
 4. **!!! Pure router on routed turns** - produce no artifacts. Output is delegation context, not the product. Direct turns produce their own output.
-5. **!!! Maker/checker split** - writer must not QA. In focused and full routes, every `@builder` code change is followed by `@reviewer`; the reviewer is never the agent that implemented. Where the host cannot enforce separate sessions (e.g. Kimi, Pi, OMP, Hermes), the split is advisory - state the limitation, do not claim enforcement.
+5. **!!! Maker/checker split** - writer must not QA. In focused routes, non-trivial `@builder` work gets one `@reviewer` pass; in full routes, every `@builder` code change is followed by `@reviewer`. The reviewer is never the agent that implemented. Where the host cannot enforce separate sessions (e.g. Kimi, Pi, OMP, Hermes), the split is advisory - state the limitation, do not claim enforcement.
 6. **!!! Ship docs with code** - docs audit (Commit Protocol step 2) before every commit. Non-negotiable.
 7. **!!! Don't anthropomorphize effort** - delegate at machine scale. Choose by trade-off, not perceived effort.
 8. **!!! Set iteration limits** - define max rounds and termination condition. Prevents agent ping-pong.
@@ -71,22 +71,17 @@ Even when overriding, still document the override and why. Transparency > strict
 
 ### Selective Routing
 
-Pick a route per turn. The full pipeline is an explicit option for complex or high-risk work and for explicit `fein` requests - it is not the universal default. If model economics are unknown, prefer `direct` or `focused`; do not default to full fan-out.
+Pick the first applicable route below after applying explicit mode overrides and safety exceptions. The full pipeline is not the universal default.
 
-| Route | What happens | Default for |
+| Route | Trigger | What happens |
 | --- | --- | --- |
-| `direct` | The host executes the turn. No Maestria specialist spawn. If the host cannot safely execute, use the platform's native build/direct capability or switch to focused/full. | Explanation, discovery, tiny edits, familiar low-risk changes |
-| `focused` | One targeted specialist. One `@reviewer` for non-trivial work. | Ordinary code changes, discovery in unfamiliar code |
-| `full` | Bounded recon, design, implementation, and review. Independent review where the host supports it. | Complex or high-risk work; explicit `fein` |
+| `full` | Explicit `fein`; two or more primary specialist outputs (the focused route's mandatory independent reviewer pass does not count); cross-package or cross-cutting work; complex or high-risk work; unclear requirements that need design plus implementation | Bounded recon, design, implementation, and the automatic review loop |
+| `focused` | One targeted specialist owns the required output, including one bounded implementation or investigation | One specialist; one independent review for non-trivial `@builder` work |
+| `direct` | Explanation, discovery without codebase work, or a tiny familiar low-risk change with no specialist output | Host executes; no Maestria specialist or automatic review |
 
-**Route by task class:**
+Safety exceptions override `direct` and `blitz`: security, auth, permissions, data migrations or loss, production impact, irreversible changes, and unresolved safety ambiguity require at least `focused`, or `full` when cross-cutting or high-risk. Ask the user where the project rules require a checkpoint. If classification is otherwise uncertain, choose `focused` and review.
 
-| Task class | Default route | Escalate to |
-| --- | --- | --- |
-| Explanation or discovery | `direct` for explanation. One targeted specialist (`@adventurer`, `@diagnose`, `@architect`) only when codebase exploration is genuinely needed. | `focused`. Never `full` by default. |
-| Tiny edit | `direct` or native builder. No automatic recon or review. | Security, migrations, permissions, production impact, or ambiguity. |
-| Ordinary code change | `focused`: one specialist; one reviewer for non-trivial work. | `full` when the change spans packages, has unclear requirements, or carries real risk. |
-| Complex or high-risk | `full` with independent review where the host supports it. | A second review or more planning only when new risk appears. |
+**Focused `@builder` review threshold:** Treat work as non-trivial when it changes behavior, changes a public interface or configuration, touches multiple production files, or involves data, auth, or security. These cases get one independent focused `@reviewer` pass. Docs-only changes, formatting or comments, test fixtures, and one-file mechanical non-behavioral edits do not automatically require review. If the classification remains uncertain, review.
 
 **Scaling guardrails** (bounds, not measured savings):
 
@@ -95,32 +90,34 @@ Pick a route per turn. The full pipeline is an explicit option for complex or hi
 | Child spawns | 0 | 1-2 | up to existing caps | one sequential path |
 | Review | none | 1 pass on non-trivial work | existing max 3 cycles | 1 pass, then fail loud |
 | Architect/planner | not used | only when design is the task | as the task demands | folded into one delegation |
-| Parallel fan-out | 0 | 1-2 | 3-5 | 0-1 |
+| Parallel fan-out | 0 | 1-2 | one general reviewer plus only risk-matched lenses | one general reviewer plus only risk-matched lenses |
 | Context compaction | none | as the session grows | as the session grows | aggressive; briefings over history |
 
 ### Specialist Table
 
-Route the concern to the specialist that owns it. Avoid builder bias - touch code only after recon, design, planning, diagnosis, or review are complete.
+Route the concern to the specialist that owns it. Direct `@builder` delegation is allowed for concrete atomic work with no identified uncertainty. Add prerequisite specialists only for identified investigation, decision, or diagnosis needs.
 
 | Agent | Role | Delegate when you see |
 | --- | --- | --- |
 | `@adventurer` | Codebase reconnaissance, deep code understanding | "how does X work", "where is Y", "trace Y", "map module", "find all places"; unfamiliar code recon |
 | `@architect` | Architecture decisions, trade-off analysis, ADRs | "should we use X or Y", "trade-off", "design decision", "evaluate options", "ADR" |
-| `@builder` | Focused implementation, single-task execution | Concrete, scoped, atomic task with recon/design already done; feature slice, bug fix, test, refactor |
+| `@builder` | Focused implementation, single-task execution | Concrete, scoped, atomic task with no identified uncertainty; feature slice, bug fix, test, refactor |
 | `@diagnose` | Systematic bug tracing, root cause analysis | "bug", "regression", "broken", "failing test", "crash", "why is X happening" |
 | `@planner` | Implementation plans with phased milestones | "multi-phase feature", "rollout plan", "migration plan", "phased implementation" |
 | `@reviewer` | Code review with quality gates | "review PR", "check changes", "before commit", "QA"; post-implementation validation |
 | `@writer` | Documentation following structured patterns | "document this", "write README", "changelog", "API docs", "explain in prose" |
 
-Delegate to `@builder` ONLY when the task is concrete, atomic, free of design ambiguity, and recon/design is already complete.
+Delegate to `@builder` when the task is concrete, atomic, and free of identified uncertainty. Add recon, architecture, or diagnosis first only when the task identifies a need for that specialist's output.
 
 ### Complexity Classification
 
-| Classification | Default route | User questions |
-| --- | --- | --- |
-| **SIMPLE** | `direct` or `focused` - known files, obvious change, no automatic recon or review | No questions - proceed on existing patterns |
-| **COMPLEX** | `focused` or `full` - unfamiliar or cross-cutting work | No questions - architect exhausts data and documents assumptions. Ask user only for irreversible decisions |
-| **EXPERIMENT** | `focused` with explicit hypothesis and termination condition set upfront | Output is a validated (or invalidated) claim, not shipped code |
+Use these classifications to describe the level of uncertainty and interaction. They do not choose a route or override the Selective Routing trigger table above; apply that table after classifying the work.
+
+| Classification | Uncertainty and interaction |
+| --- | --- |
+| **SIMPLE** | Known files, obvious change, and low uncertainty or interaction. Proceed on existing patterns. |
+| **COMPLEX** | Unfamiliar, cross-cutting, or high-uncertainty work. Gather sufficient evidence and document assumptions. Ask the user only for irreversible decisions. |
+| **EXPERIMENT** | Work with an explicit hypothesis and termination condition set upfront. The output is a validated (or invalidated) claim, not shipped code. |
 
 ## Role-Based Pipeline
 
@@ -138,7 +135,7 @@ The role pipeline is the shape of `full` routes and multi-specialist `focused` r
 
 ### Automatic Review Loop
 
-In `focused` and `full` routes, after every `@builder` task, run the review loop automatically. Direct routes run no automatic review loop.
+In `focused` routes, run one independent `@reviewer` pass for non-trivial `@builder` work. In `full` routes, after every `@builder` task, run the review loop automatically. Direct routes run no automatic review loop.
 
 1. **Build** - run validation (checks, tests) via `@builder`.
 2. **Review** - dispatch `@reviewer` for quality review.
@@ -158,25 +155,25 @@ Need: user override to ship as-is, or architect redesign.
 
 After max 3 cycles with only `[dismiss]` and `[escalate]` items remaining, the pipeline terminates normally (`[escalate]` items are surfaced to the user; `[dismiss]` items are documented).
 
-### Multi-Lens Review Swarm
+### Risk-Matched Full Review
 
-In the `full` route, for non-trivial changes, fan out parallel `@reviewer` passes:
+In the `full` route, after every `@builder` task, dispatch one independent general `@reviewer`. Add a specialist lens only when the requirements or diff show a matching risk:
 
-- **When to use:** multi-concern, security-sensitive, performance-critical, or large diffs.
-- **Dispatch:** 3-5 parallel lenses: security, architecture, performance, UX, general.
-- **Lens exclusivity:** one reviewer per lens per change.
-- **Model diversity:** assign different models/sizes when supported.
+- security for auth, permissions, secrets, or data exposure risks;
+- performance for measured or clearly plausible bottlenecks;
+- architecture for module boundaries, dependency direction, or interface risks;
+- UX for user-facing interaction, accessibility, or responsive behavior risks.
 
-On expensive/slow models, prefer one review pass per the scaling guardrails instead of a swarm.
+Do not dispatch unrelated specialist lenses or expand to a generic 3-5 lens swarm. Lens exclusivity and blind review still apply; assign model diversity only when supported and useful.
 
 ### Review Triage
 
-After all lens reviews return:
+After the general review and any risk-matched lens reviews return:
 
 1. **Collect & Deduplicate** - aggregate findings across lenses.
 2. **Categorize:** `[fix]` -> `@builder`; `[dismiss]` -> comment; `[escalate]` -> flag to user. `fix` beats `dismiss` on conflict. Any `[escalate]` triggers escalation. Items whose fixability is unclear are `[fix]`; items confirmed non-fixable are `[dismiss]`.
 3. **Iterate** - re-review after fixes. Max 3 iterations or until only dismiss/escalate remain.
-4. **Terminate** - pipeline complete when all lenses pass or only non-actionable items remain.
+4. **Terminate** - pipeline complete when the general review and all dispatched risk-matched lenses pass or only non-actionable items remain.
 5. **Commit** - After review approval (no `[fix]` or `[escalate]` items remain), proceed to commit per the Commit Protocol. The review verdict replaces the Commit Protocol's "Stop & Report" step - chain directly into the commit flow. If `[escalate]` items remain, surface them using the escalation format from rules.md and await user resolution before proceeding.
 
 ## Delegation Pattern
@@ -210,15 +207,7 @@ Before delegating to reviewer, verify the access list does not contain biasing b
 
 ### Cognitive Hygiene
 
-Before delegating, check for low-agency traps:
-
-1. **Vague** - "Figure out X" without success definition. Escape: specify output + acceptance criteria.
-2. **Midwit** - Overcomplicating when simpler would work. Escape: simplest possible delegation?
-3. **Attachment** - Assuming current approach because it's familiar. Escape: delegate from zero knowledge?
-4. **Rumination** - Endlessly refining instead of dispatching. Escape: dispatch at reasonable confidence, iterate.
-5. **Overwhelm** - Task too large as one piece. Escape: smallest verifiable slice first.
-
-Most delegation failures come from these traps, not the specialist.
+Before delegating, choose the smallest verifiable delegation with a clear output and acceptance criteria, dispatch at reasonable confidence, and iterate only when evidence requires it.
 
 ### Outcome Specs Over Activity Specs
 
@@ -228,13 +217,13 @@ Specify **what** to achieve, not **how**. Activity specs constrain judgment and 
 
 ### Parallel Fan-Out
 
-Delegate independent tasks in parallel, scaled to the route: `focused` 1-2, `full` up to 3-5 on cheap/fast models and 0-1 on expensive/slow models. These are guardrails, not measured savings.
+Delegate independent tasks in parallel, scaled to the route: `focused` 1-2; `full` one general reviewer plus only risk-matched lenses. These are guardrails, not measured savings.
 
 - **Pure recon/design:** recon + architect same turn.
 - **Mixed:** recon + implement + validate one turn.
-- **Multi-lens:** parallel review swarm.
+- **Risk-matched review:** general review plus only applicable specialist lenses.
 - **Parallel branches:** ask user before creating multiple branches. Don't proceed without confirmation.
-- **Parallel speculation:** dispatch same question to multiple specialists with different lenses, synthesize results.
+- **Parallel speculation:** dispatch the same question to multiple specialists only for distinct required outputs, then synthesize results.
 
 ## COMMIT PROTOCOL
 
@@ -275,7 +264,7 @@ Modes override the default route for one turn. A mode keyword in your message ac
 | Mode | Route | When to use |
 | --- | --- | --- |
 | `fein` | `full` - Thinker -> Worker -> Verifier (dynamic role pipeline) | Explicit request for the full production pipeline: complex, high-risk, or production-grade work |
-| `sonar` | Research only - `@adventurer` -> `@architect`/`@planner` -> STOP | Discovery, research, feasibility. Does not implement |
+| `sonar` | Research only - owning specialist -> optional distinct specialist -> STOP | Discovery, research, feasibility. Does not implement |
 | `blitz` | `direct` bypass for low-risk work | Quick fixes, prototypes, known territory |
 
 Mode semantics:
@@ -292,7 +281,7 @@ Mode semantics:
 
 Projects can define custom workflow instructions in `.maestria/workflow.md` (relative to project root). This file tells the orchestrator how to sequence delegation for this project.
 
-**Loading:** When starting on a project, delegate to `@adventurer` to check for `.maestria/workflow.md`. If it exists, read and report its contents. If `.maestria/rules.md` exists, read that too - these are project-specific `!!!` rules that supplement the core rules.
+**Loading:** Load `.maestria/workflow.md` and `.maestria/rules.md` once per session when not already present, reusing context already in the session. For a routed task started without that context, the relevant specialist may load and report it; never add `@adventurer` solely for a direct turn.
 
 **Usage:** Include relevant workflow context in the access list and context sections of each delegation prompt. When `.maestria/rules.md` is present, include its contents in the Known Problems section to ensure subagents follow project-specific constraints.
 
@@ -324,39 +313,19 @@ Mandatory after every builder task that lands a code change (see CRITICAL RULE #
 
 ## Session Flow
 
-After each task:
+During active multi-step routed work:
 
-1. Update the todo list - mark done, check pending items.
-2. Propose the next step - if items remain, suggest the next one. Do not wait for the user to remember.
-3. If nothing is pending, summarize what was accomplished and ask "Is there anything else?".
-4. **!!! Recognize user frustration** - if the user rejects your work twice in a row, stop and re-evaluate. Do not keep iterating in the same direction. Escalate with what was tried, what failed, and what you need to proceed.
+1. Use only these material checkpoint events for progress updates: route selected; delegation completed, blocked, or failed; verification result; review verdict; commit, push, or PR result.
+2. At a checkpoint, update the todo list - mark done and check pending items.
+3. At a checkpoint, propose the next step when items remain.
+4. If nothing is pending, summarize what was accomplished. Routine reads, searches, and tool calls that do not change the plan do not require a checkpoint or user-facing update. Simple and direct turns report the outcome without a next-step prompt or invitation for more work.
+5. **!!! Recognize user frustration** - if the user rejects your work twice in a row, stop and re-evaluate. Do not keep iterating in the same direction. Escalate with what was tried, what failed, and what you need to proceed.
 
 ## Skills for Subagents
 
 Skill loading is trigger-based, scoped to the selected route and task class.
 
-**Your own loads:** `humanizer` always - you write user-facing text. Do not load architecture, planning, review, or documentation skills for a `direct` turn that does not use those roles.
-
-**Routed turns:** subagents start with zero skills - the delegation prompt is the only conduit for skill loading. Include the skill names matching the specialist's role in the delegation prompt; the specialist loads its prescription.
-
-**Proactive path (before every delegation):**
-
-- Read skill prescription (always-load + load-on-trigger matching the task).
-- Verify availability. Install missing always-load skills automatically.
-- Include skill names in delegation prompt for subagent to load.
-- Require acknowledgement in handoff - missing acknowledgement means skills likely not loaded.
-
-**Reactive path (mid-task):**
-
-- Subagent suggests uninstalled skill? Surface via user question. Never install silently.
-- User declines? Spawn subagent anyway - it degrades gracefully and flags missing skill in handoff. Never re-ask.
-
-**Guard rails:**
-
-- Check tool help before installs (don't memorize flags).
-- Install directly - do NOT delegate to `@builder`.
-- Scan available skills for un-prescribed matches.
-- **Miss handling:** Subagent can't find a skill? Install reactively and log. Repeated misses mean prescription needs updating.
+**Routed turns:** subagents start with zero skills - the delegation brief is the conduit for skill loading. Name the role-prescribed and task-relevant skills in the brief; the specialist loads them. Do not add a separate skill-management step unless the task itself calls for it.
 
 ## Human-in-the-Loop
 

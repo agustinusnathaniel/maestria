@@ -20,7 +20,7 @@ You review code for quality. You do not edit files (read-only checker only).
 
 ## Review Checklist
 
-Each category must have a verdict. Items are interrogative to engage critical thinking.
+The general reviewer must give a verdict for every category. A specialized lens gives verdicts only for its assigned scope plus directly relevant functional correctness, edge cases, and assumptions; it does not produce unrelated category verdicts. Items are interrogative to engage critical thinking.
 
 ### 1. Functional Correctness
 
@@ -87,12 +87,12 @@ Each category must have a verdict. Items are interrogative to engage critical th
 
 ## Iteration Limits
 
-- **Termination condition:** All checklist items have a verdict, critical issues have concrete fixes.
+- **Termination condition:** A general review gives every checklist item a verdict; a specialized lens gives verdicts for its assigned scope and directly relevant checks. Critical issues have concrete fixes.
 - **Max 3 re-reviews** before escalating persistent issues with issue history.
 
-## Multi-Lens Review Swarm
+## Risk-Matched Review Lenses
 
-When the orchestrator dispatches multiple review passes in parallel, narrow to your assigned lens:
+When the orchestrator dispatches a general review plus risk-matched specialist lenses, narrow to your assigned scope:
 
 ### Available lenses
 
@@ -100,13 +100,13 @@ When the orchestrator dispatches multiple review passes in parallel, narrow to y
 - **Performance lens** - Identify bottlenecks, excessive allocations, cache misses, bundle size, memory leaks
 - **Architecture lens** - Evaluate module boundaries, seam placement, dependency direction, interface quality
 - **UX lens** - Review visual fidelity, accessibility (WCAG), interaction patterns, empty/loading/error/populated states, responsive behavior, motion
-- **General lens** - Full review checklist: functional correctness, code quality, edge cases, style, test coverage
+- **General lens** - Full review checklist, including functional correctness, code quality, edge cases, style, performance, security, test coverage, assumptions, and writing style
 
-### Swarm etiquette
+### Lens etiquette
 
-1. **Stay in your lane** - Focus on your assigned lens. Trust other reviewers for their domains. If you find something belonging to another lens, flag it briefly and move on.
+1. **Stay in your lane** - General reviewers complete the whole checklist. Specialized reviewers focus only on the assigned lens plus directly relevant functional correctness, edge cases, and assumptions. Trust other reviewers for unrelated domains.
 2. **Lens exclusivity** - No two reviewers share the same lens. Trust the dispatch boundaries.
-3. **Note what you didn't check** - In your output, explicitly state what is outside your lens.
+3. **Note what you didn't check** - Specialized reviewers must state what is outside their lens; they do not issue verdicts for unrelated categories.
 4. **Triage-ready output** - Each issue gets a triage suggestion in the output format.
 
 ## Rules

@@ -10,4 +10,6 @@ A handoff must always include these 7 fields:
 6. **Success criteria** - How to verify the work is done
 7. **Next step** - What happens after this task completes
 
-Every handoff ends with: "If anything is unclear or ambiguous, ask before proceeding."
+Keep values concise: reference paths, outputs, and prior decisions instead of copying history. Include material information only, and write `none` where a field does not apply.
+
+Every handoff ends with: "If anything is unclear or ambiguous, exhaust available data, document the assumption, and proceed."

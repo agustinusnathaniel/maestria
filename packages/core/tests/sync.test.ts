@@ -203,6 +203,7 @@ describe('loadConfig', () => {
     const config = await loadConfig(configPath);
 
     expect(config.source).toMatch(/agent-directives$/);
+    expect(config.configPath).toBe(configPath);
     expect(config.files).toEqual({});
   });
 
@@ -420,6 +421,7 @@ describe('preserve option', () => {
     writeFileSync(join(outputDir, 'subdir', 'keep.md'), '# Keep\n', 'utf-8');
 
     const config: ResolvedSyncConfig = {
+      configPath: join(tmpDir, 'sync.config.ts'),
       configDir: tmpDir,
       source: sourceDir,
       output: outputDir,
@@ -457,6 +459,7 @@ describe('preserve option', () => {
 
     // No preserve patterns - both stale files get removed
     const config: ResolvedSyncConfig = {
+      configPath: join(tmpDir, 'sync.config.ts'),
       configDir: tmpDir,
       source: sourceDir,
       output: outputDir,
@@ -510,6 +513,7 @@ describe('secondary source loop', () => {
     );
 
     const config: ResolvedSyncConfig = {
+      configPath: join(tmpDir, 'sync.config.ts'),
       configDir: tmpDir,
       source: sourceDir,
       output: outputDir,
@@ -661,6 +665,119 @@ describe('checkProvenance', () => {
     });
 
     expect(result.status).toBe('unchanged');
+  });
+
+  it('passes when a changed sync config regenerates the output', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const configPath = join(tmpDir, 'sync.config.ts');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+    writeFileSync(configPath, "export default { append: '' };\n", 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
+
+    // The config change drives this regenerated output in the real sync path.
+    writeFileSync(configPath, "export default { append: 'Updated\\n' };\n", 'utf-8');
+    fileCfg.append = 'Updated\n';
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      configPath,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('unchanged');
+    expect(result.error).toBeUndefined();
+  });
+
+  it('rejects a staged wrong output even when an unrelated sync config is dirty', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const configPath = join(tmpDir, 'sync.config.ts');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+    writeFileSync(configPath, "export default { append: '' };\n", 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
+
+    const expectedContent = readFileSync(outputPath, 'utf-8');
+
+    // The config is dirty, but this change is unrelated to the output.
+    writeFileSync(configPath, "export default { append: '' };\n// unrelated change\n", 'utf-8');
+
+    // Stage an invalid output, then restore the expected working-tree content.
+    writeFileSync(outputPath, '# Wrong content', 'utf-8');
+    execSync('git add output.md', { cwd: tmpDir, stdio: 'ignore' });
+    writeFileSync(outputPath, expectedContent, 'utf-8');
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      configPath,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('Provenance violation');
+  });
+
+  it('rejects a staged deletion when the expected output is restored', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
+
+    const expectedContent = readFileSync(outputPath, 'utf-8');
+
+    execSync('git rm output.md', { cwd: tmpDir, stdio: 'ignore' });
+    writeFileSync(outputPath, expectedContent, 'utf-8');
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('Provenance violation');
   });
 
   it('passes when a new untracked canonical source regenerates an existing output', async () => {
