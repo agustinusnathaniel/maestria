@@ -11,10 +11,14 @@ import { z } from 'zod';
  *
  * - `"fein"` -- Full pipeline (recon -> design -> build -> review)
  * - `"sonar"` -- Research only (recon + design, stop before build)
- * - `"blitz"` -- Fast implementation (builder direct, skip recon/design/review)
+ * - `"blitz"` -- Direct zero-child execution; independent landing review required before shipping
  */
 export const modeKeywordSchema = z.enum(['fein', 'sonar', 'blitz']);
 export type ModeKeyword = z.infer<typeof modeKeywordSchema>;
+
+/** Runtime route selected for the root orchestrator's current user turn. */
+export const routeSchema = z.enum(['direct', 'focused', 'full', 'landing-review']);
+export type Route = z.infer<typeof routeSchema>;
 
 /**
  * Plugin-level options for @maestria/opencode.

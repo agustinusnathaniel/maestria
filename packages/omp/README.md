@@ -22,11 +22,13 @@ omp install @maestria/omp
 
 After installation, the extension loads automatically on omp session start:
 
-- Use `/fein`, `/sonar`, `/blitz` to set workflow modes
+- Use `/fein`, `/sonar`, `/blitz` to set workflow modes. Slash-command selections persist; `fein`, `sonar`, or `blitz` in ordinary input applies to that turn only.
 - Use `/review <target>` to enter code review mode (blocks destructive tools)
 - Use `/handoff <goal>` to generate structured handoff prompts
 - Use `/maestria-status` to view current session state
 - Use `/review-model <model-id>` to set a specific model for review mode
+
+Mode tool policy is enforced at the root session: fein and sonar are dispatcher-only, sonar is read-only, and blitz permits direct tools while blocking native `task` and `maestria_subagent` dispatch.
 
 The 7 specialist agents are available via omp's built-in `task` tool:
 

@@ -57,7 +57,10 @@ _PIPELINE_DESC = {
     ),
     "blitz": _load_pipeline_desc(
         "blitz",
-        "Fast implementation mode: skip gates, go directly to implementation",
+        (
+            "Direct execution mode: no Maestria child during execution; "
+            "independent review before shipping if an artifact lands"
+        ),
     ),
 }
 
@@ -103,23 +106,25 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
         if not cmd or cmd not in _MAESTRIA_COMMANDS:
             return None
 
+        session_id = kwargs.get("session_id") or getattr(event, "session_id", None)
+
         if cmd == "mode":
-            mode = mode_manager.get_mode()
+            mode = mode_manager.get_mode(session_id)
             response = (
                 f"**Maestria Status**\n\n"
-                f"Mode: **{mode}**\n"
-                f"Read-only: {'Yes' if mode_manager.is_read_only() else 'No'}"
+                f"Mode: **{mode or 'none'}**\n"
+                f"Read-only: {'Yes' if mode_manager.is_read_only(session_id) else 'No'}"
             )
 
         elif cmd in ("fein", "sonar", "blitz"):
-            mode_manager.set_mode(cmd)
+            mode_manager.set_mode(cmd, session_id)
             response = (
                 f"Switched to **{cmd}** mode.\n"
                 f"Pipeline: {_PIPELINE_DESC.get(cmd, 'unknown')}"
             )
 
         elif cmd in ("review", "plan"):
-            mode_manager.set_mode("fein")
+            mode_manager.set_mode("fein", session_id)
             response = (
                 f"Switched to **fein** mode.\n"
                 f"Pipeline: {_PIPELINE_DESC['fein']}"
@@ -128,7 +133,7 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
         else:
             return None  # Shouldn't reach here
 
-        logger.info("pre_gateway: handled /%s (mode=%s)", cmd, mode_manager.get_mode())
+        logger.info("pre_gateway: handled /%s (mode=%s)", cmd, mode_manager.get_mode(session_id))
 
         # Fire response asynchronously
         if gateway is not None:

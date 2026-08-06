@@ -99,6 +99,31 @@ describe('extension entry point', () => {
     expect(getBranch).toHaveBeenCalled();
   });
 
+  it('clears transient automatic mode when session_start restores another session', async () => {
+    const pi = createMockPi();
+    const getBranch = vi.fn(() => []);
+    const ctx = { sessionManager: { getBranch } };
+    extension(pi as unknown as ExtensionAPI);
+
+    const onCalls = (pi.on as ReturnType<typeof vi.fn>).mock.calls;
+    const input = onCalls.find((call: unknown[]) => call[0] === 'input')![1] as (
+      event: unknown,
+      ctx: unknown,
+    ) => unknown;
+    const sessionStart = onCalls.find((call: unknown[]) => call[0] === 'session_start')![1] as (
+      event: unknown,
+      ctx: unknown,
+    ) => unknown;
+    const beforeAgentStart = onCalls.find(
+      (call: unknown[]) => call[0] === 'before_agent_start',
+    )![1] as (event: unknown, ctx: unknown) => unknown;
+
+    await input({ text: 'blitz implement this' }, {});
+    await sessionStart({ type: 'session_start' }, ctx);
+
+    expect(beforeAgentStart({ systemPrompt: [] }, {})).toBeUndefined();
+  });
+
   it('resets copied native state through tree navigation without inventing a goal event', async () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);

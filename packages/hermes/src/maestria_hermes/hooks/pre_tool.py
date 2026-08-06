@@ -12,19 +12,26 @@ from __future__ import annotations
 
 import logging
 
+from maestria_hermes.landing_review import LandingReviewManager
 from maestria_hermes.modes import ModeManager
 from maestria_hermes.permissions import TOOL_CATEGORIES, block_message, get_role
 from maestria_hermes.session import get_role_for_session
 
 logger = logging.getLogger(__name__)
 
+_ROOT_DISPATCH_TOOLS = {"delegate_task", "opencode_route"}
 
-def create_pre_tool_hook(mode_manager: ModeManager):
+
+def create_pre_tool_hook(
+    mode_manager: ModeManager,
+    landing_manager: LandingReviewManager | None = None,
+):
     """Create a pre_tool_call hook closure bound to the given mode manager.
 
     In sonar mode all write tools are blocked regardless of specialist.
-    In fein/blitz mode the hook checks the caller's permission role,
-    resolved from the session_id -> role mapping.
+    In fein/sonar, an unassigned root session is dispatcher-only. In blitz,
+    direct tools are allowed but dispatch tools are blocked. Specialist
+    sessions continue to use their role permissions for remaining tools.
     """
 
     def pre_tool_hook(tool_name: str, **kwargs) -> None | dict:
@@ -32,7 +39,41 @@ def create_pre_tool_hook(mode_manager: ModeManager):
 
         Returns None to allow, or a block dict to deny.
         """
-        mode = mode_manager.get_mode()
+        session_id = kwargs.get("session_id", "")
+        session_id = kwargs.get("task_id") or session_id
+        args = kwargs.get("args", {})
+        mode = mode_manager.get_mode(session_id or None)
+        role = get_role_for_session(session_id) if session_id else ""
+        is_root_session = not role
+
+        if mode in {"fein", "sonar"} and is_root_session:
+            if tool_name not in _ROOT_DISPATCH_TOOLS:
+                return {
+                    "action": "block",
+                    "message": (
+                        f"Tool '{tool_name}' is blocked for the Maestria orchestrator. "
+                        f"Use delegate_task or opencode_route in {mode} mode."
+                    ),
+                }
+
+        if mode == "blitz" and tool_name in _ROOT_DISPATCH_TOOLS:
+            return {
+                "action": "block",
+                "message": (
+                    f"Tool '{tool_name}' is blocked in blitz mode. "
+                    "Blitz runs directly without specialist dispatch."
+                ),
+            }
+
+        if landing_manager is not None:
+            landing_block = landing_manager.shipping_block(
+                session_id,
+                tool_name,
+                args,
+                kwargs.get("cwd") or kwargs.get("directory") or kwargs.get("worktree"),
+            )
+            if landing_block is not None:
+                return landing_block
 
         # Sonar mode: block ALL write tools regardless of specialist
         if mode == "sonar":
@@ -49,9 +90,6 @@ def create_pre_tool_hook(mode_manager: ModeManager):
             return None  # Read tools allowed in sonar mode
 
         # Fein/Blitz mode: check permission role from session mapping
-        session_id = kwargs.get("session_id", "")
-        role = get_role_for_session(session_id) if session_id else ""
-
         if not role:
             # No role mapping -- session may not be a subagent (e.g. direct chat).
             # Allow the tool; the sonar mode gate above is the reliable fallback.

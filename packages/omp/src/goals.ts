@@ -1,6 +1,7 @@
 import type { ExtensionAPI, ExtensionContext } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
 import { createInitialState, persistState } from '@/state.js';
+import type { ModeController } from '@maestria/shared-pi/modes-core';
 
 interface PersistedStateEntry {
   type: string;
@@ -98,7 +99,11 @@ export function restoreMaestriaStateForSession(state: MaestriaState, ctx: Extens
  * mode, review state, etc.). It is persisted through the existing
  * `maestria_state` mechanism so session restoration keeps working.
  */
-export function installGoalEventHandlers(pi: ExtensionAPI, state: MaestriaState): void {
+export function installGoalEventHandlers(
+  pi: ExtensionAPI,
+  state: MaestriaState,
+  modeController: Pick<ModeController, 'clearAutomaticMode'>,
+): void {
   pi.on('goal_updated', (event) => {
     // OMP emits complete/dropped goals as non-null terminal objects. They are
     // meaningful lifecycle transitions, but are no longer current goals, so
@@ -126,12 +131,15 @@ export function installGoalEventHandlers(pi: ExtensionAPI, state: MaestriaState)
   // Every transition is a new target-session boundary. Rehydrate all
   // Maestria fields from that target, including only public native goal state.
   pi.on('session_switch', (_event, ctx) => {
+    modeController.clearAutomaticMode();
     restoreMaestriaStateForSession(state, ctx);
   });
   pi.on('session_branch', (_event, ctx) => {
+    modeController.clearAutomaticMode();
     restoreMaestriaStateForSession(state, ctx);
   });
   pi.on('session_tree', (_event, ctx) => {
+    modeController.clearAutomaticMode();
     restoreMaestriaStateForSession(state, ctx);
   });
 }

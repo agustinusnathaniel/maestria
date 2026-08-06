@@ -66,6 +66,9 @@
     "hooks": [
       "config",
       "chat.message",
+      "event",
+      "tool.execute.before",
+      "tool.execute.after",
       "experimental.session.compacting"
     ]
   }

@@ -9,6 +9,7 @@ provides_tools:
 provides_hooks:
   - pre_llm_call
   - pre_tool_call
+  - pre_verify
   - on_session_start
   - on_session_end
   - subagent_start

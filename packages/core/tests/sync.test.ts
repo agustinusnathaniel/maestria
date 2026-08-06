@@ -787,3 +787,168 @@ describe('checkProvenance', () => {
     expect(existsSync(join(tmpDir, 'PWNED'))).toBe(false);
   });
 });
+
+// ═══════════════════════════════════════════════
+// Canonical directive contract
+// ═══════════════════════════════════════════════
+
+describe('canonical directive contract', () => {
+  const readDirective = (path: string): string =>
+    readFileSync(new URL(`../agent-directives/${path}`, import.meta.url), 'utf-8');
+
+  it('keeps route semantics and safety criteria in the canonical rules', () => {
+    const rules = readDirective('rules.md');
+
+    expect(rules).toContain(
+      '| `direct` | Host execution only. No Maestria child and no handoff. |',
+    );
+    expect(rules).toContain(
+      '| `focused` | One targeted specialist. Add one reviewer only for an explicit risk criterion. |',
+    );
+    expect(rules).toContain(
+      '| `full` | One thinker, one worker, and one reviewer by default. Add fan-out only for evidenced risk. |',
+    );
+    expect(rules).toContain('exhaust available data');
+    expect(rules.replace(/\s+/g, ' ')).toContain(
+      'Do not scan, install, or require skill acknowledgement before every delegation.',
+    );
+  });
+
+  it('preserves the explicit hard-rule meanings', () => {
+    const rules = readDirective('rules.md');
+
+    for (const rule of [
+      "**!!! Don't assume**",
+      '**!!! Read the docs first**',
+      "**!!! Don't anthropomorphize effort**",
+      '**!!! Never leak internal context into public output**',
+      '**!!! Write for humans**',
+      '**!!! Never delete what you did not create**',
+      '**!!! Select the route before progress tools**',
+      '**!!! Preserve routed ownership**',
+      '**!!! Validate before handoff or landing**',
+      '**!!! Preserve maker/checker separation**',
+      '**!!! Stop for irreversible risk**',
+      '**!!! Audit docs with code before shipping**',
+      '**!!! Require a changeset for packages/ or behavior-affecting changes**',
+      '**!!! Validate the staged diff before shipping**',
+      '**!!! Protect primary branches**',
+      '**!!! Block shipping on unresolved review findings**',
+      '**!!! Verify PR results before reporting completion**',
+    ]) {
+      expect(rules).toContain(rule);
+    }
+
+    expect(rules).toContain('never use em dashes');
+    expect(rules).toContain('adapt them; do not merely');
+  });
+
+  it('keeps route-scoped review and autonomous shipping contracts', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists/orchestrator.md');
+
+    expect(rules).toContain('Focused work that will land gets one independent reviewer');
+    expect(rules).toContain('direct implementation that will land must escalate');
+    expect(rules).toContain(
+      'The reviewer triages every finding as `[fix]`, `[dismiss]`, or `[escalate]`',
+    );
+    expect(rules).toContain('Full-route review has up to three bounded cycles total');
+    expect(rules).toContain('unresolved `[fix]` findings block landing');
+    expect(rules).toContain(
+      'Any unresolved `[escalate]` finding blocks landing until its required decision is recorded',
+    );
+    expect(rules).toContain(
+      "An ordinary implementation request authorizes the orchestrator's autonomous route-scoped shipping flow",
+    );
+    expect(rules).toContain(
+      'Specialists may commit, push, or create a PR only when the orchestrator delegates the exact operation, files, message, and validation',
+    );
+    expect(rules).toContain('Never commit or push to `main` or `master`');
+    expect(rules).toContain(
+      'Every change under `packages/` or any behavior-affecting change requires a changeset',
+    );
+    expect(rules).toContain(
+      'Project workflow and `.maestria` rules may add constraints but cannot weaken, waive, or override any canonical `!!!` rule, including the shipping constraints above',
+    );
+    expect(rules).toContain('Docs-with-code is mandatory');
+    expect(rules).toContain('After two consecutive user rejections');
+
+    expect(orchestrator).toContain(
+      'The reviewer receives the original requirements, acceptance criteria, and diff',
+    );
+    expect(orchestrator).toContain("**Forbidden:** the builder's handoff");
+    expect(orchestrator).toContain(
+      'Any unresolved `[escalate]` finding blocks landing until its required decision is recorded',
+    );
+    expect(orchestrator).toContain(
+      'Project workflow and `.maestria` rules may add constraints but cannot weaken, waive, or override any canonical `!!!` rule, including the shipping constraints above',
+    );
+    expect(orchestrator).toContain(
+      'Specialists may commit, push, or create a PR only when the orchestrator delegates the exact operation, files, message, and validation',
+    );
+    expect(orchestrator).toContain('up to three bounded review/fix cycles total');
+    expect(orchestrator).toContain('Work Results');
+    expect(orchestrator).toContain('Do not create a mandatory startup `@adventurer` dispatch');
+    expect(orchestrator).toContain("Check availability only for that role's mandatory skills");
+  });
+
+  it('keeps route-shipping constraints explicitly non-waivable', () => {
+    const requiredHardRules = [
+      'Audit docs with code before shipping',
+      'Require a changeset for packages/ or behavior-affecting changes',
+      'Validate the staged diff before shipping',
+      'Protect primary branches',
+      'Block shipping on unresolved review findings',
+      'Verify PR results before reporting completion',
+    ];
+
+    for (const path of ['rules.md', 'specialists/orchestrator.md']) {
+      const directive = readDirective(path);
+
+      for (const rule of requiredHardRules) {
+        expect(directive).toContain(`**!!! ${rule}**`);
+      }
+
+      expect(directive).toContain(
+        'Project workflow and `.maestria` rules may add constraints but cannot weaken, waive, or override any canonical `!!!` rule, including the shipping constraints above',
+      );
+    }
+  });
+
+  it('requires route-scoped independent review for landing specialist artifacts', () => {
+    for (const specialist of ['adventurer', 'architect', 'builder', 'diagnose', 'planner']) {
+      const text = readDirective(`specialists/${specialist}.md`);
+      expect(text).toContain('**!!! Maker/checker split**');
+      expect(text).toContain('route-scoped independent reviewer before landing');
+      expect(text).toContain('do not self-QA it');
+      expect(text).toContain('Research-only and non-landing work remains review-free');
+    }
+  });
+
+  it('keeps the route efficiency constraints in the canonical patterns', () => {
+    const composition = readDirective('COMPOSITION.md');
+    const patterns = readFileSync(new URL('../../../PATTERNS.md', import.meta.url), 'utf-8');
+
+    for (const content of [composition, patterns]) {
+      expect(content).toContain('Do not add startup reconnaissance');
+      expect(content).toContain('scale expensive or slow');
+      expect(content.toLowerCase()).toContain('unresolved `[fix]`');
+      expect(content).toContain('non-primary feature branch');
+    }
+  });
+
+  it('keeps focused and full handoffs distinct', () => {
+    const rules = readDirective('rules.md');
+    const handoff = readDirective('skills/handoff.md');
+
+    expect(rules).toContain('## Handoff Contract');
+    expect(rules).toContain('Focused work uses the compact five-field contract');
+    expect(rules).toContain('Full or cross-agent work uses all seven fields');
+    expect(handoff).toContain('## Focused handoff');
+    expect(handoff).toContain('## Full or cross-agent handoff');
+    expect(handoff).toContain(
+      'For ambiguity, exhaust available data, document the assumption and evidence,',
+    );
+    expect(handoff).not.toContain('ask before proceeding');
+  });
+});

@@ -1,151 +1,96 @@
-# ADR-CORE-013: Selective routing by task and model economics
+# ADR-CORE-013: Route-scoped orchestration with hard-rule preservation
 
 ## Status
 
-Proposed evolution (2026-07-31). Unit 1 documents the contract; no adaptive routing is implemented by this ADR.
+Accepted for the canonical directive layer (2026-08-06). This ADR documents prompt and documentation behavior. It does not claim universal runtime enforcement across platforms.
 
 ## Context
 
-### The Pipeline Is a Token Multiplier by Construction
+The previous directive set treated the full recon/design/implementation/review ceremony as the normal shape of work. That made selective routing contradictory: small direct work still acquired child-agent expectations, focused work implied automatic review, and mode documents described different pipeline semantics. The cost and latency of delegation vary by task, model, and platform, so the canonical contract must scope ceremony to the route that needs it.
 
-Maestria's pipeline forces discipline through delegation: a "simple" task spawns `@adventurer` (recon) -> `@builder` (implement) -> `@reviewer` (verify), and a complex task adds `@architect`/`@planner`, the review loop (max 3 cycles), and the commit protocol (which spawns `@adventurer` for git inspection, `@builder` for execution). Each spawn loads a fresh 40-150K context plus megabytes of cached context, and every delegation briefing, result, and Work Results table accumulates in the orchestrator session forever.
-
-This is the mechanism of Maestria's discipline - and it is also a constant token multiplier on top of whatever the model costs.
-
-### Session Data: The Multiplier's Cost Scales With Model Price
-
-Usage data from the opencode session database (620 Maestria sessions) shows the same pipeline under two pricing regimes:
-
-|                         | deepseek-v4-flash (547 sessions) | kimi-k3 (11 sessions, Jul 20-21) |
-| ----------------------- | -------------------------------- | -------------------------------- |
-| Subagent input          | 6.4M fresh + ~300M cached        | 855K fresh + ~7M cached          |
-| Total cost              | $7.16                            | $6.60                            |
-| Cost per adventurer run | ~$0.011                          | ~$0.68                           |
-
-The same pipeline that costs pennies on flash costs dollars on kimi-k3. A frontier-model session (gpt-5.6-luna) shows the structural shape: one task spawned a long chain of sequential subagents, consuming far more cached than fresh input. The orchestrator's own session cost was negligible next to the amplification from delegation.
-
-A flash-class session (deepseek-v4-flash) shows the other failure mode: a day of frequent subagent spawns stays cheap, but the orchestrator session grows large and every spawn adds latency.
-
-Across the recon report, a Kimi adventurer run averaged about $0.683 and 452
-seconds, compared with about $0.011 and 81 seconds for flash. Orchestrator cache-read versus fresh-input cost differed by roughly 45x, and observed fan-out reached 58 children. These figures establish the cost and latency problem; they do not establish a universal route or a promised reduction. [verified]
-
-### The Gap
-
-The orchestrator has no awareness of its own model's price or latency. It applies the same pipeline depth, fan-out caps (3-5 parallel), and review loops regardless of whether tokens cost a few cents or nearly a dollar per million and whether each spawn takes 2 seconds or 2 minutes. The workflow modes (`fein`/`sonar`/`blitz`) are platform-dependent, user-initiated mechanisms; they do not express persistent model economics. No universal tier variable or automatic adaptive route exists today. [verified]
-
-The result: Maestria is implicitly optimized for cheap, fast, weak-advantage models (flash-class), and becomes a net negative on frontier models, where the quality premium of narrow-focus delegation shrinks while the cost and latency multipliers stay constant.
+The route rehaul must optimize when policy applies, not reduce the meaning or detail of the prior hard rules. In particular, route selection cannot remove verification, ownership, maker/checker review before landing, safety checkpoints, autonomous shipping, or the autonomy principle of exhausting data and proceeding with documented assumptions.
 
 ## Decision
 
-Adopt staged evolution rather than claiming a runtime feature that does not exist. Unit 1 narrows the public contract to three routes: direct execution, a focused specialist or review, and the full pipeline. Users select a route based on task risk, uncertainty, model economics, and platform behavior. The full pipeline is explicitly selected or justified by the task; it is not a universal default. [inferred]
+Canonical directives define three per-turn routes:
 
-Unit 2 may implement selective routing informed by model economics. That future work must preserve the route contract while making any new configuration or runtime behavior explicit.
+| Route | Canonical behavior |
+| --- | --- |
+| `direct` | Host or native direct execution. No Maestria child or handoff during execution. |
+| `focused` | One targeted specialist. Landing work receives one independent reviewer before landing. Research-only and non-landing work remains review-free unless concrete risk requires review. |
+| `full` | One thinker, one worker, and one independent reviewer by default. Extra fan-out or review lenses require evidenced risk. |
 
-### Proposed future tier model
+Direct implementation that will land escalates to a review-capable route before commit, push, publish, merge, or PR creation. Direct execution remains zero-child. This preserves the maker/checker split while retaining a direct default for simple work.
 
-| Tier       | Model class (example)          | Budget         | Latency  |
-| ---------- | ------------------------------ | -------------- | -------- |
-| `flash`    | deepseek-v4-flash, free models | < $0.5/M input | fast     |
-| `mid`      | mid-price models               | $0.5-2/M input | moderate |
-| `frontier` | gpt-5.6, kimi-k3 class         | > $2/M input   | slow     |
+Full review is blind to maker-authored narrative: it receives the original requirements, acceptance criteria, and diff. Findings are triaged as `[fix]`, `[dismiss]`, or `[escalate]`. Review/fix work is bounded to three cycles; unresolved `[fix]` findings fail loud and block landing, and any unresolved `[escalate]` finding blocks landing until its required decision is recorded. Multi-lens review is reserved for evidenced multi-concern or high-risk full work and scales down to one pass for expensive or slow models.
 
-This table is a hypothesis for Unit 2, not current behavior. `MAESTRIA_TIER` is not implemented. No platform currently provides a universal tier setting or automatic route selection. [verified]
+The canonical modes are semantic aliases for these routes:
 
-### Future tier-scaled levers
+- `fein` selects `full`.
+- `sonar` selects focused research and never implements.
+- `blitz` selects `direct` and never delegates to a Maestria specialist.
 
-| Lever | Low-cost baseline hypothesis | `mid` | `frontier` |
-| --- | --- | --- | --- |
-| **Recon** | `@adventurer` on any unfamiliar code | `@adventurer` only when codebase genuinely unknown | skip; orchestrator asks user or uses direct context |
-| **Design stages** | `@architect`/`@planner` on COMPLEX | `@architect`/`@planner` on COMPLEX only | folded into single delegation; no separate stage |
-| **Implementation** | `@builder` (fresh context) | `@builder` | direct execution; `@builder` only for large atomic slices |
-| **Review** | `@reviewer` always after `@builder` | `@reviewer` after `@builder` on non-trivial changes | `@reviewer` only on user request or before commit of substantial work |
-| **Parallel fan-out cap** | 3-5 | 2 | 0-1 |
-| **Review loop max** | 3 cycles | 2 cycles | 1 pass; fail loud after |
-| **Session compaction** | none (orchestrator context grows) | compact when session context exceeds threshold | aggressive compaction; briefings over history |
+An ordinary implementation request authorizes the orchestrator's autonomous route-scoped commit/push/publish/PR flow unless explicitly limited to research-only, no-commit, or no-ship. Specialists may commit, push, or create a PR only when the orchestrator delegates the exact operation, files, message, and validation. Direct root work follows the same flow. Human checkpoints are limited to migrations/data, production, security, irreversible decisions, and safety ambiguity. Shipping requires status, diff, history, branch, and worktree inspection; every change under `packages/` or any behavior-affecting change requires a changeset, while docs-only or internal-only changes follow repository conventions; a docs audit for internal docs, user docs, and changelog; a conventional message; intended-file staging; clean-state verification; and a non-primary feature branch. PRs contain Summary, Changes or Work Results, Testing, and Breaking Changes.
 
-### What Does Not Change
+Handoffs are route-scoped. Direct turns have none. Focused work uses the compact five-field contract. Full or cross-agent work uses the existing seven fields. Project workflow and rules are discovered when the selected route needs them and propagated through relevant handoffs, without mandatory startup reconnaissance. Project `.maestria` rules may add constraints but cannot waive or override canonical `!!!` rules; core hard rules take precedence.
 
-- **Tier scales the pipeline, not the rules.** `!!!` rules (never implement routed work yourself, maker/checker split, handoff contracts, iteration limits) still bind. Direct-route turns run on the host; focused and full turns delegate to the 7 specialists, and the orchestrator does not implement work routed to a specialist. A frontier orchestrator delegates fewer times and to fewer specialists. The maker/checker split is preserved on every code change that lands; only its frequency scales.
-- **Mode keywords still win.** `fein`/`sonar`/`blitz` are per-turn overrides that beat the tier default for that turn. Tier is the default; mode is the exception.
-- **The 7 specialists stay.** No specialist is removed at any tier. `frontier` skips stages, it does not delete agents.
-- **The sync pipeline is unaffected.** This is content (prompts) + config (tier declaration), not new plumbing. The orchestrator prompt gains a Tier section; platform frontmatter gains a tier setting.
+## Hard rules preserved
+
+The canonical `!!!` rules remain explicit for: not assuming; consulting docs before unfamiliar APIs or migrations; not anthropomorphizing effort; never leaking internal context; writing for humans without em dashes; never deleting what was not created; selecting the route before progress; preserving routed ownership; validating before handoff or landing; preserving maker/checker separation; and stopping for irreversible risk.
+
+The autonomy contract also retains exhaust-data behavior, two-rejection stop and escalation, role-scoped mandatory skill availability checks, triggered optional skills, unrecognized-branch/worktree handling, docs-with-code, Work Results after builder code changes, and a maximum of three iterations. These rules are optimized by route, not weakened by it.
 
 ## Consequences
 
 ### Positive
 
-- **The current contract becomes honest.** Users can choose direct, focused, or full work without inferring that every task receives the same pipeline.
-- **Cost and latency become explicit trade-offs.** The evidence shows large variation: 620 sessions cost $19.17 in aggregate; Kimi K3 sessions cost
-  $6.60 for 11 sessions versus $7.16 for 547 DeepSeek flash sessions. These figures describe observed usage, not a promised saving.
-- **Future routing remains measurable.** Unit 2 can compare cost, latency, correction rate, and review findings by route.
+- Small, familiar work can stay direct without child-agent overhead.
+- Focused work has one owner and gets independent review when it will land.
+- Full work retains a predictable blind maker/checker path with bounded loops.
+- Hard safety, autonomy, shipping, and public-output rules remain explicit.
+- Mode documents, handoffs, patterns, and the core rules use one contract.
 
 ### Negative
 
-- **Selective routing can miss useful checks.** A direct route gives up some structured handoffs and independent review. The guide therefore recommends escalation when uncertainty or risk increases.
-- **Platform differences limit portability.** OpenCode has stronger tool-level maker/checker enforcement. Kimi reviewer behavior is advisory unless a review-only session is configured. Pi and OMP have inherited-context and dispatch differences. Hermes defaults to `fein` but does not automatically create maker/checker enforcement for direct work.
+- Direct and focused non-landing routes intentionally give up routine independent checking.
+- Risk criteria require judgment and concrete evidence.
+- Platform adapters may provide only advisory enforcement for prompt-level boundaries.
+- Fail-loud review findings can block autonomous landing until the safety or redesign input is resolved.
 
-## Alternatives Considered
+## Alternatives considered
 
-### Option A: Keep the Pipeline Universal, Document the Constraint
+### Keep the full pipeline universal
 
-Document "Maestria is designed for cheap fast models" and leave the pipeline untouched.
+Rejected. It conflicts with route selection and imposes unnecessary model and latency overhead on low-risk work.
 
-Rejected for the public contract. It hides a measurable cost and contradicts observed model and platform differences. [verified]
+### Use `blitz` as the only shortcut
 
-### Option B: Collapse the Pipeline Only Via User-Initiated `blitz` Mode
+Rejected. A mode-specific escape hatch does not define ordinary focused work or make the route contract consistent across platforms.
 
-Require users on frontier models to prefix tasks with `blitz`.
+### Remove hard rules from smaller routes
 
-Rejected as the complete solution. `blitz` is not universal across platforms, and it is a task mode rather than a model-economics policy. [verified]
+Rejected. Route selection scopes ceremony, not safety, ownership, verification, review-before-landing, public-output, or autonomous-shipping meaning.
 
-### Option C: Runtime Cost Feedback Loop
+### Add runtime model-price feedback
 
-The orchestrator reads its own session token/cost telemetry (where the platform exposes it) and adjusts fan-out dynamically.
-
-Deferred. Platform telemetry is inconsistent across opencode/kimi-code/pi, and dynamic self-tuning is a reliability risk in the core loop. The static tier is deterministic, testable, and covers the observed failure mode (steady-state amplification). Telemetry-driven tuning can be layered on later if the static tier proves too coarse.
-
-### Option D: Model Detection at Session Start
-
-The platform passes the resolved model name into the orchestrator context; Maestria maps known model IDs to tiers automatically.
-
-Deferred for the same reason as Option C: the mapping is platform-specific and brittle across model aliases and providers. Automatic capability classification is a non-goal for Unit 1. [inferred]
-
-## Related Decisions
-
-- ADR-CORE-011 (eliminate questions) - established the autonomy default this tier scales; tier does not change the question policy
-- ADR-CORE-012 (deterministic review signals) - review frequency scales with tier; the access list discipline applies at every tier
-- ADR-OC-003 (workflow modes) - platform-specific modes remain available where implemented; they do not imply adaptive routing
-
-## Non-goals
-
-- No runtime price detection.
-- No automatic model capability classification.
-- No universal `MAESTRIA_TIER` variable yet.
-- No new framework or runtime.
-- No claim that platform dispatch, context inheritance, or maker/checker enforcement is equivalent across platforms.
+Deferred. Platform telemetry and model naming are not uniform. The canonical directive contract can be implemented and tested independently of that future runtime work.
 
 ## Assumptions
 
-- [verified] Current platforms do not expose a universal `MAESTRIA_TIER` or automatic model-economics router.
-- [verified] Full pipeline selection, mode activation, reviewer enforcement, and context inheritance vary by platform.
-- [inferred] A route guide based on task class is more useful to users now than a price-tier taxonomy that the runtime cannot enforce.
-- [inferred] Unit 2 should measure route outcomes before choosing defaults or promising cost reductions.
-
-## Measurable hypotheses for Unit 2
-
-These are hypotheses, not acceptance claims:
-
-1. Direct execution will reduce cost and wall-clock time for tiny edits and familiar, low-risk changes compared with the full pipeline.
-2. Focused delegation will retain useful discovery or review quality with less overhead than the full pipeline for ordinary changes.
-3. Full routing will reduce escaped defects or rework for complex and high-risk changes enough to justify its additional model work.
-4. Model price and cache behavior will materially change the preferred route.
-
-Unit 2 should measure route cost, latency, correction rate, and reviewer findings before claiming an improvement target.
+- `[verified]` Canonical source files define route and mode behavior as prose; platform packages derive artifacts through sync.
+- `[verified]` Platform context isolation, route gates, and tool enforcement differ.
+- `[inferred]` Explicit task risk is a more stable routing signal than a model price taxonomy that the current directive layer cannot enforce.
 
 ## Rollback conditions
 
-Roll back any future selective-routing implementation if it silently changes the route selected by an explicit user mode, hides the selected route, prevents a user from choosing the full pipeline, or increases escaped defects without a documented trade-off. Restore the documented direct/focused/full guidance until the behavior is corrected.
+Revisit this contract if a platform silently changes an explicit mode, prevents users from selecting `full`, hides the selected route, weakens a preserved hard rule, or shows increased escaped defects without a documented trade-off.
+
+## Related decisions
+
+- ADR-CORE-005 - canonical directive sync
+- ADR-CORE-011 - exhaust data, document assumptions, and proceed
+- ADR-CORE-012 - blind review, triage, and fail-loud behavior
 
 ## Date
 
-2026-07-31
+2026-08-06

@@ -43,11 +43,17 @@ def create_llm_output_middleware(mode_manager: ModeManager):
 
         # Add methodology footer for mode awareness (opt-in)
         if _MODE_FOOTER_ENABLED and isinstance(result, str) and "[MAESTRIA" not in result:
-            mode = mode_manager.get_mode()
+            session_id = kwargs.get("session_id")
+            if session_id is None and isinstance(request, dict):
+                session_id = request.get("session_id")
+            mode = mode_manager.get_mode(session_id)
             mode_note = {
                 "fein": "Fein mode: full methodology pipeline applied.",
                 "sonar": "Sonar mode: research only, no changes made.",
-                "blitz": "Blitz mode: fast execution, gates skipped.",
+                "blitz": (
+                    "Blitz mode: direct execution, no Maestria child; independent review "
+                    "before shipping if an artifact lands."
+                ),
             }.get(mode, "")
 
             if mode_note:

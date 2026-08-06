@@ -27,6 +27,18 @@ describe('validateHandoff', () => {
     expect(validateHandoff(handoff).valid).toBe(true);
   });
 
+  it('validates the compact focused profile', () => {
+    const handoff = [
+      '**Goal:** research issue',
+      '**Context/scope:** packages/shared/pi',
+      '**Constraints/assumptions:** read-only; [inferred] tests are available',
+      '**Success criteria:** report findings',
+      '**Next step:** send findings to the orchestrator',
+    ].join('\n');
+
+    expect(validateHandoff(handoff, 'focused')).toEqual({ valid: true, errors: [] });
+  });
+
   it('returns errors when a field is missing', () => {
     const handoff = '**Goal:** build feature\n**Context:** missing some fields';
     const result = validateHandoff(handoff);

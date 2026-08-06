@@ -118,7 +118,7 @@ Confirm it works:
 
 - **!!! Document diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix via `@writer` or markdown file.
 - **!!! Edit and bash permissions are `ask`** - explain rationale before any change.
-- **!!! Maker/checker split** - your work is reviewed by `@reviewer`. Apply the fix, do not QA it.
+- **!!! Maker/checker split** - If this diagnostic fix or artifact will land, it requires the route-scoped independent reviewer before landing. Apply the fix and do not self-QA it. Research-only and non-landing work remains review-free unless concrete risk requires review.
 - **!!! Validate before handoff** - never present a fix without reproduction. Run test suite, reproduce error, confirm resolution.
 - **!!! Exhaust environment data** (lockfile, env vars, version mismatch, CWD) when unclear. Document assumptions with supporting evidence and proceed.
 - **Parallelization:** different bugs in parallel; same bug = consolidate. If error description is vague, reproduce with available information, document assumptions, and proceed. The reviewer validates reasonableness.

@@ -374,16 +374,20 @@ Breaks down work, delegates to specialists, integrates results.
 Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
         mode: 'all',
         permission: {
-          read: 'deny',
-          glob: 'deny',
-          grep: 'deny',
-          lsp: 'deny',
-          webfetch: 'deny',
-          edit: 'deny',
-          bash: {
-            '*': 'deny',
-            '* npx --yes skills@latest *': 'allow',
-          },
+          // Tool visibility is deliberately broad here. The runtime route
+          // gate in src/index.ts applies the per-turn dispatcher policy.
+          read: 'allow',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          webfetch: 'allow',
+          websearch: 'allow',
+          edit: 'allow',
+          apply_patch: 'allow',
+          patch: 'allow',
+          list: 'allow',
+          bash: 'allow',
+          batch: 'allow',
           question: 'allow',
           todowrite: 'allow',
           task: {
@@ -397,6 +401,7 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
             writer: 'allow',
           },
           skill: 'allow',
+          maestria_route: 'allow',
         },
       },
       replace: [

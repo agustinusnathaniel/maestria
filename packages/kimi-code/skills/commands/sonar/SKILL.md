@@ -15,4 +15,4 @@ arguments: []
 
 ## MODE: sonar (Research Only)
 
-Research mode: reconnaissance and design only. Delegate to adventurer (recon) followed by architect or planner (analysis/design). STOP after delivering findings and design. Do NOT implement, write code, or create any production files.
+Research mode selects the `focused` route by default. Delegate one specialist that owns the research question, then stop before implementation. Add a second specialist only when the first result exposes a concrete unresolved question or risk that requires another role. Do NOT implement, write code, create production files, commit, push, publish, merge, or create a PR.

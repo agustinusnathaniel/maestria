@@ -9,7 +9,11 @@ import {
   getModePrompt,
   detectModeInText,
   buildModeText,
+  createModeController,
+  installModeAutoDetect,
+  installModeCommands,
 } from '../src/modes-core.js';
+import { createInitialState } from '../src/state-core.js';
 
 // ── Constants ──
 
@@ -220,5 +224,124 @@ describe('detectModeInText', () => {
     expect(result).not.toBeNull();
     expect(result!.keyword).toBe('fein');
     expect(result!.strippedText).toBe('build the feature');
+  });
+});
+
+describe('automatic mode controller', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = join(tmpdir(), `maestria-auto-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
+    for (const kw of MODE_KEYWORDS) {
+      writeFileSync(join(tmpDir, `${kw}.md`), `## MODE: ${kw}\n\n${kw} prompt`);
+    }
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('keeps keyword modes transient and clears them on the next unmarked turn', async () => {
+    const state = createInitialState();
+    const controller = createModeController(state);
+    let inputHandler: ((event: unknown, ctx: unknown) => unknown) | undefined;
+
+    installModeAutoDetect(
+      (handler) => {
+        inputHandler = handler;
+      },
+      state,
+      tmpDir,
+      {
+        restoreOriginalState: async () => {},
+        noMatch: undefined,
+        transform: (text) => text,
+        setAutomaticMode: (mode) => controller.setAutomaticMode(mode),
+      },
+    );
+
+    await inputHandler!({ text: 'blitz implement this' }, {});
+    expect(state.mode).toBeNull();
+    expect(controller.getMode()).toBe('blitz');
+
+    await inputHandler!({ text: 'continue the task' }, {});
+    expect(controller.getMode()).toBeNull();
+  });
+
+  it('lets an explicit persisted mode resume after a transient keyword turn', async () => {
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    const controller = createModeController(state);
+    let inputHandler: ((event: unknown, ctx: unknown) => unknown) | undefined;
+
+    installModeAutoDetect(
+      (handler) => {
+        inputHandler = handler;
+      },
+      state,
+      tmpDir,
+      {
+        restoreOriginalState: async () => {},
+        noMatch: undefined,
+        transform: (text) => text,
+        setAutomaticMode: (mode) => controller.setAutomaticMode(mode),
+      },
+    );
+
+    await inputHandler!({ text: 'blitz do this once' }, {});
+    expect(controller.getMode()).toBe('blitz');
+    await inputHandler!({ text: 'now continue fein work' }, {});
+    expect(controller.getMode()).toBe('fein');
+  });
+
+  it('clears a transient keyword mode when an explicit command is selected', async () => {
+    const state = createInitialState();
+    const controller = createModeController(state);
+    const commandHandlers = new Map<string, (args: unknown, ctx: unknown) => unknown>();
+
+    installModeCommands(
+      (name, options) => {
+        commandHandlers.set(name, options.handler);
+      },
+      state,
+      {
+        restoreOriginalState: async () => {},
+        persistState: () => {},
+        clearAutomaticMode: () => controller.clearAutomaticMode(),
+      },
+    );
+
+    controller.setAutomaticMode('blitz');
+    await commandHandlers.get('fein')!('', { ui: { notify: () => {} } });
+
+    expect(state.mode).toBe('fein');
+    expect(controller.getMode()).toBe('fein');
+  });
+
+  it('resets landing-review state per turn without changing persisted mode', async () => {
+    const state = {
+      ...createInitialState(),
+      mode: 'blitz' as const,
+      landingReview: 'reviewing' as const,
+    };
+    let inputHandler: ((event: unknown, ctx: unknown) => unknown) | undefined;
+
+    installModeAutoDetect(
+      (handler) => {
+        inputHandler = handler;
+      },
+      state,
+      tmpDir,
+      {
+        restoreOriginalState: async () => {},
+        noMatch: undefined,
+        transform: (text) => text,
+        setAutomaticMode: () => {},
+      },
+    );
+
+    await inputHandler!({ text: 'continue direct work' }, {});
+    expect(state.landingReview).toBe('stale');
+    expect(state.mode).toBe('blitz');
   });
 });

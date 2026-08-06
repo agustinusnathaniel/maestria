@@ -2,7 +2,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { MODE_KEYWORDS, getModePrompt } from '@maestria/shared-pi/modes-core';
-import { installModeCommands } from '@/modes.js';
+import { installModeAutoDetect, installModeCommands } from '@/modes.js';
 import { createInitialState } from '@/state.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -237,5 +237,27 @@ describe('installModeCommands', () => {
         expect.objectContaining({ mode: 'blitz' }),
       );
     });
+  });
+});
+
+describe('installModeAutoDetect', () => {
+  it('does not persist automatic keyword modes and clears them on an unmarked turn', async () => {
+    let inputHandler: ((event: unknown, ctx: unknown) => unknown) | undefined;
+    const pi = {
+      on: (_event: string, handler: (event: unknown, ctx: unknown) => unknown) => {
+        inputHandler = handler;
+      },
+      appendEntry: vi.fn(),
+    };
+    const state = createInitialState();
+
+    installModeAutoDetect(pi as any, state);
+    await inputHandler!({ text: 'blitz implement this' }, {});
+    expect(state.mode).toBeNull();
+    expect(pi.appendEntry).not.toHaveBeenCalled();
+
+    await inputHandler!({ text: 'continue the task' }, {});
+    // The transient mode is observable through prompt/tool hooks, not state.
+    expect(state.mode).toBeNull();
   });
 });

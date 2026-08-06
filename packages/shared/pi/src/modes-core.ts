@@ -10,7 +10,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { MaestriaState } from './state-core.js';
+import { resetLandingReview, type MaestriaState } from './state-core.js';
 
 // ── Constants ──
 
@@ -68,6 +68,33 @@ export interface ModeDetectResult {
   strippedText: string;
   /** The full mode prompt (marker + body). */
   prompt: string;
+}
+
+/**
+ * Resolves the mode that applies to the current turn.
+ *
+ * Explicit slash commands update `state.mode` and are persisted by the
+ * platform. Keyword detection uses the transient automatic mode instead, so
+ * an input keyword cannot silently change the mode of later turns.
+ */
+export interface ModeController {
+  getMode(): ModeKeyword | null;
+  setAutomaticMode(mode: ModeKeyword | null): void;
+  clearAutomaticMode(): void;
+}
+
+export function createModeController(state: MaestriaState): ModeController {
+  let automaticMode: ModeKeyword | null = null;
+
+  return {
+    getMode: () => automaticMode ?? state.mode,
+    setAutomaticMode: (mode) => {
+      automaticMode = mode;
+    },
+    clearAutomaticMode: () => {
+      automaticMode = null;
+    },
+  };
 }
 
 /** Regex matching fenced code blocks (```) and inline backtick spans (`). */
@@ -171,25 +198,27 @@ export function installModeAutoDetect(
   opts: {
     /** Exit review mode — calls platform's restoreOriginalState */
     restoreOriginalState: (ctx: unknown) => Promise<void>;
-    /** Persist state after mode change */
-    persistState: () => void;
     /** Return value when no keyword is detected (e.g. Pi: { action: 'continue' }) */
     noMatch: unknown;
     /** Build return value from transformed text (e.g. Pi: { action: 'transform', text }) */
     transform: (text: string) => unknown;
+    /** Set the mode for this turn without changing persisted explicit mode. */
+    setAutomaticMode: (mode: ModeKeyword | null) => void;
   },
 ): void {
   onInput(async (event: unknown, ctx: unknown) => {
+    // A new user turn cannot reopen a review that is in flight. Active review
+    // state becomes stale; terminal review state starts a fresh execution
+    // window and never carries approval into another turn.
+    Object.assign(state, resetLandingReview(state));
     const text = ((event as Record<string, unknown>).text as string) ?? '';
     const result = detectModeInText(text, commandsDir);
+    opts.setAutomaticMode(result?.keyword ?? null);
     if (!result) return opts.noMatch;
 
     if (state.reviewMode) {
       await opts.restoreOriginalState(ctx);
     }
-
-    state.mode = result.keyword;
-    opts.persistState();
 
     return opts.transform(buildModeText(result.prompt, result.strippedText));
   });
@@ -215,12 +244,16 @@ export function installModeCommands(
     restoreOriginalState: (ctx: unknown) => Promise<void>;
     /** Persist state after mode change */
     persistState: () => void;
+    /** Clear a transient keyword mode before persisting an explicit command mode. */
+    clearAutomaticMode?: () => void;
   },
 ): void {
   for (const keyword of MODE_KEYWORDS) {
     registerCommand(keyword, {
       description: `Set workflow mode to ${keyword}`,
       handler: async (_args: unknown, ctx: unknown) => {
+        opts.clearAutomaticMode?.();
+        Object.assign(state, resetLandingReview(state));
         if (state.reviewMode) {
           await opts.restoreOriginalState(ctx);
         }

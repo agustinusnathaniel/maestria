@@ -45,7 +45,7 @@ def create_transform_tool_result_hook(mode_manager: ModeManager):
         if not tool_name or not isinstance(result, str):
             return None
 
-        mode = mode_manager.get_mode()
+        mode = mode_manager.get_mode(kwargs.get("session_id"))
 
         # Only annotate write/exec tools in non-sonar modes
         if mode == "sonar":
@@ -75,7 +75,10 @@ def _build_annotation(mode: str, tool_name: str) -> str:
     """
     mode_labels = {
         "fein": "[Maestria: full methodology pipeline active]",
-        "blitz": "[Maestria: fast execution mode, gates skipped]",
+        "blitz": (
+            "[Maestria: direct execution; no Maestria child; independent review "
+            "before shipping if an artifact lands]"
+        ),
     }
     label = mode_labels.get(mode, "")
     if not label:

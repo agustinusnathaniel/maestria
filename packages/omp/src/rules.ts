@@ -6,7 +6,7 @@ import type {
   ExtensionContext,
 } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
-import { getModePrompt } from '@maestria/shared-pi/modes-core';
+import { getModePrompt, type ModeController } from '@maestria/shared-pi/modes-core';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const COMMANDS_DIR = __dirname + '/../agents/commands';
@@ -23,20 +23,24 @@ const COMMANDS_DIR = __dirname + '/../agents/commands';
  * letting the platform's prompt assembly (skills + context files + tools)
  * stand as-is.
  */
-export function createModePromptHandler(state: MaestriaState) {
+export function createModePromptHandler(
+  state: MaestriaState,
+  modeController?: Pick<ModeController, 'getMode'>,
+) {
   return (
     event: BeforeAgentStartEvent,
     _ctx: ExtensionContext,
   ): BeforeAgentStartEventResult | void => {
-    if (!state.mode) return;
+    const mode = modeController?.getMode() ?? state.mode;
+    if (!mode) return;
 
     const parts: string[] = [
       ...event.systemPrompt,
       '',
-      getModePrompt(state.mode, COMMANDS_DIR),
+      getModePrompt(mode, COMMANDS_DIR),
       '',
-      `The user has set workflow mode to "${state.mode}". ` +
-        'Honor this mode throughout the session until changed via /command.',
+      `The user has selected workflow mode "${mode}" for this turn. ` +
+        'Explicit slash-command modes remain active until changed via /command.',
     ];
 
     return { systemPrompt: parts };

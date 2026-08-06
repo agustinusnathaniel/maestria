@@ -15,10 +15,21 @@ from maestria_hermes.hooks.pre_gateway import create_pre_gateway_hook
 from maestria_hermes.hooks.pre_llm import create_pre_llm_hook
 from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
 from maestria_hermes.hooks.transform import create_transform_tool_result_hook
+from maestria_hermes.landing_review import (
+    LandingReviewManager,
+    claim_reviewer_lifecycle_start,
+    create_pre_verify_hook,
+)
 from maestria_hermes.middleware.llm_output import create_llm_output_middleware
 from maestria_hermes.modes import ModeManager
 from maestria_hermes.permissions import init_roles
-from maestria_hermes.session import SessionManager, create_session_hooks
+from maestria_hermes.session import (
+    SessionManager,
+    clear_role_for_session,
+    clear_role_for_subagent,
+    create_session_hooks,
+    set_role_for_session,
+)
 from maestria_hermes.tools.opencode import (
     opencode_route_handler,
     opencode_route_tool_schema,
@@ -57,6 +68,7 @@ def register(ctx):
     # Initialize singletons
     mode_manager = ModeManager()
     session_manager = SessionManager()
+    landing_manager = LandingReviewManager()
     init_roles()  # Load role permissions (from file or defaults)
 
     # -- Phase 0: Pre-gateway command dispatch (runs before agent-busy check) --
@@ -68,15 +80,30 @@ def register(ctx):
     # -- Phase 2: LLM lifecycle hooks --------------------------------------
 
     ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager))
-    ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
+    ctx.register_hook(
+        "pre_tool_call",
+        create_pre_tool_hook(mode_manager, landing_manager),
+    )
+
+    try:
+        lifecycle = ctx.subagent_lifecycle
+    except Exception:
+        lifecycle = None
+    ctx.register_hook(
+        "pre_verify",
+        create_pre_verify_hook(mode_manager, lifecycle, landing_manager),
+    )
 
     # -- Phase 2: Full lifecycle hooks --------------------------------------
 
-    on_start, on_end = create_session_hooks(session_manager)
+    on_start, on_end = create_session_hooks(session_manager, mode_manager)
 
     ctx.register_hook("on_session_start", on_start)
     ctx.register_hook("on_session_end", on_end)
-    ctx.register_hook("subagent_start", _on_subagent_start)
+    ctx.register_hook(
+        "subagent_start",
+        lambda **kwargs: _on_subagent_start(mode_manager=mode_manager, **kwargs),
+    )
     ctx.register_hook("subagent_stop", _on_subagent_stop)
     ctx.register_hook("transform_tool_result", create_transform_tool_result_hook(mode_manager))
 
@@ -123,7 +150,10 @@ def register(ctx):
         _cmd_set_mode(mode_manager, "blitz"),
         description=_load_cmd_description(
             _skills_dir / "commands" / "blitz" / "SKILL.md",
-            "Fast implementation mode: skip gates, go directly to implementation",
+            (
+                "Direct execution mode: no Maestria child during execution; "
+                "independent review before shipping if an artifact lands"
+            ),
         ),
     )
     ctx.register_command(
@@ -175,7 +205,10 @@ def _cmd_set_mode(mode_manager, mode):
         pipeline = {
             "fein": "adventurer / architect -> builder -> reviewer",
             "sonar": "adventurer / architect -> STOP (read-only)",
-            "blitz": "builder (skip recon and review)",
+            "blitz": (
+                "direct execution (no Maestria child; independent review before "
+                "shipping if an artifact lands)"
+            ),
         }
         return (
             f"Switched to **{mode}** mode.\n"
@@ -191,24 +224,23 @@ def _cmd_status(mode_manager):
         mode = mode_manager.get_mode()
         return (
             f"**Maestria Status**\n\n"
-            f"Mode: **{mode}**\n"
+            f"Mode: **{mode or 'none'}**\n"
             f"Read-only: {'Yes' if mode_manager.is_read_only() else 'No'}"
         )
     return handler
 
 
-def _on_subagent_start(**kwargs) -> None:
+def _on_subagent_start(mode_manager=None, **kwargs) -> None:
     """Log when a subagent is spawned for pipeline tracking.
 
-    Role registration for permission enforcement is handled by the
-    pre_llm_call hook, which parses [MAESTRIA_ROLE: <role>] from the
-    delegate_task context on the subagent's first turn.  This hook
-    exists solely for observability.
+    Role registration for permission enforcement uses the trusted native
+    child_role/child_subagent_id/child_session_id metadata emitted by Hermes.
+    User prompt text is never used for authorization.
 
     Kwargs (from delegate_tool.py):
         child_session_id: str — spawned agent's session id
         child_subagent_id: str — spawned agent's unique id
-        child_role: str — specialist role (builder, reviewer, etc.)
+        child_role: str — native effective role (leaf or orchestrator)
         child_goal: str — the task goal
         parent_session_id: str — orchestrator's session id
         parent_turn_id: str — orchestrator's turn id
@@ -217,7 +249,22 @@ def _on_subagent_start(**kwargs) -> None:
     child_session_id = kwargs.get("child_session_id", "unknown")
     child_role = kwargs.get("child_role", "unknown")
     child_goal = kwargs.get("child_goal", "")
-    if child_role and child_role != "unknown":
+    if mode_manager is not None:
+        mode_manager.inherit_session(
+            kwargs.get("parent_session_id", ""),
+            child_session_id,
+        )
+    is_reviewer = claim_reviewer_lifecycle_start(
+        child_session_id,
+        kwargs.get("child_subagent_id"),
+        child_role,
+    )
+    if child_role and child_role != "unknown" and not is_reviewer:
+        set_role_for_session(
+            child_session_id,
+            child_role,
+            kwargs.get("child_subagent_id"),
+        )
         logger.info(
             "maestria subagent started: role=%s session=%s",
             child_role, child_session_id,
@@ -229,22 +276,25 @@ def _on_subagent_start(**kwargs) -> None:
 def _on_subagent_stop(**kwargs) -> None:
     """Log when a subagent completes for pipeline tracking.
 
-    Role cleanup is unnecessary — the pre_llm_call hook manages
-    session->role registration per-turn.  This hook exists solely
-    for observability.
+    Clear the trusted role mapping when the child session ends.
 
     Kwargs (from delegate_tool.py):
         child_session_id: str — completed agent's session id
-        child_role: str — specialist role
+        child_role: str — native effective role (when available)
         child_summary: str — result summary
         child_status: str — completion status
         duration_ms: int — wall-clock duration in milliseconds
         parent_session_id: str — orchestrator's session id
     """
     child_session_id = kwargs.get("child_session_id", "unknown")
+    child_subagent_id = kwargs.get("child_subagent_id", "")
     child_role = kwargs.get("child_role", "unknown")
     child_status = kwargs.get("child_status", "unknown")
     duration_ms = kwargs.get("duration_ms", 0)
+    if child_subagent_id:
+        clear_role_for_subagent(child_subagent_id)
+    if child_session_id != "unknown":
+        clear_role_for_session(child_session_id)
     logger.info(
         "maestria subagent stopped: role=%s session=%s status=%s duration=%.1fs",
         child_role, child_session_id, child_status, duration_ms / 1000.0,

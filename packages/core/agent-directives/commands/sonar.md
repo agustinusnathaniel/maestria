@@ -1,7 +1,7 @@
 ---
 name: sonar
-description: Research only - recon, design, STOP before implementation
-pipeline: recon (@adventurer) -> design/plan (@architect/@planner) -> STOP
+description: Focused research - one specialist, STOP before implementation
+pipeline: one research specialist -> STOP; add a second only when needed
 precedence: mode marker overrides trigger phrases
 detection: case-insensitive keyword, [MODE: sonar] marker injected at front of message
 ---
@@ -10,4 +10,4 @@ detection: case-insensitive keyword, [MODE: sonar] marker injected at front of m
 
 ## MODE: sonar (Research Only)
 
-Research mode: reconnaissance and design only. Delegate to @adventurer (recon) followed by @architect or @planner (analysis/design). STOP after delivering findings and design. Do NOT implement, write code, or create any production files.
+Research mode selects the `focused` route by default. Delegate one specialist that owns the research question, then stop before implementation. Add a second specialist only when the first result exposes a concrete unresolved question or risk that requires another role. Do NOT implement, write code, create production files, commit, push, publish, merge, or create a PR.

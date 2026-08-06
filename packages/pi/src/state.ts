@@ -9,10 +9,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- barrel re-exports are intentionally unused */
 export type {
   MaestriaState,
+  LandingReviewPhase,
+  LandingReviewBinding,
+  LandingReviewVerdict,
   HandoffEntry,
   SubagentStatusInfo,
 } from '@maestria/shared-pi/state-core';
-export { HANDOFF_HISTORY_CAP, FILE_HISTORY_CAP } from '@maestria/shared-pi/state-core';
+export {
+  HANDOFF_HISTORY_CAP,
+  FILE_HISTORY_CAP,
+  LANDING_REVIEW_VERDICT_INSTRUCTIONS,
+} from '@maestria/shared-pi/state-core';
 export {
   createInitialState,
   recordHandoff,
@@ -20,6 +27,14 @@ export {
   recordFileRead,
   recordSubagentStatus,
   setReviewMode,
+  resetLandingReview,
+  armLandingReview,
+  beginLandingReview,
+  markLandingReviewFailed,
+  markLandingReviewStale,
+  markLandingReviewShippingStarted,
+  recordLandingReviewVerdict,
+  validateLandingReviewVerdict,
   exitReviewMode,
   persistState,
   renderMaestriaSummary,

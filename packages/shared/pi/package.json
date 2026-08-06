@@ -27,6 +27,10 @@
     "./tools-core": {
       "import": "./src/tools-core.ts",
       "types": "./src/tools-core.ts"
+    },
+    "./manifest-core": {
+      "import": "./src/manifest-core.ts",
+      "types": "./src/manifest-core.ts"
     }
   },
   "scripts": {
