@@ -1,5 +1,24 @@
 # @maestria/omp
 
+## 0.4.0
+
+### Minor Changes
+
+- [#175](https://github.com/agustinusnathaniel/maestria/pull/175) [`6f21b47`](https://github.com/agustinusnathaniel/maestria/commit/6f21b47e4c3e03353163ad4f83e49a227a798687) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Mirror OMP's native goal state into Maestria session state by observing the
+  public goal events. Goal lifecycle transitions are handled safely across
+  session switches, branches, tree navigation, and restoration, using valid
+  public mode data or resetting to unknown when no trustworthy event exists.
+
+  Model goal-tool behavior remains fail-closed when native tool provenance cannot
+  be established. Maestria does not activate native goal mode or invoke OMP goal
+  commands.
+
+### Patch Changes
+
+- [#180](https://github.com/agustinusnathaniel/maestria/pull/180) [`8d77c40`](https://github.com/agustinusnathaniel/maestria/commit/8d77c4060fab81e20083ab1d8614600adfe258ee) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make delegation more selective, keep handoffs concise, and let Sonar research
+  start with the owning specialist while adding another specialist only when a
+  distinct required output remains.
+
 ## 0.3.2
 
 ### Patch Changes
