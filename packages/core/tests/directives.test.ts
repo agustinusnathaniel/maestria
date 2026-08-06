@@ -22,7 +22,7 @@ describe('canonical directive contracts', () => {
       'touch code only after recon, design, planning, diagnosis, or review are complete',
     );
     expect(orchestrator).toContain(
-      'In `focused` routes, run one `@reviewer` pass for non-trivial `@builder` work.',
+      'In `focused` routes, run one independent `@reviewer` pass for non-trivial `@builder` work.',
     );
     expect(orchestrator).toContain(
       'In `full` routes, after every `@builder` task, run the review loop automatically.',
@@ -30,6 +30,62 @@ describe('canonical directive contracts', () => {
     expect(orchestrator).toContain('Max 3 cycles');
     expect(orchestrator).toContain('FAIL LOUD');
     expect(orchestrator).toContain('the reviewer reviews against the acceptance criteria');
+  });
+
+  it('defines deterministic route triggers and focused review thresholds', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const complexityStart = orchestrator.indexOf('### Complexity Classification');
+    const pipelineStart = orchestrator.indexOf('## Role-Based Pipeline');
+    const complexity = orchestrator.slice(complexityStart, pipelineStart);
+
+    expect(orchestrator).toContain('Pick the first applicable route below');
+    expect(orchestrator).toContain(
+      "| `full` | Explicit `fein`; two or more primary specialist outputs (the focused route's mandatory independent reviewer pass does not count); cross-package or cross-cutting work; complex or high-risk work; unclear requirements that need design plus implementation |",
+    );
+    expect(orchestrator).toContain(
+      '| `focused` | One targeted specialist owns the required output, including one bounded implementation or investigation |',
+    );
+    expect(orchestrator).toContain(
+      '| `direct` | Explanation, discovery without codebase work, or a tiny familiar low-risk change with no specialist output |',
+    );
+    expect(orchestrator).toContain(
+      'changes behavior, changes a public interface or configuration, touches multiple production files, or involves data, auth, or security',
+    );
+    expect(orchestrator).toContain(
+      'Docs-only changes, formatting or comments, test fixtures, and one-file mechanical non-behavioral edits do not automatically require review.',
+    );
+    expect(orchestrator).toContain('If the classification remains uncertain, review.');
+    expect(orchestrator).toContain('Safety exceptions override `direct` and `blitz`');
+    expect(complexity).toContain('describe the level of uncertainty and interaction');
+    expect(complexity).toContain(
+      'do not choose a route or override the Selective Routing trigger table above',
+    );
+    expect(complexity).not.toContain('Default route');
+    expect(complexity).not.toMatch(/`(?:direct|focused|full)`/);
+    expect(orchestrator).toContain('One targeted specialist owns the required output');
+    expect(orchestrator).toContain(
+      'one independent `@reviewer` pass for non-trivial `@builder` work',
+    );
+  });
+
+  it('bounds full review to a general reviewer and matching risk lenses', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const reviewer = readDirective('specialists', 'reviewer.md');
+
+    expect(orchestrator).toContain('dispatch one independent general `@reviewer`');
+    expect(orchestrator).toContain('only when the requirements or diff show a matching risk');
+    expect(orchestrator).toContain('Do not dispatch unrelated specialist lenses');
+    expect(orchestrator).not.toContain('3-5 parallel lenses');
+    expect(orchestrator).toContain('Max 3 cycles');
+    expect(orchestrator).toContain('FAIL LOUD');
+    expect(reviewer).toContain('The general reviewer must give a verdict for every category.');
+    expect(reviewer).toContain(
+      'A specialized lens gives verdicts only for its assigned scope plus directly relevant functional correctness, edge cases, and assumptions',
+    );
+    expect(reviewer).not.toContain(
+      'relevant functional correctness, edge cases, assumptions, style, and test implications',
+    );
+    expect(reviewer).toContain('they do not issue verdicts for unrelated categories');
   });
 
   it('keeps the seven handoff fields concise and assumptions-first', () => {

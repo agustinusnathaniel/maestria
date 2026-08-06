@@ -54,22 +54,17 @@ Even when overriding, still document the override and why. Transparency > strict
 
 ### Selective Routing
 
-Pick a route per turn. The full pipeline is an explicit option for complex or high-risk work and for explicit `fein` requests - it is not the universal default. If model economics are unknown, prefer `direct` or `focused`; do not default to full fan-out.
+Pick the first applicable route below after applying explicit mode overrides and safety exceptions. The full pipeline is not the universal default.
 
-| Route | What happens | Default for |
+| Route | Trigger | What happens |
 | --- | --- | --- |
-| `direct` | The host executes the turn. No Maestria specialist spawn. If the host cannot safely execute, use the platform's native build/direct capability or switch to focused/full. | Explanation, discovery, tiny edits, familiar low-risk changes |
-| `focused` | One targeted specialist. One `reviewer` for non-trivial work. | Ordinary code changes, discovery in unfamiliar code |
-| `full` | Bounded recon, design, implementation, and review. Independent review where the host supports it. | Complex or high-risk work; explicit `fein` |
+| `full` | Explicit `fein`; two or more primary specialist outputs (the focused route's mandatory independent reviewer pass does not count); cross-package or cross-cutting work; complex or high-risk work; unclear requirements that need design plus implementation | Bounded recon, design, implementation, and the automatic review loop |
+| `focused` | One targeted specialist owns the required output, including one bounded implementation or investigation | One specialist; one independent review for non-trivial `builder` work |
+| `direct` | Explanation, discovery without codebase work, or a tiny familiar low-risk change with no specialist output | Host executes; no Maestria specialist or automatic review |
 
-**Route by task class:**
+Safety exceptions override `direct` and `blitz`: security, auth, permissions, data migrations or loss, production impact, irreversible changes, and unresolved safety ambiguity require at least `focused`, or `full` when cross-cutting or high-risk. Ask the user where the project rules require a checkpoint. If classification is otherwise uncertain, choose `focused` and review.
 
-| Task class | Default route | Escalate to |
-| --- | --- | --- |
-| Explanation or discovery | `direct` for explanation. One targeted specialist (`adventurer`, `diagnose`, `architect`) only when codebase exploration is genuinely needed. | `focused`. Never `full` by default. |
-| Tiny edit | `direct` or native builder. No automatic recon or review. | Security, migrations, permissions, production impact, or ambiguity. |
-| Ordinary code change | `focused`: one specialist; one reviewer for non-trivial work. | `full` when the change spans packages, has unclear requirements, or carries real risk. |
-| Complex or high-risk | `full` with independent review where the host supports it. | A second review or more planning only when new risk appears. |
+**Focused `builder` review threshold:** Treat work as non-trivial when it changes behavior, changes a public interface or configuration, touches multiple production files, or involves data, auth, or security. These cases get one independent focused `reviewer` pass. Docs-only changes, formatting or comments, test fixtures, and one-file mechanical non-behavioral edits do not automatically require review. If the classification remains uncertain, review.
 
 **Scaling guardrails** (bounds, not measured savings):
 
@@ -78,7 +73,7 @@ Pick a route per turn. The full pipeline is an explicit option for complex or hi
 | Child spawns | 0 | 1-2 | up to existing caps | one sequential path |
 | Review | none | 1 pass on non-trivial work | existing max 3 cycles | 1 pass, then fail loud |
 | Architect/planner | not used | only when design is the task | as the task demands | folded into one delegation |
-| Parallel fan-out | 0 | 1-2 | 3-5 | 0-1 |
+| Parallel fan-out | 0 | 1-2 | one general reviewer plus only risk-matched lenses | one general reviewer plus only risk-matched lenses |
 | Context compaction | none | as the session grows | as the session grows | aggressive; briefings over history |
 
 ### Specialist Table
@@ -99,11 +94,13 @@ Delegate to `builder` when the task is concrete, atomic, and free of identified 
 
 ### Complexity Classification
 
-| Classification | Default route | User questions |
-| --- | --- | --- |
-| **SIMPLE** | `direct` or `focused` - known files, obvious change, no automatic recon or review | No questions - proceed on existing patterns |
-| **COMPLEX** | `focused` or `full` - unfamiliar or cross-cutting work | No questions - architect gathers sufficient evidence and documents assumptions. Ask user only for irreversible decisions |
-| **EXPERIMENT** | `focused` with explicit hypothesis and termination condition set upfront | Output is a validated (or invalidated) claim, not shipped code |
+Use these classifications to describe the level of uncertainty and interaction. They do not choose a route or override the Selective Routing trigger table above; apply that table after classifying the work.
+
+| Classification | Uncertainty and interaction |
+| --- | --- |
+| **SIMPLE** | Known files, obvious change, and low uncertainty or interaction. Proceed on existing patterns. |
+| **COMPLEX** | Unfamiliar, cross-cutting, or high-uncertainty work. Gather sufficient evidence and document assumptions. Ask the user only for irreversible decisions. |
+| **EXPERIMENT** | Work with an explicit hypothesis and termination condition set upfront. The output is a validated (or invalidated) claim, not shipped code. |
 
 ## Role-Based Pipeline
 
@@ -121,7 +118,7 @@ The role pipeline is the shape of `full` routes and multi-specialist `focused` r
 
 ### Automatic Review Loop
 
-In `focused` routes, run one `reviewer` pass for non-trivial `builder` work. In `full` routes, after every `builder` task, run the review loop automatically. Direct routes run no automatic review loop.
+In `focused` routes, run one independent `reviewer` pass for non-trivial `builder` work. In `full` routes, after every `builder` task, run the review loop automatically. Direct routes run no automatic review loop.
 
 1. **Build** - run validation (checks, tests) via `builder`.
 2. **Review** - dispatch `reviewer` for quality review.
@@ -141,25 +138,25 @@ Need: user override to ship as-is, or architect redesign.
 
 After max 3 cycles with only `[dismiss]` and `[escalate]` items remaining, the pipeline terminates normally (`[escalate]` items are surfaced to the user; `[dismiss]` items are documented).
 
-### Multi-Lens Review Swarm
+### Risk-Matched Full Review
 
-In the `full` route, for non-trivial changes, fan out parallel `reviewer` passes:
+In the `full` route, after every `builder` task, dispatch one independent general `reviewer`. Add a specialist lens only when the requirements or diff show a matching risk:
 
-- **When to use:** multi-concern, security-sensitive, performance-critical, or large diffs.
-- **Dispatch:** 3-5 parallel lenses: security, architecture, performance, UX, general.
-- **Lens exclusivity:** one reviewer per lens per change.
-- **Model diversity:** assign different models/sizes when supported.
+- security for auth, permissions, secrets, or data exposure risks;
+- performance for measured or clearly plausible bottlenecks;
+- architecture for module boundaries, dependency direction, or interface risks;
+- UX for user-facing interaction, accessibility, or responsive behavior risks.
 
-On expensive/slow models, prefer one review pass per the scaling guardrails instead of a swarm.
+Do not dispatch unrelated specialist lenses or expand to a generic 3-5 lens swarm. Lens exclusivity and blind review still apply; assign model diversity only when supported and useful.
 
 ### Review Triage
 
-After all lens reviews return:
+After the general review and any risk-matched lens reviews return:
 
 1. **Collect & Deduplicate** - aggregate findings across lenses.
 2. **Categorize:** `[fix]` -> `builder`; `[dismiss]` -> comment; `[escalate]` -> flag to user. `fix` beats `dismiss` on conflict. Any `[escalate]` triggers escalation. Items whose fixability is unclear are `[fix]`; items confirmed non-fixable are `[dismiss]`.
 3. **Iterate** - re-review after fixes. Max 3 iterations or until only dismiss/escalate remain.
-4. **Terminate** - pipeline complete when all lenses pass or only non-actionable items remain.
+4. **Terminate** - pipeline complete when the general review and all dispatched risk-matched lenses pass or only non-actionable items remain.
 5. **Commit** - After review approval (no `[fix]` or `[escalate]` items remain), proceed to commit per the Commit Protocol. The review verdict replaces the Commit Protocol's "Stop & Report" step - chain directly into the commit flow. If `[escalate]` items remain, surface them using the escalation format from rules.md and await user resolution before proceeding.
 
 ## Delegation Pattern
@@ -203,13 +200,13 @@ Specify **what** to achieve, not **how**. Activity specs constrain judgment and 
 
 ### Parallel Fan-Out
 
-Delegate independent tasks in parallel, scaled to the route: `focused` 1-2, `full` up to 3-5 on cheap/fast models and 0-1 on expensive/slow models. These are guardrails, not measured savings.
+Delegate independent tasks in parallel, scaled to the route: `focused` 1-2; `full` one general reviewer plus only risk-matched lenses. These are guardrails, not measured savings.
 
 - **Pure recon/design:** recon + architect same turn.
 - **Mixed:** recon + implement + validate one turn.
-- **Multi-lens:** parallel review swarm.
+- **Risk-matched review:** general review plus only applicable specialist lenses.
 - **Parallel branches:** ask user before creating multiple branches. Don't proceed without confirmation.
-- **Parallel speculation:** dispatch same question to multiple specialists with different lenses, synthesize results.
+- **Parallel speculation:** dispatch the same question to multiple specialists only for distinct required outputs, then synthesize results.
 
 ## COMMIT PROTOCOL
 
