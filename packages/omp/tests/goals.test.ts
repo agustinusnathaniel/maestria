@@ -24,9 +24,27 @@ function install(pi: MockPi, state: MaestriaState) {
   >;
   const goalUpdatedCall = calls.find(([event]) => event === 'goal_updated');
   const sessionSwitchCall = calls.find(([event]) => event === 'session_switch');
+  const sessionBranchCall = calls.find(([event]) => event === 'session_branch');
+  const sessionTreeCall = calls.find(([event]) => event === 'session_tree');
   expect(goalUpdatedCall).toBeDefined();
   expect(sessionSwitchCall).toBeDefined();
-  return { goalUpdated: goalUpdatedCall![1], sessionSwitch: sessionSwitchCall![1] };
+  expect(sessionBranchCall).toBeDefined();
+  expect(sessionTreeCall).toBeDefined();
+  return {
+    goalUpdated: goalUpdatedCall![1],
+    sessionSwitch: sessionSwitchCall![1],
+    sessionBranch: sessionBranchCall![1],
+    sessionTree: sessionTreeCall![1],
+  };
+}
+
+function sessionContext(entries: unknown[] = []) {
+  return {
+    sessionManager: {
+      getBranch: vi.fn(() => entries),
+      getEntries: vi.fn(() => entries),
+    },
+  };
 }
 
 const NATIVE_GOAL = {
@@ -54,12 +72,14 @@ function maestriaOnlyState(): MaestriaState {
 }
 
 describe('installGoalEventHandlers', () => {
-  it('registers goal_updated and session_switch handlers', () => {
+  it('registers goal and every public session transition handler', () => {
     const pi = createMockPi();
     install(pi, createInitialState());
     const events = (pi.on as ReturnType<typeof vi.fn>).mock.calls.map((c: unknown[]) => c[0]);
     expect(events).toContain('goal_updated');
     expect(events).toContain('session_switch');
+    expect(events).toContain('session_branch');
+    expect(events).toContain('session_tree');
   });
 
   it('mirrors native goal objective/status into state.nativeGoal', async () => {
@@ -100,6 +120,40 @@ describe('installGoalEventHandlers', () => {
     );
   });
 
+  it('mirrors and persists a budget-limited native goal', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    const { goalUpdated } = install(pi, state);
+
+    await goalUpdated(
+      { type: 'goal_updated', goal: { ...NATIVE_GOAL, status: 'budget-limited' } },
+      {},
+    );
+
+    expect(state.nativeGoal).toEqual({
+      objective: NATIVE_GOAL.objective,
+      status: 'budget-limited',
+    });
+    expect(pi.appendEntry).toHaveBeenCalledWith(
+      'maestria_state',
+      expect.objectContaining({
+        nativeGoal: { objective: NATIVE_GOAL.objective, status: 'budget-limited' },
+      }),
+    );
+  });
+
+  it('does not re-persist a duplicate budget-limited native goal', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    const { goalUpdated } = install(pi, state);
+    const event = { type: 'goal_updated', goal: { ...NATIVE_GOAL, status: 'budget-limited' } };
+
+    await goalUpdated(event, {});
+    await goalUpdated(event, {});
+
+    expect(pi.appendEntry).toHaveBeenCalledTimes(1);
+  });
+
   it('does not re-persist when the same native goal mirror is re-emitted', async () => {
     const pi = createMockPi();
     const state = createInitialState();
@@ -131,14 +185,14 @@ describe('installGoalEventHandlers', () => {
     const { goalUpdated } = install(pi, state);
 
     await goalUpdated({ type: 'goal_updated', goal: NATIVE_GOAL }, {});
-    await goalUpdated({ type: 'goal_updated', goal: { ...NATIVE_GOAL, status: 'completed' } }, {});
+    await goalUpdated({ type: 'goal_updated', goal: { ...NATIVE_GOAL, status: 'paused' } }, {});
 
     expect(pi.appendEntry).toHaveBeenCalledTimes(2);
     const lastCall = (pi.appendEntry as ReturnType<typeof vi.fn>).mock.calls.at(-1);
     expect(lastCall).toEqual([
       'maestria_state',
       expect.objectContaining({
-        nativeGoal: { objective: NATIVE_GOAL.objective, status: 'completed' },
+        nativeGoal: { objective: NATIVE_GOAL.objective, status: 'paused' },
       }),
     ]);
   });
@@ -207,7 +261,7 @@ describe('installGoalEventHandlers', () => {
 
     await sessionSwitch(
       { type: 'session_switch', reason: 'new', previousSessionFile: undefined },
-      {},
+      sessionContext(),
     );
 
     expect(state.nativeGoal).toBeNull();
@@ -221,10 +275,270 @@ describe('installGoalEventHandlers', () => {
 
     await sessionSwitch(
       { type: 'session_switch', reason: 'new', previousSessionFile: undefined },
-      {},
+      sessionContext(),
     );
 
     expect(state.nativeGoal).toBeNull();
+    expect(pi.appendEntry).not.toHaveBeenCalled();
+  });
+
+  it('rehydrates the complete target state for new, resume, branch, and handoff transitions', async () => {
+    const pi = createMockPi();
+    const state = maestriaOnlyState();
+    const target = {
+      ...createInitialState(),
+      mode: 'sonar' as const,
+      activeTask: 'target task',
+      blockers: ['target blocker'],
+      nativeGoal: { objective: 'copied goal', status: 'active' },
+    };
+    const { sessionSwitch, sessionBranch } = install(pi, state);
+    const targetEntries = [{ type: 'custom', customType: 'maestria_state', data: target }];
+
+    await sessionSwitch(
+      { type: 'session_switch', reason: 'new', previousSessionFile: undefined },
+      sessionContext(targetEntries),
+    );
+    expect(state.mode).toBe('sonar');
+    expect(state.activeTask).toBe('target task');
+    expect(state.blockers).toEqual(['target blocker']);
+    expect(state.nativeGoal).toBeNull();
+
+    state.activeTask = 'source task';
+    await sessionSwitch(
+      { type: 'session_switch', reason: 'resume', previousSessionFile: 'old.jsonl' },
+      sessionContext(targetEntries),
+    );
+    expect(state.activeTask).toBe('target task');
+    expect(state.nativeGoal).toBeNull();
+
+    state.activeTask = 'source task';
+    await sessionBranch(
+      { type: 'session_branch', previousSessionFile: 'old.jsonl' },
+      sessionContext(targetEntries),
+    );
+    expect(state.activeTask).toBe('target task');
+    expect(state.nativeGoal).toBeNull();
+
+    state.activeTask = 'source task';
+    await sessionSwitch(
+      { type: 'session_switch', reason: 'handoff', previousSessionFile: 'old.jsonl' },
+      sessionContext(targetEntries),
+    );
+    expect(state.activeTask).toBe('target task');
+    expect(state.nativeGoal).toBeNull();
+    expect(pi.appendEntry).not.toHaveBeenCalled();
+  });
+
+  it('resets a forked native mirror when OMP emits no follow-up goal event', async () => {
+    const pi = createMockPi();
+    const state = {
+      ...createInitialState(),
+      nativeGoal: { objective: 'parent goal', status: 'active' },
+    };
+    const { sessionSwitch } = install(pi, state);
+    const forkEntries = [
+      {
+        type: 'custom',
+        customType: 'maestria_state',
+        data: {
+          ...createInitialState(),
+          nativeGoal: { objective: 'parent goal', status: 'active' },
+        },
+      },
+    ];
+
+    await sessionSwitch(
+      { type: 'session_switch', reason: 'fork', previousSessionFile: 'parent.jsonl' },
+      sessionContext(forkEntries),
+    );
+    expect(state.nativeGoal).toBeNull();
+    expect(pi.appendEntry).not.toHaveBeenCalled();
+  });
+
+  it('rehydrates native goal state from a public target mode entry without a follow-up event', async () => {
+    const pi = createMockPi();
+    const state = {
+      ...createInitialState(),
+      nativeGoal: { objective: 'old goal', status: 'active' },
+    };
+    const { sessionSwitch } = install(pi, state);
+    const targetEntries = [
+      {
+        type: 'mode_change',
+        mode: 'goal_paused',
+        data: { goal: { objective: 'target goal', status: 'paused' } },
+      },
+      {
+        type: 'custom',
+        customType: 'maestria_state',
+        data: {
+          ...createInitialState(),
+          nativeGoal: { objective: 'copied goal', status: 'active' },
+        },
+      },
+    ];
+
+    await sessionSwitch(
+      { type: 'session_switch', reason: 'fork', previousSessionFile: 'parent.jsonl' },
+      sessionContext(targetEntries),
+    );
+
+    expect(state.nativeGoal).toEqual({
+      objective: 'target goal',
+      status: 'paused',
+    });
+    expect(pi.appendEntry).not.toHaveBeenCalled();
+  });
+
+  it('rehydrates a budget-limited native goal from a public mode entry', async () => {
+    const pi = createMockPi();
+    const state = {
+      ...createInitialState(),
+      nativeGoal: { objective: 'old goal', status: 'active' },
+    };
+    const { sessionSwitch } = install(pi, state);
+    const targetEntries = [
+      {
+        type: 'mode_change',
+        mode: 'goal',
+        data: { goal: { objective: 'budget-limited target', status: 'budget-limited' } },
+      },
+    ];
+
+    await sessionSwitch(
+      { type: 'session_switch', reason: 'resume', previousSessionFile: 'parent.jsonl' },
+      sessionContext(targetEntries),
+    );
+
+    expect(state.nativeGoal).toEqual({
+      objective: 'budget-limited target',
+      status: 'budget-limited',
+    });
+    expect(pi.appendEntry).not.toHaveBeenCalled();
+  });
+
+  it('clears non-null complete and dropped terminal events and persists the transition', async () => {
+    const pi = createMockPi();
+    const state = { ...createInitialState(), nativeGoal: { objective: 'old', status: 'active' } };
+    const { goalUpdated } = install(pi, state);
+
+    await goalUpdated({ type: 'goal_updated', goal: { ...NATIVE_GOAL, status: 'complete' } }, {});
+    expect(state.nativeGoal).toBeNull();
+    expect(pi.appendEntry).toHaveBeenCalledTimes(1);
+
+    await goalUpdated({ type: 'goal_updated', goal: { ...NATIVE_GOAL, status: 'dropped' } }, {});
+    expect(state.nativeGoal).toBeNull();
+    expect(pi.appendEntry).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves a paused goal mirror for native lifecycle management', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    const { goalUpdated } = install(pi, state);
+
+    await goalUpdated({ type: 'goal_updated', goal: { ...NATIVE_GOAL, status: 'paused' } }, {});
+
+    expect(state.nativeGoal).toEqual({ objective: NATIVE_GOAL.objective, status: 'paused' });
+  });
+
+  it('rehydrates only the current branch, not a sibling session-state entry', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    const { sessionSwitch } = install(pi, state);
+    const siblingState = { ...createInitialState(), activeTask: 'sibling task' };
+    const targetState = { ...createInitialState(), activeTask: 'current branch task' };
+    const entries = [{ type: 'custom', customType: 'maestria_state', data: siblingState }];
+    const context = sessionContext(entries);
+    context.sessionManager.getBranch.mockReturnValue([
+      { type: 'custom', customType: 'maestria_state', data: targetState },
+    ]);
+
+    await sessionSwitch(
+      { type: 'session_switch', reason: 'resume', previousSessionFile: 'old.jsonl' },
+      context,
+    );
+
+    expect(state.activeTask).toBe('current branch task');
+  });
+
+  it('restores the selected tree leaf and cannot retain sibling mode, task, or native goal', async () => {
+    const pi = createMockPi();
+    const state = {
+      ...maestriaOnlyState(),
+      mode: 'fein' as const,
+      activeTask: 'old active task',
+      nativeGoal: { objective: 'old native goal', status: 'active' },
+    };
+    const { sessionTree } = install(pi, state);
+    const siblingState = {
+      ...createInitialState(),
+      mode: 'sonar' as const,
+      activeTask: 'sibling task',
+      nativeGoal: { objective: 'sibling native goal', status: 'active' },
+    };
+    const targetState = {
+      ...createInitialState(),
+      mode: 'blitz' as const,
+      activeTask: 'selected task',
+      nativeGoal: { objective: 'copied native goal', status: 'active' },
+    };
+    const context = sessionContext([
+      { type: 'custom', customType: 'maestria_state', data: siblingState },
+    ]);
+    context.sessionManager.getBranch.mockReturnValue([
+      { type: 'custom', customType: 'maestria_state', data: targetState },
+      {
+        type: 'mode_change',
+        mode: 'goal',
+        data: { goal: { objective: 'selected native goal', status: 'active' } },
+      },
+    ]);
+
+    await sessionTree(
+      { type: 'session_tree', oldLeafId: 'sibling-leaf', newLeafId: 'selected-leaf' },
+      context,
+    );
+
+    expect(state.mode).toBe('blitz');
+    expect(state.activeTask).toBe('selected task');
+    expect(state.nativeGoal).toEqual({ objective: 'selected native goal', status: 'active' });
+    expect(pi.appendEntry).not.toHaveBeenCalled();
+  });
+
+  it('resets when the public branch is unavailable instead of restoring global sibling entries', async () => {
+    const pi = createMockPi();
+    const state = {
+      ...createInitialState(),
+      mode: 'sonar' as const,
+      activeTask: 'previous task',
+      nativeGoal: { objective: 'previous native goal', status: 'active' },
+    };
+    const { sessionTree } = install(pi, state);
+    const getEntries = vi.fn(() => [
+      {
+        type: 'custom',
+        customType: 'maestria_state',
+        data: {
+          ...createInitialState(),
+          mode: 'blitz' as const,
+          activeTask: 'sibling task',
+          nativeGoal: { objective: 'sibling native goal', status: 'active' },
+        },
+      },
+    ]);
+    const getBranch = vi.fn(() => null);
+
+    await sessionTree(
+      { type: 'session_tree', oldLeafId: 'sibling-leaf', newLeafId: 'target-leaf' },
+      { sessionManager: { getBranch, getEntries } },
+    );
+
+    expect(state.mode).toBeNull();
+    expect(state.activeTask).toBe('');
+    expect(state.nativeGoal).toBeNull();
+    expect(getBranch).toHaveBeenCalledTimes(1);
+    expect(getEntries).not.toHaveBeenCalled();
     expect(pi.appendEntry).not.toHaveBeenCalled();
   });
 });

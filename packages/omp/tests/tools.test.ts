@@ -127,7 +127,7 @@ describe('installToolInterceptors', () => {
     expect(result).toBeUndefined();
   });
 
-  it('allows native goal tool when native goal mode is active', async () => {
+  it('blocks model goal calls while native goal mode is active when provenance is unavailable', async () => {
     const pi = { on: vi.fn(), getActiveTools: vi.fn() };
     pi.getActiveTools.mockReturnValue(['task', 'goal', 'read', 'write']);
     const state = { ...createInitialState(), mode: 'fein' as const };
@@ -135,7 +135,8 @@ describe('installToolInterceptors', () => {
 
     const handler = (pi as any).on.mock.calls[0][1];
     const result = await handler({ toolName: 'goal' }, {});
-    expect(result).toBeUndefined();
+    expect(result.block).toBe(true);
+    expect(result.reason).toContain("'goal' is blocked");
   });
 
   it('blocks native goal tool when native goal mode is inactive', async () => {

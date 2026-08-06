@@ -7,16 +7,17 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## Spec-Driven Delegation
 
-The orchestrator gives each specialist a **spec** - a structured handoff containing six required fields:
+The orchestrator gives each specialist a **spec** - a structured handoff containing seven required fields:
 
-| Field                | Description                                                  |
-| -------------------- | ------------------------------------------------------------ |
-| **Goal**             | What the specialist must accomplish                          |
-| **Context**          | Current mode, active task, specialist history, files touched |
-| **Requirements**     | Specific deliverables and constraints                        |
-| **Known Problems**   | Blockers or caveats the specialist should address            |
-| **Success Criteria** | Verifiable conditions for completion                         |
-| **Next Step**        | What happens after this task completes                       |
+| Field                      | Description                                                  |
+| -------------------------- | ------------------------------------------------------------ |
+| **Goal**                   | What the specialist must accomplish                          |
+| **Context**                | Current mode, active task, specialist history, files touched |
+| **Requirements**           | Specific deliverables and constraints                        |
+| **Known Problems**         | Blockers or caveats the specialist should address            |
+| **Assumptions documented** | Decisions or assumptions made during investigation           |
+| **Success Criteria**       | Verifiable conditions for completion                         |
+| **Next Step**              | What happens after this task completes                       |
 
 The orchestrator enforces **phase gates** - each specialist must verify completion before the next phase begins. If a specialist blocks, the orchestrator escalates or re-plans.
 
@@ -54,12 +55,18 @@ When a workflow mode is active (fein/sonar/blitz), the platform may restrict the
 
 <Aside type="note">
   **Pi** restricts the orchestrator to only `maestria_subagent` during enforcement. **OMP** allows
-  both `task()` (native) and `maestria_subagent` (structured handoff wrapper) during enforcement,
-  plus OMP's native `goal` tool while native goal mode is active. The `maestria_subagent` tool
-  validates parameters and constructs a structured handoff, then returns a plan for the native
-  `task()` call. Subagent sessions (without the `task` tool) are not restricted and retain their
-  full specialist toolset.
+  both `task()` (native) and `maestria_subagent` (structured handoff wrapper) during enforcement.
+  The `maestria_subagent` tool validates parameters and constructs a structured handoff, then
+  returns a plan for the native `task()` call. Subagent sessions (without the `task` tool) are not
+  restricted and retain their full specialist toolset.
 </Aside>
+
+OMP's public extension API exposes tool names but not the provenance of a tool call. Maestria
+therefore does not make a name-only exception for `goal`, because another extension could register
+a colliding tool. Native goal state remains observable, including paused goals, but OMP's native
+resume, complete, and drop operations remain OMP-owned and available through user-issued `/goal`
+slash commands. Maestria does not invoke those commands. Model `goal` tool calls remain blocked
+while pure-dispatcher enforcement is active because their provenance cannot be established.
 
 ### Enforcement lifecycle
 
@@ -115,11 +122,17 @@ Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are block
 
 **Pipeline discipline.** When full orchestration is selected, the flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk - fine for simple changes, not recommended for cross-module work.
 
-**Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains all six required fields. Incomplete handoffs are rejected.
+**Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains all seven required fields. Incomplete handoffs are rejected.
 
 **Session persistence.** Mode and delegation state survive session compaction, resume, and fork operations. Run `/maestria-status` to view the current state at any time.
 
-**Native goal state (OMP).** When OMP's native goal mode is active, Maestria observes the goal state and reflects the goal objective and status into its own session state, visible via `/maestria-status` and preserved across compaction. Observation only: Maestria never activates goal mode and never invokes native goal commands - goal mode activation and command handling stay fully OMP-owned.
+**Native goal state (OMP).** Maestria observes OMP's public `goal_updated` event and mirrors active,
+paused, and budget-limited goals into session state. Non-null complete and dropped terminal events
+clear the current-goal mirror after persisting the transition. Session start, switch, fork, branch,
+handoff, and tree-navigation transitions restore the target-session Maestria state and use a valid
+public native goal mode entry when available. If OMP provides no readable target goal state, the
+mirror resets to unknown (`null`) until a future public goal event. Maestria never activates goal
+mode or invokes native goal commands.
 
 <Aside type="note">
   **Pi** depends on `@gotgenes/pi-subagents` for subagent lifecycle and state management. **OMP**

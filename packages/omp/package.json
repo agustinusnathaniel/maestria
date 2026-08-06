@@ -42,7 +42,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@oh-my-pi/pi-coding-agent": "*"
+    "@oh-my-pi/pi-coding-agent": ">=17.0.5 <18.0.0"
   },
   "engines": {
     "node": ">=22.12.0"

@@ -10,13 +10,13 @@ omp install @maestria/omp
 
 ## What's Included
 
-- **7 specialist agents** (adventurer, architect, builder, diagnose, planner, reviewer, writer) — deployed to `~/.omp/agent/agents/` for omp task dispatch
-- **4 maestria skills** — orchestrator dispatcher, global rules, handoff contract, iteration limits
-- **Workflow mode commands** — `/fein`, `/sonar`, `/blitz`
-- **Review mode** — `/review`, `/restore-model`, `/review-model` with read-only tool restrictions and dangerous pattern protection
-- **Session state tracking** — handoff history, file tracking, blockers, persistence across compaction
-- **Native goal integration** — observes OMP's native goal mode and reflects goal objective/status in Maestria session state
-- **Structured handoff** — `/handoff` with 7-field contract
+- **7 specialist agents** (adventurer, architect, builder, diagnose, planner, reviewer, writer) - deployed to `~/.omp/agent/agents/` for omp task dispatch
+- **4 maestria skills** - orchestrator dispatcher, global rules, handoff contract, iteration limits
+- **Workflow mode commands** - `/fein`, `/sonar`, `/blitz`
+- **Review mode** - `/review`, `/restore-model`, `/review-model` with read-only tool restrictions and dangerous pattern protection
+- **Session state tracking** - handoff history, file tracking, blockers, persistence across compaction
+- **Native goal integration** - observes OMP's native goal mode and reflects goal objective/status in Maestria session state
+- **Structured handoff** - `/handoff` with 7-field contract
 
 ## Usage
 
@@ -46,7 +46,9 @@ This package follows the same sync-based architecture as all maestria plugins:
 
 ## Native Goal State
 
-When OMP's native goal mode is active, Maestria observes the goal state and reflects the goal objective and status into its own session state (visible via `/maestria-status` and preserved across compaction). Observation only: Maestria never activates goal mode and never invokes native goal commands - goal mode activation and command handling stay fully OMP-owned.
+When OMP's native goal mode is active, Maestria observes `goal_updated` and mirrors active, paused, and budget-limited goals in its own session state (visible via `/maestria-status` and preserved across compaction). Non-null `complete` and `dropped` events clear the current-goal mirror after recording the transition. Session start, switch, fork, branch, handoff, and tree-navigation transitions restore the target session's Maestria state and use a valid public native goal entry when available. If no public target goal state is available, the mirror remains unknown until a future public goal event.
+
+Observation only: Maestria never activates goal mode or invokes native goal commands. User-issued OMP `/goal` commands for pause, resume, and drop remain OMP-owned and available. The public OMP extension API exposes tool names but not tool provenance, so Maestria does not exempt the name `goal` from pure-dispatcher enforcement; model `goal` calls remain blocked when provenance cannot be established.
 
 ## Differences from Pi Plugin
 
@@ -56,7 +58,7 @@ Compared to `@maestria/pi`, this plugin:
 - Relies on omp's built-in task dispatch (no `@gotgenes/pi-subagents` needed)
 - Deploys agents to `~/.omp/agent/agents/` (not `~/.pi/agent/agents/`)
 - Uses bare agent names (`adventurer`, not `/adventurer`)
-- Retains a `"pi"` fallback block in `package.json` — omp's runtime accepts `pkg.pi` as a fallback when `pkg.omp` is absent, so the dual block ensures compatibility
+- Retains a `"pi"` fallback block in `package.json` - omp's runtime accepts `pkg.pi` as a fallback when `pkg.omp` is absent, so the dual block ensures compatibility
 
 ## License
 

@@ -60,6 +60,8 @@ describe('extension entry point', () => {
     expect(onEvents).toContain('tool_call');
     expect(onEvents).toContain('goal_updated');
     expect(onEvents).toContain('session_switch');
+    expect(onEvents).toContain('session_branch');
+    expect(onEvents).toContain('session_tree');
   });
 
   it('registers orchestration commands', async () => {
@@ -73,13 +75,20 @@ describe('extension entry point', () => {
     expect(registerCommand).toHaveBeenCalledWith('review-model', expect.any(Object));
   });
 
+  it('leaves OMP-owned native goal slash commands outside Maestria command registration', () => {
+    const pi = createMockPi();
+    extension(pi as unknown as ExtensionAPI);
+
+    expect(pi.registerCommand).not.toHaveBeenCalledWith('goal', expect.anything());
+  });
+
   it('restores state on session_start from custom entries', async () => {
     const pi = createMockPi();
     const mockState = { mode: 'fein', activeTask: 'test task' };
-    const getEntries = vi.fn(() => [
+    const getBranch = vi.fn(() => [
       { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
     ]);
-    const ctx = { sessionManager: { getEntries } };
+    const ctx = { sessionManager: { getBranch } };
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
@@ -87,6 +96,39 @@ describe('extension entry point', () => {
     expect(sessionStartCall).toBeDefined();
     const handler = sessionStartCall![1];
     await handler({}, ctx);
-    expect(getEntries).toHaveBeenCalled();
+    expect(getBranch).toHaveBeenCalled();
+  });
+
+  it('resets copied native state through tree navigation without inventing a goal event', async () => {
+    const pi = createMockPi();
+    extension(pi as unknown as ExtensionAPI);
+    const onCalls = (pi.on as ReturnType<typeof vi.fn>).mock.calls;
+    const sessionStart = onCalls.find((c: unknown[]) => c[0] === 'session_start')![1];
+    const sessionTree = onCalls.find((c: unknown[]) => c[0] === 'session_tree')![1];
+    const getBranch = vi.fn();
+    const context = { sessionManager: { getBranch, getEntries: getBranch } };
+    const parentState = {
+      mode: 'fein',
+      activeTask: 'parent task',
+      nativeGoal: { objective: 'parent goal', status: 'active' },
+    };
+    getBranch.mockReturnValue([
+      { type: 'custom', customType: 'maestria_state', data: parentState },
+    ]);
+
+    await sessionStart({ type: 'session_start' }, context);
+    await sessionTree(
+      { type: 'session_tree', oldLeafId: 'parent-leaf', newLeafId: 'target-leaf' },
+      context,
+    );
+
+    const statusCommand = (pi.registerCommand as ReturnType<typeof vi.fn>).mock.calls.find(
+      (call: unknown[]) => call[0] === 'maestria-status',
+    )![1] as { handler: (args: string, ctx: unknown) => Promise<void> };
+    const setEditorText = vi.fn();
+    const commandContext = { ui: { setEditorText, notify: vi.fn() } };
+    await statusCommand.handler('', commandContext);
+    expect(setEditorText).toHaveBeenCalledWith(expect.stringContaining('**Goal:** parent task'));
+    expect(setEditorText).toHaveBeenCalledWith(expect.not.stringContaining('**Native Goal:**'));
   });
 });

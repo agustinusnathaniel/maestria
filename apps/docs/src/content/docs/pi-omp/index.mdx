@@ -50,20 +50,28 @@ omp install @maestria/omp
 
 Both extensions are fully self-configuring - no manual config editing needed.
 
+OMP native goal state is observed in Maestria's session mirror. Active, paused,
+and budget-limited goals are shown; complete and dropped terminal events clear
+the current-goal mirror. Session transitions rehydrate target-session Maestria
+state and use OMP's public native goal entry when available; otherwise the
+mirror remains unknown until a public goal event. User-issued `/goal` commands
+remain OMP-owned, while model goal calls are blocked when their provenance is
+unavailable.
+
 <LinkButton href="/pi-omp/getting-started/installation/" size="lg">
   Installation Guide →
 </LinkButton>
 
 ## Platform Comparison
 
-| Feature             | Pi                                 | OMP                                                                       |
-| ------------------- | ---------------------------------- | ------------------------------------------------------------------------- |
-| Subagent dispatch   | `@gotgenes/pi-subagents` extension | Built-in `task()` tool                                                    |
-| Dispatch tool       | `maestria_subagent(agent, task)`   | `task(agent, task)` or `maestria_subagent(...)`                           |
-| Peer dependency     | `@gotgenes/pi-subagents`           | None                                                                      |
-| Enforcement tools   | `maestria_subagent` only           | `task`, `maestria_subagent`, plus native `goal` while goal mode is active |
-| Agent discovery dir | `~/.pi/agent/agents/`              | `~/.omp/agent/agents/`                                                    |
-| Install command     | `pnpx maestria@latest install pi`  | `omp install @maestria/omp`                                               |
+| Feature             | Pi                                 | OMP                                             |
+| ------------------- | ---------------------------------- | ----------------------------------------------- |
+| Subagent dispatch   | `@gotgenes/pi-subagents` extension | Built-in `task()` tool                          |
+| Dispatch tool       | `maestria_subagent(agent, task)`   | `task(agent, task)` or `maestria_subagent(...)` |
+| Peer dependency     | `@gotgenes/pi-subagents`           | None                                            |
+| Enforcement tools   | `maestria_subagent` only           | `task` and `maestria_subagent`                  |
+| Agent discovery dir | `~/.pi/agent/agents/`              | `~/.omp/agent/agents/`                          |
+| Install command     | `pnpx maestria@latest install pi`  | `omp install @maestria/omp`                     |
 
 ## Explore the Docs
 
