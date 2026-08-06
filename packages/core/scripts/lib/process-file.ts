@@ -14,7 +14,7 @@ import { unifiedDiff } from './diff.js';
 import { atomicWrite } from './file.js';
 import type { ResolvedFileConfig } from './config.js';
 import type { SyncFileResult } from './sync.js';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 
 // ── Git provenance check ──
 
@@ -29,22 +29,11 @@ function checkProvenance(sourcePath: string, outputPath: string): boolean {
     const repoCwd = dirname(outputPath);
 
     const hasChanges = (filePath: string): boolean => {
-      const unstaged = execSync(`git diff --name-only -- "${filePath}"`, {
-        cwd: repoCwd,
-        encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim();
-      if (unstaged.length > 0) return true;
-      const staged = execSync(`git diff --cached --name-only -- "${filePath}"`, {
-        cwd: repoCwd,
-        encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim();
-      if (staged.length > 0) return true;
-      // New canonical sources are untracked, so git diff never sees them — but
-      // they are legitimate "changed" inputs to the sync pipeline (e.g. a newly
-      // added agent-directives/skills/*.md). Count untracked files as changed.
-      const porcelain = execSync(`git status --porcelain -- "${filePath}"`, {
+      // A single porcelain call covers staged (`M `), unstaged (` M`), and
+      // untracked (`??`) changes. execFileSync passes the path as an argument
+      // (no shell), so a path containing shell metacharacters cannot inject
+      // commands — the previous execSync string interpolation could.
+      const porcelain = execFileSync('git', ['status', '--porcelain', '--', filePath], {
         cwd: repoCwd,
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'],
