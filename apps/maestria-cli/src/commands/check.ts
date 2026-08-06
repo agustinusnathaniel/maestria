@@ -1,7 +1,8 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { getPlatform } from '@/lib/platforms.js';
 import { detectAll } from '@/lib/detect.js';
+import { getPlatform } from '@/lib/platforms.js';
+import { VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformStatus } from '@/types.js';
 
 export const checkCommand = defineCommand({
@@ -12,7 +13,7 @@ export const checkCommand = defineCommand({
   args: {
     platform: {
       type: 'positional',
-      description: 'Platform to check (opencode, pi, hermes, kimi-code, cursor)',
+      description: `Platform to check (${VALID_PLATFORMS.join(', ')}).`,
       required: true,
     },
     json: {
@@ -35,7 +36,7 @@ export const checkCommand = defineCommand({
     if (!platform) {
       if (!args.quiet) {
         console.error(`Unknown platform: ${platformId}`);
-        console.error('Available: opencode, pi, hermes, kimi-code, cursor');
+        console.error(`Available: ${VALID_PLATFORMS.join(', ')}`);
       }
       process.exit(1);
     }

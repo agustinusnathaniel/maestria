@@ -22,6 +22,45 @@ function readOpenCodeConfig(): Effect.Effect<string, CommandError> {
   );
 }
 
+/**
+ * Install a package from an npm tarball into a destination directory.
+ *
+ * Shared by the kimi-code and cursor platform handlers, which both pack
+ * @maestria/* packages to /tmp and extract them into their platform's
+ * plugin directory. The tarball name derives from the package name with
+ * the @maestria/ scope stripped (e.g. @maestria/kimi-code ->
+ * maestria-kimi-code-*.tgz).
+ *
+ * @param pkg    Full npm package name (e.g. '@maestria/kimi-code')
+ * @param dest   Destination directory to extract into
+ * @param opts   Optional tag (default 'latest') and a post-extract copy step
+ */
+function installNpmTarball(
+  pkg: string,
+  dest: string,
+  opts: { tag?: string; copyFrom?: string; copyTo?: string } = {},
+): Effect.Effect<void, CommandError> {
+  const tag = opts.tag ?? 'latest';
+  const shortName = pkg.replace('@maestria/', '');
+  const tarballGlob = `/tmp/maestria-${shortName}-*.tgz`;
+
+  return Effect.gen(function* () {
+    // Remove stale tarballs and the destination dir before installing
+    yield* sh(`rm -rf ${tarballGlob} "${dest}"`, 15_000);
+
+    const copyStep =
+      opts.copyFrom && opts.copyTo ? ` && cp "${dest}/${opts.copyFrom}" "${opts.copyTo}"` : '';
+
+    yield* sh(
+      `npm pack ${pkg}@${tag} --pack-destination /tmp && ` +
+        `mkdir -p "${dest}" && ` +
+        `tar -xzf ${tarballGlob} -C "${dest}" --strip-components=1${copyStep} && ` +
+        `rm -f ${tarballGlob}`,
+      120_000,
+    );
+  });
+}
+
 // ── Platform definitions ─────────────────────────────
 
 export interface PlatformHandler {
@@ -207,34 +246,27 @@ const kimiCode: PlatformHandler = {
           message: String(error),
         }),
     });
-    yield* sh(
-      `rm -rf /tmp/maestria-kimi-code* "${homedir()}/.kimi-code/plugins/managed/maestria"`,
-      15_000,
-    );
-    yield* sh(
-      `mkdir -p "${homedir()}/.kimi-code/plugins/managed/maestria" && ` +
-        `npm pack @maestria/kimi-code@latest --pack-destination /tmp && ` +
-        `tar -xzf /tmp/maestria-kimi-code-*.tgz -C "${homedir()}/.kimi-code/plugins/managed/maestria" --strip-components=1 && ` +
-        `cp "${homedir()}/.kimi-code/plugins/managed/maestria/rules/AGENTS.md" "${homedir()}/.kimi-code/AGENTS.md" && ` +
-        `rm -f /tmp/maestria-kimi-code-*.tgz`,
-      120_000,
+    yield* installNpmTarball(
+      '@maestria/kimi-code',
+      `${homedir()}/.kimi-code/plugins/managed/maestria`,
+      {
+        copyFrom: 'rules/AGENTS.md',
+        copyTo: `${homedir()}/.kimi-code/AGENTS.md`,
+      },
     );
   }).pipe(Effect.as(void 0)),
 
   update: (version?: string) =>
     Effect.gen(function* () {
       const tag = version ?? 'latest';
-      yield* sh(
-        `rm -rf /tmp/maestria-kimi-code* "${homedir()}/.kimi-code/plugins/managed/maestria"`,
-        15_000,
-      );
-      yield* sh(
-        `mkdir -p "${homedir()}/.kimi-code/plugins/managed/maestria" && ` +
-          `npm pack @maestria/kimi-code@${tag} --pack-destination /tmp && ` +
-          `tar -xzf /tmp/maestria-kimi-code-*.tgz -C "${homedir()}/.kimi-code/plugins/managed/maestria" --strip-components=1 && ` +
-          `cp "${homedir()}/.kimi-code/plugins/managed/maestria/rules/AGENTS.md" "${homedir()}/.kimi-code/AGENTS.md" && ` +
-          `rm -f /tmp/maestria-kimi-code-*.tgz`,
-        120_000,
+      yield* installNpmTarball(
+        '@maestria/kimi-code',
+        `${homedir()}/.kimi-code/plugins/managed/maestria`,
+        {
+          tag,
+          copyFrom: 'rules/AGENTS.md',
+          copyTo: `${homedir()}/.kimi-code/AGENTS.md`,
+        },
       );
       yield* invalidateVersionCache('@maestria/kimi-code').pipe(
         Effect.catchCause(() => Effect.void),
@@ -344,27 +376,13 @@ const cursor: PlatformHandler = {
           message: String(error),
         }),
     });
-    yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);
-    yield* sh(
-      `npm pack @maestria/cursor@latest --pack-destination /tmp && ` +
-        `mkdir -p "${CURSOR_PLUGIN_DIR}" && ` +
-        `tar -xzf /tmp/maestria-cursor-*.tgz -C "${CURSOR_PLUGIN_DIR}" --strip-components=1 && ` +
-        `rm -f /tmp/maestria-cursor-*.tgz`,
-      120_000,
-    );
+    yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR);
   }).pipe(Effect.as(void 0)),
 
   update: (version?: string) =>
     Effect.gen(function* () {
       const tag = version ?? 'latest';
-      yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);
-      yield* sh(
-        `npm pack @maestria/cursor@${tag} --pack-destination /tmp && ` +
-          `mkdir -p "${CURSOR_PLUGIN_DIR}" && ` +
-          `tar -xzf /tmp/maestria-cursor-*.tgz -C "${CURSOR_PLUGIN_DIR}" --strip-components=1 && ` +
-          `rm -f /tmp/maestria-cursor-*.tgz`,
-        120_000,
-      );
+      yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR, { tag });
       // Invalidate version cache so npmViewVersion doesn't return stale data
       yield* invalidateVersionCache('@maestria/cursor').pipe(Effect.catchCause(() => Effect.void));
     }).pipe(Effect.as(void 0)),

@@ -1,9 +1,10 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 import { select, isCancel, cancel } from '@clack/prompts';
-import { platforms, getPlatform } from '@/lib/platforms.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
+import { platforms, getPlatform } from '@/lib/platforms.js';
+import { VALID_PLATFORMS } from '@/lib/validation.js';
 
 import type { PlatformResult } from '@/types.js';
 
@@ -15,8 +16,7 @@ export const uninstallCommand = defineCommand({
   args: {
     platform: {
       type: 'positional',
-      description:
-        'Platform to uninstall. One of: opencode, pi, kimi-code, hermes, cursor. Pass directly to skip interactive selection.',
+      description: `Platform to uninstall. One of: ${VALID_PLATFORMS.join(', ')}. Pass directly to skip interactive selection.`,
       required: false,
     },
     all: {
