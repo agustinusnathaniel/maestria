@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.3
+
+### Patch Changes
+
+- [#180](https://github.com/agustinusnathaniel/maestria/pull/180) [`8d77c40`](https://github.com/agustinusnathaniel/maestria/commit/8d77c4060fab81e20083ab1d8614600adfe258ee) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make delegation more selective, keep handoffs concise, and let Sonar research
+  start with the owning specialist while adding another specialist only when a
+  distinct required output remains.
+
+- [#175](https://github.com/agustinusnathaniel/maestria/pull/175) [`6f21b47`](https://github.com/agustinusnathaniel/maestria/commit/6f21b47e4c3e03353163ad4f83e49a227a798687) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Extend the platform-agnostic shared state contract with a native-goal mirror
+  containing an objective and status, including the new shape in initial state,
+  persistence, and summaries.
+
+  The `@maestria/pi` patch bundles this shared state-core update in its published
+  extension artifact, so Pi recognizes and renders the new state shape.
+
 ## 0.6.2
 
 ### Patch Changes
