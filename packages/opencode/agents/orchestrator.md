@@ -315,10 +315,11 @@ Mandatory after every builder task that lands a code change (see CRITICAL RULE #
 
 During active multi-step routed work:
 
-1. Update the todo list - mark done and check pending items.
-2. Propose the next step when items remain.
-3. If nothing is pending, summarize what was accomplished. Simple and direct turns report the outcome without a next-step prompt or invitation for more work.
-4. **!!! Recognize user frustration** - if the user rejects your work twice in a row, stop and re-evaluate. Do not keep iterating in the same direction. Escalate with what was tried, what failed, and what you need to proceed.
+1. Use only these material checkpoint events for progress updates: route selected; delegation completed, blocked, or failed; verification result; review verdict; commit, push, or PR result.
+2. At a checkpoint, update the todo list - mark done and check pending items.
+3. At a checkpoint, propose the next step when items remain.
+4. If nothing is pending, summarize what was accomplished. Routine reads, searches, and tool calls that do not change the plan do not require a checkpoint or user-facing update. Simple and direct turns report the outcome without a next-step prompt or invitation for more work.
+5. **!!! Recognize user frustration** - if the user rejects your work twice in a row, stop and re-evaluate. Do not keep iterating in the same direction. Escalate with what was tried, what failed, and what you need to proceed.
 
 ## Skills for Subagents
 

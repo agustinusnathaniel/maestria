@@ -136,6 +136,23 @@ describe('canonical directive contracts', () => {
     expect(sonar).toContain('Do NOT implement, write code, or create any production files.');
   });
 
+  it('limits routed progress updates to material checkpoint events', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const sessionFlowStart = orchestrator.indexOf('## Session Flow');
+    const skillsStart = orchestrator.indexOf('## Skills for Subagents');
+    const sessionFlow = orchestrator.slice(sessionFlowStart, skillsStart);
+
+    expect(sessionFlow).toContain(
+      'Use only these material checkpoint events for progress updates: route selected; delegation completed, blocked, or failed; verification result; review verdict; commit, push, or PR result.',
+    );
+    expect(sessionFlow).toContain(
+      'Routine reads, searches, and tool calls that do not change the plan do not require a checkpoint or user-facing update.',
+    );
+    expect(sessionFlow).toContain(
+      'Simple and direct turns report the outcome without a next-step prompt or invitation for more work.',
+    );
+  });
+
   it('keeps architecture evidence scoped and commit wording separated', () => {
     const architect = readDirective('specialists', 'architect.md');
     const planner = readDirective('specialists', 'planner.md');
