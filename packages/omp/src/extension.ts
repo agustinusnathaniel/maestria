@@ -7,6 +7,7 @@ import { installCompactionHandlers } from '@/compaction.js';
 import { installSubagentTool } from '@/subagent.js';
 import { installCommands } from '@/commands.js';
 import { installToolInterceptors } from '@/tools.js';
+import { installGoalEventHandlers, restoreMaestriaStateForSession } from '@/goals.js';
 
 export default function (pi: ExtensionAPI): void {
   const state = createInitialState();
@@ -27,19 +28,8 @@ export default function (pi: ExtensionAPI): void {
   pi.on('session_start', (_event: SessionStartEvent, ctx) => {
     deploySpecialistAgents(ctx);
 
-    // Restore persisted state on session start (reload/resume/fork)
-    if (!ctx.sessionManager?.getEntries) return;
-    const entries = ctx.sessionManager.getEntries();
-    for (let i = entries.length - 1; i >= 0; i--) {
-      const entry = entries[i];
-      if (entry.type === 'custom' && entry.customType === 'maestria_state') {
-        const data = entry.data;
-        if (data && typeof data === 'object') {
-          Object.assign(state, data);
-        }
-        break;
-      }
-    }
+    // Restore the complete target-session state from public session entries.
+    restoreMaestriaStateForSession(state, ctx);
   });
 
   // Install compaction preservation handlers
@@ -48,6 +38,9 @@ export default function (pi: ExtensionAPI): void {
   // Install orchestration hooks: subagent tool and commands
   installSubagentTool(pi, state, cleanups);
   installCommands(pi, state);
+
+  // Mirror OMP's native goal state (goal_updated event) into Maestria state
+  installGoalEventHandlers(pi, state);
 
   // Cleanup subscriptions on shutdown
   pi.on('session_shutdown', () => {

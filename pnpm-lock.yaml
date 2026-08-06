@@ -215,7 +215,7 @@ importers:
   packages/omp:
     dependencies:
       '@oh-my-pi/pi-coding-agent':
-        specifier: '*'
+        specifier: '>=17.0.5 <18.0.0'
         version: 17.0.5(@types/node@26.1.1)
     devDependencies:
       '@maestria/shared-pi':

@@ -27,6 +27,7 @@ const NEW_STATE_KEYS = [
   'originalTools',
   'subagentStatus',
   'reviewModel',
+  'nativeGoal',
 ];
 
 describe('createInitialState', () => {

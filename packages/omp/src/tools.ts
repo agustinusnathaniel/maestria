@@ -16,6 +16,11 @@ export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState):
     // with spawns capability; our specialist agents don't set spawns
     // so they won't have 'task' auto-added.
     if (state.mode !== null && pi.getActiveTools().includes('task')) {
+      // The public OMP extension API exposes tool names but not the provenance
+      // of a tool call. Do not allow a name-only `goal` exemption: an
+      // extension can register a colliding tool name. User-issued `/goal`
+      // slash commands remain OMP-owned and do not pass through this model
+      // tool-call enforcement hook.
       if (event.toolName !== 'task' && event.toolName !== 'maestria_subagent') {
         return {
           block: true,

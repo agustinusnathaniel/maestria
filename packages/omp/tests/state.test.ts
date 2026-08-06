@@ -27,6 +27,7 @@ const NEW_STATE_KEYS = [
   'originalTools',
   'subagentStatus',
   'reviewModel',
+  'nativeGoal',
 ];
 
 describe('createInitialState', () => {
@@ -62,6 +63,7 @@ describe('createInitialState', () => {
     expect(state.originalModel).toBeNull();
     expect(state.originalTools).toBeNull();
     expect(state.reviewModel).toBeNull();
+    expect(state.nativeGoal).toBeNull();
   });
 });
 
@@ -455,6 +457,27 @@ describe('renderMaestriaSummary with reviewModel', () => {
     const summary = renderMaestriaSummary(state);
 
     expect(summary).not.toContain('**Review Model:**');
+  });
+});
+
+describe('renderMaestriaSummary with nativeGoal', () => {
+  it('includes native goal section when a native goal is mirrored', () => {
+    const state: MaestriaState = {
+      ...createInitialState(),
+      nativeGoal: { objective: 'Ship the feature', status: 'active' },
+    };
+
+    const summary = renderMaestriaSummary(state);
+
+    expect(summary).toContain('**Native Goal:** Ship the feature (active)');
+  });
+
+  it('omits native goal section when no native goal is mirrored', () => {
+    const state = createInitialState();
+
+    const summary = renderMaestriaSummary(state);
+
+    expect(summary).not.toContain('**Native Goal:**');
   });
 });
 
