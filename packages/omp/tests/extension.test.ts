@@ -58,6 +58,8 @@ describe('extension entry point', () => {
     expect(onEvents).toContain('session_shutdown');
     expect(onEvents).toContain('before_agent_start');
     expect(onEvents).toContain('tool_call');
+    expect(onEvents).toContain('goal_updated');
+    expect(onEvents).toContain('session_switch');
   });
 
   it('registers orchestration commands', async () => {

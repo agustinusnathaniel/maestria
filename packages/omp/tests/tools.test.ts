@@ -126,4 +126,38 @@ describe('installToolInterceptors', () => {
     const result = await handler({ toolName: 'bash' }, {});
     expect(result).toBeUndefined();
   });
+
+  it('allows native goal tool when native goal mode is active', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'goal', 'read', 'write']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'goal' }, {});
+    expect(result).toBeUndefined();
+  });
+
+  it('blocks native goal tool when native goal mode is inactive', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'goal' }, {});
+    expect(result.block).toBe(true);
+    expect(result.reason).toContain("'goal' is blocked");
+  });
+
+  it('still blocks non-goal tools while native goal mode is active', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'goal', 'read', 'write']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'write' }, {});
+    expect(result.block).toBe(true);
+  });
 });

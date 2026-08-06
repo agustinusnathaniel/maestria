@@ -15,6 +15,7 @@ omp install @maestria/omp
 - **Workflow mode commands** — `/fein`, `/sonar`, `/blitz`
 - **Review mode** — `/review`, `/restore-model`, `/review-model` with read-only tool restrictions and dangerous pattern protection
 - **Session state tracking** — handoff history, file tracking, blockers, persistence across compaction
+- **Native goal integration** — observes OMP's native goal mode and reflects goal objective/status in Maestria session state
 - **Structured handoff** — `/handoff` with 7-field contract
 
 ## Usage
@@ -42,6 +43,10 @@ This package follows the same sync-based architecture as all maestria plugins:
 2. The sync pipeline transforms canonical sources with omp-appropriate frontmatter
 3. On session start, the extension deploys agent `.md` files to `~/.omp/agent/agents/`
 4. omp's built-in `task` tool discovers and dispatches to these agents
+
+## Native Goal State
+
+When OMP's native goal mode is active, Maestria observes the goal state and reflects the goal objective and status into its own session state (visible via `/maestria-status` and preserved across compaction). Observation only: Maestria never activates goal mode and never invokes native goal commands - goal mode activation and command handling stay fully OMP-owned.
 
 ## Differences from Pi Plugin
 

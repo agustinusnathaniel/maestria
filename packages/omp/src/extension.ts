@@ -7,6 +7,7 @@ import { installCompactionHandlers } from '@/compaction.js';
 import { installSubagentTool } from '@/subagent.js';
 import { installCommands } from '@/commands.js';
 import { installToolInterceptors } from '@/tools.js';
+import { installGoalEventHandlers } from '@/goals.js';
 
 export default function (pi: ExtensionAPI): void {
   const state = createInitialState();
@@ -48,6 +49,9 @@ export default function (pi: ExtensionAPI): void {
   // Install orchestration hooks: subagent tool and commands
   installSubagentTool(pi, state, cleanups);
   installCommands(pi, state);
+
+  // Mirror OMP's native goal state (goal_updated event) into Maestria state
+  installGoalEventHandlers(pi, state);
 
   // Cleanup subscriptions on shutdown
   pi.on('session_shutdown', () => {

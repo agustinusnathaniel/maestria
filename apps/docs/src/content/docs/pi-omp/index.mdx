@@ -56,14 +56,14 @@ Both extensions are fully self-configuring - no manual config editing needed.
 
 ## Platform Comparison
 
-| Feature             | Pi                                 | OMP                                             |
-| ------------------- | ---------------------------------- | ----------------------------------------------- |
-| Subagent dispatch   | `@gotgenes/pi-subagents` extension | Built-in `task()` tool                          |
-| Dispatch tool       | `maestria_subagent(agent, task)`   | `task(agent, task)` or `maestria_subagent(...)` |
-| Peer dependency     | `@gotgenes/pi-subagents`           | None                                            |
-| Enforcement tools   | `maestria_subagent` only           | `task` and `maestria_subagent`                  |
-| Agent discovery dir | `~/.pi/agent/agents/`              | `~/.omp/agent/agents/`                          |
-| Install command     | `pnpx maestria@latest install pi`  | `omp install @maestria/omp`                     |
+| Feature             | Pi                                 | OMP                                                                       |
+| ------------------- | ---------------------------------- | ------------------------------------------------------------------------- |
+| Subagent dispatch   | `@gotgenes/pi-subagents` extension | Built-in `task()` tool                                                    |
+| Dispatch tool       | `maestria_subagent(agent, task)`   | `task(agent, task)` or `maestria_subagent(...)`                           |
+| Peer dependency     | `@gotgenes/pi-subagents`           | None                                                                      |
+| Enforcement tools   | `maestria_subagent` only           | `task`, `maestria_subagent`, plus native `goal` while goal mode is active |
+| Agent discovery dir | `~/.pi/agent/agents/`              | `~/.omp/agent/agents/`                                                    |
+| Install command     | `pnpx maestria@latest install pi`  | `omp install @maestria/omp`                                               |
 
 ## Explore the Docs
 

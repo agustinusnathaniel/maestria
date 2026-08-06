@@ -54,10 +54,11 @@ When a workflow mode is active (fein/sonar/blitz), the platform may restrict the
 
 <Aside type="note">
   **Pi** restricts the orchestrator to only `maestria_subagent` during enforcement. **OMP** allows
-  both `task()` (native) and `maestria_subagent` (structured handoff wrapper) during enforcement.
-  The `maestria_subagent` tool validates parameters and constructs a structured handoff, then
-  returns a plan for the native `task()` call. Subagent sessions (without the `task` tool) are not
-  restricted and retain their full specialist toolset.
+  both `task()` (native) and `maestria_subagent` (structured handoff wrapper) during enforcement,
+  plus OMP's native `goal` tool while native goal mode is active. The `maestria_subagent` tool
+  validates parameters and constructs a structured handoff, then returns a plan for the native
+  `task()` call. Subagent sessions (without the `task` tool) are not restricted and retain their
+  full specialist toolset.
 </Aside>
 
 ### Enforcement lifecycle
@@ -117,6 +118,8 @@ Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are block
 **Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains all six required fields. Incomplete handoffs are rejected.
 
 **Session persistence.** Mode and delegation state survive session compaction, resume, and fork operations. Run `/maestria-status` to view the current state at any time.
+
+**Native goal state (OMP).** When OMP's native goal mode is active, Maestria observes the goal state and reflects the goal objective and status into its own session state, visible via `/maestria-status` and preserved across compaction. Observation only: Maestria never activates goal mode and never invokes native goal commands - goal mode activation and command handling stay fully OMP-owned.
 
 <Aside type="note">
   **Pi** depends on `@gotgenes/pi-subagents` for subagent lifecycle and state management. **OMP**
