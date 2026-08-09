@@ -26,7 +26,8 @@
     "typecheck": "vp check --no-fmt --no-lint",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
-    "contributors:check": "all-contributors check"
+    "contributors:check": "all-contributors check",
+    "bench:directives": "node scripts/bench-directives.ts"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
