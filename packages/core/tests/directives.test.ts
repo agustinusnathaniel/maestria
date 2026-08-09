@@ -104,12 +104,33 @@ describe('canonical directive contracts', () => {
       expect(handoff).toContain(field);
     }
 
+    expect(handoff).toContain('Every handoff must always include these 7 fields');
+    expect(handoff).toContain('**Requirements** - Specific expectations and boundaries');
+    expect(handoff).toContain('**Known problems** - Identified issues, what to watch for');
     expect(handoff).toContain('Keep values concise');
-    expect(handoff).toContain('reference paths, outputs, and prior decisions');
-    expect(handoff).toContain('Include material information only');
-    expect(handoff).toContain('write `none` where a field does not apply');
+    expect(handoff).toContain('reference paths, outputs, and decisions');
+    expect(handoff).toContain('include material information only');
+    expect(handoff).toContain('write `none` when inapplicable');
     expect(handoff).toContain('exhaust available data, document the assumption, and proceed');
     expect(handoff).not.toContain('ask before proceeding');
+  });
+
+  it('preserves iteration limits and the canonical specialist set', () => {
+    const iterationLimits = readDirective('skills', 'iteration-limits.md');
+    const adventurer = readDirective('specialists', 'adventurer.md');
+
+    expect(iterationLimits).toContain('When delegating work in a loop, always define:');
+    expect(iterationLimits).toContain(
+      '**Verifiable Termination Condition** - A concrete measurable state stopping the loop',
+    );
+    expect(iterationLimits).toContain('Verifiable Termination Condition');
+    expect(iterationLimits).toContain('Max-N Hard Limit');
+    expect(iterationLimits).toContain('Usually 3-5 attempts before escalation');
+    expect(iterationLimits).toContain(
+      'Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.',
+    );
+    expect(adventurer).not.toContain('Tester');
+    expect(adventurer).not.toContain('@tester');
   });
 
   it('scopes workflow context, skills, session choreography, and sonar fan-out', () => {

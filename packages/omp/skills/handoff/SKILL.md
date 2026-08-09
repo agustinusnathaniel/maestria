@@ -12,16 +12,16 @@ description: >-
 
 # Handoff Contract
 
-A handoff must always include these 7 fields:
+Every handoff must always include these 7 fields:
 
-1. **Goal** - What to achieve and why it matters
-2. **Context** - Relevant paths, constraints, prior decisions, what's been tried
+1. **Goal** - What to achieve and why
+2. **Context** - Relevant paths, constraints, decisions, and attempts
 3. **Requirements** - Specific expectations and boundaries
-4. **Known problems** - Issues already identified, what to watch for
-5. **Assumptions documented** - Assumptions made and their evidence, tagged `[inferred]` where uncertain
-6. **Success criteria** - How to verify the work is done
-7. **Next step** - What happens after this task completes
+4. **Known problems** - Identified issues, what to watch for, and risks
+5. **Assumptions documented** - Assumptions and evidence, tagged `[inferred]` when uncertain
+6. **Success criteria** - How to verify completion
+7. **Next step** - What happens after completion
 
-Keep values concise: reference paths, outputs, and prior decisions instead of copying history. Include material information only, and write `none` where a field does not apply.
+Keep values concise: reference paths, outputs, and decisions instead of copying history; include material information only; write `none` when inapplicable.
 
 Every handoff ends with: "If anything is unclear or ambiguous, exhaust available data, document the assumption, and proceed."
