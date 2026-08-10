@@ -9,23 +9,28 @@ description: Project structure, development setup, and how to extend @maestria/h
 
 ```
 packages/hermes/
-├── plugin.yaml                  # Plugin manifest (hooks, commands, tools)
-├── __init__.py                  # register() entry point + all handlers
-├── permissions.py               # PermissionRole class and ROLES dict
-├── modes.py                     # Mode persistence (atomic JSON writes)
-├── plugins.py                   # (future) Plugin lifecycle
-├── session.py                   # Session lifecycle hooks via SessionDB
-├── _version.py                  # Single source of truth for version
-├── hooks/
-│   ├── pre_llm.py              # Mode injection into user messages
-│   ├── pre_tool.py             # Role-based tool gating
-│   └── transform.py            # Tool result annotations
-├── middleware/
-│   └── llm_output.py           # LLM execution wrapper (opt-in mode footer)
-├── tools/
-│   └── opencode.py             # OpenCode CLI routing tool
-├── skills/                      # SKILL.md files (7 specialists + orchestrator + global)
-└── sync.config.ts              # Sync configuration for agent directives
+├── plugin.yaml                  # Plugin manifest (provides_hooks, middleware, commands, tools)
+├── pyproject.toml               # Python package metadata (src layout)
+├── __init__.py                  # Root shim re-exporting the src/maestria_hermes package
+├── sync.config.ts               # Sync configuration for agent directives
+├── src/maestria_hermes/
+│   ├── __init__.py              # register() entry point + all handlers
+│   ├── permissions.py           # Literal tool allowlists (SONAR/BLITZ_DIRECT/CHILD_SAFE) + native child topology roles
+│   ├── modes.py                 # Mode persistence (atomic JSON writes)
+│   ├── session.py               # Session trust-state registry (trusted top-level / delegated child)
+│   ├── _version.py              # Single source of truth for version
+│   ├── hooks/
+│   │   ├── pre_gateway.py       # Slash-command dispatch before the agent-busy check
+│   │   ├── pre_llm.py           # Mode injection into user messages
+│   │   ├── pre_tool.py          # Lifecycle trust-based tool gating
+│   │   └── transform.py         # Tool result annotations
+│   ├── middleware/
+│   │   └── llm_output.py        # LLM execution wrapper (opt-in mode footer)
+│   ├── tools/
+│   │   └── opencode.py          # OpenCode CLI routing tool
+│   └── skills/                  # SKILL.md files (9 methodology + 3 command skills)
+└── tests/
+    └── test_hooks.py            # Plugin registration + hook behavior tests
 ```
 
 ## Development Setup
@@ -59,10 +64,10 @@ ln -s /path/to/maestria/packages/hermes ~/.hermes/plugins/maestria-hermes
 
 ## Design Principles
 
-1. **Methodology portable, adapter thin** — Plugin code is the Hermes adapter; the real methodology lives in `packages/core/agent-directives/`
-2. **Hermes-native first + memory-agnostic** — Use Hermes' built-in subsystems (`delegate_task`, `ctx.llm`, `/goal`, `kanban_*`) rather than reimplementing them. Memory is a platform concern (8 providers), not a plugin concern.
-3. **Self-contained** — The plugin has no startup probes for external tools or packages. The `opencode_route` tool delegates to OpenCode CLI if installed, but does not verify or probe for it at startup.
-4. **Feel native** — Commands, hooks, and config follow Hermes Plugin API conventions
+1. **Methodology portable, adapter thin** - Plugin code is the Hermes adapter; the real methodology lives in `packages/core/agent-directives/`
+2. **Hermes-native first + memory-agnostic** - Use Hermes' built-in subsystems (`delegate_task`, `ctx.llm`, `/goal`, `kanban_*`) rather than reimplementing them. Memory is a platform concern (8 providers), not a plugin concern.
+3. **Self-contained** - The plugin has no startup probes for external tools or packages. The `opencode_route` tool delegates to OpenCode CLI if installed, but does not verify or probe for it at startup.
+4. **Feel native** - Commands, hooks, and config follow Hermes Plugin API conventions
 
 See the [ADR-HM-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/hermes/ADR-HM-001-long-lived-goals-scope.md) for the design rationale behind specific scope decisions.
 
@@ -76,22 +81,39 @@ pytest packages/hermes/
 vp check
 ```
 
+### Documentation validation
+
+The docs site has no MDX prose test suite. Documentation is validated by the docs build (including link checks) and by exact source checks against the runtime contracts:
+
+```bash
+# Build the docs site; runs starlight-links-validator and rejects broken links
+pnpm --filter @maestria/docs build
+```
+
+Contract accuracy is maintained by exact source checks rather than brittle prose tests. The authoritative sources for the plugin's public surface are:
+
+- `packages/hermes/plugin.yaml` - the `provides_hooks`, `provides_middleware`, `provides_tools`, and `provides_commands` lists
+- `packages/hermes/src/maestria_hermes/__init__.py` - the `register()` entry point wiring
+- `packages/hermes/tests/test_hooks.py` - asserts the manifest (`plugin.yaml`) exactly matches the runtime inventory registered by `register()`
+
+When you change any of the above, update this documentation to match the runtime contract. Verify any documented signature (for example `ctx.register_skill(name, path, description="")`) against the Hermes SDK source before writing it.
+
 ## Extending
 
 ### Adding a command
 
 1. Create `commands/<name>.py` with an async function `async def cmd_<name>(ctx, args):`
 2. Register it in `__init__.py`'s `register()` via `ctx.register_command()`
-3. Add the command name to `plugin.yaml`'s `commands` list
+3. Add the command name to `plugin.yaml`'s `provides_commands` list
 
 ### Adding a hook
 
 1. Create `hooks/<name>.py` with the handler function
 2. Wire it in `__init__.py`'s `register()` via `ctx.register_hook()`
-3. Add the hook name to `plugin.yaml`'s `hooks` list
+3. Add the hook name to `plugin.yaml`'s `provides_hooks` list
 
 ### Adding a skill
 
 1. Create the `SKILL.md` file in `skills/`
-2. Register it via `ctx.register_skill()` in `__init__.py`
-3. Skills are namespaced as `hermes-maestria:<name>` in Hermes
+2. Register it via `ctx.register_skill(name, path, description="")` in `__init__.py`. The bare `name` must match `[a-zA-Z0-9_-]+` and contain no `:`; the namespace is derived automatically from the plugin name
+3. Skills are namespaced as `maestria-hermes:<name>` in Hermes (the prefix is the plugin name `maestria-hermes`, not a hand-written value)

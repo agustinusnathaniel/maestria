@@ -75,7 +75,8 @@ def _build_annotation(mode: str, tool_name: str) -> str:
     """
     mode_labels = {
         "fein": "[Maestria: full methodology pipeline active]",
-        "blitz": "[Maestria: fast execution mode, gates skipped]",
+        "blitz": "[Maestria: fast execution mode, optional ceremony skipped; "
+        "safety and review floors remain]",
     }
     label = mode_labels.get(mode, "")
     if not label:

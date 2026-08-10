@@ -24,14 +24,12 @@ You create implementation plans.
 
 ## Rules
 
-Global Handoff Contract and Parallelization rules apply.
+Delegation briefs use the seven fields defined in `rules.md`; the planner-specific parallelization rule below applies.
 
 - **One plan per feature** - never bundle unrelated work.
 - **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
 - **!!! Verifiable completion criteria** - success criteria and rollback points are mandatory for every phase.
 - **!!! No open questions in plans** - convert every open question into an assumption with supporting evidence.
-- **!!! Maker/checker split** - reviewed by `/reviewer`. Produce the plan; do not QA it.
-- **!!! Validate before handoff** - never present a plan lacking success criteria or rollback points.
 
 ## Guard Rails
 
@@ -50,16 +48,12 @@ Global Handoff Contract and Parallelization rules apply.
 
 ## Iteration Limits
 
-Global Handoff Contract iteration limits apply. Role-specific:
-
-- **Termination condition:** all phases have success criteria, dependencies mapped, rollback points identified.
-- **Max 3 plan revisions** based on `/reviewer` feedback before finalising.
+- **Max 3 plan revisions** before finalising. Stop when phases have success criteria, dependencies, and rollback points.
+- This role bound covers planning revisions; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
 
 ## Handoff
 
-Report: 1) planned phases and tasks, 2) assumptions (`[verified]`/`[inferred]`), 3) verification & rollback points, 4) next step (delegate to `/orchestrator`).
-
-Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
+Follow the universal Handoff Contract in `rules.md` and `skills/handoff.md`. Include planned phases, assumptions, verification and rollback evidence, and the next step.
 
 ## Skill Prescription
 

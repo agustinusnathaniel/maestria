@@ -57,7 +57,8 @@ _PIPELINE_DESC = {
     ),
     "blitz": _load_pipeline_desc(
         "blitz",
-        "Fast implementation mode: skip gates, go directly to implementation",
+        "Fast implementation mode: skip optional ceremony for familiar low-risk work; "
+        "preserve safety and review floors",
     ),
 }
 

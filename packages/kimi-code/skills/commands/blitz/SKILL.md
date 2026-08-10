@@ -1,6 +1,6 @@
 ---
 name: blitz
-description: "Fast implementation mode: skip recon/design unless unknown"
+description: "Fast implementation mode: skip optional ceremony for familiar low-risk work; preserve safety and review floors"
 type: prompt
 whenToUse: When the user types /blitz or includes "blitz" in their message for fast implementation.
 arguments: []
@@ -9,12 +9,10 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.
+**Skill profile:** `plan` - workflow mode command. Use direct responses for explanation/discovery; route code changes to the `builder` coder via `Agent()`. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.
 
 [MODE: blitz]
 
 ## MODE: blitz (Fast Implementation)
 
-Explicit low-risk/direct bypass: skip reconnaissance and design gates for familiar, low-risk work. Go directly to builder for implementation (or direct execution where the host supports it). Only use adventurer if the codebase context is genuinely unknown (not as a default step). Skip reviewer unless the user explicitly requests review.
-
-Safety floors still apply. Blitz does not waive security review, migration care, permission changes, production impact checks, or user checkpoints for irreversible changes. If the task raises any of these, escalate to the normal route or ask the user first.
+Activate the low-risk bypass. Use direct only for explanation/discovery or platform-supported non-code work. Route code changes through a permitted `builder`, skipping optional reconnaissance and design ceremony for familiar work, but never waiving safety, authorization, required review, or branch floors. Escalate safety exceptions to the normal route.

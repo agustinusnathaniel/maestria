@@ -350,10 +350,11 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: '@reviewer', to: 'reviewer' },
       ],
       prepend:
-        '**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
+        '**Skill profile:** `plan` - workflow mode command. Use direct responses for explanation/discovery; route code changes to the `builder` coder via `Agent()`. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
       frontmatter: {
         name: 'blitz',
-        description: 'Fast implementation mode: skip recon/design unless unknown',
+        description:
+          'Fast implementation mode: skip optional ceremony for familiar low-risk work; preserve safety and review floors',
         type: 'prompt',
         whenToUse:
           'When the user types /blitz or includes "blitz" in their message for fast implementation.',

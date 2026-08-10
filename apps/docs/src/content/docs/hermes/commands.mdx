@@ -1,6 +1,6 @@
 ---
 title: Commands
-description: Complete reference for all @maestria/hermes slash commands — modes, review, planning, session management, and roles.
+description: Complete reference for all @maestria/hermes slash commands - modes, review, planning, session management, and roles.
 ---
 
 The plugin registers 6 slash commands that are available in every Hermes session.
@@ -16,9 +16,9 @@ Set the plugin to **fein** (full pipeline) mode. The orchestrator runs the compl
 → Mode set to fein
 ```
 
-In fein mode, all stages are mandatory — the orchestrator does not skip phases.
+In fein mode, the orchestrator directive runs all stages without skipping phases. This is directive guidance - Hermes has no native gate, so the review stage is advisory, not mechanically enforced.
 
-> **Pro tip:** Pair `/fein` with `/goal` for multi-session work. Set `/goal draft Run the fein pipeline to implement OAuth` — the goal persists across sessions and restores your mode on `/goal resume`. See [Goals docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals).
+> **Pro tip:** Pair `/fein` with `/goal` for multi-session work. Set `/goal draft Run the fein pipeline to implement OAuth` - the goal persists across sessions and restores your mode on `/goal resume`. See [Goals docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals).
 
 ### `/sonar`
 
@@ -29,18 +29,18 @@ Set the plugin to **sonar** (research) mode. Only the adventurer and architect/p
 → Mode set to sonar
 ```
 
-The `pre_tool_call` hook blocks `edit`, `write`, and `bash` in sonar mode — read-only guarantees.
+The `pre_tool_call` hook blocks `edit`, `write`, and `bash` in sonar mode - read-only guarantees.
 
 ### `/blitz`
 
-Set the plugin to **blitz** (fast execution) mode. The builder runs directly with minimal overhead. No adventurer exploration or reviewer validation.
+Set the plugin to **blitz** (fast execution) mode. Direct blitz is limited to a literal read/research/LLM allowlist - no code changes are made directly. Delegated builder writes are unavailable until Hermes provides an authenticated capability channel. No adventurer exploration or reviewer validation runs for the direct path.
 
 ```
 /blitz
 → Mode set to blitz
 ```
 
-Use for quick fixes on known territory where you trust the outcome.
+Use for explanation and discovery on known territory where you trust the outcome. Code changes run on a trusted top-level fein session and route through review; delegated builder writes are deferred until an authenticated capability channel exists.
 
 ### `/mode`
 

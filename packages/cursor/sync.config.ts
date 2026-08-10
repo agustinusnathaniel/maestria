@@ -50,7 +50,7 @@ Delegate via the \`Task\` tool to these custom agents (plugin \`agents/\`). Pass
 ### How to invoke
 
 1. Load this orchestrator skill for methodology (already in context when relevant).
-2. Call \`Task\` with the specialist agent name and a full handoff: Goal, Context, Requirements, Known problems, Assumptions, Success criteria, Next step.
+2. Call \`Task\` with the specialist agent name and a full handoff: Goal, Context, Requirements, Known problems, Assumptions documented, Success criteria, Next step.
 3. For parallel independent work, launch multiple \`Task\` calls in one turn.
 
 ### Maker/checker (two-layer enforcement)
@@ -70,7 +70,7 @@ Users can trigger modes with slash commands from this plugin:
 | --- | --- |
 | \`/fein\` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | \`/sonar\` | Research only: adventurer → architect/planner → STOP |
-| \`/blitz\` | Fast path: builder directly (skip recon/design unless unknown) |
+| \`/blitz\` | Fast path: direct for explanation/discovery, builder for familiar low-risk code changes; preserve safety and review floors |
 
 ## Related Agents
 
@@ -235,7 +235,7 @@ export default {
       prepend: [
         '---',
         'name: blitz',
-        'description: Fast Maestria implementation via builder (skip recon/design unless unknown)',
+        'description: Fast Maestria implementation via builder for familiar low-risk work; preserve safety and review floors',
         '---',
         '',
       ].join('\n'),
@@ -243,7 +243,7 @@ export default {
         '',
         'Load the `orchestrator` skill if coordination is needed. Prefer a single `Task` to `builder` with a clear handoff.',
         '',
-        'If the user provided a goal after `/blitz`, implement that goal now.',
+        'If the user provided an explanation or discovery goal after `/blitz`, answer it directly. For code changes, delegate to `builder` now.',
       ].join('\n'),
     },
   },

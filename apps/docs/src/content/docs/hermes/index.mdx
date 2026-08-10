@@ -1,12 +1,12 @@
 ---
 title: '@maestria/hermes'
-description: Hermes Agent plugin that brings the Maestria methodology — 7 specialists, pipeline orchestration, and mode system — to any domain.
+description: Hermes Agent plugin that brings the Maestria methodology - 7 specialists, pipeline orchestration, and mode system - to any domain.
 template: splash
 editUrl: false
 lastUpdated: false
 hero:
   title: 'Methodology for Any Agent'
-  tagline: 'Install one plugin. Get 7 specialists, role-gated tool access, and discipline-aware mode switching — on the Hermes Agent platform.'
+  tagline: 'Install one plugin. Get 7 specialists, disciplined mode switching, and role-neutral child trust boundaries on the Hermes Agent platform.'
   actions:
     - text: Get Started
       icon: right-arrow
@@ -21,11 +21,11 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 
 ## How It Works
 
-1. **Install the plugin** — `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`
-2. **Plugin activates** — Registers 9 methodology skills, 6 slash commands, permission roles, and lifecycle hooks. The plugin has no startup probes for external tools — it is self-contained.
-3. **Pick your mode** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation) — each enables the right specialists and tool gates
-4. **Dispatch specialists** — The orchestrator decomposes work via `delegate_task` and enforces maker/checker separation. Complex coding tasks can use the `opencode_route` tool if OpenCode CLI is installed.
-5. **Review before delivery** — Reviewer validates output before anything reaches you
+1. **Install the plugin** - `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`
+2. **Plugin activates** - Registers 9 methodology skills plus 3 command skills, 6 slash commands, role-neutral child trust, and lifecycle hooks. The plugin has no startup probes for external tools - it is self-contained.
+3. **Pick your mode** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation) - each enables the right specialists and tool gates
+4. **Dispatch specialists** - The orchestrator decomposes work via `delegate_task` and applies the maker/checker split as directive guidance. Delegated children are read/research/LLM-only and cannot write, execute code, shell, delegate, or invoke OpenCode. Code changes and `opencode_route` (if OpenCode CLI is installed) are performed by a trusted top-level fein session.
+5. **Review is advisory** - The reviewer validates output, but Hermes has no native review gate, so a reviewer pass is not mechanically enforced before delivery.
 
 ## Quick Install
 
@@ -33,7 +33,7 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
 ```
 
-The plugin is fully self-configuring — Hermes discovers its hooks, commands, and skills from `plugin.yaml`. No manual setup needed.
+The plugin is fully self-configuring - Hermes discovers its hooks, commands, and skills from `plugin.yaml`. No manual setup needed.
 
 <LinkButton href="/hermes/getting-started/installation/" size="lg">
   Installation Guide →
@@ -66,12 +66,12 @@ The plugin is fully self-configuring — Hermes discovers its hooks, commands, a
 
 ## Comparison: Hermes vs Other Platforms
 
-| Aspect            | @maestria/opencode   | @maestria/hermes                         |
-| ----------------- | -------------------- | ---------------------------------------- |
-| Primary domain    | Software engineering | Any domain                               |
-| Distribution      | npm plugin           | Git-based (`hermes plugins install`)     |
-| Subagent dispatch | `task()` function    | `delegate_task` (Hermes native)          |
-| Tool gating       | YAML frontmatter     | `pre_tool_call` hook                     |
-| Mode switching    | Keyword detection    | Slash commands `/fein` `/sonar` `/blitz` |
-| Coding path       | Built-in             | Routes to OpenCode CLI (optional)        |
-| Permissions       | Agent-level          | Role-based (`PermissionRole`)            |
+| Aspect            | @maestria/opencode   | @maestria/hermes                                               |
+| ----------------- | -------------------- | -------------------------------------------------------------- |
+| Primary domain    | Software engineering | Any domain                                                     |
+| Distribution      | npm plugin           | Git-based (`hermes plugins install`)                           |
+| Subagent dispatch | `task()` function    | `delegate_task` (Hermes native)                                |
+| Tool gating       | YAML frontmatter     | `pre_tool_call` hook                                           |
+| Mode switching    | Keyword detection    | Slash commands `/fein` `/sonar` `/blitz`                       |
+| Coding path       | Built-in             | Routes to OpenCode CLI (trusted top-level fein session only)   |
+| Permissions       | Agent-level          | Role-neutral child trust (children are read/research/LLM-only) |

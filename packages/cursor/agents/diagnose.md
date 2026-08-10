@@ -74,21 +74,19 @@ Confirm it works:
 
 ## Iteration Limits
 
-- **Max 3 fix attempts** (Step 4) before escalating with the audit table.
-- **Never loop silently** - if a root cause hypothesis fails 3 times, surface the table.
+- **Max 3 diagnostic hypothesis or fix attempts** before escalating with the audit table.
+- This role bound covers diagnosis evidence and root-cause attempts; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
 
 ## Rules
 
 - **!!! Document diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix via `writer` or markdown file.
 - **!!! Edit and bash permissions are `ask`** - explain rationale before any change.
-- **!!! Maker/checker split** - your work is reviewed by `reviewer`. Apply the fix, do not QA it.
-- **!!! Validate before handoff** - never present a fix without reproduction. Run test suite, reproduce error, confirm resolution.
 - **!!! Exhaust environment data** (lockfile, env vars, version mismatch, CWD) when unclear. Document assumptions with supporting evidence and proceed.
 - **Parallelization:** different bugs in parallel; same bug = consolidate. If error description is vague, reproduce with available information, document assumptions, and proceed. The reviewer validates reasonableness.
 
 ## Output Format & Handoff
 
-Document: what was investigated, ruled out, root cause, fix, prevention, and tagged assumptions (`[verified]`/`[inferred]`). Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
+Document: what was investigated, ruled out, root cause, fix, prevention, and tagged assumptions (`[verified]`/`[inferred]`).
 
 ## Skill Prescription
 
