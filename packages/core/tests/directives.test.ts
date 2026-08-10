@@ -188,4 +188,183 @@ describe('canonical directive safety contracts', () => {
     expect(hermesOrchestrator).not.toContain('trusted native `subagent_start` lifecycle state');
     expect(hermesOrchestrator).not.toContain('PermissionRole');
   });
+
+  it('records the primary outcome and non-goals and classifies findings by scope', () => {
+    const goalScope = readSection(readDirective('rules.md'), '## Goal and Scope Control');
+
+    expect(goalScope).toContain('primary user outcome');
+    expect(goalScope).toContain('explicit non-goals');
+    expect(goalScope).toContain(
+      'in-scope fix, out-of-scope follow-up, platform limitation, or design-level blocker',
+    );
+    expect(goalScope).toContain(
+      'Scope expansion requires a fresh design decision and updated acceptance criteria',
+    );
+    expect(goalScope).toContain('otherwise defer it as a follow-up');
+  });
+
+  it('circuit-breaks repeated non-progress into architecture escalation', () => {
+    const boundedAutonomy = readSection(readDirective('rules.md'), '## Bounded Autonomy');
+
+    expect(boundedAutonomy).toContain('Pivot once, then escalate');
+    expect(boundedAutonomy).toContain('stop and escalate to an architecture decision');
+    expect(boundedAutonomy).toContain(
+      'Do not spend the repair budget on unrelated platform or runtime work',
+    );
+    expect(boundedAutonomy).toContain('Security, auth, or permission findings are mandatory stops');
+    expect(boundedAutonomy).toContain('never repair or follow-up work');
+    expect(boundedAutonomy).toContain(
+      'Completion is measured against the user outcome plus the acceptance criteria',
+    );
+  });
+
+  it('requires reviewers to classify findings without silently redefining the task', () => {
+    const reviewScope = readSection(readDirective('rules.md'), '## Review Scope');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(reviewScope).toContain('category, severity, in-scope status, required action');
+    expect(reviewScope).toContain('do not automatically block the current unit');
+    expect(reviewScope).toContain('record them as follow-ups');
+    expect(reviewScope).toContain('route to `@architect`');
+    expect(orchestrator).toContain('Classify scope first');
+    expect(orchestrator).toContain('record as follow-ups, do not expand the current unit');
+  });
+
+  it('keeps security findings as mandatory stops and classifies design before fix triage', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const triageStart = orchestrator.indexOf('Collect and deduplicate findings');
+    expect(triageStart).toBeGreaterThanOrEqual(0);
+    const triage = orchestrator.slice(triageStart);
+
+    // Security, auth, or permission findings are stops - never deferrable follow-ups.
+    expect(rules).toMatch(
+      /Security, auth, or permission findings are never ordinary deferrable out-of-scope follow-ups/,
+    );
+    expect(rules).toContain('Security, auth, or permission findings are mandatory stops');
+    // The security stop is stated before any follow-up deferral path.
+    const nonDeferrable = rules.indexOf('never ordinary deferrable out-of-scope follow-ups');
+    const deferralPath = rules.indexOf('otherwise defer it as a follow-up');
+    expect(nonDeferrable).toBeGreaterThanOrEqual(0);
+    expect(deferralPath).toBeGreaterThanOrEqual(0);
+    expect(nonDeferrable).toBeLessThan(deferralPath);
+    // The triage stops on security before dispatching any builder work, and the
+    // security stop step never defers a security finding as a follow-up.
+    expect(orchestrator).toContain('Security, auth, or permission findings are mandatory stops');
+    const securityStop = triage.indexOf(
+      'Security, auth, or permission findings are mandatory stops',
+    );
+    const builderDispatch = triage.indexOf('dispatch `@builder`');
+    const classifyFirst = triage.indexOf('Classify scope first');
+    const designBlockers = triage.indexOf(
+      'Design-level blockers route to `@architect` before any builder repair',
+    );
+    const autoRepair = triage.indexOf('may be repaired automatically');
+    expect(securityStop).toBeGreaterThanOrEqual(0);
+    expect(builderDispatch).toBeGreaterThanOrEqual(0);
+    expect(classifyFirst).toBeGreaterThanOrEqual(0);
+    expect(designBlockers).toBeGreaterThanOrEqual(0);
+    expect(autoRepair).toBeGreaterThanOrEqual(0);
+    expect(securityStop).toBeLessThan(builderDispatch);
+    expect(triage.slice(0, classifyFirst)).not.toContain('record as follow-ups');
+    // Design-level blockers route to `@architect` before any builder dispatch or repair.
+    expect(classifyFirst).toBeLessThan(builderDispatch);
+    expect(designBlockers).toBeLessThan(builderDispatch);
+    expect(designBlockers).toBeLessThan(autoRepair);
+  });
+
+  it('keeps checkpoint commits the narrow exception to review-before-commit', () => {
+    const checkpointCommits = readSection(readDirective('rules.md'), '## Checkpoint Commits');
+
+    // Normal commits still require review approval; the checkpoint is the only exception.
+    expect(checkpointCommits).toMatch(/review approval before commit/);
+    expect(checkpointCommits).toMatch(/only exception/);
+    expect(checkpointCommits).toMatch(/preservation only/);
+    // Checkpoint validation keeps scope/status/diff checks and excludes unrelated artifacts.
+    expect(checkpointCommits).toMatch(/scope, status, and diff checks/);
+    expect(checkpointCommits).toMatch(/exclude unrelated and untracked artifacts/);
+    // Labelled unreviewed, no default push/PR, no shipping authority.
+    expect(checkpointCommits).toMatch(/unreviewed/);
+    expect(checkpointCommits).toContain('not production-ready');
+    expect(checkpointCommits).toMatch(/do not default-push or create a PR/);
+    // The checkpoint path stops after the preservation commit; push/PR need separate authorization and final review.
+    expect(checkpointCommits).toMatch(/stops after the preservation commit/);
+    expect(checkpointCommits).toMatch(/never enters the automatic push\/PR flow/);
+    expect(checkpointCommits).toMatch(/separate authorization and final review/);
+    expect(checkpointCommits).toMatch(/cannot satisfy final review or authorize shipping/);
+    // No docs-only shortcut: the exemption is review-only, never commit approval.
+    expect(checkpointCommits).toMatch(/Docs-only is not an unreviewed commit shortcut/);
+    expect(checkpointCommits).toMatch(/review dispatch only, never to commit approval/);
+    // Safety, security, and authorization floors are not waived.
+    expect(checkpointCommits).toMatch(/cannot be waived/);
+  });
+
+  it('runs a material-checkpoint scope sequence covering every reported event', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const start = orchestrator.indexOf('### Material Checkpoint Sequence');
+    expect(start).toBeGreaterThanOrEqual(0);
+    const sequence = orchestrator.slice(start);
+
+    expect(sequence).toMatch(/Restate the primary user outcome and the explicit non-goals/);
+    expect(sequence).toMatch(/Check scope/);
+    expect(sequence).toMatch(/Classify findings/);
+    expect(sequence).toMatch(/Propose the next owner/);
+    expect(sequence).toMatch(/Stop when the outcome is met/);
+    // The sequence covers every material event the checkpoints contract reports.
+    for (const event of [
+      'route selected',
+      'delegation completed, blocked, or failed',
+      'verification result',
+      'review verdict',
+      'commit, push, or PR result',
+    ]) {
+      expect(sequence).toContain(event);
+    }
+    // Non-applicable events are skipped, not forced.
+    expect(sequence).toMatch(/only applicable events/);
+  });
+
+  it('stops on security before owner selection in the material checkpoint sequence', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const start = orchestrator.indexOf('### Material Checkpoint Sequence');
+    expect(start).toBeGreaterThanOrEqual(0);
+    const sequence = orchestrator.slice(start);
+
+    const securityStop = sequence.indexOf('Security stop');
+    const neverDispatch = sequence.indexOf('never dispatch builder work');
+    const proposeOwner = sequence.indexOf('Propose the next owner');
+    expect(securityStop).toBeGreaterThanOrEqual(0);
+    expect(neverDispatch).toBeGreaterThanOrEqual(0);
+    expect(proposeOwner).toBeGreaterThanOrEqual(0);
+    // The mandatory security stop/authorization branch precedes owner selection.
+    expect(securityStop).toBeLessThan(proposeOwner);
+    expect(neverDispatch).toBeLessThan(proposeOwner);
+  });
+
+  it('never lets docs-only or checkpoint commits shortcut commit review', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const specialistOwnership = orchestrator.indexOf('### Specialist Ownership');
+    const commitProtocol = orchestrator.indexOf('## Commit Protocol');
+    expect(specialistOwnership).toBeGreaterThanOrEqual(0);
+    expect(commitProtocol).toBeGreaterThanOrEqual(0);
+    const routing = orchestrator.slice(0, specialistOwnership);
+    const protocol = orchestrator.slice(commitProtocol);
+
+    // The docs-only review exemption never extends to commit.
+    expect(routing).toMatch(/do not automatically require review/);
+    expect(routing).toMatch(/never extends to commit/);
+    expect(routing).toContain('docs-only is not an unreviewed commit shortcut');
+    expect(routing).not.toMatch(/docs-only[^.]*commit without review/);
+    // The checkpoint commit path stops after preservation and never auto-pushes/PRs.
+    expect(protocol).toMatch(/### Checkpoint Commits/);
+    expect(protocol).toMatch(/stops after the preservation commit/);
+    expect(protocol).toMatch(/never enters the automatic push\/PR flow/);
+    expect(protocol).toMatch(/separate authorization and final review/);
+    // The checkpoint path has no automatic push or PR step of its own.
+    const checkpointCommits = protocol.indexOf('### Checkpoint Commits');
+    expect(checkpointCommits).toBeGreaterThanOrEqual(0);
+    const checkpointPath = protocol.slice(checkpointCommits);
+    expect(checkpointPath).not.toMatch(/push automatically/i);
+    expect(checkpointPath).not.toMatch(/auto-create/i);
+  });
 });

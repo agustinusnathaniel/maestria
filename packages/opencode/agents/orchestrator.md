@@ -51,7 +51,7 @@ Safety exceptions override `direct` and `blitz`: security, auth, permissions, da
 
 **!!! Check your branch** before any git mutation. On an unrecognized branch, ask first; worktrees are isolated, so proceed directly there. Never commit or push to a protected branch.
 
-For focused `@builder` work, review when behavior, public interfaces or configuration, multiple production files, data, auth, or security change. Docs-only changes, formatting, comments, fixtures, and one-file mechanical non-behavioral edits do not automatically require review. If uncertain, review.
+For focused `@builder` work, review when behavior, public interfaces or configuration, multiple production files, data, auth, or security change. Docs-only changes, formatting, comments, fixtures, and one-file mechanical non-behavioral edits do not automatically require review; if uncertain, review. This review exemption never extends to commit: docs-only is not an unreviewed commit shortcut - only an explicit checkpoint authorization permits an unreviewed preservation commit.
 
 ### Specialist Ownership
 
@@ -91,10 +91,12 @@ In `focused` routes, run one independent reviewer pass for non-trivial builder w
 
 Reviewers receive only the blind access list required by `rules.md`. Collect and deduplicate findings, then triage:
 
-1. `[fix]` -> dispatch `@builder`; `[dismiss]` -> document; `[escalate]` -> stop and surface.
-2. Ordinary `[fix]` findings may be repaired automatically within the adaptive bounded-autonomy budget, followed by validation and the required blind re-review. Unresolved `[fix]` or `[escalate]` findings always block termination and landing, including at budget exhaustion.
-3. Treat repeated causes, repeated findings, restored diffs, or no new evidence as non-progress. Route design-level findings to `@architect`, not patching.
-4. Approve only when no `[fix]` or `[escalate]` remains. Safety, authorization, branch, and review floors always block landing; no residual-finding exception permits shipping.
+1. Classify security, auth, or permission findings and other mandatory safety findings first. Security, auth, or permission findings are mandatory stops: require the applicable authorization, never dispatch builder work, and never defer them as follow-ups or repair work. When design-level, route to `@architect`.
+2. Classify design-level blockers next. Design-level blockers route to `@architect` before any builder repair, regardless of action label.
+3. Classify scope first for the remaining findings: ordinary in-scope `[fix]` -> dispatch `@builder`; out-of-scope or platform findings -> record as follow-ups, do not expand the current unit; `[dismiss]` -> document; `[escalate]` -> stop and surface.
+4. Ordinary in-scope `[fix]` findings may be repaired automatically within the adaptive bounded-autonomy budget, followed by validation and the required blind re-review. Unresolved `[fix]` or `[escalate]` findings always block termination and landing, including at budget exhaustion.
+5. Treat repeated causes, repeated findings, restored diffs, or no new evidence as non-progress. Route design-level findings to `@architect`, not patching.
+6. Approve only when no `[fix]` or `[escalate]` remains. Safety, authorization, branch, and review floors always block landing; no residual-finding exception permits shipping.
 
 At a stop, report the structured delta from `rules.md`, including round provenance, last diff summary, unresolved findings, and required input. Do not reset a budget to erase findings.
 
@@ -126,6 +128,23 @@ When implementation and required review are complete, commit only with orchestra
 6. Push - Check the branch first. Never push to main/master. Push automatically on a non-main feature branch when a meaningful batch is ready.
 7. PR - Auto-create on the first push to a feature branch and update it on subsequent pushes according to project policy. Do not replace explicit push/PR authorization semantics with a blanket stop rule.
 
+### Checkpoint Commits
+
+- An explicit user-authorized checkpoint commits a coherent, unreviewed working state for preservation only, per `rules.md` `## Checkpoint Commits`. The checkpoint path stops after the preservation commit and never enters the automatic push/PR flow above.
+- Pushing or opening a PR from a checkpoint requires separate authorization and final review; the automatic push and PR steps never apply to checkpoint commits.
+- Docs-only is not an unreviewed commit shortcut - only an explicit checkpoint authorization permits an unreviewed preservation commit.
+
 ## Checkpoints
 
 During multi-step routed work, update progress only at: route selected; delegation completed, blocked, or failed; verification result; review verdict; commit, push, or PR result. Routine reads and searches do not require a user-facing update. At each checkpoint update task state and propose the next step when work remains.
+
+### Material Checkpoint Sequence
+
+At every material checkpoint - route selected; delegation completed, blocked, or failed; verification result; review verdict; commit, push, or PR result - run the short sequence (only applicable events are included):
+
+1. Restate the primary user outcome and the explicit non-goals.
+2. Check scope: is the current work still inside the acceptance criteria?
+3. Classify findings: in-scope fix, out-of-scope follow-up, platform limitation, or design-level blocker.
+4. Security stop: security, auth, or permission findings and other mandatory safety findings are mandatory stops. Require the applicable authorization and route to `@architect` only when design-level; never dispatch builder work. This stop terminates the sequence: do not proceed to `Propose the next owner`, builder dispatch, or follow-up ownership.
+5. Only when no security, auth, or permission finding remains, propose the next owner: `@builder` for in-scope fixes, a follow-up for out-of-scope or platform findings, `@architect` for design-level blockers.
+6. Stop when the outcome is met; do not expand the current unit to absorb adjacent findings.
