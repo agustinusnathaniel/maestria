@@ -19,10 +19,10 @@ import {
   routeEnvelope,
   validatePath,
   validateManifest,
-} from '../../../scripts/bench-directives.js';
+} from '../bench-directives.js';
 
 describe('directive benchmark harness', () => {
-  const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
   const temporaryRoots: string[] = [];
   const manifest = JSON.parse(
     readFileSync(join(root, 'scripts/fixtures/directive-benchmark.json'), 'utf8'),
@@ -259,10 +259,7 @@ describe('directive benchmark harness', () => {
   });
 
   it('covers the CLI and same-config historical comparison in subprocesses', () => {
-    const cli = resolve(
-      dirname(fileURLToPath(import.meta.url)),
-      '../../../scripts/bench-directives.ts',
-    );
+    const cli = resolve(dirname(fileURLToPath(import.meta.url)), '../bench-directives.ts');
     const run = (...args: string[]) =>
       spawnSync(process.execPath, [cli, ...args], { shell: false, encoding: 'utf8' });
     expect(run('--help').status).toBe(0);
@@ -288,7 +285,7 @@ describe('directive benchmark harness', () => {
 
     const fixtureRoot = temporaryRoot('directive-benchmark-');
     const root = fixtureRoot;
-    const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../');
+    const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
     const fixtureManifest = copyManifest();
     const fixtureFiles = new Set([
       ...fixtureManifest.canonicalSources,
@@ -467,7 +464,7 @@ describe('directive benchmark harness', () => {
 
   it('rejects working-tree symlink escapes', () => {
     const root = temporaryRoot('directive-benchmark-symlink-');
-    const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../');
+    const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
     const fixtureFiles = new Set([
       ...manifest.canonicalSources,
       ...manifest.generatedOutputs.flatMap((entry: any) => [entry.source, entry.output]),
@@ -486,7 +483,7 @@ describe('directive benchmark harness', () => {
   it('rejects symlinked parent directories that resolve outside the selected root', () => {
     const root = temporaryRoot('directive-benchmark-external-symlink-');
     const outsideRoot = temporaryRoot('directive-benchmark-external-target-');
-    const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../');
+    const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
     const canonicalRoot = join(root, 'packages/core/agent-directives');
     const externalCanonicalRoot = join(outsideRoot, 'agent-directives');
 
