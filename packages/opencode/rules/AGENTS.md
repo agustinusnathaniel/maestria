@@ -11,9 +11,13 @@ This file is the universal contract ledger. The orchestrator owns routing and se
 
 - **!!! Don't assume** - verify against actual code and documentation.
 - **!!! Read the docs first** - consult official documentation before using unfamiliar APIs, tools, or migration paths.
+- **!!! Don't anthropomorphize effort** - choose approaches by technical trade-offs and evidence, not by perceived human effort or token cost.
+- **!!! Write for humans** - use clear, professional prose with standard hyphens; avoid inflated or promotional language.
 - **!!! Never leak internal context into public output** - public descriptions, changesets, commits, and docs must stand on their own.
 - **!!! Never delete what you didn't create** - adapt existing systems after understanding them.
 - Report errors matter-of-factly and write for humans using standard hyphens, not em dashes.
+- Surface materially relevant incidental findings after the primary outcome; active security or production risks are immediate stops.
+- If a platform URL-fetch operation hangs, proceed with available evidence and report the skipped source.
 - Platform behavior varies. State what is guaranteed versus advisory; do not claim isolated context, tool enforcement, or maker/checker enforcement where the platform does not provide it.
 
 ## Orchestration
@@ -58,7 +62,7 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 ## Context Management
 
 - Every specialist reports success, blocked, or failed; include the structured delta when blocked.
-- Reports cover the outcome summary, changed files by signature or interface with what changed and why, verification evidence, blockers or follow-ups, and the next step.
+- Reports cover the outcome summary, changed files by signature or interface with what changed and why, verification evidence, blockers or follow-ups, and the next step. After every builder task that lands a code change, use the Work Results table: File | What changed | Why; include change markers (`+`, `~`, `-`, `!`, `(test)`) and focus on signatures/interfaces.
 - Result markers: `+` new, `~` modified, `-` deleted, `!` breaking, and `(test)` for test files.
 - Completion evidence and the seven-field brief follow the Handoff Contract.
 - Empty, malformed, unavailable, or blocked specialist output is not success. Mark it blocked, preserve the structured delta, and do not retry the same brief. Allow at most one changed-brief recovery when new evidence justifies it; a second empty or blocked result trips the task circuit breaker and escalates to `@diagnose`, `@architect`, or the user as applicable.
@@ -119,7 +123,8 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 ## Commit and Branch Safety
 
 - Only the orchestrator authorizes commits. Plans and specialist results do not imply a commit.
-- Validate and review required changes before commit; stage only intended files. A changeset is required for affected published packages.
+- Validate and review required changes before commit; stage only intended files.
+- **!!! Ship docs with code** - before every commit, audit all affected documentation categories: internal docs, ADRs, references, user-facing docs, changelog, and changeset. Any `packages/` change or behavior-affecting change MUST have a corresponding changeset; check existing entries and create one if needed. Keep docs, changelogs, and changesets in sync with the change.
 - **!!! Check your branch** - on an unrecognized branch, ask first. Worktrees are isolated - proceed directly.
 - **!!! Never commit or push to main.** Work on a feature branch. For normal work, never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved. The only exception is a separately user-authorized feature-branch checkpoint push for preservation: it stays unreviewed, cannot push protected branches, create or merge a PR, merge, release, or claim production readiness, and final review plus the applicable authorization remain required for shipping.
 - Pull latest before creating a feature branch from main. Worktrees are already isolated.
@@ -130,7 +135,7 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 - Checkpoint validation still requires scope, status, and diff checks; exclude unrelated and untracked artifacts.
 - Commit, push, PR, merge, and release are separate actions with separate gates. A checkpoint commits for preservation only and never auto-pushes, auto-creates a PR, merges, or releases; the checkpoint path stops after the preservation commit and never enters the configured push/PR flow. This default does not mean the user prohibited pushing.
 - A checkpoint commit is labeled `unreviewed` / `not production-ready` and stays unreviewed until final review. If the user separately authorizes pushing, a feature-branch push is allowed for preservation, but the work remains unreviewed and cannot merge or release; opening a PR, merging, or releasing each require final review and the applicable authorization.
-- Normal reviewed feature-branch work follows the project and platform push/PR policy. If the platform has no lifecycle integration, report push or PR creation as a pending next step rather than claiming it happened. Protected branches and unresolved safety, security, or authorization floors remain blocked.
+- Normal reviewed feature-branch work follows the project and platform push/PR policy. If the platform has no lifecycle integration, report push or PR creation as a pending next step rather than claiming it happened. Protected branches and unresolved safety, security, or authorization floors remain blocked. Where PR lifecycle is supported, keep the summary, changes, testing, breaking-changes, docs, changelog, and changeset content synchronized.
 - Docs-only is not an unreviewed commit shortcut - the docs-only review exemption applies to review dispatch only, never to commit approval. Only an explicit checkpoint authorization permits an unreviewed preservation commit.
 - Checkpoint commits cannot satisfy final review or authorize shipping. Unresolved safety, security, or authorization floors still cannot be waived.
 

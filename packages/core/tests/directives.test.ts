@@ -133,6 +133,33 @@ describe('canonical directive safety contracts', () => {
     }
   });
 
+  it('retains the non-negotiable ship-docs-with-code contract', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(rules).toContain("**!!! Don't anthropomorphize effort**");
+    expect(rules).toContain('**!!! Write for humans**');
+    expect(rules).toContain('Surface materially relevant incidental findings');
+    expect(rules).toContain('If a platform URL-fetch operation hangs');
+    expect(rules).toContain('**!!! Ship docs with code**');
+    expect(rules).toContain(
+      'Any `packages/` change or behavior-affecting change MUST have a corresponding changeset',
+    );
+    expect(rules).toContain('Keep docs, changelogs, and changesets in sync with the change');
+    expect(rules).toContain(
+      'After every builder task that lands a code change, use the Work Results table',
+    );
+    expect(orchestrator).toContain('Work Results table');
+    expect(orchestrator).toContain('**!!! Never implement routed code changes yourself.**');
+    expect(orchestrator).toContain('Each delegation owns one coherent outcome');
+    expect(orchestrator).toContain('If the user rejects the approach twice in a row');
+    expect(orchestrator).toContain('Git mutations remain route-scoped');
+    expect(orchestrator).toContain('**!!! Docs Audit**');
+    expect(orchestrator).toContain(
+      'any `packages/` change or behavior-affecting change MUST have a corresponding changeset',
+    );
+  });
+
   it('keeps canonical directives independent of projection paths and host permissions', () => {
     const directiveFiles = [
       'rules.md',
