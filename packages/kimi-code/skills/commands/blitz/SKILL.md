@@ -1,6 +1,6 @@
 ---
 name: blitz
-description: "Fast implementation mode: skip recon/design unless unknown"
+description: "Fast implementation mode: skip optional recon/design unless unknown; required review remains"
 type: prompt
 whenToUse: When the user types /blitz or includes "blitz" in their message for fast implementation.
 arguments: []

@@ -70,7 +70,7 @@ Users can trigger modes with slash commands from this plugin:
 | --- | --- |
 | \`/fein\` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | \`/sonar\` | Research only: adventurer → architect/planner → STOP |
-| \`/blitz\` | Fast path: builder directly (skip recon/design unless unknown) |
+| \`/blitz\` | Fast path: builder directly (skip optional recon/design unless unknown; required review remains) |
 
 ## Related Agents
 
@@ -145,7 +145,7 @@ export default {
       frontmatter: {
         name: 'reviewer',
         description:
-          'Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use after builder lands a change. Read-only — never edit.',
+          'Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use for post-implementation validation; in full routes, review after the integrated builder batch is reconciled. Read-only — never edit.',
         readonly: true,
       },
     },
@@ -235,7 +235,7 @@ export default {
       prepend: [
         '---',
         'name: blitz',
-        'description: Fast Maestria implementation via builder (skip recon/design unless unknown)',
+        'description: Fast Maestria implementation via builder (skip optional recon/design unless unknown; required review remains)',
         '---',
         '',
       ].join('\n'),

@@ -130,7 +130,8 @@ and adherence to conventions. Provides specific, actionable feedback.
 Use for: PR review, pre-commit review, architecture document review.`,
         type: 'prompt',
         whenToUse: `Pre-merge review, post-implementation validation, security audits,
-before-commit QA. Use after \`builder\` lands a code change.`,
+before-commit QA. In full routes, review after the integrated builder batch is
+reconciled; run the general review first, then risk-matched lenses sequentially.`,
         arguments: [],
       },
     },
@@ -353,7 +354,8 @@ This should appear at the end of your response when the user asks for a handoff,
         '**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
       frontmatter: {
         name: 'blitz',
-        description: 'Fast implementation mode: skip recon/design unless unknown',
+        description:
+          'Fast implementation mode: skip optional recon/design unless unknown; required review remains',
         type: 'prompt',
         whenToUse:
           'When the user types /blitz or includes "blitz" in their message for fast implementation.',

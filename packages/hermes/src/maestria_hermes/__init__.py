@@ -123,7 +123,7 @@ def register(ctx):
         _cmd_set_mode(mode_manager, "blitz"),
         description=_load_cmd_description(
             _skills_dir / "commands" / "blitz" / "SKILL.md",
-            "Fast implementation mode: skip gates, go directly to implementation",
+            "Fast implementation mode: skip optional ceremony for familiar low-risk work; required review and safety floors remain",
         ),
     )
     ctx.register_command(
@@ -175,7 +175,7 @@ def _cmd_set_mode(mode_manager, mode):
         pipeline = {
             "fein": "adventurer / architect -> builder -> reviewer",
             "sonar": "adventurer / architect -> STOP (read-only)",
-            "blitz": "builder (skip recon and review)",
+            "blitz": "builder (skip optional recon/design; required review and safety floors remain)",
         }
         return (
             f"Switched to **{mode}** mode.\n"

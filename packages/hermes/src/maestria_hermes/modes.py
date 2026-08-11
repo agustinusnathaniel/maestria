@@ -3,7 +3,7 @@
 Supports three modes:
 - fein:  Full pipeline with all gates (default)
 - sonar: Research only -- read-only tools, no edits
-- blitz: Fast execution -- skip recon and review gates
+- blitz: Fast execution -- skip optional recon/design ceremony; required review and safety floors remain
 
 Mode persists across sessions via a JSON state file (bundled fallback).
 The plugin is memory-engine agnostic — no memory backend is required or

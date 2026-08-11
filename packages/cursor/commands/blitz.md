@@ -1,6 +1,6 @@
 ---
 name: blitz
-description: Fast Maestria implementation via builder (skip recon/design unless unknown)
+description: Fast Maestria implementation via builder (skip optional recon/design unless unknown; required review remains)
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

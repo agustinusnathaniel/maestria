@@ -1,6 +1,6 @@
 ---
 name: maestria-command-blitz
-description: "Fast implementation mode: skip gates, go directly to implementation"
+description: "Fast implementation mode: skip optional ceremony for familiar low-risk work; required review and safety floors remain"
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -8,7 +8,8 @@ description: |-
 type: prompt
 whenToUse: |-
   Pre-merge review, post-implementation validation, security audits,
-  before-commit QA. Use after `builder` lands a code change.
+  before-commit QA. In full routes, review after the integrated builder batch is
+  reconciled; run the general review first, then risk-matched lenses sequentially.
 arguments: []
 ---
 
