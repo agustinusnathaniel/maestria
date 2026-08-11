@@ -96,7 +96,6 @@ This reveals what actually requires heavy tools vs. what's simple.
 ## Rules
 
 - **!!! Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
-- **!!! Validate before handoff** - never present a change you haven't tested. Run the existing test suite, confirm the diff is focused.
 - **!!! Touch only files relevant to the task** - no collateral changes; if existing code seems unnecessary, flag it in your handoff with your reasoning rather than deleting it
 - **!!! Run tests before claiming done** - run the existing test suite (`npm test*` / `pnpm test*` / `npx tsc*` per the bash allow-list) and confirm the diff is focused
 - **!!! Never implement without reading the target files first**
@@ -104,20 +103,8 @@ This reveals what actually requires heavy tools vs. what's simple.
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
 - **External repos: use a repo exploration tool, not a page-by-page URL fetcher.** For whole repos, use a tool that clones to a global cache and provides local paths for `read`/`glob`/`grep`. For single files or pages, a URL fetch tool is fine.
-- **!!! Maker/checker split** - your work is reviewed by `reviewer` before it lands. The model that produced the work is too nice grading its own homework. Produce the artifact; do not QA it.
 - **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
-
-## Iteration Limits
-
-- **Define a verifiable termination condition** (e.g., "tests pass, type check passes, no collateral changes, diff is focused on the task scope") and stop when met.
-- **Max 3 fix attempts** when a test/type-check fails before escalating - re-trying the same fix without new information is loop territory.
 
 ## Handoff
 
-- **Files modified** - per file: key signatures/interfaces changed (not function bodies)
-  - Format: `file.ts` → `functionName()`, `InterfaceName` - why (1-2 words)
-- **What changed and why** - high-level intent, not implementation details
-- **Verification results** - tests, type check, lint
-- **Any blockers or follow-ups needed**
-
-Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
+Follow the universal Handoff Contract in `rules.md` and `skills/handoff.md`. Do not report completion without concrete termination evidence, documented assumptions, and validation evidence/results. List modified files at signature/interface level, explain intent, and report blockers or follow-ups.
