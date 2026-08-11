@@ -1,11 +1,5 @@
 ---
-'@maestria/core': patch
-'@maestria/cursor': patch
 '@maestria/hermes': patch
-'@maestria/kimi-code': patch
-'@maestria/omp': patch
-'@maestria/opencode': patch
-'@maestria/pi': patch
 ---
 
-Compress canonical agent directive support contracts without changing behavior.
+Harden the Hermes adapter by wiring native session and subagent lifecycle trust, immutable mode and child safety allowlists, and the current Hermes plugin registration contracts.
