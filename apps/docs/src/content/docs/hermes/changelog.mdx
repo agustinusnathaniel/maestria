@@ -24,7 +24,7 @@ Agent directives compressed to cut orchestrator context usage by ~38% without re
 ### Added
 
 - **pre_gateway_dispatch hook**: Intercepts `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan` commands before the agent-busy check
-- **Role-based permission enforcement**: `[MAESTRIA_ROLE: <specialist>]` in `delegate_task` context enforces per-specialist tool restrictions
+- **Role-based permission enforcement (historical implementation)**: `[MAESTRIA_ROLE: <specialist>]` in `delegate_task` context enforced per-specialist tool restrictions
 - **Transform hook**: Write operations in fein/blitz mode append methodology annotation to tool results
 
 ### Fixed

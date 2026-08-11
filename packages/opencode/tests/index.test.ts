@@ -60,4 +60,24 @@ describe('plugin structure', () => {
     expect(agent.reviewer.temperature).toBe(0.1);
     expect(agent.reviewer.mode).toBe('subagent');
   });
+
+  it('keeps direct code tools denied to the orchestrator and permitted to builder', async () => {
+    const plugin = await MaestriaPlugin({} as never);
+    const config = { agent: {} };
+    await plugin.config?.(config);
+
+    const agent = config.agent as Record<string, Record<string, any>>;
+    expect(agent.orchestrator.permission.read).toBe('deny');
+    expect(agent.orchestrator.permission.edit).toBe('deny');
+    expect(agent.orchestrator.permission.bash['*']).toBe('deny');
+    expect(agent.builder.permission.read).toBe('allow');
+    expect(agent.builder.permission.edit).toBe('allow');
+    for (const command of ['pnpm*', 'npm*', 'tsc*', 'vitest*', 'vp*']) {
+      expect(agent.builder.permission.bash[command]).toBe('allow');
+    }
+    expect(agent.orchestrator.prompt).toContain(
+      'code changes use `focused` and a permitted `@builder`',
+    );
+    expect(agent.orchestrator.prompt).not.toContain('direct execution where the host supports it');
+  });
 });
