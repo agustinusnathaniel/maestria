@@ -19,14 +19,12 @@ Agent directives compressed to cut orchestrator context usage by ~38% without re
 
 - **Orchestrator behavior**: Simple tasks now run directly instead of always being delegated to subagents. Complex tasks (multi-file, cross-domain, risky) still use specialist routing. Routine changes are faster with less overhead — no action needed on your part.
 
-> **Supersession note (current, 2026-08-10):** The "Role-based permission enforcement" item below describes per-specialist tool restrictions driven by `[MAESTRIA_ROLE: <specialist>]` markers in `delegate_task` context. That role-based child-permission model is **superseded** by the approved role-neutral child trust policy (ADR-HM-002, 2026-08-10): delegated children receive a fixed read/research/LLM-only policy, and `[MAESTRIA_ROLE: ...]` markers are ignored. The historical entry is preserved unchanged as a record of what shipped in 0.1.3. The `pre_gateway_dispatch` and `transform_tool_result` entries below remain current - both hooks are still registered in the runtime.
-
 ## 0.1.3 (2026-07-17)
 
 ### Added
 
 - **pre_gateway_dispatch hook**: Intercepts `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan` commands before the agent-busy check
-- **Role-based permission enforcement**: `[MAESTRIA_ROLE: <specialist>]` in `delegate_task` context enforces per-specialist tool restrictions
+- **Role-based permission enforcement (historical implementation)**: `[MAESTRIA_ROLE: <specialist>]` in `delegate_task` context enforced per-specialist tool restrictions
 - **Transform hook**: Write operations in fein/blitz mode append methodology annotation to tool results
 
 ### Fixed
