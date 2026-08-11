@@ -8,4 +8,4 @@
 '@maestria/pi': patch
 ---
 
-Centralize universal directive contracts and add bounded autonomous repair and scoped process lifecycle guidance.
+Streamline canonical agent directives by centralizing universal contracts, preserving orchestration behavior in compact form, and adding bounded autonomy, scope control, process lifecycle guidance, and checkpoint action boundaries.
