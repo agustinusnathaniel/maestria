@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.4
+
+### Patch Changes
+
+- [#185](https://github.com/agustinusnathaniel/maestria/pull/185) [`79e753c`](https://github.com/agustinusnathaniel/maestria/commit/79e753c104c72a3403aded79ee6c49ed3cb2b5fe) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Streamline canonical agent directives by centralizing universal contracts, preserving orchestration behavior in compact form, and adding bounded autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action boundaries.
+
+- [#183](https://github.com/agustinusnathaniel/maestria/pull/183) [`2533967`](https://github.com/agustinusnathaniel/maestria/commit/2533967721f20380f2c5c40eeddd9cd005c6ff65) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Restore session state from the current branch and rehydrate on session-tree navigation.
+
+  `/maestria-status`, compaction summaries, and mode enforcement previously restored
+  persisted state from `sessionManager.getEntries()`, which spans the entire session
+  tree — resuming a session could pull a sibling branch's `maestria_state` (wrong mode,
+  wrong active task). Restoration now reads only the current branch via `getBranch()`,
+  matching the omp extension's semantics, and a new `session_tree` handler rehydrates
+  state when navigating between branches so the UI never shows stale state.
+
 ## 0.6.3
 
 ### Patch Changes
