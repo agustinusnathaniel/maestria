@@ -1,5 +1,13 @@
 # @maestria/hermes
 
+## 0.1.12
+
+### Patch Changes
+
+- [#185](https://github.com/agustinusnathaniel/maestria/pull/185) [`79e753c`](https://github.com/agustinusnathaniel/maestria/commit/79e753c104c72a3403aded79ee6c49ed3cb2b5fe) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Streamline canonical agent directives by centralizing universal contracts, preserving orchestration behavior in compact form, and adding bounded autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action boundaries.
+
+- [#181](https://github.com/agustinusnathaniel/maestria/pull/181) [`6eabeff`](https://github.com/agustinusnathaniel/maestria/commit/6eabeff0348ad5a33c21360d7c0c72d31d89c968) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Harden the Hermes adapter by wiring native session and subagent lifecycle trust, immutable mode and child safety allowlists, and the current Hermes plugin registration contracts.
+
 ## 0.1.11
 
 ### Patch Changes
