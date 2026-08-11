@@ -77,7 +77,7 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 ## Handoff Contract
 
 - **!!! Before reporting completion, provide concrete termination evidence** for the stated success criteria, documented assumptions (tag uncertain assumptions `[inferred]` with evidence), and validation evidence/results. An unverified result is not a completed handoff.
-- When delegating, include the seven-field brief in `skills/handoff.md`: Goal, Context, Requirements, Known problems, Assumptions documented, Success criteria, and Next step. Do not omit a field; write `none` when it is inapplicable.
+- When delegating, include the seven-field brief defined in the Delegation section above: Goal, Context, Requirements, Known problems, Assumptions documented, Success criteria, and Next step. Do not omit a field; write `none` when it is inapplicable.
 - Re-read the artifact before handoff and report the observable evidence that the completion promise is met. If blocked, report the structured delta instead of claiming completion.
 
 ## Blind Review
@@ -133,9 +133,9 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 
 - Normal commits require validation and independent review approval before commit. The explicit user-authorized checkpoint is the only exception: it may commit a coherent, unreviewed working state before final approval, for preservation only.
 - Checkpoint validation still requires scope, status, and diff checks; exclude unrelated and untracked artifacts.
-- Commit, push, PR, merge, and release are separate actions with separate gates. A checkpoint commits for preservation only and never auto-pushes, auto-creates a PR, merges, or releases; the checkpoint path stops after the preservation commit and never enters the automatic push/PR flow. This default does not mean the user prohibited pushing.
+- Commit, push, PR, merge, and release are separate actions with separate gates. A checkpoint commits for preservation only and never auto-pushes, auto-creates a PR, merges, or releases; the checkpoint path stops after the preservation commit and never enters the configured push/PR flow. This default does not mean the user prohibited pushing.
 - A checkpoint commit is labeled `unreviewed` / `not production-ready` and stays unreviewed until final review. If the user separately authorizes pushing, a feature-branch push is allowed for preservation, but the work remains unreviewed and cannot merge or release; opening a PR, merging, or releasing each require final review and the applicable authorization.
-- Normal reviewed feature-branch work keeps the existing automatic push and PR policy. Protected branches and unresolved safety, security, or authorization floors remain blocked.
+- Normal reviewed feature-branch work follows the project and platform push/PR policy. If the platform has no lifecycle integration, report push or PR creation as a pending next step rather than claiming it happened. Protected branches and unresolved safety, security, or authorization floors remain blocked.
 - Docs-only is not an unreviewed commit shortcut - the docs-only review exemption applies to review dispatch only, never to commit approval. Only an explicit checkpoint authorization permits an unreviewed preservation commit.
 - Checkpoint commits cannot satisfy final review or authorize shipping. Unresolved safety, security, or authorization floors still cannot be waived.
 

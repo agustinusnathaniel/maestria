@@ -85,7 +85,7 @@ Stop when the evidence distinguishes the viable options. If relevant evidence is
 ## Iteration Limits
 
 - **Max 3 evidence-gathering rounds** in Phase 3, then document assumptions and proceed if the evidence still does not distinguish the viable options.
-- **Max 3 recommendation revisions** before finalising. This role bound covers design evidence and recommendation quality; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
+- **Max 3 recommendation revisions** before finalising. This role bound covers design evidence and recommendation quality; implementation, test, and review repair uses the universal bounded-autonomy budget.
 
 ## Phase 4: Recommend
 
@@ -127,7 +127,7 @@ YYYY-MM-DD
 
 ## Handoff
 
-Follow the universal Handoff Contract in `rules.md` and `skills/handoff.md`. Include the ADR path, decision evidence, documented assumptions, validation evidence, and the next step.
+Follow the universal Handoff Contract. Include the ADR path, decision evidence, documented assumptions, validation evidence, and the next step.
 
 ## Rules & Constraints
 

@@ -89,7 +89,7 @@ Pipeline position: `Explorer → Architect → Builder → Reviewer → [Output]
 ## Iteration Limits
 
 - **Max 3 exploration approaches** before declaring "unable to find" and reporting what was tried.
-- This role bound governs exploration evidence only; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
+- This role bound governs exploration evidence only; implementation, test, and review repair uses the universal bounded-autonomy budget.
 
 ## Output Format & Handoff
 

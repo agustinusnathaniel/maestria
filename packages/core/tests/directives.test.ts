@@ -133,6 +133,28 @@ describe('canonical directive safety contracts', () => {
     }
   });
 
+  it('keeps canonical directives independent of projection paths and host permissions', () => {
+    const directiveFiles = [
+      'rules.md',
+      'skills/iteration-limits.md',
+      'specialists/adventurer.md',
+      'specialists/architect.md',
+      'specialists/builder.md',
+      'specialists/diagnose.md',
+      'specialists/orchestrator.md',
+      'specialists/planner.md',
+      'specialists/reviewer.md',
+      'specialists/writer.md',
+    ];
+    const canonical = directiveFiles.map((file) => readDirective(...file.split('/'))).join('\n');
+
+    // Projection paths and permission/tool names belong to sync.config.ts, not core.
+    expect(canonical).not.toContain('skills/handoff.md');
+    expect(canonical).not.toMatch(/`rules\.md(?:#|`)/);
+    expect(canonical).not.toContain('bash allow-list');
+    expect(canonical).not.toContain('bash permissions are `ask`');
+  });
+
   it('records goal/scope and classifies review findings without redefining the task', () => {
     const goalScope = readSection(readDirective('rules.md'), '## Goal and Scope Control');
     const reviewScope = readSection(readDirective('rules.md'), '## Review Scope');
@@ -247,7 +269,7 @@ describe('canonical directive safety contracts', () => {
     );
     expect(checkpointCommits).toMatch(/never auto-pushes, auto-creates a PR, merges, or releases/);
     expect(checkpointCommits).toMatch(/stops after the preservation commit/);
-    expect(checkpointCommits).toMatch(/never enters the automatic push\/PR flow/);
+    expect(checkpointCommits).toMatch(/never enters the configured push\/PR flow/);
     expect(checkpointCommits).toMatch(/unreviewed/);
     expect(checkpointCommits).toContain('does not mean the user prohibited pushing');
     // An authorized push preserves the unreviewed work but cannot merge or release.
@@ -255,8 +277,8 @@ describe('canonical directive safety contracts', () => {
     expect(checkpointCommits).toContain('feature-branch push is allowed for preservation');
     expect(checkpointCommits).toMatch(/remains unreviewed and cannot merge or release/);
     expect(checkpointCommits).toContain('final review and the applicable authorization');
-    // Normal reviewed work keeps the automatic push/PR policy; protected and unresolved floors block.
-    expect(checkpointCommits).toContain('keeps the existing automatic push and PR policy');
+    // Normal reviewed work follows configured project/platform policy; protected and unresolved floors block.
+    expect(checkpointCommits).toContain('follows the project and platform push/PR policy');
     expect(checkpointCommits).toContain(
       'Protected branches and unresolved safety, security, or authorization floors remain blocked',
     );
@@ -267,18 +289,22 @@ describe('canonical directive safety contracts', () => {
 
     // The orchestrator checkpoint section mirrors the same separate-action gates.
     expect(orchestrator).toMatch(
-      /The checkpoint path stops after the preservation commit and never enters the automatic push\/PR flow/,
+      /The checkpoint path stops after the preservation commit and never enters the configured push\/PR flow/,
     );
     expect(orchestrator).toContain('Commit, push, PR, merge, and release are separate actions');
     expect(orchestrator).toContain(
-      'automatic push and PR steps never apply to a checkpoint commit',
+      'configured push and PR steps never apply to a checkpoint commit',
     );
     expect(orchestrator).toContain('feature-branch push is allowed for preservation');
     expect(orchestrator).toMatch(
       /remains unreviewed, cannot claim production readiness, and cannot merge or release/,
     );
-    expect(orchestrator).toContain('keeps the automatic push and PR policy');
+    expect(orchestrator).toContain('follows the project and platform push/PR policy');
     expect(orchestrator).toMatch(/never extends to commit/);
+    expect(orchestrator).not.toContain('Push automatically');
+    expect(orchestrator).not.toContain('Auto-create on the first push');
+    expect(orchestrator).toContain('platform provides an authorized push integration');
+    expect(orchestrator).toContain('platform provides an authorized PR integration');
   });
 
   it('orders fan-out, the integration barrier, and sequential review lenses', () => {
@@ -292,7 +318,7 @@ describe('canonical directive safety contracts', () => {
       '## Review Dispatch and Triage',
     );
 
-    // Universal parallelization safety stays owned by rules.md.
+    // Universal parallelization safety stays owned by the universal rules contract.
     expect(parallel).toContain('different scopes only');
     expect(parallel).toContain('single writer or sequential execution');
     expect(parallel).toContain('two builders on overlapping files');
@@ -302,7 +328,7 @@ describe('canonical directive safety contracts', () => {
     // and keeps one writer per file or module via the universal rules.
     expect(fanOut).toContain('independent, non-overlapping work within the declared budget');
     expect(fanOut).toContain('One writer per file or module');
-    expect(fanOut).toContain('universal parallelization safety in `rules.md`');
+    expect(fanOut).toContain('universal parallelization safety contract');
 
     // The integration barrier collects and reconciles outputs before review.
     const barrier = fanOut.indexOf('integration barrier');
@@ -388,12 +414,10 @@ describe('canonical directive safety contracts', () => {
     expect(resultReporting).toMatch(/`\+` new, `~` modified, `-` deleted, `!` breaking/);
     expect(resultReporting).toContain('`(test)` for test files');
     // The orchestrator references the legend without restating it.
-    expect(orchestrator).toContain('result marker legend in `rules.md` Context Management');
+    expect(orchestrator).toContain('result marker legend');
     expect(orchestrator).not.toMatch(/`\+` new, `~` modified, `-` deleted, `!` breaking/);
     expect(orchestrator).not.toContain('`(test)` for test files');
-    expect(orchestrator).toContain(
-      'Completion evidence follows the handoff contract in `rules.md`',
-    );
+    expect(orchestrator).toContain('Completion evidence follows the universal Handoff Contract');
     // The universal field list stays owned by rules.md, not restated as a clause here.
     expect(orchestrator).not.toContain('outcome summary, changed files at signature level');
   });

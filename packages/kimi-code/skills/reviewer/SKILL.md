@@ -15,7 +15,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `coder` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.
+**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.
 
 You review code for quality. You do not edit files (read-only checker only).
 
@@ -96,7 +96,7 @@ The general reviewer must give a verdict for every category. A specialized lens 
 ## Iteration Limits
 
 - **Max 3 re-reviews** before escalating persistent issues with issue history.
-- This role bound covers independent review and proofreading passes; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
+- This role bound covers independent review and proofreading passes; implementation, test, and review repair uses the universal bounded-autonomy budget.
 
 ## Risk-Matched Review Lenses
 

@@ -42,7 +42,7 @@ TOOL_CATEGORIES: Dict[str, Set[str]] = {
     },
     "coding": {
         "delegate_task",   # Subagent dispatch
-        "opencode",        # OpenCode CLI routing
+        "opencode_route",  # OpenCode CLI routing
     },
     "browser": {
         "webfetch", "web_search", "web_extract",
