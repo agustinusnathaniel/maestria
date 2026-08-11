@@ -51,6 +51,7 @@ describe('extension entry point', () => {
     expect(onEvents).toContain('session_start');
     expect(onEvents).toContain('session_shutdown');
     expect(onEvents).toContain('before_agent_start');
+    expect(onEvents).toContain('session_tree');
     expect(onEvents).toContain('tool_call');
   });
 
@@ -65,13 +66,21 @@ describe('extension entry point', () => {
     expect(registerCommand).toHaveBeenCalledWith('review-model', expect.any(Object));
   });
 
-  it('restores state on session_start from custom entries', async () => {
+  it('restores state on session_start from the current branch', async () => {
     const pi = createMockPi();
     const mockState = { mode: 'fein', activeTask: 'test task' };
-    const getEntries = vi.fn(() => [
+    const siblingState = { mode: 'sonar', activeTask: 'sibling task' };
+    const entries = [
+      { type: 'custom', customType: 'maestria_state', data: siblingState, timestamp: 50 },
+    ];
+    const getBranch = vi.fn(() => [
       { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
     ]);
-    const ctx = { sessionManager: { getEntries } };
+    const getEntries = vi.fn(() => [
+      ...entries,
+      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+    ]);
+    const ctx = { sessionManager: { getBranch, getEntries } };
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
@@ -79,6 +88,58 @@ describe('extension entry point', () => {
     expect(sessionStartCall).toBeDefined();
     const handler = sessionStartCall![1];
     await handler({}, ctx);
-    expect(getEntries).toHaveBeenCalled();
+    expect(getBranch).toHaveBeenCalled();
+  });
+
+  it('does not restore sibling-branch state on session_start', async () => {
+    const pi = createMockPi();
+    const mockState = { mode: 'fein', activeTask: 'test task' };
+    const siblingState = { mode: 'sonar', activeTask: 'sibling task' };
+    const branchEntries = [
+      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+    ];
+    const allEntries = [
+      { type: 'custom', customType: 'maestria_state', data: siblingState, timestamp: 50 },
+      ...branchEntries,
+    ];
+    const getBranch = vi.fn(() => branchEntries);
+    const getEntries = vi.fn(() => allEntries);
+    const ctx = { sessionManager: { getBranch, getEntries } };
+    extension(pi as unknown as ExtensionAPI);
+    const { on } = pi;
+    const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
+    const sessionStartCall = onCalls.find((c: unknown[]) => c[0] === 'session_start');
+    const handler = sessionStartCall![1];
+    await handler({}, ctx);
+
+    const statusCall = (pi.registerCommand as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: unknown[]) => c[0] === 'maestria-status',
+    );
+    expect(statusCall).toBeDefined();
+    const setEditorText = vi.fn();
+    await statusCall![1].handler('', { ui: { setEditorText } });
+    const text = setEditorText.mock.calls[0][0] as string;
+    expect(text).toContain('test task');
+    expect(text).not.toContain('sibling task');
+  });
+
+  it('registers a session_tree handler that restores state from the current branch', async () => {
+    const pi = createMockPi();
+    const mockState = { mode: 'fein', activeTask: 'test task' };
+    const getBranch = vi.fn(() => [
+      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+    ]);
+    const getEntries = vi.fn(() => [
+      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+    ]);
+    const ctx = { sessionManager: { getBranch, getEntries } };
+    extension(pi as unknown as ExtensionAPI);
+    const { on } = pi;
+    const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
+    const sessionTreeCall = onCalls.find((c: unknown[]) => c[0] === 'session_tree');
+    expect(sessionTreeCall).toBeDefined();
+    const handler = sessionTreeCall![1];
+    await handler({}, ctx);
+    expect(getBranch).toHaveBeenCalled();
   });
 });
