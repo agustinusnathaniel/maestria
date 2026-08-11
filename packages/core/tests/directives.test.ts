@@ -162,7 +162,32 @@ describe('canonical directive safety contracts', () => {
     expect(neverDispatch).toBeLessThan(proposeOwner);
   });
 
-  it('keeps checkpoint commits the narrow review exception with no default push/PR', () => {
+  it('scopes the branch/review prohibition to normal work with the preservation-only exception', () => {
+    const commitSafety = readSection(readDirective('rules.md'), '## Commit and Branch Safety');
+    const checkpointCommits = readSection(readDirective('rules.md'), '## Checkpoint Commits');
+
+    // The protected-branch floor is unconditional.
+    expect(commitSafety).toMatch(/Never commit or push to main/);
+    // Normal work: an unresolved required review, authorization, or safety gate blocks push, PR, merge, and release.
+    expect(commitSafety).toContain(
+      'For normal work, never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved',
+    );
+    // The narrow exception is a separately user-authorized checkpoint push, preservation-only.
+    expect(commitSafety).toContain(
+      'separately user-authorized feature-branch checkpoint push for preservation',
+    );
+    expect(commitSafety).toContain('cannot push protected branches');
+    expect(commitSafety).toContain(
+      'create or merge a PR, merge, release, or claim production readiness',
+    );
+    // A checkpoint push never authorizes PR/merge/release; final review and authorization remain required for shipping.
+    expect(commitSafety).toContain(
+      'final review plus the applicable authorization remain required for shipping',
+    );
+    expect(checkpointCommits).toContain('cannot satisfy final review or authorize shipping');
+  });
+
+  it('keeps checkpoint commits the narrow review exception with separate push/PR/merge/release gates', () => {
     const checkpointCommits = readSection(readDirective('rules.md'), '## Checkpoint Commits');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
@@ -173,24 +198,43 @@ describe('canonical directive safety contracts', () => {
     // Checkpoint validation keeps scope/status/diff checks and excludes unrelated artifacts.
     expect(checkpointCommits).toMatch(/scope, status, and diff checks/);
     expect(checkpointCommits).toMatch(/exclude unrelated and untracked artifacts/);
-    // Labelled unreviewed, no default push/PR, no shipping authority.
-    expect(checkpointCommits).toMatch(/unreviewed/);
-    expect(checkpointCommits).toContain('do not default-push or create a PR');
+    // Commit, push, PR, merge, and release are separate actions with separate gates.
+    expect(checkpointCommits).toContain(
+      'Commit, push, PR, merge, and release are separate actions',
+    );
+    expect(checkpointCommits).toMatch(/never auto-pushes, auto-creates a PR, merges, or releases/);
     expect(checkpointCommits).toMatch(/stops after the preservation commit/);
     expect(checkpointCommits).toMatch(/never enters the automatic push\/PR flow/);
-    expect(checkpointCommits).toMatch(/separate authorization and final review/);
-    expect(checkpointCommits).toMatch(/cannot satisfy final review or authorize shipping/);
-    // No docs-only shortcut, and safety/security/authorization floors are not waived.
+    expect(checkpointCommits).toMatch(/unreviewed/);
+    expect(checkpointCommits).toContain('does not mean the user prohibited pushing');
+    // An authorized push preserves the unreviewed work but cannot merge or release.
+    expect(checkpointCommits).toContain('separately authorizes pushing');
+    expect(checkpointCommits).toContain('feature-branch push is allowed for preservation');
+    expect(checkpointCommits).toMatch(/remains unreviewed and cannot merge or release/);
+    expect(checkpointCommits).toContain('final review and the applicable authorization');
+    // Normal reviewed work keeps the automatic push/PR policy; protected and unresolved floors block.
+    expect(checkpointCommits).toContain('keeps the existing automatic push and PR policy');
+    expect(checkpointCommits).toContain(
+      'Protected branches and unresolved safety, security, or authorization floors remain blocked',
+    );
+    // No docs-only shortcut, no shipping authority, and floors are not waived.
     expect(checkpointCommits).toMatch(/Docs-only is not an unreviewed commit shortcut/);
+    expect(checkpointCommits).toMatch(/cannot satisfy final review or authorize shipping/);
     expect(checkpointCommits).toMatch(/cannot be waived/);
 
-    // The orchestrator commit protocol mirrors the same no-push/PR boundary.
+    // The orchestrator checkpoint section mirrors the same separate-action gates.
     expect(orchestrator).toMatch(
       /The checkpoint path stops after the preservation commit and never enters the automatic push\/PR flow/,
     );
-    expect(orchestrator).toMatch(
-      /Pushing or opening a PR from a checkpoint requires separate authorization and final review/,
+    expect(orchestrator).toContain('Commit, push, PR, merge, and release are separate actions');
+    expect(orchestrator).toContain(
+      'automatic push and PR steps never apply to a checkpoint commit',
     );
+    expect(orchestrator).toContain('feature-branch push is allowed for preservation');
+    expect(orchestrator).toMatch(
+      /remains unreviewed, cannot claim production readiness, and cannot merge or release/,
+    );
+    expect(orchestrator).toContain('keeps the automatic push and PR policy');
     expect(orchestrator).toMatch(/never extends to commit/);
   });
 });

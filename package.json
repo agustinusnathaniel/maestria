@@ -26,9 +26,7 @@
     "typecheck": "vp check --no-fmt --no-lint",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
-    "contributors:check": "all-contributors check",
-    "bench:directives": "node scripts/bench-directives.ts",
-    "bench:directives:test": "vp test --run -c scripts/tests/vite.config.ts"
+    "contributors:check": "all-contributors check"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",

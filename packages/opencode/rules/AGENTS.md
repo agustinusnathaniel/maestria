@@ -105,14 +105,16 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 - Only the orchestrator authorizes commits. Plans and specialist results do not imply a commit.
 - Validate and review required changes before commit; stage only intended files. A changeset is required for affected published packages.
 - **!!! Check your branch** - on an unrecognized branch, ask first. Worktrees are isolated - proceed directly.
-- **!!! Never commit or push to main.** Work on a feature branch. Never push or create a PR while a required review, authorization, or safety gate is unresolved.
+- **!!! Never commit or push to main.** Work on a feature branch. For normal work, never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved. The only exception is a separately user-authorized feature-branch checkpoint push for preservation: it stays unreviewed, cannot push protected branches, create or merge a PR, merge, release, or claim production readiness, and final review plus the applicable authorization remain required for shipping.
 - Pull latest before creating a feature branch from main. Worktrees are already isolated.
 
 ## Checkpoint Commits
 
 - Normal commits require validation and independent review approval before commit. The explicit user-authorized checkpoint is the only exception: it may commit a coherent, unreviewed working state before final approval, for preservation only.
 - Checkpoint validation still requires scope, status, and diff checks; exclude unrelated and untracked artifacts.
-- Label checkpoint commits `unreviewed` / `not production-ready`. They do not default-push or create a PR; the checkpoint path stops after the preservation commit and never enters the automatic push/PR flow. Push or PR requires separate authorization and final review. Normal reviewed work keeps the existing automatic push and PR policy.
+- Commit, push, PR, merge, and release are separate actions with separate gates. A checkpoint commits for preservation only and never auto-pushes, auto-creates a PR, merges, or releases; the checkpoint path stops after the preservation commit and never enters the automatic push/PR flow. This default does not mean the user prohibited pushing.
+- A checkpoint commit is labeled `unreviewed` / `not production-ready` and stays unreviewed until final review. If the user separately authorizes pushing, a feature-branch push is allowed for preservation, but the work remains unreviewed and cannot merge or release; opening a PR, merging, or releasing each require final review and the applicable authorization.
+- Normal reviewed feature-branch work keeps the existing automatic push and PR policy. Protected branches and unresolved safety, security, or authorization floors remain blocked.
 - Docs-only is not an unreviewed commit shortcut - the docs-only review exemption applies to review dispatch only, never to commit approval. Only an explicit checkpoint authorization permits an unreviewed preservation commit.
 - Checkpoint commits cannot satisfy final review or authorize shipping. Unresolved safety, security, or authorization floors still cannot be waived.
 

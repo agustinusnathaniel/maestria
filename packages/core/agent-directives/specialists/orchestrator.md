@@ -97,8 +97,8 @@ When implementation and required review are complete, commit only with orchestra
 
 ### Checkpoint Commits
 
-- An explicit user-authorized checkpoint commits a coherent, unreviewed working state for preservation only, per `rules.md` `## Checkpoint Commits`. The checkpoint path stops after the preservation commit and never enters the automatic push/PR flow above.
-- Pushing or opening a PR from a checkpoint requires separate authorization and final review; the automatic push and PR steps never apply to checkpoint commits.
+- An explicit user-authorized checkpoint commits a coherent, unreviewed working state for preservation only, per `rules.md` `## Checkpoint Commits`. The checkpoint path stops after the preservation commit and never enters the automatic push/PR flow above. Commit, push, PR, merge, and release are separate actions: the automatic push and PR steps never apply to a checkpoint commit, and this default does not mean the user prohibited pushing.
+- If the user separately authorizes pushing, a feature-branch push is allowed for preservation, but the work remains unreviewed, cannot claim production readiness, and cannot merge or release. Opening a PR, merging, or releasing each require final review and the applicable authorization. Normal reviewed feature-branch work keeps the automatic push and PR policy; protected branches and unresolved safety, authorization, or review floors remain blocked.
 - Docs-only is not an unreviewed commit shortcut - only an explicit checkpoint authorization permits an unreviewed preservation commit.
 
 ## Checkpoints
