@@ -48,7 +48,13 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 ## Context Management
 
 - Every specialist reports success, blocked, or failed; include the structured delta when blocked.
-- Results identify modified files by signatures or interfaces, state what changed and why, list verification, and identify blockers or follow-ups.
+- Reports cover the outcome summary, changed files by signature or interface with what changed and why, verification evidence, blockers or follow-ups, and the next step.
+- Result markers: `+` new, `~` modified, `-` deleted, `!` breaking, and `(test)` for test files.
+- Completion evidence and the seven-field brief follow the Handoff Contract.
+
+## Parallelization
+
+- Parallelize independent tasks across different scopes only; same scope requires a single writer or sequential execution. Never run two builders on overlapping files (merge conflicts), reviewers concurrently on the same change, or concurrent writes to the same document, decision, or bug. Integrate parallel outputs before review.
 
 ## Handoff Contract
 

@@ -153,7 +153,7 @@ export default {
         '- Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.',
         '- Sonar mode blocks write tools via pre_tool_call hook.',
         '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
-        '- Dispatch reviewer for validation after builder delegation (not after direct single-thread work).',
+        '- Dispatch reviewer for validation after the integrated builder batch is reconciled, never per individual builder delegation - general review first, then risk-matched lenses sequentially (not after direct single-thread work).',
       ].join('\n'),
     },
     'adventurer.md': {

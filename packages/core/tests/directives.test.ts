@@ -237,4 +237,121 @@ describe('canonical directive safety contracts', () => {
     expect(orchestrator).toContain('keeps the automatic push and PR policy');
     expect(orchestrator).toMatch(/never extends to commit/);
   });
+
+  it('orders fan-out, the integration barrier, and sequential review lenses', () => {
+    const parallel = readSection(readDirective('rules.md'), '## Parallelization');
+    const fanOut = readSection(
+      readDirective('specialists', 'orchestrator.md'),
+      '### Parallel Fan-Out',
+    );
+    const reviewDispatch = readSection(
+      readDirective('specialists', 'orchestrator.md'),
+      '## Review Dispatch and Triage',
+    );
+
+    // Universal parallelization safety stays owned by rules.md.
+    expect(parallel).toContain('different scopes only');
+    expect(parallel).toContain('single writer or sequential execution');
+    expect(parallel).toContain('two builders on overlapping files');
+    expect(parallel).toContain('reviewers concurrently on the same change');
+
+    // Fan-out covers only independent, non-overlapping builder or thinker work
+    // and keeps one writer per file or module via the universal rules.
+    expect(fanOut).toContain('independent, non-overlapping builder or thinker work');
+    expect(fanOut).toContain('One writer per file or module');
+    expect(fanOut).toContain('universal parallelization safety in `rules.md`');
+
+    // The integration barrier collects and reconciles outputs before review.
+    const barrier = fanOut.indexOf('integration barrier');
+    expect(barrier).toBeGreaterThanOrEqual(0);
+    expect(barrier).toBeLessThan(fanOut.indexOf('before review'));
+    expect(fanOut).toContain('Collect and reconcile all parallel outputs');
+
+    // The integration barrier precedes the general review dispatch in the sequence.
+    const barrierInDispatch = reviewDispatch.indexOf('integration barrier');
+    const generalInDispatch = reviewDispatch.indexOf('general reviewer first');
+    expect(barrierInDispatch).toBeGreaterThanOrEqual(0);
+    expect(barrierInDispatch).toBeLessThan(generalInDispatch);
+
+    // General reviewer runs first, then risk-matched lenses sequentially;
+    // never concurrent reviewers against the same change.
+    const general = reviewDispatch.indexOf('general reviewer first');
+    const lenses = reviewDispatch.indexOf('risk-matched lenses');
+    expect(general).toBeGreaterThanOrEqual(0);
+    expect(general).toBeLessThan(lenses);
+    expect(reviewDispatch).toContain('never concurrent reviewers against the same change');
+
+    // The universal clause is not restated as a full clause in the orchestrator.
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    expect(orchestrator).not.toContain('single writer or sequential execution');
+    expect(orchestrator).not.toContain('two builders on overlapping files');
+
+    // Review is batched after integration, never per builder task.
+    expect(orchestrator).not.toContain('after every builder task');
+  });
+
+  it('specifies delegation outcomes and termination instead of activity sequences', () => {
+    const outcomeSpecs = readSection(
+      readDirective('specialists', 'orchestrator.md'),
+      '### Outcome Specs Over Activity Specs',
+    );
+
+    expect(outcomeSpecs).toContain('goal, constraints, acceptance criteria');
+    expect(outcomeSpecs).toContain('termination condition');
+    expect(outcomeSpecs).toContain('Do not prescribe generic tool sequences');
+    expect(outcomeSpecs).toContain('Requirements constraint, not the Goal');
+  });
+
+  it('keeps assumptions and evidence separate and rechecks the primary outcome', () => {
+    const hygiene = readSection(
+      readDirective('specialists', 'orchestrator.md'),
+      '### Cognitive Hygiene',
+    );
+
+    expect(hygiene).toContain('Keep assumptions, evidence, and findings separate');
+    expect(hygiene).toContain('stale plan after requirements or evidence change');
+    expect(hygiene).toContain('re-check the primary outcome at checkpoints');
+    expect(hygiene).toContain('builder narratives out of reviewer access lists');
+  });
+
+  it('orders the session flow from route to final handoff with stop semantics', () => {
+    const flow = readSection(readDirective('specialists', 'orchestrator.md'), '## Session Flow');
+
+    for (const stage of [
+      'Route',
+      'Load rules',
+      'Delegate',
+      'Validate',
+      'Review and triage',
+      'Commit, push, PR gates',
+      'Hand off',
+    ]) {
+      expect(flow).toContain(`**${stage}**`);
+    }
+    expect(flow).toContain('`sonar` stops after research with no implementation');
+    expect(flow).toContain('checkpoint commits stop after the preservation commit');
+  });
+
+  it('reports result fields at signature level with change markers', () => {
+    const resultReporting = readSection(readDirective('rules.md'), '## Context Management');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(resultReporting).toContain('outcome summary');
+    expect(resultReporting).toContain('changed files by signature or interface');
+    expect(resultReporting).toContain('verification evidence');
+    expect(resultReporting).toContain('blockers or follow-ups');
+    expect(resultReporting).toContain('next step');
+    // The marker legend is owned by the universal result-reporting contract in rules.md.
+    expect(resultReporting).toMatch(/`\+` new, `~` modified, `-` deleted, `!` breaking/);
+    expect(resultReporting).toContain('`(test)` for test files');
+    // The orchestrator references the legend without restating it.
+    expect(orchestrator).toContain('result marker legend in `rules.md` Context Management');
+    expect(orchestrator).not.toMatch(/`\+` new, `~` modified, `-` deleted, `!` breaking/);
+    expect(orchestrator).not.toContain('`(test)` for test files');
+    expect(orchestrator).toContain(
+      'Completion evidence follows the handoff contract in `rules.md`',
+    );
+    // The universal field list stays owned by rules.md, not restated as a clause here.
+    expect(orchestrator).not.toContain('outcome summary, changed files at signature level');
+  });
 });

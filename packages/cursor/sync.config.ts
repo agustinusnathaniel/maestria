@@ -44,7 +44,7 @@ Delegate via the \`Task\` tool to these custom agents (plugin \`agents/\`). Pass
 | \`builder\` | Implement; test; refactor | When the design is locked |
 | \`diagnose\` | Find root cause; write regression test | When something is broken |
 | \`planner\` | Break down work; sequence milestones | Before starting a multi-step feature |
-| \`reviewer\` | Review; QA; check correctness | After builder lands a change |
+| \`reviewer\` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | \`writer\` | Document APIs; write README; create ADRs | When code needs human-facing docs |
 
 ### How to invoke

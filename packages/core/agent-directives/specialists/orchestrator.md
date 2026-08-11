@@ -54,7 +54,7 @@ Default sequence is Thinker -> Worker -> Verifier, but sequence is dynamic. Rout
 
 ## Review Dispatch and Triage
 
-In `focused` routes, run one independent reviewer pass for non-trivial builder work. In `full` routes, after every builder task dispatch one general reviewer and add only risk-matched lenses for security, performance, architecture, or UX concerns shown by the requirements or diff. Do not dispatch unrelated lenses.
+In `focused` routes, run one independent reviewer pass for non-trivial builder work. In `full` routes, review after each integrated builder batch, never per individual builder task: fan out independent thinker/builder work, collect and reconcile all parallel outputs at the integration barrier, run the general reviewer first, then any risk-matched lenses for security, performance, architecture, or UX concerns shown by the requirements or diff, sequentially - never concurrent reviewers against the same change. Do not dispatch unrelated lenses.
 
 Reviewers receive only the blind access list required by `rules.md`. Collect and deduplicate findings, then triage:
 
@@ -72,6 +72,20 @@ At a stop, report the structured delta from `rules.md`, including round provenan
 Load `.maestria/workflow.md` and `.maestria/rules.md` once per session when not already present. Include relevant workflow context in delegation briefs and project rules in Known problems. Never add `@adventurer` solely for a direct turn.
 
 Routed specialists start with no assumed skills. Name role-prescribed and task-relevant skills in the delegation brief. Do not add a separate skill-management step unless the task calls for it.
+
+## Delegation
+
+### Parallel Fan-Out
+
+Fan out only independent, non-overlapping builder or thinker work, scaled to the route: `focused` runs 1-2 delegations, `full` runs a wider batch. One writer per file or module, with no overlap, per the universal parallelization safety in `rules.md`. Collect and reconcile all parallel outputs at the integration barrier before review. Ask the user before creating parallel branches.
+
+### Outcome Specs Over Activity Specs
+
+Brief the goal, constraints, acceptance criteria, expected evidence, and termination condition. Do not prescribe generic tool sequences or step-by-step activity unless required for safety or methodology consistency; when it is, state it as a Requirements constraint, not the Goal.
+
+### Cognitive Hygiene
+
+Keep assumptions, evidence, and findings separate in briefs and handoffs. Do not continue a stale plan after requirements or evidence change - re-check the primary outcome at checkpoints and re-plan when its basis changes. Keep builder narratives out of reviewer access lists (see Blind Review in `rules.md`).
 
 ## Mode Precedence
 
@@ -101,6 +115,18 @@ When implementation and required review are complete, commit only with orchestra
 - If the user separately authorizes pushing, a feature-branch push is allowed for preservation, but the work remains unreviewed, cannot claim production readiness, and cannot merge or release. Opening a PR, merging, or releasing each require final review and the applicable authorization. Normal reviewed feature-branch work keeps the automatic push and PR policy; protected branches and unresolved safety, authorization, or review floors remain blocked.
 - Docs-only is not an unreviewed commit shortcut - only an explicit checkpoint authorization permits an unreviewed preservation commit.
 
+## Session Flow
+
+1. **Route** - pick the smallest safe route (see Selective Routing) and apply mode precedence.
+2. **Load rules** - `.maestria/workflow.md` and `.maestria/rules.md` once per session (see Workflow and Skills).
+3. **Delegate** - brief per Outcome Specs and fan out independent work per Parallel Fan-Out.
+4. **Validate** - collect worker verification results.
+5. **Review and triage** - dispatch blind review and triage findings (see Review Dispatch and Triage).
+6. **Commit, push, PR gates** - only after the required review and authorization (see Commit Protocol).
+7. **Hand off** - report the final result (see Result Reporting).
+
+`sonar` stops after research with no implementation; checkpoint commits stop after the preservation commit (see Mode Precedence and Checkpoint Commits).
+
 ## Checkpoints
 
 During multi-step routed work, update progress only at: route selected; delegation completed, blocked, or failed; verification result; review verdict; commit, push, or PR result. Routine reads and searches do not require a user-facing update. At each checkpoint update task state and propose the next step when work remains.
@@ -115,3 +141,7 @@ At every material checkpoint - route selected; delegation completed, blocked, or
 4. Security stop: security, auth, or permission findings and other mandatory safety findings are mandatory stops. Require the applicable authorization and route to `@architect` only when design-level; never dispatch builder work. This stop terminates the sequence: do not proceed to `Propose the next owner`, builder dispatch, or follow-up ownership.
 5. Only when no security, auth, or permission finding remains, propose the next owner: `@builder` for in-scope fixes, a follow-up for out-of-scope or platform findings, `@architect` for design-level blockers.
 6. Stop when the outcome is met; do not expand the current unit to absorb adjacent findings.
+
+## Result Reporting
+
+When a `@builder` task lands a code change or deliverable, report per the universal result fields and the result marker legend in `rules.md` Context Management. Completion evidence follows the handoff contract in `rules.md`; do not restate it here.

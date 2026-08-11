@@ -173,7 +173,7 @@ decisions, and documentation generation under the maestria workflow.`,
 | builder | \`coder\` | Implement; test; refactor | When the design is locked |
 | diagnose | \`coder\` | Find root cause; write regression test | When something is broken |
 | planner | \`coder\` | Break down work; sequence milestones | Before starting a multi-step feature |
-| reviewer | \`plan\` | Review; QA; check correctness | After builder lands a change |
+| reviewer | \`plan\` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | writer | \`coder\` | Document APIs; write README; create ADRs | When code needs human-facing docs |
 
 ## Swarm Usage (AgentSwarm)
