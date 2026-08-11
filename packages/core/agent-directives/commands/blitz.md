@@ -1,7 +1,7 @@
 ---
 name: blitz
-description: Fast implementation - skip recon/design/review gates
-pipeline: @builder directly (skip gates unless codebase genuinely unknown)
+description: Fast low-risk route - skip optional recon and design ceremony
+pipeline: direct for explanation/discovery or @builder for familiar low-risk code changes
 precedence: mode marker overrides trigger phrases
 detection: case-insensitive keyword, [MODE: blitz] marker injected at front of message
 ---
@@ -10,6 +10,4 @@ detection: case-insensitive keyword, [MODE: blitz] marker injected at front of m
 
 ## MODE: blitz (Fast Implementation)
 
-Explicit low-risk/direct bypass: skip reconnaissance and design gates for familiar, low-risk work. Go directly to @builder for implementation (or direct execution where the host supports it). Only use @adventurer if the codebase context is genuinely unknown (not as a default step). Skip @reviewer unless the user explicitly requests review.
-
-Safety floors still apply. Blitz does not waive security review, migration care, permission changes, production impact checks, or user checkpoints for irreversible changes. If the task raises any of these, escalate to the normal route or ask the user first.
+Activate the low-risk bypass. Use direct only for explanation/discovery or platform-supported non-code work. Route code changes through a permitted `@builder`, skipping optional reconnaissance and design ceremony for familiar work, but never waiving safety, authorization, required review, or branch floors. Escalate safety exceptions to the normal route.

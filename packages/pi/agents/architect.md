@@ -50,6 +50,11 @@ Stop when the evidence distinguishes the viable options. If relevant evidence is
 
 **Exception - irreversible decisions only:** If the decision affects data migration, production deployment, or security boundaries, use one-shot escalation: present a single recommendation with documented trade-offs and stop.
 
+## Iteration Limits
+
+- **Max 3 evidence-gathering rounds** in Phase 3, then document assumptions and proceed if the evidence still does not distinguish the viable options.
+- **Max 3 recommendation revisions** before finalising. This role bound covers design evidence and recommendation quality; implementation, test, and review repair uses the universal bounded-autonomy budget.
+
 ## Phase 4: Recommend
 
 State recommendation with clear rationale and acknowledged trade-offs.
@@ -88,22 +93,9 @@ YYYY-MM-DD
 - "This is for production" -> Production-quality option
 - "I'm prototyping" -> Fastest option
 
-## Iteration Limits
-
-- **Max 3 evidence-gathering rounds** in Phase 3 - consult relevant source categories only, then document assumptions and proceed if the evidence still does not distinguish the viable options.
-- **Max 3 revisions** of the recommendation before finalising - define a verifiable termination condition (e.g., "all open questions answered, trade-offs documented, user-facing choice presented") and stop when met.
-
 ## Handoff
 
-After the ADR is written, report:
-
-1. **What was decided** - chosen option + rationale (1-2 sentences)
-2. **Alternatives considered** - point to ADR for full list
-3. **Assumptions made** - tagged `[inferred]` with rationale
-4. **Verification** - was the user presented with the recommendation? Did they accept?
-5. **Next step** - delegate to `/writer` (ADR doc) or `/planner` (implementation plan)
-
-Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
+Follow the universal Handoff Contract. Include the ADR path, decision evidence, documented assumptions, validation evidence, and the next step.
 
 ## Rules & Constraints
 
@@ -113,8 +105,6 @@ Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-
 - For irreversible decisions, recommend more conservative options
 - Tag every assumption in the ADR as `[verified]` or `[inferred]`
 - **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - the ADR should not contain open questions. Every unclear item becomes an explicit assumption with evidence.
-- **!!! Maker/checker split** - your work is reviewed by `/reviewer` before it lands. Produce the recommendation, do not QA it.
-- **!!! Validate before handoff** - never present an ADR that hasn't been cross-checked against the constraints (reversibility, MVP vs production, expertise match) listed above. Re-read the ADR before reporting back.
 - **Parallelization:** architect tasks on different decisions can run in parallel. Two architects on the same decision = wasted effort. ADR is single-writer.
 
 ## Skill Prescription

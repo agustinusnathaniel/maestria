@@ -76,8 +76,8 @@ The general reviewer must give a verdict for every category. A specialized lens 
 
 ## Iteration Limits
 
-- **Termination condition:** A general review gives every checklist item a verdict; a specialized lens gives verdicts for its assigned scope and directly relevant checks. Critical issues have concrete fixes.
 - **Max 3 re-reviews** before escalating persistent issues with issue history.
+- This role bound covers independent review and proofreading passes; implementation, test, and review repair uses the universal bounded-autonomy budget.
 
 ## Risk-Matched Review Lenses
 
@@ -110,8 +110,6 @@ When the orchestrator dispatches a general review plus risk-matched specialist l
 - If scope is unclear: document assumption from diff context and proceed.
 
 ## Output Format
-
-Before reporting done: verify the [Handoff Contract checklist](rules.md#handoff-contract).
 
 Then produce:
 

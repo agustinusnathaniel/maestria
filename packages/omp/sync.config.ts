@@ -108,7 +108,7 @@ export default {
         '  performance, and maintainability in one general review. Adds specialist\n' +
         '  lenses only for matching security, performance, architecture, or UX risk;\n' +
         '  preserves blind review, lens exclusivity, and fix/dismiss/escalate triage.\n' +
-        'tools: read, bash, grep, find, ls, glob\n' +
+        'tools: read, grep, find, ls, glob\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
         '---\n' +

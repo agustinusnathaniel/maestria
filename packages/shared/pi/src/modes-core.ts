@@ -96,7 +96,7 @@ function isInRanges(index: number, ranges: Array<[number, number]>): boolean {
  * Higher number = more restrictive = wins when multiple keywords are present.
  * fein (3): full pipeline with mandatory gates
  * sonar (2): research only, no code
- * blitz (1): fast implementation, skip all gates
+ * blitz (1): fast implementation, skip optional ceremony; required review remains
  */
 const MODE_PRIORITY: Record<ModeKeyword, number> = {
   fein: 3,

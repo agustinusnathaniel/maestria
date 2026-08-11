@@ -37,4 +37,4 @@ run scripts/check-sync to verify
 
 ## Reference
 
-These patterns emerged from scar tissue - repeated failures that taught us what works. They are not preferences. See `rules.md` for the `!!!` convention.
+These patterns emerged from scar tissue - repeated failures that taught us what works. They are not preferences. See the universal rules contract for the `!!!` convention.

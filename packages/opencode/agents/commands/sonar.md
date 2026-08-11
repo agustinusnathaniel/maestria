@@ -5,4 +5,4 @@
 
 ## MODE: sonar (Research Only)
 
-Research mode: research only. Start with the specialist that owns the research question. Add a second specialist only for a distinct unresolved required output. STOP after the required research output is delivered. Do NOT implement, write code, or create any production files.
+Activate research-only mode. Start with the owning specialist, add a second only for a distinct unresolved required output, then stop. Do not implement, write code, or create production files.

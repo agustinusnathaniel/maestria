@@ -44,7 +44,7 @@ Delegate via the \`Task\` tool to these custom agents (plugin \`agents/\`). Pass
 | \`builder\` | Implement; test; refactor | When the design is locked |
 | \`diagnose\` | Find root cause; write regression test | When something is broken |
 | \`planner\` | Break down work; sequence milestones | Before starting a multi-step feature |
-| \`reviewer\` | Review; QA; check correctness | After builder lands a change |
+| \`reviewer\` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | \`writer\` | Document APIs; write README; create ADRs | When code needs human-facing docs |
 
 ### How to invoke
@@ -70,7 +70,7 @@ Users can trigger modes with slash commands from this plugin:
 | --- | --- |
 | \`/fein\` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | \`/sonar\` | Research only: adventurer → architect/planner → STOP |
-| \`/blitz\` | Fast path: builder directly (skip recon/design unless unknown) |
+| \`/blitz\` | Fast path: builder directly (skip optional recon/design unless unknown; required review remains) |
 
 ## Related Agents
 
@@ -145,7 +145,7 @@ export default {
       frontmatter: {
         name: 'reviewer',
         description:
-          'Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use after builder lands a change. Read-only — never edit.',
+          'Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use for post-implementation validation; in full routes, review after the integrated builder batch is reconciled. Read-only — never edit.',
         readonly: true,
       },
     },
@@ -235,7 +235,7 @@ export default {
       prepend: [
         '---',
         'name: blitz',
-        'description: Fast Maestria implementation via builder (skip recon/design unless unknown)',
+        'description: Fast Maestria implementation via builder (skip optional recon/design unless unknown; required review remains)',
         '---',
         '',
       ].join('\n'),
