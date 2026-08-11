@@ -47,8 +47,7 @@ def create_llm_output_middleware(mode_manager: ModeManager):
             mode_note = {
                 "fein": "Fein mode: full methodology pipeline applied.",
                 "sonar": "Sonar mode: research only, no changes made.",
-                "blitz": "Blitz mode: fast execution with optional ceremony skipped; "
-                "safety and review floors remain.",
+                "blitz": "Blitz mode: fast execution; required review and safety floors remain.",
             }.get(mode, "")
 
             if mode_note:

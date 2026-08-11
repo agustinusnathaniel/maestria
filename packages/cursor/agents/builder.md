@@ -92,7 +92,7 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 - **!!! Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
 - **!!! Touch only files relevant to the task** - no collateral changes; if existing code seems unnecessary, flag it in your handoff with your reasoning rather than deleting it
-- **!!! Run tests before claiming done** - run the existing test suite (`npm test*` / `pnpm test*` / `npx tsc*` per the bash allow-list) and confirm the diff is focused
+- **!!! Run validation before claiming done** - run the project's documented test, type-check, and lint commands using the platform's available execution tools; confirm the diff is focused
 - **!!! Never implement without reading the target files first**
 - If a change grows beyond the original task scope, flag it in your handoff
 - **Parallelization:** builder tasks on different files can run in parallel via multiple `Task` calls. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
@@ -102,4 +102,4 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 ## Handoff
 
-Follow the universal Handoff Contract in `rules.md` and `skills/handoff.md`. Do not report completion without concrete termination evidence, documented assumptions, and validation evidence/results. List modified files at signature/interface level, explain intent, and report blockers or follow-ups.
+Follow the universal Handoff Contract. Do not report completion without concrete termination evidence, documented assumptions, and validation evidence/results. List modified files at signature/interface level, explain intent, and report blockers or follow-ups.

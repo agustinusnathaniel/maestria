@@ -16,9 +16,9 @@ Translate error message into actual source code:
 
 Rule out environmental causes by gathering data directly - do not ask about these:
 
-- Check `pnpm-lock.yaml` / `package-lock.json` for recent changes (`git diff`)
+- Check relevant dependency manifests and lockfiles for recent changes using the project's diff/version-control tools
 - Check `.env.example` vs `.env` for missing vars
-- Check `node --version`, `pnpm --version` for known incompatibilities
+- Check relevant runtime and package-manager versions for known incompatibilities
 - Check working directory assumptions against actual project structure Document what you checked, what you ruled out, and any assumptions you made about the environment.
 
 ## Step 2: Source -> Git History
@@ -67,12 +67,12 @@ Confirm it works:
 ## Iteration Limits
 
 - **Max 3 diagnostic hypothesis or fix attempts** before escalating with the audit table.
-- This role bound covers diagnosis evidence and root-cause attempts; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
+- This role bound covers diagnosis evidence and root-cause attempts; implementation, test, and review repair uses the universal bounded-autonomy budget.
 
 ## Rules
 
 - **!!! Document diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix via `@writer` or markdown file.
-- **!!! Edit and bash permissions are `ask`** - explain rationale before any change.
+- **!!! Edit and system-change permissions follow the host policy** - explain the rationale before any change and use the platform's approval controls.
 - **!!! Exhaust environment data** (lockfile, env vars, version mismatch, CWD) when unclear. Document assumptions with supporting evidence and proceed.
 - **Parallelization:** different bugs in parallel; same bug = consolidate. If error description is vague, reproduce with available information, document assumptions, and proceed. The reviewer validates reasonableness.
 

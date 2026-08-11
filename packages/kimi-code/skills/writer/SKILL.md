@@ -66,7 +66,7 @@ You write documentation.
 
 - **Termination condition:** links checked, examples runnable, tone matches docs, proofread once.
 - **Max 3 proofread-revise cycles** before handing off.
-- This role bound covers proofreading only; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
+- This role bound covers proofreading only; implementation, test, and review repair uses the universal bounded-autonomy budget.
 - **!!! Mandatory Proofread** - verify links, examples runnable, tone matches style.
 - **!!! Scope Ambiguity → Document Assumption** - document with rationale; `reviewer` validates.
 

@@ -14,9 +14,13 @@ This file is the universal contract ledger. The orchestrator owns routing and se
 
 - **!!! Don't assume** - verify against actual code and documentation.
 - **!!! Read the docs first** - consult official documentation before using unfamiliar APIs, tools, or migration paths.
+- **!!! Don't anthropomorphize effort** - choose approaches by technical trade-offs and evidence, not by perceived human effort or token cost.
+- **!!! Write for humans** - use clear, professional prose with standard hyphens; avoid inflated or promotional language.
 - **!!! Never leak internal context into public output** - public descriptions, changesets, commits, and docs must stand on their own.
 - **!!! Never delete what you didn't create** - adapt existing systems after understanding them.
 - Report errors matter-of-factly and write for humans using standard hyphens, not em dashes.
+- Surface materially relevant incidental findings after the primary outcome; active security or production risks are immediate stops.
+- If a platform URL-fetch operation hangs, proceed with available evidence and report the skipped source.
 - Platform behavior varies. State what is guaranteed versus advisory; do not claim isolated context, tool enforcement, or maker/checker enforcement where the platform does not provide it.
 
 ## Orchestration
@@ -34,6 +38,13 @@ This file is the universal contract ledger. The orchestrator owns routing and se
 - Classify every finding as one of: in-scope fix, out-of-scope follow-up, platform limitation, or design-level blocker.
 - **!!! Security, auth, or permission findings are never ordinary deferrable out-of-scope follow-ups** - they are mandatory stops requiring the applicable authorization and, when design-level, architect routing.
 - Do not expand file, package, or runtime scope merely because a reviewer notices an adjacent issue. Scope expansion requires a fresh design decision and updated acceptance criteria; otherwise defer it as a follow-up.
+
+## Work Unit and Child Budgets
+
+- A work unit is one user outcome, its acceptance criteria, and its explicit non-goals. Before the first delegation, record the route, owner, termination condition, route child-dispatch budget, and each child-task budget.
+- No delegation may start without a finite, positive route child-dispatch budget and a finite, non-negative child-task repair budget; an omitted or invalid budget is a blocked route, not permission to continue. Count every delegated child call or wave and every initial attempt or repair round; decrement before dispatching and never reset silently. A work unit ends only as success, blocked, failed, cancelled, or abandoned.
+- At each new user request, classify it as current outcome, adjacent follow-up, or new outcome. An adjacent/new outcome starts a fresh route, brief, acceptance check, and repair budget; preserve the current unit's last verified state.
+- Do not dispatch a dependent child or claim completion until the current child has a terminal report. Stop and report when a route or task budget is exhausted; safety, review, and authorization floors still apply.
 
 ## Delegation
 
@@ -54,12 +65,21 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 ## Context Management
 
 - Every specialist reports success, blocked, or failed; include the structured delta when blocked.
-- Results identify modified files by signatures or interfaces, state what changed and why, list verification, and identify blockers or follow-ups.
+- Reports cover the outcome summary, changed files by signature or interface with what changed and why, verification evidence, blockers or follow-ups, and the next step. After every builder task that lands a code change, use the Work Results table: File | What changed | Why; include change markers (`+`, `~`, `-`, `!`, `(test)`) and focus on signatures/interfaces.
+- Result markers: `+` new, `~` modified, `-` deleted, `!` breaking, and `(test)` for test files.
+- Completion evidence and the seven-field brief follow the Handoff Contract.
+- Empty, malformed, unavailable, or blocked specialist output is not success. Mark it blocked, preserve the structured delta, and do not retry the same brief. Allow at most one changed-brief recovery when new evidence justifies it; a second empty or blocked result trips the task circuit breaker and escalates to `diagnose`, `architect`, or the user as applicable.
+- For every agent-started long-lived process, report its ownership/identity, scoped stop method, terminal-state or exit verification, and retained log/artifact location; report `none started` when applicable. Cleanup is evidenced by observed state, never intent. Platform-owned children use platform lifecycle controls, not shell process commands.
+- Before compaction or context rollover, preserve the work-unit record, acceptance condition, assumptions/evidence, child statuses and remaining budgets, last diff, verification/findings, process cleanup evidence, and next step. Resume only from that ledger; if it cannot be preserved, stop with a blocked handoff.
+
+## Parallelization
+
+- Parallelize independent tasks across different scopes only; same scope requires a single writer or sequential execution. Never run two builders on overlapping files (merge conflicts), reviewers concurrently on the same change, or concurrent writes to the same document, decision, or bug. Integrate parallel outputs before review.
 
 ## Handoff Contract
 
 - **!!! Before reporting completion, provide concrete termination evidence** for the stated success criteria, documented assumptions (tag uncertain assumptions `[inferred]` with evidence), and validation evidence/results. An unverified result is not a completed handoff.
-- When delegating, include the seven-field brief in `skills/handoff.md`: Goal, Context, Requirements, Known problems, Assumptions documented, Success criteria, and Next step. Do not omit a field; write `none` when it is inapplicable.
+- When delegating, include the seven-field brief defined in the Delegation section above: Goal, Context, Requirements, Known problems, Assumptions documented, Success criteria, and Next step. Do not omit a field; write `none` when it is inapplicable.
 - Re-read the artifact before handoff and report the observable evidence that the completion promise is met. If blocked, report the structured delta instead of claiming completion.
 
 ## Blind Review
@@ -95,7 +115,7 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 
 ## Process Lifecycle Ownership
 
-- **!!! Prefer foreground execution when backgrounding is unnecessary.** For any agent-started server, watcher, task runner, subprocess, or remote worker that can outlive the current command, record or otherwise retain its platform-provided identity and scoped stop/verification method. Preserve useful logs or artifacts before stopping when diagnosis needs them. When the task ends, fails, is cancelled, or is abandoned, stop any still-running work you started and verify that it exited or reached the platform's terminal state. Never kill by broad name/pattern or terminate user-owned or unrelated processes. Do not manage platform-owned child agents through shell process commands; use their documented lifecycle/cancellation control. Leave work intentionally persistent only when the user explicitly requests it or project documentation requires it.
+- **!!! Prefer foreground execution when backgrounding is unnecessary.** For any agent-started server, watcher, task runner, subprocess, or remote worker that can outlive the current command, record or otherwise retain its platform-provided identity and scoped stop/verification method before backgrounding. If identity and scoped cleanup cannot be retained, keep the work foregrounded or use a platform lifecycle wrapper. Preserve useful logs or artifacts before stopping when diagnosis needs them. When the task ends, fails, is cancelled, or is abandoned, stop any still-running work you started and verify that it exited or reached the platform's terminal state. Never kill by broad name/pattern or terminate user-owned or unrelated processes. Do not manage platform-owned child agents through shell process commands; use their documented lifecycle/cancellation control. Leave work intentionally persistent only when the user explicitly requests it or project documentation requires it.
 
 ## Iteration and Fail-Loud
 
@@ -106,7 +126,8 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 ## Commit and Branch Safety
 
 - Only the orchestrator authorizes commits. Plans and specialist results do not imply a commit.
-- Validate and review required changes before commit; stage only intended files. A changeset is required for affected published packages.
+- Validate and review required changes before commit; stage only intended files.
+- **!!! Ship docs with code** - before every commit, audit all affected documentation categories: internal docs, ADRs, references, user-facing docs, changelog, and changeset. Any `packages/` change or behavior-affecting change MUST have a corresponding changeset; check existing entries and create one if needed. Keep docs, changelogs, and changesets in sync with the change.
 - **!!! Check your branch** - on an unrecognized branch, ask first. Worktrees are isolated - proceed directly.
 - **!!! Never commit or push to main.** Work on a feature branch. For normal work, never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved. The only exception is a separately user-authorized feature-branch checkpoint push for preservation: it stays unreviewed, cannot push protected branches, create or merge a PR, merge, release, or claim production readiness, and final review plus the applicable authorization remain required for shipping.
 - Pull latest before creating a feature branch from main. Worktrees are already isolated.
@@ -115,9 +136,9 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 
 - Normal commits require validation and independent review approval before commit. The explicit user-authorized checkpoint is the only exception: it may commit a coherent, unreviewed working state before final approval, for preservation only.
 - Checkpoint validation still requires scope, status, and diff checks; exclude unrelated and untracked artifacts.
-- Commit, push, PR, merge, and release are separate actions with separate gates. A checkpoint commits for preservation only and never auto-pushes, auto-creates a PR, merges, or releases; the checkpoint path stops after the preservation commit and never enters the automatic push/PR flow. This default does not mean the user prohibited pushing.
+- Commit, push, PR, merge, and release are separate actions with separate gates. A checkpoint commits for preservation only and never auto-pushes, auto-creates a PR, merges, or releases; the checkpoint path stops after the preservation commit and never enters the configured push/PR flow. This default does not mean the user prohibited pushing.
 - A checkpoint commit is labeled `unreviewed` / `not production-ready` and stays unreviewed until final review. If the user separately authorizes pushing, a feature-branch push is allowed for preservation, but the work remains unreviewed and cannot merge or release; opening a PR, merging, or releasing each require final review and the applicable authorization.
-- Normal reviewed feature-branch work keeps the existing automatic push and PR policy. Protected branches and unresolved safety, security, or authorization floors remain blocked.
+- Normal reviewed feature-branch work follows the project and platform push/PR policy. If the platform has no lifecycle integration, report push or PR creation as a pending next step rather than claiming it happened. Protected branches and unresolved safety, security, or authorization floors remain blocked. Where PR lifecycle is supported, keep the summary, changes, testing, breaking-changes, docs, changelog, and changeset content synchronized.
 - Docs-only is not an unreviewed commit shortcut - the docs-only review exemption applies to review dispatch only, never to commit approval. Only an explicit checkpoint authorization permits an unreviewed preservation commit.
 - Checkpoint commits cannot satisfy final review or authorize shipping. Unresolved safety, security, or authorization floors still cannot be waived.
 

@@ -1,11 +1,10 @@
 """@maestria/hermes — Maestria methodology adapter for Hermes Agent.
 
 Registers mode system (fein/sonar/blitz), 9 specialist skill files,
-lifecycle trust tracking, the role-neutral delegated-child tool policy,
-and OpenCode CLI routing tool.
+permission roles, pipeline lifecycle hooks, and OpenCode CLI routing tool.
 Entry point: register(ctx) — loaded via plugin.yaml discovery.
 
-Design docs at docs/hermes-maestria-plugin.md and ADR-HM-002.
+Design docs at docs/hermes-maestria-plugin.md.
 """
 
 import logging
@@ -18,15 +17,8 @@ from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
 from maestria_hermes.hooks.transform import create_transform_tool_result_hook
 from maestria_hermes.middleware.llm_output import create_llm_output_middleware
 from maestria_hermes.modes import ModeManager
-from maestria_hermes.session import (
-    SessionManager,
-    create_session_hooks,
-    end_trust,
-    is_valid_lifecycle_id,
-    mark_invalid_child,
-    mark_trusted_child,
-    revoke_all_trust,
-)
+from maestria_hermes.permissions import init_roles
+from maestria_hermes.session import SessionManager, create_session_hooks
 from maestria_hermes.tools.opencode import (
     opencode_route_handler,
     opencode_route_tool_schema,
@@ -65,6 +57,7 @@ def register(ctx):
     # Initialize singletons
     mode_manager = ModeManager()
     session_manager = SessionManager()
+    init_roles()  # Load role permissions (from file or defaults)
 
     # -- Phase 0: Pre-gateway command dispatch (runs before agent-busy check) --
     ctx.register_hook(
@@ -78,17 +71,11 @@ def register(ctx):
     ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
 
     # -- Phase 2: Full lifecycle hooks --------------------------------------
-    # on_session_start (first-turn) / on_session_end (per-turn, resumable)
-    # establish and preserve trust; on_session_finalize and session reset
-    # are terminal trust boundaries; subagent_start/stop track delegated
-    # children (native topology roles only).
 
-    on_start, on_end, on_finalize, on_reset = create_session_hooks(session_manager)
+    on_start, on_end = create_session_hooks(session_manager)
 
     ctx.register_hook("on_session_start", on_start)
     ctx.register_hook("on_session_end", on_end)
-    ctx.register_hook("on_session_finalize", on_finalize)
-    ctx.register_hook("on_session_reset", on_reset)
     ctx.register_hook("subagent_start", _on_subagent_start)
     ctx.register_hook("subagent_stop", _on_subagent_stop)
     ctx.register_hook("transform_tool_result", create_transform_tool_result_hook(mode_manager))
@@ -136,8 +123,10 @@ def register(ctx):
         _cmd_set_mode(mode_manager, "blitz"),
         description=_load_cmd_description(
             _skills_dir / "commands" / "blitz" / "SKILL.md",
-            "Fast implementation mode: skip optional ceremony for familiar low-risk work; "
-            "preserve safety and review floors",
+            (
+                "Fast implementation mode: skip optional ceremony for familiar low-risk work; "
+                "required review and safety floors remain"
+            ),
         ),
     )
     ctx.register_command(
@@ -189,8 +178,10 @@ def _cmd_set_mode(mode_manager, mode):
         pipeline = {
             "fein": "adventurer / architect -> builder -> reviewer",
             "sonar": "adventurer / architect -> STOP (read-only)",
-            "blitz": "builder for familiar low-risk work (skip optional ceremony; "
-            "preserve safety and review floors)",
+            "blitz": (
+                "builder (skip optional recon/design; required review and "
+                "safety floors remain)"
+            ),
         }
         return (
             f"Switched to **{mode}** mode.\n"
@@ -213,83 +204,54 @@ def _cmd_status(mode_manager):
 
 
 def _on_subagent_start(**kwargs) -> None:
-    """Record a delegated child's native topology role as trust state.
+    """Log when a subagent is spawned for pipeline tracking.
 
-    Hermes' native ``child_role`` is ONLY ``leaf`` or ``orchestrator``
-    (topology signals - which node in the delegation tree a child is).
-    It is never a Maestria specialist identity.  A valid topology role
-    with a usable child session id marks the child TRUSTED_CHILD under the
-    fixed role-neutral read/research/LLM-only policy; anything else marks
-    it INVALID_CHILD, which denies all tools.  User/first-turn message
-    text is never a role source.
+    Role registration for permission enforcement is handled by the
+    pre_llm_call hook, which parses [MAESTRIA_ROLE: <role>] from the
+    delegate_task context on the subagent's first turn.  This hook
+    exists solely for observability.
 
     Kwargs (from delegate_tool.py):
-        child_session_id: str - spawned agent's session id
-        child_subagent_id: str - spawned agent's unique id
-        child_role: str - native topology role ("leaf" / "orchestrator")
-        child_goal: str - the task goal
-        parent_session_id: str - orchestrator's session id
-        parent_turn_id: str - orchestrator's turn id
-        parent_subagent_id: str - orchestrator's subagent id
+        child_session_id: str — spawned agent's session id
+        child_subagent_id: str — spawned agent's unique id
+        child_role: str — specialist role (builder, reviewer, etc.)
+        child_goal: str — the task goal
+        parent_session_id: str — orchestrator's session id
+        parent_turn_id: str — orchestrator's turn id
+        parent_subagent_id: str — orchestrator's subagent id
     """
-    child_session_id = kwargs.get("child_session_id", "")
-    raw_child_role = kwargs.get("child_role")
+    child_session_id = kwargs.get("child_session_id", "unknown")
+    child_role = kwargs.get("child_role", "unknown")
     child_goal = kwargs.get("child_goal", "")
-    if mark_trusted_child(child_session_id, raw_child_role):
+    if child_role and child_role != "unknown":
         logger.info(
-            "maestria child started: topology_role=%s session=%s",
-            raw_child_role, child_session_id,
+            "maestria subagent started: role=%s session=%s",
+            child_role, child_session_id,
         )
-    else:
-        mark_invalid_child(child_session_id)
-        logger.warning(
-            "maestria child started with invalid native role type=%s",
-            type(raw_child_role).__name__,
-        )
-    if isinstance(child_goal, str) and child_goal:
-        logger.debug("maestria child goal: %s", child_goal[:200])
+    if child_goal:
+        logger.debug("maestria subagent goal: %s", child_goal[:200])
 
 
 def _on_subagent_stop(**kwargs) -> None:
-    """Clear a delegated child's trust when it exits (terminal boundary).
+    """Log when a subagent completes for pipeline tracking.
 
-    A stopped child must not retain any trust: its session id is marked
-    ENDED and must be re-established by a fresh trusted lifecycle event.
-
-    Event-scoped when the payload carries a usable native child session
-    id: only that child's trust is ended.  Fails closed on a malformed
-    payload: when no usable child session id can be scoped, EVERY
-    session's active trust is revoked (revoke_all_trust) rather than
-    leaving any session trusted.  The handler never raises; it logs a
-    safe diagnostic for the malformed event.
+    Role cleanup is unnecessary — the pre_llm_call hook manages
+    session->role registration per-turn.  This hook exists solely
+    for observability.
 
     Kwargs (from delegate_tool.py):
-        child_session_id: str - completed agent's session id
-        child_role: str - native topology role
-        child_summary: str - result summary
-        child_status: str - completion status
-        duration_ms: int - wall-clock duration in milliseconds
-        parent_session_id: str - orchestrator's session id
+        child_session_id: str — completed agent's session id
+        child_role: str — specialist role
+        child_summary: str — result summary
+        child_status: str — completion status
+        duration_ms: int — wall-clock duration in milliseconds
+        parent_session_id: str — orchestrator's session id
     """
-    child_session_id = kwargs.get("child_session_id", "")
+    child_session_id = kwargs.get("child_session_id", "unknown")
     child_role = kwargs.get("child_role", "unknown")
     child_status = kwargs.get("child_status", "unknown")
     duration_ms = kwargs.get("duration_ms", 0)
-    if is_valid_lifecycle_id(child_session_id):
-        end_trust(child_session_id)
-        try:
-            duration_s = duration_ms / 1000.0
-        except TypeError:
-            duration_s = 0.0
-        logger.info(
-            "maestria child stopped: topology_role=%s session=%s status=%s duration=%.1fs",
-            child_role, child_session_id, child_status, duration_s,
-        )
-    else:
-        revoke_all_trust()
-        logger.warning(
-            "maestria subagent_stop could not be scoped (child_session_id=%r); "
-            "revoking all active trust (fail closed)",
-            child_session_id if isinstance(child_session_id, str)
-            else f"<{type(child_session_id).__name__}>",
-        )
+    logger.info(
+        "maestria subagent stopped: role=%s session=%s status=%s duration=%.1fs",
+        child_role, child_session_id, child_status, duration_ms / 1000.0,
+    )

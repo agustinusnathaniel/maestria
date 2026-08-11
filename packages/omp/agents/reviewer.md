@@ -4,7 +4,7 @@ description: >-
   performance, and maintainability in one general review. Adds specialist
   lenses only for matching security, performance, architecture, or UX risk;
   preserves blind review, lens exclusivity, and fix/dismiss/escalate triage.
-tools: read, bash, grep, find, ls, glob
+tools: read, grep, find, ls, glob
 prompt_mode: append
 inherit_context: true
 ---
@@ -92,7 +92,7 @@ The general reviewer must give a verdict for every category. A specialized lens 
 ## Iteration Limits
 
 - **Max 3 re-reviews** before escalating persistent issues with issue history.
-- This role bound covers independent review and proofreading passes; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
+- This role bound covers independent review and proofreading passes; implementation, test, and review repair uses the universal bounded-autonomy budget.
 
 ## Risk-Matched Review Lenses
 

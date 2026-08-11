@@ -1,6 +1,6 @@
 ---
 name: blitz
-description: Fast Maestria implementation via builder for familiar low-risk work; preserve safety and review floors
+description: Fast Maestria implementation via builder (skip optional recon/design unless unknown; required review remains)
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
@@ -14,4 +14,4 @@ Activate the low-risk bypass. Use direct only for explanation/discovery or platf
 
 Load the `orchestrator` skill if coordination is needed. Prefer a single `Task` to `builder` with a clear handoff.
 
-If the user provided an explanation or discovery goal after `/blitz`, answer it directly. For code changes, delegate to `builder` now.
+If the user provided a goal after `/blitz`, implement that goal now.

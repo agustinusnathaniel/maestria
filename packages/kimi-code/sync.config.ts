@@ -121,7 +121,7 @@ any complex feature that needs review before building.`,
     'reviewer.md': {
       output: 'reviewer/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'reviewer',
         description: `Code review with quality gates.
@@ -130,7 +130,8 @@ and adherence to conventions. Provides specific, actionable feedback.
 Use for: PR review, pre-commit review, architecture document review.`,
         type: 'prompt',
         whenToUse: `Pre-merge review, post-implementation validation, security audits,
-before-commit QA. Use after \`builder\` lands a code change.`,
+before-commit QA. In full routes, review after the integrated builder batch is
+reconciled; run the general review first, then risk-matched lenses sequentially.`,
         arguments: [],
       },
     },
@@ -173,7 +174,7 @@ decisions, and documentation generation under the maestria workflow.`,
 | builder | \`coder\` | Implement; test; refactor | When the design is locked |
 | diagnose | \`coder\` | Find root cause; write regression test | When something is broken |
 | planner | \`coder\` | Break down work; sequence milestones | Before starting a multi-step feature |
-| reviewer | \`plan\` | Review; QA; check correctness | After builder lands a change |
+| reviewer | \`plan\` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | writer | \`coder\` | Document APIs; write README; create ADRs | When code needs human-facing docs |
 
 ## Swarm Usage (AgentSwarm)
@@ -350,11 +351,11 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: '@reviewer', to: 'reviewer' },
       ],
       prepend:
-        '**Skill profile:** `plan` - workflow mode command. Use direct responses for explanation/discovery; route code changes to the `builder` coder via `Agent()`. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
+        '**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
       frontmatter: {
         name: 'blitz',
         description:
-          'Fast implementation mode: skip optional ceremony for familiar low-risk work; preserve safety and review floors',
+          'Fast implementation mode: skip optional recon/design unless unknown; required review remains',
         type: 'prompt',
         whenToUse:
           'When the user types /blitz or includes "blitz" in their message for fast implementation.',

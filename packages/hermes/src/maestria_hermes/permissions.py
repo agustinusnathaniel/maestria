@@ -1,34 +1,26 @@
-"""Permission allowlists for the maestria Hermes plugin.
+"""Config-driven permission roles for each maestria specialist.
 
-Trust is a lifecycle concern (see session.py); this module owns the
-literal, immutable tool allowlists that bound what a trusted caller may
-invoke:
+Roles are loaded from ~/.hermes/maestria-roles.json (if present) with
+fallback to built-in defaults. Each role defines which tool categories
+a specialist can use — the pre_tool_call hook checks these at runtime.
 
-- ``SONAR_ALLOWED_TOOLS`` - read/research tools for sonar mode.
-- ``BLITZ_DIRECT_ALLOWED_TOOLS`` - read/research/LLM tools for trusted
-  top-level sessions in blitz mode.
-- ``CHILD_SAFE_ALLOWED_TOOLS`` - the fixed role-neutral policy applied to
-  every delegated child session (read/research/LLM only).  Hermes' native
-  child roles (``leaf`` / ``orchestrator``) are topology signals only; they
-  never grant a delegated child write, shell, code-execution, delegation,
-  or OpenCode capability.
-
-These are SAFETY-CRITICAL allowlists: they are written as literal immutable
-frozensets and deliberately NOT derived from TOOL_CATEGORIES.  Deriving
-them would let a future category addition silently widen what a caller may
-use without a review pass.  TOOL_CATEGORIES remains only a documented
-reference grouping of Hermes tool names; the allowlists must be edited (and
-re-reviewed) by hand.
+Tool categories map semantic groups to actual Hermes tool names.
+Update TOOL_CATEGORIES when Hermes adds or renames tools.
 """
 
 from __future__ import annotations
 
-from typing import Dict, Set
+import json
+import logging
+import os
+from typing import Dict, List, Set
+
+logger = logging.getLogger(__name__)
+
 
 # -- Canonical tool category definitions -----------------------------------
-# Documented reference grouping of Hermes tool names.  This is NOT used to
-# derive the allowlists below (see module docstring).  Update when Hermes
-# adds or renames tools so the reference stays accurate.
+# The single source of truth mapping category names to Hermes tool names.
+# Update this when Hermes adds/renames tools.
 
 TOOL_CATEGORIES: Dict[str, Set[str]] = {
     "read": {
@@ -50,8 +42,7 @@ TOOL_CATEGORIES: Dict[str, Set[str]] = {
     },
     "coding": {
         "delegate_task",   # Subagent dispatch
-        "opencode",        # OpenCode CLI routing
-        "opencode_route",  # Registered OpenCode routing tool
+        "opencode_route",  # OpenCode CLI routing
     },
     "browser": {
         "webfetch", "web_search", "web_extract",
@@ -64,85 +55,127 @@ TOOL_CATEGORIES: Dict[str, Set[str]] = {
     },
 }
 
-# Native delegated-child roles Hermes passes through the subagent_start
-# lifecycle hook.  These are TOPOLOGY signals (which node in the delegation
-# tree a child is), not Maestria specialist identities: Hermes only ever
-# sets child_role to "orchestrator" (a delegating child) or "leaf" (every
-# other child).  No Maestria specialist name appears here; none may be
-# added, because a native role string must never grant specialist
-# capability.  Literal and immutable.
-NATIVE_CHILD_ROLES = frozenset({"leaf", "orchestrator"})
 
-# Sonar is intentionally narrower than the read/browser categories.  Only
-# exact, reviewed tool names that inspect local or remote information belong
-# in this set.  In particular, browser interaction tools are excluded because
-# click/evaluate operations can mutate external state.
-SONAR_ALLOWED_TOOLS = frozenset(
-    {
-        "read",
-        "read_file",
-        "glob",
-        "grep",
-        "search_files",
-        "list",
-        "ls",
-        "stat",
-        "file_info",
-        "webfetch",
-        "web_search",
-        "web_extract",
-    }
-)
+# -- Built-in default roles ------------------------------------------------
+# Used when no ~/.hermes/maestria-roles.json override exists.
 
-# A trusted top-level Hermes session in blitz may explain, inspect, and
-# research, but it cannot invoke an unreviewed or potentially mutating tool.
-# Keep this positive allowlist exact so new tools fail closed.
-BLITZ_DIRECT_ALLOWED_TOOLS = frozenset(
-    {
-        "read",
-        "read_file",
-        "glob",
-        "grep",
-        "search_files",
-        "list",
-        "ls",
-        "stat",
-        "file_info",
-        "complete",
-        "complete_structured",
-        "think",
-        "reason",
-        "webfetch",
-        "web_search",
-        "web_extract",
-    }
-)
+_DEFAULT_ROLE_CATEGORIES: Dict[str, List[str]] = {
+    "orchestrator": ["llm", "coding"],            # delegates only
+    "adventurer":   ["read", "llm", "browser"],   # research only
+    "architect":    ["read", "llm", "browser"],    # design + research
+    "builder":      ["read", "write", "bash", "llm", "coding", "browser", "data"],  # full access
+    "diagnose":     ["read", "bash", "llm", "coding"],   # investigation
+    "planner":      ["read", "llm"],                     # planning only
+    "reviewer":     ["read", "llm"],                     # read-only validation
+    "writer":       ["read", "llm", "browser"],           # content creation
+}
 
-# The fixed role-neutral policy applied to EVERY delegated child session,
-# regardless of mode or the specialist name the orchestrator routed to.
-# A delegated child may read/research and reason; it cannot write, run a
-# shell, execute code, delegate further, or invoke OpenCode
-# (opencode / opencode_route).  This is the approved conservative child
-# trust policy (ADR-HM-002): Hermes' native child roles are topology
-# signals only and provide no authenticated capability channel, so no
-# child is ever granted specialist write capability.
-CHILD_SAFE_ALLOWED_TOOLS = frozenset(
-    {
-        "read",
-        "read_file",
-        "glob",
-        "grep",
-        "search_files",
-        "list",
-        "ls",
-        "stat",
-        "file_info",
-        "complete",
-        "complete_structured",
-        "think",
-        "reason",
-        "webfetch",
-        "web_search",
-        "web_extract",
-    }
-)
+
+# -- Role class -------------------------------------------------------------
+
+class PermissionRole:
+    """Tool permissions for one specialist role, resolved at startup."""
+
+    def __init__(self, name: str, categories: List[str]):
+        self.name = name
+        self._allowed_tools: Set[str] = set()
+        for cat in categories:
+            self._allowed_tools |= TOOL_CATEGORIES.get(cat, set())
+
+    def is_tool_allowed(self, tool_name: str) -> bool:
+        """Check if a tool is allowed for this specialist."""
+        return tool_name in self._allowed_tools
+
+
+# -- Config loading ---------------------------------------------------------
+
+def _hermes_home() -> str:
+    """Get the Hermes home directory."""
+    return os.path.expanduser(
+        os.environ.get("HERMES_HOME", "~/.hermes")
+    )
+
+
+def _load_roles_override() -> Dict[str, List[str]]:
+    """Load role overrides from ~/.hermes/maestria-roles.json.
+
+    Returns a dict of role_name -> category list, or empty dict if the
+    file doesn't exist. Validates that all referenced categories exist
+    in TOOL_CATEGORIES.
+    """
+    path = os.path.join(_hermes_home(), "maestria-roles.json")
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return {}
+    except (json.JSONDecodeError, PermissionError) as e:
+        logger.warning("maestria-roles.json: %s — using defaults", e)
+        return {}
+
+    roles = data.get("roles", {})
+    if not isinstance(roles, dict):
+        logger.warning("maestria-roles.json: 'roles' must be a dict — using defaults")
+        return {}
+
+    # Validate categories
+    valid = set(TOOL_CATEGORIES.keys())
+    cleaned: Dict[str, List[str]] = {}
+    for role_name, cats in roles.items():
+        if not isinstance(cats, list):
+            logger.warning("maestria-roles.json: skipping '%s' — value must be a list", role_name)
+            continue
+        unknown = [c for c in cats if c not in valid]
+        if unknown:
+            logger.warning(
+                "maestria-roles.json: role '%s' has unknown categories: %s — ignoring them",
+                role_name, unknown,
+            )
+        cleaned[role_name] = [c for c in cats if c in valid]
+
+    return cleaned
+
+
+def resolve_roles() -> Dict[str, PermissionRole]:
+    """Build the final role map: user overrides merged over defaults.
+
+    Users can override individual roles in ~/.hermes/maestria-roles.json
+    without having to redefine every role. Roles not mentioned in the
+    override file keep their default category lists.
+    """
+    overrides = _load_roles_override()
+
+    roles: Dict[str, PermissionRole] = {}
+    # Start with defaults, apply overrides on top
+    merged_categories = dict(_DEFAULT_ROLE_CATEGORIES)
+    for role_name, cats in overrides.items():
+        merged_categories[role_name] = cats
+
+    for name, cats in merged_categories.items():
+        roles[name] = PermissionRole(name=name, categories=cats)
+
+    return roles
+
+
+# -- Public API -------------------------------------------------------------
+
+# Singleton — resolved once at plugin registration
+_ROLES: Dict[str, PermissionRole] = {}
+
+def init_roles() -> None:
+    """Initialize the role map. Called once during plugin registration."""
+    global _ROLES
+    _ROLES = resolve_roles()
+
+def get_role(name: str) -> PermissionRole:
+    """Get a permission role by name. Falls back to orchestrator (most restrictive)."""
+    return _ROLES.get(name, _ROLES.get("orchestrator", PermissionRole("orchestrator", [])))
+
+
+def block_message(role: str, tool_name: str) -> str:
+    """Return a helpful block message when a tool is denied."""
+    return (
+        f"Tool '{tool_name}' is not allowed for the '{role}' specialist. "
+        f"Each specialist has restricted tools. Switch to the appropriate "
+        f"specialist or mode for this operation."
+    )

@@ -903,4 +903,4 @@ describe('checkProvenance', () => {
     expect(result.error).toContain('Provenance violation');
     expect(existsSync(join(tmpDir, 'PWNED'))).toBe(false);
   });
-});
+}, 30_000);

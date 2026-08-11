@@ -1,6 +1,6 @@
 ---
 name: blitz
-description: "Fast implementation mode: skip optional ceremony for familiar low-risk work; preserve safety and review floors"
+description: "Fast implementation mode: skip optional recon/design unless unknown; required review remains"
 type: prompt
 whenToUse: When the user types /blitz or includes "blitz" in their message for fast implementation.
 arguments: []
@@ -9,7 +9,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Skill profile:** `plan` - workflow mode command. Use direct responses for explanation/discovery; route code changes to the `builder` coder via `Agent()`. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.
+**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.
 
 [MODE: blitz]
 

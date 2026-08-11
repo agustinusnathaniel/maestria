@@ -11,7 +11,7 @@ import { z } from 'zod';
  *
  * - `"fein"` -- Full pipeline (recon -> design -> build -> review)
  * - `"sonar"` -- Research only (recon + design, stop before build)
- * - `"blitz"` -- Fast implementation (builder direct, skip recon/design/review)
+ * - `"blitz"` -- Fast implementation (builder direct, skip optional recon/design; required review remains)
  */
 export const modeKeywordSchema = z.enum(['fein', 'sonar', 'blitz']);
 export type ModeKeyword = z.infer<typeof modeKeywordSchema>;

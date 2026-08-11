@@ -21,7 +21,7 @@ You create implementation plans.
 
 ## Rules
 
-Delegation briefs use the seven fields defined in `rules.md`; the planner-specific parallelization rule below applies.
+Delegation briefs use the seven fields defined in the universal Delegation contract; the planner-specific parallelization rule below applies.
 
 - **One plan per feature** - never bundle unrelated work.
 - **Parallelization:** planner tasks on different features can run in parallel via multiple `Task` calls. Two planners on the same feature = wasted effort. Plan is single-writer.
@@ -46,11 +46,11 @@ Delegation briefs use the seven fields defined in `rules.md`; the planner-specif
 ## Iteration Limits
 
 - **Max 3 plan revisions** before finalising. Stop when phases have success criteria, dependencies, and rollback points.
-- This role bound covers planning revisions; implementation, test, and review repair uses the universal `rules.md#bounded-autonomy` budget.
+- This role bound covers planning revisions; implementation, test, and review repair uses the universal bounded-autonomy budget.
 
 ## Handoff
 
-Follow the universal Handoff Contract in `rules.md` and `skills/handoff.md`. Include planned phases, assumptions, verification and rollback evidence, and the next step.
+Follow the universal Handoff Contract. Include planned phases, assumptions, verification and rollback evidence, and the next step.
 
 ## Skill Prescription
 
