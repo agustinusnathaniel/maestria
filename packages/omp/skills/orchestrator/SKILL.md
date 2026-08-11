@@ -69,6 +69,8 @@ Default sequence is Thinker -> Worker -> Verifier, but sequence is dynamic. Rout
 
 In `focused` routes, run one independent reviewer pass for non-trivial builder work. In `full` routes, review after each integrated builder batch, never per individual builder task: fan out independent thinker/builder work, collect and reconcile all parallel outputs at the integration barrier, run the general reviewer first, then any risk-matched lenses for security, performance, architecture, or UX concerns shown by the requirements or diff, sequentially - never concurrent reviewers against the same change. Do not dispatch unrelated lenses.
 
+An empty, malformed, unavailable, or blocked reviewer result is a blocked route, never approval. Allow at most one changed-brief recovery when new evidence justifies it, then trip the task circuit breaker and escalate.
+
 Reviewers receive only the blind access list required by `rules.md`. Collect and deduplicate findings, then triage:
 
 1. Classify security, auth, or permission findings and other mandatory safety findings first. Security, auth, or permission findings are mandatory stops: require the applicable authorization, never dispatch builder work, and never defer them as follow-ups or repair work. When design-level, route to `architect`.
@@ -90,7 +92,7 @@ Routed specialists start with no assumed skills. Name role-prescribed and task-r
 
 ### Parallel Fan-Out
 
-Fan out only independent, non-overlapping builder or thinker work, scaled to the route: `focused` runs 1-2 delegations, `full` runs a wider batch. One writer per file or module, with no overlap, per the universal parallelization safety in `rules.md`. Collect and reconcile all parallel outputs at the integration barrier before review. Ask the user before creating parallel branches.
+Fan out only independent, non-overlapping work within the declared budget: `focused` uses one owning delegation plus only its required reviewer; `full` uses one thinker, one integrated worker batch, and one general reviewer by default. Extra children or risk lenses require evidence, an explicit budget increase, and a new termination condition. One writer per file or module, with no overlap, per the universal parallelization safety in `rules.md`. Collect and reconcile all parallel outputs at the integration barrier before review. Ask the user before creating parallel branches.
 
 ### Outcome Specs Over Activity Specs
 
@@ -132,11 +134,14 @@ When implementation and required review are complete, commit only with orchestra
 
 1. **Route** - pick the smallest safe route (see Selective Routing) and apply mode precedence.
 2. **Load rules** - `.maestria/workflow.md` and `.maestria/rules.md` once per session (see Workflow and Skills).
-3. **Delegate** - brief per Outcome Specs and fan out independent work per Parallel Fan-Out.
-4. **Validate** - collect worker verification results.
-5. **Review and triage** - dispatch blind review and triage findings (see Review Dispatch and Triage).
-6. **Commit, push, PR gates** - only after the required review and authorization (see Commit Protocol).
-7. **Hand off** - report the final result (see Result Reporting).
+3. **Declare the work-unit ledger** - record the outcome, non-goals, termination condition, finite route budget, and child-task budgets before delegation.
+4. **Delegate** - brief per Outcome Specs and fan out only within the declared budgets.
+5. **Validate** - collect terminal worker reports and decrement budgets before any next dispatch.
+6. **Review and triage** - dispatch blind review and triage findings (see Review Dispatch and Triage).
+7. **Commit, push, PR gates** - only after the required review and authorization (see Commit Protocol).
+8. **Hand off** - report the final result and preserved ledger (see Result Reporting).
+
+At each material checkpoint, record child status, remaining budgets, structured delta, and circuit-breaker state. A changed outcome starts a new work unit; do not continue the old route by default.
 
 `sonar` stops after research with no implementation; checkpoint commits stop after the preservation commit (see Mode Precedence and Checkpoint Commits).
 

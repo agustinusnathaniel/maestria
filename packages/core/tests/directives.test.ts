@@ -59,6 +59,49 @@ describe('canonical directive safety contracts', () => {
     expect(orchestrator).toContain('Approve only when no `[fix]` or `[escalate]` remains');
   });
 
+  it('bounds work units, failed outputs, and context rollover', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const iterationLimits = readDirective('skills', 'iteration-limits.md');
+
+    expect(rules).toContain('## Work Unit and Child Budgets');
+    expect(rules).toContain('finite, positive route child-dispatch budget');
+    expect(rules).toContain('finite, non-negative child-task repair budget');
+    expect(rules).toContain('omitted or invalid budget is a blocked route');
+    expect(rules).toContain('decrement before dispatching and never reset silently');
+    expect(rules).toContain('success, blocked, failed, cancelled, or abandoned');
+    expect(rules).toContain(
+      'Empty, malformed, unavailable, or blocked specialist output is not success',
+    );
+    expect(rules).toContain('at most one changed-brief recovery');
+    expect(rules).toContain('second empty or blocked result trips the task circuit breaker');
+    expect(rules).toContain('ownership/identity, scoped stop method');
+    expect(rules).toContain('terminal-state or exit verification');
+    expect(rules).toContain('retained log/artifact location');
+    expect(rules).toContain('report `none started` when applicable');
+    expect(rules).toContain('Before compaction or context rollover');
+    expect(rules).toContain('child statuses and remaining budgets');
+
+    const sessionFlow = readSection(orchestrator, '## Session Flow');
+    expect(sessionFlow).toContain('Declare the work-unit ledger');
+    expect(sessionFlow).toContain('within the declared budgets');
+    expect(sessionFlow).toContain('A changed outcome starts a new work unit');
+    expect(orchestrator).toContain('blocked route, never approval');
+    expect(orchestrator).toContain('one owning delegation plus only its required reviewer');
+    expect(orchestrator).toContain(
+      'one thinker, one integrated worker batch, and one general reviewer by default',
+    );
+    expect(iterationLimits).toContain('finite route and child-task budgets');
+    expect(iterationLimits).toContain('trip the circuit breaker');
+
+    expect(sessionFlow.indexOf('Declare the work-unit ledger')).toBeLessThan(
+      sessionFlow.indexOf('Delegate'),
+    );
+    expect(rules.indexOf('Allow at most one changed-brief recovery')).toBeLessThan(
+      rules.indexOf('second empty or blocked result trips the task circuit breaker'),
+    );
+  });
+
   it('scopes process cleanup to agent-owned work and forbids broad termination', () => {
     const lifecycle = readSection(readDirective('rules.md'), '## Process Lifecycle Ownership');
 
@@ -257,7 +300,7 @@ describe('canonical directive safety contracts', () => {
 
     // Fan-out covers only independent, non-overlapping builder or thinker work
     // and keeps one writer per file or module via the universal rules.
-    expect(fanOut).toContain('independent, non-overlapping builder or thinker work');
+    expect(fanOut).toContain('independent, non-overlapping work within the declared budget');
     expect(fanOut).toContain('One writer per file or module');
     expect(fanOut).toContain('universal parallelization safety in `rules.md`');
 

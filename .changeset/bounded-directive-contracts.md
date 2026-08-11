@@ -8,4 +8,4 @@
 '@maestria/pi': patch
 ---
 
-Streamline canonical agent directives by centralizing universal contracts, preserving orchestration behavior in compact form, and adding bounded autonomy, scope control, process lifecycle guidance, and checkpoint action boundaries.
+Streamline canonical agent directives by centralizing universal contracts, preserving orchestration behavior in compact form, and adding bounded autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action boundaries.

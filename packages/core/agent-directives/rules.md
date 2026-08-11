@@ -29,6 +29,13 @@ This file is the universal contract ledger. The orchestrator owns routing and se
 - **!!! Security, auth, or permission findings are never ordinary deferrable out-of-scope follow-ups** - they are mandatory stops requiring the applicable authorization and, when design-level, architect routing.
 - Do not expand file, package, or runtime scope merely because a reviewer notices an adjacent issue. Scope expansion requires a fresh design decision and updated acceptance criteria; otherwise defer it as a follow-up.
 
+## Work Unit and Child Budgets
+
+- A work unit is one user outcome, its acceptance criteria, and its explicit non-goals. Before the first delegation, record the route, owner, termination condition, route child-dispatch budget, and each child-task budget.
+- No delegation may start without a finite, positive route child-dispatch budget and a finite, non-negative child-task repair budget; an omitted or invalid budget is a blocked route, not permission to continue. Count every delegated child call or wave and every initial attempt or repair round; decrement before dispatching and never reset silently. A work unit ends only as success, blocked, failed, cancelled, or abandoned.
+- At each new user request, classify it as current outcome, adjacent follow-up, or new outcome. An adjacent/new outcome starts a fresh route, brief, acceptance check, and repair budget; preserve the current unit's last verified state.
+- Do not dispatch a dependent child or claim completion until the current child has a terminal report. Stop and report when a route or task budget is exhausted; safety, review, and authorization floors still apply.
+
 ## Delegation
 
 Every delegation contains exactly the material needed for the specialist to act:
@@ -51,6 +58,9 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 - Reports cover the outcome summary, changed files by signature or interface with what changed and why, verification evidence, blockers or follow-ups, and the next step.
 - Result markers: `+` new, `~` modified, `-` deleted, `!` breaking, and `(test)` for test files.
 - Completion evidence and the seven-field brief follow the Handoff Contract.
+- Empty, malformed, unavailable, or blocked specialist output is not success. Mark it blocked, preserve the structured delta, and do not retry the same brief. Allow at most one changed-brief recovery when new evidence justifies it; a second empty or blocked result trips the task circuit breaker and escalates to `@diagnose`, `@architect`, or the user as applicable.
+- For every agent-started long-lived process, report its ownership/identity, scoped stop method, terminal-state or exit verification, and retained log/artifact location; report `none started` when applicable. Cleanup is evidenced by observed state, never intent. Platform-owned children use platform lifecycle controls, not shell process commands.
+- Before compaction or context rollover, preserve the work-unit record, acceptance condition, assumptions/evidence, child statuses and remaining budgets, last diff, verification/findings, process cleanup evidence, and next step. Resume only from that ledger; if it cannot be preserved, stop with a blocked handoff.
 
 ## Parallelization
 
@@ -95,7 +105,7 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 
 ## Process Lifecycle Ownership
 
-- **!!! Prefer foreground execution when backgrounding is unnecessary.** For any agent-started server, watcher, task runner, subprocess, or remote worker that can outlive the current command, record or otherwise retain its platform-provided identity and scoped stop/verification method. Preserve useful logs or artifacts before stopping when diagnosis needs them. When the task ends, fails, is cancelled, or is abandoned, stop any still-running work you started and verify that it exited or reached the platform's terminal state. Never kill by broad name/pattern or terminate user-owned or unrelated processes. Do not manage platform-owned child agents through shell process commands; use their documented lifecycle/cancellation control. Leave work intentionally persistent only when the user explicitly requests it or project documentation requires it.
+- **!!! Prefer foreground execution when backgrounding is unnecessary.** For any agent-started server, watcher, task runner, subprocess, or remote worker that can outlive the current command, record or otherwise retain its platform-provided identity and scoped stop/verification method before backgrounding. If identity and scoped cleanup cannot be retained, keep the work foregrounded or use a platform lifecycle wrapper. Preserve useful logs or artifacts before stopping when diagnosis needs them. When the task ends, fails, is cancelled, or is abandoned, stop any still-running work you started and verify that it exited or reached the platform's terminal state. Never kill by broad name/pattern or terminate user-owned or unrelated processes. Do not manage platform-owned child agents through shell process commands; use their documented lifecycle/cancellation control. Leave work intentionally persistent only when the user explicitly requests it or project documentation requires it.
 
 ## Iteration and Fail-Loud
 
