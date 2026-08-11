@@ -56,6 +56,47 @@ TOOL_CATEGORIES: Dict[str, Set[str]] = {
 }
 
 
+# Native child roles are topology signals from Hermes, not Maestria
+# specialist identities. Keep these immutable and separate from the
+# configurable category map so a user override cannot widen safety policy.
+NATIVE_CHILD_ROLES = frozenset({"leaf", "orchestrator"})
+
+# Positive, reviewed allowlists for the mode and delegated-child boundaries.
+# New Hermes tools stay denied until explicitly reviewed here.
+SONAR_ALLOWED_TOOLS = frozenset(
+    {
+        "read",
+        "read_file",
+        "glob",
+        "grep",
+        "search_files",
+        "list",
+        "ls",
+        "stat",
+        "file_info",
+        "webfetch",
+        "web_search",
+        "web_extract",
+    }
+)
+
+BLITZ_DIRECT_ALLOWED_TOOLS = frozenset(
+    {
+        *SONAR_ALLOWED_TOOLS,
+        "complete",
+        "complete_structured",
+        "think",
+        "reason",
+    }
+)
+
+CHILD_SAFE_ALLOWED_TOOLS = frozenset(
+    {
+        *BLITZ_DIRECT_ALLOWED_TOOLS,
+    }
+)
+
+
 # -- Built-in default roles ------------------------------------------------
 # Used when no ~/.hermes/maestria-roles.json override exists.
 
