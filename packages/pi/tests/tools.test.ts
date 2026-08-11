@@ -111,4 +111,72 @@ describe('installToolInterceptors', () => {
       expect(result).toBeUndefined();
     });
   });
+
+  describe('file tracking', () => {
+    it('records file read into state on read tool call', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'read', input: { path: 'src/foo.ts' } }, {});
+      expect(result).toBeUndefined();
+      expect(state.filesRead).toContain('src/foo.ts');
+    });
+
+    it('records file modified on edit tool call', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      await handler({ toolName: 'edit', input: { path: 'src/bar.ts', edits: [] } }, {});
+      expect(state.filesModified).toContain('src/bar.ts');
+    });
+
+    it('records file modified on write tool call', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      await handler({ toolName: 'write', input: { path: 'src/baz.ts' } }, {});
+      expect(state.filesModified).toContain('src/baz.ts');
+    });
+
+    it('persists state via appendEntry when a file is tracked', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      await handler({ toolName: 'read', input: { path: 'src/foo.ts' } }, {});
+      expect(pi.appendEntry).toHaveBeenCalledWith(
+        'maestria_state',
+        expect.objectContaining({ filesRead: ['src/foo.ts'] }),
+      );
+    });
+
+    it('does not record when read lacks a path', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      await handler({ toolName: 'read', input: {} }, {});
+      expect(state.filesRead).toEqual([]);
+      expect(pi.appendEntry).not.toHaveBeenCalled();
+    });
+
+    it('does not record blocked edit in review mode', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = { ...createInitialState(), reviewMode: true };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'edit', input: { path: 'x.ts' } }, {});
+      expect(result.block).toBe(true);
+      expect(state.filesModified).toEqual([]);
+    });
+  });
 });

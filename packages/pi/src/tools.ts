@@ -6,6 +6,7 @@ import {
 } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
 import { DANGEROUS_PATTERNS } from '@maestria/shared-pi/tools-core';
+import { recordFileModified, recordFileRead } from '@/state.js';
 
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
   pi.on('tool_call', async (event: ToolCallEvent, ctx: ExtensionContext) => {
@@ -62,6 +63,26 @@ export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState):
           }
         }
       }
+    }
+
+    // Record file access for session state (ADR-PI-002: tool_call maintains file tracking).
+    // Only record when the call is allowed to proceed.
+    let tracked = false;
+    if (isToolCallEventType('read', event)) {
+      const path = event.input?.path;
+      if (typeof path === 'string' && path) {
+        Object.assign(state, recordFileRead(state, path));
+        tracked = true;
+      }
+    } else if (isToolCallEventType('edit', event) || isToolCallEventType('write', event)) {
+      const path = event.input?.path;
+      if (typeof path === 'string' && path) {
+        Object.assign(state, recordFileModified(state, path));
+        tracked = true;
+      }
+    }
+    if (tracked) {
+      pi.appendEntry('maestria_state', { ...state });
     }
 
     return undefined; // allow

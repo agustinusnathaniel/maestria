@@ -11,7 +11,10 @@ function recordAndPersist(
   taskText: string,
 ): void {
   const updatedState = recordHandoff(state, from, to, taskText);
-  Object.assign(state, updatedState);
+  const specialistsDelegated = updatedState.specialistsDelegated.includes(to)
+    ? updatedState.specialistsDelegated
+    : [...updatedState.specialistsDelegated, to];
+  Object.assign(state, { ...updatedState, specialistsDelegated });
   persistState(pi, state);
 }
 

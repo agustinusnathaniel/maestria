@@ -70,7 +70,10 @@ function recordAndPersist(
   taskText: string,
 ): void {
   const updatedState = recordHandoff(state, 'orchestrator', agentName, taskText);
-  Object.assign(state, updatedState);
+  const specialistsDelegated = updatedState.specialistsDelegated.includes(agentName)
+    ? updatedState.specialistsDelegated
+    : [...updatedState.specialistsDelegated, agentName];
+  Object.assign(state, { ...updatedState, specialistsDelegated });
   pi.appendEntry('maestria_state', state);
 }
 
