@@ -6,6 +6,7 @@ import {
   recordHandoff,
   recordFileModified,
   recordFileRead,
+  recordSpecialistDelegated,
   setReviewMode,
   exitReviewMode,
   renderMaestriaSummary,
@@ -108,6 +109,30 @@ describe('recordHandoff', () => {
     // Oldest (1) should be dropped
     expect(state.handoffHistory[4].task).toBe('task2');
     expect(state.handoffHistory.some((e) => e.task === 'task1')).toBe(false);
+  });
+});
+
+describe('recordSpecialistDelegated', () => {
+  it('appends a specialist to an empty list', () => {
+    const state = createInitialState();
+    const next = recordSpecialistDelegated(state, 'builder');
+
+    expect(next.specialistsDelegated).toEqual(['builder']);
+  });
+
+  it('is immutable - does not mutate the original state', () => {
+    const state = createInitialState();
+    recordSpecialistDelegated(state, 'builder');
+    expect(state.specialistsDelegated).toEqual([]);
+  });
+
+  it('deduplicates repeated delegations', () => {
+    let state = createInitialState();
+    state = recordSpecialistDelegated(state, 'builder');
+    state = recordSpecialistDelegated(state, 'architect');
+    state = recordSpecialistDelegated(state, 'builder');
+
+    expect(state.specialistsDelegated).toEqual(['builder', 'architect']);
   });
 });
 

@@ -1,6 +1,6 @@
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff } from '@/state.js';
+import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
 import { assertValidAgent, assertNonEmptyTask } from '@maestria/shared-pi/subagent-utils';
 
 function recordAndPersist(
@@ -10,11 +10,8 @@ function recordAndPersist(
   to: string,
   taskText: string,
 ): void {
-  const updatedState = recordHandoff(state, from, to, taskText);
-  const specialistsDelegated = updatedState.specialistsDelegated.includes(to)
-    ? updatedState.specialistsDelegated
-    : [...updatedState.specialistsDelegated, to];
-  Object.assign(state, { ...updatedState, specialistsDelegated });
+  const updatedState = recordSpecialistDelegated(recordHandoff(state, from, to, taskText), to);
+  Object.assign(state, updatedState);
   persistState(pi, state);
 }
 

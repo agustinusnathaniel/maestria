@@ -6,7 +6,7 @@ import {
 } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
 import { DANGEROUS_PATTERNS } from '@maestria/shared-pi/tools-core';
-import { recordFileModified, recordFileRead } from '@/state.js';
+import { persistState, recordFileModified, recordFileRead } from '@/state.js';
 
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
   pi.on('tool_call', async (event: ToolCallEvent, ctx: ExtensionContext) => {
@@ -82,7 +82,7 @@ export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState):
       }
     }
     if (tracked) {
-      pi.appendEntry('maestria_state', { ...state });
+      persistState(pi, state);
     }
 
     return undefined; // allow

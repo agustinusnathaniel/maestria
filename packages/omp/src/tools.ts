@@ -1,7 +1,7 @@
 import type { ExtensionAPI, ToolCallEvent, ExtensionContext } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
 import { DANGEROUS_PATTERNS } from '@maestria/shared-pi/tools-core';
-import { recordFileModified, recordFileRead } from '@/state.js';
+import { persistState, recordFileModified, recordFileRead } from '@/state.js';
 
 // Note: omp's @oh-my-pi/pi-coding-agent does not export isToolCallEventType,
 // so we use direct event.toolName string comparison instead.
@@ -81,7 +81,7 @@ export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState):
       }
     }
     if (tracked) {
-      pi.appendEntry('maestria_state', { ...state });
+      persistState(pi, state);
     }
 
     return undefined; // allow

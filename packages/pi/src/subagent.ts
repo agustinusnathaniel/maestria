@@ -2,7 +2,7 @@ import { Type } from 'typebox';
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff } from '@/state.js';
+import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
 import {
   assertValidAgent,
   assertNonEmptyTask,
@@ -69,12 +69,12 @@ function recordAndPersist(
   agentName: string,
   taskText: string,
 ): void {
-  const updatedState = recordHandoff(state, 'orchestrator', agentName, taskText);
-  const specialistsDelegated = updatedState.specialistsDelegated.includes(agentName)
-    ? updatedState.specialistsDelegated
-    : [...updatedState.specialistsDelegated, agentName];
-  Object.assign(state, { ...updatedState, specialistsDelegated });
-  pi.appendEntry('maestria_state', state);
+  const updatedState = recordSpecialistDelegated(
+    recordHandoff(state, 'orchestrator', agentName, taskText),
+    agentName,
+  );
+  Object.assign(state, updatedState);
+  persistState(pi, state);
 }
 
 export function installSubagentTool(

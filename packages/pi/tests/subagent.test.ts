@@ -1,8 +1,24 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { installSubagentTool, MAX_PARALLEL_TASKS } from '@/subagent.js';
 import { validateHandoff, MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 import { createInitialState } from '@/state.js';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
+
+// Mock the subagents SDK so execute() can reach recordAndPersist (existing tests
+// keep the SDK-unavailable fallback by leaving getSubagentsServiceMock undefined).
+const subagentsServiceMock = vi.hoisted(() => ({
+  spawn: vi.fn(),
+  getRecord: vi.fn(),
+}));
+const getSubagentsServiceMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@gotgenes/pi-subagents', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@gotgenes/pi-subagents')>();
+  return {
+    ...actual,
+    getSubagentsService: getSubagentsServiceMock,
+  };
+});
 
 // Suppress expected console.warn noise from SDK-unavailable fallback paths
 vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -510,5 +526,54 @@ describe('installSubagentTool - validation errors without tasks', () => {
     await expect(
       toolDef.execute('call-1', { mode: 'chain' }, undefined, undefined, {}),
     ).rejects.toThrow('tasks array is required');
+  });
+});
+
+describe('installSubagentTool - handoff recording', () => {
+  beforeEach(() => {
+    getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
+    subagentsServiceMock.spawn.mockReturnValue('agent-1');
+    subagentsServiceMock.getRecord.mockReturnValue({ status: 'completed', result: 'done' });
+  });
+
+  it('records specialist in state for single mode', async () => {
+    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const state = createInitialState();
+    installSubagentTool(pi as any, state);
+
+    const toolDef = (pi as any).registerTool.mock.calls[0][0];
+    await toolDef.execute(
+      'call-1',
+      { agent: 'builder', task: 'build the feature' },
+      undefined,
+      undefined,
+      {},
+    );
+
+    expect(state.handoffHistory).toHaveLength(1);
+    expect(state.handoffHistory[0].to).toBe('builder');
+    expect(state.specialistsDelegated).toEqual(['builder']);
+    expect(pi.appendEntry).toHaveBeenCalledWith(
+      'maestria_state',
+      expect.objectContaining({ specialistsDelegated: ['builder'] }),
+    );
+  });
+
+  it('deduplicates specialists across repeated delegation', async () => {
+    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const state = createInitialState();
+    installSubagentTool(pi as any, state);
+
+    const toolDef = (pi as any).registerTool.mock.calls[0][0];
+    await toolDef.execute('call-1', { agent: 'builder', task: 'build' }, undefined, undefined, {});
+    await toolDef.execute(
+      'call-2',
+      { agent: 'builder', task: 'build again' },
+      undefined,
+      undefined,
+      {},
+    );
+
+    expect(state.specialistsDelegated).toEqual(['builder']);
   });
 });
