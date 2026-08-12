@@ -33,6 +33,7 @@
     "@changesets/cli": "catalog:",
     "@types/node": "catalog:",
     "all-contributors-cli": "catalog:",
+    "tsx": "4.23.12",
     "vite-plus": "catalog:"
   },
   "devEngines": {
