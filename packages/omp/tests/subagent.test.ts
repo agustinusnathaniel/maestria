@@ -327,6 +327,25 @@ describe('installSubagentTool - handoff recording', () => {
     expect(state.handoffHistory[0].from).toBe('orchestrator');
     expect(state.handoffHistory[0].to).toBe('builder');
     expect(state.handoffHistory[0].task).toBe('build the feature');
+    expect(state.specialistsDelegated).toEqual(['builder']);
+  });
+
+  it('deduplicates specialists across repeated delegation', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    installSubagentTool(pi as any, state);
+
+    const toolDef = getToolDef(pi);
+    await toolDef.execute('call-1', { agent: 'builder', task: 'build' }, undefined, undefined, {});
+    await toolDef.execute(
+      'call-2',
+      { agent: 'builder', task: 'build again' },
+      undefined,
+      undefined,
+      {},
+    );
+
+    expect(state.specialistsDelegated).toEqual(['builder']);
   });
 
   it('records handoffs in state for parallel mode', async () => {
@@ -354,6 +373,9 @@ describe('installSubagentTool - handoff recording', () => {
     expect(state.handoffHistory[0].task).toBe('design');
     expect(state.handoffHistory[1].to).toBe('builder');
     expect(state.handoffHistory[1].task).toBe('build');
+    // specialistsDelegated appends in delegation order (taskList order), unlike
+    // handoffHistory which prepends (most recent first).
+    expect(state.specialistsDelegated).toEqual(['builder', 'architect']);
   });
 
   it('persists state via appendEntry after handoff recording', async () => {

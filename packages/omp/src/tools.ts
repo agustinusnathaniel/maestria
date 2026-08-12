@@ -1,6 +1,7 @@
 import type { ExtensionAPI, ToolCallEvent, ExtensionContext } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
 import { DANGEROUS_PATTERNS } from '@maestria/shared-pi/tools-core';
+import { persistState, recordFileModified, recordFileRead } from '@/state.js';
 
 // Note: omp's @oh-my-pi/pi-coding-agent does not export isToolCallEventType,
 // so we use direct event.toolName string comparison instead.
@@ -62,6 +63,25 @@ export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState):
           }
         }
       }
+    }
+
+    // Record file access for session state (ADR-PI-002: tool_call maintains file tracking).
+    let tracked = false;
+    if (event.toolName === 'read') {
+      const path = (event.input as Record<string, unknown> | undefined)?.path;
+      if (typeof path === 'string' && path) {
+        Object.assign(state, recordFileRead(state, path));
+        tracked = true;
+      }
+    } else if (event.toolName === 'edit' || event.toolName === 'write') {
+      const path = (event.input as Record<string, unknown> | undefined)?.path;
+      if (typeof path === 'string' && path) {
+        Object.assign(state, recordFileModified(state, path));
+        tracked = true;
+      }
+    }
+    if (tracked) {
+      persistState(pi, state);
     }
 
     return undefined; // allow

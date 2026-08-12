@@ -102,6 +102,11 @@ export function recordFileRead(state: MaestriaState, path: string): MaestriaStat
   return { ...state, filesRead: prependDeduped(state.filesRead, path, FILE_HISTORY_CAP) };
 }
 
+export function recordSpecialistDelegated(state: MaestriaState, name: string): MaestriaState {
+  if (state.specialistsDelegated.includes(name)) return state;
+  return { ...state, specialistsDelegated: [...state.specialistsDelegated, name] };
+}
+
 export function recordSubagentStatus(
   state: MaestriaState,
   id: string,

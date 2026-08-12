@@ -18,6 +18,7 @@ export {
   recordHandoff,
   recordFileModified,
   recordFileRead,
+  recordSpecialistDelegated,
   recordSubagentStatus,
   setReviewMode,
   exitReviewMode,
