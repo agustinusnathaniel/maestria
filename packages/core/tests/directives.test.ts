@@ -294,7 +294,7 @@ describe('canonical directive safety contracts', () => {
       'push, PR creation, merge, and release remain subject to their own project and platform authorization',
     );
     expect(orchestrator).toContain(
-      'the orchestrator may authorize and execute one autonomous commit on a recognized feature branch',
+      'the orchestrator may authorize one autonomous routine commit on a recognized feature branch',
     );
     expect(orchestrator).not.toContain('explicit user commit request in the current turn');
     expect(orchestrator).not.toContain('authorization resets to zero after the commit');
