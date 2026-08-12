@@ -133,21 +133,22 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 
 ## Commit and Branch Safety
 
-- Only the orchestrator authorizes commits. Plans and specialist results do not imply a commit.
-- Validate and review required changes before commit; stage only intended files.
+- The orchestrator is the commit authority for the current work unit; specialist plans and results do not independently trigger commits.
+- On a recognized feature branch, the orchestrator may commit completed, validated work autonomously after the required independent review. No additional user confirmation is required for the commit itself.
+- Before committing, inspect status and the intended diff, stage only intended files, and use a conventional message. The commit message and Work Results report are evidence of what was committed, not a user-question checkpoint.
 - **!!! Ship docs with code** - before every commit, audit all affected documentation categories: internal docs, ADRs, references, user-facing docs, changelog, and changeset. Any `packages/` change or behavior-affecting change MUST have a corresponding changeset; check existing entries and create one if needed. Keep docs, changelogs, and changesets in sync with the change.
 - **!!! Check your branch** - on an unrecognized branch, ask first. Worktrees are isolated - proceed directly.
-- **!!! Never commit or push to main.** Work on a feature branch. For normal work, never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved. The only exception is a separately user-authorized feature-branch checkpoint push for preservation: it stays unreviewed, cannot push protected branches, create or merge a PR, merge, release, or claim production readiness, and final review plus the applicable authorization remain required for shipping.
+- **!!! Never commit or push to main.** Work on a feature branch. Commit, push, PR, merge, and release are separate actions: push, PR creation, merge, and release remain subject to their own project and platform authorization and safety gates. Never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved. A feature-branch checkpoint push may preserve unreviewed work only when separately authorized; it cannot push protected branches, create or merge a PR, merge, release, or claim production readiness.
 - Pull latest before creating a feature branch from main. Worktrees are already isolated.
 
 ## Checkpoint Commits
 
-- Normal commits require validation and independent review approval before commit. The explicit user-authorized checkpoint is the only exception: it may commit a coherent, unreviewed working state before final approval, for preservation only.
+- Normal commits require validation and independent review approval before commit. An explicit checkpoint is the only exception to that review requirement: it may commit a coherent, unreviewed working state before final approval, for preservation only.
 - Checkpoint validation still requires scope, status, and diff checks; exclude unrelated and untracked artifacts.
 - Commit, push, PR, merge, and release are separate actions with separate gates. A checkpoint commits for preservation only and never auto-pushes, auto-creates a PR, merges, or releases; the checkpoint path stops after the preservation commit and never enters the configured push/PR flow. This default does not mean the user prohibited pushing.
 - A checkpoint commit is labeled `unreviewed` / `not production-ready` and stays unreviewed until final review. If the user separately authorizes pushing, a feature-branch push is allowed for preservation, but the work remains unreviewed and cannot merge or release; opening a PR, merging, or releasing each require final review and the applicable authorization.
 - Normal reviewed feature-branch work follows the project and platform push/PR policy. If the platform has no lifecycle integration, report push or PR creation as a pending next step rather than claiming it happened. Protected branches and unresolved safety, security, or authorization floors remain blocked. Where PR lifecycle is supported, keep the summary, changes, testing, breaking-changes, docs, changelog, and changeset content synchronized.
-- Docs-only is not an unreviewed commit shortcut - the docs-only review exemption applies to review dispatch only, never to commit approval. Only an explicit checkpoint authorization permits an unreviewed preservation commit.
+- The docs-only review exemption does not waive validation, the docs audit, branch floors, or any required safety gate. Only an explicit checkpoint authorization permits an intentionally unreviewed preservation commit.
 - Checkpoint commits cannot satisfy final review or authorize shipping. Unresolved safety, security, or authorization floors still cannot be waived.
 
 ## Canonical Source Invariant

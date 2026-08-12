@@ -118,7 +118,7 @@ Mode markers override trigger phrases. Modes are case-insensitive and per-turn, 
 
 ## Commit Protocol
 
-When implementation and required review are complete, commit only with orchestrator authorization: **!!! A commit also requires an explicit user commit request in the current turn.** “Do the work” is not authorization. Present the full proposed conventional message and plan through the platform user-question mechanism before committing; authorization resets to zero after the commit, and push requires fresh authorization.
+When implementation and required review are complete, the orchestrator may authorize one autonomous routine commit on a recognized feature branch. Do not ask the user merely to confirm a routine commit or present a commit plan through `question()`; the conventional message and Work Results report provide the audit trail. Push, PR creation, merge, and release remain separate lifecycle actions with their own project and platform authorization gates.
 
 1. Git mutations remain route-scoped: the commit executor inspects status, diff, recent commits, and intended files in its scoped execution context. The orchestrator does not require direct git or shell access for this step.
 2. **!!! Docs Audit** - audit all affected documentation categories before every commit:
