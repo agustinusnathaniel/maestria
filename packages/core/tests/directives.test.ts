@@ -67,7 +67,7 @@ describe('canonical directive safety contracts', () => {
     expect(rules).toContain('## Work Unit and Child Budgets');
     expect(rules).toContain('finite, positive route child-dispatch budget');
     expect(rules).toContain('finite, non-negative child-task repair budget');
-    expect(rules).toContain('omitted or invalid budget is a blocked route');
+    expect(rules).toContain('an invalid override is a blocked route');
     expect(rules).toContain('decrement before dispatching and never reset silently');
     expect(rules).toContain('success, blocked, failed, cancelled, or abandoned');
     expect(rules).toContain(
@@ -99,6 +99,240 @@ describe('canonical directive safety contracts', () => {
     );
     expect(rules.indexOf('Allow at most one changed-brief recovery')).toBeLessThan(
       rules.indexOf('second empty or blocked result trips the task circuit breaker'),
+    );
+  });
+
+  it('recovers from dispatch failures without mutating code or consuming repair budget', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    // A failed delegation is not idle: preserve the ledger and dispatch at most one
+    // recovery attempt for the same child, with a corrected brief when the cause is identifiable.
+    expect(rules).toContain('preserve the work ledger and artifacts');
+    expect(rules).toContain('at most one recovery attempt for the same child');
+    expect(rules).toContain('a materially corrected brief when the cause is identifiable');
+    expect(orchestrator).toContain('**Dispatch failure fallback.**');
+    expect(orchestrator).toContain('If a delegation is unavailable, malformed, or times out');
+
+    // Continue read-only exploration, planning, and reporting while the child is unavailable.
+    expect(rules).toContain(
+      'continue independent read-only exploration, planning, and result reporting where useful',
+    );
+    expect(orchestrator).toContain(
+      'continue independent read-only exploration, planning, and result reporting where useful',
+    );
+
+    // Never mutate code as a fallback and never waive review or safety floors.
+    expect(rules).toContain(
+      'Never mutate code directly as a fallback and never waive review or safety floors',
+    );
+    expect(orchestrator).toContain(
+      'Never mutate code directly as a fallback and never waive the route, review, or safety floors',
+    );
+
+    // Transient provider/transport failures are not substantive progress and consume no
+    // repair budget, but every attempt still counts against dispatch-attempt accounting.
+    expect(rules).toContain(
+      'Transient attempts do not count as substantive repair progress and consume no repair/review budget',
+    );
+    expect(rules).toContain('every attempt still counts against dispatch-attempt accounting');
+    expect(orchestrator).toContain(
+      'A transient provider or transport failure is not substantive repair progress and does not consume the repair budget',
+    );
+  });
+
+  it('records a failed dispatch as terminal before any recovery and treats recovery as a new attempt for the same child', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    // The failed attempt becomes terminal blocked or failed before a recovery dispatch.
+    expect(rules).toContain('record it as terminal `blocked` or `failed` first');
+    expect(orchestrator).toContain('record it as terminal `blocked` or `failed` first');
+
+    // Recovery is a new attempt for the same child, not dependent work, and shares the
+    // child's single recovery allowance with the changed-brief rule.
+    expect(rules).toContain('Recovery is a new attempt for the same child, not dependent work');
+    expect(rules).toContain(
+      "counts against the child's single recovery allowance shared with the changed-brief rule",
+    );
+    expect(rules).toContain(
+      'Allow at most one changed-brief recovery per child when new evidence justifies it',
+    );
+    expect(orchestrator).toContain(
+      'Recovery is a new attempt for the same child, not dependent work',
+    );
+    expect(orchestrator).toContain(
+      "shares the child's single recovery allowance with the changed-brief rule",
+    );
+
+    // If recovery fails, preserve the terminal delta and stop dependent work.
+    expect(rules).toContain(
+      'If recovery fails, preserve the terminal delta and stop dependent work',
+    );
+    expect(orchestrator).toContain(
+      'If recovery fails, preserve the terminal delta and stop dependent work',
+    );
+
+    // Validate records failed or cancelled attempts as terminal before any recovery dispatch.
+    expect(orchestrator).toContain(
+      'record failed or cancelled attempts as terminal before any recovery dispatch',
+    );
+  });
+
+  it('never retries intentional cancellation while bounding infrastructure-cancellation retries', () => {
+    const workUnit = readSection(readDirective('rules.md'), '## Work Unit and Child Budgets');
+    const context = readSection(readDirective('rules.md'), '## Context Management');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    // Runtime-classified infrastructure cancellations are transient and get at most one
+    // bounded retry with backoff or reduced concurrency - a finite, not unbounded, bound.
+    expect(workUnit).toContain(
+      'Provider overload, header timeouts, transport failures, and runtime-classified infrastructure cancellations are transient',
+    );
+    expect(workUnit).toContain('at most one bounded retry with backoff or reduced concurrency');
+
+    // User-requested or platform-intentional cancellation is terminal and never retried or continued.
+    expect(workUnit).toContain(
+      'User-requested or platform-intentional cancellation is terminal and is never retried or continued',
+    );
+    expect(context).toContain(
+      'Intentional user or platform cancellation is terminal `cancelled` and is never retried or continued',
+    );
+    expect(orchestrator).toContain(
+      'Intentional user or platform cancellation is terminal `cancelled` and is never retried or continued',
+    );
+
+    // The old unbounded shorthand is gone from the budget section.
+    expect(workUnit).not.toContain('cancellations are infrastructure-transient');
+    expect(workUnit).not.toContain('retry with bounded backoff or reduce concurrency');
+  });
+
+  it('defaults budgets for simple routes and continues the same work unit on routine messages', () => {
+    const workUnit = readSection(readDirective('rules.md'), '## Work Unit and Child Budgets');
+    const sessionFlow = readSection(
+      readDirective('specialists', 'orchestrator.md'),
+      '## Session Flow',
+    );
+    const iterationLimits = readDirective('skills', 'iteration-limits.md');
+
+    // Default routes use implicit finite defaults; explicit declarations are for
+    // fan-out, non-default children, or repair extensions. A missing ledger line is not a blocked route.
+    expect(workUnit).toContain('Default routes run on the finite default budgets implicitly');
+    expect(workUnit).toContain('one owning specialist plus only its required reviewer');
+    expect(workUnit).toContain(
+      'Declare explicit finite route and child-task budgets only for fan-out, non-default children, or repair extensions',
+    );
+    expect(workUnit).toContain('A missing ceremonial ledger line is not a blocked route');
+    expect(workUnit).toContain('when a safe default route is obvious');
+    expect(iterationLimits).toContain(
+      'Declare and decrement finite route and child-task budgets only for fan-out, non-default children, or repair extensions',
+    );
+
+    // Bounded repair defaults survive, and adaptive repair is accounted in the internal handoff/checkpoint.
+    expect(workUnit).toContain('3 repair rounds, hard-capped at 5');
+    expect(workUnit).toContain(
+      'account for remaining budgets in the internal handoff and checkpoint updates',
+    );
+
+    // Continuation: greeting/status/explanation/continuation is not a new work unit and
+    // does not reset budgets or force re-routing; only a changed outcome restarts the unit.
+    expect(workUnit).toContain(
+      'A greeting, status check, explanation, or continuation of the same outcome is not a new work unit',
+    );
+    expect(workUnit).toContain('it does not reset budgets and does not force re-routing');
+    expect(workUnit).toContain('Only a changed outcome starts a fresh route');
+    expect(sessionFlow).toContain(
+      'A greeting, status check, explanation, or continuation of the same outcome is not a new work unit',
+    );
+    expect(sessionFlow).toContain('does not reset budgets and does not force re-routing');
+    expect(sessionFlow).toContain('A changed outcome starts a new work unit');
+    expect(sessionFlow).toContain('route and child budgets use the finite default shapes');
+    expect(sessionFlow).not.toContain(
+      'finite route budget, and child-task budgets before delegation',
+    );
+  });
+
+  it('defines finite default shapes for every route with one-initial one-recovery accounting', () => {
+    const workUnit = readSection(readDirective('rules.md'), '## Work Unit and Child Budgets');
+    const fanOut = readSection(
+      readDirective('specialists', 'orchestrator.md'),
+      '### Parallel Fan-Out',
+    );
+
+    // Every route has an explicit, finite default shape.
+    expect(workUnit).toContain('`direct` uses zero child dispatches');
+    expect(workUnit).toContain(
+      '`focused` uses one owning specialist plus only its required reviewer',
+    );
+    expect(workUnit).toContain(
+      '`full` uses one thinker, one integrated worker batch, and one general reviewer',
+    );
+    expect(workUnit).toContain('with a risk lens only when evidenced and explicitly added');
+    expect(workUnit).toContain(
+      '`sonar` uses one owning read-only specialist plus at most one distinct read-only specialist',
+    );
+
+    // The finite defaults apply and are counted internally without numeric budget fields.
+    expect(workUnit).toContain('the finite defaults apply and are counted internally');
+    expect(workUnit).toContain('without requiring numeric budget fields');
+
+    // Each planned child gets one initial dispatch and at most one recovery dispatch,
+    // so recovery is finite and included in the route budget.
+    expect(workUnit).toContain('one initial dispatch and at most one recovery dispatch');
+    expect(workUnit).toContain('recovery is finite and included in the route budget');
+
+    // Repair rounds are separate from dispatch recovery.
+    expect(workUnit).toContain(
+      '3 repair rounds, hard-capped at 5, extended only on observable progress',
+    );
+    expect(workUnit).toContain('separate from dispatch recovery');
+
+    // The orchestrator fan-out section mirrors the focused and full default shapes.
+    expect(fanOut).toContain(
+      '`focused` uses one owning delegation plus only its required reviewer',
+    );
+    expect(fanOut).toContain(
+      '`full` uses one thinker, one integrated worker batch, and one general reviewer by default',
+    );
+  });
+
+  it('keeps the composition summary aligned with the universal recovery and budget rules', () => {
+    const composition = readDirective('COMPOSITION.md');
+    const rules = readDirective('rules.md');
+
+    // Route defaults are summarized with the same finite shapes, not a weaker shorthand.
+    expect(composition).toContain('`direct` zero dispatches');
+    expect(composition).toContain(
+      '`focused` one owning specialist plus only its required reviewer',
+    );
+    expect(composition).toContain(
+      '`full` one thinker, one integrated worker batch, one general reviewer',
+    );
+    expect(composition).toContain(
+      '`sonar` one owning read-only specialist plus at most one distinct read-only specialist',
+    );
+    expect(composition).toContain(
+      'each planned child gets one initial dispatch and at most one recovery dispatch',
+    );
+
+    // Recovery mirrors the universal terminal-before-recovery and one-recovery bounds.
+    expect(composition).toContain('record it terminal blocked or failed first');
+    expect(composition).toContain('at most one recovery dispatch for the same child');
+    expect(composition).toContain('otherwise one bounded transport retry');
+    expect(composition).toContain('intentional cancellation is terminal and never retried');
+    expect(composition).toContain('if recovery fails, preserve the delta and stop dependent work');
+
+    // The weak "retry once" shorthand without conditions is not used.
+    expect(composition).not.toContain('retry once with a corrected brief');
+    expect(rules).not.toContain('retry at most once with a materially corrected brief');
+  });
+
+  it('does not frame user questions as normal routed progress', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(orchestrator).not.toContain('progress is made through delegation and user questions');
+    expect(orchestrator).toContain(
+      'user input is sought only at universal authorization checkpoints and genuine user-required intent boundaries',
     );
   });
 
