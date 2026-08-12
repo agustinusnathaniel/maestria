@@ -226,6 +226,24 @@ describe('skills directory', () => {
     }
   });
 
+  it('preserves the plan-to-coder capability split', async () => {
+    const orchestrator = await readFile(
+      path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
+      'utf8',
+    );
+    const builder = await readFile(
+      path.join(PACKAGE_ROOT, 'skills', 'builder', 'SKILL.md'),
+      'utf8',
+    );
+
+    expect(orchestrator).toMatch(/Subagent profile.*`plan`/);
+    expect(orchestrator).toMatch(/do \*\*not\*\* have Write or Edit/i);
+    expect(orchestrator).toContain('builder | `coder`');
+    expect(builder).toMatch(/Subagent profile.*`coder`/);
+    expect(builder).toMatch(/Write, Edit/);
+    expect(orchestrator).toContain('Runtime Authority');
+  });
+
   it('reviewer skill has the explicit do-not-edit constraint near the top', async () => {
     const text = await readFile(path.join(PACKAGE_ROOT, 'skills', 'reviewer', 'SKILL.md'), 'utf8');
     const head = text.slice(0, 1500);
@@ -268,10 +286,11 @@ describe('rules/AGENTS.md', () => {
     ]) {
       expect(text).toContain(specialist);
     }
-    // All three sections from the opencode rules are preserved.
-    expect(text).toContain('## Orchestration');
-    expect(text).toContain('## Delegation');
-    expect(text).toContain('## Context Management');
+    // The compact shared contract preserves its behavioral layers.
+    expect(text).toContain('## Outcome and Scope');
+    expect(text).toContain('## Delegation and Context');
+    expect(text).toContain('## Acceptance and Blind Review');
+    expect(text).not.toContain('## Work Unit and Child Budgets');
   });
 });
 

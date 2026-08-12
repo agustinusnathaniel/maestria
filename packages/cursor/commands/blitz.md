@@ -10,7 +10,7 @@ description: Fast Maestria implementation via builder (skip optional recon/desig
 
 ## MODE: blitz (Fast Implementation)
 
-Activate the low-risk bypass. Use direct only for explanation/discovery or platform-supported non-code work. Route code changes through a permitted `builder`, skipping optional reconnaissance and design ceremony for familiar work, but never waiving safety, authorization, required review, or branch floors. Escalate safety exceptions to the normal route.
+Use direct execution for familiar, low-risk code or other work when the host permits it; otherwise delegate to the permitted specialist. Skip optional reconnaissance and design ceremony, but never waive safety, authorization, required review, or branch floors. Escalate safety exceptions to the normal route.
 
 Load the `orchestrator` skill if coordination is needed. Prefer a single `Task` to `builder` with a clear handoff.
 

@@ -278,6 +278,18 @@ describe('generated skills', () => {
     // The orchestrator references the rules skill rather than embedding it.
     expect(body).not.toContain('# Global Agent Rules');
   });
+
+  it('describes direct capability and advisory orchestration honestly', async () => {
+    const text = await readFile(
+      path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
+      'utf8',
+    );
+
+    expect(text).toContain('Runtime Authority');
+    expect(text).toContain('direct work is available');
+    expect(text).toContain('Methodology and skills are advisory guidance');
+    expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/i);
+  });
 });
 
 describe('generated commands', () => {

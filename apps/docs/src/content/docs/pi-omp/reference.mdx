@@ -7,17 +7,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## Spec-Driven Delegation
 
-The orchestrator gives each specialist a **spec** - a structured handoff containing seven required fields:
-
-| Field                      | Description                                                  |
-| -------------------------- | ------------------------------------------------------------ |
-| **Goal**                   | What the specialist must accomplish                          |
-| **Context**                | Current mode, active task, specialist history, files touched |
-| **Requirements**           | Specific deliverables and constraints                        |
-| **Known Problems**         | Blockers or caveats the specialist should address            |
-| **Assumptions documented** | Decisions or assumptions made during investigation           |
-| **Success Criteria**       | Verifiable conditions for completion                         |
-| **Next Step**              | What happens after this task completes                       |
+The orchestrator gives each specialist a **compact, material handoff** containing only what is needed to act: the outcome, relevant context and constraints, acceptance or expected evidence, material assumptions or known problems, and the next step or blocker. There is no fixed field count.
 
 The orchestrator enforces **phase gates** - each specialist must verify completion before the next phase begins. If a specialist blocks, the orchestrator escalates or re-plans.
 
@@ -122,7 +112,7 @@ Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are block
 
 **Pipeline discipline.** When full orchestration is selected, the flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk - fine for simple changes, not recommended for cross-module work.
 
-**Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains all seven required fields. Incomplete handoffs are rejected.
+**Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains the material needed to act. Incomplete handoffs are rejected.
 
 **Session persistence.** Mode and delegation state survive session compaction, resume, and fork operations. Run `/maestria-status` to view the current state at any time.
 

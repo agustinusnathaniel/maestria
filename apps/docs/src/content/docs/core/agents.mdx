@@ -19,15 +19,15 @@ When full orchestration is selected, the default pipeline for non-trivial work g
 - **Worker** - implementation, documentation
 - **Verifier** - validation, quality gates
 
-The orchestrator routes work dynamically based on task needs. The pipeline terminates when the verifier accepts the result.
+The orchestrator routes work dynamically based on task needs. When a selected route includes a verifier, that pipeline terminates when the verifier accepts the result.
 
 Three workflow modes are available to control pipeline depth. Their activation and enforcement depend on the platform:
 
-| Mode      | Full Form           | Pipeline                                                                       | Use Case                                    |
-| --------- | ------------------- | ------------------------------------------------------------------------------ | ------------------------------------------- |
-| **fein**  | Full pipeline       | Thinker → Worker → Verifier (adaptive sequencing)                              | Production-grade work, mandatory validation |
-| **sonar** | Research only       | Read-only `@adventurer`/`@planner` specialists - STOP before implementation    | Understanding before committing             |
-| **blitz** | Fast implementation | `@builder` for familiar work; skip optional recon/design, keep required review | Quick fixes, known territory                |
+| Mode      | Full Form           | Pipeline                                                                                                                                       | Use Case                                    |
+| --------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **fein**  | Full pipeline       | Thinker → Worker → Verifier (adaptive sequencing)                                                                                              | Production-grade work, mandatory validation |
+| **sonar** | Research only       | Read-only `@adventurer`/`@planner` specialists - STOP before implementation                                                                    | Understanding before committing             |
+| **blitz** | Fast implementation | Direct execution when the host permits it; otherwise the permitted specialist. Skip optional recon/design and keep required safeguards/review. | Quick fixes, known territory                |
 
 ## When to Use the Orchestrator
 

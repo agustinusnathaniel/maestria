@@ -4,6 +4,10 @@
 
 Accepted
 
+## Current Status
+
+The fixed five-section handoff and hard Max-N template described by this historical decision are no longer the canonical contract. Current directives use compact, material handoffs and progress-based repair bounds. See `packages/core/agent-directives/skills/handoff.md` and `packages/core/agent-directives/rules.md`.
+
 ## Context
 
 The 7 agents (orchestrator, architect, builder, diagnose, planner, reviewer, writer) were built incrementally across multiple sessions. Each agent had its own structure - some had skill lists, some had output formats, some had iteration limits, others didn't. After ADR-CORE-003 established the `!!!` marker convention and skill pattern, the template still varied significantly between agents:

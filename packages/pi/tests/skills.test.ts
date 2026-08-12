@@ -31,4 +31,12 @@ describe('skills', () => {
       expect(nameMatch![1]).toBe(name);
     }
   });
+
+  it('keeps the direct-capable host semantics in the orchestrator skill', () => {
+    const content = readFileSync(join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
+
+    expect(content).toContain('Runtime Authority');
+    expect(content).toContain('direct work is available');
+    expect(content).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/i);
+  });
 });

@@ -4,6 +4,10 @@
 
 Accepted
 
+## Current Status
+
+The original mode table documents the historical OpenCode implementation. The current canonical contract is capability-aware: `blitz` uses direct execution for familiar, low-risk work when the host permits it, otherwise the permitted specialist; `fein` uses the full route with dynamic sequencing and required review floors. See `packages/core/agent-directives/commands/blitz.md` and `packages/core/agent-directives/commands/fein.md`.
+
 ## Context
 
 The orchestrator's default pipeline (`adventurer → architect/planner → builder → reviewer`) handles most work well, but users have three distinct usage patterns that don't fit the full pipeline:
