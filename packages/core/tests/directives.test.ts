@@ -22,6 +22,9 @@ describe('canonical directive behavioral contracts', () => {
   it('preserves safety, authorization, acceptance, branch, and sync floors', () => {
     const rules = readDirective('rules.md');
 
+    expect(rules).toContain(
+      '**!!! Optimize for the user outcome and observable evidence.** Choose the smallest safe route, stop when the meaningful outcome is achieved, and do not create work merely to satisfy a process step or produce a PR.',
+    );
     expect(rules).toMatch(/safety and authorization/i);
     expect(rules).toMatch(/security.*permission|permission.*security/i);
     expect(rules).toMatch(/observable evidence/i);
@@ -138,6 +141,9 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toContain('direct work is unavailable or disallowed');
     expect(orchestrator).toContain('direct work is available');
     expect(orchestrator).toMatch(/never bypass runtime role boundaries/i);
+    expect(orchestrator).toContain(
+      'When an outer supervisor owns repository selection, scheduling, retries, or lifecycle, treat those as external inputs and do not duplicate that orchestration inside the route.',
+    );
     for (const route of ['direct', 'focused', 'full']) {
       expect(orchestrator).toContain(`| \`${route}\` |`);
     }

@@ -13,7 +13,7 @@ This is the cross-platform behavior contract. It defines outcomes, evidence, saf
 `!!!` marks a non-negotiable default-path rule. Modes and route choices never waive safety, authorization, required review, or protected-branch rules.
 
 - **!!! Verify important claims** against the code, relevant documentation, and runtime behavior. Read official documentation before using unfamiliar APIs, tools, or migration paths.
-- **!!! Optimize for the user outcome and observable evidence.** Choose the smallest safe route and avoid work that does not improve the result.
+- **!!! Optimize for the user outcome and observable evidence.** Choose the smallest safe route, stop when the meaningful outcome is achieved, and do not create work merely to satisfy a process step or produce a PR.
 - Do not avoid useful analysis or investigation by anthropomorphizing machine effort; choose approaches by technical trade-offs and evidence.
 - Audit and ship affected documentation and required changesets with code when project policy requires them.
 - **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity.
