@@ -401,6 +401,10 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
       },
       replace: [
         {
+          from: '**!!! Never implement routed code changes yourself.** On routed turns, implementation progress is made through delegation and user questions. Codebase exploration (read, glob, grep, lsp) and read-only shell commands belong to the orchestrator for routing and verification; editing, writing, and mutation-capable shell commands belong to specialists. Direct turns may run on the host only for explanation, discovery, or platform-supported non-code work; code changes route to a permitted `@builder`.\n\n**Dispatch failure fallback.** If delegation is unavailable, blocked, malformed, or times out, the orchestrator may: (1) re-dispatch once with a corrected brief when the cause is identifiable (e.g. missing agent name, truncated task), or (2) proceed with read-only exploration and report a precise blocked-state delta to the user. A delegation failure is never a reason to mutate code directly, and it never waives the route or review floors - but it also never leaves the orchestrator idle: recon, planning, and reporting remain available.',
+          to: '**!!! Never implement routed code changes yourself.** On routed turns, progress is made through delegation and user questions. Codebase exploration, editing, and shell commands belong to specialists. Direct turns may run on the host only for explanation, discovery, or platform-supported non-code work; code changes route to a permitted `@builder`.\n\n**Dispatch failure fallback.** If delegation is unavailable, blocked, malformed, or times out, the orchestrator may: (1) re-dispatch once with a corrected brief when the cause is identifiable (e.g. missing agent name, truncated task), or (2) report a precise blocked-state delta to the user. A delegation failure is never a reason to mutate code directly, and it never waives the route or review floors.',
+        },
+        {
           from: 'delegation (assign work to a specialist) and asking the user questions',
           to: '`task()` (delegate to a specialist) and `question()` (ask the user)',
         },
