@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.6.5
+
+### Patch Changes
+
+- [#192](https://github.com/agustinusnathaniel/maestria/pull/192) [`512b6b8`](https://github.com/agustinusnathaniel/maestria/commit/512b6b81925349d64a4be60498150e5a328807c0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: restore orchestrator autonomy while keeping maker/checker split
+
+  The pure-dispatcher enforcement blocked ALL orchestrator tools (read,
+  grep, bash, edit) when a workflow mode was active. When specialist
+  dispatch timed out or the model omitted the agent name, the orchestrator
+  had zero fallback and aborted - the reported "lacks autonomy, behaves
+  weirdly" symptom.
+
+  - Orchestrator regains read-only tools (read, glob, grep, lsp, webfetch,
+    read-only bash, tests) for routing and verification; mutations remain
+    denied and delegated.
+  - Dispatch failure is no longer an idle state: one corrected-brief retry,
+    then read-only recon + precise blocked-state reporting. Never mutates
+    directly, never waives route/review floors.
+  - maestria_subagent now requires `agent` and `task` and returns an
+    actionable message listing valid agents instead of throwing an opaque
+    "Unknown agent: undefined".
+  - Subagent poll timeout raised 60s -> 180s.
+  - OpenCode projection: orchestrator permission frontmatter updated to
+    allow read-only tools; sync regenerated all platform projections.
+
+- [#190](https://github.com/agustinusnathaniel/maestria/pull/190) [`96f2649`](https://github.com/agustinusnathaniel/maestria/commit/96f264911f8756ee3528277699deb96e8a1bc9d7) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify agent workflow contracts while preserving detailed specialist guidance. Routine validated commits on recognized feature branches remain autonomous after required review; push and later lifecycle actions stay separately gated. Add bounded repair and platform-enforcement notes, refresh generated projections, and retain explicit mode reset behavior and read-only sonar profiles where supported.
+
+- [#194](https://github.com/agustinusnathaniel/maestria/pull/194) [`b1c67ed`](https://github.com/agustinusnathaniel/maestria/commit/b1c67eddcb46b0633166c0af25b5bfd336a33abb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Simplify and re-align the shared agent directives around outcome, evidence, runtime authority, blind review, bounded repair, and autonomous routine work. Directives now avoid unnecessary orchestration ceremony, allow the host runtime to determine whether work is performed directly or delegated, prevent nested supervisors from duplicating scheduling and lifecycle work, and keep all generated platform projections synchronized.
+
+- [#187](https://github.com/agustinusnathaniel/maestria/pull/187) [`2479f32`](https://github.com/agustinusnathaniel/maestria/commit/2479f32886ec033ed545a576e0175f9e3ffe64a2) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: record file reads/edits and specialist delegation in session state
+
 ## 0.6.4
 
 ### Patch Changes
