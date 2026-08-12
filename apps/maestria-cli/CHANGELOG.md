@@ -1,5 +1,11 @@
 # maestria
 
+## 0.8.1
+
+### Patch Changes
+
+- [`04cc0bd`](https://github.com/agustinusnathaniel/maestria/commit/04cc0bd5aa67c1474e8bedc3c3be4b05ba07b88a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix `maestria uninstall pi` failing with `No matching package found for @maestria/pi`. The Pi uninstall now passes the `npm:@maestria/pi` package reference, matching the form `pi install` accepts. The shared `@gotgenes/pi-subagents` prerequisite is still left untouched.
+
 ## 0.8.0
 
 ### Minor Changes
