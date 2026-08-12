@@ -47,6 +47,12 @@ const READ_ONLY_BASH_PREFIX =
 export function isReadOnlyBashCommand(rawCommand: string): boolean {
   const command = rawCommand.trim();
   if (command.includes('$(') || command.includes('`')) return false;
-  if (command.replace(/2?>&[12]/g, '').includes('>')) return false;
-  return command.split(/[\n;&|]+/).every((segment) => READ_ONLY_BASH_PREFIX.test(segment.trim()));
+  // Strip `2>&1`-style fd redirects first so the `&` inside them is not
+  // mistaken for a command separator and the `>` is not counted as output
+  // redirection.
+  const withoutFdRedirects = command.replace(/\d?>&[12]/g, '');
+  if (withoutFdRedirects.includes('>')) return false;
+  return withoutFdRedirects
+    .split(/[\n;&|]+/)
+    .every((segment) => READ_ONLY_BASH_PREFIX.test(segment.trim()));
 }
