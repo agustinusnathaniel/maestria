@@ -112,22 +112,20 @@ describe('canonical directive safety contracts', () => {
     expect(rules).toContain('at most one recovery attempt for the same child');
     expect(rules).toContain('a materially corrected brief when the cause is identifiable');
     expect(orchestrator).toContain('**Dispatch failure fallback.**');
-    expect(orchestrator).toContain('If a delegation is unavailable, malformed, or times out');
+    expect(orchestrator).toContain('Apply the universal Context Management recovery contract');
 
     // Continue read-only exploration, planning, and reporting while the child is unavailable.
     expect(rules).toContain(
       'continue independent read-only exploration, planning, and result reporting where useful',
     );
-    expect(orchestrator).toContain(
-      'continue independent read-only exploration, planning, and result reporting where useful',
-    );
+    expect(orchestrator).toContain('independent read-only work may continue');
 
     // Never mutate code as a fallback and never waive review or safety floors.
     expect(rules).toContain(
       'Never mutate code directly as a fallback and never waive review or safety floors',
     );
     expect(orchestrator).toContain(
-      'Never mutate code directly as a fallback and never waive the route, review, or safety floors',
+      'Never mutate code as a fallback or waive route, review, or safety floors',
     );
 
     // Transient provider/transport failures are not substantive progress and consume no
@@ -137,7 +135,7 @@ describe('canonical directive safety contracts', () => {
     );
     expect(rules).toContain('every attempt still counts against dispatch-attempt accounting');
     expect(orchestrator).toContain(
-      'A transient provider or transport failure is not substantive repair progress and does not consume the repair budget',
+      'Transient failures consume no repair budget but count as dispatch attempts',
     );
   });
 
@@ -147,10 +145,11 @@ describe('canonical directive safety contracts', () => {
 
     // The failed attempt becomes terminal blocked or failed before a recovery dispatch.
     expect(rules).toContain('record it as terminal `blocked` or `failed` first');
-    expect(orchestrator).toContain('record it as terminal `blocked` or `failed` first');
+    expect(orchestrator).toContain(
+      'terminally record unavailable, malformed, or timed-out delegations before recovery',
+    );
 
-    // Recovery is a new attempt for the same child, not dependent work, and shares the
-    // child's single recovery allowance with the changed-brief rule.
+    // Recovery remains one bounded attempt shared by changed briefs and dispatch recovery.
     expect(rules).toContain('Recovery is a new attempt for the same child, not dependent work');
     expect(rules).toContain(
       "counts against the child's single recovery allowance shared with the changed-brief rule",
@@ -158,20 +157,13 @@ describe('canonical directive safety contracts', () => {
     expect(rules).toContain(
       'Allow at most one changed-brief recovery per child when new evidence justifies it',
     );
-    expect(orchestrator).toContain(
-      'Recovery is a new attempt for the same child, not dependent work',
-    );
-    expect(orchestrator).toContain(
-      "shares the child's single recovery allowance with the changed-brief rule",
-    );
+    expect(orchestrator).toContain('use one shared recovery allowance');
 
     // If recovery fails, preserve the terminal delta and stop dependent work.
     expect(rules).toContain(
       'If recovery fails, preserve the terminal delta and stop dependent work',
     );
-    expect(orchestrator).toContain(
-      'If recovery fails, preserve the terminal delta and stop dependent work',
-    );
+    expect(orchestrator).toContain('failed recovery stops dependent work');
 
     // Validate records failed or cancelled attempts as terminal before any recovery dispatch.
     expect(orchestrator).toContain(
@@ -199,8 +191,12 @@ describe('canonical directive safety contracts', () => {
       'Intentional user or platform cancellation is terminal `cancelled` and is never retried or continued',
     );
     expect(orchestrator).toContain(
-      'Intentional user or platform cancellation is terminal `cancelled` and is never retried or continued',
+      'Intentional user or platform cancellation is terminal `cancelled` and never retried or continued',
     );
+    expect(context).toContain(
+      'Empty, malformed, unavailable, or blocked specialist output is not success',
+    );
+    expect(context).toContain('a second empty or blocked result trips the task circuit breaker');
 
     // The old unbounded shorthand is gone from the budget section.
     expect(workUnit).not.toContain('cancellations are infrastructure-transient');
@@ -246,7 +242,7 @@ describe('canonical directive safety contracts', () => {
     );
     expect(sessionFlow).toContain('does not reset budgets and does not force re-routing');
     expect(sessionFlow).toContain('A changed outcome starts a new work unit');
-    expect(sessionFlow).toContain('route and child budgets use the finite default shapes');
+    expect(sessionFlow).toContain('using finite default shapes');
     expect(sessionFlow).not.toContain(
       'finite route budget, and child-task budgets before delegation',
     );
