@@ -138,9 +138,9 @@ scripts/sync-all
 scripts/check-sync
 
 # Per-plugin (run from the plugin directory)
-cd packages/opencode && npx tsx ../core/scripts/sync.ts --verbose
-cd packages/opencode && npx tsx ../core/scripts/sync.ts --check  # CI mode
-cd packages/opencode && npx tsx ../core/scripts/sync.ts --diff   # show changes
+cd packages/opencode && pnpm exec tsx ../core/scripts/sync.ts --verbose
+cd packages/opencode && pnpm exec tsx ../core/scripts/sync.ts --check  # CI mode
+cd packages/opencode && pnpm exec tsx ../core/scripts/sync.ts --diff   # show changes
 ```
 
 ### Critical Rule

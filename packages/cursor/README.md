@@ -46,7 +46,7 @@ See [INSTALL.md](./INSTALL.md) for the full checklist.
 
 ```bash
 # Sync agents/skills/rules from core
-cd packages/cursor && npx tsx ../core/scripts/sync.ts --verbose
+cd packages/cursor && pnpm exec tsx ../core/scripts/sync.ts --verbose
 
 # Test
 pnpm --filter @maestria/cursor test
