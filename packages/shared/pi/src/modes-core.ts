@@ -15,6 +15,7 @@ import type { MaestriaState } from './state-core.js';
 // ── Constants ──
 
 export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
+export const MODE_CLEAR_COMMAND = 'mode-clear';
 export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
 
 export const MODE_MARKERS: Record<ModeKeyword, string> = {
@@ -217,6 +218,20 @@ export function installModeCommands(
     persistState: () => void;
   },
 ): void {
+  registerCommand(MODE_CLEAR_COMMAND, {
+    description: 'Clear workflow mode and return to neutral routing',
+    handler: async (_args: unknown, ctx: unknown) => {
+      if (state.reviewMode) {
+        await opts.restoreOriginalState(ctx);
+      }
+      state.mode = null;
+      opts.persistState();
+      ((ctx as Record<string, unknown>).ui as { notify: (msg: string) => void }).notify(
+        'Workflow mode cleared. Neutral routing is active.',
+      );
+    },
+  });
+
   for (const keyword of MODE_KEYWORDS) {
     registerCommand(keyword, {
       description: `Set workflow mode to ${keyword}`,

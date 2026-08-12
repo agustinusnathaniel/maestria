@@ -12,7 +12,7 @@ The orchestrator's default pipeline (`adventurer → architect/planner → build
 
 2. **Research only** - the user wants investigation and options, not implementation. Run recon, synthesize findings, produce structured output - then stop. No builder delegations, no code changes.
 
-3. **Fast implementation** - the user knows what they want and wants it done now. Skip recon, skip design, skip review. One-shot edits preferred. Tests optional.
+3. **Fast implementation** - the user knows what they want and wants it done now. Skip optional recon and design ceremony while preserving safety, authorization, branch, validation, and required-review floors.
 
 Before this ADR, the only way to express intent was through the natural language prompt - "take your time", "just explore", "ship it fast". These are ambiguous or phrased inconsistently. A research request gets interpreted as needing a plan. A fast request triggers the full pipeline. Every mode was a guess.
 
@@ -25,8 +25,8 @@ We needed a mechanism that lets the user express their intent upfront - one word
 | Mode | Keyword | Origin | Meaning | Pipeline Behavior |
 | --- | --- | --- | --- | --- |
 | Full pipeline | `fein` | German | Fine, precise, careful | Mandatory recon → design → build → review. Reviewer gate non-negotiable. |
-| Research only | `sonar` | Space/tech | Scan depths, map terrain | Recon + architect/planner → STOP. No builder calls. |
-| Fast implementation | `blitz` | German | Lightning, fast | Builder direct. Skip recon/design/review. One-shot preferred. |
+| Research only | `sonar` | Space/tech | Scan depths, map terrain | Read-only `@adventurer` or `@planner` research → STOP. No builder calls or production-file writes. |
+| Fast implementation | `blitz` | German | Lightning, fast | Builder direct. Skip optional recon/design ceremony; required review remains. |
 
 ### Detection Syntax
 
@@ -66,11 +66,11 @@ The `chat.message` hook:
 3. Strips the keyword from the message
 4. Prepends `[MODE: fein]` (or `sonar`/`blitz`) marker + the mode's summary prompt (~3-5 lines)
 
-The mode marker is **re-injected every turn** - it is not stateful. The hook fires on every user message, so the orchestrator receives the mode instruction fresh each time. This eliminates stale-state bugs (what happens if the mode changes mid-task).
+For OpenCode, the mode marker is **re-injected every turn** - it is not stateful. The hook fires on every user message, so the orchestrator receives the mode instruction fresh each time. This eliminates stale-state bugs (what happens if the mode changes mid-task). Other adapters may persist mode state and must document a clear/reset path.
 
 #### No Phase Tracking
 
-The mode is per-turn, not per-phase. Conversation history (the existing message log) tracks progress between turns. No additional state machinery is needed. A user can switch from `sonar` to `blitz` between turns by changing the keyword.
+For OpenCode, the mode is per-turn, not per-phase. Conversation history (the existing message log) tracks progress between turns. Other adapters may use session state; those adapters must document its lifetime and expose a neutral reset such as `/mode-clear`.
 
 ### Mode Prompts (TypeScript Definition)
 
@@ -94,9 +94,10 @@ in the same turn.
 ## MODE: sonar (Research Only)
 
 Research mode: reconnaissance and design only. Delegate to
-@adventurer (recon) followed by @architect or @planner
-(analysis/design). STOP after delivering findings and design.
-Do NOT implement, write code, or create any production files.
+@adventurer (recon) or @planner (read-only analysis). Add only a
+second read-only @adventurer/@planner when a distinct output is needed.
+STOP after delivering findings. Do NOT implement, write code, or create
+any production files.
 ```
 
 #### blitz prompt
@@ -104,10 +105,10 @@ Do NOT implement, write code, or create any production files.
 ```
 ## MODE: blitz (Fast Implementation)
 
-Speed mode: skip reconnaissance and design gates. Go directly
-to @builder for implementation. Only use @adventurer if the
-codebase context is genuinely unknown (not as a default step).
-Skip @reviewer unless the user explicitly requests review.
+Speed mode: skip optional reconnaissance and design ceremony. Go directly
+to @builder for familiar low-risk implementation. Required validation and
+review floors remain; never use blitz to bypass safety, authorization, or
+branch requirements.
 ```
 
 ### Prompt Depth Gap
@@ -141,7 +142,7 @@ Rationale:
 
 - **Denylist over allowlist** because modes are opt-in additive features. Adding a new mode in the future should work out of the box; existing users who want to exclude it add it to their denylist.
 - **No default mode** because the orchestrator's existing behavior (standard pipeline) is the fallback. A mode keyword is an override, not a requirement.
-- **No per-agent overrides** because mode is about the orchestrator's pipeline, not individual agent behavior. A blitz'd builder still builds; a sonar'd architect still designs.
+- **No per-agent overrides** because mode is about the orchestrator's pipeline, not individual agent behavior. Sonar explicitly limits research to read-only roles; blitz still preserves required gates.
 
 ### ADR-Naming Compliance (ADR-CORE-002)
 
@@ -161,7 +162,7 @@ This follows ADR-CORE-002's principle: "functional naming tells you what the age
 | Hashtag prefixes (`#fein`) | No advantage over plain words; adds a character with no semantic benefit. |
 | Case-sensitive matching | `Fein`, `FEIN`, `fein` all trigger the same mode. Lowercase is canonical. |
 | Leftmost-wins on multiple keywords | Most-restrictive-wins lets users correct themselves mid-message. |
-| Persistent mode state | Per-turn only. Mode is re-detected each message; no session-level state. |
+| Persistent mode state | OpenCode is per-turn. Adapters with session state must expose/document reset behavior. |
 | Phase tracking | Over-engineered for a per-turn feature. Conversation history handles it. |
 | Default / fallback mode | Standard pipeline is the implicit default. Mode keywords are overrides. |
 | Allowlist configuration | Adding modes should not break existing setups; denylist is forward-safe. |

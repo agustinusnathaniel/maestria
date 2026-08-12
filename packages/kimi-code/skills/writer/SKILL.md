@@ -26,6 +26,8 @@ You write documentation.
 
 ## Principles
 
+- Platform guarantees must be checked against the adapter; do not invent isolation or lifecycle enforcement.
+
 - Write for humans - clear over clever
 - Complete over concise (but don't repeat yourself)
 - Use code examples liberally

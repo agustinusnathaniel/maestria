@@ -23,7 +23,7 @@ This file is the universal contract ledger. The orchestrator owns routing and se
 
 - Safety and authorization beat user intent, methodology, and brevity.
 - Load `.maestria/workflow.md` and `.maestria/rules.md` once per session when relevant. Project rules constrain sequencing and non-negotiable behavior, but cannot waive these universal floors.
-- Modes are per-turn and platform-specific in lifetime. `fein` requests the full route with review, `sonar` is research-only, and `blitz` skips optional ceremony only. See the orchestrator for route selection and mode precedence.
+- Modes are per-turn when the runtime supports per-turn markers: `fein` requests the full route with review, `sonar` is research-only, and `blitz` skips optional ceremony only. Persisted modes must expose a clear/reset path (for example `/mode-clear`) and document their lifetime. See the orchestrator for route selection and mode precedence.
 
 ## Goal and Scope Control
 
@@ -39,6 +39,7 @@ This file is the universal contract ledger. The orchestrator owns routing and se
 - No delegation may start without a finite, positive route child-dispatch budget and a finite, non-negative child-task repair budget; an omitted or invalid budget is a blocked route, not permission to continue. Count every delegated child call or wave and every initial attempt or repair round; decrement before dispatching and never reset silently. A work unit ends only as success, blocked, failed, cancelled, or abandoned.
 - At each new user request, classify it as current outcome, adjacent follow-up, or new outcome. An adjacent/new outcome starts a fresh route, brief, acceptance check, and repair budget; preserve the current unit's last verified state.
 - Do not dispatch a dependent child or claim completion until the current child has a terminal report. Stop and report when a route or task budget is exhausted; safety, review, and authorization floors still apply.
+- Provider overload, header timeouts, transport failures, and cancellations are infrastructure-transient: preserve artifacts and the work ledger, retry with bounded backoff or reduce concurrency, and do not spend substantive repair/review budget on the transient failure itself.
 
 ## Delegation
 
@@ -63,7 +64,6 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 - Result markers: `+` new, `~` modified, `-` deleted, `!` breaking, and `(test)` for test files.
 - Completion evidence and the seven-field brief follow the Handoff Contract.
 - Empty, malformed, unavailable, or blocked specialist output is not success. Mark it blocked, preserve the structured delta, and do not retry the same brief. Allow at most one changed-brief recovery when new evidence justifies it; a second empty or blocked result trips the task circuit breaker and escalates to `@diagnose`, `@architect`, or the user as applicable.
-- A blocked or failed delegation is not an idle state: while the cause is diagnosed or authorization is sought, the orchestrator may continue read-only exploration, planning, and result reporting. It must not mutate code directly as a workaround and must not silently drop the route's review or safety floors.
 - For every agent-started long-lived process, report its ownership/identity, scoped stop method, terminal-state or exit verification, and retained log/artifact location; report `none started` when applicable. Cleanup is evidenced by observed state, never intent. Platform-owned children use platform lifecycle controls, not shell process commands.
 - Before compaction or context rollover, preserve the work-unit record, acceptance condition, assumptions/evidence, child statuses and remaining budgets, last diff, verification/findings, process cleanup evidence, and next step. Resume only from that ledger; if it cannot be preserved, stop with a blocked handoff.
 
@@ -95,6 +95,7 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 
 - The orchestrator owns each work unit's repair budget, progress record, and stop decision. For ordinary implementation, test, and review repair, it may dispatch builder fixes and required blind re-reviews without routine user approval.
 - A repair round is one builder attempt plus validation and, when required by the route, one reviewer pass. The initial build is not a repair round. Default budget: 3 rounds. Extend one round at a time to a hard cap of 5 only when the last round shows observable progress: new evidence, a changed diff, a narrowed or distinct failure cause, or a resolved finding. Count every attempted round.
+- The initial build is not a repair round; each builder fix plus validation and any required re-review consumes one round. Transient dispatch handling is separate.
 - Repeating a failure cause or review finding, restoring the same diff, or producing no new evidence is non-progress. Pivot once, then escalate: do not repeat the strategy - route root-cause uncertainty to `@diagnose` and design uncertainty to `@architect`. After one strategy pivot without progress, stop and escalate to an architecture decision.
 - Do not spend the repair budget on unrelated platform or runtime work; non-security cross-boundary findings are follow-ups, not repair work. Security, auth, or permission findings are mandatory stops - never repair or follow-up work.
 - A design-level finding involving requirements, a public contract, data model, module boundary, threat model, or cross-cutting behavior is a redesign, not a patch. Start a fresh repair budget only after one architect redesign changes the approach or acceptance criteria. Never reset a budget to erase findings or bypass a safety stop.
@@ -120,21 +121,22 @@ Keep handoffs concise and end with: "If anything is unclear, exhaust available d
 
 ## Commit and Branch Safety
 
-- Only the orchestrator authorizes commits. Plans and specialist results do not imply a commit.
-- Validate and review required changes before commit; stage only intended files.
+- The orchestrator is the commit authority for the current work unit; specialist plans and results do not independently trigger commits.
+- On a recognized feature branch, the orchestrator may commit completed, validated work autonomously after the required independent review. No additional user confirmation is required for the commit itself.
+- Before committing, inspect status and the intended diff, stage only intended files, and use a conventional message. The commit message and Work Results report are evidence of what was committed, not a user-question checkpoint.
 - **!!! Ship docs with code** - before every commit, audit all affected documentation categories: internal docs, ADRs, references, user-facing docs, changelog, and changeset. Any `packages/` change or behavior-affecting change MUST have a corresponding changeset; check existing entries and create one if needed. Keep docs, changelogs, and changesets in sync with the change.
 - **!!! Check your branch** - on an unrecognized branch, ask first. Worktrees are isolated - proceed directly.
-- **!!! Never commit or push to main.** Work on a feature branch. For normal work, never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved. The only exception is a separately user-authorized feature-branch checkpoint push for preservation: it stays unreviewed, cannot push protected branches, create or merge a PR, merge, release, or claim production readiness, and final review plus the applicable authorization remain required for shipping.
+- **!!! Never commit or push to main.** Work on a feature branch. Commit, push, PR, merge, and release are separate actions: push, PR creation, merge, and release remain subject to their own project and platform authorization and safety gates. Never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved. A feature-branch checkpoint push may preserve unreviewed work only when separately authorized; it cannot push protected branches, create or merge a PR, merge, release, or claim production readiness.
 - Pull latest before creating a feature branch from main. Worktrees are already isolated.
 
 ## Checkpoint Commits
 
-- Normal commits require validation and independent review approval before commit. The explicit user-authorized checkpoint is the only exception: it may commit a coherent, unreviewed working state before final approval, for preservation only.
+- Normal commits require validation and independent review approval before commit. An explicit checkpoint is the only exception to that review requirement: it may commit a coherent, unreviewed working state before final approval, for preservation only.
 - Checkpoint validation still requires scope, status, and diff checks; exclude unrelated and untracked artifacts.
 - Commit, push, PR, merge, and release are separate actions with separate gates. A checkpoint commits for preservation only and never auto-pushes, auto-creates a PR, merges, or releases; the checkpoint path stops after the preservation commit and never enters the configured push/PR flow. This default does not mean the user prohibited pushing.
 - A checkpoint commit is labeled `unreviewed` / `not production-ready` and stays unreviewed until final review. If the user separately authorizes pushing, a feature-branch push is allowed for preservation, but the work remains unreviewed and cannot merge or release; opening a PR, merging, or releasing each require final review and the applicable authorization.
 - Normal reviewed feature-branch work follows the project and platform push/PR policy. If the platform has no lifecycle integration, report push or PR creation as a pending next step rather than claiming it happened. Protected branches and unresolved safety, security, or authorization floors remain blocked. Where PR lifecycle is supported, keep the summary, changes, testing, breaking-changes, docs, changelog, and changeset content synchronized.
-- Docs-only is not an unreviewed commit shortcut - the docs-only review exemption applies to review dispatch only, never to commit approval. Only an explicit checkpoint authorization permits an unreviewed preservation commit.
+- The docs-only review exemption does not waive validation, the docs audit, branch floors, or any required safety gate. Only an explicit checkpoint authorization permits an intentionally unreviewed preservation commit.
 - Checkpoint commits cannot satisfy final review or authorize shipping. Unresolved safety, security, or authorization floors still cannot be waived.
 
 ## Canonical Source Invariant

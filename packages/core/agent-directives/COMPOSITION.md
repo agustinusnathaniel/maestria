@@ -24,7 +24,7 @@ leverage any relevant skills and documentation
 exhaust data before asking questions
 document assumptions with evidence
 proceed - reviewer will validate
-commit each logical unit autonomously under the separate commit protocol
+validate each logical unit autonomously; commit only under the separate commit protocol and its authorization
 ```
 
 ## Cross-Platform Sync Work

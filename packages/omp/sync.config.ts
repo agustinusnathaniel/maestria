@@ -29,7 +29,8 @@ export default {
 
   files: {
     // --- omp agent types (7 specialists) ---
-    // Each gets role-specific frontmatter with tool isolation
+    // Read-only sonar roles omit bash; architect/diagnose retain bash for evidence gathering.
+    // The native profile must enforce this list; prompts alone cannot prevent shell mutation.
 
     'adventurer.md': {
       prepend:
@@ -38,7 +39,7 @@ export default {
         '  Codebase reconnaissance specialist. Maps unknown territory, traces\n' +
         '  call chains and dependencies, discovers module relationships, and\n' +
         '  produces structured recon reports for downstream specialists.\n' +
-        'tools: read, bash, grep, find, ls, glob\n' +
+        'tools: read, grep, find, ls, glob\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
         '---\n' +
@@ -93,7 +94,7 @@ export default {
         '  Implementation planning specialist. Breaks complex features into\n' +
         '  phased milestones with dependencies, timelines, verification criteria,\n' +
         '  and rollback points.\n' +
-        'tools: read, bash, grep, find, ls\n' +
+        'tools: read, grep, find, ls\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
         '---\n' +

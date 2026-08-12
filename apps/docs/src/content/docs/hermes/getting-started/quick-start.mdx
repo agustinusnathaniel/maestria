@@ -23,6 +23,7 @@ All features are accessible via slash commands:
 
 ```bash
 /mode        # Show current mode and role
+/mode-clear  # Return to neutral routing
 /fein        # Full pipeline: explore → design → build → review
 /sonar       # Research only: explore → analyze → stop
 /blitz       # Fast execution: build directly
@@ -36,7 +37,7 @@ All features are accessible via slash commands:
 You:          /fein
 Hermes:       Mode set to fein
 You:          Research the auth patterns in this codebase
-Hermes:       [Adventurer explores, Architect designs, Builder implements, Reviewer checks]
+Hermes:       [Adventurer explores, Architect designs, Builder route is capability-gated, Reviewer checks]
 ```
 
 ## Modes at a Glance
@@ -44,7 +45,7 @@ Hermes:       [Adventurer explores, Architect designs, Builder implements, Revie
 | Mode    | Pipeline                                          | When to Use                                                                     |
 | ------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `fein`  | Full: adventurer → architect → builder → reviewer | Production work, new features, anything that needs review                       |
-| `sonar` | Research: adventurer → architect → stop           | Understanding a codebase, exploring options, no creation                        |
+| `sonar` | Research: read-only adventurer/planner → stop     | Understanding a codebase, exploring options, no creation                        |
 | `blitz` | Direct, read/research/LLM-only                    | Explanation and discovery on known territory; code changes route through review |
 
 The mode directive is injected into every message automatically - no manual prompting needed.
@@ -84,3 +85,5 @@ Configure Mnemosyne or Uteke in `config.yaml` under `memory:`. See the [Installa
 
 - [Commands](/hermes/commands/) - Full reference for all slash commands
 - [Core Concepts](/core/agents/) - Specialist reference and pipeline patterns
+
+> **Mode lifetime:** Hermes stores mode globally in `$HERMES_HOME`; use `/mode-clear` to return to neutral routing for all sessions sharing that home.

@@ -145,6 +145,11 @@ def register(ctx):
         description="Show current maestria mode and status",
     )
     ctx.register_command(
+        "mode-clear",
+        _cmd_clear_mode(mode_manager),
+        description="Clear maestria mode and return to neutral routing",
+    )
+    ctx.register_command(
         "review",
         _cmd_set_mode(mode_manager, "fein"),
         description="Activate full methodology pipeline (fein mode) with review gate",
@@ -201,13 +206,21 @@ def _cmd_set_mode(mode_manager, mode):
     return handler
 
 
+def _cmd_clear_mode(mode_manager):
+    """Return a slash command handler that clears persisted mode state."""
+    def handler(_raw_args: str) -> str:
+        mode_manager.clear_mode()
+        return "Cleared Maestria mode. Neutral routing is active."
+    return handler
+
+
 def _cmd_status(mode_manager):
     """Return a slash command handler that shows current mode status."""
     def handler(_raw_args: str) -> str:
         mode = mode_manager.get_mode()
         return (
             f"**Maestria Status**\n\n"
-            f"Mode: **{mode}**\n"
+            f"Mode: **{mode or 'neutral'}**\n"
             f"Read-only: {'Yes' if mode_manager.is_read_only() else 'No'}"
         )
     return handler

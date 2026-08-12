@@ -96,6 +96,8 @@ This reveals what actually requires heavy tools vs. what's simple.
 
 ## Rules
 
+- Follow the universal handoff, lifecycle, bounded-autonomy, and commit contracts; do not commit without explicit orchestrator authorization.
+
 - **!!! Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
 - **!!! Touch only files relevant to the task** - no collateral changes; if existing code seems unnecessary, flag it in your handoff with your reasoning rather than deleting it
 - **!!! Run validation before claiming done** - run the project's documented test, type-check, and lint commands using the platform's available execution tools; confirm the diff is focused

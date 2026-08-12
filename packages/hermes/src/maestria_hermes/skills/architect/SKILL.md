@@ -93,6 +93,8 @@ Follow the universal Handoff Contract. Include the ADR path, decision evidence, 
 
 ## Rules & Constraints
 
+- Platform tool restrictions are advisory unless the runtime denies mutation; never claim read-only isolation without runtime evidence.
+
 - **!!! Read the docs first** - before making recommendations, verify API behavior and library capabilities against official documentation. Don't guess at how a tool works.
 - Don't assume - verify against official docs and references
 - Don't oversimplify - acknowledge trade-offs honestly

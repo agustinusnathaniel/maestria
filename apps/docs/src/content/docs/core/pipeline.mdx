@@ -114,11 +114,11 @@ Define before delegating:
 
 The pipeline supports three modes that control its depth. Each mode is suited to a different class of work.
 
-| Mode                    | Pipeline                                          | Use Case                                                                                              |
-| ----------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Full pipeline**       | Thinker → Worker → Verifier (adaptive sequencing) | Explicitly chosen for high-risk or multi-phase work where the extra stages earn their cost.           |
-| **Research**            | Thinker only - STOP after analysis/design         | Understanding before committing. Reconnaissance, architecture evaluation, planning without execution. |
-| **Fast implementation** | Worker only - skip recon and review               | Quick fixes in known territory where the design is obvious and risk is low.                           |
+| Mode                    | Pipeline                                                                    | Use Case                                                                                              |
+| ----------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Full pipeline**       | Thinker → Worker → Verifier (adaptive sequencing)                           | Explicitly chosen for high-risk or multi-phase work where the extra stages earn their cost.           |
+| **Research**            | Thinker only - STOP after analysis/design                                   | Understanding before committing. Reconnaissance, architecture evaluation, planning without execution. |
+| **Fast implementation** | `@builder` only - skip optional recon/design ceremony; keep required review | Quick fixes in known territory where the design is obvious and risk is low.                           |
 
 The available mode names and activation rules depend on the platform. A task can also escalate from one mode to another - if a fast implementation hits unexpected complexity, the agent can fall back to the full pipeline. Strong or expensive models often work better with direct execution or a single specialist; see [When to use Maestria](/core/when-to-use/).
 

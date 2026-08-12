@@ -260,13 +260,13 @@ describe('canonical directive safety contracts', () => {
 
     // The protected-branch floor is unconditional.
     expect(commitSafety).toMatch(/Never commit or push to main/);
-    // Normal work: an unresolved required review, authorization, or safety gate blocks push, PR, merge, and release.
+    // Normal work: unresolved required review, authorization, or safety gates block lifecycle actions.
     expect(commitSafety).toContain(
-      'For normal work, never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved',
+      'Never push, create a PR, merge, or release while a required review, authorization, or safety gate is unresolved',
     );
     // The narrow exception is a separately user-authorized checkpoint push, preservation-only.
     expect(commitSafety).toContain(
-      'separately user-authorized feature-branch checkpoint push for preservation',
+      'A feature-branch checkpoint push may preserve unreviewed work only when separately authorized',
     );
     expect(commitSafety).toContain('cannot push protected branches');
     expect(commitSafety).toContain(
@@ -274,9 +274,30 @@ describe('canonical directive safety contracts', () => {
     );
     // A checkpoint push never authorizes PR/merge/release; final review and authorization remain required for shipping.
     expect(commitSafety).toContain(
-      'final review plus the applicable authorization remain required for shipping',
+      'it cannot push protected branches, create or merge a PR, merge, release, or claim production readiness',
     );
     expect(checkpointCommits).toContain('cannot satisfy final review or authorize shipping');
+  });
+
+  it('permits autonomous reviewed commits while keeping lifecycle actions separate', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const commitSafety = readSection(rules, '## Commit and Branch Safety');
+
+    expect(commitSafety).toContain(
+      'may commit completed, validated work autonomously after the required independent review',
+    );
+    expect(commitSafety).toContain(
+      'No additional user confirmation is required for the commit itself',
+    );
+    expect(commitSafety).toContain(
+      'push, PR creation, merge, and release remain subject to their own project and platform authorization',
+    );
+    expect(orchestrator).toContain(
+      'the orchestrator may authorize one autonomous routine commit on a recognized feature branch',
+    );
+    expect(orchestrator).not.toContain('explicit user commit request in the current turn');
+    expect(orchestrator).not.toContain('authorization resets to zero after the commit');
   });
 
   it('keeps checkpoint commits the narrow review exception with separate push/PR/merge/release gates', () => {
@@ -310,7 +331,7 @@ describe('canonical directive safety contracts', () => {
       'Protected branches and unresolved safety, security, or authorization floors remain blocked',
     );
     // No docs-only shortcut, no shipping authority, and floors are not waived.
-    expect(checkpointCommits).toMatch(/Docs-only is not an unreviewed commit shortcut/);
+    expect(checkpointCommits).toMatch(/docs-only review exemption does not waive validation/);
     expect(checkpointCommits).toMatch(/cannot satisfy final review or authorize shipping/);
     expect(checkpointCommits).toMatch(/cannot be waived/);
 

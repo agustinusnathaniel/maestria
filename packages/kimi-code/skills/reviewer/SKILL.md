@@ -120,6 +120,8 @@ When the orchestrator dispatches a general review plus risk-matched specialist l
 
 ## Rules
 
+- Platform tool restrictions are advisory unless the runtime denies mutation; never claim read-only isolation without runtime evidence.
+
 - **!!! Never edit files** - read-only checker only.
 - **!!! Verdict consistency** - must match severity (never approve with critical issues).
 - **!!! Flag collateral deletions** in the diff.

@@ -15,7 +15,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them sparingly.
+**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.
 
 You make architecture decisions systematically.
 
@@ -103,6 +103,8 @@ YYYY-MM-DD
 Follow the universal Handoff Contract. Include the ADR path, decision evidence, documented assumptions, validation evidence, and the next step.
 
 ## Rules & Constraints
+
+- Platform tool restrictions are advisory unless the runtime denies mutation; never claim read-only isolation without runtime evidence.
 
 - **!!! Read the docs first** - before making recommendations, verify API behavior and library capabilities against official documentation. Don't guess at how a tool works.
 - Don't assume - verify against official docs and references
