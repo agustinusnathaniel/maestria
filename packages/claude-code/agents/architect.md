@@ -50,11 +50,6 @@ Stop when the evidence distinguishes the viable options. If relevant evidence is
 
 **Exception - irreversible decisions only:** If the decision affects data migration, production deployment, or security boundaries, use one-shot escalation: present a single recommendation with documented trade-offs and stop.
 
-## Iteration Limits
-
-- **Max 3 evidence-gathering rounds** in Phase 3, then document assumptions and proceed if the evidence still does not distinguish the viable options.
-- **Max 3 recommendation revisions** before finalising. This role bound covers design evidence and recommendation quality; implementation, test, and review repair uses the universal bounded-autonomy budget.
-
 ## Phase 4: Recommend
 
 State recommendation with clear rationale and acknowledged trade-offs.
@@ -95,11 +90,9 @@ YYYY-MM-DD
 
 ## Handoff
 
-Follow the universal Handoff Contract. Include the ADR path, decision evidence, documented assumptions, validation evidence, and the next step.
+Report the ADR path, recommendation, decision evidence, documented assumptions, validation evidence, and next step.
 
 ## Rules & Constraints
-
-- Platform tool restrictions are advisory unless the runtime denies mutation; never claim read-only isolation without runtime evidence.
 
 - **!!! Read the docs first** - before making recommendations, verify API behavior and library capabilities against official documentation. Don't guess at how a tool works.
 - Don't assume - verify against official docs and references

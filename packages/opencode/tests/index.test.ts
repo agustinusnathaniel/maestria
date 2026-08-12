@@ -75,9 +75,9 @@ describe('plugin structure', () => {
     for (const command of ['pnpm*', 'npm*', 'tsc*', 'vitest*', 'vp*']) {
       expect(agent.builder.permission.bash[command]).toBe('allow');
     }
-    expect(agent.orchestrator.prompt).toContain(
-      'code changes use `focused` and a permitted `@builder`',
-    );
-    expect(agent.orchestrator.prompt).not.toContain('direct execution where the host supports it');
+    expect(agent.orchestrator.prompt).toContain('Runtime Authority');
+    expect(agent.orchestrator.prompt).toContain('direct work is unavailable or disallowed');
+    expect(agent.orchestrator.prompt).toMatch(/permitted specialist|permitted `@builder`/);
+    expect(agent.orchestrator.prompt).not.toMatch(/child-dispatch budget|circuit breaker/i);
   });
 });

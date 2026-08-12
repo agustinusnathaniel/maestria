@@ -1,51 +1,21 @@
 # Directive Composition Patterns
 
-Some directive combinations are known to work well together. These are "proven combos" documented from practice.
+These notes are human-facing design guidance. The runtime adapts the patterns to its own tools, permissions, context behavior, and lifecycle controls.
 
-## Feature Implementation
+## Pipeline Composition
 
-```
-!!! ensure to check, test rigorously, then commit one-by-one per task under the separate commit protocol
-kindly update documentation
-commit, split if applicable
-```
+Use `direct` for known, low-risk work when the host permits it. Use `focused` when one specialist can own a concrete outcome. Use `full` when reconnaissance, design, implementation, and independent review add enough information or risk reduction to justify their cost.
 
-## Quality-First Development
+Each delegation has one coherent outcome and a useful handoff. Parallelize only independent work, integrate results before review, and do not make a later stage depend on an unverified earlier result.
 
-```
-leverage any relevant skills and documentation
-!!! verify before handoff - never present broken code
-!!! run full check suite before committing
-```
+## Maker/Checker Split
 
-## Autonomous Mode
+The agent that produces work should not approve it. The checker receives the requirements, acceptance evidence, and relevant diff, then reports findings without the maker's self-assessment. Tool-level enforcement varies by runtime; the directive must describe that distinction honestly.
 
-```
-exhaust data before asking questions
-document assumptions with evidence
-proceed - reviewer will validate
-validate each logical unit autonomously; commit only under the separate commit protocol and its authorization
-```
+## High-Agency Execution
 
-## Focused Autonomy
+Exhaust available evidence, state material assumptions, and proceed on ordinary ambiguity. Define observable completion evidence before substantial work. Repair ordinary in-scope defects while progress continues, change strategy when it doesn't, and stop loudly at safety, authorization, or genuine decision boundaries.
 
-```
-pick the smallest safe route; defaults are finite and counted: `direct` zero dispatches, `focused` one owning specialist plus only its required reviewer, `full` one thinker, one integrated worker batch, one general reviewer, `sonar` one owning read-only specialist plus at most one distinct read-only specialist; each planned child gets one initial dispatch and at most one recovery dispatch
-keep the primary outcome, non-goals, and termination condition; declare explicit budgets only for fan-out, non-default children, or repair extensions
-on an unavailable, malformed, or timed-out delegation: record it terminal blocked or failed first, then at most one recovery dispatch for the same child with a corrected brief when the cause is identifiable, otherwise one bounded transport retry; intentional cancellation is terminal and never retried; if recovery fails, preserve the delta and stop dependent work while independent read-only exploration and reporting continue; never mutate directly
-transient provider or transport failures are not repair progress and consume no repair budget, but every attempt counts against dispatch-attempt accounting
-a greeting, status check, or continuation is the same work unit; only a changed outcome restarts it
-review stays blind; unresolved findings block landing
-```
+## Canonical Sync
 
-## Cross-Platform Sync Work
-
-```
-edit canonical source in packages/core/agent-directives/
-run scripts/sync-all to propagate
-run scripts/check-sync to verify
-```
-
-## Reference
-
-These patterns emerged from scar tissue - repeated failures that taught us what works. They are not preferences. See the universal rules contract for the `!!!` convention.
+Edit only `packages/core/agent-directives/`, run `scripts/sync-all` to generate platform projections, and run `scripts/check-sync` before handoff.

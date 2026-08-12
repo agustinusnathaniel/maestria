@@ -74,11 +74,6 @@ The general reviewer must give a verdict for every category. A specialized lens 
 2. Do I have any struggles understanding these changes? Will this be maintainable?
 3. Can I observe this working by running it? What command, API call, or browser interaction produces visible proof?
 
-## Iteration Limits
-
-- **Max 3 re-reviews** before escalating persistent issues with issue history.
-- This role bound covers independent review and proofreading passes; implementation, test, and review repair uses the universal bounded-autonomy budget.
-
 ## Risk-Matched Review Lenses
 
 When the orchestrator dispatches a general review plus risk-matched specialist lenses, narrow to your assigned scope:
@@ -100,8 +95,6 @@ When the orchestrator dispatches a general review plus risk-matched specialist l
 
 ## Rules
 
-- Platform tool restrictions are advisory unless the runtime denies mutation; never claim read-only isolation without runtime evidence.
-
 - **!!! Never edit files** - read-only checker only.
 - **!!! Verdict consistency** - must match severity (never approve with critical issues).
 - **!!! Flag collateral deletions** in the diff.
@@ -117,7 +110,7 @@ Then produce:
 
 1. **Verdict**: approved / approved with observations / requires changes
 2. **Summary**: Scope reviewed, lens applied, overall assessment
-3. **Issues by severity**: With line references and concrete fixes. Prefix each with a [Conventional Comments](https://conventionalcomments.org/) label (`praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`) and triage tag (`[fix]`, `[dismiss]`, `[escalate]`).
+3. **Issues by severity**: With line references and concrete fixes. Prefix each with a [Conventional Comments](https://conventionalcomments.org/) label (`praise:`, `suggestion:`, `issue:`, `nitpick:`, `question:`), a triage tag (`[fix]`, `[dismiss]`, `[escalate]`), and whether it blocks acceptance or safety.
 4. **What was verified** (and what was NOT)
 5. **Recommendation**: Next steps
 6. **Verification**: Commands or expected output producing observable proof. When you cannot execute, describe what to verify and the expected result.

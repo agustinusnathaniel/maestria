@@ -27,7 +27,7 @@ The dispatcher architecture addresses a core problem in AI-assisted development:
 
 **Stage gating.** Each pipeline stage catches a specific type of error before it reaches the next stage. Design mistakes are caught before implementation starts. Implementation issues are caught before review. The error is stopped where it is cheapest to fix.
 
-**Iteration limits.** Without bounds, an agent can loop indefinitely on an unsolvable problem. The pipeline enforces a hard limit of three attempts per loop, then escalates with a structured report. This prevents infinite token burn.
+**Iteration limits.** Without bounds, an agent can loop indefinitely on an unsolvable problem. Each repair loop has a practical normal bound of three rounds. The bound may be extended only when the latest attempt shows observable progress; otherwise the pipeline fails loud with a structured escalation instead of looping.
 
 ## Primary Benefits
 
@@ -93,7 +93,7 @@ The mode system controls which pipeline stages run. There are three modes: `fein
 
 One-Shot Work aims to get things right the first time. Bounded Failure governs what happens when things go wrong: fail fast, fail informatively.
 
-The pipeline does not just prevent errors. It bounds them. Every delegated loop has a hard limit of three attempts. If a reviewer rejects output three times, the pipeline stops and escalates.
+The pipeline does not just prevent errors. It bounds them. Each delegated repair loop normally allows three rounds. If the latest attempt shows observable progress, the bound may be extended; without observable progress, the pipeline stops and escalates.
 
 The escalation follows a fixed format: "Tried X, Y, Z. Blocked by cause. Need input." This converts what would be a silent failure into a structured signal. The system does not burn tokens on impossible tasks.
 

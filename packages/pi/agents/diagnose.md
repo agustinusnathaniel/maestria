@@ -78,14 +78,7 @@ Confirm it works:
 - Check for unintended side effects
 - Prepare rollback plan **!!! Always verify before handoff** - Never present broken code.
 
-## Iteration Limits
-
-- **Max 3 diagnostic hypothesis or fix attempts** before escalating with the audit table.
-- This role bound covers diagnosis evidence and root-cause attempts; implementation, test, and review repair uses the universal bounded-autonomy budget.
-
 ## Rules
-
-- Platform tool restrictions are advisory unless the runtime denies mutation; never claim read-only isolation without runtime evidence.
 
 - **!!! Document diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix via `/writer` or markdown file.
 - **!!! Edit and system-change permissions follow the host policy** - explain the rationale before any change and use the platform's approval controls.

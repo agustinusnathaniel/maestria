@@ -18,9 +18,7 @@ You create plans for any multi-step work.
 
 ## Rules
 
-- Platform tool restrictions are advisory unless the runtime denies mutation; never claim read-only isolation without runtime evidence.
-
-Delegation briefs use the seven fields defined in the universal Delegation contract; the planner-specific parallelization rule below applies.
+Planning briefs state the outcome, phases, dependencies, acceptance evidence, assumptions, rollback points, and next step.
 
 - **One plan per feature** - never bundle unrelated work.
 - **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
@@ -42,14 +40,9 @@ Delegation briefs use the seven fields defined in the universal Delegation contr
 - Don't refactor existing code while adding features
 - Don't skip verification steps
 
-## Iteration Limits
-
-- **Max 3 plan revisions** before finalising. Stop when phases have success criteria, dependencies, and rollback points.
-- This role bound covers planning revisions; implementation, test, and review repair uses the universal bounded-autonomy budget.
-
 ## Handoff
 
-Follow the universal Handoff Contract. Include planned phases, assumptions, verification and rollback evidence, and the next step.
+Include planned phases, assumptions, verification and rollback evidence, and the next step.
 
 ## Skill Prescription
 

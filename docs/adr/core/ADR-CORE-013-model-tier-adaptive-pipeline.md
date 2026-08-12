@@ -41,6 +41,10 @@ Adopt staged evolution rather than claiming a runtime feature that does not exis
 
 Unit 2 may implement selective routing informed by model economics. That future work must preserve the route contract while making any new configuration or runtime behavior explicit.
 
+### Runtime authority clarification (2026-08-12)
+
+The shared directive defines route selection and behavioral principles; the host runtime defines execution authority. OpenCode, OMP, and Kimi may require pure-dispatcher behavior where their adapters or session permissions restrict the orchestrator. Direct-capable runtimes may execute a direct route when their host permits it. Delegated work remains owned by its designated specialist, and maker/checker requirements remain honest about the enforcement the host actually provides.
+
 ### Proposed future tier model
 
 | Tier       | Model class (example)          | Budget         | Latency  |
@@ -65,7 +69,7 @@ This table is a hypothesis for Unit 2, not current behavior. `MAESTRIA_TIER` is 
 
 ### What Does Not Change
 
-- **Tier scales the pipeline, not the rules.** `!!!` rules (never implement routed work yourself, maker/checker split, handoff contracts, iteration limits) still bind. Direct-route turns run on the host; focused and full turns delegate to the 7 specialists, and the orchestrator does not implement work routed to a specialist. A frontier orchestrator delegates fewer times and to fewer specialists. The maker/checker split is preserved on every code change that lands; only its frequency scales.
+- **Tier scales the pipeline, not the safety principles.** `!!!` rules such as evidence-based completion, maker/checker review, bounded repair, and authorization floors still bind. Whether the orchestrator can execute directly is defined by the host runtime: restricted hosts may require pure dispatch, while direct-capable hosts may execute a direct route. A frontier orchestrator delegates fewer times and to fewer specialists. The maker/checker split remains required where the selected route and host can provide it; the directive must not claim stronger enforcement than the host provides.
 - **Mode keywords still win.** `fein`/`sonar`/`blitz` are per-turn overrides that beat the tier default for that turn. Tier is the default; mode is the exception.
 - **The 7 specialists stay.** No specialist is removed at any tier. `frontier` skips stages, it does not delete agents.
 - **The sync pipeline is unaffected.** This is content (prompts) + config (tier declaration), not new plumbing. The orchestrator prompt gains a Tier section; platform frontmatter gains a tier setting.

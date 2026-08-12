@@ -1,10 +1,10 @@
 # Iteration Limits
 
-The universal bounded-autonomy contract owns repair budgets and progress-sensitive stopping. This skill is only a concise projection:
-
-- Define a **Verifiable Termination Condition** before looping.
-- Count every attempt against the applicable hard limit; default repair budget is 3 rounds and may extend one round at a time to 5 only with observable progress. Transient provider or transport failures are not repair rounds and do not count as progress, but every dispatch attempt still counts against dispatch-attempt accounting.
-- Stop on non-progress, safety ambiguity, or unresolved review floors. Escalate: `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
-- Default routes run on implicit finite budgets: `direct` zero dispatches; `focused` one owning specialist plus only its required reviewer; `full` one thinker, one integrated worker batch, one general reviewer, with a risk lens only when evidenced and explicitly added; `sonar` one owning read-only specialist plus at most one distinct read-only specialist. Each planned child gets one initial dispatch and at most one recovery dispatch, counted in the route budget; repair rounds are separate from dispatch recovery. Declare and decrement finite route and child-task budgets only for fan-out, non-default children, or repair extensions; never silently reset them, and account for remaining budgets in the internal handoff or checkpoint when adaptive repair is used.
-- A failed dispatch is terminal before recovery: record it `blocked` or `failed` (`cancelled` for intentional user or platform cancellation, which is never retried or continued), then at most one recovery dispatch for the same child with a materially corrected brief when the cause is identifiable, otherwise one bounded transport retry. If recovery fails, preserve the terminal delta and stop dependent work; independent read-only work may continue.
-- Empty or blocked output is non-progress: allow at most one changed-brief recovery, then trip the circuit breaker and escalate with the structured delta.
+- Define a verifiable termination condition before looping.
+- Set a practical repair bound, normally three rounds. Extend only when the
+  latest attempt shows observable progress; never silently reset the bound.
+- Repeated causes, repeated findings, restored diffs, or no new evidence mean
+  non-progress. Change strategy or escalate rather than retrying unchanged.
+- Stop on safety ambiguity, authorization boundaries, or unresolved review
+  blockers. Report: `Tried X, Y, Z. Blocked by [cause]. Need [input] to
+  proceed.`
