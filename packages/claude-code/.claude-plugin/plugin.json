@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "maestria",
+  "displayName": "Maestria",
+  "version": "0.1.0",
+  "description": "Maestria methodology for Claude Code: specialist agents, orchestrator and global-rules skills, and workflow commands",
+  "author": {
+    "name": "agustinusnathaniel"
+  },
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/claude-code",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "ai",
+    "claude-code",
+    "maestria",
+    "orchestration",
+    "pipeline",
+    "specialists"
+  ]
+}
