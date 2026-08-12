@@ -83,21 +83,41 @@ describe('installSubagentTool - single mode (backward compat)', () => {
     expect(toolDef.name).toBe('maestria_subagent');
   });
 
-  it('rejects unknown agent names', async () => {
+  it('returns an actionable message for unknown agent names', async () => {
     const pi = { registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
     const toolDef = (pi as any).registerTool.mock.calls[0][0];
-    await expect(
-      toolDef.execute(
-        'call-1',
-        { agent: 'unknown', task: 'do something' },
-        undefined,
-        undefined,
-        {},
-      ),
-    ).rejects.toThrow('Unknown agent');
+    const result = await toolDef.execute(
+      'call-1',
+      { agent: 'unknown', task: 'do something' },
+      undefined,
+      undefined,
+      {},
+    );
+    const text = result.content[0].text;
+    expect(text).toContain('Invalid maestria_subagent call');
+    expect(text).toContain('agent');
+    expect(text).toContain('adventurer');
+  });
+
+  it('returns an actionable message when agent is missing', async () => {
+    const pi = { registerTool: vi.fn() };
+    const state = createInitialState();
+    installSubagentTool(pi as any, state);
+
+    const toolDef = (pi as any).registerTool.mock.calls[0][0];
+    const result = await toolDef.execute(
+      'call-1',
+      { task: 'do something' },
+      undefined,
+      undefined,
+      {},
+    );
+    const text = result.content[0].text;
+    expect(text).toContain('Invalid maestria_subagent call');
+    expect(text).toContain('agent');
   });
 
   it('rejects empty task description', async () => {

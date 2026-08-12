@@ -82,16 +82,88 @@ describe('installToolInterceptors', () => {
     expect(result).toBeUndefined();
   });
 
-  it('blocks tools other than task/maestria_subagent when orchestrator is in a mode', async () => {
+  it('blocks mutation bash when orchestrator is in a mode', async () => {
     const pi = { on: vi.fn(), getActiveTools: vi.fn() };
     pi.getActiveTools.mockReturnValue(['task', 'read', 'write', 'bash']);
     const state = { ...createInitialState(), mode: 'fein' as const };
     installToolInterceptors(pi as any, state);
 
     const handler = (pi as any).on.mock.calls[0][1];
-    const result = await handler({ toolName: 'bash' }, {});
+    const result = await handler({ toolName: 'bash', input: { command: 'rm -rf dist' } }, {});
     expect(result.block).toBe(true);
     expect(result.reason).toContain("'bash' is blocked");
+  });
+
+  it('blocks edit and write when orchestrator is in a mode', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write', 'bash']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    expect((await handler({ toolName: 'write', input: { path: 'a.ts' } }, {})).block).toBe(true);
+    expect((await handler({ toolName: 'edit', input: { path: 'a.ts' } }, {})).block).toBe(true);
+  });
+
+  it('allows read-only bash when orchestrator is in a mode', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write', 'bash']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'bash', input: { command: 'git status' } }, {});
+    expect(result).toBeUndefined();
+  });
+
+  it('blocks chained bash that hides a mutation behind a read-only prefix', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write', 'bash']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler(
+      { toolName: 'bash', input: { command: 'git status && git checkout .' } },
+      {},
+    );
+    expect(result.block).toBe(true);
+  });
+
+  it('blocks command substitution in bash when orchestrator is in a mode', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write', 'bash']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler({ toolName: 'bash', input: { command: 'ls $(rm -rf dist)' } }, {});
+    expect(result.block).toBe(true);
+  });
+
+  it('allows read-only bash pipelines when orchestrator is in a mode', async () => {
+    const pi = { on: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write', 'bash']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    const result = await handler(
+      { toolName: 'bash', input: { command: 'git log --oneline | head -5' } },
+      {},
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it('allows read and grep when orchestrator is in a mode', async () => {
+    const pi = { on: vi.fn(), appendEntry: vi.fn(), getActiveTools: vi.fn() };
+    pi.getActiveTools.mockReturnValue(['task', 'read', 'write', 'bash']);
+    const state = { ...createInitialState(), mode: 'fein' as const };
+    installToolInterceptors(pi as any, state);
+
+    const handler = (pi as any).on.mock.calls[0][1];
+    expect(await handler({ toolName: 'read', input: { path: 'a.ts' } }, {})).toBeUndefined();
+    expect(await handler({ toolName: 'grep', input: { pattern: 'x' } }, {})).toBeUndefined();
   });
 
   it('allows task tool when orchestrator is in a mode', async () => {

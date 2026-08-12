@@ -4,16 +4,19 @@ import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 import type { MaestriaState } from '@/state.js';
 import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
 import {
+  ALLOWED_AGENTS,
   assertValidAgent,
   assertNonEmptyTask,
   MAESTRIA_EVENTS,
 } from '@maestria/shared-pi/subagent-utils';
 
+const ALLOWED_AGENT_NAMES: ReadonlyArray<string> = ALLOWED_AGENTS;
+
 /** Terminal subagent statuses - agent will produce no more updates. */
 const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
 
 /** Maximum time to wait for a subagent to complete, in milliseconds. */
-export const POLL_TIMEOUT_MS = 60_000;
+export const POLL_TIMEOUT_MS = 180_000;
 
 /** Interval between subagent status checks, in milliseconds. */
 export const POLL_INTERVAL_MS = 500;
@@ -95,8 +98,11 @@ export function installSubagentTool(
       return args;
     },
     parameters: Type.Object({
-      agent: Type.Optional(Type.String({ description: 'Specialist agent name' })),
-      task: Type.Optional(Type.String({ description: 'Task description for the subagent' })),
+      agent: Type.String({
+        description:
+          'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
+      }),
+      task: Type.String({ description: 'Task description for the subagent (required)' }),
       tasks: Type.Optional(
         Type.Array(
           Type.Object({
@@ -139,7 +145,19 @@ export function installSubagentTool(
 
       // Validate parameters based on mode
       if (mode === 'single') {
-        assertValidAgent(params.agent!);
+        if (!params.agent || !ALLOWED_AGENT_NAMES.includes(params.agent)) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text:
+                  `Invalid maestria_subagent call: 'agent' is required and must be one of ` +
+                  `${ALLOWED_AGENT_NAMES.join(', ')}. ` +
+                  `Re-dispatch with a valid agent name; the orchestrator may continue read-only exploration while the brief is corrected.`,
+              },
+            ],
+          };
+        }
         assertNonEmptyTask(params.task, 'Task description is required');
       } else if (mode === 'parallel') {
         if (!params.tasks || params.tasks.length < 2) {
