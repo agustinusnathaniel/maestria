@@ -5,25 +5,42 @@ import {
   type ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
-import { DANGEROUS_PATTERNS } from '@maestria/shared-pi/tools-core';
+import { DANGEROUS_PATTERNS, isReadOnlyBashCommand } from '@maestria/shared-pi/tools-core';
 import { persistState, recordFileModified, recordFileRead } from '@/state.js';
 
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
   pi.on('tool_call', async (event: ToolCallEvent, ctx: ExtensionContext) => {
     if (!event || !event.toolName) return;
 
-    // ── Pure dispatcher enforcement ──
+    // ── Orchestrator routing enforcement ──
     // When a maestria workflow mode is active, restrict the root session
-    // (orchestrator) to ONLY the maestria_subagent delegation tool.
-    // Subagent sessions are detected by the absence of the pi-subagents
-    // 'subagent' tool (stripped by applyRecursionGuard in child sessions).
+    // (orchestrator) to read-only recon + delegation. The orchestrator may
+    // read, search, and inspect to route and verify, but mutations (edit,
+    // write, mutation-capable bash) belong to specialists. Subagent sessions
+    // are detected by the absence of the pi-subagents 'subagent' tool
+    // (stripped by applyRecursionGuard in child sessions).
     if (state.mode !== null && pi.getActiveTools().includes('subagent')) {
-      if (event.toolName !== 'maestria_subagent') {
+      const isMutation =
+        isToolCallEventType('edit', event) ||
+        isToolCallEventType('write', event) ||
+        isToolCallEventType('patch', event) ||
+        event.toolName === 'bash';
+      if (isMutation) {
+        // Read-only bash (ls, git status, git diff, tests) is allowed so the
+        // orchestrator can verify state; mutation-capable commands still
+        // belong to specialists.
+        if (event.toolName === 'bash') {
+          const input = event.input as { command?: unknown } | undefined;
+          const command = typeof input?.command === 'string' ? input.command : '';
+          if (isReadOnlyBashCommand(command)) {
+            return undefined;
+          }
+        }
         return {
           block: true,
           reason:
             `Tool '${event.toolName}' is blocked for the orchestrator. ` +
-            `Use 'maestria_subagent' to delegate tasks to specialists.`,
+            `Use 'maestria_subagent' to delegate mutations to specialists.`,
         };
       }
     }

@@ -29,10 +29,9 @@ export function installSubagentTool(
       agent: pi.zod
         .string()
         .describe(
-          'Specialist agent name (adventurer, architect, builder, diagnose, planner, reviewer, writer)',
-        )
-        .optional(),
-      task: pi.zod.string().describe('Task description for the subagent').optional(),
+          'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
+        ),
+      task: pi.zod.string().describe('Task description for the subagent (required)'),
       tasks: pi.zod
         .array(
           pi.zod.object({

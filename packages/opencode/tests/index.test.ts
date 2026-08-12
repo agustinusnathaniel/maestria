@@ -61,15 +61,20 @@ describe('plugin structure', () => {
     expect(agent.reviewer.mode).toBe('subagent');
   });
 
-  it('keeps direct code tools denied to the orchestrator and permitted to builder', async () => {
+  it('keeps mutation tools denied to the orchestrator while permitting read-only recon', async () => {
     const plugin = await MaestriaPlugin({} as never);
     const config = { agent: {} };
     await plugin.config?.(config);
 
     const agent = config.agent as Record<string, Record<string, any>>;
-    expect(agent.orchestrator.permission.read).toBe('deny');
+    // Orchestrator may read/search to route and verify, but never mutate.
+    expect(agent.orchestrator.permission.read).toBe('allow');
+    expect(agent.orchestrator.permission.grep).toBe('allow');
     expect(agent.orchestrator.permission.edit).toBe('deny');
     expect(agent.orchestrator.permission.bash['*']).toBe('deny');
+    // Read-only bash allowed for recon; mutation-capable still denied.
+    expect(agent.orchestrator.permission.bash['ls*']).toBe('allow');
+    expect(agent.orchestrator.permission.bash['git status*']).toBe('allow');
     expect(agent.builder.permission.read).toBe('allow');
     expect(agent.builder.permission.edit).toBe('allow');
     for (const command of ['pnpm*', 'npm*', 'tsc*', 'vitest*', 'vp*']) {
