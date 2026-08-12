@@ -7,9 +7,9 @@ import { Aside } from '@astrojs/starlight/components';
 
 # Workflow Patterns
 
-The 7 specialists work as a team. The orchestrator manages the flow - it decomposes complex requests into phases, delegates each phase to the appropriate specialist, and verifies completion before moving on.
+For routed or full-pipeline work, the 7 specialists can work as a team. The orchestrator manages that flow - it decomposes complex requests into phases, delegates each phase to the appropriate specialist, and verifies completion before moving on.
 
-> This page builds on the [specialist roles and pipeline model](/core/agents/) documented in the Specialist Reference. The pipeline routes work through thinker → worker → verifier roles with dynamic sequencing.
+> This page builds on the [specialist roles and pipeline model](/core/agents/) documented in the Specialist Reference. When selected, the pipeline routes work through thinker → worker → verifier roles with dynamic sequencing.
 
 ## Explore a codebase
 
@@ -61,7 +61,7 @@ Let **Reviewer** check your changes before committing.
 
 > Reviewer: Review my current changes before I commit.
 
-The Reviewer runs a 7-dimension checklist: correctness, performance, security, maintainability, test coverage, error handling, and style. The Reviewer is read-only and never edits files directly.
+The Reviewer performs a general quality and safety review across correctness, edge cases, security, performance, maintainability, test coverage, assumptions, and style as relevant. The Reviewer is read-only and never edits files directly.
 
 The Reviewer also prioritizes observing behavior over reasoning about correctness - each review includes a command, API request, or browser interaction that produces visible proof.
 
@@ -104,20 +104,23 @@ The Writer follows structured patterns matched to the document type - purpose, u
 
 ## Investigate an uncertain problem
 
-Use **Parallel speculation** when the right approach isn't clear and you need
-multiple perspectives before committing to a direction.
+Use **Parallel speculation** only when the right approach is genuinely unclear
+and multiple independent perspectives would materially improve the decision.
 
 > Orchestrator: I need to understand why the auth module keeps failing under
 > load. Adventurer, map the entry points. Architect, evaluate the auth
 > architecture. Diagnose, trace the failure path.
 
-The orchestrator dispatches the same question to multiple specialists with
+The orchestrator dispatches the question to independent specialists with
 different lenses, then synthesizes the results before choosing a direction.
-Use this pattern when:
+Use this pattern only when:
 
 - The root cause of a problem is genuinely unknown
 - A design decision has ambiguous trade-offs
 - You need to explore an unfamiliar domain from multiple angles
+
+For a clear, low-risk task, use one route and let the assigned specialist or
+host agent reason and act without unnecessary fan-out.
 
 This is different from parallel exploration (which fans out independent
 tasks). Parallel speculation fans out the _same_ question to get different
@@ -152,8 +155,8 @@ The orchestrator spawns independent exploration tasks simultaneously and present
 See [Pipeline & Roles](/core/pipeline/) for the full pipeline diagram and role descriptions.
 
 <Aside type="tip">
-  Most tasks don't start with code. Start with recon (Adventurer) or design (Architect) before
-  reaching for Builder. The orchestrator handles this routing automatically.
+  Choose the smallest safe route. Use direct execution for known, low-risk work when the host
+  permits it; use recon or design when the code is unfamiliar or the approach is uncertain.
 </Aside>
 
 ## Project Workflows (.maestria/)
@@ -175,8 +178,9 @@ to `@adventurer`. If found:
 
 ### Precedence
 
-Core rules (never implement routed work yourself, maker/checker split, commit protocol, etc.) always
-take precedence over project instructions. If a conflict arises, the core rule wins.
+Runtime authority, selected-route safeguards, maker/checker review where applicable, bounded repair,
+and the commit protocol always take precedence over project instructions. If a conflict arises, the
+core principle wins.
 
 ### Example
 
