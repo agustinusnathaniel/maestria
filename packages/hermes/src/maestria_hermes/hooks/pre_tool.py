@@ -176,7 +176,7 @@ def create_pre_tool_hook(mode_manager: ModeManager):
         tool_name = str(tool_name)
 
         mode = mode_manager.get_mode()
-        if mode not in VALID_MODES:
+        if mode is not None and mode not in VALID_MODES:
             logger.warning("invalid maestria mode denied tool=%s mode=%r", tool_name, mode)
             return _block("Tool access denied: invalid maestria mode.")
 
@@ -215,6 +215,6 @@ def create_pre_tool_hook(mode_manager: ModeManager):
                 "no trusted top-level binding and no valid delegated-child trust."
             )
 
-        return _top_level_policy(mode, tool_name)
+        return _top_level_policy(mode or "fein", tool_name)
 
     return pre_tool_hook

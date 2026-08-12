@@ -81,7 +81,18 @@ describe('installModeCommands', () => {
 
     installModeCommands(pi as any, state);
 
-    expect(Object.keys(pi._commands)).toEqual(['fein', 'sonar', 'blitz']);
+    expect(Object.keys(pi._commands)).toEqual(['mode-clear', 'fein', 'sonar', 'blitz']);
+  });
+
+  it('clears the active mode and persists neutral state', async () => {
+    const pi = createMockPi();
+    const state = createInitialState();
+    state.mode = 'sonar';
+    installModeCommands(pi as any, state);
+    const ctx = { ui: { notify: vi.fn() } };
+    await pi._commands['mode-clear'].handler('', ctx);
+    expect(state.mode).toBeNull();
+    expect(ctx.ui.notify).toHaveBeenCalledWith('Workflow mode cleared. Neutral routing is active.');
   });
 
   it('registers all 3 commands with correct descriptions', () => {

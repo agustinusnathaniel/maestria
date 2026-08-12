@@ -6,7 +6,9 @@ Supports three modes:
 - blitz: Fast execution -- skip optional recon/design ceremony;
   required review and safety floors remain
 
-Mode persists across sessions via a JSON state file (bundled fallback).
+Mode persists globally across Hermes sessions via a JSON state file (bundled fallback);
+`/mode-clear` persists neutral routing. This global scope is a platform limitation,
+not session isolation.
 The plugin is memory-engine agnostic — no memory backend is required or
 assumed for mode state to work correctly.
 """
@@ -42,15 +44,16 @@ class ModeManager:
 
     def __init__(self):
         self._mode: Optional[str] = None
+        self._loaded = False
         self._load()
 
     # -- public API -----------------------------------------------------------
 
-    def get_mode(self) -> str:
-        """Return the current mode (loaded from file or default)."""
-        if self._mode is None:
+    def get_mode(self) -> Optional[str]:
+        """Return the current mode, or None after an explicit neutral reset."""
+        if not self._loaded:
             self._load()
-        return self._mode or DEFAULT_MODE
+        return self._mode
 
     def set_mode(self, mode: str) -> None:
         """Set a new mode and persist to state file."""
@@ -60,6 +63,13 @@ class ModeManager:
                 f"Invalid mode '{mode}'. Choose from: {', '.join(sorted(VALID_MODES))}"
             )
         self._mode = normalized
+        self._loaded = True
+        self._save()
+
+    def clear_mode(self) -> None:
+        """Clear the explicit mode and persist neutral routing."""
+        self._mode = None
+        self._loaded = True
         self._save()
 
     def is_read_only(self) -> bool:
@@ -75,12 +85,18 @@ class ModeManager:
             try:
                 data = json.loads(path.read_text(encoding="utf-8"))
                 mode = data.get("mode", DEFAULT_MODE)
+                if mode is None:
+                    self._mode = None
+                    self._loaded = True
+                    return
                 if mode in VALID_MODES:
                     self._mode = mode
+                    self._loaded = True
                     return
             except (json.JSONDecodeError, OSError):
                 pass
         self._mode = DEFAULT_MODE
+        self._loaded = True
 
     def _save(self) -> None:
         """Persist current mode to the state file (atomic write)."""

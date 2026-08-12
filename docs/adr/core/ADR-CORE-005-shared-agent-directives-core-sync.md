@@ -57,7 +57,7 @@ Content rules:
 
 - **No platform-specific tool names** - write `task()` instead of `@task` or `maestria_subagent()`; each plugin's config maps these during derivation
 - **No frontmatter** - frontmatter is a plugin-specific concern (YAML vs SKILL.md format)
-- **No role prefixes** - write "delegate to architect" rather than `@architect` or `/architect`
+- **Canonical role tokens** - use `@architect`-style role identifiers as platform-neutral placeholders; sync configs map them to each platform's invocation form. Do not add platform-specific commands or tool syntax to core.
 - **Section structure preserved** - `!!!` markers, skill buckets, iteration limits, handoff contracts, rules bullets remain unchanged
 - **File naming** - snake-case `.md`, one file per specialist (flat, no subdirectories)
 - **Rules as a single file** - rules were consolidated into one `rules.md` instead of separate files per topic, since the rules are short and rarely edited independently

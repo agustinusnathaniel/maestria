@@ -22,8 +22,8 @@ import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
 ## How It Works
 
 1. **Install the plugin** - `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`
-2. **Plugin activates** - Registers 9 methodology skills plus 3 command skills, 6 slash commands, role-neutral child trust, and lifecycle hooks. The plugin has no startup probes for external tools - it is self-contained.
-3. **Pick your mode** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation) - each enables the right specialists and tool gates
+2. **Plugin activates** - Registers 9 methodology skills plus 3 command skills, 7 slash commands, role-neutral child trust, and lifecycle hooks. The plugin has no startup probes for external tools - it is self-contained.
+3. **Pick your mode** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation), `/mode-clear` (neutral reset) - each enables the right specialists and tool gates
 4. **Dispatch specialists** - The orchestrator decomposes work via `delegate_task` and applies the maker/checker split as directive guidance. Delegated children are read/research/LLM-only and cannot write, execute code, shell, delegate, or invoke OpenCode. Code changes and `opencode_route` (if OpenCode CLI is installed) are performed by a trusted top-level fein session.
 5. **Review is advisory** - The reviewer validates output, but Hermes has no native review gate, so a reviewer pass is not mechanically enforced before delivery.
 
@@ -72,6 +72,6 @@ The plugin is fully self-configuring - Hermes discovers its hooks, commands, and
 | Distribution      | npm plugin           | Git-based (`hermes plugins install`)                           |
 | Subagent dispatch | `task()` function    | `delegate_task` (Hermes native)                                |
 | Tool gating       | YAML frontmatter     | `pre_tool_call` hook                                           |
-| Mode switching    | Keyword detection    | Slash commands `/fein` `/sonar` `/blitz`                       |
+| Mode switching    | Keyword detection    | Slash commands `/fein` `/sonar` `/blitz` `/mode-clear`         |
 | Coding path       | Built-in             | Routes to OpenCode CLI (trusted top-level fein session only)   |
 | Permissions       | Agent-level          | Role-neutral child trust (children are read/research/LLM-only) |

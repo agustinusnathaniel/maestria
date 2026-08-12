@@ -61,6 +61,8 @@ def create_pre_llm_hook(mode_manager: ModeManager):
 
         # -- Inject mode context -------------------------------------------
 
+        if mode is None:
+            return {"context": ""}
         context = _MODE_CONTEXT.get(
             mode,
             f"[MAESTRIA MODE: {mode}]\nNo specific mode instructions defined.",

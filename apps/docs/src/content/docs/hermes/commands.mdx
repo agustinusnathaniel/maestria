@@ -3,9 +3,13 @@ title: Commands
 description: Complete reference for all @maestria/hermes slash commands - modes, review, planning, session management, and roles.
 ---
 
-The plugin registers 6 slash commands that are available in every Hermes session.
+The plugin registers 7 slash commands that are available in every Hermes session.
 
 ## Mode Commands
+
+## Mode state and reset
+
+Hermes persists the selected mode globally in `$HERMES_HOME/maestria-mode.json`, so it can affect other Hermes sessions using the same home directory. This is a platform limitation, not session isolation. `/mode-clear` writes neutral state and stops mode prompt injection; `/mode` then reports `neutral`. A fresh installation without a state file starts in `fein`.
 
 ### `/fein`
 
@@ -22,14 +26,14 @@ In fein mode, the orchestrator directive runs all stages without skipping phases
 
 ### `/sonar`
 
-Set the plugin to **sonar** (research) mode. Only the adventurer and architect/planner run. No output is created.
+Set the plugin to **sonar** (research) mode. Only read-only adventurer/planner research runs. No output is created.
 
 ```
 /sonar
 → Mode set to sonar
 ```
 
-The `pre_tool_call` hook blocks `edit`, `write`, and `bash` in sonar mode - read-only guarantees.
+For a trusted top-level session, the `pre_tool_call` hook blocks `edit`, `write`, and `bash` in sonar mode. Unknown or delegated child sessions use separate fail-closed/role-neutral policies.
 
 ### `/blitz`
 
@@ -49,7 +53,7 @@ Show the current mode and read-only status.
 ```
 /mode
 → **Maestria Status**
-  Mode: **fein**
+  Mode: **neutral**
   Read-only: No
 ```
 

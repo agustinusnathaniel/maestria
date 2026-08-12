@@ -23,11 +23,11 @@ The orchestrator routes work dynamically based on task needs. The pipeline termi
 
 Three workflow modes are available to control pipeline depth. Their activation and enforcement depend on the platform:
 
-| Mode      | Full Form           | Pipeline                                          | Use Case                                    |
-| --------- | ------------------- | ------------------------------------------------- | ------------------------------------------- |
-| **fein**  | Full pipeline       | Thinker → Worker → Verifier (adaptive sequencing) | Production-grade work, mandatory validation |
-| **sonar** | Research            | Thinker only - STOP after analysis/design         | Understanding before committing             |
-| **blitz** | Fast implementation | Worker only - skip recon and review               | Quick fixes, known territory                |
+| Mode      | Full Form           | Pipeline                                                                       | Use Case                                    |
+| --------- | ------------------- | ------------------------------------------------------------------------------ | ------------------------------------------- |
+| **fein**  | Full pipeline       | Thinker → Worker → Verifier (adaptive sequencing)                              | Production-grade work, mandatory validation |
+| **sonar** | Research only       | Read-only `@adventurer`/`@planner` specialists - STOP before implementation    | Understanding before committing             |
+| **blitz** | Fast implementation | `@builder` for familiar work; skip optional recon/design, keep required review | Quick fixes, known territory                |
 
 ## When to Use the Orchestrator
 
