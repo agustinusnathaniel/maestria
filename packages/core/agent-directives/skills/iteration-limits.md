@@ -1,9 +1,9 @@
 # Iteration Limits
 
-Use the universal bounded-autonomy contract in `rules.md`.
+The universal bounded-autonomy contract owns repair budgets and progress-sensitive stopping. This skill is only a concise projection:
 
-- Define a verifiable termination condition before looping and count attempts.
-- Routine repair: two rounds, then one final extension (maximum three) only with observable progress.
-- The initial build is not a repair round; each builder fix plus validation and any required re-review consumes one round. Transient dispatch failures are handled separately and do not consume a repair round.
-- Repeated causes, restored diffs, no new evidence, safety ambiguity, or unresolved review floors stop the loop. Pivot once to diagnosis or architecture, then report: `Tried X, Y. Blocked by [cause]. Need [input].`
-- If a specialist report is empty, inspect the artifact first; recover once with a changed brief only when evidence is insufficient. Never silently reset attempts.
+- Define a **Verifiable Termination Condition** before looping.
+- Count every attempt against the applicable hard limit; default repair budget is 3 rounds and may extend one round at a time to 5 only with observable progress.
+- Stop on non-progress, safety ambiguity, or unresolved review floors. Escalate: `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.`
+- Declare and decrement finite route and child-task budgets before dispatch; never silently reset them.
+- Empty or blocked output is non-progress: allow at most one changed-brief recovery, then trip the circuit breaker and escalate with the structured delta.

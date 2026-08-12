@@ -9,4 +9,4 @@
 '@maestria/pi': patch
 ---
 
-Re-align agent directives for shorter prompts, autonomous routine repair, bounded review, scoped process cleanup, transient-failure handling, and platform-aware enforcement caveats. Generated projections are refreshed from the canonical sources. Persisted Pi/OMP/Hermes modes now have an explicit neutral reset, and read-only sonar roles use runtime tool profiles where supported.
+Clarify agent workflow contracts while preserving detailed specialist guidance. Add bounded repair and platform-enforcement notes, refresh generated projections, and retain explicit mode reset behavior and read-only sonar profiles where supported.
