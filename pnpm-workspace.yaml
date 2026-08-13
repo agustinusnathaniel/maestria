@@ -72,9 +72,6 @@ allowBuilds:
   protobufjs: true
   sharp: true
 minimumReleaseAgeExclude:
-  - '@astrojs/markdown-satteri@0.3.2'
-  - '@astrojs/starlight@0.41.3'
-  - astro@7.1.3
-  - effect@4.0.0-beta.100
-  # Effect v4 RC is intentionally pinned by the selective adoption ADR.
-  - effect@4.0.0-rc.108
+  - '@astrojs/*'
+  - astro
+  - effect
