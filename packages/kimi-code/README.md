@@ -38,7 +38,7 @@ See [INSTALL.md](./INSTALL.md) for the full checklist, including the recommended
 
 ## Contributing
 
-See [Contributing](/kimi-code/contributing/) on the docs site.
+See [Contributing](https://maestria.sznm.dev/kimi-code/contributing/) on the docs site.
 
 ## License
 

@@ -43,7 +43,7 @@ Wherever a platform has its own plugin manager, the CLI delegates to it rather t
 
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
-- **Host-native delegation** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code `installed.json`, Cursor plugin directory, Claude Code/Codex marketplaces).
+- **Host-native delegation** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install under `~/.kimi-code/plugins/managed/maestria` copying `rules/AGENTS.md` and reading `kimi.plugin.json`, Cursor plugin directory, Claude Code/Codex marketplaces).
 
 ## Support / Platform Notes
 
