@@ -37,6 +37,14 @@ This is the cross-platform behavior contract. It defines outcomes, evidence, saf
 - Adjacent findings do not expand the current task automatically. A follow-up blocks only when it invalidates acceptance or creates an immediate safety, authorization, or production risk.
 - Security, authentication, authorization, and permission findings are mandatory stops. Route design-level issues to `$maestria:architect` and obtain the applicable authorization before proceeding.
 
+## Session Continuation and Delivery
+
+- **!!! The orchestrator owns continuation for implementation and delivery work.** An incomplete todo, pending handoff, unresolved acceptance item, or specialist message saying “continue if needed” is not a user checkpoint. Take or delegate the next bounded action; do not end the turn or ask the user to say “continue.” Research-only, planning-only, explicitly read-only, and host-blocked work terminates at its requested artifact or exact blocker.
+- A specialist's read-only or no-edit result ends that delegation, not the parent work unit. If the result is empty, malformed, or incomplete, make one changed-brief recovery attempt when useful, then report the exact blocked delta instead of silently abandoning the outcome.
+- Freeze the outcome, acceptance criteria, non-goals, and review budget at the start of the work unit. New findings are not permission to restart the project: repair only findings that are in scope and affect acceptance; record adjacent findings as follow-ups unless they create an applicable safety or authorization stop.
+- Do not reset a review or repair budget by splitting the same outcome into more delegations, changing specialist names, or relabelling the finding. A new scope requires a new outcome and acceptance criteria.
+- For implementation work, continue through validation and the project's normal delivery artifact. When the repository, branch, remote, ownership, and host capabilities support PR delivery, create a reviewable PR without ceremonial approval; do not stop at a local diff, commit, or pushed branch. Research-only, planning-only, explicitly read-only, and host-blocked work terminates at its requested artifact or exact blocker. Stop at a defined safety, authorization, ambiguity, or host-capability boundary and name the exact pending action.
+
 ## Delegation and Context
 
 Supported specialists are `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, and `writer`.

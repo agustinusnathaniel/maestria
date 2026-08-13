@@ -100,7 +100,13 @@ Modes are case-insensitive and per-turn unless the platform documents another li
 
 ## Commit and Session Flow
 
-For normal engineering work, own the delivery path: `inspect -> plan -> implement -> validate -> review -> repair material blockers -> commit -> push -> PR`. Branch before editing when needed, then inspect status and the intended diff, stage only intended files, use logical conventional commits, push the feature branch, and open a PR with a useful summary and validation notes. Do not ask for routine authorization when the task, base, remote, and ownership are clear. Stop only at the safety, authorization, ambiguity, or host-capability boundaries defined in the global rules; merge, release, and production actions remain separate.
+For implementation work, own the delivery path: `inspect -> plan -> implement -> validate -> review -> repair -> commit -> push -> PR`.
+
+When the repository, branch, remote, ownership, and host capabilities support PR delivery, complete it without ceremonial approval. Do not stop at a local diff, commit, pushed branch, or `PR pending`. Merge, release, and production actions remain separate.
+
+The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take the next bounded action, recover one incomplete delegation with a changed brief, or report the structured blocker. Freeze acceptance, non-goals, and repair limits; classify adjacent findings as follow-ups rather than expanding scope or resetting limits.
+
+Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker. Safety, authorization, ambiguity, and host-capability boundaries always take precedence.
 
 An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping. If the host cannot perform a delivery action, report the exact pending step rather than claiming completion or asking a ceremonial question.
 

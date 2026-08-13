@@ -74,6 +74,41 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toContain('follow-ups');
   });
 
+  it('continues incomplete work and freezes scope across delegations', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const iteration = readDirective('skills', 'iteration-limits.md');
+
+    expect(rules).toMatch(/orchestrator owns continuation for implementation and delivery work/i);
+    expect(rules).toMatch(/not a user checkpoint/i);
+    expect(rules).toMatch(
+      /research-only, planning-only, explicitly read-only, and host-blocked work/i,
+    );
+    expect(rules).toMatch(/empty, malformed, or incomplete.*recovery attempt/i);
+    expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/i);
+    expect(rules).toMatch(/do not reset a review or repair budget/i);
+    expect(orchestrator).toMatch(/parent session owns continuation until.*terminal artifact/i);
+    expect(orchestrator).toMatch(/freeze acceptance, non-goals, and repair limits/i);
+    expect(iteration).toMatch(/same user outcome/i);
+    expect(iteration).toMatch(/adjacent findings as follow-ups/i);
+  });
+
+  it('makes PR creation the normal implementation delivery step', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(rules).toMatch(/for implementation work, continue through validation/i);
+    expect(rules).toMatch(/create a reviewable PR without ceremonial approval/i);
+    expect(rules).toMatch(
+      /research-only, planning-only, explicitly read-only, and host-blocked work/i,
+    );
+    expect(orchestrator).toMatch(/for implementation work, own the delivery path/i);
+    expect(orchestrator).toMatch(/without ceremonial approval/i);
+    expect(orchestrator).toMatch(
+      /do not stop at a local diff, commit, pushed branch, or `PR pending`/i,
+    );
+  });
+
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {
     const rules = readDirective('rules.md');
     const handoff = readDirective('skills', 'handoff.md');
