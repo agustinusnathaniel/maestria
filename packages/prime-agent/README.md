@@ -65,8 +65,8 @@ Every skill is emitted as `skills/<name>/SKILL.md` (directories containing `SKIL
 
 ```bash
 pnpm test              # generated-skill assertions
-pnpm sync              # regenerate generated skills from canonical sources
 pnpm validate          # validate skills/<name>/SKILL.md frontmatter and layout
+bash scripts/sync-all  # regenerate generated skills for all plugins (incl. this one)
 ```
 
 See the [contributing guide](../../CONTRIBUTING.md) for repository conventions.

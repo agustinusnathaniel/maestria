@@ -66,11 +66,7 @@ scripts/sync-all          # regenerate all platform packages
 scripts/check-sync        # verify everything is in sync
 ```
 
-Or, for this package only:
-
-```bash
-cd packages/prime-agent && pnpm sync
-```
+The root pipeline auto-discovers this package via its `sync.config.ts`; there is no package-local `sync` script.
 
 ## Uninstall / removal
 

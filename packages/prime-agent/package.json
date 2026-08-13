@@ -35,7 +35,6 @@
   },
   "scripts": {
     "test": "vp test",
-    "sync": "pnpm exec tsx ../core/scripts/sync.ts --config sync.config.ts",
     "validate": "npm run validate-skills",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts"
   },
