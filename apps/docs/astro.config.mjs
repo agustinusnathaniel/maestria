@@ -167,13 +167,13 @@ export default defineConfig({
           label: '@maestria/codex',
           collapsed: true,
           items: [
-            { label: 'Overview', link: '/codex-cli/' },
+            { label: 'Overview', link: '/codex/' },
             {
               label: 'Getting Started',
-              items: [{ autogenerate: { directory: 'codex-cli/getting-started' } }],
+              items: [{ autogenerate: { directory: 'codex/getting-started' } }],
             },
-            { label: 'Changelog', link: '/codex-cli/changelog/' },
-            { label: 'Contributing', link: '/codex-cli/contributing/' },
+            { label: 'Changelog', link: '/codex/changelog/' },
+            { label: 'Contributing', link: '/codex/contributing/' },
           ],
         },
         {
