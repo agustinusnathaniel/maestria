@@ -50,3 +50,5 @@ __pycache__/
 *.key
 *.p12
 *.pfx
+
+**/handoffs/
