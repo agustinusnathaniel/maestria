@@ -22,6 +22,7 @@ export class SubagentPollError extends Data.TaggedError('SubagentPollError')<{
 
 export interface SubagentPollingService {
   getRecord(id: string): SubagentRecord | undefined;
+  abort?: (id: string) => boolean;
 }
 
 export interface PollSubagentOptions {

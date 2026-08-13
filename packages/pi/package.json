@@ -1,6 +1,6 @@
 {
   "name": "@maestria/pi",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "Maestria extension for the Pi coding agent",
   "keywords": [
     "agent-orchestration",
@@ -44,7 +44,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-coding-agent": "^0.84.1",
     "@gotgenes/pi-subagents": "^18.0.0",
     "typebox": "*"
   },

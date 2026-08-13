@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.6
+
+### Patch Changes
+
+- [#198](https://github.com/agustinusnathaniel/maestria/pull/198) [`d80a38b`](https://github.com/agustinusnathaniel/maestria/commit/d80a38b0ed33c59eff3cfd638420eb6494369fd1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix parallel subagent dispatch so successful results are preserved and orphaned subagents are aborted when a partial failure occurs.
+
+- [#199](https://github.com/agustinusnathaniel/maestria/pull/199) [`2955263`](https://github.com/agustinusnathaniel/maestria/commit/2955263a3788aea829c548bc56c7f6e7ff941637) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
+
 ## 0.6.5
 
 ### Patch Changes
