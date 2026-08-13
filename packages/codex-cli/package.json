@@ -37,8 +37,7 @@
     "provenance": true
   },
   "scripts": {
-    "test": "vp test",
-    "sync": "pnpm exec tsx ../core/scripts/sync.ts --config sync.config.ts"
+    "test": "vp test"
   },
   "devDependencies": {
     "@types/node": "catalog:",

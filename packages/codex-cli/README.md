@@ -54,13 +54,6 @@ scripts/sync-all
 scripts/check-sync
 ```
 
-For this package alone:
-
-```bash
-cd packages/codex-cli
-pnpm sync
-```
-
 Do not hand-edit the generated `skills/` directory.
 
 ## Evidence baseline

@@ -39,7 +39,6 @@
   },
   "scripts": {
     "test": "vp test",
-    "sync": "pnpm exec tsx ../core/scripts/sync.ts --config sync.config.ts",
     "validate": "claude plugin validate . --strict"
   },
   "devDependencies": {

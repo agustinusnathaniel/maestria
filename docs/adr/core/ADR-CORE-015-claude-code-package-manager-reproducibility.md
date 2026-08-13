@@ -6,7 +6,7 @@ Proposed (2026-08-12). This ADR records a workspace-level package manager policy
 
 ## Context
 
-The first implementation batch for the Claude Code adapter (ADR-CORE-014, `Native candidate`, plugin delivery) produced a declarative plugin package in `packages/claude-code/`: generated agents, skills, and commands from the core sync pipeline (ADR-CORE-005), a local `tsx`-based sync script, tests, manifest, and a changeset. The package is validated locally with `claude plugin validate --strict` and runs its test suite through the shared Vite toolchain (`vite-plus` / `vitest` from the workspace catalog).
+The first implementation batch for the Claude Code adapter (ADR-CORE-014, `Native candidate`, plugin delivery) produced a declarative plugin package in `packages/claude-code/`: generated agents, skills, and commands from the core sync pipeline (ADR-CORE-005), root sync tooling, tests, manifest, and a changeset. The package is validated locally with `claude plugin validate --strict` and runs its test suite through the shared Vite toolchain (`vite-plus` / `vitest` from the workspace catalog).
 
 While landing that package, the workspace toolchain pinning surfaced a reproducibility problem. The shared catalog entries for the Vite toolchain were declared as floating ranges:
 

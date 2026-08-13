@@ -25,7 +25,7 @@ The user explicitly authorized (2026-08-12, on branch `feat/runtime-support-adap
 1. **Pin `tsx` at the root** as a root development dependency at the exact version the committed lockfile already resolved for the workspace: `4.23.12`. Root devDependencies always produce a `node_modules/.bin/tsx` at the workspace root in a clean install, so the runner is guaranteed present regardless of per-package dependency graphs. No range (`^`, `~`, `latest`) - upgrades are deliberate policy changes.
 2. **Root orchestration scripts invoke the root-resolved runner via pnpm**: `pnpm exec tsx`. `pnpm exec` resolves the binary from the workspace root's `node_modules/.bin` even when executed from a package subdirectory, so each package's config path and working-directory behavior is preserved (the subshell still `cd`s into the package directory, keeping `./sync.config.ts` resolution correct). The sync script path stays absolute.
 3. **`npx` is prohibited for sync invocation**: it resolves against the current package's local install (absent for packages without a `tsx` devDependency) and otherwise falls back to registry fetching, which is non-deterministic and fails in clean/offline CI.
-4. **Package `sync` scripts are convenience wrappers only**, retained so `pnpm --filter <pkg> sync` works from the package context. They delegate to the same root runner (`pnpm exec tsx ../core/scripts/sync.ts --config sync.config.ts`); they are not a second implementation of the pipeline and carry no package-local runner.
+4. **The root scripts are the only sync entrypoints**; packages do not expose package-level `sync` wrappers. The root scripts already discover each package's `sync.config.ts` and invoke the root runner from that package directory.
 5. **The Claude package-local `tsx` devDependency is removed**; the root pin is the single source for the runner.
 
 ## Consequences
@@ -35,7 +35,7 @@ The user explicitly authorized (2026-08-12, on branch `feat/runtime-support-adap
 - Deterministic sync checks in clean CI: after `pnpm install --frozen-lockfile`, the root `node_modules/.bin/tsx` always exists, so `scripts/check-sync` no longer depends on per-package dependency graphs or network availability.
 - A single pinned runner version (`tsx@4.23.12`) across the workspace - no per-package range drift; future upgrades are intentional root pin changes.
 - The `npx` registry fallback is eliminated from the shared repository gate.
-- Review comments on PR #189 are resolved: package `sync` scripts are documented convenience wrappers that delegate to the root runner, and the package-local `tsx` is gone.
+- Review comments on PR #189 are resolved: the sync runner is root-pinned, the root scripts are the only sync entrypoints, and no package-local `tsx` is required.
 
 ### Negative
 
@@ -62,7 +62,7 @@ To revert this decision:
 
 1. Remove `tsx: 4.23.12` from root `package.json` devDependencies.
 2. Regenerate the lockfile with `pnpm install --lockfile-only` (or revert `pnpm-lock.yaml`).
-3. Restore the `npx tsx` invocations in `scripts/check-sync`/`scripts/sync-all` and the package `sync` wrappers, re-adding package-local `tsx` devDependencies where needed.
+3. Restore the `npx tsx` invocations in `scripts/check-sync`/`scripts/sync-all`, re-adding package-local `tsx` devDependencies only if package-local sync entrypoints are also restored.
 4. Re-verify with `pnpm install --frozen-lockfile`, `bash scripts/check-sync`, and `pnpm check` before committing the revert.
 
 Rolling back the pin restores the previous resolution behavior (with its clean-CI failure mode); it does not change the sync pipeline semantics.
@@ -73,7 +73,7 @@ Rolling back the pin restores the previous resolution behavior (with its clean-C
 - `pnpm exec tsx --version` resolves `4.23.12` both at the workspace root and from a package subdirectory.
 - `bash scripts/check-sync` passes for every package with a `sync.config.ts`.
 - `bash scripts/sync-all` regenerates outputs with no drift (check-sync stays green afterward).
-- Package wrappers delegate to the root runner: `pnpm --filter @maestria/claude-code sync`, `pnpm --filter @maestria/omp sync`, `pnpm --filter @maestria/pi sync` all run the sync script.
+- No package-level `sync` scripts are required; all packages with a `sync.config.ts` are discovered by the root scripts.
 - No `npx tsx` remains in supported sync scripts or docs; no package-local `tsx` remains where the root runner is intended.
 
 ## Non-Goals (Explicit)
