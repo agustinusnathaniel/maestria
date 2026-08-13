@@ -709,4 +709,71 @@ describe('installSubagentTool - parallel partial failure', () => {
     expect(text).not.toContain('Subagent Handoff Required');
     expect(subagentsServiceMock.abort).toHaveBeenCalledWith('id-b');
   });
+
+  it('substitutes {previous} literally when the previous result contains $ patterns', async () => {
+    getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
+    subagentsServiceMock.spawn.mockClear();
+    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
+      agent === 'builder' ? 'id-a' : 'id-b',
+    );
+    // id-a completes with a result containing $ sequences that a string-replacement
+    // would corrupt ($& -> the placeholder itself, $' -> trailing text, $1 -> empty).
+    subagentsServiceMock.getRecord.mockImplementation((id: string) => {
+      if (id === 'id-a') return { status: 'completed', result: 'Use `echo $&` and $1 args' };
+      return { status: 'completed', result: 'DONE' };
+    });
+
+    const { toolDef } = install();
+
+    await toolDef.execute(
+      'call-1',
+      {
+        mode: 'chain',
+        tasks: [
+          { agent: 'builder', task: 'build the base' },
+          { agent: 'architect', task: 'Review the prior output: {previous}' },
+        ],
+      },
+      undefined,
+      undefined,
+      {},
+    );
+
+    // The second spawn must receive the literal previous result — no $ corruption.
+    const secondSpawnTask = subagentsServiceMock.spawn.mock.calls[1][1];
+    expect(secondSpawnTask).toBe('Review the prior output: Use `echo $&` and $1 args');
+  });
+
+  it('aborts already-spawned subagents when a later spawn throws', async () => {
+    getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
+    const aborted = new Set<string>();
+    subagentsServiceMock.abort.mockImplementation((id: string) => {
+      aborted.add(id);
+      return true;
+    });
+    subagentsServiceMock.spawn.mockImplementation((agent: string) => {
+      if (agent === 'builder') return 'id-a';
+      throw new Error('spawn failed for architect');
+    });
+
+    const { toolDef } = install();
+
+    const result = await toolDef.execute(
+      'call-1',
+      {
+        mode: 'parallel',
+        tasks: [
+          { agent: 'builder', task: 'build the base' },
+          { agent: 'architect', task: 'design the extension' },
+        ],
+      },
+      undefined,
+      undefined,
+      {},
+    );
+
+    // Dispatch failed -> handoff fallback, but the spawned subagent was not orphaned.
+    expect(result.content[0].text).toContain('Subagent Handoff Required');
+    expect(aborted.has('id-a')).toBe(true);
+  });
 });

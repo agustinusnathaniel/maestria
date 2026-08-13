@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { beforeAll, describe, it, expect } from 'vite-plus/test';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
@@ -233,8 +233,15 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
     return result.files.map((f) => f.path);
   }
 
+  // npm pack is relatively expensive in this workspace. Reuse the one
+  // deterministic dry-run result across assertions so the tests do not race
+  // Vitest's default per-test timeout by spawning npm three times.
+  let packFiles: string[];
+  beforeAll(() => {
+    packFiles = npmPackFileList();
+  });
+
   it('packs the compiled extension, its sourcemap, and the manifest', () => {
-    const files = npmPackFileList();
     for (const required of [
       'package.json',
       'INSTALL.md',
@@ -243,7 +250,7 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
       'dist/extension.mjs',
       'dist/extension.mjs.map',
     ]) {
-      expect(files, `tarball must include ${required}`).toContain(required);
+      expect(packFiles, `tarball must include ${required}`).toContain(required);
     }
   });
 
@@ -257,18 +264,16 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
       .map((e) => e.name);
     expect(skillNames.length).toBeGreaterThan(0);
 
-    const files = npmPackFileList();
     for (const name of skillNames) {
-      expect(files, `tarball must include skills/${name}/SKILL.md`).toContain(
+      expect(packFiles, `tarball must include skills/${name}/SKILL.md`).toContain(
         `skills/${name}/SKILL.md`,
       );
     }
   });
 
   it('excludes source, tests, and dependency trees from the tarball', () => {
-    const files = npmPackFileList();
     for (const excluded of ['src/', 'tests/', 'node_modules/', 'scripts/']) {
-      expect(files.some((f) => f.startsWith(excluded))).toBe(false);
+      expect(packFiles.some((f) => f.startsWith(excluded))).toBe(false);
     }
   });
 });
