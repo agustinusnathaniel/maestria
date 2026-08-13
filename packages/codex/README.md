@@ -15,7 +15,7 @@ The projection intentionally ships no hooks, MCP server, model configuration, or
 From the repository root:
 
 ```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex-cli
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
 ```
 
 Use the `validate_plugin.py` shipped with the Codex plugin-creator skill in your Codex installation; the path is installation-specific.

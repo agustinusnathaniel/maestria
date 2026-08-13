@@ -10,7 +10,7 @@ format; it does not duplicate methodology content by hand.
 ## Package structure
 
 ```text
-packages/codex-cli/
+packages/codex/
 ├── .codex-plugin/plugin.json  # Hand-authored plugin manifest
 ├── skills/                    # Generated SKILL.md projections
 ├── sync.config.ts             # Codex-specific transforms and frontmatter
@@ -26,7 +26,7 @@ package and is not a second canonical source.
 
 ## Canonical source workflow
 
-1. Edit `packages/core/agent-directives/`, never generated files under `packages/codex-cli/skills/`.
+1. Edit `packages/core/agent-directives/`, never generated files under `packages/codex/skills/`.
 2. Run `scripts/sync-all` from the repository root.
 3. Run `scripts/check-sync` to verify every platform projection.
 4. Run the package tests and the workspace checks.
@@ -52,7 +52,7 @@ The Codex sync config:
 Run the Codex plugin-creator validator against the package and inspect the generated skill files:
 
 ```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex-cli
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
 pnpm --filter @maestria/codex test
 ```
 

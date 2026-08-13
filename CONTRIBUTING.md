@@ -27,7 +27,7 @@ maestria/
 │   ├── pi/                Pi extension (published, v0.5.10)
 │   ├── cursor/            Cursor IDE plugin (published, v0.1.3)
 │   ├── claude-code/       Claude Code plugin (published, v0.2.1)
-│   ├── codex-cli/         Codex CLI projection (published, v0.2.0)
+│   ├── codex/             Codex CLI projection (published, v0.2.0)
 │   ├── hermes/            Hermes Agent plugin (private, v0.1.7, published on PyPI)
 │   └── shared/
 │       └── pi/            Shared pure-TS utilities for omp/pi (private)
@@ -297,7 +297,7 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 | Validate | `claude plugin validate . --strict`                               |
 | Install  | `npx maestria install claude-code` or the Claude Code marketplace |
 
-### codex-cli
+### codex
 
 | Concern  | Details                                                                         |
 | -------- | ------------------------------------------------------------------------------- |

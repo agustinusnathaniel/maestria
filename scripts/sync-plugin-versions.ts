@@ -31,7 +31,7 @@
  * Targets:
  * - @maestria/hermes       packages/hermes/package.json -> src/maestria_hermes/_version.py, plugin.yaml
  * - @maestria/claude-code  packages/claude-code/package.json -> .claude-plugin/plugin.json
- * - @maestria/codex    packages/codex-cli/package.json -> .codex-plugin/plugin.json
+ * - @maestria/codex    packages/codex/package.json -> .codex-plugin/plugin.json
  */
 
 import fs from 'node:fs';
@@ -67,7 +67,7 @@ export const TARGETS: Target[] = [
     [path.join('src', 'maestria_hermes', '_version.py'), path.join('plugin.yaml')],
   ],
   [path.join(ROOT, 'packages', 'claude-code'), [path.join('.claude-plugin', 'plugin.json')]],
-  [path.join(ROOT, 'packages', 'codex-cli'), [path.join('.codex-plugin', 'plugin.json')]],
+  [path.join(ROOT, 'packages', 'codex'), [path.join('.codex-plugin', 'plugin.json')]],
 ];
 
 export function display(p: string): string {

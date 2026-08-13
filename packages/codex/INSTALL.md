@@ -12,7 +12,7 @@
 Validate the package before installing it:
 
 ```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex-cli
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
 ```
 
 Replace the placeholder with the `validate_plugin.py` path from the plugin-creator skill in your Codex installation.
@@ -62,4 +62,4 @@ scripts/sync-all
 scripts/check-sync
 ```
 
-Never edit generated files under `packages/codex-cli/skills/` directly.
+Never edit generated files under `packages/codex/skills/` directly.

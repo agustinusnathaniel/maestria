@@ -31,7 +31,7 @@ maestria/
 │   ├── core/            - Canonical agent directives + sync pipeline (private)
 │   ├── opencode/        - @maestria/opencode plugin
 │   ├── claude-code/     - @maestria/claude-code plugin
-│   ├── codex-cli/       - @maestria/codex plugin projection
+│   ├── codex/           - @maestria/codex plugin projection
 │   ├── omp/             - @maestria/omp plugin
 │   ├── kimi-code/       - @maestria/kimi-code plugin
 │   ├── cursor/          - @maestria/cursor plugin
@@ -54,7 +54,7 @@ See [VISION.md](VISION.md) for the project's guiding philosophy and long-term go
 | --- | --- | --- |
 | [@maestria/opencode](packages/opencode/) | Maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
 | [@maestria/claude-code](packages/claude-code/) | Maestria methodology plugin for Claude Code | [README](packages/claude-code/README.md) |
-| [@maestria/codex](packages/codex-cli/) | Provisional Maestria skills projection for Codex CLI | [README](packages/codex-cli/README.md) |
+| [@maestria/codex](packages/codex/) | Provisional Maestria skills projection for Codex CLI | [README](packages/codex/README.md) |
 | [@maestria/omp](packages/omp/) | Maestria methodology plugin for Oh My Pi | [README](packages/omp/README.md) |
 | [@maestria/kimi-code](packages/kimi-code/) | Maestria methodology plugin for Kimi Code | [README](packages/kimi-code/README.md) |
 | [@maestria/cursor](packages/cursor/) | Maestria methodology plugin for Cursor IDE/CLI | [README](packages/cursor/README.md) |

@@ -12,7 +12,7 @@
     "pipeline",
     "skills"
   ],
-  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex-cli#readme",
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex#readme",
   "bugs": {
     "url": "https://github.com/agustinusnathaniel/maestria/issues"
   },
@@ -21,7 +21,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/agustinusnathaniel/maestria.git",
-    "directory": "packages/codex-cli"
+    "directory": "packages/codex"
   },
   "files": [
     ".codex-plugin",

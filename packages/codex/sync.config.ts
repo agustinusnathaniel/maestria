@@ -1,4 +1,4 @@
-// packages/codex-cli/sync.config.ts
+// packages/codex/sync.config.ts
 // Codex CLI projection: derives Codex plugin skills from the canonical core
 // directives. Generated skills are advisory workflow guidance; Codex runtime
 // capabilities and trust controls remain outside this package.
