@@ -43,7 +43,7 @@
     "@clack/prompts": "^1.7.0",
     "@types/node": "catalog:",
     "citty": "^0.2.2",
-    "effect": "4.0.0-rc.108",
+    "effect": "catalog:",
     "jsonc-parser": "catalog:",
     "picocolors": "^1.1.1",
     "typescript": "catalog:",
@@ -54,7 +54,7 @@
   },
   "pnpm": {
     "overrides": {
-      "effect": "4.0.0-rc.108"
+      "effect": "catalog:"
     }
   }
 }

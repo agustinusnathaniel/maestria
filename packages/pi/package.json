@@ -35,7 +35,7 @@
     "validate": "npm run validate-skills"
   },
   "dependencies": {
-    "effect": "4.0.0-rc.108"
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@maestria/shared-pi": "workspace:*",
