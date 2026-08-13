@@ -2,7 +2,7 @@
 
 An OpenCode plugin that encodes learned AI-engineering patterns into a portable, self-wiring configuration.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope.
+> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The agent agents and rules in this package are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Motivation
 
@@ -18,8 +18,6 @@ The patterns in this plugin were extracted from months of daily AI-assisted engi
 
 This is not just another agent pack. Most agent packs focus on capability - giving agents more tools, more context, more autonomy. This plugin focuses on discipline: giving agents clear boundaries, explicit methodology, and structured handoffs. Capability is the default. Discipline is the differentiator.
 
-To that end, the plugin is built on five design principles:
-
 ## Goals
 
 - **Interoperability** - The methodology is harness-agnostic. Works with any LLM provider that OpenCode supports. No vendor lock-in, no model-specific prompt tricks.
@@ -34,25 +32,13 @@ To that end, the plugin is built on five design principles:
 - **Does NOT replace OpenCode's built-in agents** - `explore` and `general` remain available for unstructured work. The plugin's 8 subagents are specialists for structured workflows on top of that foundation.
 - **Does NOT auto-extract patterns from sessions** - All rules and agent prompts are manually curated. No automated pattern extraction, no session mining, no implicit learning.
 - **Does NOT require or provide a specific LLM provider** - Model selection is OpenCode configuration. No provider lock-in, no subscription or API key required. MIT-licensed, open source.
-- **Does NOT work outside OpenCode** - This is an OpenCode plugin. Kimi Code and Hermes adaptations are in development as separate packages under the `@maestria` scope, each independently versioned and maintained.
+- **Does NOT work outside OpenCode** - This is an OpenCode plugin. Kimi Code, Hermes, Cursor, and other adaptations ship as separate packages under the `@maestria` scope, each independently versioned and maintained.
 - **Does NOT include telemetry, usage tracking, or external data collection** - No data leaves your machine. No analytics. No crash reporting. The plugin has zero network calls of its own.
 - **Does NOT enforce rules programmatically** - Rules are guidance, not gates. The `!!!` convention signals non-negotiable rules, but the agent can still violate them. Enforcement happens through permissions and review, not runtime checks.
 
-## What It Does
+## Status / Support Boundary
 
-This plugin bundles a set of agents and rules that encode effective AI-engineering workflows:
-
-- **Agents** - 8 specialized subagents for different phases of work:
-  - `@orchestrator` - Manager for complex multi-step tasks; restricted to delegating only to the 7 registered subagents via task permissions
-  - `@adventurer` - Codebase reconnaissance and deep code understanding before implementation
-  - `@architect` - Architecture decisions with decision matrices
-  - `@builder` - Focused implementation agent for atomic tasks
-  - `@diagnose` - Systematic 6-step regression tracing
-  - `@planner` - Create detailed implementation plans with phased milestones
-  - `@reviewer` - Code review with quality gates
-  - `@writer` - Documentation following structured patterns
-
-- **Rules** - Global directives injected into every session's system prompt
+`@maestria/opencode` is a **native plugin** for OpenCode: it uses the OpenCode plugin SDK, registers agents programmatically through a `config` hook, and appends the global rules file to the session's instructions via the same hook (`input.instructions`). It is published to npm and installable through OpenCode's plugin manager or the [maestria CLI](../..). Runtime enforcement follows OpenCode's permission model (`permission` frontmatter on each agent); the methodology itself is advisory prompt guidance.
 
 ## Installation
 
@@ -85,32 +71,7 @@ Add to your OpenCode config file:
 
 To pin a specific version, use `"@maestria/opencode@0.3.3"` instead of `"@maestria/opencode@latest"`. Restart OpenCode after adding the plugin.
 
-## How It Works
-
-1. **Plugin loads** - OpenCode installs `@maestria/opencode` from npm
-2. **Config hook** - The plugin reads bundled agent markdown files, parses their frontmatter, and registers them programmatically with OpenCode
-3. **Rules injected** - `system.transform` hook appends rules to every session
-4. **Agents available** - All 8 agents are available as subagents via `@` mention
-5. **State preserved** - `session.compacting` hook preserves task status across compaction events
-
-### Design Philosophy
-
-This plugin is built on the **Harness Engineering** principle: `Agent = Model + Harness`. The harness is what turns a raw LLM into a reliable coding agent - the model is just one component.
-
-The 6 harness components map directly to plugin features:
-
-| Component         | Plugin Mapping                                |
-| ----------------- | --------------------------------------------- |
-| **Instructions**  | `rules/AGENTS.md` injected into every session |
-| **Tools**         | Skill prescription system + MCP integration   |
-| **Sandboxes**     | `permission` frontmatter on every agent       |
-| **Orchestration** | `mode: all/subagent` + `task()` delegation    |
-| **Guardrails**    | `edit: deny`, `bash: ask`, iteration limits   |
-| **Observability** | Session compaction hooks, structured handoffs |
-
-Most agent failures are configuration failures, not model failures. The plugin's agents are designed with this principle - precise rules, explicit boundaries, and clear delegation chains over raw capability.
-
-## Updating
+### Updating
 
 OpenCode does not auto-update plugins. Packages are cached locally at `~/.cache/opencode/packages/<name>@<version>/` - the npm registry is not consulted if the package is already cached. To update, re-run the install command with the same scope as the original install:
 
@@ -146,13 +107,7 @@ Then re-run the install command (with or without `-g` as appropriate).
 
 > **Tip:** Run `opencode debug paths` to see the cache directory resolved for your platform.
 
-To pin a specific version, use `@<version>` instead of `@latest`:
-
-```bash
-opencode plugin @maestria/opencode@0.3.3
-```
-
-## Uninstalling
+### Uninstalling
 
 There is no CLI command to remove a plugin. To uninstall, edit your OpenCode config file and remove the entry from the `plugin` array:
 
@@ -175,6 +130,72 @@ rm -rf ~/.cache/opencode/packages/@maestria/opencode*
 ```
 
 Alternatively, use the [maestria CLI](https://maestria.sznm.dev/cli/) to manage installation across all platforms from a single command.
+
+## What It Provides
+
+This plugin bundles a set of agents and rules that encode effective AI-engineering workflows:
+
+- **Agents** - 8 specialized subagents for different phases of work:
+  - `@orchestrator` - Manager for complex multi-step tasks; restricted to delegating only to the 7 registered subagents via task permissions
+  - `@adventurer` - Codebase reconnaissance and deep code understanding before implementation
+  - `@architect` - Architecture decisions with decision matrices
+  - `@builder` - Focused implementation agent for atomic tasks
+  - `@diagnose` - Systematic 6-step regression tracing
+  - `@planner` - Create detailed implementation plans with phased milestones
+  - `@reviewer` - Code review with quality gates
+  - `@writer` - Documentation following structured patterns
+
+- **Rules** - Global directives injected into every session's system prompt
+
+### How It Works
+
+1. **Plugin loads** - OpenCode installs `@maestria/opencode` from npm
+2. **Config hook** - The plugin reads bundled agent markdown files, parses their frontmatter, and registers them programmatically with OpenCode
+3. **Rules appended** - the `config` hook appends the bundled global rules file (`rules/AGENTS.md`) to `input.instructions` for every session
+4. **Agents available** - All 8 agents are available as subagents via `@` mention
+5. **State preserved** - `session.compacting` hook preserves task status across compaction events
+
+This plugin is built on the **Harness Engineering** principle: `Agent = Model + Harness`. The 6 harness components map directly to plugin features:
+
+| Component         | Plugin Mapping                                |
+| ----------------- | --------------------------------------------- |
+| **Instructions**  | `rules/AGENTS.md` injected into every session |
+| **Tools**         | Skill prescription system + MCP integration   |
+| **Sandboxes**     | `permission` frontmatter on every agent       |
+| **Orchestration** | `mode: all/subagent` + `task()` delegation    |
+| **Guardrails**    | `edit: deny`, `bash: ask`, iteration limits   |
+| **Observability** | Session compaction hooks, structured handoffs |
+
+Most agent failures are configuration failures, not model failures. The plugin's agents are designed with this principle - precise rules, explicit boundaries, and clear delegation chains over raw capability.
+
+## Limitations / Platform Notes
+
+- The plugin is specific to OpenCode; other platforms use separate `@maestria` packages.
+- Enforcement is advisory except where OpenCode's `permission` frontmatter structurally denies tools (for example, the orchestrator cannot edit). Read-only role boundaries are prompt guidance backed by permission blocks, not a sandbox.
+- The generated agents are projections of the canonical core directives. To change behavior, edit `packages/core/agent-directives/` and re-run the sync pipeline - never edit the generated files under `agents/` directly.
+
+## Development
+
+```bash
+# Sync agents/rules from core
+cd packages/opencode && pnpm exec tsx ../core/scripts/sync.ts --verbose
+
+# Test
+pnpm --filter @maestria/opencode test
+
+# Build
+vp pack
+
+# Format, lint, type-check (repo root)
+vp check
+```
+
+Canonical prompts live in `packages/core/agent-directives/`. Edit those, then sync. Never edit generated files under `agents/` directly.
+
+## Documentation and Changelog
+
+- [User-facing documentation](https://maestria.sznm.dev/opencode/) on the docs site
+- [Changelog](CHANGELOG.md)
 
 ## License
 

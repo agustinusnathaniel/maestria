@@ -35,8 +35,10 @@ export default defineConfig({
             'orchestration, handoffs, and review contracts), ' +
             '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), ' +
             '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
-            '@maestria/pi (full agent orchestration for Pi Coding Agent), and ' +
-            '@maestria/hermes (methodology layer for Hermes Agent), and ' +
+            '@maestria/pi (full agent orchestration for Pi Coding Agent), ' +
+            '@maestria/hermes (methodology layer for Hermes Agent), ' +
+            '@maestria/prime-agent (Maestria methodology for Prime Agent as Agent Skills ' +
+            'plus a verified Prime/Pi extension for workflow modes), and ' +
             '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX).',
         }),
         starlightPageActions({
@@ -215,6 +217,19 @@ export default defineConfig({
             { label: 'Commands', link: '/hermes/commands/' },
             { label: 'Changelog', link: '/hermes/changelog/' },
             { label: 'Contributing', link: '/hermes/contributing/' },
+          ],
+        },
+        {
+          label: '@maestria/prime-agent',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/prime-agent/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'prime-agent/getting-started' } }],
+            },
+            { label: 'Changelog', link: '/prime-agent/changelog/' },
+            { label: 'Contributing', link: '/prime-agent/contributing/' },
           ],
         },
       ],

@@ -2,13 +2,31 @@
 
 A declarative Claude Code plugin that encodes the Maestria engineering methodology: 7 specialist agents, an orchestrator skill, a preloaded global-rules skill, and 3 workflow commands, all generated from the canonical directives in `packages/core/agent-directives/`.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. Runtime support status and evidence are tracked in [ADR-CORE-014](../../docs/adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md) and the [runtime support matrix](../../docs/runtime-support-matrix.md).
+> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The agents, skills, and commands in this package are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept). Runtime support status and evidence are tracked in [ADR-CORE-014](../../docs/adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md) and the [runtime support matrix](../../docs/runtime-support-matrix.md).
 
-## Status
+## Motivation
+
+Claude Code has a native plugin system with agents, skills, and commands, but no built-in engineering methodology. `@maestria/claude-code` ships the Maestria methodology as a declarative plugin: 7 specialist agents, an orchestrator skill, a global-rules skill preloaded into every agent, and `fein`/`sonar`/`blitz` workflow commands. It is generated from the canonical directives, so it stays in lockstep with every other Maestria platform.
+
+## Goals
+
+- **7 specialist agents** - `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`, each preloading the global-rules skill.
+- **Orchestrator and global-rules skills** - routing methodology plus the universal rules contract.
+- **Workflow commands** - `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz`.
+- **Read-only enforcement** - `adventurer`, `planner`, and `reviewer` deny `Write`/`Edit` via `disallowedTools` (user-authorized; the only runtime enforcement).
+- **Local validation** - `claude plugin validate --strict` is the automated gate.
+
+## Non-Goals
+
+- **Does NOT ship hooks, MCP servers, or runtime code** - this is a declarative package: manifest, agents, skills, and commands only. No postinstall, no config-writing installer, no CLI or model registration.
+- **Does NOT write project or user `CLAUDE.md` files** - there is no `rules/` directory.
+- **Does NOT enforce roles as a sandbox** - the only runtime enforcement is `disallowedTools: Write, Edit` on the three read-only roles; everything else is advisory prompt guidance.
+
+## Status / Support Boundary
 
 `Native candidate` - the plugin validates cleanly with the official CLI (`claude plugin validate --strict`) and follows the current documented plugin contract, but runtime behavior is **not yet tested end to end**. Upstream Claude Code docs are moving and unpinned; reverify any material claim before relying on it (see the runtime support matrix). Do not treat this package as a production support promise.
 
-## Install
+## Installation
 
 The package is published to npm and can be installed persistently through the Maestria CLI. The CLI stages the published package into a local Claude Code marketplace cache, then delegates installation and updates to Claude Code's native plugin commands.
 
@@ -43,6 +61,8 @@ npx maestria update claude-code
 
 The Claude Code host manages the installed plugin and its scope. `maestria update claude-code --version ...` is not supported because Claude Code updates from the configured marketplace's latest package.
 
+See [INSTALL.md](INSTALL.md) for the full installation checklist, verification steps, and uninstall.
+
 ### Regenerating the plugin
 
 All agents, skills, and commands are generated from the canonical core directives. Never hand-edit generated files; edit the canonical sources and run the sync pipeline:
@@ -52,7 +72,7 @@ scripts/sync-all          # regenerate every platform package
 scripts/check-sync        # CI check that generated files are in sync
 ```
 
-## What's inside
+## What It Provides
 
 All components are namespaced under the plugin name `maestria`.
 
@@ -89,7 +109,7 @@ Every agent is configured to preload the `maestria:global-rules` skill via the C
 
 Commands are invoked by their namespaced name (for example `/maestria:fein`). The bare `/fein` may also resolve when no other skill claims the name, but the namespaced form is the documented contract.
 
-## Platform notes and limitations
+## Limitations / Platform Notes
 
 - **Plugin-agent `permissionMode`, `hooks`, and `mcpServers` frontmatter are ignored by Claude Code** for security reasons (documented upstream). This plugin therefore ships none of them. To enforce those fields you would need to copy an agent file into `.claude/agents/` or `~/.claude/agents/`.
 - **Advisory vs enforced:** skills, preloaded rules, and role prompts are advisory. The only runtime-enforced control in this package is `disallowedTools: Write, Edit` on the three read-only roles. Do not describe prompt rules as security enforcement.
@@ -111,6 +131,12 @@ pnpm validate    # claude plugin validate . --strict (requires the Claude CLI)
 ```
 
 See the [contributing guide](../../CONTRIBUTING.md) for repository conventions.
+
+## Documentation and Changelog
+
+- [User-facing documentation](https://maestria.sznm.dev/claude-code/) on the docs site
+- [Installation checklist](INSTALL.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 

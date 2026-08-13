@@ -1,0 +1,137 @@
+---
+title: Installation & Setup
+description: Register @maestria/prime-agent with Prime Agent, enable the extension, and verify the Agent Skills.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+`@maestria/prime-agent` ships two resource types Prime discovers from the `pi` manifest key in
+`package.json`:
+
+- **Skills** (`pi.skills: ["./skills"]`): the 14 Agent Skills (`skills/<name>/SKILL.md`).
+- **Extension** (`pi.extensions: ["./dist/extension.mjs"]`): a compiled Prime/Pi extension with the
+  workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and
+  mode prompt injection.
+
+<Aside type="caution" title="Pinned support boundary">
+  This package is a `Native candidate`. The generated skills match the documented Prime Agent Agent
+  Skills contract and the extension is verified against the pinned Prime fork (commit
+  `7787f07415d843b9a800f6a4720e0c739bd608e5`, verified 2026-08-13), but runtime behavior is **not
+  yet tested end to end** in a live Prime session. Native `rlm` dispatch and JSON/RPC headless mode
+  are deferred.
+</Aside>
+
+## Prerequisites
+
+- **Prime Agent** installed (see Prime's [getting started](https://github.com/PrimeIntellect-ai/prime-agent)).
+- Node.js and pnpm are only needed if you are contributing to this repository to regenerate files
+  from the canonical core directives. Prime installs registered packages itself via npm; pnpm is not
+  required to consume this package.
+
+## Register the package (preferred, enables the extension)
+
+Register the published package with Prime's package mechanism:
+
+```bash
+prime-agent package install npm:@maestria/prime-agent
+```
+
+- By default the package is recorded in global settings (`~/.prime/agent/settings.json`); add
+  `--local` to record it in project settings (`.prime/agent/settings.json`), which Prime installs
+  automatically at startup.
+- Prime reads the package's `pi.extensions` and `pi.skills` manifest entries to discover the
+  extension and the skills. This is the only documented install path that enables the extension
+  automatically.
+- **Git/local source installs are skills-only unless the package has been built.** Prime's git
+  installs clone the repository and run `npm install` but do **not** build, so `dist/extension.mjs`
+  is absent and the extension is silently skipped. To get the extension from a source install, build
+  the package first and point Prime at the built directory:
+
+  ```bash
+  pnpm --filter @maestria/prime-agent build
+  prime-agent package install local:/path/to/maestria/packages/prime-agent
+  ```
+
+## Skills-only options (no extension)
+
+If you only want the skills, point Prime at the package's `skills/` directory in settings
+(`~/.prime/agent/settings.json` for your user, or `.prime/agent/settings.json` in the project):
+
+```json
+{
+  "skills": ["/path/to/node_modules/@maestria/prime-agent/skills"]
+}
+```
+
+This works with a local clone too:
+
+```json
+{
+  "skills": ["/path/to/maestria/packages/prime-agent/skills"]
+}
+```
+
+Alternatively, copy or symlink the skill directories into a project or global skill location:
+
+```bash
+ln -s /path/to/maestria/packages/prime-agent/skills/* ~/.prime/agent/skills/
+```
+
+### Enabling the extension for skills-only installs
+
+If you installed via a skills-only path and want the extension too, point the `extensions` setting
+at the compiled file (the npm package tarball includes `dist/extension.mjs`; a source clone needs
+`pnpm --filter @maestria/prime-agent build` first):
+
+```json
+{
+  "extensions": ["/path/to/node_modules/@maestria/prime-agent/dist/extension.mjs"],
+  "skills": ["/path/to/node_modules/@maestria/prime-agent/skills"]
+}
+```
+
+## Verify the installation
+
+<Steps>
+
+1. **Start Prime Agent** from the repository or project you want it to work in.
+
+2. **Reload** to rediscover new or edited skill metadata and extension registration:
+
+   ```bash
+   /reload
+   ```
+
+3. **Confirm the skills appear.** Run `/skill:orchestrator` or ask the agent to load the
+   `global-rules` skill.
+
+4. **Confirm the extension loaded.** Run `/maestria-status` - it should report the current mode
+   (`none` initially) and the verified/deferred subset. Try `/fein`, `/sonar`, `/blitz`, and
+   `/mode-clear`; while a mode is active, the mode prompt is appended to the system prompt on each
+   agent turn.
+
+</Steps>
+
+<Aside type="caution" title="Runtime checks are not yet verified">
+  Steps 3-4 are runtime checks that are **not yet verified** end to end. The package-level gates are
+  `pnpm build` (the extension compiles to the declared `dist/extension.mjs`), `pnpm validate`
+  (frontmatter/layout), and `pnpm test` (generated-skill, extension, package-manifest, and npm-pack
+  tarball-content tests). See the [runtime support
+  matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
+</Aside>
+
+## Uninstall / removal
+
+If you used the package registration path, unregister it:
+
+```bash
+prime-agent package remove npm:@maestria/prime-agent
+```
+
+Otherwise removal is simply dropping the settings `skills`/`extensions` entries or symlink that
+points Prime at the package.
+
+## Next Steps
+
+- [Quick Start](/prime-agent/getting-started/quick-start/) - run your first pipeline
+- [Browse the Agents](/core/agents/) - detailed documentation for each specialist

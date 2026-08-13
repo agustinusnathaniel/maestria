@@ -2,25 +2,30 @@
 
 `@maestria/codex` is a provisional Codex CLI projection of Maestria's canonical agent methodology. It packages the core directives as Codex skills inside a `.codex-plugin/plugin.json` bundle.
 
-## Status and support boundary
+> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The skills in this package are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
-This is a `Provisional` / `Projection` spike verified against the locally available `codex 0.145.0` on 2026-08-13. The package demonstrates a generated skills projection; it is not a production support promise and does not claim Codex desktop parity.
+## Motivation
 
-Codex skills, plugin loading, subagent workflows, and `AGENTS.md` are runtime capabilities, not Maestria security controls. This package does not make any specialist role read-only, guarantee delegation, or enforce the maker/checker split. Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
+Codex CLI has a plugin and skills system, but no built-in engineering methodology. `@maestria/codex` demonstrates how Maestria's specialists, orchestration, rules, handoffs, and workflow modes project onto Codex's namespaced skill surface. It is a skills-only projection: the methodology is available to Codex users as `$maestria:*` skills, while Codex's own sandbox, approvals, and hook trust model remain the runtime boundary.
 
-The projection intentionally ships no hooks, MCP server, model configuration, or `AGENTS.md` writer. Persistent installation is handled by the Maestria CLI, which stages the published npm package into a local Codex marketplace and delegates to Codex's native plugin commands.
+## Goals
 
-## Local package validation
+- **Skills-only projection** - package the canonical Maestria specialist, orchestration, rules, handoff, iteration-limit, and workflow-mode directives as Codex skills through `.codex-plugin/plugin.json`.
+- **Maestria CLI compatibility** - install, status, check, update, and uninstall through the CLI, which stages the published npm package into a local Codex marketplace.
+- **Namespaced skills** - `$maestria:*` identifiers so the projection coexists with the host's own skills.
 
-From the repository root:
+## Non-Goals
 
-```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
-```
+- **Does NOT claim Codex desktop parity** - the verified projection surface is Codex CLI's plugin `skills/` directory.
+- **Does NOT enforce roles** - Codex skills, plugin loading, subagent workflows, and `AGENTS.md` are runtime capabilities, not Maestria security controls. This package does not make any specialist role read-only, guarantee delegation, or enforce the maker/checker split.
+- **Does NOT ship hooks, MCP servers, model configuration, or an `AGENTS.md` writer** - the projection intentionally excludes them.
+- **Does NOT support exact version pinning** - `maestria update codex --version` is rejected because Codex's marketplace update path selects the latest staged package.
 
-Use the `validate_plugin.py` shipped with the Codex plugin-creator skill in your Codex installation; the path is installation-specific.
+## Status / Support Boundary
 
-When a Codex marketplace is available, install the package through that marketplace and start a fresh session before checking skill discovery. This repository does not create or mutate a marketplace as part of the spike.
+This is a `Provisional` / `Projection` spike verified against the locally available `codex 0.145.0` on 2026-08-13. The package demonstrates a generated skills projection; it is not a production support promise and does not claim Codex desktop parity. Reverify host marketplace and skills behavior when upgrading Codex.
+
+## Installation
 
 For the published package, the supported convenience path is:
 
@@ -32,7 +37,21 @@ This requires Codex CLI and npm on `PATH`. The CLI creates a local marketplace u
 
 Codex CLI does not expose a plugin update command in the supported surface used by this projection. `maestria update codex` refreshes the staged npm package, removes the installed plugin, and adds it again. Exact version pinning is not available through `maestria update codex --version`.
 
-## Skills
+### Local package validation
+
+From the repository root:
+
+```bash
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
+```
+
+Use the `validate_plugin.py` shipped with the Codex plugin-creator skill in your Codex installation; the path is installation-specific.
+
+When a Codex marketplace is available, install the package through that marketplace and start a fresh session before checking skill discovery. This repository does not create or mutate a marketplace as part of the spike.
+
+See [INSTALL.md](INSTALL.md) for the full installation checklist and verification.
+
+## What It Provides
 
 The plugin exposes these namespaced skills:
 
@@ -55,17 +74,37 @@ The plugin exposes these namespaced skills:
 
 The workflow-mode entries are skills rather than Codex slash commands because the pinned projection surface verified for this spike is the plugin `skills/` directory.
 
-## Regenerating generated skills
+## Limitations / Platform Notes
 
-All skills are generated from `packages/core/agent-directives/`. Edit canonical sources only, then regenerate and check every projection:
+- Read-only specialist boundaries are documented guidance, not tool enforcement; Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
+- The projection is skills-only and provisional; support remains provisional until the pinned Codex CLI behavior and the marketplace/plugin install flow have been reverified.
+- The skills are generated from `packages/core/agent-directives/`. To change behavior, edit the canonical sources and re-run the sync pipeline - never hand-edit the generated `skills/` directory.
+
+### Regenerating generated skills
 
 ```bash
 scripts/sync-all
 scripts/check-sync
 ```
 
-Do not hand-edit the generated `skills/` directory.
+## Development
+
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/codex test
+```
 
 ## Evidence baseline
 
 The pinned capability and trust findings are recorded in [`docs/runtime-support-matrix.md`](../../docs/runtime-support-matrix.md) and bounded by [`ADR-CORE-014`](../../docs/adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). The exact release source used for the spike is OpenAI Codex [`rust-v0.145.0`](https://github.com/openai/codex/releases/tag/rust-v0.145.0).
+
+## Documentation and Changelog
+
+- [User-facing documentation](https://maestria.sznm.dev/codex/) on the docs site
+- [Installation checklist](INSTALL.md)
+- [Changelog](CHANGELOG.md)
+
+## License
+
+MIT

@@ -133,3 +133,8 @@ For per-package uninstall instructions, see:
 - [@maestria/opencode uninstall](apps/docs/src/content/docs/opencode/getting-started/installation.mdx)
 - [@maestria/kimi-code uninstall](apps/docs/src/content/docs/kimi-code/getting-started/installation.mdx)
 - [@maestria/pi & @maestria/omp uninstall](apps/docs/src/content/docs/pi-omp/getting-started/installation.mdx)
+- [@maestria/cursor uninstall](apps/docs/src/content/docs/cursor/getting-started/installation.mdx)
+- [@maestria/claude-code uninstall](apps/docs/src/content/docs/claude-code/getting-started/installation.mdx)
+- [@maestria/codex uninstall](apps/docs/src/content/docs/codex/getting-started/installation.mdx)
+- [@maestria/hermes uninstall](apps/docs/src/content/docs/hermes/getting-started/installation.mdx)
+- [@maestria/prime-agent uninstall](apps/docs/src/content/docs/prime-agent/getting-started/installation.mdx)

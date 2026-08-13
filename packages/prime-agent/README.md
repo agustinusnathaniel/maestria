@@ -2,17 +2,41 @@
 
 A package that encodes the Maestria engineering methodology for [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent): 7 specialist roles, an orchestrator, the global-rules contract, handoff and iteration-limits aids, and the fein/sonar/blitz workflow modes - delivered as standard [Agent Skills](https://agentskills.io/specification) (`skills/<name>/SKILL.md`), generated from the canonical directives in `packages/core/agent-directives/` - plus a small, verified Prime/Pi extension (`dist/extension.mjs`) for workflow-mode commands and mode prompt injection.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. Runtime support status and evidence are tracked in [ADR-CORE-014](../../docs/adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md) and the [runtime support matrix](../../docs/runtime-support-matrix.md).
+> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The skills in this package are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept). Runtime support status and evidence are tracked in [ADR-CORE-014](../../docs/adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md) and the [runtime support matrix](../../docs/runtime-support-matrix.md).
 
-## Status
+## Motivation
+
+Prime Agent executes code directly and loads methodology from standard Agent Skills. `@maestria/prime-agent` brings Maestria's engineering discipline to Prime in the form Prime already consumes: skills for the 7 specialist roles, orchestrator, global rules, handoff and iteration limits, and the fein/sonar/blitz workflow modes - plus a small extension that turns those modes into session-level commands and prompt injection. Skills are advisory guidance; they are not a sandbox and do not claim runtime enforcement.
+
+## Goals
+
+- **Skills-first delivery** - ship the Maestria methodology as standard Agent Skills (`skills/<name>/SKILL.md`) with the required `name`/`description` frontmatter.
+- **A verified executable subset** - a small, self-contained Prime/Pi extension (`dist/extension.mjs`) covering workflow-mode slash commands and mode prompt injection, using only the public extension API of the pinned Prime fork.
+- **Session-scoped mode state** - mode state rides on host session custom entries, restored across session start/reload/resume/fork and preserved across compaction, with no filesystem writes.
+- **Single source of truth** - skills are generated from the canonical core directives; the extension loads its mode content from the generated `skills/` so there is one source for mode text.
+
+## Non-Goals
+
+- **Does NOT provide native `rlm` recursive-subagent dispatch** - the pinned fork's `rlm(...)` call is an IPython-side tool with **no public JS extension bridge**, so this package cannot spawn child agents from the extension. "Delegate to a specialist" means load the relevant skill and apply its methodology.
+- **Does NOT support JSON/RPC headless-mode integration** - deferred (ADR-CORE-014).
+- **Does NOT enforce roles as a sandbox** - Prime Agent has no skill-level tool-denial mechanism (the Agent Skills `allowed-tools` field is experimental and only pre-approves tools), so read-only roles state their role intent without claiming a runtime boundary.
+- **Does NOT declare a runtime dependency on pi packages** - the Prime-compatible fork of `@earendil-works/pi-coding-agent` is not published to npm and Prime bundles the pi API into its runtime, so the extension consumes the API through the runtime-provided `pi` object with type-only local declarations.
+
+## Status / Support Boundary
 
 `Native candidate` - Skills-first delivery plus a verified executable extension subset. Prime Agent evidence (Agent Skills standard, discovery paths, frontmatter requirements, extension API, execution boundary) was re-verified on 2026-08-13 at the immutable upstream commit [`7787f07415d843b9a800f6a4720e0c739bd608e5`](https://github.com/PrimeIntellect-ai/prime-agent/tree/7787f07415d843b9a800f6a4720e0c739bd608e5). The generated skills match the documented contract, the compiled extension is verified against the pinned fork's public extension API (source inspection) and exercised by tests, but runtime behavior in a live Prime session is **not yet tested end to end**. Native recursive-subagent (`rlm`) dispatch and JSON/RPC headless-mode integration remain **deferred** (see below). Do not treat this package as a production support promise.
 
-## Install
+## Installation
 
-See [INSTALL.md](INSTALL.md) for installation and consumption options.
+See [INSTALL.md](INSTALL.md) for installation and consumption options. The preferred path registers the published npm package with Prime, which enables both the skills and the extension:
 
-## What's inside
+```bash
+prime-agent package install npm:@maestria/prime-agent
+```
+
+For skills-only installs, point Prime at the package's `skills/` directory in settings, or copy/symlink the skill directories into a project or global skill location.
+
+## What It Provides
 
 ### Agent Skills
 
@@ -61,7 +85,7 @@ The package ships a compiled Prime/Pi extension (`dist/extension.mjs`, declared 
 
 In addition, while a mode is active the extension appends the mode's prompt (loaded from the generated `skills/<mode>/SKILL.md`, so the injected text is exactly the sync-projected mode skill) to the system prompt on every agent turn via the `before_agent_start` event. Mode state is session-scoped (host session custom entries via `pi.appendEntry`), restored on session start/reload/resume/fork and on session-tree navigation, and persists across compaction by design (custom entries are session entries).
 
-## Platform notes and limitations
+## Limitations / Platform Notes
 
 - **Verified subset only, not native `rlm` dispatch:** the extension covers mode commands and mode prompt injection. There is **no** recursive-subagent dispatch: the pinned fork's `rlm(...)` call is an IPython-side tool with **no public JS extension bridge**, so this package does not and cannot spawn child agents from the extension. "Delegate to a specialist" means load the relevant skill and apply its methodology, not spawn a child agent. JSON/RPC headless-mode integration is likewise deferred (ADR-CORE-014). The `/maestria-status` command states this explicitly.
 - **Advisory, not enforced:** skills, rules, role prompts, and the extension are advisory guidance, not security enforcement. The extension performs **no tool interception** (it does not claim any control over Prime's Python/command execution path). Prime Agent has no skill-level tool-denial mechanism (the Agent Skills `allowed-tools` field is experimental and only pre-approves tools), so the read-only roles (`adventurer`, `planner`, `reviewer`) state their role intent without claiming a runtime boundary.
@@ -86,6 +110,12 @@ bash scripts/sync-all # regenerate generated skills for all plugins (incl. this 
 ```
 
 See the [contributing guide](../../CONTRIBUTING.md) for repository conventions.
+
+## Documentation and Changelog
+
+- [User-facing documentation](https://maestria.sznm.dev/prime-agent/) on the docs site
+- [Installation guide](INSTALL.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 

@@ -12,6 +12,8 @@ description: Release history for @maestria/claude-code.
 - The published package can be installed, checked, updated, and removed with `maestria install claude-code`, `maestria status`, `maestria update claude-code`, and `maestria uninstall claude-code`.
 - The Maestria CLI stages the npm package in a local marketplace and delegates installation state to Claude Code's native plugin manager.
 - Exact version pinning is not supported for `maestria update claude-code --version`; the host marketplace selects the latest package.
+- Plugin metadata now stays aligned with package versions: release-time version sync is generalized across plugins and a `--check` mode fails the build on drift, so the published plugin artifact can no longer diverge from npm metadata.
+- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
 
 ## v0.2.0
 

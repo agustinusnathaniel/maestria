@@ -6,11 +6,35 @@ A single CLI to manage maestria plugins across all coding agent platforms - Open
 npx maestria status
 ```
 
-## Why
+> This project is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope.
 
-Each coding agent platform installs maestria differently. `maestria` wraps them all behind one interface. Check what's installed, install for a platform, or update everything - no more hunting through READMEs for the right command.
+## Motivation
 
-## Commands
+Each coding agent platform installs maestria differently. OpenCode uses its own plugin manager, Pi and Oh My Pi use package registration, Kimi Code reads an `installed.json` registry, Cursor copies a plugin directory, and Claude Code and Codex CLI use host-native marketplaces. Hunting through each platform's README for the right command is slow and error-prone.
+
+`maestria` wraps all of them behind one interface. Check what's installed, install for a platform, or update everything from a single command - including platforms whose install steps are non-trivial (staging npm packages into local marketplaces, wiring peer dependencies, and navigating plugin registries).
+
+## Goals
+
+- **One command per operation** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
+- **Host-native state** - wherever a platform has its own plugin manager, the CLI delegates to it rather than mutating host configuration directly.
+- **Agent and CI friendly** - `--json`, `--compact`, and `--quiet` flags plus documented exit codes make the CLI scriptable.
+- **Version-aware** - network-first version lookups and correct semver comparison so updates and status are accurate.
+
+## Non-Goals
+
+- **Does NOT replace a platform's own plugin manager** - for OpenCode, Pi, Oh My Pi, Kimi Code, Cursor, Claude Code, and Codex CLI, the CLI drives the platform's native mechanism; it is not an independent install source.
+- **Does NOT add new platforms** - platform support lives in the per-package adapters, not here.
+- **Does NOT enforce runtime behavior** - the CLI manages plugin installation only; it does not run agents or enforce methodology.
+- **Does NOT pin versions for marketplace-backed hosts** - Claude Code and Codex CLI select the latest staged package; exact version pinning is rejected for those adapters.
+
+## Status / Support Boundary
+
+The CLI is published to npm as the `maestria` package and is the supported convenience path for installing, checking, updating, and removing Maestria plugins. It requires the target platform's CLI on `PATH` (`opencode`, `pi`, `kimi`, `hermes`, `agent`, `claude`, or `codex`), and npm is required for Claude Code and Codex CLI because the CLI stages their published packages into local marketplaces under `~/.cache/maestria/`.
+
+## Usage
+
+### Commands
 
 | Command | What it does |
 | --- | --- |
@@ -29,7 +53,7 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 
 All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text - ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version where the host supports it. Claude Code and Codex CLI use latest-only marketplace updates and reject `--version`.
 
-## Usage
+### Examples
 
 ```bash
 # Check status (no arguments = status)
@@ -99,36 +123,28 @@ npm version lookups use a **network-first** strategy: the CLI always fetches the
 rm ~/.cache/maestria/versions.json
 ```
 
-## Prerequisites
+## What It Provides
 
-- Node.js 22+
-- The platform CLI must be on `$PATH` (`opencode`, `pi`, `kimi`, `hermes`, `agent` for Cursor, `claude`, or `codex`)
-- npm is required for Claude Code and Codex CLI because the CLI stages their published packages into local marketplaces under `~/.cache/maestria/`
+- **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` for OpenCode, Oh My Pi, Pi, Kimi Code, Hermes, Cursor, Claude Code, and Codex CLI.
+- **Interactive and scriptable modes** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
+- **Host-native delegation** - delegates install/update/uninstall state to each platform's own mechanism (OpenCode plugin, Pi/OMP package registration, Kimi `installed.json`, Cursor plugin directory, Claude Code/Codex marketplace).
 
-## Supported Platforms
+## Limitations / Platform Notes
 
-| ID            | Platform    | Package                 |
-| ------------- | ----------- | ----------------------- |
-| `opencode`    | OpenCode    | `@maestria/opencode`    |
-| `omp`         | Oh My Pi    | `@maestria/omp`         |
-| `pi`          | Pi          | `@maestria/pi`          |
-| `kimi-code`   | Kimi Code   | `@maestria/kimi-code`   |
-| `hermes`      | Hermes      | `maestria-hermes`       |
-| `cursor`      | Cursor      | `@maestria/cursor`      |
-| `claude-code` | Claude Code | `@maestria/claude-code` |
-| `codex`       | Codex CLI   | `@maestria/codex`       |
-
-## Tech Stack
-
-- **Effect v4** - typed errors, structured concurrency, Effect-based platform operations
-- **citty** - lightweight CLI routing with typed arg definitions
-- **@clack/prompts** - interactive spinners and selection prompts
-- **picocolors** - terminal output coloring
-- **vite-plus** - bundles to a single self-contained `.mjs` file
+- Requires the platform CLI on `PATH`; the CLI cannot install a platform it cannot detect.
+- npm is required for the Claude Code and Codex CLI adapters (they stage published npm packages into local marketplaces).
+- Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code and Codex CLI reject it.
+- Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless you remove it separately.
 
 ## Development
 
 ```bash
+# Install dependencies
+vp install
+
+# Format, lint, and type-check
+vp check
+
 # Build
 pnpm build
 
@@ -142,6 +158,13 @@ pnpm typecheck
 node dist/index.js status
 ```
 
-## Related
+The CLI is built on **Effect v4** (typed errors, structured concurrency), **citty** (CLI routing), **@clack/prompts** (interactive prompts), **picocolors** (output), and **vite-plus** (bundles to a single self-contained `.mjs` file).
 
-- [Maestria CLI documentation](https://maestria.sznm.dev/cli/)
+## Documentation and Changelog
+
+- [CLI documentation](https://maestria.sznm.dev/cli/) on the docs site
+- [Changelog](CHANGELOG.md)
+
+## License
+
+MIT
