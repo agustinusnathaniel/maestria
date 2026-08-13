@@ -19,15 +19,17 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Maestria',
-      description: 'Portable AI engineering praxis plugins for OpenCode and beyond.',
+      description: 'Portable AI engineering praxis plugins for OpenCode, Claude Code, and beyond.',
       customCss: ['./src/styles/global.css'],
       plugins: [
         starlightLinksValidator(),
         starlightLlmsTxt({
           projectName: 'maestria',
           description:
-            'Portable AI engineering praxis plugins for OpenCode, Kimi Code, Cursor, Pi, and Hermes. ' +
+            'Portable AI engineering praxis plugins for OpenCode, Claude Code, Kimi Code, Cursor, Pi, and Hermes. ' +
             'Includes @maestria/opencode (8 agents, global rules injection), ' +
+            '@maestria/claude-code (declarative Claude Code plugin with specialist agents, ' +
+            'orchestrator and global-rules skills, and fein/sonar/blitz workflow commands), ' +
             '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), ' +
             '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
             '@maestria/pi (full agent orchestration for Pi Coding Agent), and ' +
@@ -143,6 +145,19 @@ export default defineConfig({
             },
             { label: 'Changelog', link: '/kimi-code/changelog/' },
             { label: 'Contributing', link: '/kimi-code/contributing/' },
+          ],
+        },
+        {
+          label: '@maestria/claude-code',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/claude-code/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'claude-code/getting-started' } }],
+            },
+            { label: 'Changelog', link: '/claude-code/changelog/' },
+            { label: 'Contributing', link: '/claude-code/contributing/' },
           ],
         },
         {
