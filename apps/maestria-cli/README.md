@@ -16,9 +16,9 @@ npx maestria status
 | `maestria install [--all\|platforms]` | Install for all detected platforms or specific ones (`opencode,pi`) |
 | `maestria update [--all\|platforms]` | Update installed platforms; `--version 0.5.0` pins a version where the host supports it |
 | `maestria uninstall <platform>` | Remove a platform installation |
-| `maestria check` | Verify a platform installation |
+| `maestria check <platform>` | Verify a platform installation |
 
-All commands accept `--json`, `--quiet`, and `--compact` for scripting and CI, and `--help` shows in-terminal examples, exit codes, and AI-agent usage tips.
+All commands accept `--json` and `--quiet` for scripting and CI, and `--help` shows in-terminal examples, exit codes, and AI-agent usage tips. `--compact` is supported on every command except `check`, which requires a platform argument and outputs JSON by default.
 
 ```bash
 # Check status
