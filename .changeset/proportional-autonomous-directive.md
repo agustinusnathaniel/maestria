@@ -1,5 +1,6 @@
 ---
 '@maestria/claude-code': patch
+'@maestria/core': patch
 '@maestria/cursor': patch
 '@maestria/kimi-code': patch
 '@maestria/omp': patch
