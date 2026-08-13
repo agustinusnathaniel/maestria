@@ -233,18 +233,25 @@ export function installSubagentTool(
             ],
           });
 
-          // Spawn all tasks
+          // Spawn all tasks. If a later spawn throws, abort the subagents already
+          // spawned so they are not orphaned; the outer catch returns the handoff
+          // fallback.
           const spawnedIds: string[] = [];
-          for (const t of taskList) {
-            const id = service.spawn(t.agent, t.task, {
-              description: t.task.slice(0, 80),
-              foreground: true,
-              inheritContext: true,
-            });
-            spawnedIds.push(id);
+          try {
+            for (const t of taskList) {
+              const id = service.spawn(t.agent, t.task, {
+                description: t.task.slice(0, 80),
+                foreground: true,
+                inheritContext: true,
+              });
+              spawnedIds.push(id);
 
-            // Record each handoff
-            recordAndPersist(pi, state, t.agent, t.task);
+              // Record each handoff
+              recordAndPersist(pi, state, t.agent, t.task);
+            }
+          } catch (err) {
+            abortSubagents(service, spawnedIds);
+            throw err;
           }
 
           // Poll all concurrently, preserving completed results when one poll fails.
@@ -318,9 +325,12 @@ export function installSubagentTool(
             const t = taskList[i];
             let taskText = t.task;
 
-            // Substitute {previous} placeholder with previous result
+            // Substitute {previous} placeholder with previous result.
+            // A replacer function (not a string) is required: string replacements interpret
+            // $&, $', $`, and $1..$99 in the replacement text, so a previous result
+            // containing those sequences would silently corrupt the next task brief.
             if (i > 0 && taskText.includes('{previous}')) {
-              taskText = taskText.replace(/\{previous\}/g, previousResult);
+              taskText = taskText.replace(/\{previous\}/g, () => previousResult);
             }
 
             const id = service.spawn(t.agent, taskText, {
