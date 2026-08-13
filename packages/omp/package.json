@@ -30,7 +30,6 @@
     "build": "vp pack",
     "test": "vp test",
     "lint": "vp check",
-    "sync": "pnpm exec tsx ../core/scripts/sync.ts --config sync.config.ts",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },

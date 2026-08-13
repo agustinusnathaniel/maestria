@@ -90,7 +90,6 @@ The global-rules skill is generated once from `rules.md` and preloaded into ever
 
 ```bash
 pnpm test        # manifest and generated-file assertions
-pnpm sync        # regenerate generated files from canonical sources
 pnpm validate    # claude plugin validate . --strict (requires the Claude CLI)
 ```
 

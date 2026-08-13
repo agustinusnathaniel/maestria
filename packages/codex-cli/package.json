@@ -1,18 +1,18 @@
 {
-  "name": "@maestria/claude-code",
-  "version": "0.2.1",
+  "name": "@maestria/codex-cli",
+  "version": "0.1.0",
   "private": false,
-  "description": "Maestria methodology plugin for Claude Code - specialist agents, orchestrator and global-rules skills, and workflow commands",
+  "description": "Provisional Maestria skills projection for Codex CLI",
   "keywords": [
-    "agents",
     "ai",
-    "claude-code",
+    "codex",
+    "codex-cli",
     "maestria",
     "orchestration",
     "pipeline",
-    "plugin"
+    "skills"
   ],
-  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/claude-code#readme",
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex-cli#readme",
   "bugs": {
     "url": "https://github.com/agustinusnathaniel/maestria/issues"
   },
@@ -21,13 +21,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/agustinusnathaniel/maestria.git",
-    "directory": "packages/claude-code"
+    "directory": "packages/codex-cli"
   },
   "files": [
-    ".claude-plugin",
-    "agents",
+    ".codex-plugin",
     "skills",
-    "commands",
+    "CHANGELOG.md",
     "INSTALL.md",
     "README.md",
     "LICENSE"
@@ -38,8 +37,7 @@
     "provenance": true
   },
   "scripts": {
-    "test": "vp test",
-    "validate": "claude plugin validate . --strict"
+    "test": "vp test"
   },
   "devDependencies": {
     "@types/node": "catalog:",
