@@ -79,8 +79,11 @@ describe('canonical directive behavioral contracts', () => {
     const orchestrator = readDirective('specialists', 'orchestrator.md');
     const iteration = readDirective('skills', 'iteration-limits.md');
 
-    expect(rules).toMatch(/orchestrator owns continuation/i);
+    expect(rules).toMatch(/orchestrator owns continuation for implementation and delivery work/i);
     expect(rules).toMatch(/not a user checkpoint/i);
+    expect(rules).toMatch(
+      /research-only, planning-only, explicitly read-only, and host-blocked work/i,
+    );
     expect(rules).toMatch(/empty, malformed, or incomplete.*recovery attempt/i);
     expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/i);
     expect(rules).toMatch(/do not reset a review or repair budget/i);
@@ -90,15 +93,18 @@ describe('canonical directive behavioral contracts', () => {
     expect(iteration).toMatch(/adjacent findings as follow-ups/i);
   });
 
-  it('makes PR creation the normal terminal delivery step', () => {
+  it('makes PR creation the normal implementation delivery step', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
-    expect(rules).toMatch(/terminal state is a reviewable PR/i);
-    expect(rules).toMatch(/not a local diff, commit, or pushed branch/i);
-    expect(orchestrator).toMatch(/A PR is the default terminal delivery artifact/i);
-    expect(orchestrator).toMatch(/not an optional follow-up/i);
-    expect(orchestrator).toMatch(/do not ask for routine authorization or end with `PR pending`/i);
+    expect(rules).toMatch(/for implementation work, continue through validation/i);
+    expect(rules).toMatch(/create a reviewable PR without ceremonial approval/i);
+    expect(rules).toMatch(
+      /research-only, planning-only, explicitly read-only, and host-blocked work/i,
+    );
+    expect(orchestrator).toMatch(/for implementation work, own the delivery path/i);
+    expect(orchestrator).toMatch(/without ceremonial approval/i);
+    expect(orchestrator).toMatch(/do not stop at `PR pending`/i);
   });
 
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {
