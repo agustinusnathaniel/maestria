@@ -132,7 +132,7 @@ Each plugin defines its transforms in `sync.config.ts`:
 | **pi** | Unified `sync.config.ts` (9 replacements: `task(` → `maestria_subagent(`, `@` → `/`) with dual output paths for agents + skills | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
 | **omp** | Unified `sync.config.ts` (replacements: `@agent` → bare name, omp has built-in `task()` so no rewrite needed) | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
 | **claude-code** | Namespaces agent/skill references, adapts tool names, and adds Claude agent frontmatter | `agents/*.md`, `skills/*/SKILL.md`, and `commands/*.md` |
-| **codex-cli** | Namespaces skill references and projects workflow modes as skills | `skills/*/SKILL.md` |
+| **codex** | Namespaces skill references and projects workflow modes as skills | `skills/*/SKILL.md` |
 
 ### Commands
 
@@ -299,14 +299,14 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 
 ### codex
 
-| Concern  | Details                                                                         |
-| -------- | ------------------------------------------------------------------------------- |
-| Format   | Provisional Codex CLI plugin projection - skills only                           |
-| Manifest | `.codex-plugin/plugin.json`                                                     |
-| Skills   | Auto-generated in `skills/*/SKILL.md`                                           |
-| Test     | `pnpm --filter @maestria/codex test`                                            |
-| Validate | Codex plugin-creator `validate_plugin.py`                                       |
-| Install  | `npx maestria install codex-cli`; the CLI stages a local npm-backed marketplace |
+| Concern  | Details                                                                     |
+| -------- | --------------------------------------------------------------------------- |
+| Format   | Provisional Codex CLI plugin projection - skills only                       |
+| Manifest | `.codex-plugin/plugin.json`                                                 |
+| Skills   | Auto-generated in `skills/*/SKILL.md`                                       |
+| Test     | `pnpm --filter @maestria/codex test`                                        |
+| Validate | Codex plugin-creator `validate_plugin.py`                                   |
+| Install  | `npx maestria install codex`; the CLI stages a local npm-backed marketplace |
 
 ---
 

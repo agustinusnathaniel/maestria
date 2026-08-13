@@ -21,14 +21,14 @@ modify Codex configuration, register models, add MCP servers, or install hooks.
 ## Install through Maestria
 
 ```bash
-npx maestria install codex-cli
+npx maestria install codex
 ```
 
 The CLI downloads the published `@maestria/codex` package, creates a local marketplace at
-`~/.cache/maestria/codex-cli-marketplace`, and invokes:
+`~/.cache/maestria/codex-marketplace`, and invokes:
 
 ```bash
-codex plugin marketplace add ~/.cache/maestria/codex-cli-marketplace
+codex plugin marketplace add ~/.cache/maestria/codex-marketplace
 codex plugin add maestria@maestria
 ```
 
@@ -42,7 +42,7 @@ published package used to refresh the local marketplace.
 1. **Check the host status**
 
    ```bash
-   npx maestria check codex-cli
+   npx maestria check codex
    ```
 
 2. **List the installed plugin**
@@ -69,14 +69,14 @@ published package used to refresh the local marketplace.
 ## Update and remove
 
 ```bash
-npx maestria update codex-cli
-npx maestria uninstall codex-cli
+npx maestria update codex
+npx maestria uninstall codex
 ```
 
 Codex CLI does not expose a separate plugin update command in the supported surface. The Maestria
 CLI refreshes the staged npm package, removes `maestria@maestria`, and adds it again.
 
-Exact version pinning is not supported through `npx maestria update codex-cli --version ...`.
+Exact version pinning is not supported through `npx maestria update codex --version ...`.
 
 ## Validation without installation
 

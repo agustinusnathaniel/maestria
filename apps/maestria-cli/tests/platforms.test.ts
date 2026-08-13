@@ -51,12 +51,12 @@ describe('pi platform uninstall', () => {
 describe('marketplace-backed platform handlers', () => {
   it('registers Claude Code and Codex CLI with their published packages', () => {
     const claudeCode = getPlatform('claude-code');
-    const codexCli = getPlatform('codex-cli');
+    const codex = getPlatform('codex');
 
     expect(claudeCode?.npmPackage).toBe('@maestria/claude-code');
-    expect(codexCli?.npmPackage).toBe('@maestria/codex');
+    expect(codex?.npmPackage).toBe('@maestria/codex');
     expect(claudeCode?.supportsVersionPinning).toBe(false);
-    expect(codexCli?.supportsVersionPinning).toBe(false);
+    expect(codex?.supportsVersionPinning).toBe(false);
   });
 
   it('recognizes the installed Claude Code plugin from host JSON', async () => {
@@ -100,17 +100,17 @@ describe('marketplace-backed platform handlers', () => {
       return Effect.succeed('');
     });
 
-    const codexCli = getPlatform('codex-cli');
-    expect(codexCli).toBeDefined();
-    expect(await Effect.runPromise(codexCli!.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(codexCli!.getInstalledVersion)).toBe('0.2.0');
+    const codex = getPlatform('codex');
+    expect(codex).toBeDefined();
+    expect(await Effect.runPromise(codex!.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(codex!.getInstalledVersion)).toBe('0.2.0');
   });
 
   it('uses host-native uninstall commands', async () => {
     vi.clearAllMocks();
 
     await Effect.runPromise(getPlatform('claude-code')!.uninstall);
-    await Effect.runPromise(getPlatform('codex-cli')!.uninstall);
+    await Effect.runPromise(getPlatform('codex')!.uninstall);
 
     const calls = vi
       .mocked(shell.run)

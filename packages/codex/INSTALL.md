@@ -1,6 +1,6 @@
 # Installing @maestria/codex
 
-> This package is a provisional projection spike, not a production support promise. It was verified against `codex-cli 0.145.0` on 2026-08-13.
+> This package is a provisional projection spike, not a production support promise. It was verified against `codex 0.145.0` on 2026-08-13.
 
 ## Prerequisites
 
@@ -24,16 +24,16 @@ The validator checks the `.codex-plugin/plugin.json` manifest and the packaged l
 Install the published projection and register it with Codex's native plugin manager:
 
 ```bash
-npx maestria install codex-cli
+npx maestria install codex
 ```
 
-The CLI downloads `@maestria/codex` from npm, creates a local marketplace under `~/.cache/maestria/codex-cli-marketplace`, and runs `codex plugin add maestria@maestria`. Codex owns the installed plugin cache and enabled state.
+The CLI downloads `@maestria/codex` from npm, creates a local marketplace under `~/.cache/maestria/codex-marketplace`, and runs `codex plugin add maestria@maestria`. Codex owns the installed plugin cache and enabled state.
 
 Update or remove it with:
 
 ```bash
-npx maestria update codex-cli
-npx maestria uninstall codex-cli
+npx maestria update codex
+npx maestria uninstall codex
 ```
 
 The update path refreshes the npm package and reinstalls it because Codex CLI does not expose a separate plugin update command. Exact version pinning is not supported for this adapter.

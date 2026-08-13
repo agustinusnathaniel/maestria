@@ -16,7 +16,7 @@ export const VALID_PLATFORMS = [
   'hermes',
   'cursor',
   'claude-code',
-  'codex-cli',
+  'codex',
 ] as const;
 export type ValidPlatform = (typeof VALID_PLATFORMS)[number];
 

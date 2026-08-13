@@ -295,7 +295,7 @@ The CLI now recognizes the two recently added plugin packages:
 | Platform | CLI identifier | Host integration |
 | --- | --- | --- |
 | Claude Code | `claude-code` | Stages `@maestria/claude-code` under `~/.cache/maestria/`, registers a local marketplace with `claude plugin marketplace add`, and installs at user scope with `claude plugin install`. |
-| Codex CLI | `codex-cli` | Stages `@maestria/codex` under `~/.cache/maestria/`, registers a local marketplace with `codex plugin marketplace add`, and installs with `codex plugin add`. |
+| Codex CLI | `codex` | Stages `@maestria/codex` under `~/.cache/maestria/`, registers a local marketplace with `codex plugin marketplace add`, and installs with `codex plugin add`. |
 
 Both adapters use the host runtime as the source of installed state and version reporting. They do not write Claude Code or Codex configuration directly. Exact version pinning is rejected for these adapters because their supported marketplace update paths select the latest staged package.
 

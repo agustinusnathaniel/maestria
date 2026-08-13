@@ -4,7 +4,7 @@
 
 ## Status and support boundary
 
-This is a `Provisional` / `Projection` spike verified against the locally available `codex-cli 0.145.0` on 2026-08-13. The package demonstrates a generated skills projection; it is not a production support promise and does not claim Codex desktop parity.
+This is a `Provisional` / `Projection` spike verified against the locally available `codex 0.145.0` on 2026-08-13. The package demonstrates a generated skills projection; it is not a production support promise and does not claim Codex desktop parity.
 
 Codex skills, plugin loading, subagent workflows, and `AGENTS.md` are runtime capabilities, not Maestria security controls. This package does not make any specialist role read-only, guarantee delegation, or enforce the maker/checker split. Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
 
@@ -25,12 +25,12 @@ When a Codex marketplace is available, install the package through that marketpl
 For the published package, the supported convenience path is:
 
 ```bash
-npx maestria install codex-cli
+npx maestria install codex
 ```
 
-This requires Codex CLI and npm on `PATH`. The CLI creates a local marketplace under `~/.cache/maestria/`, then runs `codex plugin add maestria@maestria`. Check, update, or remove the installation with `maestria status`, `maestria update codex-cli`, and `maestria uninstall codex-cli`.
+This requires Codex CLI and npm on `PATH`. The CLI creates a local marketplace under `~/.cache/maestria/`, then runs `codex plugin add maestria@maestria`. Check, update, or remove the installation with `maestria status`, `maestria update codex`, and `maestria uninstall codex`.
 
-Codex CLI does not expose a plugin update command in the supported surface used by this projection. `maestria update codex-cli` refreshes the staged npm package, removes the installed plugin, and adds it again. Exact version pinning is not available through `maestria update codex-cli --version`.
+Codex CLI does not expose a plugin update command in the supported surface used by this projection. `maestria update codex` refreshes the staged npm package, removes the installed plugin, and adds it again. Exact version pinning is not available through `maestria update codex --version`.
 
 ## Skills
 

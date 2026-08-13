@@ -62,7 +62,7 @@ function installNpmTarball(
 }
 
 const CLAUDE_MARKETPLACE_DIR = `${homedir()}/.cache/maestria/claude-code-marketplace`;
-const CODEX_MARKETPLACE_DIR = `${homedir()}/.cache/maestria/codex-cli-marketplace`;
+const CODEX_MARKETPLACE_DIR = `${homedir()}/.cache/maestria/codex-marketplace`;
 const MAESTRIA_MARKETPLACE = 'maestria';
 const MAESTRIA_PLUGIN = 'maestria';
 
@@ -370,8 +370,8 @@ const claudeCode: PlatformHandler = {
   ).pipe(Effect.as(void 0)),
 };
 
-const codexCli: PlatformHandler = {
-  id: 'codex-cli',
+const codex: PlatformHandler = {
+  id: 'codex',
   label: 'Codex CLI',
   npmPackage: '@maestria/codex',
   supportsVersionPinning: false,
@@ -732,7 +732,7 @@ export const platforms: readonly PlatformHandler[] = [
   cursor,
   omp,
   claudeCode,
-  codexCli,
+  codex,
 ];
 
 export function getPlatform(id: string): PlatformHandler | undefined {

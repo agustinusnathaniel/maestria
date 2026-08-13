@@ -20,7 +20,7 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 | `maestria install --all` | Install for all detected platforms |
 | `maestria install opencode` | Install for a specific platform |
 | `maestria install claude-code` | Install the Claude Code plugin through its native marketplace |
-| `maestria install codex-cli` | Install the Codex CLI projection through its native marketplace |
+| `maestria install codex` | Install the Codex CLI projection through its native marketplace |
 | `maestria install opencode,pi` | Install for multiple comma-separated platforms |
 | `maestria update` | Interactive platform update (grouped multiselect with `a` toggle-all) |
 | `maestria update --all` | Update all installed platforms |
@@ -45,7 +45,7 @@ npx maestria install --all
 npx maestria install opencode,pi
 
 # Install the marketplace-backed plugins
-npx maestria install claude-code,codex-cli
+npx maestria install claude-code,codex
 
 # Update everything
 npx maestria update --all
@@ -72,7 +72,7 @@ Invalid arguments are caught early:
 
 ```bash
 $ npx maestria update unknown
-Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex-cli
+Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex
 
 $ npx maestria update opencode --version 2.0
 Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
@@ -116,7 +116,7 @@ rm ~/.cache/maestria/versions.json
 | `hermes`      | Hermes      | `maestria-hermes`       |
 | `cursor`      | Cursor      | `@maestria/cursor`      |
 | `claude-code` | Claude Code | `@maestria/claude-code` |
-| `codex-cli`   | Codex CLI   | `@maestria/codex`       |
+| `codex`       | Codex CLI   | `@maestria/codex`       |
 
 ## Tech Stack
 
