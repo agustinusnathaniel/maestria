@@ -304,19 +304,20 @@ Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place
 Check the installation status of a maestria plugin on a specific platform.
 
 ```bash
-maestria check <platform> [--json] [--quiet]
+maestria check <platform> [--json] [--no-json] [--quiet]
 ```
 
 `<platform>` is required - one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`.
 
 ### Flags
 
-| Flag      | Description                                                              |
-| --------- | ------------------------------------------------------------------------ |
-| `--json`  | Output as JSON. **Default: `true`** - JSON is the default output format. |
-| `--quiet` | Suppress non-essential stderr output; the exit code is the signal        |
+| Flag        | Description                                                               |
+| ----------- | ------------------------------------------------------------------------- |
+| `--json`    | Output as JSON. **Default: `true`** - JSON is the default output format.  |
+| `--no-json` | Disable JSON output; the exit code alone signals the result               |
+| `--quiet`   | Suppress non-essential stderr output. Does **not** disable JSON on stdout |
 
-Unlike every other command, `check` has no `--compact` flag. For exit-code-only scripting, pass `--no-json` (or use `--quiet` and ignore the JSON output) - the exit code is the signal.
+Unlike every other command, `check` has no `--compact` flag. For exit-code-only scripting, pass `--no-json`: JSON is not written to stdout and the exit code alone signals the result. `--quiet` suppresses only stderr output (spinners, error messages) - the JSON result is still printed to stdout unless `--no-json` is also passed.
 
 ### Behavior
 
@@ -342,10 +343,10 @@ Every result includes the `platform` field with the checked platform id. `latest
 Choose which model each maestria specialist agent uses, per platform.
 
 ```bash
-maestria configure <platform> [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
+maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-Supported platforms: `opencode`, `pi`, `omp`. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. Agents without a configured model inherit the session model.
+`platform` is optional - one of `opencode`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. Agents without a configured model inherit the session model.
 
 ### Interactive (TTY)
 

@@ -15,8 +15,9 @@ npx maestria status
 | `maestria` | Show status (default) |
 | `maestria install [--all\|platforms]` | Install for all detected platforms or specific ones (`opencode,pi`) |
 | `maestria update [--all\|platforms]` | Update installed platforms; `--version 0.5.0` pins a version where the host supports it |
-| `maestria uninstall <platform>` | Remove a platform installation |
+| `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
 | `maestria check <platform>` | Verify a platform installation |
+| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, pi, omp); `--set` configures non-interactively |
 
 All commands accept `--json` and `--quiet` for scripting and CI, and `--help` shows in-terminal examples, exit codes, and AI-agent usage tips. `--compact` is supported on every command except `check`, which requires a platform argument and outputs JSON by default.
 
