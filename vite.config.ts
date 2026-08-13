@@ -60,10 +60,10 @@ export default defineConfig({
         output: [],
       },
       'check-manifest-versions': {
-        command: 'python3 scripts/sync-plugin-versions.py --check',
+        command: 'pnpm exec tsx scripts/sync-plugin-versions.ts --check',
         cache: true,
         input: [
-          'scripts/sync-plugin-versions.py',
+          'scripts/sync-plugin-versions.ts',
           'packages/*/package.json',
           'packages/claude-code/.claude-plugin/plugin.json',
           'packages/hermes/plugin.yaml',
@@ -72,12 +72,9 @@ export default defineConfig({
         output: [],
       },
       'test-sync-plugin-versions': {
-        command: 'python3 packages/hermes/tests/test_sync_plugin_versions.py',
+        command: 'pnpm exec vitest run scripts/sync-plugin-versions.test.ts',
         cache: true,
-        input: [
-          'scripts/sync-plugin-versions.py',
-          'packages/hermes/tests/test_sync_plugin_versions.py',
-        ],
+        input: ['scripts/sync-plugin-versions.ts', 'scripts/sync-plugin-versions.test.ts'],
         output: [],
       },
     },
