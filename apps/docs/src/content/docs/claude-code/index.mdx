@@ -6,7 +6,7 @@ editUrl: false
 lastUpdated: false
 hero:
   title: 'Engineering Workflows for Claude Code'
-  tagline: 'Load one plugin. Get 7 specialist agents, the orchestrator methodology, global rules, and fein/sonar/blitz workflow commands - from a self-contained directory, no install.'
+  tagline: 'Install one plugin. Get 7 specialist agents, the orchestrator methodology, global rules, and fein/sonar/blitz workflow commands.'
   actions:
     - text: Get Started
       icon: right-arrow
@@ -41,16 +41,22 @@ the package.
 
 ## Quick Start
 
-The plugin is a self-contained directory - validate and load it without any install step, from the repository root:
+The plugin is a self-contained directory. Validate it from a checkout, or install the published
+package persistently through the Maestria CLI:
 
 ```bash
 claude plugin validate ./packages/claude-code --strict
 claude --plugin-dir ./packages/claude-code
 ```
 
-<Aside type="caution" title="Local validation only">
-  Marketplace distribution and a CLI install handler (`maestria install claude-code`) are follow-up
-  work. Until then, load the plugin from a checkout of this repository with `--plugin-dir`.
+```bash
+npx maestria install claude-code
+```
+
+<Aside type="caution" title="Candidate runtime">
+  The Maestria CLI now supports persistent Claude Code installation, but end-to-end component
+  behavior remains a candidate-runtime claim. Validate the package and verify the loaded agents,
+  commands, and skill preload in your Claude Code version.
 </Aside>
 
 <LinkButton href="/claude-code/getting-started/installation/" size="lg">

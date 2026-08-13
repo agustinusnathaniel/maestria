@@ -1,5 +1,16 @@
 # maestria
 
+## Next
+
+### Claude Code and Codex CLI support
+
+- Add `claude-code` and `codex` platform detection and status reporting.
+- Add native marketplace-backed install, update, and uninstall handlers for both plugins.
+- Stage the published npm packages under `~/.cache/maestria/` without writing host configuration
+  directly.
+- Reject exact version pinning for these two adapters because their host marketplace update paths
+  select the latest staged package.
+
 ## 0.8.1
 
 ### Patch Changes

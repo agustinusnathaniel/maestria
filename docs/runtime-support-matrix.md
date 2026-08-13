@@ -14,6 +14,16 @@ Internal evidence ledger for runtime support and adapter policy. This is the sup
 - **Pinned state:** each evidence record states the exact release/version/immutable commit/docs revision, or the exact text `unpinned - reverify before implementation`.
 - **Evidence ID:** every snapshot, evidence, capability/control, and source row carries one or more `Evidence ID`s (for example `E-CLAUDE-01`) that are the traceability link to a complete evidence record. A complete evidence record is a row in the per-runtime Evidence tables below; it contains the runtime/surface, the claim, the pinned state, the source URL/path, the review date, and the test status. Section headings do not provide implicit metadata (runtime, review date, or source); each row is self-contained and must be read together with its evidence record, never inferred from its heading.
 
+## Maestria CLI adapter evidence (reviewed 2026-08-13)
+
+The CLI adapters are management wrappers, not new runtime capabilities. They stage the published npm package under `~/.cache/maestria/`, register a local marketplace with the host CLI, and use the host's native install/remove/list commands. They do not write Claude Code or Codex configuration.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-CLI-01 | Claude Code | Host CLI | `claude plugin marketplace add`, `install`, `uninstall`, and `list --json` are available for the user-scope adapter | Claude Code `2.1.217` | `claude plugin --help`; `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested |
+| E-CLI-02 | Codex CLI | Host CLI | `codex plugin marketplace add`, `add`, `remove`, and `list --json` are available for the marketplace adapter | Codex CLI `0.145.0` | `codex plugin --help`; `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested |
+| E-CLI-03 | Both | Distribution bridge | The adapter stages the published package and creates a local marketplace manifest; it does not edit host configuration files directly | Working-tree CLI implementation | `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested by code inspection |
+
 ## Snapshot
 
 | Runtime | Support level | Delivery | Disposition | Rationale | Evidence ID | Reviewed |
@@ -114,15 +124,15 @@ Internal evidence ledger for runtime support and adapter policy. This is the sup
 
 ### Pinned re-verification (2026-08-13)
 
-The projection spike pins its implementation baseline to local `codex-cli 0.145.0`. The corresponding upstream release tag is `rust-v0.145.0`, which resolves to commit `25af12f`.
+The projection spike pins its implementation baseline to local `codex 0.145.0`. The corresponding upstream release tag is `rust-v0.145.0`, which resolves to commit `25af12f`.
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-CODEX-CLI-07 | Codex CLI | Version identity | The local CLI reports `codex-cli 0.145.0`; the matching upstream release is `rust-v0.145.0` | `0.145.0`; commit `25af12f` | `codex --version`; https://github.com/openai/codex/releases/tag/rust-v0.145.0 | 2026-08-13 | tested |
+| E-CODEX-CLI-07 | Codex CLI | Version identity | The local CLI reports `codex 0.145.0`; the matching upstream release is `rust-v0.145.0` | `0.145.0`; commit `25af12f` | `codex --version`; https://github.com/openai/codex/releases/tag/rust-v0.145.0 | 2026-08-13 | tested |
 | E-CODEX-CLI-08 | Codex CLI | Plugin bundle | A plugin requires `.codex-plugin/plugin.json` and can expose skills from a `skills/` directory; the plugin name provides the component namespace | `rust-v0.145.0` plugin specification | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/skills/src/assets/samples/plugin-creator/references/plugin-json-spec.md; https://developers.openai.com/plugins/build/plugins | 2026-08-13 | tested |
 | E-CODEX-CLI-09 | Codex CLI | Hook handlers | The pinned source executes configured command handlers; prompt and agent handlers are parsed but skipped | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs | 2026-08-13 | tested: source inspection |
 | E-CODEX-CLI-10 | Codex CLI | Plugin hook trust | Non-managed plugin hooks require managed status, a matching trusted hash, or an explicit bypass before command execution | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs; https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/registry.rs | 2026-08-13 | tested: source inspection |
-| E-CODEX-CLI-11 | Codex CLI | Maestria projection | The spike generates 14 skills from the canonical directives and ships no hooks, MCP server, installer, model configuration, or `AGENTS.md` writer | `packages/codex-cli` on this branch | `packages/codex-cli/sync.config.ts`; `packages/codex-cli/skills/` | 2026-08-13 | tested after sync |
+| E-CODEX-CLI-11 | Codex CLI | Maestria projection | The package generates 14 skills from the canonical directives and ships no hooks, MCP server, model configuration, or `AGENTS.md` writer; the separate Maestria CLI provides npm-backed marketplace staging | `packages/codex` on this branch | `packages/codex/sync.config.ts`; `packages/codex/skills/`; `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested after sync |
 
 ### Capability vs control
 
@@ -135,7 +145,7 @@ The projection spike pins its implementation baseline to local `codex-cli 0.145.
 
 ### Statuses and gates
 
-- **Version sensitivity gate:** the spike baseline is pinned to `codex-cli 0.145.0` / `rust-v0.145.0` (`25af12f`). Reverify after CLI upgrades or material plugin/hook changes.
+- **Version sensitivity gate:** the spike baseline is pinned to `codex 0.145.0` / `rust-v0.145.0` (`25af12f`). Reverify after CLI upgrades or material plugin/hook changes.
 - **Projection boundary:** keep the package skills-only. Do not add hooks, MCP, installer, model configuration, or `AGENTS.md` generation without a new decision and security review.
 - **Promotion to `Native`:** establish a stable supported executable-extension API, verify its security model, produce a projection via the sync pipeline, and pass `scripts/check-sync`.
 - **Rollback:** remove the projection/plugin spike.

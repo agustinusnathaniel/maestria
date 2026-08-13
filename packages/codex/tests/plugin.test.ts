@@ -33,6 +33,10 @@ interface PluginManifest {
   apps?: unknown;
 }
 
+interface PackageManifest {
+  version?: string;
+}
+
 async function readJson<T>(relativePath: string): Promise<T> {
   const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8');
   return JSON.parse(text) as T;
@@ -63,9 +67,12 @@ function parseFrontmatter(text: string): Record<string, string> {
 
 describe('.codex-plugin/plugin.json manifest', () => {
   it('has the Codex plugin identity and skills entry point', async () => {
-    const manifest = await readJson<PluginManifest>('.codex-plugin/plugin.json');
+    const [manifest, pkg] = await Promise.all([
+      readJson<PluginManifest>('.codex-plugin/plugin.json'),
+      readJson<PackageManifest>('package.json'),
+    ]);
     expect(manifest.name).toBe('maestria');
-    expect(manifest.version).toBe('0.1.0');
+    expect(manifest.version).toBe(pkg.version);
     expect(manifest.description).toBeTruthy();
     expect(manifest.skills).toBe('./skills/');
   });
@@ -119,7 +126,7 @@ describe('generated skills', () => {
 describe('package metadata', () => {
   it('matches the public workspace package identity', async () => {
     const pkg = await readJson<Record<string, unknown>>('package.json');
-    expect(pkg.name).toBe('@maestria/codex-cli');
+    expect(pkg.name).toBe('@maestria/codex');
     expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');
   });
