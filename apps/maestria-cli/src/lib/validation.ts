@@ -12,6 +12,7 @@ export const VALID_PLATFORMS = [
   'opencode',
   'omp',
   'pi',
+  'prime-agent',
   'kimi-code',
   'hermes',
   'cursor',

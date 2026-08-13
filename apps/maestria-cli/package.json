@@ -8,7 +8,8 @@
     "kimi-code",
     "maestria",
     "opencode",
-    "pi"
+    "pi",
+    "prime-agent"
   ],
   "homepage": "https://maestria.sznm.dev/cli/",
   "bugs": "https://github.com/agustinusnathaniel/maestria/issues",

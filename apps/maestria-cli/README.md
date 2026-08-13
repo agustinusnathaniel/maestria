@@ -1,6 +1,6 @@
 # maestria
 
-A single CLI to manage maestria plugins across all coding agent platforms - OpenCode, Oh My Pi, Kimi Code, Pi, Hermes, Cursor, Claude Code, and Codex CLI.
+A single CLI to manage maestria plugins across all coding agent platforms - OpenCode, Oh My Pi, Kimi Code, Pi, Prime Agent, Hermes, Cursor, Claude Code, and Codex CLI.
 
 ```bash
 npx maestria status
@@ -21,13 +21,16 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 | `maestria install opencode` | Install for a specific platform |
 | `maestria install claude-code` | Install the Claude Code plugin through its native marketplace |
 | `maestria install codex` | Install the Codex CLI projection through its native marketplace |
+| `maestria install prime-agent` | Install the Prime Agent package through its native package manager (global scope) |
 | `maestria install opencode,pi` | Install for multiple comma-separated platforms |
 | `maestria update` | Interactive platform update (grouped multiselect with `a` toggle-all) |
 | `maestria update --all` | Update all installed platforms |
 | `maestria update opencode,pi` | Update multiple comma-separated platforms |
 | `maestria update opencode --version 0.5.0` | Update to a specific version |
 
-All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text - ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version where the host supports it. Claude Code and Codex CLI use latest-only marketplace updates and reject `--version`.
+All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text - ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version where the host supports it. Claude Code, Codex CLI, and Prime Agent use latest-only updates and reject `--version`.
+
+Prime Agent support is deliberately global (user scope only): Prime resolves project settings from the current working directory, so every Prime command runs from a freshly created empty temporary directory and project registrations are never scanned or modified. A version-pinned user registration is reported as an error rather than silently skipped.
 
 ## Usage
 
@@ -72,7 +75,7 @@ Invalid arguments are caught early:
 
 ```bash
 $ npx maestria update unknown
-Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex
+Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex
 
 $ npx maestria update opencode --version 2.0
 Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
@@ -102,7 +105,7 @@ rm ~/.cache/maestria/versions.json
 ## Prerequisites
 
 - Node.js 22+
-- The platform CLI must be on `$PATH` (`opencode`, `pi`, `kimi`, `hermes`, `agent` for Cursor, `claude`, or `codex`)
+- The platform CLI must be on `$PATH` (`opencode`, `pi`, `prime-agent`, `kimi`, `hermes`, `agent` for Cursor, `claude`, or `codex`)
 - npm is required for Claude Code and Codex CLI because the CLI stages their published packages into local marketplaces under `~/.cache/maestria/`
 
 ## Supported Platforms
@@ -112,6 +115,7 @@ rm ~/.cache/maestria/versions.json
 | `opencode`    | OpenCode    | `@maestria/opencode`    |
 | `omp`         | Oh My Pi    | `@maestria/omp`         |
 | `pi`          | Pi          | `@maestria/pi`          |
+| `prime-agent` | Prime Agent | `@maestria/prime-agent` |
 | `kimi-code`   | Kimi Code   | `@maestria/kimi-code`   |
 | `hermes`      | Hermes      | `maestria-hermes`       |
 | `cursor`      | Cursor      | `@maestria/cursor`      |

@@ -4,11 +4,16 @@ import { Effect } from 'effect';
 import { isCancel, cancel } from '@clack/prompts';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { getPlatform } from '@/lib/platforms.js';
-import type { PlatformHandler } from '@/lib/platforms.js';
+import type { PlatformHandler, PlatformUpdateSnapshot } from '@/lib/platforms.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { invalidateVersionCache } from '@/lib/shell.js';
 import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
-import { validatePlatforms, validateVersion, validateOrExit } from '@/lib/validation.js';
+import {
+  validatePlatforms,
+  validateVersion,
+  validateOrExit,
+  VALID_PLATFORMS,
+} from '@/lib/validation.js';
 import { isVersionEq, isVersionDifferent } from '@/lib/version.js';
 import type { PlatformResult } from '@/types.js';
 
@@ -21,8 +26,8 @@ export const updateCommand = defineCommand({
     platform: {
       type: 'positional',
       description:
-        'Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). ' +
-        'One of: opencode, pi, kimi-code, hermes, cursor, omp, claude-code, codex. ' +
+        `Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). ` +
+        `One of: ${VALID_PLATFORMS.join(', ')}. ` +
         'Pass directly to skip interactive selection.',
       required: false,
     },
@@ -215,7 +220,7 @@ export const updateCommand = defineCommand({
   },
 });
 
-function updateOne(
+export function updateOne(
   platform: PlatformHandler,
   quiet: boolean,
   version?: string,
@@ -230,14 +235,60 @@ function updateOne(
       } satisfies PlatformResult;
     }
 
-    const prevVersion = yield* platform.getInstalledVersion.pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
-    );
+    // Capture the per-update snapshot exactly once when the handler provides
+    // one, so a stateful host inspection (e.g. Prime's `package list`) runs a
+    // single time per update and is shared by the version check, the preflight,
+    // and the update step below. A capture failure fails the update with the
+    // accurate error (fail closed) rather than updating blind.
+    const captured: PlatformUpdateSnapshot | { error: string } | undefined =
+      platform.captureUpdateSnapshot
+        ? yield* platform.captureUpdateSnapshot.pipe(
+            Effect.match({
+              onFailure: (error) => ({ error: error.message }),
+              onSuccess: (snapshot) => snapshot,
+            }),
+          )
+        : undefined;
+
+    if (captured !== undefined && 'error' in captured) {
+      return {
+        id: platform.id,
+        label: platform.label,
+        ok: false,
+        message: captured.error,
+      } satisfies PlatformResult;
+    }
+    const snapshot: PlatformUpdateSnapshot | undefined =
+      captured === undefined ? undefined : captured;
+
+    const prevVersion = snapshot
+      ? snapshot.installedVersion
+      : yield* platform.getInstalledVersion.pipe(
+          Effect.catchCause(() => Effect.succeed('unknown')),
+        );
 
     // Determine target version: explicit arg, or fetch latest from npm
     const targetVersion =
       version ??
       (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
+
+    // Run any handler-level update preflight BEFORE the version-equality
+    // short-circuit below, so an ineligible registration (e.g. Prime's
+    // version-pinned source, which Prime skips for `package update`) is
+    // reported as an error even when the installed version equals the latest.
+    if (platform.preflightUpdate) {
+      const preflightError: string | void = yield* platform
+        .preflightUpdate(snapshot)
+        .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)));
+      if (preflightError !== undefined) {
+        return {
+          id: platform.id,
+          label: platform.label,
+          ok: false,
+          message: preflightError,
+        } satisfies PlatformResult;
+      }
+    }
 
     // Skip if already on the target version
     if (isVersionEq(prevVersion, targetVersion)) {
@@ -255,7 +306,7 @@ function updateOne(
     spinner.start(`Updating ${platform.label}: ${prevVersion} → ${targetVersion}...`);
 
     const errorMessage: string | void = yield* platform
-      .update(version)
+      .update(version, snapshot)
       .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)));
 
     if (errorMessage !== undefined) {

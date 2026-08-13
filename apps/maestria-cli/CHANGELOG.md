@@ -10,6 +10,19 @@
 
 ## Next
 
+### Prime Agent support
+
+- Add `prime-agent` platform detection and status reporting.
+- Add native package-manager-backed install, update, and uninstall handlers that delegate to
+  `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`.
+- Prime support is deliberately global (user scope only): every Prime command runs from a freshly
+  created empty temporary directory, so project registrations are never scanned or modified, and
+  the temporary directory is removed afterwards.
+- Read registration state from `prime-agent package list` (user scope only) and the installed
+  version from the installed package's manifest.
+- Reject exact version pinning because Prime's updates always select the latest package version;
+  a version-pinned user registration is reported as an error rather than silently skipped.
+
 ### Claude Code and Codex CLI support
 
 - Add `claude-code` and `codex` platform detection and status reporting.
