@@ -19,7 +19,7 @@ Internal evidence ledger for runtime support and adapter policy. This is the sup
 | Runtime | Support level | Delivery | Disposition | Rationale | Evidence ID | Reviewed |
 | --- | --- | --- | --- | --- | --- | --- |
 | Claude Code | Native candidate | Plugin | candidate native plugin | Promotion gated on approved docs and a blind review | E-CLAUDE-01 | 2026-08-11 |
-| Prime Agent | Native candidate | Skills-first | executable extension deferred | Skills-first delivery; executable extension deferred until API/security verification | E-PRIME-01 | 2026-08-11 |
+| Prime Agent | Native candidate | Skills-first | executable extension deferred | Skills-first delivery; executable extension deferred until API/security verification | E-PRIME-01 | 2026-08-13 |
 | Codex CLI | Provisional | Projection | projection-plugin spike | Bounded projection/plugin spike; pin the exact CLI version before relying on it | E-CODEX-CLI-01 | 2026-08-11 |
 | Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim | E-CODEX-DESKTOP-01 | 2026-08-11 |
 | JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 | 2026-08-11 |
@@ -67,30 +67,35 @@ Internal evidence ledger for runtime support and adapter policy. This is the sup
 
 **Support level:** Native candidate. **Delivery:** Skills-first. **Disposition:** executable extension deferred. **Rationale:** skills-first delivery; executable extension deferred until API/security verification.
 
-### Evidence (reviewed 2026-08-11)
+> Prime Agent evidence was re-verified on 2026-08-13 against the immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5` (PrimeIntellect-ai/prime-agent, `main`). All prior `unpinned` claims (E-PRIME-01..07) were confirmed and are now pinned to that commit. The decision is unchanged: `Native candidate` / Skills-first / executable extension deferred.
+
+### Evidence (reverified 2026-08-13)
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-PRIME-01 | Prime Agent | Identity | Prime Agent is an open-source RLM coding and research agent built on the Pi ecosystem: "Our agent and TUI is built on top of `pi`" (earendil-works/pi) | unpinned - reverify before implementation | https://github.com/PrimeIntellect-ai/prime-agent | 2026-08-11 | not tested |
-| E-PRIME-02 | Prime Agent | Subagents | `rlm(...)` spawns real child agents (subagents) for parallel or background work | unpinned - reverify before implementation | https://github.com/PrimeIntellect-ai/prime-agent | 2026-08-11 | not tested |
-| E-PRIME-03 | Prime Agent | Skills | Skills implement the Agent Skills standard (`SKILL.md` + frontmatter) and can be Python-backed (a Python package installed into the persistent IPython kernel) | unpinned - reverify before implementation | https://github.com/PrimeIntellect-ai/prime-agent/blob/main/packages/coding-agent/docs/skills.md | 2026-08-11 | not tested |
-| E-PRIME-04 | Prime Agent | Skill discovery | Skill discovery paths include `~/.prime/agent/skills/`, `.prime/agent/skills/`, `~/.agents/skills/`, `.agents/skills/`, and `pi.skills` entries in `package.json` | unpinned - reverify before implementation | https://github.com/PrimeIntellect-ai/prime-agent/blob/main/packages/coding-agent/docs/skills.md | 2026-08-11 | not tested |
-| E-PRIME-05 | Prime Agent | Skill consumption | Prime Agent can consume skills from other harnesses by adding their directories to settings, including `~/.claude/skills` and `~/.codex/skills` | unpinned - reverify before implementation | https://github.com/PrimeIntellect-ai/prime-agent/blob/main/packages/coding-agent/docs/skills.md | 2026-08-11 | not tested |
-| E-PRIME-06 | Prime Agent | Headless modes | JSON mode and RPC mode exist for headless automation and integrations | unpinned - reverify before implementation | https://github.com/PrimeIntellect-ai/prime-agent | 2026-08-11 | not tested |
-| E-PRIME-07 | Prime Agent | Execution boundary | "Prime Agent executes model-generated Python and project commands with your user permissions. Its worker and kernel processes improve lifecycle isolation and recovery; they are not a security sandbox." | unpinned - reverify before implementation | https://github.com/PrimeIntellect-ai/prime-agent | 2026-08-11 | not tested |
+| E-PRIME-01 | Prime Agent | Identity | Prime Agent is an open-source RLM coding and research agent built on the Pi ecosystem: "Our agent and TUI is built on top of `pi`" (earendil-works/pi) | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/README.md | 2026-08-13 | not tested |
+| E-PRIME-02 | Prime Agent | Subagents | `rlm(...)` spawns real child agents (subagents) for parallel or background work and returns results programmatically | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/README.md | 2026-08-13 | not tested |
+| E-PRIME-03 | Prime Agent | Skills | Skills implement the Agent Skills standard (`SKILL.md` + frontmatter); `name` and `description` are required, unknown frontmatter fields are ignored, and skills with a missing description are not loaded; validation is otherwise lenient (warnings, including name/directory mismatch); Python-backed skills install packages into the persistent IPython kernel | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/skills.md | 2026-08-13 | not tested |
+| E-PRIME-04 | Prime Agent | Skill discovery | Skill discovery paths include `~/.prime/agent/skills/`, `.prime/agent/skills/`, `~/.agents/skills/`, `.agents/skills/`, package `skills/` directories or `pi.skills` entries in `package.json`, settings `skills` arrays, `--skill <path>`, and built-in skills. Root `.md` files are discovered as individual skills only in the prime-specific paths (`~/.prime/agent/skills/`, `.prime/agent/skills/`); directories containing `SKILL.md` are discovered recursively in all skill locations; root `.md` files under `~/.agents/skills/` and `.agents/skills/` are ignored | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/skills.md | 2026-08-13 | not tested |
+| E-PRIME-05 | Prime Agent | Skill consumption | Prime Agent can consume skills from other harnesses by adding their directories to settings, including `~/.claude/skills` and `~/.codex/skills` (global) and `.prime/agent/settings.json` with `"skills": ["../.claude/skills"]` (project) | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/skills.md | 2026-08-13 | not tested |
+| E-PRIME-06 | Prime Agent | Headless modes | JSON mode and RPC mode exist for headless automation and integrations (documented as `docs/json.md` and `docs/rpc.md`) | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/README.md | 2026-08-13 | not tested |
+| E-PRIME-07 | Prime Agent | Execution boundary | "Prime Agent executes model-generated Python and project commands with your user permissions. Its worker and kernel processes improve lifecycle isolation and recovery; they are **not** a security sandbox." | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/README.md | 2026-08-13 | not tested |
+| E-PRIME-08 | Prime Agent | `@maestria/prime-agent` first package | The package ships 14 Agent Skills (`skills/<name>/SKILL.md`), each with the required `name` (matching its directory) and `description` frontmatter, generated from canonical directives via the core sync pipeline; it claims no executable extension (no JSON/RPC mode, no `rlm(...)` subagent dispatch) and makes no sandbox claim | Working-tree package snapshot; verify at landing | `packages/prime-agent/` (sync.config.ts, skills/, tests/, README.md) | 2026-08-13 | tested |
 
 ### Capability vs control
 
 | Evidence ID | Mechanism | Capability | Control | Note |
 | --- | --- | --- | --- | --- |
-| E-PRIME-03 | Skills (Agent Skills standard, Python-backed) | Supported | Advisory | Loaded on demand; Python-backed skills install into kernel; loading is not a security control |
-| E-PRIME-02 | Subagent dispatch (`rlm`) | Supported | Advisory | Programmatic subagents; dispatch is not a security control |
-| E-PRIME-06 | JSON/RPC headless modes | Available | Advisory | For automation and integrations; not a security control |
+| E-PRIME-03 | Skills (Agent Skills standard, Python-backed) | Supported | Advisory | Loaded on demand; `name`/`description` required (missing description means not loaded); validation otherwise lenient; Python-backed skills install into kernel; loading is not a security control |
+| E-PRIME-02 | Subagent dispatch (`rlm`) | Supported | Advisory | Programmatic subagents; dispatch is not a security control. Not part of the skills-first package (deferred) |
+| E-PRIME-06 | JSON/RPC headless modes | Available | Advisory | For automation and integrations; not a security control. Not part of the skills-first package (deferred) |
 | E-PRIME-07 | Execution sandbox | Unavailable | Not a sandbox | Model-generated Python/commands run with user permissions |
+| E-PRIME-08 | `@maestria/prime-agent` skills package | Supported | Advisory | 14 generated Agent Skills with required frontmatter; methodology is advisory, no executable extension, no sandbox claim |
 
 ### Statuses and gates
 
-- **Promotion to `Native`:** verify a stable, supported package API for an executable extension beyond skills-first delivery; verify the security model (not a sandbox, so restrict to trusted repositories and skills); ship a skills-first package via the sync pipeline; `scripts/check-sync` passes.
+- **Reverified 2026-08-13** against upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; all E-PRIME-01..07 claims confirmed, decision unchanged (`Native candidate` / Skills-first / executable extension deferred).
+- **Promotion to `Native`:** verify a stable, supported package API for an executable extension beyond skills-first delivery; verify the security model (not a sandbox, so restrict to trusted repositories and skills); the skills-first package ships via the sync pipeline and `scripts/check-sync` passes. The skills-first package exists now; promotion still requires the gates above.
 - **Rollback:** revert the generated package; canonical content stays in core.
 - **Withdrawal:** if no stable executable-extension API exists, keep the executable extension deferred and downgrade or remove package-level claims.
 - **Re-promotion:** no automatic re-promotion; only after re-verification.
@@ -270,6 +275,7 @@ See the per-runtime sections above. In all cases, withdrawal downgrades or remov
 - `[inferred]` Claude Code's promotion/landing is gated on the repaired docs passing blind review; the native-candidate implementation may already exist before promotion review.
 - `[verified]` Canonical content remains in `packages/core/agent-directives/` and projections follow ADR-CORE-005.
 - `[inferred]` Runtime behavior reflects source/docs reviewed on 2026-08-11 and must be reverified before implementation.
+- `[verified]` Prime Agent evidence (E-PRIME-01..07) was re-verified on 2026-08-13 against immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; the decision (Native candidate / Skills-first / executable extension deferred) is unchanged.
 
 ## Statuses and gates (resolved open questions)
 
@@ -289,8 +295,9 @@ Each previously unresolved question now has an explicit status or gate:
 | E-CLAUDE-06, E-CLAUDE-07 | Claude Code | https://code.claude.com/docs/en/sub-agents | 2026-08-11 | not tested |
 | E-CLAUDE-03 | Claude Code | https://code.claude.com/docs/en/plugin-marketplaces | 2026-08-11 | not tested |
 | E-CLAUDE-08 | Claude Code | `packages/claude-code/tests/plugin.test.ts`, `packages/claude-code/package.json` (working-tree snapshot) | 2026-08-12 | tested |
-| E-PRIME-01, E-PRIME-02, E-PRIME-06, E-PRIME-07 | Prime Agent | https://github.com/PrimeIntellect-ai/prime-agent | 2026-08-11 | not tested |
-| E-PRIME-03, E-PRIME-04, E-PRIME-05 | Prime Agent | https://github.com/PrimeIntellect-ai/prime-agent/blob/main/packages/coding-agent/docs/skills.md | 2026-08-11 | not tested |
+| E-PRIME-01, E-PRIME-02, E-PRIME-06, E-PRIME-07 | Prime Agent | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/README.md | 2026-08-13 | not tested |
+| E-PRIME-03, E-PRIME-04, E-PRIME-05 | Prime Agent | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/skills.md | 2026-08-13 | not tested |
+| E-PRIME-08 | Prime Agent | `packages/prime-agent/` (sync.config.ts, skills/, tests/, README.md; working-tree snapshot) | 2026-08-13 | tested |
 | E-CODEX-CLI-01 | Codex CLI | https://github.com/openai/codex | 2026-08-11 | not tested |
 | E-CODEX-CLI-02 | Codex CLI | https://developers.openai.com/codex (docs index) | 2026-08-11 | not tested |
 | E-CODEX-CLI-03, E-CODEX-CLI-04, E-CODEX-CLI-05, E-CODEX-CLI-06 | Codex CLI | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
@@ -299,7 +306,7 @@ Each previously unresolved question now has an explicit status or gate:
 | E-JCODE-02 | JCode | https://jcode.sh/sdk | 2026-08-11 | not tested |
 | E-CRUSH-01, E-CRUSH-02, E-CRUSH-03, E-CRUSH-04, E-CRUSH-05 | Crush | https://github.com/charmbracelet/crush | 2026-08-11 | not tested |
 
-Upstream sources above are research-only (`unpinned - reverify before implementation`) and must be reverified before implementation, promotion, or re-promotion. E-CLAUDE-08 is a local working-tree package snapshot (`Working-tree package snapshot; verify at landing`), not an upstream research source.
+Upstream sources above are research-only (`unpinned - reverify before implementation`) and must be reverified before implementation, promotion, or re-promotion. E-CLAUDE-08 and E-PRIME-08 are local working-tree package snapshots (`Working-tree package snapshot; verify at landing`), not upstream research sources.
 
 ## Related
 

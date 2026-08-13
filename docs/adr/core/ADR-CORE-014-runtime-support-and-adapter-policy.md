@@ -176,6 +176,17 @@ Withdrawal downgrades or removes a runtime's claims (support level, delivery, ca
 
 Sources reviewed on 2026-08-11 are cited with URLs, review dates, test status, and pinned/unpinned state in [runtime-support-matrix.md](../../runtime-support-matrix.md). Those sources are research-only and must be reverified before implementation, promotion, or re-promotion.
 
+## Reverification: Prime Agent (2026-08-13)
+
+On 2026-08-13 the Prime Agent evidence (E-PRIME-01..07) was re-verified against the immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5` (PrimeIntellect-ai/prime-agent, `main`; README and `packages/coding-agent/docs/skills.md`). All claims were confirmed and re-dated in [runtime-support-matrix.md](../../runtime-support-matrix.md). The decision is unchanged: Prime Agent stays `Native candidate` / Skills-first / executable extension deferred.
+
+The reverification confirmed and recorded the following nuances, which the skills-first package respects:
+
+- **Discovery nuance:** root `.md` files are discovered as individual skills only in the prime-specific paths (`~/.prime/agent/skills/`, `.prime/agent/skills/`); directories containing `SKILL.md` are discovered in all skill locations; root `.md` files under `.agents/skills/` are ignored. `@maestria/prime-agent` therefore emits the standards-compliant `skills/<name>/SKILL.md` layout, valid in every documented location.
+- **Frontmatter nuance:** `name` and `description` are required per the Agent Skills standard; `name` must be lowercase hyphenated and match the parent directory; unknown frontmatter fields are ignored; a missing `description` means the skill is not loaded; validation is otherwise lenient (warnings). The package ships only the required fields.
+- **Security nuance:** Prime Agent is not a sandbox (E-PRIME-07) - it executes model-generated Python and project commands with user permissions. The skills-first package makes no sandbox or enforcement claim; skills, rules, and role prompts are advisory.
+- **Executable extension remains deferred:** JSON/RPC headless modes and `rlm(...)` subagent dispatch are documented upstream but are not part of the skills-first package. The package claims no executable adapter behavior.
+
 ## Date
 
-2026-08-11
+2026-08-11 (decision). Prime Agent evidence re-verified 2026-08-13 at immutable commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; decision unchanged (see Reverification above).

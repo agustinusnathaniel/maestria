@@ -26,6 +26,7 @@ maestria/
 │   ├── omp/               Oh My Pi plugin (published, v0.2.4)
 │   ├── pi/                Pi extension (published, v0.5.10)
 │   ├── cursor/            Cursor IDE plugin (published, v0.1.3)
+│   ├── prime-agent/       Prime Agent skills-first package (published, v0.1.0)
 │   ├── hermes/            Hermes Agent plugin (private, v0.1.7, published on PyPI)
 │   └── shared/
 │       └── pi/            Shared pure-TS utilities for omp/pi (private)
@@ -60,6 +61,7 @@ maestria/
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
 | `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
+| `@maestria/prime-agent` | Yes | 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent (skills-first; executable extension deferred) |
 | `@maestria/hermes` | No | Hermes Agent plugin — methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
 | `@maestria/shared-pi` | No | Shared pure-TS utilities for omp and pi (agent deployment, subagent validation, event constants) |
 | `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
