@@ -64,6 +64,31 @@ async function pollSubagent(
   return record;
 }
 
+/**
+ * Poll a subagent to completion, aborting it if the poll fails so it is not
+ * orphaned in the background. A poll failure (timeout, record cleanup) does
+ * not mean the underlying subagent stopped.
+ */
+async function pollSubagentOrAbort(
+  id: string,
+  label: string,
+  sendUpdates: boolean,
+  service: { getRecord(id: string): SubagentRecord | undefined; abort(id: string): boolean },
+  signal: AbortSignal | undefined,
+  onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
+): Promise<SubagentRecord> {
+  try {
+    return await pollSubagent(id, label, sendUpdates, service, signal, onUpdate);
+  } catch (err) {
+    try {
+      service.abort(id);
+    } catch {
+      // best-effort: abort is non-critical
+    }
+    throw err;
+  }
+}
+
 // ── Handoff recording helper ────────────────────────────────────
 
 function recordAndPersist(
@@ -224,8 +249,8 @@ export function installSubagentTool(
           // Record handoff in state and persist (only after spawn succeeds)
           recordAndPersist(pi, state, agent, task);
 
-          // Poll for completion
-          const record = await pollSubagent(
+          // Poll for completion (abort on poll failure so nothing is orphaned)
+          const record = await pollSubagentOrAbort(
             id,
             `Subagent ${agent}`,
             true,
@@ -266,17 +291,32 @@ export function installSubagentTool(
             recordAndPersist(pi, state, t.agent, t.task);
           }
 
-          // Poll all concurrently
-          const records = await Promise.all(
+          // Poll all concurrently, capturing each task's outcome independently so a
+          // single failure does not discard the other results.
+          const outcomes = await Promise.all(
             spawnedIds.map((id, i) =>
-              pollSubagent(
+              pollSubagentOrAbort(
                 id,
                 `${taskList[i].agent} (${i + 1}/${taskList.length})`,
                 false,
                 service,
                 signal,
                 onUpdate,
-              ),
+              )
+                .then((record) => ({ index: i, record }))
+                .catch((error: unknown) => {
+                  // The failed subagent may still be running (timeout); abort it and
+                  // every sibling so no subagent is orphaned. abort() is a no-op for
+                  // agents that already reached a terminal state.
+                  for (const other of spawnedIds) {
+                    try {
+                      service.abort(other);
+                    } catch {
+                      // best-effort
+                    }
+                  }
+                  return { index: i, error };
+                }),
             ),
           );
 
@@ -284,7 +324,7 @@ export function installSubagentTool(
             content: [
               {
                 type: 'text' as const,
-                text: `All ${taskList.length} parallel subagents completed.`,
+                text: `All ${taskList.length} parallel subagents settled.`,
               },
             ],
           });
@@ -293,10 +333,18 @@ export function installSubagentTool(
           const parts = [`## Parallel Results (${taskList.length} tasks)\n`];
           for (let i = 0; i < taskList.length; i++) {
             const t = taskList[i];
-            const rec = records[i];
-            const resultText = rec.result ?? rec.error ?? 'No output.';
-            parts.push(`### ${i + 1}: ${t.agent}`);
-            parts.push(resultText);
+            const outcome = outcomes[i];
+            const header = `### ${i + 1}: ${t.agent}`;
+            if ('error' in outcome) {
+              const message =
+                outcome.error instanceof Error ? outcome.error.message : String(outcome.error);
+              parts.push(header);
+              parts.push(`⚠️ ${message}`);
+            } else {
+              const resultText = outcome.record.result ?? outcome.record.error ?? 'No output.';
+              parts.push(header);
+              parts.push(resultText);
+            }
           }
 
           return {
@@ -337,17 +385,21 @@ export function installSubagentTool(
               ],
             });
 
-            // Poll for completion
-            const record = await pollSubagent(
-              id,
-              `Chain step ${i + 1}: ${t.agent}`,
-              true,
-              service,
-              signal,
-              onUpdate,
-            );
-
-            previousResult = record.result ?? record.error ?? 'No output.';
+            // Poll for completion (abort on poll failure so nothing is orphaned)
+            try {
+              const record = await pollSubagentOrAbort(
+                id,
+                `Chain step ${i + 1}: ${t.agent}`,
+                true,
+                service,
+                signal,
+                onUpdate,
+              );
+              previousResult = record.result ?? record.error ?? 'No output.';
+            } catch (error) {
+              previousResult = `[error] ${error instanceof Error ? error.message : String(error)}`;
+              break;
+            }
 
             if (i < taskList.length - 1) {
               onUpdate?.({

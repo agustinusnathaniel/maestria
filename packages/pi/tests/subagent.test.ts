@@ -9,6 +9,7 @@ import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 const subagentsServiceMock = vi.hoisted(() => ({
   spawn: vi.fn(),
   getRecord: vi.fn(),
+  abort: vi.fn(),
 }));
 const getSubagentsServiceMock = vi.hoisted(() => vi.fn());
 
@@ -595,5 +596,117 @@ describe('installSubagentTool - handoff recording', () => {
     );
 
     expect(state.specialistsDelegated).toEqual(['builder']);
+  });
+});
+
+describe('installSubagentTool - parallel partial failure', () => {
+  function install() {
+    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const state = createInitialState();
+    installSubagentTool(pi as any, state);
+    const toolDef = (pi as any).registerTool.mock.calls[0][0];
+    return { pi, state, toolDef };
+  }
+
+  it('preserves completed results when one subagent is cleaned up (poll throws)', async () => {
+    getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
+    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
+      agent === 'builder' ? 'id-a' : 'id-b',
+    );
+    // id-a completes with a result; id-b's record disappears -> poll throws
+    // "cleaned up before completion" -> the failed outcome must not discard
+    // id-a's completed result.
+    subagentsServiceMock.getRecord.mockImplementation((id: string) => {
+      if (id === 'id-a') return { status: 'completed', result: 'RESULT_A_OK' };
+      return undefined; // id-b cleaned up
+    });
+
+    const { toolDef } = install();
+
+    const result = await toolDef.execute(
+      'call-1',
+      {
+        mode: 'parallel',
+        tasks: [
+          { agent: 'builder', task: 'build' },
+          { agent: 'architect', task: 'design' },
+        ],
+      },
+      undefined,
+      undefined,
+      {},
+    );
+    const text = result.content[0].text;
+    expect(text).toContain('RESULT_A_OK');
+    expect(text).not.toContain('Subagent Handoff Required');
+  });
+
+  it('aborts still-running sibling subagents when one fails instead of orphaning them', async () => {
+    getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
+    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
+      agent === 'builder' ? 'id-a' : 'id-b',
+    );
+    // id-a keeps running (never terminal) until aborted; id-b cleaned up ->
+    // poll throws -> the sibling abort must stop id-a and it must be called.
+    const aborted = new Set<string>();
+    subagentsServiceMock.abort.mockImplementation((id: string) => {
+      aborted.add(id);
+      return true;
+    });
+    subagentsServiceMock.getRecord.mockImplementation((id: string) => {
+      if (aborted.has(id)) return { status: 'aborted' };
+      if (id === 'id-a') return { status: 'running' };
+      return undefined; // id-b cleaned up
+    });
+
+    const { toolDef } = install();
+
+    await toolDef.execute(
+      'call-1',
+      {
+        mode: 'parallel',
+        tasks: [
+          { agent: 'builder', task: 'build' },
+          { agent: 'architect', task: 'design' },
+        ],
+      },
+      undefined,
+      undefined,
+      {},
+    );
+    expect(subagentsServiceMock.abort).toHaveBeenCalledWith('id-a');
+  });
+
+  it('aborts and returns an error marker when a chain step record is cleaned up', async () => {
+    getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
+    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
+      agent === 'builder' ? 'id-a' : 'id-b',
+    );
+    // id-a completes; id-b's record disappears -> poll throws -> the step
+    // must be aborted and the chain must surface an error marker.
+    subagentsServiceMock.getRecord.mockImplementation((id: string) => {
+      if (id === 'id-a') return { status: 'completed', result: 'STEP_A_OK' };
+      return undefined; // id-b cleaned up
+    });
+
+    const { toolDef } = install();
+
+    const result = await toolDef.execute(
+      'call-1',
+      {
+        mode: 'chain',
+        tasks: [
+          { agent: 'builder', task: 'build' },
+          { agent: 'architect', task: 'design' },
+        ],
+      },
+      undefined,
+      undefined,
+      {},
+    );
+    const text = result.content[0].text;
+    expect(text).toContain('[error]');
+    expect(text).not.toContain('Subagent Handoff Required');
+    expect(subagentsServiceMock.abort).toHaveBeenCalledWith('id-b');
   });
 });
