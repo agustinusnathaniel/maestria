@@ -1,5 +1,13 @@
 # maestria
 
+## 0.9.0
+
+### Minor Changes
+
+- [#204](https://github.com/agustinusnathaniel/maestria/pull/204) [`2ec96b2`](https://github.com/agustinusnathaniel/maestria/commit/2ec96b28a0edf38c5d513c5d708c6694303e1676) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add Maestria CLI compatibility for the Claude Code and Codex CLI plugin packages. The CLI detects
+  both hosts, stages the published npm package into a local marketplace, and delegates install,
+  update, status, check, and uninstall operations to the host plugin manager.
+
 ## Next
 
 ### Claude Code and Codex CLI support

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.8
+
+### Patch Changes
+
+- [#205](https://github.com/agustinusnathaniel/maestria/pull/205) [`ca061e4`](https://github.com/agustinusnathaniel/maestria/commit/ca061e423dccf5dbe9728e291d2e943fa3deedc0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix chain-mode {previous} substitution so previous results containing `$` sequences are inserted literally, and abort already-spawned subagents when a later parallel spawn fails so none are orphaned.
+
 ## 0.6.7
 
 ### Patch Changes
