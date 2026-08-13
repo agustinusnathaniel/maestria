@@ -5,6 +5,14 @@ description: Release history for @maestria/claude-code.
 
 # Changelog
 
+## v0.2.1
+
+### Marketplace and CLI installation
+
+- The published package can be installed, checked, updated, and removed with `maestria install claude-code`, `maestria status`, `maestria update claude-code`, and `maestria uninstall claude-code`.
+- The Maestria CLI stages the npm package in a local marketplace and delegates installation state to Claude Code's native plugin manager.
+- Exact version pinning is not supported for `maestria update claude-code --version`; the host marketplace selects the latest package.
+
 ## v0.2.0
 
 _Initial release_
@@ -17,7 +25,7 @@ _Initial release_
 - **Orchestrator and global-rules skills** - `/maestria:orchestrator` routes work to specialists; `maestria:global-rules` is preloaded into every agent
 - **Workflow commands** - `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` select the pipeline depth
 - **Read-only enforcement** - `adventurer`, `planner`, and `reviewer` deny `Write`/`Edit` via `disallowedTools` (user-authorized; the only runtime enforcement)
-- **Local validation** - `claude plugin validate --strict` is the automated gate; marketplace distribution is follow-up work
+- **Local validation** - `claude plugin validate --strict` is the automated gate; marketplace installation is available through Claude Code or the Maestria CLI
 
 ### Shared directive updates
 

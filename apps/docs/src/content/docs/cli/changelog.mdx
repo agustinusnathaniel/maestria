@@ -5,6 +5,16 @@ description: Release history for the maestria CLI.
 
 # Changelog
 
+## Next
+
+### Claude Code and Codex CLI support
+
+- Added `claude-code` and `codex` platform detection to `status` and `check`.
+- Added `install`, `update`, and `uninstall` adapters for both host CLIs.
+- The CLI stages the published npm packages under `~/.cache/maestria/` and delegates plugin state
+  to each host's native marketplace manager.
+- Exact version pinning is unavailable for these two marketplace-backed adapters.
+
 ## v0.8.0
 
 _August 3, 2026_

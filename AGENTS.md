@@ -4,7 +4,7 @@
 
 ## Project Snapshot
 
-Maestria is a meta-project: it builds the **agent methodology** (dispatcher + 7 specialists) that AI agents use. The canonical agent directives live in `packages/core/agent-directives/` and are synced to platform-specific plugins (OpenCode, Kimi Code, Pi, Cursor, Hermes) via `scripts/sync-all`.
+Maestria is a meta-project: it builds the **agent methodology** (dispatcher + 7 specialists) that AI agents use. The canonical agent directives live in `packages/core/agent-directives/` and are synced to platform-specific plugins (OpenCode, Kimi Code, Pi, Cursor, Hermes, Claude Code, Codex CLI) via `scripts/sync-all`.
 
 See [VISION.md](VISION.md) for the project's motivation and [PATTERNS.md](PATTERNS.md) for the two core design patterns (Pipeline Composition + Maker/Checker Split).
 
@@ -36,12 +36,14 @@ Prefer small, verifiable changes over sweeping rewrites. Each change should pass
 
 - **`packages/core/`** - Zero platform-specific imports. Cannot import from opencode, kimi-code, pi, or any platform SDK. Zero Node.js-specific APIs that would prevent browser-side use. The `scripts/` directory is dev tooling and uses Node.js APIs where appropriate, but library modules are browser-safe. Contains the canonical `agent-directives/` (specialist prompts + rules) and shared scripts.
 - **`packages/opencode/`** - Depends on `@maestria/core` via the sync pipeline. Uses standard OpenCode SDK APIs only. Its `agents/` directory is **auto-generated** from core via the sync pipeline.
+- **`packages/claude-code/`** - Declarative Claude Code projection. Its agents, skills, and commands are **auto-generated** from core; the manifest and package docs are hand-authored.
+- **`packages/codex/`** - Provisional Codex CLI skills projection. Its skills are **auto-generated** from core; the manifest and package docs are hand-authored.
 - **`packages/kimi-code/`** - Depends on `@maestria/core` via the sync pipeline. Follows Kimi Code platform conventions.
 - **`packages/pi/`** - Depends on `@maestria/core` via the sync pipeline. Must not depend on any Node.js APIs (Pi is a terminal prompt, not an SDK plugin).
 
 ### Canonical source flow
 
-The 8 pipeline agents (7 specialists + orchestrator) are defined in `packages/core/agent-directives/specialists/` and synced to plugin agent directories (`packages/opencode/agents/`, etc.) via `scripts/sync-all`. **Always edit the canonical source, never the generated copy.** See `packages/core/agent-directives/README.md` for the content ownership guide. Reference ADR CORE-005 for the sync bridge design.
+The 8 pipeline agents (7 specialists + orchestrator) are defined in `packages/core/agent-directives/specialists/` and synced to plugin agent/skill directories (`packages/opencode/agents/`, `packages/claude-code/agents/`, `packages/codex/skills/`, etc.) via `scripts/sync-all`. **Always edit the canonical source, never the generated copy.** See `packages/core/agent-directives/README.md` for the content ownership guide. Reference ADR CORE-005 for the sync bridge design.
 
 ## Decision-Making Guide
 

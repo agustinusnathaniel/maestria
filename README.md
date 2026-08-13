@@ -30,11 +30,14 @@ maestria/
 ├── packages/
 │   ├── core/            - Canonical agent directives + sync pipeline (private)
 │   ├── opencode/        - @maestria/opencode plugin
+│   ├── claude-code/     - @maestria/claude-code plugin
+│   ├── codex/           - @maestria/codex plugin projection
 │   ├── omp/             - @maestria/omp plugin
 │   ├── kimi-code/       - @maestria/kimi-code plugin
 │   ├── cursor/          - @maestria/cursor plugin
 │   ├── hermes/          - @maestria/hermes plugin (Python)
 │   ├── pi/              - @maestria/pi plugin
+│   ├── prime-agent/     - @maestria/prime-agent plugin (Prime Agent skills + extension)
 │   └── shared/pi/       - Shared pure-TS utilities for omp/pi
 ├── scripts/             - Sync and CI verification scripts
 ├── VISION.md            - Project vision and principles
@@ -51,11 +54,14 @@ See [VISION.md](VISION.md) for the project's guiding philosophy and long-term go
 | Package | Description | README |
 | --- | --- | --- |
 | [@maestria/opencode](packages/opencode/) | Maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
+| [@maestria/claude-code](packages/claude-code/) | Maestria methodology plugin for Claude Code | [README](packages/claude-code/README.md) |
+| [@maestria/codex](packages/codex/) | Provisional Maestria skills projection for Codex CLI | [README](packages/codex/README.md) |
 | [@maestria/omp](packages/omp/) | Maestria methodology plugin for Oh My Pi | [README](packages/omp/README.md) |
 | [@maestria/kimi-code](packages/kimi-code/) | Maestria methodology plugin for Kimi Code | [README](packages/kimi-code/README.md) |
 | [@maestria/cursor](packages/cursor/) | Maestria methodology plugin for Cursor IDE/CLI | [README](packages/cursor/README.md) |
 | [@maestria/hermes](packages/hermes/) | Maestria methodology plugin for Hermes | [README](packages/hermes/README.md) |
 | [@maestria/pi](packages/pi/) | Maestria methodology plugin for Pi | [README](packages/pi/README.md) |
+| [@maestria/prime-agent](packages/prime-agent/) | Maestria methodology for Prime Agent (skills + verified extension subset) | [README](packages/prime-agent/README.md) |
 
 ## Development
 

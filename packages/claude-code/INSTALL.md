@@ -1,10 +1,11 @@
 # Installing @maestria/claude-code
 
-> Status: `Native candidate`. This package validates cleanly with the official Claude Code CLI, but runtime behavior is not yet tested end to end. Marketplace distribution and a CLI install handler are follow-up work; this batch ships the package and local validation only.
+> Status: `Native candidate`. This package validates cleanly with the official Claude Code CLI, but runtime behavior is not yet tested end to end. Persistent installation is available through `maestria install claude-code`; the package remains a candidate rather than a production support promise.
 
 ## Prerequisites
 
 - **Claude Code** with the `claude` CLI on `PATH` (required for validation and local loading).
+- Node.js and npm (required by the Maestria CLI's npm-backed marketplace staging).
 - Node.js and pnpm (to regenerate files from the canonical core directives).
 
 ## Local validation (no install)
@@ -26,6 +27,25 @@ claude --plugin-dir ./packages/claude-code
 ```
 
 `--plugin-dir` loads the plugin for that session only. You can pass it multiple times to load several plugins.
+
+## Persistent installation through Maestria
+
+From any project, install the published package at Claude Code's user scope:
+
+```bash
+npx maestria install claude-code
+```
+
+The CLI downloads `@maestria/claude-code` from npm, writes a small local marketplace under `~/.cache/maestria/`, and invokes Claude Code's native `plugin marketplace add` and `plugin install` commands. The host, not Maestria, owns the installed plugin state.
+
+Update or remove it with:
+
+```bash
+npx maestria update claude-code
+npx maestria uninstall claude-code
+```
+
+The Maestria CLI uses the marketplace's latest package for Claude Code; exact version pinning is not available through `maestria update claude-code --version`.
 
 ## Using the plugin
 
@@ -57,8 +77,21 @@ scripts/check-sync        # verify everything is in sync
 
 ## Uninstall / removal
 
-No installation steps were performed, so removal is simply not loading the plugin (drop `--plugin-dir`) or deleting the `packages/claude-code` directory.
+For a persistent installation managed by Maestria:
 
-## Marketplace distribution (follow-up)
+```bash
+npx maestria uninstall claude-code
+```
 
-Distribution through a Claude Code plugin marketplace is not part of this batch. When it ships, install will use the standard `/plugin marketplace add ...` and `/plugin install ...` flow.
+For a session-only `--plugin-dir` load, stop passing that flag. Removing the local marketplace cache is optional and does not affect Claude Code's installed plugin record:
+
+```bash
+rm -rf ~/.cache/maestria/claude-code-marketplace
+```
+
+To use Claude Code directly, add the repository marketplace and install the plugin with the host CLI:
+
+```bash
+claude plugin marketplace add agustinusnathaniel/maestria
+claude plugin install maestria@maestria --scope user
+```

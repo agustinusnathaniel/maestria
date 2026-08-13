@@ -1,0 +1,66 @@
+---
+title: Quick Start
+description: Use the Maestria specialist and workflow skills in Codex CLI.
+---
+
+Once `@maestria/codex` is installed, start a fresh Codex CLI session so the plugin marketplace
+state is loaded.
+
+## Route a task
+
+Use the orchestrator skill when a task is unfamiliar, cross-file, or risky:
+
+```text
+$maestria:orchestrator I need to add rate limiting to the API. Plan and implement it.
+```
+
+The orchestrator chooses between direct work and specialist skills based on task risk and available
+runtime capabilities. It is methodology guidance, not a replacement for Codex's own approvals or
+sandbox.
+
+## Call a specialist
+
+Use one specialist when you need one kind of help:
+
+```text
+$maestria:adventurer Trace the authentication flow and report the relevant files.
+```
+
+Available roles are:
+
+| Skill                  | Use it for                                      |
+| ---------------------- | ----------------------------------------------- |
+| `$maestria:adventurer` | Reconnaissance and codebase mapping             |
+| `$maestria:architect`  | Architecture trade-offs and ADR decisions       |
+| `$maestria:builder`    | Focused implementation and verification         |
+| `$maestria:diagnose`   | Root-cause analysis and regression tracing      |
+| `$maestria:planner`    | Phased plans, dependencies, and rollback points |
+| `$maestria:reviewer`   | Independent review after implementation         |
+| `$maestria:writer`     | Documentation and structured prose              |
+
+## Choose a workflow mode
+
+The workflow modes are Codex skills rather than slash commands:
+
+| Skill             | Route                                                             |
+| ----------------- | ----------------------------------------------------------------- |
+| `$maestria:fein`  | Full pipeline: reconnaissance, design, implementation, and review |
+| `$maestria:sonar` | Research-only route that stops before implementation              |
+| `$maestria:blitz` | Fast capability-aware route for small or well-understood work     |
+
+For example:
+
+```text
+$maestria:fein Add rate limiting to the API.
+```
+
+## Review independently
+
+After the builder completes, invoke the reviewer in a separate turn:
+
+```text
+$maestria:reviewer Review the current diff for correctness, security, and missing tests.
+```
+
+The reviewer skill is advisory. Codex may still expose write-capable tools while that skill is
+active; use Codex's own sandbox and approval controls when a hard boundary is required.

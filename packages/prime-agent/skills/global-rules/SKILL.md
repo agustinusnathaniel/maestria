@@ -1,12 +1,18 @@
 ---
 name: global-rules
-description: Universal Maestria rules for evidence, safety, authorization, delegation, review, bounded repair, and branch discipline.
+description: |-
+  Universal agent rules contract: universal floors,
+  orchestration, delegation, context management, handoff, blind review, bounded
+  autonomy, authorization checkpoints, process lifecycle, and commit and branch
+  safety.
+  Load once per session and apply to routing, delegation, review, and commit
+  decisions.
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-# Global Agent Rules - @maestria/codex-cli
+# Global Agent Rules - @maestria/prime-agent
 
 This is the cross-platform behavior contract. It defines outcomes, evidence, safety, delegation, review, and bounded repair. The host runtime defines tool authority and lifecycle; specialists own their role methodology.
 
@@ -35,7 +41,7 @@ This is the cross-platform behavior contract. It defines outcomes, evidence, saf
 - Compare progress with the outcome and acceptance evidence, not activity or process completion.
 - Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups.
 - Adjacent findings do not expand the current task automatically. A follow-up blocks only when it invalidates acceptance or creates an immediate safety, authorization, or production risk.
-- Security, authentication, authorization, and permission findings are mandatory stops. Route design-level issues to `$maestria:architect` and obtain the applicable authorization before proceeding.
+- Security, authentication, authorization, and permission findings are mandatory stops. Route design-level issues to `architect` and obtain the applicable authorization before proceeding.
 
 ## Delegation and Context
 
@@ -61,7 +67,7 @@ Supported specialists are `adventurer`, `architect`, `builder`, `diagnose`, `pla
 - Ordinary in-scope repair may continue without routine user approval while it is making observable progress and remains within scope.
 - Review is a convergence gate, not an invitation to polish indefinitely. Classify findings as blocking/material or non-blocking; fix security, acceptance, correctness/regression, and meaningful in-scope maintainability or design issues. Minor preferences and suggestions are follow-ups.
 - Default to one independent review and one repair/re-review pass. Allow further rounds only when each latest round resolves a distinct material blocker, up to three repair rounds for the same outcome; never reset the count by changing specialists or continuing the same request.
-- Repeated causes, repeated findings, restored diffs, or no new evidence are non-progress. Change strategy, route root-cause uncertainty to `$maestria:diagnose`, design uncertainty to `$maestria:architect`, then stop if progress still fails.
+- Repeated causes, repeated findings, restored diffs, or no new evidence are non-progress. Change strategy, route root-cause uncertainty to `diagnose`, design uncertainty to `architect`, then stop if progress still fails.
 - Do not loop silently. Report: `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.` Preserve the last diff and finding provenance.
 
 ## Authorization, Lifecycle, and Branches
@@ -77,3 +83,8 @@ Supported specialists are `adventurer`, `architect`, `builder`, `diagnose`, `pla
 - Author agent directives only under `packages/core/agent-directives/`.
 - Generate platform projections with `scripts/sync-all`; never hand-edit them.
 - Pass the sync check before handing off a canonical directive change.
+
+
+## Prime Agent Integration
+
+This package delivers the universal rules as the `global-rules` skill. Delivery is skills-first and advisory: methodology and rules are prompt guidance, not security enforcement. The package ships a small executable extension covering workflow-mode commands and mode prompt injection only; JSON/RPC headless modes and recursive-subagent dispatch remain deferred - do not claim them. Prime Agent is not a sandbox - it executes model-generated Python and project commands with your user permissions; restrict use to trusted repositories, skills, and instructions.
