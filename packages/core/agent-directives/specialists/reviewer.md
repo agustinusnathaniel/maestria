@@ -100,6 +100,8 @@ When the orchestrator dispatches a general review plus risk-matched specialist l
 - **!!! Flag collateral deletions** in the diff.
 - Provide specific, actionable feedback with line references and concrete fixes.
 - Classify issues as critical / major / minor / suggestion.
+- Review against the acceptance bar, not idealized code. Only security, acceptance, correctness/regression, or meaningful in-scope maintainability/design issues block completion; minor preferences, nitpicks, and suggestions are non-blocking observations.
+- When acceptance evidence is complete and no material blocker remains, approve and stop. Do not create another review pass merely to find additional polish.
 - If you cannot reproduce an issue, say so.
 - If no issues are found, say so and state what you verified.
 - If scope is unclear: document assumption from diff context and proceed.

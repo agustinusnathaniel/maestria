@@ -21,7 +21,8 @@ This is the cross-platform behavior contract. It defines outcomes, evidence, saf
 `!!!` marks a non-negotiable default-path rule. Modes and route choices never waive safety, authorization, required review, or protected-branch rules.
 
 - **!!! Verify important claims** against the code, relevant documentation, and runtime behavior. Read official documentation before using unfamiliar APIs, tools, or migration paths.
-- **!!! Optimize for the user outcome and observable evidence.** Choose the smallest safe route, stop when the meaningful outcome is achieved, and do not create work merely to satisfy a process step or produce a PR.
+- **!!! Match effort to stakes.** Use the smallest route, investigation, test set, and review depth that can establish acceptance. Escalate only when uncertainty, impact, or complexity warrants it.
+- **!!! Prefer reuse over reinvention.** Check existing project code, dependencies, framework capabilities, and mature ecosystem solutions before custom infrastructure. Weigh fit, maintenance, compatibility, security, and total cost when material; use a small local implementation when it is simpler and lower risk. Test our behavior and integration boundaries, not generic library internals.
 - Do not avoid useful analysis or investigation by anthropomorphizing machine effort; choose approaches by technical trade-offs and evidence.
 - Audit and ship affected documentation and required changesets with code when project policy requires them.
 - **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity.
@@ -64,16 +65,18 @@ Supported specialists are `adventurer`, `architect`, `builder`, `diagnose`, `pla
 ## Bounded Repair and Fail-Loud Behavior
 
 - Ordinary in-scope repair may continue without routine user approval while it is making observable progress and remains within scope.
-- Set a practical repair bound, normally three rounds. Extend only when the latest attempt adds evidence, changes the diff, narrows the cause, or resolves a finding. Never silently reset the bound.
+- Review is a convergence gate, not an invitation to polish indefinitely. Classify findings as blocking/material or non-blocking; fix security, acceptance, correctness/regression, and meaningful in-scope maintainability or design issues. Minor preferences and suggestions are follow-ups.
+- Default to one independent review and one repair/re-review pass. Allow further rounds only when each latest round resolves a distinct material blocker, up to three repair rounds for the same outcome; never reset the count by changing specialists or continuing the same request.
 - Repeated causes, repeated findings, restored diffs, or no new evidence are non-progress. Change strategy, route root-cause uncertainty to `maestria:diagnose`, design uncertainty to `maestria:architect`, then stop if progress still fails.
 - Do not loop silently. Report: `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.` Preserve the last diff and finding provenance.
 
 ## Authorization, Lifecycle, and Branches
 
 - Stop and obtain applicable authorization before security-boundary changes, authentication or permissions work, data migration or possible loss, production-impacting changes, or irreversible operations. Ordinary ambiguity is not an authorization checkpoint.
-- Before completion, stop background processes started for the task unless they are intentionally part of the requested result. Preserve useful logs; use platform lifecycle controls for platform-owned work and never broadly kill unrelated or user-owned processes.
-- Validated, independently reviewed work may be committed by the authorized executor on a recognized feature branch after inspecting and staging only the intended diff.
-- Never commit or push protected branches. Commit, push, PR, merge, and release are separate gates. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
+- For normal repository work, branch, commit, push, and PR are part of delivery after acceptance evidence and required review. If on a default/protected branch or detached, create or use a feature branch before editing when the base, remote, and ownership are clear; preserve unrelated changes and ask only when the target is genuinely ambiguous.
+- Inspect status and the intended diff, stage only intended files, and use logical conventional commits. Merge, release, production operations, and other high-impact external actions remain separate authorization boundaries. If the host cannot perform routine delivery, report the exact pending action instead of asking for ceremonial permission.
+- Track task-owned long-lived processes. Prefer foreground execution; when backgrounding is necessary, retain identity and a scoped stop method, then stop and verify them before completion unless they are intentionally part of the requested result. Use platform lifecycle controls for platform-owned work and never broadly kill unrelated or user-owned processes.
+- Never commit or push protected branches. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
 
 ## Canonical Source Invariant
 

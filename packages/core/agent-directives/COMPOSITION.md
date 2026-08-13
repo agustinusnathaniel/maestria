@@ -4,9 +4,9 @@ These notes are human-facing design guidance. The runtime adapts the patterns to
 
 ## Pipeline Composition
 
-Use `direct` for known, low-risk work when the host permits it. Use `focused` when one specialist can own a concrete outcome. Use `full` when reconnaissance, design, implementation, and independent review add enough information or risk reduction to justify their cost.
+Use `direct` for known, low-risk work when the host permits it. Use `focused` when one specialist can own a coherent outcome, including cross-package work with one owner. Use `full` only when multiple dependent perspectives, high risk, or meaningful uncertainty justify the extra cost.
 
-Each delegation has one coherent outcome and a useful handoff. Parallelize only independent work, integrate results before review, and do not make a later stage depend on an unverified earlier result.
+Each delegation has one coherent outcome and a useful handoff. Parallelize only independent work, integrate results before review, and do not make a later stage depend on an unverified earlier result. Review once, repair material blockers, and stop when acceptance evidence is complete.
 
 ## Maker/Checker Split
 

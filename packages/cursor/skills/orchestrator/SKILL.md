@@ -18,13 +18,13 @@ Apply explicit mode precedence and safety exceptions first, then choose the smal
 
 | Route | Use when | Result |
 | --- | --- | --- |
-| `full` | `fein`, multiple dependent perspectives, cross-package or cross-cutting work, high risk, or uncertainty that needs design and implementation | Reconnaissance or design, implementation, and independent review as justified |
+| `full` | `fein`, multiple dependent perspectives, high risk, or meaningful uncertainty that needs design and implementation | Reconnaissance or design, implementation, and independent review as justified |
 | `focused` | One specialist can own a concrete outcome, investigation, or implementation | One specialist, with independent review for meaningful builder work |
 | `direct` | The current session can safely complete known, low-risk work and the host permits it | The current session completes and verifies the work |
 
 Security, authentication, permissions, data migration or loss, production impact, irreversible changes, and unresolved safety ambiguity override `direct` and `blitz`. Use at least `focused`, or `full` when the issue is cross-cutting or high-risk. Ask only where project rules require a checkpoint.
 
-**!!! Check the branch** before git mutation. On an unrecognized branch, ask first. Worktrees are isolated. Never commit or push a protected branch.
+**!!! Check the branch** before git mutation. For normal repository work, create or use a feature branch when the base, remote, and ownership are clear; do not ask merely because the checkout is default, detached, or missing a task branch. Worktrees are isolated. Never commit or push a protected branch.
 
 For focused builder work, review behavior, public interfaces or configuration, multiple production files, data, auth, or security changes. Formatting, comments, fixtures, and one-file mechanical non-behavioral edits do not require automatic review unless the risk is uncertain. This is a review decision, not permission to make an unreviewed commit.
 
@@ -73,7 +73,7 @@ Triage findings in this order:
 3. In-scope `[fix]` findings: send to `builder` for bounded repair and blind re-review.
 4. Out-of-scope or platform findings: record as follow-ups. `[dismiss]` means document the rationale. `[escalate]` means surface the decision to its owner; it blocks completion only when it affects acceptance, safety, authorization, or a design-level requirement.
 
-Approve when no blocking finding remains and acceptance evidence is complete. Repeated causes, repeated findings, restored diffs, and no new evidence are non-progress; change strategy rather than repeating the same patch.
+Approve when acceptance evidence is complete and no blocking/material finding remains. Minor preferences and suggestions do not block delivery. Repeated causes, repeated findings, restored diffs, and no new evidence are non-progress; change strategy rather than repeating the same patch.
 
 ## Workflow and Delegation
 
@@ -95,7 +95,9 @@ Modes are case-insensitive and per-turn unless the platform documents another li
 
 ## Commit and Session Flow
 
-After implementation and required review, the authorized executor may commit validated work on a recognized feature branch. Inspect status and the intended diff, stage only intended files, use a conventional message, and audit affected docs and changesets. Push, PR, merge, and release are separate gates. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
+For normal engineering work, own the delivery path: `inspect -> plan -> implement -> validate -> review -> repair material blockers -> commit -> push -> PR`. Branch before editing when needed, then inspect status and the intended diff, stage only intended files, use logical conventional commits, push the feature branch, and open a PR with a useful summary and validation notes. Do not ask for routine authorization when the task, base, remote, and ownership are clear. Stop only at the safety, authorization, ambiguity, or host-capability boundaries defined in the global rules; merge, release, and production actions remain separate.
+
+An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping. If the host cannot perform a delivery action, report the exact pending step rather than claiming completion or asking a ceremonial question.
 
 1. Select the route and load relevant project rules.
 2. Complete the work directly or delegate with a concise outcome brief.

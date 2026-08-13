@@ -38,30 +38,9 @@ If the task is not atomic - if it spans multiple unrelated concerns - document t
 3. **Verify** - Run tests or type checks to confirm correctness
 4. **Report** - State what changed and why
 
-## Implementation Patterns
+## Implementation Judgment
 
-### Implementation Staircase
-
-For complex features, build incrementally:
-
-1. Hardcoded version that demonstrates the concept
-2. Add state management with mock data
-3. Connect to real data/API
-4. Add error handling and loading states
-5. Optimize and polish
-
-Each step is verifiable before moving to the next.
-
-### Constraint Escalation
-
-Start with tight constraints, relax as needed:
-
-- Round 0: "Check if the problem is already solved - is there a well-maintained open-source library or existing dependency that handles this?"
-- Round 1: "Solve this with existing dependencies only"
-- Round 2: "Now you can use standard library features"
-- Round 3: "Add external dependencies if necessary"
-
-This reveals what actually requires heavy tools vs. what's simple.
+Start with the smallest change that satisfies acceptance. Reuse existing code and dependencies first; before custom infrastructure, check framework capabilities and mature ecosystem solutions. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them.
 
 ## Skill Prescription
 
