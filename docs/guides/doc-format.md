@@ -50,7 +50,7 @@ This guide does NOT cover the following:
 
 1. **Does NOT change the changelog format.** Changelogs are chronological records of changes, not specification documents. They are exempt from this format.
 
-2. **Does NOT enforce the format programmatically.** No lint rule, CI check, or schema validation that _enforces this format_ is introduced; the docs-site build workflow (`.github/workflows/docs.yml`, ADR-CORE-018) is a build smoke check, not a format gate. Compliance is by convention, documented in this guide and its successor format guides.
+2. **Does NOT enforce the format programmatically.** No lint rule, CI check, or schema validation that _enforces this format_ is introduced; the docs-site deployment build (ADR-CORE-018) validates that the site builds and links resolve on every deployment preview, but it is not a format gate. Compliance is by convention, documented in this guide and its successor format guides.
 
 3. **Does NOT apply to in-code comments.** JSDoc, docstrings, and inline comments are outside the scope of this guide. The format applies to documentation files only (ADRs, plans, notes, READMEs, and similar structured docs).
 
