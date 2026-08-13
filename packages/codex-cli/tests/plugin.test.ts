@@ -63,9 +63,12 @@ function parseFrontmatter(text: string): Record<string, string> {
 
 describe('.codex-plugin/plugin.json manifest', () => {
   it('has the Codex plugin identity and skills entry point', async () => {
-    const manifest = await readJson<PluginManifest>('.codex-plugin/plugin.json');
+    const [manifest, pkg] = await Promise.all([
+      readJson<PluginManifest>('.codex-plugin/plugin.json'),
+      readJson<Record<string, unknown>>('package.json'),
+    ]);
     expect(manifest.name).toBe('maestria');
-    expect(manifest.version).toBe('0.1.0');
+    expect(manifest.version).toBe(pkg.version as string);
     expect(manifest.description).toBeTruthy();
     expect(manifest.skills).toBe('./skills/');
   });
