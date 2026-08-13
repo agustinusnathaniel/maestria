@@ -2,7 +2,7 @@
 
 A Maestria extension for the [Oh My Pi](https://omp.sh/) coding agent that deploys the 7 specialist agents and workflow modes on top of OMP's native task dispatch.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The agents and skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The agents and skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Installation
 
@@ -30,7 +30,7 @@ omp install @maestria/omp
 ## Documentation and Changelog
 
 - [User-facing documentation](https://maestria.sznm.dev/pi-omp/) on the docs site (shared with `@maestria/pi`)
-- [Changelog](CHANGELOG.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/omp/CHANGELOG.md)
 
 ## License
 

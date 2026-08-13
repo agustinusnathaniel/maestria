@@ -116,6 +116,15 @@ Rules of thumb:
 - **Link `INSTALL.md` where the package ships one**, and mention the canonical core directives (`packages/core/agent-directives/`) for generated plugin packages.
 - **Package-specific concise content is expected.** Each README keeps its own truthful details, commands, and platform notes; avoid version numbers in prose except where a support boundary requires them.
 
+#### Link Policy for Published READMEs
+
+Published package READMEs are consumed **outside the repository** (rendered by npm, PyPI, or another registry), where repository-relative links do not resolve. All links to repository files or public docs must therefore be absolute:
+
+- **Repository files** (root `VISION.md`, `CONTRIBUTING.md`, `LICENSE`, package `INSTALL.md`/`CHANGELOG.md`, and files under `docs/`) must use canonical GitHub links: `https://github.com/agustinusnathaniel/maestria/blob/main/<path>`. Use `/blob/main/` (never PR branches or `/tree/`) because the README is published as of the default branch after merge.
+- **User-facing docs** must use the public docs origin: `https://maestria.sznm.dev/<route>/`.
+- Do not leave Markdown links that are relative (`./...`, `../...`, `/...`) or bare repository file names (`INSTALL.md`, `CHANGELOG.md`) in a published README when they are intended as links; verify every target exists in the repository or as a docs route. Anchor-only links (e.g. `#installation`) are fine if retained, but avoid adding unnecessary anchors.
+- **Internal docs are different.** ADRs, plans, notes, guides, and this file are read inside the repository, so relative links remain acceptable there. Only published package READMEs require absolute links.
+
 ### Template for New ADRs
 
 All new ADRs must follow the expanded format:

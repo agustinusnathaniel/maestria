@@ -2,7 +2,7 @@
 
 A [Pi coding agent](https://pi.software/) extension that brings Maestria's structured agent orchestration - specialist delegation, workflow modes, and maker/checker review - to Pi.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The agents and skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The agents and skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Installation
 
@@ -35,7 +35,7 @@ Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` 
 ## Documentation and Changelog
 
 - [User-facing documentation](https://maestria.sznm.dev/pi-omp/) on the docs site (shared with `@maestria/omp`)
-- [Changelog](CHANGELOG.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/CHANGELOG.md)
 
 ## License
 

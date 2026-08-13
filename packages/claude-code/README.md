@@ -2,7 +2,7 @@
 
 A declarative Claude Code plugin that encodes the Maestria engineering methodology - 7 specialist agents, an orchestrator skill, a preloaded global-rules skill, and 3 workflow commands.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The agents, skills, and commands are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The agents, skills, and commands are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Status / Support Boundary
 
@@ -17,7 +17,7 @@ npx maestria status
 npx maestria update claude-code
 ```
 
-The CLI stages the published package into a local Claude Code marketplace cache, then delegates installation and updates to Claude Code's native plugin commands. Version pinning is not supported: Claude Code updates from the configured marketplace's latest package. For a session-local run without installing, use `claude --plugin-dir ./packages/claude-code`. See [INSTALL.md](INSTALL.md) for the full checklist, verification, and uninstall.
+The CLI stages the published package into a local Claude Code marketplace cache, then delegates installation and updates to Claude Code's native plugin commands. Version pinning is not supported: Claude Code updates from the configured marketplace's latest package. For a session-local run without installing, use `claude --plugin-dir ./packages/claude-code`. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/INSTALL.md) for the full checklist, verification, and uninstall.
 
 ## What It Provides
 
@@ -36,8 +36,8 @@ The CLI stages the published package into a local Claude Code marketplace cache,
 ## Documentation and Changelog
 
 - [User-facing documentation](https://maestria.sznm.dev/claude-code/) on the docs site
-- [Installation checklist](INSTALL.md)
-- [Changelog](CHANGELOG.md)
+- [Installation checklist](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/INSTALL.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/CHANGELOG.md)
 
 ## Development
 
@@ -46,7 +46,7 @@ pnpm test        # manifest and generated-file assertions
 pnpm validate    # claude plugin validate . --strict (requires the Claude CLI)
 ```
 
-See the [contributing guide](../../CONTRIBUTING.md) for repository conventions.
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 

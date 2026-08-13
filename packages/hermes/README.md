@@ -2,7 +2,7 @@
 
 Maestria's agent methodology - pipeline composition, maker/checker split, specialist delegation, and mode-based workflows - for [Hermes Agent](https://hermes-agent.nousresearch.com), delivered as a Python plugin.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Installation
 
@@ -33,7 +33,7 @@ This clones the maestria repository, extracts `packages/hermes/`, and enables th
 ## Documentation and Changelog
 
 - [User-facing documentation](https://maestria.sznm.dev/hermes/) - installation, commands, quick start
-- [Changelog](CHANGELOG.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/hermes/CHANGELOG.md)
 
 ## Development
 
@@ -43,7 +43,7 @@ ruff check src/
 pytest
 ```
 
-See the [contributing guide](../../CONTRIBUTING.md) for repository conventions.
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 

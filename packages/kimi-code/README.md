@@ -2,7 +2,7 @@
 
 A declarative, manifest-based Kimi Code plugin that ships 8 specialized skills (orchestrator + 7 specialists) for engineering workflows with swarm-aware orchestration.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The skills and rules are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The skills and rules are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Installation
 
@@ -15,7 +15,7 @@ pnpx maestria@latest status
 pnpx maestria@latest update kimi-code
 ```
 
-See [INSTALL.md](./INSTALL.md) for the full checklist, including the recommended `[[hooks]]` and `[[permission.rules]]` tool-layer safety configuration.
+See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/kimi-code/INSTALL.md) for the full checklist, including the recommended `[[hooks]]` and `[[permission.rules]]` tool-layer safety configuration.
 
 ## What It Provides
 
@@ -33,8 +33,8 @@ See [INSTALL.md](./INSTALL.md) for the full checklist, including the recommended
 ## Documentation and Changelog
 
 - [User-facing documentation](https://maestria.sznm.dev/kimi-code/) on the docs site
-- [Installation checklist](INSTALL.md)
-- [Changelog](CHANGELOG.md)
+- [Installation checklist](https://github.com/agustinusnathaniel/maestria/blob/main/packages/kimi-code/INSTALL.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/kimi-code/CHANGELOG.md)
 
 ## Contributing
 

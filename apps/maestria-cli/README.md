@@ -6,7 +6,7 @@ A single CLI to install, update, and uninstall Maestria plugins across coding ag
 npx maestria status
 ```
 
-> This project is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope.
+> This project is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Usage
 
@@ -56,11 +56,11 @@ Wherever a platform has its own plugin manager, the CLI delegates to it rather t
 ## Documentation and Changelog
 
 - [CLI documentation](https://maestria.sznm.dev/cli/) on the docs site
-- [Changelog](CHANGELOG.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/apps/maestria-cli/CHANGELOG.md)
 
 ## Development
 
-See the [contributing guide](../../CONTRIBUTING.md) for repository conventions.
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 

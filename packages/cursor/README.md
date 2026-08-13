@@ -2,7 +2,7 @@
 
 A declarative [Cursor](https://cursor.com/) plugin that brings Maestria's structured agent orchestration to Cursor IDE and Cursor CLI (`agent`) - 7 specialist Task agents, an orchestrator skill, always-on global rules, and workflow commands.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The agents, skills, and rules are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The agents, skills, and rules are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Installation
 
@@ -11,7 +11,7 @@ A declarative [Cursor](https://cursor.com/) plugin that brings Maestria's struct
 pnpx maestria@latest install cursor
 ```
 
-Restart Cursor IDE, or load the plugin in Cursor CLI with `agent --plugin-dir ~/.cursor/plugins/local/maestria`. See [INSTALL.md](./INSTALL.md) for the full checklist, manual setup, verification, and uninstall.
+Restart Cursor IDE, or load the plugin in Cursor CLI with `agent --plugin-dir ~/.cursor/plugins/local/maestria`. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/INSTALL.md) for the full checklist, manual setup, verification, and uninstall.
 
 ## What It Provides
 
@@ -29,8 +29,8 @@ Restart Cursor IDE, or load the plugin in Cursor CLI with `agent --plugin-dir ~/
 ## Documentation and Changelog
 
 - [User-facing documentation](https://maestria.sznm.dev/cursor/) on the docs site
-- [Installation checklist](INSTALL.md)
-- [Changelog](CHANGELOG.md)
+- [Installation checklist](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/INSTALL.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/CHANGELOG.md)
 
 ## License
 

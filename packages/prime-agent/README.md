@@ -2,7 +2,7 @@
 
 Maestria's engineering methodology for [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent), delivered as standard [Agent Skills](https://agentskills.io/specification) (`skills/<name>/SKILL.md`) plus a small, verified Prime/Pi extension for workflow-mode commands.
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Status / Support Boundary
 
@@ -15,7 +15,7 @@ Maestria's engineering methodology for [Prime Agent](https://github.com/PrimeInt
 prime-agent package install npm:@maestria/prime-agent
 ```
 
-For skills-only installs, point Prime at the package's `skills/` directory in settings, or copy/symlink the skill directories into a project or global skill location. See [INSTALL.md](INSTALL.md) for all installation and consumption options.
+For skills-only installs, point Prime at the package's `skills/` directory in settings, or copy/symlink the skill directories into a project or global skill location. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/prime-agent/INSTALL.md) for all installation and consumption options.
 
 ## What It Provides
 
@@ -36,8 +36,8 @@ For skills-only installs, point Prime at the package's `skills/` directory in se
 ## Documentation and Changelog
 
 - [User-facing documentation](https://maestria.sznm.dev/prime-agent/) on the docs site
-- [Installation guide](INSTALL.md)
-- [Changelog](CHANGELOG.md)
+- [Installation guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/prime-agent/INSTALL.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/prime-agent/CHANGELOG.md)
 
 ## Development
 
@@ -47,7 +47,7 @@ pnpm test       # generated-skill + extension + package tests
 pnpm validate   # validate skills/<name>/SKILL.md frontmatter and layout
 ```
 
-See the [contributing guide](../../CONTRIBUTING.md) for repository conventions.
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 

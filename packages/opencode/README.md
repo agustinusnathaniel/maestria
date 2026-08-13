@@ -2,7 +2,7 @@
 
 An OpenCode plugin that encodes Maestria's AI-engineering methodology as agents, rules, and workflows - a harness that makes model output consistent and reliable (`Agent = Model + Harness`).
 
-> This package is part of Maestria. See [VISION.md](../../VISION.md) for the project vision, motivation, and scope. The agents and rules are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](../../CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The agents and rules are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
 ## Installation
 
@@ -32,11 +32,11 @@ OpenCode does not auto-update plugins; re-run the install command with `--force`
 ## Documentation and Changelog
 
 - [User-facing documentation](https://maestria.sznm.dev/opencode/) on the docs site
-- [Changelog](CHANGELOG.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/opencode/CHANGELOG.md)
 
 ## Development
 
-See the [contributing guide](../../CONTRIBUTING.md) for repository conventions.
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 
