@@ -280,6 +280,32 @@ describe('session state persistence', () => {
     const result = await fake.fire.beforeAgentStart('BASE');
     expect(result).toBeUndefined();
   });
+
+  it('ignores a maestria_mode entry with an invalid mode value', async () => {
+    const fake = createFakePi();
+    extension(fake.pi);
+    // Malformed persisted data must never resurrect a mode or crash the
+    // restore path: an unknown mode value is skipped (fail-closed to null).
+    await fake.fire.sessionStart(
+      branchContext([{ ...modeEntry('fein', 100), data: { mode: 'chaos' } } as SessionEntry]),
+    );
+    const result = await fake.fire.beforeAgentStart('BASE');
+    expect(result).toBeUndefined();
+  });
+
+  it('ignores malformed maestria_mode data and unrelated custom entries', async () => {
+    const fake = createFakePi();
+    extension(fake.pi);
+    await fake.fire.sessionStart(
+      branchContext([
+        { ...modeEntry('fein', 100), data: 'not-an-object' } as SessionEntry,
+        { ...modeEntry('fein', 150), data: { mode: 7 } } as SessionEntry,
+        { ...modeEntry('fein', 200), customType: 'some-other-extension' } as SessionEntry,
+      ]),
+    );
+    const result = await fake.fire.beforeAgentStart('BASE');
+    expect(result).toBeUndefined();
+  });
 });
 
 describe('status command', () => {

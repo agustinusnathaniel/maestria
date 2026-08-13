@@ -18,7 +18,7 @@ The extension has **no runtime dependencies**: it consumes the Prime/Pi extensio
 
 ## Install
 
-Prime Agent loads skills from project/global skill directories, package `skills/` directories or `pi.skills` entries, and the `skills` array in settings. It does **not** auto-discover arbitrary installed npm packages from `node_modules`. To make Prime load this package's skills **and extension**, register the package with Prime (Option A) or point Prime at the package's `skills/` directory explicitly (Options B and C - extension requires Option A or a manual `extensions` setting entry, see below).
+Prime Agent loads skills from project/global skill directories, package `skills/` directories or `pi.skills` entries, and the `skills` array in settings. It does **not** auto-discover arbitrary installed npm packages from `node_modules`. To make Prime load this package's skills **and extension**, register the package with Prime (Option A) or point Prime at the package's `skills/` directory explicitly (Options B and C - extension requires Option A or a manual `extensions` setting entry pointing at a built `dist/extension.mjs`, see below).
 
 ### Option A: register the package with Prime (preferred, required for the extension)
 
@@ -30,7 +30,13 @@ prime-agent package install npm:@maestria/prime-agent
 
 - By default the package is recorded in global settings (`~/.prime/agent/settings.json`); add `--local` to record it in project settings (`.prime/agent/settings.json`), which Prime installs automatically at startup.
 - Prime then reads the package's `pi.extensions` and `pi.skills` manifest entries to discover the extension and the skills. Option A is the only documented install path that enables the extension automatically.
-- `prime-agent package install` also accepts git sources and local paths (for example a maestria checkout), so you can consume this package before it is published. See Prime's [packages documentation](https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/packages.md) for the full source syntax.
+- **The npm package route ships the compiled extension**: `dist/extension.mjs` (and its sourcemap) is built before publishing, so the tarball always contains it and Option A via `npm:@maestria/prime-agent` enables both skills and the extension.
+- `prime-agent package install` also accepts git sources and local paths, so you can consume this package before it is published. **Git/local source installs are skills-only unless the package has been built.** Prime's git installs clone the repository and run `npm install` (frequently with dev dependencies omitted) but do **not** build, so `dist/extension.mjs` is absent and the extension is silently skipped. To get the extension from a source install, build the package first and point Prime at that built package directory:
+  ```bash
+  pnpm --filter @maestria/prime-agent build   # creates packages/prime-agent/dist/extension.mjs
+  prime-agent package install local:/path/to/maestria/packages/prime-agent
+  ```
+- **Installing the monorepo root Git URL (`https://github.com/agustinusnathaniel/maestria.git`) does not target this workspace package**: it clones the monorepo root, whose `package.json` has no `pi` manifest, so Prime discovers no skills or extension from it. Use a packaged release (`npm:@maestria/prime-agent`) or a local built package directory instead. See Prime's [packages documentation](https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/packages.md) for the full source syntax.
 
 ### Option B: explicit `skills` entry in settings (skills only)
 
@@ -69,6 +75,8 @@ If you installed via Option B or C and want the extension too, point the `extens
 }
 ```
 
+**The artifact must exist at the configured path.** The npm package tarball includes `dist/extension.mjs` (built before publishing), so the `node_modules` path above works for npm installs. For a source clone the compiled file only exists after building the package (`pnpm --filter @maestria/prime-agent build`); a git install without a build has no `dist/extension.mjs`, and Prime silently skips a missing extension file - the `/fein`-family commands and mode prompt injection will simply not be registered.
+
 (Equivalent to what Option A's package registration configures automatically; the settings `extensions` array is Prime's documented per-user extension list.)
 
 ### Dependency installs are setup only
@@ -82,7 +90,7 @@ If you installed via Option B or C and want the extension too, point the `extens
 3. Confirm the skills appear (for example, run `/skill:orchestrator` or ask the agent to load the `global-rules` skill).
 4. Confirm the extension loaded: run `/maestria-status` - it should report the current mode (`none` initially) and the verified/deferred subset. Try `/fein`, `/sonar`, `/blitz` and `/mode-clear`; while a mode is active, the mode prompt is appended to the system prompt on each agent turn, and `/maestria-status` shows the active mode.
 
-> Steps 3-4 are runtime checks that are **not yet verified** in this batch; the package-level gates are `pnpm build` (the extension compiles to the declared `dist/extension.mjs`), `pnpm validate` (frontmatter/layout), and `pnpm test` (generated-skill, extension, and package-manifest tests).
+> Steps 3-4 are runtime checks that are **not yet verified** in this batch; the package-level gates are `pnpm build` (the extension compiles to the declared `dist/extension.mjs`), `pnpm validate` (frontmatter/layout), and `pnpm test` (generated-skill, extension, package-manifest, and `npm pack --dry-run` tarball-content tests).
 
 ## Security
 

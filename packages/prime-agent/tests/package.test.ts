@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
+import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -203,5 +204,71 @@ describe('prime-agent built extension artifact', () => {
     expect(systemPrompt).toBeDefined();
     expect(systemPrompt).toContain('[MODE: fein]');
     expect(systemPrompt).toContain('## MODE: fein');
+  });
+});
+
+describe('prime-agent package tarball (npm pack --dry-run)', () => {
+  /**
+   * The file list npm would pack, per `npm pack --dry-run --json`.
+   *
+   * This is the regression guard for the packaging/install blocker: `dist/` is
+   * gitignored, so a publish/pack of a clean tree without a build silently
+   * omits the extension Prime is told to load (`pi.extensions`). The package
+   * test script builds first (`vp pack && vp test`), so the dry-run here
+   * reflects a built tree, and the `files` allowlist in package.json is what
+   * npm actually honors (gitignore does not exclude allowlisted files).
+   * Deterministic: local-only, no network, no live Prime binary required.
+   */
+  function npmPackFileList(): string[] {
+    const stdout = execFileSync('npm', ['pack', '--dry-run', '--json'], {
+      cwd: PACKAGE_ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const parsed = JSON.parse(stdout) as Array<{ files?: Array<{ path: string }> }>;
+    const result = parsed[0];
+    if (!result?.files) {
+      throw new Error('npm pack --dry-run --json returned no file list');
+    }
+    return result.files.map((f) => f.path);
+  }
+
+  it('packs the compiled extension, its sourcemap, and the manifest', () => {
+    const files = npmPackFileList();
+    for (const required of [
+      'package.json',
+      'INSTALL.md',
+      'README.md',
+      'LICENSE',
+      'dist/extension.mjs',
+      'dist/extension.mjs.map',
+    ]) {
+      expect(files, `tarball must include ${required}`).toContain(required);
+    }
+  });
+
+  it('packs every generated skill directory', async () => {
+    const skillNames = (
+      await readdir(path.join(PACKAGE_ROOT, 'skills'), {
+        withFileTypes: true,
+      })
+    )
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name);
+    expect(skillNames.length).toBeGreaterThan(0);
+
+    const files = npmPackFileList();
+    for (const name of skillNames) {
+      expect(files, `tarball must include skills/${name}/SKILL.md`).toContain(
+        `skills/${name}/SKILL.md`,
+      );
+    }
+  });
+
+  it('excludes source, tests, and dependency trees from the tarball', () => {
+    const files = npmPackFileList();
+    for (const excluded of ['src/', 'tests/', 'node_modules/', 'scripts/']) {
+      expect(files.some((f) => f.startsWith(excluded))).toBe(false);
+    }
   });
 });

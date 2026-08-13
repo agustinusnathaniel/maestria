@@ -61,8 +61,17 @@ export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
   try {
     const content = readFileSync(join(skillsDir, keyword, 'SKILL.md'), 'utf8');
     const modeIdx = content.indexOf('## MODE:');
-    const body = modeIdx !== -1 ? content.slice(modeIdx) : content;
-    prompt = `${MODE_MARKERS[keyword]}\n\n${body.replace(/\s+$/, '')}\n`;
+    if (modeIdx === -1) {
+      // A generated skill without the mode section must not leak the whole
+      // SKILL.md into the system prompt: degrade to "no injection" instead.
+      console.warn(
+        `[maestria] prime-agent: mode skill "${keyword}" has no "## MODE:" heading; ` +
+          `mode prompt injection disabled for this mode.`,
+      );
+    } else {
+      const body = content.slice(modeIdx);
+      prompt = `${MODE_MARKERS[keyword]}\n\n${body.replace(/\s+$/, '')}\n`;
+    }
   } catch (error) {
     console.warn(
       `[maestria] prime-agent: failed to load mode skill "${keyword}" from ${skillsDir}; ` +

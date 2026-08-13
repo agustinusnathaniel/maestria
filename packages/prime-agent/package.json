@@ -37,6 +37,7 @@
   },
   "scripts": {
     "build": "vp pack",
+    "prepublishOnly": "npm run build",
     "test": "vp pack && vp test",
     "validate": "npm run validate-skills",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts"

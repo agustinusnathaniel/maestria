@@ -26,7 +26,7 @@ maestria/
 │   ├── omp/               Oh My Pi plugin (published, v0.2.4)
 │   ├── pi/                Pi extension (published, v0.5.10)
 │   ├── cursor/            Cursor IDE plugin (published, v0.1.3)
-│   ├── prime-agent/       Prime Agent skills-first package (published, v0.1.0)
+│   ├── prime-agent/       Prime Agent skills-first package (v0.1.0, first release pending)
 │   ├── claude-code/       Claude Code plugin (published, v0.2.1)
 │   ├── codex/             Codex CLI projection (published, v0.2.0)
 │   ├── hermes/            Hermes Agent plugin (private, v0.1.7, published on PyPI)
@@ -63,7 +63,7 @@ maestria/
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
 | `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
-| `@maestria/prime-agent` | Yes | 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent (skills-first; executable extension deferred) |
+| `@maestria/prime-agent` | Yes (v0.1.0, first release pending) | Skills-first: 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent, plus a verified executable extension subset (mode commands, mode prompt injection); native rlm dispatch and JSON/RPC remain deferred |
 | `@maestria/claude-code` | Yes | Declarative Claude Code plugin with 7 agents, skills, and workflow commands |
 | `@maestria/codex` | Yes | Provisional Codex CLI projection with namespaced methodology skills |
 | `@maestria/hermes` | No | Hermes Agent plugin — methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
@@ -76,7 +76,7 @@ maestria/
 packages/core/agent-directives/  (canonical source)
     │
     ▼ (scripts/sync-all iterates packages/*/sync.config.ts)
-packages/{opencode,kimi-code,omp,pi}/
+packages/*/  (every platform package - opencode, kimi-code, omp, pi, cursor, prime-agent, ...)
     sync.config.ts defines:
       • source (where canonical files live)
       • output (where generated files go)
@@ -135,6 +135,7 @@ Each plugin defines its transforms in `sync.config.ts`:
 | **omp** | Unified `sync.config.ts` (replacements: `@agent` → bare name, omp has built-in `task()` so no rewrite needed) | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
 | **claude-code** | Namespaces agent/skill references, adapts tool names, and adds Claude agent frontmatter | `agents/*.md`, `skills/*/SKILL.md`, and `commands/*.md` |
 | **codex** | Namespaces skill references and projects workflow modes as skills | `skills/*/SKILL.md` |
+| **prime-agent** | `@agent` refs → bare skill names; Agent Skills layout with required `name`/`description` frontmatter; read-only role prepends; orchestrator/global-rules/mode append blocks | `skills/<name>/SKILL.md` - 14 Agent Skills |
 
 ### Commands
 
@@ -338,7 +339,7 @@ pnpm version-packages
 pnpm release
 ```
 
-Create a changeset whenever you make a user-facing change to a published package (`@maestria/opencode`, `@maestria/pi`). Private packages (`@maestria/core`, `@maestria/kimi-code`, `@maestria/docs`) can skip changesets but use `"tag": true` for internal tracking.
+Create a changeset whenever you make a user-facing change to a package that is published on npm (or about to be published - the changeset is what ships it). Private packages (for example `@maestria/core`, `@maestria/docs`) can skip changesets but use `"tag": true` for internal tracking.
 
 ---
 
