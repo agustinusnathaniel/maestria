@@ -65,9 +65,16 @@ describe('.codex-plugin/plugin.json manifest', () => {
   it('has the Codex plugin identity and skills entry point', async () => {
     const manifest = await readJson<PluginManifest>('.codex-plugin/plugin.json');
     expect(manifest.name).toBe('maestria');
-    expect(manifest.version).toBe('0.1.0');
     expect(manifest.description).toBeTruthy();
     expect(manifest.skills).toBe('./skills/');
+  });
+
+  it('version aligns with package metadata', async () => {
+    const [manifest, pkg] = await Promise.all([
+      readJson<PluginManifest>('.codex-plugin/plugin.json'),
+      readJson<{ version?: string }>('package.json'),
+    ]);
+    expect(manifest.version).toBe(pkg.version);
   });
 
   it('does not ship unimplemented integrations or hooks', async () => {
