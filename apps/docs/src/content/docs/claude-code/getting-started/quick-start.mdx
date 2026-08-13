@@ -1,0 +1,74 @@
+---
+title: Quick Start
+description: Your first session with @maestria/claude-code - delegating to specialist agents, using the orchestrator skill, and running workflow commands.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Once the plugin is loaded (see [Installation & Setup](/claude-code/getting-started/installation/)), its components are available in your session as namespaced identifiers - no extra setup.
+
+<Aside type="caution" title="Choose the workflow before choosing the orchestrator">
+  Maestria adds coordination and review sessions. For small changes or expensive, slow models,
+  direct execution or one specialist is often the better path. Read [When to use
+  Maestria](/core/when-to-use/) first.
+</Aside>
+
+## Start a Session
+
+Launch Claude Code with the plugin loaded:
+
+```bash
+claude --plugin-dir ./packages/claude-code
+```
+
+## Delegate to a Specialist
+
+Call any of the 7 specialist agents directly by their namespaced name:
+
+```markdown
+@maestria:adventurer Explore the auth module and trace the login flow.
+```
+
+The specialists are `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, and `writer`. See the [Specialist Reference](/core/agents/) for role details.
+
+## Use the Orchestrator
+
+For unfamiliar, multi-file, or high-risk work, run the orchestrator skill to route the work through the right specialists:
+
+```markdown
+/maestria:orchestrator I need to add rate limiting to the API. Plan and implement it.
+```
+
+The orchestrator is the routing layer - it decomposes the task, delegates to specialists, and integrates the results. It does not implement work it has delegated.
+
+## Select a Pipeline Mode
+
+Three workflow commands control the pipeline depth. They are namespaced and invoked like any Claude Code command:
+
+| Command           | Pipeline                                                                                  | Use case                                |
+| ----------------- | ----------------------------------------------------------------------------------------- | --------------------------------------- |
+| `/maestria:fein`  | Full pipeline: recon → design → implement → review                                        | Production-grade work, mandatory review |
+| `/maestria:sonar` | Research only: owning specialist → optional distinct specialist → STOP                    | Understanding before committing         |
+| `/maestria:blitz` | Fast path: direct or `maestria:builder` (skip optional ceremony; required review remains) | Quick fixes, known territory            |
+
+```markdown
+/maestria:fein add rate limiting to the API.
+```
+
+## What to Expect
+
+- **Global rules** - the `maestria:global-rules` skill is configured to preload into every specialist agent at startup, staging the universal rules contract into context.
+- **Read-only roles** - `@maestria:adventurer`, `@maestria:planner`, and `@maestria:reviewer` have the `Write` and `Edit` tools denied; they explore, plan, and review but never implement.
+- **Advisory, not security** - persona constraints in skills and prompts are guidance. `disallowedTools` is the only runtime enforcement; do not treat prompt rules as a security boundary.
+
+<Aside type="caution" title="Native candidate - verify behavior">
+  The plugin validates cleanly with `claude plugin validate --strict`, but runtime behavior (skill
+  preload resolution, command pipelines, namespaced invocation) is **not yet tested end to end**. If
+  a component does not behave as documented, report it - upstream Claude Code docs are moving and
+  unpinned.
+</Aside>
+
+## Next Steps
+
+- [Specialist Reference](/core/agents/) - Full docs for all 7 specialists plus the orchestrator
+- [Workflow Patterns](/core/workflow-patterns/) - Orchestration and pipeline patterns

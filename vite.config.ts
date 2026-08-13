@@ -59,6 +59,27 @@ export default defineConfig({
         input: ['packages/hermes/src/**/*.py', 'packages/hermes/pyproject.toml'],
         output: [],
       },
+      'check-manifest-versions': {
+        command: 'python3 scripts/sync-plugin-versions.py --check',
+        cache: true,
+        input: [
+          'scripts/sync-plugin-versions.py',
+          'packages/*/package.json',
+          'packages/claude-code/.claude-plugin/plugin.json',
+          'packages/hermes/plugin.yaml',
+          'packages/hermes/src/maestria_hermes/_version.py',
+        ],
+        output: [],
+      },
+      'test-sync-plugin-versions': {
+        command: 'python3 packages/hermes/tests/test_sync_plugin_versions.py',
+        cache: true,
+        input: [
+          'scripts/sync-plugin-versions.py',
+          'packages/hermes/tests/test_sync_plugin_versions.py',
+        ],
+        output: [],
+      },
     },
     cache: { scripts: true, tasks: true },
   },

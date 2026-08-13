@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "maestria",
   "displayName": "Maestria",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Maestria methodology for Claude Code: specialist agents, orchestrator and global-rules skills, and workflow commands",
   "author": {
     "name": "agustinusnathaniel"
