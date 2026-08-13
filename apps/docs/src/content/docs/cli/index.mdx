@@ -20,7 +20,7 @@ hero:
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/AllPackageManagers.astro';
 
-Maestria ships the same AI engineering methodology to multiple coding agent platforms. Each has its own install commands, update paths, and version management. `maestria` wraps them all behind a single interface, including Claude Code and Codex CLI.
+Maestria ships the same AI engineering methodology to multiple coding agent platforms. Each has its own install commands, update paths, and version management. `maestria` wraps them all behind a single interface, including Claude Code, Codex CLI, and Prime Agent.
 
 ## Why a CLI?
 
@@ -31,6 +31,7 @@ Without the CLI, managing maestria means remembering per-platform commands:
 | OpenCode    | `opencode plugin @maestria/opencode@latest` | Re-run with `--force`                |
 | Kimi Code   | `maestria install kimi-code`                | `maestria update kimi-code`          |
 | Pi          | `pi install npm:@maestria/pi`               | `pi install npm:@maestria/pi@latest` |
+| Prime Agent | `maestria install prime-agent`              | `maestria update prime-agent`        |
 | Claude Code | `maestria install claude-code`              | `maestria update claude-code`        |
 | Codex CLI   | `maestria install codex`                    | `maestria update codex`              |
 

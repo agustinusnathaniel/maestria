@@ -9,6 +9,19 @@ description: Release history for the maestria CLI.
 
 _August 13, 2026_
 
+### Prime Agent support
+
+- Added `prime-agent` platform detection to `status` and `check`.
+- Added `install`, `update`, and `uninstall` adapters that delegate to Prime's native package
+  manager (`prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`).
+- Prime support is deliberately global (user scope only): every Prime command runs from a freshly
+  created empty temporary directory, so project registrations are never scanned or modified, and
+  the temporary directory is removed afterwards.
+- Registration state is read from `prime-agent package list`, and the installed version is read
+  from the installed package's manifest.
+- Updates use Prime's latest-only package semantics, so exact version pinning is unavailable.
+  A version-pinned user registration is reported as an error rather than silently skipped.
+
 ### Claude Code and Codex CLI support
 
 - Added `claude-code` and `codex` platform detection to `status` and `check`.

@@ -1,6 +1,6 @@
 # maestria
 
-A single CLI to install, update, and uninstall Maestria plugins across coding agent platforms - OpenCode, Oh My Pi, Pi, Kimi Code, Hermes, Cursor, Claude Code, and Codex CLI.
+A single CLI to install, update, and uninstall Maestria plugins across coding agent platforms - OpenCode, Oh My Pi, Pi, Prime Agent, Kimi Code, Hermes, Cursor, Claude Code, and Codex CLI.
 
 ```bash
 npx maestria status
@@ -43,13 +43,14 @@ Wherever a platform has its own plugin manager, the CLI delegates to it rather t
 
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
-- **Host-native delegation** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install under `~/.kimi-code/plugins/managed/maestria` copying `rules/AGENTS.md` and reading `kimi.plugin.json`, Cursor plugin directory, Claude Code/Codex marketplaces).
+- **Host-native delegation** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install under `~/.kimi-code/plugins/managed/maestria` copying `rules/AGENTS.md` and reading `kimi.plugin.json`, Cursor plugin directory, Prime Agent native package manager (global scope), Claude Code/Codex marketplaces).
 
 ## Support / Platform Notes
 
 - Requires the target platform's CLI on `PATH`; the CLI cannot install a platform it cannot detect.
 - npm is required for the Claude Code and Codex CLI adapters (they stage published packages into local marketplaces under `~/.cache/maestria/`).
-- Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code and Codex CLI select the latest staged package and reject `--version`.
+- Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code, Codex CLI, and Prime Agent select the latest staged package and reject `--version`.
+- Prime Agent support is deliberately global (user scope only): Prime resolves project settings from the current working directory, so every Prime command runs from a freshly created empty temporary directory and project registrations are never scanned or modified. A version-pinned user registration is reported as an error rather than silently skipped.
 - Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless removed separately.
 - The CLI manages plugin installation only; it does not run agents or enforce methodology.
 

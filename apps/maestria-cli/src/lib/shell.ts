@@ -9,17 +9,25 @@ export class CommandError extends Data.TaggedError('CommandError')<{
 
 // ── Shell helpers ────────────────────────────────────
 
+/**
+ * Run a command with an optional working directory. `cwd` is the directory the
+ * child process is launched in; callers that must isolate a command from the
+ * invoking directory (e.g. Prime's cwd-scoped package commands) pass an empty
+ * temporary directory. Existing callers that pass no `cwd` keep spawning in the
+ * invoking process's directory.
+ */
 export function run(
   cmd: string,
   args: string[],
   timeoutMs = 30_000,
+  cwd?: string,
 ): Effect.Effect<string, CommandError> {
   return Effect.tryPromise({
     try: async () => {
       const { execFile } = await import('node:child_process');
       const { promisify } = await import('node:util');
       const execFileAsync = promisify(execFile);
-      const { stdout } = await execFileAsync(cmd, args, { timeout: timeoutMs });
+      const { stdout } = await execFileAsync(cmd, args, { timeout: timeoutMs, cwd });
       return stdout.trim();
     },
     catch: (error) => {

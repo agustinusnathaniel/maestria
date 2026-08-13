@@ -57,14 +57,14 @@ Detects which coding agent CLIs are available on `$PATH`, checks whether maestri
 
 Each platform object:
 
-| Field              | Type    | Description                                                                                            |
-| ------------------ | ------- | ------------------------------------------------------------------------------------------------------ |
-| `id`               | string  | Platform identifier (`opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
-| `label`            | string  | Human-readable name                                                                                    |
-| `available`        | boolean | CLI tool detected on `$PATH`                                                                           |
-| `installed`        | boolean | Maestria is installed for this platform                                                                |
-| `installedVersion` | string  | Version string from the installed package                                                              |
-| `latestVersion`    | string  | Latest version available on npm                                                                        |
+| Field              | Type    | Description                                                                                                           |
+| ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------- |
+| `id`               | string  | Platform identifier (`opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
+| `label`            | string  | Human-readable name                                                                                                   |
+| `available`        | boolean | CLI tool detected on `$PATH`                                                                                          |
+| `installed`        | boolean | Maestria is installed for this platform                                                                               |
+| `installedVersion` | string  | Version string from the installed package                                                                             |
+| `latestVersion`    | string  | Latest version available on npm                                                                                       |
 
 ### Compact output
 
@@ -120,6 +120,7 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 | ------------- | ----------- | ------------------------------------------------------- |
 | `opencode`    | OpenCode    | `@maestria/opencode` (npm)                              |
 | `pi`          | Pi          | `@maestria/pi` (npm)                                    |
+| `prime-agent` | Prime Agent | `@maestria/prime-agent` (npm, native package manager)   |
 | `kimi-code`   | Kimi Code   | `@maestria/kimi-code` (npm)                             |
 | `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
 | `cursor`      | Cursor      | `@maestria/cursor` (npm)                                |
@@ -133,13 +134,25 @@ Claude Code and Codex CLI use their host-native marketplace managers. The Maestr
 published npm package under `~/.cache/maestria/` before invoking those managers; it does not write
 Claude Code or Codex configuration files directly.
 
+Prime Agent manages packages through its native package manager. `maestria` delegates `install`,
+`update`, and `uninstall` to `prime-agent package install`/`update`/`remove
+npm:@maestria/prime-agent` and reads registration state from `prime-agent package list`; it does not
+write Prime configuration files directly. Prime support is deliberately global (user scope only):
+Prime's package commands resolve project settings from the current working directory, so every
+Prime command runs from a freshly created empty temporary directory. From that isolated cwd only the
+user (global) scope is visible - a project's registrations are never scanned, counted as installed,
+or modified - and the temporary directory is removed after each command. Prime's package manager
+accepts no version spec: updates always target the latest release and skip versioned/pinned
+registrations. When the user-scope `npm:@maestria/prime-agent` registration is version-pinned, the
+CLI detects the pin up front and reports an error instead of silently skipping the update.
+
 **Input validation** - the CLI catches invalid arguments before any platform work begins:
 
-| Scenario                    | Error message                                                                                               |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Unknown platform ID         | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex` |
-| Invalid version format      | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.`                                       |
-| `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.`                                                    |
+| Scenario                    | Error message                                                                                                            |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Unknown platform ID         | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex` |
+| Invalid version format      | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.`                                                    |
+| `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.`                                                                 |
 
 **Runtime errors** - if a platform command fails (e.g., network error, missing binary), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
 
@@ -188,7 +201,7 @@ Use `--version` to pin a specific version instead of the latest:
 maestria update opencode --version 0.5.0
 ```
 
-Exact version pinning is not available for `claude-code` or `codex`; those host marketplace
+Exact version pinning is not available for `claude-code`, `codex`, or `prime-agent`; those host
 adapters update from the latest staged npm package and return a validation result if `--version` is
 passed.
 
@@ -199,7 +212,7 @@ passed.
 | `maestria update opencode,pi`              | Updates OpenCode and Pi simultaneously                                                                                                 |
 | `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically                                                                                                |
 | `maestria update --all`                    | Updates all installed platforms to latest                                                                                              |
-| `maestria update --all --version 0.5.0`    | Updates pin-capable platforms to v0.5.0; Claude Code and Codex CLI return a version-pinning validation result                          |
+| `maestria update --all --version 0.5.0`    | Updates pin-capable platforms to v0.5.0; Claude Code, Codex CLI, and Prime Agent return a version-pinning validation result            |
 
 ### Version caching
 
