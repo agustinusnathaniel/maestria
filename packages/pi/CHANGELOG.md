@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.7
+
+### Patch Changes
+
+- [#201](https://github.com/agustinusnathaniel/maestria/pull/201) [`3ee7c6b`](https://github.com/agustinusnathaniel/maestria/commit/3ee7c6b7bbd7ce8fb19282cf301be6252feefef4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Use Effect v4 RC for cancellable subagent polling and structured parallel dispatch, so aborted or failed polls no longer leave sibling polling work running.
+
 ## 0.6.6
 
 ### Patch Changes
