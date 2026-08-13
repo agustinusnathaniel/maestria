@@ -22,13 +22,14 @@ describe('canonical directive behavioral contracts', () => {
   it('preserves safety, authorization, acceptance, branch, and sync floors', () => {
     const rules = readDirective('rules.md');
 
-    expect(rules).toContain(
-      '**!!! Optimize for the user outcome and observable evidence.** Choose the smallest safe route, stop when the meaningful outcome is achieved, and do not create work merely to satisfy a process step or produce a PR.',
-    );
+    expect(rules).toMatch(/match effort to stakes/i);
+    expect(rules).toMatch(/prefer reuse over reinvention/i);
     expect(rules).toMatch(/safety and authorization/i);
     expect(rules).toMatch(/security.*permission|permission.*security/i);
     expect(rules).toMatch(/observable evidence/i);
     expect(rules).toMatch(/protected-branch|protected branch/i);
+    expect(rules).toMatch(/branch, commit, push, and PR are part of delivery/i);
+    expect(rules).toMatch(/stop and verify them before completion/i);
     expect(rules).toMatch(/maker\/checker/i);
     expect(rules).toMatch(/canonical source invariant/i);
     expect(rules).toMatch(/scripts\/sync-all/);
@@ -114,7 +115,8 @@ describe('canonical directive behavioral contracts', () => {
     const rules = readDirective('rules.md');
     const iteration = readDirective('skills', 'iteration-limits.md');
 
-    expect(rules).toMatch(/repair bound.*normally three rounds/i);
+    expect(rules).toMatch(/one independent review and one repair\/re-review pass/i);
+    expect(rules).toMatch(/up to three repair rounds/i);
     expect(rules).toMatch(/observable progress/i);
     expect(rules).toMatch(/repeated causes.*no new evidence|no new evidence.*repeated causes/i);
     expect(rules).toMatch(/do not loop silently/i);
