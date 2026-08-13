@@ -34,7 +34,6 @@
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },
-  "dependencies": {},
   "devDependencies": {
     "@maestria/shared-pi": "workspace:*",
     "@types/node": "catalog:",
@@ -42,7 +41,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-coding-agent": "^0.84.1",
     "@gotgenes/pi-subagents": "^18.0.0",
     "typebox": "*"
   },
