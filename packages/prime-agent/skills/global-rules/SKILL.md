@@ -87,4 +87,4 @@ Supported specialists are `adventurer`, `architect`, `builder`, `diagnose`, `pla
 
 ## Prime Agent Integration
 
-This package delivers the universal rules as the `global-rules` skill. Delivery is skills-first and advisory: methodology and rules are prompt guidance, not security enforcement. Prime Agent is not a sandbox - it executes model-generated Python and project commands with your user permissions; restrict use to trusted repositories, skills, and instructions. There is no executable extension in this package (JSON/RPC headless modes and recursive-subagent dispatch are deferred); do not claim it.
+This package delivers the universal rules as the `global-rules` skill. Delivery is skills-first and advisory: methodology and rules are prompt guidance, not security enforcement. The package ships a small executable extension covering workflow-mode commands and mode prompt injection only; JSON/RPC headless modes and recursive-subagent dispatch remain deferred - do not claim them. Prime Agent is not a sandbox - it executes model-generated Python and project commands with your user permissions; restrict use to trusted repositories, skills, and instructions.

@@ -121,11 +121,15 @@ During multi-step work, update the user at meaningful transitions: route, delega
 
 The universal contracts live in the `global-rules` skill; load it once per session when you need the full contract text. The specialist roles are skills loaded on demand: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`, plus `handoff` and `iteration-limits`. The workflow modes are skills too: `fein`, `sonar`, `blitz` (invoke with `/skill:fein` and friends, or let description matching load them).
 
-### Advisory delivery, not executable dispatch
+### Executable extension (verified subset)
 
-This is a skills-first package: specialist roles are methodology skills, not executable subagents. There is no recursive-subagent dispatch, no JSON/RPC headless mode, and no agent tool in this package - Prime's executable extension is deferred. "Delegate to a specialist" means load the relevant skill and apply its methodology, not spawn a child agent.
+This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (`pi.extensions`) covering the workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and mode prompt injection on each agent turn via `before_agent_start`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
+
+### Deferred: recursive-subagent dispatch
+
+Recursive-subagent (`rlm`) dispatch and JSON/RPC headless mode are NOT provided. "Delegate to a specialist" means load the relevant skill and apply its methodology, not spawn a child agent. Prime's `rlm` call is an IPython-side tool with no public JS extension bridge in the pinned fork, so this package does not and cannot dispatch subagents.
 
 ### Platform notes
 
-- Methodology and skills are advisory guidance, not hard security enforcement. Prime Agent is not a sandbox: it executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.
+- Methodology, skills, and the extension are advisory guidance, not hard security enforcement. The extension performs no tool interception and no filesystem writes. Prime Agent is not a sandbox: it executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.
 - Prime Agent validates skills against the Agent Skills standard: `name` and `description` are required, unknown frontmatter fields are ignored, and skills with a missing description are not loaded.

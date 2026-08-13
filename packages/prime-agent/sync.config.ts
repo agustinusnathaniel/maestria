@@ -5,14 +5,19 @@
 // skills/<name>/SKILL.md so it is discoverable in every documented Prime skill
 // location (project/global .prime/agent/skills, .agents/skills, package
 // `skills/` directories or `pi.skills` entries, and settings `skills` arrays).
-// All methodology content is generated; only this config and the package
-// metadata/docs/tests are hand-authored.
+// All methodology content is generated; only this config, the package
+// metadata/docs/tests, and the compiled extension (src/) are hand-authored.
 //
-// Scope: skills-first delivery only (ADR-CORE-014). Prime's executable
-// extension - JSON/RPC headless modes and recursive-subagent (`rlm`) dispatch -
-// is deferred and is NOT claimed anywhere in this projection. Specialist
-// references (`@adventurer`, ...) become plain skill names so the content reads
-// as "load the skill" rather than "spawn an agent".
+// Scope (ADR-CORE-014, re-verified 2026-08-13 at upstream commit
+// 7787f07415d843b9a800f6a4720e0c739bd608e5): skills-first delivery PLUS a small
+// verified executable extension (`pi.extensions`, src/extension.ts) covering
+// workflow-mode slash commands (/fein, /sonar, /blitz, /mode-clear,
+// /maestria-status) and before_agent_start mode prompt injection. Prime's
+// recursive-subagent (`rlm`) dispatch and JSON/RPC headless mode remain
+// deferred and are NOT claimed anywhere in this projection - the pinned fork
+// exposes no public JS extension bridge for `rlm` (it is an IPython-side tool).
+// Specialist references (`@adventurer`, ...) become plain skill names so the
+// content reads as "load the skill" rather than "spawn an agent".
 
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
@@ -47,23 +52,27 @@ const ORCHESTRATOR_APPEND = `
 
 The universal contracts live in the \`global-rules\` skill; load it once per session when you need the full contract text. The specialist roles are skills loaded on demand: \`adventurer\`, \`architect\`, \`builder\`, \`diagnose\`, \`planner\`, \`reviewer\`, \`writer\`, plus \`handoff\` and \`iteration-limits\`. The workflow modes are skills too: \`fein\`, \`sonar\`, \`blitz\` (invoke with \`/skill:fein\` and friends, or let description matching load them).
 
-### Advisory delivery, not executable dispatch
+### Executable extension (verified subset)
 
-This is a skills-first package: specialist roles are methodology skills, not executable subagents. There is no recursive-subagent dispatch, no JSON/RPC headless mode, and no agent tool in this package - Prime's executable extension is deferred. "Delegate to a specialist" means load the relevant skill and apply its methodology, not spawn a child agent.
+This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (\`pi.extensions\`) covering the workflow-mode slash commands (\`/fein\`, \`/sonar\`, \`/blitz\`, \`/mode-clear\`, \`/maestria-status\`) and mode prompt injection on each agent turn via \`before_agent_start\`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
+
+### Deferred: recursive-subagent dispatch
+
+Recursive-subagent (\`rlm\`) dispatch and JSON/RPC headless mode are NOT provided. "Delegate to a specialist" means load the relevant skill and apply its methodology, not spawn a child agent. Prime's \`rlm\` call is an IPython-side tool with no public JS extension bridge in the pinned fork, so this package does not and cannot dispatch subagents.
 
 ### Platform notes
 
-- Methodology and skills are advisory guidance, not hard security enforcement. Prime Agent is not a sandbox: it executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.
+- Methodology, skills, and the extension are advisory guidance, not hard security enforcement. The extension performs no tool interception and no filesystem writes. Prime Agent is not a sandbox: it executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.
 - Prime Agent validates skills against the Agent Skills standard: \`name\` and \`description\` are required, unknown frontmatter fields are ignored, and skills with a missing description are not loaded.
 `;
 
 const MODE_APPENDS: Record<string, string> = {
   fein: `
-Load the \`orchestrator\` skill for routing and delegation methodology. If the user provided a goal after invoking \`fein\`, run the full pipeline on that goal now.`,
+Load the \`orchestrator\` skill for routing and delegation methodology. The \`/fein\` extension command also activates this mode for the session (a goal argument is forwarded to the agent; the mode prompt is injected on every turn; clear with \`/mode-clear\`). If the user provided a goal after invoking \`fein\`, run the full pipeline on that goal now.`,
   sonar: `
-Research-only mode. Load the \`orchestrator\` skill for routing and delegation methodology. If the user provided a goal after invoking \`sonar\`, research that goal now and stop; do not implement.`,
+Research-only mode. Load the \`orchestrator\` skill for routing and delegation methodology. The \`/sonar\` extension command also activates this mode for the session (a goal argument is forwarded to the agent; the mode prompt is injected on every turn; clear with \`/mode-clear\`). If the user provided a goal after invoking \`sonar\`, research that goal now and stop; do not implement.`,
   blitz: `
-Fast implementation mode. Load the \`orchestrator\` skill if coordination is needed. If the user provided a goal after invoking \`blitz\`, implement that goal now.`,
+Fast implementation mode. Load the \`orchestrator\` skill if coordination is needed. The \`/blitz\` extension command also activates this mode for the session (a goal argument is forwarded to the agent; the mode prompt is injected on every turn; clear with \`/mode-clear\`). If the user provided a goal after invoking \`blitz\`, implement that goal now.`,
 };
 
 export default {
@@ -184,7 +193,7 @@ decisions.`,
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/prime-agent' },
       ],
-      append: `\n\n## Prime Agent Integration\n\nThis package delivers the universal rules as the \`global-rules\` skill. Delivery is skills-first and advisory: methodology and rules are prompt guidance, not security enforcement. Prime Agent is not a sandbox - it executes model-generated Python and project commands with your user permissions; restrict use to trusted repositories, skills, and instructions. There is no executable extension in this package (JSON/RPC headless modes and recursive-subagent dispatch are deferred); do not claim it.\n`,
+      append: `\n\n## Prime Agent Integration\n\nThis package delivers the universal rules as the \`global-rules\` skill. Delivery is skills-first and advisory: methodology and rules are prompt guidance, not security enforcement. The package ships a small executable extension covering workflow-mode commands and mode prompt injection only; JSON/RPC headless modes and recursive-subagent dispatch remain deferred - do not claim them. Prime Agent is not a sandbox - it executes model-generated Python and project commands with your user permissions; restrict use to trusted repositories, skills, and instructions.\n`,
     },
     'skills/handoff.md': {
       output: 'handoff/SKILL.md',

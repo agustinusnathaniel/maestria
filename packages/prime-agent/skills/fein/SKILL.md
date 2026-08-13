@@ -12,4 +12,4 @@ description: Full pipeline mode - reconnaissance or design, implementation, and 
 
 Activate the `full` route. Use the dynamic thinker -> worker -> verifier pipeline and required review floors.
 
-Load the `orchestrator` skill for routing and delegation methodology. If the user provided a goal after invoking `fein`, run the full pipeline on that goal now.
+Load the `orchestrator` skill for routing and delegation methodology. The `/fein` extension command also activates this mode for the session (a goal argument is forwarded to the agent; the mode prompt is injected on every turn; clear with `/mode-clear`). If the user provided a goal after invoking `fein`, run the full pipeline on that goal now.

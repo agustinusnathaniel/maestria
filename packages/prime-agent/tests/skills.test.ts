@@ -224,12 +224,21 @@ describe('content invariants', () => {
     expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/i);
   });
 
-  it('frames the orchestrator delivery honestly: advisory, not a sandbox, extension deferred', async () => {
+  it('frames the orchestrator delivery honestly: advisory, not a sandbox, rlm/JSON-RPC deferred', async () => {
     const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf8');
     expect(text).toContain('skills-first package');
     expect(text).toContain('not a sandbox');
     expect(text).toContain('advisory guidance');
-    expect(text).toContain('executable extension is deferred');
+    // Verified executable subset: mode commands + mode prompt injection.
+    expect(text).toContain('`pi.extensions`');
+    expect(text).toContain('`/fein`');
+    expect(text).toContain('`/mode-clear`');
+    expect(text).toContain('before_agent_start');
+    expect(text).toContain('mode prompt injection');
+    // Deferred: recursive-subagent dispatch and JSON/RPC headless mode.
+    expect(text).toContain('Deferred: recursive-subagent dispatch');
+    expect(text).toContain('are NOT provided');
+    expect(text).not.toMatch(/rlm\s*\(/);
     expect(text).toContain('`global-rules` skill');
     expect(text).toContain('`fein`');
     expect(text).toContain('`sonar`');
@@ -297,19 +306,26 @@ describe('package boundary', () => {
     expect(pkg.name).toBe('@maestria/prime-agent');
   });
 
-  it('ships skills but no executable surface (no agents/, hooks/, dist/)', async () => {
+  it('has no agents/, hooks/, or commands/ directories (no subagent/agent-tool surface)', async () => {
     expect(await pathExists(path.join(PACKAGE_ROOT, 'agents'))).toBe(false);
     expect(await pathExists(path.join(PACKAGE_ROOT, 'hooks'))).toBe(false);
     expect(await pathExists(path.join(PACKAGE_ROOT, 'commands'))).toBe(false);
   });
 
-  it('allowlists only the skills projection and docs for packaging', async () => {
+  it('allowlists the skills projection, the compiled extension, and docs for packaging', async () => {
     const pkg = await readJson<PackageJson>('package.json');
-    for (const entry of ['skills', 'README.md', 'INSTALL.md', 'LICENSE']) {
+    for (const entry of ['dist', 'skills', 'README.md', 'INSTALL.md', 'LICENSE']) {
       expect(pkg.files).toContain(entry);
     }
     expect(pkg.files).not.toContain('agents');
     expect(pkg.files).not.toContain('hooks');
-    expect(pkg.files).not.toContain('dist');
+  });
+
+  it('declares the compiled extension and skills under the pi manifest key', async () => {
+    const pkg = await readJson<PackageJson & { pi?: { extensions?: string[]; skills?: string[] } }>(
+      'package.json',
+    );
+    expect(pkg.pi?.extensions).toContain('./dist/extension.mjs');
+    expect(pkg.pi?.skills).toContain('./skills');
   });
 });

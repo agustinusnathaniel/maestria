@@ -2,7 +2,7 @@
   "name": "@maestria/prime-agent",
   "version": "0.1.0",
   "private": false,
-  "description": "Maestria methodology for Prime Agent - specialist roles, orchestrator, global rules, and workflow modes as Agent Skills (skills-first)",
+  "description": "Maestria methodology for Prime Agent - specialist roles, orchestrator, global rules, and workflow modes as Agent Skills, plus a small Prime/Pi extension for mode commands and mode prompt injection",
   "keywords": [
     "agent-orchestration",
     "agents",
@@ -24,6 +24,7 @@
     "directory": "packages/prime-agent"
   },
   "files": [
+    "dist",
     "skills",
     "INSTALL.md",
     "README.md",
@@ -35,7 +36,8 @@
     "provenance": true
   },
   "scripts": {
-    "test": "vp test",
+    "build": "vp pack",
+    "test": "vp pack && vp test",
     "validate": "npm run validate-skills",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts"
   },
@@ -49,6 +51,9 @@
     "node": ">=22.12.0"
   },
   "pi": {
+    "extensions": [
+      "./dist/extension.mjs"
+    ],
     "skills": [
       "./skills"
     ]

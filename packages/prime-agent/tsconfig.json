@@ -1,6 +1,12 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["tests/**/*.ts", "scripts/**/*.ts", "sync.config.ts", "vite.config.ts"],
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "scripts/**/*.ts",
+    "sync.config.ts",
+    "vite.config.ts"
+  ],
   "compilerOptions": {
     "noEmit": true,
     "types": ["node"]
