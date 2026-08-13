@@ -1,5 +1,13 @@
 # @maestria/claude-code
 
+## 0.2.1
+
+### Patch Changes
+
+- [#195](https://github.com/agustinusnathaniel/maestria/pull/195) [`8850e68`](https://github.com/agustinusnathaniel/maestria/commit/8850e680561538e6697815b24692f30829c53641) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Claude Code plugin metadata now stays aligned with package versions: release-time version sync is generalized across plugins (replacing the Hermes-only script) and a `--check` mode fails the build on drift, so the published plugin artifact can no longer diverge from npm metadata. Local usage, installation, quick-start, and contributing docs are now available on the docs site.
+
+- [#199](https://github.com/agustinusnathaniel/maestria/pull/199) [`2955263`](https://github.com/agustinusnathaniel/maestria/commit/2955263a3788aea829c548bc56c7f6e7ff941637) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
+
 ## 0.2.0
 
 ### Minor Changes

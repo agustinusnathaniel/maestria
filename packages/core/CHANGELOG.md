@@ -1,5 +1,13 @@
 # @maestria/core
 
+## 0.7.3
+
+### Patch Changes
+
+- [#199](https://github.com/agustinusnathaniel/maestria/pull/199) [`2955263`](https://github.com/agustinusnathaniel/maestria/commit/2955263a3788aea829c548bc56c7f6e7ff941637) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
+
+- [#197](https://github.com/agustinusnathaniel/maestria/pull/197) [`28f9d61`](https://github.com/agustinusnathaniel/maestria/commit/28f9d6193744f8e331598da59a63101655205e64) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Release tooling: the plugin version sync script is rewritten from Python to TypeScript (scripts/sync-plugin-versions.ts, run via pnpm exec tsx) with an equivalent contract - after 'changeset version', package.json versions propagate into the manifests shipped with each plugin (plugin.json, plugin.yaml, \_version.py), and '--check' still fails the build on drift. The Python implementation and its test are replaced by a Vitest suite, and vitest is now a root devDependency so the sync tests run in clean CI. No published runtime API changes.
+
 ## 0.7.2
 
 ### Patch Changes
