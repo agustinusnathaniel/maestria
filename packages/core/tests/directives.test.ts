@@ -87,8 +87,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/empty, malformed, or incomplete.*recovery attempt/i);
     expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/i);
     expect(rules).toMatch(/do not reset a review or repair budget/i);
-    expect(orchestrator).toMatch(/parent session must continue until.*terminal outcome/i);
-    expect(orchestrator).toMatch(/do not restart the same outcome indefinitely/i);
+    expect(orchestrator).toMatch(/parent session owns continuation until.*terminal artifact/i);
+    expect(orchestrator).toMatch(/freeze acceptance, non-goals, and repair limits/i);
     expect(iteration).toMatch(/same user outcome/i);
     expect(iteration).toMatch(/adjacent findings as follow-ups/i);
   });
@@ -104,7 +104,9 @@ describe('canonical directive behavioral contracts', () => {
     );
     expect(orchestrator).toMatch(/for implementation work, own the delivery path/i);
     expect(orchestrator).toMatch(/without ceremonial approval/i);
-    expect(orchestrator).toMatch(/do not stop at `PR pending`/i);
+    expect(orchestrator).toMatch(
+      /do not stop at a local diff, commit, pushed branch, or `PR pending`/i,
+    );
   });
 
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {

@@ -120,9 +120,13 @@ Modes are case-insensitive and per-turn unless the platform documents another li
 
 ## Commit and Session Flow
 
-For implementation work, own the delivery path: `inspect -> plan -> implement -> validate -> review -> repair material blockers -> commit -> push -> PR`. When the repository, branch, remote, ownership, and host capabilities support PR delivery, create the reviewable PR without ceremonial approval; do not stop at `PR pending`. Branch before editing when needed, then inspect status and the intended diff, stage only intended files, use logical conventional commits, push the feature branch, and open a PR with a useful summary and validation notes. Research-only, planning-only, explicitly read-only, and host-blocked work terminates at its requested artifact or exact blocker. Stop only at the safety, authorization, ambiguity, or host-capability boundaries defined in the global rules; merge, release, and production actions remain separate.
+For implementation work, own the delivery path: `inspect -> plan -> implement -> validate -> review -> repair -> commit -> push -> PR`.
 
-For implementation and delivery routes, the parent session must continue until the selected route reaches a terminal outcome. An incomplete todo, a specialist's incomplete handoff, or a handoff that says “continue if needed” is not a reason to return control to the user. Take the next bounded action, recover one incomplete delegation with a changed brief when useful, or emit the structured blocked delta required by the global rules. Do not restart the same outcome indefinitely: freeze acceptance and non-goals, classify new findings as in-scope or follow-up, and do not reset repair limits by creating more sub-work units. `sonar`, planning-only, explicitly read-only, and host-blocked routes stop at their defined artifact or blocker.
+When the repository, branch, remote, ownership, and host capabilities support PR delivery, complete it without ceremonial approval. Do not stop at a local diff, commit, pushed branch, or `PR pending`. Merge, release, and production actions remain separate.
+
+The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take the next bounded action, recover one incomplete delegation with a changed brief, or report the structured blocker. Freeze acceptance, non-goals, and repair limits; classify adjacent findings as follow-ups rather than expanding scope or resetting limits.
+
+Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker. Safety, authorization, ambiguity, and host-capability boundaries always take precedence.
 
 An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping. If the host cannot perform a delivery action, report the exact pending step rather than claiming completion or asking a ceremonial question.
 
