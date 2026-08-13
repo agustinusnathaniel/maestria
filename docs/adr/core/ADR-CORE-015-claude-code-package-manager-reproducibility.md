@@ -23,6 +23,8 @@ The Claude package does not depend on any specific newer toolchain version. It n
 
 The user explicitly authorized (2026-08-12, on branch `feat/runtime-support-adapters`) changing the existing `vite` and `vite-plus` catalog entries from `latest` to the exact `0.2.7` versions, and the generated `pnpm-lock.yaml` importer and dependency updates for `@maestria/claude-code`. The authorization is limited to this pin and the Claude package's lockfile importer; it does not authorize a `0.2.8` (or newer) upgrade, any other catalog changes, hooks, MCP, CLI handlers, model registry, or other runtime work.
 
+This authorization statement records the scope of the 2026-08-12 landing batch. The later 2026-08-13 CLI marketplace adapter work is separately authorized and documented in ADR-CORE-007; it does not change the toolchain pin recorded here.
+
 ## Decision
 
 Pin the shared Vite toolchain catalog entries to the exact versions that the committed lockfile already resolved:

@@ -1,18 +1,42 @@
 ---
 title: Installation & Setup
-description: How to validate and load @maestria/claude-code - a self-contained plugin directory with no install step, no build, no runtime code.
+description: How to validate, install, and load @maestria/claude-code through Claude Code or the Maestria CLI.
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
 `@maestria/claude-code` is a declarative Claude Code plugin - a `.claude-plugin/plugin.json` manifest plus directories of agent, skill, and command files, all generated from the canonical core directives. It is a self-contained directory: there is no npm install, no build step, and no runtime code.
 
-> **Status: Native candidate.** This package validates cleanly with the official Claude Code CLI, but runtime behavior is not yet tested end to end. Marketplace distribution and a CLI install handler are follow-up work; this batch ships the package and local validation only.
+> **Status: Native candidate.** This package validates cleanly with the official Claude Code CLI, but runtime behavior is not yet tested end to end. Persistent installation is available through the Maestria CLI; do not treat the candidate status as a production support promise.
 
 ## Prerequisites
 
 - **Claude Code** with the `claude` CLI on `PATH` - required for validation and local loading.
-- **Node.js and pnpm** - only needed to regenerate files from the canonical core directives, not to load the plugin.
+- **Node.js and npm** - required when installing through `maestria install claude-code`.
+- **Node.js and pnpm** - only needed to regenerate files from the canonical core directives.
+
+## Persistent installation through the Maestria CLI
+
+Install the published plugin at Claude Code's user scope:
+
+```bash
+npx maestria install claude-code
+```
+
+The CLI downloads `@maestria/claude-code` from npm, stages it in a local marketplace under
+`~/.cache/maestria/`, and delegates the actual install to Claude Code. This keeps plugin state and
+scope in the host runtime.
+
+Check, update, or remove the installation with:
+
+```bash
+npx maestria status
+npx maestria update claude-code
+npx maestria uninstall claude-code
+```
+
+Claude Code's marketplace update path selects the latest package. Exact version pinning is not
+available through `maestria update claude-code --version`.
 
 ## Local validation (no install)
 
@@ -97,11 +121,27 @@ The plugin does not ship a `rules/` directory and does not write project or user
 
 ## Uninstalling
 
-No installation steps were performed, so removal is simply not loading the plugin (drop `--plugin-dir`) or deleting the `packages/claude-code` directory.
+For a persistent CLI-managed installation:
 
-## Marketplace distribution (follow-up)
+```bash
+npx maestria uninstall claude-code
+```
 
-Distribution through a Claude Code plugin marketplace is not part of this batch. When it ships, install will use the standard `/plugin marketplace add ...` and `/plugin install ...` flow. A CLI install handler (`maestria install claude-code`) is also follow-up work and is not available today.
+For a session-only `--plugin-dir` load, stop passing the flag. The local staging directory is safe
+to remove after uninstalling:
+
+```bash
+rm -rf ~/.cache/maestria/claude-code-marketplace
+```
+
+## Direct Claude Code marketplace installation
+
+The repository also exposes a Claude Code marketplace entry for users who prefer the host CLI:
+
+```bash
+claude plugin marketplace add agustinusnathaniel/maestria
+claude plugin install maestria@maestria --scope user
+```
 
 ## Next Steps
 

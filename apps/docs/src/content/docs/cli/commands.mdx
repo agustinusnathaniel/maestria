@@ -57,14 +57,14 @@ Detects which coding agent CLIs are available on `$PATH`, checks whether maestri
 
 Each platform object:
 
-| Field              | Type    | Description                                                                    |
-| ------------------ | ------- | ------------------------------------------------------------------------------ |
-| `id`               | string  | Platform identifier (`opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`) |
-| `label`            | string  | Human-readable name                                                            |
-| `available`        | boolean | CLI tool detected on `$PATH`                                                   |
-| `installed`        | boolean | Maestria is installed for this platform                                        |
-| `installedVersion` | string  | Version string from the installed package                                      |
-| `latestVersion`    | string  | Latest version available on npm                                                |
+| Field              | Type    | Description                                                                                            |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------ |
+| `id`               | string  | Platform identifier (`opencode`, `omp`, `pi`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`) |
+| `label`            | string  | Human-readable name                                                                                    |
+| `available`        | boolean | CLI tool detected on `$PATH`                                                                           |
+| `installed`        | boolean | Maestria is installed for this platform                                                                |
+| `installedVersion` | string  | Version string from the installed package                                                              |
+| `latestVersion`    | string  | Latest version available on npm                                                                        |
 
 ### Compact output
 
@@ -74,6 +74,8 @@ With `--compact`, status outputs one line per platform with no colors or decorat
 opencode: available installed=0.2.1 latest=0.2.1
 pi: not-available not-installed
 kimi-code: available installed=0.1.0 latest=0.2.1
+claude-code: available installed=0.2.1 latest=0.2.1
+codex: available installed=0.2.0 latest=0.2.0
 ```
 
 Ideal for AI agents and token-sensitive environments. Implies `--quiet` (no spinner animations).
@@ -114,24 +116,30 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 
 ### Platform identifiers
 
-| ID          | Platform  | Distribution                           |
-| ----------- | --------- | -------------------------------------- |
-| `opencode`  | OpenCode  | `@maestria/opencode` (npm)             |
-| `pi`        | Pi        | `@maestria/pi` (npm)                   |
-| `kimi-code` | Kimi Code | `@maestria/kimi-code` (npm)            |
-| `hermes`    | Hermes    | Git-based via `hermes plugins install` |
-| `cursor`    | Cursor    | `@maestria/cursor` (npm)               |
-| `omp`       | Oh My Pi  | `@maestria/omp` (npm)                  |
+| ID            | Platform    | Distribution                                            |
+| ------------- | ----------- | ------------------------------------------------------- |
+| `opencode`    | OpenCode    | `@maestria/opencode` (npm)                              |
+| `pi`          | Pi          | `@maestria/pi` (npm)                                    |
+| `kimi-code`   | Kimi Code   | `@maestria/kimi-code` (npm)                             |
+| `hermes`      | Hermes      | Git-based via `hermes plugins install`                  |
+| `cursor`      | Cursor      | `@maestria/cursor` (npm)                                |
+| `omp`         | Oh My Pi    | `@maestria/omp` (npm)                                   |
+| `claude-code` | Claude Code | npm package staged into a local Claude Code marketplace |
+| `codex`       | Codex CLI   | npm package staged into a local Codex marketplace       |
 
 ### Error handling
 
+Claude Code and Codex CLI use their host-native marketplace managers. The Maestria CLI stages the
+published npm package under `~/.cache/maestria/` before invoking those managers; it does not write
+Claude Code or Codex configuration files directly.
+
 **Input validation** - the CLI catches invalid arguments before any platform work begins:
 
-| Scenario                    | Error message                                                                           |
-| --------------------------- | --------------------------------------------------------------------------------------- |
-| Unknown platform ID         | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor` |
-| Invalid version format      | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.`                   |
-| `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.`                                |
+| Scenario                    | Error message                                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Unknown platform ID         | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex` |
+| Invalid version format      | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.`                                       |
+| `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.`                                                    |
 
 **Runtime errors** - if a platform command fails (e.g., network error, missing binary), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
 
@@ -180,6 +188,10 @@ Use `--version` to pin a specific version instead of the latest:
 maestria update opencode --version 0.5.0
 ```
 
+Exact version pinning is not available for `claude-code` or `codex`; those host marketplace
+adapters update from the latest staged npm package and return a validation result if `--version` is
+passed.
+
 | Invocation                                 | What happens                                                                                                                           |
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `maestria update`                          | Detects installed platforms, shows interactive grouped multiselect picker with "All platforms" toggle header and `a` key to toggle all |
@@ -187,7 +199,7 @@ maestria update opencode --version 0.5.0
 | `maestria update opencode,pi`              | Updates OpenCode and Pi simultaneously                                                                                                 |
 | `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically                                                                                                |
 | `maestria update --all`                    | Updates all installed platforms to latest                                                                                              |
-| `maestria update --all --version 0.5.0`    | Updates all installed platforms to v0.5.0                                                                                              |
+| `maestria update --all --version 0.5.0`    | Updates pin-capable platforms to v0.5.0; Claude Code and Codex CLI return a version-pinning validation result                          |
 
 ### Version caching
 

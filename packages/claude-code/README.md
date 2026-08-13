@@ -10,7 +10,7 @@ A declarative Claude Code plugin that encodes the Maestria engineering methodolo
 
 ## Install
 
-This batch ships the package and local validation only. Marketplace distribution and a CLI install handler are follow-up work.
+The package is published to npm and can be installed persistently through the Maestria CLI. The CLI stages the published package into a local Claude Code marketplace cache, then delegates installation and updates to Claude Code's native plugin commands.
 
 ### Local validation and development
 
@@ -25,6 +25,23 @@ Load the plugin for a session without installing it:
 ```bash
 claude --plugin-dir ./packages/claude-code
 ```
+
+### Persistent installation
+
+Install the published plugin for the current user with the cross-platform CLI:
+
+```bash
+npx maestria install claude-code
+```
+
+This requires both `claude` and `npm` on `PATH`. Check or update the installation with:
+
+```bash
+npx maestria status
+npx maestria update claude-code
+```
+
+The Claude Code host manages the installed plugin and its scope. `maestria update claude-code --version ...` is not supported because Claude Code updates from the configured marketplace's latest package.
 
 ### Regenerating the plugin
 

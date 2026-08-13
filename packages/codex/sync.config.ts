@@ -1,4 +1,4 @@
-// packages/codex-cli/sync.config.ts
+// packages/codex/sync.config.ts
 // Codex CLI projection: derives Codex plugin skills from the canonical core
 // directives. Generated skills are advisory workflow guidance; Codex runtime
 // capabilities and trust controls remain outside this package.
@@ -143,7 +143,7 @@ export default {
         description:
           'Universal Maestria rules for evidence, safety, authorization, delegation, review, bounded repair, and branch discipline.',
       },
-      replace: [{ from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/codex-cli' }],
+      replace: [{ from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/codex' }],
     },
     'skills/handoff.md': {
       output: 'handoff/SKILL.md',
