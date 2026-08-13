@@ -6,7 +6,7 @@ description: Universal Maestria rules for evidence, safety, authorization, deleg
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-# Global Agent Rules - @maestria/codex-cli
+# Global Agent Rules - @maestria/codex
 
 This is the cross-platform behavior contract. It defines outcomes, evidence, safety, delegation, review, and bounded repair. The host runtime defines tool authority and lifecycle; specialists own their role methodology.
 

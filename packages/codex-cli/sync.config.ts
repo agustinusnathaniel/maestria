@@ -143,7 +143,7 @@ export default {
         description:
           'Universal Maestria rules for evidence, safety, authorization, delegation, review, bounded repair, and branch discipline.',
       },
-      replace: [{ from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/codex-cli' }],
+      replace: [{ from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/codex' }],
     },
     'skills/handoff.md': {
       output: 'handoff/SKILL.md',

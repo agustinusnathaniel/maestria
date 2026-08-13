@@ -1,0 +1,86 @@
+---
+title: '@maestria/codex'
+description: Provisional Codex CLI plugin projection that packages Maestria's methodology as namespaced skills.
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  title: 'Maestria Skills for Codex CLI'
+  tagline: 'Install one provisional plugin to make Maestria specialists, orchestration, handoffs, and review contracts available as Codex skills.'
+  actions:
+    - text: Get Started
+      icon: right-arrow
+      link: /codex-cli/getting-started/installation/
+    - text: View Core Methodology
+      icon: external
+      variant: minimal
+      link: /core/agents/
+---
+
+import { LinkCard, CardGrid, LinkButton, Aside } from '@astrojs/starlight/components';
+
+`@maestria/codex` is a **provisional projection** of the canonical Maestria directives. It
+packages the 7 specialists, orchestrator, global rules, handoff and iteration-limit contracts, and
+the `fein`/`sonar`/`blitz` workflow modes as namespaced Codex skills.
+
+<Aside type="caution" title="Codex CLI only">
+  This package was verified against Codex CLI `0.145.0` on 2026-08-13. It does not claim Codex
+  desktop parity, and skills remain advisory guidance rather than runtime permission controls.
+</Aside>
+
+## Install
+
+The Maestria CLI is the supported convenience path for the published npm package:
+
+```bash
+npx maestria install codex-cli
+```
+
+The CLI stages `@maestria/codex` in a local marketplace under `~/.cache/maestria/`, then uses
+Codex's native `codex plugin add` command. Check, update, and remove it with:
+
+```bash
+npx maestria status
+npx maestria update codex-cli
+npx maestria uninstall codex-cli
+```
+
+<LinkButton href="/codex-cli/getting-started/installation/" size="lg">
+  Installation and verification →
+</LinkButton>
+
+## What It Provides
+
+- `$maestria:adventurer`, `$maestria:architect`, `$maestria:builder`, `$maestria:diagnose`, `$maestria:planner`, `$maestria:reviewer`, and `$maestria:writer`
+- `$maestria:orchestrator` for capability-aware routing
+- `$maestria:global-rules` for the universal evidence, safety, authorization, and review contract
+- `$maestria:handoff` and `$maestria:iteration-limits` for bounded multi-stage work
+- `$maestria:fein`, `$maestria:sonar`, and `$maestria:blitz` as workflow-mode skills
+
+The read-only specialist boundaries are documented guidance. Codex's own sandbox, approvals, and
+hook trust model remain the runtime boundary.
+
+## Explore the Docs
+
+<CardGrid>
+  <LinkCard
+    title="Getting Started"
+    description="Install the npm package through Maestria, validate the projection, and verify skill discovery."
+    href="/codex-cli/getting-started/installation/"
+  />
+  <LinkCard
+    title="Quick Start"
+    description="Use the orchestrator and specialist skills on a real Codex CLI task."
+    href="/codex-cli/getting-started/quick-start/"
+  />
+  <LinkCard
+    title="Contributing"
+    description="Understand the generated skill projection and sync pipeline."
+    href="/codex-cli/contributing/"
+  />
+  <LinkCard
+    title="Changelog"
+    description="Release history and support-boundary changes."
+    href="/codex-cli/changelog/"
+  />
+</CardGrid>

@@ -1,6 +1,6 @@
-# @maestria/codex-cli
+# @maestria/codex
 
-`@maestria/codex-cli` is a provisional Codex CLI projection of Maestria's canonical agent methodology. It packages the core directives as Codex skills inside a `.codex-plugin/plugin.json` bundle.
+`@maestria/codex` is a provisional Codex CLI projection of Maestria's canonical agent methodology. It packages the core directives as Codex skills inside a `.codex-plugin/plugin.json` bundle.
 
 ## Status and support boundary
 
@@ -8,7 +8,7 @@ This is a `Provisional` / `Projection` spike verified against the locally availa
 
 Codex skills, plugin loading, subagent workflows, and `AGENTS.md` are runtime capabilities, not Maestria security controls. This package does not make any specialist role read-only, guarantee delegation, or enforce the maker/checker split. Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
 
-The spike intentionally ships no hooks, MCP server, installer, model configuration, or `AGENTS.md` writer. In particular, it does not advertise a `maestria install codex-cli` command.
+The projection intentionally ships no hooks, MCP server, model configuration, or `AGENTS.md` writer. Persistent installation is handled by the Maestria CLI, which stages the published npm package into a local Codex marketplace and delegates to Codex's native plugin commands.
 
 ## Local package validation
 
@@ -21,6 +21,16 @@ python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex-cli
 Use the `validate_plugin.py` shipped with the Codex plugin-creator skill in your Codex installation; the path is installation-specific.
 
 When a Codex marketplace is available, install the package through that marketplace and start a fresh session before checking skill discovery. This repository does not create or mutate a marketplace as part of the spike.
+
+For the published package, the supported convenience path is:
+
+```bash
+npx maestria install codex-cli
+```
+
+This requires Codex CLI and npm on `PATH`. The CLI creates a local marketplace under `~/.cache/maestria/`, then runs `codex plugin add maestria@maestria`. Check, update, or remove the installation with `maestria status`, `maestria update codex-cli`, and `maestria uninstall codex-cli`.
+
+Codex CLI does not expose a plugin update command in the supported surface used by this projection. `maestria update codex-cli` refreshes the staged npm package, removes the installed plugin, and adds it again. Exact version pinning is not available through `maestria update codex-cli --version`.
 
 ## Skills
 

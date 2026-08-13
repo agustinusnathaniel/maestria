@@ -4,7 +4,9 @@
 
 Proposed (2026-08-11). This ADR records a decision boundary and support policy, not a shipped implementation. It accompanies the evidence ledger in [runtime-support-matrix.md](../../runtime-support-matrix.md).
 
-No runtime in this ADR is claimed as shipped (`Native`). Promotion requires the promotion gates below and a blind review of these repaired docs; review/promotion gates precede promotion or landing, and the native-candidate implementation may already exist before promotion review.
+No runtime in this ADR is claimed as promoted to `Native`. Package projections and separate CLI marketplace adapters may exist without changing the support level declared here. Promotion requires the gates below and a blind review of these repaired docs; review/promotion gates precede promotion or landing, and the native-candidate implementation may already exist before promotion review.
+
+The package projections and Maestria CLI marketplace adapters described by this policy have since been implemented. Their support levels remain governed by this ADR; implementation does not by itself promote Claude Code or Codex CLI to `Native`.
 
 ## Context
 
@@ -28,9 +30,9 @@ The current upstream evidence is mostly unpinned moving documentation on `main`/
 
 ## Non-Goals
 
-- This ADR does not implement any runtime package. It is a decision and scope record only.
+- At the time of the original decision, this ADR did not implement any runtime package. It remains the decision and scope record for the subsequent bounded package projections and CLI adapters.
 - It does not modify canonical agent directives or any generated platform output.
-- It does not add the CLI installation/version handlers or model-config handlers for these runtimes; those remain separate and are not part of this first batch (see ADR-CORE-007 for the CLI architecture and ADR-CORE-008 for dependency bundling).
+- It does not define model-config handlers for these runtimes. CLI installation/version handlers remain a separate concern under ADR-CORE-007; the current adapters only stage packages and invoke host-native marketplace commands.
 - It does not make a public-facing support promise. All runtime claims are internal, dated, and version-sensitive.
 - It does not reuse `@maestria/pi` for Prime Agent. Prime Agent is built on the Pi ecosystem (it is a Pi-based harness), so reusing the Maestria Pi extension would create a false or conflicting dependency claim.
 - It does not claim desktop/local parity for any runtime where parity is unverified.
@@ -72,7 +74,7 @@ The `Evidence ID` values in these tables (and in the capability/control tables b
 
 ### Principle: canonical source, per-platform output
 
-All canonical methodology remains in `packages/core/agent-directives/`. Any future adapter is a generated projection produced by the core sync pipeline (ADR-CORE-005). Runtime-specific derivation (frontmatter, file layout, skill names) is owned by each package's `sync.config.ts`, never by hand-edited copies. CLI installation/version handlers and model-config handlers are separate concerns and are not part of this first batch.
+All canonical methodology remains in `packages/core/agent-directives/`. Any adapter is a generated projection produced by the core sync pipeline (ADR-CORE-005). Runtime-specific derivation (frontmatter, file layout, skill names) is owned by each package's `sync.config.ts`, never by hand-edited copies. CLI installation/version handlers and model-config handlers remain separate concerns; the current Claude Code and Codex CLI handlers do not write host configuration.
 
 ### Security and trust boundaries (capability vs control)
 
@@ -97,7 +99,7 @@ Codex hook trust is not uniform: only non-managed command hooks are `Trust-gated
 
 ### Scope of the first batch
 
-The first implementation batch covers Claude Code (`Native candidate`, plugin) as the primary candidate, pending promotion/landing gates (approved docs and a blind review), with Prime Agent (`Native candidate`, skills-first) as a secondary candidate pending API/security verification. Codex CLI, Codex desktop, JCode, and Crush are `Provisional` or `Deferred` targets. This ADR records the boundary; it does not ship them.
+The first implementation batch covers Claude Code (`Native candidate`, plugin) as the primary candidate, pending promotion/landing gates (approved docs and a blind review), with Prime Agent (`Native candidate`, skills-first) as a secondary candidate pending API/security verification. Codex CLI remains `Provisional`; Codex desktop, JCode, and Crush remain `Deferred` targets. The separate CLI adapters do not promote any runtime or claim desktop parity.
 
 ## Consequences
 
@@ -168,7 +170,7 @@ Withdrawal downgrades or removes a runtime's claims (support level, delivery, ca
 
 - ADR-CORE-002 (plugin architecture) - the pure plugin, markdown agents, hooks pattern that Claude Code's plugin shape aligns with.
 - ADR-CORE-005 (shared agent directives core sync) - establishes the canonical-source, per-platform generated output invariant this ADR relies on.
-- ADR-CORE-007 (CLI package for plugin management) - CLI installation/version handlers remain separate; this ADR does not add runtime handlers.
+- ADR-CORE-007 (CLI package for plugin management) - CLI host adapters are separate from runtime support promotion and use native marketplace commands.
 - ADR-CORE-008 (CLI dependency bundling) - dependency policy applies to any future adapter package.
 - ADR-PI-000 and ADR-PI-001 - Prime Agent is Pi-based, so `@maestria/pi` is not reused for it (see Non-Goals).
 

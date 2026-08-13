@@ -1,4 +1,4 @@
-# @maestria/codex-cli
+# @maestria/codex
 
 ## 0.2.0
 

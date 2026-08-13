@@ -19,7 +19,8 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Maestria',
-      description: 'Portable AI engineering praxis plugins for OpenCode, Claude Code, and beyond.',
+      description:
+        'Portable AI engineering praxis plugins for OpenCode, Claude Code, Codex CLI, and beyond.',
       customCss: ['./src/styles/global.css'],
       plugins: [
         starlightLinksValidator(),
@@ -30,6 +31,8 @@ export default defineConfig({
             'Includes @maestria/opencode (8 agents, global rules injection), ' +
             '@maestria/claude-code (declarative Claude Code plugin with specialist agents, ' +
             'orchestrator and global-rules skills, and fein/sonar/blitz workflow commands), ' +
+            '@maestria/codex (provisional Codex CLI skills projection with specialist workflows, ' +
+            'orchestration, handoffs, and review contracts), ' +
             '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), ' +
             '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
             '@maestria/pi (full agent orchestration for Pi Coding Agent), and ' +
@@ -158,6 +161,19 @@ export default defineConfig({
             },
             { label: 'Changelog', link: '/claude-code/changelog/' },
             { label: 'Contributing', link: '/claude-code/contributing/' },
+          ],
+        },
+        {
+          label: '@maestria/codex',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/codex-cli/' },
+            {
+              label: 'Getting Started',
+              items: [{ autogenerate: { directory: 'codex-cli/getting-started' } }],
+            },
+            { label: 'Changelog', link: '/codex-cli/changelog/' },
+            { label: 'Contributing', link: '/codex-cli/contributing/' },
           ],
         },
         {

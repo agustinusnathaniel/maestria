@@ -1,6 +1,6 @@
 # maestria
 
-A single CLI to manage maestria plugins across all coding agent platforms - OpenCode, Oh My Pi, Kimi Code, Pi, Hermes, and Cursor.
+A single CLI to manage maestria plugins across all coding agent platforms - OpenCode, Oh My Pi, Kimi Code, Pi, Hermes, Cursor, Claude Code, and Codex CLI.
 
 ```bash
 npx maestria status
@@ -19,13 +19,15 @@ Each coding agent platform installs maestria differently. `maestria` wraps them 
 | `maestria install` | Interactive platform install (multiselect) |
 | `maestria install --all` | Install for all detected platforms |
 | `maestria install opencode` | Install for a specific platform |
+| `maestria install claude-code` | Install the Claude Code plugin through its native marketplace |
+| `maestria install codex-cli` | Install the Codex CLI projection through its native marketplace |
 | `maestria install opencode,pi` | Install for multiple comma-separated platforms |
 | `maestria update` | Interactive platform update (grouped multiselect with `a` toggle-all) |
 | `maestria update --all` | Update all installed platforms |
 | `maestria update opencode,pi` | Update multiple comma-separated platforms |
 | `maestria update opencode --version 0.5.0` | Update to a specific version |
 
-All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text - ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version.
+All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text - ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version where the host supports it. Claude Code and Codex CLI use latest-only marketplace updates and reject `--version`.
 
 ## Usage
 
@@ -41,6 +43,9 @@ npx maestria install --all
 
 # Install for multiple specific platforms
 npx maestria install opencode,pi
+
+# Install the marketplace-backed plugins
+npx maestria install claude-code,codex-cli
 
 # Update everything
 npx maestria update --all
@@ -67,7 +72,7 @@ Invalid arguments are caught early:
 
 ```bash
 $ npx maestria update unknown
-Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor
+Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor, claude-code, codex-cli
 
 $ npx maestria update opencode --version 2.0
 Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
@@ -97,17 +102,21 @@ rm ~/.cache/maestria/versions.json
 ## Prerequisites
 
 - Node.js 22+
-- The platform CLI must be on `$PATH` (`opencode`, `pi`, `kimi`, `hermes`, or `agent` for Cursor)
+- The platform CLI must be on `$PATH` (`opencode`, `pi`, `kimi`, `hermes`, `agent` for Cursor, `claude`, or `codex`)
+- npm is required for Claude Code and Codex CLI because the CLI stages their published packages into local marketplaces under `~/.cache/maestria/`
 
 ## Supported Platforms
 
-| ID          | Platform  | Package               |
-| ----------- | --------- | --------------------- |
-| `opencode`  | OpenCode  | `@maestria/opencode`  |
-| `omp`       | Oh My Pi  | `@maestria/omp`       |
-| `pi`        | Pi        | `@maestria/pi`        |
-| `kimi-code` | Kimi Code | `@maestria/kimi-code` |
-| `hermes`    | Hermes    | `maestria-hermes`     |
+| ID            | Platform    | Package                 |
+| ------------- | ----------- | ----------------------- |
+| `opencode`    | OpenCode    | `@maestria/opencode`    |
+| `omp`         | Oh My Pi    | `@maestria/omp`         |
+| `pi`          | Pi          | `@maestria/pi`          |
+| `kimi-code`   | Kimi Code   | `@maestria/kimi-code`   |
+| `hermes`      | Hermes      | `maestria-hermes`       |
+| `cursor`      | Cursor      | `@maestria/cursor`      |
+| `claude-code` | Claude Code | `@maestria/claude-code` |
+| `codex-cli`   | Codex CLI   | `@maestria/codex`       |
 
 ## Tech Stack
 

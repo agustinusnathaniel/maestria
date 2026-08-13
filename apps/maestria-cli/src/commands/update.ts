@@ -22,7 +22,8 @@ export const updateCommand = defineCommand({
       type: 'positional',
       description:
         'Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). ' +
-        'One of: opencode, pi, kimi-code, hermes, cursor, omp. Pass directly to skip interactive selection.',
+        'One of: opencode, pi, kimi-code, hermes, cursor, omp, claude-code, codex-cli. ' +
+        'Pass directly to skip interactive selection.',
       required: false,
     },
     version: {
@@ -220,6 +221,15 @@ function updateOne(
   version?: string,
 ): Effect.Effect<PlatformResult, never> {
   return Effect.gen(function* () {
+    if (version && platform.supportsVersionPinning === false) {
+      return {
+        id: platform.id,
+        label: platform.label,
+        ok: false,
+        message: `Version pinning is not supported for ${platform.label}; updating without --version is required.`,
+      } satisfies PlatformResult;
+    }
+
     const prevVersion = yield* platform.getInstalledVersion.pipe(
       Effect.catchCause(() => Effect.succeed('unknown')),
     );

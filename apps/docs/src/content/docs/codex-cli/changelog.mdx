@@ -1,0 +1,24 @@
+---
+title: Changelog
+description: Release history for @maestria/codex.
+---
+
+# Changelog
+
+## 0.2.0
+
+### Provisional Codex CLI projection
+
+- Added the generated skills projection for the 7 specialists, orchestrator, global rules, handoff,
+  iteration limits, and `fein`/`sonar`/`blitz` workflow modes.
+- Added Maestria CLI compatibility: `install`, `status`, `check`, `update`, and `uninstall` now
+  recognize the `codex-cli` platform.
+- The CLI stages the npm package in a local Codex marketplace and delegates plugin state to Codex.
+- Codex desktop parity, hooks, MCP, model configuration, and hard read-only enforcement remain out
+  of scope.
+
+## 0.1.0
+
+Initial provisional Codex CLI projection. It packages the canonical Maestria specialist,
+orchestration, rules, handoff, iteration-limit, and workflow-mode directives as Codex skills through
+`.codex-plugin/plugin.json`.

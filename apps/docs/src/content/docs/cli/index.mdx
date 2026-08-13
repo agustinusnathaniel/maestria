@@ -1,12 +1,12 @@
 ---
 title: 'maestria'
-description: Manage maestria plugins across coding agent platforms from a single command - install, update, and check status across platforms, and configure per-agent models for OpenCode, Pi, and OMP.
+description: Manage maestria plugins across coding agent platforms from a single command - install, update, and check status across platforms, and configure per-agent models where supported.
 template: splash
 editUrl: false
 lastUpdated: false
 hero:
   title: 'One CLI to Manage Them All'
-  tagline: 'Install, update, and check maestria across coding agent platforms. Configure per-agent models for OpenCode, Pi, and OMP from the same command.'
+  tagline: 'Install, update, and check maestria across coding agent platforms. Configure per-agent models where the host runtime supports it.'
   actions:
     - text: Get Started
       icon: right-arrow
@@ -20,17 +20,19 @@ hero:
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/AllPackageManagers.astro';
 
-Maestria ships the same AI engineering methodology to three coding agent platforms. Each has its own install commands, update paths, and version management. `maestria` wraps them all behind a single interface.
+Maestria ships the same AI engineering methodology to multiple coding agent platforms. Each has its own install commands, update paths, and version management. `maestria` wraps them all behind a single interface, including Claude Code and Codex CLI.
 
 ## Why a CLI?
 
 Without the CLI, managing maestria means remembering per-platform commands:
 
-| Platform  | Install                                     | Update                               |
-| --------- | ------------------------------------------- | ------------------------------------ |
-| OpenCode  | `opencode plugin @maestria/opencode@latest` | Re-run with `--force`                |
-| Kimi Code | `maestria update kimi-code`                 | Re-run the update command            |
-| Pi        | `pi install npm:@maestria/pi`               | `pi install npm:@maestria/pi@latest` |
+| Platform    | Install                                     | Update                               |
+| ----------- | ------------------------------------------- | ------------------------------------ |
+| OpenCode    | `opencode plugin @maestria/opencode@latest` | Re-run with `--force`                |
+| Kimi Code   | `maestria install kimi-code`                | `maestria update kimi-code`          |
+| Pi          | `pi install npm:@maestria/pi`               | `pi install npm:@maestria/pi@latest` |
+| Claude Code | `maestria install claude-code`              | `maestria update claude-code`        |
+| Codex CLI   | `maestria install codex-cli`                | `maestria update codex-cli`          |
 
 With the CLI, one command does it all:
 
@@ -41,7 +43,7 @@ No more context-switching between platform CLIs. No more hunting through READMEs
 ## How It Works
 
 1. **Run <AllPackageManagers type="dlx" pkg="maestria@latest" />** - no install required, thanks to the bundled single-file `.mjs` distribution
-2. **Platform detection** - the CLI shows a spinner and checks which coding agent CLIs are on your `$PATH` (opencode, kimi, pi)
+2. **Platform detection** - the CLI shows a spinner and checks which supported coding agent CLIs are on your `$PATH`
 3. **Parallel checks** - for each detected platform, it checks whether maestria is installed and what version is available
 4. **Action** - install, update, configure per-agent models, or inspect as needed
 
