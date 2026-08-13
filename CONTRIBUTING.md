@@ -20,21 +20,21 @@ The project uses [Vite+](https://viteplus.dev) as its unified toolchain. `vp che
 ```
 maestria/
 ├── packages/
-│   ├── core/              Canonical agent directives + sync pipeline (private, v0.4.9)
-│   ├── opencode/          OpenCode plugin (published, v0.6.12)
-│   ├── kimi-code/         Kimi Code plugin (published, v0.4.9)
-│   ├── omp/               Oh My Pi plugin (published, v0.2.4)
-│   ├── pi/                Pi extension (published, v0.5.10)
-│   ├── cursor/            Cursor IDE plugin (published, v0.1.3)
-│   ├── prime-agent/       Prime Agent skills-first package (v0.1.0, first release pending)
+│   ├── core/              Canonical agent directives + sync pipeline (private, v0.7.3)
+│   ├── opencode/          OpenCode plugin (published, v0.6.21)
+│   ├── kimi-code/         Kimi Code plugin (published, v0.4.16)
+│   ├── omp/               Oh My Pi plugin (published, v0.4.3)
+│   ├── pi/                Pi extension (published, v0.6.8)
+│   ├── cursor/            Cursor IDE plugin (published, v0.1.8)
+│   ├── prime-agent/       Prime Agent skills-first package (published, v0.2.0)
 │   ├── claude-code/       Claude Code plugin (published, v0.2.1)
-│   ├── codex/             Codex CLI projection (published, v0.2.0)
-│   ├── hermes/            Hermes Agent plugin (private, v0.1.7, published on PyPI)
+│   ├── codex/             Codex CLI projection (published, v0.2.1)
+│   ├── hermes/            Hermes Agent plugin (private, v0.1.13, published on PyPI)
 │   └── shared/
 │       └── pi/            Shared pure-TS utilities for omp/pi (private)
 ├── apps/
 │   ├── docs/              Starlight documentation site (private)
-│   └── maestria-cli/      CLI tool (published, v0.7.3)
+│   └── maestria-cli/      CLI tool (published, v0.9.0)
 ├── scripts/
 │   ├── sync-all           Regenerate all plugin outputs from canonical sources
 │   └── check-sync         CI verification: fail if any output differs
@@ -63,10 +63,10 @@ maestria/
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
 | `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
-| `@maestria/prime-agent` | Yes (v0.1.0, first release pending) | Skills-first: 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent, plus a verified executable extension subset (mode commands, mode prompt injection); native rlm dispatch and JSON/RPC remain deferred |
+| `@maestria/prime-agent` | Yes (v0.2.0) | Skills-first: 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent, plus a verified executable extension subset (mode commands, mode prompt injection); native rlm dispatch and JSON/RPC remain deferred |
 | `@maestria/claude-code` | Yes | Declarative Claude Code plugin with 7 agents, skills, and workflow commands |
 | `@maestria/codex` | Yes | Provisional Codex CLI projection with namespaced methodology skills |
-| `@maestria/hermes` | No | Hermes Agent plugin — methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
+| `@maestria/hermes` | No (PyPI) | Hermes Agent plugin — methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
 | `@maestria/shared-pi` | No | Shared pure-TS utilities for omp and pi (agent deployment, subagent validation, event constants) |
 | `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
 
@@ -362,12 +362,12 @@ Create a changeset whenever you make a user-facing change to a package that is p
 | Area | Location | How to run |
 | --- | --- | --- |
 | User-facing docs | `apps/docs/` (Astro + Starlight) | `vp run @maestria/docs#dev` |
-| Architecture decisions | `docs/adr/{core,opencode,kimi-code,omp,pi}/` | Read as markdown |
+| Architecture decisions | `docs/adr/{core,opencode,kimi-code,cursor,hermes,pi}/` | Read as markdown |
 | Testing guide | `docs/testing.md` | Read as markdown |
 | Completion checklist | `docs/checklist.md` | Read as markdown |
 | Root project docs | `AGENTS.md`, `PATTERNS.md`, `VISION.md`, `README.md` | Read as markdown |
 
-The docs site auto-generates sidebar navigation via `starlight-auto-sidebar`. After adding a new page, verify it appears in the sidebar during local dev.
+The docs site sidebar is configured in `apps/docs/astro.config.mjs` (manual groups per package, with per-package `getting-started` pages auto-generated from their directory). After adding a new package docs section, add a matching sidebar group and verify it appears during local dev.
 
 ---
 

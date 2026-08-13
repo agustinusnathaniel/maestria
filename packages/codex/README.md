@@ -1,71 +1,44 @@
 # @maestria/codex
 
-`@maestria/codex` is a provisional Codex CLI projection of Maestria's canonical agent methodology. It packages the core directives as Codex skills inside a `.codex-plugin/plugin.json` bundle.
+A provisional Codex CLI projection of Maestria's canonical agent methodology, packaged as namespaced `$maestria:*` skills inside a `.codex-plugin/plugin.json` bundle.
 
-## Status and support boundary
+> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The skills are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
 
-This is a `Provisional` / `Projection` spike verified against the locally available `codex 0.145.0` on 2026-08-13. The package demonstrates a generated skills projection; it is not a production support promise and does not claim Codex desktop parity.
+## Status / Support Boundary
 
-Codex skills, plugin loading, subagent workflows, and `AGENTS.md` are runtime capabilities, not Maestria security controls. This package does not make any specialist role read-only, guarantee delegation, or enforce the maker/checker split. Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
+`Provisional` spike verified against the locally available `codex 0.145.0` on 2026-08-13. It demonstrates a generated skills projection and is not a production support promise; it does not claim Codex desktop parity. Reverify host marketplace and skills behavior when upgrading Codex.
 
-The projection intentionally ships no hooks, MCP server, model configuration, or `AGENTS.md` writer. Persistent installation is handled by the Maestria CLI, which stages the published npm package into a local Codex marketplace and delegates to Codex's native plugin commands.
-
-## Local package validation
-
-From the repository root:
+## Installation
 
 ```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
-```
-
-Use the `validate_plugin.py` shipped with the Codex plugin-creator skill in your Codex installation; the path is installation-specific.
-
-When a Codex marketplace is available, install the package through that marketplace and start a fresh session before checking skill discovery. This repository does not create or mutate a marketplace as part of the spike.
-
-For the published package, the supported convenience path is:
-
-```bash
+# Supported convenience path (requires Codex CLI and npm on PATH)
 npx maestria install codex
+npx maestria status
+npx maestria update codex
+npx maestria uninstall codex
 ```
 
-This requires Codex CLI and npm on `PATH`. The CLI creates a local marketplace under `~/.cache/maestria/`, then runs `codex plugin add maestria@maestria`. Check, update, or remove the installation with `maestria status`, `maestria update codex`, and `maestria uninstall codex`.
+The CLI stages the published npm package into a local marketplace under `~/.cache/maestria/` and runs `codex plugin add maestria@maestria`. Codex CLI exposes no plugin update command in the pinned surface, so `maestria update codex` refreshes the staged package, removes the plugin, and adds it again. Exact version pinning is not available. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/codex/INSTALL.md) for the full checklist and verification.
 
-Codex CLI does not expose a plugin update command in the supported surface used by this projection. `maestria update codex` refreshes the staged npm package, removes the installed plugin, and adds it again. Exact version pinning is not available through `maestria update codex --version`.
+## What It Provides
 
-## Skills
+- **14 namespaced skills** - `$maestria:global-rules`, `$maestria:orchestrator`, the 7 specialists (adventurer, architect, builder, diagnose, planner, reviewer, writer), `$maestria:handoff`, `$maestria:iteration-limits`, and the workflow modes `$maestria:fein`, `$maestria:sonar`, `$maestria:blitz`.
+- **Maestria CLI compatibility** - install, status, check, update, and uninstall through the CLI.
 
-The plugin exposes these namespaced skills:
+## Support / Platform Notes
 
-| Skill | Purpose |
-| --- | --- |
-| `$maestria:global-rules` | Universal evidence, safety, authorization, review, and branch contracts |
-| `$maestria:orchestrator` | Route work and coordinate specialist skills |
-| `$maestria:adventurer` | Reconnaissance and codebase mapping |
-| `$maestria:architect` | Architecture trade-offs and ADR decisions |
-| `$maestria:builder` | Atomic implementation and verification |
-| `$maestria:diagnose` | Root-cause analysis and regression tracing |
-| `$maestria:planner` | Phased implementation planning |
-| `$maestria:reviewer` | Independent quality review |
-| `$maestria:writer` | Documentation and structured prose |
-| `$maestria:handoff` | Inter-stage handoff contracts |
-| `$maestria:iteration-limits` | Bounded loops and repair termination |
-| `$maestria:fein` | Full pipeline mode |
-| `$maestria:sonar` | Research-only mode |
-| `$maestria:blitz` | Fast capability-aware mode |
+- Skills-only projection: workflow modes ship as skills, not slash commands, because the verified surface for this spike is the plugin `skills/` directory.
+- Read-only specialist boundaries are documented guidance, not tool enforcement; Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
+- No hooks, MCP servers, model configuration, or `AGENTS.md` writer are shipped.
+- Support remains provisional until the pinned Codex CLI behavior and the marketplace/plugin install flow are reverified. Evidence baseline: [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) and [ADR-CORE-014](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md).
+- The skills are projections of the canonical core directives. To change behavior, edit `packages/core/agent-directives/` and re-run the sync pipeline - never hand-edit the generated `skills/` directory.
 
-The workflow-mode entries are skills rather than Codex slash commands because the pinned projection surface verified for this spike is the plugin `skills/` directory.
+## Documentation and Changelog
 
-## Regenerating generated skills
+- [User-facing documentation](https://maestria.sznm.dev/codex/) on the docs site
+- [Installation checklist](https://github.com/agustinusnathaniel/maestria/blob/main/packages/codex/INSTALL.md)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/codex/CHANGELOG.md)
 
-All skills are generated from `packages/core/agent-directives/`. Edit canonical sources only, then regenerate and check every projection:
+## License
 
-```bash
-scripts/sync-all
-scripts/check-sync
-```
-
-Do not hand-edit the generated `skills/` directory.
-
-## Evidence baseline
-
-The pinned capability and trust findings are recorded in [`docs/runtime-support-matrix.md`](../../docs/runtime-support-matrix.md) and bounded by [`ADR-CORE-014`](../../docs/adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). The exact release source used for the spike is OpenAI Codex [`rust-v0.145.0`](https://github.com/openai/codex/releases/tag/rust-v0.145.0).
+MIT

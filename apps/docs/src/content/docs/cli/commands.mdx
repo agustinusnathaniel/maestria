@@ -1,6 +1,6 @@
 ---
 title: Command Reference
-description: Complete reference for all maestria commands - status, install, update - with flags, options, and examples.
+description: Complete reference for all maestria commands - status, install, update, uninstall, check, configure - with flags, options, and examples.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -10,11 +10,12 @@ import { PackageManagers } from 'starlight-package-managers';
 
 These flags work on every command:
 
-| Flag        | Description                                          |
-| ----------- | ---------------------------------------------------- |
-| `--json`    | Output results as JSON instead of formatted text     |
-| `--quiet`   | Suppress spinner animations                          |
-| `--compact` | Machine-friendly text output - one line per platform |
+| Flag      | Description                                      |
+| --------- | ------------------------------------------------ |
+| `--json`  | Output results as JSON instead of formatted text |
+| `--quiet` | Suppress spinner animations                      |
+
+`--compact` (machine-friendly text output) is supported on every command except `check`, which outputs JSON by default instead. `--help` is available on every command and shows in-terminal examples, exit codes, and AI-agent usage tips.
 
 Running `maestria` with no arguments is equivalent to `maestria status`.
 
@@ -261,15 +262,91 @@ showing a clear error message instead of attempting an interactive prompt.
 
 ---
 
+## `uninstall`
+
+Remove maestria plugins from coding agent platforms.
+
+```bash
+maestria uninstall [platform] [--all] [--json] [--quiet] [--compact]
+```
+
+### Flags
+
+| Flag          | Description                                                          |
+| ------------- | -------------------------------------------------------------------- |
+| `platform`    | Positional arg - platform to uninstall. Omit for interactive picker. |
+| `--all`, `-a` | Uninstall all installed platforms                                    |
+| `--json`      | Output results as JSON                                               |
+| `--quiet`     | Suppress spinner animations                                          |
+| `--compact`   | Machine-friendly text output - one line per result                   |
+
+### Behavior
+
+| Invocation                     | What happens                                             |
+| ------------------------------ | -------------------------------------------------------- |
+| `maestria uninstall`           | Detects installed platforms, shows an interactive picker |
+| `maestria uninstall pi`        | Uninstalls Pi only                                       |
+| `maestria uninstall --all`     | Uninstalls every platform where maestria is installed    |
+| `maestria uninstall pi --json` | Uninstalls Pi, outputs JSON result                       |
+
+Like `install` and `update`, `uninstall` detects non-interactive terminals and exits with code `1` showing a clear error message instead of attempting an interactive prompt when no platform is passed and `--all` is not set. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
+
+Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
+
+### Example
+
+<PackageManagers type="dlx" pkg="maestria" args="uninstall pi" />
+
+---
+
+## `check`
+
+Check the installation status of a maestria plugin on a specific platform.
+
+```bash
+maestria check <platform> [--json] [--no-json] [--quiet]
+```
+
+`<platform>` is required - one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`.
+
+### Flags
+
+| Flag        | Description                                                               |
+| ----------- | ------------------------------------------------------------------------- |
+| `--json`    | Output as JSON. **Default: `true`** - JSON is the default output format.  |
+| `--no-json` | Disable JSON output; the exit code alone signals the result               |
+| `--quiet`   | Suppress non-essential stderr output. Does **not** disable JSON on stdout |
+
+Unlike every other command, `check` has no `--compact` flag. For exit-code-only scripting, pass `--no-json`: JSON is not written to stdout and the exit code alone signals the result. `--quiet` suppresses only stderr output (spinners, error messages) - the JSON result is still printed to stdout unless `--no-json` is also passed.
+
+### Behavior
+
+`check` validates the platform, checks whether its CLI is available on `$PATH`, then checks whether the `@maestria/<platform>` plugin is installed:
+
+| State                               | Exit code | JSON output                                                                                                                     |
+| ----------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Unknown platform                    | `1`       | Error message on stderr (suppressed with `--quiet`)                                                                             |
+| CLI tool not available              | `1`       | `available: false`, `pluginInstalled: false`, `message: "CLI tool for <label> is not available on this machine"`                |
+| CLI available, plugin not installed | `1`       | `available: true`, `pluginInstalled: false`, `message: "@maestria/<platform> is not installed for <label>"`, `installedVersion` |
+| Installed                           | `0`       | `available: true`, `pluginInstalled: true`, `installedVersion`, `latestVersion`                                                 |
+
+Every result includes the `platform` field with the checked platform id. `latestVersion` is included only when it could be determined. JSON is written to stdout only when `--json` is enabled (the default); with `--no-json` the exit code alone signals the result.
+
+### Example
+
+<PackageManagers type="dlx" pkg="maestria" args="check opencode" />
+
+---
+
 ## `configure`
 
 Choose which model each maestria specialist agent uses, per platform.
 
 ```bash
-maestria configure <platform> [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
+maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-Supported platforms: `opencode`, `pi`, `omp`. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. Agents without a configured model inherit the session model.
+`platform` is optional - one of `opencode`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. Agents without a configured model inherit the session model.
 
 ### Interactive (TTY)
 

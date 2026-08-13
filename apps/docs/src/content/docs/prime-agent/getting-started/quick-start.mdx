@@ -1,0 +1,74 @@
+---
+title: Quick Start
+description: Use the Maestria specialist, orchestration, and workflow-mode skills in Prime Agent.
+---
+
+Once `@maestria/prime-agent` is installed, start Prime Agent from the repository or project you want
+it to work in, then run `/reload` so the skills and extension metadata are rediscovered.
+
+## Load the orchestrator
+
+Use the orchestrator skill when a task is unfamiliar, cross-file, or risky:
+
+```text
+/skill:orchestrator I need to add rate limiting to the API. Plan and implement it.
+```
+
+The orchestrator chooses between direct work and specialist skills based on task risk and available
+runtime capabilities. It is methodology guidance, not a replacement for Prime's own execution
+boundary. "Delegate to a specialist" means load the relevant skill and apply its methodology - this
+package does not spawn child agents from the extension (see Platform notes).
+
+## Call a specialist
+
+Use one specialist when you need one kind of help:
+
+```text
+/skill:adventurer Trace the authentication flow and report the relevant files.
+```
+
+The specialist roles are:
+
+| Skill        | Use it for                                      |
+| ------------ | ----------------------------------------------- |
+| `adventurer` | Reconnaissance and codebase mapping             |
+| `architect`  | Architecture trade-offs and ADR decisions       |
+| `builder`    | Focused implementation and verification         |
+| `diagnose`   | Root-cause analysis and regression tracing      |
+| `planner`    | Phased plans, dependencies, and rollback points |
+| `reviewer`   | Independent review after implementation         |
+| `writer`     | Documentation and structured prose              |
+
+## Choose a workflow mode
+
+The workflow modes are loaded by description matching, or invoked explicitly as `/skill:fein`,
+`/skill:sonar`, `/skill:blitz`. If the extension is loaded, the same modes are available as slash
+commands (`/fein`, `/sonar`, `/blitz`) and are persisted for the session:
+
+| Mode    | Route                                                             |
+| ------- | ----------------------------------------------------------------- |
+| `fein`  | Full pipeline: reconnaissance, design, implementation, and review |
+| `sonar` | Research-only route that stops before implementation              |
+| `blitz` | Fast route for small or well-understood work                      |
+
+For example:
+
+```text
+/fein Add rate limiting to the API.
+```
+
+While a mode is active, the extension appends the mode's prompt to the system prompt on every agent
+turn. `/maestria-status` shows the current mode and the verified/deferred subset; `/mode-clear`
+returns to neutral routing.
+
+## Review independently
+
+After the builder completes, invoke the reviewer in a separate turn:
+
+```text
+/skill:reviewer Review the current work for correctness, security, and missing tests.
+```
+
+The reviewer skill is advisory. Prime Agent does not provide a skill-level tool-denial mechanism, so
+read-only roles state their intent without claiming a runtime boundary; use Prime's own execution
+controls where a hard boundary is required.

@@ -31,7 +31,7 @@ pnpx maestria@latest status
 To pin to a specific version:
 
 ```bash
-pnpx maestria@latest update kimi-code@0.4.6
+pnpx maestria@latest update kimi-code --version 0.4.6
 ```
 
 ## Verify

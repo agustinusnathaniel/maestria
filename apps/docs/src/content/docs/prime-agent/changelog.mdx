@@ -1,0 +1,35 @@
+---
+title: Changelog
+description: Release history for @maestria/prime-agent.
+---
+
+# Changelog
+
+## 0.2.0
+
+_Initial release_
+
+### Maestria methodology for Prime Agent
+
+`@maestria/prime-agent` delivers the Maestria engineering methodology for Prime Agent as standard
+Agent Skills - 7 specialist roles, orchestrator, global-rules, handoff and iteration-limits aids, and
+`fein`/`sonar`/`blitz` workflow modes - generated from the canonical directives by the root sync
+pipeline (`skills/<name>/SKILL.md` with required `name`/`description` frontmatter) - plus a small,
+verified Prime/Pi extension (`dist/extension.mjs`, `pi.extensions`) covering workflow-mode slash
+commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and `before_agent_start`
+mode prompt injection with session-scoped mode state (custom session entries, no filesystem writes).
+
+### Support boundary
+
+- **Native candidate, verified subset only.** The extension uses only the public extension API of the
+  pinned Prime fork (commit `7787f074...`), performs no tool interception, and has no runtime
+  dependency on pi packages. Evidence re-verified on 2026-08-13 (see ADR-CORE-014 and the runtime
+  support matrix).
+- Native recursive-subagent (`rlm`) dispatch and JSON/RPC headless mode remain **deferred** - the
+  pinned fork exposes no public JS extension bridge for `rlm`.
+- No sandbox or runtime-enforcement claim is made.
+
+### Packaging fixes
+
+- Reuse the npm pack dry-run result across package assertions so the packaging tests do not exceed
+  Vitest's per-test timeout.
