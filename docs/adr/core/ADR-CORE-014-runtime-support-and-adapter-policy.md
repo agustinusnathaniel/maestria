@@ -30,7 +30,7 @@ The current upstream evidence is mostly unpinned moving documentation on `main`/
 
 ## Non-Goals
 
-- At the time of the original decision, this ADR did not implement any runtime package. It remains the decision and scope record for the subsequent bounded package projections and CLI adapters.
+- At the time of the original decision (2026-08-11) this ADR did not implement any runtime package; it was a decision and scope record only, and it remains the decision and scope record for the subsequent bounded package projections and CLI adapters. The 2026-08-13 reverification below supersedes that wording for Prime Agent - the skills-first package and its verified extension subset now exist as an unreleased `Native candidate` - while no runtime in this ADR is claimed as shipped/promoted (`Native`).
 - It does not modify canonical agent directives or any generated platform output.
 - It does not define model-config handlers for these runtimes. CLI installation/version handlers remain a separate concern under ADR-CORE-007; the current adapters only stage packages and invoke host-native marketplace commands.
 - It does not make a public-facing support promise. All runtime claims are internal, dated, and version-sensitive.
@@ -66,7 +66,7 @@ The `Evidence ID` values in these tables (and in the capability/control tables b
 | Runtime | Support level | Delivery | Disposition | Rationale | Evidence ID |
 | --- | --- | --- | --- | --- | --- |
 | Claude Code | Native candidate | Plugin | candidate native plugin | Promotion gated on approved docs and a blind review | E-CLAUDE-01 |
-| Prime Agent | Native candidate | Skills-first | executable extension deferred | Skills-first delivery; executable extension deferred until API/security verification | E-PRIME-01 |
+| Prime Agent | Native candidate | Skills-first + verified extension subset | skills + mode-command extension; native rlm dispatch deferred | Skills-first package plus a small verified extension subset (mode commands, mode prompt injection); native `rlm` dispatch/JSON-RPC deferred until a public JS bridge is verified | E-PRIME-01 |
 | Codex CLI | Provisional | Projection | projection-plugin spike | Bounded projection/plugin spike; pin the exact CLI version before relying on it | E-CODEX-CLI-01 |
 | Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim | E-CODEX-DESKTOP-01 |
 | JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 |
@@ -99,7 +99,7 @@ Codex hook trust is not uniform: only non-managed command hooks are `Trust-gated
 
 ### Scope of the first batch
 
-The first implementation batch covers Claude Code (`Native candidate`, plugin) as the primary candidate, pending promotion/landing gates (approved docs and a blind review), with Prime Agent (`Native candidate`, skills-first) as a secondary candidate pending API/security verification. Codex CLI remains `Provisional`; Codex desktop, JCode, and Crush remain `Deferred` targets. The separate CLI adapters do not promote any runtime or claim desktop parity.
+The first implementation batch covers Claude Code (`Native candidate`, plugin) as the primary candidate, pending promotion/landing gates (approved docs and a blind review), with Prime Agent (`Native candidate`, skills-first plus a verified extension subset) as a secondary candidate pending API/security verification. For Prime Agent, the executable extension ships only the verified subset (workflow-mode slash commands, mode prompt injection, session-scoped mode state) - see the reverification section below; native `rlm` dispatch and JSON/RPC headless mode remain deferred. Codex CLI remains `Provisional`; Codex desktop, JCode, and Crush remain `Deferred` targets. The separate CLI adapters do not promote any runtime or claim desktop parity.
 
 ## Consequences
 
@@ -116,7 +116,7 @@ The first implementation batch covers Claude Code (`Native candidate`, plugin) a
 
 - JCode and Crush have no confirmed first-class package/extension distribution API; only projection/experiment scope is offered (`Deferred`).
 - Codex support is version-sensitive and split between CLI and desktop; the desktop surface gets a common-subset projection only, with no CLI parity claim (`Deferred`).
-- Prime Agent's executable extension is deferred until API/security verification, so its near-term delivery is skills-first only.
+- Prime Agent's executable extension covers only the verified subset (mode commands, mode prompt injection); native `rlm` dispatch and JSON/RPC headless mode stay deferred, so its delivery is skills-first plus that subset, and no `rlm`/JSON-RPC claim is made.
 - Documentation alone cannot enforce the boundary; reviewers must check that implementation stays within the stated scope.
 
 ## Alternatives Considered
@@ -149,7 +149,7 @@ A runtime moves from `Provisional`/`Deferred`/`Native candidate` to a shipped `N
 | Runtime | Promotion | Rollback | Withdrawal | Re-promotion |
 | --- | --- | --- | --- | --- |
 | Claude Code | Approved docs (blind review), then a plugin package via the core sync pipeline, `scripts/check-sync` passes, promotion gates verified | Revert the generated projection/package; canonical content stays in core | Downgrade or remove support, delivery, capability, and control claims | Only after the promotion gates are re-verified |
-| Prime Agent | Verify a stable supported API for the executable extension; skills-first package via the sync pipeline; `check-sync` passes | Revert the generated package | Replace or remove claims; the executable extension stays deferred until verified | Only after re-verification |
+| Prime Agent | Verify a stable supported API for the executable extension beyond the verified subset (mode commands, mode prompt injection, session state); skills-first package plus the verified subset via the sync pipeline; `check-sync` passes | Revert the generated package and/or the extension subset | Replace or remove claims; native `rlm` dispatch and JSON/RPC headless mode stay deferred until verified | Only after re-verification |
 | Codex CLI | Pin the exact CLI version, verify the trust flow, projection via the sync pipeline, `check-sync` passes | Remove the projection/plugin spike | Downgrade or remove claims; keep `Provisional`, `Deferred`, or `Withdrawn` | Only after the version and evidence are re-verified |
 | Codex desktop | Separate from CLI; verify a desktop extension surface exists first | Remove the common-subset projection | Downgrade or remove parity-adjacent claims | Only after the desktop surface is re-verified |
 | JCode | Requires a confirmed first-class package/extension distribution API | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
@@ -178,6 +178,20 @@ Withdrawal downgrades or removes a runtime's claims (support level, delivery, ca
 
 Sources reviewed on 2026-08-11 are cited with URLs, review dates, test status, and pinned/unpinned state in [runtime-support-matrix.md](../../runtime-support-matrix.md). Those sources are research-only and must be reverified before implementation, promotion, or re-promotion.
 
+## Reverification: Prime Agent (2026-08-13)
+
+On 2026-08-13 the Prime Agent evidence (E-PRIME-01..07) was re-verified against the immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5` (PrimeIntellect-ai/prime-agent, `main`; README and `packages/coding-agent/docs/skills.md`). All claims were confirmed and re-dated in [runtime-support-matrix.md](../../runtime-support-matrix.md). The decision is updated accordingly: Prime Agent stays `Native candidate` with Skills-first delivery plus a verified executable extension subset (mode commands, mode prompt injection, session-scoped mode state). Native `rlm` dispatch and JSON/RPC headless-mode integration remain deferred, and the promotion gates for `Native` remain unmet - the extension covers only the verified subset and Prime Agent is not a sandbox.
+
+**Reconciling the original scope with the current state.** The original decision (2026-08-11) was deliberately non-implementing: it recorded the support boundary and explicitly did not build any runtime package (see Non-Goals). That policy still holds for the other runtimes in this ADR (Claude Code, Codex CLI/desktop, JCode, Crush). For Prime Agent, this reverification supersedes the original scope wording: the skills-first package and its verified extension subset are now implemented as an unreleased `Native candidate` (`packages/prime-agent`, generated by the core sync pipeline from `packages/core/agent-directives/`, ADR-CORE-005). The support level is unchanged - Prime Agent remains `Native candidate`, not `Native`; no runtime in this ADR is claimed as shipped. The promotion gates are unmet (no live end-to-end Prime session has been run, and the extension covers only the verified subset), and native `rlm` dispatch and JSON/RPC headless-mode integration remain deferred.
+
+The reverification confirmed and recorded the following nuances, which the skills-first package respects:
+
+- **Discovery nuance:** root `.md` files are discovered as individual skills only in the prime-specific paths (`~/.prime/agent/skills/`, `.prime/agent/skills/`); directories containing `SKILL.md` are discovered in all skill locations; root `.md` files under `.agents/skills/` are ignored. `@maestria/prime-agent` therefore emits the standards-compliant `skills/<name>/SKILL.md` layout, valid in every documented location.
+- **Frontmatter nuance:** `name` and `description` are required per the Agent Skills standard; `name` must be lowercase hyphenated and match the parent directory; unknown frontmatter fields are ignored; a missing `description` means the skill is not loaded; validation is otherwise lenient (warnings). The package ships only the required fields.
+- **Security nuance:** Prime Agent is not a sandbox (E-PRIME-07) - it executes model-generated Python and project commands with user permissions. The package makes no sandbox or enforcement claim; skills, rules, role prompts, and the extension are advisory.
+- **Executable extension subset (2026-08-13):** the package now ships a compiled Prime/Pi extension (`pi.extensions`, `dist/extension.mjs`) covering a small verified subset of the public extension API of the pinned fork (E-PRIME-09): workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`), `before_agent_start` mode prompt injection (systemPrompt chaining), and session-scoped mode state via custom session entries. It performs no tool interception, writes no files, and has no runtime dependency on pi packages (the Prime-compatible `@earendil-works/pi-coding-agent` fork `0.7.2` is unpublished on npm; Prime bundles the pi API, so the extension is type-only against local declarations - E-PRIME-11).
+- **Native `rlm` dispatch remains deferred:** `rlm(...)` subagent dispatch is an IPython-side tool in the pinned fork with **no public JS extension bridge** for extensions (E-PRIME-10); JSON/RPC headless-mode integration is likewise not part of the package. The extension covers only the verified subset and documents this explicitly. Promotion to `Native` still requires all promotion gates.
+
 ## Date
 
-2026-08-11
+2026-08-11 (decision). Prime Agent evidence re-verified 2026-08-13 at immutable commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; decision updated (see Reverification above).

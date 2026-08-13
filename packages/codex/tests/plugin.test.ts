@@ -77,6 +77,14 @@ describe('.codex-plugin/plugin.json manifest', () => {
     expect(manifest.skills).toBe('./skills/');
   });
 
+  it('version aligns with package metadata', async () => {
+    const [manifest, pkg] = await Promise.all([
+      readJson<PluginManifest>('.codex-plugin/plugin.json'),
+      readJson<{ version?: string }>('package.json'),
+    ]);
+    expect(manifest.version).toBe(pkg.version);
+  });
+
   it('does not ship unimplemented integrations or hooks', async () => {
     const manifest = await readJson<PluginManifest>('.codex-plugin/plugin.json');
     expect(manifest.hooks).toBeUndefined();

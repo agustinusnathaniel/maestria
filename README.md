@@ -37,6 +37,7 @@ maestria/
 │   ├── cursor/          - @maestria/cursor plugin
 │   ├── hermes/          - @maestria/hermes plugin (Python)
 │   ├── pi/              - @maestria/pi plugin
+│   ├── prime-agent/     - @maestria/prime-agent plugin (Prime Agent skills + extension)
 │   └── shared/pi/       - Shared pure-TS utilities for omp/pi
 ├── scripts/             - Sync and CI verification scripts
 ├── VISION.md            - Project vision and principles
@@ -60,6 +61,7 @@ See [VISION.md](VISION.md) for the project's guiding philosophy and long-term go
 | [@maestria/cursor](packages/cursor/) | Maestria methodology plugin for Cursor IDE/CLI | [README](packages/cursor/README.md) |
 | [@maestria/hermes](packages/hermes/) | Maestria methodology plugin for Hermes | [README](packages/hermes/README.md) |
 | [@maestria/pi](packages/pi/) | Maestria methodology plugin for Pi | [README](packages/pi/README.md) |
+| [@maestria/prime-agent](packages/prime-agent/) | Maestria methodology for Prime Agent (skills + verified extension subset) | [README](packages/prime-agent/README.md) |
 
 ## Development
 
