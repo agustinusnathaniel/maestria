@@ -34,7 +34,9 @@
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },
-  "dependencies": {},
+  "dependencies": {
+    "effect": "4.0.0-rc.108"
+  },
   "devDependencies": {
     "@maestria/shared-pi": "workspace:*",
     "@types/node": "catalog:",
