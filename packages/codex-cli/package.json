@@ -1,0 +1,52 @@
+{
+  "name": "@maestria/codex-cli",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Provisional Maestria skills projection for Codex CLI",
+  "keywords": [
+    "ai",
+    "codex",
+    "codex-cli",
+    "maestria",
+    "orchestration",
+    "pipeline",
+    "skills"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex-cli#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/codex-cli"
+  },
+  "files": [
+    ".codex-plugin",
+    "skills",
+    "CHANGELOG.md",
+    "INSTALL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "test": "vp test",
+    "sync": "pnpm exec tsx ../core/scripts/sync.ts --config sync.config.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
