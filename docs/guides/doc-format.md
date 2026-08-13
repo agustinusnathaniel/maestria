@@ -30,11 +30,11 @@ Our existing ADR format (Status → Context → Decision → Consequences → Da
 
 This guide achieves the following:
 
-1. **Consistent preamble structure** - a background section (Context for ADRs, Motivation for READMEs) followed by Goals and Non-Goals, making docs navigable by pattern rather than by content.
+1. **Consistent preamble structure** - a background section (Context for ADRs) followed by Goals and Non-Goals, making internal docs navigable by pattern rather than by content; published READMEs are concise landing pages instead (see the Publishable README Template below).
 
 2. **Clear scope boundaries for decisions** - Every future ADR defines what it does (Goals) and what it does not do (Non-Goals) up front. Reviewers can check "does this implementation stay within scope?" against a single list.
 
-3. **Explicit required sections per document type** - ADRs, plans, notes/guides, and READMEs each have a fixed list of required sections. Missing sections are review blockers, not style suggestions.
+3. **Explicit required sections per document type** - ADRs, plans, and notes/guides each have a fixed list of required sections; publishable READMEs have a required set of information covered concisely (see the Publishable README Template). Missing sections are review blockers, not style suggestions.
 
 4. **Distinguish internal rationale from public usage** - internal docs (ADRs, plans, notes) capture why and the evidence trail; public docs (READMEs, docs site) capture how to use the artifact. Never put internal rationale in place of usage guidance, and never publish private reasoning as if it were a product promise.
 
@@ -62,7 +62,7 @@ The following are explicitly deferred to follow-up tasks, not permanently exclud
 
 1. **Retrofit existing ADRs (ADR-CORE-001 through ADR-CORE-004, ADR-OC-000 through ADR-OC-002) with Goals and Non-Goals sections** - planned as a follow-up task.
 
-2. **Update the README with Motivation/Goals/Non-Goals sections** - completed - see `packages/opencode/README.md`.)
+2. **Publishable README simplification** - completed - the ten publishable READMEs are concise landing pages (see the Publishable README Template above).
 
 ## Decision
 
@@ -94,25 +94,27 @@ The `## Context` section remains the primary place for background, rationale, an
 
 ### Publishable README Template
 
-Publishable package READMEs (packages published to npm/PyPI and the CLI app) must include these sections in this exact order:
+Publishable package READMEs (packages published to npm/PyPI and the CLI app) are **concise landing pages**, not internal design documents. They tell a consumer what the package is, how to install it, what it provides, and what it does not promise. A published README must cover the following information:
 
-| Section | Required | Content |
+| Information | Required | Content |
 | --- | --- | --- |
-| Motivation | Yes | Why the package exists and the consumer problem it solves |
-| Goals | Yes | What the package is _for_ - testable scope, consumer-facing |
-| Non-Goals | Yes | What the package explicitly does not do (support boundaries) |
-| Status / Support Boundary | Yes | Runtime support status, evidence basis, promised vs deferred |
-| Installation or Usage | Yes | How to install and/or consume the package - see wording note below |
-| What It Provides | Yes | The features, components, or artifacts the package ships |
-| Limitations / Platform Notes | Yes | Platform constraints; advisory vs enforced behavior |
-| Development | Yes | How to build, test, and contribute |
-| Documentation and Changelog | Yes | Links to public docs and the package changelog |
+| Title and description | Yes | Package name and a one-sentence description of what it is for |
+| Installation or Usage | Yes | One canonical command/path, plus short verification or quick usage when useful |
+| What It Provides | Yes | The features, components, or artifacts the package ships (short bullets) |
+| Support / Platform Notes | Yes | Material limitations and truthful support boundaries (see below) |
+| Documentation and Changelog | Yes | Links to the public docs route and the package changelog |
+| Development / Contributing | No | Only if useful; link to repository guidance rather than duplicating it |
 | License | Yes | SPDX license identifier |
+
+Target roughly 40-80 lines; keep each README package-specific rather than copy-paste uniform.
 
 Rules of thumb:
 
-- **"Installation or Usage" is the one allowed wording variant.** Authors may title that section `Installation`, `Usage`, or a combined `Installation & Usage` depending on the package, but no other section may be renamed or reordered.
-- **Package-specific concise content is expected.** The contract fixes structure, not content. Each README keeps its own truthful details, commands, platform notes, and support boundary; avoid version numbers in prose except where a support boundary requires them; link `INSTALL.md` where the package ships one; and mention canonical core directives for generated plugin packages.
+- **No verbose standalone sections.** Do not include full `Motivation`, `Goals`, or `Non-Goals` sections, long architecture narratives, implementation internals, or repeated role descriptions in a published README. Fold essential context into the opening description and the Support / Platform Notes section. Detailed rationale and design history belong in internal documents (ADRs, plans, and `docs/`).
+- **"Installation or Usage" is the one allowed wording variant.** Authors may title that section `Installation`, `Usage`, or a combined `Installation & Usage` depending on the package.
+- **Keep truthful support boundaries.** Include provisional or verified-subset status, version-pinning limitations, and host-enforced-vs-methodology-only distinctions where they apply.
+- **Link `INSTALL.md` where the package ships one**, and mention the canonical core directives (`packages/core/agent-directives/`) for generated plugin packages.
+- **Package-specific concise content is expected.** Each README keeps its own truthful details, commands, and platform notes; avoid version numbers in prose except where a support boundary requires them.
 
 ### Template for New ADRs
 
@@ -184,7 +186,7 @@ Tagging is required in ADRs (`Assumptions`), plans (`Acceptance`/`Verification`)
 
 Rules of thumb:
 
-- A README's `Motivation`/`Goals`/`Non-Goals` describe what the package is _for_; do not turn them into an architecture retrospective.
+- A published README is a concise landing page: a one-sentence description of what the package is _for_, install/usage, what it provides, and its support boundaries - not an architecture retrospective. Internal docs carry the rationale and design history.
 - ADR rationale that is also a product boundary (e.g. "this package does not claim runtime enforcement") should appear in _both_ places, but phrased for each audience.
 - Do not reference `packages/core/agent-directives/` paths or internal ADR numbers as the _only_ explanation in a public README; pair them with consumer-facing guidance.
 
