@@ -74,6 +74,33 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toContain('follow-ups');
   });
 
+  it('continues incomplete work and freezes scope across delegations', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const iteration = readDirective('skills', 'iteration-limits.md');
+
+    expect(rules).toMatch(/orchestrator owns continuation/i);
+    expect(rules).toMatch(/not a user checkpoint/i);
+    expect(rules).toMatch(/empty, malformed, or incomplete.*recovery attempt/i);
+    expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/i);
+    expect(rules).toMatch(/do not reset a review or repair budget/i);
+    expect(orchestrator).toMatch(/parent session must continue until.*terminal outcome/i);
+    expect(orchestrator).toMatch(/do not restart the same outcome indefinitely/i);
+    expect(iteration).toMatch(/same user outcome/i);
+    expect(iteration).toMatch(/adjacent findings as follow-ups/i);
+  });
+
+  it('makes PR creation the normal terminal delivery step', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(rules).toMatch(/terminal state is a reviewable PR/i);
+    expect(rules).toMatch(/not a local diff, commit, or pushed branch/i);
+    expect(orchestrator).toMatch(/A PR is the default terminal delivery artifact/i);
+    expect(orchestrator).toMatch(/not an optional follow-up/i);
+    expect(orchestrator).toMatch(/do not ask for routine authorization or end with `PR pending`/i);
+  });
+
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {
     const rules = readDirective('rules.md');
     const handoff = readDirective('skills', 'handoff.md');

@@ -160,11 +160,11 @@ Rejected because:
 
 Several design details diverged from the original plan during implementation. This section documents what changed and why.
 
-### Amendment (2026-08-13): Delivery is one autonomous outcome
+### Amendment (2026-08-14): Delivery and continuation are one autonomous outcome
 
 Recent Maestria sessions showed that treating branch creation, push, and PR creation as implicit or separately authorized steps caused the agent to stop after implementation and wait for routine instructions. The earlier PR-question boundary is therefore superseded for normal engineering work.
 
-The canonical contract now owns the complete path from repository inspection through a reviewable PR. The agent creates or uses a feature branch, commits validated and reviewed work, pushes it, and opens the PR when the task, base, remote, and ownership are clear. It still stops for security, authentication or permissions, data loss or migration, production, irreversible, genuinely ambiguous, or host-capability boundaries. Merge and release remain separate actions.
+The canonical contract now owns the complete path from repository inspection through a reviewable PR. The agent creates or uses a feature branch, commits validated and reviewed work, pushes it, and opens the PR when the task, base, remote, and ownership are clear. A specialist handoff, incomplete todo, or no-edit result is not a user checkpoint; the parent continues with the next bounded action, makes one useful recovery attempt for incomplete delegation, or reports the exact blocked delta. Acceptance criteria, non-goals, and the repair budget remain attached to the same user outcome even when work is split across specialists. Adjacent review findings do not restart or broaden that outcome unless they invalidate acceptance or trigger a safety/authorization stop. It still stops for security, authentication or permissions, data loss or migration, production, irreversible, genuinely ambiguous, or host-capability boundaries. Merge and release remain separate actions.
 
 ### Mid-Phase vs Boundary Distinction (Refined Scope)
 
