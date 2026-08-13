@@ -31,7 +31,7 @@ Internal evidence ledger for runtime support and adapter policy. This is the sup
 
 **Support level:** Native candidate. **Delivery:** Plugin. **Disposition:** candidate native plugin. **Rationale:** promotion gated on approved docs and a blind review.
 
-### Evidence (reviewed 2026-08-11)
+### Evidence (historical baseline reviewed 2026-08-11)
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -117,20 +117,32 @@ Internal evidence ledger for runtime support and adapter policy. This is the sup
 | E-CODEX-CLI-05 | Codex CLI | Managed hook policy | Managed hooks are trusted by managed policy: they run under the runtime's managed-hook policy rather than the per-hash trust review that non-managed command hooks require. Managed hooks are trusted by managed policy and are not `Trust-gated` like non-managed hooks | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
 | E-CODEX-CLI-06 | Codex CLI | Trust-bypass | A documented trust-bypass configuration exists that lets hooks run without the normal trust review. This trust-bypass configuration exists and is an explicit security exception, not an enforcement path | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
 
+### Pinned re-verification (2026-08-13)
+
+The projection spike pins its implementation baseline to local `codex-cli 0.145.0`. The corresponding upstream release tag is `rust-v0.145.0`, which resolves to commit `25af12f`.
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-CODEX-CLI-07 | Codex CLI | Version identity | The local CLI reports `codex-cli 0.145.0`; the matching upstream release is `rust-v0.145.0` | `0.145.0`; commit `25af12f` | `codex --version`; https://github.com/openai/codex/releases/tag/rust-v0.145.0 | 2026-08-13 | tested |
+| E-CODEX-CLI-08 | Codex CLI | Plugin bundle | A plugin requires `.codex-plugin/plugin.json` and can expose skills from a `skills/` directory; the plugin name provides the component namespace | `rust-v0.145.0` plugin specification | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/skills/src/assets/samples/plugin-creator/references/plugin-json-spec.md; https://developers.openai.com/plugins/build/plugins | 2026-08-13 | tested |
+| E-CODEX-CLI-09 | Codex CLI | Hook handlers | The pinned source executes configured command handlers; prompt and agent handlers are parsed but skipped | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs | 2026-08-13 | tested: source inspection |
+| E-CODEX-CLI-10 | Codex CLI | Plugin hook trust | Non-managed plugin hooks require managed status, a matching trusted hash, or an explicit bypass before command execution | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs; https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/registry.rs | 2026-08-13 | tested: source inspection |
+| E-CODEX-CLI-11 | Codex CLI | Maestria projection | The spike generates 14 skills from the canonical directives and ships no hooks, MCP server, installer, model configuration, or `AGENTS.md` writer | `packages/codex-cli` on this branch | `packages/codex-cli/sync.config.ts`; `packages/codex-cli/skills/` | 2026-08-13 | tested after sync |
+
 ### Capability vs control
 
 | Evidence ID | Mechanism | Capability | Control | Note |
 | --- | --- | --- | --- | --- |
-| E-CODEX-CLI-03 | Non-managed command hooks | Supported | Trust-gated | Non-managed command hooks require review/trust before running; trust is hash-based |
-| E-CODEX-CLI-05 | Managed hook policy | Supported | Advisory | Managed hooks are trusted by managed policy; they are not `Trust-gated` like non-managed command hooks. The policy itself is not a universal enforcement claim |
-| E-CODEX-CLI-06 | Trust-bypass configuration | Available | Advisory | Documented trust-bypass configuration exists; treated as an explicit security exception, not an enforcement path |
-| E-CODEX-CLI-04 | Hooks (prompt/agent types) | Unavailable | Unsupported | Parsed but skipped |
-| E-CODEX-CLI-02 | Plugins, skills, subagents, AGENTS.md | Supported | Advisory | Documented surfaces; presence is not enforcement |
+| E-CODEX-CLI-10 | Non-managed plugin command hooks | Supported | Trust-gated | Plugin command hooks require managed status, a matching trusted hash, or an explicit bypass |
+| E-CODEX-CLI-10 | Managed hook policy and trust bypass | Available | Advisory | These are host controls and explicit exceptions, not Maestria enforcement paths |
+| E-CODEX-CLI-09 | Hooks (prompt/agent types) | Unavailable | Unsupported | Parsed but skipped by the pinned source |
+| E-CODEX-CLI-08 | Plugin manifest and skills | Supported | Advisory | Skills are the bounded projection surface; they do not enforce delegation, role permissions, or review |
 
 ### Statuses and gates
 
-- **Version sensitivity gate:** pin the exact Codex CLI version that introduced or changed the trust-gated hook flow and plugin support before any projection is relied on. Until pinned, keep `Provisional`.
-- **Promotion to `Native`:** pin the CLI version, verify the trust flow, produce a projection via the sync pipeline, and pass `scripts/check-sync`.
+- **Version sensitivity gate:** the spike baseline is pinned to `codex-cli 0.145.0` / `rust-v0.145.0` (`25af12f`). Reverify after CLI upgrades or material plugin/hook changes.
+- **Projection boundary:** keep the package skills-only. Do not add hooks, MCP, installer, model configuration, or `AGENTS.md` generation without a new decision and security review.
+- **Promotion to `Native`:** establish a stable supported executable-extension API, verify its security model, produce a projection via the sync pipeline, and pass `scripts/check-sync`.
 - **Rollback:** remove the projection/plugin spike.
 - **Withdrawal:** downgrade or remove claims; keep `Provisional`, `Deferred`, or `Withdrawn`.
 - **Re-promotion:** no automatic re-promotion; only after the version and evidence are re-verified.

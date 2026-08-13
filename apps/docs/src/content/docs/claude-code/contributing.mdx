@@ -43,17 +43,11 @@ maestria/
 
 All methodology content is authored in the canonical source under `packages/core/agent-directives/` and synced to Claude Code format via the sync pipeline. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide. Never hand-edit files under `agents/`, `skills/`, or `commands/`.
 
-After changing canonical content, regenerate and verify:
+After changing canonical content, regenerate and verify from the repository root:
 
 ```bash
 scripts/sync-all          # regenerate every platform package
 scripts/check-sync        # CI check that generated files are in sync
-```
-
-Or, for this package only:
-
-```bash
-cd packages/claude-code && pnpm sync
 ```
 
 ### Agent frontmatter reference

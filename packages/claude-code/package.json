@@ -1,6 +1,6 @@
 {
   "name": "@maestria/claude-code",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": false,
   "description": "Maestria methodology plugin for Claude Code - specialist agents, orchestrator and global-rules skills, and workflow commands",
   "keywords": [
@@ -39,7 +39,6 @@
   },
   "scripts": {
     "test": "vp test",
-    "sync": "pnpm exec tsx ../core/scripts/sync.ts --config sync.config.ts",
     "validate": "claude plugin validate . --strict"
   },
   "devDependencies": {

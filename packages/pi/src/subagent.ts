@@ -1,4 +1,5 @@
 import { Type } from 'typebox';
+import { Effect } from 'effect';
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 import type { MaestriaState } from '@/state.js';
@@ -9,11 +10,9 @@ import {
   assertNonEmptyTask,
   MAESTRIA_EVENTS,
 } from '@maestria/shared-pi/subagent-utils';
+import { pollSubagentEffect, type SubagentPollingService } from '@/subagent-polling.js';
 
 const ALLOWED_AGENT_NAMES: ReadonlyArray<string> = ALLOWED_AGENTS;
-
-/** Terminal subagent statuses - agent will produce no more updates. */
-const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
 
 /** Maximum time to wait for a subagent to complete, in milliseconds. */
 export const POLL_TIMEOUT_MS = 180_000;
@@ -24,44 +23,22 @@ export const POLL_INTERVAL_MS = 500;
 /** Maximum number of tasks allowed in parallel dispatch. */
 export const MAX_PARALLEL_TASKS = 8;
 
-// ── Polling helper ───────────────────────────────────────────────
+function abortSubagents(service: SubagentPollingService, ids: readonly string[]): void {
+  if (typeof service.abort !== 'function') return;
 
-type SubagentRecord = { status: string; result?: string; error?: string };
-
-async function pollSubagent(
-  id: string,
-  label: string,
-  sendUpdates: boolean,
-  service: { getRecord(id: string): SubagentRecord | undefined },
-  signal: AbortSignal | undefined,
-  onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
-): Promise<SubagentRecord> {
-  const maxPolls = POLL_TIMEOUT_MS / POLL_INTERVAL_MS;
-  let polls = 0;
-  let record = service.getRecord(id);
-  while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
-    if (signal?.aborted) throw new Error('Maestria subagent call aborted');
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
-    record = service.getRecord(id);
-    polls++;
-    if (sendUpdates) {
-      onUpdate?.({
-        content: [
-          {
-            type: 'text' as const,
-            text: `${label} running... (${Math.round((polls * POLL_INTERVAL_MS) / 1000)}s)`,
-          },
-        ],
-      });
+  for (const id of ids) {
+    try {
+      service.abort(id);
+    } catch {
+      // Best-effort cleanup: the original polling failure remains authoritative.
     }
   }
-  if (record && !TERMINAL_STATUSES.has(record.status)) {
-    throw new Error(`Subagent ${id} timed out after ${POLL_TIMEOUT_MS}ms`);
-  }
-  if (!record) {
-    throw new Error(`Subagent ${id} was cleaned up before completion`);
-  }
-  return record;
+}
+
+function pollSubagentOrAbortEffect(options: Parameters<typeof pollSubagentEffect>[0]) {
+  return Effect.tapError(pollSubagentEffect(options), () =>
+    Effect.sync(() => abortSubagents(options.service, [options.id])),
+  );
 }
 
 // ── Handoff recording helper ────────────────────────────────────
@@ -224,14 +201,18 @@ export function installSubagentTool(
           // Record handoff in state and persist (only after spawn succeeds)
           recordAndPersist(pi, state, agent, task);
 
-          // Poll for completion
-          const record = await pollSubagent(
-            id,
-            `Subagent ${agent}`,
-            true,
-            service,
-            signal,
-            onUpdate,
+          // Poll for completion (abort on poll failure so nothing is orphaned)
+          const record = await Effect.runPromise(
+            pollSubagentOrAbortEffect({
+              id,
+              label: `Subagent ${agent}`,
+              sendUpdates: true,
+              service,
+              signal,
+              onUpdate,
+              intervalMs: POLL_INTERVAL_MS,
+              timeoutMs: POLL_TIMEOUT_MS,
+            }),
           );
 
           const resultText = record.result ?? record.error ?? 'No output.';
@@ -266,17 +247,32 @@ export function installSubagentTool(
             recordAndPersist(pi, state, t.agent, t.task);
           }
 
-          // Poll all concurrently
-          const records = await Promise.all(
-            spawnedIds.map((id, i) =>
-              pollSubagent(
-                id,
-                `${taskList[i].agent} (${i + 1}/${taskList.length})`,
-                false,
-                service,
-                signal,
-                onUpdate,
+          // Poll all concurrently, preserving completed results when one poll fails.
+          // A failed poll aborts every sibling so no subagent is orphaned.
+          const outcomes = await Effect.runPromise(
+            Effect.all(
+              spawnedIds.map((id, i) =>
+                Effect.match(
+                  pollSubagentEffect({
+                    id,
+                    label: `${taskList[i].agent} (${i + 1}/${taskList.length})`,
+                    sendUpdates: false,
+                    service,
+                    signal,
+                    onUpdate,
+                    intervalMs: POLL_INTERVAL_MS,
+                    timeoutMs: POLL_TIMEOUT_MS,
+                  }),
+                  {
+                    onSuccess: (record) => ({ record }),
+                    onFailure: (error) => {
+                      abortSubagents(service, spawnedIds);
+                      return { error };
+                    },
+                  },
+                ),
               ),
+              { concurrency: 'unbounded' },
             ),
           );
 
@@ -284,7 +280,7 @@ export function installSubagentTool(
             content: [
               {
                 type: 'text' as const,
-                text: `All ${taskList.length} parallel subagents completed.`,
+                text: `All ${taskList.length} parallel subagents settled.`,
               },
             ],
           });
@@ -293,10 +289,18 @@ export function installSubagentTool(
           const parts = [`## Parallel Results (${taskList.length} tasks)\n`];
           for (let i = 0; i < taskList.length; i++) {
             const t = taskList[i];
-            const rec = records[i];
-            const resultText = rec.result ?? rec.error ?? 'No output.';
-            parts.push(`### ${i + 1}: ${t.agent}`);
-            parts.push(resultText);
+            const outcome = outcomes[i];
+            const header = `### ${i + 1}: ${t.agent}`;
+            if ('error' in outcome) {
+              const message =
+                outcome.error instanceof Error ? outcome.error.message : String(outcome.error);
+              parts.push(header);
+              parts.push(`⚠️ ${message}`);
+            } else {
+              const resultText = outcome.record.result ?? outcome.record.error ?? 'No output.';
+              parts.push(header);
+              parts.push(resultText);
+            }
           }
 
           return {
@@ -337,17 +341,25 @@ export function installSubagentTool(
               ],
             });
 
-            // Poll for completion
-            const record = await pollSubagent(
-              id,
-              `Chain step ${i + 1}: ${t.agent}`,
-              true,
-              service,
-              signal,
-              onUpdate,
-            );
-
-            previousResult = record.result ?? record.error ?? 'No output.';
+            // Poll for completion (abort on poll failure so nothing is orphaned)
+            try {
+              const record = await Effect.runPromise(
+                pollSubagentOrAbortEffect({
+                  id,
+                  label: `Chain step ${i + 1}: ${t.agent}`,
+                  sendUpdates: true,
+                  service,
+                  signal,
+                  onUpdate,
+                  intervalMs: POLL_INTERVAL_MS,
+                  timeoutMs: POLL_TIMEOUT_MS,
+                }),
+              );
+              previousResult = record.result ?? record.error ?? 'No output.';
+            } catch (error) {
+              previousResult = `[error] ${error instanceof Error ? error.message : String(error)}`;
+              break;
+            }
 
             if (i < taskList.length - 1) {
               onUpdate?.({

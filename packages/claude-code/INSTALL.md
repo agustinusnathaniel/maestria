@@ -55,12 +55,6 @@ scripts/sync-all          # regenerate all platform packages
 scripts/check-sync        # verify everything is in sync
 ```
 
-Or, for this package only:
-
-```bash
-cd packages/claude-code && pnpm sync
-```
-
 ## Uninstall / removal
 
 No installation steps were performed, so removal is simply not loading the plugin (drop `--plugin-dir`) or deleting the `packages/claude-code` directory.
