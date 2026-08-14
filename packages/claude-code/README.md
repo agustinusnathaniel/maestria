@@ -6,7 +6,7 @@ A declarative Claude Code plugin that encodes the Maestria engineering methodolo
 
 ## Status / Support Boundary
 
-`Native candidate` - validates cleanly with the official CLI (`claude plugin validate --strict`) and follows the current documented plugin contract, but runtime behavior is **not yet tested end to end**. Upstream Claude Code docs are moving and unpinned; reverify any material claim before relying on it. Do not treat this package as a production support promise.
+`Native candidate` - validates cleanly with the official CLI (`claude plugin validate . --strict`) and follows the current documented plugin contract, but runtime behavior is **not yet tested end to end**. Upstream Claude Code docs are moving and unpinned; reverify any material claim before relying on it. Do not treat this package as a production support promise.
 
 ## Installation
 
@@ -17,7 +17,7 @@ npx maestria status
 npx maestria update claude-code
 ```
 
-The CLI manages installation and updates through Claude Code's native plugin commands. Version pinning is not supported: updates always take the configured marketplace's latest package. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/INSTALL.md) for the full checklist, verification, and uninstall.
+The CLI manages installation and updates through Claude Code's native plugin commands. Version pinning is not supported: updates always take the configured marketplace's latest package. To load a local checkout as a plugin directory for the current session, run `claude --plugin-dir ./packages/claude-code`. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/INSTALL.md) for the full checklist, verification, and uninstall.
 
 ## What It Provides
 
