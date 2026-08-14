@@ -130,6 +130,7 @@ describe('canonical directive behavioral contracts', () => {
   it('keeps maker/checker review blind and distinguishes blocking findings', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const reviewer = readDirective('specialists', 'reviewer.md');
 
     expect(rules).toMatch(/implementer must not approve its own work/i);
     expect(rules).toMatch(
@@ -144,20 +145,38 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(/blocks completion only when/i);
     expect(orchestrator).toContain('acceptance, safety');
     expect(orchestrator).toContain('authorization');
+    expect(reviewer).toMatch(/label `\[fix\]` only for a concrete blocker/i);
+    expect(reviewer).toMatch(/after a repair, re-review only the repaired scope/i);
   });
 
   it('keeps bounded repair, progress detection, and fail-loud stopping', () => {
     const rules = readDirective('rules.md');
     const iteration = readDirective('skills', 'iteration-limits.md');
 
-    expect(rules).toMatch(/one independent review and one repair\/re-review pass/i);
-    expect(rules).toMatch(/up to three repair rounds/i);
+    expect(rules).toMatch(
+      /one independent review and.*only when blockers exist.*one repair\/re-review pass/i,
+    );
+    expect(rules).toMatch(/named blocker remains unresolved|new material regression/i);
+    expect(iteration).toMatch(/no more than three repair\/re-review passes/i);
+    expect(iteration).toMatch(/`\[fix\]` means blocking\/material/i);
+    expect(iteration).toMatch(/final verification/i);
+    expect(iteration).toMatch(/and stop/i);
     expect(rules).toMatch(/observable progress/i);
     expect(rules).toMatch(/repeated causes.*no new evidence|no new evidence.*repeated causes/i);
     expect(rules).toMatch(/do not loop silently/i);
     expect(iteration).toMatch(/verifiable termination condition/i);
     expect(iteration).toMatch(/change strategy or escalate/i);
     expect(iteration).toMatch(/Tried X, Y, Z/);
+  });
+
+  it('keeps approval boundaries narrow without weakening security floors', () => {
+    const rules = readDirective('rules.md');
+
+    expect(rules).toMatch(/security.*boundaries are mandatory stops/i);
+    expect(rules).toMatch(/ordinary in-scope security defects may be repaired autonomously/i);
+    expect(rules).toMatch(
+      /never use a question or approval checkpoint for branch, commit, push, PR/i,
+    );
   });
 
   it('separates route choice from host execution authority', () => {

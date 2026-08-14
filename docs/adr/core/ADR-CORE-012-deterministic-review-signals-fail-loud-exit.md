@@ -12,9 +12,9 @@ Maestria's maker/checker split is its core reliability pattern. The flow is:
 
 1. `@builder` implements code, writes tests, and runs validation
 2. `@reviewer` (with `edit: deny`) performs quality review across multiple lenses
-3. The orchestrator triages findings: `[fix]` -> builder, `[dismiss]` -> comment, `[escalate]` -> flag to user
-4. Max 3 iteration cycles; escalate persistent issues
-5. Termination when only dismiss/escalate remain or all lenses pass
+3. The orchestrator triages only concrete blockers as `[fix]`; non-blocking observations are `[dismiss]` or follow-ups, and boundary decisions are `[escalate]`
+4. One repair/re-review pass is the default; additional passes require a named unresolved or newly introduced material blocker, with a maximum of 3 for one outcome
+5. Targeted re-review plus final verification terminates the pipeline when no blocker remains
 
 This pattern addresses three known failure modes of self-review: commitment bias, context blindness, and toolset overlap (documented in PATTERNS.md). The permission enforcement (`edit: deny`) prevents the checker from becoming the writer.
 
@@ -179,7 +179,7 @@ The hardened access list approach was selected because:
 
 Replace the underspecified "escalate with cause" with a structured fail-loud exit that blocks silent shipping.
 
-**When max 3 cycles are reached with unresolved `[fix]` items:**
+**When the maximum of 3 repair/re-review passes is reached with unresolved material `[fix]` items:**
 
 1. **Commit is blocked.** The orchestrator does not proceed to the commit protocol. The pipeline is in a failed state.
 
@@ -207,8 +207,8 @@ Replace the underspecified "escalate with cause" with a structured fail-loud exi
 ```
 1. **Build** - run validation (checks, tests) via @builder.
 2. **Review** - dispatch @reviewer for quality review.
-3. **Triage** - approve -> commit; fixable -> @builder then re-review.
-4. **Max 3 cycles** per unit of work. After cycle 3 with unresolved [fix] items:
+3. **Triage** - approve when no blocker remains; material blocker -> @builder, then targeted re-review.
+4. **Max 3 repair/re-review passes** per outcome. After pass 3 with unresolved material [fix] items:
    -> [FAIL LOUD] block commit, auto-escalate with structured delta.
    -> User override required to proceed.
 5. **Document** - include verdict, unresolved issues, and failure delta (if applicable) in session summary.
