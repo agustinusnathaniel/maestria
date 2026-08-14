@@ -1,6 +1,6 @@
 {
   "name": "@maestria/prime-agent",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": false,
   "description": "Maestria methodology for Prime Agent - specialist roles, orchestrator, global rules, and workflow modes as Agent Skills, plus a small Prime/Pi extension for mode commands and mode prompt injection",
   "keywords": [

@@ -1,5 +1,11 @@
 # @maestria/omp
 
+## 0.4.5
+
+### Patch Changes
+
+- [#213](https://github.com/agustinusnathaniel/maestria/pull/213) [`b6f3a09`](https://github.com/agustinusnathaniel/maestria/commit/b6f3a09d1be75e6f19e1d3736f71696df44f3c6d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Bound review and repair to material blockers, preserve narrow approval boundaries, and complete routine implementation delivery autonomously.
+
 ## 0.4.4
 
 ### Patch Changes
