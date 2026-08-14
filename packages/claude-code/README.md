@@ -2,11 +2,11 @@
 
 A declarative Claude Code plugin that encodes the Maestria engineering methodology - 7 specialist agents, an orchestrator skill, a preloaded global-rules skill, and 3 workflow commands.
 
-> This package is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope. The agents, skills, and commands are **generated** from the canonical directives in `packages/core/agent-directives/` by the [sync pipeline](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md#3-the-sync-pipeline-core-concept).
+> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Status / Support Boundary
 
-`Native candidate` - the plugin validates cleanly with the official CLI (`claude plugin validate --strict`) and follows the current documented plugin contract, but runtime behavior is **not yet tested end to end**. Upstream Claude Code docs are moving and unpinned; reverify any material claim before relying on it. Do not treat this package as a production support promise.
+`Native candidate` - validates cleanly with the official CLI (`claude plugin validate . --strict`) and follows the current documented plugin contract, but runtime behavior is **not yet tested end to end**. Upstream Claude Code docs are moving and unpinned; reverify any material claim before relying on it. Do not treat this package as a production support promise.
 
 ## Installation
 
@@ -17,7 +17,7 @@ npx maestria status
 npx maestria update claude-code
 ```
 
-The CLI stages the published package into a local Claude Code marketplace cache, then delegates installation and updates to Claude Code's native plugin commands. Version pinning is not supported: Claude Code updates from the configured marketplace's latest package. For a session-local run without installing, use `claude --plugin-dir ./packages/claude-code`. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/INSTALL.md) for the full checklist, verification, and uninstall.
+The CLI manages installation and updates through Claude Code's native plugin commands. Version pinning is not supported: updates always take the configured marketplace's latest package. To load a local checkout as a plugin directory for the current session, run `claude --plugin-dir ./packages/claude-code`. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/INSTALL.md) for the full checklist, verification, and uninstall.
 
 ## What It Provides
 
@@ -29,9 +29,8 @@ The CLI stages the published package into a local Claude Code marketplace cache,
 ## Support / Platform Notes
 
 - Advisory vs enforced: skills, preloaded rules, and role prompts are advisory. The only runtime-enforced control is `disallowedTools: Write, Edit` on the three read-only roles; do not describe prompt rules as security enforcement.
-- No hooks, MCP servers, or runtime code; no `rules/` directory, and no project or user `CLAUDE.md` files are written.
-- Runtime resolution of the plugin-scoped skill preload is not yet verified against a live session; if a preloaded skill cannot be resolved, Claude Code skips it with a warning and the agent still loads.
-- The generated components are projections of the canonical core directives. To change behavior, edit `packages/core/agent-directives/` and re-run the sync pipeline - never hand-edit generated files.
+- Ships no hooks or MCP servers, and writes no project or user `CLAUDE.md` files.
+- If a preloaded skill cannot be resolved at session start, Claude Code skips it with a warning and the agent still loads.
 
 ## Documentation and Changelog
 
@@ -39,12 +38,7 @@ The CLI stages the published package into a local Claude Code marketplace cache,
 - [Installation checklist](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/INSTALL.md)
 - [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/CHANGELOG.md)
 
-## Development
-
-```bash
-pnpm test        # manifest and generated-file assertions
-pnpm validate    # claude plugin validate . --strict (requires the Claude CLI)
-```
+## Contributing
 
 See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
