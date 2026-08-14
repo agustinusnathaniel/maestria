@@ -53,6 +53,15 @@ const PRIME_PACKAGE_LIST = {
   ].join('\n'),
 };
 
+function primePlatform(latestVersion = '0.2.0') {
+  return {
+    ...getPlatform('prime-agent')!,
+    // npmViewVersion closes over shell.run internally, so replace the handler
+    // effect at the command seam instead of allowing these tests to hit npm.
+    getLatestVersion: Effect.succeed(latestVersion),
+  };
+}
+
 // updateOne is the per-platform routine behind `maestria update <platform>`
 // (and the --all / interactive paths). These are command-level regressions for
 // the interaction between Prime's version-pinned registration check
@@ -76,7 +85,7 @@ describe('update command - Prime Agent', () => {
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
     );
 
-    const result = await Effect.runPromise(updateOne(getPlatform('prime-agent')!, true));
+    const result = await Effect.runPromise(updateOne(primePlatform(), true));
 
     expect(result.ok).toBe(false);
     expect(result.message).toContain('version-pinned');
@@ -112,7 +121,7 @@ describe('update command - Prime Agent', () => {
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
     );
 
-    const result = await Effect.runPromise(updateOne(getPlatform('prime-agent')!, true));
+    const result = await Effect.runPromise(updateOne(primePlatform(), true));
 
     expect(result.ok).toBe(true);
     expect(result.message).toBe('Already up to date');
@@ -143,7 +152,7 @@ describe('update command - Prime Agent', () => {
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.1.0' }),
     );
 
-    const result = await Effect.runPromise(updateOne(getPlatform('prime-agent')!, true));
+    const result = await Effect.runPromise(updateOne(primePlatform(), true));
 
     expect(result.ok).toBe(true);
     expect(result.message).toBe('Updated');
@@ -194,7 +203,7 @@ describe('update command - Prime Agent', () => {
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.1.0' }),
     );
 
-    const result = await Effect.runPromise(updateOne(getPlatform('prime-agent')!, true));
+    const result = await Effect.runPromise(updateOne(primePlatform(), true));
 
     // The project-scope pin must not block the update (only the user scope is
     // managed), and exactly one user-scope update command is issued.
@@ -225,7 +234,7 @@ describe('update command - Prime Agent', () => {
     });
     fsMocks.mkdtemp.mockRejectedValueOnce(new Error('ENOSPC'));
 
-    const result = await Effect.runPromise(updateOne(getPlatform('prime-agent')!, true));
+    const result = await Effect.runPromise(updateOne(primePlatform(), true));
 
     // The update reports the failure instead of running blind, and no Prime
     // package update command is issued.
