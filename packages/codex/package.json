@@ -1,6 +1,6 @@
 {
   "name": "@maestria/codex",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": false,
   "description": "Provisional Maestria skills projection for Codex CLI",
   "keywords": [
