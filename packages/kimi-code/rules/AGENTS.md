@@ -74,11 +74,11 @@ Supported specialists are `adventurer`, `architect`, `builder`, `diagnose`, `pla
 ## Authorization, Lifecycle, and Branches
 
 - Stop and obtain applicable authorization before changes that alter security/authentication/permission boundaries, data migration or possible loss, production-impacting changes, or irreversible operations. Ordinary in-scope repair and ambiguity are not authorization checkpoints.
-- Never use a question or approval checkpoint for branch, commit, push, PR, ordinary in-scope repair, or continuation; use it only for the boundaries above or when the host/runtime denies the action.
-- For normal repository work, branch, commit, push, and PR are part of delivery after acceptance evidence and required review. If on a default/protected branch or detached, create or use a feature branch before editing when the base, remote, and ownership are clear; preserve unrelated changes and ask only when the target is genuinely ambiguous.
+- **!!! Routine delivery is autonomous.** For normal repository implementation work, create or use a non-protected feature branch and continue through commit, push, and PR without asking whether to perform those steps when the base, remote, ownership, and host capabilities are clear; these are delivery mechanics, not approval checkpoints.
+- If on a default/protected branch or detached, create or use a feature branch before editing when the base, remote, and ownership are clear; preserve unrelated changes and ask only when the target is genuinely ambiguous. Never commit or push protected branches.
 - Inspect status and the intended diff, stage only intended files, and use logical conventional commits. Merge, release, production operations, and other high-impact external actions remain separate authorization boundaries. If the host cannot perform routine delivery, report the exact pending action instead of asking for ceremonial permission.
 - Track task-owned long-lived processes. Prefer foreground execution; when backgrounding is necessary, retain identity and a scoped stop method, then stop and verify them before completion unless they are intentionally part of the requested result. Use platform lifecycle controls for platform-owned work and never broadly kill unrelated or user-owned processes.
-- Never commit or push protected branches. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
+- An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
 
 ## Canonical Source Invariant
 

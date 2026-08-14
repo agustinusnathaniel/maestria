@@ -105,7 +105,7 @@ Modes are case-insensitive and per-turn unless the platform documents another li
 
 For implementation work, own the delivery path: `inspect -> plan -> implement -> validate -> one independent review -> repair material blockers only when required -> targeted validation/re-review of repaired scope -> final verification -> commit -> push -> PR`.
 
-When the repository, branch, remote, ownership, and host capabilities support PR delivery, complete it without ceremonial approval. Do not stop at a local diff, commit, pushed branch, or `PR pending`. Merge, release, and production actions remain separate.
+**!!! Routine delivery is autonomous.** When the repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete the lifecycle without ceremonial approval. Do not stop at a local diff, commit, pushed branch, or `PR pending`. Merge, release, and production actions remain separate.
 
 The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take the next bounded action, recover one incomplete delegation with a changed brief, or report the structured blocker. Freeze acceptance, non-goals, and repair limits; classify adjacent findings as follow-ups rather than expanding scope or resetting limits.
 

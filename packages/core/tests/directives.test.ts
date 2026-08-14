@@ -28,7 +28,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/security.*permission|permission.*security/i);
     expect(rules).toMatch(/observable evidence/i);
     expect(rules).toMatch(/protected-branch|protected branch/i);
-    expect(rules).toMatch(/branch, commit, push, and PR are part of delivery/i);
+    expect(rules).toMatch(/routine delivery is autonomous/i);
     expect(rules).toMatch(/stop and verify them before completion/i);
     expect(rules).toMatch(/maker\/checker/i);
     expect(rules).toMatch(/canonical source invariant/i);
@@ -171,11 +171,15 @@ describe('canonical directive behavioral contracts', () => {
 
   it('keeps approval boundaries narrow without weakening security floors', () => {
     const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
 
     expect(rules).toMatch(/security.*boundaries are mandatory stops/i);
     expect(rules).toMatch(/ordinary in-scope security defects may be repaired autonomously/i);
-    expect(rules).toMatch(
-      /never use a question or approval checkpoint for branch, commit, push, PR/i,
+    expect(rules).toMatch(/routine delivery is autonomous/i);
+    expect(rules).toMatch(/without asking whether to perform those steps/i);
+    expect(rules).toMatch(/these are delivery mechanics, not approval checkpoints/i);
+    expect(orchestrator).toMatch(
+      /do not ask whether to create or use a feature branch, commit, push, or create a PR/i,
     );
   });
 
