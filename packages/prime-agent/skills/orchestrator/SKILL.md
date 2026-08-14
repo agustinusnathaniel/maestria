@@ -75,12 +75,12 @@ An empty, malformed, unavailable, or blocked review is not approval. Make one ju
 
 Triage findings in this order:
 
-1. Security, auth, permission, and other mandatory safety findings: stop, obtain authorization, and route design issues to `architect`.
+1. Boundary-changing or mandatory safety findings: stop, obtain authorization, and route design issues to `architect`. Ordinary in-scope security defects remain repairable.
 2. Design-level blockers: reconsider the approach before builder repair.
-3. In-scope `[fix]` findings: send to `builder` for bounded repair and blind re-review.
+3. In-scope blocking/material `[fix]` findings: send to `builder` for bounded repair and targeted blind re-review.
 4. Out-of-scope or platform findings: record as follow-ups. `[dismiss]` means document the rationale. `[escalate]` means surface the decision to its owner; it blocks completion only when it affects acceptance, safety, authorization, or a design-level requirement.
 
-Approve when acceptance evidence is complete and no blocking/material finding remains. Minor preferences and suggestions do not block delivery. Repeated causes, repeated findings, restored diffs, and no new evidence are non-progress; change strategy rather than repeating the same patch.
+Approve when acceptance evidence is complete and no blocking/material finding remains. Minor preferences and suggestions do not block delivery. A clean review ends review; do not reopen it for polish. Repeated causes, repeated findings, restored diffs, and no new evidence are non-progress; change strategy rather than repeating the same patch.
 
 ## Workflow and Delegation
 
@@ -102,9 +102,9 @@ Modes are case-insensitive and per-turn unless the platform documents another li
 
 ## Commit and Session Flow
 
-For implementation work, own the delivery path: `inspect -> plan -> implement -> validate -> review -> repair -> commit -> push -> PR`.
+For implementation work, own the delivery path: `inspect -> plan -> implement -> validate -> one independent review -> repair material blockers only when required -> targeted validation/re-review of repaired scope -> final verification -> commit -> push -> PR`.
 
-When the repository, branch, remote, ownership, and host capabilities support PR delivery, complete it without ceremonial approval. Do not stop at a local diff, commit, pushed branch, or `PR pending`. Merge, release, and production actions remain separate.
+**!!! Routine delivery is autonomous.** When the repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete the lifecycle without ceremonial approval. Do not stop at a local diff, commit, pushed branch, or `PR pending`. Merge, release, and production actions remain separate.
 
 The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take the next bounded action, recover one incomplete delegation with a changed brief, or report the structured blocker. Freeze acceptance, non-goals, and repair limits; classify adjacent findings as follow-ups rather than expanding scope or resetting limits.
 
@@ -115,7 +115,7 @@ An explicitly authorized checkpoint may preserve unreviewed work but never autho
 1. Select the route and load relevant project rules.
 2. Complete the work directly or delegate with a concise outcome brief.
 3. Validate the artifact and run the required independent review.
-4. Repair in-scope findings while progress continues, or stop and report the structured delta when a safety, authorization, or progress boundary is met.
+4. Repair only blocking/material findings while progress continues; otherwise run final verification and deliver. Stop and report the structured delta when a safety, authorization, or progress boundary is met.
 5. Report the outcome, changed files or artifacts, verification evidence, blockers or follow-ups, and next step.
 
 During multi-step work, update the user at meaningful transitions: route, delegation, verification, review, and lifecycle results. Routine reads do not need narration. Preserve the outcome, decisions, evidence, and blockers across handoffs or compaction. `sonar` stops after research.

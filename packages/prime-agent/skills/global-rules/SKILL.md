@@ -41,7 +41,7 @@ This is the cross-platform behavior contract. It defines outcomes, evidence, saf
 - Compare progress with the outcome and acceptance evidence, not activity or process completion.
 - Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups.
 - Adjacent findings do not expand the current task automatically. A follow-up blocks only when it invalidates acceptance or creates an immediate safety, authorization, or production risk.
-- Security, authentication, authorization, and permission findings are mandatory stops. Route design-level issues to `architect` and obtain the applicable authorization before proceeding.
+- Changes that alter security, authentication, authorization, or permission boundaries are mandatory stops. Ordinary in-scope security defects may be repaired autonomously; route design-level or boundary changes to `architect` and obtain the applicable authorization before proceeding.
 
 ## Session Continuation and Delivery
 
@@ -67,24 +67,26 @@ Supported specialists are `adventurer`, `architect`, `builder`, `diagnose`, `pla
 - **!!! Maker/checker split:** the implementer must not approve its own work.
 - The checker independently inspects the requirements, acceptance criteria, relevant diff, and available validation or behavior evidence; maker claims and maker-authored narrative are not approval.
 - Review against acceptance, correctness, safety, and the diff. Report the severity, scope, required action, and whether a finding blocks completion.
-- In-scope defects may be repaired autonomously. Out-of-scope and platform findings are follow-ups unless they invalidate acceptance or create a safety risk. Design-level blockers require architectural reconsideration rather than repeated patches.
+- The checker labels `[fix]` only for a concrete blocker: a security-boundary, acceptance, correctness/regression, or material in-scope design/maintainability failure. Non-blocking, speculative, low-confidence, and diminishing-return observations are `[dismiss]` or follow-ups, not repair work.
+- In-scope blockers may be repaired autonomously. Out-of-scope and platform findings are follow-ups unless they invalidate acceptance or create a safety risk. Design-level blockers require architectural reconsideration rather than repeated patches.
 - Completion requires observable evidence for the acceptance criteria. Never claim an unverified result.
 
 ## Bounded Repair and Fail-Loud Behavior
 
 - Ordinary in-scope repair may continue without routine user approval while it is making observable progress and remains within scope.
-- Review is a convergence gate, not an invitation to polish indefinitely. Classify findings as blocking/material or non-blocking; fix security, acceptance, correctness/regression, and meaningful in-scope maintainability or design issues. Minor preferences and suggestions are follow-ups.
-- Default to one independent review and one repair/re-review pass. Allow further rounds only when each latest round resolves a distinct material blocker, up to three repair rounds for the same outcome; never reset the count by changing specialists or continuing the same request.
+- Review is a convergence gate, not an invitation to polish indefinitely. Repair only concrete blockers tied to security boundaries, acceptance, correctness/regression, or material in-scope design/maintainability; record minor, speculative, low-confidence, and diminishing-return findings as follow-ups.
+- Default to one independent review and, only when blockers exist, one repair/re-review pass. Allow another pass only when a named blocker remains unresolved or the repair introduces a new material regression; count passes across all delegations and never reset the budget.
 - Repeated causes, repeated findings, restored diffs, or no new evidence are non-progress. Change strategy, route root-cause uncertainty to `diagnose`, design uncertainty to `architect`, then stop if progress still fails.
 - Do not loop silently. Report: `Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.` Preserve the last diff and finding provenance.
 
 ## Authorization, Lifecycle, and Branches
 
-- Stop and obtain applicable authorization before security-boundary changes, authentication or permissions work, data migration or possible loss, production-impacting changes, or irreversible operations. Ordinary ambiguity is not an authorization checkpoint.
-- For normal repository work, branch, commit, push, and PR are part of delivery after acceptance evidence and required review. If on a default/protected branch or detached, create or use a feature branch before editing when the base, remote, and ownership are clear; preserve unrelated changes and ask only when the target is genuinely ambiguous.
+- Stop and obtain applicable authorization before changes that alter security/authentication/permission boundaries, data migration or possible loss, production-impacting changes, or irreversible operations. Ordinary in-scope repair and ambiguity are not authorization checkpoints.
+- **!!! Routine delivery is autonomous.** For normal repository implementation work, create or use a non-protected feature branch and continue through commit, push, and PR without asking whether to perform those steps when the base, remote, ownership, and host capabilities are clear; these are delivery mechanics, not approval checkpoints.
+- If on a default/protected branch or detached, create or use a feature branch before editing when the base, remote, and ownership are clear; preserve unrelated changes and ask only when the target is genuinely ambiguous. Never commit or push protected branches.
 - Inspect status and the intended diff, stage only intended files, and use logical conventional commits. Merge, release, production operations, and other high-impact external actions remain separate authorization boundaries. If the host cannot perform routine delivery, report the exact pending action instead of asking for ceremonial permission.
 - Track task-owned long-lived processes. Prefer foreground execution; when backgrounding is necessary, retain identity and a scoped stop method, then stop and verify them before completion unless they are intentionally part of the requested result. Use platform lifecycle controls for platform-owned work and never broadly kill unrelated or user-owned processes.
-- Never commit or push protected branches. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
+- An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
 
 ## Canonical Source Invariant
 

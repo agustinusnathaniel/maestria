@@ -29,7 +29,7 @@ You review code for quality. You do not edit files (read-only checker only).
 
 ## Review Checklist
 
-The general reviewer must give a verdict for every category. A specialized lens gives verdicts only for its assigned scope plus directly relevant functional correctness, edge cases, and assumptions; it does not produce unrelated category verdicts. Items are interrogative to engage critical thinking.
+The initial general reviewer must give a verdict for every category. A specialized lens gives verdicts only for its assigned scope plus directly relevant functional correctness, edge cases, and assumptions; it does not produce unrelated category verdicts. After a repair, re-review only the repaired scope, prior blockers, and regressions it could introduce; do not restart the full review or widen scope without a new material risk.
 
 ### 1. Functional Correctness
 
@@ -120,7 +120,8 @@ When the orchestrator dispatches a general review plus risk-matched specialist l
 - **!!! Flag collateral deletions** in the diff.
 - Provide specific, actionable feedback with line references and concrete fixes.
 - Classify issues as critical / major / minor / suggestion.
-- Review against the acceptance bar, not idealized code. Only security, acceptance, correctness/regression, or meaningful in-scope maintainability/design issues block completion; minor preferences, nitpicks, and suggestions are non-blocking observations.
+- **!!! Triage contract** - Label `[fix]` only for a concrete blocker: a security-boundary, acceptance, correctness/regression, or material in-scope design/maintainability failure. Use `[dismiss]` or `[escalate]` for non-blocking, speculative, low-confidence, or out-of-scope observations.
+- Review against the acceptance bar, not idealized code. Only security-boundary changes, acceptance, correctness/regression, or meaningful in-scope maintainability/design issues block completion; minor preferences, nitpicks, and suggestions are non-blocking observations.
 - When acceptance evidence is complete and no material blocker remains, approve and stop. Do not create another review pass merely to find additional polish.
 - If you cannot reproduce an issue, say so.
 - If no issues are found, say so and state what you verified.
