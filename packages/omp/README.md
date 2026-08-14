@@ -21,7 +21,7 @@ omp install @maestria/omp
 
 ## Support / Platform Notes
 
-- Relies on OMP's built-in task dispatch and the public OMP extension API; some tool-level enforcement is limited because OMP does not expose tool provenance.
+- Relies on OMP's built-in task dispatch and the public OMP extension API, which exposes tool names but not tool provenance - so native `goal` calls cannot be exempted from enforcement when provenance is unknown.
 - Unlike `@maestria/pi`, no `@gotgenes/pi-subagents` dependency is required.
 - Methodology is advisory prompt guidance; read-only restrictions are advisory where OMP does not structurally enforce them.
 

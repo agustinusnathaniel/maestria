@@ -29,6 +29,7 @@ The CLI installs and updates the plugin through Codex's `plugin add` flow. Codex
 
 - Workflow modes ship as skills, not slash commands.
 - Read-only specialist boundaries are documented guidance, not tool enforcement; Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
+- Ships no hooks, MCP servers, model configuration, or `AGENTS.md` writer.
 - Support remains provisional until the pinned Codex CLI behavior and the marketplace/plugin install flow are reverified.
 
 ## Documentation and Changelog

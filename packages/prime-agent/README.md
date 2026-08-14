@@ -6,7 +6,7 @@ Maestria's engineering methodology for [Prime Agent](https://github.com/PrimeInt
 
 ## Status / Support Boundary
 
-`Native candidate` - follows the documented Prime plugin contract and was validated on 2026-08-13, but runtime behavior in a live Prime session is **not yet tested end to end**. Native recursive-subagent (`rlm`) dispatch and JSON/RPC headless-mode integration are deferred (see below). Do not treat this package as a production support promise.
+`Native candidate` - skills and extension contract were reverified on 2026-08-13 against the current pinned Prime Agent reference, but runtime behavior in a live Prime session is **not yet tested end to end**. Native recursive-subagent (`rlm`) dispatch and JSON/RPC headless-mode integration are deferred (see below). Do not treat this package as a production support promise.
 
 ## Installation
 
