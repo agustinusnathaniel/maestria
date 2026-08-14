@@ -113,7 +113,7 @@ Rules of thumb:
 - **No verbose standalone sections.** Do not include full `Motivation`, `Goals`, or `Non-Goals` sections, long architecture narratives, implementation internals, or repeated role descriptions in a published README. Fold essential context into the opening description and the Support / Platform Notes section. Detailed rationale and design history belong in internal documents (ADRs, plans, and `docs/`).
 - **"Installation or Usage" is the one allowed wording variant.** Authors may title that section `Installation`, `Usage`, or a combined `Installation & Usage` depending on the package.
 - **Keep truthful support boundaries.** Include provisional or verified-subset status, version-pinning limitations, and host-enforced-vs-methodology-only distinctions where they apply.
-- **Link `INSTALL.md` where the package ships one**, and mention the canonical core directives (`packages/core/agent-directives/`) for generated plugin packages.
+- **Link `INSTALL.md` where the package ships one**. Keep how generated packages are produced from canonical directives out of the published README; generation and sync mechanics belong in the contributing guide.
 - **Package-specific concise content is expected.** Each README keeps its own truthful details, commands, and platform notes; avoid version numbers in prose except where a support boundary requires them.
 
 #### Link Policy for Published READMEs

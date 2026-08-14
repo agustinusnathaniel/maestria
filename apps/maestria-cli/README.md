@@ -19,39 +19,20 @@ npx maestria status
 | `maestria check <platform>` | Verify a platform installation |
 | `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, pi, omp); `--set` configures non-interactively |
 
-All commands accept `--json` and `--quiet` for scripting and CI, and `--help` shows in-terminal examples, exit codes, and AI-agent usage tips. `--compact` is supported on every command except `check`, which requires a platform argument and outputs JSON by default.
-
-```bash
-# Check status
-npx maestria
-
-# Install for all detected platforms
-npx maestria install --all
-
-# Update everything
-npx maestria update --all
-
-# Remove the Pi extension
-npx maestria uninstall pi
-
-# Machine-readable output for CI
-npx maestria status --json --quiet
-```
-
-Wherever a platform has its own plugin manager, the CLI delegates to it rather than mutating host configuration directly.
+All commands accept `--json` and `--quiet` for scripting and CI, and `--help` shows in-terminal examples, exit codes, and AI-agent usage tips. `--compact` is supported on every command except `check`, which requires a platform argument and outputs JSON by default. Wherever a platform has its own plugin manager, the CLI delegates to it rather than mutating host configuration directly.
 
 ## What It Provides
 
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
-- **Host-native delegation** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install under `~/.kimi-code/plugins/managed/maestria` copying `rules/AGENTS.md` and reading `kimi.plugin.json`, Cursor plugin directory, Prime Agent native package manager (global scope), Claude Code/Codex marketplaces).
+- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install, Cursor plugin directory, Prime Agent package manager, Claude Code/Codex marketplaces).
 
 ## Support / Platform Notes
 
 - Requires the target platform's CLI on `PATH`; the CLI cannot install a platform it cannot detect.
-- npm is required for the Claude Code and Codex CLI adapters (they stage published packages into local marketplaces under `~/.cache/maestria/`).
-- Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code, Codex CLI, and Prime Agent select the latest staged package and reject `--version`.
-- Prime Agent support is deliberately global (user scope only): Prime resolves project settings from the current working directory, so every Prime command runs from a freshly created empty temporary directory and project registrations are never scanned or modified. A version-pinned user registration is reported as an error rather than silently skipped.
+- npm is required for the Claude Code and Codex CLI adapters.
+- Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code, Codex CLI, and Prime Agent select the latest available package and reject `--version`.
+- Prime Agent support is deliberately global (user scope only): project registrations are never scanned or modified. A version-pinned user registration is reported as an error rather than silently skipped.
 - Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless removed separately.
 - The CLI manages plugin installation only; it does not run agents or enforce methodology.
 
@@ -60,7 +41,7 @@ Wherever a platform has its own plugin manager, the CLI delegates to it rather t
 - [CLI documentation](https://maestria.sznm.dev/cli/) on the docs site
 - [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/apps/maestria-cli/CHANGELOG.md)
 
-## Development
+## Contributing
 
 See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
