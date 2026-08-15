@@ -23,13 +23,18 @@ export function isValidVersion(v: string): boolean {
  * Special values:
  * - 'latest' is always greater than any semver version
  * - 'unknown' returns null (insufficient information to compare)
+ * - non-semver values (e.g. display sentinels like 'see GitHub releases')
+ *   return null (insufficient information to compare)
  *
  * @returns -1 if a < b, 0 if equal, 1 if a > b, null if either is 'unknown'
+ *   or not a valid semver version
  */
 export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
   if (a === 'unknown' || b === 'unknown') return null;
   if (a === 'latest') return b === 'latest' ? 0 : 1;
   if (b === 'latest') return -1;
+
+  if (!SEMVER_REGEX.test(a) || !SEMVER_REGEX.test(b)) return null;
 
   const result = a.localeCompare(b, undefined, { numeric: true });
   if (result === 0) return 0;
@@ -64,8 +69,9 @@ export function isVersionLt(a: string, b: string): boolean {
   return compareVersions(a, b) === -1;
 }
 
-/** Check if a differs from b (for "needs update" detection). Returns false if either is 'unknown'. */
+/** Check if a differs from b (for "needs update" detection). Returns false if either is 'unknown' or incomparable (non-semver). */
 export function isVersionDifferent(a: string, b: string): boolean {
   if (a === 'unknown' || b === 'unknown') return false;
-  return compareVersions(a, b) !== 0;
+  const result = compareVersions(a, b);
+  return result !== null && result !== 0;
 }
