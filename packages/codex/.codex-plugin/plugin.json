@@ -5,7 +5,7 @@
   "author": {
     "name": "agustinusnathaniel"
   },
-  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex-cli",
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex",
   "repository": "https://github.com/agustinusnathaniel/maestria",
   "license": "MIT",
   "keywords": ["ai", "codex", "maestria", "orchestration", "pipeline", "skills", "specialists"],
@@ -16,7 +16,7 @@
     "developerName": "agustinusnathaniel",
     "category": "Developer Tools",
     "capabilities": ["Skills"],
-    "websiteURL": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex-cli",
+    "websiteURL": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/codex",
     "defaultPrompt": [
       "Route this task through the Maestria specialists.",
       "Review this change independently before implementation.",
