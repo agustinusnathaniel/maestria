@@ -239,7 +239,7 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
   let packFiles: string[];
   beforeAll(() => {
     packFiles = npmPackFileList();
-  });
+  }, 30_000);
 
   it('packs the compiled extension, its sourcemap, and the manifest', () => {
     for (const required of [
