@@ -16,6 +16,14 @@
       "import": "./src/compaction-core.ts",
       "types": "./src/compaction-core.ts"
     },
+    "./commands-core": {
+      "import": "./src/commands-core.ts",
+      "types": "./src/commands-core.ts"
+    },
+    "./review-core": {
+      "import": "./src/review-core.ts",
+      "types": "./src/review-core.ts"
+    },
     "./state-core": {
       "import": "./src/state-core.ts",
       "types": "./src/state-core.ts"
