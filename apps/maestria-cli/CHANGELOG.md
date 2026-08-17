@@ -1,5 +1,22 @@
 # maestria
 
+## 0.10.1
+
+### Patch Changes
+
+- [#219](https://github.com/agustinusnathaniel/maestria/pull/219) [`e5d2f3b`](https://github.com/agustinusnathaniel/maestria/commit/e5d2f3b3a8f2787b211e9d2c858fe199ecdce73e) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix(cli): exit non-zero when install/update/uninstall have partial failures
+
+  The install, update, and uninstall commands always exited 0 even when a platform result failed, contradicting the documented exit-code contract. They now exit 1 when any per-platform result is ok:false, so CI and AI-agent consumers can detect partial failure from the exit code alone (matching the check command).
+
+- [#215](https://github.com/agustinusnathaniel/maestria/pull/215) [`cbaef35`](https://github.com/agustinusnathaniel/maestria/commit/cbaef35dc3f9ceed38a7f04f6da567cf6f5dd7d9) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix(cli): treat non-semver latest versions as incomparable in update --all detection
+
+  The hermes platform handler intentionally reports `see GitHub releases` as its
+  latest version (a display sentinel). `compareVersions` previously fell through
+  to `localeCompare` for non-semver strings, so `update --all` always flagged
+  hermes as needing an update and reported a fake success. Non-semver values are
+  now incomparable (`compareVersions` returns `null`), and
+  `isVersionDifferent` treats an incomparable pair as not different.
+
 ## 0.10.0
 
 ### Minor Changes
