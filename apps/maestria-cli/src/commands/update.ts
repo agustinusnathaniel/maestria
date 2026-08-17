@@ -15,6 +15,7 @@ import {
   VALID_PLATFORMS,
 } from '@/lib/validation.js';
 import { isVersionEq, isVersionDifferent } from '@/lib/version.js';
+import { exitCodeForResults } from '@/lib/result-exit.js';
 import type { PlatformResult } from '@/types.js';
 
 export const updateCommand = defineCommand({
@@ -216,7 +217,7 @@ export const updateCommand = defineCommand({
     } else {
       console.log(renderResults(results));
     }
-    process.exit(0);
+    process.exit(exitCodeForResults(results));
   },
 });
 
