@@ -3,7 +3,6 @@ import { Effect } from 'effect';
 import { detectAll } from '@/lib/detect.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
-import type { PlatformStatus } from '@/types.js';
 
 export const checkCommand = defineCommand({
   meta: {
@@ -43,7 +42,13 @@ export const checkCommand = defineCommand({
 
     // Detect all (parallel, fast — uses cached effects)
     const allStatus = await Effect.runPromise(detectAll());
-    const status = allStatus.find((s) => s.id === platformId) as PlatformStatus;
+    const status = allStatus.find((s) => s.id === platformId);
+    if (!status) {
+      if (!args.quiet) {
+        console.error(`No status found for platform: ${platformId}`);
+      }
+      process.exit(1);
+    }
 
     // Check if the CLI tool is even available
     if (!status.available) {
@@ -55,6 +60,8 @@ export const checkCommand = defineCommand({
       };
       if (args.json) {
         console.log(JSON.stringify(result));
+      } else {
+        console.log(`${platform.label}: CLI tool is not available on this machine`);
       }
       process.exit(1);
     }
@@ -70,6 +77,8 @@ export const checkCommand = defineCommand({
       };
       if (args.json) {
         console.log(JSON.stringify(result));
+      } else {
+        console.log(`@maestria/${platformId} is not installed for ${platform.label}`);
       }
       process.exit(1);
     }
@@ -84,6 +93,9 @@ export const checkCommand = defineCommand({
     };
     if (args.json) {
       console.log(JSON.stringify(result));
+    } else {
+      const version = status.installedVersion ? ` (v${status.installedVersion})` : '';
+      console.log(`@maestria/${platformId} is installed for ${platform.label}${version}`);
     }
     process.exit(0);
   },
