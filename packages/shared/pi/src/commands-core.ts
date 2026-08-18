@@ -9,7 +9,7 @@
  */
 
 import type { MaestriaState } from './state-core.js';
-import { persistState, renderMaestriaSummary } from './state-core.js';
+import { persistState, recordHandoff, renderMaestriaSummary } from './state-core.js';
 import { cycleToReviewModel, restoreOriginalState } from './review-core.js';
 import { MAESTRIA_EVENTS } from './subagent-utils.js';
 
@@ -180,10 +180,7 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
       ].join('\n');
 
       // Record in state
-      state.handoffHistory = [
-        { from: 'current', to: 'next', task: goal, timestamp: Date.now() },
-        ...(state.handoffHistory ?? []),
-      ].slice(0, 5);
+      Object.assign(state, recordHandoff(state, 'current', 'next', goal));
 
       // Persist state
       persistState(pi, state);
