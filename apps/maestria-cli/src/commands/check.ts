@@ -2,6 +2,7 @@ import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 import { detectAll } from '@/lib/detect.js';
 import { getPlatform } from '@/lib/platforms.js';
+import { renderStatusTable } from '@/lib/output.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 
 export const checkCommand = defineCommand({
@@ -13,13 +14,19 @@ export const checkCommand = defineCommand({
     platform: {
       type: 'positional',
       description: `Platform to check (${VALID_PLATFORMS.join(', ')}).`,
-      required: true,
+      required: false,
+    },
+    all: {
+      type: 'boolean',
+      description: 'Check all detected platforms at once',
+      alias: 'a',
+      default: false,
     },
     json: {
       type: 'boolean',
       description:
         'Output as JSON — structured machine-readable format optimized for AI agents and CI pipelines',
-      default: true,
+      default: false,
     },
     quiet: {
       type: 'boolean',
@@ -28,7 +35,36 @@ export const checkCommand = defineCommand({
     },
   },
   run: async ({ args }) => {
-    const platformId = args.platform as string;
+    const platformId = args.platform as string | undefined;
+
+    // --all mode: check every detected, available platform
+    if (args.all) {
+      const allStatus = await Effect.runPromise(detectAll());
+      const checked = allStatus.filter((s) => s.available);
+
+      if (checked.length === 0) {
+        if (!args.quiet) {
+          console.log('No supported coding agent platforms detected on this machine.');
+        }
+        process.exit(1);
+      }
+
+      if (args.json) {
+        console.log(JSON.stringify(checked, null, 2));
+      } else {
+        console.log(renderStatusTable(checked));
+      }
+      process.exit(checked.every((s) => s.installed) ? 0 : 1);
+    }
+
+    if (!platformId) {
+      if (!args.quiet) {
+        console.error('Missing required platform argument.');
+        console.error('Usage: maestria check <platform> or maestria check --all');
+        console.error(`Available: ${VALID_PLATFORMS.join(', ')}`);
+      }
+      process.exit(1);
+    }
 
     // Validate platform exists
     const platform = getPlatform(platformId);
