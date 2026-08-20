@@ -1,5 +1,5 @@
 import { Effect } from 'effect';
-import { platforms } from '@/lib/platforms.js';
+import { platforms, getPlatform } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformStatus } from '@/types.js';
 
@@ -42,6 +42,24 @@ function detectOne(platform: PlatformHandler): Effect.Effect<PlatformStatus, nev
       latestVersion,
     };
   });
+}
+
+/**
+ * Check availability + installation + versions for a single platform.
+ */
+export function detectSingle(platformId: string): Effect.Effect<PlatformStatus, never> {
+  const handler = getPlatform(platformId);
+  if (!handler) {
+    return Effect.succeed({
+      id: platformId,
+      label: platformId,
+      available: false,
+      installed: false,
+      installedVersion: '',
+      latestVersion: '',
+    });
+  }
+  return detectOne(handler);
 }
 
 /**
