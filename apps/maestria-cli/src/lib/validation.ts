@@ -87,23 +87,6 @@ export function validateVersion(input: string): Effect.Effect<string, Validation
 }
 
 /**
- * Check that --all and a platform positional aren't both provided.
- */
-export function validateNotAllAndPlatform(
-  all: boolean,
-  platform?: string,
-): Effect.Effect<void, ValidationError> {
-  if (all && platform) {
-    return Effect.fail(
-      new ValidationError({
-        message: 'Cannot use --all with a specific platform. Choose one.',
-      }),
-    );
-  }
-  return Effect.void;
-}
-
-/**
  * Run a validation effect at the CLI boundary.
  * Prints the error and exits with code 1 on failure, returns the value on success.
  */

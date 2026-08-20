@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { detectAll } from '@/lib/detect.js';
+import { detectAll, detectSingle } from '@/lib/detect.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { renderStatusTable } from '@/lib/output.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
@@ -36,6 +36,13 @@ export const checkCommand = defineCommand({
   },
   run: async ({ args }) => {
     const platformId = args.platform as string | undefined;
+
+    if (args.all && platformId) {
+      if (!args.quiet) {
+        console.error('Cannot use --all with a specific platform. Choose one.');
+      }
+      process.exit(1);
+    }
 
     // --all mode: check every detected, available platform
     if (args.all) {
@@ -76,15 +83,8 @@ export const checkCommand = defineCommand({
       process.exit(1);
     }
 
-    // Detect all (parallel, fast — uses cached effects)
-    const allStatus = await Effect.runPromise(detectAll());
-    const status = allStatus.find((s) => s.id === platformId);
-    if (!status) {
-      if (!args.quiet) {
-        console.error(`No status found for platform: ${platformId}`);
-      }
-      process.exit(1);
-    }
+    // Detect single platform (only runs detection for this one platform)
+    const status = await Effect.runPromise(detectSingle(platformId));
 
     // Check if the CLI tool is even available
     if (!status.available) {
