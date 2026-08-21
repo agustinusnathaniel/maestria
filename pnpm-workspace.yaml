@@ -7,29 +7,50 @@ packages:
 catalogMode: prefer
 
 catalog:
-  '@types/node': ^26
-  typescript: ^6.0.3
-  vite: npm:@voidzero-dev/vite-plus-core@0.2.7
-  vitest: 4.1.10
-  vite-plus: 0.2.7
-  '@changesets/cli': ^2.31.1
-  '@changesets/changelog-github': ^0.7.0
+  '@types/node': ^26.2.0
+  typescript: ^7.0.2
+  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
+  vitest: 4.1.11
+  vite-plus: 0.2.9
+  '@changesets/cli': ^3.0.1
+  '@changesets/changelog-github': ^1.0.0
   '@fontsource-variable/alan-sans': ^5.3.0
   '@fontsource-variable/sn-pro': ^5.3.0
-  '@earendil-works/pi-coding-agent': '^0.84.1'
-  '@gotgenes/pi-subagents': '^18.1.0'
-  effect: 4.0.0-rc.108
+  '@earendil-works/pi-coding-agent': '^0.84.2'
+  '@gotgenes/pi-subagents': '^19.3.4'
+  effect: 4.0.0-rc.111
   jsonc-parser: ^3.3.1
   'typebox': '*'
-  '@astrojs/starlight': ^0.41.3
-  astro: 7.1.3
+  '@astrojs/starlight': ^0.41.7
+  astro: 7.2.4
   all-contributors-cli: ^6.26.1
   tailwindcss: ^4.3.3
   '@tailwindcss/vite': ^4.3.3
   '@astrojs/starlight-tailwind': ^5.0.0
+  tsx: 4.23.12
+  yaml: ^2.9.0
+  '@astrojs/check': ^0.9.10
+  sharp: 0.35.3
+  astro-contributors: ^0.9.0
+  starlight-auto-sidebar: ^0.4.0
+  starlight-links-validator: ^0.25.3
+  starlight-llms-txt: ^0.11.0
+  starlight-package-managers: ^0.12.0
+  starlight-page-actions: ^0.7.1
+  '@clack/prompts': ^1.7.0
+  citty: ^0.2.2
+  picocolors: ^1.1.1
+  '@clack/core': ^1.4.3
+  '@types/diff': ^8.0.0
+  diff: ^9.0.0
+  '@opencode-ai/plugin': ^1.18.19
+  es-toolkit: ^1.51.0
+  zod: ^4.4.3
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'
+  # keep vitest's browser peer aligned with the catalog-pinned vitest (vite-plus bundles 4.1.10)
+  '@vitest/browser-preview': 4.1.11
   # Dependency-security pins (pnpm 11: overrides live in pnpm-workspace.yaml)
   # GHSA-mh99-v99m-4gvg (brace-expansion DoS) via minimatch 10.2.5 -> 5.0.6; 10.2.6 declares ^5.0.8
   minimatch: 10.2.6
@@ -51,8 +72,8 @@ overrides:
   # — deep in @oh-my-pi/pi-coding-agent host runtime; omp imports it type-only so workspace gates verify safety
   adm-zip: 0.6.0
   sharp: 0.35.3
-  # nanoid predictable value DoS (GHSA-2v37-7h3g-55p8): <3.3.17 via postcss in docs app
-  nanoid: 3.3.17
+  # nanoid predictable value DoS (GHSA-2v37-7h3g-55p8): <3.3.18 via postcss in docs app
+  nanoid: 3.3.18
   # undici cookie injection / cache-control parsing / retry desync / CRLF injection
   # (GHSA-v3r7-h72x-cjcm, GHSA-4cwx-7wf7-3272, GHSA-8xcm-r25x-g524, GHSA-m8rv-5g2x-5cg5, GHSA-jr45-8vmc-qm54)
   # — via @earendil-works/pi-coding-agent and @gotgenes/pi-subagents (pi runtime, not type-only)
@@ -64,6 +85,8 @@ peerDependencyRules:
   allowedVersions:
     vite: '*'
     vitest: '*'
+    # @astrojs/check declares ^5||^6 but TS 7 verified working (typecheck + astro build pass)
+    typescript: '*'
 allowBuilds:
   '@google/genai': true
   esbuild: true

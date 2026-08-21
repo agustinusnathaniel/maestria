@@ -34,10 +34,10 @@
     "@types/node": "catalog:",
     "all-contributors-cli": "catalog:",
     "jsonc-parser": "catalog:",
-    "tsx": "4.23.12",
+    "tsx": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "catalog:",
-    "yaml": "^2.9.0"
+    "yaml": "catalog:"
   },
   "devEngines": {
     "runtime": {
