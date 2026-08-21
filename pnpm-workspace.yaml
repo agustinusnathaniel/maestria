@@ -27,25 +27,6 @@ catalog:
   tailwindcss: ^4.3.3
   '@tailwindcss/vite': ^4.3.3
   '@astrojs/starlight-tailwind': ^5.0.0
-  tsx: 4.23.12
-  yaml: ^2.9.0
-  '@astrojs/check': ^0.9.10
-  sharp: 0.35.3
-  astro-contributors: ^0.9.0
-  starlight-auto-sidebar: ^0.4.0
-  starlight-links-validator: ^0.25.3
-  starlight-llms-txt: ^0.11.0
-  starlight-package-managers: ^0.12.0
-  starlight-page-actions: ^0.7.1
-  '@clack/prompts': ^1.7.0
-  citty: ^0.2.2
-  picocolors: ^1.1.1
-  '@clack/core': ^1.4.3
-  '@types/diff': ^8.0.0
-  diff: ^9.0.0
-  '@opencode-ai/plugin': ^1.18.19
-  es-toolkit: ^1.51.0
-  zod: ^4.4.3
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'

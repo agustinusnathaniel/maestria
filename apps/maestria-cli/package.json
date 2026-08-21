@@ -38,15 +38,15 @@
     "test": "vp test"
   },
   "dependencies": {
-    "@clack/core": "catalog:"
+    "@clack/core": "^1.4.3"
   },
   "devDependencies": {
-    "@clack/prompts": "catalog:",
+    "@clack/prompts": "^1.7.0",
     "@types/node": "catalog:",
-    "citty": "catalog:",
+    "citty": "^0.2.2",
     "effect": "catalog:",
     "jsonc-parser": "catalog:",
-    "picocolors": "catalog:",
+    "picocolors": "^1.1.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },

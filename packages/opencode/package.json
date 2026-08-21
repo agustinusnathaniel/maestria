@@ -44,9 +44,9 @@
     "test": "vp test"
   },
   "dependencies": {
-    "es-toolkit": "catalog:",
-    "yaml": "catalog:",
-    "zod": "catalog:"
+    "es-toolkit": "^1.51.0",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.18.19",
