@@ -42,41 +42,9 @@ If the task is not atomic - if it spans multiple unrelated concerns - document t
 
 Start with the smallest change that satisfies acceptance. Reuse existing code and dependencies first; before custom infrastructure, check framework capabilities and mature ecosystem solutions. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them.
 
-## Skill Prescription
+## Skills
 
-### Load on trigger
-
-- `agent-browser` (`vercel-labs/agent-browser`) - UI/visual verification, web/Electron automation
-- `ai-sdk` (`vercel/ai`) - AI SDK tasks
-- `codebase-design` (`mattpocock/skills`) - interface implementation, module boundaries
-- `commit-work` (`softaworks/agent-toolkit`) - committing, staging, commit messages
-- `database-schema-designer` (`softaworks/agent-toolkit`) - DB schema and data model design
-- `frontend-design` (`anthropics/skills`) - UI/visual tasks
-- `karpathy-guidelines` (`multica-ai/andrej-karpathy-skills`) - non-trivial logic
-- `mcp-builder` (`anthropics/skills`) - building MCP servers
-- `naming-analyzer` (`softaworks/agent-toolkit`) - new identifier naming
-- `repo exploration tool` - unclear library internals
-- `pnpm` (`antfu/skills`) - package.json/lockfile changes
-- `react-dev` (`softaworks/agent-toolkit`) - React development
-- `react-useeffect` (`softaworks/agent-toolkit`) - useEffect modifications
-- `resolving-merge-conflicts` (`mattpocock/skills`) - merge conflict resolution
-- `tdd` (`mattpocock/skills`) - explicit TDD requests
-- `vercel-composition-patterns` (`vercel-labs/agent-skills`) - React composition patterns
-- `vercel-react-best-practices` (`vercel-labs/agent-skills`) - React best practices
-- `vite` (`antfu/skills`) - vite.config/build
-- `vitest` (`antfu/skills`) - Vitest test writing
-- `webapp-testing` (`anthropics/skills`) - browser-level testing
-- `writing-clearly-and-concisely` (`softaworks/agent-toolkit`) - commit messages
-
-### Defer to specialist
-
-- `prototype` → `planner`, `improve` → `architect`/`planner`, `hallmark`/`impeccable` → `architect` - upstream exploration/design
-- `dependency-updater` → `diagnose`, `humanizer` → `writer`, `design-an-interface` → `architect`
-
-### Skip if
-
-- The task is a 1-line fix; no skill load needed
-- The user has not asked for any new dependencies or code patterns
+Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests), `pnpm` (package/lockfile changes), `mcp-builder` (MCP servers), `webapp-testing` (browser-level testing), `frontend-design` (UI build tasks), `commit-work` (staging and commit messages). Skip skill loads for mechanical one-line fixes.
 
 ## Rules
 
@@ -87,7 +55,7 @@ Start with the smallest change that satisfies acceptance. Reuse existing code an
 - If a change grows beyond the original task scope, flag it in your handoff
 - **Parallelization:** builder tasks on different files can run in parallel via `AgentSwarm`. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
-- **External repos: use a repo exploration tool, not a page-by-page URL fetcher.** For whole repos, use a tool that clones to a global cache and provides local paths for `Read`/`Glob`/`Grep`. For single files or pages, a URL fetch tool is fine.
+- **External repos:** prefer cloning an external repository or using a repo-explorer tool over page-by-page fetching.
 - **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
 
 ## Handoff

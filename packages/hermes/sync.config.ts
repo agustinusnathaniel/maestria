@@ -193,13 +193,11 @@ export default {
         description: 'Root cause analysis -- investigates problems and finds causes',
       },
       replace: [
-        {
-          from: 'You trace bugs systematically.',
-          to: 'You investigate problems and trace root causes systematically.',
-        },
         { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
         {
-          from: 'Check `pnpm-lock.yaml` / `package-lock.json` for recent changes (`git diff`)',
+          // Re-anchored 2026-08: the canonical Step 1.5 sentence was reworded
+          // upstream and the old lockfile-specific anchor silently no-op'd.
+          from: "Check relevant dependency manifests and lockfiles for recent changes using the project's diff/version-control tools",
           to: 'Check for recent changes in configuration or dependencies',
         },
         {
@@ -216,28 +214,10 @@ export default {
         name: 'maestria-planner',
         description: 'Planning -- breaks down work into ordered, verifiable steps',
       },
-      replace: [
-        {
-          from: '- Write tests for new functionality',
-          to: '- Verify each output meets its success criteria',
-        },
-        {
-          from: '- Run type checking after changes',
-          to: '- Run validation checks after each change',
-        },
-        {
-          from: '- Commit with conventional commits',
-          to: '- Document changes following project conventions',
-        },
-        {
-          from: "- Don't change architecture unless explicitly asked",
-          to: "- Don't change scope unless explicitly asked",
-        },
-        {
-          from: "- Don't add new dependencies without approval",
-          to: "- Don't introduce new tools or approaches without justification",
-        },
-      ],
+      // NOTE: no replace ops. The previous five generalization replaces
+      // anchored to the canonical Guard Rails bullet lists, which were
+      // consolidated into a single guard-rails line; that line is already
+      // general-purpose wording.
     },
 
     // -- Reviewer: quality validation --
@@ -275,33 +255,10 @@ export default {
         name: 'maestria-global-rules',
         description: 'Cross-cutting methodology rules for all specialists',
       },
-      replace: [
-        // Generalize coding-specific rules for a general-purpose agent
-        {
-          from: '**!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands.',
-          to: '**!!! Maker/checker split** - your work is reviewed before it lands. The reviewer has no write access.',
-        },
-        {
-          from: 'validation commands `check`/`test`',
-          to: 'validation commands',
-        },
-
-        // Generalize delegation rules for Hermes
-        // [inferred] Re-based onto the PR #157 route-scoped canonical sentence.
-        // The old canonical phrase ("Never delegate to platform-native built-in
-        // agents - they are built-in, not part of the pipeline.") was removed by
-        // PR #157, so the old `from` silently no-oped and raw canonical text shipped.
-        // `explore`/`general` are Hermes' built-in agents - the adaptation intent is
-        // preserved from the pre-PR config.
-        {
-          from: 'Focused and full routes delegate only to the 7 specialists below - do not substitute platform-native built-in agents for them.',
-          to: 'Focused and full routes delegate only to the 7 specialists below - never delegate to built-in `explore` or `general` - they bypass the pipeline.',
-        },
-        {
-          from: '| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |',
-          to: '| `adventurer` | Research and exploration, deep understanding | Understanding unfamiliar code, tracing dependencies, gathering context |',
-        },
-      ],
+      // NOTE: no replace ops. The previous four generalization replaces
+      // anchored to canonical sentences/tables removed by earlier directive
+      // revisions and silently no-op'd; the revised canonical rules body is
+      // already general-purpose wording.
     },
   },
 

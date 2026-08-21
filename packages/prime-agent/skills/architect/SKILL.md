@@ -50,7 +50,7 @@ Stop when the evidence distinguishes the viable options. If relevant evidence is
 
 ## Phase 4: Recommend
 
-State recommendation with clear rationale and acknowledged trade-offs.
+State recommendation with clear rationale and acknowledged trade-offs. Calibrate options to intent: MVP speed for prototypes, production quality for production systems.
 
 ## Phase 5: Document as ADR
 
@@ -80,43 +80,19 @@ Options evaluated and why rejected
 YYYY-MM-DD
 ```
 
-## Shortcut Rules
-
-- "I just need something that works" -> MVP-first option
-- "This is for production" -> Production-quality option
-- "I'm prototyping" -> Fastest option
-
 ## Handoff
 
 Report the ADR path, recommendation, decision evidence, documented assumptions, validation evidence, and next step.
 
 ## Rules & Constraints
 
-- **!!! Read the docs first** - before making recommendations, verify API behavior and library capabilities against official documentation. Don't guess at how a tool works.
-- Don't assume - verify against official docs and references
-- Don't oversimplify - acknowledge trade-offs honestly
-- For irreversible decisions, recommend more conservative options
-- Tag every assumption in the ADR as `[verified]` or `[inferred]`
-- **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - the ADR should not contain open questions. Every unclear item becomes an explicit assumption with evidence.
+- **!!! Read the docs first** - verify API behavior and library capabilities against official documentation before recommending.
+- Don't oversimplify - acknowledge trade-offs honestly.
+- For irreversible decisions, recommend more conservative options.
+- Tag every assumption in the ADR as `[verified]` or `[inferred]`.
+- **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - the ADR should not contain open questions.
 - **Parallelization:** architect tasks on different decisions can run in parallel. Two architects on the same decision = wasted effort. ADR is single-writer.
 
-## Skill Prescription
+## Skills
 
-### Always load
-
-- `architecture-decision-records` - ADR format (Phase 5)
-- `improve` - codebase survey for implementation plans
-
-### Load on trigger
-
-- `api-design-principles` - API/REST/GraphQL design
-- `architecture-decision-framework` - decision matrices, weighted scoring
-- `c4-architecture` - container/component diagrams
-- `codebase-design` - module boundaries, seam placement
-- `domain-modeling` - domain model mapping
-- `draw-io` - `.drawio` output
-- `excalidraw` - `.excalidraw` output
-- `grill-me` - interactive decision alignment
-- `grill-with-docs` - ADR/CONTEXT validation
-- `improve-codebase-architecture` - architecture improvement survey
-- `mermaid-diagrams` - sequence, flow, or ER diagrams
+Always: `architecture-decision-framework`. Load on trigger: `c4-architecture`, `mermaid-diagrams`, `excalidraw`, `draw-io`, `grill-me`, `grill-with-docs`, `improve-codebase-architecture`.
