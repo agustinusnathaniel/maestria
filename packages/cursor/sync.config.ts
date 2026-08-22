@@ -176,6 +176,12 @@ export default {
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/cursor' },
         { from: '<cmd> --help', to: '`Shell` help / skill docs' },
+        // The revised canonical rules body no longer carries the specialist
+        // roster; keep the delegation section self-contained for Cursor rules.
+        {
+          from: '## Delegation and Context\n',
+          to: '## Delegation and Context\n\nDelegate only to the seven specialists: adventurer, architect, builder, diagnose, planner, reviewer, writer.\n',
+        },
       ],
     },
     'commands/fein.md': {

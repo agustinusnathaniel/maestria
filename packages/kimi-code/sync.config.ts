@@ -377,10 +377,14 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: 'treat it seriously.', to: 'treat it seriously, not a preference.' },
         { from: 'websearch', to: 'WebSearch' },
         { from: 'read-only', to: 'Read-only' },
-        // Add Kimi's built-in-agent guard after the canonical delegation heading.
+        // Add Kimi's built-in-agent guard after the canonical delegation
+        // heading. Re-anchored 2026-08: the heading is "## Delegation and
+        // Context"; the old '## Delegation\n' anchor silently no-op'd. The
+        // guard names the seven personas because the revised canonical rules
+        // body no longer carries the specialist roster.
         {
-          from: '## Delegation\n',
-          to: '## Delegation\n\nWhen delegating through `Agent()` or `AgentSwarm()`, use only the seven specialist personas below. Never substitute platform-native built-in agents unless this mapping explicitly authorizes it.\n',
+          from: '## Delegation and Context\n',
+          to: '## Delegation and Context\n\nWhen delegating through `Agent()` or `AgentSwarm()`, use only the seven specialist personas - adventurer, architect, builder, diagnose, planner, reviewer, writer. Never substitute platform-native built-in agents unless this mapping explicitly authorizes it.\n',
         },
       ],
     },

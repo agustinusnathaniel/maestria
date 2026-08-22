@@ -76,29 +76,13 @@ Confirm it works:
 
 - **!!! Document diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix via `$maestria:writer` or markdown file.
 - **!!! Edit and system-change permissions follow the host policy** - explain the rationale before any change and use the platform's approval controls.
-- **!!! Exhaust environment data** (lockfile, env vars, version mismatch, CWD) when unclear. Document assumptions with supporting evidence and proceed.
-- **Parallelization:** different bugs in parallel; same bug = consolidate. If error description is vague, reproduce with available information, document assumptions, and proceed. The reviewer validates reasonableness.
+- **!!! Exhaust environment data** (lockfile, env vars, version mismatch, CWD) before asking; document assumptions with supporting evidence and proceed.
+- **Parallelization:** different bugs in parallel; same bug = consolidate.
 
 ## Output Format & Handoff
 
 Document: what was investigated, ruled out, root cause, fix, prevention, and tagged assumptions (`[verified]`/`[inferred]`).
 
-## Skill Prescription
+## Skills
 
-### Always load
-
-- `diagnosing-bugs` - core diagnostic methodology
-
-### Load on trigger
-
-- `agent-browser` - UI/network/performance troubleshooting
-- `dependency-updater` - dependency/lockfile/version bugs
-- `resolving-merge-conflicts` - merge/rebase regressions
-- `karpathy-guidelines` - pattern-level bugs
-- `logging-best-practices` - log analysis and instrumentation
-- `repo exploration tool` - external library root cause
-- `webapp-testing` - UI bug reproduction
-
-### Skip if
-
-- No skill matches the bug category; proceed with raw tool calls
+Load on trigger: `agent-browser`, `webapp-testing`, `logging-best-practices`, `dependency-updater`. Skip when no skill matches the bug category.
