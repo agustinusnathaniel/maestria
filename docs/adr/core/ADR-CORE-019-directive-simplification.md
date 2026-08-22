@@ -73,7 +73,7 @@ The pre-change state:
 
 ### Positive
 
-- Roughly 26% fewer bytes across the changed canonical files (rules.md −34%), clearing the ≥20% goal on every measured scope (canonical files ~24%, generated platform projections ~21%).
+- Roughly 26% fewer bytes across the always-loaded directives (rules.md and orchestrator.md combined), 24% across all nine changed canonical files (rules.md alone: 31%), and 21% across generated platform projections - clearing the ≥20% goal on every measured scope.
 - Completion is unambiguous: implementers, reviewers, and users share one definition of "done".
 - Fewer silent no-op transforms - sync configs no longer carry replace ops whose anchors stopped matching canonical text.
 - Zero test-semantics edits (58/58 core tests pass unmodified).
