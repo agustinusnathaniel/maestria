@@ -1,0 +1,90 @@
+---
+/**
+ * Site footer, extracted verbatim from the homepage. No props. Used by the
+ * homepage and every plugin overview page (rendered after the `.plugin-root`
+ * canvas so it sits on the page background).
+ */
+import { marks, markAttrs } from '../../data/marks.js';
+
+interface FooterLink {
+  href: string;
+  title: string;
+  external?: boolean;
+}
+
+/** Footer navigation columns. Links mirror the sidebar and docs map. */
+const footerColumns: { head: string; links: FooterLink[] }[] = [
+  {
+    head: 'Documentation',
+    links: [
+      { href: '/core/when-to-use/', title: 'When to Use', desc: '' },
+      { href: '/core/how-it-works/', title: 'How It Works', desc: '' },
+      { href: '/core/pipeline/', title: 'Pipeline & Roles', desc: '' },
+    ],
+  },
+  {
+    head: 'Platforms',
+    links: [
+      { href: '/opencode/', title: 'OpenCode', desc: '' },
+      { href: '/claude-code/', title: 'Claude Code', desc: '' },
+      // On the homepage this stays a same-page anchor; elsewhere route home.
+      { href: Astro.url.pathname === '/' ? '#adapters' : '/#adapters', title: 'All platforms', desc: '' },
+    ],
+  },
+  {
+    head: 'Community',
+    links: [
+      { href: 'https://github.com/agustinusnathaniel/maestria', title: 'GitHub', desc: '', external: true },
+      { href: '/core/contributing/', title: 'Contributing', desc: '' },
+      { href: '/core/changelog/', title: 'Changelog', desc: '' },
+    ],
+  },
+];
+---
+
+<footer class="mt-[clamp(3.5rem,7vw,5rem)] border-t border-home-border pt-[clamp(2.25rem,5vw,3rem)] pb-2">
+  <div class="flex flex-wrap justify-between gap-x-12 gap-y-10">
+    <div class="min-w-0">
+      <div class="flex items-center gap-2.5">
+        <svg class="w-[22px] h-[22px] text-home-text-muted" {...markAttrs} set:html={marks.orchestrator} />
+        <span class="font-mono text-[0.9375rem] text-home-text">maestria</span>
+      </div>
+      <p class="mt-3 mb-0 text-[0.8125rem] leading-[1.6] text-home-text-muted max-w-[30ch]">AI engineering praxis, encoded as plugins.</p>
+    </div>
+    <nav class="grid grid-cols-2 sm:grid-cols-3 gap-x-12 gap-y-8" aria-label="Footer">
+      {footerColumns.map((col) => (
+        <div>
+          <p class="foot-head">{col.head}</p>
+          <ul class="m-0 mt-3 p-0 list-none space-y-2">
+            {col.links.map((link) => (
+              <li>
+                <a
+                  class="inline-block text-sm text-home-text-soft no-underline transition-colors hover:text-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+                  href={link.href}
+                  target={link.external ? '_blank' : undefined}
+                  rel={link.external ? 'noopener noreferrer' : undefined}
+                >{link.title}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  </div>
+  <div class="mt-10 pt-[1.5rem] border-t border-home-border flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-[0.8125rem] text-home-text-muted">
+    <span>MIT License © 2026 maestria</span>
+    <span>Built with Astro &amp; Starlight</span>
+  </div>
+</footer>
+
+<style>
+  .foot-head {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--home-text-muted);
+    margin: 0;
+  }
+</style>

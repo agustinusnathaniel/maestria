@@ -155,6 +155,37 @@ pre {
   margin-top: 0;
 }
 
+/* Plugin overview pages: same full-bleed canvas treatment as .home */
+.content-panel:has(.plugin-root) {
+  padding: 0;
+}
+
+.sl-container:has(.plugin-root) {
+  max-width: none;
+}
+
+.sl-container:has(.plugin-root) > * + * {
+  margin-top: 0;
+}
+
+:where(.sl-markdown-content .plugin-root)
+  :not(a, strong, em, del, span, input, code, br)
+  + :not(a, strong, em, del, span, input, code, br) {
+  margin-top: 0;
+}
+
+:where(.sl-markdown-content .plugin-root) :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 0;
+}
+
+.plugin-root {
+  position: relative;
+  overflow: clip;
+  background: var(--home-bg);
+  color: var(--home-text);
+  padding-bottom: clamp(3rem, 7vw, 5rem);
+}
+
 /* ============================================
    HEADING FONTS (documentation pages only;
    the homepage overrides these below)
@@ -173,7 +204,10 @@ h6 {
    LANDING PAGE - TOKENS
    ============================================ */
 
-.home {
+/* Theme tokens shared by the homepage canvas (.home) and plugin overview
+   pages (.plugin-root). Shell properties stay on their own selectors below. */
+.home,
+.plugin-root {
   --home-bg: #0b0d0b;
   --home-surface: #111411;
   --home-surface-raised: #171b17;
@@ -188,7 +222,9 @@ h6 {
   --home-focus: #b7ef5f;
   --home-glow: rgba(183, 239, 95, 0.07);
   --home-grid-line: rgba(240, 245, 239, 0.045);
+}
 
+.home {
   background: var(--home-bg);
   color: var(--home-text);
   max-width: 100%;
@@ -204,7 +240,8 @@ h6 {
   padding-bottom: clamp(4rem, 9vw, 6rem);
 }
 
-:root[data-theme='light'] .home {
+:root[data-theme='light'] .home,
+:root[data-theme='light'] .plugin-root {
   --home-bg: #f3f5ef;
   --home-surface: #ffffff;
   --home-surface-raised: #e9ede4;
@@ -390,14 +427,16 @@ html {
 }
 
 @media (prefers-contrast: more) {
-  .home {
+  .home,
+  .plugin-root {
     --home-border: rgba(240, 245, 239, 0.4);
     --home-border-strong: rgba(240, 245, 239, 0.66);
     --color-home-border: rgba(240, 245, 239, 0.4);
     --color-home-border-strong: rgba(240, 245, 239, 0.66);
   }
 
-  :root[data-theme='light'] .home {
+  :root[data-theme='light'] .home,
+  :root[data-theme='light'] .plugin-root {
     --home-border: rgba(15, 20, 13, 0.4);
     --home-border-strong: rgba(15, 20, 13, 0.66);
     --color-home-border: rgba(15, 20, 13, 0.4);

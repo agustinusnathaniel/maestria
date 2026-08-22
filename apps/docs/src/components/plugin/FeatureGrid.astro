@@ -1,0 +1,52 @@
+---
+/**
+ * Hairline feature grid in the homepage adapters language: outer top/left
+ * border, cells with right/bottom borders, surface tint + accent title on
+ * hover. Cells are non-interactive (divs); wrap in a link-bearing component
+ * if you need clickable cards.
+ */
+interface FeatureItem {
+  title: string;
+  desc: string;
+}
+
+interface Props {
+  items: FeatureItem[];
+  /** Column count at desktop widths; collapses to 1 below lg. */
+  columns?: 2 | 3;
+}
+
+const { items, columns = 3 } = Astro.props;
+---
+
+<div
+  class:list={[
+    'grid border-t border-l border-home-border max-lg:grid-cols-1',
+    columns === 2 ? 'grid-cols-2' : 'grid-cols-3',
+  ]}
+>
+  {
+    items.map((item) => (
+      <div class="group flex flex-col items-start gap-[0.45rem] p-[clamp(1.1rem,2vw,1.5rem)] border-r border-b border-home-border bg-transparent min-w-0 transition-colors hover:bg-home-surface">
+        <h3 class="feature-title">{item.title}</h3>
+        <p class="m-0 text-[13.5px] leading-[1.55] text-home-text-muted">{item.desc}</p>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .feature-title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--home-text);
+    transition: color 160ms ease;
+  }
+
+  .group:hover .feature-title,
+  .group:focus-within .feature-title {
+    color: var(--home-accent);
+  }
+</style>
