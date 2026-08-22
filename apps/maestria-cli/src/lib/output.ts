@@ -1,5 +1,6 @@
 import picocolors from 'picocolors';
 import { spinner as clackSpinner } from '@clack/prompts';
+import { freshnessOf } from '@/lib/freshness.js';
 import type { PlatformStatus, StatusOutput, PlatformResult } from '@/types.js';
 
 /** Wrapper around @clack/prompts spinner that respects --quiet */
@@ -26,11 +27,19 @@ export function renderStatusTable(platforms: PlatformStatus[]): string {
         : p.latestVersion
           ? p.latestVersion
           : picocolors.dim('unknown');
+    const freshness = p.installed ? freshnessOf(p.installedVersion, p.latestVersion) : 'unknown';
+    const outdated =
+      freshness === 'current'
+        ? picocolors.green('no')
+        : freshness === 'outdated'
+          ? picocolors.yellow('yes')
+          : picocolors.dim('-');
 
     lines.push(`  ${picocolors.bold(p.label)}`);
     lines.push(`    Available:  ${available}`);
     lines.push(`    Installed:  ${installed} ${version}`);
     lines.push(`    Latest:     ${latest}`);
+    lines.push(`    Outdated:   ${outdated}`);
   }
 
   return lines.join('\n') + '\n';

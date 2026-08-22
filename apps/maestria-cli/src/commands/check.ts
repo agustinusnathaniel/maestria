@@ -1,6 +1,7 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 import { detectAll, detectSingle } from '@/lib/detect.js';
+import { freshnessOf, checkExitCode } from '@/lib/freshness.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { renderStatusTable } from '@/lib/output.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
@@ -8,7 +9,8 @@ import { VALID_PLATFORMS } from '@/lib/validation.js';
 export const checkCommand = defineCommand({
   meta: {
     name: 'check',
-    description: 'Check installation status of a maestria plugin on a specific platform',
+    description:
+      'Check installation status of a maestria plugin on a specific platform and detect outdated installs',
   },
   args: {
     platform: {
@@ -56,12 +58,21 @@ export const checkCommand = defineCommand({
         process.exit(1);
       }
 
+      const freshnessList = checked.map((s) =>
+        s.installed ? freshnessOf(s.installedVersion, s.latestVersion) : 'unknown',
+      );
+
       if (args.json) {
-        console.log(JSON.stringify(checked, null, 2));
+        const results = checked.map((s, i) => ({
+          ...s,
+          outdated: freshnessList[i] === 'outdated',
+        }));
+        console.log(JSON.stringify(results, null, 2));
       } else {
         console.log(renderStatusTable(checked));
       }
-      process.exit(checked.every((s) => s.installed) ? 0 : 1);
+      const allInstalled = checked.every((s) => s.installed);
+      process.exit(allInstalled ? (freshnessList.includes('outdated') ? 3 : 0) : 1);
     }
 
     if (!platformId) {
@@ -120,19 +131,26 @@ export const checkCommand = defineCommand({
     }
 
     // Everything is good
+    const freshness = freshnessOf(status.installedVersion, status.latestVersion);
     const result = {
       platform: platformId,
       available: true,
       pluginInstalled: true,
       installedVersion: status.installedVersion,
       latestVersion: status.latestVersion || undefined,
+      outdated: freshness === 'outdated',
     };
     if (args.json) {
       console.log(JSON.stringify(result));
     } else {
       const version = status.installedVersion ? ` (v${status.installedVersion})` : '';
       console.log(`@maestria/${platformId} is installed for ${platform.label}${version}`);
+      if (freshness === 'outdated') {
+        console.log(
+          `update available: v${status.installedVersion} -> v${status.latestVersion} (run 'maestria update ${platformId}')`,
+        );
+      }
     }
-    process.exit(0);
+    process.exit(checkExitCode(freshness, status.installed));
   },
 });
