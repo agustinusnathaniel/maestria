@@ -4,83 +4,148 @@ description: Provisional Codex CLI plugin projection that packages Maestria's me
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Maestria Skills for Codex CLI'
-  tagline: 'Install one provisional plugin to make Maestria specialists, orchestration, handoffs, and review contracts available as Codex skills.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /codex/getting-started/installation/
-    - text: View Core Methodology
-      icon: external
-      variant: minimal
-      link: /core/agents/
 ---
 
-import { LinkCard, CardGrid, LinkButton, Aside } from '@astrojs/starlight/components';
+import PlatformHero from '../../../components/plugin/PlatformHero.astro';
+import PluginSection from '../../../components/plugin/PluginSection.astro';
+import FeatureGrid from '../../../components/plugin/FeatureGrid.astro';
+import SiblingPlatforms from '../../../components/plugin/SiblingPlatforms.astro';
+import SiteFooter from '../../../components/plugin/SiteFooter.astro';
+import { marks } from '../../../data/marks.js';
 
-`@maestria/codex` is a **provisional projection** of the canonical Maestria directives. It
-packages the 7 specialists, orchestrator, global rules, handoff and iteration-limit contracts, and
-the `fein`/`sonar`/`blitz` workflow modes as namespaced Codex skills.
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-<Aside type="caution" title="Codex CLI only">
-  This package was verified against Codex CLI `0.145.0` on 2026-08-13. It does not claim Codex
-  desktop parity, and skills remain advisory guidance rather than runtime permission controls.
-</Aside>
+  <div class="home-inner">
+    <div class="relative min-w-0">
+      <span class="absolute right-0 top-[clamp(4rem,8vw,6rem)] z-10 -translate-y-[3px] inline-flex items-center rounded-full border border-home-border px-2.5 py-1 font-mono text-[0.6875rem] font-medium tracking-[0.14em] text-home-text-muted" aria-hidden="true">PROVISIONAL</span>
+      <PlatformHero
+        eyebrow="@MAESTRIA/CODEX"
+        title="Maestria skills for Codex CLI."
+        lead="Install one provisional plugin to make Maestria specialists, orchestration, handoffs, and review contracts available as Codex skills."
+        mark={marks.codex}
+        primaryCta={{ href: '/codex/getting-started/installation/', label: 'Get started' }}
+        secondaryCta={{ href: '/codex/getting-started/quick-start/', label: 'Quick start' }}
+        installCommand="npx maestria install codex"
+      />
+    </div>
 
-## Install
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="The roster, as namespaced skills."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Specialist skills', desc: '$maestria:adventurer through $maestria:writer - the seven-specialist roster packaged as namespaced Codex skills.' },
+          { title: 'Capability-aware routing', desc: '$maestria:orchestrator chooses between direct work and specialist skills based on task risk and available runtime capabilities.' },
+          { title: 'Global rules', desc: '$maestria:global-rules carries the universal evidence, safety, authorization, and review contract.' },
+          { title: 'Bounded multi-stage work', desc: '$maestria:handoff and $maestria:iteration-limits keep long work units contained with explicit handoff and repair budgets.' },
+          { title: 'Workflow-mode skills', desc: '$maestria:fein, $maestria:sonar, and $maestria:blitz expose the workflow mode system as invocable skills.' },
+          { title: 'Advisory by design', desc: 'Read-only specialist boundaries are documented guidance - Codex sandbox, approvals, and hook trust model remain the runtime boundary.' },
+        ]}
+      />
+    </PluginSection>
 
-The Maestria CLI is the supported convenience path for the published npm package:
+    <PluginSection
+      index="02"
+      kicker="HOW IT WIRES IN"
+      title="CLI stages, Codex installs."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <ol class="list-none m-0 p-0 border-t border-home-border">
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">CLI stages</strong> - <code>npx maestria install codex</code> places <code>@maestria/codex</code> in a local marketplace under <code>~/.cache/maestria/</code></p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Native pickup</strong> - installation completes through Codex's own <code>codex plugin add</code> command</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Skills discovered</strong> - start a fresh Codex CLI session so marketplace state loads and the <code>$maestria:*</code> palette appears</p>
+        </li>
+      </ol>
+    </PluginSection>
 
-```bash
-npx maestria install codex
-```
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="One supported path."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          The Maestria CLI is the supported convenience path for the published npm package:
+        </p>
+      </div>
 
-The CLI stages `@maestria/codex` in a local marketplace under `~/.cache/maestria/`, then uses
-Codex's native `codex plugin add` command. Check, update, and remove it with:
+      ```bash
+      npx maestria install codex
+      ```
 
-```bash
-npx maestria status
-npx maestria update codex
-npx maestria uninstall codex
-```
+      <p class="!mt-6 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        Check, update, and remove it with the same CLI:
+      </p>
 
-<LinkButton href="/codex/getting-started/installation/" size="lg">
-  Installation and verification →
-</LinkButton>
+      ```bash
+      npx maestria status
+      npx maestria update codex
+      npx maestria uninstall codex
+      ```
 
-## What It Provides
+      <div class="pt-8">
+        <aside class="max-w-46rem border border-home-border bg-home-surface px-[clamp(1.1rem,2vw,1.5rem)] py-4">
+          <p class="m-0 mb-1.5 font-mono text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-home-accent">Codex CLI only</p>
+          <p class="m-0 text-sm leading-[1.65] text-home-text-muted">
+            Verified against Codex CLI 0.145.0 on 2026-08-13. No Codex desktop parity is claimed,
+            and skills remain advisory guidance rather than runtime permission controls.
+          </p>
+        </aside>
+      </div>
+    </PluginSection>
 
-- `$maestria:adventurer`, `$maestria:architect`, `$maestria:builder`, `$maestria:diagnose`, `$maestria:planner`, `$maestria:reviewer`, and `$maestria:writer`
-- `$maestria:orchestrator` for capability-aware routing
-- `$maestria:global-rules` for the universal evidence, safety, authorization, and review contract
-- `$maestria:handoff` and `$maestria:iteration-limits` for bounded multi-stage work
-- `$maestria:fein`, `$maestria:sonar`, and `$maestria:blitz` as workflow-mode skills
+    <PluginSection
+      index="04"
+      kicker="FIND YOUR WAY"
+      title="Start with the plugin."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/codex/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Install the npm package through Maestria, validate the projection, and verify skill discovery.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/codex/getting-started/quick-start/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Route a real task through the orchestrator and specialist skills.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Core Methodology</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Roles, permissions, and when to use each of the 7 specialists.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/codex/changelog/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Release history and support-boundary changes.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/codex/contributing/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Understand the generated skill projection and sync pipeline.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
 
-The read-only specialist boundaries are documented guidance. Codex's own sandbox, approvals, and
-hook trust model remain the runtime boundary.
+    <SiblingPlatforms excludeId="codex" />
 
-## Explore the Docs
+    <SiteFooter />
 
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Install the npm package through Maestria, validate the projection, and verify skill discovery."
-    href="/codex/getting-started/installation/"
-  />
-  <LinkCard
-    title="Quick Start"
-    description="Use the orchestrator and specialist skills on a real Codex CLI task."
-    href="/codex/getting-started/quick-start/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Understand the generated skill projection and sync pipeline."
-    href="/codex/contributing/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Release history and support-boundary changes."
-    href="/codex/changelog/"
-  />
-</CardGrid>
+  </div>
+</div>

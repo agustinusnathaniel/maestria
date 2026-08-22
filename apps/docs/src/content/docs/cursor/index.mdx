@@ -4,64 +4,136 @@ description: Declarative Cursor plugin that ships specialist agents, an orchestr
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Engineering Workflows for Cursor'
-  tagline: 'Install one plugin. Get 7 specialist agents, an orchestrator skill, always-on rules, and fein/sonar/blitz commands — same bundle for IDE and CLI.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /cursor/getting-started/installation/
-    - text: View Agents
-      icon: external
-      variant: minimal
-      link: /core/agents/
 ---
 
-import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import PlatformHero from '../../../components/plugin/PlatformHero.astro';
+import PluginSection from '../../../components/plugin/PluginSection.astro';
+import FeatureGrid from '../../../components/plugin/FeatureGrid.astro';
+import SiblingPlatforms from '../../../components/plugin/SiblingPlatforms.astro';
+import SiteFooter from '../../../components/plugin/SiteFooter.astro';
 import { PackageManagers } from 'starlight-package-managers';
+import { marks } from '../../../data/marks.js';
 
-## How It Works
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-1. **Plugin loads** — Cursor discovers `.cursor-plugin/plugin.json` and auto-loads `rules/`, `agents/`, `skills/`, `commands/`
-2. **Global rules apply** — `rules/maestria-global.mdc` uses `alwaysApply: true`
-3. **Orchestrator skill** — available when relevant or via `/orchestrate`
-4. **Specialists run as Task agents** — adventurer, architect, builder, diagnose, planner, reviewer, writer
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/CURSOR"
+      title="One bundle for IDE and CLI."
+      lead="Install one plugin. Get 7 specialist agents, an orchestrator skill, always-on rules, and fein/sonar/blitz commands - same bundle for IDE and CLI."
+      mark={marks.cursorMark}
+      primaryCta={{ href: '/cursor/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/cursor/getting-started/quick-start/', label: 'Quick start' }}
+      installCommand="npx maestria install cursor"
+    />
 
-## Quick Install
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Same bundle, both surfaces."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: '7 specialist agents', desc: 'adventurer, architect, builder, diagnose, planner, reviewer, and writer run as Cursor Task agents.' },
+          { title: 'Always-on global rules', desc: 'rules/maestria-global.mdc ships with alwaysApply: true - workflow directives apply to every Agent session.' },
+          { title: 'Orchestrator skill', desc: 'Loads when a task needs the pipeline, or invoke it directly via /orchestrate.' },
+          { title: 'Workflow mode commands', desc: '/fein, /sonar, and /blitz select the pipeline depth from Agent chat - in the IDE or the CLI.' },
+          { title: 'One install, both surfaces', desc: 'The same plugin drives Cursor IDE and Cursor CLI - restart the IDE or point the CLI at the plugin directory.' },
+          { title: 'Declarative plugin', desc: '.cursor-plugin/plugin.json declares rules/, agents/, skills/, and commands/ - Cursor discovers and auto-loads each directory.' },
+        ]}
+      />
+    </PluginSection>
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="install cursor" />
+    <PluginSection
+      index="02"
+      kicker="HOW IT WIRES IN"
+      title="Rules always on, specialists on call."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <ol class="list-none m-0 p-0 border-t border-home-border">
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Plugin loads</strong> - Cursor discovers <code>.cursor-plugin/plugin.json</code> and auto-loads <code>rules/</code>, <code>agents/</code>, <code>skills/</code>, <code>commands/</code></p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Global rules apply</strong> - <code>rules/maestria-global.mdc</code> uses <code>alwaysApply: true</code></p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Orchestrator skill</strong> - available when relevant or via <code>/orchestrate</code></p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">4</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Specialists run as Task agents</strong> - adventurer, architect, builder, diagnose, planner, reviewer, writer</p>
+        </li>
+      </ol>
+    </PluginSection>
 
-Then restart Cursor IDE, or:
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="Install once, restart or point the CLI."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          The chip above uses the maestria CLI. Prefer your own package runner?
+        </p>
+      </div>
 
-```bash
-agent --plugin-dir ~/.cursor/plugins/local/maestria
-```
+      <PackageManagers type="dlx" pkg="maestria@latest" args="install cursor" />
 
-<LinkButton href="/cursor/getting-started/installation/" size="lg">
-  Full Installation Guide →
-</LinkButton>
+      <p class="!mt-6 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        Then restart Cursor IDE, or launch the CLI against the plugin directory:
+      </p>
 
-## Explore the Docs
+      ```bash
+      agent --plugin-dir ~/.cursor/plugins/local/maestria
+      ```
+    </PluginSection>
 
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Installation, setup, and your first session with the plugin."
-    href="/cursor/getting-started/installation/"
-  />
-  <LinkCard
-    title="Agent Reference"
-    description="The 7 specialists and orchestrator methodology."
-    href="/core/agents/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Release history for @maestria/cursor."
-    href="/cursor/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="How to edit sync config and regenerate plugin files."
-    href="/cursor/contributing/"
-  />
-</CardGrid>
+    <PluginSection
+      index="04"
+      kicker="FIND YOUR WAY"
+      title="Start with the plugin."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cursor/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Installation, setup, and your first session with the plugin.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cursor/getting-started/quick-start/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Run your first workflow command and delegate to specialists.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Agent Reference</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">The 7 specialists and orchestrator methodology.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cursor/changelog/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Release history for @maestria/cursor.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cursor/contributing/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">How to edit sync config and regenerate plugin files.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
+
+    <SiblingPlatforms excludeId="cursor" />
+
+    <SiteFooter />
+
+  </div>
+</div>

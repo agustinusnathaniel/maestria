@@ -4,91 +4,164 @@ description: Declarative Claude Code plugin that ships 7 specialist agents, an o
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Engineering Workflows for Claude Code'
-  tagline: 'Install one plugin. Get 7 specialist agents, the orchestrator methodology, global rules, and fein/sonar/blitz workflow commands.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /claude-code/getting-started/installation/
-    - text: View Agents
-      icon: external
-      variant: minimal
-      link: /core/agents/
 ---
 
-import { LinkCard, CardGrid, LinkButton, Aside } from '@astrojs/starlight/components';
+import PlatformHero from '../../../components/plugin/PlatformHero.astro';
+import PluginSection from '../../../components/plugin/PluginSection.astro';
+import FeatureGrid from '../../../components/plugin/FeatureGrid.astro';
+import SiblingPlatforms from '../../../components/plugin/SiblingPlatforms.astro';
+import SiteFooter from '../../../components/plugin/SiteFooter.astro';
+import { marks } from '../../../data/marks.js';
 
-`@maestria/claude-code` is a declarative [Claude Code](https://code.claude.com) plugin: a
-`.claude-plugin/plugin.json` manifest, a directory of agent files, two skills, and three workflow
-commands. The agent files, skills, and workflow commands are generated from the canonical
-directives in `packages/core/agent-directives/`; the plugin manifest is maintained separately in
-the package.
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-> **Status: Native candidate.** The plugin validates cleanly with the official CLI
-> (`claude plugin validate --strict`) and follows the current documented plugin contract, but
-> runtime behavior is **not yet tested end to end**. Upstream Claude Code docs are moving and
-> unpinned - reverify before relying on any claim. Do not treat this package as a production
-> support promise. See the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) for evidence.
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/CLAUDE-CODE"
+      title="Seven specialists behind Claude Code."
+      lead="Install one plugin. Get 7 specialist agents, the orchestrator methodology, global rules, and fein/sonar/blitz workflow commands."
+      mark={marks.claudeCode}
+      primaryCta={{ href: '/claude-code/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/claude-code/getting-started/quick-start/', label: 'Quick start' }}
+      installCommand="npx maestria install claude-code"
+    />
 
-## How It Works
+    <div class="pt-[clamp(1.25rem,2.5vw,1.75rem)]">
+      <aside class="max-w-46rem border border-home-border bg-home-surface px-[clamp(1.1rem,2vw,1.5rem)] py-4">
+        <p class="m-0 mb-1.5 font-mono text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-home-accent">Native candidate</p>
+        <p class="m-0 text-sm leading-[1.65] text-home-text-muted">
+          Validates cleanly with the official CLI (<code>claude plugin validate --strict</code>)
+          and follows the documented plugin contract, but runtime behavior is not yet tested
+          end to end. Upstream Claude Code docs are moving and unpinned - reverify before relying
+          on any claim. See the <a href="https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md">runtime support matrix</a> for evidence.
+        </p>
+      </aside>
+    </div>
 
-1. **Plugin loads** - Claude Code discovers the `.claude-plugin/plugin.json` manifest and the `agents/`, `skills/`, and `commands/` directories from the plugin directory
-2. **Rules preloaded** - every specialist agent preloads the `maestria:global-rules` skill via the agent `skills` frontmatter field
-3. **Agents available** - 7 specialist agents are available as namespaced `@maestria:<agent>` mentions
-4. **Orchestrate** - the `/maestria:orchestrator` skill routes work to specialists; `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` select the pipeline depth
-5. **Read-only roles enforced** - `adventurer`, `planner`, and `reviewer` deny the `Write` and `Edit` tools via `disallowedTools` (user-authorized; the only runtime enforcement in the package)
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Namespaced agents, native shape."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: '7 specialist agents', desc: 'adventurer through writer, available as namespaced @maestria:<agent> mentions in every session.' },
+          { title: 'Orchestrator skill', desc: '/maestria:orchestrator routes work to the right specialist when a task needs the full pipeline.' },
+          { title: 'Workflow mode commands', desc: '/maestria:fein, /maestria:sonar, and /maestria:blitz select the pipeline depth for each task.' },
+          { title: 'Global rules preloaded', desc: 'Every specialist preloads the maestria:global-rules skill via its frontmatter - evidence, safety, and review contracts ride along automatically.' },
+          { title: 'Read-only roles enforced', desc: 'adventurer, planner, and reviewer deny Write and Edit via disallowedTools - user-authorized, and the only runtime enforcement in the package.' },
+          { title: 'Declarative projection', desc: 'A .claude-plugin/plugin.json manifest plus agent files, two skills, and three workflow commands - generated from packages/core/agent-directives/, manifest maintained separately.' },
+        ]}
+      />
+    </PluginSection>
 
-## Quick Start
+    <PluginSection
+      index="02"
+      kicker="HOW IT WIRES IN"
+      title="Manifest in, methodology out."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <ol class="list-none m-0 p-0 border-t border-home-border">
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Plugin loads</strong> - Claude Code discovers the <code>.claude-plugin/plugin.json</code> manifest plus the <code>agents/</code>, <code>skills/</code>, and <code>commands/</code> directories</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Rules preloaded</strong> - every specialist preloads the <code>maestria:global-rules</code> skill via its <code>skills</code> frontmatter field</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Agents available</strong> - all 7 specialists answer to namespaced <code>@maestria:&lt;agent&gt;</code> mentions</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">4</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Orchestrate</strong> - the <code>/maestria:orchestrator</code> skill routes work to specialists; <code>/maestria:fein</code>, <code>/maestria:sonar</code>, and <code>/maestria:blitz</code> select the pipeline depth</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">5</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Read-only enforced</strong> - adventurer, planner, and reviewer deny the <code>Write</code> and <code>Edit</code> tools via <code>disallowedTools</code></p>
+        </li>
+      </ol>
+    </PluginSection>
 
-The plugin is a self-contained directory. Validate it from a checkout, or install the published
-package persistently through the Maestria CLI:
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="Validate locally or install persistently."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          The chip above installs the published npm package persistently through the Maestria
+          CLI. Prefer to drive it straight from a checkout? Validate and load the local
+          directory:
+        </p>
+      </div>
 
-```bash
-claude plugin validate ./packages/claude-code --strict
-claude --plugin-dir ./packages/claude-code
-```
+      ```bash
+      claude plugin validate ./packages/claude-code --strict
+      claude --plugin-dir ./packages/claude-code
+      ```
 
-```bash
-npx maestria install claude-code
-```
+      <div class="pt-8">
+        <aside class="max-w-46rem border border-home-border bg-home-surface px-[clamp(1.1rem,2vw,1.5rem)] py-4">
+          <p class="m-0 mb-1.5 font-mono text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-home-accent">Candidate runtime</p>
+          <p class="m-0 text-sm leading-[1.65] text-home-text-muted">
+            Persistent installation is supported, but end-to-end component behavior remains a
+            candidate-runtime claim. Validate the package and verify the loaded agents, commands,
+            and skill preload in your Claude Code version.
+          </p>
+        </aside>
+      </div>
+    </PluginSection>
 
-<Aside type="caution" title="Candidate runtime">
-  The Maestria CLI now supports persistent Claude Code installation, but end-to-end component
-  behavior remains a candidate-runtime claim. Validate the package and verify the loaded agents,
-  commands, and skill preload in your Claude Code version.
-</Aside>
+    <PluginSection
+      index="04"
+      kicker="FIND YOUR WAY"
+      title="Start with the plugin."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/claude-code/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Local validation, loading the plugin, and your first session.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/claude-code/getting-started/quick-start/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Delegate to specialists and run your first workflow command.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Agent Reference</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Roles, permissions, and when to use each of the 7 specialists.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/workflow-patterns/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Workflow Patterns</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Practical agent usage patterns - from recon to full build pipelines.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/claude-code/changelog/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/claude-code/contributing/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Project structure, the sync pipeline, and how to extend the plugin.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
 
-<LinkButton href="/claude-code/getting-started/installation/" size="lg">
-  Full Installation Guide →
-</LinkButton>
+    <SiblingPlatforms excludeId="claude-code" />
 
-## Explore the Docs
+    <SiteFooter />
 
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Local validation, loading the plugin, and your first session."
-    href="/claude-code/getting-started/installation/"
-  />
-  <LinkCard
-    title="Agent Reference"
-    description="Roles, permissions, and when to use each of the 7 specialists."
-    href="/core/agents/"
-  />
-  <LinkCard
-    title="Workflow Patterns"
-    description="Practical agent usage patterns - from recon to full build pipelines."
-    href="/core/workflow-patterns/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Version history and release notes."
-    href="/claude-code/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Project structure, the sync pipeline, and how to extend the plugin."
-    href="/claude-code/contributing/"
-  />
-</CardGrid>
+  </div>
+</div>

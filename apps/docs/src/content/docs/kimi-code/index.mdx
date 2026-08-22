@@ -4,72 +4,145 @@ description: Declarative Kimi Code plugin that ships 8 specialized skills with s
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Engineering Workflows for Kimi Code'
-  tagline: 'Install one plugin. Get 8 specialized skills, swarm-aware orchestration, and global rules - all from a declarative manifest, no build step.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /kimi-code/getting-started/installation/
-    - text: View Skills
-      icon: external
-      variant: minimal
-      link: /core/agents/
 ---
 
-import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import PlatformHero from '../../../components/plugin/PlatformHero.astro';
+import PluginSection from '../../../components/plugin/PluginSection.astro';
+import FeatureGrid from '../../../components/plugin/FeatureGrid.astro';
+import SiblingPlatforms from '../../../components/plugin/SiblingPlatforms.astro';
+import SiteFooter from '../../../components/plugin/SiteFooter.astro';
 import { PackageManagers } from 'starlight-package-managers';
+import { marks } from '../../../data/marks.js';
 
-## How It Works
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-1. **Plugin loads** - Kimi Code parses `kimi.plugin.json` from the installed location and discovers `skills/`
-2. **Orchestrator auto-loads** - `sessionStart.skill: "orchestrator"` injects the full methodology and delegation rules into every session start
-3. **Global rules load** - `rules/AGENTS.md` is auto-loaded by Kimi Code from `~/.kimi-code/AGENTS.md` (one-time copy)
-4. **Safety enforced** - Optional `[[hooks]]` and `[[permission.rules]]` blocks in `config.toml` enforce persona boundaries at the tool layer
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/KIMI-CODE"
+      title="Eight skills, zero build step."
+      lead="Install one plugin. Get 8 specialized skills, swarm-aware orchestration, and global rules - all from a declarative manifest."
+      mark={marks.kimiCode}
+      primaryCta={{ href: '/kimi-code/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/kimi-code/getting-started/quick-start/', label: 'Quick start' }}
+      installCommand="npx maestria install kimi-code"
+    />
 
-## Quick Install
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="The whole harness as skills."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: '8 specialized skills', desc: 'The orchestrator plus seven specialists - adventurer, architect, builder, diagnose, planner, reviewer, writer - shipped as plain Kimi Code skills.' },
+          { title: 'Swarm-aware orchestration', desc: "The orchestrator routes work across specialist skills and dispatches to Kimi Code's 3 built-in subagent profiles." },
+          { title: 'Auto-loading methodology', desc: 'sessionStart.skill injects the full methodology and delegation rules into every session start - no commands to remember.' },
+          { title: 'Global rules, one-time copy', desc: 'Workflow directives live in ~/.kimi-code/AGENTS.md after a single copy and load automatically every session.' },
+          { title: 'Tool-layer safety', desc: 'Optional [[hooks]] and [[permission.rules]] blocks in config.toml enforce persona boundaries at the tool layer.' },
+          { title: 'No build step, no SDK hooks', desc: 'A declarative kimi.plugin.json manifest plus a directory of skills. Nothing compiles, nothing runs beyond Kimi Code itself.' },
+        ]}
+      />
+    </PluginSection>
 
-In a Kimi Code session:
+    <PluginSection
+      index="02"
+      kicker="HOW IT WIRES IN"
+      title="Declarative from the first parse."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <ol class="list-none m-0 p-0 border-t border-home-border">
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Plugin loads</strong> - Kimi Code parses <code>kimi.plugin.json</code> from the installed location and discovers <code>skills/</code></p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Orchestrator auto-loads</strong> - <code>sessionStart.skill: "orchestrator"</code> injects the full methodology and delegation rules into every session start</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Global rules load</strong> - <code>rules/AGENTS.md</code> is auto-loaded by Kimi Code from <code>~/.kimi-code/AGENTS.md</code> (one-time copy)</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">4</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Safety enforced</strong> - optional <code>[[hooks]]</code> and <code>[[permission.rules]]</code> blocks in <code>config.toml</code> enforce persona boundaries at the tool layer</p>
+        </li>
+      </ol>
+    </PluginSection>
 
-<PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="One command, standard npm under the hood."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          The chip above uses the maestria CLI. Prefer your own package runner?
+          Launch it from a Kimi Code session:
+        </p>
+      </div>
 
-The CLI pulls `@maestria/kimi-code` from npm and extracts it into `~/.kimi-code/plugins/managed/maestria`, then copies the global rules to `~/.kimi-code/AGENTS.md`.
+      <PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
 
-> The plugin is distributed via npm as a tarball. The CLI (`npx maestria`)
-> downloads the package, extracts the plugin manifest and skills to the
-> correct location, and sets up the global rules. No git operations, no
-> release branches, no subtree splits - just a standard npm package.
+      <p class="!mt-6 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        The CLI pulls <code>@maestria/kimi-code</code> from npm and extracts it into
+        <code>~/.kimi-code/plugins/managed/maestria</code>, then copies the global rules
+        to <code>~/.kimi-code/AGENTS.md</code>.
+      </p>
 
-<LinkButton href="/kimi-code/getting-started/installation/" size="lg">
-  Full Installation Guide →
-</LinkButton>
+      <p class="!mt-4 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-muted">
+        Distribution is a standard npm tarball - no git operations, no release branches,
+        no subtree splits.
+      </p>
+    </PluginSection>
 
-## Explore the Docs
+    <PluginSection
+      index="04"
+      kicker="FIND YOUR WAY"
+      title="Start with the plugin."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/kimi-code/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Installation, setup, and your first session with the plugin.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/kimi-code/getting-started/quick-start/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Delegate to specialists and try the orchestrator's swarm fan-out.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Skill Reference</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">The 8 skills, mapped to Kimi Code's 3 built-in subagent profiles.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/workflow-patterns/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Workflow Patterns</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Practical skill usage patterns - from recon to full build pipelines, plus swarm fan-out.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/kimi-code/changelog/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/kimi-code/contributing/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Project structure, editing skills, and how to extend the plugin.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
 
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Installation, setup, and your first session with the plugin."
-    href="/kimi-code/getting-started/installation/"
-  />
-  <LinkCard
-    title="Skill Reference"
-    description="The 8 skills, mapped to Kimi Code's 3 built-in subagent profiles."
-    href="/core/agents/"
-  />
-  <LinkCard
-    title="Workflow Patterns"
-    description="Practical skill usage patterns - from recon to full build pipelines, plus swarm fan-out."
-    href="/core/workflow-patterns/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Version history and release notes."
-    href="/kimi-code/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Project structure, editing skills, and how to extend the plugin."
-    href="/kimi-code/contributing/"
-  />
-</CardGrid>
+    <SiblingPlatforms excludeId="kimi-code" />
+
+    <SiteFooter />
+
+  </div>
+</div>
