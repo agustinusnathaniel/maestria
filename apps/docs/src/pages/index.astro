@@ -73,56 +73,112 @@ const marks: Record<string, string> = {
     '<rect x="3.5" y="7" width="4.5" height="4.5"/><rect x="16" y="7" width="4.5" height="4.5"/><line x1="9.5" y1="9.25" x2="14.5" y2="9.25"/><polyline points="12.5 7.25 14.5 9.25 12.5 11.25"/>',
   platforms:
     '<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
+  // Platform adapter marks.
+  opencode: '<polyline points="5.5 7.5 10 12 5.5 16.5"/><line x1="12.5" y1="17" x2="18.5" y2="17"/>',
+  claudeCode:
+    '<path d="M12 4.5v15"/><path d="m5.8 8.25 12.4 7.5"/><path d="m18.2 8.25-12.4 7.5"/>',
+  codex:
+    '<path d="M9.75 4.5c-2.1 0-3.15 1.05-3.15 3.15v1.7c0 1.5-.85 2.4-2.35 2.65 1.5.25 2.35 1.15 2.35 2.65v1.7c0 2.1 1.05 3.15 3.15 3.15"/><path d="M14.25 4.5c2.1 0 3.15 1.05 3.15 3.15v1.7c0 1.5.85 2.4 2.35 2.65-1.5.25-2.35 1.15-2.35 2.65v1.7c0 2.1-1.05 3.15-3.15 3.15"/>',
+  kimiCode: '<path d="M12 4.5 19.5 12 12 19.5 4.5 12Z"/>',
+  cursorMark: '<path d="M5.5 4.5 10.53 18.03l2.02-5.48 5.48-2.02z"/>',
+  piOmp:
+    '<circle cx="12" cy="12" r="8.25"/><path d="M12 3.75a8.25 8.25 0 0 1 0 16.5Z" fill="currentColor"/>',
+  hermes:
+    '<path d="M4.5 6.5 15 10.25"/><path d="M4.5 12H20"/><path d="m15 13.75-10.5 3.75"/>',
+  primeAgent:
+    '<path d="M12 3.75 18.5 6v5.25c0 4.06-2.72 6.63-6.5 8.25-3.78-1.62-6.5-4.19-6.5-8.25V6Z"/><polyline points="9 11.75 11.25 14 15.25 9.75"/>',
+  ecosystem:
+    '<circle cx="6.5" cy="6" r="1.9"/><circle cx="17.5" cy="8" r="1.9"/><circle cx="10" cy="18" r="1.9"/><path d="M8.3 6.6 15.7 7.8"/><path d="m6.9 7.9 2.6 8.2"/><path d="m16.9 9.8-5.9 6.6"/>',
 };
+
+interface Platform {
+  href: string;
+  mark: string;
+  name: string;
+  desc: string;
+  flagship?: boolean;
+  auxiliary?: boolean;
+  badge?: string;
+}
 
 /**
  * Platform adapter cells. All routes verified against src/content/docs and the
- * sidebar in astro.config.mjs. The ecosystem row completes the 3-column grid
- * with a real route and describes shared companion tooling.
+ * sidebar in astro.config.mjs. Nine cells complete the 3-column grid;
+ * `/ecosystem/` closes it with shared companion tooling.
  */
-const platforms = [
+const platforms: Platform[] = [
   {
     href: '/opencode/',
+    mark: 'opencode',
     name: '@maestria/opencode',
     desc: '8 specialized agents with global rules injected into every session.',
+    flagship: true,
+  },
+  {
+    href: '/claude-code/',
+    mark: 'claudeCode',
+    name: '@maestria/claude-code',
+    desc: 'Namespaced agents, skills, and workflow commands for Claude Code.',
+  },
+  {
+    href: '/codex/',
+    mark: 'codex',
+    name: '@maestria/codex',
+    desc: 'Specialist and workflow skills for Codex CLI.',
+    badge: 'PROVISIONAL',
   },
   {
     href: '/kimi-code/',
+    mark: 'kimiCode',
     name: '@maestria/kimi-code',
     desc: '8 specialized skills with swarm-aware orchestration and no build step.',
   },
   {
     href: '/cursor/',
+    mark: 'cursorMark',
     name: '@maestria/cursor',
     desc: 'Specialist agents, orchestrator skill, and workflow commands for Cursor IDE and CLI.',
   },
   {
     href: '/pi-omp/',
+    mark: 'piOmp',
     name: '@maestria/pi & @maestria/omp',
     desc: '7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.',
   },
   {
     href: '/hermes/',
+    mark: 'hermes',
     name: '@maestria/hermes',
-    desc: 'Methodology layer for Hermes Agent: 7 specialists, pipeline, and mode system.',
+    desc: 'Methodology layer for Hermes Agent: specialists, pipeline, and mode system.',
   },
   {
     href: '/prime-agent/',
+    mark: 'primeAgent',
     name: '@maestria/prime-agent',
-    desc: 'Skills-first Maestria for Prime Agent: 7 specialists, orchestrator, and workflow modes, plus a verified extension subset.',
+    desc: 'Skills-first Maestria for Prime Agent: specialists, orchestrator, and workflow modes.',
   },
   {
     href: '/ecosystem/',
+    mark: 'ecosystem',
     name: 'Shared ecosystem',
     desc: 'Optional companion tooling: CodeGraph indexing and RTK.',
+    auxiliary: true,
   },
 ];
 
+interface DocLink {
+  href: string;
+  title: string;
+  desc: string;
+  external?: boolean;
+}
+
 /**
  * Open docs navigation map. Every route is verified against
- * src/content/docs; omitted routes are never invented.
+ * src/content/docs; omitted routes are never invented. The platform directory
+ * lives in the Adapters section (03), so it is not duplicated here.
  */
-const docsMap = [
+const docsMap: { group: string; items: DocLink[] }[] = [
   {
     group: 'CLI',
     items: [
@@ -159,51 +215,57 @@ const docsMap = [
     ],
   },
   {
-    group: 'Adapters',
+    group: 'Community',
     items: [
       {
-        href: '/opencode/',
-        title: '@maestria/opencode',
-        desc: 'OpenCode plugin with 8 agents and global rules.',
+        href: 'https://github.com/agustinusnathaniel/maestria',
+        title: 'GitHub repository',
+        desc: 'Source, issues, and releases for every package.',
+        external: true,
       },
       {
-        href: '/kimi-code/',
-        title: '@maestria/kimi-code',
-        desc: 'Kimi Code plugin with 8 declarative skills.',
+        href: '/core/contributing/',
+        title: 'Contributing',
+        desc: 'Add an adapter or improve the core methodology.',
       },
       {
-        href: '/cursor/',
-        title: '@maestria/cursor',
-        desc: 'Cursor IDE and CLI plugin with specialist agents.',
-      },
-      {
-        href: '/pi-omp/',
-        title: '@maestria/pi & @maestria/omp',
-        desc: 'Pi and Oh My Pi orchestration through subagents.',
-      },
-      {
-        href: '/hermes/',
-        title: '@maestria/hermes',
-        desc: 'Hermes Agent methodology layer and mode system.',
-      },
-      {
-        href: '/prime-agent/',
-        title: '@maestria/prime-agent',
-        desc: 'Skills-first Prime Agent package: specialist and orchestrator skills with workflow modes.',
-      },
-      {
-        href: '/claude-code/',
-        title: '@maestria/claude-code',
-        desc: 'Claude Code plugin with namespaced agents, skills, and workflow commands.',
-      },
-      {
-        href: '/codex/',
-        title: '@maestria/codex',
-        desc: 'Provisional Codex CLI projection with specialist and workflow skills.',
+        href: '/core/changelog/',
+        title: 'Changelog',
+        desc: 'What changed across the ecosystem.',
       },
     ],
   },
 ];
+
+/** Footer navigation columns. Links mirror the sidebar and docs map. */
+const footerColumns: { head: string; links: DocLink[] }[] = [
+  {
+    head: 'Documentation',
+    links: [
+      { href: '/core/when-to-use/', title: 'When to Use', desc: '' },
+      { href: '/core/how-it-works/', title: 'How It Works', desc: '' },
+      { href: '/core/pipeline/', title: 'Pipeline & Roles', desc: '' },
+    ],
+  },
+  {
+    head: 'Platforms',
+    links: [
+      { href: '/opencode/', title: 'OpenCode', desc: '' },
+      { href: '/claude-code/', title: 'Claude Code', desc: '' },
+      { href: '#adapters', title: 'All platforms', desc: '' },
+    ],
+  },
+  {
+    head: 'Community',
+    links: [
+      { href: 'https://github.com/agustinusnathaniel/maestria', title: 'GitHub', desc: '', external: true },
+      { href: '/core/contributing/', title: 'Contributing', desc: '' },
+      { href: '/core/changelog/', title: 'Changelog', desc: '' },
+    ],
+  },
+];
+
+const INSTALL_CMD = 'npx maestria install opencode';
 
 const markAttrs = {
   viewBox: '0 0 24 24',
@@ -228,164 +290,135 @@ const markAttrs = {
   }}
 >
   <div class="home">
+    <div class="home-glow" aria-hidden="true"></div>
+    <div class="home-grid" aria-hidden="true"></div>
+
     <div class="home-inner">
-      <section class="flex flex-col items-center text-center pt-[clamp(3rem,8vw,5.5rem)] max-2xl:pt-[clamp(2.5rem,6vw,4rem)] max-md:pt-1.5 mb-[clamp(4.25rem,10vw,7rem)] max-2xl:mb-[clamp(3rem,8vw,5.5rem)] max-md:mb-[1.125rem] min-w-0 home-hero-anim" aria-labelledby="home-title">
-        <p class="text-[0.8125rem] max-md:text-[0.75rem] font-semibold tracking-[0.12em] uppercase text-home-text-muted mb-5 max-md:mb-2">MAESTRIA / METHODOLOGY LAYER</p>
-        <h1 id="home-title" class="text-[clamp(2.75rem,7vw,4.75rem)] max-md:text-[clamp(1.875rem,9vw,2.5rem)] font-[540] leading-[1.04] tracking-[-0.045em] text-balance text-home-text max-w-[18ch]">Make the work deliberate.</h1>
+      <!-- ============================== 1. HERO ============================== -->
+      <section
+        class="flex flex-col items-center text-center pt-[clamp(4.5rem,9vw,6.5rem)] max-md:pt-12 min-w-0 home-hero-anim"
+        aria-labelledby="home-title"
+      >
+        <p class="font-mono text-xs uppercase tracking-[0.14em] text-home-text-muted mb-5 max-md:mb-2">OPEN-SOURCE METHODOLOGY LAYER</p>
+        <h1 id="home-title" class="text-[clamp(2.75rem,7vw,4.75rem)] max-md:text-[clamp(1.875rem,9vw,2.5rem)] font-[540] leading-[1.04] tracking-[-0.04em] text-balance text-home-text max-w-[20ch]">
+          Make the work <span class="text-home-accent">deliberate.</span>
+        </h1>
         <p class="text-[clamp(1.05rem,1.6vw,1.25rem)] max-md:text-[0.875rem] leading-[1.6] max-md:leading-[1.55] text-home-text-soft max-w-40rem mt-6 max-md:mt-3 mx-auto text-pretty">
           A portable harness for AI coding agents. Route complex work through
           specialists, structured handoffs, and independent review.
         </p>
-        <div class="flex items-center justify-center flex-wrap gap-7 max-md:gap-5 mt-9 max-md:mt-4">
-          <a class="inline-flex items-center justify-center min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98]" href="/cli/getting-started/">Get Started</a>
-          <a class="group inline-flex items-center gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent" href="#pipeline">
-            Explore the pipeline<span class="transition-transform group-hover:translate-x-[3px]" aria-hidden="true">→</span>
+        <div class="flex items-center justify-center flex-wrap gap-[1.4rem] max-md:gap-4 mt-9 max-md:mt-4">
+          <a class="inline-flex items-center justify-center min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cli/getting-started/">Get Started</a>
+          <a class="inline-flex items-center gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="#pipeline">
+            Explore the pipeline<span aria-hidden="true">↓</span>
           </a>
         </div>
+        <div class="mt-8 max-md:mt-6 flex flex-col items-center gap-2.5 min-w-0">
+          <div class="install-chip inline-flex items-stretch rounded-[6px] bg-home-surface border border-home-border overflow-hidden max-w-full">
+            <span class="flex items-center pl-4 pr-2 font-mono text-sm text-home-accent select-none" aria-hidden="true">$</span>
+            <code class="flex items-center py-2.5 font-mono text-[0.8125rem] text-home-text whitespace-nowrap">{INSTALL_CMD}</code>
+            <button
+              type="button"
+              class="copy-btn inline-flex cursor-pointer items-center justify-center self-stretch w-10 ml-1 mr-0.5 rounded-[4px] bg-transparent border-0 text-home-text-muted hover:text-home-text hover:bg-home-surface-raised focus:text-home-text focus:bg-home-surface-raised transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+              aria-label="Copy install command"
+              data-install-cmd={INSTALL_CMD}
+            >
+              <svg class="icon-copy w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <svg class="icon-check w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+          <span class="copy-live sr-only" aria-live="polite"></span>
+          <p class="font-mono text-xs text-home-text-muted m-0">npm · pnpm · yarn · bun · deno — any runtime works</p>
+        </div>
       </section>
 
-      <section
-        class="hero-console"
-        aria-label="Example run of the Maestria pipeline: Thinker, Worker, and Verifier stages with handoff inspection"
-      >
-        <header class="flex items-center justify-between flex-wrap gap-y-2 gap-x-5 px-4 py-2.5 border-b border-home-border max-md:px-3 max-md:py-[0.4375rem] max-md:gap-x-3.5">
-          <span class="flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-home-text">
-            <span class="w-[7px] h-[7px] rounded-[1px] bg-home-accent" aria-hidden="true"></span>
-            <span>EXAMPLE RUN / READY</span>
-          </span>
-          <span class="flex items-center flex-wrap gap-y-1 gap-x-4 text-xs">
-            <span class="font-semibold tracking-wider uppercase text-home-text-soft">8 ROLES · 3 MODES</span>
-            <span class="text-home-text-muted max-sm:absolute max-sm:w-px max-sm:h-px max-sm:-m-px max-sm:p-0 max-sm:overflow-hidden max-sm:clip-[rect(0_0_0_0)] max-sm:clip-path-[inset(50%)] max-sm:whitespace-nowrap max-sm:border-0">ILLUSTRATIVE, NOT LIVE TELEMETRY</span>
-          </span>
-        </header>
-        <div class="flex-1 grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)] max-xl:grid-cols-1">
-          <div class="flex flex-col min-w-0" aria-label="Cognitive stages">
-            <div class="console-stage">
-              <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border stage-label">Thinker</p>
-              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
-                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Adventurer</span>
-                <span class="text-home-text-muted text-right stage-task">context mapped</span>
-                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">recon report</span>
-              </div>
-              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
-                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Architect</span>
-                <span class="text-home-text-muted text-right stage-task">approach selected</span>
-                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">decision record</span>
-              </div>
-              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
-                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Planner</span>
-                <span class="text-home-text-muted text-right stage-task">scope bounded</span>
-                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">implementation plan</span>
-              </div>
-            </div>
-            <div class="console-stage">
-              <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border stage-label">Worker</p>
-              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
-                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Builder</span>
-                <span class="text-home-text-muted text-right stage-task">artifact produced</span>
-                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">implementation + tests</span>
-              </div>
-            </div>
-            <div class="console-stage">
-              <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border stage-label">Verifier</p>
-              <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 text-[0.8125rem] min-w-0 stage-row">
-                <span class="text-home-text font-[560] whitespace-nowrap stage-role">Reviewer</span>
-                <span class="text-home-text-muted text-right stage-task">independent check</span>
-                <span class="text-home-text-soft text-[0.75rem] text-right stage-artifact">review verdict</span>
-              </div>
-            </div>
+      <!-- ========================= 2. HARNESS TRANSCRIPT ========================= -->
+      <section class="term-wrap pt-[clamp(3.5rem,7vw,5rem)] min-w-0" aria-labelledby="term-title">
+        <h2 id="term-title" class="sr-only">Harness transcript example</h2>
+        <div class="term mx-auto w-full max-w-[46rem]">
+          <div class="term-bar">
+            <span class="term-title">maestria — harness transcript</span>
+            <span class="term-badge">EXAMPLE</span>
           </div>
-
-          <div class="flex flex-col min-w-0 border-l border-home-border max-xl:border-l-0 max-xl:border-t max-xl:border-home-border" aria-label="Workflow workspace">
-            <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border">Workflow</p>
-            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 ws-row">
-              <span class="text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-home-accent whitespace-nowrap ws-phase">Think</span>
-              <span class="text-[0.8125rem] text-home-text-soft text-right ws-item">Adventurer · recon report</span>
-              <span class="text-[0.6875rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted whitespace-nowrap ws-state">done</span>
+          <div class="term-body">
+            <p class="term-line term-cmd" style="--i: 0"><span class="term-prompt" aria-hidden="true">$ </span>npx maestria install opencode</p>
+            <p class="term-line term-out" style="--i: 1"><span class="term-ok" aria-hidden="true">✓ </span>@maestria/opencode installed — 8 specialists wired</p>
+            <div class="term-spacer" aria-hidden="true"></div>
+            <p class="term-line term-cmd" style="--i: 2"><span class="term-prompt" aria-hidden="true">$ </span>maestria status</p>
+            <div class="term-row term-status-row" style="--i: 3">
+              <span class="term-cell">opencode</span>
+              <span class="term-state"><span class="term-ok" aria-hidden="true">✓ </span>connected</span>
+              <span class="term-cell">claude-code</span>
+              <span class="term-state"><span class="term-ok" aria-hidden="true">✓ </span>connected</span>
             </div>
-            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 ws-row">
-              <span class="text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-home-accent whitespace-nowrap ws-phase">Route</span>
-              <span class="text-[0.8125rem] text-home-text-soft text-right ws-item">Orchestrator → Builder</span>
-              <span class="text-[0.6875rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted whitespace-nowrap ws-state">routed</span>
+            <div class="term-row term-status-row" style="--i: 4">
+              <span class="term-cell">kimi-code</span>
+              <span class="term-state"><span class="term-open" aria-hidden="true">○ </span>available</span>
+              <span class="term-cell">cursor</span>
+              <span class="term-state"><span class="term-open" aria-hidden="true">○ </span>available</span>
             </div>
-            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 ws-row">
-              <span class="text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-home-accent whitespace-nowrap ws-phase">Build</span>
-              <span class="text-[0.8125rem] text-home-text-soft text-right ws-item">Builder · implementation + tests</span>
-              <span class="text-[0.6875rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted whitespace-nowrap ws-state">ready</span>
+            <div class="term-spacer" aria-hidden="true"></div>
+            <p class="term-line term-comment" style="--i: 5"># one task through the harness — thinker, worker, verifier</p>
+            <div class="term-row term-task-row" style="--i: 6">
+              <span class="term-role">thinker</span><span class="term-agent">adventurer</span>
+              <span class="term-artifact"><span aria-hidden="true">→ </span>recon report</span>
+              <span class="term-done term-ok" aria-hidden="true">✓</span>
             </div>
-            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 ws-row">
-              <span class="text-[0.6875rem] font-semibold tracking-[0.08em] uppercase text-home-accent whitespace-nowrap ws-phase">Review</span>
-              <span class="text-[0.8125rem] text-home-text-soft text-right ws-item">Reviewer · verdict pending</span>
-              <span class="text-[0.6875rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted whitespace-nowrap ws-state">queued</span>
+            <div class="term-row term-task-row" style="--i: 7">
+              <span class="term-role">thinker</span><span class="term-agent">architect</span>
+              <span class="term-artifact"><span aria-hidden="true">→ </span>decision record</span>
+              <span class="term-done term-ok" aria-hidden="true">✓</span>
             </div>
-          </div>
-
-          <div class="flex flex-col min-w-0 border-l border-home-border max-xl:border-l-0 max-xl:border-t max-xl:border-home-border" aria-label="Inspector: handoffs and boundaries">
-            <p class="px-[0.9rem] py-2.5 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-home-text-muted border-b border-home-border">Inspector</p>
-            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 insp-row">
-              <span class="text-[0.75rem] font-semibold tracking-[0.04em] uppercase text-home-text-muted whitespace-nowrap insp-k">Handoff</span>
-              <span class="text-[0.8125rem] text-home-text-soft text-right insp-v">Builder → Reviewer</span>
+            <div class="term-row term-task-row" style="--i: 8">
+              <span class="term-role">planner</span><span class="term-agent"></span>
+              <span class="term-artifact"><span aria-hidden="true">→ </span>phased plan</span>
+              <span class="term-done term-ok" aria-hidden="true">✓</span>
             </div>
-            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 insp-row">
-              <span class="text-[0.75rem] font-semibold tracking-[0.04em] uppercase text-home-text-muted whitespace-nowrap insp-k">Verdict</span>
-              <span class="text-[0.8125rem] text-home-text-soft text-right insp-v">artifact accepted</span>
+            <div class="term-row term-task-row" style="--i: 9">
+              <span class="term-role">worker</span><span class="term-agent">builder</span>
+              <span class="term-artifact"><span aria-hidden="true">→ </span>implementation + tests</span>
+              <span class="term-done term-ok" aria-hidden="true">✓</span>
             </div>
-            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 insp-row">
-              <span class="text-[0.75rem] font-semibold tracking-[0.04em] uppercase text-home-text-muted whitespace-nowrap insp-k">Boundary</span>
-              <span class="text-[0.8125rem] text-home-text-soft text-right insp-v">maker != checker</span>
-            </div>
-            <div class="flex items-baseline justify-between gap-3 px-[0.9rem] py-2.5 min-w-0 insp-row">
-              <span class="text-[0.75rem] font-semibold tracking-[0.04em] uppercase text-home-text-muted whitespace-nowrap insp-k">Termination</span>
-              <span class="text-[0.8125rem] text-home-text-soft text-right insp-v">verifier accepts</span>
+            <div class="term-row term-task-row" style="--i: 10">
+              <span class="term-role">verifier</span><span class="term-agent">reviewer</span>
+              <span class="term-artifact"><span aria-hidden="true">→ </span>verdict: approved</span>
+              <span class="term-done term-ok" aria-hidden="true">✓<span class="term-cursor" aria-hidden="true">▍</span></span>
             </div>
           </div>
         </div>
       </section>
-    </div>
 
-    <section class="w-full bg-home-punch text-home-punch-ink mb-[clamp(5rem,12vw,9rem)]" aria-label="Maestria by the numbers">
-      <div class="max-w-7xl mx-auto py-[clamp(2.75rem,6vw,4.25rem)] px-[clamp(1.25rem,4vw,2.5rem)] grid grid-cols-4 gap-6 max-md:grid-cols-2 max-md:gap-8">
-        <div>
-          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">8</span>
-          <span class="block mt-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">SPECIALISTS</span>
-        </div>
-        <div>
-          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">3</span>
-          <span class="block mt-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">COGNITIVE ROLES</span>
-        </div>
-        <div>
-          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">1</span>
-          <span class="block mt-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">ORCHESTRATOR</span>
-        </div>
-        <div>
-          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">0</span>
-          <span class="block mt-2.5 text-[0.8125rem] font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">VENDOR LOCK-IN</span>
-        </div>
-      </div>
-    </section>
-
-    <div class="home-inner">
-      <section class="home-section mb-[clamp(6rem,14vw,11rem)]" aria-labelledby="principles-title">
+      <!-- ============================ 3. THE METHOD ============================ -->
+      <section class="home-section mb-[clamp(5.5rem,12vw,9rem)]" aria-labelledby="method-title">
         <p class="section-eyebrow">01 / THE METHOD</p>
-        <h2 id="principles-title">Structure beats improvisation.</h2>
-        <div class="grid grid-cols-3 max-lg:grid-cols-1">
-          <article class="pl-[clamp(1.5rem,3vw,2.5rem)] border-l border-home-border min-w-0 max-lg:pl-0 max-lg:pt-6 max-lg:border-l-0 max-lg:border-t first:pl-0 first:border-l-0 first:max-lg:border-t-0 first:max-lg:pt-0 last:pr-0">
-            <svg class="w-[26px] h-[26px] text-home-text-muted mb-5" {...markAttrs} set:html={marks.pipeline} />
-            <h3 class="text-lg font-[560] tracking-[-0.01em] text-home-text mb-2">Pipeline composition</h3>
-            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        <h2 id="method-title">Structure beats improvisation.</h2>
+        <div class="grid grid-cols-3 max-lg:grid-cols-1 gap-x-[clamp(2rem,4vw,3rem)] max-lg:gap-y-10">
+          <article class="group border-t border-home-border pt-[1.5rem] min-w-0">
+            <div class="flex items-center justify-between gap-4">
+              <span class="method-num">01</span>
+              <svg class="w-[26px] h-[26px] text-home-text-muted" {...markAttrs} set:html={marks.pipeline} />
+            </div>
+            <h3 class="mt-5 mb-2 text-[19px] leading-[1.3] font-[590] tracking-[-0.01em] text-home-text">Pipeline composition</h3>
+            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft m-0">
               Route work through focused stages instead of asking one context
               to do everything.
             </p>
           </article>
-          <article class="pl-[clamp(1.5rem,3vw,2.5rem)] border-l border-home-border min-w-0 max-lg:pl-0 max-lg:pt-6 max-lg:border-l-0 max-lg:border-t first:pl-0 first:border-l-0 first:max-lg:border-t-0 first:max-lg:pt-0 last:pr-0">
-            <svg class="w-[26px] h-[26px] text-home-text-muted mb-5" {...markAttrs} set:html={marks.makerChecker} />
-            <h3 class="text-lg font-[560] tracking-[-0.01em] text-home-text mb-2">Maker/checker split</h3>
-            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft">The builder produces; the reviewer sees it fresh.</p>
+          <article class="group border-t border-home-border pt-[1.5rem] min-w-0">
+            <div class="flex items-center justify-between gap-4">
+              <span class="method-num">02</span>
+              <svg class="w-[26px] h-[26px] text-home-text-muted" {...markAttrs} set:html={marks.makerChecker} />
+            </div>
+            <h3 class="mt-5 mb-2 text-[19px] leading-[1.3] font-[590] tracking-[-0.01em] text-home-text">Maker/checker split</h3>
+            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft m-0">The builder produces; the reviewer sees it fresh.</p>
           </article>
-          <article class="pl-[clamp(1.5rem,3vw,2.5rem)] border-l border-home-border min-w-0 max-lg:pl-0 max-lg:pt-6 max-lg:border-l-0 max-lg:border-t first:pl-0 first:border-l-0 first:max-lg:border-t-0 first:max-lg:pt-0 last:pr-0">
-            <svg class="w-[26px] h-[26px] text-home-text-muted mb-5" {...markAttrs} set:html={marks.platforms} />
-            <h3 class="text-lg font-[560] tracking-[-0.01em] text-home-text mb-2">Platform independence</h3>
-            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          <article class="group border-t border-home-border pt-[1.5rem] min-w-0">
+            <div class="flex items-center justify-between gap-4">
+              <span class="method-num">03</span>
+              <svg class="w-[26px] h-[26px] text-home-text-muted" {...markAttrs} set:html={marks.platforms} />
+            </div>
+            <h3 class="mt-5 mb-2 text-[19px] leading-[1.3] font-[590] tracking-[-0.01em] text-home-text">Platform independence</h3>
+            <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft m-0">
               Methodology stays consistent while each platform uses native
               primitives.
             </p>
@@ -393,7 +426,8 @@ const markAttrs = {
         </div>
       </section>
 
-      <section class="home-section mb-[clamp(4.5rem,11vw,8rem)] scroll-mt-[calc(var(--sl-nav-height)+2rem)]" id="pipeline" aria-labelledby="agents-title">
+      <!-- =========================== 4. SPECIALISTS =========================== -->
+      <section class="home-section mb-[clamp(5rem,11vw,8rem)] scroll-mt-[calc(var(--sl-nav-height)+2rem)]" id="pipeline" aria-labelledby="agents-title">
         <p class="section-eyebrow">02 / SPECIALISTS</p>
         <h2 id="agents-title">The conductor is not the crew.</h2>
         <div class="grid grid-cols-[minmax(0,20rem)_minmax(0,1fr)] gap-[clamp(1.5rem,3vw,2.5rem)] items-start max-lg:grid-cols-1">
@@ -408,7 +442,8 @@ const markAttrs = {
                 tabindex={index === 0 ? 0 : -1}
               >
                 <svg class="w-5 h-5 flex-none" {...markAttrs} set:html={marks[agent.id]} />
-                <span class="agent-tab-name">{agent.name}</span>
+                <span class="agent-tab-name whitespace-nowrap">{agent.name}</span>
+                <span class="agent-tab-role">{agent.role}</span>
               </button>
             ))}
           </div>
@@ -443,44 +478,87 @@ const markAttrs = {
                     <dd class="text-sm text-home-text-soft m-0 pl-0">{agentMeta[agent.id].constraint}</dd>
                   </div>
                 </dl>
+                <a
+                  class="panel-more inline-flex items-center gap-1.5 mt-7 border-t border-home-border pt-[1rem] text-[13px] font-medium text-home-text-soft no-underline transition-colors hover:text-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+                  href="/core/agents/"
+                >
+                  Full specialist reference<span class="panel-more-arrow" aria-hidden="true">→</span>
+                </a>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section class="home-section mb-[clamp(5.5rem,13vw,10rem)]" aria-labelledby="platforms-title">
+      <!-- ============================ 5. ADAPTERS ============================ -->
+      <section class="home-section" id="adapters" aria-labelledby="platforms-title">
         <p class="section-eyebrow">03 / ADAPTERS</p>
         <h2 id="platforms-title">One methodology. Native primitives.</h2>
         <div class="grid grid-cols-3 border-t border-l border-home-border max-lg:grid-cols-1">
           {platforms.map((platform) => (
-            <a class="group flex flex-col items-start gap-[0.4rem] p-[clamp(1.25rem,2.5vw,1.75rem)] border-r border-b border-home-border bg-transparent no-underline text-inherit min-w-0 transition-colors hover:bg-home-surface" href={platform.href}>
-              <svg class="w-[22px] h-[22px] text-home-text-muted mb-2" {...markAttrs} set:html={marks.platforms} />
-              <span class="text-[1.0625rem] font-[560] tracking-[-0.01em] text-home-text transition-colors group-hover:text-home-accent">{platform.name}</span>
-              <span class="text-sm leading-[1.6] text-home-text-muted">{platform.desc}</span>
-              <span class="mt-3 text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px]" aria-hidden="true">→</span>
+            <a
+              class:list={[
+                'group relative flex flex-col items-start gap-[0.4rem] p-[clamp(1.25rem,2.5vw,1.75rem)] border-r border-b border-home-border bg-transparent no-underline text-inherit min-w-0 transition-colors hover:border-home-border-strong hover:bg-home-surface focus-visible:border-home-border-strong focus-visible:bg-home-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]',
+                { 'platform-flagship': platform.flagship === true },
+                { 'platform-aux': platform.auxiliary === true },
+              ]}
+              href={platform.href}
+            >
+              <svg class="w-6 h-6 text-home-text-muted mb-2" {...markAttrs} set:html={marks[platform.mark]} />
+              <span class="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.9375rem] text-home-text transition-colors group-hover:text-home-accent group-focus-visible:text-home-accent">
+                {platform.name}
+                {platform.badge && <span class="platform-badge">{platform.badge}</span>}
+              </span>
+              <span class="text-[0.84375rem] leading-[1.55] text-home-text-muted">{platform.desc}</span>
             </a>
           ))}
         </div>
       </section>
+    </div>
 
+    <!-- ============================= 6. PUNCH BAND ============================= -->
+    <section class="w-full bg-home-punch text-home-punch-ink mb-[clamp(5.5rem,12vw,9rem)]" aria-label="Maestria by the numbers">
+      <div class="max-w-7xl mx-auto py-[clamp(2.75rem,6vw,4.25rem)] px-[clamp(1.25rem,4vw,2.5rem)] grid grid-cols-4 gap-6 max-md:grid-cols-2 max-md:gap-8">
+        <div>
+          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">8</span>
+          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">SPECIALISTS</span>
+        </div>
+        <div>
+          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">3</span>
+          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">COGNITIVE ROLES</span>
+        </div>
+        <div>
+          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">9</span>
+          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">PLATFORM ADAPTERS</span>
+        </div>
+        <div>
+          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">0</span>
+          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">VENDOR LOCK-IN</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="home-inner">
+      <!-- ============================= 7. DOCS MAP ============================= -->
       <section class="home-section" aria-labelledby="docs-title">
-        <p class="section-eyebrow">04 / DOCUMENTATION</p>
-        <h2 id="docs-title">Start with the system, then choose your platform.</h2>
+        <p class="section-eyebrow">04 / FIND YOUR WAY</p>
+        <h2 id="docs-title">Start with the system.</h2>
         <div>
           {docsMap.map((group, gi) => (
             <div>
               <p class:list={[
-                "pt-2 pb-2 text-xs font-semibold tracking-[0.1em] uppercase text-home-text-muted",
-                gi === 0 ? "mt-0" : "mt-9"
+                'pt-2 pb-2 font-mono text-xs font-medium tracking-[0.1em] uppercase text-home-text-muted',
+                gi === 0 ? 'mt-0' : 'mt-9'
               ]}>{group.group}</p>
               {group.items.map((item, ii) => (
                 <a
                   class:list={[
-                    "group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto]",
-                    ii === group.items.length - 1 && "border-b"
+                    'group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]',
+                    ii === group.items.length - 1 && 'border-b'
                   ]}
                   href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
                 >
                   <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">{item.title}</span>
                   <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">{item.desc}</span>
@@ -491,6 +569,42 @@ const markAttrs = {
           ))}
         </div>
       </section>
+
+      <!-- =============================== 8. FOOTER =============================== -->
+      <footer class="mt-[clamp(3.5rem,7vw,5rem)] border-t border-home-border pt-[clamp(2.25rem,5vw,3rem)] pb-2">
+        <div class="flex flex-wrap justify-between gap-x-12 gap-y-10">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-[22px] h-[22px] text-home-text-muted" {...markAttrs} set:html={marks.orchestrator} />
+              <span class="font-mono text-[0.9375rem] text-home-text">maestria</span>
+            </div>
+            <p class="mt-3 mb-0 text-[0.8125rem] leading-[1.6] text-home-text-muted max-w-[30ch]">AI engineering praxis, encoded as plugins.</p>
+          </div>
+          <nav class="grid grid-cols-2 sm:grid-cols-3 gap-x-12 gap-y-8" aria-label="Footer">
+            {footerColumns.map((col) => (
+              <div>
+                <p class="foot-head">{col.head}</p>
+                <ul class="m-0 mt-3 p-0 list-none space-y-2">
+                  {col.links.map((link) => (
+                    <li>
+                      <a
+                        class="inline-block text-sm text-home-text-soft no-underline transition-colors hover:text-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+                        href={link.href}
+                        target={link.external ? '_blank' : undefined}
+                        rel={link.external ? 'noopener noreferrer' : undefined}
+                      >{link.title}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </div>
+        <div class="mt-10 pt-[1.5rem] border-t border-home-border flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-[0.8125rem] text-home-text-muted">
+          <span>MIT License © 2026 maestria</span>
+          <span>Built with Astro &amp; Starlight</span>
+        </div>
+      </footer>
     </div>
   </div>
 </StarlightPage>
@@ -509,48 +623,243 @@ const markAttrs = {
   }
 
   @media (prefers-reduced-motion: no-preference) {
+    .home-hero-anim,
+    .term-wrap {
+      animation: home-reveal 340ms ease-out both;
+    }
+
     .home-hero-anim {
-      animation: home-reveal 340ms ease-out 40ms both;
+      animation-delay: 40ms;
+    }
+
+    .term-wrap {
+      animation-delay: 140ms;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .home-hero-anim {
+    .home-hero-anim,
+    .term-wrap {
       opacity: 1;
       transform: none;
     }
   }
 
   @media (prefers-reduced-transparency: reduce) {
-    .home-hero-anim {
+    .home-hero-anim,
+    .term-wrap {
       opacity: 1;
       transform: none;
     }
   }
 
-  .stage-row + .stage-row,
-  .ws-row + .ws-row,
-  .insp-row + .insp-row {
-    border-top: 1px solid var(--home-border);
+  /* ============================================
+     SECTION EYEBROWS — monospace identity moment
+     ============================================ */
+
+  .section-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
   }
 
-  .console-stage + .console-stage {
-    border-top: 1px solid var(--home-border);
+  /* ============================================
+     HARNESS TRANSCRIPT
+     Fixed dark artifact in BOTH themes — literal
+     values, not theme vars.
+     ============================================ */
+
+  .term {
+    background: #0d110c;
+    border: 1px solid rgba(240, 245, 239, 0.14);
+    border-radius: 8px;
+    box-shadow: 0 24px 64px -28px rgba(0, 0, 0, 0.55);
+    color: #e7ece3;
+    overflow: hidden;
   }
 
-  @media (max-width: 900px) {
-    .stage-row + .stage-row,
-    .ws-row + .ws-row,
-    .insp-row + .insp-row {
-      border-top: 1px solid var(--home-border);
+  .term-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 1.25rem;
+    background: rgba(240, 245, 239, 0.04);
+    border-bottom: 1px solid rgba(240, 245, 239, 0.1);
+  }
+
+  .term-title {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: #9fab97;
+  }
+
+  .term-badge {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    color: #9fab97;
+    border: 1px solid rgba(240, 245, 239, 0.22);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+  }
+
+  .term-body {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.75;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+  }
+
+  .term-line,
+  .term-row {
+    margin: 0;
+    color: #e7ece3;
+  }
+
+  .term-prompt,
+  .term-ok {
+    color: #b7ef5f;
+  }
+
+  .term-open {
+    color: #9fab97;
+  }
+
+  .term-comment {
+    color: #8a957d;
+  }
+
+  .term-spacer {
+    height: 1.75em;
+  }
+
+  /* Status rows: fixed-width name columns keep the rhythm without
+     hand-spaced strings. */
+  .term-status-row {
+    display: grid;
+    grid-template-columns: 7.25rem minmax(3rem, 1fr) 7.25rem 1fr;
+    column-gap: 1rem;
+    padding-left: 1.5rem;
+  }
+
+  .term-status-row .term-state {
+    color: #9fab97;
+  }
+
+  /* Task rows: role / agent fixed columns, artifact fluid, verdict right. */
+  .term-task-row {
+    display: grid;
+    grid-template-columns: 4.75rem 6.75rem minmax(0, 1fr) auto;
+    column-gap: 1rem;
+    padding-left: 1.5rem;
+  }
+
+  .term-task-row .term-role {
+    color: #9fab97;
+  }
+
+  .term-done {
+    text-align: right;
+  }
+
+  /* Blinking block cursor after the last line. */
+  .term-cursor {
+    display: inline-block;
+    margin-left: 0.2em;
+    color: #b7ef5f;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes term-in {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes term-blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* Progressive enhancement: lines are fully visible by default; JS adds
+       .term-play when the card enters the viewport, then lines stagger in. */
+    .term.term-play .term-line,
+    .term.term-play .term-row {
+      opacity: 0;
+      animation: term-in 220ms ease-out forwards;
+      animation-delay: calc(var(--i, 0) * 60ms);
+    }
+
+    .term-cursor {
+      animation: term-blink 1.1s step-end infinite;
     }
   }
 
-  /* Agent tab active state: attribute selectors and pseudo-elements
-     that can't be expressed with Tailwind utilities. */
+  @media (prefers-reduced-motion: reduce) {
+    .term.term-play .term-line,
+    .term.term-play .term-row {
+      opacity: 1;
+      animation: none;
+    }
+
+    .term-cursor {
+      animation: none;
+    }
+  }
+
+  /* ============================================
+     INSTALL CHIP — copy state swap
+     ============================================ */
+
+  .copy-btn .icon-check {
+    display: none;
+  }
+
+  .copy-btn.copied .icon-copy {
+    display: none;
+  }
+
+  .copy-btn.copied .icon-check {
+    display: block;
+    color: var(--home-accent);
+  }
+
+  /* ============================================
+     METHOD MODULES — numbered, hairline top
+     ============================================ */
+
+  .method-num {
+    font-family: var(--font-mono);
+    font-size: 1.125rem;
+    line-height: 1;
+    color: var(--home-accent);
+    opacity: 0.7;
+    transition: opacity 160ms ease;
+  }
+
+  .group:hover .method-num,
+  .group:focus-within .method-num {
+    opacity: 1;
+  }
+
+  /* ============================================
+     AGENT TABS — active state upgrades
+     ============================================ */
+
   .agent-tab[aria-selected='true'] {
     color: var(--home-text);
     font-weight: 560;
+    background: var(--home-surface-raised);
   }
 
   .agent-tab[aria-selected='true']::before {
@@ -572,8 +881,93 @@ const markAttrs = {
     border-bottom: 1px solid var(--home-border);
   }
 
+  /* Role snippet: right-aligned, muted, desktop only. */
+  .agent-tab-role {
+    display: none;
+    margin-left: auto;
+    padding-left: 1rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: right;
+    color: var(--home-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  @media (min-width: 768px) {
+    .agent-tab-role {
+      display: block;
+    }
+  }
+
   .agent-panel[hidden] {
     display: none;
+  }
+
+  /* Panel footer link: the dl keeps internal separators; drop the last row's
+     border so the link's own top hairline is the single divider. */
+  .agent-panel dl > div:last-child {
+    border-bottom: 0;
+  }
+
+  .panel-more-arrow {
+    transition: transform 160ms ease;
+  }
+
+  .panel-more:hover .panel-more-arrow,
+  .panel-more:focus-visible .panel-more-arrow {
+    transform: translateX(3px);
+  }
+
+  /* ============================================
+     PLATFORM CARDS — flagship accent + aux ring
+     ============================================ */
+
+  .platform-flagship::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 2rem;
+    height: 2px;
+    background: var(--home-accent);
+  }
+
+  .platform-aux::after {
+    content: '';
+    position: absolute;
+    inset: 0.5rem;
+    border: 1px dashed var(--home-border);
+    border-radius: 3px;
+    pointer-events: none;
+  }
+
+  .platform-badge {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    color: var(--home-text-muted);
+    border: 1px solid var(--home-border-strong);
+    border-radius: 3px;
+    padding: 0.1rem 0.4rem;
+    line-height: 1.4;
+  }
+
+  /* ============================================
+     FOOTER
+     ============================================ */
+
+  .foot-head {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--home-text-muted);
+    margin: 0;
   }
 
   /* Starlight markdown content margin overrides. */
@@ -635,5 +1029,61 @@ const markAttrs = {
         (tabsArray[nextIndex] as HTMLElement).focus();
       }
     });
+
+    // Install command copy button: clipboard write, icon -> check swap,
+    // polite live-region announcement, revert after ~1.6s.
+    const copyBtn = document.querySelector<HTMLButtonElement>('.copy-btn');
+    const copyLive = document.querySelector<HTMLElement>('.copy-live');
+
+    if (copyBtn) {
+      let revertTimer: ReturnType<typeof setTimeout> | undefined;
+
+      copyBtn.addEventListener('click', () => {
+        const command = copyBtn.dataset.installCmd || 'npx maestria install opencode';
+
+        const announce = () => {
+          copyBtn.classList.add('copied');
+          if (copyLive) copyLive.textContent = 'Copied';
+          window.clearTimeout(revertTimer);
+          revertTimer = setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            if (copyLive) copyLive.textContent = '';
+          }, 1600);
+
+          if (typeof window.umami !== 'undefined') {
+            window.umami.track('hero_install_copy');
+          }
+        };
+
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(command).then(announce).catch(() => {});
+        }
+      });
+    }
+
+    // Harness transcript: stagger lines in once when >=30% of the card is
+    // visible. Gated behind prefers-reduced-motion; CSS keeps lines fully
+    // visible by default so this is pure progressive enhancement.
+    const term = document.querySelector('.term');
+
+    if (
+      term &&
+      typeof IntersectionObserver !== 'undefined' &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('term-play');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.3 },
+      );
+
+      observer.observe(term);
+    }
   });
 </script>
