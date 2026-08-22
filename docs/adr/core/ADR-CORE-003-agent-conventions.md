@@ -63,6 +63,8 @@ The orchestrator additionally has a full table of all subagents with role descri
 | `@builder`   | Focused implementation | Feature work, bug fixes     |
 ```
 
+> **Amendment (2026-08-22):** The Check → Use → Suggest skill pattern and the per-domain source-repo listings described in this section were retired in favor of compact verified-skill lines; see ADR-CORE-019. The `!!!` marker and cross-reference conventions below remain in force.
+
 ### 3. Skill Pattern: Check → Use → Suggest
 
 Every agent follows the same three-step pattern for skills:

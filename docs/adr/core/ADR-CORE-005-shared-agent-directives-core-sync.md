@@ -58,7 +58,7 @@ Content rules:
 - **No platform-specific tool names** - write `task()` instead of `@task` or `maestria_subagent()`; each plugin's config maps these during derivation
 - **No frontmatter** - frontmatter is a plugin-specific concern (YAML vs SKILL.md format)
 - **Canonical role tokens** - use `@architect`-style role identifiers as platform-neutral placeholders; sync configs map them to each platform's invocation form. Do not add platform-specific commands or tool syntax to core.
-- **Section structure preserved** - `!!!` markers, skill buckets, iteration limits, handoff contracts, rules bullets remain unchanged
+- **Section structure preserved** - Updated 2026-08-22: `!!!` markers, iteration limits, handoff contracts, and rules bullets remain unchanged; skill buckets were replaced by compact per-specialist Skills sections listing only verified skills (see ADR-CORE-019)
 - **File naming** - snake-case `.md`, one file per specialist (flat, no subdirectories)
 - **Rules as a single file** - rules were consolidated into one `rules.md` instead of separate files per topic, since the rules are short and rarely edited independently
 - **Orchestrator lives here** - the orchestrator prompt is in `specialists/orchestrator.md`, alongside the 7 specialist prompts, sharing the same sync pipeline. It was originally excluded (see Post-Implementation Evolution).
@@ -356,7 +356,7 @@ Several details diverged from the original design during implementation. This se
 - ADR-CORE-001 (global rules scope) - the `rules/` subdirectory in core content is scoped per the three-way filter defined there
 - ADR-CORE-002 (plugin architecture) - established Markdown as source of truth; this ADR extends that principle to multi-plugin content sharing
 - ADR-CORE-003 (agent conventions) - the `!!!` markers, cross-references, skill pattern, and rules bullets are preserved in core content
-- ADR-CORE-004 (agent prompt template) - the 4-bucket skills, 5-section handoff, and iteration limits are preserved in core content
+- ADR-CORE-004 (agent prompt template) - Updated 2026-08-22: core content carries compact verified-skill sections, compact material handoffs, and progress-based repair bounds rather than the 4-bucket skills and fixed five-section handoff described there (see ADR-CORE-019)
 - ADR-KC-001 (kimi-code architecture) - the "Future Considerations: Platform-Agnostic Core (After 3+ Platforms)" section set the trigger condition that this ADR satisfies
 
 ## Date
