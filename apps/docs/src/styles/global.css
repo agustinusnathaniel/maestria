@@ -193,6 +193,11 @@ h6 {
   color: var(--home-text);
   max-width: 100%;
   position: relative;
+  /* Contain the absolutely-positioned atmosphere layers (.home-glow is wider
+     than small viewports). `clip` is used instead of `hidden` so .home never
+     becomes a scroll container: sticky positioning and in-page anchors keep
+     their normal viewport-relative behavior. */
+  overflow: clip;
   /* Carry the final section gap as canvas padding. Without it, the last
      section's bottom margin collapses through .home and renders as a
      body-colored band above the footer. */
@@ -257,24 +262,6 @@ h6 {
 }
 
 /* ============================================
-   HERO CONSOLE
-   ============================================ */
-
-.hero-console {
-  max-width: 1120px;
-  width: 100%;
-  margin-inline: auto;
-  /* Gap from the console to the punch band (collapses through .home-inner). */
-  margin-bottom: clamp(4.25rem, 10vw, 7rem);
-  min-height: 360px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--home-border);
-  border-radius: 3px;
-  background: var(--home-surface);
-}
-
-/* ============================================
    PUNCH BAND
    ============================================ */
 
@@ -311,14 +298,6 @@ h6 {
    is the last section; its bottom gap is carried by .home's
    padding-bottom so it stays on the canvas background. */
 
-/* One short fade-up on first load: the hero statement and the console.
-   No looping, no scroll choreography, no per-card reveals. */
-@media (prefers-reduced-motion: no-preference) {
-  .hero-console {
-    animation: home-reveal 340ms ease-out 140ms both;
-  }
-}
-
 /* ============================================
    HERO ATMOSPHERE
    Fixed-position decoration layers inside .home.
@@ -353,12 +332,6 @@ h6 {
 /* ============================================
    LANDING PAGE - RESPONSIVE
    ============================================ */
-
-@media (max-width: 640px) {
-  .hero-console {
-    margin-bottom: 2rem;
-  }
-}
 
 /* Starlight hides the header's theme switcher and social links below 50rem,
    relying on the sidebar drawer (MobileMenuFooter) to surface them instead.
@@ -413,19 +386,6 @@ html {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-
-  .hero-console {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  /* Homepage surfaces are opaque by design; nothing depends on translucency. */
-  .hero-console {
-    opacity: 1;
-    transform: none;
   }
 }
 

@@ -738,10 +738,12 @@ const markAttrs = {
   }
 
   /* Status rows: fixed-width name columns keep the rhythm without
-     hand-spaced strings. */
+     hand-spaced strings. The fluid columns use `minmax(0, …)` so grid items
+     can shrink below their min-content width when space runs out instead of
+     overflowing the card; text wraps rather than spills. */
   .term-status-row {
     display: grid;
-    grid-template-columns: 7.25rem minmax(3rem, 1fr) 7.25rem 1fr;
+    grid-template-columns: 7.25rem minmax(3rem, 1fr) 7.25rem minmax(0, 1fr);
     column-gap: 1rem;
     padding-left: 1.5rem;
   }
@@ -814,6 +816,48 @@ const markAttrs = {
 
     .term-cursor {
       animation: none;
+    }
+  }
+
+  /* Narrow viewports: let transcript rows reflow instead of overflowing the
+     card. Status pairs collapse to one platform-pair per line; task artifacts
+     wrap onto their own line below the role/agent pair. Fluid tracks
+     (`minmax(0, …)`) plus overflow-wrap keep every cell inside the card —
+     wrapping text is fine, clipping/spilling is not. Desktop is untouched. */
+  @media (max-width: 480px) {
+    .term-status-row {
+      /* Four cells auto-place into two rows: one platform-pair each. */
+      grid-template-columns: minmax(0, 7.25rem) minmax(0, 1fr);
+      row-gap: 0.1em;
+    }
+
+    .term-task-row {
+      grid-template-columns: minmax(0, 4.75rem) minmax(0, 1fr) auto;
+      grid-template-areas:
+        'role agent done'
+        'artifact artifact artifact';
+      row-gap: 0.1em;
+    }
+
+    .term-task-row .term-role {
+      grid-area: role;
+    }
+
+    .term-task-row .term-agent {
+      grid-area: agent;
+    }
+
+    .term-task-row .term-artifact {
+      grid-area: artifact;
+    }
+
+    .term-task-row .term-done {
+      grid-area: done;
+    }
+
+    .term-line,
+    .term-row span {
+      overflow-wrap: anywhere;
     }
   }
 
@@ -1017,9 +1061,12 @@ const markAttrs = {
       const tabsArray = Array.from(tabs);
       const index = tabsArray.indexOf(tab);
 
+      // Roving tabindex. The tablist is laid out vertically, so Up/Down are
+      // the primary APG keys; Left/Right stay as aliases. preventDefault()
+      // below keeps Up/Down from scrolling the page.
       let nextIndex: number | null = null;
-      if (e.key === 'ArrowRight') nextIndex = (index + 1) % tabsArray.length;
-      if (e.key === 'ArrowLeft') nextIndex = (index - 1 + tabsArray.length) % tabsArray.length;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabsArray.length;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabsArray.length) % tabsArray.length;
       if (e.key === 'Home') nextIndex = 0;
       if (e.key === 'End') nextIndex = tabsArray.length - 1;
 
