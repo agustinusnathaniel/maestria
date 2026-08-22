@@ -99,6 +99,8 @@ The maker/checker split is why the pipeline defines separate specialists for Wor
 
 Delegated repair loops should converge within a practical normal bound of about three rounds. Extend the loop only when the latest attempt shows observable progress toward a verifiable termination condition. If the same cause recurs or no new evidence appears, change strategy or escalate with what was tried, what failed, and what is needed to proceed.
 
+Implementation turns end at a delivered state - reviewed changes on a pushed branch with an open PR - and cancelled delegations are retried once rather than treated as stop signals.
+
 <Aside>
   Repeated retries without progress consume context without improving the result. Use evidence of
   progress to justify another round; otherwise change strategy or escalate.

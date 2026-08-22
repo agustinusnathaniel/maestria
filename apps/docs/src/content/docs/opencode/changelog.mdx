@@ -5,6 +5,17 @@ description: Release history for @maestria/opencode.
 
 # Changelog
 
+## v0.7.0
+
+_August 22, 2026_
+
+### Leaner directives, explicit delivery autonomy
+
+- Canonical agent directives are ~26% leaner: the bounded-repair contract lives once in the global rules, specialist skill catalogs list only verified skills, and dead sync-config replacement anchors were removed or re-anchored.
+- Delegated implementation outcomes now complete at a pushed feature branch with an open PR; routine commit, push, and PR creation require no approval asks, while merge, release, and production actions remain separate authorization boundaries.
+- Failed or cancelled delegations are treated as transport trouble - one adjusted-brief retry, then structured blocker reporting. User-initiated or intentional platform cancellation stays terminal.
+- Decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+
 ## v0.6.21
 
 _August 13, 2026_

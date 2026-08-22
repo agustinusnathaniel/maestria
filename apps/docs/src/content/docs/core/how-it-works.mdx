@@ -42,7 +42,7 @@ These benefits were explicit design goals. The harness was built to deliver them
   [Pipeline & Roles](/core/pipeline/#makerchecker-split) for details.
 </Aside>
 
-**Mode system.** Three workflow modes make the quality-speed trade-off explicit where the platform supports them. `fein` runs the full pipeline, `sonar` runs research only, and `blitz` runs implementation directly. Their activation, persistence, and tool enforcement vary by platform.
+**Mode system.** Three workflow modes make the quality-speed trade-off explicit where the platform supports them. `fein` runs the full pipeline, `sonar` runs research only, and `blitz` uses direct execution when the host permits it - otherwise the permitted specialist - skipping optional recon/design and keeping required safeguards/review. Their activation, persistence, and tool enforcement vary by platform.
 
 **Portable plugins.** The same methodology adapts to OpenCode, Kimi Code, Pi, OMP, Cursor, Hermes, Claude Code, and Codex CLI. The role contracts are shared, but each plugin maps them to different native primitives. Portability means adapted behavior, not identical runtime behavior.
 
@@ -87,7 +87,7 @@ One-shot work means the pipeline is designed to get things right on the first pa
 
 The cost of fixing a bug increases by about an order of magnitude at each stage. The pipeline catches each error class at its cheapest correction point.
 
-The mode system controls which pipeline stages run. There are three modes: `fein` (full pipeline), `sonar` (research only), and `blitz` (implementation only). See [Primary Benefits](#primary-benefits) for how the mode system works.
+The mode system controls which pipeline stages run. There are three modes: `fein` (full pipeline), `sonar` (research only), and `blitz` (direct execution when the host permits it, otherwise the permitted specialist). See [Primary Benefits](#primary-benefits) for how the mode system works.
 
 ### Bounded Failure
 
