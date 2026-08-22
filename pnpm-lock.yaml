@@ -115,6 +115,9 @@ importers:
       '@fontsource-variable/alan-sans':
         specifier: 'catalog:'
         version: 5.3.0
+      '@fontsource-variable/jetbrains-mono':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource-variable/sn-pro':
         specifier: 'catalog:'
         version: 5.3.0
@@ -1048,6 +1051,9 @@ packages:
 
   '@fontsource-variable/alan-sans@5.3.0':
     resolution: {integrity: sha512-b9vb2d57X0DDAqdB+MJGXUIDSIv8oDp/L9F3UL9roqoK0zd19GFnlka4ae8znE12SKEJQVCDSTd5woOTcK/WhA==}
+
+  '@fontsource-variable/jetbrains-mono@5.3.0':
+    resolution: {integrity: sha512-F32xpS2NsGYoQi2ADSkKTgpJj7ozajsGgDJ8woTnqjmIB+dxDIqImjl4pXZVEExu8UFZ2ndhmX18EBS/hdz3Lw==}
 
   '@fontsource-variable/sn-pro@5.3.0':
     resolution: {integrity: sha512-4Xu46ein75l15vAwryh/ChYfBoS1ONBqZsLT9hxRrtBDiGkgfcp0XsJD2Z8ZKmm3fhFaZayww2SIp/AKMl/Jsg==}
@@ -6388,6 +6394,8 @@ snapshots:
       '@expressive-code/core': 0.44.1
 
   '@fontsource-variable/alan-sans@5.3.0': {}
+
+  '@fontsource-variable/jetbrains-mono@5.3.0': {}
 
   '@fontsource-variable/sn-pro@5.3.0': {}
 

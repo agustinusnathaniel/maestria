@@ -13,6 +13,7 @@
    ============================================ */
 
 @import '@fontsource-variable/alan-sans';
+@import '@fontsource-variable/jetbrains-mono';
 @import '@fontsource-variable/sn-pro';
 @import '@fontsource-variable/sn-pro/wght-italic.css';
 
@@ -23,6 +24,7 @@
 @theme {
   --font-sans: 'SN Pro Variable', sans-serif;
   --font-heading: 'Alan Sans Variable', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --color-home-bg: #0b0d0b;
   --color-home-surface: #111411;
@@ -45,6 +47,16 @@
   --breakpoint-lg: 768px;
   --breakpoint-xl: 900px;
   --breakpoint-2xl: 1100px;
+}
+
+/* ============================================
+   MONOSPACE SYSTEM
+   ============================================ */
+
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
 }
 
 /* ============================================
@@ -174,10 +186,13 @@ h6 {
   --home-accent-strong: #cdf58a;
   --home-accent-ink: #0b0d0b;
   --home-focus: #b7ef5f;
+  --home-glow: rgba(183, 239, 95, 0.07);
+  --home-grid-line: rgba(240, 245, 239, 0.045);
 
   background: var(--home-bg);
   color: var(--home-text);
   max-width: 100%;
+  position: relative;
   /* Carry the final section gap as canvas padding. Without it, the last
      section's bottom margin collapses through .home and renders as a
      body-colored band above the footer. */
@@ -191,13 +206,15 @@ h6 {
   --home-border: rgba(15, 20, 13, 0.14);
   --home-border-strong: rgba(15, 20, 13, 0.32);
   --home-text: #141713;
-  --home-text-soft: #434a3e;
+  --home-text-soft: #363d31;
   /* 5.30:1 on --home-bg (#f3f5ef), >= 4.5:1 for normal labels. */
   --home-text-muted: #5f6858;
   --home-accent: #1c5b1e;
   --home-accent-strong: #144816;
   --home-accent-ink: #f3f5ef;
   --home-focus: #1c5b1e;
+  --home-glow: rgba(28, 91, 30, 0.06);
+  --home-grid-line: rgba(15, 20, 13, 0.055);
 
   /* Override Tailwind theme tokens for light mode */
   --color-home-bg: #f3f5ef;
@@ -206,7 +223,7 @@ h6 {
   --color-home-border: rgba(15, 20, 13, 0.14);
   --color-home-border-strong: rgba(15, 20, 13, 0.32);
   --color-home-text: #141713;
-  --color-home-text-soft: #434a3e;
+  --color-home-text-soft: #363d31;
   --color-home-text-muted: #5f6858;
   --color-home-accent: #1c5b1e;
   --color-home-accent-strong: #144816;
@@ -219,6 +236,8 @@ h6 {
   margin-inline: auto;
   padding-inline: clamp(1.25rem, 4vw, 2.5rem);
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .home-section {
@@ -298,6 +317,37 @@ h6 {
   .hero-console {
     animation: home-reveal 340ms ease-out 140ms both;
   }
+}
+
+/* ============================================
+   HERO ATMOSPHERE
+   Fixed-position decoration layers inside .home.
+   Purely decorative; content wrappers must sit above them.
+   ============================================ */
+
+.home-glow {
+  position: absolute;
+  top: -18%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(75rem, 130vw);
+  aspect-ratio: 2 / 1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse closest-side, var(--home-glow), transparent 70%);
+  pointer-events: none;
+}
+
+.home-grid {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: clamp(30rem, 90vh, 48rem);
+  background-image:
+    linear-gradient(var(--home-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--home-grid-line) 1px, transparent 1px);
+  background-size: 4.5rem 4.5rem;
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent);
+  mask-image: linear-gradient(to bottom, black 55%, transparent);
+  pointer-events: none;
 }
 
 /* ============================================
