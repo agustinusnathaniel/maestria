@@ -7,6 +7,13 @@ This changelog tracks meaningful changes to how Maestria-powered agents
 behave - what they do differently, what they're stricter about, and what
 you can expect from them.
 
+## 2026-08-22
+
+- **Directive simplification (~24% leaner across canonical directives; ~21% as shipped in generated plugins).** Canonical directives consolidated: the bounded-repair contract lives once in the global rules, specialist skill catalogs list only verified skills, and dead sync-config replacement anchors were removed across platforms.
+- **Delivery is terminal-artifact driven.** Delegated implementation outcomes complete at a pushed feature branch with an open PR; routine delivery requires no approval asks, while merge, release, and production actions remain separate authorization boundaries.
+- **Transport failures are not verdicts.** Failed or cancelled delegations get one adjusted-brief retry before structured blocker reporting; user-initiated or intentional platform cancellation stays terminal.
+- Full decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+
 ## 2026-08-13
 
 - **Claude Code and Codex CLI projections documented.** The Claude Code plugin is a native candidate, while the Codex CLI package remains provisional and skills-only. Both are installable through the Maestria CLI's host-native marketplace adapters.
