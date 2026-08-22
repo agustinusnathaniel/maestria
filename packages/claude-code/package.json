@@ -1,6 +1,6 @@
 {
   "name": "@maestria/claude-code",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "private": false,
   "description": "Maestria methodology plugin for Claude Code - specialist agents, orchestrator and global-rules skills, and workflow commands",
   "keywords": [
