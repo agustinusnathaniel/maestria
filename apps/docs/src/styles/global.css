@@ -378,7 +378,8 @@ h6 {
    `.home` wrapper, so docs pages and the 404/pi-omp splash pages keep their
    existing behavior. */
 @media (max-width: 50rem) {
-  :root:not([data-has-sidebar]):has(.home) .right-group {
+  :root:not([data-has-sidebar]):has(.home) .right-group,
+  :root:not([data-has-sidebar]):has(.plugin-root) .right-group {
     display: flex;
   }
 }
