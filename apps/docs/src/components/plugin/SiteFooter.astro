@@ -17,26 +17,26 @@ const footerColumns: { head: string; links: FooterLink[] }[] = [
   {
     head: 'Documentation',
     links: [
-      { href: '/core/when-to-use/', title: 'When to Use', desc: '' },
-      { href: '/core/how-it-works/', title: 'How It Works', desc: '' },
-      { href: '/core/pipeline/', title: 'Pipeline & Roles', desc: '' },
+      { href: '/core/when-to-use/', title: 'When to Use' },
+      { href: '/core/how-it-works/', title: 'How It Works' },
+      { href: '/core/pipeline/', title: 'Pipeline & Roles' },
     ],
   },
   {
     head: 'Platforms',
     links: [
-      { href: '/opencode/', title: 'OpenCode', desc: '' },
-      { href: '/claude-code/', title: 'Claude Code', desc: '' },
+      { href: '/opencode/', title: 'OpenCode' },
+      { href: '/claude-code/', title: 'Claude Code' },
       // On the homepage this stays a same-page anchor; elsewhere route home.
-      { href: Astro.url.pathname === '/' ? '#adapters' : '/#adapters', title: 'All platforms', desc: '' },
+      { href: Astro.url.pathname === '/' ? '#adapters' : '/#adapters', title: 'All platforms' },
     ],
   },
   {
     head: 'Community',
     links: [
-      { href: 'https://github.com/agustinusnathaniel/maestria', title: 'GitHub', desc: '', external: true },
-      { href: '/core/contributing/', title: 'Contributing', desc: '' },
-      { href: '/core/changelog/', title: 'Changelog', desc: '' },
+      { href: 'https://github.com/agustinusnathaniel/maestria', title: 'GitHub', external: true },
+      { href: '/core/contributing/', title: 'Contributing' },
+      { href: '/core/changelog/', title: 'Changelog' },
     ],
   },
 ];
