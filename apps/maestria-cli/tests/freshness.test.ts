@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { checkExitCode, freshnessOf } from '@/lib/freshness.js';
+import { checkExitCode, freshnessOf, needsUpdateOf } from '@/lib/freshness.js';
 
 describe('freshnessOf', () => {
   it('flags older installed versions as outdated', () => {
@@ -26,6 +26,31 @@ describe('freshnessOf', () => {
 
   it('returns unknown when the installed version is unknown', () => {
     expect(freshnessOf('unknown', '0.10.1')).toBe('unknown');
+  });
+});
+
+describe('needsUpdateOf', () => {
+  it('flags an install strictly behind latest', () => {
+    expect(needsUpdateOf('0.1.0', '0.2.0')).toBe(true);
+  });
+
+  it('never flags an install ahead of latest (local dev build)', () => {
+    expect(needsUpdateOf('0.99.0', '0.2.0')).toBe(false);
+    expect(needsUpdateOf('2.0.0', '1.9.9')).toBe(false);
+  });
+
+  it('does not flag equal versions', () => {
+    expect(needsUpdateOf('0.10.1', '0.10.1')).toBe(false);
+  });
+
+  it('applies semver prerelease ordering', () => {
+    expect(needsUpdateOf('1.0.0-alpha', '1.0.0')).toBe(true);
+  });
+
+  it('returns false when either side is unknown or incomparable', () => {
+    expect(needsUpdateOf('unknown', '0.10.1')).toBe(false);
+    expect(needsUpdateOf('0.10.1', '')).toBe(false);
+    expect(needsUpdateOf('0.10.1', 'see GitHub releases')).toBe(false);
   });
 });
 

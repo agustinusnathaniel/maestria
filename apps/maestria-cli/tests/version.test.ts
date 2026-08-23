@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { compareVersions, isVersionEq, isVersionDifferent } from '@/lib/version.js';
+import { compareVersions, isVersionEq, isVersionDifferent, isVersionGt } from '@/lib/version.js';
 
 describe('compareVersions', () => {
   it('treats non-semver display sentinels as incomparable', () => {
@@ -45,5 +45,27 @@ describe('isVersionEq', () => {
 
   it('returns true for two latest values', () => {
     expect(isVersionEq('latest', 'latest')).toBe(true);
+  });
+});
+
+describe('isVersionGt', () => {
+  it('reports an install ahead of the registry as greater', () => {
+    expect(isVersionGt('0.11.0', '0.10.1')).toBe(true);
+  });
+
+  it('returns false for equal versions', () => {
+    expect(isVersionGt('0.10.1', '0.10.1')).toBe(false);
+  });
+
+  it('applies semver prerelease ordering (prerelease < release)', () => {
+    expect(isVersionGt('1.0.0', '1.0.0-alpha')).toBe(true);
+  });
+
+  it('returns false when the installed version is unknown', () => {
+    expect(isVersionGt('unknown', '0.10.1')).toBe(false);
+  });
+
+  it('returns false for an empty (incomparable) version', () => {
+    expect(isVersionGt('0.10.1', '')).toBe(false);
   });
 });
