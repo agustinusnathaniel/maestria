@@ -44,7 +44,12 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
     </button>
   </div>
   <span class="copy-live sr-only" aria-live="polite"></span>
-  <p class="font-mono text-xs text-home-text-muted m-0">npm · pnpm · yarn · bun · deno — any runtime works</p>
+  <!-- Two deliberate segments: below the 480px `sm` breakpoint the runtimes
+       and the tagline break onto their own lines, so no single word wraps
+       into an orphan. Above it the caption renders as one line. -->
+  <p class="font-mono text-xs text-home-text-muted m-0">
+    npm · pnpm · yarn · bun · deno<br class="sm:hidden" /> — any runtime works
+  </p>
 </div>
 
 <style>

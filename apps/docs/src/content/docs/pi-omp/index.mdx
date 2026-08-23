@@ -14,14 +14,14 @@ import SiteFooter from '../../../components/plugin/SiteFooter.astro';
 import { PackageManagers } from 'starlight-package-managers';
 import { marks } from '../../../data/marks.js';
 
-<div class="plugin-root">
+<div class="plugin-root plugin-title-wrap">
   <div class="home-glow" aria-hidden="true"></div>
   <div class="home-grid" aria-hidden="true"></div>
 
   <div class="home-inner">
     <PlatformHero
       eyebrow={'@MAESTRIA/PI & @MAESTRIA/OMP'}
-      title="Portable engineering workflows."
+      title="Spec-driven, portable workflows."
       lead="Extend Pi or Oh My Pi with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration - configured in seconds."
       mark={marks.piOmp}
       primaryCta={{ href: '/pi-omp/getting-started/installation/', label: 'Get started' }}

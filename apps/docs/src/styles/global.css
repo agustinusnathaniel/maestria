@@ -186,48 +186,100 @@ pre {
   padding-bottom: clamp(3rem, 7vw, 5rem);
 }
 
+/* Starlight renders each plugin page's title (h1#_top) as a bare package
+   identifier above the custom hero. Browsers treat hyphens and slashes as
+   break opportunities, so narrow viewports split "@maestria/claude-code"
+   mid-identifier. Keep single-identifier titles on one line and scale them
+   to fit: 21ch measures ~11.1x the font size in Alan Sans 600, and
+   100vw/12 - 0.2rem stays under the padded panel width down to ~280px
+   viewports before the --sl-text-h1 cap takes over on wide screens. Titles
+   holding several identifiers (pi-omp: "@maestria/pi & @maestria/omp") opt
+   out via .plugin-title-wrap in the page source so they wrap between
+   identifiers at the normal size instead. */
+.page:has(.plugin-root) h1#_top {
+  white-space: nowrap;
+  font-size: min(var(--sl-text-h1), calc(100vw / 12 - 0.2rem));
+}
+
+.page:has(.plugin-title-wrap) h1#_top {
+  white-space: normal;
+  font-size: var(--sl-text-h1);
+}
+
+/* Splash shells end with the custom SiteFooter on the canvas. Starlight's
+   own footer (edit/last-updated meta + prev/next pagination) renders BELOW
+   it on the lighter body background - a visible seam in the wrong order.
+   These pages disable edit links and last-updated in frontmatter and
+   credits are off, so Starlight's footer carries only pagination there, and
+   splash landings should not paginate. Collapse it along with main's
+   trailing padding so the canvas color runs to the end of the document. */
+.page:has(.plugin-root) main footer.sl-flex,
+.page:has(.home) main footer.sl-flex {
+  display: none;
+}
+
+.page:has(.plugin-root) main,
+.page:has(.home) main {
+  padding-bottom: 0;
+}
+
 /* --------------------------------------------
    PLUGIN PAGES - CODE BLOCKS & INLINE CODE
    Scoped to .plugin-root so ordinary docs pages
    keep Starlight/Expressive Code defaults.
    -------------------------------------------- */
 
-/* Expressive Code frames on plugin pages sit on a full-bleed canvas without
-   Starlight's markdown column, so long commands must stay reachable by
-   horizontal scroll instead of appearing dead-clipped at narrow widths.
-   (EC already sets overflow-x: auto; restated here as the contract for this
-   scope.) */
-/* Reserve a true right gutter for the frame's copy control: `.copy` is a
-   44px box absolutely positioned against the figure with a 9px right offset,
-   floating above the scrollport at first-line height. A per-button mask
-   cannot cover long lines on lower rows, so the glyph ink itself is clipped
-   out of a 53px strip along the pre's right edge. mask-image anchors to the
-   element box - not the scrolled content - so the exclusion holds at every
-   row and every scroll offset. */
+/* Code blocks on plugin pages sit on a full-bleed canvas without Starlight's
+   markdown column, and long lines must never dead-clip at the container
+   edge. Every Expressive Code block in this scope therefore wraps, mirroring
+   EC's own `wrap` transformer: lines reflow instead of scrolling out of
+   view, so no variant (plain frames, terminal frames, or the
+   starlight-package-managers tab frames, which render the same EC markup)
+   can be cut under the copy button. `anywhere` (not EC's `break-word`) is
+   required so the min-content size of the flex/grid line boxes shrinks with
+   the viewport instead of forcing a residual horizontal overflow. */
+.plugin-root .expressive-code pre .ec-line .code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The frame's copy control (`.copy`) is a 40px button absolutely positioned
+   against the figure ~9px from the right edge, floating above the first
+   code line. Reserve that zone as a real gutter: wrapped lines stop short of
+   it via the trailing padding below, and the pre's right edge dissolves into
+   the gutter so any content that somehow does not wrap fades out instead of
+   being sliced mid-character. mask-image anchors to the element box - not
+   the scrolled content - so the exclusion holds at every row and scroll
+   offset. */
 .plugin-root .expressive-code pre {
   overflow-x: auto;
   -webkit-mask-image: linear-gradient(
     to right,
-    #000 calc(100% - 53px),
-    transparent calc(100% - 52px)
+    #000 calc(100% - 69px),
+    transparent calc(100% - 53px)
   );
-  mask-image: linear-gradient(to right, #000 calc(100% - 53px), transparent calc(100% - 52px));
+  mask-image: linear-gradient(to right, #000 calc(100% - 69px), transparent calc(100% - 53px));
 }
 
-/* Trailing space in the scrolled body so the final characters stop clear of
-   the masked strip at max scroll instead of vanishing into it. */
+/* Trailing space in the wrapped body so text stops clear of the button
+   gutter (the button spans ~9-49px from the right edge). border-box keeps
+   the reserved gutter inside the pre's content width, and min-width: 0
+   lets the flex item shrink so wrapped blocks have no residual horizontal
+   overflow. */
 .plugin-root .expressive-code pre > code {
+  min-width: 0;
+  box-sizing: border-box;
   padding-right: 56px;
 }
 
-/* Backfill the clipped strip with the editor background so the gutter reads
-   as part of the block, and restore the right/bottom chrome the mask removed
-   from the pre. Anchored to the non-scrolling figure. Terminal frames render
-   a 34px caption bar above the code body, so the strip starts below it;
-   plain frames have no caption (EC hides figcaption) and start at the top.
-   Measured across every plugin page: figures are either
-   `.frame.is-terminal` (caption visible) or `.frame` (caption display:none). */
-.plugin-root .expressive-code figure.frame::after {
+/* Render the gutter as part of the block: backfill the masked strip with the
+   editor background and separate it with a hairline. Anchored to the
+   non-scrolling figure. Terminal frames render a 34px caption bar above the
+   code body, so the strip starts below it; plain frames have no visible
+   caption and start at the top. Measured across every plugin page: figures
+   are either `.is-terminal` (caption visible) or plain (caption
+   display:none). */
+.plugin-root .expressive-code figure::after {
   content: '';
   position: absolute;
   top: 0;
@@ -235,13 +287,13 @@ pre {
   bottom: 0;
   width: 53px;
   background: var(--sl-color-gray-6);
-  border-right: 1px solid color-mix(in srgb, var(--sl-color-gray-5) 75%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--sl-color-gray-5) 75%, transparent);
-  border-bottom-right-radius: 1px;
+  border-left: 1px solid var(--home-border);
+  border-right: 1px solid var(--home-border);
+  border-bottom: 1px solid var(--home-border);
   pointer-events: none;
 }
 
-.plugin-root .expressive-code figure.frame.is-terminal::after {
+.plugin-root .expressive-code figure.is-terminal::after {
   top: 34px;
 }
 

@@ -27,7 +27,7 @@ const { items, columns = 3 } = Astro.props;
 >
   {
     items.map((item) => (
-      <div class="group flex flex-col items-start gap-[0.45rem] p-[clamp(1.1rem,2vw,1.5rem)] border-r border-b border-home-border bg-transparent min-w-0 transition-colors hover:bg-home-surface">
+      <div class="group flex flex-col items-start gap-[0.75rem] p-[clamp(1.1rem,2vw,1.5rem)] border-r border-b border-home-border bg-transparent min-w-0 transition-colors hover:bg-home-surface">
         <h3 class="feature-title">{item.title}</h3>
         <p class="m-0 text-[13.5px] leading-[1.55] text-home-text-muted">{item.desc}</p>
       </div>
