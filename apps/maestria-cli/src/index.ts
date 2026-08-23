@@ -116,6 +116,7 @@ EXIT CODES
 
   0   Success
   1   Validation or command error
+  3   Outdated (maestria check: a newer plugin version is available)
   130 User cancelled (interactive mode)
 `;
 
