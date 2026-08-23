@@ -225,6 +225,10 @@ h6 {
 }
 
 .home {
+  /* Shared vertical rhythm between major homepage sections. Applied as
+     `margin-bottom` on the preceding section — never margin-top, which the
+     markdown reset below zeroes between block siblings. */
+  --home-section-gap: clamp(4.5rem, 9vw, 7rem);
   background: var(--home-bg);
   color: var(--home-text);
   max-width: 100%;
@@ -329,11 +333,13 @@ h6 {
   text-wrap: balance;
 }
 
-/* Section-to-section rhythm. Deliberately uneven, scaled down on mobile.
-   Each gap is a `margin-bottom` on the preceding section because the
-   homepage reset zeroes `margin-top` between block siblings. The docs-map
-   is the last section; its bottom gap is carried by .home's
-   padding-bottom so it stays on the canvas background. */
+/* Section-to-section rhythm. One shared token (--home-section-gap) keeps
+   every inter-section gap in the same fluid scale; the adapters section
+   uses a slightly smaller pre-band variant (never below 4rem). Each gap is
+   a `margin-bottom` on the preceding section because the homepage reset
+   zeroes `margin-top` between block siblings. The docs-map is the last
+   section; its bottom gap is carried by .home's padding-bottom so it stays
+   on the canvas background. */
 
 /* ============================================
    HERO ATMOSPHERE
@@ -372,11 +378,10 @@ h6 {
 
 /* Starlight hides the header's theme switcher and social links below 50rem,
    relying on the sidebar drawer (MobileMenuFooter) to surface them instead.
-   Splash pages such as this homepage have no sidebar, so there is no mobile
-   fallback and the controls become unreachable. Restore them in the header
-   on the homepage only: scoped to the splash shell without a sidebar and a
-   `.home` wrapper, so docs pages and the 404/pi-omp splash pages keep their
-   existing behavior. */
+   Sidebar-less splash shells — the `.home` homepage and the `.plugin-root`
+   plugin overview pages — have no drawer fallback, so those controls would
+   be unreachable there. Restore them in the header for these shells only;
+   docs pages, which do have a sidebar, keep Starlight's default behavior. */
 @media (max-width: 50rem) {
   :root:not([data-has-sidebar]):has(.home) .right-group,
   :root:not([data-has-sidebar]):has(.plugin-root) .right-group {

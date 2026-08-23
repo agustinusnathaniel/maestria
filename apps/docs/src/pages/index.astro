@@ -153,13 +153,13 @@ const INSTALL_CMD = 'npx maestria install opencode';
         <h1 id="home-title" class="text-[clamp(2.75rem,7vw,4.75rem)] max-md:text-[clamp(1.875rem,9vw,2.5rem)] font-[540] leading-[1.04] tracking-[-0.04em] text-balance text-home-text max-w-[20ch]">
           Make the work <span class="text-home-accent">deliberate.</span>
         </h1>
-        <p class="text-[clamp(1.05rem,1.6vw,1.25rem)] max-md:text-[0.875rem] leading-[1.6] max-md:leading-[1.55] text-home-text-soft max-w-40rem mt-6 max-md:mt-3 mx-auto text-pretty">
+        <p class="text-[clamp(1.05rem,1.6vw,1.25rem)] max-md:text-[0.875rem] leading-[1.6] max-md:leading-[1.55] text-home-text-soft max-w-[40ch] mt-6 max-md:mt-3 mx-auto text-pretty">
           A portable harness for AI coding agents. Route complex work through
           specialists, structured handoffs, and independent review.
         </p>
         <div class="flex items-center justify-center flex-wrap gap-[1.4rem] max-md:gap-4 mt-9 max-md:mt-4">
-          <a class="inline-flex items-center justify-center min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cli/getting-started/">Get Started</a>
-          <a class="inline-flex items-center gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="#pipeline">
+          <a class="inline-flex items-center justify-center max-sm:w-full min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cli/getting-started/">Get Started</a>
+          <a class="inline-flex items-center justify-center max-sm:w-full gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="#pipeline">
             Explore the pipeline<span aria-hidden="true">↓</span>
           </a>
         </div>
@@ -167,7 +167,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       </section>
 
       <!-- ========================= 2. HARNESS TRANSCRIPT ========================= -->
-      <section class="term-wrap pt-[clamp(3.5rem,7vw,5rem)] min-w-0" aria-labelledby="term-title">
+      <section class="term-wrap pt-[clamp(3.5rem,7vw,5rem)] mb-[var(--home-section-gap)] min-w-0" aria-labelledby="term-title">
         <h2 id="term-title" class="sr-only">Harness transcript example</h2>
         <div class="term mx-auto w-full max-w-[46rem]">
           <div class="term-bar">
@@ -223,7 +223,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       </section>
 
       <!-- ============================ 3. THE METHOD ============================ -->
-      <section class="home-section mb-[clamp(5.5rem,12vw,9rem)]" aria-labelledby="method-title">
+      <section class="home-section mb-[var(--home-section-gap)]" aria-labelledby="method-title">
         <p class="section-eyebrow">01 / THE METHOD</p>
         <h2 id="method-title">Structure beats improvisation.</h2>
         <div class="grid grid-cols-3 max-lg:grid-cols-1 gap-x-[clamp(2rem,4vw,3rem)] max-lg:gap-y-10">
@@ -261,7 +261,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       </section>
 
       <!-- =========================== 4. SPECIALISTS =========================== -->
-      <section class="home-section mb-[clamp(5rem,11vw,8rem)] scroll-mt-[calc(var(--sl-nav-height)+2rem)]" id="pipeline" aria-labelledby="agents-title">
+      <section class="home-section mb-[var(--home-section-gap)] scroll-mt-[calc(var(--sl-nav-height)+2rem)]" id="pipeline" aria-labelledby="agents-title">
         <p class="section-eyebrow">02 / SPECIALISTS</p>
         <h2 id="agents-title">The conductor is not the crew.</h2>
         <div class="grid grid-cols-[minmax(0,20rem)_minmax(0,1fr)] gap-[clamp(1.5rem,3vw,2.5rem)] items-start max-lg:grid-cols-1">
@@ -325,7 +325,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       </section>
 
       <!-- ============================ 5. ADAPTERS ============================ -->
-      <section class="home-section" id="adapters" aria-labelledby="platforms-title">
+      <section class="home-section mb-[clamp(4rem,9vw,6rem)]" id="adapters" aria-labelledby="platforms-title">
         <p class="section-eyebrow">03 / ADAPTERS</p>
         <h2 id="platforms-title">One methodology. Native primitives.</h2>
         <div class="grid grid-cols-3 border-t border-l border-home-border max-lg:grid-cols-1">
@@ -351,7 +351,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
     </div>
 
     <!-- ============================= 6. PUNCH BAND ============================= -->
-    <section class="w-full bg-home-punch text-home-punch-ink mb-[clamp(5.5rem,12vw,9rem)]" aria-label="Maestria by the numbers">
+    <section class="w-full bg-home-punch text-home-punch-ink mb-[var(--home-section-gap)]" aria-label="Maestria by the numbers">
       <div class="max-w-7xl mx-auto py-[clamp(2.75rem,6vw,4.25rem)] px-[clamp(1.25rem,4vw,2.5rem)] grid grid-cols-4 gap-6 max-md:grid-cols-2 max-md:gap-8">
         <div>
           <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">8</span>
@@ -526,12 +526,13 @@ const INSTALL_CMD = 'npx maestria install opencode';
     color: #b7ef5f;
   }
 
+  /* ○ status glyphs only; label text keeps #9fab97. */
   .term-open {
-    color: #9fab97;
+    color: #aab5a2;
   }
 
   .term-comment {
-    color: #8a957d;
+    color: #97a28b;
   }
 
   .term-spacer {
@@ -569,10 +570,11 @@ const INSTALL_CMD = 'npx maestria install opencode';
     text-align: right;
   }
 
-  /* Blinking block cursor after the last line. */
+  /* Blinking block cursor after the last line. Kept clear of the verdict
+     glyph so the caret reads as terminal continuation, never as collision. */
   .term-cursor {
     display: inline-block;
-    margin-left: 0.2em;
+    margin-inline-start: 0.75ch;
     color: #b7ef5f;
   }
 
@@ -620,11 +622,14 @@ const INSTALL_CMD = 'npx maestria install opencode';
     }
   }
 
-  /* Narrow viewports: let transcript rows reflow instead of overflowing the
-     card. Status pairs collapse to one platform-pair per line; task artifacts
-     wrap onto their own line below the role/agent pair. Fluid tracks
-     (`minmax(0, …)`) plus overflow-wrap keep every cell inside the card —
-     wrapping text is fine, clipping/spilling is not. Desktop is untouched. */
+  /* Narrow viewports: let transcript rows reflow into intentional blocks
+     instead of soft-wrapping mid-cell. Status pairs collapse to one
+     platform-pair per line; task rows become explicit two-line entries —
+     stage tag + agent on line 1 with the verdict right-aligned, artifact
+     indented below so continuations never return flush-left (solo agents
+     keep the same slots via an empty partner span). The install output gets
+     a hanging indent for the same reason. Fluid tracks plus overflow-wrap
+     keep every cell inside the card. Desktop is untouched. */
   @media (max-width: 480px) {
     .term-status-row {
       /* Four cells auto-place into two rows: one platform-pair each. */
@@ -633,10 +638,12 @@ const INSTALL_CMD = 'npx maestria install opencode';
     }
 
     .term-task-row {
-      grid-template-columns: minmax(0, 4.75rem) minmax(0, 1fr) auto;
+      /* Line 1: role + agent left, `1fr` filler pushes the verdict right.
+         Line 2: artifact spans all tracks, indented past the stage column. */
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
       grid-template-areas:
-        'role agent done'
-        'artifact artifact artifact';
+        'role agent . done'
+        'artifact artifact artifact artifact';
       row-gap: 0.1em;
     }
 
@@ -650,10 +657,18 @@ const INSTALL_CMD = 'npx maestria install opencode';
 
     .term-task-row .term-artifact {
       grid-area: artifact;
+      padding-inline-start: 2ch;
     }
 
     .term-task-row .term-done {
       grid-area: done;
+    }
+
+    /* Hanging indent: wrapped install-output lines align under the message
+       text, not under the leading ✓. */
+    .term-out {
+      padding-left: 2ch;
+      text-indent: -2ch;
     }
 
     .term-line,
@@ -709,7 +724,8 @@ const INSTALL_CMD = 'npx maestria install opencode';
     border-bottom: 1px solid var(--home-border);
   }
 
-  /* Role snippet: right-aligned, muted, desktop only. */
+  /* Role snippet: right-aligned, muted, desktop only; wraps to at most two
+     lines instead of truncating mid-word. */
   .agent-tab-role {
     display: none;
     margin-left: auto;
@@ -719,15 +735,16 @@ const INSTALL_CMD = 'npx maestria install opencode';
     line-height: 1.4;
     text-align: right;
     color: var(--home-text-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     min-width: 0;
   }
 
   @media (min-width: 768px) {
     .agent-tab-role {
-      display: block;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
     }
   }
 
