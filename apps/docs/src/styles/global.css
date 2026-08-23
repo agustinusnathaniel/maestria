@@ -186,6 +186,73 @@ pre {
   padding-bottom: clamp(3rem, 7vw, 5rem);
 }
 
+/* --------------------------------------------
+   PLUGIN PAGES - CODE BLOCKS & INLINE CODE
+   Scoped to .plugin-root so ordinary docs pages
+   keep Starlight/Expressive Code defaults.
+   -------------------------------------------- */
+
+/* Expressive Code frames on plugin pages sit on a full-bleed canvas without
+   Starlight's markdown column, so long commands must stay reachable by
+   horizontal scroll instead of appearing dead-clipped at narrow widths.
+   (EC already sets overflow-x: auto; restated here as the contract for this
+   scope.) */
+/* Reserve a true right gutter for the frame's copy control: `.copy` is a
+   44px box absolutely positioned against the figure with a 9px right offset,
+   floating above the scrollport at first-line height. A per-button mask
+   cannot cover long lines on lower rows, so the glyph ink itself is clipped
+   out of a 53px strip along the pre's right edge. mask-image anchors to the
+   element box - not the scrolled content - so the exclusion holds at every
+   row and every scroll offset. */
+.plugin-root .expressive-code pre {
+  overflow-x: auto;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 53px), transparent calc(100% - 52px));
+  mask-image: linear-gradient(to right, #000 calc(100% - 53px), transparent calc(100% - 52px));
+}
+
+/* Trailing space in the scrolled body so the final characters stop clear of
+   the masked strip at max scroll instead of vanishing into it. */
+.plugin-root .expressive-code pre > code {
+  padding-right: 56px;
+}
+
+/* Backfill the clipped strip with the editor background so the gutter reads
+   as part of the block, and restore the right/bottom chrome the mask removed
+   from the pre. Anchored to the non-scrolling figure. Terminal frames render
+   a 34px caption bar above the code body, so the strip starts below it;
+   plain frames have no caption (EC hides figcaption) and start at the top.
+   Measured across every plugin page: figures are either
+   `.frame.is-terminal` (caption visible) or `.frame` (caption display:none). */
+.plugin-root .expressive-code figure.frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 53px;
+  background: var(--sl-color-gray-6);
+  border-right: 1px solid color-mix(in srgb, var(--sl-color-gray-5) 75%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--sl-color-gray-5) 75%, transparent);
+  border-bottom-right-radius: 1px;
+  pointer-events: none;
+}
+
+.plugin-root .expressive-code figure.frame.is-terminal::after {
+  top: 34px;
+}
+
+/* Inline code chips on plugin pages: path-like literals (`pkg/a/b --flag`)
+   used to stretch edge-to-edge and break mid-token anywhere in the word.
+   Make them shrink-to-fit boxes that cap at the container width, keep a
+   hair of breathing room against adjacent text, and prefer wrapping like
+   paths. Desktop rendering is unchanged for chips shorter than the line. */
+.plugin-root code:not(pre code) {
+  display: inline-block;
+  max-width: 100%;
+  margin-inline: 0.125em;
+  overflow-wrap: anywhere;
+}
+
 /* ============================================
    HEADING FONTS (documentation pages only;
    the homepage overrides these below)
