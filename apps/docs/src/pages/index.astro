@@ -150,14 +150,16 @@ const INSTALL_CMD = 'npx maestria install opencode';
         aria-labelledby="home-title"
       >
         <p class="font-mono text-xs uppercase tracking-[0.14em] text-home-text-muted mb-5 max-md:mb-2">OPEN-SOURCE METHODOLOGY LAYER</p>
-        <h1 id="home-title" class="text-[clamp(2.75rem,7vw,4.75rem)] max-md:text-[clamp(1.875rem,9vw,2.5rem)] font-[540] leading-[1.04] tracking-[-0.04em] text-balance text-home-text max-w-[20ch]">
+        <h1 id="home-title" class="text-[clamp(2.75rem,7vw,4.75rem)] max-md:text-[clamp(1.875rem,9vw,2.5rem)] font-[540] leading-[1.04] tracking-[-0.04em] text-balance text-home-text max-w-[20ch] mb-6 max-md:mb-3">
           Make the work <span class="text-home-accent">deliberate.</span>
         </h1>
-        <p class="text-[clamp(1.05rem,1.6vw,1.25rem)] max-md:text-[0.875rem] leading-[1.6] max-md:leading-[1.55] text-home-text-soft max-w-[40ch] mt-6 max-md:mt-3 mx-auto text-pretty">
+        <p class="text-[clamp(1.05rem,1.6vw,1.25rem)] max-md:text-[0.875rem] leading-[1.6] max-md:leading-[1.55] text-home-text-soft max-w-[40ch] mb-9 max-md:mb-4 mx-auto text-pretty">
           A portable harness for AI coding agents. Route complex work through
           specialists, structured handoffs, and independent review.
         </p>
-        <div class="flex items-center justify-center flex-wrap gap-[1.4rem] max-md:gap-4 mt-9 max-md:mt-4">
+        <!-- Spacing to the install chip rides on margin-bottom: the unlayered
+             markdown reset zeroes sibling margin-top inside .home. -->
+        <div class="flex items-center justify-center flex-wrap gap-[1.4rem] max-md:gap-4 max-sm:gap-3.5 mb-6">
           <a class="inline-flex items-center justify-center max-sm:w-full min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/cli/getting-started/">Get Started</a>
           <a class="inline-flex items-center justify-center max-sm:w-full gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="#pipeline">
             Explore the pipeline<span aria-hidden="true">↓</span>
@@ -171,7 +173,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
         <h2 id="term-title" class="sr-only">Harness transcript example</h2>
         <div class="term mx-auto w-full max-w-[46rem]">
           <div class="term-bar">
-            <span class="term-title">maestria — harness transcript</span>
+            <span class="term-title">maestria<span class="term-title-suffix"> — harness transcript</span></span>
             <span class="term-badge">EXAMPLE</span>
           </div>
           <div class="term-body">
@@ -495,6 +497,17 @@ const INSTALL_CMD = 'npx maestria install opencode';
     font-size: 0.75rem;
     letter-spacing: 0.06em;
     color: #9fab97;
+    /* The title bar stays one line at every width; see the suffix rule
+       below for the narrow-viewport half of this contract. */
+    white-space: nowrap;
+  }
+
+  /* Below 480px the descriptive suffix hides, leaving "maestria" beside the
+     EXAMPLE pill — the bar can never wrap into a cramped second line. */
+  @media (max-width: 480px) {
+    .term-title-suffix {
+      display: none;
+    }
   }
 
   .term-badge {
