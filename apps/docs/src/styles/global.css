@@ -206,7 +206,11 @@ pre {
    row and every scroll offset. */
 .plugin-root .expressive-code pre {
   overflow-x: auto;
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 53px), transparent calc(100% - 52px));
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - 53px),
+    transparent calc(100% - 52px)
+  );
   mask-image: linear-gradient(to right, #000 calc(100% - 53px), transparent calc(100% - 52px));
 }
 
