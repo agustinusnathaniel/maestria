@@ -48,9 +48,9 @@ Notes:
 ## Development
 
 ```bash
-pnpm sync    # regenerate agents/ + rules/ from canonical core directives
-vp check     # format, lint, type-check
-vp pack      # build to dist/
+scripts/sync-all   # regenerate agents/ + rules/ from canonical core directives (repo root)
+pnpm check         # format, lint, type-check; verifies sync state via scripts/check-sync
+vp pack            # build to dist/
 ```
 
-Agents are synced from `packages/core/agent-directives/` - edit canonical sources there, never the generated files.
+Agents are synced from `packages/core/agent-directives/` - edit canonical sources there, never the generated files. To regenerate only this package's outputs, run `npx tsx ../core/scripts/sync.ts` from this package directory.
