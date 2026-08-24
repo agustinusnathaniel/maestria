@@ -2,8 +2,37 @@
 import StarlightHead from '@astrojs/starlight/components/Head.astro'
 import Analytics from './Analytics.astro'
 import Tracking from './Tracking.astro'
+import { markdownTwinPath } from '../lib/agent-delivery';
+import { SITE_URL, organizationSchema, softwareApplicationSchema } from '../lib/site-schema';
+
+// Trust anchors for agents and search engines: Organization + SoftwareApplication.
+const schemas = [organizationSchema(), softwareApplicationSchema()];
+
+/**
+ * Markdown discovery: advertise this page's markdown twin via rel="alternate"
+ * so agents can prefer it. The homepage advertises /llms.txt, which is its
+ * markdown representation. Paths that already are markdown artifacts (*.md,
+ * *.txt) are skipped — they have no further twin.
+ */
+function markdownAlternateHref(pathname: string): string | undefined {
+  const clean = pathname.split('?')[0]?.split('#')[0] ?? '/';
+  if (clean.endsWith('.md') || clean.endsWith('.txt')) return undefined;
+  const twin = markdownTwinPath(clean);
+  const normalized =
+    clean.length > 1 ? (clean.replace(/\/+$/, '').replace(/\.html$/, '') || '/') : '/';
+  if (twin === normalized) return undefined;
+  return new URL(twin, Astro.site ?? new URL(SITE_URL)).href;
+}
+
+const alternateHref = markdownAlternateHref(Astro.url.pathname);
 ---
 
 <StarlightHead />
+
+{schemas.map((schema) => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+))}
+{alternateHref && <link rel="alternate" type="text/markdown" href={alternateHref} />}
+
 <Analytics />
 <Tracking />
