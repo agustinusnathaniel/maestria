@@ -6,8 +6,10 @@
  * `<script type="application/ld+json">` tags.
  *
  * Identity policy (owner decision): GitHub is the only contact surface.
- * No emails, phone numbers, or postal addresses - the `address` key is
- * omitted entirely, never null.
+ * No emails or phone numbers are ever emitted. The Organization carries a
+ * single owner-approved-minimal postal address (country only, no street or
+ * city) so search engines get a resolvable locality signal without inventing
+ * contact data.
  */
 
 export const SITE_URL = 'https://maestria.sznm.dev';
@@ -26,16 +28,22 @@ export const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`;
 export const AUTHOR_NAME = 'Agustinus Nathaniel';
 export const AUTHOR_URL = 'https://github.com/agustinusnathaniel';
 
-/** Organization entity for the site as a whole. */
-export function organizationSchema() {
+/**
+ * Organization entity without `@context`, the shared shape used both as a
+ * standalone JSON-LD entity and nested under WebSite.publisher.
+ */
+function organizationEntity() {
   return {
-    '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Maestria',
     url: SITE_URL,
     description: SITE_DESCRIPTION,
     logo: `${SITE_URL}/favicon.svg`,
     sameAs: [GITHUB_REPO_URL],
+    // Owner-approved-minimal postal identity: country inferred from the
+    // owner's public presence, pending owner confirmation. Deliberately no
+    // street, city, email, or phone - GitHub issues stay the contact surface.
+    address: { '@type': 'PostalAddress', addressCountry: 'ID' },
     contactPoint: [
       {
         '@type': 'ContactPoint',
@@ -44,6 +52,23 @@ export function organizationSchema() {
         availableLanguage: ['en'],
       },
     ],
+  };
+}
+
+/** Organization entity for the site as a whole. */
+export function organizationSchema() {
+  return { '@context': 'https://schema.org', ...organizationEntity() };
+}
+
+/** WebSite entity naming the docs site and its publishing organization. */
+export function websiteSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Maestria',
+    url: SITE_URL,
+    description: SITE_DESCRIPTION,
+    publisher: organizationEntity(),
   };
 }
 

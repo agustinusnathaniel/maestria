@@ -3,7 +3,7 @@ import StarlightHead from '@astrojs/starlight/components/Head.astro'
 import Analytics from './Analytics.astro'
 import Tracking from './Tracking.astro'
 import { markdownTwinPath } from '../lib/agent-delivery';
-import { SITE_URL, organizationSchema, softwareApplicationSchema } from '../lib/site-schema';
+import { SITE_URL, organizationSchema, softwareApplicationSchema, websiteSchema } from '../lib/site-schema';
 
 // Preload the latin variable fonts used on first paint of every page. Hashed
 // asset URLs only exist at build time, so this lives in the Head override
@@ -19,8 +19,9 @@ const preloadedFonts = [
   { href: jetbrainsMonoLatinUrl, family: 'JetBrains Mono Variable' },
 ];
 
-// Trust anchors for agents and search engines: Organization + SoftwareApplication.
-const schemas = [organizationSchema(), softwareApplicationSchema()];
+// Trust anchors for agents and search engines: Organization + SoftwareApplication
+// + WebSite (the site's own entity, publishing the Organization).
+const schemas = [organizationSchema(), softwareApplicationSchema(), websiteSchema()];
 
 /**
  * Markdown discovery: advertise this page's markdown twin via rel="alternate"
