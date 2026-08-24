@@ -14,6 +14,7 @@
     "@astrojs/starlight": "catalog:",
     "@astrojs/starlight-tailwind": "catalog:",
     "@fontsource-variable/alan-sans": "catalog:",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/sn-pro": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "astro": "catalog:",

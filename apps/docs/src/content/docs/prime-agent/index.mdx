@@ -4,98 +4,141 @@ description: Maestria methodology for Prime Agent - 7 specialists, orchestrator,
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Maestria Skills for Prime Agent'
-  tagline: 'Deliver the Maestria engineering methodology to Prime Agent as standard Agent Skills, plus a small verified extension for workflow-mode commands and mode prompt injection.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /prime-agent/getting-started/installation/
-    - text: View Core Methodology
-      icon: external
-      variant: minimal
-      link: /core/agents/
 ---
 
-import { LinkCard, CardGrid, Aside } from '@astrojs/starlight/components';
+import PlatformHero from '../../../components/plugin/PlatformHero.astro';
+import PluginSection from '../../../components/plugin/PluginSection.astro';
+import FeatureGrid from '../../../components/plugin/FeatureGrid.astro';
+import SiblingPlatforms from '../../../components/plugin/SiblingPlatforms.astro';
+import SiteFooter from '../../../components/plugin/SiteFooter.astro';
+import { Aside } from '@astrojs/starlight/components';
+import { marks } from '../../../data/marks.js';
 
-`@maestria/prime-agent` encodes the Maestria engineering methodology for
-[Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent): 7 specialist roles, an
-orchestrator, the global-rules contract, handoff and iteration-limits aids, and the
-`fein`/`sonar`/`blitz` workflow modes - delivered as standard
-[Agent Skills](https://agentskills.io/specification) (`skills/<name>/SKILL.md`), generated from the
-canonical directives in `packages/core/agent-directives/` - plus a small, verified Prime/Pi
-extension (`dist/extension.mjs`) for workflow-mode commands and mode prompt injection.
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-<Aside type="caution" title="Native candidate - verified subset only">
-  The generated skills match the documented Prime Agent Agent Skills contract and the extension is
-  verified against the pinned Prime fork's public extension API, but runtime behavior is **not yet
-  tested end to end** in a live Prime session. Native recursive-subagent (`rlm`) dispatch and
-  JSON/RPC headless-mode integration remain **deferred**. This package is not a production support
-  promise and does not claim runtime enforcement.
-</Aside>
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/PRIME-AGENT"
+      title="Maestria skills for Prime Agent."
+      lead="Deliver the Maestria engineering methodology to Prime Agent as standard Agent Skills, plus a small verified extension for workflow-mode commands and mode prompt injection."
+      mark={marks.primeAgent}
+      primaryCta={{ href: '/prime-agent/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/prime-agent/getting-started/quick-start/', label: 'Quick start' }}
+      installCommand="npx maestria install prime-agent"
+    />
 
-## Install
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="14 skills and one verified extension."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Full specialist roster', desc: 'Seven specialists: adventurer, architect, builder, diagnose, planner, reviewer, writer.' },
+          { title: 'Orchestration and rules', desc: 'The orchestrator, global-rules contract, handoff aid, and iteration-limits aid ship as skills.' },
+          { title: 'Workflow modes', desc: 'fein, sonar, and blitz skills mirror the core pipeline stages.' },
+          { title: 'Extension: mode commands', desc: 'dist/extension.mjs registers /fein, /sonar, /blitz, /mode-clear, and /maestria-status.' },
+          { title: 'Extension: mode injection', desc: 'Injects the active mode prompt on every agent turn.' },
+          { title: 'Spec-shaped skills', desc: 'Every skill ships as a standard Agent Skill at skills/<name>/SKILL.md with the required name/description frontmatter.' },
+        ]}
+      />
+    </PluginSection>
 
-The preferred path is to register the published npm package with Prime:
+    <PluginSection
+      index="02"
+      kicker="VERIFICATION STATUS"
+      title="Native candidate - verified subset only."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <Aside type="caution" title="Not yet tested end to end">
+        The generated skills match the documented [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent)
+        Agent Skills contract and the extension is verified against the pinned Prime fork's public extension API,
+        but runtime behavior is **not yet tested end to end** in a live Prime session. Native recursive-subagent
+        (`rlm`) dispatch and JSON/RPC headless-mode integration remain **deferred**.
+      </Aside>
+    </PluginSection>
 
-```bash
-prime-agent package install npm:@maestria/prime-agent
-```
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="Register the package with Prime."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          The preferred path is to register the published npm package with Prime:
+        </p>
+      </div>
 
-For skills-only installs, point Prime at the package's `skills/` directory in settings, or copy or
-symlink the skill directories into a project/global skill location. See the installation guide for
-the full options (including how to enable the extension for non-package installs).
+      ```bash
+      prime-agent package install npm:@maestria/prime-agent
+      ```
 
-<LinkCard
-  title="Installation & Setup"
-  description="Register the package, enable the extension, and verify the skills."
-  href="/prime-agent/getting-started/installation/"
-/>
+      <p class="!mt-6 mb-0 max-w-46rem text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        For skills-only installs, point Prime at the package's <code>skills/</code> directory in settings,
+        or copy or symlink the skill directories into a project/global skill location. See the
+        installation guide for the full options, including how to enable the extension for non-package installs.
+      </p>
+    </PluginSection>
 
-## What It Provides
+    <PluginSection
+      index="04"
+      kicker="PLATFORM LIMITS"
+      title="Advisory guidance, not enforcement."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        columns={2}
+        items={[
+          { title: 'Verified subset only', desc: "The extension covers mode commands and mode prompt injection. Prime's recursive-subagent call (rlm(...)) is an IPython-side tool with no public JS extension bridge, so this package cannot spawn child agents from the extension." },
+          { title: 'Advisory, not enforced', desc: 'Skills, rules, and the extension are advisory guidance, not security enforcement. Prime Agent has no skill-level tool-denial mechanism, so read-only roles state their role intent without claiming a runtime boundary.' },
+          { title: 'Not a sandbox', desc: 'Prime Agent executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.' },
+          { title: 'No filesystem writes', desc: 'The extension writes nothing - no ~/.pi, no .prime/agent writes; mode state rides on host session entries.' },
+        ]}
+      />
+    </PluginSection>
 
-- **14 Agent Skills** (`skills/<name>/SKILL.md`) with the required `name`/`description` frontmatter:
-  - 7 **specialists**: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`
-  - **orchestration/rules**: `orchestrator`, `global-rules`, `handoff`, `iteration-limits`
-  - **workflow modes**: `fein`, `sonar`, `blitz`
-- **A verified Prime/Pi extension** (`dist/extension.mjs`) registering `/fein`, `/sonar`, `/blitz`,
-  `/mode-clear`, and `/maestria-status`, and injecting the active mode's prompt on every agent turn.
+    <PluginSection
+      index="05"
+      kicker="FIND YOUR WAY"
+      title="Start with the plugin."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/prime-agent/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Register the package with Prime, enable the extension, and verify skill discovery.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/prime-agent/getting-started/quick-start/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Load the orchestrator and specialist skills on a real Prime Agent task.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Core Methodology</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Roles, permissions, and when to use each specialist.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/prime-agent/changelog/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Release history for @maestria/prime-agent.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/prime-agent/contributing/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Understand the generated Agent Skills projection and the sync pipeline.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
 
-## Platform notes and limitations
+    <SiblingPlatforms excludeId="prime-agent" />
 
-- **Verified subset only, not native `rlm` dispatch**: the extension covers mode commands and mode
-  prompt injection. Prime's recursive-subagent (`rlm(...)`) call is an IPython-side tool with no
-  public JS extension bridge, so this package cannot spawn child agents from the extension.
-- **Advisory, not enforced**: skills, rules, and the extension are advisory guidance, not security
-  enforcement. Prime Agent has no skill-level tool-denial mechanism, so read-only roles state their
-  role intent without claiming a runtime boundary.
-- **Not a sandbox**: Prime Agent executes model-generated Python and project commands with your user
-  permissions. Restrict use to trusted repositories, skills, and instructions.
-- **No filesystem writes**: the extension writes nothing (no `~/.pi`, no `.prime/agent` writes);
-  mode state rides on host session entries.
+    <SiteFooter />
 
-## Explore the Docs
-
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Register the package with Prime, enable the extension, and verify skill discovery."
-    href="/prime-agent/getting-started/installation/"
-  />
-  <LinkCard
-    title="Quick Start"
-    description="Load the orchestrator and specialist skills on a real Prime Agent task."
-    href="/prime-agent/getting-started/quick-start/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Release history for @maestria/prime-agent."
-    href="/prime-agent/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Understand the generated Agent Skills projection and the sync pipeline."
-    href="/prime-agent/contributing/"
-  />
-</CardGrid>
+  </div>
+</div>

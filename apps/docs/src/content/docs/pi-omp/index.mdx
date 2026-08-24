@@ -4,96 +4,197 @@ description: Extend Pi or Oh My Pi with spec-driven orchestration, workflow mode
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Portable Engineering Workflows'
-  tagline: 'Extend Pi or Oh My Pi with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration - configured in seconds.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /pi-omp/getting-started/installation/
-    - text: View on GitHub (Pi)
-      icon: external
-      variant: minimal
-      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/pi
-    - text: View on GitHub (OMP)
-      icon: external
-      variant: minimal
-      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/omp
 ---
 
-import { LinkCard, CardGrid, LinkButton, Aside } from '@astrojs/starlight/components';
+import PlatformHero from '../../../components/plugin/PlatformHero.astro';
+import PluginSection from '../../../components/plugin/PluginSection.astro';
+import FeatureGrid from '../../../components/plugin/FeatureGrid.astro';
+import SiblingPlatforms from '../../../components/plugin/SiblingPlatforms.astro';
+import SiteFooter from '../../../components/plugin/SiteFooter.astro';
 import { PackageManagers } from 'starlight-package-managers';
+import { marks } from '../../../data/marks.js';
 
-The same Maestria methodology that works on OpenCode is adapted for **Pi** and **Oh My Pi (OMP)**. The role names and workflow ideas carry over, but runtime behavior is not identical. Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read [When to use Maestria](/core/when-to-use/) before assuming that a workflow transfers unchanged.
+<div class="plugin-root plugin-title-wrap">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-<Aside type="tip">
-  **Pi** uses `@gotgenes/pi-subagents` for subagent dispatch via the `maestria_subagent` tool.
-  **OMP** has built-in `task()` dispatch - no external dependency needed.
-</Aside>
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow={'@MAESTRIA/PI & @MAESTRIA/OMP'}
+      title="Spec-driven, portable workflows."
+      lead="Extend Pi or Oh My Pi with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration - configured in seconds."
+      mark={marks.piOmp}
+      primaryCta={{ href: '/pi-omp/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/pi-omp/reference/', label: 'Reference' }}
+      installCommand="npx maestria install pi"
+    />
 
-## How It Works
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Two runtimes, one discipline."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Same method, adapted', desc: 'The Maestria methodology that works on OpenCode is adapted for Pi and Oh My Pi (OMP). Role names and workflow ideas carry over - runtime behavior does not.' },
+          { title: '7 specialist subagents', desc: 'Activation deploys 7 specialist agent files and auto-discovers the methodology skills alongside them.' },
+          { title: 'Modes drive the pipeline', desc: '/fein runs the full pipeline, /sonar stays research-only, /blitz is fast implementation - each mode activates the right subagents in sequence.' },
+          { title: 'Dispatch per runtime', desc: 'Pi dispatches through the @gotgenes/pi-subagents extension via the maestria_subagent tool; OMP uses built-in task() dispatch with no external dependency.' },
+          { title: 'Session tree tracking', desc: 'Every subagent invocation records its parent task ID, preserving the full session tree across turns.' },
+          { title: 'Honest about differences', desc: 'Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read When to Use before assuming a workflow transfers unchanged.' },
+        ]}
+      />
+    </PluginSection>
 
-1. **Install the extension** - one command for your platform
-2. **Extension activates** - deploys 7 specialist agent files, auto-discovers methodology skills, registers mode commands (`/fein`, `/sonar`, `/blitz`)
-3. **Mode commands drive the pipeline** - `/fein` (full pipeline), `/sonar` (research), `/blitz` (fast impl) - each activates the right subagents in sequence
-4. **Orchestrator dispatches** - decomposes work, delegates to specialists via subagent dispatch (Pi or OMP), enforces phase gates
-5. **Session tree tracks state** - each subagent invocation records its parent task ID, preserving the full session tree across turns
+    <PluginSection
+      index="02"
+      kicker="HOW IT WORKS"
+      title="Five steps from install to dispatch."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <ol class="list-none m-0 p-0 border-t border-home-border">
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Install the extension</strong> - one command for your platform</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Extension activates</strong> - deploys 7 specialist agent files, auto-discovers methodology skills, registers mode commands (<code>/fein</code>, <code>/sonar</code>, <code>/blitz</code>)</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Mode commands drive the pipeline</strong> - each activates the right subagents in sequence</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">4</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Orchestrator dispatches</strong> - decomposes work, delegates to specialists via subagent dispatch (Pi or OMP), enforces phase gates</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">5</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Session tree tracks state</strong> - each subagent invocation records its parent task ID, preserving the full session tree across turns</p>
+        </li>
+      </ol>
+    </PluginSection>
 
-## Quick Install
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="One command per runtime."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          Both extensions are fully self-configuring - no manual config editing needed.
+        </p>
+      </div>
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="install pi" comment="Pi" />
+      <PackageManagers type="dlx" pkg="maestria@latest" args="install pi" comment="Pi" />
 
-```bash
-# Oh My Pi
-omp install @maestria/omp
-```
+      ```bash
+      # Oh My Pi
+      omp install @maestria/omp
+      ```
+    </PluginSection>
 
-Both extensions are fully self-configuring - no manual config editing needed.
+    <PluginSection
+      index="04"
+      kicker="PLATFORM DIFFERENCES"
+      title="Same method, different plumbing."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="[overflow-wrap:anywhere]">
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3 px-0.5 border-t border-b border-home-border">
+          <span class="font-mono text-xs font-medium uppercase tracking-[0.14em] text-home-text-muted">Feature</span>
+          <span class="font-mono text-xs font-medium uppercase tracking-[0.14em] text-home-text-muted">Pi</span>
+          <span class="font-mono text-xs font-medium uppercase tracking-[0.14em] text-home-text-muted">Oh My Pi</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Subagent dispatch</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>@gotgenes/pi-subagents</code> extension</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Built-in <code>task()</code> tool</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Dispatch tool</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>maestria_subagent(agent, task)</code></span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>task(agent, task)</code> or <code>maestria_subagent(...)</code></span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Peer dependency</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>@gotgenes/pi-subagents</code></span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">None</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Enforcement tools</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>maestria_subagent</code> only</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>task</code> and <code>maestria_subagent</code></span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Agent discovery dir</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>~/.pi/agent/agents/</code></span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>~/.omp/agent/agents/</code></span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Install command</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>pnpx maestria@latest install pi</code></span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>omp install @maestria/omp</code></span>
+        </div>
+      </div>
 
-OMP native goal state is observed in Maestria's session mirror. Active, paused,
-and budget-limited goals are shown; complete and dropped terminal events clear
-the current-goal mirror. Session transitions rehydrate target-session Maestria
-state and use OMP's public native goal entry when available; otherwise the
-mirror remains unknown until a public goal event. User-issued `/goal` commands
-remain OMP-owned, while model goal calls are blocked when their provenance is
-unavailable.
+      <p class="!mt-8 mb-0 max-w-46rem text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        OMP native goal state is observed in Maestria's session mirror. Active,
+        paused, and budget-limited goals are shown; complete and dropped terminal
+        events clear the current-goal mirror. Session transitions rehydrate
+        target-session Maestria state and use OMP's public native goal entry when
+        available; otherwise the mirror remains unknown until a public goal event.
+        User-issued <code>/goal</code> commands remain OMP-owned, while model goal
+        calls are blocked when their provenance is unavailable.
+      </p>
+    </PluginSection>
 
-<LinkButton href="/pi-omp/getting-started/installation/" size="lg">
-  Installation Guide →
-</LinkButton>
+    <PluginSection
+      index="05"
+      kicker="FIND YOUR WAY"
+      title="Start with the plugin."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Installation, setup, and your first session.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/getting-started/quick-start/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Your first session with @maestria/pi or @maestria/omp.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/reference/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Reference</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Commands, subagent dispatch, review mode, and session management.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/when-to-use/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">When to Use</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Which workflows transfer unchanged - read before you port.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/changelog/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/contributing/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Project structure and how to extend.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
 
-## Platform Comparison
+    <SiblingPlatforms excludeId="pi-omp" />
 
-| Feature             | Pi                                 | OMP                                             |
-| ------------------- | ---------------------------------- | ----------------------------------------------- |
-| Subagent dispatch   | `@gotgenes/pi-subagents` extension | Built-in `task()` tool                          |
-| Dispatch tool       | `maestria_subagent(agent, task)`   | `task(agent, task)` or `maestria_subagent(...)` |
-| Peer dependency     | `@gotgenes/pi-subagents`           | None                                            |
-| Enforcement tools   | `maestria_subagent` only           | `task` and `maestria_subagent`                  |
-| Agent discovery dir | `~/.pi/agent/agents/`              | `~/.omp/agent/agents/`                          |
-| Install command     | `pnpx maestria@latest install pi`  | `omp install @maestria/omp`                     |
+    <SiteFooter />
 
-## Explore the Docs
-
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Installation, setup, and your first session."
-    href="/pi-omp/getting-started/installation/"
-  />
-  <LinkCard
-    title="Reference"
-    description="Commands, subagent dispatch, review mode, and session management."
-    href="/pi-omp/reference/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Version history and release notes."
-    href="/pi-omp/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Project structure and how to extend."
-    href="/pi-omp/contributing/"
-  />
-</CardGrid>
+  </div>
+</div>

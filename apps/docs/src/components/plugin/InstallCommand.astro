@@ -1,0 +1,103 @@
+---
+/**
+ * Install command chip: decorative `$` prompt, mono command text, and a copy
+ * button (clipboard write, copy->check icon swap for ~1.6s, polite live-region
+ * feedback, guarded umami tracking). Extracted verbatim from the homepage
+ * hero; reused on plugin overview pages.
+ *
+ * The runtime caption below the chip is part of this component so every
+ * usage carries it.
+ */
+interface Props {
+  /** Bare command copied to the clipboard; rendered without a `$`. */
+  command: string;
+  /**
+   * Umami analytics discriminator sent as the `location` property of the
+   * `install_copy` event (e.g. 'home-hero', 'plugin-hero').
+   */
+  location?: string;
+  /** Chip alignment inside its parent column ('center' matches the homepage). */
+  align?: 'center' | 'start';
+}
+
+const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
+---
+
+<div
+  class:list={[
+    'install-cmd mt-8 max-md:mt-6 flex flex-col gap-2.5 min-w-0',
+    align === 'center' ? 'items-center' : 'items-start',
+  ]}
+  data-install-location={location}
+>
+  <div class="install-chip inline-flex items-stretch rounded-[6px] bg-home-surface border border-home-border overflow-hidden max-w-full">
+    <span class="flex items-center pl-4 pr-2 font-mono text-sm text-home-accent select-none" aria-hidden="true">$</span>
+    <code class="flex items-center py-2.5 font-mono text-[0.8125rem] text-home-text whitespace-nowrap">{command}</code>
+    <button
+      type="button"
+      class="copy-btn inline-flex cursor-pointer items-center justify-center self-stretch w-10 ml-1 mr-0.5 rounded-[4px] bg-transparent border-0 text-home-text-muted hover:text-home-text hover:bg-home-surface-raised focus:text-home-text focus:bg-home-surface-raised transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+      aria-label="Copy install command"
+      data-install-cmd={command}
+    >
+      <svg class="icon-copy w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <svg class="icon-check w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>
+  </div>
+  <span class="copy-live sr-only" aria-live="polite"></span>
+  <!-- Two deliberate segments: below the 480px `sm` breakpoint the runtimes
+       and the tagline break onto their own lines, so no single word wraps
+       into an orphan. Above it the caption renders as one line. -->
+  <p class="font-mono text-xs text-home-text-muted m-0">
+    npm · pnpm · yarn · bun · deno<br class="sm:hidden" /> — any runtime works
+  </p>
+</div>
+
+<style>
+  /* Copy state swap */
+  .copy-btn .icon-check {
+    display: none;
+  }
+
+  .copy-btn.copied .icon-copy {
+    display: none;
+  }
+
+  .copy-btn.copied .icon-check {
+    display: block;
+    color: var(--home-accent);
+  }
+</style>
+
+<script>
+  // One listener set per rendered chip; Astro dedupes this module per page.
+  document.querySelectorAll<HTMLElement>('.install-cmd').forEach((root) => {
+    const btn = root.querySelector<HTMLButtonElement>('.copy-btn');
+    const live = root.querySelector<HTMLElement>('.copy-live');
+    if (!btn) return;
+
+    let revertTimer: ReturnType<typeof setTimeout> | undefined;
+
+    btn.addEventListener('click', () => {
+      const command = btn.dataset.installCmd || '';
+      const location = root.dataset.installLocation || 'unknown';
+
+      const announce = () => {
+        btn.classList.add('copied');
+        if (live) live.textContent = 'Copied';
+        window.clearTimeout(revertTimer);
+        revertTimer = setTimeout(() => {
+          btn.classList.remove('copied');
+          if (live) live.textContent = '';
+        }, 1600);
+
+        if (typeof window.umami !== 'undefined') {
+          window.umami.track('install_copy', { location });
+        }
+      };
+
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(command).then(announce).catch(() => {});
+      }
+    });
+  });
+</script>

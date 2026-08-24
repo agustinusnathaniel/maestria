@@ -1,0 +1,100 @@
+---
+/**
+ * Left-aligned hero for plugin overview pages. Mirrors the homepage hero
+ * language (mono eyebrow, Alan Sans display title, ghost secondary CTA) but
+ * composes left-to-right to differentiate sub-pages from the centered
+ * homepage. Renders an InstallCommand chip when `installCommand` is set.
+ */
+import InstallCommand from './InstallCommand.astro';
+import { markAttrs } from '../../data/marks.js';
+
+interface Props {
+  /** Mono uppercase eyebrow, e.g. '@MAESTRIA/OPENCODE'. */
+  eyebrow: string;
+  /** Display title (Alan Sans, balanced, max 24ch). */
+  title: string;
+  /** Lead paragraph under the title. */
+  lead: string;
+  /** SVG inner markup from the shared marks dict (src/data/marks.ts). */
+  mark: string;
+  primaryCta: { href: string; label: string };
+  secondaryCta?: { href: string; label: string };
+  installCommand?: string;
+}
+
+const { eyebrow, title, lead, mark, primaryCta, secondaryCta, installCommand } = Astro.props;
+---
+
+<header class="flex flex-col items-start text-left min-w-0 pt-[clamp(4rem,8vw,6rem)]">
+  <p class="hero-eyebrow m-0 mb-5 flex items-center gap-2.5">
+    <svg class="w-[22px] h-[22px] flex-none text-home-accent" {...markAttrs} set:html={mark} />
+    <span>{eyebrow}</span>
+  </p>
+  <h1 class="hero-title">{title}</h1>
+  <p class="hero-lead">{lead}</p>
+  <!-- mb-6 gives the install chip deliberate air: the plugin-root reset
+       zeroes sibling margin-top, so spacing rides on margin-bottom. -->
+  <div class="hero-ctas flex items-center flex-wrap gap-[1.4rem] max-md:gap-4 mb-6">
+    <a
+      class="inline-flex items-center justify-center min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+      href={primaryCta.href}
+    >{primaryCta.label}</a>
+    {
+      secondaryCta && (
+        <a
+          class="inline-flex items-center gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+          href={secondaryCta.href}
+        >
+          {secondaryCta.label}
+          <span aria-hidden="true">→</span>
+        </a>
+      )
+    }
+  </div>
+  {installCommand && <InstallCommand command={installCommand} location="plugin-hero" align="start" />}
+</header>
+
+<style>
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--home-text-muted);
+  }
+
+  .hero-title {
+    margin: 0;
+    font-family: 'Alan Sans Variable', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    font-weight: 540;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--home-text);
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+
+  .hero-lead {
+    margin: 1.25rem 0 0;
+    font-size: clamp(1rem, 1.2vw, 1.0625rem);
+    line-height: 1.65;
+    color: var(--home-text-soft);
+    max-width: 52rem;
+    text-wrap: pretty;
+  }
+
+  /* Lead→CTA air (authored as mt-9 / max-md:mt-4 on this row). Utility
+     margin-top is stripped by the plugin-root markdown reset between block
+     siblings; a scoped rule outranks that unlayered reset. */
+  .hero-ctas {
+    margin-top: 2.25rem;
+  }
+
+  @media (width < 40rem) {
+    .hero-ctas {
+      margin-top: 1rem;
+    }
+  }
+</style>
