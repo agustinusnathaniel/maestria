@@ -20,18 +20,21 @@ The project uses [Vite+](https://viteplus.dev) as its unified toolchain. `vp che
 ```
 maestria/
 ├── packages/
-│   ├── core/              Canonical agent directives + sync pipeline (private, v0.4.9)
-│   ├── opencode/          OpenCode plugin (published, v0.6.12)
-│   ├── kimi-code/         Kimi Code plugin (published, v0.4.9)
-│   ├── omp/               Oh My Pi plugin (published, v0.2.4)
-│   ├── pi/                Pi extension (published, v0.5.10)
-│   ├── cursor/            Cursor IDE plugin (published, v0.1.3)
-│   ├── hermes/            Hermes Agent plugin (private, v0.1.7, published on PyPI)
+│   ├── core/              Canonical agent directives + sync pipeline (private, v0.7.5)
+│   ├── opencode/          OpenCode plugin (published, v0.6.23)
+│   ├── kimi-code/         Kimi Code plugin (published, v0.4.18)
+│   ├── omp/               Oh My Pi plugin (published, v0.4.5)
+│   ├── pi/                Pi extension (published, v0.6.10)
+│   ├── cursor/            Cursor IDE plugin (published, v0.1.10)
+│   ├── prime-agent/       Prime Agent skills-first package (published, v0.2.2)
+│   ├── claude-code/       Claude Code plugin (published, v0.2.3)
+│   ├── codex/             Codex CLI projection (published, v0.2.3)
+│   ├── hermes/            Hermes Agent plugin (private, v0.1.13, published on PyPI)
 │   └── shared/
 │       └── pi/            Shared pure-TS utilities for omp/pi (private)
 ├── apps/
 │   ├── docs/              Starlight documentation site (private)
-│   └── maestria-cli/      CLI tool (published, v0.7.3)
+│   └── maestria-cli/      CLI tool (published, v0.10.1)
 ├── scripts/
 │   ├── sync-all           Regenerate all plugin outputs from canonical sources
 │   └── check-sync         CI verification: fail if any output differs
@@ -60,7 +63,10 @@ maestria/
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
 | `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
-| `@maestria/hermes` | No | Hermes Agent plugin — methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
+| `@maestria/prime-agent` | Yes (v0.2.2) | Skills-first: 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent, plus a verified executable extension subset (mode commands, mode prompt injection); native rlm dispatch and JSON/RPC remain deferred |
+| `@maestria/claude-code` | Yes | Declarative Claude Code plugin with 7 agents, skills, and workflow commands |
+| `@maestria/codex` | Yes | Provisional Codex CLI projection with namespaced methodology skills |
+| `@maestria/hermes` | No (PyPI) | Hermes Agent plugin - methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
 | `@maestria/shared-pi` | No | Shared pure-TS utilities for omp and pi (agent deployment, subagent validation, event constants) |
 | `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
 
@@ -70,7 +76,7 @@ maestria/
 packages/core/agent-directives/  (canonical source)
     │
     ▼ (scripts/sync-all iterates packages/*/sync.config.ts)
-packages/{opencode,kimi-code,omp,pi}/
+packages/*/  (every platform package - opencode, kimi-code, omp, pi, cursor, prime-agent, ...)
     sync.config.ts defines:
       • source (where canonical files live)
       • output (where generated files go)
@@ -127,6 +133,9 @@ Each plugin defines its transforms in `sync.config.ts`:
 | **kimi-code** | 18 string replacements (`task(` → `Agent(`, `webfetch` → `FetchURL`, etc.) + prepend subagent profile + append routing/swarm docs | `skills/<name>/SKILL.md` - Kimi Code skills |
 | **pi** | Unified `sync.config.ts` (9 replacements: `task(` → `maestria_subagent(`, `@` → `/`) with dual output paths for agents + skills | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
 | **omp** | Unified `sync.config.ts` (replacements: `@agent` → bare name, omp has built-in `task()` so no rewrite needed) | `agents/<name>.md` (subagent agent files) + `skills/<name>/SKILL.md` (Pi skill files) |
+| **claude-code** | Namespaces agent/skill references, adapts tool names, and adds Claude agent frontmatter | `agents/*.md`, `skills/*/SKILL.md`, and `commands/*.md` |
+| **codex** | Namespaces skill references and projects workflow modes as skills | `skills/*/SKILL.md` |
+| **prime-agent** | `@agent` refs → bare skill names; Agent Skills layout with required `name`/`description` frontmatter; read-only role prepends; orchestrator/global-rules/mode append blocks | `skills/<name>/SKILL.md` - 14 Agent Skills |
 
 ### Commands
 
@@ -138,9 +147,9 @@ scripts/sync-all
 scripts/check-sync
 
 # Per-plugin (run from the plugin directory)
-cd packages/opencode && npx tsx ../core/scripts/sync.ts --verbose
-cd packages/opencode && npx tsx ../core/scripts/sync.ts --check  # CI mode
-cd packages/opencode && npx tsx ../core/scripts/sync.ts --diff   # show changes
+cd packages/opencode && pnpm exec tsx ../core/scripts/sync.ts --verbose
+cd packages/opencode && pnpm exec tsx ../core/scripts/sync.ts --check  # CI mode
+cd packages/opencode && pnpm exec tsx ../core/scripts/sync.ts --diff   # show changes
 ```
 
 ### Critical Rule
@@ -155,18 +164,18 @@ cd packages/opencode && npx tsx ../core/scripts/sync.ts --diff   # show changes
 
 Agent directives are LLM prompts. Verbose directives dilute attention and degrade performance. Follow these principles:
 
-- **Keep sections short** — aim for <50 lines per section. If a section exceeds 100 lines, split or trim it.
-- **Prefer cross-references over duplication** — reference `rules.md` sections rather than repeating rules inline. Platform-enforced security rules (path traversal, token redaction, destructive op confirmation) don't need LLM-level duplication.
-- **Use concise reference format for security guidance** — 5 bullet points max, no tables/checklists. Platform-level enforcement beats prompt-level rules.
-- **One topic per section** — if a section covers two concerns, split it.
-- **No marketing or meta-commentary** — directives describe what the agent should do, not why it was written that way. Save rationale for ADRs.
-- **Every line must carry weight** — if removing a line doesn't change the agent's behavior, remove it.
+- **Keep sections short** - aim for <50 lines per section. If a section exceeds 100 lines, split or trim it.
+- **Prefer cross-references over duplication** - reference `rules.md` sections rather than repeating rules inline. Platform-enforced security rules (path traversal, token redaction, destructive op confirmation) don't need LLM-level duplication.
+- **Use concise reference format for security guidance** - 5 bullet points max, no tables/checklists. Platform-level enforcement beats prompt-level rules.
+- **One topic per section** - if a section covers two concerns, split it.
+- **No marketing or meta-commentary** - directives describe what the agent should do, not why it was written that way. Save rationale for ADRs.
+- **Every line must carry weight** - if removing a line doesn't change the agent's behavior, remove it.
 
 These guidelines are scar tissue from PR #127. They apply to all new and modified agent directives.
 
 ### Add a new specialist
 
-1. Create `packages/core/agent-directives/specialists/<name>.md` — follow the existing structure (role description, methodology, iteration limits, handoff format, skill prescription, related agents) and the [Directive Writing Guidelines](#directive-writing-guidelines) above.
+1. Create `packages/core/agent-directives/specialists/<name>.md` - follow the existing structure (role description, methodology, iteration limits, handoff format, skill prescription, related agents) and the [Directive Writing Guidelines](#directive-writing-guidelines) above.
 2. Register in the orchestrator prompt's delegation table
 3. For each plugin, check `sync.config.ts`:
    - **OpenCode:** Add frontmatter with `mode: subagent`, `description`, and `permission` blocks
@@ -267,16 +276,40 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 
 | Concern | Details |
 | --- | --- |
-| Format | Python plugin — PyPI distribution (`maestria-hermes`) |
-| Manifest | `plugin.yaml` — standalone Hermes Agent plugin |
+| Format | Python plugin - PyPI distribution (`maestria-hermes`) |
+| Manifest | `plugin.yaml` - standalone Hermes Agent plugin |
 | Skills | Auto-generated in `src/maestria_hermes/skills/<name>/SKILL.md` from sync (7 specialists + orchestrator) |
 | Tools | Hand-authored `src/maestria_hermes/tools/` (provides `opencode_route` tool) |
-| Hooks | Hand-authored `src/maestria_hermes/hooks/` (6 hooks: pre\_llm\_call, pre\_tool\_call, subagent start/stop, etc.) |
-| Middleware | Hand-authored `src/maestria_hermes/middleware/` (llm\_execution) |
+| Hooks | Hand-authored `src/maestria_hermes/hooks/` (6 hooks: pre_llm_call, pre_tool_call, subagent start/stop, etc.) |
+| Middleware | Hand-authored `src/maestria_hermes/middleware/` (llm_execution) |
 | Commands | Hand-authored `{fein,sonar,blitz,mode,review,plan}` commands |
 | Validate | `ruff check src/` |
 | Install | `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable` or `pip install maestria-hermes` |
 | Key transforms | `task(` → `delegate_task(`, `@name` → bare name, tool generalizations, coding-specific → general-purpose adaptation |
+
+### claude-code
+
+| Concern  | Details                                                           |
+| -------- | ----------------------------------------------------------------- |
+| Format   | Declarative Claude Code plugin - no build step                    |
+| Manifest | `.claude-plugin/plugin.json`                                      |
+| Agents   | Auto-generated in `agents/*.md` from the core sync pipeline       |
+| Skills   | Auto-generated in `skills/*/SKILL.md`                             |
+| Commands | Auto-generated in `commands/*.md`                                 |
+| Test     | `pnpm --filter @maestria/claude-code test`                        |
+| Validate | `claude plugin validate . --strict`                               |
+| Install  | `npx maestria install claude-code` or the Claude Code marketplace |
+
+### codex
+
+| Concern  | Details                                                                     |
+| -------- | --------------------------------------------------------------------------- |
+| Format   | Provisional Codex CLI plugin projection - skills only                       |
+| Manifest | `.codex-plugin/plugin.json`                                                 |
+| Skills   | Auto-generated in `skills/*/SKILL.md`                                       |
+| Test     | `pnpm --filter @maestria/codex test`                                        |
+| Validate | Codex plugin-creator `validate_plugin.py`                                   |
+| Install  | `npx maestria install codex`; the CLI stages a local npm-backed marketplace |
 
 ---
 
@@ -306,7 +339,7 @@ pnpm version-packages
 pnpm release
 ```
 
-Create a changeset whenever you make a user-facing change to a published package (`@maestria/opencode`, `@maestria/pi`). Private packages (`@maestria/core`, `@maestria/kimi-code`, `@maestria/docs`) can skip changesets but use `"tag": true` for internal tracking.
+Create a changeset whenever you make a user-facing change to a package that is published on npm (or about to be published - the changeset is what ships it). Private packages (for example `@maestria/core`, `@maestria/docs`) can skip changesets but use `"tag": true` for internal tracking.
 
 ---
 
@@ -329,12 +362,12 @@ Create a changeset whenever you make a user-facing change to a published package
 | Area | Location | How to run |
 | --- | --- | --- |
 | User-facing docs | `apps/docs/` (Astro + Starlight) | `vp run @maestria/docs#dev` |
-| Architecture decisions | `docs/adr/{core,opencode,kimi-code,omp,pi}/` | Read as markdown |
+| Architecture decisions | `docs/adr/{core,opencode,kimi-code,cursor,hermes,pi}/` | Read as markdown |
 | Testing guide | `docs/testing.md` | Read as markdown |
 | Completion checklist | `docs/checklist.md` | Read as markdown |
 | Root project docs | `AGENTS.md`, `PATTERNS.md`, `VISION.md`, `README.md` | Read as markdown |
 
-The docs site auto-generates sidebar navigation via `starlight-auto-sidebar`. After adding a new page, verify it appears in the sidebar during local dev.
+The docs site sidebar is configured in `apps/docs/astro.config.mjs` (manual groups per package, with per-package `getting-started` pages auto-generated from their directory). After adding a new package docs section, add a matching sidebar group and verify it appears during local dev.
 
 ---
 

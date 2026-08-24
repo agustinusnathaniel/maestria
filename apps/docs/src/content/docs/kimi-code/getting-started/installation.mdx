@@ -4,6 +4,7 @@ description: Install @maestria/kimi-code in your Kimi Code CLI. No npm install, 
 ---
 
 import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 `@maestria/kimi-code` is a declarative Kimi Code plugin - a manifest, a directory of skill files, and a global rules file. The plugin is loaded by Kimi Code at session start, and the orchestrator skill auto-injects the methodology.
 
@@ -17,13 +18,13 @@ import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
 The [maestria CLI](/cli/) provides a unified interface for installing and managing
 maestria plugins across all supported platforms:
 
-```bash
-# Install for this platform
-npx maestria install kimi-code
-
-# Verify installation
-npx maestria status
-```
+<PackageManagers
+  type="dlx"
+  pkg="maestria"
+  args="install kimi-code"
+  comment="Install for this platform"
+/>
+<PackageManagers type="dlx" pkg="maestria" args="status" comment="Verify installation" />
 
 <Aside type="caution" title="Additional setup required">
   The CLI installs the plugin files and copies the global rules. You still need to add the
@@ -40,9 +41,7 @@ npx maestria status
 
    The plugin is distributed via npm. The maestria CLI downloads and extracts it directly:
 
-   ```bash
-   npx maestria install kimi-code
-   ```
+   <PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
 
    This runs `npm pack @maestria/kimi-code@latest` and extracts the tarball into
    `~/.kimi-code/plugins/managed/maestria`, then copies the global rules to
@@ -244,15 +243,11 @@ npx maestria status
 
 To update via the maestria CLI:
 
-```bash
-npx maestria update kimi-code
-```
+<PackageManagers type="dlx" pkg="maestria" args="update kimi-code" />
 
 To pin to a specific version:
 
-```bash
-npx maestria update kimi-code@0.4.6
-```
+<PackageManagers type="dlx" pkg="maestria" args="update kimi-code@0.4.6" />
 
 <details>
 <summary>Alternative: Manual update</summary>
@@ -277,8 +272,9 @@ rm -f /tmp/maestria-kimi-code-*.tgz
 
 ## Uninstalling
 
+<PackageManagers type="dlx" pkg="maestria" args="uninstall kimi-code" />
+
 ```bash
-npx maestria uninstall kimi-code
 # or manually:
 rm -rf ~/.kimi-code/plugins/managed/maestria ~/.kimi-code/AGENTS.md
 ```

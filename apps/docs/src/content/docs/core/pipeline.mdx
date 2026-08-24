@@ -5,13 +5,13 @@ description: The Thinker-Worker-Verifier pipeline model - how specialists are se
 
 import { Aside } from '@astrojs/starlight/components';
 
-The Maestria methodology structures complex work through a **three-role pipeline**: Thinker, Worker, and Verifier. Each role is staffed by one or more specialists with focused expertise. An orchestrator (manager) sequences these roles adaptively, decomposing high-level goals into atomic tasks and routing each to the right specialist.
+For complex work that uses the pipeline, Maestria separates three roles: Thinker, Worker, and Verifier. Each role is staffed by one or more specialists with focused expertise. An orchestrator (manager) sequences the selected roles adaptively, decomposing high-level goals into atomic tasks and routing each to the right specialist.
 
 ## Overview
 
 The pipeline separates three fundamentally different cognitive modes:
 
-- **Thinker** - analyzes, designs, plans. Asks "what should we do and why?" before any code is written.
+- **Thinker** - analyzes, designs, and plans when the selected route needs that work. Asks "what should we do and why?" before implementation when the task is unfamiliar or design-uncertain.
 - **Worker** - executes, produces artifacts. Carries out the plan, one atomic task at a time.
 - **Verifier** - validates output against quality criteria. Catches what the worker missed.
 
@@ -47,7 +47,7 @@ Verifiers validate. They inspect artifacts produced by Workers against quality c
 | ------------ | ----------- | ---------------------------------------------------------------- |
 | **Reviewer** | Review / QA | Pre-merge validation, security audit, post-implementation review |
 
-For non-trivial changes, the orchestrator can dispatch multiple Reviewer instances with different focus areas (Security, Architecture, Performance, UX, General) in parallel - a multi-lens review swarm. Results are triaged into [fix]/[dismiss]/[escalate] categories with conservative conflict resolution.
+For a full review, the orchestrator dispatches one independent general Reviewer. It adds specialist lenses only when the requirements or diff show matching security, performance, architecture, or UX risk. Reviews remain blind and lenses remain exclusive. Results are triaged into [fix]/[dismiss]/[escalate] categories with conservative conflict resolution.
 
 ## Pipeline Flow Diagram
 
@@ -97,28 +97,24 @@ The maker/checker split is why the pipeline defines separate specialists for Wor
 
 ## Iteration Limits
 
-Any delegated loop between specialists must define hard iteration limits up front. This prevents agent ping-pong - where two specialists pass work back and forth without converging.
+Delegated repair loops should converge within a practical normal bound of about three rounds. Extend the loop only when the latest attempt shows observable progress toward a verifiable termination condition. If the same cause recurs or no new evidence appears, change strategy or escalate with what was tried, what failed, and what is needed to proceed.
 
-Define before delegating:
-
-- **Maximum rounds** - the upper bound on fix-attempt iterations (e.g., 3).
-- **Escalation criteria** - what constitutes "stuck" and how to escalate (e.g., "after 3 failed attempts, surface the blocker with what was tried, what failed, and what input is needed to proceed").
-- **Termination condition** - the verifiable state that ends the loop (e.g., "type check passes, tests pass, diff is focused on task scope").
+Implementation turns end at a delivered state - reviewed changes on a pushed branch with an open PR - and cancelled delegations are retried once rather than treated as stop signals.
 
 <Aside>
-  Without iteration limits, automated loops can consume excessive rounds on unsolvable problems.
-  Always set a max before delegating, and escalate instead of retrying when the limit is reached.
+  Repeated retries without progress consume context without improving the result. Use evidence of
+  progress to justify another round; otherwise change strategy or escalate.
 </Aside>
 
 ## Workflow modes
 
 The pipeline supports three modes that control its depth. Each mode is suited to a different class of work.
 
-| Mode                    | Pipeline                                          | Use Case                                                                                              |
-| ----------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Full pipeline**       | Thinker → Worker → Verifier (adaptive sequencing) | Explicitly chosen for high-risk or multi-phase work where the extra stages earn their cost.           |
-| **Research**            | Thinker only - STOP after analysis/design         | Understanding before committing. Reconnaissance, architecture evaluation, planning without execution. |
-| **Fast implementation** | Worker only - skip recon and review               | Quick fixes in known territory where the design is obvious and risk is low.                           |
+| Mode                    | Pipeline                                                                                                                                                | Use Case                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Full pipeline**       | Thinker → Worker → Verifier (adaptive sequencing)                                                                                                       | Explicitly chosen for high-risk or multi-phase work where the extra stages earn their cost.           |
+| **Research**            | Thinker only - STOP after analysis/design                                                                                                               | Understanding before committing. Reconnaissance, architecture evaluation, planning without execution. |
+| **Fast implementation** | Direct execution when the host permits it; otherwise the permitted specialist - skip optional recon/design ceremony and keep required safeguards/review | Quick fixes in known territory where the design is obvious and risk is low.                           |
 
 The available mode names and activation rules depend on the platform. A task can also escalate from one mode to another - if a fast implementation hits unexpected complexity, the agent can fall back to the full pipeline. Strong or expensive models often work better with direct execution or a single specialist; see [When to use Maestria](/core/when-to-use/).
 

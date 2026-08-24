@@ -2,7 +2,7 @@
 
 Roles are loaded from ~/.hermes/maestria-roles.json (if present) with
 fallback to built-in defaults. Each role defines which tool categories
-a specialist can use — the pre_tool_call hook checks these at runtime.
+a specialist can use - the pre_tool_call hook checks these at runtime.
 
 Tool categories map semantic groups to actual Hermes tool names.
 Update TOOL_CATEGORIES when Hermes adds or renames tools.
@@ -42,7 +42,7 @@ TOOL_CATEGORIES: Dict[str, Set[str]] = {
     },
     "coding": {
         "delegate_task",   # Subagent dispatch
-        "opencode",        # OpenCode CLI routing
+        "opencode_route",  # OpenCode CLI routing
     },
     "browser": {
         "webfetch", "web_search", "web_extract",
@@ -54,6 +54,47 @@ TOOL_CATEGORIES: Dict[str, Set[str]] = {
         "jupyter", "notebook",
     },
 }
+
+
+# Native child roles are topology signals from Hermes, not Maestria
+# specialist identities. Keep these immutable and separate from the
+# configurable category map so a user override cannot widen safety policy.
+NATIVE_CHILD_ROLES = frozenset({"leaf", "orchestrator"})
+
+# Positive, reviewed allowlists for the mode and delegated-child boundaries.
+# New Hermes tools stay denied until explicitly reviewed here.
+SONAR_ALLOWED_TOOLS = frozenset(
+    {
+        "read",
+        "read_file",
+        "glob",
+        "grep",
+        "search_files",
+        "list",
+        "ls",
+        "stat",
+        "file_info",
+        "webfetch",
+        "web_search",
+        "web_extract",
+    }
+)
+
+BLITZ_DIRECT_ALLOWED_TOOLS = frozenset(
+    {
+        *SONAR_ALLOWED_TOOLS,
+        "complete",
+        "complete_structured",
+        "think",
+        "reason",
+    }
+)
+
+CHILD_SAFE_ALLOWED_TOOLS = frozenset(
+    {
+        *BLITZ_DIRECT_ALLOWED_TOOLS,
+    }
+)
 
 
 # -- Built-in default roles ------------------------------------------------
@@ -110,12 +151,12 @@ def _load_roles_override() -> Dict[str, List[str]]:
     except FileNotFoundError:
         return {}
     except (json.JSONDecodeError, PermissionError) as e:
-        logger.warning("maestria-roles.json: %s — using defaults", e)
+        logger.warning("maestria-roles.json: %s - using defaults", e)
         return {}
 
     roles = data.get("roles", {})
     if not isinstance(roles, dict):
-        logger.warning("maestria-roles.json: 'roles' must be a dict — using defaults")
+        logger.warning("maestria-roles.json: 'roles' must be a dict - using defaults")
         return {}
 
     # Validate categories
@@ -123,12 +164,12 @@ def _load_roles_override() -> Dict[str, List[str]]:
     cleaned: Dict[str, List[str]] = {}
     for role_name, cats in roles.items():
         if not isinstance(cats, list):
-            logger.warning("maestria-roles.json: skipping '%s' — value must be a list", role_name)
+            logger.warning("maestria-roles.json: skipping '%s' - value must be a list", role_name)
             continue
         unknown = [c for c in cats if c not in valid]
         if unknown:
             logger.warning(
-                "maestria-roles.json: role '%s' has unknown categories: %s — ignoring them",
+                "maestria-roles.json: role '%s' has unknown categories: %s - ignoring them",
                 role_name, unknown,
             )
         cleaned[role_name] = [c for c in cats if c in valid]
@@ -159,7 +200,7 @@ def resolve_roles() -> Dict[str, PermissionRole]:
 
 # -- Public API -------------------------------------------------------------
 
-# Singleton — resolved once at plugin registration
+# Singleton - resolved once at plugin registration
 _ROLES: Dict[str, PermissionRole] = {}
 
 def init_roles() -> None:

@@ -57,15 +57,15 @@ Content rules:
 
 - **No platform-specific tool names** - write `task()` instead of `@task` or `maestria_subagent()`; each plugin's config maps these during derivation
 - **No frontmatter** - frontmatter is a plugin-specific concern (YAML vs SKILL.md format)
-- **No role prefixes** - write "delegate to architect" rather than `@architect` or `/architect`
-- **Section structure preserved** - `!!!` markers, skill buckets, iteration limits, handoff contracts, rules bullets remain unchanged
+- **Canonical role tokens** - use `@architect`-style role identifiers as platform-neutral placeholders; sync configs map them to each platform's invocation form. Do not add platform-specific commands or tool syntax to core.
+- **Section structure preserved** - Updated 2026-08-22: `!!!` markers, iteration limits, handoff contracts, and rules bullets remain unchanged; skill buckets were replaced by compact per-specialist Skills sections listing only verified skills (see ADR-CORE-019)
 - **File naming** - snake-case `.md`, one file per specialist (flat, no subdirectories)
 - **Rules as a single file** - rules were consolidated into one `rules.md` instead of separate files per topic, since the rules are short and rarely edited independently
 - **Orchestrator lives here** - the orchestrator prompt is in `specialists/orchestrator.md`, alongside the 7 specialist prompts, sharing the same sync pipeline. It was originally excluded (see Post-Implementation Evolution).
 
 ### 2. Sync Tool: `packages/core/scripts/sync.ts`
 
-A single TypeScript script (not a separate package) run via `npx tsx`. It lives at `packages/core/scripts/sync.ts` (142 lines) backed by 6 library modules:
+A single TypeScript script (not a separate package) run via a root-pinned `tsx` runner (see [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md)). It lives at `packages/core/scripts/sync.ts` (142 lines) backed by 6 library modules:
 
 | Module | Lines | Purpose |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ A single TypeScript script (not a separate package) run via `npx tsx`. It lives 
 | `scripts/lib/process-file.ts` | 161 | Transform pipeline - reads a source file, applies transforms in order, dispatches to write/check/diff mode |
 | `scripts/lib/sync.ts` | 141 | Orchestration - walks source dirs, matches config entries, dispatches to `processFile`, auto-cleans |
 
-It is not published to npm. It runs inside the monorepo via `tsx`. This avoided adding a separate publish-and-consume cycle for a tool that only ever runs inside this repo.
+It is not published to npm. It runs inside the monorepo via the root-pinned `tsx` runner (ADR-CORE-016). This avoided adding a separate publish-and-consume cycle for a tool that only ever runs inside this repo.
 
 **CLI flags** (not subcommands):
 
@@ -191,7 +191,7 @@ Plugin discovery uses a bash glob over `packages/*/sync.config.ts`, running the 
 for config in "$ROOT"/packages/*/sync.config.ts; do
   [ -f "$config" ] || continue
   PKG_DIR="$(dirname "$config")"
-  (cd "$PKG_DIR" && npx tsx "$ROOT/packages/core/scripts/sync.ts" --verbose)
+  (cd "$PKG_DIR" && pnpm exec tsx "$ROOT/packages/core/scripts/sync.ts" --verbose)
 done
 ```
 
@@ -277,7 +277,7 @@ Several details diverged from the original design during implementation. This se
 
 **Designed:** `packages/core-sync/` as a separate npm-publishable CLI tool (`core-sync`).
 
-**Built:** `packages/core/scripts/sync.ts` - a single TypeScript script inside the existing `@maestria/core` package, run via `npx tsx`.
+**Built:** `packages/core/scripts/sync.ts` - a single TypeScript script inside the existing `@maestria/core` package, run via the root-pinned `tsx` runner (ADR-CORE-016).
 
 **Why:** The tool only ever runs inside this monorepo. Publishing it as a standalone package added a publish-consume cycle (version bumps, changesets, CI) for zero benefit. Running it via `tsx` inside `@maestria/core` keeps the pipeline co-located with the content it processes. If a future consumer outside this repo needs it, extracting it into a package is straightforward - the library modules (`lib/config.ts`, `lib/sync.ts`, etc.) already have clean interfaces.
 
@@ -334,7 +334,7 @@ Several details diverged from the original design during implementation. This se
 
 **Designed:** `core-sync write packages/*/sync.config.js` - the tool discovers plugins by glob.
 
-**Built:** A bash script (`scripts/sync-all`) iterates over glob results, changing into each package directory and running `tsx sync.ts` there.
+**Built:** A bash script (`scripts/sync-all`) iterates over glob results, changing into each package directory and running `pnpm exec tsx sync.ts` there (the runner is pinned at the workspace root; `pnpm exec` resolves it from any subdirectory, see ADR-CORE-016).
 
 **Why:** The tool is not a published binary - it's a `.ts` file. Running it from outside `packages/core/` means the module resolution for relative imports (e.g., `'../core/scripts/lib/config.js'`) breaks. The bash approach lets each plugin's `tsx` invocation resolve modules from its own package root. The overhead is negligible (one `cd` per plugin).
 
@@ -356,7 +356,7 @@ Several details diverged from the original design during implementation. This se
 - ADR-CORE-001 (global rules scope) - the `rules/` subdirectory in core content is scoped per the three-way filter defined there
 - ADR-CORE-002 (plugin architecture) - established Markdown as source of truth; this ADR extends that principle to multi-plugin content sharing
 - ADR-CORE-003 (agent conventions) - the `!!!` markers, cross-references, skill pattern, and rules bullets are preserved in core content
-- ADR-CORE-004 (agent prompt template) - the 4-bucket skills, 5-section handoff, and iteration limits are preserved in core content
+- ADR-CORE-004 (agent prompt template) - Updated 2026-08-22: core content carries compact verified-skill sections, compact material handoffs, and progress-based repair bounds rather than the 4-bucket skills and fixed five-section handoff described there (see ADR-CORE-019)
 - ADR-KC-001 (kimi-code architecture) - the "Future Considerations: Platform-Agnostic Core (After 3+ Platforms)" section set the trigger condition that this ADR satisfies
 
 ## Date

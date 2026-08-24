@@ -1,5 +1,5 @@
 name: maestria-hermes
-version: 0.1.10
+version: 0.1.13
 description: Maestria methodology plugin for Hermes Agent
 kind: standalone
 author: Maestria Contributors
@@ -7,10 +7,13 @@ license: MIT
 provides_tools:
   - opencode_route
 provides_hooks:
+  - pre_gateway_dispatch
   - pre_llm_call
   - pre_tool_call
   - on_session_start
   - on_session_end
+  - on_session_finalize
+  - on_session_reset
   - subagent_start
   - subagent_stop
   - transform_tool_result

@@ -15,7 +15,7 @@ const AGENTS_SRC = join(__dirname, '..', 'agents');
  * registry.reload() call (which fires automatically on each tool invocation).
  * This function ensures the files are in place before the first subagent dispatch.
  *
- * Only creates files that don't already exist — never overwrites user-customized agents.
+ * Only creates files that don't already exist - never overwrites user-customized agents.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function deploySpecialistAgents(_ctx?: unknown): void {

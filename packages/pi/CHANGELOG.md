@@ -1,5 +1,119 @@
 # Changelog
 
+## 0.7.1
+
+### Patch Changes
+
+- [#235](https://github.com/agustinusnathaniel/maestria/pull/235) [`6db422d`](https://github.com/agustinusnathaniel/maestria/commit/6db422d2b22429b52f1943fca4c9ee7374f8a5c6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Enforce a shared human-facing output contract across all agent projections. Authored responses, comments, commits, pull request metadata, and documentation must avoid Unicode U+2014 while preserving code syntax, intentional literals, quoted source text, and user-provided text.
+
+## 0.7.0
+
+### Minor Changes
+
+- [#226](https://github.com/agustinusnathaniel/maestria/pull/226) [`d0364a8`](https://github.com/agustinusnathaniel/maestria/commit/d0364a8d827e058a900bf88fd6048a21eb6efa4f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Simplify agent directives for token efficiency. Consolidate delivery autonomy around an explicit terminal-artifact rule (reviewed changes on a pushed feature branch with an open PR), add transient-delegation-failure recovery duty, carry binding user constraints through every delegation brief, trim dead skill references into compact per-role skill catalogs, and align sync-config replace anchors with the revised canonical text.
+
+## 0.6.10
+
+### Patch Changes
+
+- [#213](https://github.com/agustinusnathaniel/maestria/pull/213) [`b6f3a09`](https://github.com/agustinusnathaniel/maestria/commit/b6f3a09d1be75e6f19e1d3736f71696df44f3c6d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Bound review and repair to material blockers, preserve narrow approval boundaries, and complete routine implementation delivery autonomously.
+
+## 0.6.9
+
+### Patch Changes
+
+- [#210](https://github.com/agustinusnathaniel/maestria/pull/210) [`88cc573`](https://github.com/agustinusnathaniel/maestria/commit/88cc5738ac2b1d5c381bba58f7208498087b2bfa) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Keep normal engineering sessions autonomous through continuation, scope-frozen bounded repair, and reviewable PR delivery. Incomplete specialist work is recovered or reported as a structured blocker instead of becoming an implicit user checkpoint.
+
+## 0.6.8
+
+### Patch Changes
+
+- [#205](https://github.com/agustinusnathaniel/maestria/pull/205) [`ca061e4`](https://github.com/agustinusnathaniel/maestria/commit/ca061e423dccf5dbe9728e291d2e943fa3deedc0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix chain-mode {previous} substitution so previous results containing `$` sequences are inserted literally, and abort already-spawned subagents when a later parallel spawn fails so none are orphaned.
+
+## 0.6.7
+
+### Patch Changes
+
+- [#201](https://github.com/agustinusnathaniel/maestria/pull/201) [`3ee7c6b`](https://github.com/agustinusnathaniel/maestria/commit/3ee7c6b7bbd7ce8fb19282cf301be6252feefef4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Use Effect v4 RC for cancellable subagent polling and structured parallel dispatch, so aborted or failed polls no longer leave sibling polling work running.
+
+## 0.6.6
+
+### Patch Changes
+
+- [#198](https://github.com/agustinusnathaniel/maestria/pull/198) [`d80a38b`](https://github.com/agustinusnathaniel/maestria/commit/d80a38b0ed33c59eff3cfd638420eb6494369fd1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix parallel subagent dispatch so successful results are preserved and orphaned subagents are aborted when a partial failure occurs.
+
+- [#199](https://github.com/agustinusnathaniel/maestria/pull/199) [`2955263`](https://github.com/agustinusnathaniel/maestria/commit/2955263a3788aea829c548bc56c7f6e7ff941637) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
+
+## 0.6.5
+
+### Patch Changes
+
+- [#192](https://github.com/agustinusnathaniel/maestria/pull/192) [`512b6b8`](https://github.com/agustinusnathaniel/maestria/commit/512b6b81925349d64a4be60498150e5a328807c0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: restore orchestrator autonomy while keeping maker/checker split
+
+  The pure-dispatcher enforcement blocked ALL orchestrator tools (read,
+  grep, bash, edit) when a workflow mode was active. When specialist
+  dispatch timed out or the model omitted the agent name, the orchestrator
+  had zero fallback and aborted - the reported "lacks autonomy, behaves
+  weirdly" symptom.
+  - Orchestrator regains read-only tools (read, glob, grep, lsp, webfetch,
+    read-only bash, tests) for routing and verification; mutations remain
+    denied and delegated.
+  - Dispatch failure is no longer an idle state: one corrected-brief retry,
+    then read-only recon + precise blocked-state reporting. Never mutates
+    directly, never waives route/review floors.
+  - maestria_subagent now requires `agent` and `task` and returns an
+    actionable message listing valid agents instead of throwing an opaque
+    "Unknown agent: undefined".
+  - Subagent poll timeout raised 60s -> 180s.
+  - OpenCode projection: orchestrator permission frontmatter updated to
+    allow read-only tools; sync regenerated all platform projections.
+
+- [#190](https://github.com/agustinusnathaniel/maestria/pull/190) [`96f2649`](https://github.com/agustinusnathaniel/maestria/commit/96f264911f8756ee3528277699deb96e8a1bc9d7) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify agent workflow contracts while preserving detailed specialist guidance. Routine validated commits on recognized feature branches remain autonomous after required review; push and later lifecycle actions stay separately gated. Add bounded repair and platform-enforcement notes, refresh generated projections, and retain explicit mode reset behavior and read-only sonar profiles where supported.
+
+- [#194](https://github.com/agustinusnathaniel/maestria/pull/194) [`b1c67ed`](https://github.com/agustinusnathaniel/maestria/commit/b1c67eddcb46b0633166c0af25b5bfd336a33abb) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Simplify and re-align the shared agent directives around outcome, evidence, runtime authority, blind review, bounded repair, and autonomous routine work. Directives now avoid unnecessary orchestration ceremony, allow the host runtime to determine whether work is performed directly or delegated, prevent nested supervisors from duplicating scheduling and lifecycle work, and keep all generated platform projections synchronized.
+
+- [#187](https://github.com/agustinusnathaniel/maestria/pull/187) [`2479f32`](https://github.com/agustinusnathaniel/maestria/commit/2479f32886ec033ed545a576e0175f9e3ffe64a2) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix: record file reads/edits and specialist delegation in session state
+
+## 0.6.4
+
+### Patch Changes
+
+- [#185](https://github.com/agustinusnathaniel/maestria/pull/185) [`79e753c`](https://github.com/agustinusnathaniel/maestria/commit/79e753c104c72a3403aded79ee6c49ed3cb2b5fe) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Streamline canonical agent directives by centralizing universal contracts, preserving orchestration behavior in compact form, and adding bounded autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action boundaries.
+
+- [#183](https://github.com/agustinusnathaniel/maestria/pull/183) [`2533967`](https://github.com/agustinusnathaniel/maestria/commit/2533967721f20380f2c5c40eeddd9cd005c6ff65) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Restore session state from the current branch and rehydrate on session-tree navigation.
+
+  `/maestria-status`, compaction summaries, and mode enforcement previously restored
+  persisted state from `sessionManager.getEntries()`, which spans the entire session
+  tree - resuming a session could pull a sibling branch's `maestria_state` (wrong mode,
+  wrong active task). Restoration now reads only the current branch via `getBranch()`,
+  matching the omp extension's semantics, and a new `session_tree` handler rehydrates
+  state when navigating between branches so the UI never shows stale state.
+
+## 0.6.3
+
+### Patch Changes
+
+- [#180](https://github.com/agustinusnathaniel/maestria/pull/180) [`8d77c40`](https://github.com/agustinusnathaniel/maestria/commit/8d77c4060fab81e20083ab1d8614600adfe258ee) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Make delegation more selective, keep handoffs concise, and let Sonar research
+  start with the owning specialist while adding another specialist only when a
+  distinct required output remains.
+
+- [#175](https://github.com/agustinusnathaniel/maestria/pull/175) [`6f21b47`](https://github.com/agustinusnathaniel/maestria/commit/6f21b47e4c3e03353163ad4f83e49a227a798687) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Extend the platform-agnostic shared state contract with a native-goal mirror
+  containing an objective and status, including the new shape in initial state,
+  persistence, and summaries.
+
+  The `@maestria/pi` patch bundles this shared state-core update in its published
+  extension artifact, so Pi recognizes and renders the new state shape.
+
+## 0.6.2
+
+### Patch Changes
+
+- [#171](https://github.com/agustinusnathaniel/maestria/pull/171) [`d4d6f44`](https://github.com/agustinusnathaniel/maestria/commit/d4d6f44ea5ef7657727016e5e91f5bb0b33595e5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - handoff skill now documents the 7-field contract (including Assumptions documented); handoff and iteration-limits skills are generated from canonical sources in @maestria/core
+
+- [#169](https://github.com/agustinusnathaniel/maestria/pull/169) [`d219a87`](https://github.com/agustinusnathaniel/maestria/commit/d219a87394c87bf9b680ef59395cb6eb96a3e0f5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Align `/handoff` command output with the 7-field `HANDOFF_FIELDS` contract.
+
+  The shared handoff validator (`@maestria/shared-pi/subagent-utils`) already required 7 fields including **Assumptions documented**, but the `/handoff` command in `pi` and `omp` still generated a 6-field prompt - so handoffs produced by the command could fail validation. The command now emits the **Assumptions documented** section (with `[inferred]` tagging guidance) before Success criteria, matching the validator and the handoff SKILL.md contract.
+
 ## 0.6.1
 
 ### Patch Changes
@@ -40,7 +154,6 @@
 ### Minor Changes
 
 - [#145](https://github.com/agustinusnathaniel/maestria/pull/145) [`ea3d492`](https://github.com/agustinusnathaniel/maestria/commit/ea3d4920f4d01298c9decbd3dfc80551c82bcbf3) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Enforce pure dispatcher pattern on Pi and OMP with auto-detect mode keywords
-
   - **Pure dispatcher enforcement**: when a workflow mode (fein/sonar/blitz) is active, the orchestrator is now restricted to only delegation tools (`maestria_subagent`/`task`). Implementation tools like `bash`, `edit`, and `write` are blocked at the tool level, enforcing the maker/checker split automatically.
   - **Auto-detect mode keywords**: type `fein do X` at the start of any message and the plugin automatically strips the keyword and injects the mode prompt inline. No slash command needed.
   - **Refactor Pi and OMP plugins** to share common infrastructure behind the scenes, ensuring consistent behavior across both platforms.
@@ -57,7 +170,7 @@
 
   **Why this matters:** Without this fix, users updating pi or omp encounter npm
   install failures because `@maestria/shared-pi` is a private package. This is
-  solely a dependency classification fix — no behavioral change for end users.
+  solely a dependency classification fix - no behavioral change for end users.
 
 ## 0.5.13
 
@@ -120,7 +233,6 @@
 ### Patch Changes
 
 - [#108](https://github.com/agustinusnathaniel/maestria/pull/108) [`a2e2b8a`](https://github.com/agustinusnathaniel/maestria/commit/a2e2b8a061749c268e30eda82be43f6b1dbaf507) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactored all agent directive prompts for better structure, clarity, and cross-platform consistency:
-
   - Restructured core prompts with clearer sections and emphasis on critical rules agents must follow
   - Added structured handoff verification checklists to all specialist agents so handoffs between agents are more reliable
   - Standardized "Before reporting done" completion checks across all agents, reducing premature sign-offs
@@ -140,7 +252,6 @@
   or the runtime lacked the required API (e.g., findPackageJSON in Bun).
 
   Changes:
-
   - opencode: lazy-load mode prompts via Proxy with error fallback
   - pi/omp: lazy-load mode prompts via getModePrompt() cache
   - pi/omp: defer homedir() from module scope to function body
@@ -228,7 +339,6 @@
 - [#66](https://github.com/agustinusnathaniel/maestria/pull/66) [`8321ab8`](https://github.com/agustinusnathaniel/maestria/commit/8321ab891e3d4ffb562617ba2e09a06f51eb580a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: use Pi native skill system + pi-subagents agent registration
 
   Replaced non-standard `before_agent_start` + `readFileSync` injection with Pi's standard patterns:
-
   - **Skill-based injection:** Orchestrator dispatcher prompt and global agent rules now ship as `SKILL.md` files auto-discovered from `pi.skills` manifest field and injected by Pi's resource loader into every session's system prompt.
   - **Pi-subagents agent registration:** 7 specialist agents defined as `.md` files with YAML frontmatter (`description`, `tools`, `prompt_mode: append`, `inherit_context: true`), deployed to `~/.pi/agent/agents/` at extension startup for pi-subagents discovery. Each specialist has role-specific tool isolation enforcing maker/checker split.
   - Removed dead `prompts/` and `rules/` directories (synced but never consumed).
@@ -249,7 +359,6 @@
 - [#59](https://github.com/agustinusnathaniel/maestria/pull/59) [`9c0746e`](https://github.com/agustinusnathaniel/maestria/commit/9c0746e611afb6e79b071a14629fbd5b925338e9) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add multi-lens review swarm, observation-first principle, and triage pipeline
 
   Three review methodology patterns adopted from PostHog's code review research:
-
   - **Multi-lens review swarm** - orchestrator can dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General) for non-trivial changes, with exclusive lenses and cross-referenced etiquette rules
   - **Observation over reasoning** - reviewer principle shifted from "verify without running" to "what command produces visible proof?", prioritizing observable behavior over logical argument
   - **Review triage pipeline** - issues categorized [fix]/[dismiss]/[escalate] by reviewer, then validated by orchestrator with conflict resolution (conservative wins); iteration terminates when no actionable threads remain
@@ -272,7 +381,6 @@
 
   **Work result summary** - orchestrator presents completed work as
   structured file/signature table, not verbatim handoff dump.
-
   - !!! Convention, "Never delete" rule, escalation ladder, anti-patterns,
     Session Flow, Commit Completeness Check, and Automatic Review Loop added.
 
@@ -323,7 +431,6 @@
 ### Patch Changes
 
 - [`456ae22`](https://github.com/agustinusnathaniel/maestria/commit/456ae22da14f336784ec944755fb11092fbbeee0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add two new principles to agent directives
-
   - **Start from first principles** - added as a new `## Principles` section in `rules.md` and as a Phase 0 preamble in `diagnose.md`
   - **Prefer existing solutions** - added to `rules.md`, as a first-check blockquote in `architect.md` Phase 2, and as Round 0 in `builder.md`'s Constraint Escalation pattern
 
@@ -366,7 +473,6 @@
   Implements the `@maestria/pi` package - a Pi coding agent extension bringing Maestria's structured agent orchestration (recon → design → implement → review) to the Pi ecosystem.
 
   Includes:
-
   - 9 source modules: extension, modes, rules, rules-content, state, compaction, subagent, commands, tools
   - 3 workflow modes: fein (full pipeline), sonar (research), blitz (fast impl)
   - 8 prompt templates: orchestrator + 7 specialists

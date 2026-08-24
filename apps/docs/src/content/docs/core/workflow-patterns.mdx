@@ -7,9 +7,9 @@ import { Aside } from '@astrojs/starlight/components';
 
 # Workflow Patterns
 
-The 7 specialists work as a team. The orchestrator manages the flow - it decomposes complex requests into phases, delegates each phase to the appropriate specialist, and verifies completion before moving on.
+For routed or full-pipeline work, the 7 specialists can work as a team. The orchestrator manages that flow - it decomposes complex requests into phases, delegates each phase to the appropriate specialist, and verifies completion before moving on.
 
-> This page builds on the [specialist roles and pipeline model](/core/agents/) documented in the Specialist Reference. The pipeline routes work through thinker → worker → verifier roles with dynamic sequencing.
+> This page builds on the [specialist roles and pipeline model](/core/agents/) documented in the Specialist Reference. When selected, the pipeline routes work through thinker → worker → verifier roles with dynamic sequencing.
 
 ## Explore a codebase
 
@@ -61,19 +61,18 @@ Let **Reviewer** check your changes before committing.
 
 > Reviewer: Review my current changes before I commit.
 
-The Reviewer runs a 7-dimension checklist: correctness, performance, security, maintainability, test coverage, error handling, and style. The Reviewer is read-only and never edits files directly.
+The Reviewer performs a general quality and safety review across correctness, edge cases, security, performance, maintainability, test coverage, assumptions, and style as relevant. The Reviewer is read-only and never edits files directly.
 
 The Reviewer also prioritizes observing behavior over reasoning about correctness - each review includes a command, API request, or browser interaction that produces visible proof.
 
-## Multi-lens review
+## Risk-matched review
 
-For non-trivial changes, the orchestrator can dispatch multiple Reviewers with different focus areas in parallel. This catches more issues than a single general review.
+For a full review, the orchestrator dispatches one independent general Reviewer. It adds a specialist lens only when the requirements or diff show a matching security, performance, architecture, or UX risk. This avoids generic reviewer fan-out while adding focused scrutiny where it is justified.
 
-> Orchestrator: Security review: focus on injection risks, auth bypasses, data exposure.
-> Orchestrator: Performance review: focus on bottlenecks, allocations, bundle size.
-> Orchestrator: UX review: focus on visual fidelity, accessibility, interaction patterns.
+> Orchestrator: Review this authentication change generally, with a security lens for injection risks, auth bypasses, and data exposure.
+> Orchestrator: Review this dashboard change generally, with a UX lens for accessibility, interaction patterns, and responsive states.
 
-Available lenses: **Security**, **Architecture**, **Performance**, **UX**, and **General** (the full checklist). Each lens has exclusive scope - no two reviewers cover the same ground.
+Available lenses: **Security**, **Architecture**, **Performance**, **UX**, and **General** (the full checklist). The general review always runs first; specialist lenses are added only when the corresponding risk is present. Reviews are blind and independent, and each lens has exclusive scope - no two reviewers cover the same ground.
 
 ### Review triage
 
@@ -85,13 +84,13 @@ After all lenses return, the orchestrator triages the combined feedback into thr
 
 Conflict resolution: if lenses disagree on the same issue, the more conservative categorization wins. If any lens escalates, the whole issue escalates.
 
-### When to use single vs multi-lens
+### When to add a specialist lens
 
-| Use single @reviewer          | Use multi-lens swarm                       |
-| ----------------------------- | ------------------------------------------ |
-| Trivial changes, docs, config | Touches multiple concerns (data + UI)      |
-| Diffs under ~100 lines        | Security-sensitive or performance-critical |
-| Pure documentation            | Large diffs needing focused attention      |
+| General review only           | General review plus a specialist lens              |
+| ----------------------------- | -------------------------------------------------- |
+| Trivial changes, docs, config | Security-sensitive or performance-critical changes |
+| Diffs under ~100 lines        | Architecture changes with boundary or seam risk    |
+| Pure documentation            | UX changes involving accessibility or interaction  |
 
 Mandatory review after every Builder change is the default inside the full pipeline. It is an intentional cost: use a direct specialist or a single reviewer when the change does not justify a complete chain.
 
@@ -105,20 +104,23 @@ The Writer follows structured patterns matched to the document type - purpose, u
 
 ## Investigate an uncertain problem
 
-Use **Parallel speculation** when the right approach isn't clear and you need
-multiple perspectives before committing to a direction.
+Use **Parallel speculation** only when the right approach is genuinely unclear
+and multiple independent perspectives would materially improve the decision.
 
 > Orchestrator: I need to understand why the auth module keeps failing under
 > load. Adventurer, map the entry points. Architect, evaluate the auth
 > architecture. Diagnose, trace the failure path.
 
-The orchestrator dispatches the same question to multiple specialists with
+The orchestrator dispatches the question to independent specialists with
 different lenses, then synthesizes the results before choosing a direction.
-Use this pattern when:
+Use this pattern only when:
 
 - The root cause of a problem is genuinely unknown
 - A design decision has ambiguous trade-offs
 - You need to explore an unfamiliar domain from multiple angles
+
+For a clear, low-risk task, use one route and let the assigned specialist or
+host agent reason and act without unnecessary fan-out.
 
 This is different from parallel exploration (which fans out independent
 tasks). Parallel speculation fans out the _same_ question to get different
@@ -153,8 +155,8 @@ The orchestrator spawns independent exploration tasks simultaneously and present
 See [Pipeline & Roles](/core/pipeline/) for the full pipeline diagram and role descriptions.
 
 <Aside type="tip">
-  Most tasks don't start with code. Start with recon (Adventurer) or design (Architect) before
-  reaching for Builder. The orchestrator handles this routing automatically.
+  Choose the smallest safe route. Use direct execution for known, low-risk work when the host
+  permits it; use recon or design when the code is unfamiliar or the approach is uncertain.
 </Aside>
 
 ## Project Workflows (.maestria/)
@@ -176,8 +178,9 @@ to `@adventurer`. If found:
 
 ### Precedence
 
-Core rules (never implement routed work yourself, maker/checker split, commit protocol, etc.) always
-take precedence over project instructions. If a conflict arises, the core rule wins.
+Runtime authority, selected-route safeguards, maker/checker review where applicable, bounded repair,
+and the commit protocol always take precedence over project instructions. If a conflict arises, the
+core principle wins.
 
 ### Example
 

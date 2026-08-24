@@ -4,6 +4,7 @@ description: How to install @maestria/pi or @maestria/omp and what you get - 7 s
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import { PackageManagers } from 'starlight-package-managers';
 
 `@maestria/pi` and `@maestria/omp` are extensions that turn the [Pi](https://pi.ai) or [Oh My Pi](https://ohmy.ai) coding agents into disciplined engineering workstations. Each registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration - all with a single extension entry.
 
@@ -24,9 +25,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 The recommended approach uses the [maestria CLI](/cli/), which automatically handles peer dependencies:
 
-```bash
-pnpx maestria@latest install pi
-```
+<PackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
 
 <details>
 <summary>Alternative: manual Pi CLI setup</summary>
@@ -83,10 +82,14 @@ You should see `@maestria/pi` or `@maestria/omp` in the output.
 
 ### Pi
 
-```bash
-# Via maestria CLI (recommended)
-pnpx maestria@latest update pi
+<PackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="update pi"
+  comment="Via maestria CLI (recommended)"
+/>
 
+```bash
 # Or manually
 pi install npm:@maestria/pi@latest
 ```
@@ -111,10 +114,7 @@ omp install @maestria/omp@latest
 
 ### Pi
 
-```bash
-# Via maestria CLI
-pnpx maestria@latest uninstall pi
-```
+<PackageManagers type="dlx" pkg="maestria@latest" args="uninstall pi" comment="Via maestria CLI" />
 
 This removes `@maestria/pi`. The `@gotgenes/pi-subagents` peer dependency is left in place because other Pi extensions may depend on it.
 

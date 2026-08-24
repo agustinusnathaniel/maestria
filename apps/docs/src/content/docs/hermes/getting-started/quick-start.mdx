@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Your first session with @maestria/hermes — switching modes, using slash commands, and dispatching specialists.
+description: Your first session with @maestria/hermes - switching modes, using slash commands, and dispatching specialists.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -23,6 +23,7 @@ All features are accessible via slash commands:
 
 ```bash
 /mode        # Show current mode and role
+/mode-clear  # Return to neutral routing
 /fein        # Full pipeline: explore → design → build → review
 /sonar       # Research only: explore → analyze → stop
 /blitz       # Fast execution: build directly
@@ -36,35 +37,37 @@ All features are accessible via slash commands:
 You:          /fein
 Hermes:       Mode set to fein
 You:          Research the auth patterns in this codebase
-Hermes:       [Adventurer explores, Architect designs, Builder implements, Reviewer checks]
+Hermes:       [Adventurer explores, Architect designs, Builder route is capability-gated, Reviewer checks]
 ```
 
 ## Modes at a Glance
 
-| Mode    | Pipeline                                          | When to Use                                               |
-| ------- | ------------------------------------------------- | --------------------------------------------------------- |
-| `fein`  | Full: adventurer → architect → builder → reviewer | Production work, new features, anything that needs review |
-| `sonar` | Research: adventurer → architect → stop           | Understanding a codebase, exploring options, no creation  |
-| `blitz` | Build direct: builder only                        | Quick fixes, known territory, trivial changes             |
+| Mode    | Pipeline                                          | When to Use                                                                     |
+| ------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `fein`  | Full: adventurer → architect → builder → reviewer | Production work, new features, anything that needs review                       |
+| `sonar` | Research: read-only adventurer/planner → stop     | Understanding a codebase, exploring options, no creation                        |
+| `blitz` | Direct, read/research/LLM-only                    | Explanation and discovery on known territory; code changes route through review |
 
-The mode directive is injected into every message automatically — no manual prompting needed.
+The mode directive is injected into every message automatically - no manual prompting needed.
 
-## Specialist Roles
+## Specialist Roles and Tool Boundaries
 
-The plugin ships with permission roles for each of the 8 specialists, controlling which tools they can use:
+The seven specialist names (adventurer, architect, builder, diagnose, planner, reviewer, writer) are methodology **routing roles** that the orchestrator dispatches to. They are not tool-granting identities on Hermes. Trust and tool capability are governed by the role-neutral child trust policy:
 
-| Specialist     | Tool Access                                          | Use Case                               |
-| -------------- | ---------------------------------------------------- | -------------------------------------- |
-| `orchestrator` | LLM reasoning + `delegate_task` only                 | Task decomposition and dispatch        |
-| `adventurer`   | Read, search, browser, LLM                           | Exploring codebases and gathering info |
-| `architect`    | Read, search, browser, LLM                           | Designing solutions                    |
-| `builder`      | All tools (read, write, bash, browser, data, coding) | Implementing changes                   |
-| `diagnose`     | Read, bash, LLM, `delegate_task`                     | Root cause analysis                    |
-| `planner`      | Read, LLM                                            | Multi-step planning                    |
-| `reviewer`     | Read, LLM                                            | Code review (edit/write blocked)       |
-| `writer`       | Read, LLM, browser                                   | Documentation and content              |
+| Context                                                                         | Allowed tools                                                                                                                 |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Trusted top-level session** (positively identified by native lifecycle state) | Normal direct behavior. In sonar: read/research only. In direct blitz: a literal read/research/LLM allowlist, no code changes |
+| **Delegated child** (spawned via `delegate_task`)                               | Fixed read/research/LLM-only policy. Cannot write, execute code, run a shell, delegate, or invoke OpenCode                    |
+| **Ambiguous / invalid / ended child**                                           | Fails closed - denied in all modes                                                                                            |
 
-Roles are assigned automatically when the orchestrator dispatches a specialist. The `pre_tool_call` hook enforces tool restrictions — no manual role switching needed.
+Under this policy:
+
+- Native Hermes child roles are `leaf`/`orchestrator` topology roles only, not Maestria specialist roles.
+- User or delegation text cannot grant capabilities; role markers in messages are ignored.
+- Review/landing enforcement is advisory (Hermes has no native review-state or landing gate).
+- Role-specific delegated builder writes are deferred until Hermes provides an authenticated capability channel.
+
+Direct code changes on Hermes are performed by a trusted top-level session (typically fein), not by a delegated `builder` child.
 
 ## Pairing with Platform Features
 
@@ -80,5 +83,7 @@ Configure Mnemosyne or Uteke in `config.yaml` under `memory:`. See the [Installa
 
 ## Next Steps
 
-- [Commands](/hermes/commands/) — Full reference for all slash commands
-- [Core Concepts](/core/agents/) — Specialist reference and pipeline patterns
+- [Commands](/hermes/commands/) - Full reference for all slash commands
+- [Core Concepts](/core/agents/) - Specialist reference and pipeline patterns
+
+> **Mode lifetime:** Hermes stores mode globally in `$HERMES_HOME`; use `/mode-clear` to return to neutral routing for all sessions sharing that home.

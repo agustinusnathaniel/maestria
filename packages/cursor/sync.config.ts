@@ -44,7 +44,7 @@ Delegate via the \`Task\` tool to these custom agents (plugin \`agents/\`). Pass
 | \`builder\` | Implement; test; refactor | When the design is locked |
 | \`diagnose\` | Find root cause; write regression test | When something is broken |
 | \`planner\` | Break down work; sequence milestones | Before starting a multi-step feature |
-| \`reviewer\` | Review; QA; check correctness | After builder lands a change |
+| \`reviewer\` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | \`writer\` | Document APIs; write README; create ADRs | When code needs human-facing docs |
 
 ### How to invoke
@@ -57,8 +57,8 @@ Delegate via the \`Task\` tool to these custom agents (plugin \`agents/\`). Pass
 
 Cursor agents use a two-layer maker/checker split:
 
-1. **Runtime enforcement** — \`readonly: true\` flag on \`adventurer\`, \`planner\`, and \`reviewer\` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
-2. **Prompt-level guidance** — Agent prompts also include explicit read-only instructions as a backup.
+1. **Runtime enforcement** - \`readonly: true\` flag on \`adventurer\`, \`planner\`, and \`reviewer\` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
+2. **Prompt-level guidance** - Agent prompts also include explicit read-only instructions as a backup.
 
 Enforce the split: never send review work to the same agent that implemented; \`reviewer\` / \`adventurer\` / \`planner\` must not edit files.
 
@@ -70,7 +70,7 @@ Users can trigger modes with slash commands from this plugin:
 | --- | --- |
 | \`/fein\` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | \`/sonar\` | Research only: adventurer → architect/planner → STOP |
-| \`/blitz\` | Fast path: builder directly (skip recon/design unless unknown) |
+| \`/blitz\` | Fast path: builder directly (skip optional recon/design unless unknown; required review remains) |
 
 ## Related Agents
 
@@ -95,11 +95,11 @@ export default {
     'adventurer.md': {
       output: 'adventurer.md',
       prepend:
-        '**Read-only.** You have Read, Glob, Grep, Shell, WebSearch, and WebFetch. Do **not** use Write, StrReplace, or Delete. Exploration only — never implement or design.\n\n',
+        '**Read-only.** You have Read, Glob, Grep, Shell, WebSearch, and WebFetch. Do **not** use Write, StrReplace, or Delete. Exploration only - never implement or design.\n\n',
       frontmatter: {
         name: 'adventurer',
         description:
-          'Codebase reconnaissance agent. Maps unknown territory, traces call chains, maps module relationships. Use before implementation in unfamiliar code. Read-only — never implement or design.',
+          'Codebase reconnaissance agent. Maps unknown territory, traces call chains, maps module relationships. Use before implementation in unfamiliar code. Read-only - never implement or design.',
         readonly: true,
       },
     },
@@ -130,7 +130,7 @@ export default {
     'planner.md': {
       output: 'planner.md',
       prepend:
-        '**Plan only.** Prefer Read, Glob, Grep, Shell (read-only), WebSearch, WebFetch. Do **not** implement or edit production code — produce a structured plan.\n\n',
+        '**Plan only.** Prefer Read, Glob, Grep, Shell (read-only), WebSearch, WebFetch. Do **not** implement or edit production code - produce a structured plan.\n\n',
       frontmatter: {
         name: 'planner',
         description:
@@ -141,11 +141,11 @@ export default {
     'reviewer.md': {
       output: 'reviewer.md',
       prepend:
-        '**Checker only — maker/checker split.** Produce a structured review report. Do **not** use Write, StrReplace, or Delete. Do not fix issues yourself; report them for builder.\n\n',
+        '**Checker only - maker/checker split.** Produce a structured review report. Do **not** use Write, StrReplace, or Delete. Do not fix issues yourself; report them for builder.\n\n',
       frontmatter: {
         name: 'reviewer',
         description:
-          'Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use after builder lands a change. Read-only — never edit.',
+          'Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use for post-implementation validation; in full routes, review after the integrated builder batch is reconciled. Read-only - never edit.',
         readonly: true,
       },
     },
@@ -170,12 +170,18 @@ export default {
       output: '../rules/maestria-global.mdc',
       frontmatter: {
         description:
-          'Maestria global agent rules — always apply for Cursor sessions using the maestria plugin',
+          'Maestria global agent rules - always apply for Cursor sessions using the maestria plugin',
         alwaysApply: true,
       },
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/cursor' },
         { from: '<cmd> --help', to: '`Shell` help / skill docs' },
+        // The revised canonical rules body no longer carries the specialist
+        // roster; keep the delegation section self-contained for Cursor rules.
+        {
+          from: '## Delegation and Context\n',
+          to: '## Delegation and Context\n\nDelegate only to the seven specialists: adventurer, architect, builder, diagnose, planner, reviewer, writer.\n',
+        },
       ],
     },
     'commands/fein.md': {
@@ -235,7 +241,7 @@ export default {
       prepend: [
         '---',
         'name: blitz',
-        'description: Fast Maestria implementation via builder (skip recon/design unless unknown)',
+        'description: Fast Maestria implementation via builder (skip optional recon/design unless unknown; required review remains)',
         '---',
         '',
       ].join('\n'),

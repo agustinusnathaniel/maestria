@@ -1,6 +1,8 @@
 # @maestria/omp
 
-Maestria extension for the [Oh My Pi](https://omp.sh/) coding agent.
+A Maestria extension for the [Oh My Pi](https://omp.sh/) coding agent that deploys the 7 specialist agents and workflow modes on top of OMP's native task dispatch.
+
+> This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
 ## Installation
 
@@ -8,50 +10,29 @@ Maestria extension for the [Oh My Pi](https://omp.sh/) coding agent.
 omp install @maestria/omp
 ```
 
-## What's Included
+## What It Provides
 
-- **7 specialist agents** (adventurer, architect, builder, diagnose, planner, reviewer, writer) — deployed to `~/.omp/agent/agents/` for omp task dispatch
-- **4 maestria skills** — orchestrator dispatcher, global rules, handoff contract, iteration limits
-- **Workflow mode commands** — `/fein`, `/sonar`, `/blitz`
-- **Review mode** — `/review`, `/restore-model`, `/review-model` with read-only tool restrictions and dangerous pattern protection
-- **Session state tracking** — handoff history, file tracking, blockers, persistence across compaction
-- **Structured handoff** — `/handoff` with 6-field contract
+- **7 specialist agents** (adventurer, architect, builder, diagnose, planner, reviewer, writer) using OMP's built-in `task` dispatch - no extra subagent package needed.
+- **4 maestria skills** - orchestrator dispatcher, global rules, handoff contract, iteration limits.
+- **Workflow modes** - `/fein`, `/sonar`, `/blitz`.
+- **Review mode** - `/review`, `/restore-model`, `/review-model` with read-only tool restrictions.
+- **Session state tracking** - handoff history, file tracking, blockers, preserved across compaction.
+- **Native goal observation** - mirrors OMP's native goal mode in Maestria session state; Maestria never activates goal mode itself.
 
-## Usage
+## Support / Platform Notes
 
-After installation, the extension loads automatically on omp session start:
+- Relies on OMP's built-in task dispatch and the public OMP extension API, which exposes tool names but not tool provenance - so native `goal` calls cannot be exempted from enforcement when provenance is unknown.
+- Unlike `@maestria/pi`, no `@gotgenes/pi-subagents` dependency is required.
+- Methodology is advisory prompt guidance; read-only restrictions are advisory where OMP does not structurally enforce them.
 
-- Use `/fein`, `/sonar`, `/blitz` to set workflow modes
-- Use `/review <target>` to enter code review mode (blocks destructive tools)
-- Use `/handoff <goal>` to generate structured handoff prompts
-- Use `/maestria-status` to view current session state
-- Use `/review-model <model-id>` to set a specific model for review mode
+## Documentation and Changelog
 
-The 7 specialist agents are available via omp's built-in `task` tool:
+- [User-facing documentation](https://maestria.sznm.dev/pi-omp/) on the docs site (shared with `@maestria/pi`)
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/packages/omp/CHANGELOG.md)
 
-```
-task(agent: "adventurer", task: "Explore the codebase and report structure")
-task(agent: "builder", task: "Implement the feature")
-```
+## Contributing
 
-## How It Works
-
-This package follows the same sync-based architecture as all maestria plugins:
-
-1. Agent methodology is authored in `packages/core/agent-directives/`
-2. The sync pipeline transforms canonical sources with omp-appropriate frontmatter
-3. On session start, the extension deploys agent `.md` files to `~/.omp/agent/agents/`
-4. omp's built-in `task` tool discovers and dispatches to these agents
-
-## Differences from Pi Plugin
-
-Compared to `@maestria/pi`, this plugin:
-
-- Uses `@oh-my-pi/pi-coding-agent` SDK (not `@earendil-works/pi-coding-agent`)
-- Relies on omp's built-in task dispatch (no `@gotgenes/pi-subagents` needed)
-- Deploys agents to `~/.omp/agent/agents/` (not `~/.pi/agent/agents/`)
-- Uses bare agent names (`adventurer`, not `/adventurer`)
-- Retains a `"pi"` fallback block in `package.json` — omp's runtime accepts `pkg.pi` as a fallback when `pkg.omp` is absent, so the dual block ensures compatibility
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## License
 

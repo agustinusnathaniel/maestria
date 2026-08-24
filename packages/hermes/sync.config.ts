@@ -107,7 +107,8 @@ export default {
       stripFrontmatter: true,
       frontmatter: {
         name: 'maestria-command-blitz',
-        description: 'Fast implementation mode: skip gates, go directly to implementation',
+        description:
+          'Fast implementation mode: skip optional ceremony for familiar low-risk work; required review and safety floors remain',
       },
     },
 
@@ -120,29 +121,7 @@ export default {
           'Methodology orchestrator -- runs single-thread by default, delegates to specialists for complex tasks',
       },
       prepend: '',
-      replace: [
-        // Override the "pure dispatcher" mandate for Hermes (full-tool agent)
-        {
-          from: 'You are a dispatcher. Your only tools for making progress on a task are `delegate_task()` (delegate to a specialist) and `question()` (ask the user).',
-          to: 'You are a methodology orchestrator. On Hermes you have full tool access and default to single-thread execution. Delegate via `delegate_task()` only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode") that benefit from parallelization or specialist focus.',
-        },
-        {
-          from: 'If you are tempted to "just check" something in the codebase - that is a `delegate_task()` call, not something you can do yourself. Delegation is the path of least resistance, by design.',
-          to: 'If you are tempted to delegate a simple task - do it directly. `delegate_task()` is for complexity, not convenience.',
-        },
-        {
-          from: '1. **!!! Never implement yourself** - See the top of this prompt for the dispatcher mandate. You can only make progress via `delegate_task()` delegation.',
-          to: '1. **Default to direct implementation.** Only delegate for complex tasks.',
-        },
-        {
-          from: "5. **!!! Pure router** - Your reasoning output is context for delegations, not the product. Keep analysis to what's needed for a good delegation decision. Do not produce artifacts (designs, code, documentation) yourself - delegate production to specialists.",
-          to: '5. **Produce or delegate based on complexity** - For simple tasks, produce artifacts directly. For complex tasks, produce delegation briefings for specialists. Your reasoning serves the task either way.',
-        },
-        {
-          from: '11. **!!! Don\'t anthropomorphize effort** - You are a dispatcher, not an implementer. Thinking "that analysis would be too much work" or "this approach is less effort" is always wrong reasoning - you delegate all work to specialists who have machine-scale capabilities. When assessing alternatives, choose the right specialist for the question, not the one that "feels" like less work. Effort estimation using human standards is a category error for a dispatcher that only routes.',
-          to: '11. **!!! Don\'t anthropomorphize effort** - You are an orchestrator, not a manual worker. Thinking "that analysis would be too much work" or "this approach is less effort" is always wrong reasoning - you delegate all work to specialists who have machine-scale capabilities. When assessing alternatives, choose the right specialist for the question, not the one that "feels" like less work. Effort estimation using human standards is a category error for an orchestrator that delegates appropriately.',
-        },
-      ],
+      replace: [],
       append: [
         '',
         '## Hermes-Specific Notes',
@@ -153,7 +132,7 @@ export default {
         '- Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.',
         '- Sonar mode blocks write tools via pre_tool_call hook.',
         '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
-        '- Dispatch reviewer for validation after builder delegation (not after direct single-thread work).',
+        '- Dispatch reviewer for validation after the integrated builder batch is reconciled, never per individual builder delegation - general review first, then risk-matched lenses sequentially (not after direct single-thread work).',
       ].join('\n'),
     },
     'adventurer.md': {
@@ -214,13 +193,11 @@ export default {
         description: 'Root cause analysis -- investigates problems and finds causes',
       },
       replace: [
-        {
-          from: 'You trace bugs systematically.',
-          to: 'You investigate problems and trace root causes systematically.',
-        },
         { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
         {
-          from: 'Check `pnpm-lock.yaml` / `package-lock.json` for recent changes (`git diff`)',
+          // Re-anchored 2026-08: the canonical Step 1.5 sentence was reworded
+          // upstream and the old lockfile-specific anchor silently no-op'd.
+          from: "Check relevant dependency manifests and lockfiles for recent changes using the project's diff/version-control tools",
           to: 'Check for recent changes in configuration or dependencies',
         },
         {
@@ -237,28 +214,10 @@ export default {
         name: 'maestria-planner',
         description: 'Planning -- breaks down work into ordered, verifiable steps',
       },
-      replace: [
-        {
-          from: '- Write tests for new functionality',
-          to: '- Verify each output meets its success criteria',
-        },
-        {
-          from: '- Run type checking after changes',
-          to: '- Run validation checks after each change',
-        },
-        {
-          from: '- Commit with conventional commits',
-          to: '- Document changes following project conventions',
-        },
-        {
-          from: "- Don't change architecture unless explicitly asked",
-          to: "- Don't change scope unless explicitly asked",
-        },
-        {
-          from: "- Don't add new dependencies without approval",
-          to: "- Don't introduce new tools or approaches without justification",
-        },
-      ],
+      // NOTE: no replace ops. The previous five generalization replaces
+      // anchored to the canonical Guard Rails bullet lists, which were
+      // consolidated into a single guard-rails line; that line is already
+      // general-purpose wording.
     },
 
     // -- Reviewer: quality validation --
@@ -296,27 +255,10 @@ export default {
         name: 'maestria-global-rules',
         description: 'Cross-cutting methodology rules for all specialists',
       },
-      replace: [
-        // Generalize coding-specific rules for a general-purpose agent
-        {
-          from: '**!!! Maker/checker split** - your work is reviewed by `@reviewer` before it lands.',
-          to: '**!!! Maker/checker split** - your work is reviewed before it lands. The reviewer has no write access.',
-        },
-        {
-          from: 'validation commands `check`/`test`',
-          to: 'validation commands',
-        },
-
-        // Generalize delegation rules for Hermes
-        {
-          from: '**Never delegate to platform-native built-in agents** - they are built-in, not part of the pipeline.',
-          to: 'Never delegate to built-in `explore` or `general` - they bypass the pipeline.',
-        },
-        {
-          from: '| `@adventurer` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |',
-          to: '| `adventurer` | Research and exploration, deep understanding | Understanding unfamiliar code, tracing dependencies, gathering context |',
-        },
-      ],
+      // NOTE: no replace ops. The previous four generalization replaces
+      // anchored to canonical sentences/tables removed by earlier directive
+      // revisions and silently no-op'd; the revised canonical rules body is
+      // already general-purpose wording.
     },
   },
 

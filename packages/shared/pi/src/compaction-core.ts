@@ -1,7 +1,7 @@
 /**
  * Shared compaction handlers for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.
  *
  * @module
@@ -14,7 +14,7 @@ import type { MaestriaState } from './state-core.js';
  * Install handlers for session compaction and tree events to persist
  * and restore maestria state across session compaction boundaries.
  *
- * Uses duck-typed `pi` parameter — both Pi and OMP ExtensionAPI types
+ * Uses duck-typed `pi` parameter - both Pi and OMP ExtensionAPI types
  * satisfy the `{ on(event: string, handler): void }` shape needed here.
  */
 export function installCompactionHandlers(

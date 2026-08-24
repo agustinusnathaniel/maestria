@@ -1,6 +1,6 @@
 ---
 name: maestria-command-blitz
-description: "Fast implementation mode: skip gates, go directly to implementation"
+description: "Fast implementation mode: skip optional ceremony for familiar low-risk work; required review and safety floors remain"
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
@@ -10,6 +10,4 @@ description: "Fast implementation mode: skip gates, go directly to implementatio
 
 ## MODE: blitz (Fast Implementation)
 
-Explicit low-risk/direct bypass: skip reconnaissance and design gates for familiar, low-risk work. Go directly to builder for implementation (or direct execution where the host supports it). Only use adventurer if the codebase context is genuinely unknown (not as a default step). Skip reviewer unless the user explicitly requests review.
-
-Safety floors still apply. Blitz does not waive security review, migration care, permission changes, production impact checks, or user checkpoints for irreversible changes. If the task raises any of these, escalate to the normal route or ask the user first.
+Use direct execution for familiar, low-risk code or other work when the host permits it; otherwise delegate to the permitted specialist. Skip optional reconnaissance and design ceremony, but never waive safety, authorization, required review, or branch floors. Escalate safety exceptions to the normal route.

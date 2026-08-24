@@ -33,6 +33,9 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update opencode -V 0.5.0 Update to specific version',
       'maestria update opencode,pi       Update multiple platforms at once',
       'maestria install hermes           Install for Hermes agent',
+      'maestria install claude-code      Install for Claude Code',
+      'maestria install codex        Install for Codex CLI',
+      'maestria install prime-agent      Install for Prime Agent',
       'maestria configure opencode       Choose per-agent models interactively',
       'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set a model non-interactively',
       'maestria --help                   Show this help',
@@ -52,6 +55,9 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria install --json           Output results as JSON',
       'maestria install --quiet          Suppress spinner output',
       'maestria install hermes           Install for a specific platform',
+      'maestria install claude-code      Install for Claude Code',
+      'maestria install codex        Install for Codex CLI',
+      'maestria install prime-agent      Install for Prime Agent',
       'maestria install --compact        Minimal machine-friendly output',
     ],
   },
@@ -63,6 +69,9 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update opencode,pi       Update multiple platforms at once',
       'maestria update --json            Output results as JSON',
       'maestria update hermes            Update Hermes to latest',
+      'maestria update claude-code      Update Claude Code to latest',
+      'maestria update codex         Update Codex CLI to latest',
+      'maestria update prime-agent      Update Prime Agent to latest',
       'maestria update --compact         Minimal machine-friendly output',
     ],
   },
@@ -78,7 +87,9 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
     examples: [
       'maestria check opencode           Check if @maestria/opencode is installed',
       'maestria check hermes             Check if @maestria/hermes is installed',
-      'maestria check opencode --json    Output as JSON (default)',
+      'maestria check prime-agent        Check if @maestria/prime-agent is installed',
+      'maestria check --all              Check all detected platforms',
+      'maestria check opencode --json    Output as JSON',
       'maestria check opencode --quiet   Exit code only (for scripts)',
     ],
   },
@@ -105,6 +116,7 @@ EXIT CODES
 
   0   Success
   1   Validation or command error
+  3   Outdated (maestria check: a newer plugin version is available)
   130 User cancelled (interactive mode)
 `;
 

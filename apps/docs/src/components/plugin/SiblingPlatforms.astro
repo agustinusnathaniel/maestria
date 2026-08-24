@@ -1,0 +1,66 @@
+---
+/**
+ * "Runs wherever you work" - compact chip row linking to every other
+ * platform overview page. Excludes the current platform (`excludeId`) and
+ * the ecosystem entry (not a platform adapter).
+ */
+import { platforms } from '../../data/platforms.js';
+import { marks, markAttrs } from '../../data/marks.js';
+
+interface Props {
+  /** Registry id of the page this component renders on. */
+  excludeId: string;
+}
+
+const { excludeId } = Astro.props;
+
+const siblings = platforms.filter((platform) => platform.id !== excludeId && platform.href !== '/ecosystem/');
+---
+
+<section class="home-section" aria-labelledby="siblings-title">
+  <p class="section-eyebrow sibling-eyebrow">SAME METHOD · OTHER PLATFORMS</p>
+  <h2 id="siblings-title" class="sibling-title">Runs wherever you work.</h2>
+  <ul class="m-0 p-0 list-none flex flex-wrap gap-2.5">
+    {
+      siblings.map((platform) => (
+        <li>
+          <a
+            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-home-border no-underline text-home-text-soft transition-colors hover:border-home-accent hover:text-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+            href={platform.href}
+          >
+            <svg class="w-[18px] h-[18px]" {...markAttrs} set:html={marks[platform.mark]} />
+            <span class="font-mono text-[13.5px] whitespace-nowrap">{platform.name}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  /* Trailing section on every plugin page: carry the gap to the footer
+     hairline here as bottom padding - the plugin-page sibling reset zeroes
+     margin-top between block siblings, so the footer's own margin never
+     applies after this section. */
+  section {
+    padding-bottom: clamp(3rem, 7vw, 4.5rem);
+  }
+
+  .sibling-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+  }
+
+  .sibling-title {
+    margin: 0 0 1.5rem;
+    font-family: 'Alan Sans Variable', sans-serif;
+    font-size: clamp(1.5rem, 2.5vw, 1.75rem);
+    font-weight: 560;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--home-text);
+    text-wrap: balance;
+  }
+</style>

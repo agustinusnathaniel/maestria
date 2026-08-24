@@ -6,13 +6,16 @@ Accepted
 
 ## Context
 
-Maestria ships the same AI engineering methodology to 3 coding agent platforms - OpenCode, Kimi Code, and Pi - each with different installation and update mechanics:
+Maestria ships the same AI engineering methodology to multiple coding agent platforms, each with different installation and update mechanics:
 
-| Platform  | Install method                              | Update method                        |
-| --------- | ------------------------------------------- | ------------------------------------ |
-| OpenCode  | `opencode plugin @maestria/opencode@latest` | Same command with `--force`          |
-| Kimi Code | npm pack + file extract                     | Direct file install                  |
-| Pi        | `pi install npm:@maestria/pi`               | `pi install npm:@maestria/pi@latest` |
+| Platform | Install method | Update method |
+| --- | --- | --- |
+| OpenCode | `opencode plugin @maestria/opencode@latest` | Same command with `--force` |
+| Kimi Code | npm pack + file extract | Direct file install |
+| Pi | `pi install npm:@maestria/pi` | `pi install npm:@maestria/pi@latest` |
+| Claude Code | npm package staged into a local Claude marketplace, then `claude plugin install` | Refresh staged package, uninstall, and install through Claude Code |
+| Codex CLI | npm package staged into a local Codex marketplace, then `codex plugin add` | Refresh staged package, remove, and add through Codex CLI |
+| Prime Agent | `prime-agent package install npm:@maestria/prime-agent` (global scope) | `prime-agent package update npm:@maestria/prime-agent` (global scope) |
 
 > **Note:** As of Kimi Code v0.23.6 the `kimi plugins` CLI subcommand was removed. The CLI now installs via `npm pack @maestria/kimi-code@latest` and extracts the tarball into the managed plugins directory, matching the approach used internally by Kimi Code's own plugin system.
 
@@ -285,6 +288,18 @@ The following changes were made after the initial ADR was accepted:
 | OpenCode config | `isInstalled` reads `opencode.jsonc` first, falling back to `opencode.json`. |
 | Process lifecycle | `SIGINT`/`SIGTERM` handlers and explicit `process.exit(0)` calls ensure clean termination. |
 | Architecture | `lib/shell.ts`, `lib/validation.ts`, and `lib/install-one.ts` were added. `types.ts` was simplified to interface definitions only (tagged errors live in their respective modules: `CommandError` in `shell.ts`, `ValidationError` in `validation.ts`). |
+
+### 2026-08-13
+
+The CLI now recognizes three recently added plugin packages:
+
+| Platform | CLI identifier | Host integration |
+| --- | --- | --- |
+| Claude Code | `claude-code` | Stages `@maestria/claude-code` under `~/.cache/maestria/`, registers a local marketplace with `claude plugin marketplace add`, and installs at user scope with `claude plugin install`. |
+| Codex CLI | `codex` | Stages `@maestria/codex` under `~/.cache/maestria/`, registers a local marketplace with `codex plugin marketplace add`, and installs with `codex plugin add`. |
+| Prime Agent | `prime-agent` | Delegates to Prime's native package commands (`package install`/`update`/`remove npm:@maestria/prime-agent`) in the default global scope; every command runs from a freshly created empty temporary directory so project settings are never scanned or modified (Prime resolves project settings from cwd). Registration state comes from `prime-agent package list` (user scope only). |
+
+These adapters use the host runtime as the source of installed state and version reporting. They do not write host configuration directly. Exact version pinning is rejected for these adapters: Claude Code and Codex CLI updates select the latest staged package, and Prime skips `package update` for version-pinned registrations - the CLI detects a pinned user registration up front (even before the update command's "Already up to date" short-circuit, via a single per-update registration snapshot) and reports an accurate error instead of claiming a successful update or silently skipping it.
 
 ## Date
 

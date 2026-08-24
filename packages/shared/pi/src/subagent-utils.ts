@@ -1,7 +1,7 @@
 /**
  * Shared subagent validation utilities for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.
  *
  * @module
@@ -30,7 +30,7 @@ export const ALLOWED_AGENTS = [
 /** A valid specialist agent name. */
 export type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
 
-/** The 6-field handoff contract used in delegation. */
+/** The 7-field handoff contract used in delegation. */
 export const HANDOFF_FIELDS = [
   'Goal',
   'Context',

@@ -8,7 +8,17 @@ export class ValidationError extends Data.TaggedError('ValidationError')<{
 
 // ── Validators ───────────────────────────────────────
 
-const VALID_PLATFORMS = ['opencode', 'omp', 'pi', 'kimi-code', 'hermes', 'cursor'] as const;
+export const VALID_PLATFORMS = [
+  'opencode',
+  'omp',
+  'pi',
+  'prime-agent',
+  'kimi-code',
+  'hermes',
+  'cursor',
+  'claude-code',
+  'codex',
+] as const;
 export type ValidPlatform = (typeof VALID_PLATFORMS)[number];
 
 /**
@@ -74,23 +84,6 @@ export function validateVersion(input: string): Effect.Effect<string, Validation
       message: `Invalid version '${input}'. Use semver format (e.g., 0.5.0) or 'latest'.`,
     }),
   );
-}
-
-/**
- * Check that --all and a platform positional aren't both provided.
- */
-export function validateNotAllAndPlatform(
-  all: boolean,
-  platform?: string,
-): Effect.Effect<void, ValidationError> {
-  if (all && platform) {
-    return Effect.fail(
-      new ValidationError({
-        message: 'Cannot use --all with a specific platform. Choose one.',
-      }),
-    );
-  }
-  return Effect.void;
 }
 
 /**

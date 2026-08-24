@@ -58,7 +58,7 @@ Read-only - never implement, design, or edit.`,
     'architect.md': {
       output: 'architect/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them sparingly.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'architect',
         description: `Architecture decisions using decision matrices and ADRs.
@@ -121,7 +121,7 @@ any complex feature that needs review before building.`,
     'reviewer.md': {
       output: 'reviewer/SKILL.md',
       prepend:
-        '**Subagent profile:** `coder` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
         name: 'reviewer',
         description: `Code review with quality gates.
@@ -130,7 +130,8 @@ and adherence to conventions. Provides specific, actionable feedback.
 Use for: PR review, pre-commit review, architecture document review.`,
         type: 'prompt',
         whenToUse: `Pre-merge review, post-implementation validation, security audits,
-before-commit QA. Use after \`builder\` lands a code change.`,
+before-commit QA. In full routes, review after the integrated builder batch is
+reconciled; run the general review first, then risk-matched lenses sequentially.`,
         arguments: [],
       },
     },
@@ -169,11 +170,11 @@ decisions, and documentation generation under the maestria workflow.`,
 | Persona | Subagent Type | Role | When |
 |---------|--------------|------|------|
 | adventurer | \`explore\` | Gather data; describe the terrain | Before any implementation in unfamiliar code |
-| architect | \`coder\` | Evaluate options; document decisions | When multiple approaches exist |
+| architect | \`plan\` | Evaluate options; document decisions | When multiple approaches exist |
 | builder | \`coder\` | Implement; test; refactor | When the design is locked |
 | diagnose | \`coder\` | Find root cause; write regression test | When something is broken |
-| planner | \`coder\` | Break down work; sequence milestones | Before starting a multi-step feature |
-| reviewer | \`plan\` | Review; QA; check correctness | After builder lands a change |
+| planner | \`plan\` | Break down work; sequence milestones | Before starting a multi-step feature |
+| reviewer | \`plan\` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | writer | \`coder\` | Document APIs; write README; create ADRs | When code needs human-facing docs |
 
 ## Swarm Usage (AgentSwarm)
@@ -353,7 +354,8 @@ This should appear at the end of your response when the user asks for a handoff,
         '**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
       frontmatter: {
         name: 'blitz',
-        description: 'Fast implementation mode: skip recon/design unless unknown',
+        description:
+          'Fast implementation mode: skip optional recon/design unless unknown; required review remains',
         type: 'prompt',
         whenToUse:
           'When the user types /blitz or includes "blitz" in their message for fast implementation.',
@@ -375,38 +377,14 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: 'treat it seriously.', to: 'treat it seriously, not a preference.' },
         { from: 'websearch', to: 'WebSearch' },
         { from: 'read-only', to: 'Read-only' },
-        // Replace the canonical delegation section (post-default-transform) with a kimi-code version
+        // Add Kimi's built-in-agent guard after the canonical delegation
+        // heading. Re-anchored 2026-08: the heading is "## Delegation and
+        // Context"; the old '## Delegation\n' anchor silently no-op'd. The
+        // guard names the seven personas because the revised canonical rules
+        // body no longer carries the specialist roster.
         {
-          from: `## Delegation
-
-When delegating work, use only the 7 specialists below. **Never delegate to platform-native built-in agents** - they are built-in, not part of the pipeline.
-
-| Agent | Role | When to Delegate |
-| --- | --- | --- |
-| \`@adventurer\` | Codebase reconnaissance, deep code understanding | Understanding unfamiliar code, tracing dependencies, gathering context before implementation |
-| \`@architect\` | Architecture decisions, trade-off analysis, ADRs | Choosing between approaches, technology evaluation |
-| \`@builder\` | Focused implementation, single-task execution | Feature work, bug fixes, test writing, refactors |
-| \`@diagnose\` | Systematic bug tracing, root cause analysis | Debugging regressions, production incidents, cryptic errors |
-| \`@planner\` | Implementation plans with phased milestones | Complex features requiring structured execution |
-| \`@reviewer\` | Code review with quality gates | Pre-merge review, security audit, post-implementation QA |
-| \`@writer\` | Documentation following structured patterns | READMEs, API docs, changelogs, ADR transcription |
-
-`,
-          to: `## Delegation
-
-When delegating work via \`Agent()\` (single item) or \`AgentSwarm()\` (≥3 uniform items), use only the 7 specialist personas below. Each maps to a subagent type (\`coder\`, \`explore\`, or \`plan\`) via the orchestrator's routing table.
-
-| Persona      | Subagent Type | Role                                             |
-| ------------ | ------------- | ------------------------------------------------ |
-| \`adventurer\` | \`explore\`     | Codebase reconnaissance, deep code understanding |
-| \`architect\`  | \`coder\`       | Architecture decisions, trade-off analysis, ADRs |
-| \`builder\`    | \`coder\`       | Focused implementation, single-task execution   |
-| \`diagnose\`   | \`coder\`       | Systematic bug tracing, root cause analysis     |
-| \`planner\`    | \`plan\`        | Implementation plans with phased milestones     |
-| \`reviewer\`   | \`coder\`       | Code review with quality gates                  |
-| \`writer\`     | \`coder\`       | Documentation following structured patterns     |
-
-`,
+          from: '## Delegation and Context\n',
+          to: '## Delegation and Context\n\nWhen delegating through `Agent()` or `AgentSwarm()`, use only the seven specialist personas - adventurer, architect, builder, diagnose, planner, reviewer, writer. Never substitute platform-native built-in agents unless this mapping explicitly authorizes it.\n',
         },
       ],
     },

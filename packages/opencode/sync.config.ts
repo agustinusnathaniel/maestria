@@ -399,27 +399,11 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
           skill: 'allow',
         },
       },
-      replace: [
-        {
-          from: 'delegation (assign work to a specialist) and asking the user questions',
-          to: '`task()` (delegate to a specialist) and `question()` (ask the user)',
-        },
-        { from: 'delegation to specialists', to: '`task()` delegation' },
-        {
-          from: 'platform-native built-in agents that bypass the pipeline',
-          to: 'built-in `explore` or `general`',
-        },
-        { from: 'delegate in parallel', to: 'send independent `task()` calls' },
-        {
-          from: `1. **Inspect** - delegate to \`@adventurer\` to check git status and review recent commits.\n   - **Learn from corrections:** Read the commit log and look for patterns in the user's past corrections. Did they change \`feat\` to \`chore\`? Correct a scope? Reject a push? Apply those conventions to this commit without asking.`,
-          to: '1. **Inspect:** `task(adventurer, "show git status + last 10 commits")`. Adhere to learned user patterns.',
-        },
-        {
-          from: 'Asking the user is restricted to three exception categories:',
-          to: '`question()` is strictly limited to 3 exception categories:',
-        },
-      ],
     },
+    // NOTE: no body `replace` ops for orchestrator.md. The previous seven
+    // body replaces anchored to canonical sentences removed in earlier
+    // directive revisions and silently no-op'd (split/join never matches);
+    // the canonical orchestrator body is already platform-neutral.
     'commands/fein.md': {
       output: 'commands/fein.md',
       stripFrontmatter: true,
@@ -434,16 +418,10 @@ Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
     },
     'rules.md': {
       output: '../rules/AGENTS.md',
-      replace: [
-        { from: 'repo cloning tool', to: '`opensrc`' },
-        { from: 'URL fetching tool', to: '`webfetch`' },
-        { from: 'URL fetch', to: '`webfetch`' },
-        { from: 'web search', to: '`websearch`' },
-        {
-          from: 'platform-native built-in agents',
-          to: '`explore` or `general`',
-        },
-      ],
+      // NOTE: no replace ops. The previous generic-vocabulary renames
+      // ("repo cloning tool", "URL fetch", "web search", ...) anchored to
+      // canonical sentences that no longer exist; the canonical rules body
+      // is already tool-neutral.
     },
   },
 } satisfies SyncConfig;

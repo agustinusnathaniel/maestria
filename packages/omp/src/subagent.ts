@@ -1,6 +1,6 @@
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff } from '@/state.js';
+import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
 import { assertValidAgent, assertNonEmptyTask } from '@maestria/shared-pi/subagent-utils';
 
 function recordAndPersist(
@@ -10,7 +10,7 @@ function recordAndPersist(
   to: string,
   taskText: string,
 ): void {
-  const updatedState = recordHandoff(state, from, to, taskText);
+  const updatedState = recordSpecialistDelegated(recordHandoff(state, from, to, taskText), to);
   Object.assign(state, updatedState);
   persistState(pi, state);
 }
@@ -29,10 +29,9 @@ export function installSubagentTool(
       agent: pi.zod
         .string()
         .describe(
-          'Specialist agent name (adventurer, architect, builder, diagnose, planner, reviewer, writer)',
-        )
-        .optional(),
-      task: pi.zod.string().describe('Task description for the subagent').optional(),
+          'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
+        ),
+      task: pi.zod.string().describe('Task description for the subagent (required)'),
       tasks: pi.zod
         .array(
           pi.zod.object({
@@ -129,6 +128,6 @@ export function installSubagentTool(
     },
   });
 
-  // No subagent lifecycle event subscriptions needed — omp's built-in task tool
+  // No subagent lifecycle event subscriptions needed - omp's built-in task tool
   // handles all dispatch lifecycle natively.
 }

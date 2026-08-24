@@ -15,3 +15,17 @@ hero:
       variant: minimal
       link: /core/agents/
 ---
+
+import { RECOVERY_LINKS } from '../../lib/agent-delivery.ts';
+
+## Recovery paths for agents and humans
+
+This page does not exist. Every link below is absolute, so agents can follow it without resolving a base URL.
+
+<ul>
+  {RECOVERY_LINKS.map(([label, href]) => (
+    <li>
+      <a href={href}>{label}</a>
+    </li>
+  ))}
+</ul>

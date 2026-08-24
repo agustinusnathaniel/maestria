@@ -1,7 +1,7 @@
 /**
  * Shared mode constants and utilities for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Imported by both @maestria/omp and @maestria/pi to eliminate duplication
  * in mode prompt loading, keyword detection, and text transformation.
  *
@@ -15,6 +15,7 @@ import type { MaestriaState } from './state-core.js';
 // ── Constants ──
 
 export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
+export const MODE_CLEAR_COMMAND = 'mode-clear';
 export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
 
 export const MODE_MARKERS: Record<ModeKeyword, string> = {
@@ -25,7 +26,7 @@ export const MODE_MARKERS: Record<ModeKeyword, string> = {
 
 // ── Prompt loading ──
 
-/** Lazily cached mode prompts — shared across platforms. */
+/** Lazily cached mode prompts - shared across platforms. */
 const _promptCache: Partial<Record<ModeKeyword, string>> = {};
 
 /**
@@ -70,24 +71,79 @@ export interface ModeDetectResult {
   prompt: string;
 }
 
+/** Regex matching fenced code blocks (```) and inline backtick spans (`). */
+const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/g;
+
+/**
+ * Find ranges of fenced code blocks and inline code spans in text.
+ * Returns [start, end) positions. Keywords inside these ranges are
+ * ignored during detection (per ADR-OC-003).
+ */
+function findAllCodeBlockRanges(text: string): Array<[number, number]> {
+  const ranges: Array<[number, number]> = [];
+  let match: RegExpExecArray | null;
+  while ((match = CODE_BLOCK_RE.exec(text)) !== null) {
+    ranges.push([match.index, match.index + match[0].length]);
+  }
+  return ranges;
+}
+
+function isInRanges(index: number, ranges: Array<[number, number]>): boolean {
+  return ranges.some(([start, end]) => index >= start && index < end);
+}
+
+/**
+ * Priority mapping for mode keyword restrictiveness.
+ * Higher number = more restrictive = wins when multiple keywords are present.
+ * fein (3): full pipeline with mandatory gates
+ * sonar (2): research only, no code
+ * blitz (1): fast implementation, skip optional ceremony; required review remains
+ */
+const MODE_PRIORITY: Record<ModeKeyword, number> = {
+  fein: 3,
+  sonar: 2,
+  blitz: 1,
+};
+
 /**
  * Detect a mode keyword (fein/sonar/blitz) in text as a whole word,
- * case-insensitive. Returns the first match found (iteration order:
- * fein, sonar, blitz).
+ * case-insensitive. Detection rules (per ADR-OC-003):
+ * - Word-boundary regex matching (\bfein\b, \bsonar\b, \bblitz\b)
+ * - Most restrictive match wins (fein > sonar > blitz)
+ * - Case-insensitive
+ * - Matches inside fenced code blocks (```) and inline backticks (`) are ignored
  */
 export function detectModeInText(text: string, commandsDir: string): ModeDetectResult | null {
   if (!text) return null;
 
+  const codeRanges = findAllCodeBlockRanges(text);
+  let best: { keyword: ModeKeyword; index: number } | null = null;
+
   for (const keyword of MODE_KEYWORDS) {
-    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
-    if (regex.test(text)) {
-      const stripped = text.replace(regex, '').trim();
-      const prompt = getModePrompt(keyword, commandsDir);
-      return { keyword, strippedText: stripped, prompt };
+    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(text)) !== null) {
+      if (isInRanges(match.index, codeRanges)) continue;
+      // Most-restrictive wins: prefer higher-priority mode over position
+      if (best === null || MODE_PRIORITY[keyword] > MODE_PRIORITY[best.keyword]) {
+        best = { keyword, index: match.index };
+      }
     }
   }
 
-  return null;
+  if (best === null) return null;
+
+  // Strip the matched keyword, cleaning up a trailing colon and collapsing
+  // double spaces (mirrors opencode's stripKeyword behavior).
+  const before = text.slice(0, best.index);
+  const after = text.slice(best.index + best.keyword.length).replace(/^:\s*/, '');
+  const strippedText = (before + after).replace(/ {2,}/g, ' ').trim();
+
+  return {
+    keyword: best.keyword,
+    strippedText,
+    prompt: getModePrompt(best.keyword, commandsDir),
+  };
 }
 
 /**
@@ -114,7 +170,7 @@ export function installModeAutoDetect(
   state: MaestriaState,
   commandsDir: string,
   opts: {
-    /** Exit review mode — calls platform's restoreOriginalState */
+    /** Exit review mode - calls platform's restoreOriginalState */
     restoreOriginalState: (ctx: unknown) => Promise<void>;
     /** Persist state after mode change */
     persistState: () => void;
@@ -162,6 +218,20 @@ export function installModeCommands(
     persistState: () => void;
   },
 ): void {
+  registerCommand(MODE_CLEAR_COMMAND, {
+    description: 'Clear workflow mode and return to neutral routing',
+    handler: async (_args: unknown, ctx: unknown) => {
+      if (state.reviewMode) {
+        await opts.restoreOriginalState(ctx);
+      }
+      state.mode = null;
+      opts.persistState();
+      ((ctx as Record<string, unknown>).ui as { notify: (msg: string) => void }).notify(
+        'Workflow mode cleared. Neutral routing is active.',
+      );
+    },
+  });
+
   for (const keyword of MODE_KEYWORDS) {
     registerCommand(keyword, {
       description: `Set workflow mode to ${keyword}`,

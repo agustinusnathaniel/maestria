@@ -6,7 +6,8 @@ import { getPlatform } from '@/lib/platforms.js';
 import { detectAll } from '@/lib/detect.js';
 import { installOne } from '@/lib/install-one.js';
 import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
-import { validatePlatforms, validateOrExit } from '@/lib/validation.js';
+import { validatePlatforms, validateOrExit, VALID_PLATFORMS } from '@/lib/validation.js';
+import { exitCodeForResults } from '@/lib/result-exit.js';
 import type { PlatformResult } from '@/types.js';
 
 export const installCommand = defineCommand({
@@ -18,8 +19,9 @@ export const installCommand = defineCommand({
     platform: {
       type: 'positional',
       description:
-        'Platform(s) to install. Comma-separated for multiple (e.g., opencode,pi). ' +
-        'One of: opencode, pi, kimi-code, hermes, cursor, omp. Pass directly to skip interactive selection.',
+        `Platform(s) to install. Comma-separated for multiple (e.g., opencode,pi). ` +
+        `One of: ${VALID_PLATFORMS.join(', ')}. ` +
+        'Pass directly to skip interactive selection.',
       required: false,
     },
     all: {
@@ -185,6 +187,6 @@ export const installCommand = defineCommand({
     } else {
       console.log(renderResults(results));
     }
-    process.exit(0);
+    process.exit(exitCodeForResults(results));
   },
 });

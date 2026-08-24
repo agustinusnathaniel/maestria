@@ -22,14 +22,15 @@ export default {
       { from: '@planner', to: 'planner' },
       { from: '@reviewer', to: 'reviewer' },
       { from: '@writer', to: 'writer' },
-      // omp has a built-in task tool, so task( stays as task( — no rewrite needed
+      // omp has a built-in task tool, so task( stays as task( - no rewrite needed
       { from: '@orchestrator', to: 'orchestrator' },
     ],
   },
 
   files: {
     // --- omp agent types (7 specialists) ---
-    // Each gets role-specific frontmatter with tool isolation
+    // Read-only sonar roles omit bash; architect/diagnose retain bash for evidence gathering.
+    // The native profile must enforce this list; prompts alone cannot prevent shell mutation.
 
     'adventurer.md': {
       prepend:
@@ -38,7 +39,7 @@ export default {
         '  Codebase reconnaissance specialist. Maps unknown territory, traces\n' +
         '  call chains and dependencies, discovers module relationships, and\n' +
         '  produces structured recon reports for downstream specialists.\n' +
-        'tools: read, bash, grep, find, ls, glob\n' +
+        'tools: read, grep, find, ls, glob\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
         '---\n' +
@@ -93,7 +94,7 @@ export default {
         '  Implementation planning specialist. Breaks complex features into\n' +
         '  phased milestones with dependencies, timelines, verification criteria,\n' +
         '  and rollback points.\n' +
-        'tools: read, bash, grep, find, ls\n' +
+        'tools: read, grep, find, ls\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
         '---\n' +
@@ -105,9 +106,10 @@ export default {
         '---\n' +
         'description: >-\n' +
         '  Code review specialist. Reviews for correctness, edge cases, security,\n' +
-        '  performance, and maintainability. Supports multi-lens review swarms\n' +
-        '  with fix/dismiss/escalate triage.\n' +
-        'tools: read, bash, grep, find, ls, glob\n' +
+        '  performance, and maintainability in one general review. Adds specialist\n' +
+        '  lenses only for matching security, performance, architecture, or UX risk;\n' +
+        '  preserves blind review, lens exclusivity, and fix/dismiss/escalate triage.\n' +
+        'tools: read, grep, find, ls, glob\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
         '---\n' +
@@ -168,6 +170,31 @@ export default {
         '  Global behavioral constraints and best practices for maestria-powered\n' +
         '  Oh My Pi agents. Covers orchestration conventions, delegation rules, context\n' +
         '  management, commit policy, pipeline patterns, and branch discipline.\n' +
+        '---\n' +
+        '\n',
+    },
+    'skills/handoff.md': {
+      output: '../skills/handoff/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: handoff\n' +
+        'description: >-\n' +
+        '  The 7-field handoff contract for inter-specialist delegation.\n' +
+        '  Load when receiving a task from another specialist, or when handing off work\n' +
+        '  to the next stage in the pipeline.\n' +
+        '---\n' +
+        '\n',
+    },
+
+    'skills/iteration-limits.md': {
+      output: '../skills/iteration-limits/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: iteration-limits\n' +
+        'description: >-\n' +
+        '  The iteration-limit pattern with verifiable termination and escalation format.\n' +
+        '  Load when defining termination conditions for a loop, or when a loop is at risk of\n' +
+        '  running too long.\n' +
         '---\n' +
         '\n',
     },

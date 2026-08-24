@@ -78,8 +78,9 @@ The `planner` persona returns phases with success criteria and rollback points. 
 The full pipeline diagram is in [Workflow Patterns](/core/workflow-patterns/#pipeline-reference).
 
 <Aside type="tip">
-  Most tasks don't start with code. Start with recon (`adventurer`) or design (`architect`) before
-  reaching for `builder`. The orchestrator handles this routing automatically - but you can also
+  Choose the smallest safe route. Use direct execution for known, low-risk work when the host
+  permits it; use recon (`adventurer`) or design (`architect`) when the code is unfamiliar or the
+  approach is uncertain. The orchestrator handles this routing automatically - but you can also
   invoke specialists directly when you know which one you want.
 </Aside>
 

@@ -1,138 +1,50 @@
 # maestria
 
-A single CLI to manage maestria plugins across all coding agent platforms - OpenCode, Oh My Pi, Kimi Code, Pi, Hermes, and Cursor.
+A single CLI to install, update, and uninstall Maestria plugins across coding agent platforms - OpenCode, Oh My Pi, Pi, Prime Agent, Kimi Code, Hermes, Cursor, Claude Code, and Codex CLI.
 
 ```bash
 npx maestria status
 ```
 
-## Why
+> This project is part of Maestria. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
-Each coding agent platform installs maestria differently. `maestria` wraps them all behind one interface. Check what's installed, install for a platform, or update everything - no more hunting through READMEs for the right command.
-
-## Commands
+## Usage
 
 | Command | What it does |
 | --- | --- |
 | `maestria` | Show status (default) |
-| `maestria status` | Show installed plugins and version info |
-| `maestria install` | Interactive platform install (multiselect) |
-| `maestria install --all` | Install for all detected platforms |
-| `maestria install opencode` | Install for a specific platform |
-| `maestria install opencode,pi` | Install for multiple comma-separated platforms |
-| `maestria update` | Interactive platform update (grouped multiselect with `a` toggle-all) |
-| `maestria update --all` | Update all installed platforms |
-| `maestria update opencode,pi` | Update multiple comma-separated platforms |
-| `maestria update opencode --version 0.5.0` | Update to a specific version |
+| `maestria install [--all\|platforms]` | Install for all detected platforms or specific ones (`opencode,pi`) |
+| `maestria update [--all\|platforms]` | Update installed platforms; `--version 0.5.0` pins a version where the host supports it |
+| `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
+| `maestria check <platform>` | Verify a platform installation |
+| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, pi, omp); `--set` configures non-interactively |
 
-All commands accept `--json` (machine-readable), `--quiet` (suppress spinners), and `--compact` (machine-friendly text - ideal for AI agents). The root command also accepts `--version` to print the version number and exit. The `update` command additionally accepts `--version`/`-V` to pin a specific version.
+All commands accept `--json` and `--quiet` for scripting and CI, and `--help` shows in-terminal examples, exit codes, and AI-agent usage tips. `--compact` is supported on every command except `check`, which requires a platform argument and outputs JSON by default. Wherever a platform has its own plugin manager, the CLI delegates to it rather than mutating host configuration directly.
 
-## Usage
+## What It Provides
 
-```bash
-# Check status (no arguments = status)
-npx maestria
+- **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
+- **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
+- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install, Cursor plugin directory, Prime Agent package manager, Claude Code/Codex marketplaces).
 
-# Install interactively
-npx maestria install
+## Support / Platform Notes
 
-# Install for all platforms
-npx maestria install --all
+- Requires the target platform's CLI on `PATH`; the CLI cannot install a platform it cannot detect.
+- npm is required for the Claude Code and Codex CLI adapters.
+- Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code, Codex CLI, and Prime Agent select the latest available package and reject `--version`.
+- Prime Agent support is deliberately global (user scope only): project registrations are never scanned or modified. A version-pinned user registration is reported as an error rather than silently skipped.
+- Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless removed separately.
+- The CLI manages plugin installation only; it does not run agents or enforce methodology.
 
-# Install for multiple specific platforms
-npx maestria install opencode,pi
+## Documentation and Changelog
 
-# Update everything
-npx maestria update --all
+- [CLI documentation](https://maestria.sznm.dev/cli/) on the docs site
+- [Changelog](https://github.com/agustinusnathaniel/maestria/blob/main/apps/maestria-cli/CHANGELOG.md)
 
-# Update multiple platforms simultaneously
-npx maestria update opencode,pi
+## Contributing
 
-# Update to a specific version
-npx maestria update opencode --version 0.5.0
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
-# JSON output for CI
-npx maestria status --json --quiet
+## License
 
-# Compact output (AI agents, token-sensitive pipelines)
-npx maestria status --compact
-
-# Check version
-npx maestria --version
-```
-
-### Input validation
-
-Invalid arguments are caught early:
-
-```bash
-$ npx maestria update unknown
-Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, kimi-code, hermes, cursor
-
-$ npx maestria update opencode --version 2.0
-Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
-
-$ npx maestria install opencode --all
-Cannot use --all with a specific platform. Choose one.
-```
-
-### Exit Codes
-
-| Code  | Meaning                                |
-| ----- | -------------------------------------- |
-| `0`   | Success                                |
-| `1`   | Validation or command error            |
-| `130` | User cancelled (interactive mode only) |
-
-Run any command with `--help` to see in-terminal examples and exit code documentation, including a TIP FOR AI AGENTS section with usage guidance for automated environments.
-
-### Version caching
-
-npm version lookups use a **network-first** strategy: the CLI always fetches the latest version from npm, falling back to `~/.cache/maestria/versions.json` only when the network call fails. The cache is updated automatically after every successful fetch. Delete the cache to force a fresh start:
-
-```bash
-rm ~/.cache/maestria/versions.json
-```
-
-## Prerequisites
-
-- Node.js 22+
-- The platform CLI must be on `$PATH` (`opencode`, `pi`, `kimi`, `hermes`, or `agent` for Cursor)
-
-## Supported Platforms
-
-| ID          | Platform  | Package               |
-| ----------- | --------- | --------------------- |
-| `opencode`  | OpenCode  | `@maestria/opencode`  |
-| `omp`       | Oh My Pi  | `@maestria/omp`       |
-| `pi`        | Pi        | `@maestria/pi`        |
-| `kimi-code` | Kimi Code | `@maestria/kimi-code` |
-| `hermes`    | Hermes    | `maestria-hermes`     |
-
-## Tech Stack
-
-- **Effect v4** - typed errors, structured concurrency, Effect-based platform operations
-- **citty** - lightweight CLI routing with typed arg definitions
-- **@clack/prompts** - interactive spinners and selection prompts
-- **picocolors** - terminal output coloring
-- **vite-plus** - bundles to a single self-contained `.mjs` file
-
-## Development
-
-```bash
-# Build
-pnpm build
-
-# Dev (watch mode)
-pnpm dev
-
-# Type-check
-pnpm typecheck
-
-# Run locally
-node dist/index.js status
-```
-
-## Related
-
-- [Maestria CLI documentation](https://maestria.sznm.dev/cli/)
+MIT

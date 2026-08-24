@@ -14,40 +14,90 @@ import { unifiedDiff } from './diff.js';
 import { atomicWrite } from './file.js';
 import type { ResolvedFileConfig } from './config.js';
 import type { SyncFileResult } from './sync.js';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 
 // ── Git provenance check ──
 
 /**
  * Check that a synced output file wasn't modified without changing the
- * corresponding canonical source. Uses git to detect uncommitted changes.
+ * corresponding canonical source or sync config. Uses git to detect uncommitted changes.
  * Silently skips if not in a git repo or git is unavailable.
  */
-function checkProvenance(sourcePath: string, outputPath: string): boolean {
+function checkProvenance(
+  sourcePath: string,
+  outputPath: string,
+  expectedContent: string,
+  configPath?: string,
+): boolean {
   try {
     // git operations must run within the repo; derive cwd from output path
     const repoCwd = dirname(outputPath);
 
     const hasChanges = (filePath: string): boolean => {
-      const unstaged = execSync(`git diff --name-only -- "${filePath}"`, {
+      // A single porcelain call covers staged (`M `), unstaged (` M`), and
+      // untracked (`??`) changes. execFileSync passes the path as an argument
+      // (no shell), so a path containing shell metacharacters cannot inject
+      // commands - the previous execSync string interpolation could.
+      const porcelain = execFileSync('git', ['status', '--porcelain', '--', filePath], {
         cwd: repoCwd,
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'],
       }).trim();
-      if (unstaged.length > 0) return true;
-      const staged = execSync(`git diff --cached --name-only -- "${filePath}"`, {
-        cwd: repoCwd,
-        encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-      }).trim();
-      return staged.length > 0;
+      return porcelain.length > 0;
+    };
+
+    const hasStagedChanges = (filePath: string): boolean => {
+      try {
+        execFileSync('git', ['diff', '--cached', '--quiet', '--', filePath], {
+          cwd: repoCwd,
+          stdio: 'ignore',
+        });
+        return false;
+      } catch (err) {
+        if (
+          typeof err === 'object' &&
+          err !== null &&
+          'status' in err &&
+          (err as { status?: number }).status === 1
+        ) {
+          return true;
+        }
+        throw err;
+      }
     };
 
     const outputChanged = hasChanges(outputPath);
     if (!outputChanged) return true; // No uncommitted changes to output file - fine
 
+    if (hasStagedChanges(outputPath)) {
+      const repoRoot = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+        cwd: repoCwd,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+      const indexPath = relative(repoRoot, outputPath);
+      let stagedContent: string;
+      try {
+        stagedContent = execFileSync('git', ['show', `:${indexPath}`], {
+          cwd: repoRoot,
+          encoding: 'utf-8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        });
+      } catch {
+        // Git confirmed a staged change, so a missing or unreadable index entry
+        // is itself a provenance violation (for example, a staged deletion).
+        return false;
+      }
+
+      // A staged output must itself be generated from the current expected content.
+      // Source/config changes cannot authorize an unrelated staged hand edit.
+      return stagedContent === expectedContent;
+    }
+
     const sourceChanged = hasChanges(sourcePath);
     if (sourceChanged) return true; // Both changed - legitimate workflow
+
+    if (configPath && hasChanges(configPath)) return true; // Config changed - legitimate workflow
 
     // Output changed but source didn't - provenance violation
     return false;
@@ -59,6 +109,7 @@ function checkProvenance(sourcePath: string, outputPath: string): boolean {
 // ── Types ──
 
 export interface ProcessFileOpts {
+  configPath?: string;
   dryRun?: boolean;
   check?: boolean;
   diff?: boolean;
@@ -82,7 +133,7 @@ export async function processFile(
   fileCfg: ResolvedFileConfig,
   opts: ProcessFileOpts,
 ): Promise<SyncFileResult> {
-  const { dryRun, check, diff, verbose, report, logger } = opts;
+  const { configPath, dryRun, check, diff, verbose, report, logger } = opts;
 
   try {
     let content = normalizeLineEndings(await readFile(sourcePath, 'utf-8'));
@@ -156,7 +207,7 @@ export async function processFile(
     }
 
     if (existingContent === content) {
-      if (check && !checkProvenance(sourcePath, fileCfg.output)) {
+      if (check && !checkProvenance(sourcePath, fileCfg.output, content, configPath)) {
         const relOutput = relative(process.cwd(), fileCfg.output);
         const relSource = relative(process.cwd(), sourcePath);
         if (verbose) {

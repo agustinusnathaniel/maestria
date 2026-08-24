@@ -7,6 +7,22 @@ This changelog tracks meaningful changes to how Maestria-powered agents
 behave - what they do differently, what they're stricter about, and what
 you can expect from them.
 
+## 2026-08-22
+
+- **Directive simplification (~24% leaner across canonical directives; ~21% as shipped in generated plugins).** Canonical directives consolidated: the bounded-repair contract lives once in the global rules, specialist skill catalogs list only verified skills, and dead sync-config replacement anchors were removed across platforms.
+- **Delivery is terminal-artifact driven.** Delegated implementation outcomes complete at a pushed feature branch with an open PR; routine delivery requires no approval asks, while merge, release, and production actions remain separate authorization boundaries.
+- **Transport failures are not verdicts.** Failed or cancelled delegations get one adjusted-brief retry before structured blocker reporting; user-initiated or intentional platform cancellation stays terminal.
+- Full decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+
+## 2026-08-13
+
+- **Claude Code and Codex CLI projections documented.** The Claude Code plugin is a native candidate, while the Codex CLI package remains provisional and skills-only. Both are installable through the Maestria CLI's host-native marketplace adapters.
+- **Effort calibrated to task risk.** Directives now match effort to stakes, prefer mature ecosystem solutions over custom infrastructure, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
+- **Runtime-aware routing.** Direct, focused, and full routes are selected according to task needs and host capabilities. `fein` can request the full pipeline, while direct execution remains available for known low-risk work where the host permits it.
+- **Compact, evidence-oriented work.** Directives and handoffs emphasize the material context, evidence, and outcome needed for the next decision instead of a fixed output schema. No-action and no-PR outcomes are valid when the work does not justify implementation.
+- **Bounded progress and independent review.** Repair loops use a practical normal bound of about three rounds and extend only with observable progress. Repeated causes require a strategy change or escalation; maker/checker review is used where the selected route supports it.
+- **Clear lifecycle boundaries.** Completion includes cleanup of delegated work, and nested agents do not duplicate an outer supervisor's repository selection, scheduling, retry, or lifecycle responsibilities. Platform adapters may impose stricter execution limits.
+
 ## 2026-08-03
 
 - **Selective routing by task class.** Maestria now guides turns through direct, focused, or full routes: explanations and discovery use direct execution, tiny edits use direct execution or a native builder, ordinary code changes use focused delegation, and complex or high-risk work uses the full pipeline with independent review where supported. The full route is selected for that work or for explicit `fein` requests, not forced for every turn.
@@ -70,7 +86,7 @@ you can expect from them.
 
 ## 2026-07-10
 
-- **Subagent permission alignment.** All subagents received expanded bash allow-lists matching their actual tooling needs — read-only file operations pre-allowed, agent-specific tools added per role. Reduces unnecessary permission prompts from 70-88% of commands down to only unusual operations. Catch-all `*: ask` remains for safety.
+- **Subagent permission alignment.** All subagents received expanded bash allow-lists matching their actual tooling needs - read-only file operations pre-allowed, agent-specific tools added per role. Reduces unnecessary permission prompts from 70-88% of commands down to only unusual operations. Catch-all `*: ask` remains for safety.
 
 ## 2026-07-10
 

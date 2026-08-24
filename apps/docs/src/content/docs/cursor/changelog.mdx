@@ -5,23 +5,74 @@ description: Release history for @maestria/cursor.
 
 # Changelog
 
+## 0.2.0
+
+_August 22, 2026_
+
+- Canonical agent directives are ~24% leaner at the source (~21% as shipped in generated plugins): the bounded-repair contract lives once in the global rules, specialist skill catalogs list only verified skills, and the rules delegation roster insert keeps the generated rules file self-contained.
+- Delegated implementation outcomes now complete at a pushed feature branch with an open PR; failed or cancelled delegations get one adjusted-brief retry before structured blocker reporting.
+- Decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+
+## 0.1.8
+
+_August 13, 2026_
+
+- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge
+  reviews on material blockers, deliver routine engineering work through feature branches and PRs,
+  and clean up task-owned background processes before completion.
+
+## 0.1.7
+
+_August 12-13, 2026_
+
+- Clarified agent workflow contracts: routine validated commits on recognized feature branches remain
+  autonomous after required review; push and later lifecycle actions stay separately gated.
+- Simplified and re-aligned the shared directives around outcome, evidence, runtime authority, blind
+  review, bounded repair, and autonomous routine work, keeping generated projections in sync.
+
+## 0.1.6
+
+_August 11, 2026_
+
+- Streamlined canonical agent directives by centralizing universal contracts and adding bounded
+  autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action
+  boundaries.
+
+## 0.1.5
+
+_August 6, 2026_
+
+- Delegation is more selective, handoffs stay concise, and Sonar research starts with the owning
+  specialist, adding another specialist only when a distinct required output remains.
+
+## 0.1.4
+
+_August 3, 2026_
+
+### Selective routing contract
+
+The orchestrator now routes by task class across `direct`, `focused`, and `full` routes. Small
+explanations and tiny edits run directly or through one specialist; complex or high-risk work uses
+the full pipeline. `fein` selects the full route, `sonar` is research-only, and `blitz` is an
+explicit low-risk/direct bypass that does not waive safety floors.
+
 ## 0.1.1
 
 _July 21, 2026_
 
 ### Minor Changes
 
-- Initial release of `@maestria/cursor` — declarative Cursor plugin for IDE and CLI.
+- Initial release of `@maestria/cursor` - declarative Cursor plugin for IDE and CLI.
 - **7 specialist agents** synced from core (`agents/*.md`) with Cursor-adapted tool names
 - **Orchestrator skill** (`skills/orchestrator/SKILL.md`) with Task-based routing, handoff contracts, and maker/checker enforcement
 - **Global rules** (`rules/maestria-global.mdc`, `alwaysApply: true`)
-- **Workflow commands** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation)
-- **Two-layer maker/checker** — `readonly: true` runtime flag on adventurer/planner/reviewer agents
-- **CLI support** — `maestria install cursor`, `maestria update cursor`, `maestria uninstall cursor`, `maestria check cursor`
+- **Workflow commands** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation)
+- **Two-layer maker/checker** - `readonly: true` runtime flag on adventurer/planner/reviewer agents
+- **CLI support** - `maestria install cursor`, `maestria update cursor`, `maestria uninstall cursor`, `maestria check cursor`
 - Sync workflow mode commands through canonical source pipeline
 
 ## 0.1.0
 
 _July 21, 2026_
 
-Initial release — same as 0.1.0 (versioning alignment).
+Initial release - same as 0.1.0 (versioning alignment).

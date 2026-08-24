@@ -21,51 +21,34 @@ Input → @adventurer (recon) → @planner or @architect (plan/design)
   → @builder (implement) → @reviewer (validate) → Output
 ```
 
-Each arrow is a structured handoff, not a loose "figure it out" delegation. Planner and architect are alternatives at the same pipeline stage - the orchestrator delegates to whichever fits the task. For simple features, one suffices. For complex features, both may participate (planner scopes the work, architect evaluates approach). The output of one stage is the input briefing for the next.
+Each arrow carries a concise, material handoff, not a loose "figure it out" delegation. Planner and architect are alternatives at the same pipeline stage - the orchestrator delegates to whichever fits the task. For simple features, one suffices. For complex features, both may participate (planner scopes the work, architect evaluates approach). The output of one stage is the input briefing for the next.
 
 ### Sub-Elements
 
 #### Handoff Contract
 
-Every delegation crossing an agent boundary must be a complete briefing. Without this structure, agents lose context, invent assumptions, or produce output that doesn't connect to the next stage.
-
-The contract has seven fields:
-
-| Field                      | Purpose                                                         |
-| -------------------------- | --------------------------------------------------------------- |
-| **Goal**                   | What to achieve and why it matters                              |
-| **Context**                | Relevant paths, constraints, prior decisions, what's been tried |
-| **Requirements**           | Specific expectations and boundaries                            |
-| **Known problems**         | Issues already identified, things to watch for                  |
-| **Assumptions documented** | Explicit assumptions made during the task and their evidence    |
-| **Success criteria**       | How to verify the work is done (the completions promise)        |
-| **Next step**              | What happens after this task completes                          |
-
-Every handoff ends with: _"If anything is unclear or ambiguous, exhaust available data first, document your assumption, and proceed."_
+Every delegation crossing an agent boundary should be a concise, outcome-oriented brief containing whatever the recipient needs to act: relevant context and constraints, acceptance evidence, material assumptions or blockers, and the next step. This is guidance, not a fixed schema; omit empty parts, keep the brief proportional to the task, and reference existing artifacts instead of copying history.
 
 Example:
 
 ```
-Goal: Map the auth module's session handling paths before we refactor login.
-Context: /src/auth/session.ts (the main file), ADR-CORE-003 in docs/adr/core/.
-  We already know the token refresh path has a race condition (issue #42).
-Requirements: Trace every code path that reads or writes session state.
-  Do not edit any files - read only. List files and line numbers.
-Known problems: The JWT expiration check in session.ts line 89 uses wall
-  clock time instead of server time, which causes intermittent failures
-  across timezones.
-Success criteria: A complete call graph of session operations with file
-  paths, line numbers, and the race condition's entry points documented.
+Outcome: Map the auth module's session handling paths before we refactor login.
+Context and constraints: /src/auth/session.ts (the main file) and ADR-CORE-003
+  in docs/adr/core/. Trace every code path that reads or writes session state;
+  do not edit files. We already know the token refresh path has a race condition
+  (issue #42), and session.ts line 89 uses wall-clock rather than server time.
+Acceptance/evidence: Return a complete call graph with file paths, line numbers,
+  and the race condition's entry points documented.
 Next step: @architect receives this map to design the fix strategy.
 ```
 
 #### Iteration Limits
 
-Every pipeline stage must have three controls:
+Every substantial pipeline stage needs three controls:
 
 1. **Verifiable termination condition** - a concrete, measurable state that stops execution. Not "done when it feels right." Done when the success criteria in the handoff contract are met.
 
-2. **Max-N hard limit** - usually 3 attempts before escalation. If a stage fails after N tries, it's not a persistence problem; it's a context, skill, or approach problem that needs human judgment.
+2. **Bounded attempts** - normally three repair rounds, extended only when the latest attempt shows observable progress. Repeated causes or no new evidence require a strategy change or escalation.
 
 3. **Escalation format** - a structured signal so the next stage or the human operator can take over without guessing what went wrong:
 
@@ -81,11 +64,13 @@ Every pipeline stage must have three controls:
 
 2. **Full pipeline when selected** - a multi-file, cross-module, or new-feature task may follow `adventurer → planner or architect → builder → reviewer` when the task's risk or uncertainty justifies it. Skipping stages is expected for direct and focused routes. The handoff should state why the selected route is appropriate.
 
-3. **Parallel fan-out is allowed for independent tasks** - max 3-5 subtasks per turn. Examples: `@adventurer` mapping auth + `@adventurer` tracing billing in parallel; `@reviewer` checking PR #7 + `@builder` fixing bug #42 + `@architect` evaluating a dependency decision.
+3. **Parallel fan-out is allowed for independent tasks** - keep the fan-out bounded by usefulness and host limits. Examples: `@adventurer` mapping auth and tracing billing in parallel; `@reviewer` checking PR #7, `@builder` fixing bug #42, and `@architect` evaluating a dependency decision.
 
 4. **Stages are ordered by dependency** - later stages cannot proceed without earlier stages' output. The builder cannot implement what the planner hasn't scoped. The reviewer cannot validate what the builder hasn't built. This seems obvious. It gets violated when someone tries to parallelize dependent work.
 
 ### Platform Adaptation
+
+Runtime authority varies by host: OpenCode and Kimi Code use dispatcher-style orchestrator authority; OMP and Pi enforce dispatcher behavior in workflow-mode sessions; Hermes is direct-capable by default; and Cursor and Claude Code depend more on host/session permissions. The adapter must describe the actual tool and context boundaries without assuming stronger enforcement than the runtime provides.
 
 How each platform implements this pattern:
 

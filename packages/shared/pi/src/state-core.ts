@@ -1,7 +1,7 @@
 /**
  * Shared state management for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Provides shared state-management types, transforms, persistence, and rendering
  * consumed directly by @maestria/omp and @maestria/pi.
  *
@@ -29,6 +29,17 @@ export interface SubagentStatusInfo {
   completedAt?: number;
 }
 
+/**
+ * Mirror of the host platform's native goal (e.g. OMP goal mode).
+ *
+ * Platform-agnostic by design: only the objective text and status are
+ * carried so shared state stays free of platform-specific types.
+ */
+export interface NativeGoalMirror {
+  objective: string;
+  status: string;
+}
+
 export interface MaestriaState {
   mode: ModeKeyword | null;
   activeTask: string;
@@ -43,6 +54,7 @@ export interface MaestriaState {
   originalTools: string[] | null;
   subagentStatus: Record<string, SubagentStatusInfo>;
   reviewModel: string | null;
+  nativeGoal: NativeGoalMirror | null;
 }
 
 // ── Transforms ──
@@ -62,6 +74,7 @@ export function createInitialState(): MaestriaState {
     originalTools: null,
     subagentStatus: {},
     reviewModel: null,
+    nativeGoal: null,
   };
 }
 
@@ -87,6 +100,11 @@ export function recordFileModified(state: MaestriaState, path: string): Maestria
 
 export function recordFileRead(state: MaestriaState, path: string): MaestriaState {
   return { ...state, filesRead: prependDeduped(state.filesRead, path, FILE_HISTORY_CAP) };
+}
+
+export function recordSpecialistDelegated(state: MaestriaState, name: string): MaestriaState {
+  if (state.specialistsDelegated.includes(name)) return state;
+  return { ...state, specialistsDelegated: [...state.specialistsDelegated, name] };
 }
 
 export function recordSubagentStatus(
@@ -142,6 +160,10 @@ export function renderMaestriaSummary(state: MaestriaState): string {
 
   if (state.activeTask) {
     parts.push(`**Goal:** ${state.activeTask}`);
+  }
+
+  if (state.nativeGoal) {
+    parts.push(`**Native Goal:** ${state.nativeGoal.objective} (${state.nativeGoal.status})`);
   }
 
   if (state.completionPromise) {

@@ -144,6 +144,18 @@ describe('skills/orchestrator', () => {
       expect(text).toContain(specialist);
     }
   });
+
+  it('keeps direct main-session capability distinct from specialist restrictions', async () => {
+    const text = await readFile(
+      path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
+      'utf8',
+    );
+
+    expect(text).toContain('Runtime Authority');
+    expect(text).toContain('direct work is available');
+    expect(text).not.toContain('Never implement routed code changes yourself');
+    expect(text).not.toMatch(/pure dispatcher/i);
+  });
 });
 
 describe('rules/maestria-global.mdc', () => {

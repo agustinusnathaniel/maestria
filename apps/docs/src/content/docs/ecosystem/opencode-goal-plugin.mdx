@@ -1,0 +1,59 @@
+---
+title: OpenCode Goal Plugin
+description: Codex-style long-running goal mode for OpenCode. Pairs well with Maestria's orchestrator continuation policy.
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+OpenCode Goal Plugin is an independent project under the MIT license, published
+on npm as `@prevalentware/opencode-goal-plugin` and maintained by prevalentWare.
+It is not part of Maestria. It is currently pre-1.0 (0.1.x) and actively
+maintained.
+
+## What It Is
+
+OpenCode Goal Plugin adds Codex-style long-running goal mode to OpenCode. It
+provides a `/goal` slash command, persistent goal state for the session,
+completion-evidence tracking, idle continuation, and a terminal UI goal
+indicator.
+
+With the plugin installed, a session keeps working toward one explicit
+objective until it is complete, blocked, or cleared.
+
+## Why Use It With Maestria
+
+Maestria's orchestrator follows a continuation policy: the session owns
+progress toward one explicit outcome until it reaches its terminal artifact.
+OpenCode Goal Plugin expresses a similar contract at the runtime level through
+goal state, completion evidence, and idle continuation.
+
+The two projects are independent but complementary. Maestria's directives are
+host-agnostic: goal lifecycle tools, when present, belong to the host runtime.
+Maestria neither requires nor activates this plugin.
+
+## Installation
+
+```bash
+opencode plugin @prevalentware/opencode-goal-plugin
+```
+
+## Quick Start
+
+Start an OpenCode session as usual and set an objective with the `/goal`
+command. The session keeps working toward that objective until it is complete,
+blocked, or you clear it.
+
+## Resources
+
+<CardGrid>
+  <LinkCard
+    title="GitHub Repository"
+    description="Source code, issues, and releases."
+    href="https://github.com/prevalentWare/opencode-goal-plugin"
+  />
+  <LinkCard
+    title="npm Package"
+    description="Package page for @prevalentware/opencode-goal-plugin."
+    href="https://www.npmjs.com/package/@prevalentware/opencode-goal-plugin"
+  />
+</CardGrid>

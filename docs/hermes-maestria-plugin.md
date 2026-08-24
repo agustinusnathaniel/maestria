@@ -12,13 +12,13 @@ Five principles that govern every decision in this plugin:
 
 ### 1. Methodology portable, adapter thin
 
-The maestria methodology (7 specialists + pipeline + maker/checker) lives in `packages/core/agent-directives/` and is sync'd to every platform. The Hermes plugin is just the **adapter** — it maps the methodology to Hermes' native Plugin API. Keep plugin code lean; the real logic is in canonical sources.
+The maestria methodology (7 specialists + pipeline + maker/checker) lives in `packages/core/agent-directives/` and is sync'd to every platform. The Hermes plugin is just the **adapter** - it maps the methodology to Hermes' native Plugin API. Keep plugin code lean; the real logic is in canonical sources.
 
 ### 2. Hermes-native first + memory-agnostic
 
-Hermes has built-in features that solve the problems the plugin would otherwise need to reimplement — `delegate_task` for subagent dispatch, `kanban_*` tools for task orchestration, `/goal` for persistent objectives, and 8 memory providers (Mnemosyne, holographic, mem0, supermemory, etc.). Use them. Don't reinvent them. The plugin's job is to wire the methodology into these existing subsystems, not duplicate them.
+Hermes has built-in features that solve the problems the plugin would otherwise need to reimplement - `delegate_task` for subagent dispatch, `kanban_*` tools for task orchestration, `/goal` for persistent objectives, and 8 memory providers (Mnemosyne, holographic, mem0, supermemory, etc.). Use them. Don't reinvent them. The plugin's job is to wire the methodology into these existing subsystems, not duplicate them.
 
-**The plugin is memory-engine agnostic.** It never reads, writes, or cares which memory provider Hermes has configured. Memory is a platform concern — the user chooses their provider independently. The plugin does not add a memory layer on top, because:
+**The plugin is memory-engine agnostic.** It never reads, writes, or cares which memory provider Hermes has configured. Memory is a platform concern - the user chooses their provider independently. The plugin does not add a memory layer on top, because:
 
 - Doing so would couple the plugin to a specific backend
 - Hermes already has dedicated memory infrastructure (8 providers)
@@ -28,17 +28,33 @@ Only fall back to custom implementations (JSON file for mode persistence) when t
 
 ### 3. General agent, not a coding tool
 
-Hermes is a general-purpose AI agent platform, not a coding CLI like OpenCode. The plugin's specialists must work across domains — research, content, analysis, strategy, operations — not just software engineering. The coding path routes to OpenCode CLI as an optional power-up, never a hard dependency.
+Hermes is a general-purpose AI agent platform, not a coding CLI like OpenCode. The plugin's specialists must work across domains - research, content, analysis, strategy, operations - not just software engineering. The coding path routes to OpenCode CLI as an optional power-up, never a hard dependency.
 
-### 4. Minimal detection — only for external tooling
+### 4. Minimal detection - only for external tooling
 
-Different Hermes instances have different tools and providers configured. The plugin does not probe for any external tool at startup — the `opencode_route` tool is a simple CLI delegator that fails clearly if OpenCode CLI is not installed. Memory backends and platform features like kanban are deliberately not probed: Hermes provides them natively and the plugin doesn't need to know which ones are active.
+Different Hermes instances have different tools and providers configured. The plugin does not probe for any external tool at startup - the `opencode_route` tool is a simple CLI delegator that fails clearly if OpenCode CLI is not installed. Memory backends and platform features like kanban are deliberately not probed: Hermes provides them natively and the plugin doesn't need to know which ones are active.
 
 The probe never blocks, installs, or modifies config. It just logs guidance.
 
 ### 5. Feel native to Hermes users
 
 Commands, hooks, tools, and skills follow Hermes Plugin API conventions. Config lives in `config.yaml`. Users interact with `/fein`, `/sonar`, `/blitz` the same way they interact with `/goal`. The plugin should feel like it belongs, not like a foreign methodology bolted on.
+
+## Role-Neutral Child Trust Policy (Approved 2026-08-10)
+
+The specialist tables and pipeline diagrams in this document describe **directive-level routing** (which specialist the orchestrator should delegate to, and what that specialist is expected to do). They do **not** describe capability grants for delegated child sessions. Trust and tool capability are governed by the approved role-neutral child trust policy below (recorded in ADR-HM-002):
+
+- **Native Hermes child roles are topology roles, not Maestria specialists.** A delegated child's native role is `leaf` (default) or `orchestrator`. The seven specialist names (adventurer, architect, builder, diagnose, planner, reviewer, writer) are methodology routing identities, not tool-granting child identities on Hermes.
+- **Role provenance is normalized by Hermes, not evaluated by Maestria.** Hermes maps the requested delegation role to an effective native topology role (`leaf` or `orchestrator`) before `subagent_start` fires. Maestria never sees a requested specialist-named role, so it neither accepts nor rejects one; it validates the effective topology role and applies the same fixed child policy regardless. The plugin does not claim to reject original requested roles.
+- **User/delegation text cannot grant capabilities.** `[MAESTRIA_ROLE: ...]`-style markers in user or delegation text neither create a role mapping nor relax any allowlist.
+- **Delegated children receive a fixed read/research/LLM-only policy.** A delegated child may read, research, and use LLM reasoning. It cannot write, execute code, run a shell, delegate further, or invoke OpenCode (`opencode`/`opencode_route`). This applies regardless of which specialist the orchestrator routes to.
+- **Top-level direct sessions retain normal direct behavior only with trusted native binding.** A session is trusted as direct/top-level only from recognized native lifecycle state (`on_session_start` on a recognized non-child platform, or a validated `task_id == session_id` binding). Ambiguous, invalid, or ended child state fails closed.
+- **Sonar and direct blitz have literal positive allowlists that fail closed.** Unknown, renamed, and new tools are denied by default.
+- **Review/landing enforcement is advisory.** Hermes has no native review-state or landing gate.
+- **Lifecycle: session end is per-turn and resumable; finalize/reset/subagent stop are terminal trust boundaries.** A stopped or ended child has its role and trust cleared.
+- **Role-specific delegated builder writes are deferred** until Hermes provides an authenticated capability channel that provably binds a delegated child to an authorized capability. Until then, delegated children do not receive write/execute/shell/delegate/OpenCode capability. Code changes on Hermes are performed by a trusted top-level fein session under its direct-access boundary, not by a delegated `builder` child.
+
+> Where a table below shows a specialist with write/bash/OpenCode access (for example the builder), read that as the specialist's **routing role and intended activity** under directive guidance. It is **not** a grant that a delegated child may write. The role-neutral child boundary is mechanically enforced by the runtime: `subagent_start` records only topology trust state, and `pre_tool_call` holds every delegated child to the fixed read/research/LLM-only policy. See [ADR-HM-002](adr/hermes/ADR-HM-002-orchestration-policy.md) for the enforcement status.
 
 ## Architecture
 
@@ -58,29 +74,29 @@ User request
   - Present to user
 ```
 
-Each specialist runs as a Hermes subagent with its own toolset (restricted by pre_tool_call hook), access to `ctx.llm.complete_structured()` for independent reasoning, and structured handoff briefs from the orchestrator.
+Each specialist is a methodology routing identity that the orchestrator dispatches to via `delegate_task`. A dispatched child runs under the approved role-neutral child policy: fixed read/research/LLM-only access, plus access to `ctx.llm.complete_structured()` for independent reasoning and structured handoff briefs from the orchestrator. Role-specific write access for delegated children is deferred until an authenticated capability channel exists.
 
-OpenCode CLI is only needed when the Builder needs a dedicated coding sandbox for complex multi-file work. For simple coding tasks, Hermes' own tools (edit, write, bash) suffice.
+OpenCode CLI (`opencode_route`) and direct write/bash tools are available to a trusted top-level fein session under its direct-access boundary, not to delegated children. Delegated children cannot invoke OpenCode, write, execute code, or run a shell. Until an authenticated capability channel exists, delegated builder writes are deferred; code changes on Hermes are performed by a trusted top-level fein session.
 
 ## Key Difference from @maestria/opencode
 
 Both plugins use the same pipeline composition, mode system, and maker/checker split. The difference is domain scope and platform-native features.
 
-| Aspect         | @maestria/opencode        | @maestria/hermes                               |
-| -------------- | ------------------------- | ---------------------------------------------- |
-| Primary domain | Software engineering      | Any domain                                     |
-| Adventurer     | Explores codebases        | Web, docs, data, code, systems                 |
-| Architect      | Designs software          | Any solution - systems, processes, content     |
-| Builder        | Edits code files          | Creates in any medium. Can route to OpenCode   |
-| Diagnose       | Debugs code bugs          | Any problem type                               |
-| Planner        | Plans coding work         | Any multi-step work                            |
-| Reviewer       | Reviews code              | Code, docs, plans, designs                     |
-| Writer         | Writes docs               | Same (already general-purpose)                 |
-| Modes          | fein/sonar/blitz (coding) | fein/sonar/blitz (work style, domain-agnostic) |
-| Tooling        | OpenCode tools only       | Hermes tools + optional OpenCode CLI           |
-| Subagents      | task() function           | Hermes native delegate_task                    |
-| Reasoning      | LLM via tool calls        | ctx.llm.complete_structured() (JSON schema)    |
-| Permissions    | YAML frontmatter          | pre_tool_call hook                             |
+| Aspect | @maestria/opencode | @maestria/hermes |
+| --- | --- | --- |
+| Primary domain | Software engineering | Any domain |
+| Adventurer | Explores codebases | Web, docs, data, code, systems |
+| Architect | Designs software | Any solution - systems, processes, content |
+| Builder | Edits code files | Creates in any medium (delegated child is read/research/LLM-only; builder writes deferred) |
+| Diagnose | Debugs code bugs | Any problem type |
+| Planner | Plans coding work | Any multi-step work |
+| Reviewer | Reviews code | Code, docs, plans, designs |
+| Writer | Writes docs | Same (already general-purpose) |
+| Modes | fein/sonar/blitz (coding) | fein/sonar/blitz (work style, domain-agnostic) |
+| Tooling | OpenCode tools only | Hermes tools + optional OpenCode CLI |
+| Subagents | task() function | Hermes native delegate_task |
+| Reasoning | LLM via tool calls | ctx.llm.complete_structured() (JSON schema) |
+| Permissions | YAML frontmatter | pre_tool_call hook |
 
 ## Hermes Platform Capabilities
 
@@ -91,18 +107,16 @@ Both plugins use the same pipeline composition, mode system, and maker/checker s
 | `ctx.llm.complete_structured()` | Structured JSON output via schema. Used by architect, planner, reviewer |
 | `ctx.inject_message()` | Insert specialist findings or progress into the conversation |
 | `ctx.register_auxiliary_task()` | Sidecar LLM tasks for background specialist reasoning |
-| `ctx.register_skill()` | Register namespaced skills as `<plugin>:<skill>` |
+| `ctx.register_skill(name, path, description="")` | Register namespaced skills as `maestria-hermes:<skill>` |
 | `ctx.register_command()` | Slash command registration |
 | `ctx.dispatch_tool()` | Programmatic tool invocation |
 | `pre_llm_call` hook | Mode injection into user message (preserves prompt cache) |
-| `pre/post_tool_call` hooks | Permission gating and dispatch auditing |
-| `transform_tool_result` hook | Transform tool output before model sees it |
-| `transform_llm_output` hook | Multi-specialist output synthesis |
-| `transform_terminal_output` hook | Shell output transformation |
-| `subagent_start/stop` hooks | Pipeline lifecycle tracking |
-| `pre_gateway_dispatch` hook | Gateway message interception |
-| `kanban_task_*` hooks | Kanban integration (claimed/completed/blocked) |
-| Middleware (4 kinds) | tool_request, tool_execution, llm_request, llm_execution |
+| `pre_tool_call` hook | Lifecycle trust-based tool gating (role-neutral child policy) |
+| `transform_tool_result` hook | Append methodology annotation to write tool results |
+| `subagent_start/stop` hooks | Record and clear a delegated child's trust state |
+| `pre_gateway_dispatch` hook | Slash-command dispatch before the agent-busy check |
+| `on_session_*` hooks | Session trust establishment and terminal trust boundaries |
+| Middleware (`llm_execution`) | Mode footer annotation on LLM calls (opt-in via `MAESTRIA_MODE_FOOTER=1`) |
 | MCP client/server | stdio/HTTP-SSE, OAuth, mTLS, dynamic tool discovery |
 | plugin.yaml trust gates | Provider/model/agent_id/profile override controls |
 | Skills system | YAML-frontmatter markdown, namespaced per plugin |
@@ -111,16 +125,18 @@ Both plugins use the same pipeline composition, mode system, and maker/checker s
 
 ### Middleware Kinds
 
-| Middleware | Trigger | Plugin Use |
-| --- | --- | --- |
-| `tool_request` | Before tool call is initiated | Mode gating (block edit/write in sonar) |
-| `tool_execution` | Wraps tool execution | Timing, logging, result transformation |
-| `llm_request` | Before LLM call | Inject methodology into every LLM request |
-| `llm_execution` | Wraps LLM call | Response validation, structured output enforcement |
+Hermes supports four middleware kinds. The plugin currently registers only `llm_execution`; the other three are platform capabilities the plugin does not currently use.
+
+| Middleware | Registered | Trigger | Plugin Use |
+| --- | --- | --- | --- |
+| `tool_request` | No | Before tool call is initiated | _(not registered)_ |
+| `tool_execution` | No | Wraps tool execution | _(not registered)_ |
+| `llm_request` | No | Before LLM call | _(not registered)_ |
+| `llm_execution` | Yes | Wraps LLM call | Mode footer annotation (opt-in via `MAESTRIA_MODE_FOOTER=1`) |
 
 ## Specialist Roster
 
-All 7 maestria specialists, generalized to work across any domain.
+All 7 maestria specialists, generalized to work across any domain. Each is a methodology routing identity, not a tool-granting child identity. Under the role-neutral child policy, a dispatched child is limited to the fixed read/research/LLM-only policy; the tools listed for each specialist describe that specialist's routing role and intended activity under directive guidance, not a capability grant for the child session.
 
 ### Adventurer
 
@@ -146,22 +162,25 @@ Design solutions and evaluate options.
 
 Create output and implement solutions.
 
-| Aspect           | Detail                                                                  |
-| ---------------- | ----------------------------------------------------------------------- |
-| Tools            | Hermes edit/write/bash for direct work. OpenCode CLI for complex coding |
-| Reasoning        | `ctx.llm.complete()` for implementation planning                        |
-| OpenCode routing | Complex multi-file tasks delegate to OpenCode CLI                       |
-| Guard            | Output is reviewed by Reviewer before delivery                          |
+| Aspect | Detail |
+| --- | --- |
+| Routing role | Create output and implement solutions |
+| Reasoning | `ctx.llm.complete()` for implementation planning |
+| Child capability | Read/research/LLM-only (role-neutral policy). Write/bash/OpenCode for a delegated child is deferred until an authenticated capability channel exists |
+| OpenCode routing | Complex multi-file coding is routed through `opencode_route`, available to a trusted top-level fein session, not a delegated child |
+| Guard | Output is reviewed by Reviewer before delivery |
 
 ### Diagnose
 
 Find root causes and investigate problems.
 
-| Aspect           | Detail                                                              |
-| ---------------- | ------------------------------------------------------------------- |
-| Tools            | grep, read, bash, data analysis. OpenCode CLI for complex debugging |
-| Reasoning        | `ctx.llm.complete_structured()` for root cause analysis             |
-| OpenCode routing | Complex debugging sessions delegate to OpenCode CLI                 |
+| Aspect | Detail |
+| --- | --- |
+| Routing role | Find root causes and investigate problems |
+| Tools | grep, read, data analysis, LLM reasoning |
+| Reasoning | `ctx.llm.complete_structured()` for root cause analysis |
+| Child capability | Read/research/LLM-only (role-neutral policy). Bash and OpenCode routing are not available to a delegated child |
+| OpenCode routing | Complex debugging sessions delegate to OpenCode CLI via `opencode_route`, available to a trusted top-level fein session |
 
 ### Planner
 
@@ -177,10 +196,10 @@ Plan multi-step work and order tasks.
 
 Validate output quality.
 
-| Aspect | Detail                                                           |
-| ------ | ---------------------------------------------------------------- |
-| Tools  | read, diff, `ctx.llm.complete_structured()` with review criteria |
-| Guard  | Blocked from edit/write via pre_tool_call (maker/checker split)  |
+| Aspect | Detail |
+| --- | --- |
+| Tools | read, diff, `ctx.llm.complete_structured()` with review criteria |
+| Guard | Read-only. Edit/write are not available to the reviewer child (role-neutral child policy and maker/checker split) |
 
 ### Writer
 
@@ -193,14 +212,16 @@ Create documentation and content.
 
 ## How Specialists Use Hermes Features
 
+Under the role-neutral child policy, a dispatched child is always limited to the fixed read/research/LLM-only policy; the "Toolset" column reflects the specialist's routing role under directive guidance, not a capability grant for the child.
+
 | Specialist | Key Hermes Features Used | Toolset |
 | --- | --- | --- |
 | Adventurer | webfetch, browser, web_search, `ctx.llm.complete()` | Read-only |
 | Architect | `ctx.llm.complete_structured()`, `ctx.register_auxiliary_task()` | Read + ctx.llm |
-| Builder | edit, write, bash, `ctx.llm.complete()`, `ctx.inject_message()` | Full tools |
-| Diagnose | grep, read, bash, `ctx.llm.complete_structured()`, auxiliary tasks | Read + ctx.llm |
+| Builder | `ctx.llm.complete()`, `ctx.inject_message()` | Read/research/LLM-only for a child (write/bash/OpenCode deferred until an authenticated capability channel) |
+| Diagnose | grep, read, `ctx.llm.complete_structured()`, auxiliary tasks | Read + ctx.llm |
 | Planner | `ctx.llm.complete_structured()`, `ctx.dispatch_tool(delegate_task)` | Read + ctx.llm |
-| Reviewer | read, diff, `ctx.llm.complete_structured()` | Read-only (edit/write blocked by hook) |
+| Reviewer | read, diff, `ctx.llm.complete_structured()` | Read-only |
 | Writer | `ctx.llm.complete()`, `ctx.llm.complete_structured()` | Read + ctx.llm |
 
 ## Mode System
@@ -236,21 +257,23 @@ Do not skip stages.
 
 ## Pipeline Sequences
 
-| Work type         | Pipeline                                               |
-| ----------------- | ------------------------------------------------------ |
-| Research question | adventurer - writer - reviewer                         |
-| Decision/design   | adventurer - architect - writer - reviewer             |
-| Implementation    | adventurer - architect - builder - reviewer            |
-| Bug/issue         | diagnose - builder - reviewer                          |
-| Planning          | adventurer - planner - reviewer                        |
-| Content           | adventurer - writer - reviewer                         |
-| Complex coding    | adventurer - architect - builder (OpenCode) - reviewer |
+| Work type | Pipeline |
+| --- | --- |
+| Research question | adventurer - writer - reviewer |
+| Decision/design | adventurer - architect - writer - reviewer |
+| Implementation | adventurer - architect - builder - reviewer |
+| Bug/issue | diagnose - builder - reviewer |
+| Planning | adventurer - planner - reviewer |
+| Content | adventurer - writer - reviewer |
+| Complex coding | adventurer - architect - builder - reviewer (OpenCode routing via a trusted top-level fein session) |
 
 ## Hermes Feature Deep Dive
 
 ### Native delegate_task
 
 The orchestrator dispatches specialists via `ctx.dispatch_tool("delegate_task", brief)`. Delegation includes a structured brief with context, constraints, and output format. Supports background/async for parallel specialist work. `subagent_start` and `subagent_stop` hooks monitor the lifecycle.
+
+> Regardless of the toolset requested in the delegation brief, a delegated child is limited to the fixed read/research/LLM-only policy under the role-neutral child trust policy. The child cannot write, execute code, run a shell, delegate further, or invoke OpenCode.
 
 ```
 ctx.dispatch_tool("delegate_task", {
@@ -286,41 +309,39 @@ Trust gates in plugin.yaml control LLM access: `plugins.entries.<name>.llm.allow
 
 Hermes ships with 8 built-in memory providers:
 
-- **Mnemosyne** — agent memory with recall, sleep cycles, canonical facts, graph edges
-- **Uteke** — knowledge base wiki for permanent reference docs
-- **holographic** — local SQLite FTS5 (offline-first)
-- **mem0, supermemory, retaindb, openviking, hindsight, byterover, honcho** — various server-side backends
+- **Mnemosyne** - agent memory with recall, sleep cycles, canonical facts, graph edges
+- **Uteke** - knowledge base wiki for permanent reference docs
+- **holographic** - local SQLite FTS5 (offline-first)
+- **mem0, supermemory, retaindb, openviking, hindsight, byterover, honcho** - various server-side backends
 
-The maestria plugin is intentionally **memory-engine agnostic**. It never reads from, writes to, or checks for any memory provider. Memory is a platform concern — the user configures their preferred provider at the Hermes level, and the plugin doesn't add a layer on top.
+The maestria plugin is intentionally **memory-engine agnostic**. It never reads from, writes to, or checks for any memory provider. Memory is a platform concern - the user configures their preferred provider at the Hermes level, and the plugin doesn't add a layer on top.
 
-For users who want cross-session memory: configure Mnemosyne or another provider in your Hermes config. The plugin's methodology (modes, pipeline, maker/checker) works regardless of which provider — or none — is active.
+For users who want cross-session memory: configure Mnemosyne or another provider in your Hermes config. The plugin's methodology (modes, pipeline, maker/checker) works regardless of which provider - or none - is active.
 
 See [Hermes Memory documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) for setup guides.
 
-### All Lifecycle Hooks (22)
+### Registered Lifecycle Hooks
 
-The plugin uses hooks to implement the methodology:
+The plugin registers exactly the hooks declared under `provides_hooks` in `plugin.yaml`:
 
 | Hook | Phase | Plugin Use |
 | --- | --- | --- |
+| `pre_gateway_dispatch` | Gateway | Slash-command dispatch before the agent-busy check |
 | `pre_llm_call` | Before LLM | Mode injection into user message |
-| `post_llm_call` | After LLM | _(not implemented)_ Tag output with specialist metadata |
-| `pre_tool_call` | Before tool | Permission gating by mode and specialist |
-| `post_tool_call` | After tool | _(not implemented)_ Audit logging, result capture |
-| `pre_gateway_dispatch` | Gateway | _(not implemented)_ Message interception |
-| `subagent_start/stop` | Subagent lifecycle | Pipeline tracking, duration logging |
-| `transform_llm_output` | Output | _(not implemented)_ Multi-specialist synthesis |
-| `transform_tool_result` | Tool output | Security annotations, methodology markers |
-| `transform_terminal_output` | Terminal | _(not implemented)_ Shell output sanitization |
-| `kanban_task_*` | Kanban | _(not implemented)_ Task lifecycle tracking |
-| (plus 9 standard session and agent lifecycle hooks) |  |  |
+| `pre_tool_call` | Before tool | Lifecycle trust-based tool gating (role-neutral child policy) |
+| `on_session_start` | Session | Establish trust for a recognized top-level session |
+| `on_session_end` | Session | Preserve trust across per-turn, resumable session end |
+| `on_session_finalize` | Session | Terminal trust boundary (clears trust) |
+| `on_session_reset` | Session | Terminal trust boundary (clears trust) |
+| `subagent_start` | Subagent lifecycle | Record a delegated child's native topology role as trust state |
+| `subagent_stop` | Subagent lifecycle | Clear a delegated child's trust on exit (terminal boundary) |
+| `transform_tool_result` | Tool output | Append methodology annotation to write tool results |
 
-### Middleware (4 Kinds)
+### Middleware
 
-- **tool_request** - Mode gating. Block edit/write in sonar. Block destructive tools in review mode. Return modified request or block with message.
-- **tool_execution** - Timing, logging, result transformation for all tools.
-- **llm_request** - Inject methodology context into every LLM request without modifying the system prompt.
-- **llm_execution** - Response validation, structured output enforcement.
+The plugin registers a single middleware kind:
+
+- **`llm_execution`** - Wraps LLM calls to append the mode footer annotation (opt-in via `MAESTRIA_MODE_FOOTER=1`).
 
 ### MCP Integration
 
@@ -328,7 +349,11 @@ Full MCP client with stdio and HTTP-SSE transports, OAuth, mTLS, and dynamic too
 
 ### Skills System
 
-Skills are YAML-frontmatter markdown files. Registered via `ctx.register_skill(name, content, description)`. Plugin skills are namespaced - they don't enter the flat skills tree. Accessible only as `<plugin_name>:<skill_name>` (e.g., `hermes-maestria:orchestrator`).
+Skills are YAML-frontmatter markdown files, registered via `ctx.register_skill(name, path, description="")`. The plugin passes the filesystem path to a `SKILL.md` file; `description` is optional and defaults to `""`. The bare `name` must match `[a-zA-Z0-9_-]+` and contain no `:`.
+
+Plugin skills are namespaced - they don't enter the flat skills tree. They resolve only as `<plugin_name>:<skill_name>`, and because the plugin name is `maestria-hermes`, that namespace is `maestria-hermes:<skill_name>` (e.g., `maestria-hermes:orchestrator`, `maestria-hermes:global-rules`, `maestria-hermes:command-fein`).
+
+The plugin registers 12 skills: 9 methodology skills (orchestrator, builder, reviewer, global-rules, adventurer, architect, diagnose, planner, writer) plus 3 command workflow skills (`command-fein`, `command-sonar`, `command-blitz`).
 
 ### ctx.inject_message()
 
@@ -354,13 +379,15 @@ Collect results when all complete.
 
 ## OpenCode Composition
 
-OpenCode CLI is a tool available to specialists, not a separate layer:
+OpenCode CLI (`opencode_route`) is available to a **trusted top-level fein session**, not to delegated children. A delegated child cannot invoke OpenCode. The builder or diagnose specialist (running as the routing decision-maker, with the actual coding performed at the top-level fein session) evaluates task complexity:
 
 1. Builder (or Diagnose) evaluates task complexity
-2. Simple tasks: use Hermes tools directly (edit, write, bash)
+2. Simple tasks: use Hermes tools directly (edit, write, bash) from the trusted top-level fein session
 3. Complex/multi-file/risky: route to OpenCode CLI with structured brief
-4. Delegate via `opencode run <goal>` — the tool reports clearly if the CLI is missing
+4. Delegate via `opencode run <goal>` - the tool reports clearly if the CLI is missing
 5. Results flow back for review and integration
+
+> Delegated children are read/research/LLM-only and cannot write or invoke OpenCode. Role-specific delegated builder writes are deferred until an authenticated capability channel exists.
 
 ```python
 def delegate_to_opencode(task_brief, cwd):
@@ -378,59 +405,74 @@ def delegate_to_opencode(task_brief, cwd):
 
 ### Pipeline Composition via delegate_task
 
-The orchestrator dispatches specialists via
+The orchestrator decomposes a request, selects a pipeline, and dispatches each specialist via `delegate_task`. Each delegation carries a structured brief: the specialist's routing role, relevant context from prior stages, an output format spec, and iteration limits. Each dispatched child runs under the approved role-neutral child trust policy - fixed read/research/LLM-only access, plus `ctx.llm.complete_structured()` for independent reasoning. It cannot write, execute code, run a shell, delegate further, or invoke OpenCode.
 
-... [OUTPUT TRUNCATED - 47 chars omitted out of 50047 total] ...
+Pipelines are summarized in [Pipeline Sequences](#pipeline-sequences):
 
-ccess list, context from prior stages, output format spec, and iteration limits. Each specialist runs as
+- fein: full pipeline with review
+- sonar: reconnaissance and analysis, stops before creation
+- blitz: direct, read/research/LLM-only
 
-... [OUTPUT TRUNCATED - 2028 chars omitted out of 52028 total] ...
-
-w, /plan
-
-- OpenCode CLI routing (optional)
+Code changes on Hermes are performed by a trusted top-level fein session (optionally via `opencode_route`), not by a delegated child.
 
 ### Project Structure
 
 ```
-.hermes-maestria/
-  plugin.yaml          # Plugin manifest
-  mode                 # Current mode file
-  state.json           # Session state
-skills/
-  orchestrator.md      # Orchestrator skill
-  builder.md           # Builder specialist
-  reviewer.md          # Reviewer specialist
-  global-rules.md      # Cross-cutting rules
-plugin/
-  __init__.py          # register() entry point
-  hooks.py             # Hook handlers
-  modes.py             # Mode system with persistence
-  opencode.py          # OpenCode CLI delegation tool
+packages/hermes/
+├── plugin.yaml                    # Plugin manifest (provides_hooks, middleware, commands, tools)
+├── pyproject.toml                 # Python package metadata (src layout)
+├── __init__.py                    # Root shim re-exporting the src/maestria_hermes package
+├── sync.config.ts                 # Sync configuration for agent directives
+├── src/maestria_hermes/
+│   ├── __init__.py                # register() entry point + command handlers
+│   ├── permissions.py             # Literal tool allowlists + native child topology roles
+│   ├── modes.py                   # Mode system (fein/sonar/blitz) with JSON persistence
+│   ├── session.py                 # Session trust-state registry (trusted top-level / delegated child)
+│   ├── hooks/
+│   │   ├── pre_gateway.py         # Pre-gateway command dispatch
+│   │   ├── pre_llm.py             # Mode injection into user messages
+│   │   ├── pre_tool.py            # Lifecycle trust-based tool gating
+│   │   └── transform.py           # Tool result annotations
+│   ├── middleware/
+│   │   └── llm_output.py          # llm_execution middleware (opt-in mode footer)
+│   ├── tools/
+│   │   └── opencode.py            # OpenCode CLI routing tool
+│   └── skills/                    # SKILL.md files (9 methodology + 3 command skills)
+└── tests/
+    └── test_hooks.py              # Plugin registration + hook behavior tests
 ```
 
 ### plugin.yaml (Actual)
 
 ```yaml
 name: maestria-hermes
-version: 0.1.0
-hooks:
+version: 0.1.11
+description: Maestria methodology plugin for Hermes Agent
+kind: standalone
+author: Maestria Contributors
+license: MIT
+provides_tools:
+  - opencode_route
+provides_hooks:
+  - pre_gateway_dispatch
   - pre_llm_call
-  - post_llm_call
   - pre_tool_call
-  - post_tool_call
-  - transform_llm_output
-commands:
-  - /fein
-  - /sonar
-  - /blitz
-  - /review
-  - /plan
-skills:
-  - orchestrator.md
-  - builder.md
-  - reviewer.md
-  - global-rules.md
+  - on_session_start
+  - on_session_end
+  - on_session_finalize
+  - on_session_reset
+  - subagent_start
+  - subagent_stop
+  - transform_tool_result
+provides_middleware:
+  - llm_execution
+provides_commands:
+  - fein
+  - sonar
+  - blitz
+  - mode
+  - review
+  - plan
 ```
 
 ### register() (Actual API)
@@ -442,31 +484,48 @@ def register(ctx):
     mode_manager = ModeManager()
     session_manager = SessionManager()
 
+    # Pre-gateway command dispatch (runs before the agent-busy check)
+    ctx.register_hook("pre_gateway_dispatch", create_pre_gateway_hook(mode_manager))
+
+    # LLM lifecycle hooks
     ctx.register_hook("pre_llm_call", create_pre_llm_hook(mode_manager))
     ctx.register_hook("pre_tool_call", create_pre_tool_hook(mode_manager))
-    ctx.register_hook("on_session_start", ...)
-    ctx.register_hook("on_session_end", ...)
+
+    # Session lifecycle hooks (trust establishment + terminal boundaries)
+    on_start, on_end, on_finalize, on_reset = create_session_hooks(session_manager)
+    ctx.register_hook("on_session_start", on_start)
+    ctx.register_hook("on_session_end", on_end)
+    ctx.register_hook("on_session_finalize", on_finalize)
+    ctx.register_hook("on_session_reset", on_reset)
     ctx.register_hook("subagent_start", _on_subagent_start)
     ctx.register_hook("subagent_stop", _on_subagent_stop)
-    ctx.register_hook(
-        "transform_tool_result",
-        create_transform_tool_result_hook(mode_manager),
-    )
-    ctx.register_middleware(
-        "llm_execution",
-        create_llm_output_middleware(mode_manager),
-    )
+    ctx.register_hook("transform_tool_result", create_transform_tool_result_hook(mode_manager))
+
+    # Middleware
+    ctx.register_middleware("llm_execution", create_llm_output_middleware(mode_manager))
+
+    # Tools
     ctx.register_tool(
         name="opencode_route",
         toolset="maestria",
-        ...
+        schema=opencode_route_tool_schema(),
+        handler=opencode_route_handler,
+        description="Delegate a complex coding task to OpenCode CLI",
+        emoji="🔧",
     )
-    ctx.register_command("fein", ...)
-    ctx.register_command("sonar", ...)
-    ctx.register_command("blitz", ...)
-    ctx.register_command("mode", ...)
-    ctx.register_command("review", ...)
-    ctx.register_command("plan", ...)
+
+    # Slash commands
+    ctx.register_command("fein", _cmd_set_mode(mode_manager, "fein"), ...)
+    ctx.register_command("sonar", _cmd_set_mode(mode_manager, "sonar"), ...)
+    ctx.register_command("blitz", _cmd_set_mode(mode_manager, "blitz"), ...)
+    ctx.register_command("mode", _cmd_status(mode_manager), ...)
+    ctx.register_command("review", _cmd_set_mode(mode_manager, "fein"), ...)
+    ctx.register_command("plan", _cmd_set_mode(mode_manager, "fein"), ...)
+
+    # Skills: 9 methodology + 3 command workflow modes, namespaced maestria-hermes:<name>
+    for name, path in _skill_registrations:
+        if path.exists():
+            ctx.register_skill(name, path)
 ```
 
 ### Success Criteria
@@ -475,60 +534,70 @@ def register(ctx):
 - Mode switching persists across messages
 - pre_llm_call injects mode context into user message
 - pre_tool_call blocks edit/write in sonar mode
-- Builder completes simple edits with Hermes tools
+- Trusted top-level fein sessions complete edits with Hermes tools (delegated children are read/research/LLM-only)
 - Builder routes coding tasks to OpenCode CLI and captures results
 - Reviewer inspects output and reports findings
 
-## Phase 2 (v0.2): Full Roster + Hermes-Native Subsystems
+## Phase 2 (v0.2): Full Roster + Hermes-Native Subsystems (Historical/Planned)
+
+> **Status: historical planning doc.** This section records the originally planned v0.2 roadmap. As of the current version (v0.1.11), much of it has shipped or been superseded: all 7 specialists are now registered, `subagent_start`/`subagent_stop` and `transform_tool_result` are registered, and permission gating uses the role-neutral child trust policy (literal allowlists), not the earlier role-based model. Items still marked "not yet implemented" describe work that remains outstanding.
 
 All 7 specialists with full skill files, replacing custom JSON file persistence with Hermes' built-in subsystems.
 
 ### Deliverables
 
 - Adventurer, architect, diagnose, planner, writer skill files
-- Permission **roles** in pre_tool_call (rename from "profiles" to avoid collision with Hermes Agent Profiles feature)
+- Permission gating in pre_tool_call (role-neutral: lifecycle trust states + literal allowlists; the earlier "profiles" naming was dropped to avoid collision with Hermes Agent Profiles feature, and the later role-based model was itself superseded by the role-neutral child trust policy)
 - Each specialist uses `ctx.llm.complete_structured()` for reasoning
 - delegate_task for subagent dispatch (native Hermes tool)
 - subagent_start/stop hooks for pipeline tracking
 - OpenCode CLI routing (simple `opencode run <goal>` delegator)
-- Mode + state via **SessionDB.state_meta** (not custom JSON files) — **not yet implemented** (still uses JSON file)
+- Mode + state via **SessionDB.state_meta** (not custom JSON files) - **not yet implemented** (still uses JSON file)
 - transform_tool_result hook for methodology annotations
 
-> Memory is deliberately excluded from Phase 2. The plugin is memory-agnostic — no memory integration is planned. Hermes provides 8 memory providers at the platform level.
+> Memory is deliberately excluded from Phase 2. The plugin is memory-agnostic - no memory integration is planned. Hermes provides 8 memory providers at the platform level.
 
 ### Key Changes: Custom Files → Hermes-Native APIs
 
 | Before (standalone) | After (Hermes-native) | Why |
 | --- | --- | --- |
-| `~/.hermes/maestria-mode.json` | `session.state_meta["maestria:mode"]` | Survives `/resume`, `/goal resume`, session restart — no separate file |
-| `~/.hermes/maestria-session.json` | SessionDB (built-in) | Already tracks session_id, timestamps — redundant file removed |
-| `PermissionProfile` class name | `PermissionRole` | "Profile" is a Hermes Agent concept for isolated agent configs — rename to avoid confusion |
-| Hardcoded tool-name lists in Python | Config-driven role→tool mappings via `~/.hermes/maestria-roles.json` | Users customize roles without editing plugin code |
+| `~/.hermes/maestria-mode.json` | `session.state_meta["maestria:mode"]` | Survives `/resume`, `/goal resume`, session restart - no separate file |
+| `~/.hermes/maestria-session.json` | SessionDB (built-in) | Already tracks session_id, timestamps - redundant file removed |
+| `PermissionProfile` class name | `PermissionRole` (later removed in favor of literal allowlists + role-neutral child trust) | "Profile" is a Hermes Agent concept for isolated agent configs - rename avoided confusion; the resulting role-based model was superseded by the approved role-neutral child trust policy |
+| Hardcoded tool-name lists in Python | Literal immutable allowlists (`SONAR_ALLOWED_TOOLS`, `BLITZ_DIRECT_ALLOWED_TOOLS`, `CHILD_SAFE_ALLOWED_TOOLS`) | Safety-critical: allowlists are reviewed literals that fail closed; the legacy `maestria-roles.json` override mechanism was removed so a stale override file cannot re-introduce child write capability |
 
-> **Memory deliberately excluded from this table.** The plugin is memory-engine agnostic — it never had a custom memory file and never will. Hermes has 8 built-in memory providers; the user chooses one independently. See "Memory Providers (Platform Concern)" below.
+> **Memory deliberately excluded from this table.** The plugin is memory-engine agnostic - it never had a custom memory file and never will. Hermes has 8 built-in memory providers; the user chooses one independently. See "Memory Providers (Platform Concern)" below.
 
 ### Permission Roles
 
-| Tool           | fein    | sonar   | blitz   |
-| -------------- | ------- | ------- | ------- |
-| webfetch       | allowed | allowed | blocked |
-| web_search     | allowed | allowed | blocked |
-| browser        | allowed | allowed | blocked |
-| grep/glob/read | allowed | allowed | allowed |
-| python         | allowed | blocked | allowed |
-| bash           | allowed | blocked | allowed |
-| edit/write     | allowed | blocked | allowed |
-| ctx.llm        | allowed | allowed | allowed |
-| delegate_task  | allowed | allowed | blocked |
-| opencode (CLI) | allowed | blocked | allowed |
+The effective tool policy depends on whether the caller is a trusted top-level session or a delegated child:
 
-### Memory (Platform Concern — No Plugin Integration)
+| Tool category | Trusted top-level, fein | Trusted top-level, sonar | Trusted top-level, blitz | Delegated child (any mode) |
+| --- | --- | --- | --- | --- |
+| read (grep/glob/read) | allowed | allowed | allowed | allowed |
+| webfetch/web_search | allowed | allowed | allowed | allowed |
+| web_extract | allowed | allowed | allowed | allowed |
+| ctx.llm (complete/reason) | allowed | allowed | allowed | allowed |
+| edit/write | allowed | blocked | blocked | blocked |
+| bash / python | allowed | blocked | blocked | blocked |
+| browser interaction | allowed | blocked | blocked | blocked |
+| delegate_task | allowed | blocked | blocked | blocked |
+| opencode / opencode_route | allowed | blocked | blocked | blocked |
+
+Notes:
+
+- A **trusted top-level** session is one positively identified by native lifecycle state (`on_session_start` on a recognized non-child platform, or a validated `task_id == session_id` binding). Ambiguous, invalid, or ended child state fails closed and is denied in all modes.
+- **Sonar** and **direct blitz** use literal positive allowlists that fail closed; unknown, renamed, or new tools are denied by default.
+- A **delegated child** always receives the fixed read/research/LLM-only policy under the role-neutral child trust policy, regardless of mode or specialist. It cannot write, execute code, run a shell, delegate, or invoke OpenCode. Role-specific delegated builder writes are deferred until Hermes provides an authenticated capability channel.
+- **Review/landing enforcement is advisory**; Hermes has no native review-state or landing gate.
+
+### Memory (Platform Concern - No Plugin Integration)
 
 The plugin is memory-engine agnostic. There is no plugin-level memory integration because:
 
 1. **Hermes provides it.** 8 memory providers are available at the platform level. Users configure one independently.
 2. **The methodology doesn't require it.** Maestria defines _how to work_ (pipeline, modes, maker/checker split). Remembering decisions across sessions is a platform capability.
-3. **No custom JSONL fallback.** Previous versions of this doc described a JSONL fallback that was never wired — `MemoryManager.record()` was never called, and `recall_context()` always returned empty. This was dead code and has been removed.
+3. **No custom JSONL fallback.** Previous versions of this doc described a JSONL fallback that was never wired - `MemoryManager.record()` was never called, and `recall_context()` always returned empty. This was dead code and has been removed.
 
 If users want cross-session memory, they configure Mnemosyne or another provider at the Hermes level. The plugin works identically regardless.
 
@@ -543,7 +612,7 @@ session.state_meta["maestria:mode"] = "fein"
 # Set current role
 session.state_meta["maestria:role"] = "builder"
 
-# Read anywhere — survives resume and restart
+# Read anywhere - survives resume and restart
 mode = session.state_meta.get("maestria:mode", "fein")
 ```
 
@@ -569,14 +638,16 @@ def orchestrate_pipeline(ctx, pipeline, task):
 ### Success Criteria
 
 - All 7 specialists dispatch from orchestrator
-- Permission **roles** enforce correct tool access per mode (class renamed, config-driven)
+- Permission gating (role-neutral) enforces correct tool access per mode and per trust state (literal allowlists; no `PermissionRole`/`ROLES`)
 - Each specialist uses `ctx.llm.complete_structured()` for reasoning
 - subagent_start/stop hooks track pipeline progression
 - Multi-specialist pipelines complete end-to-end
 - Mode state survives `/resume` via SessionDB.state_meta (no JSON files)
 - OpenCode routing works with @maestria/opencode loaded
 
-## Phase 3 (v0.3): Advanced Features (Future)
+## Phase 3 (v0.3): Advanced Features (Future, Not Shipped)
+
+> **Status: future planning doc.** None of the items in this section are implemented in the current version (v0.1.11). They describe a planned v0.3 roadmap that may or may not be pursued. In particular, only the `llm_execution` middleware kind is registered; `llm_request` remains a platform capability the plugin does not yet use.
 
 Polished multi-tool orchestration with all Hermes features. Integrates with built-in Kanban task board and Goals system.
 
@@ -592,19 +663,19 @@ Polished multi-tool orchestration with all Hermes features. Integrates with buil
 | Parallel delegation | Concurrent specialist dispatch via parallel delegate_task |
 | Auxiliary tasks | Background reasoning for architect, diagnose, planner |
 | ctx.inject_message() | Progress reporting during long pipelines |
-| **Kanban integration** | Pipeline state pushed to kanban board — claimed/completed/blocked |
+| **Kanban integration** | Pipeline state pushed to kanban board - claimed/completed/blocked |
 | **Goals integration** | Set `/goal` from maestria pipelines for multi-turn continuity |
 | Performance monitoring | Per-specialist metrics (duration, tool calls, tokens) |
 | Plugin trust gates | LLM access restrictions per specialist |
 
 ### Kanban Integration (Future)
 
-Each pipeline step maps to a kanban task lifecycle. Use the `kanban_*` toolset — not just lifecycle hooks:
+Each pipeline step maps to a kanban task lifecycle. Use the `kanban_*` toolset - not just lifecycle hooks:
 
 ```python
 # Orchestrator creates kanban tasks for each pipeline step:
 ctx.dispatch_tool("kanban_create", {
-    "title": f"Pipeline: {task_id} — Phase: {specialist}",
+    "title": f"Pipeline: {task_id} - Phase: {specialist}",
     "description": f"Run {specialist} specialist on {task_id}",
     "lane": "ready",
     "tags": ["maestria", pipeline_id, specialist],
@@ -645,7 +716,7 @@ for task in board:
 
 Kanban lifecycle hooks (`kanban_task_claimed`, `kanban_task_completed`, `kanban_task_blocked`) fire automatically in the dispatcher/worker processes and can be used for observability (logging, Uteke event recording, notifications).
 
-This replaces ad-hoc pipeline tracking with the production-grade kanban subsystem — durable, board-visible, and inspectable via `hermes kanban dashboard`.
+This replaces ad-hoc pipeline tracking with the production-grade kanban subsystem - durable, board-visible, and inspectable via `hermes kanban dashboard`.
 
 ### Goals Integration (Future)
 
@@ -659,13 +730,13 @@ Map long-running maestria pipelines to Hermes Goals for `/resume` and multi-turn
 # Goals add: turn budget, judge evaluation, auto-continuation.
 ```
 
-The ideal setup is `/goal draft` — let the LLM structure a completion contract from a plain-language objective:
+The ideal setup is `/goal draft` - let the LLM structure a completion contract from a plain-language objective:
 
 ```
 /goal draft Run the fein pipeline to implement user authentication
 ```
 
-This produces a contract with outcome, verification, constraints, boundaries, and stop_when — which maps naturally to the maestria model:
+This produces a contract with outcome, verification, constraints, boundaries, and stop_when - which maps naturally to the maestria model:
 
 | Goal contract field | Maestria equivalent                                     |
 | ------------------- | ------------------------------------------------------- |
@@ -684,7 +755,7 @@ ctx.dispatch_tool("/goal", {"action": "wait", "pid": pid, "reason": "OpenCode bu
 # Goal auto-resumes when OpenCode exits
 ```
 
-The maestria mode + role in `state_meta` integrate naturally: when a Goal resumes via `/goal resume`, the mode and role are restored automatically from SessionDB. No separate goal mechanism needed in the plugin — just leverage the built-in Goals system for multi-turn task continuity.
+The maestria mode + role in `state_meta` integrate naturally: when a Goal resumes via `/goal resume`, the mode and role are restored automatically from SessionDB. No separate goal mechanism needed in the plugin - just leverage the built-in Goals system for multi-turn task continuity.
 
 ### Mode + Goals Alignment (Future)
 
@@ -711,13 +782,13 @@ def methodology_context_middleware(ctx, llm_request):
     return llm_request
 ```
 
-> **Not implemented (deliberately).** The plugin is memory-engine agnostic — see Principle #2. Memory is a platform concern managed by Hermes' 8 built-in providers. The plugin never reads, writes, or probes for any memory backend.
+> **Not implemented (deliberately).** The plugin is memory-engine agnostic - see Principle #2. Memory is a platform concern managed by Hermes' 8 built-in providers. The plugin never reads, writes, or probes for any memory backend.
 
 ## Distribution & Environment Adaptation
 
 The plugin uses **git-based distribution** via `hermes plugins install`, then enabled via `hermes plugins enable maestria-hermes`. Different Hermes instances will have different tools and providers configured.
 
-For a turnkey experience, the maestria methodology can also be distributed as a **Hermes Profile Distribution** — a git repo users install with one command, giving them the complete agent with all skills, config, and optional add-ons pre-configured.
+For a turnkey experience, the maestria methodology can also be distributed as a **Hermes Profile Distribution** - a git repo users install with one command, giving them the complete agent with all skills, config, and optional add-ons pre-configured.
 
 ### Two Distribution Channels
 
@@ -769,7 +840,7 @@ For multi-agent setups, the maestria orchestrator can run as a dedicated Hermes 
 
 ```bash
 hermes profile create maestria-orch \
-  --description "Maestria pipeline orchestrator — decomposes work, assigns specialists, reviews output"
+  --description "Maestria pipeline orchestrator - decomposes work, assigns specialists, reviews output"
 ```
 
 The orchestrator profile has:
@@ -783,7 +854,7 @@ Worker profiles (one per specialist role) register with role descriptions:
 
 ```bash
 hermes profile create maestria-builder \
-  --description "Maestria builder specialist — implements solutions, edits files"
+  --description "Maestria builder specialist - implements solutions, edits files"
 ```
 
 ### Pipeline Flow
@@ -803,7 +874,7 @@ User → maestria-orch (profile)
        └─ maestria-reviewer claims "review" → blocks if fails
 ```
 
-Each specialist is a real OS-level Hermes profile, coordinated via the durable kanban board rather than in-process `delegate_task` calls. The plugin runs on each profile, limiting tools via permission roles.
+Each specialist is a real OS-level Hermes profile, coordinated via the durable kanban board rather than in-process `delegate_task` calls. The plugin runs on each profile, applying role-neutral tool gating (lifecycle trust states + literal allowlists).
 
 ### When to Use
 
@@ -818,13 +889,13 @@ At startup (`register()`), the plugin probes the environment and selects backend
 
 | Feature | Preferred | Fallback 1 | Fallback 2 | Fallback 3 |
 | --- | --- | --- | --- | --- |
-| Memory | **Not probed — platform concern.** Hermes has 8 built-in providers; user chooses independently. Plugin doesn't care which is active. | — | — | — |
-| Mode persistence | SessionDB.state_meta | Custom JSON file | In-memory (session-only) | — |
-| Kanban integration | **Not probed — platform feature.** Available via kanban\_\* tools when enabled. Plugin doesn't need to know. | — | — | — |
-| Goals integration | Built-in `/goal` command | Pipeline only (no goals) | — | — |
-| OpenCode routing | `which opencode` available | Hermes native tools only | — | — |
-| Parallel dispatch | `delegate_task(tasks=[...])` batched mode | Sequential `delegate_task` calls | In-process tool calls | — |
-| Profile distribution | Available as pop profile | Plugin only (no profile) | — | — |
+| Memory | **Not probed - platform concern.** Hermes has 8 built-in providers; user chooses independently. Plugin doesn't care which is active. | - | - | - |
+| Mode persistence | SessionDB.state_meta | Custom JSON file | In-memory (session-only) | - |
+| Kanban integration | **Not probed - platform feature.** Available via kanban\_\* tools when enabled. Plugin doesn't need to know. | - | - | - |
+| Goals integration | Built-in `/goal` command | Pipeline only (no goals) | - | - |
+| OpenCode routing | `which opencode` available | Hermes native tools only | - | - |
+| Parallel dispatch | `delegate_task(tasks=[...])` batched mode | Sequential `delegate_task` calls | In-process tool calls | - |
+| Profile distribution | Available as pop profile | Plugin only (no profile) | - | - |
 
 ### Strategy Implementation
 
@@ -852,16 +923,16 @@ def minimal_probe():
 | Component | Bundled? | Why |
 | --- | --- | --- |
 | Plugin Python code (`maestria_hermes/`) | ✅ Git package | Core plugin |
-| 9 SKILL.md files | ✅ Git package | Specialist methodology guides |
+| 12 SKILL.md files (9 methodology + 3 command) | ✅ Git package | Specialist methodology guides + command workflow modes |
 | Mode system | ✅ Git package | Standalone Python, no deps |
 | OpenCode CLI | ❌ Not bundled | External CLI tool |
 | maestria-dist profile | ✅ Separate git repo | Completely optional, for turnkey setup |
 
-> Memory backends (Mnemosyne, Uteke, etc.) are deliberately not listed here — they are platform concerns, not plugin concerns. Users configure their preferred memory provider at the Hermes level independently of this plugin.
+> Memory backends (Mnemosyne, Uteke, etc.) are deliberately not listed here - they are platform concerns, not plugin concerns. Users configure their preferred memory provider at the Hermes level independently of this plugin.
 
 ### Detection & Guidance on Plugin Load
 
-The plugin's `register()` function only logs guidance about the one external dependency — OpenCode CLI. Memory and kanban are not probed (they're platform concerns; see Principle #2). The probe never blocks, installs, or modifies config.
+The plugin's `register()` function only logs guidance about the one external dependency - OpenCode CLI. Memory and kanban are not probed (they're platform concerns; see Principle #2). The probe never blocks, installs, or modifies config.
 
 ```
 # Example: if OpenCode CLI is installed but @maestria/opencode plugin is missing
@@ -872,13 +943,15 @@ The plugin's `register()` function only logs guidance about the one external dep
 
 ### User-Facing Docs (apps/docs/)
 
-Setup guides for OpenCode live in the existing `apps/docs/` site — not in the plugin code:
+Setup guides for OpenCode live in the existing `apps/docs/` site - not in the plugin code:
 
 | Guide | Location | Content |
 | --- | --- | --- |
-| Full maestria stack | `apps/docs/src/content/docs/hermes/getting-started.mdx` | Plugin install + optional extras |
+| Full maestria stack | `apps/docs/src/content/docs/hermes/getting-started/installation.mdx` | Plugin install + optional extras |
 
 ## Open Questions (Resolved)
+
+> **Status: historical research notes.** These questions were answered against Hermes Agent source code (v0.17.0, July 2026) during design. The answers describe what was learned at the time; where a named API has since been renamed or superseded, the current name is noted inline. The runtime and `plugin.yaml` are the authoritative source for what is actually registered.
 
 All questions answered against Hermes Agent source code (v0.17.0, July 2026).
 
@@ -930,6 +1003,8 @@ def delegate_task(
 
 Supports single and batch modes. `role="orchestrator"` allows the child to further delegate (bounded by `delegation.max_spawn_depth`). `background=True` dispatches async and re-enters via the completion queue.
 
+> The native `role` values (`leaf`/`orchestrator`) are Hermes **topology roles** - they describe how deep Hermes allows a child to spawn (an `orchestrator`-topology child may spawn deeper, bounded by `delegation.max_spawn_depth`). They are not Maestria specialist identities and are not tool-granting roles. Under the role-neutral child trust policy, a maestria-managed delegated child is limited to the fixed read/research/LLM-only policy and cannot invoke the `delegate_task` tool, write, execute code, run a shell, or invoke OpenCode - regardless of its topology role.
+
 ### Q4: OpenCode CLI fallback
 
 **Resolved: No built-in fallback. The plugin must handle this.**
@@ -946,24 +1021,24 @@ fi
 
 **Implementation guidance:** The Builder specialist should check `which opencode` at the start of any OpenCode-routing path. If unavailable, fall back to Hermes-native tools (edit, write, bash) for simple tasks, or report the missing dependency for complex tasks that genuinely need OpenCode's sandbox.
 
-### Q5: transform_llm_output specialist identification
+> This guidance applies to the trusted top-level fein session performing the coding work. A delegated child is read/research/LLM-only and cannot write, run a shell, or invoke OpenCode; role-specific delegated builder writes are deferred until an authenticated capability channel exists.
 
-**Resolved: No native specialist identification. The hook receives `(response_text, session_id, model, platform)`.**
+### Q5: transform_tool_result methodology annotation
+
+**Resolved: `transform_tool_result` appends a mode annotation to write/exec tool results.**
+
+> **Historical note.** This question was originally written against a `transform_llm_output` hook intended for specialist attribution in LLM responses. That hook was never registered. The plugin registers `transform_tool_result` instead, which annotates write/exec tool results (not LLM output). The reasoning below is retained for the context it records.
+
+The registered `transform_tool_result` hook (`hooks/transform.py`) appends a small methodology annotation to write/exec tool results in fein/blitz mode so the LLM keeps mode context. It returns the original result unchanged for sonar mode and read/research tools. It does not identify which specialist produced an output:
 
 ```python
-# Hook callback kwargs (from test at tests/test_transform_llm_output_hook.py line 51):
-#   response_text: str
-#   session_id: str
-#   model: str
-#   platform: str
+# Hook callback kwargs:
+#   tool_name: str
+#   result: str
+#   (mode comes from the ModeManager; sonar returns the result unchanged)
 ```
 
-To distinguish which specialist produced which part of the response, the plugin would need either:
-
-1. **Session-level tracking**: Each specialist runs as a delegate_task subagent, so `session_id` identifies the subagent session. Map session_ids to specialist names.
-2. **Text markers**: Inject specialist identifiers into the response text and strip them before delivery.
-
-The first approach (session_id mapping) is cleaner and doesn't pollute output.
+Specialist identity is the orchestrator's routing concern, carried in `delegate_task` briefs and the session-to-trust-state mapping in `session.py` - not in this hook.
 
 ### Q6: Toolset-based grouping
 

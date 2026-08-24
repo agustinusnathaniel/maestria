@@ -1,0 +1,149 @@
+---
+title: Installation & Setup
+description: How to validate, install, and load @maestria/claude-code through Claude Code or the Maestria CLI.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+`@maestria/claude-code` is a declarative Claude Code plugin - a `.claude-plugin/plugin.json` manifest plus directories of agent, skill, and command files, all generated from the canonical core directives. It is a self-contained directory: there is no npm install, no build step, and no runtime code.
+
+> **Status: Native candidate.** This package validates cleanly with the official Claude Code CLI, but runtime behavior is not yet tested end to end. Persistent installation is available through the Maestria CLI; do not treat the candidate status as a production support promise.
+
+## Prerequisites
+
+- **Claude Code** with the `claude` CLI on `PATH` - required for validation and local loading.
+- **Node.js and npm** - required when installing through `maestria install claude-code`.
+- **Node.js and pnpm** - only needed to regenerate files from the canonical core directives.
+
+## Persistent installation through the Maestria CLI
+
+Install the published plugin at Claude Code's user scope:
+
+```bash
+npx maestria install claude-code
+```
+
+The CLI downloads `@maestria/claude-code` from npm, stages it in a local marketplace under
+`~/.cache/maestria/`, and delegates the actual install to Claude Code. This keeps plugin state and
+scope in the host runtime.
+
+Check, update, or remove the installation with:
+
+```bash
+npx maestria status
+npx maestria update claude-code
+npx maestria uninstall claude-code
+```
+
+Claude Code's marketplace update path selects the latest package. Exact version pinning is not
+available through `maestria update claude-code --version`.
+
+## Local validation (no install)
+
+Because the plugin is a self-contained directory, you can validate and load it from a checkout of this repository without any install step:
+
+```bash
+# From the repository root
+claude plugin validate ./packages/claude-code --strict
+```
+
+`--strict` treats warnings as errors and is the recommended CI check. A clean run prints:
+
+```text
+✔ Validation passed
+```
+
+## Loading the plugin
+
+Load the plugin for a session only - it is not installed or persisted:
+
+```bash
+claude --plugin-dir ./packages/claude-code
+```
+
+`--plugin-dir` loads the plugin for that session only. You can pass it multiple times to load several plugins.
+
+## Verify Installation
+
+<Steps>
+
+1. **Validate the manifest**
+
+   ```bash
+   claude plugin validate ./packages/claude-code --strict
+   ```
+
+   Prints `✔ Validation passed`.
+
+2. **Start a session with the plugin loaded**
+
+   ```bash
+   claude --plugin-dir ./packages/claude-code
+   ```
+
+3. **Confirm the plugin and its components loaded**
+
+   Check the `/plugin` manager and the `/context` Custom Agents tab. Components are namespaced under the plugin name `maestria`:
+
+   - **Agents:** `@maestria:adventurer`, `@maestria:architect`, `@maestria:builder`, `@maestria:diagnose`, `@maestria:planner`, `@maestria:reviewer`, `@maestria:writer`
+   - **Commands:** `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz`
+   - **Skills:** `/maestria:orchestrator` (user-invocable). `maestria:global-rules` is auto-preloaded into every agent and is preload-only - it is not user-invocable.
+
+4. **Check the read-only roles**
+
+   `@maestria:adventurer`, `@maestria:planner`, and `@maestria:reviewer` cannot call the `Write` or `Edit` tools (denied via `disallowedTools`).
+
+</Steps>
+
+<Aside type="caution" title="Runtime checks are not yet verified">
+  Step 1 (CLI validation) is the current automated gate and passes. Steps 2-4 are runtime checks
+  that are **not yet tested end to end** - see the [runtime support
+  matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
+</Aside>
+
+## What's Inside
+
+| Component | Namespaced identifier                                  | Purpose                                                                                                |
+| --------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Agents    | `@maestria:<agent>`                                    | 7 specialist agents: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer` |
+| Skills    | `/maestria:orchestrator`, `maestria:global-rules`      | Routing methodology (user-invocable) and universal rules contract (preload-only)                       |
+| Commands  | `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` | Full pipeline, research-only, and fast implementation modes                                            |
+
+Every agent is configured to preload the `maestria:global-rules` skill at startup. Runtime resolution of the plugin-scoped skill preload is not yet verified against a live session.
+
+## Tool Restrictions
+
+**The only runtime enforcement in this package is `disallowedTools: Write, Edit` on `adventurer`, `planner`, and `reviewer`** - the three read-only research and review roles. This is user-authorized. Everything else (skills, preloaded rules, role prompts) is advisory prompt guidance, not a security boundary.
+
+Claude Code ignores the `permissionMode`, `hooks`, and `mcpServers` agent frontmatter fields for plugin-loaded agents for security reasons, so this plugin ships none of them. To enforce those fields you would need to copy an agent file into `.claude/agents/` or `~/.claude/agents/`.
+
+The plugin does not ship a `rules/` directory and does not write project or user `CLAUDE.md` files.
+
+## Uninstalling
+
+For a persistent CLI-managed installation:
+
+```bash
+npx maestria uninstall claude-code
+```
+
+For a session-only `--plugin-dir` load, stop passing the flag. The local staging directory is safe
+to remove after uninstalling:
+
+```bash
+rm -rf ~/.cache/maestria/claude-code-marketplace
+```
+
+## Direct Claude Code marketplace installation
+
+The repository also exposes a Claude Code marketplace entry for users who prefer the host CLI:
+
+```bash
+claude plugin marketplace add agustinusnathaniel/maestria
+claude plugin install maestria@maestria --scope user
+```
+
+## Next Steps
+
+- [Quick Start](/claude-code/getting-started/quick-start/) - Your first session with the plugin
+- [Browse the Agents](/core/agents/) - Detailed documentation for each specialist

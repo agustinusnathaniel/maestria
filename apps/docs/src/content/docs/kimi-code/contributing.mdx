@@ -90,16 +90,21 @@ The `kimi.plugin.json` manifest fields:
 
 ## Skill Prescription
 
-Every skill's SKILL.md follows a 4-section prescription pattern. This pattern keeps each specialist focused on its own methodology while routing edge cases to the right persona.
+Each SKILL.md carries a compact `## Skills` paragraph instead of a long catalog. The paragraph names the skills to load on trigger with their situations in parentheses, plus an always-load entry where the role requires one, and states skip guidance inline:
 
-| Section                 | Purpose                                                                                                                          |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Always load**         | Skills this specialist's role requires unconditionally (e.g., `diagnose` loads the `diagnose` methodology skill)                 |
-| **Load on trigger**     | Conditional skills matched to specific situations (e.g., `architect` loads `c4-architecture` when a container diagram is needed) |
-| **Defer to specialist** | Skills that belong to a different persona's domain (e.g., `humanizer` is the `writer`'s job, not the `builder`'s)                |
-| **Skip if**             | Conditions under which no skill load is needed at all (e.g., a 1-line fix, no new dependencies)                                  |
+```markdown
+## Skills
 
-When writing or editing a skill, keep all four sections in the same order. The orchestrator's Skill tool loads specialist skills on demand - the prescription sections are what the model uses to decide which additional skills to load.
+Always: `architecture-decision-framework`. Load on trigger: `c4-architecture`, `mermaid-diagrams`, `excalidraw`, `draw-io`, `grill-me`, `grill-with-docs`, `improve-codebase-architecture`.
+```
+
+```markdown
+## Skills
+
+Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests), `pnpm` (package/lockfile changes), `mcp-builder` (MCP servers), `webapp-testing` (browser-level testing), `frontend-design` (UI build tasks), `commit-work` (staging and commit messages). Skip skill loads for mechanical one-line fixes.
+```
+
+When writing or editing a skill, list only skills that are verifiably present in the environment - canonical catalogs must not reference skills that do not exist. Discovery of niche skills relies on host-side skill descriptions rather than hard-coded catalog lines. The orchestrator's Skill tool loads specialist skills on demand; the Skills paragraph is what the model uses to decide which additional skills to load.
 
 ## See Also
 

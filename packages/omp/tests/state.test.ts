@@ -6,6 +6,7 @@ import {
   recordHandoff,
   recordFileModified,
   recordFileRead,
+  recordSpecialistDelegated,
   setReviewMode,
   exitReviewMode,
   renderMaestriaSummary,
@@ -27,6 +28,7 @@ const NEW_STATE_KEYS = [
   'originalTools',
   'subagentStatus',
   'reviewModel',
+  'nativeGoal',
 ];
 
 describe('createInitialState', () => {
@@ -62,6 +64,7 @@ describe('createInitialState', () => {
     expect(state.originalModel).toBeNull();
     expect(state.originalTools).toBeNull();
     expect(state.reviewModel).toBeNull();
+    expect(state.nativeGoal).toBeNull();
   });
 });
 
@@ -106,6 +109,30 @@ describe('recordHandoff', () => {
     // Oldest (1) should be dropped
     expect(state.handoffHistory[4].task).toBe('task2');
     expect(state.handoffHistory.some((e) => e.task === 'task1')).toBe(false);
+  });
+});
+
+describe('recordSpecialistDelegated', () => {
+  it('appends a specialist to an empty list', () => {
+    const state = createInitialState();
+    const next = recordSpecialistDelegated(state, 'builder');
+
+    expect(next.specialistsDelegated).toEqual(['builder']);
+  });
+
+  it('is immutable - does not mutate the original state', () => {
+    const state = createInitialState();
+    recordSpecialistDelegated(state, 'builder');
+    expect(state.specialistsDelegated).toEqual([]);
+  });
+
+  it('deduplicates repeated delegations', () => {
+    let state = createInitialState();
+    state = recordSpecialistDelegated(state, 'builder');
+    state = recordSpecialistDelegated(state, 'architect');
+    state = recordSpecialistDelegated(state, 'builder');
+
+    expect(state.specialistsDelegated).toEqual(['builder', 'architect']);
   });
 });
 
@@ -455,6 +482,27 @@ describe('renderMaestriaSummary with reviewModel', () => {
     const summary = renderMaestriaSummary(state);
 
     expect(summary).not.toContain('**Review Model:**');
+  });
+});
+
+describe('renderMaestriaSummary with nativeGoal', () => {
+  it('includes native goal section when a native goal is mirrored', () => {
+    const state: MaestriaState = {
+      ...createInitialState(),
+      nativeGoal: { objective: 'Ship the feature', status: 'active' },
+    };
+
+    const summary = renderMaestriaSummary(state);
+
+    expect(summary).toContain('**Native Goal:** Ship the feature (active)');
+  });
+
+  it('omits native goal section when no native goal is mirrored', () => {
+    const state = createInitialState();
+
+    const summary = renderMaestriaSummary(state);
+
+    expect(summary).not.toContain('**Native Goal:**');
   });
 });
 

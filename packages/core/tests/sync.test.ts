@@ -203,6 +203,7 @@ describe('loadConfig', () => {
     const config = await loadConfig(configPath);
 
     expect(config.source).toMatch(/agent-directives$/);
+    expect(config.configPath).toBe(configPath);
     expect(config.files).toEqual({});
   });
 
@@ -420,6 +421,7 @@ describe('preserve option', () => {
     writeFileSync(join(outputDir, 'subdir', 'keep.md'), '# Keep\n', 'utf-8');
 
     const config: ResolvedSyncConfig = {
+      configPath: join(tmpDir, 'sync.config.ts'),
       configDir: tmpDir,
       source: sourceDir,
       output: outputDir,
@@ -457,6 +459,7 @@ describe('preserve option', () => {
 
     // No preserve patterns - both stale files get removed
     const config: ResolvedSyncConfig = {
+      configPath: join(tmpDir, 'sync.config.ts'),
       configDir: tmpDir,
       source: sourceDir,
       output: outputDir,
@@ -477,6 +480,67 @@ describe('preserve option', () => {
 // ═══════════════════════════════════════
 // Provenance check
 // ═══════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// Secondary source loop (canonical files outside the source dir)
+// ═══════════════════════════════════════════════════════════
+
+describe('secondary source loop', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'core-sync-secondary-'));
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('resolves nested keys under the parent of source (e.g. skills/handoff.md)', async () => {
+    const sourceParent = join(tmpDir, 'source');
+    const sourceDir = join(sourceParent, 'specialists');
+    const outputDir = join(tmpDir, 'output');
+    mkdirSync(join(sourceParent, 'skills'), { recursive: true });
+    mkdirSync(sourceDir, { recursive: true });
+    mkdirSync(outputDir, { recursive: true });
+
+    // Canonical source lives in a subdirectory of the parent of source -
+    // the same layout as packages/core/agent-directives/skills/.
+    writeFileSync(
+      join(sourceParent, 'skills', 'handoff.md'),
+      '# Handoff Contract\n\n1. **Goal**\n',
+      'utf-8',
+    );
+
+    const config: ResolvedSyncConfig = {
+      configPath: join(tmpDir, 'sync.config.ts'),
+      configDir: tmpDir,
+      source: sourceDir,
+      output: outputDir,
+      preserve: [],
+      files: {
+        'skills/handoff.md': {
+          output: join(outputDir, 'handoff', 'SKILL.md'),
+          stripFrontmatter: false,
+          replace: [],
+          prepend: '---\nname: handoff\n---\n\n',
+          append: '',
+        },
+      },
+    };
+
+    const results = await runSync({ config });
+
+    const written = results.filter((r) => r.status === 'written');
+    expect(written).toHaveLength(1);
+
+    const outPath = join(outputDir, 'handoff', 'SKILL.md');
+    expect(existsSync(outPath)).toBe(true);
+    const out = readFileSync(outPath, 'utf-8');
+    expect(out).toContain('name: handoff');
+    expect(out).toContain('# Handoff Contract');
+  });
+});
 
 describe('checkProvenance', () => {
   let tmpDir: string;
@@ -603,6 +667,161 @@ describe('checkProvenance', () => {
     expect(result.status).toBe('unchanged');
   });
 
+  it('passes when a changed sync config regenerates the output', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const configPath = join(tmpDir, 'sync.config.ts');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+    writeFileSync(configPath, "export default { append: '' };\n", 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
+
+    // The config change drives this regenerated output in the real sync path.
+    writeFileSync(configPath, "export default { append: 'Updated\\n' };\n", 'utf-8');
+    fileCfg.append = 'Updated\n';
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      configPath,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('unchanged');
+    expect(result.error).toBeUndefined();
+  });
+
+  it('rejects a staged wrong output even when an unrelated sync config is dirty', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const configPath = join(tmpDir, 'sync.config.ts');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+    writeFileSync(configPath, "export default { append: '' };\n", 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
+
+    const expectedContent = readFileSync(outputPath, 'utf-8');
+
+    // The config is dirty, but this change is unrelated to the output.
+    writeFileSync(configPath, "export default { append: '' };\n// unrelated change\n", 'utf-8');
+
+    // Stage an invalid output, then restore the expected working-tree content.
+    writeFileSync(outputPath, '# Wrong content', 'utf-8');
+    execSync('git add output.md', { cwd: tmpDir, stdio: 'ignore' });
+    writeFileSync(outputPath, expectedContent, 'utf-8');
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      configPath,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('Provenance violation');
+  });
+
+  it('rejects a staged deletion when the expected output is restored', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, 'output.md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
+
+    const expectedContent = readFileSync(outputPath, 'utf-8');
+
+    execSync('git rm output.md', { cwd: tmpDir, stdio: 'ignore' });
+    writeFileSync(outputPath, expectedContent, 'utf-8');
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('Provenance violation');
+  });
+
+  it('passes when a new untracked canonical source regenerates an existing output', async () => {
+    // Simulates the canonicalize-skills workflow: output existed before as a
+    // hand-written file, then a brand-new canonical source is added and the
+    // output is regenerated from it. The new source is untracked, so git diff
+    // alone cannot see it - the check must still pass.
+    const sourceDir = join(tmpDir, 'source');
+    const outputPath = join(tmpDir, 'output.md');
+    mkdirSync(sourceDir, { recursive: true });
+
+    // Old hand-written output committed first
+    writeFileSync(outputPath, '# Old hand-written', 'utf-8');
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m init', { cwd: tmpDir, stdio: 'ignore' });
+
+    // New canonical source (untracked)
+    writeFileSync(join(sourceDir, 'handoff.md'), '# Handoff Contract', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    // Regenerate output from the new source
+    await processFile(join(sourceDir, 'handoff.md'), fileCfg, {
+      report: 'sync',
+      logger: () => {},
+    });
+
+    // Check must not flag a provenance violation
+    const result = await processFile(join(sourceDir, 'handoff.md'), fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    expect(result.status).toBe('unchanged');
+    expect(result.error).toBeUndefined();
+  });
+
   it('skips check when not in a git repo', async () => {
     const nonGitDir = mkdtempSync(join(tmpdir(), 'core-sync-nongit-'));
     try {
@@ -640,4 +859,48 @@ describe('checkProvenance', () => {
       rmSync(nonGitDir, { recursive: true, force: true });
     }
   });
-});
+
+  it('handles output paths containing shell metacharacters without executing them', async () => {
+    // Regression test: the provenance check used to interpolate file paths
+    // into execSync shell strings. A path like '$(touch PWNED).md' would have
+    // been executed as a command. execFileSync passes it as a literal argument.
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, '$(touch PWNED).md');
+
+    writeFileSync(sourcePath, '# Source', 'utf-8');
+
+    const fileCfg: ResolvedFileConfig = {
+      output: outputPath,
+      stripFrontmatter: false,
+      replace: [],
+      prepend: '',
+      append: '',
+    };
+
+    // Generate output via processFile (includes auto-generated header)
+    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+
+    // Commit so git state is clean
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    execSync('git commit -m init', { cwd: tmpDir, stdio: 'ignore' });
+
+    // Save the correct output content, then stage a different version so git
+    // sees output as modified (same pattern as the violation test above)
+    const correctContent = readFileSync(outputPath, 'utf-8');
+    writeFileSync(outputPath, '# Wrong content', 'utf-8');
+    execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
+    writeFileSync(outputPath, correctContent, 'utf-8');
+
+    const result = await processFile(sourcePath, fileCfg, {
+      check: true,
+      report: 'check',
+      logger: () => {},
+    });
+
+    // Provenance violation is detected - and no PWNED file was created by
+    // shell command substitution during the check.
+    expect(result.status).toBe('error');
+    expect(result.error).toContain('Provenance violation');
+    expect(existsSync(join(tmpDir, 'PWNED'))).toBe(false);
+  });
+}, 30_000);

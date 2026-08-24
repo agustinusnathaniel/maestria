@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-07-10)
+Accepted - amended 2026-08-13
 
 ## Context
 
@@ -80,8 +80,7 @@ Boundary checkpoints are retained and refined:
 | Checkpoint | Behavior | Rationale |
 | --- | --- | --- |
 | **Commit** | Autonomous - agent reads git log for past correction patterns, composes correct conventional commit message, commits | 88.4% approval rate; agent can learn from the 11.6% corrections |
-| **Push** | Automatic on feature branches; `question()` on `main`/`master` | Feature branches are safe to push without review; main-branch pushes are higher risk |
-| **PR creation** | Always `question()` | Separate decision from commit/push; requires user intent |
+| **Branch, commit, push, and PR** | Autonomous delivery on a clear task feature branch after validation and required review; create the feature branch automatically when the base, remote, and ownership are clear | Routine engineering delivery is one user outcome; protected branches, unresolved review, and high-impact actions remain guarded |
 | **Re-evaluation** | After 3 consecutive rejections, agent stops and re-assesses | Prevents 15+ rejection loops |
 
 ### Decision 3: Add Re-Evaluation Trigger
@@ -160,6 +159,12 @@ Rejected because:
 ## Post-Implementation Evolution
 
 Several design details diverged from the original plan during implementation. This section documents what changed and why.
+
+### Amendment (2026-08-14): Delivery and continuation are one autonomous outcome
+
+Recent Maestria sessions showed that treating branch creation, push, and PR creation as implicit or separately authorized steps caused the agent to stop after implementation and wait for routine instructions. The earlier PR-question boundary is therefore superseded for normal engineering work.
+
+For implementation work, the canonical contract owns the path from repository inspection through the project's normal delivery artifact. When the repository, branch, remote, ownership, and host capabilities support PR delivery, the agent creates or uses a feature branch, commits validated and reviewed work, pushes it, and opens the PR without ceremonial approval. Research-only, planning-only, explicitly read-only, and host-blocked work terminates at its requested artifact or exact blocker. A specialist handoff, incomplete todo, or no-edit result is not a user checkpoint for implementation work; the parent continues with the next bounded action, makes one useful recovery attempt for incomplete delegation, or reports the exact blocked delta. Acceptance criteria, non-goals, and the repair budget remain attached to the same user outcome even when work is split across specialists. Adjacent review findings do not restart or broaden that outcome unless they invalidate acceptance or trigger a safety/authorization stop. It still stops for security, authentication or permissions, data loss or migration, production, irreversible, genuinely ambiguous, or host-capability boundaries. Merge and release remain separate actions.
 
 ### Mid-Phase vs Boundary Distinction (Refined Scope)
 

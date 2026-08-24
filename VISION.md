@@ -40,16 +40,17 @@ Maestria packages are pure plugins - no postinstall scripts, no file system side
 
 ## Packages
 
-| Package                 | Platform            | Status             |
-| ----------------------- | ------------------- | ------------------ |
-| `@maestria/opencode`    | OpenCode            | Published (v0.3.3) |
-| `@maestria/kimi-code`   | Kimi Code           | In development     |
-| `@maestria/cursor`      | Cursor IDE & CLI    | In development     |
-| `@maestria/omp`         | Oh My Pi            | In development     |
-| `@maestria/claude-code` | Claude Code & Codex | Planned            |
-| `@maestria/hermes`      | Hermes              | In development     |
-| `@maestria/pi`          | Pi                  | Shipping (v0.1.0)  |
+| Package                 | Platform         | Status             |
+| ----------------------- | ---------------- | ------------------ |
+| `@maestria/opencode`    | OpenCode         | Published (v0.3.3) |
+| `@maestria/kimi-code`   | Kimi Code        | In development     |
+| `@maestria/cursor`      | Cursor IDE & CLI | In development     |
+| `@maestria/omp`         | Oh My Pi         | In development     |
+| `@maestria/claude-code` | Claude Code      | Native candidate   |
+| `@maestria/codex`       | Codex CLI        | Provisional        |
+| `@maestria/hermes`      | Hermes           | In development     |
+| `@maestria/pi`          | Pi               | Shipping (v0.1.0)  |
 
 ## How This Project Evolves
 
-Patterns are curated from experience, documented in the knowledge base, then promoted into Maestria packages when proven. The Eve meta-agent (at `apps/maestria-agent/`) assists with maintenance, analysis, and improvement proposals - but all changes flow through human review. No autonomous code changes. See **PATTERNS.md** for the catalog of design patterns that each platform package implements.
+Patterns are curated from experience, documented in the knowledge base, then promoted into Maestria packages when proven. All changes flow through human review. No autonomous code changes. See **PATTERNS.md** for the catalog of design patterns that each platform package implements.

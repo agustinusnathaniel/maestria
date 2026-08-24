@@ -12,7 +12,7 @@ for config in "$ROOT"/packages/*/sync.config.ts; do
 
   echo ""
   echo "=== Syncing $PKG_NAME ==="
-  (cd "$PKG_DIR" && npx tsx "$SYNC_SCRIPT" --verbose) || HAD_ERROR=1
+  (cd "$PKG_DIR" && pnpm exec tsx "$SYNC_SCRIPT" --verbose) || HAD_ERROR=1
 done
 
 echo ""

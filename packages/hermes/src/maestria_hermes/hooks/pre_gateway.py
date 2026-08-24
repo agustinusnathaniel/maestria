@@ -1,6 +1,6 @@
 """pre_gateway_dispatch hook -- intercepts maestria slash commands before agent-busy check.
 
-Registered commands: /fein, /sonar, /blitz, /mode, /review, /plan
+Registered commands: /fein, /sonar, /blitz, /mode, /mode-clear, /review, /plan
 These are handled here so they dispatch even when the agent is busy
 processing a turn (the normal plugin command dispatch at gateway/run.py:9007
 runs AFTER the agent-busy gate and never fires during active turns).
@@ -22,7 +22,7 @@ from maestria_hermes.modes import ModeManager
 logger = logging.getLogger(__name__)
 
 # Commands this hook handles
-_MAESTRIA_COMMANDS = {"fein", "sonar", "blitz", "mode", "review", "plan"}
+_MAESTRIA_COMMANDS = {"fein", "sonar", "blitz", "mode", "mode-clear", "review", "plan"}
 
 _FM_DESC_RE = re.compile(r'^description:\s*"(.+)"', re.MULTILINE)
 _COMMANDS_DIR = pathlib.Path(__file__).parent.parent / "skills" / "commands"
@@ -57,7 +57,10 @@ _PIPELINE_DESC = {
     ),
     "blitz": _load_pipeline_desc(
         "blitz",
-        "Fast implementation mode: skip gates, go directly to implementation",
+        (
+            "Fast implementation mode: skip optional ceremony for familiar low-risk work; "
+            "required review and safety floors remain"
+        ),
     ),
 }
 
@@ -103,7 +106,11 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
         if not cmd or cmd not in _MAESTRIA_COMMANDS:
             return None
 
-        if cmd == "mode":
+        if cmd == "mode-clear":
+            mode_manager.clear_mode()
+            response = "Cleared Maestria mode. Neutral routing is active."
+
+        elif cmd == "mode":
             mode = mode_manager.get_mode()
             response = (
                 f"**Maestria Status**\n\n"

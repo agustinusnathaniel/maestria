@@ -77,18 +77,93 @@ describe('installToolInterceptors', () => {
       installToolInterceptors(pi as any, state);
 
       const handler = (pi as any).on.mock.calls[0][1];
-      const result = await handler({ toolName: 'bash' }, {});
+      const result = await handler({ toolName: 'bash', input: { command: 'rm -rf x' } }, {});
       expect(result).toBeUndefined();
     });
 
-    it('blocks non-maestria_subagent tools when workflow mode is active in orchestrator session', async () => {
+    it('blocks mutation bash when workflow mode is active in orchestrator session', async () => {
       const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']) };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
 
       const handler = (pi as any).on.mock.calls[0][1];
-      const result = await handler({ toolName: 'bash' }, {});
+      const result = await handler({ toolName: 'bash', input: { command: 'rm -rf dist' } }, {});
       expect(result.block).toBe(true);
+    });
+
+    it('blocks edit and write when workflow mode is active in orchestrator session', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']) };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      expect((await handler({ toolName: 'edit', input: { path: 'a.ts' } }, {})).block).toBe(true);
+      expect((await handler({ toolName: 'write', input: { path: 'a.ts' } }, {})).block).toBe(true);
+    });
+
+    it('allows read-only bash when workflow mode is active in orchestrator session', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']) };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'bash', input: { command: 'git status' } }, {});
+      expect(result).toBeUndefined();
+    });
+
+    it('blocks chained bash that hides a mutation behind a read-only prefix', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']) };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler(
+        { toolName: 'bash', input: { command: 'git status && git checkout .' } },
+        {},
+      );
+      expect(result.block).toBe(true);
+    });
+
+    it('blocks command substitution in bash when workflow mode is active', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']) };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler(
+        { toolName: 'bash', input: { command: 'ls $(rm -rf dist)' } },
+        {},
+      );
+      expect(result.block).toBe(true);
+    });
+
+    it('allows read-only bash pipelines when workflow mode is active', async () => {
+      const pi = { on: vi.fn(), getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']) };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler(
+        { toolName: 'bash', input: { command: 'git log --oneline | head -5' } },
+        {},
+      );
+      expect(result).toBeUndefined();
+    });
+
+    it('allows read-only tools (read, grep) when workflow mode is active in orchestrator session', async () => {
+      const pi = {
+        on: vi.fn(),
+        appendEntry: vi.fn(),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
+      };
+      const state = { ...createInitialState(), mode: 'fein' as const };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const readResult = await handler({ toolName: 'read', input: { path: 'src/a.ts' } }, {});
+      expect(readResult).toBeUndefined();
+      const grepResult = await handler({ toolName: 'grep', input: { pattern: 'x' } }, {});
+      expect(grepResult).toBeUndefined();
     });
 
     it('allows maestria_subagent calls when workflow mode is active in orchestrator session', async () => {
@@ -107,8 +182,76 @@ describe('installToolInterceptors', () => {
       installToolInterceptors(pi as any, state);
 
       const handler = (pi as any).on.mock.calls[0][1];
-      const result = await handler({ toolName: 'bash' }, {});
+      const result = await handler({ toolName: 'bash', input: { command: 'rm -rf dist' } }, {});
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('file tracking', () => {
+    it('records file read into state on read tool call', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'read', input: { path: 'src/foo.ts' } }, {});
+      expect(result).toBeUndefined();
+      expect(state.filesRead).toContain('src/foo.ts');
+    });
+
+    it('records file modified on edit tool call', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      await handler({ toolName: 'edit', input: { path: 'src/bar.ts', edits: [] } }, {});
+      expect(state.filesModified).toContain('src/bar.ts');
+    });
+
+    it('records file modified on write tool call', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      await handler({ toolName: 'write', input: { path: 'src/baz.ts' } }, {});
+      expect(state.filesModified).toContain('src/baz.ts');
+    });
+
+    it('persists state via appendEntry when a file is tracked', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      await handler({ toolName: 'read', input: { path: 'src/foo.ts' } }, {});
+      expect(pi.appendEntry).toHaveBeenCalledWith(
+        'maestria_state',
+        expect.objectContaining({ filesRead: ['src/foo.ts'] }),
+      );
+    });
+
+    it('does not record when read lacks a path', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = createInitialState();
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      await handler({ toolName: 'read', input: {} }, {});
+      expect(state.filesRead).toEqual([]);
+      expect(pi.appendEntry).not.toHaveBeenCalled();
+    });
+
+    it('does not record blocked edit in review mode', async () => {
+      const pi = { on: vi.fn(), appendEntry: vi.fn() };
+      const state = { ...createInitialState(), reviewMode: true };
+      installToolInterceptors(pi as any, state);
+
+      const handler = (pi as any).on.mock.calls[0][1];
+      const result = await handler({ toolName: 'edit', input: { path: 'x.ts' } }, {});
+      expect(result.block).toBe(true);
+      expect(state.filesModified).toEqual([]);
     });
   });
 });

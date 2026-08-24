@@ -9,7 +9,7 @@ Each Maestria plugin has its own contributing guide with project structure, sour
 
 Agent prompts, specialist personas, and global rules are authored in a single canonical source at `packages/core/agent-directives/` and synced to all plugin packages via the config-driven sync pipeline.
 
-**Never edit the generated files** in plugin-specific directories (`packages/opencode/agents/`, `packages/pi/agents/`, `packages/pi/skills/`, `packages/kimi-code/skills/`, `packages/cursor/agents/`, `packages/cursor/skills/`, or any `rules/` directory) - they are overwritten on every sync.
+**Never edit the generated files** in plugin-specific directories (`packages/opencode/agents/`, `packages/pi/agents/`, `packages/pi/skills/`, `packages/kimi-code/skills/`, `packages/cursor/agents/`, `packages/cursor/skills/`, `packages/claude-code/agents/`, `packages/claude-code/skills/`, `packages/claude-code/commands/`, `packages/codex/skills/`, or any `rules/` directory) - they are overwritten on every sync.
 
 ### Editing the Canonical Source
 
@@ -25,11 +25,13 @@ The canonical source is plain Markdown without platform-specific syntax, YAML fr
 
 Each plugin has a `sync.config.ts` that defines how canonical content is adapted:
 
-| Plugin                | Config                              | Transforms                                                                                 |
-| --------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------ |
-| `@maestria/opencode`  | `packages/opencode/sync.config.ts`  | Adds YAML frontmatter with permissions per specialist                                      |
-| `@maestria/kimi-code` | `packages/kimi-code/sync.config.ts` | Converts to SKILL.md format with 23 text replacements, persona prepends, and routing table |
-| `@maestria/pi`        | `packages/pi/sync.config.ts`        | 10 text replacements (`@adventurer` → `/adventurer`, `task()` → `maestria_subagent()`)     |
+| Plugin                  | Config                                | Transforms                                                                                                                                   |
+| ----------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@maestria/opencode`    | `packages/opencode/sync.config.ts`    | Adds YAML frontmatter with permissions per specialist                                                                                        |
+| `@maestria/kimi-code`   | `packages/kimi-code/sync.config.ts`   | Converts to SKILL.md format with a set of text replacements adapting tool names and platform vocabulary, persona prepends, and routing table |
+| `@maestria/pi`          | `packages/pi/sync.config.ts`          | Text replacements adapting role prefixes and delegation calls (`@adventurer` → `/adventurer`, `task()` → `maestria_subagent()`)              |
+| `@maestria/claude-code` | `packages/claude-code/sync.config.ts` | Namespaced agents and skills, Claude tool names, and read-only `disallowedTools` fields                                                      |
+| `@maestria/codex`       | `packages/codex/sync.config.ts`       | Namespaced skills, workflow modes as skills, and advisory role boundaries                                                                    |
 
 ### Running the Docs Site
 

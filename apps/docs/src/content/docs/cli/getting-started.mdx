@@ -1,9 +1,10 @@
 ---
 title: Getting Started
-description: Install and use maestria to manage maestria plugins across OpenCode, Kimi Code, Pi, and Hermes.
+description: Install and use maestria to manage maestria plugins across OpenCode, Kimi Code, Pi, Prime Agent, Hermes, Claude Code, and Codex CLI.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import AllPackageManagers from '@/components/AllPackageManagers.astro';
 
 `maestria` runs anywhere Node.js 22+ is available. No install required - use `npx` to run it directly from npm.
 
@@ -11,9 +12,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 ### Check what's installed
 
-```bash
-npx maestria status
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="status" />
 
 This detects which coding agent platforms are available on your machine and shows the install status for each:
 
@@ -34,75 +33,62 @@ This detects which coding agent platforms are available on your machine and show
     Latest:     unknown
 ```
 
-Run `npx maestria` with no arguments - it defaults to `status`.
+Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> with no arguments - it defaults to `status`.
 
 ### Install for a platform
 
 **Interactive install** (pick from a list of detected platforms):
 
-```bash
-npx maestria install
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install" />
 
 **Install for all detected platforms:**
 
-```bash
-npx maestria install --all
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all" />
 
 **Install for a specific platform:**
 
-```bash
-npx maestria install opencode
-pnpx maestria@latest install pi
-npx maestria install kimi-code
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install opencode" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install claude-code" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install codex" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install prime-agent" />
 
 ### Update to the latest version
 
 **Interactive update:**
 
-```bash
-npx maestria update
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update" />
 
 **Update all:**
 
-```bash
-npx maestria update --all
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update --all" />
 
 **Update a specific platform:**
 
-```bash
-npx maestria update opencode
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode" />
 
 **Update to a specific version:**
 
-```bash
-npx maestria update opencode --version 0.5.0
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode --version 0.5.0" />
 
 ### Configure per-agent models
 
 Give each maestria specialist its own model. Interactively:
 
-```bash
-npx maestria configure opencode
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="configure opencode" />
 
 Or non-interactively for CI:
 
-```bash
-npx maestria configure pi --global --quiet --set builder=opencode-go/deepseek-v4-flash
-```
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="configure pi --global --quiet --set builder=opencode-go/deepseek-v4-flash"
+/>
 
 Use an empty value to reset an agent to inherit the session model:
 
-```bash
-npx maestria configure opencode --set reviewer=
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="configure opencode --set reviewer=" />
 
 Per-agent models are supported on opencode, pi, and omp. See the [command reference](/cli/commands/#configure) for details.
 
@@ -112,16 +98,17 @@ Per-agent models are supported on opencode, pi, and omp. See the [command refere
 - **Platform CLI tool** - the CLI detects platforms by checking for their binary on `$PATH`. The platform must be installed before maestria can be installed for it:
   - [OpenCode](https://opencode.ai) - `opencode` binary
   - [Pi](https://pi.ai) - `pi` binary
+  - [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent) - `prime-agent` binary
   - [Kimi Code](https://kimi.ai) - `kimi` binary
   - [Hermes Agent](https://hermes-agent.nousresearch.com) - `hermes` binary
+  - [Claude Code](https://code.claude.com) - `claude` binary
+  - [Codex CLI](https://developers.openai.com/codex) - `codex` binary
 
 ## JSON Output
 
 All commands accept `--json` for machine-readable output. Useful for CI scripts, dashboards, or IDE integrations:
 
-```bash
-npx maestria status --json
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="status --json" />
 
 ```json
 {
@@ -138,18 +125,14 @@ npx maestria status --json
 }
 ```
 
-```bash
-npx maestria install --all --json
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all --json" />
 
 ## Compact Output
 
 Use `--compact` for minimal machine-friendly text output suitable for AI agents
 and token-sensitive environments:
 
-```bash
-npx maestria status --compact
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="status --compact" />
 
 ```
 opencode: available installed=0.2.1 latest=0.2.1
@@ -168,12 +151,11 @@ The compact flag implies `--quiet` (no spinner animations).
 
 Use `--quiet` to suppress spinner animations. Commands still print final output:
 
-```bash
-npx maestria install --all --quiet
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all --quiet" />
 
 <Aside type="tip">
-  Combine `--quiet` with `--json` for clean CI output: `npx maestria status --json --quiet`
+  Combine `--quiet` with `--json` for clean CI output:{' '}
+  <AllPackageManagers type="dlx" pkg="maestria@latest" args="status --json --quiet" />
 </Aside>
 
 ## Exit Codes
@@ -199,7 +181,7 @@ The CLI catches invalid input early with clear error messages:
 
 ```bash
 npx maestria update unknown-platform
-# > Unknown platform 'unknown-platform'. Valid platforms: opencode, pi, kimi-code, hermes, cursor
+# > Unknown platform 'unknown-platform'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex
 ```
 
 **Invalid version format:**

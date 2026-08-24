@@ -7,6 +7,41 @@ description: Release history for @maestria/pi and @maestria/omp.
 
 Entries apply to both `@maestria/pi` and `@maestria/omp` unless otherwise noted.
 
+## v0.7.0 (Pi) / v0.5.0 (OMP)
+
+_August 22, 2026_
+
+- Canonical agent directives are ~24% leaner at the source (~21% as shipped in generated plugins): the bounded-repair contract lives once in the global rules, specialist skill catalogs list only verified skills, and dead sync-config replacement anchors were removed.
+- Delegated implementation outcomes now complete at a pushed feature branch with an open PR; failed or cancelled delegations get one adjusted-brief retry before structured blocker reporting.
+- Decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+
+## v0.6.8 (Pi)
+
+_August 13, 2026_
+
+- Fix chain-mode `{previous}` substitution so previous results containing `$` sequences are inserted
+  literally, and abort already-spawned subagents when a later parallel spawn fails so none are
+  orphaned.
+
+## v0.6.7 (Pi)
+
+_August 13, 2026_
+
+### Effect v4 polling
+
+- Use Effect v4 RC for cancellable subagent polling and structured parallel dispatch, so aborted or
+  failed polls no longer leave sibling polling work running (ADR-CORE-017).
+
+## v0.6.6 (Pi) / v0.4.3 (OMP)
+
+_August 13, 2026_
+
+- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge
+  reviews on material blockers, deliver routine engineering work through feature branches and PRs,
+  and clean up task-owned background processes before completion.
+- **Pi:** parallel subagent dispatch preserves successful results and aborts orphaned subagents on a
+  partial failure.
+
 ## v0.5.6 (Pi) / v0.2.0 (OMP)
 
 _July 21-22, 2026_

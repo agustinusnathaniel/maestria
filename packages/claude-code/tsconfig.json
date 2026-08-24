@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["tests/**/*.ts", "sync.config.ts", "vite.config.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  }
+}

@@ -20,7 +20,7 @@ function loadModePrompt(name: string): string {
 /**
  * Mode prompt text for each keyword, lazily loaded on first access.
  * If a prompt file is missing or unreadable, logs a warning and caches
- * an empty string — never throws at module evaluation time.
+ * an empty string - never throws at module evaluation time.
  *
  * @see ADR-OC-003 (section "Mode Prompts")
  */

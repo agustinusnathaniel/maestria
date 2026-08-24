@@ -1,0 +1,62 @@
+{
+  "name": "@maestria/prime-agent",
+  "version": "0.3.1",
+  "private": false,
+  "description": "Maestria methodology for Prime Agent - specialist roles, orchestrator, global rules, and workflow modes as Agent Skills, plus a small Prime/Pi extension for mode commands and mode prompt injection",
+  "keywords": [
+    "agent-orchestration",
+    "agents",
+    "coding-agent",
+    "maestria",
+    "pi-package",
+    "prime-agent",
+    "skills"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/prime-agent#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/prime-agent"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "INSTALL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "vp pack",
+    "prepublishOnly": "npm run build",
+    "test": "vp pack && vp test",
+    "validate": "npm run validate-skills",
+    "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "pi": {
+    "extensions": [
+      "./dist/extension.mjs"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  }
+}

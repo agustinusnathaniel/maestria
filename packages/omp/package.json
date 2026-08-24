@@ -1,6 +1,6 @@
 {
   "name": "@maestria/omp",
-  "version": "0.3.1",
+  "version": "0.5.1",
   "description": "Maestria extension for the Oh My Pi coding agent",
   "keywords": [
     "agent-orchestration",
@@ -30,7 +30,6 @@
     "build": "vp pack",
     "test": "vp test",
     "lint": "vp check",
-    "sync": "npx tsx ../core/scripts/sync.ts --config sync.config.ts",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
   },
@@ -42,7 +41,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@oh-my-pi/pi-coding-agent": "*"
+    "@oh-my-pi/pi-coding-agent": ">=17.0.5 <18.0.0"
   },
   "engines": {
     "node": ">=22.12.0"

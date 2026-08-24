@@ -1,5 +1,5 @@
 /**
- * Maestria state management — consolidated barrel.
+ * Maestria state management - consolidated barrel.
  *
  * Types, transforms, persistence, and render logic are shared between
  * omp and pi via @maestria/shared-pi/state-core. Only the review-mode
@@ -18,6 +18,7 @@ export {
   recordHandoff,
   recordFileModified,
   recordFileRead,
+  recordSpecialistDelegated,
   recordSubagentStatus,
   setReviewMode,
   exitReviewMode,

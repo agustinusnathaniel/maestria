@@ -27,7 +27,7 @@ The dispatcher architecture addresses a core problem in AI-assisted development:
 
 **Stage gating.** Each pipeline stage catches a specific type of error before it reaches the next stage. Design mistakes are caught before implementation starts. Implementation issues are caught before review. The error is stopped where it is cheapest to fix.
 
-**Iteration limits.** Without bounds, an agent can loop indefinitely on an unsolvable problem. The pipeline enforces a hard limit of three attempts per loop, then escalates with a structured report. This prevents infinite token burn.
+**Iteration limits.** Without bounds, an agent can loop indefinitely on an unsolvable problem. Each repair loop has a practical normal bound of three rounds. The bound may be extended only when the latest attempt shows observable progress; otherwise the pipeline fails loud with a structured escalation instead of looping.
 
 ## Primary Benefits
 
@@ -42,9 +42,9 @@ These benefits were explicit design goals. The harness was built to deliver them
   [Pipeline & Roles](/core/pipeline/#makerchecker-split) for details.
 </Aside>
 
-**Mode system.** Three workflow modes make the quality-speed trade-off explicit where the platform supports them. `fein` runs the full pipeline, `sonar` runs research only, and `blitz` runs implementation directly. Their activation, persistence, and tool enforcement vary by platform.
+**Mode system.** Three workflow modes make the quality-speed trade-off explicit where the platform supports them. `fein` runs the full pipeline, `sonar` runs research only, and `blitz` uses direct execution when the host permits it - otherwise the permitted specialist - skipping optional recon/design and keeping required safeguards/review. Their activation, persistence, and tool enforcement vary by platform.
 
-**Portable plugins.** The same methodology adapts to OpenCode, Kimi Code, Pi, OMP, Cursor, and Hermes. The role contracts are shared, but each plugin maps them to different native primitives. Portability means adapted behavior, not identical runtime behavior.
+**Portable plugins.** The same methodology adapts to OpenCode, Kimi Code, Pi, OMP, Cursor, Hermes, Claude Code, and Codex CLI. The role contracts are shared, but each plugin maps them to different native primitives. Portability means adapted behavior, not identical runtime behavior.
 
 ## Emergent Benefits
 
@@ -87,13 +87,13 @@ One-shot work means the pipeline is designed to get things right on the first pa
 
 The cost of fixing a bug increases by about an order of magnitude at each stage. The pipeline catches each error class at its cheapest correction point.
 
-The mode system controls which pipeline stages run. There are three modes: `fein` (full pipeline), `sonar` (research only), and `blitz` (implementation only). See [Primary Benefits](#primary-benefits) for how the mode system works.
+The mode system controls which pipeline stages run. There are three modes: `fein` (full pipeline), `sonar` (research only), and `blitz` (direct execution when the host permits it, otherwise the permitted specialist). See [Primary Benefits](#primary-benefits) for how the mode system works.
 
 ### Bounded Failure
 
 One-Shot Work aims to get things right the first time. Bounded Failure governs what happens when things go wrong: fail fast, fail informatively.
 
-The pipeline does not just prevent errors. It bounds them. Every delegated loop has a hard limit of three attempts. If a reviewer rejects output three times, the pipeline stops and escalates.
+The pipeline does not just prevent errors. It bounds them. Each delegated repair loop normally allows three rounds. If the latest attempt shows observable progress, the bound may be extended; without observable progress, the pipeline stops and escalates.
 
 The escalation follows a fixed format: "Tried X, Y, Z. Blocked by cause. Need input." This converts what would be a silent failure into a structured signal. The system does not burn tokens on impossible tasks.
 

@@ -2,8 +2,55 @@
 import StarlightHead from '@astrojs/starlight/components/Head.astro'
 import Analytics from './Analytics.astro'
 import Tracking from './Tracking.astro'
+import { markdownTwinPath } from '../lib/agent-delivery';
+import { SITE_URL, organizationSchema, softwareApplicationSchema, websiteSchema } from '../lib/site-schema';
+
+// Preload the latin variable fonts used on first paint of every page. Hashed
+// asset URLs only exist at build time, so this lives in the Head override
+// rather than astro.config.mjs's static `head` array. `crossorigin` is
+// required even for same-origin fonts, or browsers fetch them twice.
+import snProLatinUrl from '@fontsource-variable/sn-pro/files/sn-pro-latin-wght-normal.woff2?url'
+import alanSansLatinUrl from '@fontsource-variable/alan-sans/files/alan-sans-latin-wght-normal.woff2?url'
+import jetbrainsMonoLatinUrl from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url'
+
+const preloadedFonts = [
+  { href: snProLatinUrl, family: 'SN Pro Variable' },
+  { href: alanSansLatinUrl, family: 'Alan Sans Variable' },
+  { href: jetbrainsMonoLatinUrl, family: 'JetBrains Mono Variable' },
+];
+
+// Trust anchors for agents and search engines: Organization + SoftwareApplication
+// + WebSite (the site's own entity, publishing the Organization).
+const schemas = [organizationSchema(), softwareApplicationSchema(), websiteSchema()];
+
+/**
+ * Markdown discovery: advertise this page's markdown twin via rel="alternate"
+ * so agents can prefer it. The homepage advertises /llms.txt, which is its
+ * markdown representation. Paths that already are markdown artifacts (*.md,
+ * *.txt) are skipped - they have no further twin.
+ */
+function markdownAlternateHref(pathname: string): string | undefined {
+  const clean = pathname.split('?')[0]?.split('#')[0] ?? '/';
+  if (clean.endsWith('.md') || clean.endsWith('.txt')) return undefined;
+  const twin = markdownTwinPath(clean);
+  const normalized =
+    clean.length > 1 ? (clean.replace(/\/+$/, '').replace(/\.html$/, '') || '/') : '/';
+  if (twin === normalized) return undefined;
+  return new URL(twin, Astro.site ?? new URL(SITE_URL)).href;
+}
+
+const alternateHref = markdownAlternateHref(Astro.url.pathname);
 ---
 
 <StarlightHead />
+{preloadedFonts.map((font) => (
+  <link rel="preload" as="font" type="font/woff2" crossorigin href={font.href} />
+))}
+
+{schemas.map((schema) => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+))}
+{alternateHref && <link rel="alternate" type="text/markdown" href={alternateHref} />}
+
 <Analytics />
 <Tracking />

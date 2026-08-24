@@ -87,6 +87,7 @@ export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
     generatedOutputs.add(resolved.output);
 
     const result = await processFile(sourceAbs, resolved, {
+      configPath: config.configPath,
       dryRun,
       check,
       diff,
@@ -120,6 +121,7 @@ export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
     generatedOutputs.add(fileCfg.output);
 
     const result = await processFile(secondaryAbs, fileCfg, {
+      configPath: config.configPath,
       dryRun,
       check,
       diff,

@@ -68,11 +68,8 @@ All behavioral content is derived from canonical sources in `packages/core/agent
 ### Running the sync
 
 ```bash
-# Regenerate all Pi artifacts from canonical sources
-pnpm --filter @maestria/pi sync
-
-# Regenerate all OMP artifacts from canonical sources
-pnpm --filter @maestria/omp sync
+# Regenerate every platform artifact from canonical sources
+scripts/sync-all
 ```
 
 The orchestrator, global rules, and all 7 specialist agent files are generated in a single pass per package. The sync is auto-checked by CI via `scripts/check-sync`.
@@ -91,15 +88,16 @@ pnpm --filter @maestria/omp validate
 All specialist prompts, global rules, and the orchestrator prompt are authored in canonical sources under `packages/core/agent-directives/`. After editing, regenerate artifacts for both platforms:
 
 ```bash
-pnpm --filter @maestria/pi sync && pnpm --filter @maestria/pi validate
-pnpm --filter @maestria/omp sync && pnpm --filter @maestria/omp validate
+scripts/sync-all
+pnpm --filter @maestria/pi validate
+pnpm --filter @maestria/omp validate
 ```
 
 ### Adding or Modifying Skills
 
 Skills fall into two categories:
 
-**Canonical skills** (orchestrator, global-rules) - these are synced from core via `sync.config.ts`. Edit the canonical source, then run `pnpm sync` for each platform.
+**Canonical skills** (orchestrator, global-rules) - these are synced from core via `sync.config.ts`. Edit the canonical source, then run `scripts/sync-all` from the repository root.
 
 **Platform-only methodology skills** (handoff, iteration-limits) - these live in each package's `skills/` directory and have no canonical source. Each skill directory contains a `SKILL.md` file. To add a new platform-only skill, create a directory under `skills/` with a valid `SKILL.md` (frontmatter with `name` and `description`). Validate with:
 

@@ -1,6 +1,6 @@
 {
   "name": "@maestria/shared-pi",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -15,6 +15,14 @@
     "./compaction-core": {
       "import": "./src/compaction-core.ts",
       "types": "./src/compaction-core.ts"
+    },
+    "./commands-core": {
+      "import": "./src/commands-core.ts",
+      "types": "./src/commands-core.ts"
+    },
+    "./review-core": {
+      "import": "./src/review-core.ts",
+      "types": "./src/review-core.ts"
     },
     "./state-core": {
       "import": "./src/state-core.ts",

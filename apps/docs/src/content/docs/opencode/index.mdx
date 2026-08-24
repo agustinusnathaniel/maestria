@@ -4,73 +4,154 @@ description: OpenCode plugin that registers 8 specialized agents and injects glo
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'AI Engineering Workflows, Encoded'
-  tagline: 'Install one plugin. Get 8 agents, global rules, and session-aware orchestration - without lifting a finger.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /opencode/getting-started/installation/
-    - text: View Agents
-      icon: external
-      variant: minimal
-      link: /core/agents/
 ---
 
-import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import PlatformHero from '../../../components/plugin/PlatformHero.astro';
+import PluginSection from '../../../components/plugin/PluginSection.astro';
+import FeatureGrid from '../../../components/plugin/FeatureGrid.astro';
+import SiblingPlatforms from '../../../components/plugin/SiblingPlatforms.astro';
+import SiteFooter from '../../../components/plugin/SiteFooter.astro';
+import { marks } from '../../../data/marks.js';
 
-## How It Works
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-1. **Plugin loads** - OpenCode installs `@maestria/opencode` from npm
-2. **Config hook** - Reads bundled agent `.md` files, parses frontmatter, registers them programmatically
-3. **Rules injected** - Global workflow directives appended to every session
-4. **Agents available** - All 8 agents are available as subagents via `@` mention
-5. **State preserved** - Session compaction hook remembers task status
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/OPENCODE"
+      title="Eight specialists wired into every session."
+      lead="Install one plugin. Get 8 agents, global rules, and session-aware orchestration - without lifting a finger."
+      mark={marks.opencode}
+      primaryCta={{ href: '/opencode/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/opencode/configuration/', label: 'Configuration' }}
+      installCommand="npx maestria install opencode"
+    />
 
-## Quick Install
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="One plugin, the whole harness."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: '8 specialized agents', desc: 'The orchestrator plus seven specialists - adventurer, architect, builder, diagnose, planner, reviewer, writer - registered programmatically when the plugin loads.' },
+          { title: 'Global rules every session', desc: 'Workflow directives are appended to every OpenCode session automatically. No prompt engineering, no forgotten context.' },
+          { title: 'Delegate with @ mentions', desc: 'All 8 agents work as subagents. Call any specialist directly - @adventurer for recon, @builder for implementation, @reviewer for a fresh pair of eyes.' },
+          { title: 'Session state preserved', desc: 'A compaction hook remembers task status, so long-running work survives context resets.' },
+          { title: 'Per-agent model control', desc: "Agents register without model overrides. Assign models per agent from your own config whenever you have a reason to." },
+          { title: 'Native tool permissions', desc: "Each agent ships its own permission fields, honored by OpenCode's V2 runtime - read-only reviewers stay read-only." },
+        ]}
+      />
+    </PluginSection>
 
-```bash
-opencode plugin @maestria/opencode@latest -g
-```
+    <PluginSection
+      index="02"
+      kicker="HOW IT WIRES IN"
+      title="Self-registering, start to finish."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <ol class="list-none m-0 p-0 border-t border-home-border">
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Plugin loads</strong> - OpenCode installs <code>@maestria/opencode</code> from npm</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Config hook</strong> - reads bundled agent <code>.md</code> files, parses frontmatter, registers them programmatically</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Rules injected</strong> - global workflow directives appended to every session</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">4</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Agents available</strong> - all 8 agents are available as subagents via <code>@</code> mention</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">5</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">State preserved</strong> - session compaction hook remembers task status</p>
+        </li>
+      </ol>
+    </PluginSection>
 
-Or add to your OpenCode config manually (`~/.config/opencode/opencode.jsonc`):
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="Three ways in, one result."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          The chip above uses the maestria CLI. Prefer native tooling? Install
+          straight through OpenCode:
+        </p>
+      </div>
 
-```jsonc
-{
-  "plugin": ["@maestria/opencode@latest"],
-}
-```
+      ```bash
+      opencode plugin @maestria/opencode@latest -g
+      ```
 
-<LinkButton href="/opencode/getting-started/installation/" size="lg">
-  Installation Guide →
-</LinkButton>
+      <p class="!mt-6 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        Or add it to your OpenCode config manually (<code>~/.config/opencode/opencode.jsonc</code>):
+      </p>
 
-## Explore the Docs
+      ```jsonc
+      {
+        "plugin": ["@maestria/opencode@latest"],
+      }
+      ```
+    </PluginSection>
 
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Installation, setup, and your first session with the plugin."
-    href="/opencode/getting-started/installation/"
-  />
-  <LinkCard
-    title="Agent Reference"
-    description="Roles, permissions, and when to use each of the 8 agents."
-    href="/core/agents/"
-  />
-  <LinkCard
-    title="Workflow Patterns"
-    description="Practical agent usage patterns - from recon to full build pipelines."
-    href="/core/workflow-patterns/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Version history and release notes."
-    href="/opencode/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Development setup, project structure, and how to extend the plugin."
-    href="/opencode/contributing/"
-  />
-</CardGrid>
+    <PluginSection
+      index="04"
+      kicker="FIND YOUR WAY"
+      title="Start with the plugin."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Installation, setup, and your first session with the plugin.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/configuration/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Configuration</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Per-agent models and OpenCode-level settings.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Agent Reference</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Roles, permissions, and when to use each of the 8 agents.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/workflow-patterns/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Workflow Patterns</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Practical agent usage patterns - from recon to full build pipelines.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/reference/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Reference</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Tool permissions, t3code compatibility, and known limitations.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/changelog/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/contributing/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Development setup, project structure, and how to extend the plugin.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
+
+    <SiblingPlatforms excludeId="opencode" />
+
+    <SiteFooter />
+
+  </div>
+</div>

@@ -5,9 +5,34 @@ description: Release history for the maestria CLI.
 
 # Changelog
 
+## v0.9.0
+
+_August 13, 2026_
+
+### Prime Agent support
+
+- Added `prime-agent` platform detection to `status` and `check`.
+- Added `install`, `update`, and `uninstall` adapters that delegate to Prime's native package
+  manager (`prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`).
+- Prime support is deliberately global (user scope only): every Prime command runs from a freshly
+  created empty temporary directory, so project registrations are never scanned or modified, and
+  the temporary directory is removed afterwards.
+- Registration state is read from `prime-agent package list`, and the installed version is read
+  from the installed package's manifest.
+- Updates use Prime's latest-only package semantics, so exact version pinning is unavailable.
+  A version-pinned user registration is reported as an error rather than silently skipped.
+
+### Claude Code and Codex CLI support
+
+- Added `claude-code` and `codex` platform detection to `status` and `check`.
+- Added `install`, `update`, and `uninstall` adapters for both host CLIs.
+- The CLI stages the published npm packages under `~/.cache/maestria/` and delegates plugin state
+  to each host's native marketplace manager.
+- Exact version pinning is unavailable for these two marketplace-backed adapters.
+
 ## v0.8.0
 
-_Upcoming_
+_August 3, 2026_
 
 ### New `maestria configure` command
 
@@ -65,10 +90,10 @@ back to the cache only when the network is unavailable.
 
 **Improvements:**
 
-- **No stale version window** — Previously, published versions were
+- **No stale version window** - Previously, published versions were
   missed for up to 1 hour due to TTL-based caching. Now the live npm
   version is fetched every time the network is available.
-- **Offline fallback** — If the npm registry is unreachable, the CLI
+- **Offline fallback** - If the npm registry is unreachable, the CLI
   falls back to the last known cached version instead of failing.
 
 ## v0.4.0
@@ -83,11 +108,11 @@ multiselect with checkboxes instead of single-option pickers.
 
 **Improvements:**
 
-- **Comma-separated platforms** — Target multiple platforms in one command:
+- **Comma-separated platforms** - Target multiple platforms in one command:
   `maestria install opencode,pi,kimi-code`
-- **Multiselect in interactive mode** — Checkbox-style picker replaces
+- **Multiselect in interactive mode** - Checkbox-style picker replaces
   the old single-select for both install and update commands
-- **All platforms shortcut** — Interactive `maestria update` includes a
+- **All platforms shortcut** - Interactive `maestria update` includes a
   convenient "All platforms" option to update everything at once
 
 ## v0.3.11

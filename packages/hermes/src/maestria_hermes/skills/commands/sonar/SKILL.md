@@ -10,4 +10,4 @@ description: "Research-only mode: reconnaissance and design only, no implementat
 
 ## MODE: sonar (Research Only)
 
-Research mode: reconnaissance and design only. Delegate to adventurer (recon) followed by architect or planner (analysis/design). STOP after delivering findings and design. Do NOT implement, write code, or create any production files.
+Activate research-only mode. Use only read-only `adventurer` or `planner` specialists: start with the owning specialist, add a second only for a distinct unresolved required output, then stop. Do not implement, write code, or create production files.

@@ -14,10 +14,10 @@
     "build:ci": "vp run --filter './packages/*' --filter ./apps/maestria-cli build",
     "test": "vp run -r test",
     "changeset": "changeset",
-    "version-packages": "changeset version && python scripts/sync-hermes-version.py",
+    "version-packages": "changeset version && pnpm exec tsx scripts/sync-plugin-versions.ts",
     "release": "changeset publish",
-    "check": "vp check && vp run build && vp run test",
-    "check:ci": "vp check && pnpm build:ci && vp run check-python && vp run test",
+    "check": "vp check && vp run build && vp run test && vp run test-sync-plugin-versions && vp run check-manifest-versions",
+    "check:ci": "vp check && pnpm build:ci && vp run check-python && vp run test-sync-plugin-versions && vp run test && vp run check-manifest-versions",
     "clean": "vp cache clean",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",
@@ -33,7 +33,11 @@
     "@changesets/cli": "catalog:",
     "@types/node": "catalog:",
     "all-contributors-cli": "catalog:",
-    "vite-plus": "catalog:"
+    "jsonc-parser": "catalog:",
+    "tsx": "4.23.12",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:",
+    "yaml": "^2.9.0"
   },
   "devEngines": {
     "runtime": {

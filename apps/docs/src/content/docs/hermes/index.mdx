@@ -1,77 +1,186 @@
 ---
 title: '@maestria/hermes'
-description: Hermes Agent plugin that brings the Maestria methodology — 7 specialists, pipeline orchestration, and mode system — to any domain.
+description: Hermes Agent plugin that brings the Maestria methodology - 7 specialists, pipeline orchestration, and mode system - to any domain.
 template: splash
 editUrl: false
 lastUpdated: false
-hero:
-  title: 'Methodology for Any Agent'
-  tagline: 'Install one plugin. Get 7 specialists, role-gated tool access, and discipline-aware mode switching — on the Hermes Agent platform.'
-  actions:
-    - text: Get Started
-      icon: right-arrow
-      link: /hermes/getting-started/installation/
-    - text: View on GitHub
-      icon: external
-      variant: minimal
-      link: https://github.com/agustinusnathaniel/maestria/tree/main/packages/hermes
 ---
 
-import { LinkCard, CardGrid, LinkButton } from '@astrojs/starlight/components';
+import PlatformHero from '../../../components/plugin/PlatformHero.astro';
+import PluginSection from '../../../components/plugin/PluginSection.astro';
+import FeatureGrid from '../../../components/plugin/FeatureGrid.astro';
+import SiblingPlatforms from '../../../components/plugin/SiblingPlatforms.astro';
+import SiteFooter from '../../../components/plugin/SiteFooter.astro';
+import { marks } from '../../../data/marks.js';
 
-## How It Works
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
 
-1. **Install the plugin** — `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable`
-2. **Plugin activates** — Registers 9 methodology skills, 6 slash commands, permission roles, and lifecycle hooks. The plugin has no startup probes for external tools — it is self-contained.
-3. **Pick your mode** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation) — each enables the right specialists and tool gates
-4. **Dispatch specialists** — The orchestrator decomposes work via `delegate_task` and enforces maker/checker separation. Complex coding tasks can use the `opencode_route` tool if OpenCode CLI is installed.
-5. **Review before delivery** — Reviewer validates output before anything reaches you
+  <div class="home-inner">
+    <PlatformHero
+      eyebrow="@MAESTRIA/HERMES"
+      title="Methodology for any agent."
+      lead="Install one plugin. Get 7 specialists, disciplined mode switching, and role-neutral child trust boundaries on the Hermes Agent platform."
+      mark={marks.hermes}
+      primaryCta={{ href: '/hermes/getting-started/installation/', label: 'Get started' }}
+      secondaryCta={{ href: '/hermes/commands/', label: 'Commands' }}
+    />
 
-## Quick Install
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="A methodology worker, not just an assistant."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Methodology skills', desc: 'Activation registers 9 methodology skills plus 3 command skills and 7 slash commands.' },
+          { title: 'Disciplined mode switching', desc: '/fein runs the full pipeline, /sonar is research only, /blitz is fast implementation, /mode-clear resets neutral - each enables the right specialists and tool gates.' },
+          { title: 'Role-neutral child trust', desc: 'Delegated children are read/research/LLM-only - they cannot write, execute code, shell, delegate, or invoke OpenCode.' },
+          { title: 'Trusted coding path', desc: 'Code changes and opencode_route (if the OpenCode CLI is installed) are performed by a trusted top-level fein session.' },
+          { title: 'Self-contained plugin', desc: 'No startup probes for external tools. Hermes discovers its hooks, commands, and skills from plugin.yaml.' },
+          { title: 'Honest review', desc: 'Hermes has no native review gate, so the reviewer pass validates output as guidance rather than a mechanically enforced gate before delivery.' },
+        ]}
+      />
+    </PluginSection>
 
-```bash
-hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
-```
+    <PluginSection
+      index="02"
+      kicker="HOW IT WORKS"
+      title="Five steps, one pipeline."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <ol class="list-none m-0 p-0 border-t border-home-border">
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Install the plugin</strong> - <code>hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable</code></p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Plugin activates</strong> - registers 9 methodology skills plus 3 command skills, 7 slash commands, role-neutral child trust, and lifecycle hooks. No startup probes for external tools - it is self-contained.</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Pick your mode</strong> - <code>/fein</code> (full pipeline), <code>/sonar</code> (research only), <code>/blitz</code> (fast implementation), <code>/mode-clear</code> (neutral reset) - each enables the right specialists and tool gates</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">4</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Dispatch specialists</strong> - the orchestrator decomposes work via <code>delegate_task</code> and applies the maker/checker split as directive guidance. Delegated children are read/research/LLM-only; code changes and <code>opencode_route</code> run in a trusted top-level fein session.</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">5</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Review is advisory</strong> - the reviewer validates output, but Hermes has no native review gate, so a reviewer pass is not mechanically enforced before delivery.</p>
+        </li>
+      </ol>
+    </PluginSection>
 
-The plugin is fully self-configuring — Hermes discovers its hooks, commands, and skills from `plugin.yaml`. No manual setup needed.
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="Installed by Hermes itself."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          Hermes distributes plugins through its own git-based plugin manager -
+          there is no maestria CLI step. Install directly:
+        </p>
+      </div>
 
-<LinkButton href="/hermes/getting-started/installation/" size="lg">
-  Installation Guide →
-</LinkButton>
+      ```bash
+      hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
+      ```
 
-## Explore the Docs
+      <p class="!mt-6 mb-0 max-w-46rem text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        The plugin is fully self-configuring - Hermes discovers its hooks,
+        commands, and skills from <code>plugin.yaml</code>. No manual setup needed.
+      </p>
+    </PluginSection>
 
-<CardGrid>
-  <LinkCard
-    title="Getting Started"
-    description="Installation, setup, and your first session with the Hermes plugin."
-    href="/hermes/getting-started/installation/"
-  />
-  <LinkCard
-    title="Commands"
-    description="Reference for all slash commands: modes, review, plan, session management."
-    href="/hermes/commands/"
-  />
-  <LinkCard
-    title="Changelog"
-    description="Version history and release notes."
-    href="/hermes/changelog/"
-  />
-  <LinkCard
-    title="Contributing"
-    description="Project structure and how to extend the plugin."
-    href="/hermes/contributing/"
-  />
-</CardGrid>
+    <PluginSection
+      index="04"
+      kicker="AGAINST OPENCODE"
+      title="Where Hermes differs."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="[overflow-wrap:anywhere]">
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3 px-0.5 border-t border-b border-home-border">
+          <span class="font-mono text-xs font-medium uppercase tracking-[0.14em] text-home-text-muted">Aspect</span>
+          <span class="font-mono text-xs font-medium uppercase tracking-[0.14em] text-home-text-muted">@maestria/opencode</span>
+          <span class="font-mono text-xs font-medium uppercase tracking-[0.14em] text-home-text-muted">@maestria/hermes</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Primary domain</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Software engineering</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Any domain</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Distribution</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">npm plugin</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Git-based (<code>hermes plugins install</code>)</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Subagent dispatch</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>task()</code> function</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>delegate_task</code> (Hermes native)</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Tool gating</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">YAML frontmatter</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft"><code>pre_tool_call</code> hook</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Mode switching</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Keyword detection</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Slash commands <code>/fein</code> <code>/sonar</code> <code>/blitz</code> <code>/mode-clear</code></span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Coding path</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Built-in</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Routes to OpenCode CLI (trusted top-level fein session only)</span>
+        </div>
+        <div class="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-x-5 py-3.5 px-0.5 border-b border-home-border">
+          <span class="text-[0.875rem] font-medium text-home-text">Permissions</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Agent-level</span>
+          <span class="text-[0.8125rem] leading-[1.55] text-home-text-soft">Role-neutral child trust (children are read/research/LLM-only)</span>
+        </div>
+      </div>
+    </PluginSection>
 
-## Comparison: Hermes vs Other Platforms
+    <PluginSection
+      index="05"
+      kicker="FIND YOUR WAY"
+      title="Start with the plugin."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/hermes/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Installation, setup, and your first session with the Hermes plugin.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/hermes/commands/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Commands</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Reference for all slash commands: modes, review, plan, session management.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/hermes/changelog/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/hermes/contributing/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Project structure and how to extend the plugin.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
 
-| Aspect            | @maestria/opencode   | @maestria/hermes                         |
-| ----------------- | -------------------- | ---------------------------------------- |
-| Primary domain    | Software engineering | Any domain                               |
-| Distribution      | npm plugin           | Git-based (`hermes plugins install`)     |
-| Subagent dispatch | `task()` function    | `delegate_task` (Hermes native)          |
-| Tool gating       | YAML frontmatter     | `pre_tool_call` hook                     |
-| Mode switching    | Keyword detection    | Slash commands `/fein` `/sonar` `/blitz` |
-| Coding path       | Built-in             | Routes to OpenCode CLI (optional)        |
-| Permissions       | Agent-level          | Role-based (`PermissionRole`)            |
+    <SiblingPlatforms excludeId="hermes" />
+
+    <SiteFooter />
+
+  </div>
+</div>

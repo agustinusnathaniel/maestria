@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/_astro/*",
+    "/pagefind/*",
+    "/agents.md",
+    "/llms.txt",
+    "/llms-full.txt",
+    "/llms-small.txt",
+    "/robots.txt",
+    "/sitemap-0.xml",
+    "/sitemap-index.xml",
+    "/favicon.svg"
+  ]
+}

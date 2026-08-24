@@ -6,9 +6,9 @@ Accepted
 
 ## Terminology
 
-**Pi extension** — a `.ts`/`.js` file that exports a default function `(pi: ExtensionAPI) => void`. It hooks into Pi's lifecycle by registering tools (`pi.registerTool()`), commands (`pi.registerCommand()`), and event handlers (`pi.on()`). The extension IS the code that runs.
+**Pi extension** - a `.ts`/`.js` file that exports a default function `(pi: ExtensionAPI) => void`. It hooks into Pi's lifecycle by registering tools (`pi.registerTool()`), commands (`pi.registerCommand()`), and event handlers (`pi.on()`). The extension IS the code that runs.
 
-**Pi package** — an npm/git/local package with a `pi` manifest field in `package.json`. A package can contain extensions, skills, prompts, themes, and other resources. The package IS the container; the extension IS the code.
+**Pi package** - an npm/git/local package with a `pi` manifest field in `package.json`. A package can contain extensions, skills, prompts, themes, and other resources. The package IS the container; the extension IS the code.
 
 A single Pi package can ship multiple extensions (e.g., `shitty-extensions` ships 14 extensions from one package). An extension always lives inside a package.
 
@@ -83,23 +83,23 @@ The decisive factor is the typed programmatic API. Maestria's entire dispatch mo
 
 No other option provides this without wrapping an asynchronous event protocol that breaks the synchronous spawn-and-poll loop.
 
-Options B and D require wrapping async event-bus RPC — the spawn ID comes back on a reply channel, status is delivered as events, and there is no synchronous `getRecord(id)` equivalent. This fundamentally conflicts with how maestria's dispatch loop works: spawn synchronously, then poll every 500ms.
+Options B and D require wrapping async event-bus RPC - the spawn ID comes back on a reply channel, status is delivered as events, and there is no synchronous `getRecord(id)` equivalent. This fundamentally conflicts with how maestria's dispatch loop works: spawn synchronously, then poll every 500ms.
 
-Option C (build own) is a false economy. The `createAgentSession()` Pi SDK primitive is a low-level LLM session factory, not a managed subagent engine. A production-worthy implementation requires: session lifecycle management, concurrency limiter with queue (up to 8), agent type registry (parse .md files with YAML frontmatter), tool restriction per agent type, lifecycle event emission, abort propagation, error handling/recovery, and timeout with cleanup. The estimated 800-1200+ lines is conservative — @gotgenes/pi-subagents itself is thousands of lines covering exactly these concerns.
+Option C (build own) is a false economy. The `createAgentSession()` Pi SDK primitive is a low-level LLM session factory, not a managed subagent engine. A production-worthy implementation requires: session lifecycle management, concurrency limiter with queue (up to 8), agent type registry (parse .md files with YAML frontmatter), tool restriction per agent type, lifecycle event emission, abort propagation, error handling/recovery, and timeout with cleanup. The estimated 800-1200+ lines is conservative - @gotgenes/pi-subagents itself is thousands of lines covering exactly these concerns.
 
-The @gotgenes fork exists precisely because the upstream (D) lacked the typed API that extension authors need. Its README states: "A focused, in-process sub-agent core for pi — autonomous agents plus a typed API and lifecycle events other extensions build on." This is maestria's exact use case. The `getSubagentsService()` / `Symbol.for()` cross-extension pattern is the Pi ecosystem standard for extension-to-extension communication.
+The @gotgenes fork exists precisely because the upstream (D) lacked the typed API that extension authors need. Its README states: "A focused, in-process sub-agent core for pi - autonomous agents plus a typed API and lifecycle events other extensions build on." This is maestria's exact use case. The `getSubagentsService()` / `Symbol.for()` cross-extension pattern is the Pi ecosystem standard for extension-to-extension communication.
 
 **Key tradeoffs acknowledged:**
 
-- Lower download count than upstream (~446 vs ~7K/week) — but actively maintained (135 versions, latest 17 days ago)
-- The fork lags upstream on some features (memory, worktree isolation, scheduling, fleet view) — maestria doesn't need these
-- Adding an npm peer dependency for what could use Pi SDK primitives — the SDK is a lower level than claimed; a production engine is an order of magnitude more code than a thin wrapper
+- Lower download count than upstream (~446 vs ~7K/week) - but actively maintained (135 versions, latest 17 days ago)
+- The fork lags upstream on some features (memory, worktree isolation, scheduling, fleet view) - maestria doesn't need these
+- Adding an npm peer dependency for what could use Pi SDK primitives - the SDK is a lower level than claimed; a production engine is an order of magnitude more code than a thin wrapper
 
 **Long-term consideration:** If @gotgenes/pi-subagents becomes unmaintained, Option C (build own) becomes viable. At that point, maestria would dedicate the engineering effort to build a minimal subagent engine specialized for its own dispatch patterns, rather than depending on an external package. The current integration provides a clean seam for this migration: `subagent.ts` already wraps `service.spawn()` behind the `maestria_subagent` tool abstraction, and `agents.ts` owns the agent file deployment independently of how those files are consumed.
 
 ### Additional packages evaluated
 
-Six additional Pi gallery packages were evaluated in a follow-up survey (July 2026). Only `@quintinshaw/pi-dynamic-workflows` (Option E) satisfies all 6 requirements, but it is a full DAG workflow engine that conflicts with maestria's own role-based pipeline orchestration. Adopting it would create dual-orchestration — both maestria's phase-gated pipeline AND the workflow engine would try to manage the agent lifecycle. The remaining five packages all fail on at least 3 of the 6 requirements, with the common gap being no programmatic spawn API (requirements 1-3). The survey confirms Option A (@gotgenes/pi-subagents) as the correct choice for maestria's current architecture.
+Six additional Pi gallery packages were evaluated in a follow-up survey (July 2026). Only `@quintinshaw/pi-dynamic-workflows` (Option E) satisfies all 6 requirements, but it is a full DAG workflow engine that conflicts with maestria's own role-based pipeline orchestration. Adopting it would create dual-orchestration - both maestria's phase-gated pipeline AND the workflow engine would try to manage the agent lifecycle. The remaining five packages all fail on at least 3 of the 6 requirements, with the common gap being no programmatic spawn API (requirements 1-3). The survey confirms Option A (@gotgenes/pi-subagents) as the correct choice for maestria's current architecture.
 
 ## Decision
 
@@ -120,7 +120,7 @@ Six additional Pi gallery packages were evaluated in a follow-up survey (July 20
 
 1. **Spec-driven orchestration** - Each specialist's assigned spec (from the orchestrator's workflow DAG) is passed alongside the handoff contract. Phase gates validate that each specialist completes its spec before the next stage begins.
 2. **Session tree integration** - Each subagent invocation records its parent task ID for session tree reconstruction.
-3. **Structured cross-agent context** - Handoff contracts are validated before dispatch (6-field pre-check), not just advisory.
+3. **Structured cross-agent context** - Handoff contracts are validated before dispatch (7-field pre-check), not just advisory.
 
 ### Defer `pi-crew` and `pi-dynamic-workflows` to v1.1
 
@@ -169,7 +169,7 @@ The package was tested with `@earendil-works/pi-coding-agent@0.79.9`. The `Subag
 
 ### ✅ Handoff Validation Pre-Check Implemented
 
-As designed in the ADR, `src/subagent.ts` implements `validateHandoff()` which checks all 6 handoff fields (Goal, Context, Requirements, Known Problems, Success Criteria, Next Step) before dispatching. Rejects with clear error if a field is missing.
+As designed in the ADR, `validateHandoff()` (from `@maestria/shared-pi/subagent-utils`) checks all 7 handoff fields (Goal, Context, Requirements, Known Problems, Assumptions Documented, Success Criteria, Next Step) before dispatching. Rejects with clear error if a field is missing.
 
 ### ✅ Recursion Guard Respected
 
