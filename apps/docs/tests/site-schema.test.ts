@@ -34,14 +34,13 @@ describe('organizationSchema', () => {
     expect(contact.availableLanguage).toContain('en');
   });
 
-  it('carries the owner-approved-minimal postal address (country only)', () => {
-    // Approved data decision: country "ID" is inferred from the owner's
-    // public presence and pending owner confirmation. Nothing beyond the
-    // country code may be emitted.
-    expect(schema.address).toEqual({
-      '@type': 'PostalAddress',
-      addressCountry: 'ID',
-    });
+  it('emits no postal address at all', () => {
+    // Reaffirmed owner decision: GitHub-only identity policy. The key must
+    // be absent, never null, in every serialization of the entity.
+    const json = JSON.stringify(schema);
+    expect('address' in schema).toBe(false);
+    expect(json).not.toContain('"address"');
+    expect(json).not.toContain('@type":"PostalAddress');
   });
 
   it('emits no street, city, email, or telephone data anywhere', () => {
@@ -115,7 +114,6 @@ describe('websiteSchema', () => {
       description: org.description,
       logo: org.logo,
       sameAs: org.sameAs,
-      address: org.address,
       contactPoint: org.contactPoint,
     });
   });

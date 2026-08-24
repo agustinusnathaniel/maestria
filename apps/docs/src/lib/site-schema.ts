@@ -5,11 +5,9 @@
  * bundle anywhere and to serialize with `JSON.stringify` into
  * `<script type="application/ld+json">` tags.
  *
- * Identity policy (owner decision): GitHub is the only contact surface.
- * No emails or phone numbers are ever emitted. The Organization carries a
- * single owner-approved-minimal postal address (country only, no street or
- * city) so search engines get a resolvable locality signal without inventing
- * contact data.
+ * Identity policy (owner decision, reaffirmed this session): GitHub is the
+ * only contact surface. No emails, phone numbers, or postal addresses are
+ * ever emitted; technical support stays routed through GitHub issues only.
  */
 
 export const SITE_URL = 'https://maestria.sznm.dev';
@@ -40,10 +38,8 @@ function organizationEntity() {
     description: SITE_DESCRIPTION,
     logo: `${SITE_URL}/favicon.svg`,
     sameAs: [GITHUB_REPO_URL],
-    // Owner-approved-minimal postal identity: country inferred from the
-    // owner's public presence, pending owner confirmation. Deliberately no
-    // street, city, email, or phone - GitHub issues stay the contact surface.
-    address: { '@type': 'PostalAddress', addressCountry: 'ID' },
+    // Deliberately no postal address, email, or phone: see the identity
+    // policy above; GitHub issues remain the only contact surface.
     contactPoint: [
       {
         '@type': 'ContactPoint',
