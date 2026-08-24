@@ -6,7 +6,7 @@
  * `<script type="application/ld+json">` tags.
  *
  * Identity policy (owner decision): GitHub is the only contact surface.
- * No emails, phone numbers, or postal addresses — the `address` key is
+ * No emails, phone numbers, or postal addresses - the `address` key is
  * omitted entirely, never null.
  */
 

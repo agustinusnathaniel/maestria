@@ -51,7 +51,7 @@ const RECOVERY_LINKS: [label: string, href: string][] = [
  */
 function markdownNotFoundResponse(isHead: boolean): Response {
   const lines = [
-    '# 404 — Not found',
+    '# 404 - Not found',
     '',
     'The requested path does not exist on this site and has no markdown twin.',
     '',

@@ -17,7 +17,7 @@ export const VARY_VALUE = 'Accept, Accept-Encoding';
  *
  * Matched per comma-separated media type so bare wildcards (or an absent
  * header) never negotiate markdown and near-misses such as
- * `text/markdownx` are not accepted — browsers keep receiving HTML
+ * `text/markdownx` are not accepted - browsers keep receiving HTML
  * exactly as before.
  */
 export function wantsMarkdown(accept: string | null | undefined): boolean {

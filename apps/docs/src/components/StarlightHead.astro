@@ -12,7 +12,7 @@ const schemas = [organizationSchema(), softwareApplicationSchema()];
  * Markdown discovery: advertise this page's markdown twin via rel="alternate"
  * so agents can prefer it. The homepage advertises /llms.txt, which is its
  * markdown representation. Paths that already are markdown artifacts (*.md,
- * *.txt) are skipped — they have no further twin.
+ * *.txt) are skipped - they have no further twin.
  */
 function markdownAlternateHref(pathname: string): string | undefined {
   const clean = pathname.split('?')[0]?.split('#')[0] ?? '/';
