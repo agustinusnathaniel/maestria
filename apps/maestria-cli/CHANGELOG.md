@@ -1,5 +1,19 @@
 # maestria
 
+## 0.10.2
+
+### Patch Changes
+
+- [#230](https://github.com/agustinusnathaniel/maestria/pull/230) [`1d18698`](https://github.com/agustinusnathaniel/maestria/commit/1d18698942c34e45b98b981c09267385805e26ae) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat(cli): `maestria check` detects outdated installs
+  
+  The check command fetched each plugin's latest published version but never compared it against the installed version, so CI and AI-agent consumers had no machine-readable staleness signal. Single-platform and --all checks now report an `outdated` flag in JSON, print an explicit update hint, show an Outdated column in the status table, and exit 3 when a newer version exists (0 = installed and current; 1 = not installed, unavailable, or unknown platform, unchanged from today; nothing exits 2).
+
+- [#232](https://github.com/agustinusnathaniel/maestria/pull/232) [`0402671`](https://github.com/agustinusnathaniel/maestria/commit/0402671113c85866b18eeb15777100e4ec254008) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - fix(cli): never silently downgrade on implicit update
+  
+  `maestria update` (no `-V`) short-circuited only on exact version equality, so an install NEWER than the registry's latest - a local dev build or an unpublished release - sailed past the guard and was silently downgraded by `platform.update()`. Meanwhile `maestria check` correctly reported that same install as current (exit 0), so the two commands disagreed on identical machine state.
+  
+  Implicit updates now skip any install strictly ahead of latest with an explicit "newer than latest; skipping" message, and the interactive picker only offers platforms that are strictly behind latest. Explicit `--version` pins are honored verbatim - downgrades included. New `isVersionGt()` and `needsUpdateOf()` helpers keep check and update semantics in one place.
+
 ## 0.10.1
 
 ### Patch Changes
