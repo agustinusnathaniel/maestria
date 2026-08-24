@@ -5,6 +5,20 @@ import Tracking from './Tracking.astro'
 import { markdownTwinPath } from '../lib/agent-delivery';
 import { SITE_URL, organizationSchema, softwareApplicationSchema } from '../lib/site-schema';
 
+// Preload the latin variable fonts used on first paint of every page. Hashed
+// asset URLs only exist at build time, so this lives in the Head override
+// rather than astro.config.mjs's static `head` array. `crossorigin` is
+// required even for same-origin fonts, or browsers fetch them twice.
+import snProLatinUrl from '@fontsource-variable/sn-pro/files/sn-pro-latin-wght-normal.woff2?url'
+import alanSansLatinUrl from '@fontsource-variable/alan-sans/files/alan-sans-latin-wght-normal.woff2?url'
+import jetbrainsMonoLatinUrl from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url'
+
+const preloadedFonts = [
+  { href: snProLatinUrl, family: 'SN Pro Variable' },
+  { href: alanSansLatinUrl, family: 'Alan Sans Variable' },
+  { href: jetbrainsMonoLatinUrl, family: 'JetBrains Mono Variable' },
+];
+
 // Trust anchors for agents and search engines: Organization + SoftwareApplication.
 const schemas = [organizationSchema(), softwareApplicationSchema()];
 
@@ -28,6 +42,9 @@ const alternateHref = markdownAlternateHref(Astro.url.pathname);
 ---
 
 <StarlightHead />
+{preloadedFonts.map((font) => (
+  <link rel="preload" as="font" type="font/woff2" crossorigin href={font.href} />
+))}
 
 {schemas.map((schema) => (
   <script type="application/ld+json" set:html={JSON.stringify(schema)} />
