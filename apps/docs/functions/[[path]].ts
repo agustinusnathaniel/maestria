@@ -40,6 +40,7 @@ const RECOVERY_LINKS: [label: string, href: string][] = [
   ['Maestria home', `${SITE_ORIGIN}/`],
   ['Markdown summary for agents', `${SITE_ORIGIN}/llms.txt`],
   ['Full documentation for agents', `${SITE_ORIGIN}/llms-full.txt`],
+  ['Agent instructions', `${SITE_ORIGIN}/agents.md`],
   ['Sitemap', `${SITE_ORIGIN}/sitemap-index.xml`],
   ['When to Use Maestria', `${SITE_ORIGIN}/core/when-to-use/`],
   ['GitHub repository', 'https://github.com/agustinusnathaniel/maestria'],
