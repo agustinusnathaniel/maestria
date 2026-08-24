@@ -36,6 +36,52 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/sync check/i);
   });
 
+  it('requires a mandatory human-facing output contract in the global rules', () => {
+    const rules = readDirective('rules.md');
+
+    expect(rules).toMatch(/!!![^\n]*(?:human[- ]facing|human[- ]readable|people|output)/i);
+    for (const scope of [
+      /human[- ]facing (?:text|output)|text output/i,
+      /(?:agent )?responses?|status updates?|questions?/i,
+      /code (?:output|comments?|docstrings?)|comments?\s*[/&,]\s*docstrings?/i,
+      /commit messages?/i,
+      /PR\s+(?:titles?|descriptions?)/i,
+    ]) {
+      expect(rules).toMatch(scope);
+    }
+
+    expect(rules).toMatch(/U\+2014/i);
+    expect(rules).toMatch(
+      /(?:never|do not|avoid|prohibit|forbid)[\s\S]{0,120}(?:U\+2014|em dash)|(?:U\+2014|em dash)[\s\S]{0,120}(?:never|do not|avoid|prohibit|forbid)/i,
+    );
+    expect(rules).toMatch(
+      /(?:ASCII(?:[- ](?:only|alternative|punctuation))?|hyphen-minus)[\s\S]{0,160}(?:alternative|comma|colon|parenthes|instead|replace)|(?:comma|colon|parenthes)[\s\S]{0,160}(?:ASCII|hyphen-minus|instead|replace)/i,
+    );
+    expect(rules).toMatch(
+      /(?:preserve|leave intact|except|do not alter)[\s\S]{0,180}(?:code|syntax|literal|quoted|user[- ]provided)|(?:code|syntax|literal|quoted|user[- ]provided)[\s\S]{0,180}(?:preserve|leave intact|except|do not alter)/i,
+    );
+  });
+
+  it('covers delivery-facing text in every specialist directive', () => {
+    const deliveryDirectives = [
+      'adventurer',
+      'architect',
+      'builder',
+      'diagnose',
+      'orchestrator',
+      'planner',
+      'reviewer',
+      'writer',
+    ].map((role) => readDirective('specialists', `${role}.md`));
+
+    for (const directive of deliveryDirectives) {
+      expect(directive).toMatch(
+        /(?:human[- ]facing|delivery[- ]facing)[\s\S]{0,240}(?:commit messages?|PR\s+(?:titles?|descriptions?))|(?:commit messages?|PR\s+(?:titles?|descriptions?))[\s\S]{0,240}(?:human[- ]facing|delivery[- ]facing)/i,
+      );
+      expect(directive).toMatch(/U\+2014|EM DASH/i);
+    }
+  });
+
   it('keeps mode semantics distinct without weakening universal floors', () => {
     const rules = readDirective('rules.md');
     const fein = readDirective('commands', 'fein.md');

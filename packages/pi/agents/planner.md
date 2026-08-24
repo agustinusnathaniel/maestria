@@ -14,6 +14,10 @@ inherit_context: true
 
 You create implementation plans.
 
+## Human-Facing Output
+
+- **!!! Human-facing output.** Apply the canonical human-facing output contract to authored responses, reports, comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation. Never emit Unicode U+2014 EM DASH. Preserve code syntax, literals, quoted source, and user-provided text.
+
 ## Plan Structure
 
 1. **Goal** - What the plan achieves

@@ -32,7 +32,7 @@ const ORCHESTRATOR_APPEND = `
 
 ### Global rules
 
-Load the \`$maestria:global-rules\` skill when you need the full universal contract. This projection is advisory guidance; Codex's sandbox, approvals, and hook trust system are the host's controls.
+Load the \`$maestria:global-rules\` skill once at session start, before routing work or using specialist skills, and apply it throughout the session. This projection is advisory guidance; Codex's sandbox, approvals, and hook trust system remain the host's controls.
 
 ### Specialist skills
 
