@@ -105,6 +105,7 @@ describe('markdown content negotiation', () => {
       'https://maestria.sznm.dev/',
       '/llms.txt',
       '/llms-full.txt',
+      '/agents.md',
       '/sitemap-index.xml',
       '/core/when-to-use/',
       'https://github.com/agustinusnathaniel/maestria',

@@ -5,9 +5,9 @@
  * bundle anywhere and to serialize with `JSON.stringify` into
  * `<script type="application/ld+json">` tags.
  *
- * Identity policy (owner decision): GitHub is the only contact surface.
- * No emails, phone numbers, or postal addresses - the `address` key is
- * omitted entirely, never null.
+ * Identity policy (owner decision, reaffirmed this session): GitHub is the
+ * only contact surface. No emails, phone numbers, or postal addresses are
+ * ever emitted; technical support stays routed through GitHub issues only.
  */
 
 export const SITE_URL = 'https://maestria.sznm.dev';
@@ -26,16 +26,20 @@ export const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`;
 export const AUTHOR_NAME = 'Agustinus Nathaniel';
 export const AUTHOR_URL = 'https://github.com/agustinusnathaniel';
 
-/** Organization entity for the site as a whole. */
-export function organizationSchema() {
+/**
+ * Organization entity without `@context`, the shared shape used both as a
+ * standalone JSON-LD entity and nested under WebSite.publisher.
+ */
+function organizationEntity() {
   return {
-    '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Maestria',
     url: SITE_URL,
     description: SITE_DESCRIPTION,
     logo: `${SITE_URL}/favicon.svg`,
     sameAs: [GITHUB_REPO_URL],
+    // Deliberately no postal address, email, or phone: see the identity
+    // policy above; GitHub issues remain the only contact surface.
     contactPoint: [
       {
         '@type': 'ContactPoint',
@@ -44,6 +48,23 @@ export function organizationSchema() {
         availableLanguage: ['en'],
       },
     ],
+  };
+}
+
+/** Organization entity for the site as a whole. */
+export function organizationSchema() {
+  return { '@context': 'https://schema.org', ...organizationEntity() };
+}
+
+/** WebSite entity naming the docs site and its publishing organization. */
+export function websiteSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Maestria',
+    url: SITE_URL,
+    description: SITE_DESCRIPTION,
+    publisher: organizationEntity(),
   };
 }
 

@@ -88,9 +88,39 @@ describe('Cloudflare Pages _routes.json', () => {
       '/llms.txt',
       '/llms-full.txt',
       '/llms-small.txt',
+      '/agents.md',
+      '/robots.txt',
       '/sitemap-index.xml',
     ]) {
       expect(routes.exclude).toContain(artifact);
+    }
+  });
+});
+
+describe('public/robots.txt', () => {
+  it('declares one allow-all group and an absolute Sitemap line per RFC 9309', async () => {
+    const text = await readAppFile('public/robots.txt');
+    // Exact bytes: one group (User-agent + Allow), a blank line, then the
+    // Sitemap directive with its absolute URL, and a trailing newline.
+    expect(text).toBe(
+      [
+        'User-agent: *',
+        'Allow: /',
+        '',
+        'Sitemap: https://maestria.sznm.dev/sitemap-index.xml',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('uses only RFC 9309 directive names with absolute sitemap URLs', async () => {
+    const text = await readAppFile('public/robots.txt');
+    for (const line of text.split('\n').filter(Boolean)) {
+      const [directive] = line.split(':');
+      expect(['User-agent', 'Allow', 'Sitemap']).toContain(directive?.trim());
+      if (directive?.trim() === 'Sitemap') {
+        expect(line).toMatch(/Sitemap: https:\/\//);
+      }
     }
   });
 });

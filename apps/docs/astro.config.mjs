@@ -9,10 +9,11 @@ import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightPageActions from 'starlight-page-actions';
 
-import { augmentLlmsTxt } from './src/lib/llms-augment.ts';
+import { agentsMdDocument, augmentLlmsTxt } from './src/lib/llms-augment.ts';
 
 /**
- * Appends the "Agent instructions" section to the generated `llms.txt`.
+ * Appends the "Agent instructions" and "Developer resources" sections to the
+ * generated `llms.txt` and writes the dedicated `agents.md` document.
  * Registered LAST so its `astro:build:done` hook runs after
  * starlight-llms-txt wrote the file during prerendering. Failures throw:
  * a silently un-augmented llms.txt must never ship.
@@ -27,6 +28,13 @@ function maestriaAugmentLlmsTxt() {
         const augmented = augmentLlmsTxt(original);
         await writeFile(target, augmented, 'utf8');
         logger.info('maestria:augment-llms-txt appended agent instructions to llms.txt');
+
+        // agents.md is written even though starlight-llms-txt knows nothing
+        // about it: a missing file would 404 for every agent following the
+        // links advertised in llms.txt and the markdown 404 body.
+        const agentsMdTarget = fileURLToPath(new URL('./agents.md', dir));
+        await writeFile(agentsMdTarget, agentsMdDocument(), 'utf8');
+        logger.info('maestria:augment-llms-txt wrote agents.md');
       },
     },
   };
