@@ -16,6 +16,7 @@
  */
 import {
   MARKDOWN_MIME,
+  RECOVERY_LINKS,
   VARY_VALUE,
   markdownTwinPath,
   wantsMarkdown,
@@ -33,18 +34,28 @@ export interface EventContextLike {
   next: (input?: Request | string) => Promise<Response>;
 }
 
-const SITE_ORIGIN = 'https://maestria.sznm.dev';
+/** Preserve the asset response while making the negotiated cache key explicit. */
+function withMarkdownVary(response: Response, isHead: boolean): Response {
+  const headers = new Headers(response.headers);
+  headers.set('Vary', VARY_VALUE);
+  return new Response(isHead ? null : response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
 
-/** Recovery links listed in the markdown-formatted 404 body. */
-const RECOVERY_LINKS: [label: string, href: string][] = [
-  ['Maestria home', `${SITE_ORIGIN}/`],
-  ['Markdown summary for agents', `${SITE_ORIGIN}/llms.txt`],
-  ['Full documentation for agents', `${SITE_ORIGIN}/llms-full.txt`],
-  ['Agent instructions', `${SITE_ORIGIN}/agents.md`],
-  ['Sitemap', `${SITE_ORIGIN}/sitemap-index.xml`],
-  ['When to Use Maestria', `${SITE_ORIGIN}/core/when-to-use/`],
-  ['GitHub repository', 'https://github.com/agustinusnathaniel/maestria'],
-];
+/** Serve a verified twin with its original cache and validator headers intact. */
+function markdownResponse(response: Response, isHead: boolean): Response {
+  const headers = new Headers(response.headers);
+  headers.set('Content-Type', MARKDOWN_MIME);
+  headers.set('Vary', VARY_VALUE);
+  return new Response(isHead ? null : response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
 
 /**
  * Markdown-formatted HTTP 404 for agents: short, parseable, with absolute
@@ -77,29 +88,26 @@ export async function handleAgentDelivery(context: EventContextLike): Promise<Re
   const { request } = context;
   if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
 
+  const url = new URL(request.url);
+  const pathname = url.pathname.toLowerCase();
+  if (pathname.endsWith('.md') || pathname.endsWith('.txt')) return context.next();
+
   const accept = request.headers.get('accept');
   if (!wantsMarkdown(accept)) return context.next();
 
-  const url = new URL(request.url);
   // Responses to HEAD must not carry a body; pass null instead of a stream.
   const isHead = request.method === 'HEAD';
 
   const twinPath = markdownTwinPath(url.pathname);
   const twin = await context.env.ASSETS.fetch(new URL(twinPath, url.origin));
   if (twin.status === 200) {
-    const headers = new Headers({
-      'Content-Type': MARKDOWN_MIME,
-      Vary: VARY_VALUE,
-    });
-    const cacheControl = twin.headers.get('Cache-Control');
-    if (cacheControl) headers.set('Cache-Control', cacheControl);
-    return new Response(isHead ? null : twin.body, { status: 200, headers });
+    return markdownResponse(twin, isHead);
   }
 
   // No twin: re-fetch the original asset so known pages without a twin still
   // serve normally instead of turning into a 404.
   const original = await context.env.ASSETS.fetch(new URL(url.pathname, url.origin));
-  if (original.status === 200) return original;
+  if (original.status === 200) return withMarkdownVary(original, isHead);
 
   return markdownNotFoundResponse(isHead);
 }

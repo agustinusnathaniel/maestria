@@ -12,20 +12,82 @@ export const MARKDOWN_MIME = 'text/markdown; charset=utf-8';
 /** Vary value advertised on negotiated responses. */
 export const VARY_VALUE = 'Accept, Accept-Encoding';
 
+/** Shared absolute recovery links for the agent 404 and the human 404 page. */
+export const RECOVERY_LINKS = [
+  ['Maestria home', 'https://maestria.sznm.dev/'],
+  ['Markdown summary for agents', 'https://maestria.sznm.dev/llms.txt'],
+  ['Full documentation for agents', 'https://maestria.sznm.dev/llms-full.txt'],
+  ['Agent instructions', 'https://maestria.sznm.dev/agents.md'],
+  ['Sitemap', 'https://maestria.sznm.dev/sitemap-index.xml'],
+  ['When to Use Maestria', 'https://maestria.sznm.dev/core/when-to-use/'],
+  ['GitHub repository', 'https://github.com/agustinusnathaniel/maestria'],
+] as const;
+
+interface AcceptRange {
+  mediaType: string;
+  quality: number;
+}
+
+function parseAcceptRanges(accept: string): AcceptRange[] {
+  return accept.split(',').flatMap((mediaRange) => {
+    const [rawType, ...parameters] = mediaRange.split(';');
+    const mediaType = rawType?.trim().toLowerCase();
+    if (!mediaType?.includes('/')) return [];
+
+    let quality = 1;
+    for (const parameter of parameters) {
+      const [name, ...rawValue] = parameter.split('=');
+      if (name?.trim().toLowerCase() !== 'q') continue;
+      const parsed = Number(rawValue.join('=').trim());
+      quality = Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 0;
+    }
+
+    return [{ mediaType, quality }];
+  });
+}
+
+function qualityFor(ranges: AcceptRange[], target: string): number {
+  const [targetType, targetSubtype] = target.split('/');
+  let specificity = -1;
+  let quality = 0;
+
+  for (const range of ranges) {
+    const [rangeType, rangeSubtype] = range.mediaType.split('/');
+    const currentSpecificity =
+      rangeType === targetType && rangeSubtype === targetSubtype
+        ? 2
+        : rangeType === targetType && rangeSubtype === '*'
+          ? 1
+          : rangeType === '*' && rangeSubtype === '*'
+            ? 0
+            : -1;
+    if (currentSpecificity < 0) continue;
+    if (currentSpecificity > specificity) {
+      specificity = currentSpecificity;
+      quality = range.quality;
+    } else if (currentSpecificity === specificity) {
+      quality = Math.max(quality, range.quality);
+    }
+  }
+
+  return quality;
+}
+
 /**
- * True when the request's Accept header explicitly asks for markdown.
- *
- * Matched per comma-separated media type so bare wildcards (or an absent
- * header) never negotiate markdown and near-misses such as
- * `text/markdownx` are not accepted - browsers keep receiving HTML
- * exactly as before.
+ * True when the request explicitly accepts Markdown at least as strongly as
+ * HTML. Bare wildcards (or an absent header) never negotiate Markdown, and
+ * quality values follow the HTTP `Accept` header contract.
  */
 export function wantsMarkdown(accept: string | null | undefined): boolean {
   if (typeof accept !== 'string') return false;
-  return accept.split(',').some((mediaRange) => {
-    const mediaType = mediaRange.trim().toLowerCase().split(';')[0]?.trim();
-    return mediaType === 'text/markdown';
-  });
+
+  const ranges = parseAcceptRanges(accept);
+  const explicitlyAcceptsMarkdown = ranges.some(
+    (range) => range.mediaType === 'text/markdown' && range.quality > 0,
+  );
+  if (!explicitlyAcceptsMarkdown) return false;
+
+  return qualityFor(ranges, 'text/markdown') >= qualityFor(ranges, 'text/html');
 }
 
 /**

@@ -141,8 +141,9 @@ describe('markdown content negotiation', () => {
 
     const res = await handleAgentDelivery(context);
 
-    expect(res).toBe(original);
     expect(res.status).toBe(200);
+    expect(res.headers.get('Vary')).toBe(VARY_VALUE);
+    expect(res.headers.get('Content-Type')).toBe('text/html; charset=utf-8');
     expect(await res.text()).toBe('<html>fine</html>');
     expect(context.nextSpy).not.toHaveBeenCalled();
   });
@@ -158,6 +159,24 @@ describe('markdown content negotiation', () => {
     expect(context.fetchSpy).not.toHaveBeenCalled();
     expect(context.nextSpy).toHaveBeenCalledTimes(1);
     expect(await res.text()).toBe('next-html');
+  });
+
+  it('passes through requests that already target static Markdown or text artifacts', async () => {
+    for (const pathname of ['/opencode.md', '/llms.txt']) {
+      const next = vi.fn(async () => new Response('static-artifact'));
+      const context = makeContext(
+        `${ORIGIN}${pathname}`,
+        { accept: 'text/markdown' },
+        new Map(),
+        next,
+      );
+
+      const res = await handleAgentDelivery(context);
+
+      expect(await res.text()).toBe('static-artifact');
+      expect(context.nextSpy).toHaveBeenCalledTimes(1);
+      expect(context.fetchSpy).not.toHaveBeenCalled();
+    }
   });
 
   it('(e) never negotiates on POST', async () => {

@@ -3,6 +3,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vite-plus/test';
 
+import { RECOVERY_LINKS } from '../src/lib/agent-delivery.ts';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DOCS_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
 
@@ -63,9 +65,19 @@ describe('trust anchor pages', () => {
 describe('404 page', () => {
   it('points agents at llms.txt and the sitemap via absolute links', async () => {
     const { body } = await readDoc('404.mdx');
-    expect(body).toContain('llms.txt');
-    expect(body).toContain('sitemap-index.xml');
-    expect(body).toContain('https://maestria.sznm.dev/core/when-to-use/');
+    expect(body).toContain('RECOVERY_LINKS.map');
+    expect(RECOVERY_LINKS).toContainEqual([
+      'Markdown summary for agents',
+      'https://maestria.sznm.dev/llms.txt',
+    ]);
+    expect(RECOVERY_LINKS).toContainEqual([
+      'Sitemap',
+      'https://maestria.sznm.dev/sitemap-index.xml',
+    ]);
+    expect(RECOVERY_LINKS).toContainEqual([
+      'When to Use Maestria',
+      'https://maestria.sznm.dev/core/when-to-use/',
+    ]);
   });
 
   it('keeps its frontmatter hero actions intact', async () => {
