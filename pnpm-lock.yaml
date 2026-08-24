@@ -152,6 +152,9 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.10
         version: 0.9.10(prettier@3.9.6)(typescript@7.0.2)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.2.0
       sharp:
         specifier: 0.35.3
         version: 0.35.3(@types/node@26.2.0)
@@ -7448,7 +7451,7 @@ snapshots:
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 24.13.3
+      '@types/node': 26.2.0
 
   '@types/unist@2.0.11': {}
 

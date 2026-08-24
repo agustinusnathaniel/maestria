@@ -1,3 +1,4 @@
+import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 import starlight from '@astrojs/starlight';
@@ -7,6 +8,29 @@ import starlightAutoSidebar from 'starlight-auto-sidebar';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightPageActions from 'starlight-page-actions';
+
+import { augmentLlmsTxt } from './src/lib/llms-augment.ts';
+
+/**
+ * Appends the "Agent instructions" section to the generated `llms.txt`.
+ * Registered LAST so its `astro:build:done` hook runs after
+ * starlight-llms-txt wrote the file during prerendering. Failures throw:
+ * a silently un-augmented llms.txt must never ship.
+ */
+function maestriaAugmentLlmsTxt() {
+  return {
+    name: 'maestria:augment-llms-txt',
+    hooks: {
+      'astro:build:done': async ({ dir, logger }) => {
+        const target = fileURLToPath(new URL('./llms.txt', dir));
+        const original = await readFile(target, 'utf8');
+        const augmented = augmentLlmsTxt(original);
+        await writeFile(target, augmented, 'utf8');
+        logger.info('maestria:augment-llms-txt appended agent instructions to llms.txt');
+      },
+    },
+  };
+}
 
 export default defineConfig({
   site: 'https://maestria.sznm.dev',
@@ -23,7 +47,13 @@ export default defineConfig({
         'Portable AI engineering praxis plugins for OpenCode, Claude Code, Codex CLI, and beyond.',
       customCss: ['./src/styles/global.css'],
       plugins: [
-        starlightLinksValidator(),
+        starlightLinksValidator({
+          // The 404 hero's "Go home" action points at `/`, i.e. the custom
+          // homepage from src/pages/index.astro, which the validator cannot
+          // resolve once the page has a markdown body to scan. Exclude exactly
+          // that link value instead of disabling validation for the page.
+          exclude: ['/'],
+        }),
         starlightLlmsTxt({
           projectName: 'maestria',
           description:
@@ -105,6 +135,14 @@ export default defineConfig({
             { label: 'Contributing', link: '/core/contributing/' },
             { label: 'Contributors', link: '/core/contributors/' },
             { label: 'Changelog', link: '/core/changelog/' },
+          ],
+        },
+        {
+          label: 'Project',
+          items: [
+            { label: 'About', link: '/about/' },
+            { label: 'Contact', link: '/contact/' },
+            { label: 'Privacy', link: '/privacy/' },
           ],
         },
         {
@@ -234,5 +272,6 @@ export default defineConfig({
         },
       ],
     }),
+    maestriaAugmentLlmsTxt(),
   ],
 });

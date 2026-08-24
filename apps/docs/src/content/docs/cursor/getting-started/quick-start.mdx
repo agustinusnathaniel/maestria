@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Your first session with @maestria/cursor — specialists, orchestration, and workflow modes.
+description: Your first session with @maestria/cursor - specialists, orchestration, and workflow modes.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -26,7 +26,7 @@ Other modes:
 
 | Command         | Behavior                                   |
 | --------------- | ------------------------------------------ |
-| `/sonar <goal>` | Research only — stop before implementation |
+| `/sonar <goal>` | Research only - stop before implementation |
 | `/blitz <goal>` | Builder-first fast path                    |
 
 ## Try a single specialist
@@ -41,9 +41,9 @@ The main agent should spawn `builder` via `Task` with a complete handoff.
 
 Expected sequence:
 
-1. `diagnose` — root cause
-2. `builder` — minimal fix
-3. `reviewer` — validation (read-only; must not edit)
+1. `diagnose` - root cause
+2. `builder` - minimal fix
+3. `reviewer` - validation (read-only; must not edit)
 
 <Aside type="caution" title="Two-layer maker/checker enforcement">
   Reviewer/adventurer/planner agents use `readonly: true` runtime flag to block write tools (Write,
@@ -53,5 +53,5 @@ Expected sequence:
 
 ## Next
 
-- [Agent reference](/core/agents/) — specialist responsibilities
-- [Pipeline & roles](/core/pipeline/) — handoff contracts and iteration limits
+- [Agent reference](/core/agents/) - specialist responsibilities
+- [Pipeline & roles](/core/pipeline/) - handoff contracts and iteration limits
