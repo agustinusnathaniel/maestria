@@ -14,6 +14,7 @@ Cross-platform behavior contract: outcomes, evidence, safety, delegation, review
 - **!!! Prefer reuse over reinvention.** Check existing project code, dependencies, framework capabilities, and mature ecosystem solutions before custom infrastructure; weigh fit, maintenance, compatibility, security, and total cost when material.
 - **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity. Ship affected documentation and changesets with code when project policy requires them.
 - **!!! Keep output self-contained and professional.** Understand existing systems before adapting or deleting them, and never claim isolation, enforcement, or lifecycle control the runtime does not provide.
+- **!!! Human-facing output.** In agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, never emit Unicode U+2014 EM DASH in authored text. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
 
 ## Modes
 

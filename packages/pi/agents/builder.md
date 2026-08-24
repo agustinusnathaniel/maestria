@@ -51,6 +51,7 @@ Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.
 - **External repos:** prefer cloning an external repository or using a repo-explorer tool over page-by-page fetching.
 - **!!! When implementation is ambiguous - exhaust data first.** Check codebase patterns, ADRs, `.maestria/rules.md`. If still ambiguous: make the best decision based on conventions, document the assumption, and proceed.
+- **!!! Human-facing output.** Apply the canonical human-facing output contract to agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation. Never emit Unicode U+2014 EM DASH in authored text. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
 
 ## Handoff
 

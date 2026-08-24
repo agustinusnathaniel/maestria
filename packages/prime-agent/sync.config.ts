@@ -50,7 +50,7 @@ const ORCHESTRATOR_APPEND = `
 
 ### Skills
 
-The universal contracts live in the \`global-rules\` skill; load it once per session when you need the full contract text. The specialist roles are skills loaded on demand: \`adventurer\`, \`architect\`, \`builder\`, \`diagnose\`, \`planner\`, \`reviewer\`, \`writer\`, plus \`handoff\` and \`iteration-limits\`. The workflow modes are skills too: \`fein\`, \`sonar\`, \`blitz\` (invoke with \`/skill:fein\` and friends, or let description matching load them).
+The universal contracts live in the \`global-rules\` skill; load it once at session start, before routing work or loading specialist skills, and apply it throughout the session. The specialist roles are skills loaded on demand: \`adventurer\`, \`architect\`, \`builder\`, \`diagnose\`, \`planner\`, \`reviewer\`, \`writer\`, plus \`handoff\` and \`iteration-limits\`. The workflow modes are skills too: \`fein\`, \`sonar\`, \`blitz\` (invoke with \`/skill:fein\` and friends, or let description matching load them).
 
 ### Executable extension (verified subset)
 
