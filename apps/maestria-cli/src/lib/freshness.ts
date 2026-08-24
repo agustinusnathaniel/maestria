@@ -1,4 +1,4 @@
-import { compareVersions, isVersionDifferent } from '@/lib/version.js';
+import { compareVersions, isVersionDifferent, isVersionGt } from '@/lib/version.js';
 
 /** How an installed version relates to the latest published version. */
 export type Freshness = 'current' | 'outdated' | 'unknown';
@@ -19,6 +19,20 @@ export function freshnessOf(installedVersion: string, latestVersion: string): Fr
     return 'outdated';
   }
   return 'current';
+}
+
+/**
+ * Whether an installed version needs an update to reach the latest published
+ * version: it must be strictly BEHIND latest. An install AHEAD of latest (a
+ * local/dev build) never needs an update — mirrors freshnessOf(), which
+ * classifies newer-than-latest as 'current', so `maestria check` and the
+ * update paths agree on the same machine state.
+ */
+export function needsUpdateOf(installedVersion: string, latestVersion: string): boolean {
+  return (
+    isVersionDifferent(installedVersion, latestVersion) &&
+    !isVersionGt(installedVersion, latestVersion)
+  );
 }
 
 /**

@@ -14,7 +14,8 @@ import {
   validateOrExit,
   VALID_PLATFORMS,
 } from '@/lib/validation.js';
-import { isVersionEq, isVersionDifferent } from '@/lib/version.js';
+import { isVersionEq, isVersionGt } from '@/lib/version.js';
+import { needsUpdateOf } from '@/lib/freshness.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
 import type { PlatformResult } from '@/types.js';
 
@@ -165,7 +166,7 @@ export const updateCommand = defineCommand({
           label: p.label,
           installedVersion: pv,
           latestVersion: lv,
-          needsUpdate: isVersionDifferent(pv, lv),
+          needsUpdate: needsUpdateOf(pv, lv),
         });
       }
 
@@ -298,6 +299,22 @@ export function updateOne(
         label: platform.label,
         ok: true,
         message: 'Already up to date',
+        prevVersion,
+        nextVersion: prevVersion,
+      } satisfies PlatformResult;
+    }
+
+    // Never downgrade on an implicit update: an install AHEAD of the registry
+    // (local dev build, unpublished release) must be left alone unless the
+    // user pinned an explicit target with --version. Mirrors freshnessOf(),
+    // which classifies newer-than-latest as 'current' so `maestria check`
+    // exits 0 for the same state — check and update must agree.
+    if (!version && isVersionGt(prevVersion, targetVersion)) {
+      return {
+        id: platform.id,
+        label: platform.label,
+        ok: true,
+        message: `Installed v${prevVersion} is newer than latest v${targetVersion}; skipping (use --version to pin)`,
         prevVersion,
         nextVersion: prevVersion,
       } satisfies PlatformResult;

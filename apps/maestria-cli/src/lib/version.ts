@@ -75,3 +75,11 @@ export function isVersionDifferent(a: string, b: string): boolean {
   const result = compareVersions(a, b);
   return result !== null && result !== 0;
 }
+
+/**
+ * Check if a is strictly greater than b ('a' is ahead of 'b'). Returns false
+ * if either is 'unknown' or incomparable (non-semver).
+ */
+export function isVersionGt(a: string, b: string): boolean {
+  return compareVersions(a, b) === 1;
+}

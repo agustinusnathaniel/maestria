@@ -249,3 +249,87 @@ describe('update command - Prime Agent', () => {
     expect(updateCommands).toHaveLength(0);
   });
 });
+
+// An implicit update (no --version) must never DOWNGRADE an install that is
+// AHEAD of the registry (local dev build ahead of npm). This mirrors
+// freshnessOf(): `maestria check` exits 0 for newer-than-latest, so update must
+// agree. An explicit -V pin is honored verbatim, downgrades included.
+describe('update command - no silent downgrade', () => {
+  it('skips an implicit update when the installed version is newer than latest', async () => {
+    vi.clearAllMocks();
+    vi.mocked(shell.run).mockImplementation((cmd, args) => {
+      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
+        return Effect.succeed(PRIME_PACKAGE_LIST.unpinned);
+      }
+      return Effect.succeed('');
+    });
+    fsMocks.readFile.mockResolvedValue(
+      JSON.stringify({ name: '@maestria/prime-agent', version: '0.99.0' }),
+    );
+
+    const result = await Effect.runPromise(updateOne(primePlatform('0.2.0'), true));
+
+    expect(result.ok).toBe(true);
+    expect(result.message).toContain('newer than latest');
+    expect(result.message).toContain('skipping');
+
+    // No Prime package update command may be issued for a downgrade.
+    const updateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update',
+      );
+    expect(updateCommands).toHaveLength(0);
+  });
+
+  it('honors an explicit -V pin even when it downgrades below the installed version', async () => {
+    vi.clearAllMocks();
+    // OpenCode supports version pinning, so an explicit -V reaches the update
+    // step instead of exiting at the "pinning is not supported" check.
+    vi.mocked(shell.run).mockImplementation((cmd, args) => {
+      if (cmd === 'cat') {
+        if (args[0].includes('.cache/opencode/packages/')) {
+          return Effect.succeed(JSON.stringify({ version: '0.99.0' }));
+        }
+        return Effect.succeed('{ "plugin": ["@maestria/opencode@0.99.0"] }');
+      }
+      return Effect.succeed('');
+    });
+
+    const openCodePlatform = {
+      ...getPlatform('opencode')!,
+      getLatestVersion: Effect.succeed('0.2.0'),
+    };
+    const result = await Effect.runPromise(updateOne(openCodePlatform, true, '0.2.0'));
+
+    // The downgrade guard must NOT fire for an explicitly pinned target.
+    expect(result.message).not.toContain('newer than latest');
+    expect(result.message).not.toContain('skipping');
+
+    // Proceeding past the guard means the pinned update command WAS issued.
+    const pinnedUpdateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'opencode' &&
+          call[1]?.[0] === 'plugin' &&
+          call[1]?.[1] === '@maestria/opencode@0.2.0',
+      );
+    expect(pinnedUpdateCommands).toHaveLength(1);
+  });
+
+  it('does not offer a newer-than-latest install in the interactive picker', async () => {
+    vi.clearAllMocks();
+    vi.mocked(shell.run).mockImplementation(() => Effect.succeed(''));
+    fsMocks.readFile.mockResolvedValue(
+      JSON.stringify({ name: '@maestria/prime-agent', version: '0.99.0' }),
+    );
+
+    const { needsUpdateOf } = await import('@/lib/freshness.js');
+
+    // Picker semantics: only strictly-BEHIND platforms are offered.
+    expect(needsUpdateOf('0.99.0', '0.2.0')).toBe(false);
+    expect(needsUpdateOf('0.1.0', '0.2.0')).toBe(true);
+  });
+});
