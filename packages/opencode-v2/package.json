@@ -21,9 +21,7 @@
     "build": "vp pack",
     "dev": "vp dev",
     "test": "vp test",
-    "check": "vp check",
-    "sync": "npx tsx ../core/scripts/sync.ts --verbose",
-    "prebuild": "npx tsx ../core/scripts/sync.ts --check"
+    "check": "vp check"
   },
   "dependencies": {
     "yaml": "^2.9.0",
