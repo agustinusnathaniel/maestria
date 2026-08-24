@@ -8,7 +8,7 @@ import {
   organizationSchema,
   softwareApplicationSchema,
   websiteSchema,
-} from '../src/lib/site-schema.ts';
+} from '@/lib/site-schema.ts';
 
 describe('organizationSchema', () => {
   const schema = organizationSchema();

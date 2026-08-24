@@ -5,7 +5,7 @@ import {
   VARY_VALUE,
   markdownTwinPath,
   wantsMarkdown,
-} from '../src/lib/agent-delivery.ts';
+} from '@/lib/agent-delivery.ts';
 
 describe('MARKDOWN_MIME / VARY_VALUE', () => {
   it('expose the documented constants', () => {
@@ -22,6 +22,8 @@ describe('wantsMarkdown', () => {
     'text/html;q=0.9,text/markdown',
     'application/json, text/markdown;q=0.8, */*;q=0.1',
     'text/markdown;q=0.8, */*;q=0.1',
+    'text/*',
+    'text/*;q=0.9,text/html;q=0.8',
   ];
 
   const falsy = [
@@ -29,7 +31,6 @@ describe('wantsMarkdown', () => {
     null,
     '',
     '*/*',
-    'text/*',
     'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
     'text/html,text/markdown;q=0.9',
     'text/html;q=1,text/markdown;q=0.9',

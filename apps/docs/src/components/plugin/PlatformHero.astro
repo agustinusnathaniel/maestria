@@ -5,8 +5,8 @@
  * composes left-to-right to differentiate sub-pages from the centered
  * homepage. Renders an InstallCommand chip when `installCommand` is set.
  */
-import InstallCommand from './InstallCommand.astro';
-import { markAttrs } from '../../data/marks.js';
+import InstallCommand from '@/components/plugin/InstallCommand.astro';
+import { markAttrs } from '@/data/marks.js';
 
 interface Props {
   /** Mono uppercase eyebrow, e.g. '@MAESTRIA/OPENCODE'. */

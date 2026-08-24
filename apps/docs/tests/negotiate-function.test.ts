@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { MARKDOWN_MIME, VARY_VALUE } from '../src/lib/agent-delivery.ts';
+import { MARKDOWN_MIME, VARY_VALUE } from '@/lib/agent-delivery.ts';
 import {
   type AssetsBindingLike,
   type EventContextLike,
@@ -11,7 +11,13 @@ const ORIGIN = 'https://docs.example.com';
 
 type AssetTable = Map<
   string,
-  { status: number; body?: string; contentType?: string; cacheControl?: string }
+  {
+    status: number;
+    body?: string;
+    contentType?: string;
+    cacheControl?: string;
+    vary?: string;
+  }
 >;
 
 function makeAssets(table: AssetTable): {
@@ -25,6 +31,7 @@ function makeAssets(table: AssetTable): {
     if (!entry || entry.status !== 200) return new Response(null, { status: 404 });
     const headers = new Headers({ 'Content-Type': entry.contentType ?? 'text/plain' });
     if (entry.cacheControl) headers.set('Cache-Control', entry.cacheControl);
+    if (entry.vary) headers.set('Vary', entry.vary);
     return new Response(entry.body ?? '', { status: 200, headers });
   });
   return { binding: { fetch: fetchSpy }, fetchSpy };
@@ -86,6 +93,25 @@ describe('markdown content negotiation', () => {
     // The internal ASSETS lookup targeted the flat twin sibling from dist.
     expect(context.fetchSpy).toHaveBeenCalledWith(new URL('/opencode.md', ORIGIN));
     expect(context.nextSpy).not.toHaveBeenCalled();
+  });
+
+  it('preserves existing cache dimensions when adding negotiated dimensions', async () => {
+    const table: AssetTable = new Map([
+      [
+        '/opencode.md',
+        {
+          status: 200,
+          body: '# OpenCode\n',
+          contentType: 'text/markdown',
+          vary: 'Accept-Language',
+        },
+      ],
+    ]);
+    const context = makeContext(`${ORIGIN}/opencode/`, { accept: 'text/markdown' }, table);
+
+    const res = await handleAgentDelivery(context);
+
+    expect(res.headers.get('Vary')).toBe('Accept-Language, Accept, Accept-Encoding');
   });
 
   it('(b) answers unknown paths with a markdown 404 carrying recovery links', async () => {
