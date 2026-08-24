@@ -163,7 +163,7 @@ Changesets v3 emits structured publish and tag metadata through `CHANGESETS_OUTP
 
 ### Change
 
-Use `changesets/action@v2` in `.github/workflows/release.yml` with the v2 input names and explicit release behavior:
+Use `changesets/action@v2` in `.github/workflows/release.yml` with the v2 input names:
 
 ```yaml
 github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -171,12 +171,9 @@ version-script: pnpm version-packages
 publish-script: pnpm release
 pr-title: 'chore: version packages'
 commit-message: 'chore: version packages'
-create-github-releases: true
-push-git-tags: true
-push-with-git-cli: true
 ```
 
-The release job already grants `contents: write`, which is required for pushing release tags and creating GitHub Releases. The workflow continues to use the existing custom version and publish scripts so package version synchronization remains part of the release path.
+The action defaults `create-github-releases` and `push-git-tags` to `true`, so those flags are intentionally omitted. `push-with-git-cli` defaults to `false`, which uses the GitHub API for release commits and tags; that is sufficient here and keeps the workflow on the action's default path. The release job already grants `contents: write`, which is required for pushing release tags and creating GitHub Releases. The workflow continues to use the existing custom version and publish scripts so package version synchronization remains part of the release path.
 
 ### Options Considered
 
@@ -184,7 +181,7 @@ The release job already grants `contents: write`, which is required for pushing 
 | --- | --- | --- |
 | Keep `changesets/action@v1` | Retains the legacy action and input contract while the repository uses the v3 CLI. This is the failure mode that allowed npm publishing without a GitHub Release. | Rejected |
 | Downgrade `@changesets/cli` to v2 | Restores the old pairing but discards the v3 CLI and configuration behavior already adopted by the repository. | Rejected |
-| Upgrade to `changesets/action@v2` | Uses the supported v3 integration, structured publish metadata, and explicit tag/release controls. | Chosen |
+| Upgrade to `changesets/action@v2` | Uses the supported v3 integration, structured publish metadata, and the action's default tag/release behavior. | Chosen |
 
 ### Backfill Procedure
 

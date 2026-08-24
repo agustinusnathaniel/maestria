@@ -47,8 +47,3 @@ jobs:
           publish-script: pnpm release
           pr-title: 'chore: version packages'
           commit-message: 'chore: version packages'
-          create-github-releases: true
-          push-git-tags: true
-          push-with-git-cli: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
