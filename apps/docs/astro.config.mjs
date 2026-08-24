@@ -178,6 +178,7 @@ export default defineConfig({
             { label: 'Overview', link: '/ecosystem/' },
             { label: 'CodeGraph', link: '/ecosystem/codegraph/' },
             { label: 'RTK', link: '/ecosystem/rtk/' },
+            { label: 'OpenCode Goal Plugin', link: '/ecosystem/opencode-goal-plugin/' },
           ],
         },
         {

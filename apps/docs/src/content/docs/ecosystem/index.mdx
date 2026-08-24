@@ -8,8 +8,8 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 Maestria works great on its own, but these complementary tools can enhance
 your experience when paired with Maestria-powered agents.
 
-Both tools are independent projects with their own communities and maintainers.
-Maestria does not depend on either; they are optional enhancements.
+These tools are independent projects with their own communities and maintainers.
+Maestria does not depend on any of them; they are optional enhancements.
 
 <CardGrid>
   <LinkCard
@@ -21,5 +21,10 @@ Maestria does not depend on either; they are optional enhancements.
     title="RTK"
     description="A CLI proxy that filters command output to save 60-90% tokens. Popular companion for AI coding agents, reduces context burn from verbose tool output."
     href="/ecosystem/rtk/"
+  />
+  <LinkCard
+    title="OpenCode Goal Plugin"
+    description="Codex-style long-running goal mode for OpenCode: a /goal command, persistent goal state, and idle continuation. Complements Maestria's orchestrator continuation policy."
+    href="/ecosystem/opencode-goal-plugin/"
   />
 </CardGrid>
