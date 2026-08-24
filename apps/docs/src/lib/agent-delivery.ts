@@ -1,16 +1,18 @@
 /**
  * Agent-facing content negotiation helpers.
  *
- * Pure string functions with zero runtime dependencies so they can be bundled
- * into a Cloudflare Pages Function and imported by Vitest without any worker
- * or Astro runtime present.
+ * No Astro or worker runtime dependencies are required, so this module can be
+ * bundled into a Cloudflare Pages Function and imported by Vitest directly.
  */
+import Negotiator from 'negotiator';
 
 /** Content type served for markdown twins. */
 export const MARKDOWN_MIME = 'text/markdown; charset=utf-8';
 
 /** Vary value advertised on negotiated responses. */
 export const VARY_VALUE = 'Accept, Accept-Encoding';
+
+const SUPPORTED_MEDIA_TYPES = ['text/markdown', 'text/html'] as const;
 
 /** Shared absolute recovery links for the agent 404 and the human 404 page. */
 export const RECOVERY_LINKS = [
@@ -23,71 +25,36 @@ export const RECOVERY_LINKS = [
   ['GitHub repository', 'https://github.com/agustinusnathaniel/maestria'],
 ] as const;
 
-interface AcceptRange {
-  mediaType: string;
-  quality: number;
-}
-
-function parseAcceptRanges(accept: string): AcceptRange[] {
-  return accept.split(',').flatMap((mediaRange) => {
-    const [rawType, ...parameters] = mediaRange.split(';');
-    const mediaType = rawType?.trim().toLowerCase();
-    if (!mediaType?.includes('/')) return [];
-
-    let quality = 1;
-    for (const parameter of parameters) {
-      const [name, ...rawValue] = parameter.split('=');
-      if (name?.trim().toLowerCase() !== 'q') continue;
-      const parsed = Number(rawValue.join('=').trim());
-      quality = Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 0;
-    }
-
-    return [{ mediaType, quality }];
-  });
-}
-
-function qualityFor(ranges: AcceptRange[], target: string): number {
-  const [targetType, targetSubtype] = target.split('/');
-  let specificity = -1;
-  let quality = 0;
-
-  for (const range of ranges) {
-    const [rangeType, rangeSubtype] = range.mediaType.split('/');
-    const currentSpecificity =
-      rangeType === targetType && rangeSubtype === targetSubtype
-        ? 2
-        : rangeType === targetType && rangeSubtype === '*'
-          ? 1
-          : rangeType === '*' && rangeSubtype === '*'
-            ? 0
-            : -1;
-    if (currentSpecificity < 0) continue;
-    if (currentSpecificity > specificity) {
-      specificity = currentSpecificity;
-      quality = range.quality;
-    } else if (currentSpecificity === specificity) {
-      quality = Math.max(quality, range.quality);
-    }
-  }
-
-  return quality;
-}
-
 /**
- * True when the request explicitly accepts Markdown at least as strongly as
- * HTML. Bare wildcards (or an absent header) never negotiate Markdown, and
- * quality values follow the HTTP `Accept` header contract.
+ * True when the request accepts Markdown at least as strongly as HTML.
+ * A bare all-media wildcard (or an absent header) never negotiates Markdown, while
+ * `text/*` follows the content-negotiation behavior used by Cloudflare's
+ * Markdown for Agents feature. The protocol parsing is delegated to the
+ * mature `negotiator` package rather than maintained locally.
  */
 export function wantsMarkdown(accept: string | null | undefined): boolean {
   if (typeof accept !== 'string') return false;
 
-  const ranges = parseAcceptRanges(accept);
-  const explicitlyAcceptsMarkdown = ranges.some(
-    (range) => range.mediaType === 'text/markdown' && range.quality > 0,
+  // Ignore media-type parameters other than `q`: `negotiator` correctly
+  // parses them, but treats parameters such as `charset` as part of the
+  // available media type comparison rather than as request metadata.
+  const normalizedAccept = accept
+    .toLowerCase()
+    .split(',')
+    .map((range) => {
+      const [mediaType, ...parameters] = range.split(';');
+      const quality = parameters.find((parameter) => parameter.trim().startsWith('q='));
+      return quality ? `${mediaType?.trim()};${quality.trim()}` : mediaType?.trim();
+    })
+    .filter((range): range is string => Boolean(range))
+    .join(',');
+  const negotiator = new Negotiator({ headers: { accept: normalizedAccept } });
+  const acceptedRanges = negotiator.mediaTypes();
+  const acceptsText = acceptedRanges.some(
+    (range) => range === 'text/markdown' || range === 'text/*',
   );
-  if (!explicitlyAcceptsMarkdown) return false;
 
-  return qualityFor(ranges, 'text/markdown') >= qualityFor(ranges, 'text/html');
+  return acceptsText && negotiator.mediaType(SUPPORTED_MEDIA_TYPES) === 'text/markdown';
 }
 
 /**

@@ -27,6 +27,9 @@ catalogs:
     '@tailwindcss/vite':
       specifier: ^4.3.3
       version: 4.3.3
+    '@types/negotiator':
+      specifier: ^0.6.5
+      version: 0.6.5
     '@types/node':
       specifier: ^26.2.0
       version: 26.2.0
@@ -42,6 +45,9 @@ catalogs:
     jsonc-parser:
       specifier: ^3.3.1
       version: 3.3.1
+    negotiator:
+      specifier: ^1.1.0
+      version: 1.1.0
     tailwindcss:
       specifier: ^4.3.3
       version: 4.3.3
@@ -130,6 +136,9 @@ importers:
       astro-contributors:
         specifier: ^0.9.0
         version: 0.9.0(astro@7.2.4(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@26.2.0)(jiti@2.7.0)(tsx@4.23.12)(typescript@7.0.2)(yaml@2.9.0))
+      negotiator:
+        specifier: 'catalog:'
+        version: 1.1.0
       starlight-auto-sidebar:
         specifier: ^0.4.0
         version: 0.4.0(@astrojs/starlight@0.41.7(@astrojs/markdown-remark@7.2.4)(astro@7.2.4(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@26.2.0)(jiti@2.7.0)(tsx@4.23.12)(typescript@7.0.2)(yaml@2.9.0))(typescript@7.0.2))
@@ -152,6 +161,9 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.10
         version: 0.9.10(prettier@3.9.6)(typescript@7.0.2)
+      '@types/negotiator':
+        specifier: 'catalog:'
+        version: 0.6.5
       '@types/node':
         specifier: 'catalog:'
         version: 26.2.0
@@ -2328,6 +2340,9 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
+  '@types/negotiator@0.6.5':
+    resolution: {integrity: sha512-MPOlB48mfWhoUlynY0ga7CFsXIPcH6vGPkjzXMn2p+4PH1QUyn2KPtw0hrLLmO6SaX4zse3X6h2x/083vveAlA==}
+
   '@types/nlcst@2.0.3':
     resolution: {integrity: sha512-vSYNSDe6Ix3q+6Z7ri9lyWqgGhJTmzRjZRqyq15N0Z/1/UnVsno9G/N40NBijoYx2seFDIl0+B2mgAb9mezUCA==}
 
@@ -3089,6 +3104,10 @@ packages:
   common-ancestor-path@2.0.0:
     resolution: {integrity: sha512-dnN3ibLeoRf2HNC+OlCiNc5d2zxbLJXOtiZUudNFSXZrNSydxcCsSpRzXwfu7BBWCIfHPw+xTayeBvJCP/D8Ng==}
     engines: {node: '>= 18'}
+
+  content-type@2.1.0:
+    resolution: {integrity: sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag==}
+    engines: {node: '>=18'}
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
@@ -4147,6 +4166,10 @@ packages:
     resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  negotiator@1.1.0:
+    resolution: {integrity: sha512-NMPBRMJgiQHjbd8phG3Vebdx4kZ1H121rbl5IkMqeOsahptB9BKo/d7oJ3zTXqTgagn2bWlNSXkh0QUGM31RYg==}
+    engines: {node: '>=18'}
 
   neotraverse@1.0.1:
     resolution: {integrity: sha512-WmmLty1YWwJl9yZi77v2dVIV6X2kuYV8YYBI/G3LWGKdGHmHUvL1z7FW0iDvEvGAwNEoc5x1tOOOyDnf5jJw/w==}
@@ -7433,6 +7456,8 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
+  '@types/negotiator@0.6.5': {}
+
   '@types/nlcst@2.0.3':
     dependencies:
       '@types/unist': 3.0.3
@@ -8142,6 +8167,8 @@ snapshots:
   commander@14.0.3: {}
 
   common-ancestor-path@2.0.0: {}
+
+  content-type@2.1.0: {}
 
   convert-source-map@2.0.0: {}
 
@@ -9597,6 +9624,10 @@ snapshots:
   mute-stream@0.0.8: {}
 
   nanoid@3.3.18: {}
+
+  negotiator@1.1.0:
+    dependencies:
+      content-type: 2.1.0
 
   neotraverse@1.0.1: {}
 

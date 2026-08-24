@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages catch-all Function: markdown content negotiation.
  *
- * Agents that send `Accept: text/markdown` get the page's markdown twin
+ * Agents that request Markdown with `Accept: text/markdown` or `text/*` get the page's markdown twin
  * (see `markdownTwinPath`) served as `text/markdown` with a `Vary` header so
  * caches keep HTML and markdown responses apart. Browsers never send that
  * Accept value, so every other request falls through to `context.next()`
@@ -37,7 +37,7 @@ export interface EventContextLike {
 /** Preserve the asset response while making the negotiated cache key explicit. */
 function withMarkdownVary(response: Response, isHead: boolean): Response {
   const headers = new Headers(response.headers);
-  headers.set('Vary', VARY_VALUE);
+  addNegotiatedVary(headers);
   return new Response(isHead ? null : response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -49,12 +49,32 @@ function withMarkdownVary(response: Response, isHead: boolean): Response {
 function markdownResponse(response: Response, isHead: boolean): Response {
   const headers = new Headers(response.headers);
   headers.set('Content-Type', MARKDOWN_MIME);
-  headers.set('Vary', VARY_VALUE);
+  addNegotiatedVary(headers);
   return new Response(isHead ? null : response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,
   });
+}
+
+/** Preserve existing cache dimensions while adding the dimensions we vary on. */
+function addNegotiatedVary(headers: Headers): void {
+  const existing =
+    headers
+      .get('Vary')
+      ?.split(',')
+      .map((value) => value.trim())
+      .filter(Boolean) ?? [];
+  const names = new Set(existing.map((value) => value.toLowerCase()));
+
+  for (const value of VARY_VALUE.split(',').map((name) => name.trim())) {
+    if (!names.has(value.toLowerCase())) {
+      existing.push(value);
+      names.add(value.toLowerCase());
+    }
+  }
+
+  headers.set('Vary', existing.join(', '));
 }
 
 /**
