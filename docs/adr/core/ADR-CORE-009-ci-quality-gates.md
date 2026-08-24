@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-29); amended (2026-07-10)
+Accepted (2026-06-29); amended (2026-07-10, 2026-08-24)
 
 ## Context
 
@@ -153,6 +153,12 @@ Before Decision 1 (when CI ran `pnpm build` instead of `pnpm check`), this was i
 
 The sync step is the minimal addition required to make the existing typecheck pipeline work for Astro projects. It adds negligible time and follows the existing `vp run --filter` pattern used elsewhere in the monorepo.
 
+## Decision 7: Align Changesets v3 with `changesets/action@v2`
+
+Changesets v3 and `changesets/action@v2` use a different release metadata contract than the v1 action. The old pairing allowed npm publishing without reliably creating the corresponding GitHub Release.
+
+Pair `@changesets/cli@3.0.1` with `changesets/action@v2`, using its v2 input names and default tag/release behavior. The existing `contents: write` permission remains required. Existing npm-only releases require a one-time manual backfill; the routine workflow does not retroactively discover them.
+
 ## Consequences
 
 ### Positive
@@ -196,3 +202,4 @@ This eliminates the 6-line setup block that was duplicated across `release.yml` 
 - `vite.config.ts` - defines the `vp` tasks (fmt, lint, run) that `vp check` invokes
 - [actions/cache documentation](https://github.com/actions/cache) - cache action reference
 - [changesets/action documentation](https://github.com/changesets/action) - changesets publishing action
+- [Changesets CLI command options](https://github.com/changesets/changesets/blob/main/docs/command-line-options.md) - `git-tag` and `publish` behavior
