@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { MARKDOWN_MIME, VARY_VALUE } from '../src/lib/agent-delivery.ts';
+import { MARKDOWN_MIME, VARY_VALUE } from '@/lib/agent-delivery.ts';
 import {
   type AssetsBindingLike,
   type EventContextLike,
