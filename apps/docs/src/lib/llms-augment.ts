@@ -136,10 +136,13 @@ export function agentsMdDocument(): string {
 }
 
 /**
- * Append the missing sections to an llms.txt document: Developer resources
- * first, then Agent instructions. Each append is keyed on its own marker, so
- * calling twice yields the exact same output, and an already-complete
- * document is returned unchanged.
+ * Fill in the missing sections of an llms.txt document while keeping the
+ * canonical order: Developer resources before Agent instructions. When the
+ * Agent instructions section is already present on its own, the missing
+ * Developer resources section is inserted directly above it instead of being
+ * appended after it at the document end. Each fill is keyed on its own
+ * marker, so calling twice yields the exact same output, and an
+ * already-complete document is returned unchanged.
  */
 export function augmentLlmsTxt(original: string): string {
   const hasResources = original.includes(DEVELOPER_RESOURCES_MARKER);
@@ -147,7 +150,15 @@ export function augmentLlmsTxt(original: string): string {
   if (hasResources && hasInstructions) return original;
 
   let augmented = original;
-  if (!hasResources) augmented = appendSection(augmented, developerResourcesSection());
+  if (hasInstructions && !hasResources) {
+    augmented = insertSectionBeforeMarker(
+      augmented,
+      developerResourcesSection(),
+      AGENT_INSTRUCTIONS_MARKER,
+    );
+  } else if (!hasResources) {
+    augmented = appendSection(augmented, developerResourcesSection());
+  }
   if (!hasInstructions) augmented = appendSection(augmented, agentInstructionsSection());
   return augmented;
 }
@@ -156,4 +167,21 @@ export function augmentLlmsTxt(original: string): string {
 function appendSection(documentText: string, section: string): string {
   const base = documentText.endsWith('\n') ? documentText : `${documentText}\n`;
   return `${base}\n${section}`;
+}
+
+/**
+ * Insert one marker-led section immediately before the line carrying
+ * `beforeMarker` (caller guarantees that marker is present). Mirrors the
+ * append-path blank-line spacing: one blank line between prior content and
+ * the inserted marker comment, one between the section's trailing newline
+ * and the following line. Existing bytes are left untouched.
+ */
+function insertSectionBeforeMarker(
+  documentText: string,
+  section: string,
+  beforeMarker: string,
+): string {
+  const markerIndex = documentText.indexOf(beforeMarker);
+  const lineStart = documentText.lastIndexOf('\n', markerIndex) + 1;
+  return `${documentText.slice(0, lineStart)}\n${section}\n${documentText.slice(lineStart)}`;
 }

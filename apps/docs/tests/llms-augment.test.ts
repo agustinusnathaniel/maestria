@@ -139,6 +139,33 @@ describe('augmentLlmsTxt ordering and per-marker idempotency', () => {
     expect(augmentLlmsTxt(complete)).toBe(complete);
   });
 
+  it('inserts Developer resources above an existing Agent instructions section', () => {
+    const instructionsOnly = `${SAMPLE}\n\n${agentInstructionsSection()}`;
+    const filled = augmentLlmsTxt(instructionsOnly);
+
+    expect(filled.indexOf(DEVELOPER_RESOURCES_MARKER)).toBeLessThan(
+      filled.indexOf(AGENT_INSTRUCTIONS_MARKER),
+    );
+    expect(filled.split(DEVELOPER_RESOURCES_MARKER)).toHaveLength(2);
+    expect(filled.split(AGENT_INSTRUCTIONS_MARKER)).toHaveLength(2);
+    // Append-path blank-line spacing on both sides of the inserted section.
+    expect(filled).toContain(`\n\n${DEVELOPER_RESOURCES_MARKER}`);
+    expect(filled).toContain(`\n\n${AGENT_INSTRUCTIONS_MARKER}`);
+    // Idempotent: re-running on the filled document changes nothing.
+    expect(augmentLlmsTxt(filled)).toBe(filled);
+  });
+
+  it('appends Agent instructions after existing Developer resources', () => {
+    const resourcesOnly = `${SAMPLE}\n\n${developerResourcesSection()}`;
+    const filled = augmentLlmsTxt(resourcesOnly);
+
+    expect(filled.indexOf(AGENT_INSTRUCTIONS_MARKER)).toBeGreaterThan(
+      filled.indexOf(DEVELOPER_RESOURCES_MARKER),
+    );
+    expect(filled.split(DEVELOPER_RESOURCES_MARKER)).toHaveLength(2);
+    expect(filled.split(AGENT_INSTRUCTIONS_MARKER)).toHaveLength(2);
+  });
+
   it('fills in only the missing section when one marker already exists', () => {
     const onlyResources = `\n${DEVELOPER_RESOURCES_MARKER}\n\n## Developer resources\n\nbody\n`;
     const filled = augmentLlmsTxt(onlyResources);
