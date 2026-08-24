@@ -7,6 +7,7 @@ import {
   SITE_URL,
   organizationSchema,
   softwareApplicationSchema,
+  websiteSchema,
 } from '../src/lib/site-schema.ts';
 
 describe('organizationSchema', () => {
@@ -33,18 +34,23 @@ describe('organizationSchema', () => {
     expect(contact.availableLanguage).toContain('en');
   });
 
-  it('omits address entirely (GitHub-only identity policy)', () => {
-    // Never null: the key must be absent so serialized JSON-LD carries no
-    // empty postal data.
-    expect('address' in schema).toBe(false);
-    expect(JSON.stringify(schema)).not.toContain('"address"');
+  it('carries the owner-approved-minimal postal address (country only)', () => {
+    // Approved data decision: country "ID" is inferred from the owner's
+    // public presence and pending owner confirmation. Nothing beyond the
+    // country code may be emitted.
+    expect(schema.address).toEqual({
+      '@type': 'PostalAddress',
+      addressCountry: 'ID',
+    });
   });
 
-  it('contains no email, telephone, or postal data anywhere', () => {
+  it('emits no street, city, email, or telephone data anywhere', () => {
     const json = JSON.stringify(schema);
-    expect(json).not.toContain('@type":"PostalAddress');
+    expect(json).not.toContain('streetAddress');
+    expect(json).not.toContain('addressLocality');
     expect(json.toLowerCase()).not.toContain('mailto:');
-    expect('telephone' in schema).toBe(false);
+    expect(json.toLowerCase()).not.toContain('"email"');
+    expect(json.toLowerCase()).not.toContain('telephone');
   });
 });
 
@@ -81,10 +87,45 @@ describe('softwareApplicationSchema', () => {
   });
 });
 
+describe('websiteSchema', () => {
+  const schema = websiteSchema();
+
+  it('is a WebSite entity with the core site fields', () => {
+    expect(schema['@context']).toBe('https://schema.org');
+    expect(schema['@type']).toBe('WebSite');
+    expect(schema.name).toBe('Maestria');
+    expect(schema.url).toBe(SITE_URL);
+    expect(schema.description).toBe(SITE_DESCRIPTION);
+  });
+
+  it('embeds the Organization as publisher without its own @context', () => {
+    const publisher = schema.publisher;
+    expect(publisher['@type']).toBe('Organization');
+    expect('@context' in publisher).toBe(false);
+    expect(publisher.name).toBe('Maestria');
+    expect(publisher.url).toBe(SITE_URL);
+  });
+
+  it('publishes exactly the organizationSchema entity (single source)', () => {
+    const org = organizationSchema();
+    expect(schema.publisher).toEqual({
+      '@type': org['@type'],
+      name: org.name,
+      url: org.url,
+      description: org.description,
+      logo: org.logo,
+      sameAs: org.sameAs,
+      address: org.address,
+      contactPoint: org.contactPoint,
+    });
+  });
+});
+
 describe('JSON-LD serialization round-trip', () => {
   it.each([
     ['organization', organizationSchema()],
     ['softwareApplication', softwareApplicationSchema()],
+    ['website', websiteSchema()],
   ])('%j survives JSON.stringify -> parse unchanged', (_name, schema) => {
     const roundTripped = JSON.parse(JSON.stringify(schema));
     expect(roundTripped).toEqual(schema);
