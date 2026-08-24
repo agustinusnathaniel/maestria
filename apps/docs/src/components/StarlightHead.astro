@@ -1,9 +1,9 @@
 ---
 import StarlightHead from '@astrojs/starlight/components/Head.astro'
-import Analytics from './Analytics.astro'
-import Tracking from './Tracking.astro'
-import { markdownTwinPath } from '../lib/agent-delivery';
-import { SITE_URL, organizationSchema, softwareApplicationSchema, websiteSchema } from '../lib/site-schema';
+import Analytics from '@/components/Analytics.astro'
+import Tracking from '@/components/Tracking.astro'
+import { markdownTwinPath } from '@/lib/agent-delivery';
+import { SITE_URL, organizationSchema, softwareApplicationSchema, websiteSchema } from '@/lib/site-schema';
 
 // Preload the latin variable fonts used on first paint of every page. Hashed
 // asset URLs only exist at build time, so this lives in the Head override

@@ -5,7 +5,7 @@ import {
   VARY_VALUE,
   markdownTwinPath,
   wantsMarkdown,
-} from '../src/lib/agent-delivery.ts';
+} from '@/lib/agent-delivery.ts';
 
 describe('MARKDOWN_MIME / VARY_VALUE', () => {
   it('expose the documented constants', () => {

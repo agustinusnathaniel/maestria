@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vite-plus/test';
 
-import { RECOVERY_LINKS } from '../src/lib/agent-delivery.ts';
+import { RECOVERY_LINKS } from '@/lib/agent-delivery.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DOCS_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
