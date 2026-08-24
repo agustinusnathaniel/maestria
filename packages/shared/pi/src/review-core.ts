@@ -1,7 +1,7 @@
 /**
  * Shared review-mode orchestration for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Consumed by both @maestria/omp and @maestria/pi to eliminate duplication
  * of review-mode model/tool restoration and switching.
  *

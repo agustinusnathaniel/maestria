@@ -10,7 +10,7 @@ Accepted (2026-07-17). Revised (2026-08-10) - supersedes the single-thread defau
 
 ## Context (original, 2026-07-17)
 
-The Maestria orchestrator SKILL.md was ported from `@maestria/opencode`, where the orchestrator is a **pure dispatcher** with no implementation tools — its only actions are `task()` (delegate) and `question()` (ask the user). This design works for OpenCode because the coding agent handles implementation.
+The Maestria orchestrator SKILL.md was ported from `@maestria/opencode`, where the orchestrator is a **pure dispatcher** with no implementation tools - its only actions are `task()` (delegate) and `question()` (ask the user). This design works for OpenCode because the coding agent handles implementation.
 
 On Hermes Agent, the orchestrator has **full tool access** (read, write, bash, LLM, delegation). The "pure dispatcher" mandate is actively harmful because it forces unnecessary `delegate_task()` calls for simple tasks that could be done faster and more reliably in a single turn.
 
@@ -30,11 +30,11 @@ The Hermes orchestrator defaults to **single-thread execution**. It uses `delega
 | Orchestrator SKILL.md | "Only tools are delegate_task() and question(). Never implement yourself." | "Default to direct implementation. Only delegate for complex tasks." |
 | `pre_llm.py` fein context | "All stages execute. Maker/checker split applies." | "Default: single-thread execution. Maker/checker split applies when delegation is used." |
 | `sync.config.ts` | No replace rules for orchestrator mandate | 5 replace rules adapting canonical "pure dispatcher" language for Hermes |
-| `permissions.py` | Unchanged — orchestrator role already allows full access when no role mapping | No change needed |
+| `permissions.py` | Unchanged - orchestrator role already allows full access when no role mapping | No change needed |
 
 ### What did NOT change
 
-- **Specialist roles** (adventurer, builder, reviewer, etc.) — unchanged. They still describe their roles correctly for when delegation IS used.
+- **Specialist roles** (adventurer, builder, reviewer, etc.) - unchanged. They still describe their roles correctly for when delegation IS used.
 - **Mode system** (fein/sonar/blitz) - unchanged. Semantics are now enforced by the runtime (see Revision below).
 - **Permission enforcement** - as originally written this was a no-op for the main session: the main session has no role mapping, so all tools passed through `pre_tool_call`. This is now superseded - see [Revision (2026-08-10)](#revision-2026-08-10-bounded-direct-execution-and-role-gated-delegation), which adds direct-session allowlists in sonar/blitz and role-gated access for delegated child sessions.
 
@@ -48,7 +48,7 @@ The Hermes orchestrator defaults to **single-thread execution**. It uses `delega
 
 ### Negative
 
-- Orchestrator skill diverges from canonical `@maestria/opencode` source — sync replaces must be maintained
+- Orchestrator skill diverges from canonical `@maestria/opencode` source - sync replaces must be maintained
 - Developers may over-rely on single-thread and not delegate when beneficial
 
 These consequences still apply to direct fein work. The Revision below narrows them.

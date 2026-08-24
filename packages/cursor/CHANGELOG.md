@@ -86,7 +86,6 @@
 ### Patch Changes
 
 - [#108](https://github.com/agustinusnathaniel/maestria/pull/108) [`a2e2b8a`](https://github.com/agustinusnathaniel/maestria/commit/a2e2b8a061749c268e30eda82be43f6b1dbaf507) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactored all agent directive prompts for better structure, clarity, and cross-platform consistency:
-
   - Restructured core prompts with clearer sections and emphasis on critical rules agents must follow
   - Added structured handoff verification checklists to all specialist agents so handoffs between agents are more reliable
   - Standardized "Before reporting done" completion checks across all agents, reducing premature sign-offs
@@ -105,17 +104,16 @@
 
 ### Patch Changes
 
-- [#92](https://github.com/agustinusnathaniel/maestria/pull/92) [`e861360`](https://github.com/agustinusnathaniel/maestria/commit/e8613603e43315b403f87e66f428dfe4c1b62def) Thanks [@iyansr](https://github.com/iyansr)! - feat: @maestria/cursor plugin v0.1 — declarative Cursor IDE and CLI plugin
+- [#92](https://github.com/agustinusnathaniel/maestria/pull/92) [`e861360`](https://github.com/agustinusnathaniel/maestria/commit/e8613603e43315b403f87e66f428dfe4c1b62def) Thanks [@iyansr](https://github.com/iyansr)! - feat: @maestria/cursor plugin v0.1 - declarative Cursor IDE and CLI plugin
 
   Initial release of the Cursor platform plugin:
-
   - **7 specialist agents** synced from core (`agents/*.md`) with Cursor-adapted tool names (Read, Glob, Grep, StrReplace, Shell, Write)
   - **Orchestrator skill** (`skills/orchestrator/SKILL.md`) with Task-based routing, handoff contracts, and maker/checker enforcement
   - **Global rules** (`rules/maestria-global.mdc`, `alwaysApply: true`)
-  - **Workflow commands** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation)
-  - **Two-layer maker/checker** — `readonly: true` runtime flag on adventurer/planner/reviewer agents blocks write tools at the Cursor runtime level, with prompt-level instructions as backup
-  - **CLI support** — `maestria install cursor`, `maestria update cursor`, `maestria uninstall cursor`, `maestria check cursor` via npm (`@maestria/cursor`)
-  - **Documentation** — installation guide, quick start, changelog, contributing guide, and ADR-CR-001
+  - **Workflow commands** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation)
+  - **Two-layer maker/checker** - `readonly: true` runtime flag on adventurer/planner/reviewer agents blocks write tools at the Cursor runtime level, with prompt-level instructions as backup
+  - **CLI support** - `maestria install cursor`, `maestria update cursor`, `maestria uninstall cursor`, `maestria check cursor` via npm (`@maestria/cursor`)
+  - **Documentation** - installation guide, quick start, changelog, contributing guide, and ADR-CR-001
 
 - [#103](https://github.com/agustinusnathaniel/maestria/pull/103) [`886dbd0`](https://github.com/agustinusnathaniel/maestria/commit/886dbd0b92256110d89f1549d7a96849950a2e82) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Sync workflow mode commands (fein/sonar/blitz) through canonical source pipeline, including Hermes
 
@@ -123,9 +121,9 @@
 
 ### Minor Changes
 
-- Initial release of `@maestria/cursor` — declarative Cursor plugin for IDE and CLI.
+- Initial release of `@maestria/cursor` - declarative Cursor plugin for IDE and CLI.
 - **7 specialist agents** synced from core (`agents/*.md`)
 - **Orchestrator skill** (`skills/orchestrator/SKILL.md`) with Task-based routing
 - **Global rules** (`rules/maestria-global.mdc`, `alwaysApply: true`)
-- **Workflow commands** — `/fein`, `/sonar`, `/blitz`, `/orchestrate`
+- **Workflow commands** - `/fein`, `/sonar`, `/blitz`, `/orchestrate`
 - CLI install: `maestria install cursor` → `~/.cursor/plugins/local/maestria`

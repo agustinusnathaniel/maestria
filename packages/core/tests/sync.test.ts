@@ -784,7 +784,7 @@ describe('checkProvenance', () => {
     // Simulates the canonicalize-skills workflow: output existed before as a
     // hand-written file, then a brand-new canonical source is added and the
     // output is regenerated from it. The new source is untracked, so git diff
-    // alone cannot see it — the check must still pass.
+    // alone cannot see it - the check must still pass.
     const sourceDir = join(tmpDir, 'source');
     const outputPath = join(tmpDir, 'output.md');
     mkdirSync(sourceDir, { recursive: true });
@@ -897,7 +897,7 @@ describe('checkProvenance', () => {
       logger: () => {},
     });
 
-    // Provenance violation is detected — and no PWNED file was created by
+    // Provenance violation is detected - and no PWNED file was created by
     // shell command substitution during the check.
     expect(result.status).toBe('error');
     expect(result.error).toContain('Provenance violation');

@@ -49,7 +49,6 @@
   dispatch timed out or the model omitted the agent name, the orchestrator
   had zero fallback and aborted - the reported "lacks autonomy, behaves
   weirdly" symptom.
-
   - Orchestrator regains read-only tools (read, glob, grep, lsp, webfetch,
     read-only bash, tests) for routing and verification; mutations remain
     denied and delegated.
@@ -79,7 +78,7 @@
 
   `/maestria-status`, compaction summaries, and mode enforcement previously restored
   persisted state from `sessionManager.getEntries()`, which spans the entire session
-  tree — resuming a session could pull a sibling branch's `maestria_state` (wrong mode,
+  tree - resuming a session could pull a sibling branch's `maestria_state` (wrong mode,
   wrong active task). Restoration now reads only the current branch via `getBranch()`,
   matching the omp extension's semantics, and a new `session_tree` handler rehydrates
   state when navigating between branches so the UI never shows stale state.
@@ -107,7 +106,7 @@
 
 - [#169](https://github.com/agustinusnathaniel/maestria/pull/169) [`d219a87`](https://github.com/agustinusnathaniel/maestria/commit/d219a87394c87bf9b680ef59395cb6eb96a3e0f5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Align `/handoff` command output with the 7-field `HANDOFF_FIELDS` contract.
 
-  The shared handoff validator (`@maestria/shared-pi/subagent-utils`) already required 7 fields including **Assumptions documented**, but the `/handoff` command in `pi` and `omp` still generated a 6-field prompt — so handoffs produced by the command could fail validation. The command now emits the **Assumptions documented** section (with `[inferred]` tagging guidance) before Success criteria, matching the validator and the handoff SKILL.md contract.
+  The shared handoff validator (`@maestria/shared-pi/subagent-utils`) already required 7 fields including **Assumptions documented**, but the `/handoff` command in `pi` and `omp` still generated a 6-field prompt - so handoffs produced by the command could fail validation. The command now emits the **Assumptions documented** section (with `[inferred]` tagging guidance) before Success criteria, matching the validator and the handoff SKILL.md contract.
 
 ## 0.6.1
 
@@ -149,7 +148,6 @@
 ### Minor Changes
 
 - [#145](https://github.com/agustinusnathaniel/maestria/pull/145) [`ea3d492`](https://github.com/agustinusnathaniel/maestria/commit/ea3d4920f4d01298c9decbd3dfc80551c82bcbf3) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Enforce pure dispatcher pattern on Pi and OMP with auto-detect mode keywords
-
   - **Pure dispatcher enforcement**: when a workflow mode (fein/sonar/blitz) is active, the orchestrator is now restricted to only delegation tools (`maestria_subagent`/`task`). Implementation tools like `bash`, `edit`, and `write` are blocked at the tool level, enforcing the maker/checker split automatically.
   - **Auto-detect mode keywords**: type `fein do X` at the start of any message and the plugin automatically strips the keyword and injects the mode prompt inline. No slash command needed.
   - **Refactor Pi and OMP plugins** to share common infrastructure behind the scenes, ensuring consistent behavior across both platforms.
@@ -166,7 +164,7 @@
 
   **Why this matters:** Without this fix, users updating pi or omp encounter npm
   install failures because `@maestria/shared-pi` is a private package. This is
-  solely a dependency classification fix — no behavioral change for end users.
+  solely a dependency classification fix - no behavioral change for end users.
 
 ## 0.5.13
 
@@ -229,7 +227,6 @@
 ### Patch Changes
 
 - [#108](https://github.com/agustinusnathaniel/maestria/pull/108) [`a2e2b8a`](https://github.com/agustinusnathaniel/maestria/commit/a2e2b8a061749c268e30eda82be43f6b1dbaf507) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactored all agent directive prompts for better structure, clarity, and cross-platform consistency:
-
   - Restructured core prompts with clearer sections and emphasis on critical rules agents must follow
   - Added structured handoff verification checklists to all specialist agents so handoffs between agents are more reliable
   - Standardized "Before reporting done" completion checks across all agents, reducing premature sign-offs
@@ -249,7 +246,6 @@
   or the runtime lacked the required API (e.g., findPackageJSON in Bun).
 
   Changes:
-
   - opencode: lazy-load mode prompts via Proxy with error fallback
   - pi/omp: lazy-load mode prompts via getModePrompt() cache
   - pi/omp: defer homedir() from module scope to function body
@@ -337,7 +333,6 @@
 - [#66](https://github.com/agustinusnathaniel/maestria/pull/66) [`8321ab8`](https://github.com/agustinusnathaniel/maestria/commit/8321ab891e3d4ffb562617ba2e09a06f51eb580a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: use Pi native skill system + pi-subagents agent registration
 
   Replaced non-standard `before_agent_start` + `readFileSync` injection with Pi's standard patterns:
-
   - **Skill-based injection:** Orchestrator dispatcher prompt and global agent rules now ship as `SKILL.md` files auto-discovered from `pi.skills` manifest field and injected by Pi's resource loader into every session's system prompt.
   - **Pi-subagents agent registration:** 7 specialist agents defined as `.md` files with YAML frontmatter (`description`, `tools`, `prompt_mode: append`, `inherit_context: true`), deployed to `~/.pi/agent/agents/` at extension startup for pi-subagents discovery. Each specialist has role-specific tool isolation enforcing maker/checker split.
   - Removed dead `prompts/` and `rules/` directories (synced but never consumed).
@@ -358,7 +353,6 @@
 - [#59](https://github.com/agustinusnathaniel/maestria/pull/59) [`9c0746e`](https://github.com/agustinusnathaniel/maestria/commit/9c0746e611afb6e79b071a14629fbd5b925338e9) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add multi-lens review swarm, observation-first principle, and triage pipeline
 
   Three review methodology patterns adopted from PostHog's code review research:
-
   - **Multi-lens review swarm** - orchestrator can dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General) for non-trivial changes, with exclusive lenses and cross-referenced etiquette rules
   - **Observation over reasoning** - reviewer principle shifted from "verify without running" to "what command produces visible proof?", prioritizing observable behavior over logical argument
   - **Review triage pipeline** - issues categorized [fix]/[dismiss]/[escalate] by reviewer, then validated by orchestrator with conflict resolution (conservative wins); iteration terminates when no actionable threads remain
@@ -381,7 +375,6 @@
 
   **Work result summary** - orchestrator presents completed work as
   structured file/signature table, not verbatim handoff dump.
-
   - !!! Convention, "Never delete" rule, escalation ladder, anti-patterns,
     Session Flow, Commit Completeness Check, and Automatic Review Loop added.
 
@@ -432,7 +425,6 @@
 ### Patch Changes
 
 - [`456ae22`](https://github.com/agustinusnathaniel/maestria/commit/456ae22da14f336784ec944755fb11092fbbeee0) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add two new principles to agent directives
-
   - **Start from first principles** - added as a new `## Principles` section in `rules.md` and as a Phase 0 preamble in `diagnose.md`
   - **Prefer existing solutions** - added to `rules.md`, as a first-check blockquote in `architect.md` Phase 2, and as Round 0 in `builder.md`'s Constraint Escalation pattern
 
@@ -475,7 +467,6 @@
   Implements the `@maestria/pi` package - a Pi coding agent extension bringing Maestria's structured agent orchestration (recon → design → implement → review) to the Pi ecosystem.
 
   Includes:
-
   - 9 source modules: extension, modes, rules, rules-content, state, compaction, subagent, commands, tools
   - 3 workflow modes: fein (full pipeline), sonar (research), blitz (fast impl)
   - 8 prompt templates: orchestrator + 7 specialists

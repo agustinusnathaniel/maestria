@@ -1,5 +1,5 @@
 ---
-description: Maestria global agent rules — always apply for Cursor sessions using the maestria plugin
+description: Maestria global agent rules - always apply for Cursor sessions using the maestria plugin
 alwaysApply: true
 ---
 

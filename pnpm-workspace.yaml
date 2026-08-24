@@ -50,14 +50,14 @@ overrides:
   # tmp path traversal via unsanitized prefix/postfix (GHSA-83rp-98q9-gj7v); only consumer is external-editor (tmpNameSync)
   tmp: 0.2.7
   # adm-zip crafted ZIP 4GB memory (GHSA-4f6p-2m5m-v7xg) and sharp libvips CVEs (GHSA-f88m-g3jw-g9cj)
-  # — deep in @oh-my-pi/pi-coding-agent host runtime; omp imports it type-only so workspace gates verify safety
+  # - deep in @oh-my-pi/pi-coding-agent host runtime; omp imports it type-only so workspace gates verify safety
   adm-zip: 0.6.0
   sharp: 0.35.3
   # nanoid predictable value DoS (GHSA-2v37-7h3g-55p8): <3.3.18 via postcss in docs app
   nanoid: 3.3.18
   # undici cookie injection / cache-control parsing / retry desync / CRLF injection
   # (GHSA-v3r7-h72x-cjcm, GHSA-4cwx-7wf7-3272, GHSA-8xcm-r25x-g524, GHSA-m8rv-5g2x-5cg5, GHSA-jr45-8vmc-qm54)
-  # — via @earendil-works/pi-coding-agent and @gotgenes/pi-subagents (pi runtime, not type-only)
+  # - via @earendil-works/pi-coding-agent and @gotgenes/pi-subagents (pi runtime, not type-only)
   undici: 8.9.0
 peerDependencyRules:
   allowAny:

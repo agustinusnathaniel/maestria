@@ -37,7 +37,7 @@ function checkProvenance(
       // A single porcelain call covers staged (`M `), unstaged (` M`), and
       // untracked (`??`) changes. execFileSync passes the path as an argument
       // (no shell), so a path containing shell metacharacters cannot inject
-      // commands — the previous execSync string interpolation could.
+      // commands - the previous execSync string interpolation could.
       const porcelain = execFileSync('git', ['status', '--porcelain', '--', filePath], {
         cwd: repoCwd,
         encoding: 'utf-8',

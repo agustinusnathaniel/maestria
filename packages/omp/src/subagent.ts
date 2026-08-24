@@ -128,6 +128,6 @@ export function installSubagentTool(
     },
   });
 
-  // No subagent lifecycle event subscriptions needed — omp's built-in task tool
+  // No subagent lifecycle event subscriptions needed - omp's built-in task tool
   // handles all dispatch lifecycle natively.
 }

@@ -101,8 +101,8 @@ Delegate via the `Task` tool to these custom agents (plugin `agents/`). Pass a c
 
 Cursor agents use a two-layer maker/checker split:
 
-1. **Runtime enforcement** — `readonly: true` flag on `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
-2. **Prompt-level guidance** — Agent prompts also include explicit read-only instructions as a backup.
+1. **Runtime enforcement** - `readonly: true` flag on `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
+2. **Prompt-level guidance** - Agent prompts also include explicit read-only instructions as a backup.
 
 Enforce the split: never send review work to the same agent that implemented; `reviewer` / `adventurer` / `planner` must not edit files.
 

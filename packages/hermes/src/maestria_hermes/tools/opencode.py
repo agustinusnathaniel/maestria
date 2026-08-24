@@ -1,7 +1,7 @@
 """OpenCode CLI routing tool for Builder specialist.
 
 Provides a tool that delegates complex coding tasks to OpenCode CLI.
-Simple delegator — just calls `opencode run <goal>` and returns the result.
+Simple delegator - just calls `opencode run <goal>` and returns the result.
 If OpenCode CLI is not installed, the tool reports the error clearly.
 """
 

@@ -1,7 +1,7 @@
 /**
  * Shared tool interceptor utilities for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.
  *
  * @module
@@ -27,7 +27,7 @@ export const DANGEROUS_PATTERNS = [
 
 /**
  * Read-only bash command prefixes allowed for the orchestrator's recon and
- * verification. Anything not matching — or chaining into a mutation — is
+ * verification. Anything not matching - or chaining into a mutation - is
  * blocked; mutations belong to specialists.
  */
 const READ_ONLY_BASH_PREFIX =
@@ -36,8 +36,8 @@ const READ_ONLY_BASH_PREFIX =
 /**
  * True when a bash command performs no mutation.
  *
- * A naive prefix check is bypassable — `git status && git checkout .` or
- * `ls; rm -rf dist` both pass a prefix-only match — so every segment of a
+ * A naive prefix check is bypassable - `git status && git checkout .` or
+ * `ls; rm -rf dist` both pass a prefix-only match - so every segment of a
  * chained command (`;`, `&&`, `||`, `|`, or newline) must itself be
  * read-only, and command substitution (`$(...)`, backticks) and output
  * redirection (`>` / `>>`) are rejected because they can hide a mutation

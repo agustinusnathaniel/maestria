@@ -552,21 +552,21 @@ All 7 specialists with full skill files, replacing custom JSON file persistence 
 - delegate_task for subagent dispatch (native Hermes tool)
 - subagent_start/stop hooks for pipeline tracking
 - OpenCode CLI routing (simple `opencode run <goal>` delegator)
-- Mode + state via **SessionDB.state_meta** (not custom JSON files) — **not yet implemented** (still uses JSON file)
+- Mode + state via **SessionDB.state_meta** (not custom JSON files) - **not yet implemented** (still uses JSON file)
 - transform_tool_result hook for methodology annotations
 
-> Memory is deliberately excluded from Phase 2. The plugin is memory-agnostic — no memory integration is planned. Hermes provides 8 memory providers at the platform level.
+> Memory is deliberately excluded from Phase 2. The plugin is memory-agnostic - no memory integration is planned. Hermes provides 8 memory providers at the platform level.
 
 ### Key Changes: Custom Files → Hermes-Native APIs
 
 | Before (standalone) | After (Hermes-native) | Why |
 | --- | --- | --- |
-| `~/.hermes/maestria-mode.json` | `session.state_meta["maestria:mode"]` | Survives `/resume`, `/goal resume`, session restart — no separate file |
-| `~/.hermes/maestria-session.json` | SessionDB (built-in) | Already tracks session_id, timestamps — redundant file removed |
+| `~/.hermes/maestria-mode.json` | `session.state_meta["maestria:mode"]` | Survives `/resume`, `/goal resume`, session restart - no separate file |
+| `~/.hermes/maestria-session.json` | SessionDB (built-in) | Already tracks session_id, timestamps - redundant file removed |
 | `PermissionProfile` class name | `PermissionRole` (later removed in favor of literal allowlists + role-neutral child trust) | "Profile" is a Hermes Agent concept for isolated agent configs - rename avoided confusion; the resulting role-based model was superseded by the approved role-neutral child trust policy |
 | Hardcoded tool-name lists in Python | Literal immutable allowlists (`SONAR_ALLOWED_TOOLS`, `BLITZ_DIRECT_ALLOWED_TOOLS`, `CHILD_SAFE_ALLOWED_TOOLS`) | Safety-critical: allowlists are reviewed literals that fail closed; the legacy `maestria-roles.json` override mechanism was removed so a stale override file cannot re-introduce child write capability |
 
-> **Memory deliberately excluded from this table.** The plugin is memory-engine agnostic — it never had a custom memory file and never will. Hermes has 8 built-in memory providers; the user chooses one independently. See "Memory Providers (Platform Concern)" below.
+> **Memory deliberately excluded from this table.** The plugin is memory-engine agnostic - it never had a custom memory file and never will. Hermes has 8 built-in memory providers; the user chooses one independently. See "Memory Providers (Platform Concern)" below.
 
 ### Permission Roles
 
@@ -591,13 +591,13 @@ Notes:
 - A **delegated child** always receives the fixed read/research/LLM-only policy under the role-neutral child trust policy, regardless of mode or specialist. It cannot write, execute code, run a shell, delegate, or invoke OpenCode. Role-specific delegated builder writes are deferred until Hermes provides an authenticated capability channel.
 - **Review/landing enforcement is advisory**; Hermes has no native review-state or landing gate.
 
-### Memory (Platform Concern — No Plugin Integration)
+### Memory (Platform Concern - No Plugin Integration)
 
 The plugin is memory-engine agnostic. There is no plugin-level memory integration because:
 
 1. **Hermes provides it.** 8 memory providers are available at the platform level. Users configure one independently.
 2. **The methodology doesn't require it.** Maestria defines _how to work_ (pipeline, modes, maker/checker split). Remembering decisions across sessions is a platform capability.
-3. **No custom JSONL fallback.** Previous versions of this doc described a JSONL fallback that was never wired — `MemoryManager.record()` was never called, and `recall_context()` always returned empty. This was dead code and has been removed.
+3. **No custom JSONL fallback.** Previous versions of this doc described a JSONL fallback that was never wired - `MemoryManager.record()` was never called, and `recall_context()` always returned empty. This was dead code and has been removed.
 
 If users want cross-session memory, they configure Mnemosyne or another provider at the Hermes level. The plugin works identically regardless.
 
@@ -612,7 +612,7 @@ session.state_meta["maestria:mode"] = "fein"
 # Set current role
 session.state_meta["maestria:role"] = "builder"
 
-# Read anywhere — survives resume and restart
+# Read anywhere - survives resume and restart
 mode = session.state_meta.get("maestria:mode", "fein")
 ```
 
@@ -663,19 +663,19 @@ Polished multi-tool orchestration with all Hermes features. Integrates with buil
 | Parallel delegation | Concurrent specialist dispatch via parallel delegate_task |
 | Auxiliary tasks | Background reasoning for architect, diagnose, planner |
 | ctx.inject_message() | Progress reporting during long pipelines |
-| **Kanban integration** | Pipeline state pushed to kanban board — claimed/completed/blocked |
+| **Kanban integration** | Pipeline state pushed to kanban board - claimed/completed/blocked |
 | **Goals integration** | Set `/goal` from maestria pipelines for multi-turn continuity |
 | Performance monitoring | Per-specialist metrics (duration, tool calls, tokens) |
 | Plugin trust gates | LLM access restrictions per specialist |
 
 ### Kanban Integration (Future)
 
-Each pipeline step maps to a kanban task lifecycle. Use the `kanban_*` toolset — not just lifecycle hooks:
+Each pipeline step maps to a kanban task lifecycle. Use the `kanban_*` toolset - not just lifecycle hooks:
 
 ```python
 # Orchestrator creates kanban tasks for each pipeline step:
 ctx.dispatch_tool("kanban_create", {
-    "title": f"Pipeline: {task_id} — Phase: {specialist}",
+    "title": f"Pipeline: {task_id} - Phase: {specialist}",
     "description": f"Run {specialist} specialist on {task_id}",
     "lane": "ready",
     "tags": ["maestria", pipeline_id, specialist],
@@ -716,7 +716,7 @@ for task in board:
 
 Kanban lifecycle hooks (`kanban_task_claimed`, `kanban_task_completed`, `kanban_task_blocked`) fire automatically in the dispatcher/worker processes and can be used for observability (logging, Uteke event recording, notifications).
 
-This replaces ad-hoc pipeline tracking with the production-grade kanban subsystem — durable, board-visible, and inspectable via `hermes kanban dashboard`.
+This replaces ad-hoc pipeline tracking with the production-grade kanban subsystem - durable, board-visible, and inspectable via `hermes kanban dashboard`.
 
 ### Goals Integration (Future)
 
@@ -730,13 +730,13 @@ Map long-running maestria pipelines to Hermes Goals for `/resume` and multi-turn
 # Goals add: turn budget, judge evaluation, auto-continuation.
 ```
 
-The ideal setup is `/goal draft` — let the LLM structure a completion contract from a plain-language objective:
+The ideal setup is `/goal draft` - let the LLM structure a completion contract from a plain-language objective:
 
 ```
 /goal draft Run the fein pipeline to implement user authentication
 ```
 
-This produces a contract with outcome, verification, constraints, boundaries, and stop_when — which maps naturally to the maestria model:
+This produces a contract with outcome, verification, constraints, boundaries, and stop_when - which maps naturally to the maestria model:
 
 | Goal contract field | Maestria equivalent                                     |
 | ------------------- | ------------------------------------------------------- |
@@ -755,7 +755,7 @@ ctx.dispatch_tool("/goal", {"action": "wait", "pid": pid, "reason": "OpenCode bu
 # Goal auto-resumes when OpenCode exits
 ```
 
-The maestria mode + role in `state_meta` integrate naturally: when a Goal resumes via `/goal resume`, the mode and role are restored automatically from SessionDB. No separate goal mechanism needed in the plugin — just leverage the built-in Goals system for multi-turn task continuity.
+The maestria mode + role in `state_meta` integrate naturally: when a Goal resumes via `/goal resume`, the mode and role are restored automatically from SessionDB. No separate goal mechanism needed in the plugin - just leverage the built-in Goals system for multi-turn task continuity.
 
 ### Mode + Goals Alignment (Future)
 
@@ -782,7 +782,7 @@ def methodology_context_middleware(ctx, llm_request):
     return llm_request
 ```
 
-> **Not implemented (deliberately).** The plugin is memory-engine agnostic — see Principle #2. Memory is a platform concern managed by Hermes' 8 built-in providers. The plugin never reads, writes, or probes for any memory backend.
+> **Not implemented (deliberately).** The plugin is memory-engine agnostic - see Principle #2. Memory is a platform concern managed by Hermes' 8 built-in providers. The plugin never reads, writes, or probes for any memory backend.
 
 ## Distribution & Environment Adaptation
 
@@ -840,7 +840,7 @@ For multi-agent setups, the maestria orchestrator can run as a dedicated Hermes 
 
 ```bash
 hermes profile create maestria-orch \
-  --description "Maestria pipeline orchestrator — decomposes work, assigns specialists, reviews output"
+  --description "Maestria pipeline orchestrator - decomposes work, assigns specialists, reviews output"
 ```
 
 The orchestrator profile has:
@@ -854,7 +854,7 @@ Worker profiles (one per specialist role) register with role descriptions:
 
 ```bash
 hermes profile create maestria-builder \
-  --description "Maestria builder specialist — implements solutions, edits files"
+  --description "Maestria builder specialist - implements solutions, edits files"
 ```
 
 ### Pipeline Flow
@@ -889,13 +889,13 @@ At startup (`register()`), the plugin probes the environment and selects backend
 
 | Feature | Preferred | Fallback 1 | Fallback 2 | Fallback 3 |
 | --- | --- | --- | --- | --- |
-| Memory | **Not probed — platform concern.** Hermes has 8 built-in providers; user chooses independently. Plugin doesn't care which is active. | — | — | — |
-| Mode persistence | SessionDB.state_meta | Custom JSON file | In-memory (session-only) | — |
-| Kanban integration | **Not probed — platform feature.** Available via kanban\_\* tools when enabled. Plugin doesn't need to know. | — | — | — |
-| Goals integration | Built-in `/goal` command | Pipeline only (no goals) | — | — |
-| OpenCode routing | `which opencode` available | Hermes native tools only | — | — |
-| Parallel dispatch | `delegate_task(tasks=[...])` batched mode | Sequential `delegate_task` calls | In-process tool calls | — |
-| Profile distribution | Available as pop profile | Plugin only (no profile) | — | — |
+| Memory | **Not probed - platform concern.** Hermes has 8 built-in providers; user chooses independently. Plugin doesn't care which is active. | - | - | - |
+| Mode persistence | SessionDB.state_meta | Custom JSON file | In-memory (session-only) | - |
+| Kanban integration | **Not probed - platform feature.** Available via kanban\_\* tools when enabled. Plugin doesn't need to know. | - | - | - |
+| Goals integration | Built-in `/goal` command | Pipeline only (no goals) | - | - |
+| OpenCode routing | `which opencode` available | Hermes native tools only | - | - |
+| Parallel dispatch | `delegate_task(tasks=[...])` batched mode | Sequential `delegate_task` calls | In-process tool calls | - |
+| Profile distribution | Available as pop profile | Plugin only (no profile) | - | - |
 
 ### Strategy Implementation
 

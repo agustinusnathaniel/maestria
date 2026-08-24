@@ -80,7 +80,6 @@
 ### Minor Changes
 
 - [#153](https://github.com/agustinusnathaniel/maestria/pull/153) [`c6176e9`](https://github.com/agustinusnathaniel/maestria/commit/c6176e9cee19e2fe07317ff1aa5eefea5dfccfa1) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add `maestria configure <platform>` for per-agent model selection on opencode, pi, and omp.
-
   - Interactive: group-multiselect of the 7 specialists, then a per-agent model picker with the current model pre-selected and an _Inherit (session model)_ option; model lists fetched live from the platform (`opencode models`, `pi --list-models`, `omp models --json`).
   - Non-interactive: `--set <agent>=<model>[,...]` with empty values to reset, `--global`/`--project` config levels, and `--json`/`--quiet`/`--compact` output modes.
   - Writes are surgical: opencode JSONC path edits preserve comments and the `variant` key; pi/omp frontmatter edits preserve the agent body. Models are validated against the platform's live model list before writing.
@@ -111,7 +110,6 @@
 - [#104](https://github.com/agustinusnathaniel/maestria/pull/104) [`040f23a`](https://github.com/agustinusnathaniel/maestria/commit/040f23ad223a455b8095cb1edc9dca0a7a0a1fc7) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat: add Oh My Pi (omp) platform plugin
 
   New `@maestria/omp` package adds maestria support for the Oh My Pi coding agent:
-
   - 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer)
   - Workflow mode commands: /fein, /sonar, /blitz
   - Review mode with tool blocking and dangerous pattern detection
@@ -125,23 +123,21 @@
 ### Patch Changes
 
 - [#102](https://github.com/agustinusnathaniel/maestria/pull/102) [`7634e84`](https://github.com/agustinusnathaniel/maestria/commit/7634e84cd4bace900bbfef6cf34902edfdb1b762) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor: switch kimi-code to npm-based install; sync plugin manifest version
-
   - Switch from git-based codeload to npm-based install (`npm pack @maestria/kimi-code`)
   - Fix `maestria update kimi-code` version comparison (was always re-downloading)
   - Sync `kimi.plugin.json` version with `package.json` (0.1.0 → 0.4.6)
   - Add `publishConfig` for npm publish readiness
 
-- [#92](https://github.com/agustinusnathaniel/maestria/pull/92) [`e861360`](https://github.com/agustinusnathaniel/maestria/commit/e8613603e43315b403f87e66f428dfe4c1b62def) Thanks [@iyansr](https://github.com/iyansr)! - feat: @maestria/cursor plugin v0.1 — declarative Cursor IDE and CLI plugin
+- [#92](https://github.com/agustinusnathaniel/maestria/pull/92) [`e861360`](https://github.com/agustinusnathaniel/maestria/commit/e8613603e43315b403f87e66f428dfe4c1b62def) Thanks [@iyansr](https://github.com/iyansr)! - feat: @maestria/cursor plugin v0.1 - declarative Cursor IDE and CLI plugin
 
   Initial release of the Cursor platform plugin:
-
   - **7 specialist agents** synced from core (`agents/*.md`) with Cursor-adapted tool names (Read, Glob, Grep, StrReplace, Shell, Write)
   - **Orchestrator skill** (`skills/orchestrator/SKILL.md`) with Task-based routing, handoff contracts, and maker/checker enforcement
   - **Global rules** (`rules/maestria-global.mdc`, `alwaysApply: true`)
-  - **Workflow commands** — `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation)
-  - **Two-layer maker/checker** — `readonly: true` runtime flag on adventurer/planner/reviewer agents blocks write tools at the Cursor runtime level, with prompt-level instructions as backup
-  - **CLI support** — `maestria install cursor`, `maestria update cursor`, `maestria uninstall cursor`, `maestria check cursor` via npm (`@maestria/cursor`)
-  - **Documentation** — installation guide, quick start, changelog, contributing guide, and ADR-CR-001
+  - **Workflow commands** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation)
+  - **Two-layer maker/checker** - `readonly: true` runtime flag on adventurer/planner/reviewer agents blocks write tools at the Cursor runtime level, with prompt-level instructions as backup
+  - **CLI support** - `maestria install cursor`, `maestria update cursor`, `maestria uninstall cursor`, `maestria check cursor` via npm (`@maestria/cursor`)
+  - **Documentation** - installation guide, quick start, changelog, contributing guide, and ADR-CR-001
 
 ## 0.6.0
 
@@ -152,7 +148,7 @@
   New subcommand that checks whether a maestria plugin is installed on a given
   platform by reading the platform's own configuration (e.g.
   `~/.config/opencode/opencode.jsonc` for OpenCode). Exits 0 if installed, 1 if
-  not. Machine-readable JSON output by default — optimized for AI agent
+  not. Machine-readable JSON output by default - optimized for AI agent
   consumption.
 
 ## 0.5.0
@@ -185,7 +181,6 @@
 ### Minor Changes
 
 - [#74](https://github.com/agustinusnathaniel/maestria/pull/74) [`6fdd0ee`](https://github.com/agustinusnathaniel/maestria/commit/6fdd0ee63aed1252fb32784f62a10020ad08c264) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat: support comma-separated platforms, multiselect, and "All platforms" in update/install
-
   - `maestria update opencode,pi` and `maestria install opencode,pi` now accept comma-separated platform IDs
   - Interactive mode uses multiselect (checkboxes) instead of single-select picker
   - `maestria update` interactive mode adds an "All platforms" shortcut option
@@ -319,7 +314,6 @@
 - [#39](https://github.com/agustinusnathaniel/maestria/pull/39) [`fa2353b`](https://github.com/agustinusnathaniel/maestria/commit/fa2353b294c5ea16153bd244fe8c3726f910cf60) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat: add maestria CLI for cross-platform plugin management
 
   Introduce `maestria` CLI with three subcommands:
-
   - install: install maestria for detected coding agent platforms
   - update: update installed maestria plugins to latest version
   - status: show installation status across platforms

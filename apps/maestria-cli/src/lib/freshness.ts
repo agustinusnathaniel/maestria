@@ -24,7 +24,7 @@ export function freshnessOf(installedVersion: string, latestVersion: string): Fr
 /**
  * Whether an installed version needs an update to reach the latest published
  * version: it must be strictly BEHIND latest. An install AHEAD of latest (a
- * local/dev build) never needs an update — mirrors freshnessOf(), which
+ * local/dev build) never needs an update - mirrors freshnessOf(), which
  * classifies newer-than-latest as 'current', so `maestria check` and the
  * update paths agree on the same machine state.
  */

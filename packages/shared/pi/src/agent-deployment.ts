@@ -15,7 +15,7 @@ import { ALLOWED_AGENTS } from './subagent-utils.js';
 /**
  * Deploy bundled specialist agent .md files to the given destination directory.
  *
- * Only creates files that don't already exist — never overwrites user-customized agents.
+ * Only creates files that don't already exist - never overwrites user-customized agents.
  *
  * @param agentsSrc  - Path to the source directory containing specialist .md files
  * @param agentsDest - Absolute path to the platform's agents destination directory

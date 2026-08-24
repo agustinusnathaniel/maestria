@@ -1,7 +1,7 @@
 /**
  * Shared mode constants and utilities for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Imported by both @maestria/omp and @maestria/pi to eliminate duplication
  * in mode prompt loading, keyword detection, and text transformation.
  *
@@ -26,7 +26,7 @@ export const MODE_MARKERS: Record<ModeKeyword, string> = {
 
 // ── Prompt loading ──
 
-/** Lazily cached mode prompts — shared across platforms. */
+/** Lazily cached mode prompts - shared across platforms. */
 const _promptCache: Partial<Record<ModeKeyword, string>> = {};
 
 /**
@@ -170,7 +170,7 @@ export function installModeAutoDetect(
   state: MaestriaState,
   commandsDir: string,
   opts: {
-    /** Exit review mode — calls platform's restoreOriginalState */
+    /** Exit review mode - calls platform's restoreOriginalState */
     restoreOriginalState: (ctx: unknown) => Promise<void>;
     /** Persist state after mode change */
     persistState: () => void;

@@ -19,7 +19,7 @@ import { installCompactionHandlers as installHandlers } from '@maestria/shared-p
 export function installCompactionHandlers(pi: ExtensionAPI, state: MaestriaState): void {
   // Bridge: ExtensionAPI.on has overloaded event types incompatible with
   // the duck-typed { on: (event: string, handler) => void } in the shared
-  // module. The as-never cast is safe at runtime — both SDKs share the same
+  // module. The as-never cast is safe at runtime - both SDKs share the same
   // event shapes.
   installHandlers(
     {

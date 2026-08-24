@@ -27,7 +27,7 @@ export const checkCommand = defineCommand({
     json: {
       type: 'boolean',
       description:
-        'Output as JSON — structured machine-readable format optimized for AI agents and CI pipelines',
+        'Output as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
       default: false,
     },
     quiet: {

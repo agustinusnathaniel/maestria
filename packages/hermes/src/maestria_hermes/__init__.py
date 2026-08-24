@@ -1,8 +1,8 @@
-"""@maestria/hermes — Maestria methodology adapter for Hermes Agent.
+"""@maestria/hermes - Maestria methodology adapter for Hermes Agent.
 
 Registers mode system (fein/sonar/blitz), 9 specialist skill files,
 permission roles, pipeline lifecycle hooks, and OpenCode CLI routing tool.
-Entry point: register(ctx) — loaded via plugin.yaml discovery.
+Entry point: register(ctx) - loaded via plugin.yaml discovery.
 
 Design docs at docs/hermes-maestria-plugin.md.
 """
@@ -234,13 +234,13 @@ def _on_subagent_start(**kwargs) -> None:
     and grants only the fixed role-neutral child policy.
 
     Kwargs (from delegate_tool.py):
-        child_session_id: str — spawned agent's session id
-        child_subagent_id: str — spawned agent's unique id
-        child_role: str — specialist role (builder, reviewer, etc.)
-        child_goal: str — the task goal
-        parent_session_id: str — orchestrator's session id
-        parent_turn_id: str — orchestrator's turn id
-        parent_subagent_id: str — orchestrator's subagent id
+        child_session_id: str - spawned agent's session id
+        child_subagent_id: str - spawned agent's unique id
+        child_role: str - specialist role (builder, reviewer, etc.)
+        child_goal: str - the task goal
+        parent_session_id: str - orchestrator's session id
+        parent_turn_id: str - orchestrator's turn id
+        parent_subagent_id: str - orchestrator's subagent id
     """
     child_session_id = kwargs.get("child_session_id", "")
     raw_child_role = kwargs.get("child_role")
@@ -267,12 +267,12 @@ def _on_subagent_stop(**kwargs) -> None:
     an unscoped child potentially trusted.
 
     Kwargs (from delegate_tool.py):
-        child_session_id: str — completed agent's session id
-        child_role: str — specialist role
-        child_summary: str — result summary
-        child_status: str — completion status
-        duration_ms: int — wall-clock duration in milliseconds
-        parent_session_id: str — orchestrator's session id
+        child_session_id: str - completed agent's session id
+        child_role: str - specialist role
+        child_summary: str - result summary
+        child_status: str - completion status
+        duration_ms: int - wall-clock duration in milliseconds
+        parent_session_id: str - orchestrator's session id
     """
     child_session_id = kwargs.get("child_session_id", "")
     child_role = kwargs.get("child_role", "unknown")

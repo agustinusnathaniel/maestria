@@ -739,7 +739,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       {},
     );
 
-    // The second spawn must receive the literal previous result — no $ corruption.
+    // The second spawn must receive the literal previous result - no $ corruption.
     const secondSpawnTask = subagentsServiceMock.spawn.mock.calls[1][1];
     expect(secondSpawnTask).toBe('Review the prior output: Use `echo $&` and $1 args');
   });

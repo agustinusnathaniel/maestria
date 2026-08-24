@@ -349,7 +349,7 @@ h6 {
 
 .home {
   /* Shared vertical rhythm between major homepage sections. Applied as
-     `margin-bottom` on the preceding section — never margin-top, which the
+     `margin-bottom` on the preceding section - never margin-top, which the
      markdown reset below zeroes between block siblings. */
   --home-section-gap: clamp(4.5rem, 9vw, 7rem);
   background: var(--home-bg);
@@ -501,8 +501,8 @@ h6 {
 
 /* Starlight hides the header's theme switcher and social links below 50rem,
    relying on the sidebar drawer (MobileMenuFooter) to surface them instead.
-   Sidebar-less splash shells — the `.home` homepage and the `.plugin-root`
-   plugin overview pages — have no drawer fallback, so those controls would
+   Sidebar-less splash shells - the `.home` homepage and the `.plugin-root`
+   plugin overview pages - have no drawer fallback, so those controls would
    be unreachable there. Restore them in the header for these shells only;
    docs pages, which do have a sidebar, keep Starlight's default behavior. */
 @media (max-width: 50rem) {

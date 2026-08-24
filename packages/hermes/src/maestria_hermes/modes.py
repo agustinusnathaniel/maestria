@@ -9,7 +9,7 @@ Supports three modes:
 Mode persists globally across Hermes sessions via a JSON state file (bundled fallback);
 `/mode-clear` persists neutral routing. This global scope is a platform limitation,
 not session isolation.
-The plugin is memory-engine agnostic — no memory backend is required or
+The plugin is memory-engine agnostic - no memory backend is required or
 assumed for mode state to work correctly.
 """
 from __future__ import annotations
@@ -38,7 +38,7 @@ class ModeManager:
     a session.
 
     Persists via JSON file (works everywhere, no deps). Memory backend
-    integration is deliberately not pursued — see Principle #2 (memory-
+    integration is deliberately not pursued - see Principle #2 (memory-
     engine agnostic) in the design doc.
     """
 

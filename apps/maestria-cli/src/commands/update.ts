@@ -308,7 +308,7 @@ export function updateOne(
     // (local dev build, unpublished release) must be left alone unless the
     // user pinned an explicit target with --version. Mirrors freshnessOf(),
     // which classifies newer-than-latest as 'current' so `maestria check`
-    // exits 0 for the same state — check and update must agree.
+    // exits 0 for the same state - check and update must agree.
     if (!version && isVersionGt(prevVersion, targetVersion)) {
       return {
         id: platform.id,

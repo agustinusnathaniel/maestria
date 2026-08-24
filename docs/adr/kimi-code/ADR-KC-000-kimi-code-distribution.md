@@ -138,7 +138,7 @@ Kimi Code's marketplace UI shows `update <local> → <latest>` when a newer vers
 
 ### 2026-07-21 - Superseded by npm-based distribution
 
-The plugin distribution was switched from subtree-split release branch to npm-based distribution. The maestria CLI (`npx maestria install kimi-code`) now pulls `@maestria/kimi-code` from npm via `npm pack` and extracts it directly—no git operations, no release branch, no codeload dependency.
+The plugin distribution was switched from subtree-split release branch to npm-based distribution. The maestria CLI (`npx maestria install kimi-code`) now pulls `@maestria/kimi-code` from npm via `npm pack` and extracts it directly-no git operations, no release branch, no codeload dependency.
 
 Key changes:
 

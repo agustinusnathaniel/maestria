@@ -121,7 +121,6 @@
 ### Patch Changes
 
 - [#108](https://github.com/agustinusnathaniel/maestria/pull/108) [`a2e2b8a`](https://github.com/agustinusnathaniel/maestria/commit/a2e2b8a061749c268e30eda82be43f6b1dbaf507) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactored all agent directive prompts for better structure, clarity, and cross-platform consistency:
-
   - Restructured core prompts with clearer sections and emphasis on critical rules agents must follow
   - Added structured handoff verification checklists to all specialist agents so handoffs between agents are more reliable
   - Standardized "Before reporting done" completion checks across all agents, reducing premature sign-offs
@@ -146,7 +145,7 @@
 
 ### Patch Changes
 
-- [#89](https://github.com/agustinusnathaniel/maestria/pull/89) [`837a529`](https://github.com/agustinusnathaniel/maestria/commit/837a529be3d65bb826df052d64cd8d4febe2cf7b) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Orchestrator now defaults to single-thread execution for simple changes instead of always routing work through subagents. Complex tasks (multi-file, cross-domain, risky) still get delegated to specialists. Routine fixes and small features are faster with less context overhead — no change in how you use the plugin.
+- [#89](https://github.com/agustinusnathaniel/maestria/pull/89) [`837a529`](https://github.com/agustinusnathaniel/maestria/commit/837a529be3d65bb826df052d64cd8d4febe2cf7b) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Orchestrator now defaults to single-thread execution for simple changes instead of always routing work through subagents. Complex tasks (multi-file, cross-domain, risky) still get delegated to specialists. Routine fixes and small features are faster with less context overhead - no change in how you use the plugin.
 
 ## 0.1.3
 
@@ -155,7 +154,6 @@
 - [#87](https://github.com/agustinusnathaniel/maestria/pull/87) [`09e69d8`](https://github.com/agustinusnathaniel/maestria/commit/09e69d83df432da49f82c71d69ce6f9610c50d50) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Wire maestria specialist roles into Hermes plugin hook system for permission enforcement
 
   Three fixes to make the maestria methodology actually work at runtime:
-
   - **pre_gateway_dispatch hook**: Intercepts `/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan` commands before the agent-busy check, so they dispatch even when the agent is processing a turn. Uses fire-and-forget async send to reply directly. **Fixed: now passes `message_thread_id` in metadata so Telegram forum topic responses route to the correct thread instead of General.**
   - **Role-based permission enforcement**: Orchestrator now passes `[MAESTRIA_ROLE: <specialist>]` in `delegate_task` context. Subagent's `pre_llm_call` hook parses it and registers in a `session_id → role` map. `pre_tool_call` hook enforces tool restrictions per specialist role (builder=full access, reviewer=read-only, etc.). Sonar mode write-block remains the reliable primary gate.
   - **Transform hook annotates results**: Write operations in fein/blitz mode append a methodology annotation to tool results instead of being a silent no-op.
@@ -172,17 +170,16 @@
   re-exports `register` from the actual package.
 
   Without this, `hermes plugins install` silently fails to load the plugin
-  — none of its slash commands (`/fein`, `/sonar`, `/blitz`, etc.), hooks,
-  or skills are available.
+  - none of its slash commands (`/fein`, `/sonar`, `/blitz`, etc.), hooks,
+    or skills are available.
 
 ## 0.1.1
 
 ### Patch Changes
 
-- [#9](https://github.com/agustinusnathaniel/maestria/pull/9) [`17c6816`](https://github.com/agustinusnathaniel/maestria/commit/17c6816c602c9c40b96b28a1a574fc2c387cca56) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Initial release of @maestria/hermes — maestria methodology adapter for Hermes Agent.
+- [#9](https://github.com/agustinusnathaniel/maestria/pull/9) [`17c6816`](https://github.com/agustinusnathaniel/maestria/commit/17c6816c602c9c40b96b28a1a574fc2c387cca56) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Initial release of @maestria/hermes - maestria methodology adapter for Hermes Agent.
 
   Features:
-
   - Mode system: fein (full pipeline), sonar (read-only), blitz (fast execution)
   - OpenCode CLI routing tool
   - Pipeline lifecycle hooks (pre-LLM, pre-tool, transform)

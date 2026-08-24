@@ -81,7 +81,7 @@ Agent directives compressed to cut orchestrator context usage by ~38% without re
 
 ### Changed
 
-- **Orchestrator behavior**: Simple tasks now run directly instead of always being delegated to subagents. Complex tasks (multi-file, cross-domain, risky) still use specialist routing. Routine changes are faster with less overhead — no action needed on your part.
+- **Orchestrator behavior**: Simple tasks now run directly instead of always being delegated to subagents. Complex tasks (multi-file, cross-domain, risky) still use specialist routing. Routine changes are faster with less overhead - no action needed on your part.
 
 ## 0.1.3 (2026-07-17)
 
@@ -99,11 +99,11 @@ Agent directives compressed to cut orchestrator context usage by ~38% without re
 
 ### Fixed
 
-- Plugin loading failure due to `src/` layout — added root `__init__.py` shim
+- Plugin loading failure due to `src/` layout - added root `__init__.py` shim
 
 ## 0.1.1 (2026-07-16)
 
-Initial release — same as 0.1.0 (versioning alignment).
+Initial release - same as 0.1.0 (versioning alignment).
 
 ## 0.1.0 (2026-07-16)
 
@@ -124,7 +124,7 @@ Initial release — same as 0.1.0 (versioning alignment).
 
 ### Changed (post-release design doc alignment)
 
-- Memory engine agnosticism — removed stale Mnemosyne integration claim, removed memory/kanban probes
+- Memory engine agnosticism - removed stale Mnemosyne integration claim, removed memory/kanban probes
 - Dead code removed: `memory.py` (MemoryManager.record() never called)
 - Cross-platform detection: `shutil.which()` replaces `subprocess.run(["which", ...])`
 - Plugin check: `node -e "require(...)"` replaces fragile npm filesystem walker

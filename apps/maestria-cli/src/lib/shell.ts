@@ -99,7 +99,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
       return version;
     }
 
-    // Network failed — fall back to cached version (any age)
+    // Network failed - fall back to cached version (any age)
     return yield* readCache().pipe(Effect.catchCause(() => Effect.succeed('')));
   });
 }

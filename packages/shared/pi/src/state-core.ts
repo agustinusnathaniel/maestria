@@ -1,7 +1,7 @@
 /**
  * Shared state management for Maestria platform packages.
  *
- * Pure TypeScript — no platform-specific dependencies.
+ * Pure TypeScript - no platform-specific dependencies.
  * Provides shared state-management types, transforms, persistence, and rendering
  * consumed directly by @maestria/omp and @maestria/pi.
  *

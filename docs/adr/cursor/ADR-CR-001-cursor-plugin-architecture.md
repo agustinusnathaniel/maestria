@@ -16,14 +16,14 @@ OpenCode-style TypeScript hooks do not apply. Cursor plugins are declarative fil
 
 ### Choose: Declarative Cursor plugin under `packages/cursor`
 
-**`@maestria/cursor` is a Cursor plugin — no build step, no SDK runtime.** It consists of:
+**`@maestria/cursor` is a Cursor plugin - no build step, no SDK runtime.** It consists of:
 
-1. **`.cursor-plugin/plugin.json`** — manifest (name, version, metadata). Components auto-discovered from default folders.
-2. **`rules/maestria-global.mdc`** — synced from `rules.md`, `alwaysApply: true`.
-3. **`agents/*.md`** — seven specialists as custom Cursor agents (Task targets).
-4. **`skills/orchestrator/SKILL.md`** — orchestrator methodology (agent-decides / `/orchestrator`).
-5. **`commands/*.md`** — workflow modes: `fein`, `sonar`, `blitz`, `orchestrate` (hand-authored).
-6. **Install** — `maestria install cursor` copies the package into `~/.cursor/plugins/local/maestria`.
+1. **`.cursor-plugin/plugin.json`** - manifest (name, version, metadata). Components auto-discovered from default folders.
+2. **`rules/maestria-global.mdc`** - synced from `rules.md`, `alwaysApply: true`.
+3. **`agents/*.md`** - seven specialists as custom Cursor agents (Task targets).
+4. **`skills/orchestrator/SKILL.md`** - orchestrator methodology (agent-decides / `/orchestrator`).
+5. **`commands/*.md`** - workflow modes: `fein`, `sonar`, `blitz`, `orchestrate` (hand-authored).
+6. **Install** - `maestria install cursor` copies the package into `~/.cursor/plugins/local/maestria`.
 
 ### Component map
 
@@ -38,15 +38,15 @@ OpenCode-style TypeScript hooks do not apply. Cursor plugins are declarative fil
 
 Cursor native plugin agent schema supports `readonly: true` in agent frontmatter. v1 enforces maker/checker with **two layers**:
 
-1. **Runtime enforcement** — `readonly: true` flag on `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
-2. **Prompt-level guidance** — Agent prepends and descriptions also include explicit read-only instructions as a backup.
+1. **Runtime enforcement** - `readonly: true` flag on `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
+2. **Prompt-level guidance** - Agent prepends and descriptions also include explicit read-only instructions as a backup.
 
 ### IDE and CLI parity
 
 One plugin bundle serves both:
 
-- **IDE** — install under `~/.cursor/plugins/local/maestria` (or Marketplace later)
-- **CLI** — same path, or `agent --plugin-dir ./packages/cursor` for local development
+- **IDE** - install under `~/.cursor/plugins/local/maestria` (or Marketplace later)
+- **CLI** - same path, or `agent --plugin-dir ./packages/cursor` for local development
 
 ### Sync
 
@@ -64,12 +64,12 @@ One plugin bundle serves both:
 - Positive: Same declarative pattern as Kimi Code; sync pipeline already supports it.
 - Positive: Custom agents give specialist isolation via Task (closer to OpenCode than Kimi's 3 built-in profiles).
 - Positive: One install path for IDE and CLI.
-- Mixed: Maker/checker is two-layer (runtime `readonly: true` flag + prompt instructions) — stronger than prompt-only, but not yet matching OpenCode's hard `edit: deny` at the agent definition level.
+- Mixed: Maker/checker is two-layer (runtime `readonly: true` flag + prompt instructions) - stronger than prompt-only, but not yet matching OpenCode's hard `edit: deny` at the agent definition level.
 - Negative: Until Marketplace listing, distribution is local-plugin copy from GitHub `main` / monorepo path.
 
 ## Related Decisions
 
-- [ADR-CORE-000](../core/ADR-CORE-000-adr-structure.md) — CR prefix reserved for Cursor
-- [ADR-CORE-005](../core/ADR-CORE-005-shared-agent-directives-core-sync.md) — sync bridge
-- [ADR-CORE-007](../core/ADR-CORE-007-cli-package-plugin-management.md) — CLI platform handlers
-- [ADR-KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md) — declarative precedent; named Cursor as candidate
+- [ADR-CORE-000](../core/ADR-CORE-000-adr-structure.md) - CR prefix reserved for Cursor
+- [ADR-CORE-005](../core/ADR-CORE-005-shared-agent-directives-core-sync.md) - sync bridge
+- [ADR-CORE-007](../core/ADR-CORE-007-cli-package-plugin-management.md) - CLI platform handlers
+- [ADR-KC-001](../kimi-code/ADR-KC-001-kimi-code-architecture.md) - declarative precedent; named Cursor as candidate

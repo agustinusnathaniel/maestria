@@ -940,7 +940,7 @@ const kimiCode: PlatformHandler = {
 const hermes: PlatformHandler = {
   id: 'hermes',
   label: 'Hermes',
-  // No npmPackage — distributed via hermes plugins install (git-based)
+  // No npmPackage - distributed via hermes plugins install (git-based)
 
   detect: commandExists('hermes'),
 
@@ -1081,7 +1081,7 @@ const omp: PlatformHandler = {
   getLatestVersion: npmViewVersion('@maestria/omp'),
 
   install: Effect.gen(function* () {
-    // omp has built-in task dispatch — no subagent prerequisite needed
+    // omp has built-in task dispatch - no subagent prerequisite needed
     yield* run('omp', ['plugin', 'install', '@maestria/omp'], 120_000);
   }).pipe(Effect.as(void 0)),
 

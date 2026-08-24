@@ -35,7 +35,6 @@
   dispatch timed out or the model omitted the agent name, the orchestrator
   had zero fallback and aborted - the reported "lacks autonomy, behaves
   weirdly" symptom.
-
   - Orchestrator regains read-only tools (read, glob, grep, lsp, webfetch,
     read-only bash, tests) for routing and verification; mutations remain
     denied and delegated.
@@ -88,7 +87,7 @@
 
 - [#169](https://github.com/agustinusnathaniel/maestria/pull/169) [`d219a87`](https://github.com/agustinusnathaniel/maestria/commit/d219a87394c87bf9b680ef59395cb6eb96a3e0f5) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Align `/handoff` command output with the 7-field `HANDOFF_FIELDS` contract.
 
-  The shared handoff validator (`@maestria/shared-pi/subagent-utils`) already required 7 fields including **Assumptions documented**, but the `/handoff` command in `pi` and `omp` still generated a 6-field prompt — so handoffs produced by the command could fail validation. The command now emits the **Assumptions documented** section (with `[inferred]` tagging guidance) before Success criteria, matching the validator and the handoff SKILL.md contract.
+  The shared handoff validator (`@maestria/shared-pi/subagent-utils`) already required 7 fields including **Assumptions documented**, but the `/handoff` command in `pi` and `omp` still generated a 6-field prompt - so handoffs produced by the command could fail validation. The command now emits the **Assumptions documented** section (with `[inferred]` tagging guidance) before Success criteria, matching the validator and the handoff SKILL.md contract.
 
 ## 0.3.1
 
@@ -130,7 +129,6 @@
 ### Minor Changes
 
 - [#145](https://github.com/agustinusnathaniel/maestria/pull/145) [`ea3d492`](https://github.com/agustinusnathaniel/maestria/commit/ea3d4920f4d01298c9decbd3dfc80551c82bcbf3) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Enforce pure dispatcher pattern on Pi and OMP with auto-detect mode keywords
-
   - **Pure dispatcher enforcement**: when a workflow mode (fein/sonar/blitz) is active, the orchestrator is now restricted to only delegation tools (`maestria_subagent`/`task`). Implementation tools like `bash`, `edit`, and `write` are blocked at the tool level, enforcing the maker/checker split automatically.
   - **Auto-detect mode keywords**: type `fein do X` at the start of any message and the plugin automatically strips the keyword and injects the mode prompt inline. No slash command needed.
   - **Refactor Pi and OMP plugins** to share common infrastructure behind the scenes, ensuring consistent behavior across both platforms.
@@ -147,7 +145,7 @@
 
   **Why this matters:** Without this fix, users updating pi or omp encounter npm
   install failures because `@maestria/shared-pi` is a private package. This is
-  solely a dependency classification fix — no behavioral change for end users.
+  solely a dependency classification fix - no behavioral change for end users.
 
 ## 0.2.7
 
@@ -216,7 +214,6 @@
 ### Patch Changes
 
 - [#108](https://github.com/agustinusnathaniel/maestria/pull/108) [`a2e2b8a`](https://github.com/agustinusnathaniel/maestria/commit/a2e2b8a061749c268e30eda82be43f6b1dbaf507) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Refactored all agent directive prompts for better structure, clarity, and cross-platform consistency:
-
   - Restructured core prompts with clearer sections and emphasis on critical rules agents must follow
   - Added structured handoff verification checklists to all specialist agents so handoffs between agents are more reliable
   - Standardized "Before reporting done" completion checks across all agents, reducing premature sign-offs
@@ -236,7 +233,6 @@
   or the runtime lacked the required API (e.g., findPackageJSON in Bun).
 
   Changes:
-
   - opencode: lazy-load mode prompts via Proxy with error fallback
   - pi/omp: lazy-load mode prompts via getModePrompt() cache
   - pi/omp: defer homedir() from module scope to function body
@@ -256,7 +252,6 @@
 - [#104](https://github.com/agustinusnathaniel/maestria/pull/104) [`040f23a`](https://github.com/agustinusnathaniel/maestria/commit/040f23ad223a455b8095cb1edc9dca0a7a0a1fc7) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - feat: add Oh My Pi (omp) platform plugin
 
   New `@maestria/omp` package adds maestria support for the Oh My Pi coding agent:
-
   - 7 specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer)
   - Workflow mode commands: /fein, /sonar, /blitz
   - Review mode with tool blocking and dangerous pattern detection

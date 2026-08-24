@@ -1,5 +1,5 @@
 /**
- * Shared platform registry — single source of truth for every Maestria
+ * Shared platform registry - single source of truth for every Maestria
  * platform adapter across the homepage adapter grid, plugin overview pages
  * (see src/components/plugin/), and the footer.
  *
