@@ -6,10 +6,11 @@
 import type { Plugin } from '@opencode-ai/plugin';
 import type { SessionContext } from '@opencode-ai/plugin/promise/session';
 import type { AgentDraft } from '@opencode-ai/plugin/promise/agent';
+import type { ReferenceDraft } from '@opencode-ai/plugin/promise/reference';
 import type { Hooks, Transform, Registration } from '@opencode-ai/plugin/promise/registration';
 
 // Plugin.Context resolves through the namespace re-export in the package root.
 export type PluginContext = Plugin.Context;
 
 // Convenience re-exports so the rest of the code imports from a single place.
-export type { SessionContext, AgentDraft, Hooks, Transform, Registration };
+export type { SessionContext, AgentDraft, ReferenceDraft, Hooks, Transform, Registration };

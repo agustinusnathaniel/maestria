@@ -2,8 +2,6 @@ import type { SessionContext, PluginContext } from '@/types.js';
 import type { MaestriaPluginOptions, ModeKeyword } from '@/modes/types.js';
 import { detectMode } from '@/modes/index.js';
 import { getModeMarker, getModePrompt } from '@/modes/prompts.js';
-import { readFileSync, existsSync } from 'node:fs';
-import { RULES_PATH } from '@/root.js';
 
 export async function registerSessionHooks(
   ctx: PluginContext,
@@ -14,16 +12,8 @@ export async function registerSessionHooks(
     (rawDisabled ?? []).map((k: ModeKeyword) => k.toLowerCase()),
   );
 
-  const rulesContent = existsSync(RULES_PATH) ? readFileSync(RULES_PATH, 'utf-8') : '';
-
   await ctx.session.hook('context', (sessionCtx: SessionContext) => {
-    // 1. Inject global rules into system prompt
-    // SystemPart = { type: "text", text: string }
-    if (rulesContent) {
-      sessionCtx.system.push({ type: 'text', text: rulesContent });
-    }
-
-    // 2. Detect mode keywords in the user message text
+    // 1. Detect mode keywords in the user message text
     // Message.content is ALWAYS an Array<ContentPart> - never a string
     const lastUserMsg = [...sessionCtx.messages].reverse().find((m) => m.role === 'user');
     if (!lastUserMsg) return;
@@ -40,11 +30,11 @@ export async function registerSessionHooks(
     const result = detectMode(joined, disabledKeywords);
     if (!result) return;
 
-    // 3. Inject mode marker + prompt into system
+    // 2. Inject mode marker + prompt into system
     const modeBlock = [getModeMarker(result.mode), '', getModePrompt(result.mode)].join('\n');
     sessionCtx.system.push({ type: 'text', text: modeBlock });
 
-    // 4. Strip the keyword from the text part that actually contains it.
+    // 3. Strip the keyword from the text part that actually contains it.
     // Walk parts tracking cumulative offset so the index in the joined
     // string maps to the correct part.
     let offset = 0;

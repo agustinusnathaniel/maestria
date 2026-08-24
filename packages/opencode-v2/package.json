@@ -2,7 +2,7 @@
   "name": "@maestria/opencode-v2",
   "version": "0.1.0",
   "private": true,
-  "description": "OpenCode V2 beta plugin — Maestria methodology (POC)",
+  "description": "OpenCode V2 beta plugin - Maestria methodology (POC)",
   "files": [
     "dist",
     "agents",
@@ -30,7 +30,7 @@
     "zod": "^4.4.0"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "0.0.0-next-16694",
+    "@opencode-ai/plugin": "0.0.0-next-17444",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

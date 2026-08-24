@@ -5,7 +5,7 @@ import type { PluginContext } from '@/types.js';
  *
  * NOTE: The public docs (opencode.ai/v2/docs/build/plugins) show a two-arg
  * form `tools.add("name", {...})`. The installed package
- * (@opencode-ai/plugin@0.0.0-next-16694) uses a one-arg form:
+ * (@opencode-ai/plugin@0.0.0-next-17444) uses a one-arg form:
  * `tools.add({ name, description, input, output, execute })` where `name`
  * is a required field INSIDE the tool object. This file follows the
  * installed package (ground truth).

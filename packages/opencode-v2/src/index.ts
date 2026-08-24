@@ -3,6 +3,7 @@ import type { PluginContext } from '@/types.js';
 import type { MaestriaPluginOptions } from '@/modes/types.js';
 import { maestriaOptionsSchema } from '@/modes/types.js';
 import { registerAgentTransforms } from '@/transforms/agents.js';
+import { registerReferenceTransforms } from '@/transforms/references.js';
 import { registerToolTransforms } from '@/transforms/tools.js';
 import { registerSessionHooks } from '@/hooks/session.js';
 
@@ -16,10 +17,13 @@ export default Plugin.define({
     // 1. Register agents from generated agent files
     await registerAgentTransforms(ctx);
 
-    // 2. Register session hooks for mode detection + rules injection
+    // 2. Register global rules file as a native reference source
+    await registerReferenceTransforms(ctx);
+
+    // 3. Register session hooks for mode keyword detection + stripping
     await registerSessionHooks(ctx, options);
 
-    // 3. Register demo tool
+    // 4. Register demo tool
     await registerToolTransforms(ctx);
 
     console.log('[maestria-v2] Plugin initialized with ID: maestria.v2');
