@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-06-29); amended (2026-07-10)
+Accepted (2026-06-29); amended (2026-07-10, 2026-08-24)
 
 ## Context
 
@@ -153,6 +153,60 @@ Before Decision 1 (when CI ran `pnpm build` instead of `pnpm check`), this was i
 
 The sync step is the minimal addition required to make the existing typecheck pipeline work for Astro projects. It adds negligible time and follows the existing `vp run --filter` pattern used elsewhere in the monorepo.
 
+## Decision 7: Align Changesets v3 with `changesets/action@v2`
+
+### Context
+
+The repository upgraded to `@changesets/cli@3.0.1` and the Changesets v3 configuration schema, but `release.yml` still used `changesets/action@v1` with its legacy input names. The release workflow could publish packages to npm while failing to hand the publish metadata to the GitHub release step, leaving the npm release without a corresponding GitHub Release.
+
+Changesets v3 emits structured publish and tag metadata through `CHANGESETS_OUTPUT`. The v2 GitHub Action consumes that metadata and uses kebab-case inputs. The v1 action is the Changesets v2-compatible action and is not the supported pairing for the v3 CLI.
+
+### Change
+
+Use `changesets/action@v2` in `.github/workflows/release.yml` with the v2 input names and explicit release behavior:
+
+```yaml
+github-token: ${{ secrets.GITHUB_TOKEN }}
+version-script: pnpm version-packages
+publish-script: pnpm release
+pr-title: 'chore: version packages'
+commit-message: 'chore: version packages'
+create-github-releases: true
+push-git-tags: true
+push-with-git-cli: true
+```
+
+The release job already grants `contents: write`, which is required for pushing release tags and creating GitHub Releases. The workflow continues to use the existing custom version and publish scripts so package version synchronization remains part of the release path.
+
+### Options Considered
+
+| Option | Assessment | Verdict |
+| --- | --- | --- |
+| Keep `changesets/action@v1` | Retains the legacy action and input contract while the repository uses the v3 CLI. This is the failure mode that allowed npm publishing without a GitHub Release. | Rejected |
+| Downgrade `@changesets/cli` to v2 | Restores the old pairing but discards the v3 CLI and configuration behavior already adopted by the repository. | Rejected |
+| Upgrade to `changesets/action@v2` | Uses the supported v3 integration, structured publish metadata, and explicit tag/release controls. | Chosen |
+
+### Backfill Procedure
+
+The Changesets CLI can create missing git tags with `pnpm changeset git-tag`, but it does not create GitHub Release objects. For an already-published release, run the command at the exact release commit so tags point at the commit that produced the npm packages:
+
+```bash
+git fetch origin --tags
+git switch --detach <release-commit>
+pnpm changeset git-tag
+git tag --points-at HEAD
+git push origin <tag-1> <tag-2> <tag-3>
+```
+
+Then create the missing GitHub Release objects separately, for example with `gh release create <tag> --generate-notes`. `git-tag` uses current package versions, skips tags that already exist, and must not be run from a later unrelated commit.
+
+### Consequences
+
+- Future Changesets v3 publishes create npm packages, git tags, and GitHub Releases through one supported action pairing.
+- The action input names must remain aligned with the v2 interface; renaming them back to `version`, `publish`, `title`, or `commit` breaks the release contract.
+- Existing npm-only releases require one-time tag and GitHub Release backfill; the normal release workflow does not retroactively discover missing releases.
+- Release backfill remains an explicit operator action and is not added to the routine workflow, avoiding accidental re-tagging of unrelated package versions.
+
 ## Consequences
 
 ### Positive
@@ -196,3 +250,4 @@ This eliminates the 6-line setup block that was duplicated across `release.yml` 
 - `vite.config.ts` - defines the `vp` tasks (fmt, lint, run) that `vp check` invokes
 - [actions/cache documentation](https://github.com/actions/cache) - cache action reference
 - [changesets/action documentation](https://github.com/changesets/action) - changesets publishing action
+- [Changesets CLI command options](https://github.com/changesets/changesets/blob/main/docs/command-line-options.md) - `git-tag` and `publish` behavior
