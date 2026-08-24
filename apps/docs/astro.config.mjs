@@ -21,6 +21,7 @@ export default defineConfig({
       title: 'Maestria',
       description:
         'Portable AI engineering praxis plugins for OpenCode, Claude Code, Codex CLI, and beyond.',
+      disable404Route: true,
       customCss: ['./src/styles/global.css'],
       plugins: [
         starlightLinksValidator({
@@ -102,29 +103,6 @@ export default defineConfig({
         Head: './src/components/StarlightHead.astro',
       },
       head: [
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'og:title',
-            content: 'Maestria - Portable AI Engineering Praxis Plugins',
-          },
-        },
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'og:description',
-            content:
-              'Installable, self-wiring plugins that encode effective AI engineering workflows.',
-          },
-        },
-        {
-          tag: 'meta',
-          attrs: { name: 'twitter:card', content: 'summary_large_image' },
-        },
-        {
-          tag: 'link',
-          attrs: { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
-        },
         {
           tag: 'meta',
           attrs: {

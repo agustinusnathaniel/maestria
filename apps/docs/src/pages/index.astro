@@ -6,54 +6,6 @@ import { agents, type Agent } from '../data/agents.js';
 import { platforms } from '../data/platforms.js';
 import { marks, markAttrs } from '../data/marks.js';
 
-/**
- * Static per-agent metadata for the specialist panel. Derived from the agent
- * descriptions in src/data/agents.ts (source of truth:
- * packages/core/agent-directives/specialists/*.md). agents.ts is not modified.
- */
-const agentMeta: Record<string, { scope: string; artifact: string; constraint: string }> = {
-  orchestrator: {
-    scope: 'Dispatch only - never implements',
-    artifact: 'Route assignments, commit protocol',
-    constraint: 'Maker/checker split enforced',
-  },
-  adventurer: {
-    scope: 'Unfamiliar code territory',
-    artifact: 'Reconnaissance report',
-    constraint: 'Read-only - no edits',
-  },
-  architect: {
-    scope: 'Approach selection, trade-offs',
-    artifact: 'Decision record (ADR)',
-    constraint: 'Decisions documented, not coded',
-  },
-  builder: {
-    scope: 'One atomic task',
-    artifact: 'Implementation + tests',
-    constraint: 'Never reviews its own work',
-  },
-  diagnose: {
-    scope: 'Regressions, incidents',
-    artifact: 'Root cause analysis',
-    constraint: 'Root cause before fix',
-  },
-  planner: {
-    scope: 'Complex, multi-step features',
-    artifact: 'Phased implementation plan',
-    constraint: 'Plan first, build later',
-  },
-  reviewer: {
-    scope: 'Pre-merge quality gates',
-    artifact: 'Review verdict',
-    constraint: 'Sees work fresh - independent',
-  },
-  writer: {
-    scope: 'Documentation and prose',
-    artifact: 'Structured docs',
-    constraint: 'Follows the source of truth',
-  },
-};
-
 interface DocLink {
   href: string;
   title: string;
@@ -303,15 +255,15 @@ const INSTALL_CMD = 'npx maestria install opencode';
                 <dl class="mt-7 mb-0 p-0 border-t border-home-border">
                   <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
                     <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Scope</dt>
-                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agentMeta[agent.id].scope}</dd>
+                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agent.scope}</dd>
                   </div>
                   <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
                     <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Artifact</dt>
-                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agentMeta[agent.id].artifact}</dd>
+                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agent.artifact}</dd>
                   </div>
                   <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-[0.8125rem] border-b border-home-border">
                     <dt class="text-[0.75rem] font-semibold tracking-[0.06em] uppercase text-home-text-muted m-0 pl-0">Constraint</dt>
-                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agentMeta[agent.id].constraint}</dd>
+                    <dd class="text-sm text-home-text-soft m-0 pl-0">{agent.constraint}</dd>
                   </div>
                 </dl>
                 <a

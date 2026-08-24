@@ -40,6 +40,7 @@ function markdownAlternateHref(pathname: string): string | undefined {
 }
 
 const alternateHref = markdownAlternateHref(Astro.url.pathname);
+const analyticsEnabled = Boolean(import.meta.env.UMAMI_SRC && import.meta.env.UMAMI_WEBSITE_ID);
 ---
 
 <StarlightHead />
@@ -53,4 +54,4 @@ const alternateHref = markdownAlternateHref(Astro.url.pathname);
 {alternateHref && <link rel="alternate" type="text/markdown" href={alternateHref} />}
 
 <Analytics />
-<Tracking />
+{analyticsEnabled && <Tracking />}
