@@ -1,4 +1,3 @@
-import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 import starlight from '@astrojs/starlight';
@@ -8,37 +7,6 @@ import starlightAutoSidebar from 'starlight-auto-sidebar';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightPageActions from 'starlight-page-actions';
-
-import { agentsMdDocument, augmentLlmsTxt } from './src/lib/llms-augment.ts';
-
-/**
- * Appends the "Agent instructions" and "Developer resources" sections to the
- * generated `llms.txt` and writes the dedicated `agents.md` document.
- * Registered LAST so its `astro:build:done` hook runs after
- * starlight-llms-txt wrote the file during prerendering. Failures throw:
- * a silently un-augmented llms.txt must never ship.
- */
-function maestriaAugmentLlmsTxt() {
-  return {
-    name: 'maestria:augment-llms-txt',
-    hooks: {
-      'astro:build:done': async ({ dir, logger }) => {
-        const target = fileURLToPath(new URL('./llms.txt', dir));
-        const original = await readFile(target, 'utf8');
-        const augmented = augmentLlmsTxt(original);
-        await writeFile(target, augmented, 'utf8');
-        logger.info('maestria:augment-llms-txt appended agent instructions to llms.txt');
-
-        // agents.md is written even though starlight-llms-txt knows nothing
-        // about it: a missing file would 404 for every agent following the
-        // links advertised in llms.txt and the markdown 404 body.
-        const agentsMdTarget = fileURLToPath(new URL('./agents.md', dir));
-        await writeFile(agentsMdTarget, agentsMdDocument(), 'utf8');
-        logger.info('maestria:augment-llms-txt wrote agents.md');
-      },
-    },
-  };
-}
 
 export default defineConfig({
   site: 'https://maestria.sznm.dev',
@@ -78,6 +46,48 @@ export default defineConfig({
             '@maestria/prime-agent (Maestria methodology for Prime Agent as Agent Skills ' +
             'plus a verified Prime/Pi extension for workflow modes), and ' +
             '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX).',
+          details:
+            'For dedicated usage guidance, installation instructions, and machine-readable resource links, read [Maestria agent instructions](https://maestria.sznm.dev/agents.md).',
+          optionalLinks: [
+            {
+              label: 'Maestria documentation home',
+              url: 'https://maestria.sznm.dev/',
+            },
+            {
+              label: 'Maestria When to Use guide',
+              url: 'https://maestria.sznm.dev/core/when-to-use/',
+            },
+            {
+              label: 'Maestria CLI getting started',
+              url: 'https://maestria.sznm.dev/cli/getting-started/',
+              description: 'Install with `npx maestria install <platform>`.',
+            },
+            {
+              label: 'Maestria page Markdown example',
+              url: 'https://maestria.sznm.dev/core/when-to-use.md',
+              description: 'Every documentation page has a `.md` twin.',
+            },
+            {
+              label: 'Maestria sitemap',
+              url: 'https://maestria.sznm.dev/sitemap-index.xml',
+            },
+            {
+              label: 'Maestria robots.txt',
+              url: 'https://maestria.sznm.dev/robots.txt',
+            },
+            {
+              label: 'Maestria on npm',
+              url: 'https://www.npmjs.com/package/maestria',
+            },
+            {
+              label: 'Maestria source repository',
+              url: 'https://github.com/agustinusnathaniel/maestria',
+            },
+            {
+              label: 'Maestria issue tracker',
+              url: 'https://github.com/agustinusnathaniel/maestria/issues',
+            },
+          ],
         }),
         starlightPageActions({
           share: true,
@@ -280,6 +290,5 @@ export default defineConfig({
         },
       ],
     }),
-    maestriaAugmentLlmsTxt(),
   ],
 });

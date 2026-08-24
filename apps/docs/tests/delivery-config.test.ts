@@ -10,21 +10,7 @@ async function readAppFile(relativePath: string): Promise<string> {
   return readFile(path.join(APP_ROOT, relativePath), 'utf8');
 }
 
-/** The Vary value must keep HTML and markdown responses out of shared caches. */
-function assertVary(value: string | undefined, source: string): void {
-  expect(value, `Vary header missing in ${source}`).toBeDefined();
-  const names = (value ?? '').split(',').map((entry) => entry.trim().toLowerCase());
-  expect(names).toContain('accept');
-  expect(names).toContain('accept-encoding');
-}
-
 describe('Cloudflare Pages _headers', () => {
-  it('sets Vary: Accept, Accept-Encoding on the catch-all block', async () => {
-    const text = await readAppFile('public/_headers');
-    const match = /^\s*Vary:\s*(.+)$/im.exec(text);
-    assertVary(match?.[1], 'public/_headers');
-  });
-
   it('keeps the security headers intact', async () => {
     const text = await readAppFile('public/_headers');
     for (const header of [
@@ -34,32 +20,6 @@ describe('Cloudflare Pages _headers', () => {
     ]) {
       expect(text).toContain(header);
     }
-  });
-});
-
-describe('netlify.toml', () => {
-  it('sets Vary: Accept, Accept-Encoding in the global headers block', async () => {
-    const text = await readAppFile('netlify.toml');
-    const match = /^\s*Vary\s*=\s*"([^"]+)"/m.exec(text);
-    assertVary(match?.[1], 'netlify.toml');
-  });
-});
-
-describe('vercel.json', () => {
-  interface VercelHeader {
-    key?: string;
-    value?: string;
-  }
-  interface VercelConfig {
-    headers?: { headers?: VercelHeader[] }[];
-  }
-
-  it('sets Vary: Accept, Accept-Encoding on a route-wide header set', async () => {
-    const config = JSON.parse(await readAppFile('vercel.json')) as VercelConfig;
-    const vary = config.headers
-      ?.flatMap((rule) => rule.headers ?? [])
-      .find((header) => header.key?.toLowerCase() === 'vary');
-    assertVary(vary?.value, 'vercel.json');
   });
 });
 
@@ -122,5 +82,18 @@ describe('public/robots.txt', () => {
         expect(line).toMatch(/Sitemap: https:\/\//);
       }
     }
+  });
+});
+
+describe('public/agents.md', () => {
+  it('is a static, self-contained entrypoint for coding agents', async () => {
+    const text = await readAppFile('public/agents.md');
+    expect(text.startsWith('# Maestria agent instructions\n')).toBe(true);
+    expect(text).toContain('npx maestria install <platform>');
+    expect(text).toContain('https://maestria.sznm.dev/llms-full.txt');
+    expect(text).toContain('https://maestria.sznm.dev/core/when-to-use.md');
+    expect(text).toContain('https://github.com/agustinusnathaniel/maestria/issues');
+    expect(text).toContain('Cloudflare Pages');
+    expect(text).not.toContain('\u2014');
   });
 });

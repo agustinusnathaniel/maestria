@@ -19,8 +19,9 @@ describe('wantsMarkdown', () => {
     'text/markdown',
     'TEXT/MARKDOWN',
     'Text/Markdown; charset=utf-8',
-    'text/html,text/markdown;q=0.9',
+    'text/html;q=0.9,text/markdown',
     'application/json, text/markdown;q=0.8, */*;q=0.1',
+    'text/markdown;q=0.8, */*;q=0.1',
   ];
 
   const falsy = [
@@ -30,6 +31,11 @@ describe('wantsMarkdown', () => {
     '*/*',
     'text/*',
     'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'text/html,text/markdown;q=0.9',
+    'text/html;q=1,text/markdown;q=0.9',
+    'text/markdown;q=0',
+    'text/markdown;q=0.8, */*;q=1',
+    'text/*;q=0.9,text/markdown;q=0.8',
     'text/markdownx',
     'x-text/markdown',
   ];
@@ -40,6 +46,10 @@ describe('wantsMarkdown', () => {
 
   it.each(falsy)('rejects %j', (accept) => {
     expect(wantsMarkdown(accept)).toBe(false);
+  });
+
+  it('rejects malformed quality values', () => {
+    expect(wantsMarkdown('text/markdown;q=not-a-number')).toBe(false);
   });
 });
 
