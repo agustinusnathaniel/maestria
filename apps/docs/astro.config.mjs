@@ -88,11 +88,6 @@ export default defineConfig({
               label: 'Maestria issue tracker',
               url: 'https://github.com/agustinusnathaniel/maestria/issues',
             },
-            {
-              label: 'Maestria Developer Resources',
-              url: 'https://maestria.sznm.dev/developers/overview/',
-              description: 'CLI, CodeGraph MCP, and how to consume Maestria docs as an agent.',
-            },
           ],
         }),
         starlightPageActions({
@@ -153,10 +148,6 @@ export default defineConfig({
             { label: 'Contact', link: '/contact/' },
             { label: 'Privacy', link: '/privacy/' },
           ],
-        },
-        {
-          label: 'Developers',
-          items: [{ label: 'Developer Resources', link: '/developers/overview/' }],
         },
         {
           label: 'CLI',
