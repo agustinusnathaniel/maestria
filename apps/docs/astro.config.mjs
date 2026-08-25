@@ -108,7 +108,7 @@ export default defineConfig({
           attrs: {
             name: 'keywords',
             content:
-              'Maestria, Maestria AI engineering praxis, Maestria plugins, Maestria API, Maestria MCP Server, OpenCode, Claude Code, Codex CLI',
+              'Maestria, Maestria AI engineering praxis, Maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
           },
         },
         {
