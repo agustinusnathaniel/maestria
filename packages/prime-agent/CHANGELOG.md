@@ -1,5 +1,11 @@
 # @maestria/prime-agent
 
+## 0.3.2
+
+### Patch Changes
+
+- [#246](https://github.com/agustinusnathaniel/maestria/pull/246) [`e4b5d86`](https://github.com/agustinusnathaniel/maestria/commit/e4b5d867365aec4617fe349360e2b5f8407fb4ba) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Prefer self-explanatory code across all agent projections by emphasizing clear structure over explanatory comments and reserving comments for concise context the code cannot express.
+
 ## 0.3.1
 
 ### Patch Changes
