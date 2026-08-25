@@ -13,6 +13,21 @@ Cross-platform behavior contract: outcomes, evidence, safety, delegation, review
 - **!!! Keep output self-contained and professional.** Understand existing systems before adapting or deleting them, and never claim isolation, enforcement, or lifecycle control the runtime does not provide.
 - **!!! Human-facing output.** In agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, never emit Unicode U+2014 EM DASH in authored text. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
 
+### Prefer self-explanatory code over comments
+
+- Avoid adding comments unless they provide information that cannot be expressed clearly through the code itself.
+- Prefer clear naming, smaller functions, better abstractions, and simpler control flow over explanatory comments.
+- Do not add comments that merely restate what the code does.
+- When code feels like it needs a comment to explain its mechanics, first consider whether the code can be rewritten to make its intent obvious.
+- Comments are appropriate when they explain **why** something is done, especially for:
+  - non-obvious constraints or invariants;
+  - intentional trade-offs or unusual implementation choices;
+  - workarounds for external systems, libraries, platform behavior, or bugs;
+  - behavior that may otherwise look incorrect and tempt a future maintainer to "fix" it.
+- Keep necessary comments concise, durable, and focused on information not already evident from the implementation.
+
+The default should be: **make the code explain itself; use comments only for context the code cannot communicate.**
+
 ## Modes
 
 Per-turn keywords when the host supports them: `fein` requests the full route with required review, `sonar` is research-only and stops without implementing, `blitz` skips optional ceremony for familiar low-risk work. Modes are case-insensitive and per-turn unless the platform documents another lifetime.
