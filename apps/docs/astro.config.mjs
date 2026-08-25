@@ -106,6 +106,14 @@ export default defineConfig({
         {
           tag: 'meta',
           attrs: {
+            name: 'keywords',
+            content:
+              'Maestria, Maestria AI engineering praxis, Maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
+          },
+        },
+        {
+          tag: 'meta',
+          attrs: {
             property: 'og:image',
             content:
               'https://og.sznm.dev/api/generate?heading=maestria&text=Portable%20AI%20Engineering%20Praxis%20Plugins&template=color',
