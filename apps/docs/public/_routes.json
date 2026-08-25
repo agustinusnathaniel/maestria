@@ -11,8 +11,6 @@
     "/robots.txt",
     "/sitemap-0.xml",
     "/sitemap-index.xml",
-    "/favicon.svg",
-    "/openapi.json",
-    "/openapi.yaml"
+    "/favicon.svg"
   ]
 }
