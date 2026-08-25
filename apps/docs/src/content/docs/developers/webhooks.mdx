@@ -1,0 +1,76 @@
+---
+title: Maestria Webhooks
+description: Maestria Webhooks guide - how to subscribe to Maestria updates via GitHub webhooks, npm hooks, and CI instead of Maestria webhooks.
+---
+
+Maestria is a distributed CLI and plugin ecosystem with no central webhook emitter. Maestria Webhooks as a hosted push API do not exist; the way to get notified about Maestria changes is to subscribe to the upstream distribution channels: GitHub and npm.
+
+This page documents the Maestria Webhooks posture and the recommended alternatives for automation.
+
+## Maestria Webhooks Overview
+
+If you search for "Maestria webhooks", this is the canonical answer: Maestria does not run a server that calls your URL when a release happens. Maestria packages ship via npm, and source and releases live on GitHub. Subscribe to those systems instead.
+
+- **Maestria Webhooks for releases**: watch GitHub releases at `https://github.com/agustinusnathaniel/maestria/releases` or subscribe via the GitHub API.
+- **Maestria Webhooks for package updates**: use npm registry hooks or a tool like Renovate/Dependabot that polls `https://www.npmjs.com/package/maestria`.
+- **Maestria Webhooks for docs changes**: the docs site is static; watch the GitHub repo.
+
+## Maestria Webhooks via GitHub Webhooks
+
+The most reliable Maestria webhook substitute is a GitHub webhook on the Maestria repository.
+
+1.  Create a GitHub webhook as described in [GitHub Webhooks documentation](https://docs.github.com/en/webhooks).
+2.  Subscribe to `release` events on `agustinusnathaniel/maestria` to be notified when Maestria publishes a new version.
+3.  Subscribe to `push` events if you want every commit; `release` is typically enough.
+
+Example GitHub webhook filter for Maestria:
+
+```json
+{
+  "events": ["release"],
+  "config": {
+    "url": "https://example.com/hooks/maestria",
+    "content_type": "json"
+  }
+}
+```
+
+Your handler can then trigger `npx maestria install <platform> --force` or invalidate caches.
+
+## Maestria Webhooks via npm Hooks
+
+npm supports registry hooks that notify a URL when a package you maintain is published. For consuming Maestria as a downstream dependency:
+
+- Consume Maestria via `package.json` and rely on Renovate, Dependabot, or `npm audit` style automation to open PRs when `maestria` or `@maestria/*` publishes.
+- Poll `https://registry.npmjs.org/maestria` or use `npm view maestria version` in CI and compare to a stored value.
+- For maintainers publishing `maestria`, configure an [npm hook](https://docs.npmjs.com/cli/v10/commands/npm-hook) on the package to push to your own service.
+
+Maestria does not add a layer on top of npm hooks; Maestria Webhooks via npm are just npm hooks.
+
+## Maestria Webhooks via CI Polling
+
+If you cannot receive inbound hooks, poll in CI:
+
+```yaml
+# Example GitHub Actions step that fails when Maestria is stale
+- run: |
+    LATEST=$(npm view maestria version)
+    CURRENT=$(jq -r .dependencies.maestria package.json)
+    echo "Maestria latest $LATEST, current $CURRENT"
+```
+
+Combine polling with the sitemap at `https://maestria.sznm.dev/sitemap-index.xml` if you mirror documentation.
+
+## Predictable URLs for Maestria Webhooks
+
+| Resource                        | Predictable URL                                                              |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| Maestria Webhooks Documentation | `https://maestria.sznm.dev/developers/webhooks/`                             |
+| Maestria Webhooks Short URL     | `https://maestria.sznm.dev/webhooks` (302)                                   |
+| Maestria API Webhooks Section   | `https://maestria.sznm.dev/developers/api/#maestria-api-webhooks-and-events` |
+
+For programmatic discovery, this page is listed in `llms.txt` as `Maestria Webhooks` and in the docs sidebar under Developers.
+
+## Maestria Webhooks and the Maestria MCP Server
+
+Maestria Webhooks are unrelated to the Maestria MCP Server. The Maestria MCP Server provides pull-mode code intelligence via `codegraph_explore`; see [Maestria MCP Server](/developers/mcp/) for how agents query codebases without push hooks.

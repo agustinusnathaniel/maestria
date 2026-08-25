@@ -1,0 +1,272 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Maestria API",
+    "description": "Maestria API for the portable AI engineering praxis plugin ecosystem. Maestria ships as installable plugins and a CLI (npx maestria), with programmatic access through CLI commands, per-platform plugin directives, and machine-readable documentation endpoints. This OpenAPI 3.0.3 spec describes the static documentation site at https://maestria.sznm.dev including the Maestria API docs, OpenAPI spec itself, llms.txt, sitemap, and markdown twins.",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/agustinusnathaniel/maestria/blob/main/LICENSE"
+    },
+    "contact": {
+      "name": "Maestria",
+      "url": "https://github.com/agustinusnathaniel/maestria/issues"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://maestria.sznm.dev",
+      "description": "Maestria production documentation site"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Maestria Documentation",
+      "description": "Maestria documentation pages and static discovery endpoints"
+    },
+    {
+      "name": "Maestria CLI",
+      "description": "Maestria CLI programmatic usage - install, update, and status via npx maestria"
+    },
+    {
+      "name": "Maestria Developer Resources",
+      "description": "Maestria API docs, authentication, webhooks, and MCP server for agents"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["Maestria Documentation"],
+        "summary": "Maestria documentation home",
+        "description": "Maestria documentation home page at https://maestria.sznm.dev/. Maestria is portable AI engineering praxis plugins for OpenCode, Claude Code, Kimi Code, Cursor, Pi, Hermes, Codex CLI, prime-agent, and OMP.",
+        "operationId": "getMaestriaHome",
+        "responses": {
+          "200": {
+            "description": "Maestria home HTML",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/developers/api/": {
+      "get": {
+        "tags": ["Maestria Developer Resources"],
+        "summary": "Maestria API Documentation",
+        "description": "Canonical Maestria API Documentation page describing the Maestria CLI API, Maestria plugin APIs, and Maestria documentation API including the Maestria OpenAPI spec at /openapi.json.",
+        "operationId": "getMaestriaApiDocs",
+        "responses": {
+          "200": {
+            "description": "Maestria API docs HTML",
+            "content": {
+              "text/html": {
+                "schema": { "type": "string" }
+              },
+              "text/markdown": {
+                "schema": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/developers/authentication/": {
+      "get": {
+        "tags": ["Maestria Developer Resources"],
+        "summary": "Maestria Authentication",
+        "description": "Maestria Authentication guide. Maestria has no API keys; auth is delegated to GitHub, npm, and per-platform hosts. Predictable URL https://maestria.sznm.dev/developers/authentication/ with short alias /auth.",
+        "operationId": "getMaestriaAuthentication",
+        "responses": {
+          "200": {
+            "description": "Maestria Authentication docs",
+            "content": {
+              "text/html": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/developers/webhooks/": {
+      "get": {
+        "tags": ["Maestria Developer Resources"],
+        "summary": "Maestria Webhooks",
+        "description": "Maestria Webhooks guide. Maestria does not emit webhooks; subscribe via GitHub webhooks and npm hooks. Predictable URL https://maestria.sznm.dev/developers/webhooks/ with short alias /webhooks.",
+        "operationId": "getMaestriaWebhooks",
+        "responses": {
+          "200": {
+            "description": "Maestria Webhooks docs",
+            "content": {
+              "text/html": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/developers/mcp/": {
+      "get": {
+        "tags": ["Maestria Developer Resources"],
+        "summary": "Maestria MCP Server",
+        "description": "Maestria MCP Server docs for the CodeGraph codegraph_explore tool. Maestria recommends the CodeGraph MCP server for agent code intelligence. Predictable URL https://maestria.sznm.dev/developers/mcp/ with short alias /mcp.",
+        "operationId": "getMaestriaMcp",
+        "responses": {
+          "200": {
+            "description": "Maestria MCP docs",
+            "content": {
+              "text/html": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/llms.txt": {
+      "get": {
+        "tags": ["Maestria Documentation"],
+        "summary": "Maestria llms.txt index",
+        "description": "Maestria llms.txt for agents. Lists Maestria documentation pages and developer resources including Maestria API, Maestria OpenAPI spec, Maestria Authentication, Maestria Webhooks, and Maestria MCP Server.",
+        "operationId": "getMaestriaLlmsTxt",
+        "responses": {
+          "200": {
+            "description": "Maestria llms.txt",
+            "content": {
+              "text/plain": { "schema": { "type": "string" } },
+              "text/markdown": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/llms-full.txt": {
+      "get": {
+        "tags": ["Maestria Documentation"],
+        "summary": "Maestria full docs for agents",
+        "description": "Full Maestria documentation concatenated for agents at https://maestria.sznm.dev/llms-full.txt",
+        "operationId": "getMaestriaLlmsFull",
+        "responses": {
+          "200": {
+            "description": "Maestria llms-full.txt",
+            "content": {
+              "text/plain": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/sitemap-index.xml": {
+      "get": {
+        "tags": ["Maestria Documentation"],
+        "summary": "Maestria sitemap index",
+        "description": "Maestria sitemap index at https://maestria.sznm.dev/sitemap-index.xml covering all Maestria docs including Maestria API, Maestria Authentication, Maestria Webhooks, and Maestria MCP Server pages.",
+        "operationId": "getMaestriaSitemap",
+        "responses": {
+          "200": {
+            "description": "Maestria sitemap XML",
+            "content": {
+              "application/xml": { "schema": { "type": "string" } },
+              "text/xml": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "tags": ["Maestria Developer Resources"],
+        "summary": "Maestria OpenAPI Specification (JSON)",
+        "description": "Maestria OpenAPI 3.0.3 specification JSON at https://maestria.sznm.dev/openapi.json with info.title Maestria API. Machine-readable contract for the Maestria documentation site and CLI as API.",
+        "operationId": "getMaestriaOpenApiJson",
+        "responses": {
+          "200": {
+            "description": "Maestria OpenAPI JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaestriaOpenApi"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/openapi.yaml": {
+      "get": {
+        "tags": ["Maestria Developer Resources"],
+        "summary": "Maestria OpenAPI Specification (YAML)",
+        "description": "Maestria OpenAPI 3.0.3 specification YAML twin at https://maestria.sznm.dev/openapi.yaml identical to /openapi.json for tooling that prefers YAML.",
+        "operationId": "getMaestriaOpenApiYaml",
+        "responses": {
+          "200": {
+            "description": "Maestria OpenAPI YAML",
+            "content": {
+              "text/yaml": { "schema": { "type": "string" } },
+              "application/yaml": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/agents.md": {
+      "get": {
+        "tags": ["Maestria Documentation"],
+        "summary": "Maestria agent instructions",
+        "description": "Maestria agent instructions at https://maestria.sznm.dev/agents.md with llms.txt references and per-page markdown twin guidance.",
+        "operationId": "getMaestriaAgentsMd",
+        "responses": {
+          "200": {
+            "description": "Maestria agents.md",
+            "content": {
+              "text/markdown": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/robots.txt": {
+      "get": {
+        "tags": ["Maestria Documentation"],
+        "summary": "Maestria robots.txt",
+        "description": "Maestria robots.txt at https://maestria.sznm.dev/robots.txt with Sitemap directive to https://maestria.sznm.dev/sitemap-index.xml",
+        "operationId": "getMaestriaRobots",
+        "responses": {
+          "200": {
+            "description": "Maestria robots.txt",
+            "content": {
+              "text/plain": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MaestriaOpenApi": {
+        "type": "object",
+        "description": "Maestria OpenAPI document metadata"
+      },
+      "MaestriaSiteInfo": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Maestria" },
+          "description": {
+            "type": "string",
+            "example": "Portable AI engineering praxis plugins for OpenCode, Claude Code, Codex CLI, and beyond."
+          },
+          "url": { "type": "string", "format": "uri", "example": "https://maestria.sznm.dev" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "MaestriaNoAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Maestria docs site is unauthenticated; no Maestria API key required. Upstream GitHub and npm use their own auth, see /developers/authentication/."
+      }
+    }
+  }
+}

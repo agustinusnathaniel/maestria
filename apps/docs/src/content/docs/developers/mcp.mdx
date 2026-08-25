@@ -1,0 +1,91 @@
+---
+title: Maestria MCP Server
+description: Maestria MCP Server documentation - CodeGraph MCP codegraph_explore tool for Maestria agents, installation, and programmatic usage.
+---
+
+The Maestria MCP Server provides the recommended code intelligence layer for Maestria agents. Maestria itself is a methodology, while the Maestria MCP Server supplies the fast, structured codebase access that makes the methodology efficient: one `codegraph_explore` call returns verbatim source, call paths, and blast radius instead of 5-10 grep and read loops.
+
+This page documents the Maestria MCP Server, its `codegraph_explore` tool, and how to wire it so Maestria specialists benefit from it.
+
+## Maestria MCP Server Overview
+
+Maestria ships with guidance to use the CodeGraph MCP server. CodeGraph is a local-first code intelligence tool that parses a codebase into a SQLite knowledge graph using tree-sitter WASM parsers. It is maintained independently by Colby McHenry, not by the Maestria team, but it is the recommended companion for Maestria because it directly accelerates the reconnaissance phase of the Maestria pipeline.
+
+- **Maestria MCP Server package**: `@colbymchenry/codegraph` (npm) exposes the MCP server.
+- **Maestria MCP Server tool**: `codegraph_explore` is a single tool that answers most code questions in one call.
+- **Maestria MCP Server runtime**: local SQLite, file-watcher auto-sync, no network required to query.
+
+See also the CodeGraph ecosystem page at [CodeGraph](/ecosystem/codegraph/) for independent project context.
+
+## Maestria MCP Server Installation
+
+Install the Maestria MCP Server globally or run it without install:
+
+```sh
+# Global install for a stable host
+npm install -g @colbymchenry/codegraph@latest
+
+# Or run without install via npx/dl x
+npx @colbymchenry/codegraph@latest --help
+```
+
+Initialize the index in a repository:
+
+```sh
+codegraph init
+```
+
+The indexer builds `.codegraph/` in the project root and keeps it fresh via a file watcher. Reach for `codegraph_explore` before grep or read when you need to understand or locate code.
+
+Wire the MCP server into your agent host. For example, an OpenCode MCP config entry:
+
+```json
+{
+  "mcpServers": {
+    "codegraph": {
+      "command": "npx",
+      "args": ["-y", "@colbymchenry/codegraph@latest", "mcp"]
+    }
+  }
+}
+```
+
+Adjust the command per host. The same binary works for Claude Code, Codex CLI, and other MCP-capable hosts.
+
+## Maestria MCP Server codegraph_explore Tool
+
+The Maestria MCP Server exposes one primary tool, `codegraph_explore`, which is Read-equivalent: one call returns the verbatim, line-numbered source of relevant symbols grouped by file plus the call path among them.
+
+Query with a natural language question or symbol names:
+
+- `codegraph_explore "How does authentication reach session creation? adventurer login"` returns the relevant symbols and the path between them.
+- `codegraph_explore "GraphTraverser BFS"` returns verbatim source for that symbol.
+
+Agents should call `codegraph_explore` before hand-rolling grep and read loops. For flows, name the endpoints that span the flow and the tool surfaces the call path, including dynamic-dispatch hops like JSX children that grep cannot follow.
+
+## Using the Maestria MCP Server with Maestria Specialists
+
+The Maestria pipeline is designed around narrow, independent contexts per stage. The Maestria MCP Server makes each stage faster:
+
+- **Maestria adventurer (reconnaissance)**: run `codegraph_explore` first to map code before reading files.
+- **Maestria builder (implementation)**: call `codegraph_explore` with the symbols you are about to change to see blast radius before editing.
+- **Maestria reviewer**: verify claims against `codegraph_explore` source rather than trusting implementation narrative.
+- **Maestria orchestrator**: delegate with a brief that names the symbols or files to explore so downstream specialists know to run `codegraph_explore`.
+
+Maestria methodology documents already reference this pattern; the Maestria MCP Server is the concrete runtime that implements it.
+
+## Predictable URLs for the Maestria MCP Server
+
+| Resource                          | Predictable URL                                  |
+| --------------------------------- | ------------------------------------------------ |
+| Maestria MCP Server Documentation | `https://maestria.sznm.dev/developers/mcp/`      |
+| Maestria MCP Server Short URL     | `https://maestria.sznm.dev/mcp` (302)            |
+| CodeGraph Ecosystem Page          | `https://maestria.sznm.dev/ecosystem/codegraph/` |
+| CodeGraph Upstream Docs           | `https://colbymchenry.github.io/codegraph/`      |
+| Maestria OpenAPI Spec             | `https://maestria.sznm.dev/openapi.json`         |
+
+For programmatic discovery, this page is listed in `llms.txt` as `Maestria MCP Server` and in the docs sidebar under Developers.
+
+## Maestria MCP Server and the Maestria API
+
+The Maestria MCP Server is separate from the [Maestria API Documentation](/developers/api/). The Maestria API describes the CLI, plugin directives, and static discovery endpoints; the Maestria MCP Server describes local code intelligence. Both are listed as Maestria developer resources in `llms.txt` and at predictable URLs for agent discoverability.

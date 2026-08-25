@@ -1,0 +1,60 @@
+---
+title: Maestria Authentication
+description: Maestria Authentication guide - how Maestria handles auth via GitHub, npm, and per-platform agent auth with no Maestria API keys.
+---
+
+Maestria has no hosted API keys. Maestria Authentication is delegated to the platforms that distribute and run Maestria: GitHub for source and issues, npm for package distribution, and per-platform agent hosts for runtime auth.
+
+This page explains the Maestria Authentication model and where to configure credentials for each surface.
+
+## Maestria Authentication Overview
+
+Maestria itself is a static CLI and plugin ecosystem. There is no Maestria identity provider, no Maestria bearer token, and no Maestria login flow. Agents searching for "Maestria auth" or "Maestria API keys" should treat the docs site as unauthenticated and configure auth only when calling upstream services.
+
+## Maestria Authentication for GitHub
+
+All Maestria code, issues, and releases live on GitHub at `https://github.com/agustinusnathaniel/maestria`.
+
+- **Read access** to Maestria documentation and package READMEs is unauthenticated.
+- **Write access** (issues, pull requests, discussions) uses normal [GitHub authentication](https://docs.github.com/en/authentication). Create a personal access token or use `gh auth login`.
+- **CI usage**: the `maestria` CLI does not call GitHub directly; workflows that clone or update Maestria should use `GITHUB_TOKEN` or a PAT as with any other git dependency.
+
+No Maestria-specific scope or token type is defined; Maestria Authentication for GitHub is just GitHub authentication.
+
+## Maestria Authentication for npm
+
+Maestria packages are published to npm under the `maestria` and `@maestria/*` scopes.
+
+- **Installing** Maestria: `npx maestria install <platform>` and `npm install @maestria/*` are unauthenticated for public packages.
+- **Publishing** (maintainers only) uses standard [npm authentication](https://docs.npmjs.com/cli/v10/commands/npm-login): `npm login` with a token configured in `~/.npmrc` or via `NPM_TOKEN` in CI.
+- **Registry proxy**: if your org mirrors npm, configure auth in your registry's usual way; Maestria does not add a layer.
+
+Search keywords: Maestria npm auth, Maestria NPM_TOKEN, Maestria package authentication.
+
+## Maestria Authentication Per Platform
+
+Each host that runs Maestria brings its own auth:
+
+- **OpenCode**: authenticates to model providers via its own config; Maestria directives do not add auth.
+- **Claude Code**: uses Claude authentication configured in the Claude Code CLI; Maestria skills inherit it.
+- **Codex CLI, Cursor, Kimi Code, Pi, Hermes, Prime Agent, OMP**: each handles model credentials independently; see the per-platform docs for details.
+
+Maestria does not proxy or store any of these credentials. The Maestria Authentication surface is therefore empty by design; there is nothing to rotate or revoke for Maestria itself.
+
+## Predictable URLs for Maestria Authentication
+
+| Resource                              | Predictable URL                                                     |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| Maestria Authentication Documentation | `https://maestria.sznm.dev/developers/authentication/`              |
+| Maestria Auth Short URL               | `https://maestria.sznm.dev/auth` (302)                              |
+| Maestria Auth Alternate               | `https://maestria.sznm.dev/developers/auth/` (alias, if configured) |
+
+For programmatic discovery, this page is listed in `llms.txt` as `Maestria Authentication` and in the docs sidebar under Developers.
+
+## Maestria Authentication FAQ
+
+**Does Maestria have API keys?** No. Maestria Authentication requires no Maestria-issued key; configure GitHub and npm separately only if you need write access.
+
+**How does an agent authenticate to the Maestria docs site?** It does not need to; the Maestria docs site including `https://maestria.sznm.dev/openapi.json` is public.
+
+**Where do I report an auth-related issue?** Open an issue on [GitHub Issues](https://github.com/agustinusnathaniel/maestria/issues) - the same contact surface used for all technical support.

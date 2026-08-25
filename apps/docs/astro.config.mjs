@@ -88,6 +88,31 @@ export default defineConfig({
               label: 'Maestria issue tracker',
               url: 'https://github.com/agustinusnathaniel/maestria/issues',
             },
+            {
+              label: 'Maestria API Documentation',
+              url: 'https://maestria.sznm.dev/developers/api/',
+              description: 'Maestria API docs, CLI reference, and programmatic usage.',
+            },
+            {
+              label: 'Maestria OpenAPI Specification',
+              url: 'https://maestria.sznm.dev/openapi.json',
+              description: 'Maestria OpenAPI 3.0 spec for the documentation site and CLI.',
+            },
+            {
+              label: 'Maestria Authentication',
+              url: 'https://maestria.sznm.dev/developers/authentication/',
+              description: 'Maestria authentication: GitHub, npm, and platform auth.',
+            },
+            {
+              label: 'Maestria Webhooks',
+              url: 'https://maestria.sznm.dev/developers/webhooks/',
+              description: 'Maestria webhooks via GitHub and npm hooks.',
+            },
+            {
+              label: 'Maestria MCP Server',
+              url: 'https://maestria.sznm.dev/developers/mcp/',
+              description: 'Maestria CodeGraph MCP server for agents.',
+            },
           ],
         }),
         starlightPageActions({
@@ -103,6 +128,14 @@ export default defineConfig({
         Head: './src/components/StarlightHead.astro',
       },
       head: [
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'keywords',
+            content:
+              'Maestria, Maestria AI engineering praxis, Maestria plugins, Maestria API, Maestria MCP Server, OpenCode, Claude Code, Codex CLI',
+          },
+        },
         {
           tag: 'meta',
           attrs: {
@@ -139,6 +172,20 @@ export default defineConfig({
             { label: 'About', link: '/about/' },
             { label: 'Contact', link: '/contact/' },
             { label: 'Privacy', link: '/privacy/' },
+          ],
+        },
+        {
+          label: 'Developers',
+          items: [
+            { label: 'Maestria API', link: '/developers/api/' },
+            { label: 'Authentication', link: '/developers/authentication/' },
+            { label: 'Webhooks', link: '/developers/webhooks/' },
+            { label: 'MCP Server', link: '/developers/mcp/' },
+            {
+              label: 'OpenAPI Spec',
+              link: '/openapi.json',
+              attrs: { target: '_blank' },
+            },
           ],
         },
         {
