@@ -6,10 +6,8 @@
  * `<script type="application/ld+json">` tags.
  *
  * Identity policy (owner decision, reaffirmed this session): GitHub is the
- * primary contact surface. A minimal PostalAddress (country/locality only)
- * is emitted for schema completeness and AI verification; no street,
- * email, or telephone is emitted. Technical support stays routed through
- * GitHub issues.
+ * only contact surface. No emails, phone numbers, or postal addresses are
+ * ever emitted; technical support stays routed through GitHub issues only.
  */
 
 export const SITE_URL = 'https://maestria.sznm.dev';
@@ -31,11 +29,6 @@ export const AUTHOR_URL = 'https://github.com/agustinusnathaniel';
 /**
  * Organization entity without `@context`, the shared shape used both as a
  * standalone JSON-LD entity and nested under WebSite.publisher.
- *
- * Address policy: a minimal PostalAddress (country + locality only, no
- * street detail) is included for AI legitimacy verification and schema
- * completeness. Full postal disclosure remains out of scope per owner
- * privacy policy; contact stays routed through GitHub issues.
  */
 function organizationEntity() {
   return {
@@ -45,11 +38,8 @@ function organizationEntity() {
     description: SITE_DESCRIPTION,
     logo: `${SITE_URL}/favicon.svg`,
     sameAs: [GITHUB_REPO_URL, 'https://www.npmjs.com/package/maestria'],
-    address: {
-      '@type': 'PostalAddress',
-      addressCountry: 'ID',
-      addressLocality: 'Indonesia',
-    },
+    // Deliberately no postal address, email, or phone: see the identity
+    // policy above; GitHub issues remain the only contact surface.
     contactPoint: [
       {
         '@type': 'ContactPoint',

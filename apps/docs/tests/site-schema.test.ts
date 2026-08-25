@@ -38,28 +38,22 @@ describe('organizationSchema', () => {
     expect(contact.availableLanguage).toContain('en');
   });
 
-  it('emits a minimal PostalAddress for AI verification (country/locality only)', () => {
-    // Updated policy: minimal address (no street) for schema completeness
-    // and AI legitimacy verification, preserving privacy. See organizationEntity comment.
+  it('emits no postal address at all', () => {
+    // Reaffirmed owner decision: GitHub-only identity policy. The key must
+    // be absent, never null, in every serialization of the entity.
     const json = JSON.stringify(schema);
-    expect('address' in schema).toBe(true);
-    expect(schema.address).toEqual({
-      '@type': 'PostalAddress',
-      addressCountry: 'ID',
-      addressLocality: 'Indonesia',
-    });
-    expect(json).toContain('"address"');
-    expect(json).toContain('"PostalAddress"');
+    expect('address' in schema).toBe(false);
+    expect(json).not.toContain('"address"');
+    expect(json).not.toContain('@type":"PostalAddress');
   });
 
-  it('emits no street, email, or telephone data anywhere', () => {
+  it('emits no street, city, email, or telephone data anywhere', () => {
     const json = JSON.stringify(schema);
     expect(json).not.toContain('streetAddress');
+    expect(json).not.toContain('addressLocality');
     expect(json.toLowerCase()).not.toContain('mailto:');
     expect(json.toLowerCase()).not.toContain('"email"');
     expect(json.toLowerCase()).not.toContain('telephone');
-    // Locality is now expected via minimal PostalAddress
-    expect(schema.address.addressLocality).toBe('Indonesia');
   });
 });
 
@@ -126,7 +120,6 @@ describe('websiteSchema', () => {
       description: org.description,
       logo: org.logo,
       sameAs: org.sameAs,
-      address: org.address,
       contactPoint: org.contactPoint,
     });
   });
