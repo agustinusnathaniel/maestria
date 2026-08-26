@@ -283,6 +283,9 @@ importers:
         specifier: '>=17.0.5 <18.0.0'
         version: 17.4.0(@types/node@26.2.0)
     devDependencies:
+      '@maestria/core':
+        specifier: workspace:*
+        version: link:../core
       '@maestria/shared-pi':
         specifier: workspace:*
         version: link:../shared/pi
@@ -339,6 +342,9 @@ importers:
         specifier: '*'
         version: 1.3.16
     devDependencies:
+      '@maestria/core':
+        specifier: workspace:*
+        version: link:../core
       '@maestria/shared-pi':
         specifier: workspace:*
         version: link:../shared/pi

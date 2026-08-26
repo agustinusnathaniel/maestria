@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { join } from 'node:path';
-import { validateSkillsAndLog } from '../../core/scripts/lib/skill-validator.ts';
+import { validateSkillsAndLog } from '@maestria/core/skill-validator';
 
 const __dirname = import.meta.dirname;
 const root = join(__dirname, '..');
