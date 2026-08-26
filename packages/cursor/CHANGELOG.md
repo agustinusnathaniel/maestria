@@ -1,5 +1,11 @@
 # @maestria/cursor
 
+## 0.2.3
+
+### Patch Changes
+
+- [#248](https://github.com/agustinusnathaniel/maestria/pull/248) [`93ff292`](https://github.com/agustinusnathaniel/maestria/commit/93ff292b83f5659b67af4889848de454d1661206) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Align Cursor packaging and native per-agent model configuration while preserving existing user settings across plugin updates.
+
 ## 0.2.2
 
 ### Patch Changes

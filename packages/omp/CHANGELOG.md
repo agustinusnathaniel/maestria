@@ -1,5 +1,11 @@
 # @maestria/omp
 
+## 0.5.3
+
+### Patch Changes
+
+- [#250](https://github.com/agustinusnathaniel/maestria/pull/250) [`085f7fe`](https://github.com/agustinusnathaniel/maestria/commit/085f7fe61263aedf458a8a14d518e4f1c15bf675) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Share neutral mode and skill validation logic through the hybrid package topology.
+
 ## 0.5.2
 
 ### Patch Changes
