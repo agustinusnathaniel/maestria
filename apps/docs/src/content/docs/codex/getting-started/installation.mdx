@@ -1,6 +1,6 @@
 ---
 title: Installation & Setup
-description: Install and verify the provisional @maestria/codex projection through the Maestria CLI.
+description: Install and verify @maestria/codex through the Maestria CLI.
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
@@ -8,9 +8,10 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 `@maestria/codex` is a skills-only Codex plugin projection. It does not write `AGENTS.md`,
 modify Codex configuration, register models, add MCP servers, or install hooks.
 
-<Aside type="caution" title="Pinned support boundary">
-  The projection was verified against Codex CLI `0.145.0` on 2026-08-13. Reverify the host
-  marketplace and skills behavior when upgrading Codex. Codex desktop parity is not claimed.
+<Aside type="tip" title="Codex CLI support">
+  This package was verified against Codex CLI `0.145.0` on 2026-08-26. It targets Codex CLI plugin
+  skills and native CLI installation. Codex desktop parity and runtime tool enforcement remain
+  outside this package.
 </Aside>
 
 ## Prerequisites

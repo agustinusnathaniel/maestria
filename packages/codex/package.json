@@ -2,7 +2,7 @@
   "name": "@maestria/codex",
   "version": "0.3.2",
   "private": false,
-  "description": "Provisional Maestria skills projection for Codex CLI",
+  "description": "Maestria skills projection for Codex CLI",
   "keywords": [
     "ai",
     "codex",

@@ -1,6 +1,6 @@
 # Installing @maestria/codex
 
-> This package is a provisional projection spike, not a production support promise. It was verified against `codex 0.145.0` on 2026-08-26.
+> Codex CLI support was verified against `codex 0.145.0` on 2026-08-26. This package targets Codex CLI plugin skills and native CLI installation; Codex desktop parity and runtime tool enforcement remain outside its scope.
 
 ## Prerequisites
 
