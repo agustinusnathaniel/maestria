@@ -1,46 +1,45 @@
 /**
- * Shared mode constants and utilities for Maestria platform packages.
+ * Shared mode constants and utilities for Maestria Pi-family packages.
  *
- * Pure TypeScript - no platform-specific dependencies.
- * Imported by both @maestria/omp and @maestria/pi to eliminate duplication
- * in mode prompt loading, keyword detection, and text transformation.
+ * Delegates pure mechanics to `@maestria/shared-mode` while preserving
+ * host-specific concerns: lazy prompt loading from `commandsDir`,
+ * session-state side effects, and platform handler factories.
  *
  * @module
  */
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import {
+  MODE_KEYWORDS as SHARED_KEYWORDS,
+  MODE_MARKERS as SHARED_MARKERS,
+  extractModeSection,
+  detectMode as sharedDetectMode,
+  stripKeyword as sharedStripKeyword,
+} from '@maestria/shared-mode';
+import type { ModeKeyword as SharedModeKeyword } from '@maestria/shared-mode';
 import type { MaestriaState } from './state-core.js';
 
-// ── Constants ──
+// ── Constants (re-exported from shared-mode to preserve public API) ──
 
-export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
+export const MODE_KEYWORDS = SHARED_KEYWORDS;
 export const MODE_CLEAR_COMMAND = 'mode-clear';
-export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
+export type ModeKeyword = SharedModeKeyword;
 
-export const MODE_MARKERS: Record<ModeKeyword, string> = {
-  fein: '[MODE: fein]',
-  sonar: '[MODE: sonar]',
-  blitz: '[MODE: blitz]',
-};
+export const MODE_MARKERS: Record<ModeKeyword, string> = SHARED_MARKERS;
 
 // ── Prompt loading ──
 
-/** Lazily cached mode prompts - shared across platforms. */
+/** Lazily cached mode prompts - shared across Pi-family. */
 const _promptCache: Partial<Record<ModeKeyword, string>> = {};
 
 /**
  * Load and cache a mode prompt from a commands directory.
- * The commandsDir should point to a directory containing `fein.md`,
- * `sonar.md`, and `blitz.md` files.
+ * Delegates `## MODE:` extraction to the neutral shared-mode helper.
  */
 export function loadModePrompt(name: string, commandsDir: string): string {
   const content = readFileSync(resolve(commandsDir, `${name}.md`), 'utf-8');
-  const modeIdx = content.indexOf('## MODE:');
-  if (modeIdx !== -1) {
-    return content.slice(modeIdx).replace(/\s+$/, '') + '\n';
-  }
-  return content.replace(/\s+$/, '') + '\n';
+  return extractModeSection(content);
 }
 
 /**
@@ -71,78 +70,32 @@ export interface ModeDetectResult {
   prompt: string;
 }
 
-/** Regex matching fenced code blocks (```) and inline backtick spans (`). */
-const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/g;
-
-/**
- * Find ranges of fenced code blocks and inline code spans in text.
- * Returns [start, end) positions. Keywords inside these ranges are
- * ignored during detection (per ADR-OC-003).
- */
-function findAllCodeBlockRanges(text: string): Array<[number, number]> {
-  const ranges: Array<[number, number]> = [];
-  let match: RegExpExecArray | null;
-  while ((match = CODE_BLOCK_RE.exec(text)) !== null) {
-    ranges.push([match.index, match.index + match[0].length]);
-  }
-  return ranges;
-}
-
-function isInRanges(index: number, ranges: Array<[number, number]>): boolean {
-  return ranges.some(([start, end]) => index >= start && index < end);
-}
-
-/**
- * Priority mapping for mode keyword restrictiveness.
- * Higher number = more restrictive = wins when multiple keywords are present.
- * fein (3): full pipeline with mandatory gates
- * sonar (2): research only, no code
- * blitz (1): fast implementation, skip optional ceremony; required review remains
- */
-const MODE_PRIORITY: Record<ModeKeyword, number> = {
-  fein: 3,
-  sonar: 2,
-  blitz: 1,
-};
-
 /**
  * Detect a mode keyword (fein/sonar/blitz) in text as a whole word,
- * case-insensitive. Detection rules (per ADR-OC-003):
- * - Word-boundary regex matching (\bfein\b, \bsonar\b, \bblitz\b)
- * - Most restrictive match wins (fein > sonar > blitz)
- * - Case-insensitive
- * - Matches inside fenced code blocks (```) and inline backticks (`) are ignored
+ * case-insensitive. Delegates pure detection (including code-block
+ * exclusion, word-boundary, priority, and case-insensitivity) to
+ * `@maestria/shared-mode`. The accepted unclosed-fence behavior
+ * (ADR-OC-003) is preserved via the shared helper.
+ *
+ * Lazy prompt loading remains host-specific (reads `commandsDir`).
+ * Optional `disabled` set mirrors OpenCode's disabled-keyword support.
  */
-export function detectModeInText(text: string, commandsDir: string): ModeDetectResult | null {
+export function detectModeInText(
+  text: string,
+  commandsDir: string,
+  disabled?: Set<string>,
+): ModeDetectResult | null {
   if (!text) return null;
 
-  const codeRanges = findAllCodeBlockRanges(text);
-  let best: { keyword: ModeKeyword; index: number } | null = null;
+  const pure = sharedDetectMode(text, disabled);
+  if (pure === null) return null;
 
-  for (const keyword of MODE_KEYWORDS) {
-    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-    let match: RegExpExecArray | null;
-    while ((match = regex.exec(text)) !== null) {
-      if (isInRanges(match.index, codeRanges)) continue;
-      // Most-restrictive wins: prefer higher-priority mode over position
-      if (best === null || MODE_PRIORITY[keyword] > MODE_PRIORITY[best.keyword]) {
-        best = { keyword, index: match.index };
-      }
-    }
-  }
-
-  if (best === null) return null;
-
-  // Strip the matched keyword, cleaning up a trailing colon and collapsing
-  // double spaces (mirrors opencode's stripKeyword behavior).
-  const before = text.slice(0, best.index);
-  const after = text.slice(best.index + best.keyword.length).replace(/^:\s*/, '');
-  const strippedText = (before + after).replace(/ {2,}/g, ' ').trim();
+  const strippedText = sharedStripKeyword(text, pure);
 
   return {
-    keyword: best.keyword,
+    keyword: pure.mode,
     strippedText,
-    prompt: getModePrompt(best.keyword, commandsDir),
+    prompt: getModePrompt(pure.mode, commandsDir),
   };
 }
 
@@ -159,11 +112,6 @@ export function buildModeText(prompt: string, strippedText: string): string {
 /**
  * Install an input event handler that detects mode keywords (fein/sonar/blitz)
  * in user input, strips them, and injects the mode prompt.
- *
- * @param onInput - Platform's `pi.on('input', handler)` method
- * @param state - Shared maestria state
- * @param commandsDir - Path to directory containing fein.md/sonar.md/blitz.md
- * @param opts - Platform-specific callbacks and result builders
  */
 export function installModeAutoDetect(
   onInput: (handler: (event: unknown, ctx: unknown) => unknown) => void,
@@ -200,10 +148,6 @@ export function installModeAutoDetect(
  * Install slash commands for fein/sonar/blitz that set the workflow mode
  * and show a notification. Task description injection is handled by the
  * auto-detect handler instead.
- *
- * @param registerCommand - Platform's `pi.registerCommand(name, opts)` method
- * @param state - Shared maestria state
- * @param opts - Platform-specific callbacks
  */
 export function installModeCommands(
   registerCommand: (

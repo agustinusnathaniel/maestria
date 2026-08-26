@@ -49,6 +49,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@maestria/shared-mode": "workspace:*",
     "@opencode-ai/plugin": "^1.18.19",
     "@types/node": "catalog:",
     "typescript": "catalog:",

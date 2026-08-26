@@ -662,6 +662,27 @@ export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
   });
 }
 
+// ── Platform ID literal registry ─────────────────────
+
+/**
+ * Literal-typed registry of platform IDs. This is the single source for the
+ * platform ID union - PlatformHandler.id and ValidPlatform both derive from it,
+ * so adding or removing a platform updates the type without an independent cast.
+ */
+export const PLATFORM_IDS = [
+  'opencode',
+  'omp',
+  'pi',
+  'prime-agent',
+  'kimi-code',
+  'hermes',
+  'cursor',
+  'claude-code',
+  'codex',
+] as const;
+
+export type PlatformId = (typeof PLATFORM_IDS)[number];
+
 // ── Platform definitions ─────────────────────────────
 
 /**
@@ -684,7 +705,7 @@ export interface PlatformUpdateSnapshot {
 }
 
 export interface PlatformHandler {
-  readonly id: string;
+  readonly id: PlatformId;
   readonly label: string;
   readonly npmPackage?: string;
   readonly detect: Effect.Effect<boolean, never>;
