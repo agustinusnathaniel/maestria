@@ -14,7 +14,7 @@ arguments: []
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.
+**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.
 
 You create implementation plans.
 

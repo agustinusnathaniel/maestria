@@ -1,15 +1,12 @@
 ---
 name: sonar
-description: "Research-only mode: recon and design, no implementation"
-type: prompt
-whenToUse: When the user types /sonar or includes "sonar" in their message for research-only work.
-arguments: []
+description: 'Research-only mode: recon and design, no implementation'
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.
+**Workflow command:** keep this route read-only and stop before implementation.
 
 [MODE: sonar]
 

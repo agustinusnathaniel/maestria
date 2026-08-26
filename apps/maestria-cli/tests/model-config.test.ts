@@ -7,6 +7,10 @@ import {
   setFrontmatterModel,
   setConfigModelJsonc,
   parseConfigModels,
+  parseCursorModels,
+  parseCodexAgentModel,
+  setCodexAgentModel,
+  createCodexAgentConfig,
 } from '../src/lib/model-config.js';
 
 describe('parseOpenCodeModels', () => {
@@ -61,6 +65,55 @@ describe('parseOmpModels', () => {
 
   it('returns [] on invalid JSON', () => {
     expect(parseOmpModels('not json')).toEqual([]);
+  });
+});
+
+describe('parseCursorModels', () => {
+  it('parses current human-readable model output and removes duplicates', () => {
+    const out = [
+      'Available models:',
+      'auto - Automatic selection',
+      'claude-4-sonnet (current)',
+      'gpt-5.4',
+      'claude-4-sonnet',
+    ].join('\n');
+    expect(parseCursorModels(out)).toEqual(['auto', 'claude-4-sonnet', 'gpt-5.4']);
+  });
+
+  it('accepts JSON model catalogs when the CLI emits them', () => {
+    expect(parseCursorModels(JSON.stringify({ models: [{ id: 'gpt-5.4' }, 'auto'] }))).toEqual([
+      'gpt-5.4',
+      'auto',
+    ]);
+  });
+});
+
+describe('Codex custom-agent TOML', () => {
+  it('reads and surgically updates a top-level model', () => {
+    const content = [
+      'name = "builder"',
+      'model = "old/model" # keep this comment',
+      'developer_instructions = "Use the builder skill"',
+      '',
+      '[mcp_servers.example]',
+      'url = "https://example.test/mcp"',
+      '',
+    ].join('\n');
+    expect(parseCodexAgentModel(content)).toBe('old/model');
+    const next = setCodexAgentModel(content, 'gpt-5.4');
+    expect(parseCodexAgentModel(next)).toBe('gpt-5.4');
+    expect(next).toContain('model = "gpt-5.4" # keep this comment');
+    expect(next).toContain('[mcp_servers.example]');
+    expect(setCodexAgentModel(next, '')).not.toContain('model =');
+  });
+
+  it('creates a native read-only agent config for restricted roles', () => {
+    const config = createCodexAgentConfig('reviewer', 'gpt-5.4');
+    expect(config).toContain('name = "maestria-reviewer"');
+    expect(config).toContain('developer_instructions');
+    expect(config).toContain('model = "gpt-5.4"');
+    expect(config).toContain('sandbox_mode = "read-only"');
+    expect(config).toContain('$maestria:reviewer');
   });
 });
 

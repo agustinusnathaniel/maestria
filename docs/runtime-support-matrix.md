@@ -16,7 +16,7 @@ Internal evidence ledger for runtime support and adapter policy. This is the sup
 
 ## Maestria CLI adapter evidence (reviewed 2026-08-13)
 
-The CLI adapters are management wrappers, not new runtime capabilities. They stage the published npm package under `~/.cache/maestria/`, register a local marketplace with the host CLI, and use the host's native install/remove/list commands. They do not write Claude Code or Codex configuration.
+The CLI adapters are management wrappers around host-native capabilities. They stage the published npm package under `~/.cache/maestria/`, register a local marketplace with the host CLI, and use the host's native install/remove/list commands. The Codex adapter additionally installs native custom-agent TOMLs and a marked global `AGENTS.md` orchestration block because those surfaces are outside the plugin manifest.
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -30,7 +30,7 @@ The CLI adapters are management wrappers, not new runtime capabilities. They sta
 | --- | --- | --- | --- | --- | --- | --- |
 | Claude Code | Native candidate | Plugin | candidate native plugin | Promotion gated on approved docs and a blind review | E-CLAUDE-01 | 2026-08-11 |
 | Prime Agent | Native candidate | Skills-first + verified extension subset | skills + mode-command extension; native rlm dispatch deferred | Skills-first package plus a small verified extension subset (mode commands, mode prompt injection); native `rlm` dispatch/JSON-RPC deferred until a public JS bridge is verified | E-PRIME-01 | 2026-08-13 |
-| Codex CLI | Provisional | Projection | projection-plugin spike | Bounded projection/plugin spike; pin the exact CLI version before relying on it | E-CODEX-CLI-01 | 2026-08-11 |
+| Codex CLI | Native | Plugin + CLI-managed native agents/instructions | shipped native CLI adapter | Verified plugin skills, native custom agents, automatic primary-session orchestration guidance, model configuration, and idempotent install/update/uninstall against Codex CLI 0.145.0 and current upstream source | E-CODEX-CLI-12, E-CODEX-CLI-13, E-CODEX-CLI-14, E-CODEX-CLI-15 | 2026-08-26 |
 | Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim | E-CODEX-DESKTOP-01 | 2026-08-11 |
 | JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 | 2026-08-11 |
 | Crush | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-CRUSH-01 | 2026-08-11 |
@@ -120,7 +120,7 @@ The CLI adapters are management wrappers, not new runtime capabilities. They sta
 
 ## Codex CLI
 
-**Support level:** Provisional. **Delivery:** Projection. **Disposition:** projection-plugin spike. **Rationale:** bounded projection/plugin spike; pin the exact CLI version before relying on it.
+**Support level:** Native. **Delivery:** Plugin + CLI-managed native agents/instructions. **Disposition:** shipped native CLI adapter. **Rationale:** the integration uses Codex's documented plugin, skills, custom-agent, `agent_type`, and global `AGENTS.md` surfaces, with CLI-managed installation and preservation of user-owned settings.
 
 ### Evidence (reviewed 2026-08-11)
 
@@ -143,7 +143,17 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 | E-CODEX-CLI-08 | Codex CLI | Plugin bundle | A plugin requires `.codex-plugin/plugin.json` and can expose skills from a `skills/` directory; the plugin name provides the component namespace | `rust-v0.145.0` plugin specification | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/skills/src/assets/samples/plugin-creator/references/plugin-json-spec.md; https://developers.openai.com/plugins/build/plugins | 2026-08-13 | tested |
 | E-CODEX-CLI-09 | Codex CLI | Hook handlers | The pinned source executes configured command handlers; prompt and agent handlers are parsed but skipped | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs | 2026-08-13 | tested: source inspection |
 | E-CODEX-CLI-10 | Codex CLI | Plugin hook trust | Non-managed plugin hooks require managed status, a matching trusted hash, or an explicit bypass before command execution | `rust-v0.145.0` | https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/engine/discovery.rs; https://github.com/openai/codex/blob/rust-v0.145.0/codex-rs/hooks/src/registry.rs | 2026-08-13 | tested: source inspection |
-| E-CODEX-CLI-11 | Codex CLI | Maestria projection | The package generates 14 skills from the canonical directives and ships no hooks, MCP server, model configuration, or `AGENTS.md` writer; the separate Maestria CLI provides npm-backed marketplace staging | `packages/codex` on this branch | `packages/codex/sync.config.ts`; `packages/codex/skills/`; `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested after sync |
+| E-CODEX-CLI-11 | Codex CLI | Maestria projection | At the 2026-08-13 review point, the package generated 14 skills and the separate Maestria CLI provided npm-backed marketplace staging; native agents and automatic instructions were added in the subsequent re-verification | `packages/codex` on the 2026-08-13 snapshot | `packages/codex/sync.config.ts`; `packages/codex/skills/`; `apps/maestria-cli/src/lib/platforms.ts` | 2026-08-13 | tested after sync |
+
+### Current re-verification (2026-08-26)
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-CODEX-CLI-12 | Codex CLI | Native custom agents | Codex discovers standalone custom-agent TOMLs from `~/.codex/agents/` and project agent directories, including `name`, `description`, `developer_instructions`, model, reasoning, sandbox, MCP, and skill configuration fields | Codex CLI `0.145.0`; current upstream source | https://learn.chatgpt.com/docs/agent-configuration/subagents?surface=app; `/home/nathan/.opensrc/repos/github.com/openai/codex/main/codex-rs/core/src/config/agent_roles.rs` | 2026-08-26 | tested: source inspection + package/unit tests |
+| E-CODEX-CLI-13 | Codex CLI | Delegation | Native subagent selection uses the `agent_type` role name, so Maestria's `maestria-*` TOMLs are directly addressable by Codex's delegation runtime | Codex CLI `0.145.0`; current upstream source | https://learn.chatgpt.com/docs/agent-configuration/subagents?surface=app; `/home/nathan/.opensrc/repos/github.com/openai/codex/main/codex-rs/core/src/tools/handlers/multi_agents_spec.rs` | 2026-08-26 | tested: source inspection + package/unit tests |
+| E-CODEX-CLI-14 | Codex CLI | Global instructions | Codex loads global `AGENTS.override.md` or `AGENTS.md` from `$CODEX_HOME`; the Maestria CLI manages a marked block in the active file and preserves unrelated instructions | Codex CLI `0.145.0`; current upstream source | https://learn.chatgpt.com/docs/config-file/config-reference; `/home/nathan/.opensrc/repos/github.com/openai/codex/main/codex-rs/codex-home/src/instructions/mod.rs` | 2026-08-26 | tested: source inspection + package/unit tests |
+| E-CODEX-CLI-15 | Codex CLI | Maestria integration | `maestria install codex` installs the skills plugin, seven native roles, model-preserving updates, and automatic orchestration guidance; uninstall removes only Maestria-managed content | Working-tree implementation; Codex CLI `0.145.0` | `apps/maestria-cli/src/lib/platforms.ts`; `packages/codex/instructions/AGENTS.md`; `packages/codex/tests/plugin.test.ts` | 2026-08-26 | tested: package/unit tests + built package |
+| E-CODEX-CLI-16 | Codex CLI | Native marketplace | The repository marketplace entry maps `maestria@maestria` to the published `@maestria/codex` npm package; native `codex plugin marketplace add` followed by `codex plugin add maestria@maestria` installs the published plugin and skills | Codex CLI `0.145.0`; published `@maestria/codex@0.3.2` | `.agents/plugins/marketplace.json`; `/home/nathan/.opensrc/repos/github.com/openai/codex/main/codex-rs/core-plugins/src/marketplace.rs`; isolated Codex smoke test | 2026-08-26 | tested: live host smoke |
 
 ### Capability vs control
 
@@ -153,13 +163,15 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 | E-CODEX-CLI-10 | Managed hook policy and trust bypass | Available | Advisory | These are host controls and explicit exceptions, not Maestria enforcement paths |
 | E-CODEX-CLI-09 | Hooks (prompt/agent types) | Unavailable | Unsupported | Parsed but skipped by the pinned source |
 | E-CODEX-CLI-08 | Plugin manifest and skills | Supported | Advisory | Skills are the bounded projection surface; they do not enforce delegation, role permissions, or review |
+| E-CODEX-CLI-12 | Native custom-agent TOMLs | Supported | Host-enforced where configured | Codex owns discovery, role selection, sandbox settings, and per-agent runtime configuration |
+| E-CODEX-CLI-14 | Global `AGENTS.md` instructions | Supported | Advisory | The managed block activates the workflow in the host-owned primary session; user and repository instructions still take precedence |
 
 ### Statuses and gates
 
 - **Version sensitivity gate:** the spike baseline is pinned to `codex 0.145.0` / `rust-v0.145.0` (`25af12f`). Reverify after CLI upgrades or material plugin/hook changes.
-- **Projection boundary:** keep the package skills-only. Do not add hooks, MCP, installer, model configuration, or `AGENTS.md` generation without a new decision and security review.
-- **Promotion to `Native`:** establish a stable supported executable-extension API, verify its security model, produce a projection via the sync pipeline, and pass `scripts/check-sync`.
-- **Rollback:** remove the projection/plugin spike.
+- **Integration boundary:** keep the plugin manifest focused on skills. Native custom agents, model configuration, and the marked global `AGENTS.md` block belong to the companion CLI; do not add hooks or MCP without a separate decision and security review.
+- **Promotion to `Native`:** resolved for Codex CLI on 2026-08-26 after current docs/source re-verification, package tests, and full workspace checks. Reverify after material host changes.
+- **Rollback:** remove the companion native-agent and instruction management while leaving unrelated Codex configuration untouched.
 - **Withdrawal:** downgrade or remove claims; keep `Provisional`, `Deferred`, or `Withdrawn`.
 - **Re-promotion:** no automatic re-promotion; only after the version and evidence are re-verified.
 
@@ -311,7 +323,7 @@ Each previously unresolved question now has an explicit status or gate:
 
 - Claude Code: can the plugin-subagent field limitation be worked around while keeping the plugin distribution shape? **Gate:** keep plugin-subagent fields `Ignored` and do not rely on them; the workaround (project/user agent files) is a promotion-gate item, not an open question.
 - Prime Agent: is there a stable supported API for an executable extension beyond skills-first delivery? **Status:** a verified subset ships (mode commands, mode prompt injection, session-scoped mode state - E-PRIME-09). **Gate:** native `rlm` dispatch stays deferred - the pinned fork exposes no public JS extension bridge (E-PRIME-10); promotion to `Native` requires it.
-- Codex CLI: which exact CLI version introduced the trust-gated hook flow and plugin support? **Gate:** pin the version before any projection is relied on; until pinned, keep `Provisional`.
+- Codex CLI: which exact CLI version introduced the trust-gated hook flow and plugin support? **Resolved:** Codex CLI `0.145.0` and current upstream source were reverified on 2026-08-26; reverify after material host upgrades.
 - JCode and Crush: is there a first-class package/extension distribution API, or is projection the only supported path? **Status:** `Deferred` - projection/experiment only, until a first-class API is confirmed.
 
 ## Sources

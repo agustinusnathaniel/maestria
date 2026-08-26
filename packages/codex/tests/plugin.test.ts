@@ -23,6 +23,16 @@ const EXPECTED_SKILLS = [
   'writer',
 ] as const;
 
+const EXPECTED_NATIVE_AGENTS = [
+  'maestria-adventurer',
+  'maestria-architect',
+  'maestria-builder',
+  'maestria-diagnose',
+  'maestria-planner',
+  'maestria-reviewer',
+  'maestria-writer',
+] as const;
+
 interface PluginManifest {
   name?: string;
   version?: string;
@@ -35,6 +45,14 @@ interface PluginManifest {
 
 interface PackageManifest {
   version?: string;
+}
+
+interface MarketplaceManifest {
+  name?: string;
+  plugins?: Array<{
+    name?: string;
+    source?: { source?: string; package?: string };
+  }>;
 }
 
 async function readJson<T>(relativePath: string): Promise<T> {
@@ -93,6 +111,17 @@ describe('.codex-plugin/plugin.json manifest', () => {
   });
 });
 
+describe('repository marketplace entry', () => {
+  it('points the native Codex marketplace at the published npm package', async () => {
+    const marketplace = JSON.parse(
+      await readFile(path.join(PACKAGE_ROOT, '../../.agents/plugins/marketplace.json'), 'utf8'),
+    ) as MarketplaceManifest;
+    const plugin = marketplace.plugins?.find((entry) => entry.name === 'maestria');
+    expect(marketplace.name).toBe('maestria');
+    expect(plugin?.source).toEqual({ source: 'npm', package: '@maestria/codex' });
+  });
+});
+
 describe('generated skills', () => {
   it('contains exactly the projected skill directories', async () => {
     const entries = await readdir(path.join(PACKAGE_ROOT, 'skills'), { withFileTypes: true });
@@ -119,7 +148,17 @@ describe('generated skills', () => {
     const text = await readFile(path.join(PACKAGE_ROOT, 'skills/orchestrator/SKILL.md'), 'utf8');
     expect(text).toContain('$maestria:builder');
     expect(text).toContain('$maestria:reviewer');
-    expect(text).toContain('skills rather than Codex slash commands');
+    expect(text).toContain('maestria-builder');
+    expect(text).toContain('agent_type');
+  });
+
+  it('ships the automatic global orchestration instruction template', async () => {
+    const text = await readFile(path.join(PACKAGE_ROOT, 'instructions/AGENTS.md'), 'utf8');
+    expect(text).toContain('maestria:codex-orchestrator:start');
+    expect(text).toContain('$maestria:orchestrator');
+    expect(text).toContain('agent_type');
+    expect(text).toContain('maestria-builder');
+    expect(text).toContain('User instructions and repository-local instructions take precedence');
   });
 
   it('states that read-only role boundaries are advisory', async () => {
@@ -131,11 +170,38 @@ describe('generated skills', () => {
   });
 });
 
+describe('native Codex agent templates', () => {
+  for (const agent of EXPECTED_NATIVE_AGENTS) {
+    it(`${agent} has the required native TOML fields`, async () => {
+      const relativePath = `agents/${agent}.toml`;
+      const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8');
+      expect(text).toMatch(new RegExp(`^name\\s*=\\s*"${agent}"`, 'm'));
+      expect(text).toMatch(/^description\s*=\s*".+"/m);
+      expect(text).toContain('developer_instructions = """');
+      expect(text).toContain(`$maestria:${agent.replace('maestria-', '')}`);
+    });
+  }
+
+  for (const agent of [
+    'maestria-adventurer',
+    'maestria-architect',
+    'maestria-planner',
+    'maestria-reviewer',
+  ]) {
+    it(`${agent} declares Codex read-only sandboxing`, async () => {
+      const text = await readFile(path.join(PACKAGE_ROOT, `agents/${agent}.toml`), 'utf8');
+      expect(text).toContain('sandbox_mode = "read-only"');
+    });
+  }
+});
+
 describe('package metadata', () => {
   it('matches the public workspace package identity', async () => {
     const pkg = await readJson<Record<string, unknown>>('package.json');
     expect(pkg.name).toBe('@maestria/codex');
     expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');
+    expect(pkg.files).toContain('agents');
+    expect(pkg.files).toContain('instructions');
   });
 });

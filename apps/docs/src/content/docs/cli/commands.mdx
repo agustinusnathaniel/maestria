@@ -132,8 +132,9 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 ### Error handling
 
 Claude Code and Codex CLI use their host-native marketplace managers. The Maestria CLI stages the
-published npm package under `~/.cache/maestria/` before invoking those managers; it does not write
-Claude Code or Codex configuration files directly.
+published npm package under `~/.cache/maestria/` before invoking those managers. Claude Code
+configuration remains host-owned; Codex also receives Maestria-managed native agent TOMLs under
+`$CODEX_HOME/agents/`.
 
 Prime Agent manages packages through its native package manager. `maestria` delegates `install`,
 `update`, and `uninstall` to `prime-agent package install`/`update`/`remove
@@ -346,13 +347,15 @@ Choose which model each maestria specialist agent uses, per platform.
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-`platform` is optional - one of `opencode`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. Agents without a configured model inherit the session model.
+`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. Agents without a configured model inherit the session model.
+
+For Codex, the command writes native custom-agent TOML files under `~/.codex/agents/` for global configuration or `.codex/agents/` for project configuration. Existing agent files are edited surgically, and new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
 ### Interactive (TTY)
 
 <PackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
-Shows a group-multiselect of the 7 specialists, then a per-agent model picker with the current model pre-selected and an _Inherit (session model)_ option. The model list is fetched live from the platform (`opencode models`, `pi --list-models`, `omp models --json`).
+Shows a group-multiselect of the 7 specialists, then a per-agent model picker with the current model pre-selected and an _Inherit (session model)_ option. The model list is fetched live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, `pi --list-models`, or `omp models --json`).
 
 ### Non-interactive (CI)
 

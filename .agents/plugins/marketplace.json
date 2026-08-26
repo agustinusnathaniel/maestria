@@ -1,0 +1,20 @@
+{
+  "name": "maestria",
+  "interface": {
+    "displayName": "Maestria"
+  },
+  "plugins": [
+    {
+      "name": "maestria",
+      "source": {
+        "source": "npm",
+        "package": "@maestria/codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

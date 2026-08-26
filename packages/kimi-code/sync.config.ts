@@ -58,7 +58,7 @@ Read-only - never implement, design, or edit.`,
     'architect.md': {
       output: 'architect/SKILL.md',
       prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
       frontmatter: {
         name: 'architect',
         description: `Architecture decisions using decision matrices and ADRs.
@@ -106,7 +106,7 @@ not.`,
     'planner.md': {
       output: 'planner/SKILL.md',
       prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
       frontmatter: {
         name: 'planner',
         description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
@@ -121,7 +121,7 @@ any complex feature that needs review before building.`,
     'reviewer.md': {
       output: 'reviewer/SKILL.md',
       prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
       frontmatter: {
         name: 'reviewer',
         description: `Code review with quality gates.
@@ -153,7 +153,7 @@ Use for: README files, API docs, architecture docs, changelogs, decision records
     'orchestrator.md': {
       output: 'orchestrator/SKILL.md',
       prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, Bash, FetchURL, and WebSearch. You do **not** have Write or Edit.\n\n',
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, FetchURL, and WebSearch. You do **not** have Bash, Write, or Edit.\n\n',
       frontmatter: {
         name: 'orchestrator',
         description: 'Methodology + delegation + swarm usage for the maestria workflow',
@@ -179,7 +179,7 @@ decisions, and documentation generation under the maestria workflow.`,
 
 ## Swarm Usage (AgentSwarm)
 
-When 3+ items are uniform (same persona, same goal, independent units), use \`AgentSwarm\` instead of \`Agent\`. The swarm dispatches N parallel agents, collects results, and returns them as a structured array.
+When 2+ items are uniform (same persona, same goal, independent units), use \`AgentSwarm\` instead of \`Agent\`. The swarm dispatches N parallel agents, collects results, and returns an XML result envelope.
 
 ### When to use AgentSwarm
 
@@ -191,8 +191,12 @@ When 3+ items are uniform (same persona, same goal, independent units), use \`Ag
 ### How AgentSwarm works
 
 \`\`\`
-AgentSwarm(persona: "builder", data: [...], prompt: "...")
-  → [{status, files, summary}, ...]
+AgentSwarm(
+  description: "Review independent files",
+  subagent_type: "coder",
+  prompt_template: "Review {{item}} for correctness and test gaps.",
+  items: ["src/a.ts", "src/b.ts"]
+)
 \`\`\`
 
 Array elements run in parallel. Each gets its own context snapshot. Results are gathered after all complete.
@@ -203,25 +207,25 @@ When using AgentSwarm, only the orchestrator may talk to the user. Swarm agents 
 
 ### Result envelope
 
-Each swarm agent returns: \`{status: "ok"|"error", files: string[], summary: string}\`. The orchestrator reads the envelope and decides next steps.
+Each swarm result is returned in Kimi's XML envelope. Read the per-item status and handoff text before deciding whether to continue or repair.
 
 ## Background Sub-Agents
 
-You may launch \`Agent(persona: "explore", task: "research this")\` as a background investigation while continuing other work. Background agents run concurrently and report back. Signal completion by returning a structured result.
+You may launch \`Agent(prompt: "research this", description: "Explore the question", subagent_type: "explore", run_in_background: true)\` as a background investigation while continuing other work. Background agents run concurrently and report back.
 
 ## How to Invoke a Specialist Persona
 
 1. \`Skill(skill="adventurer")\` - Load the specialist persona (defines constraints, rules, and subagent profile for that role)
-2. \`Agent(persona: "...", data: {...}, prompt: "...")\` - Delegate a unit of work to the persona
-3. \`AgentSwarm(persona: "...", data: [...], prompt: "...")\` - Delegate N uniform items to parallel persona instances
+2. \`Agent(prompt: "...", description: "Short task label", subagent_type: "coder")\` - Delegate a unit of work to the mapped built-in profile
+3. \`AgentSwarm(description: "...", subagent_type: "coder", prompt_template: "... {{item}} ...", items: [...])\` - Delegate uniform items in parallel
 
 ### Why the two-step pattern?
 
-The \`Skill\` call loads persona-specific context (rules, tools, behavioral constraints). The \`Agent\` call sends the actual task. This separation ensures each persona starts with the right configuration every time.
+The \`Skill\` call loads persona-specific context (rules, tools, behavioral constraints). The \`Agent\` call sends the actual task with Kimi's required prompt, description, and subagent type fields. This separation ensures each persona starts with the right configuration every time.
 
 ### Subagent profile vs persona
 
-The \`explore\` subagent has Read-only tools. The \`coder\` subagent has full Write/Edit. The \`plan\` subagent is Read-only with Bash access.
+The \`explore\` subagent has read-only search tools. The \`coder\` subagent has full Write/Edit access. The \`plan\` subagent is read-only and has no shell access.
 
 ### Single-agent pattern
 
@@ -231,23 +235,24 @@ const result = await Skill(skill: "diagnose");
 if (result.status !== "ok") { AskUserQuestion("..."); return; }
 
 // 2. Dispatch the task
-const output = await Agent(persona: "diagnose", data: ctx, prompt: "Find why X fails");
-if (output.status === "ok") { /* use output.files, output.summary */ }
+const output = await Agent(
+  prompt: "Find why X fails",
+  description: "Diagnose failure",
+  subagent_type: "coder"
+);
+if (output.result) { /* use the complete handoff */ }
 \`\`\`
 
 ### Swarm pattern
 
 \`\`\`
-const items = [
-  { path: "src/a.ts", desc: "..." },
-  { path: "src/b.ts", desc: "..." },
-  { path: "src/c.ts", desc: "..." },
-];
-
-const results = await AgentSwarm(persona: "builder", data: items, prompt: "Update each file");
-for (const r of results) {
-  if (r.status !== "ok") { /* handle */ }
-}
+const results = await AgentSwarm(
+  description: "Update independent files",
+  subagent_type: "coder",
+  prompt_template: "Update {{item}} and run its focused checks.",
+  items: ["src/a.ts", "src/b.ts", "src/c.ts"]
+);
+// Read the XML result envelope and handle failed items explicitly.
 \`\`\`
 
 ## Anti-Patterns (additional)
@@ -303,7 +308,7 @@ This should appear at the end of your response when the user asks for a handoff,
     },
 
     'commands/fein.md': {
-      output: 'commands/fein/SKILL.md',
+      output: '../commands/fein.md',
       stripFrontmatter: true,
       replace: [
         { from: '@adventurer', to: 'adventurer' },
@@ -313,18 +318,12 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: '@reviewer', to: 'reviewer' },
       ],
       prepend:
-        '**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
-      frontmatter: {
-        name: 'fein',
-        description: 'Full pipeline mode: recon, design, implement, review',
-        type: 'prompt',
-        whenToUse:
-          'When the user types /fein or includes "fein" in their message to run the complete maestria pipeline.',
-        arguments: [],
-      },
+        '**Workflow command:** use the Kimi Agent and its native Agent/AgentSwarm tools as permitted by the active profile.\n\n',
+      frontmatter:
+        "---\nname: fein\ndescription: 'Full pipeline mode: recon, design, implement, review'\n---\n",
     },
     'commands/sonar.md': {
-      output: 'commands/sonar/SKILL.md',
+      output: '../commands/sonar.md',
       stripFrontmatter: true,
       replace: [
         { from: '@adventurer', to: 'adventurer' },
@@ -332,18 +331,12 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: '@planner', to: 'planner' },
       ],
       prepend:
-        '**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
-      frontmatter: {
-        name: 'sonar',
-        description: 'Research-only mode: recon and design, no implementation',
-        type: 'prompt',
-        whenToUse:
-          'When the user types /sonar or includes "sonar" in their message for research-only work.',
-        arguments: [],
-      },
+        '**Workflow command:** keep this route read-only and stop before implementation.\n\n',
+      frontmatter:
+        "---\nname: sonar\ndescription: 'Research-only mode: recon and design, no implementation'\n---\n",
     },
     'commands/blitz.md': {
-      output: 'commands/blitz/SKILL.md',
+      output: '../commands/blitz.md',
       stripFrontmatter: true,
       replace: [
         { from: '@adventurer', to: 'adventurer' },
@@ -351,21 +344,14 @@ This should appear at the end of your response when the user asks for a handoff,
         { from: '@reviewer', to: 'reviewer' },
       ],
       prepend:
-        '**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.\n\n',
-      frontmatter: {
-        name: 'blitz',
-        description:
-          'Fast implementation mode: skip optional recon/design unless unknown; required review remains',
-        type: 'prompt',
-        whenToUse:
-          'When the user types /blitz or includes "blitz" in their message for fast implementation.',
-        arguments: [],
-      },
+        '**Workflow command:** use the fastest safe route allowed by the active Kimi profile, while retaining required review.\n\n',
+      frontmatter:
+        "---\nname: blitz\ndescription: 'Fast implementation mode: skip optional recon/design unless unknown; required review remains'\n---\n",
     },
     'rules.md': {
-      output: '../rules/AGENTS.md',
+      output: '../SYSTEM.md',
       prepend:
-        '<!-- Auto-generated from @maestria/core. See the canonical file at packages/core/agent-directives/rules.md. -->\n\n',
+        '<!-- Auto-generated from @maestria/core. See the canonical file at packages/core/agent-directives/rules.md. -->\n',
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/kimi-code' },
         { from: '`read`', to: '`Read`' },

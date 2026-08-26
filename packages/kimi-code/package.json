@@ -23,8 +23,9 @@
   },
   "files": [
     "kimi.plugin.json",
+    "SYSTEM.md",
     "skills",
-    "rules",
+    "commands",
     "INSTALL.md",
     "README.md"
   ],

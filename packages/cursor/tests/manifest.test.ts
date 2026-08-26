@@ -27,6 +27,10 @@ interface PluginManifest {
   keywords?: string[];
 }
 
+interface PackageManifest {
+  version?: string;
+}
+
 async function readJson<T>(relativePath: string): Promise<T> {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
   const raw = await readFile(absolute, 'utf8');
@@ -82,10 +86,14 @@ describe('.cursor-plugin/plugin.json', () => {
   });
 
   it('has required name, version, and author', async () => {
-    const manifest = await readJson<PluginManifest>('.cursor-plugin/plugin.json');
+    const [manifest, pkg] = await Promise.all([
+      readJson<PluginManifest>('.cursor-plugin/plugin.json'),
+      readJson<PackageManifest>('package.json'),
+    ]);
     expect(manifest.name).toBe('maestria');
     expect(typeof manifest.version).toBe('string');
     expect(manifest.version!.length).toBeGreaterThan(0);
+    expect(manifest.version).toBe(pkg.version);
     expect(manifest.author?.name).toBeDefined();
     expect(manifest.license).toBe('MIT');
   });
@@ -196,5 +204,11 @@ describe('package.json', () => {
     expect(pkg.name).toBe('@maestria/cursor');
     expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');
+  });
+
+  it('ships manifest-referenced assets', async () => {
+    const pkg = await readJson<{ files?: string[] }>('package.json');
+    expect(pkg.files).toContain('assets');
+    expect(await pathExists(path.join(PACKAGE_ROOT, 'assets', 'logo.svg'))).toBe(true);
   });
 });

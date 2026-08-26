@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Align the orchestrator's `Agent` and `AgentSwarm` examples with Kimi Code 0.38's native schemas.
+- Register `fein`, `sonar`, and `blitz` as native namespaced plugin commands.
+- Register the npm-installed plugin through Kimi's `plugins/installed.json`, respect `KIMI_CODE_HOME`, and stop overwriting global `AGENTS.md`.
+- Deliver the shared rules through the native `systemPromptPath` plugin capability.
+
 ## 0.5.2
 
 ### Patch Changes

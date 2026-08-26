@@ -101,7 +101,11 @@ Use the namespaced skills below as the specialist workflow profiles:
 | `$maestria:reviewer` | Independent quality review | post-implementation validation or explicit review |
 | `$maestria:writer` | Documentation | README, changelog, API docs, or structured prose |
 
-Codex supports subagent workflows, but a skill does not create or enforce a custom subagent role. Ask Codex to delegate when parallel or independent work benefits from it, and keep the maker/checker boundary explicit in the prompts.
+Codex supports subagent workflows. Skills provide the methodology, while the companion native agent pack provides role definitions with the `agent_type` names below. Keep the maker/checker boundary explicit in every handoff.
+
+### Native custom agents
+
+The Maestria CLI installs the bundled native agent TOMLs into `$CODEX_HOME/agents/` using collision-resistant names: `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Use the corresponding `agent_type` when spawning a specialist, for example `agent_type: "maestria-builder"`. `maestria configure codex` updates their model settings without changing the role instructions. If the native pack is not installed, use the namespaced skills with Codex's built-in agents or explicit delegation prompts.
 
 ### Workflow-mode skills
 
@@ -109,4 +113,4 @@ Use `$maestria:fein` for the full route, `$maestria:sonar` for research-only wor
 
 ### Platform boundary
 
-This package contains no hooks, MCP server, installer, model configuration, or AGENTS.md writer. Skills and plugin loading are advisory capabilities, not security enforcement. Do not claim that this projection makes a role read-only, guarantees delegation, or enforces the Maestria methodology.
+The Codex plugin manifest declares skills only; the companion Maestria CLI installs the package's native custom-agent TOML files, manages their model settings, and adds a marked global orchestration block to Codex's active AGENTS.md instructions. The package contains no hooks or MCP server. Skills and instruction guidance are advisory capabilities, not security enforcement; native custom-agent sandbox settings are the host's boundary. Do not claim that this integration overrides Codex's primary agent or enforces the Maestria methodology.

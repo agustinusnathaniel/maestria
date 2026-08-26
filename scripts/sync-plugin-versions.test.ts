@@ -9,7 +9,7 @@ import { main, syncTarget, type Target } from './sync-plugin-versions.js';
  *
  * The synchronizer copies each package.json `version` into the platform
  * plugin manifests that ship with it (Hermes `_version.py` + `plugin.yaml`,
- * Claude Code `plugin.json`). These tests exercise the behavior release
+ * Claude Code, Codex, Cursor, and Kimi Code `plugin.json`). These tests exercise the behavior release
  * automation depends on - parity checking, drift repair with formatting
  * preservation, and fail-closed handling of malformed or missing input -
  * against throwaway fixture trees under the OS temp dir. They never touch the
