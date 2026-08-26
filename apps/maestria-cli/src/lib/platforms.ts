@@ -34,12 +34,12 @@ function readOpenCodeConfig(): Effect.Effect<string, CommandError> {
  *
  * @param pkg    Full npm package name (e.g. '@maestria/kimi-code')
  * @param dest   Destination directory to extract into
- * @param opts   Optional tag (default 'latest') and a post-extract copy step
+ * @param opts   Optional npm dist-tag (default 'latest')
  */
 function installNpmTarball(
   pkg: string,
   dest: string,
-  opts: { tag?: string; copyFrom?: string; copyTo?: string } = {},
+  opts: { tag?: string } = {},
 ): Effect.Effect<void, CommandError> {
   const tag = opts.tag ?? 'latest';
   const shortName = pkg.replace('@maestria/', '');
@@ -49,13 +49,10 @@ function installNpmTarball(
     // Remove stale tarballs and the destination dir before installing
     yield* sh(`rm -rf ${tarballGlob} "${dest}"`, 15_000);
 
-    const copyStep =
-      opts.copyFrom && opts.copyTo ? ` && cp "${dest}/${opts.copyFrom}" "${opts.copyTo}"` : '';
-
     yield* sh(
       `npm pack ${pkg}@${tag} --pack-destination /tmp && ` +
         `mkdir -p "${dest}" && ` +
-        `tar -xzf ${tarballGlob} -C "${dest}" --strip-components=1${copyStep} && ` +
+        `tar -xzf ${tarballGlob} -C "${dest}" --strip-components=1 && ` +
         `rm -f ${tarballGlob}`,
       120_000,
     );
@@ -158,6 +155,129 @@ function prepareNpmMarketplace(
   });
 }
 
+interface KimiInstalledRecord {
+  readonly id: string;
+  readonly root: string;
+  readonly source: 'local-path' | 'zip-url' | 'github';
+  readonly enabled: boolean;
+  readonly installedAt: string;
+  readonly updatedAt?: string;
+  readonly originalSource?: string;
+  readonly capabilities?: JsonRecord;
+  readonly github?: JsonRecord;
+}
+
+interface KimiInstalledFile {
+  readonly version: 1;
+  readonly plugins: KimiInstalledRecord[];
+}
+
+function kimiCodeHome(): string {
+  return process.env.KIMI_CODE_HOME?.trim() || `${homedir()}/.kimi-code`;
+}
+
+function kimiManagedPluginDir(): string {
+  return `${kimiCodeHome()}/plugins/managed/${MAESTRIA_PLUGIN}`;
+}
+
+function kimiInstalledPath(): string {
+  return `${kimiCodeHome()}/plugins/installed.json`;
+}
+
+function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { readFile } = await import('node:fs/promises');
+      const filePath = kimiInstalledPath();
+      let text: string;
+      try {
+        text = await readFile(filePath, 'utf8');
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          return { version: 1, plugins: [] } satisfies KimiInstalledFile;
+        }
+        throw error;
+      }
+      const parsed = JSON.parse(text) as Partial<KimiInstalledFile>;
+      if (parsed.version !== undefined && parsed.version !== 1) {
+        throw new Error(`unsupported Kimi plugin registry version: ${String(parsed.version)}`);
+      }
+      if (!Array.isArray(parsed.plugins)) {
+        throw new Error('Kimi plugin registry must contain a plugins array');
+      }
+      return {
+        version: 1,
+        plugins: parsed.plugins as KimiInstalledRecord[],
+      } satisfies KimiInstalledFile;
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `read ${kimiInstalledPath()}`,
+        message: String(error),
+      }),
+  });
+}
+
+function writeKimiInstalled(file: KimiInstalledFile): Effect.Effect<void, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { mkdir, rename, writeFile } = await import('node:fs/promises');
+      const filePath = kimiInstalledPath();
+      await mkdir(`${kimiCodeHome()}/plugins`, { recursive: true });
+      const tempPath = `${filePath}.tmp`;
+      await writeFile(tempPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+      await rename(tempPath, filePath);
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `write ${kimiInstalledPath()}`,
+        message: String(error),
+      }),
+  });
+}
+
+function registerKimiPlugin(): Effect.Effect<void, CommandError> {
+  return Effect.gen(function* () {
+    const file = yield* readKimiInstalled();
+    const now = new Date().toISOString();
+    const current = file.plugins.find((plugin) => plugin.id === MAESTRIA_PLUGIN);
+    const record: KimiInstalledRecord = {
+      ...current,
+      id: MAESTRIA_PLUGIN,
+      root: kimiManagedPluginDir(),
+      source: 'local-path',
+      enabled: current?.enabled ?? true,
+      installedAt: current?.installedAt ?? now,
+      updatedAt: now,
+      originalSource: '@maestria/kimi-code',
+    };
+    const plugins = file.plugins.filter((plugin) => plugin.id !== MAESTRIA_PLUGIN);
+    plugins.push(record);
+    yield* writeKimiInstalled({ version: 1, plugins });
+  });
+}
+
+function removeKimiPlugin(): Effect.Effect<void, CommandError> {
+  return Effect.gen(function* () {
+    const file = yield* readKimiInstalled();
+    const plugins = file.plugins.filter((plugin) => plugin.id !== MAESTRIA_PLUGIN);
+    if (plugins.length !== file.plugins.length) {
+      yield* writeKimiInstalled({ version: 1, plugins });
+    }
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { rm } = await import('node:fs/promises');
+        await rm(kimiManagedPluginDir(), { recursive: true, force: true });
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `remove ${kimiManagedPluginDir()}`,
+          message: String(error),
+        }),
+    });
+  });
+}
+
 const claudeMarketplaceManifest: JsonRecord = {
   $schema: 'https://anthropic.com/claude-code/marketplace.schema.json',
   name: MAESTRIA_MARKETPLACE,
@@ -196,6 +316,12 @@ function ensureClaudeMarketplace(): Effect.Effect<void, CommandError> {
             Effect.as(void 0),
           ),
     ),
+  );
+}
+
+function refreshClaudeMarketplace(): Effect.Effect<void, CommandError> {
+  return run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE]).pipe(
+    Effect.as(void 0),
   );
 }
 
@@ -368,6 +494,7 @@ const claudeCode: PlatformHandler = {
       claudeMarketplaceManifest,
     );
     yield* ensureClaudeMarketplace();
+    yield* refreshClaudeMarketplace();
     yield* run('claude', [
       'plugin',
       'install',
@@ -386,16 +513,10 @@ const claudeCode: PlatformHandler = {
         claudeMarketplaceManifest,
       );
       yield* ensureClaudeMarketplace();
+      yield* refreshClaudeMarketplace();
       yield* run('claude', [
         'plugin',
-        'uninstall',
-        `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-        '--scope',
-        'user',
-      ]);
-      yield* run('claude', [
-        'plugin',
-        'install',
+        'update',
         `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
         '--scope',
         'user',
@@ -409,6 +530,7 @@ const claudeCode: PlatformHandler = {
       `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
       '--scope',
       'user',
+      '--yes',
     ]),
   ).pipe(Effect.as(void 0)),
 };
@@ -861,80 +983,68 @@ const kimiCode: PlatformHandler = {
   label: 'Kimi Code',
   npmPackage: '@maestria/kimi-code',
 
-  detect: commandExists('kimi').pipe(
-    Effect.catchCause(() =>
-      run('ls', [`${homedir()}/.kimi-code/AGENTS.md`], 2_000).pipe(
-        Effect.map(() => true),
-        Effect.catchCause(() => Effect.succeed(false)),
-      ),
-    ),
-  ),
+  detect: Effect.gen(function* () {
+    if (yield* commandExists('kimi')) return true;
+    const hasRegistry = yield* run('ls', [kimiInstalledPath()], 2_000).pipe(
+      Effect.map(() => true),
+      Effect.catchCause(() => Effect.succeed(false)),
+    );
+    if (hasRegistry) return true;
+    return yield* run('ls', [`${kimiCodeHome()}/config.toml`], 2_000).pipe(
+      Effect.map(() => true),
+      Effect.catchCause(() => Effect.succeed(false)),
+    );
+  }),
 
-  isInstalled: run('ls', [`${homedir()}/.kimi-code/AGENTS.md`]).pipe(
-    Effect.map(() => true),
+  isInstalled: readKimiInstalled().pipe(
+    Effect.map((file) => file.plugins.some((plugin) => plugin.id === MAESTRIA_PLUGIN)),
+    Effect.flatMap((installed) =>
+      installed
+        ? Effect.succeed(true)
+        : run('ls', [`${kimiManagedPluginDir()}/kimi.plugin.json`], 2_000).pipe(
+            Effect.map(() => true),
+            Effect.catchCause(() => Effect.succeed(false)),
+          ),
+    ),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
 
-  getInstalledVersion: run('cat', [
-    `${homedir()}/.kimi-code/plugins/managed/maestria/kimi.plugin.json`,
-  ]).pipe(
-    Effect.map((out: string) => {
-      try {
-        return JSON.parse(out).version ?? 'unknown';
-      } catch {
-        return 'unknown';
-      }
-    }),
-    Effect.catchCause(() => Effect.succeed('unknown')),
+  getInstalledVersion: Effect.suspend(() =>
+    run('cat', [`${kimiManagedPluginDir()}/kimi.plugin.json`]).pipe(
+      Effect.map((out: string) => {
+        try {
+          return JSON.parse(out).version ?? 'unknown';
+        } catch {
+          return 'unknown';
+        }
+      }),
+      Effect.catchCause(() => Effect.succeed('unknown')),
+    ),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/kimi-code'),
 
   install: Effect.gen(function* () {
-    yield* Effect.tryPromise({
-      try: async () => {
-        const { mkdir } = await import('node:fs/promises');
-        await mkdir(`${homedir()}/.kimi-code/plugins/managed/maestria`, { recursive: true });
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `mkdir -p ${homedir()}/.kimi-code/plugins/managed/maestria`,
-          message: String(error),
-        }),
-    });
-    yield* installNpmTarball(
-      '@maestria/kimi-code',
-      `${homedir()}/.kimi-code/plugins/managed/maestria`,
-      {
-        copyFrom: 'rules/AGENTS.md',
-        copyTo: `${homedir()}/.kimi-code/AGENTS.md`,
-      },
-    );
+    // Validate the host registry before the tarball helper replaces the managed
+    // directory. Kimi's plugin manager treats malformed installed.json as a
+    // load failure, so do not destroy the current copy before surfacing it.
+    yield* readKimiInstalled();
+    yield* installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir());
+    yield* registerKimiPlugin();
   }).pipe(Effect.as(void 0)),
 
   update: (version?: string) =>
     Effect.gen(function* () {
       const tag = version ?? 'latest';
-      yield* installNpmTarball(
-        '@maestria/kimi-code',
-        `${homedir()}/.kimi-code/plugins/managed/maestria`,
-        {
-          tag,
-          copyFrom: 'rules/AGENTS.md',
-          copyTo: `${homedir()}/.kimi-code/AGENTS.md`,
-        },
-      );
+      yield* readKimiInstalled();
+      yield* installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir(), { tag });
+      yield* registerKimiPlugin();
       yield* invalidateVersionCache('@maestria/kimi-code').pipe(
         Effect.catchCause(() => Effect.void),
       );
     }).pipe(Effect.as(void 0)),
 
-  uninstall: Effect.gen(function* () {
-    yield* sh(
-      `rm -rf "${homedir()}/.kimi-code/plugins/managed/maestria" "${homedir()}/.kimi-code/AGENTS.md"`,
-      15_000,
-    );
-  }).pipe(Effect.as(void 0)),
+  uninstall: removeKimiPlugin().pipe(Effect.as(void 0)),
 };
 
 const hermes: PlatformHandler = {
@@ -986,20 +1096,116 @@ const hermes: PlatformHandler = {
 
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
+const CURSOR_AGENT_NAMES = [
+  'adventurer',
+  'architect',
+  'builder',
+  'diagnose',
+  'planner',
+  'reviewer',
+  'writer',
+] as const;
+
+function cursorCliName(): Effect.Effect<string | undefined, never> {
+  return Effect.gen(function* () {
+    if (yield* commandExists('cursor-agent')) return 'cursor-agent';
+    if (!(yield* commandExists('agent'))) return undefined;
+
+    const version = yield* run('agent', ['--version'], 3_000).pipe(
+      Effect.catchCause(() => Effect.succeed('')),
+    );
+    return /cursor/i.test(version) ? 'agent' : undefined;
+  });
+}
+
+function parseCursorAgentModel(content: string): string | undefined {
+  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content)?.[1];
+  if (frontmatter === undefined) return undefined;
+  const match = /^model:\s*(?:"([^"]*)"|'([^']*)'|(.+?))\s*$/m.exec(frontmatter);
+  return match?.[1] ?? match?.[2] ?? match?.[3];
+}
+
+function setCursorAgentModel(content: string, model: string): string {
+  const match = /^(---\r?\n)([\s\S]*?)(\r?\n---(?:\r?\n)?)/.exec(content);
+  if (!match) return content;
+  const [, opening, body, closing] = match;
+  if (opening === undefined || body === undefined || closing === undefined) return content;
+
+  const lines = body.split(/\r?\n/);
+  const modelIndex = lines.findIndex((line) => /^model:\s*/.test(line));
+  if (model) {
+    const rendered = `model: ${model}`;
+    if (modelIndex >= 0) lines[modelIndex] = rendered;
+    else lines.push(rendered);
+  } else if (modelIndex >= 0) {
+    lines.splice(modelIndex, 1);
+  }
+  return `${opening}${lines.join('\n')}${closing}${content.slice(match[0].length)}`;
+}
+
+/** Capture configured Cursor plugin-agent models before a package update replaces the plugin. */
+function readCursorAgentModels(): Effect.Effect<Record<string, string>, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { readFile } = await import('node:fs/promises');
+      const result: Record<string, string> = {};
+      for (const agent of CURSOR_AGENT_NAMES) {
+        try {
+          const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf8');
+          const model = parseCursorAgentModel(content);
+          if (model) result[agent] = model;
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+        }
+      }
+      return result;
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `read Cursor agent models from ${CURSOR_PLUGIN_DIR}/agents`,
+        message: String(error),
+      }),
+  });
+}
+
+/** Reapply configured Cursor plugin-agent models after replacing the generated package files. */
+function restoreCursorAgentModels(
+  models: Record<string, string>,
+): Effect.Effect<void, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { mkdir, readFile, writeFile } = await import('node:fs/promises');
+      const agentDir = `${CURSOR_PLUGIN_DIR}/agents`;
+      await mkdir(agentDir, { recursive: true });
+      for (const [agent, model] of Object.entries(models)) {
+        const path = `${agentDir}/${agent}.md`;
+        const content = await readFile(path, 'utf8');
+        await writeFile(path, setCursorAgentModel(content, model), 'utf8');
+      }
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `restore Cursor agent models in ${CURSOR_PLUGIN_DIR}/agents`,
+        message: String(error),
+      }),
+  });
+}
 
 const cursor: PlatformHandler = {
   id: 'cursor',
   label: 'Cursor',
   npmPackage: '@maestria/cursor',
 
-  detect: commandExists('agent').pipe(
-    Effect.catchCause(() =>
-      run('ls', [`${homedir()}/.cursor`], 2_000).pipe(
-        Effect.map(() => true),
-        Effect.catchCause(() => Effect.succeed(false)),
-      ),
-    ),
-  ),
+  detect: Effect.gen(function* () {
+    if (yield* cursorCliName()) return true;
+    // An unrelated `agent` binary (for example another vendor's CLI) must not
+    // be rescued by the broad ~/.cursor directory fallback.
+    if (yield* commandExists('agent')) return false;
+    return yield* run('ls', [`${homedir()}/.cursor`], 2_000).pipe(
+      Effect.map(() => true),
+      Effect.catchCause(() => Effect.succeed(false)),
+    );
+  }),
 
   isInstalled: run('ls', [CURSOR_PLUGIN_JSON], 2_000).pipe(
     Effect.map(() => true),
@@ -1021,6 +1227,7 @@ const cursor: PlatformHandler = {
   getLatestVersion: npmViewVersion('@maestria/cursor'),
 
   install: Effect.gen(function* () {
+    const models = yield* readCursorAgentModels();
     yield* Effect.tryPromise({
       try: async () => {
         const { mkdir } = await import('node:fs/promises');
@@ -1033,12 +1240,15 @@ const cursor: PlatformHandler = {
         }),
     });
     yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR);
+    yield* restoreCursorAgentModels(models);
   }).pipe(Effect.as(void 0)),
 
   update: (version?: string) =>
     Effect.gen(function* () {
       const tag = version ?? 'latest';
+      const models = yield* readCursorAgentModels();
       yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR, { tag });
+      yield* restoreCursorAgentModels(models);
       // Invalidate version cache so npmViewVersion doesn't return stale data
       yield* invalidateVersionCache('@maestria/cursor').pipe(Effect.catchCause(() => Effect.void));
     }).pipe(Effect.as(void 0)),

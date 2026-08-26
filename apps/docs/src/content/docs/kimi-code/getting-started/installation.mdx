@@ -6,11 +6,11 @@ description: Install @maestria/kimi-code in your Kimi Code CLI. No npm install, 
 import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
 import { PackageManagers } from 'starlight-package-managers';
 
-`@maestria/kimi-code` is a declarative Kimi Code plugin - a manifest, a directory of skill files, and a global rules file. The plugin is loaded by Kimi Code at session start, and the orchestrator skill auto-injects the methodology.
+`@maestria/kimi-code` is a declarative Kimi Code plugin - a manifest, skills, native slash commands, and a system-prompt contribution. The plugin is loaded by Kimi Code at session start, and the orchestrator skill auto-injects the methodology.
 
 ## Prerequisites
 
-- **Kimi Code v0.12.0+** - required for first-class `AgentSwarm` support. On older versions, the orchestrator skill still works, but the swarm guidance falls back to single `Agent` calls.
+- **Kimi Code v0.38.0+** - the verified version for native plugin `systemPromptPath`, plugin commands, and the current plugin registry. Older versions may load the skills-only subset, but are outside the supported boundary.
 - **Node.js 18+** - required for `npm pack` used by the CLI to install the plugin.
 
 ## Installation via CLI (Recommended)
@@ -27,9 +27,9 @@ maestria plugins across all supported platforms:
 <PackageManagers type="dlx" pkg="maestria" args="status" comment="Verify installation" />
 
 <Aside type="caution" title="Additional setup required">
-  The CLI installs the plugin files and copies the global rules. You still need to add the
-  recommended hooks and permission rules to `~/.kimi-code/config.toml`. See the manual setup section
-  below for the complete steps.
+  The CLI installs and registers the plugin without overwriting global instructions. You still need
+  to add the recommended hooks and permission rules to `~/.kimi-code/config.toml`. See the manual
+  setup section below for the complete steps.
 </Aside>
 
 <details>
@@ -43,38 +43,33 @@ maestria plugins across all supported platforms:
 
    <PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
 
-   This runs `npm pack @maestria/kimi-code@latest` and extracts the tarball into
-   `~/.kimi-code/plugins/managed/maestria`, then copies the global rules to
-   `~/.kimi-code/AGENTS.md`.
+   This runs `npm pack @maestria/kimi-code@latest`, extracts the tarball into
+   a temporary directory, and installs it through Kimi's native plugin manager.
 
    Alternatively, you can install directly from npm with the same commands used
    internally:
 
    ```bash
-   mkdir -p ~/.kimi-code/plugins/managed/maestria
    npm pack @maestria/kimi-code@latest --pack-destination /tmp
-   tar -xzf /tmp/maestria-kimi-code-*.tgz -C ~/.kimi-code/plugins/managed/maestria --strip-components=1
-   cp ~/.kimi-code/plugins/managed/maestria/rules/AGENTS.md ~/.kimi-code/AGENTS.md
+   mkdir -p /tmp/maestria-kimi-code
+   tar -xzf /tmp/maestria-kimi-code-*.tgz -C /tmp/maestria-kimi-code --strip-components=1
+   # In Kimi Code, run: /plugins install /tmp/maestria-kimi-code
    rm -f /tmp/maestria-kimi-code-*.tgz
    ```
 
-2. **Verify global rules (REQUIRED)**
+2. **Verify the plugin (REQUIRED)**
 
-   The maestria CLI copies the bundled `rules/AGENTS.md` to `~/.kimi-code/AGENTS.md` during install.
-   Verify the file is in place:
+   Kimi owns the install record and managed copy. Verify both through the native plugin manager:
 
-   ```bash
-   ls -la ~/.kimi-code/AGENTS.md
+   ```text
+   /plugins list
+   /plugins info maestria
    ```
 
    <Aside type="caution">
-     The file must stay under **32 KB**. If you customize it heavily, watch the size - Kimi Code
-     truncates AGENTS.md content past 32 KB with this marker:
+     `SYSTEM.md` is contributed through the plugin's native `systemPromptPath`. Kimi limits each
+     plugin system-prompt file to **32 KB**; the packaged file is tested against that limit.
    </Aside>
-
-   ```html
-   <!-- Some AGENTS.md files were truncated or omitted to fit the 32 KB budget -->
-   ```
 
 3. **Add lifecycle hooks to `config.toml` (recommended)**
 
@@ -217,7 +212,17 @@ maestria plugins across all supported platforms:
    2. Identify the work as ≥3 uniform items → use `AgentSwarm` with the `reviewer` persona.
    3. Dispatch a swarm across the 5 files.
 
-   If the orchestrator starts writing code directly, something is wrong with the install - check `/plugins list` and confirm the session-start skill loaded.
+   If the orchestrator starts writing code directly, check `/plugins list` and confirm the session-start skill loaded.
+
+7. **Use native workflow commands (optional)**
+
+   Kimi namespaces commands contributed by plugins:
+
+   ```text
+   /maestria:fein
+   /maestria:sonar
+   /maestria:blitz
+   ```
 
 </Steps>
 
@@ -228,16 +233,16 @@ maestria plugins across all supported platforms:
 ### Orchestrator not loading
 
 - Check `/plugins list` - `maestria` should appear with `enabled: true`.
-- Check `~/.kimi-code/AGENTS.md` exists.
+- Check `/plugins info maestria` for manifest diagnostics and confirm `sessionStart.skill` is `orchestrator`.
 - Restart Kimi Code completely (not just the session).
 
 ### AgentSwarm not available
 
-- Requires Kimi Code v0.12.0+ for first-class swarm support. On older versions, the orchestrator's swarm guidance falls back to parallel `Agent` calls.
+- Use Kimi Code v0.38.0+; older releases are outside the verified support boundary for this package.
 
-### AGENTS.md gets truncated
+### System prompt gets truncated
 
-- The 32 KB budget is enforced by Kimi Code. Trim verbose sections or move detail into specialist SKILL.md files (loaded on demand via the `Skill` tool).
+- The 32 KB plugin system-prompt budget is enforced by Kimi Code. Keep long detail in specialist SKILL.md files, loaded on demand via the `Skill` tool.
 
 ## Updating
 
@@ -247,7 +252,7 @@ To update via the maestria CLI:
 
 To pin to a specific version:
 
-<PackageManagers type="dlx" pkg="maestria" args="update kimi-code@0.4.6" />
+<PackageManagers type="dlx" pkg="maestria" args="update kimi-code --version 0.5.2" />
 
 <details>
 <summary>Alternative: Manual update</summary>
@@ -255,11 +260,10 @@ To pin to a specific version:
 The CLI uses npm to fetch the latest version. The same commands work manually:
 
 ```bash
-rm -rf ~/.kimi-code/plugins/managed/maestria
-mkdir -p ~/.kimi-code/plugins/managed/maestria
 npm pack @maestria/kimi-code@latest --pack-destination /tmp
-tar -xzf /tmp/maestria-kimi-code-*.tgz -C ~/.kimi-code/plugins/managed/maestria --strip-components=1
-cp ~/.kimi-code/plugins/managed/maestria/rules/AGENTS.md ~/.kimi-code/AGENTS.md
+mkdir -p /tmp/maestria-kimi-code
+tar -xzf /tmp/maestria-kimi-code-*.tgz -C /tmp/maestria-kimi-code --strip-components=1
+# In Kimi Code, run: /plugins install /tmp/maestria-kimi-code
 rm -f /tmp/maestria-kimi-code-*.tgz
 ```
 
@@ -275,8 +279,8 @@ rm -f /tmp/maestria-kimi-code-*.tgz
 <PackageManagers type="dlx" pkg="maestria" args="uninstall kimi-code" />
 
 ```bash
-# or manually:
-rm -rf ~/.kimi-code/plugins/managed/maestria ~/.kimi-code/AGENTS.md
+# or from a Kimi Code session:
+/plugins remove maestria
 ```
 
 Optionally remove the `[[hooks]]` and `[[permission.rules]]` blocks from `~/.kimi-code/config.toml`.

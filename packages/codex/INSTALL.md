@@ -1,6 +1,6 @@
 # Installing @maestria/codex
 
-> This package is a provisional projection spike, not a production support promise. It was verified against `codex 0.145.0` on 2026-08-13.
+> This package is a provisional projection spike, not a production support promise. It was verified against `codex 0.145.0` on 2026-08-26.
 
 ## Prerequisites
 
@@ -49,9 +49,20 @@ Codex loads plugins through a configured marketplace. Install the package from t
 
 These skills are advisory. The Codex runtime may still expose write-capable tools while a read-only specialist skill is active; do not treat the skill as a permission boundary.
 
+## Native model configuration
+
+The plugin package remains skills-only, but the Maestria CLI can configure Codex's native custom-agent model files:
+
+```bash
+npx maestria configure codex --global --set builder=gpt-5.6-terra
+npx maestria configure codex --project --set reviewer=gpt-5.6-luna
+```
+
+Global files are written under `~/.codex/agents/`; project files are written under `.codex/agents/`. Existing TOML is edited surgically. Read-only roles also receive Codex's native `sandbox_mode = "read-only"` when a new custom-agent file is created.
+
 ## Scope deliberately excluded
 
-This projection does not write Codex configuration, register a model, add MCP, or ship lifecycle hooks. It also does not claim Codex desktop parity.
+This projection does not itself write Codex configuration, register a model, add MCP, or ship lifecycle hooks. The CLI's model configuration flow is an explicit separate operation. The package also does not claim Codex desktop parity.
 
 ## Updating generated content
 

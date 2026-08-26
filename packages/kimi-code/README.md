@@ -1,6 +1,6 @@
 # @maestria/kimi-code
 
-A Kimi Code plugin that ships 8 specialized skills (orchestrator + 7 specialists) for engineering workflows with swarm-aware orchestration.
+A Kimi Code plugin that ships a native system-prompt contract, an orchestrator, and 7 specialist skills for engineering workflows with swarm-aware orchestration.
 
 > This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -19,13 +19,14 @@ See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packag
 
 ## What It Provides
 
-- **8 skills** - `orchestrator` (auto-loaded at session start) plus builder, adventurer, architect, planner, reviewer, writer, and diagnose personas, loaded on demand via the `Skill` tool.
-- **Swarm-aware orchestration** - routes ≥3 uniform items through Kimi Code's `AgentSwarm` for parallel fan-out.
-- **Global rules** - `rules/AGENTS.md` auto-loaded by Kimi Code at session start.
+- **8 core skills** - `orchestrator` (auto-loaded at session start) plus builder, adventurer, architect, planner, reviewer, writer, and diagnose personas, loaded on demand via the `Skill` tool.
+- **Native workflow commands** - `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` are registered through Kimi's plugin `commands` field.
+- **Swarm-aware orchestration** - routes 2 or more uniform items through Kimi Code's `AgentSwarm` for parallel fan-out.
+- **System-prompt rules** - `SYSTEM.md` is contributed through Kimi's native `systemPromptPath`; no global `AGENTS.md` file is written.
 
 ## Support / Platform Notes
 
-- Kimi Code hardcodes its `coder`/`explore`/`plan` subagents; the 7 specialist identities are persona content in prompt templates, not custom subagent definitions.
+- Kimi Code 0.38.0+ supports plugin system-prompt contributions and custom agents; this package uses the native system-prompt path and keeps specialist identities in skills and prompt templates for compatibility.
 - Persona text is advisory; tool-layer enforcement comes from the user-applied `[[hooks]]`/`[[permission.rules]]` blocks documented in `INSTALL.md`.
 
 ## Documentation and Changelog

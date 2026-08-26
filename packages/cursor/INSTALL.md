@@ -18,10 +18,10 @@ The CLI pulls `@maestria/cursor` from npm (`npm pack @maestria/cursor@latest`) a
 ~/.cursor/plugins/local/maestria
 ```
 
-Restart Cursor IDE so Customize → Plugins picks up the local plugin. For CLI:
+Restart Cursor IDE, or use **Developer: Reload Window**, so Customize → Plugins picks up the local plugin. The current Cursor CLI is `agent` (`cursor-agent` remains a compatibility alias) and discovers local plugins from the same directory:
 
 ```bash
-agent --plugin-dir ~/.cursor/plugins/local/maestria
+agent
 ```
 
 ### Updating
@@ -34,7 +34,7 @@ pnpx maestria@latest status
 To pin to a specific version:
 
 ```bash
-pnpx maestria@latest update cursor@0.1.0
+pnpx maestria@latest update cursor --version 0.2.2
 ```
 
 ## Verify

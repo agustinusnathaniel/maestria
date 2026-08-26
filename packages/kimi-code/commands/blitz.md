@@ -1,15 +1,12 @@
 ---
 name: blitz
-description: "Fast implementation mode: skip optional recon/design unless unknown; required review remains"
-type: prompt
-whenToUse: When the user types /blitz or includes "blitz" in their message for fast implementation.
-arguments: []
+description: 'Fast implementation mode: skip optional recon/design unless unknown; required review remains'
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->
 
-**Skill profile:** `plan` - workflow mode command. You have Read, Glob, Grep, Bash, FetchURL, and WebSearch.
+**Workflow command:** use the fastest safe route allowed by the active Kimi profile, while retaining required review.
 
 [MODE: blitz]
 

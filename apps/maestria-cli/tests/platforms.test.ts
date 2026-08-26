@@ -40,6 +40,7 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/shell.js')>();
   return {
     ...actual,
+    commandExists: vi.fn((cmd: string) => actual.commandExists(cmd)),
     // Return a real Effect so module-evaluation .pipe() chains in platforms.ts
     // keep working; executing it resolves without spawning any subprocess.
     run: vi.fn((_cmd: string, _args: string[], _timeoutMs?: number) => Effect.succeed('')),
@@ -175,8 +176,73 @@ describe('marketplace-backed platform handlers', () => {
       'maestria@maestria',
       '--scope',
       'user',
+      '--yes',
     ]);
     expect(calls).toContainEqual(['codex', 'plugin', 'remove', 'maestria@maestria', '--json']);
+  });
+});
+
+describe('Cursor platform detection', () => {
+  it('accepts the cursor-agent alias', async () => {
+    vi.mocked(shell.commandExists).mockImplementation((cmd) =>
+      Effect.succeed(cmd === 'cursor-agent'),
+    );
+    vi.mocked(shell.run).mockImplementation((cmd, args) => {
+      if (cmd === 'which' && args[0] === 'cursor-agent') {
+        return Effect.succeed('/usr/local/bin/cursor-agent');
+      }
+      return Effect.succeed('');
+    });
+
+    const cursor = getPlatform('cursor');
+    expect(cursor).toBeDefined();
+    expect(await Effect.runPromise(cursor!.detect)).toBe(true);
+  });
+
+  it('does not treat an unrelated agent binary as Cursor', async () => {
+    vi.mocked(shell.commandExists).mockImplementation((cmd) => Effect.succeed(cmd === 'agent'));
+    vi.mocked(shell.run).mockImplementation((cmd, args) => {
+      if (cmd === 'which' && args[0] === 'agent') return Effect.succeed('/usr/local/bin/agent');
+      if (cmd === 'agent' && args[0] === '--version') return Effect.succeed('Grok Build TUI 1.0.0');
+      return Effect.succeed('');
+    });
+
+    const cursor = getPlatform('cursor');
+    expect(cursor).toBeDefined();
+    expect(await Effect.runPromise(cursor!.detect)).toBe(false);
+  });
+});
+
+describe('Kimi Code platform registration', () => {
+  it('recognizes the native installed.json registry instead of a global AGENTS.md marker', async () => {
+    const previousHome = process.env.KIMI_CODE_HOME;
+    process.env.KIMI_CODE_HOME = '/tmp/maestria-kimi-test';
+    fsMocks.readFile.mockImplementation(async (filePath: string) => {
+      if (filePath.endsWith('/plugins/installed.json')) {
+        return JSON.stringify({
+          version: 1,
+          plugins: [
+            {
+              id: 'maestria',
+              root: '/tmp/maestria-kimi-test/plugins/managed/maestria',
+              source: 'local-path',
+              enabled: true,
+              installedAt: '2026-08-26T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+      return JSON.stringify({ version: '0.2.0' });
+    });
+
+    try {
+      const kimi = getPlatform('kimi-code');
+      expect(kimi).toBeDefined();
+      expect(await Effect.runPromise(kimi!.isInstalled)).toBe(true);
+    } finally {
+      if (previousHome === undefined) delete process.env.KIMI_CODE_HOME;
+      else process.env.KIMI_CODE_HOME = previousHome;
+    }
   });
 });
 
