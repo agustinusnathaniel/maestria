@@ -47,6 +47,14 @@ interface PackageManifest {
   version?: string;
 }
 
+interface MarketplaceManifest {
+  name?: string;
+  plugins?: Array<{
+    name?: string;
+    source?: { source?: string; package?: string };
+  }>;
+}
+
 async function readJson<T>(relativePath: string): Promise<T> {
   const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8');
   return JSON.parse(text) as T;
@@ -100,6 +108,17 @@ describe('.codex-plugin/plugin.json manifest', () => {
     expect(manifest.hooks).toBeUndefined();
     expect(manifest.mcpServers).toBeUndefined();
     expect(manifest.apps).toBeUndefined();
+  });
+});
+
+describe('repository marketplace entry', () => {
+  it('points the native Codex marketplace at the published npm package', async () => {
+    const marketplace = JSON.parse(
+      await readFile(path.join(PACKAGE_ROOT, '../../.agents/plugins/marketplace.json'), 'utf8'),
+    ) as MarketplaceManifest;
+    const plugin = marketplace.plugins?.find((entry) => entry.name === 'maestria');
+    expect(marketplace.name).toBe('maestria');
+    expect(plugin?.source).toEqual({ source: 'npm', package: '@maestria/codex' });
   });
 });
 

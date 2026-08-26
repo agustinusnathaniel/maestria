@@ -38,6 +38,21 @@ npx maestria uninstall codex
 
 The update path refreshes the npm package and reinstalls it because Codex CLI does not expose a separate plugin update command. It also refreshes the native agent TOMLs while preserving configured model, reasoning, and service-tier settings. Exact version pinning is not supported for this adapter.
 
+## Direct installation through Codex
+
+The repository also publishes a Codex marketplace entry whose plugin source is the npm package. Install it with Codex's native marketplace and plugin commands:
+
+```bash
+codex plugin marketplace add agustinusnathaniel/maestria
+codex plugin add maestria@maestria
+```
+
+This direct path installs the published plugin and its skills. `codex plugin add` consumes a `PLUGIN@MARKETPLACE` selector; it does not accept `@maestria/codex` as a bare npm argument. The Maestria CLI remains the full setup path because it additionally copies the bundled native agent TOMLs into `$CODEX_HOME/agents/` and manages the global orchestration instruction block. A direct Codex uninstall removes only the plugin:
+
+```bash
+codex plugin remove maestria@maestria
+```
+
 ## Loading and testing
 
 Codex loads plugins through a configured marketplace. Install the package from that marketplace, enable it, and start a new session. Check that the `$maestria:*` skills appear in the available skill set, then exercise:

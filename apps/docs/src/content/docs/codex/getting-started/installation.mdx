@@ -98,6 +98,20 @@ Exact version pinning is not supported through `npx maestria update codex --vers
 Uninstall removes only the native agent files and marked orchestration block managed by Maestria.
 Existing Codex instructions and unrelated agent files remain untouched.
 
+## Direct Codex installation
+
+The repository includes a native Codex marketplace entry backed by the published npm package. You
+can install only the plugin and skills directly through Codex:
+
+```bash
+codex plugin marketplace add agustinusnathaniel/maestria
+codex plugin add maestria@maestria
+```
+
+`codex plugin add` expects a `PLUGIN@MARKETPLACE` selector, not a bare npm package name. Direct
+installation does not copy the companion native agent TOMLs or modify global `AGENTS.md`; use
+`npx maestria install codex` for the full native-agent and automatic-orchestration setup.
+
 ## Validation without installation
 
 From the repository checkout, validate the package layout with the Codex plugin-creator validator:

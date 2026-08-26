@@ -20,6 +20,15 @@ npx maestria uninstall codex
 
 The CLI installs and updates the plugin through Codex's `plugin add` flow. Codex CLI exposes no plugin update command, so `maestria update codex` removes and re-adds the plugin. Exact version pinning is not available. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/codex/INSTALL.md) for the full checklist and verification.
 
+The published package is also available through the repository's native Codex marketplace:
+
+```bash
+codex plugin marketplace add agustinusnathaniel/maestria
+codex plugin add maestria@maestria
+```
+
+That direct path installs the plugin and skills. Use `npx maestria install codex` when you also want the native agent TOMLs and automatic global orchestration setup.
+
 ## What It Provides
 
 - **14 namespaced skills** - `$maestria:global-rules`, `$maestria:orchestrator`, the 7 specialists (adventurer, architect, builder, diagnose, planner, reviewer, writer), `$maestria:handoff`, `$maestria:iteration-limits`, and the workflow modes `$maestria:fein`, `$maestria:sonar`, `$maestria:blitz`.
