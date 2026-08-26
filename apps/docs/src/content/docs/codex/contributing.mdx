@@ -12,6 +12,7 @@ format; it does not duplicate methodology content by hand.
 ```text
 packages/codex/
 ├── .codex-plugin/plugin.json  # Hand-authored plugin manifest
+├── agents/                    # Hand-authored native Codex agent templates
 ├── skills/                    # Generated SKILL.md projections
 ├── sync.config.ts             # Codex-specific transforms and frontmatter
 ├── tests/plugin.test.ts       # Manifest and generated-file contracts
@@ -45,7 +46,12 @@ The Codex sync config:
 - namespaces specialist references as `$maestria:<name>`;
 - packages workflow modes as skills because the verified Codex projection surface is `skills/`;
 - states read-only roles as advisory rather than claiming tool enforcement;
-- keeps hooks, MCP, model configuration, and `AGENTS.md` writing out of scope.
+- keeps hooks, MCP, and `AGENTS.md` writing out of the plugin manifest; native agent installation and model configuration belong to the companion CLI.
+
+The `agents/` directory contains lightweight native TOML wrappers. They reference the generated
+namespaced skills instead of duplicating the canonical methodology. The Maestria CLI copies these
+templates into `$CODEX_HOME/agents/` as `maestria-*` roles, preserving user model, reasoning, and
+service-tier settings across updates.
 
 ## Validation
 

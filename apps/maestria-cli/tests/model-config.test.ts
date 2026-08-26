@@ -109,7 +109,7 @@ describe('Codex custom-agent TOML', () => {
 
   it('creates a native read-only agent config for restricted roles', () => {
     const config = createCodexAgentConfig('reviewer', 'gpt-5.4');
-    expect(config).toContain('name = "reviewer"');
+    expect(config).toContain('name = "maestria-reviewer"');
     expect(config).toContain('developer_instructions');
     expect(config).toContain('model = "gpt-5.4"');
     expect(config).toContain('sandbox_mode = "read-only"');

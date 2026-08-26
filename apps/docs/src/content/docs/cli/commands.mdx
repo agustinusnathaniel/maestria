@@ -132,8 +132,9 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 ### Error handling
 
 Claude Code and Codex CLI use their host-native marketplace managers. The Maestria CLI stages the
-published npm package under `~/.cache/maestria/` before invoking those managers; it does not write
-Claude Code or Codex configuration files directly.
+published npm package under `~/.cache/maestria/` before invoking those managers. Claude Code
+configuration remains host-owned; Codex also receives Maestria-managed native agent TOMLs under
+`$CODEX_HOME/agents/`.
 
 Prime Agent manages packages through its native package manager. `maestria` delegates `install`,
 `update`, and `uninstall` to `prime-agent package install`/`update`/`remove

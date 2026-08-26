@@ -3,6 +3,8 @@ import { homedir, tmpdir } from 'os';
 import { isAbsolute, win32 } from 'node:path';
 import picocolors from 'picocolors';
 
+import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
+import { codexManagedAgentFileName, mergeCodexAgentSettings } from '@/lib/codex-agent-files.js';
 import {
   run,
   sh,
@@ -337,6 +339,162 @@ function ensureCodexMarketplace(): Effect.Effect<void, CommandError> {
   );
 }
 
+// Codex plugin manifests do not declare custom agents. The published Maestria
+// package carries native agent TOMLs as a companion payload, and the CLI owns
+// copying those files into Codex's documented agents directory.
+const CODEX_MANAGED_AGENT_MANIFEST = '.maestria-agents.json';
+
+interface CodexManagedAgentManifest {
+  readonly version: 1;
+  readonly files: readonly string[];
+}
+
+function codexHomePath(): string {
+  return process.env.CODEX_HOME?.trim() || `${homedir()}/.codex`;
+}
+
+function codexManagedAgentDirectory(): string {
+  return `${codexHomePath()}/agents`;
+}
+
+function codexManagedAgentManifestPath(): string {
+  return `${codexHomePath()}/${CODEX_MANAGED_AGENT_MANIFEST}`;
+}
+
+function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifest, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { readFile } = await import('node:fs/promises');
+      let raw: string;
+      try {
+        raw = await readFile(codexManagedAgentManifestPath(), 'utf8');
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          return { version: 1, files: [] } satisfies CodexManagedAgentManifest;
+        }
+        throw error;
+      }
+      const parsed = JSON.parse(raw) as Partial<CodexManagedAgentManifest>;
+      if (parsed.version !== 1 || !Array.isArray(parsed.files)) {
+        throw new Error(
+          `invalid Maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`,
+        );
+      }
+      if (
+        !parsed.files.every(
+          (file) => typeof file === 'string' && /^[A-Za-z0-9_-]+\.toml$/.test(file),
+        )
+      ) {
+        throw new Error(`invalid managed agent filename in ${codexManagedAgentManifestPath()}`);
+      }
+      return { version: 1, files: parsed.files } satisfies CodexManagedAgentManifest;
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `read ${codexManagedAgentManifestPath()}`,
+        message: String(error),
+      }),
+  });
+}
+
+function writeCodexManagedAgentManifest(
+  manifest: CodexManagedAgentManifest,
+): Effect.Effect<void, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { mkdir, rename, writeFile } = await import('node:fs/promises');
+      await mkdir(codexHomePath(), { recursive: true });
+      const path = codexManagedAgentManifestPath();
+      const tempPath = `${path}.tmp`;
+      await writeFile(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+      await rename(tempPath, path);
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `write ${codexManagedAgentManifestPath()}`,
+        message: String(error),
+      }),
+  });
+}
+
+export function installCodexManagedAgents(packageRoot: string): Effect.Effect<void, CommandError> {
+  return Effect.gen(function* () {
+    const manifest = yield* readCodexManagedAgentManifest();
+    const sourceDir = `${packageRoot}/agents`;
+    const targetDir = codexManagedAgentDirectory();
+    const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
+
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { mkdir, readFile, rename, writeFile } = await import('node:fs/promises');
+        await mkdir(targetDir, { recursive: true });
+        for (let index = 0; index < sourceFiles.length; index++) {
+          const file = sourceFiles[index]!;
+          const agent = MAESTRIA_AGENTS[index]!;
+          const sourcePath = `${sourceDir}/${file}`;
+          const targetPath = `${targetDir}/${file}`;
+          const bundled = await readFile(sourcePath, 'utf8');
+          let next = bundled;
+          for (const existingPath of [targetPath, `${targetDir}/${agent}.toml`]) {
+            try {
+              const existing = await readFile(existingPath, 'utf8');
+              next = mergeCodexAgentSettings(bundled, existing);
+              break;
+            } catch (error) {
+              if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+            }
+          }
+          const tempPath = `${targetPath}.tmp`;
+          await writeFile(tempPath, next, 'utf8');
+          await rename(tempPath, targetPath);
+        }
+      },
+      catch: (error) => new Error(String(error)),
+    });
+
+    const currentFiles = new Set(sourceFiles);
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { rm } = await import('node:fs/promises');
+        for (const file of manifest.files) {
+          if (!currentFiles.has(file)) await rm(`${targetDir}/${file}`, { force: true });
+        }
+      },
+      catch: (error) => new Error(String(error)),
+    });
+
+    yield* writeCodexManagedAgentManifest({ version: 1, files: sourceFiles });
+  }).pipe(
+    Effect.mapError(
+      (error) =>
+        new CommandError({
+          command: `install Codex native agents from ${packageRoot}`,
+          message: error instanceof CommandError ? error.message : String(error),
+        }),
+    ),
+  );
+}
+
+export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
+  return Effect.gen(function* () {
+    const manifest = yield* readCodexManagedAgentManifest();
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { rm } = await import('node:fs/promises');
+        for (const file of manifest.files) {
+          await rm(`${codexManagedAgentDirectory()}/${file}`, { force: true });
+        }
+        await rm(codexManagedAgentManifestPath(), { force: true });
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `remove Codex native agents from ${codexManagedAgentDirectory()}`,
+          message: String(error),
+        }),
+    });
+  });
+}
+
 // ── Platform definitions ─────────────────────────────
 
 /**
@@ -564,6 +722,7 @@ const codex: PlatformHandler = {
     );
     yield* ensureCodexMarketplace();
     yield* run('codex', ['plugin', 'add', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json']);
+    yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
   }).pipe(Effect.as(void 0)),
 
   update: (_version?: string) =>
@@ -589,11 +748,18 @@ const codex: PlatformHandler = {
         `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
         '--json',
       ]);
+      yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
     }),
 
-  uninstall: Effect.suspend(() =>
-    run('codex', ['plugin', 'remove', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json']),
-  ).pipe(Effect.as(void 0)),
+  uninstall: Effect.gen(function* () {
+    yield* run('codex', [
+      'plugin',
+      'remove',
+      `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
+      '--json',
+    ]);
+    yield* removeCodexManagedAgents();
+  }).pipe(Effect.as(void 0)),
 };
 
 const pi: PlatformHandler = {

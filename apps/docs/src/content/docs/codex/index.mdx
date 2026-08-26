@@ -39,6 +39,7 @@ import { marks } from '@/data/marks.js';
       <FeatureGrid
         items={[
           { title: 'Specialist skills', desc: '$maestria:adventurer through $maestria:writer - the seven-specialist roster packaged as namespaced Codex skills.' },
+          { title: 'Native specialist agents', desc: 'The Maestria CLI installs seven native maestria-* agent roles with Codex sandbox settings and configurable model inheritance.' },
           { title: 'Capability-aware routing', desc: '$maestria:orchestrator chooses between direct work and specialist skills based on task risk and available runtime capabilities.' },
           { title: 'Global rules', desc: '$maestria:global-rules carries the universal evidence, safety, authorization, and review contract.' },
           { title: 'Bounded multi-stage work', desc: '$maestria:handoff and $maestria:iteration-limits keep long work units contained with explicit handoff and repair budgets.' },
@@ -57,7 +58,7 @@ import { marks } from '@/data/marks.js';
       <ol class="list-none m-0 p-0 border-t border-home-border">
         <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
           <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
-          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">CLI stages</strong> - <code>npx maestria install codex</code> places <code>@maestria/codex</code> in a local marketplace under <code>~/.cache/maestria/</code></p>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">CLI stages</strong> - <code>npx maestria install codex</code> places <code>@maestria/codex</code> in a local marketplace under <code>~/.cache/maestria/</code> and installs native <code>maestria-*</code> agent TOMLs under <code>$CODEX_HOME/agents/</code></p>
         </li>
         <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
           <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>

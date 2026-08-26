@@ -10,6 +10,12 @@ import {
   findNodeAtLocation,
 } from 'jsonc-parser/lib/esm/main.js';
 import { run, commandExists, CommandError } from '@/lib/shell.js';
+import {
+  codexManagedAgentFileName,
+  codexManagedAgentName,
+  parseCodexTopLevelString,
+  setCodexTopLevelString,
+} from '@/lib/codex-agent-files.js';
 
 // ── Types ─────────────────────────────────────────────
 
@@ -37,7 +43,7 @@ export type AgentModels = Partial<Record<AgentName, string>>;
  * Handles per-agent model configuration for one platform.
  * The CLI writes native config files directly:
  * - opencode: `agent.<name>.model` in opencode.json(c)
- * - codex:    `model` in native `.codex/agents/<name>.toml` files
+ * - codex:    `model` in native `.codex/agents/maestria-<name>.toml` files
  * - pi/omp:   `model:` frontmatter in agent markdown files
  */
 export interface ModelConfigHandler {
@@ -223,72 +229,22 @@ export function parseConfigModels(text: string): AgentModels {
 
 // ── Codex agent TOML helpers (pure) ────────────────────
 
-function topLevelTomlModelLine(lines: readonly string[]): number {
-  let inTable = false;
-  for (let index = 0; index < lines.length; index++) {
-    const line = lines[index];
-    if (line === undefined) continue;
-    if (/^\s*\[/.test(line)) {
-      inTable = true;
-      continue;
-    }
-    if (inTable) continue;
-    if (/^\s*model\s*=/.test(line)) return index;
-  }
-  return -1;
-}
-
-function topLevelTomlSectionLine(lines: readonly string[]): number {
-  return lines.findIndex((line) => /^\s*\[/.test(line));
-}
-
 /** Extract a top-level `model` value from a Codex custom-agent TOML file. */
 export function parseCodexAgentModel(content: string): string | undefined {
-  const lines = content.split(/\r?\n/);
-  const index = topLevelTomlModelLine(lines);
-  if (index < 0) return undefined;
-  const line = lines[index];
-  if (line === undefined) return undefined;
-  const match = /^\s*model\s*=\s*(?:"((?:\\.|[^"])*)"|'([^']*)'|([^#\s]+))/.exec(line);
-  if (!match) return undefined;
-  if (match[1] !== undefined) {
-    try {
-      return JSON.parse(`"${match[1]}"`) as string;
-    } catch {
-      return undefined;
-    }
-  }
-  return match[2] ?? match[3];
+  return parseCodexTopLevelString(content, 'model');
 }
 
 /** Set or remove a top-level `model` entry without rewriting other TOML text. */
 export function setCodexAgentModel(content: string, model: string): string {
-  const newline = content.includes('\r\n') ? '\r\n' : '\n';
-  const hasFinalNewline = /\r?\n$/.test(content);
-  const lines = content.split(/\r?\n/);
-  if (hasFinalNewline) lines.pop();
-
-  const index = topLevelTomlModelLine(lines);
-  if (model) {
-    const rendered = `model = ${JSON.stringify(model)}`;
-    if (index >= 0) {
-      const existing = lines[index] ?? '';
-      const comment = existing.match(/(\s+#.*)$/)?.[1] ?? '';
-      lines[index] = `${rendered}${comment}`;
-    } else {
-      const section = topLevelTomlSectionLine(lines);
-      lines.splice(section < 0 ? lines.length : section, 0, rendered);
-    }
-  } else if (index >= 0) {
-    lines.splice(index, 1);
-  }
-
-  const result = lines.join(newline);
-  return hasFinalNewline ? `${result}${newline}` : result;
+  return setCodexTopLevelString(content, 'model', model || undefined);
 }
 
 /** Create the smallest native Codex custom-agent file for a Maestria role. */
-export function createCodexAgentConfig(agent: AgentName, model: string): string {
+export function createCodexAgentConfig(
+  agent: AgentName,
+  model: string,
+  nativeName = codexManagedAgentName(agent),
+): string {
   const readOnly = new Set<AgentName>(['adventurer', 'architect', 'planner', 'reviewer']);
   const description = `Maestria ${agent} specialist. Use for ${agent}-focused workflow work.`;
   const instructions = [
@@ -296,7 +252,7 @@ export function createCodexAgentConfig(agent: AgentName, model: string): string 
     `Stay within the ${agent} specialist role and return a concise handoff to the parent agent.`,
   ].join('\n');
   const lines = [
-    `name = ${JSON.stringify(agent)}`,
+    `name = ${JSON.stringify(nativeName)}`,
     `description = ${JSON.stringify(description)}`,
     `developer_instructions = ${JSON.stringify(instructions)}`,
     `model = ${JSON.stringify(model)}`,
@@ -398,8 +354,19 @@ function codexHome(): string {
   return process.env.CODEX_HOME?.trim() || `${homedir()}/.codex`;
 }
 
-function codexAgentPath(level: ModelConfigLevel, agent: string): string {
-  return `${level === 'global' ? `${codexHome()}/agents` : '.codex/agents'}/${agent}.toml`;
+function codexAgentCandidates(level: ModelConfigLevel, agent: string): string[] {
+  const directory = level === 'global' ? `${codexHome()}/agents` : '.codex/agents';
+  return [`${directory}/${codexManagedAgentFileName(agent)}`, `${directory}/${agent}.toml`];
+}
+
+function resolveCodexAgentPath(
+  level: ModelConfigLevel,
+  agent: string,
+): Effect.Effect<string, never> {
+  const candidates = codexAgentCandidates(level, agent);
+  return Effect.all(candidates.map((path) => fileExists(path))).pipe(
+    Effect.map((exists) => candidates[exists.indexOf(true)] ?? candidates[0]!),
+  );
 }
 
 const codex: ModelConfigHandler = {
@@ -415,7 +382,10 @@ const codex: ModelConfigHandler = {
   readCurrent: (level) =>
     Effect.all(
       MAESTRIA_AGENTS.map((agent) =>
-        readFile(codexAgentPath(level, agent)).pipe(Effect.catchCause(() => Effect.succeed(''))),
+        resolveCodexAgentPath(level, agent).pipe(
+          Effect.flatMap((path) => readFile(path)),
+          Effect.catchCause(() => Effect.succeed('')),
+        ),
       ),
     ).pipe(
       Effect.map((contents) => {
@@ -431,10 +401,15 @@ const codex: ModelConfigHandler = {
   write: (models, level) =>
     Effect.gen(function* () {
       for (const [agent, model] of Object.entries(models)) {
-        const path = codexAgentPath(level, agent);
+        const path = yield* resolveCodexAgentPath(level, agent);
         const exists = yield* fileExists(path);
         if (!exists) {
-          if (model) yield* writeFile(path, createCodexAgentConfig(agent as AgentName, model));
+          if (model) {
+            yield* writeFile(
+              path,
+              createCodexAgentConfig(agent as AgentName, model, codexManagedAgentName(agent)),
+            );
+          }
           continue;
         }
         const content = yield* readFile(path);

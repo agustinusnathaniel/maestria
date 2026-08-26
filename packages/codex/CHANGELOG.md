@@ -1,5 +1,10 @@
 # @maestria/codex
 
+## Unreleased
+
+- Add seven native `maestria-*` custom-agent TOML templates. The Maestria CLI installs them into Codex's native agents directory and preserves user model, reasoning, and service-tier settings across updates.
+- Align the orchestrator guidance with Codex's native `agent_type` role selection.
+
 ## 0.3.2
 
 ### Patch Changes

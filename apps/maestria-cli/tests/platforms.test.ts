@@ -12,7 +12,12 @@ const fsMocks = vi.hoisted(() => {
   let originalMkdtemp: (typeof import('node:fs/promises'))['mkdtemp'] | undefined;
   let originalRm: (typeof import('node:fs/promises'))['rm'] | undefined;
   return {
-    readFile: vi.fn(async (_path: string) => JSON.stringify({ version: '0.2.0' })),
+    readFile: vi.fn(async (filePath: string) => {
+      if (filePath.endsWith('/.maestria-agents.json')) {
+        return JSON.stringify({ version: 1, files: [] });
+      }
+      return JSON.stringify({ version: '0.2.0' });
+    }),
     mkdtemp: vi.fn(async (prefix: string) => {
       if (!originalMkdtemp) throw new Error('original mkdtemp unavailable');
       return originalMkdtemp(prefix);

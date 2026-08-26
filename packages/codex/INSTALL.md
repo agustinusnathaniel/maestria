@@ -27,7 +27,7 @@ Install the published projection and register it with Codex's native plugin mana
 npx maestria install codex
 ```
 
-The CLI downloads `@maestria/codex` from npm, creates a local marketplace under `~/.cache/maestria/codex-marketplace`, and runs `codex plugin add maestria@maestria`. Codex owns the installed plugin cache and enabled state.
+The CLI downloads `@maestria/codex` from npm, creates a local marketplace under `~/.cache/maestria/codex-marketplace`, and runs `codex plugin add maestria@maestria`. Codex owns the installed plugin cache and enabled state. The CLI also installs the bundled native custom agents as `maestria-*.toml` under `$CODEX_HOME/agents/` (normally `~/.codex/agents/`).
 
 Update or remove it with:
 
@@ -36,7 +36,7 @@ npx maestria update codex
 npx maestria uninstall codex
 ```
 
-The update path refreshes the npm package and reinstalls it because Codex CLI does not expose a separate plugin update command. Exact version pinning is not supported for this adapter.
+The update path refreshes the npm package and reinstalls it because Codex CLI does not expose a separate plugin update command. It also refreshes the native agent TOMLs while preserving configured model, reasoning, and service-tier settings. Exact version pinning is not supported for this adapter.
 
 ## Loading and testing
 
@@ -49,9 +49,13 @@ Codex loads plugins through a configured marketplace. Install the package from t
 
 These skills are advisory. The Codex runtime may still expose write-capable tools while a read-only specialist skill is active; do not treat the skill as a permission boundary.
 
+5. **Use native specialist agents**
+
+   The CLI-installed native roles are `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Ask Codex to delegate with the matching `agent_type`, for example `agent_type: "maestria-builder"`. Read-only roles use Codex's native `sandbox_mode = "read-only"`.
+
 ## Native model configuration
 
-The plugin package remains skills-only, but the Maestria CLI can configure Codex's native custom-agent model files:
+The plugin manifest remains skills-only, while the Maestria CLI configures the native custom-agent model files it installs:
 
 ```bash
 npx maestria configure codex --global --set builder=gpt-5.6-terra
@@ -62,7 +66,7 @@ Global files are written under `~/.codex/agents/`; project files are written und
 
 ## Scope deliberately excluded
 
-This projection does not itself write Codex configuration, register a model, add MCP, or ship lifecycle hooks. The CLI's model configuration flow is an explicit separate operation. The package also does not claim Codex desktop parity.
+The plugin manifest does not itself declare agents, write Codex configuration, register a model, add MCP, or ship lifecycle hooks. The CLI installs native agent files, and its model configuration flow is an explicit separate operation. The package also does not claim Codex desktop parity.
 
 ## Updating generated content
 

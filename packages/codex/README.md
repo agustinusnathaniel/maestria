@@ -23,6 +23,7 @@ The CLI installs and updates the plugin through Codex's `plugin add` flow. Codex
 ## What It Provides
 
 - **14 namespaced skills** - `$maestria:global-rules`, `$maestria:orchestrator`, the 7 specialists (adventurer, architect, builder, diagnose, planner, reviewer, writer), `$maestria:handoff`, `$maestria:iteration-limits`, and the workflow modes `$maestria:fein`, `$maestria:sonar`, `$maestria:blitz`.
+- **7 native custom agents** - the Maestria CLI installs `maestria-*` agent TOMLs into Codex's native `$CODEX_HOME/agents/` directory, with read-only sandbox settings for reconnaissance, architecture, planning, and review roles.
 - **Maestria CLI compatibility** - install, status, check, update, and uninstall through the CLI.
 - **Native model configuration** - `maestria configure codex` can create or update Codex custom-agent TOML files without overwriting unrelated agent settings.
 
@@ -30,7 +31,7 @@ The CLI installs and updates the plugin through Codex's `plugin add` flow. Codex
 
 - Workflow modes ship as skills, not slash commands.
 - Read-only specialist boundaries are documented guidance, not tool enforcement; Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
-- The package itself ships no hooks, MCP servers, model configuration, or `AGENTS.md` writer. The companion CLI's Codex configure flow is separate and writes only the requested native agent files.
+- The plugin manifest ships skills; the companion CLI installs native agent TOMLs, preserves model/reasoning/service-tier settings across updates, and writes no `AGENTS.md` file.
 
 ## Documentation and Changelog
 

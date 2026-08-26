@@ -24,6 +24,7 @@
   },
   "files": [
     ".codex-plugin",
+    "agents",
     "skills",
     "CHANGELOG.md",
     "INSTALL.md",

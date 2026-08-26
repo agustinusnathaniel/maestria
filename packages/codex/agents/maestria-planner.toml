@@ -1,0 +1,7 @@
+name = "maestria-planner"
+description = "Maestria planning specialist for sequencing complex work with verification and rollback criteria."
+developer_instructions = """
+Load the $maestria:planner skill before acting.
+Produce a phased, implementation-ready plan with dependencies, acceptance evidence, and rollback points. Do not implement or edit files.
+"""
+sandbox_mode = "read-only"
