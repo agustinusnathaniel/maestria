@@ -3,8 +3,10 @@ title: Quick Start
 description: Use the Maestria specialist and workflow skills in Codex CLI.
 ---
 
-Once `@maestria/codex` is installed, start a fresh Codex CLI session so the plugin marketplace
-state is loaded.
+Once `npx maestria install codex` completes, start a fresh Codex CLI session so the plugin
+marketplace state and managed global orchestration instructions are loaded. Normal engineering
+requests now start in the host-owned Codex session, which applies the Maestria orchestrator
+guidance automatically.
 
 ## Route a task
 
@@ -14,9 +16,9 @@ Use the orchestrator skill when a task is unfamiliar, cross-file, or risky:
 $maestria:orchestrator I need to add rate limiting to the API. Plan and implement it.
 ```
 
-The orchestrator chooses between direct work and specialist skills based on task risk and available
-runtime capabilities. It is methodology guidance, not a replacement for Codex's own approvals or
-sandbox.
+The orchestrator chooses between direct work and native specialist agents based on task risk and
+available runtime capabilities. It is methodology guidance, not a replacement for Codex's own
+approvals or sandbox.
 
 ## Call a specialist
 
@@ -37,6 +39,11 @@ Available roles are:
 | `$maestria:planner`    | Phased plans, dependencies, and rollback points |
 | `$maestria:reviewer`   | Independent review after implementation         |
 | `$maestria:writer`     | Documentation and structured prose              |
+
+When the native companion pack is installed, the same roles are available to Codex delegation as
+`maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`,
+`maestria-planner`, `maestria-reviewer`, and `maestria-writer` through the native `agent_type`
+selector.
 
 ## Choose a workflow mode
 

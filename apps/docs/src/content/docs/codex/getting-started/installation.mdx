@@ -6,9 +6,10 @@ description: Install and verify @maestria/codex through the Maestria CLI.
 import { Steps, Aside } from '@astrojs/starlight/components';
 
 `@maestria/codex` is a Codex skills plugin with a companion native custom-agent pack. The Maestria
-CLI installs the skills through Codex's plugin manager and the agent TOMLs through Codex's native
-`$CODEX_HOME/agents/` directory. It does not write `AGENTS.md`, register models, add MCP servers,
-or install hooks.
+CLI installs the skills through Codex's plugin manager, the agent TOMLs through Codex's native
+`$CODEX_HOME/agents/` directory, and a marked orchestration block in the active global
+`$CODEX_HOME/AGENTS.md` or `$CODEX_HOME/AGENTS.override.md` file. It preserves unrelated
+instructions and does not write `config.toml`, register models, add MCP servers, or install hooks.
 
 <Aside type="tip" title="Codex CLI support">
   This package was verified against Codex CLI `0.145.0` on 2026-08-26. It targets Codex CLI plugin
@@ -37,7 +38,8 @@ codex plugin add maestria@maestria
 
 The actual plugin cache and enabled state belong to Codex. The staging directory contains the
 published package used to refresh the local marketplace. The CLI also installs the bundled
-`maestria-*.toml` agent roles under `$CODEX_HOME/agents/`.
+`maestria-*.toml` agent roles under `$CODEX_HOME/agents/` and updates the managed global
+orchestration instructions.
 
 ## Verify the installation
 
@@ -62,11 +64,14 @@ published package used to refresh the local marketplace. The CLI also installs t
    Plugin discovery is session-sensitive. Start a new session and confirm the `$maestria:*`
    skills are available.
 
-4. **Exercise the projection**
+4. **Exercise the integration**
 
-   Try `$maestria:adventurer` on an unfamiliar area, `$maestria:builder` for a focused change, and
-   `$maestria:reviewer` after implementation. Confirm that the reviewer reports independently and
-   that read-only boundaries are treated as guidance, not tool enforcement.
+   Ask Codex to handle a meaningful task without a skill prefix and confirm that the primary
+   session follows the Maestria orchestration guidance. You can also invoke
+   `$maestria:orchestrator` explicitly, then try `$maestria:adventurer` on an unfamiliar area,
+   `$maestria:builder` for a focused change, and `$maestria:reviewer` after implementation.
+   Confirm that the reviewer reports independently and that read-only boundaries are treated as
+   guidance, not tool enforcement.
 
 5. **Verify native agent installation**
 
@@ -89,6 +94,9 @@ CLI refreshes the staged npm package, removes and re-adds `maestria@maestria`, t
 native agent TOMLs while preserving user model settings.
 
 Exact version pinning is not supported through `npx maestria update codex --version ...`.
+
+Uninstall removes only the native agent files and marked orchestration block managed by Maestria.
+Existing Codex instructions and unrelated agent files remain untouched.
 
 ## Validation without installation
 

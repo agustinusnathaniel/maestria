@@ -113,4 +113,4 @@ Use `$maestria:fein` for the full route, `$maestria:sonar` for research-only wor
 
 ### Platform boundary
 
-The Codex plugin manifest contains skills only; the companion Maestria CLI installs the package's native custom-agent TOML files and manages their model settings outside the plugin manifest. The package contains no hooks, MCP server, or AGENTS.md writer. Skills and plugin loading are advisory capabilities, not security enforcement; native custom-agent sandbox settings are the host's boundary. Do not claim that this plugin alone guarantees delegation or enforces the Maestria methodology.
+The Codex plugin manifest declares skills only; the companion Maestria CLI installs the package's native custom-agent TOML files, manages their model settings, and adds a marked global orchestration block to Codex's active AGENTS.md instructions. The package contains no hooks or MCP server. Skills and instruction guidance are advisory capabilities, not security enforcement; native custom-agent sandbox settings are the host's boundary. Do not claim that this integration overrides Codex's primary agent or enforces the Maestria methodology.

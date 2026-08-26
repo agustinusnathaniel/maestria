@@ -4,9 +4,9 @@
 
 Proposed (2026-08-11). This ADR records a decision boundary and support policy, not a shipped implementation. It accompanies the evidence ledger in [runtime-support-matrix.md](../../runtime-support-matrix.md).
 
-No runtime in this ADR is claimed as promoted to `Native`. Package projections and separate CLI marketplace adapters may exist without changing the support level declared here. Promotion requires the gates below and a blind review of these repaired docs; review/promotion gates precede promotion or landing, and the native-candidate implementation may already exist before promotion review.
+The original 2026-08-11 decision did not promote any runtime to `Native`. Package projections and separate CLI marketplace adapters may exist without changing the support level declared here. Promotion requires the gates below and a blind review of these repaired docs; review/promotion gates precede promotion or landing, and the native-candidate implementation may already exist before promotion review.
 
-The package projections and Maestria CLI marketplace adapters described by this policy have since been implemented. Their support levels remain governed by this ADR; implementation does not by itself promote Claude Code or Codex CLI to `Native`.
+The package projections and Maestria CLI marketplace adapters described by this policy have since been implemented. The Codex CLI rows were reverified against Codex CLI `0.145.0`, current official documentation, and current upstream source on 2026-08-26; that re-verification promotes Codex CLI to `Native` in the support table below. Other runtime rows retain their independently documented gates.
 
 ## Context
 
@@ -30,7 +30,7 @@ The current upstream evidence is mostly unpinned moving documentation on `main`/
 
 ## Non-Goals
 
-- At the time of the original decision (2026-08-11) this ADR did not implement any runtime package; it was a decision and scope record only, and it remains the decision and scope record for the subsequent bounded package projections and CLI adapters. The 2026-08-13 reverification below supersedes that wording for Prime Agent - the skills-first package and its verified extension subset now exist as an unreleased `Native candidate` - while no runtime in this ADR is claimed as shipped/promoted (`Native`).
+- At the time of the original decision (2026-08-11) this ADR did not implement any runtime package; it was a decision and scope record only, and it remains the decision and scope record for the subsequent package projections and CLI adapters. The 2026-08-13 reverification below supersedes that wording for Prime Agent - the skills-first package and its verified extension subset now exist as an unreleased `Native candidate`. The 2026-08-26 Codex re-verification below records the Codex CLI adapter as `Native`; Codex desktop remains separate.
 - It does not modify canonical agent directives or any generated platform output.
 - It does not define model-config handlers for these runtimes. CLI installation/version handlers remain a separate concern under ADR-CORE-007; the current adapters only stage packages and invoke host-native marketplace commands.
 - It does not make a public-facing support promise. All runtime claims are internal, dated, and version-sensitive.
@@ -67,14 +67,14 @@ The `Evidence ID` values in these tables (and in the capability/control tables b
 | --- | --- | --- | --- | --- | --- |
 | Claude Code | Native candidate | Plugin | candidate native plugin | Promotion gated on approved docs and a blind review | E-CLAUDE-01 |
 | Prime Agent | Native candidate | Skills-first + verified extension subset | skills + mode-command extension; native rlm dispatch deferred | Skills-first package plus a small verified extension subset (mode commands, mode prompt injection); native `rlm` dispatch/JSON-RPC deferred until a public JS bridge is verified | E-PRIME-01 |
-| Codex CLI | Provisional | Projection | projection-plugin spike | Bounded projection/plugin spike; pin the exact CLI version before relying on it | E-CODEX-CLI-01 |
+| Codex CLI | Native | Plugin + CLI-managed native agents/instructions | shipped native CLI adapter | Codex's plugin, skills, custom-agent, `agent_type`, and global instruction surfaces are verified and exercised by the Maestria CLI adapter | E-CODEX-CLI-12, E-CODEX-CLI-13, E-CODEX-CLI-14, E-CODEX-CLI-15 |
 | Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim | E-CODEX-DESKTOP-01 |
 | JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 |
 | Crush | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-CRUSH-01 |
 
 ### Principle: canonical source, per-platform output
 
-All canonical methodology remains in `packages/core/agent-directives/`. Any adapter is a generated projection produced by the core sync pipeline (ADR-CORE-005). Runtime-specific derivation (frontmatter, file layout, skill names) is owned by each package's `sync.config.ts`, never by hand-edited copies. CLI installation/version handlers and model-config handlers remain separate concerns; the current Claude Code and Codex CLI handlers do not write host configuration.
+All canonical methodology remains in `packages/core/agent-directives/`. Any adapter is a generated projection produced by the core sync pipeline (ADR-CORE-005). Runtime-specific derivation (frontmatter, file layout, skill names) is owned by each package's `sync.config.ts`, never by hand-edited copies. CLI installation/version handlers and model-config handlers remain separate concerns; the Codex CLI handler additionally manages only the native agent files and marked global instruction block documented in its package.
 
 ### Security and trust boundaries (capability vs control)
 
@@ -99,7 +99,7 @@ Codex hook trust is not uniform: only non-managed command hooks are `Trust-gated
 
 ### Scope of the first batch
 
-The first implementation batch covers Claude Code (`Native candidate`, plugin) as the primary candidate, pending promotion/landing gates (approved docs and a blind review), with Prime Agent (`Native candidate`, skills-first plus a verified extension subset) as a secondary candidate pending API/security verification. For Prime Agent, the executable extension ships only the verified subset (workflow-mode slash commands, mode prompt injection, session-scoped mode state) - see the reverification section below; native `rlm` dispatch and JSON/RPC headless mode remain deferred. Codex CLI remains `Provisional`; Codex desktop, JCode, and Crush remain `Deferred` targets. The separate CLI adapters do not promote any runtime or claim desktop parity.
+The first implementation batch covers Claude Code (`Native candidate`, plugin) as the primary candidate, pending promotion/landing gates (approved docs and a blind review), with Prime Agent (`Native candidate`, skills-first plus a verified extension subset) as a secondary candidate pending API/security verification. For Prime Agent, the executable extension ships only the verified subset (workflow-mode slash commands, mode prompt injection, session-scoped mode state) - see the reverification section below; native `rlm` dispatch and JSON/RPC headless mode remain deferred. Codex CLI is now a `Native` CLI adapter; Codex desktop, JCode, and Crush remain `Deferred` targets. The separate CLI adapters do not claim desktop parity.
 
 ## Consequences
 
@@ -115,7 +115,7 @@ The first implementation batch covers Claude Code (`Native candidate`, plugin) a
 ### Negative
 
 - JCode and Crush have no confirmed first-class package/extension distribution API; only projection/experiment scope is offered (`Deferred`).
-- Codex support is version-sensitive and split between CLI and desktop; the desktop surface gets a common-subset projection only, with no CLI parity claim (`Deferred`).
+- Codex support is version-sensitive and split between CLI and desktop; the CLI has a native adapter while the desktop surface gets a common-subset projection only, with no CLI parity claim (`Deferred`).
 - Prime Agent's executable extension covers only the verified subset (mode commands, mode prompt injection); native `rlm` dispatch and JSON/RPC headless mode stay deferred, so its delivery is skills-first plus that subset, and no `rlm`/JSON-RPC claim is made.
 - Documentation alone cannot enforce the boundary; reviewers must check that implementation stays within the stated scope.
 
@@ -150,7 +150,7 @@ A runtime moves from `Provisional`/`Deferred`/`Native candidate` to a shipped `N
 | --- | --- | --- | --- | --- |
 | Claude Code | Approved docs (blind review), then a plugin package via the core sync pipeline, `scripts/check-sync` passes, promotion gates verified | Revert the generated projection/package; canonical content stays in core | Downgrade or remove support, delivery, capability, and control claims | Only after the promotion gates are re-verified |
 | Prime Agent | Verify a stable supported API for the executable extension beyond the verified subset (mode commands, mode prompt injection, session state); skills-first package plus the verified subset via the sync pipeline; `check-sync` passes | Revert the generated package and/or the extension subset | Replace or remove claims; native `rlm` dispatch and JSON/RPC headless mode stay deferred until verified | Only after re-verification |
-| Codex CLI | Pin the exact CLI version, verify the trust flow, projection via the sync pipeline, `check-sync` passes | Remove the projection/plugin spike | Downgrade or remove claims; keep `Provisional`, `Deferred`, or `Withdrawn` | Only after the version and evidence are re-verified |
+| Codex CLI | Reverify Codex CLI `0.145.0` and current upstream source, retain the generated projection, native-agent/instruction tests, and `check-sync` | Remove the native-agent and instruction management while leaving unrelated Codex configuration untouched | Downgrade or remove claims after a material host change invalidates the evidence | Only after the version and evidence are re-verified |
 | Codex desktop | Separate from CLI; verify a desktop extension surface exists first | Remove the common-subset projection | Downgrade or remove parity-adjacent claims | Only after the desktop surface is re-verified |
 | JCode | Requires a confirmed first-class package/extension distribution API | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
 | Crush | Requires a confirmed first-class API and verified hooks | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
@@ -182,7 +182,9 @@ Sources reviewed on 2026-08-11 are cited with URLs, review dates, test status, a
 
 On 2026-08-13 the Prime Agent evidence (E-PRIME-01..07) was re-verified against the immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5` (PrimeIntellect-ai/prime-agent, `main`; README and `packages/coding-agent/docs/skills.md`). All claims were confirmed and re-dated in [runtime-support-matrix.md](../../runtime-support-matrix.md). The decision is updated accordingly: Prime Agent stays `Native candidate` with Skills-first delivery plus a verified executable extension subset (mode commands, mode prompt injection, session-scoped mode state). Native `rlm` dispatch and JSON/RPC headless-mode integration remain deferred, and the promotion gates for `Native` remain unmet - the extension covers only the verified subset and Prime Agent is not a sandbox.
 
-**Reconciling the original scope with the current state.** The original decision (2026-08-11) was deliberately non-implementing: it recorded the support boundary and explicitly did not build any runtime package (see Non-Goals). That policy still holds for the other runtimes in this ADR (Claude Code, Codex CLI/desktop, JCode, Crush). For Prime Agent, this reverification supersedes the original scope wording: the skills-first package and its verified extension subset are now implemented as an unreleased `Native candidate` (`packages/prime-agent`, generated by the core sync pipeline from `packages/core/agent-directives/`, ADR-CORE-005). The support level is unchanged - Prime Agent remains `Native candidate`, not `Native`; no runtime in this ADR is claimed as shipped. The promotion gates are unmet (no live end-to-end Prime session has been run, and the extension covers only the verified subset), and native `rlm` dispatch and JSON/RPC headless-mode integration remain deferred.
+On 2026-08-26 the Codex CLI evidence was reverified against Codex CLI `0.145.0`, the current official subagent/config documentation, and current upstream source via `/opensrc`. Codex CLI is now recorded as `Native`: Maestria ships the skills projection, native `maestria-*` custom agents, per-agent model configuration, and an idempotent global orchestration instruction block managed through Codex's own `AGENTS.md` discovery. Codex desktop remains separate and `Deferred`.
+
+**Reconciling the original scope with the current state.** The original decision (2026-08-11) was deliberately non-implementing: it recorded the support boundary and explicitly did not build any runtime package (see Non-Goals). That policy still holds for the other runtimes in this ADR (Claude Code, Codex desktop, JCode, Crush). For Prime Agent, the 2026-08-13 reverification supersedes the original scope wording: the skills-first package and its verified extension subset are now implemented as an unreleased `Native candidate` (`packages/prime-agent`, generated by the core sync pipeline from `packages/core/agent-directives/`, ADR-CORE-005). For Codex CLI, the 2026-08-26 reverification promotes the shipped integration to `Native`; the current support and evidence are recorded in the Codex section and runtime matrix. Prime Agent remains `Native candidate`, not `Native`; its promotion gates are unmet (no live end-to-end Prime session has been run, and the extension covers only the verified subset), and native `rlm` dispatch and JSON/RPC headless-mode integration remain deferred.
 
 The reverification confirmed and recorded the following nuances, which the skills-first package respects:
 

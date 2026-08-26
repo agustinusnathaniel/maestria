@@ -6,6 +6,13 @@ import picocolors from 'picocolors';
 import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
 import { codexManagedAgentFileName, mergeCodexAgentSettings } from '@/lib/codex-agent-files.js';
 import {
+  CODEX_GLOBAL_INSTRUCTION_FILENAMES,
+  type CodexGlobalInstructionFilename,
+  hasCodexManagedInstructions,
+  removeCodexManagedInstructions,
+  upsertCodexManagedInstructions,
+} from '@/lib/codex-instructions.js';
+import {
   run,
   sh,
   commandExists,
@@ -339,14 +346,17 @@ function ensureCodexMarketplace(): Effect.Effect<void, CommandError> {
   );
 }
 
-// Codex plugin manifests do not declare custom agents. The published Maestria
-// package carries native agent TOMLs as a companion payload, and the CLI owns
-// copying those files into Codex's documented agents directory.
+// Codex plugin manifests do not declare custom agents or primary-session
+// instructions. The published Maestria package carries native agent TOMLs and
+// a managed AGENTS.md block as companion payloads, and the CLI owns copying
+// them into Codex's documented locations.
 const CODEX_MANAGED_AGENT_MANIFEST = '.maestria-agents.json';
 
 interface CodexManagedAgentManifest {
   readonly version: 1;
   readonly files: readonly string[];
+  readonly instructionsFile?: CodexGlobalInstructionFilename;
+  readonly instructionsCreated?: boolean;
 }
 
 function codexHomePath(): string {
@@ -359,6 +369,10 @@ function codexManagedAgentDirectory(): string {
 
 function codexManagedAgentManifestPath(): string {
   return `${codexHomePath()}/${CODEX_MANAGED_AGENT_MANIFEST}`;
+}
+
+function codexGlobalInstructionsPath(file: CodexGlobalInstructionFilename): string {
+  return `${codexHomePath()}/${file}`;
 }
 
 function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifest, CommandError> {
@@ -387,7 +401,34 @@ function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifes
       ) {
         throw new Error(`invalid managed agent filename in ${codexManagedAgentManifestPath()}`);
       }
-      return { version: 1, files: parsed.files } satisfies CodexManagedAgentManifest;
+      if (
+        parsed.instructionsFile !== undefined &&
+        !CODEX_GLOBAL_INSTRUCTION_FILENAMES.includes(
+          parsed.instructionsFile as CodexGlobalInstructionFilename,
+        )
+      ) {
+        throw new Error(
+          `invalid managed Codex instruction filename in ${codexManagedAgentManifestPath()}`,
+        );
+      }
+      if (
+        parsed.instructionsCreated !== undefined &&
+        typeof parsed.instructionsCreated !== 'boolean'
+      ) {
+        throw new Error(
+          `invalid managed Codex instruction ownership in ${codexManagedAgentManifestPath()}`,
+        );
+      }
+      return {
+        version: 1,
+        files: parsed.files,
+        ...(parsed.instructionsFile !== undefined
+          ? { instructionsFile: parsed.instructionsFile as CodexGlobalInstructionFilename }
+          : {}),
+        ...(parsed.instructionsCreated !== undefined
+          ? { instructionsCreated: parsed.instructionsCreated }
+          : {}),
+      } satisfies CodexManagedAgentManifest;
     },
     catch: (error) =>
       new CommandError({
@@ -423,6 +464,23 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
     const sourceDir = `${packageRoot}/agents`;
     const targetDir = codexManagedAgentDirectory();
     const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
+    const sourceInstructionsPath = `${packageRoot}/instructions/AGENTS.md`;
+
+    const sourceInstructions = yield* Effect.tryPromise({
+      try: async () => {
+        const { readFile } = await import('node:fs/promises');
+        return await readFile(sourceInstructionsPath, 'utf8');
+      },
+      catch: (error) => new Error(String(error)),
+    });
+    yield* Effect.tryPromise({
+      try: async () => {
+        if (!hasCodexManagedInstructions(sourceInstructions)) {
+          throw new Error(`missing Maestria instruction markers in ${sourceInstructionsPath}`);
+        }
+      },
+      catch: (error) => new Error(String(error)),
+    });
 
     yield* Effect.tryPromise({
       try: async () => {
@@ -463,7 +521,91 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
       catch: (error) => new Error(String(error)),
     });
 
-    yield* writeCodexManagedAgentManifest({ version: 1, files: sourceFiles });
+    const instructionState = yield* Effect.tryPromise({
+      try: async () => {
+        const { mkdir, readFile, rename, rm, writeFile } = await import('node:fs/promises');
+        const existing = new Map<CodexGlobalInstructionFilename, string | undefined>();
+        for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
+          try {
+            existing.set(file, await readFile(codexGlobalInstructionsPath(file), 'utf8'));
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') existing.set(file, undefined);
+            else throw error;
+          }
+        }
+
+        const sourceBlock = sourceInstructions;
+        const managedFiles = CODEX_GLOBAL_INSTRUCTION_FILENAMES.filter((file) => {
+          const content = existing.get(file);
+          return content !== undefined && hasCodexManagedInstructions(content);
+        });
+        const override = existing.get('AGENTS.override.md');
+        const previousFile = manifest.instructionsFile;
+        const target =
+          override?.trim() && !managedFiles.includes('AGENTS.override.md')
+            ? 'AGENTS.override.md'
+            : previousFile && managedFiles.includes(previousFile)
+              ? previousFile
+              : (managedFiles[0] ?? (override?.trim() ? 'AGENTS.override.md' : 'AGENTS.md'));
+
+        const cleaned = new Map<CodexGlobalInstructionFilename, string | undefined>();
+        for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
+          const content = existing.get(file);
+          cleaned.set(
+            file,
+            content === undefined ? undefined : removeCodexManagedInstructions(content),
+          );
+        }
+
+        const targetContent = upsertCodexManagedInstructions(
+          cleaned.get(target) ?? '',
+          sourceBlock,
+        );
+        const writeAtomic = async (path: string, content: string): Promise<void> => {
+          await mkdir(codexHomePath(), { recursive: true });
+          const tempPath = `${path}.tmp`;
+          await writeFile(tempPath, content, 'utf8');
+          await rename(tempPath, path);
+        };
+
+        for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
+          if (file === target) {
+            await writeAtomic(codexGlobalInstructionsPath(file), targetContent);
+            continue;
+          }
+          const original = existing.get(file);
+          const next = cleaned.get(file);
+          if (original === undefined || next === undefined || next === original) continue;
+          if (
+            next.length === 0 &&
+            manifest.instructionsCreated &&
+            manifest.instructionsFile === file
+          ) {
+            await rm(codexGlobalInstructionsPath(file), { force: true });
+          } else {
+            await writeAtomic(codexGlobalInstructionsPath(file), next);
+          }
+        }
+
+        return {
+          file: target,
+          created:
+            existing.get(target) === undefined ||
+            (manifest.instructionsCreated === true && manifest.instructionsFile === target),
+        } satisfies {
+          file: CodexGlobalInstructionFilename;
+          created: boolean;
+        };
+      },
+      catch: (error) => new Error(String(error)),
+    });
+
+    yield* writeCodexManagedAgentManifest({
+      version: 1,
+      files: sourceFiles,
+      instructionsFile: instructionState.file,
+      instructionsCreated: instructionState.created,
+    });
   }).pipe(
     Effect.mapError(
       (error) =>
@@ -480,9 +622,34 @@ export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
     const manifest = yield* readCodexManagedAgentManifest();
     yield* Effect.tryPromise({
       try: async () => {
-        const { rm } = await import('node:fs/promises');
+        const { readFile, rm } = await import('node:fs/promises');
         for (const file of manifest.files) {
           await rm(`${codexManagedAgentDirectory()}/${file}`, { force: true });
+        }
+
+        for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
+          const path = codexGlobalInstructionsPath(file);
+          let content: string;
+          try {
+            content = await readFile(path, 'utf8');
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue;
+            throw error;
+          }
+          const next = removeCodexManagedInstructions(content);
+          if (next === content) continue;
+          if (
+            next.length === 0 &&
+            manifest.instructionsCreated &&
+            manifest.instructionsFile === file
+          ) {
+            await rm(path, { force: true });
+          } else {
+            const { rename, writeFile } = await import('node:fs/promises');
+            const tempPath = `${path}.tmp`;
+            await writeFile(tempPath, next, 'utf8');
+            await rename(tempPath, path);
+          }
         }
         await rm(codexManagedAgentManifestPath(), { force: true });
       },

@@ -2,7 +2,7 @@
   "name": "@maestria/codex",
   "version": "0.3.2",
   "private": false,
-  "description": "Maestria skills projection for Codex CLI",
+  "description": "Maestria skills and native agent integration for Codex CLI",
   "keywords": [
     "ai",
     "codex",
@@ -25,6 +25,7 @@
   "files": [
     ".codex-plugin",
     "agents",
+    "instructions",
     "skills",
     "CHANGELOG.md",
     "INSTALL.md",

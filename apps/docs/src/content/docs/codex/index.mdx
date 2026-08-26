@@ -1,6 +1,6 @@
 ---
 title: '@maestria/codex'
-description: Codex CLI plugin projection that packages Maestria's methodology as namespaced skills.
+description: Codex CLI integration that packages Maestria's methodology as namespaced skills and native custom agents.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -22,7 +22,7 @@ import { marks } from '@/data/marks.js';
       <PlatformHero
         eyebrow="@MAESTRIA/CODEX"
         title="Maestria skills for Codex CLI."
-        lead="Install the Maestria plugin to make specialists, orchestration, handoffs, and review contracts available as Codex skills."
+        lead="Install Maestria to activate the orchestrator in Codex's primary session and make seven native specialists available for delegation."
         mark={marks.codex}
         primaryCta={{ href: '/codex/getting-started/installation/', label: 'Get started' }}
         secondaryCta={{ href: '/codex/getting-started/quick-start/', label: 'Quick start' }}
@@ -40,7 +40,7 @@ import { marks } from '@/data/marks.js';
         items={[
           { title: 'Specialist skills', desc: '$maestria:adventurer through $maestria:writer - the seven-specialist roster packaged as namespaced Codex skills.' },
           { title: 'Native specialist agents', desc: 'The Maestria CLI installs seven native maestria-* agent roles with Codex sandbox settings and configurable model inheritance.' },
-          { title: 'Capability-aware routing', desc: '$maestria:orchestrator chooses between direct work and specialist skills based on task risk and available runtime capabilities.' },
+          { title: 'Automatic orchestration', desc: "The CLI adds a marked global instruction block so Codex's host-owned primary agent uses $maestria:orchestrator and delegates to native maestria-* roles when appropriate." },
           { title: 'Global rules', desc: '$maestria:global-rules carries the universal evidence, safety, authorization, and review contract.' },
           { title: 'Bounded multi-stage work', desc: '$maestria:handoff and $maestria:iteration-limits keep long work units contained with explicit handoff and repair budgets.' },
           { title: 'Workflow-mode skills', desc: '$maestria:fein, $maestria:sonar, and $maestria:blitz expose the workflow mode system as invocable skills.' },
@@ -62,11 +62,15 @@ import { marks } from '@/data/marks.js';
         </li>
         <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
           <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
-          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Native pickup</strong> - installation completes through Codex's own <code>codex plugin add</code> command</p>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Native pickup</strong> - installation completes through Codex's own <code>codex plugin add</code> command and native agent discovery</p>
         </li>
         <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
           <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
           <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Skills discovered</strong> - start a fresh Codex CLI session so marketplace state loads and the <code>$maestria:*</code> palette appears</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">4</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Orchestrator active</strong> - the managed global instruction block routes normal engineering requests through Maestria's host-owned Codex session</p>
         </li>
       </ol>
     </PluginSection>
@@ -102,7 +106,7 @@ import { marks } from '@/data/marks.js';
           <p class="m-0 mb-1.5 font-mono text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-home-accent">Codex CLI only</p>
           <p class="m-0 text-sm leading-[1.65] text-home-text-muted">
             Verified against Codex CLI 0.145.0 on 2026-08-26. Codex desktop parity is outside this
-            package, and skills remain advisory guidance rather than runtime permission controls.
+            package, and methodology guidance remains distinct from runtime permission controls.
           </p>
         </aside>
       </div>

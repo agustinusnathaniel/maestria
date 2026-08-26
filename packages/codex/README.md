@@ -1,6 +1,6 @@
 # @maestria/codex
 
-A Codex CLI package that ships Maestria's agent methodology as namespaced `$maestria:*` skills.
+A Codex CLI package that ships Maestria's agent methodology as namespaced `$maestria:*` skills and native custom-agent roles.
 
 > This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -24,6 +24,7 @@ The CLI installs and updates the plugin through Codex's `plugin add` flow. Codex
 
 - **14 namespaced skills** - `$maestria:global-rules`, `$maestria:orchestrator`, the 7 specialists (adventurer, architect, builder, diagnose, planner, reviewer, writer), `$maestria:handoff`, `$maestria:iteration-limits`, and the workflow modes `$maestria:fein`, `$maestria:sonar`, `$maestria:blitz`.
 - **7 native custom agents** - the Maestria CLI installs `maestria-*` agent TOMLs into Codex's native `$CODEX_HOME/agents/` directory, with read-only sandbox settings for reconnaissance, architecture, planning, and review roles.
+- **Automatic orchestration** - the Maestria CLI installs a marked global Codex instruction block that activates the orchestrator workflow in the primary session and routes specialist work to the native roles.
 - **Maestria CLI compatibility** - install, status, check, update, and uninstall through the CLI.
 - **Native model configuration** - `maestria configure codex` can create or update Codex custom-agent TOML files without overwriting unrelated agent settings.
 
@@ -31,7 +32,8 @@ The CLI installs and updates the plugin through Codex's `plugin add` flow. Codex
 
 - Workflow modes ship as skills, not slash commands.
 - Read-only specialist boundaries are documented guidance, not tool enforcement; Codex's own sandbox, approvals, and hook trust controls remain the host boundary.
-- The plugin manifest ships skills; the companion CLI installs native agent TOMLs, preserves model/reasoning/service-tier settings across updates, and writes no `AGENTS.md` file.
+- The plugin manifest declares skills; the companion CLI installs native agent TOMLs and a marked global instruction block, preserves model/reasoning/service-tier settings across updates, and removes only Maestria-owned content on uninstall.
+- `maestria install codex` provides automatic routing for normal sessions. Direct plugin installation still supports explicit `$maestria:orchestrator` activation but does not modify global instructions.
 
 ## Documentation and Changelog
 

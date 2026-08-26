@@ -133,6 +133,15 @@ describe('generated skills', () => {
     expect(text).toContain('agent_type');
   });
 
+  it('ships the automatic global orchestration instruction template', async () => {
+    const text = await readFile(path.join(PACKAGE_ROOT, 'instructions/AGENTS.md'), 'utf8');
+    expect(text).toContain('maestria:codex-orchestrator:start');
+    expect(text).toContain('$maestria:orchestrator');
+    expect(text).toContain('agent_type');
+    expect(text).toContain('maestria-builder');
+    expect(text).toContain('User instructions and repository-local instructions take precedence');
+  });
+
   it('states that read-only role boundaries are advisory', async () => {
     for (const role of ['adventurer', 'planner', 'reviewer']) {
       const text = await readFile(path.join(PACKAGE_ROOT, `skills/${role}/SKILL.md`), 'utf8');
@@ -174,5 +183,6 @@ describe('package metadata', () => {
     expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');
     expect(pkg.files).toContain('agents');
+    expect(pkg.files).toContain('instructions');
   });
 });

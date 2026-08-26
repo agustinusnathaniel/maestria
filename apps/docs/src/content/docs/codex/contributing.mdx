@@ -1,11 +1,12 @@
 ---
 title: Contributing
-description: Maintain the generated Codex CLI projection and its marketplace-facing package metadata.
+description: Maintain the generated Codex CLI integration and its marketplace-facing package metadata.
 ---
 
 `@maestria/codex` is generated from the canonical directives in
 `packages/core/agent-directives/`. The package adapts those directives to Codex's namespaced skill
-format; it does not duplicate methodology content by hand.
+format and pairs them with lightweight native custom-agent templates and an instruction resource;
+it does not duplicate methodology content by hand.
 
 ## Package structure
 
@@ -13,6 +14,7 @@ format; it does not duplicate methodology content by hand.
 packages/codex/
 ├── .codex-plugin/plugin.json  # Hand-authored plugin manifest
 ├── agents/                    # Hand-authored native Codex agent templates
+├── instructions/              # Hand-authored managed global orchestration block
 ├── skills/                    # Generated SKILL.md projections
 ├── sync.config.ts             # Codex-specific transforms and frontmatter
 ├── tests/plugin.test.ts       # Manifest and generated-file contracts
@@ -46,12 +48,15 @@ The Codex sync config:
 - namespaces specialist references as `$maestria:<name>`;
 - packages workflow modes as skills because the verified Codex projection surface is `skills/`;
 - states read-only roles as advisory rather than claiming tool enforcement;
-- keeps hooks, MCP, and `AGENTS.md` writing out of the plugin manifest; native agent installation and model configuration belong to the companion CLI.
+- keeps hooks and MCP out of the plugin manifest; native agent installation, model configuration,
+  and managed `AGENTS.md` instructions belong to the companion CLI.
 
 The `agents/` directory contains lightweight native TOML wrappers. They reference the generated
 namespaced skills instead of duplicating the canonical methodology. The Maestria CLI copies these
 templates into `$CODEX_HOME/agents/` as `maestria-*` roles, preserving user model, reasoning, and
-service-tier settings across updates.
+service-tier settings across updates. The `instructions/AGENTS.md` resource is merged into the
+active global Codex instruction file using markers, preserving unrelated user text and allowing
+safe removal on uninstall.
 
 ## Validation
 
