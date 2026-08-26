@@ -40,6 +40,9 @@
   "scripts": {
     "test": "vp test"
   },
+  "dependencies": {
+    "@maestria/shared-mode": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:",

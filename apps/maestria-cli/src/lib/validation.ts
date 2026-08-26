@@ -1,5 +1,6 @@
 import { Data, Effect, Exit, Cause } from 'effect';
 import { isValidVersion } from './version.js';
+import { platforms, PLATFORM_IDS, type PlatformId } from './platforms.js';
 
 // ── Errors ───────────────────────────────────────────
 export class ValidationError extends Data.TaggedError('ValidationError')<{
@@ -8,18 +9,28 @@ export class ValidationError extends Data.TaggedError('ValidationError')<{
 
 // ── Validators ───────────────────────────────────────
 
-export const VALID_PLATFORMS = [
-  'opencode',
-  'omp',
-  'pi',
-  'prime-agent',
-  'kimi-code',
-  'hermes',
-  'cursor',
-  'claude-code',
-  'codex',
-] as const;
-export type ValidPlatform = (typeof VALID_PLATFORMS)[number];
+// Re-export the literal-typed platform ID union from the handler registry.
+export type ValidPlatform = PlatformId;
+
+// Legacy presentation order preserved for help text and error messages
+// (opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex).
+// Membership is derived from `platforms` registry; ordering follows the legacy
+// order so existing messages remain stable.
+const LEGACY_ORDER: readonly ValidPlatform[] = PLATFORM_IDS;
+
+const LEGACY_INDEX = new Map<ValidPlatform, number>(
+  LEGACY_ORDER.map((id, idx) => [id, idx] as const),
+);
+
+// Derived from the canonical handler registry - single source for membership.
+// Sorted by LEGACY_ORDER to preserve prior help/error message ordering.
+export const VALID_PLATFORMS: readonly ValidPlatform[] = platforms
+  .map((p) => p.id)
+  .sort((a, b) => (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999));
+
+function isValidPlatform(id: string): id is ValidPlatform {
+  return (VALID_PLATFORMS as readonly string[]).includes(id);
+}
 
 /**
  * Validate a platform ID string.
@@ -27,14 +38,14 @@ export type ValidPlatform = (typeof VALID_PLATFORMS)[number];
  */
 export function validatePlatform(input: string): Effect.Effect<ValidPlatform, ValidationError> {
   const normalized = input.trim().toLowerCase();
-  if (!VALID_PLATFORMS.includes(normalized as ValidPlatform)) {
+  if (!isValidPlatform(normalized)) {
     return Effect.fail(
       new ValidationError({
         message: `Unknown platform '${input}'. Valid platforms: ${VALID_PLATFORMS.join(', ')}`,
       }),
     );
   }
-  return Effect.succeed(normalized as ValidPlatform);
+  return Effect.succeed(normalized);
 }
 
 /**
@@ -60,14 +71,14 @@ export function validatePlatforms(input: string): Effect.Effect<ValidPlatform[],
   }
   const results: ValidPlatform[] = [];
   for (const part of parts) {
-    if (!VALID_PLATFORMS.includes(part as ValidPlatform)) {
+    if (!isValidPlatform(part)) {
       return Effect.fail(
         new ValidationError({
           message: `Unknown platform '${part}'. Valid platforms: ${VALID_PLATFORMS.join(', ')}`,
         }),
       );
     }
-    results.push(part as ValidPlatform);
+    results.push(part);
   }
   return Effect.succeed(results);
 }

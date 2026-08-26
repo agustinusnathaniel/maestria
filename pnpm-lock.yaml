@@ -308,6 +308,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@maestria/shared-mode':
+        specifier: workspace:*
+        version: link:../shared/mode
       '@opencode-ai/plugin':
         specifier: ^1.18.19
         version: 1.18.19
@@ -364,7 +367,23 @@ importers:
         specifier: 4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-preview@4.1.11)(vite@8.2.2(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
 
+  packages/shared/mode:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.2.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(@vitest/browser-preview@4.1.11)(vite@8.2.2(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
+
   packages/shared/pi:
+    dependencies:
+      '@maestria/shared-mode':
+        specifier: workspace:*
+        version: link:../mode
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
