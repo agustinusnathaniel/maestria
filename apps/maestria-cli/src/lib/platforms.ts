@@ -52,19 +52,70 @@ function installNpmTarball(
 ): Effect.Effect<void, CommandError> {
   const tag = opts.tag ?? 'latest';
   const shortName = pkg.replace('@maestria/', '');
-  const tarballGlob = `/tmp/maestria-${shortName}-*.tgz`;
+  const prefix = `maestria-${shortName}-`;
+  const pkgAtTag = `${pkg}@${tag}`;
 
   return Effect.gen(function* () {
     // Remove stale tarballs and the destination dir before installing
-    yield* sh(`rm -rf ${tarballGlob} "${dest}"`, 15_000);
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { readdir, unlink, rm } = await import('node:fs/promises');
+        const entries = await readdir('/tmp');
+        const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
+        await Promise.all(stale.map((e) => unlink(`/tmp/${e}`)));
+        await rm(dest, { recursive: true, force: true });
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `cleanup /tmp/${prefix}*.tgz and ${dest}`,
+          message: String(error),
+        }),
+    });
 
-    yield* sh(
-      `npm pack ${pkg}@${tag} --pack-destination /tmp && ` +
-        `mkdir -p "${dest}" && ` +
-        `tar -xzf ${tarballGlob} -C "${dest}" --strip-components=1 && ` +
-        `rm -f ${tarballGlob}`,
-      120_000,
-    );
+    yield* run('npm', ['pack', pkgAtTag, '--pack-destination', '/tmp'], 120_000);
+
+    const tarballPath = yield* Effect.tryPromise({
+      try: async () => {
+        const { readdir } = await import('node:fs/promises');
+        const entries = await readdir('/tmp');
+        const matches = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
+        if (matches.length === 0) throw new Error(`no tarball found for ${pkgAtTag} in /tmp`);
+        if (matches.length > 1)
+          throw new Error(`ambiguous tarballs for ${pkgAtTag} in /tmp: ${matches.join(', ')}`);
+        return `/tmp/${matches[0]}`;
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `find tarball /tmp/${prefix}*.tgz`,
+          message: String(error),
+        }),
+    });
+
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { mkdir } = await import('node:fs/promises');
+        await mkdir(dest, { recursive: true });
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `mkdir -p ${dest}`,
+          message: String(error),
+        }),
+    });
+
+    yield* run('tar', ['-xzf', tarballPath, '-C', dest, '--strip-components=1'], 120_000);
+
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { unlink } = await import('node:fs/promises');
+        await unlink(tarballPath);
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `rm -f ${tarballPath}`,
+          message: String(error),
+        }),
+    });
   });
 }
 
