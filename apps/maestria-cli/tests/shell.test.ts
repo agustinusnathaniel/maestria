@@ -8,7 +8,10 @@ describe('shell execution', () => {
   it('exports run function', () => {
     expect(typeof shell.run).toBe('function');
   });
-  it('exports sh function', () => {
-    expect(typeof shell.sh).toBe('function');
+  it('exports readTextFile function', () => {
+    expect(typeof shell.readTextFile).toBe('function');
+  });
+  it('exports fileExists function', () => {
+    expect(typeof shell.fileExists).toBe('function');
   });
 });

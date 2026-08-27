@@ -26,6 +26,7 @@ const fsMocks = vi.hoisted(() => {
       if (!originalRm) throw new Error('original rm unavailable');
       return originalRm(path, options);
     }),
+    access: vi.fn(async () => {}),
     setOriginals(
       readFile: (typeof import('node:fs/promises'))['readFile'],
       mkdtemp: (typeof import('node:fs/promises'))['mkdtemp'],
@@ -49,7 +50,8 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
     // Return a real Effect so module-evaluation .pipe() chains in platforms.ts
     // keep working; executing it resolves without spawning any subprocess.
     run: vi.fn((_cmd: string, _args: string[], _timeoutMs?: number) => Effect.succeed('')),
-    sh: vi.fn((_command: string, _timeoutMs?: number) => Effect.succeed('')),
+    readTextFile: vi.fn((path: string) => actual.readTextFile(path)),
+    fileExists: vi.fn((path: string) => actual.fileExists(path)),
   };
 });
 
@@ -66,6 +68,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
     readFile: fsMocks.readFile,
     mkdtemp: fsMocks.mkdtemp,
     rm: fsMocks.rm,
+    access: fsMocks.access,
   };
 });
 
