@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0
+
+### Minor Changes
+
+- [#248](https://github.com/agustinusnathaniel/maestria/pull/248) [`93ff292`](https://github.com/agustinusnathaniel/maestria/commit/93ff292b83f5659b67af4889848de454d1661206) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Update Kimi Code integration to use its native plugin registry, system-prompt, namespaced command, and current delegation contracts.
+
 ## Unreleased
 
 - Align the orchestrator's `Agent` and `AgentSwarm` examples with Kimi Code 0.38's native schemas.
