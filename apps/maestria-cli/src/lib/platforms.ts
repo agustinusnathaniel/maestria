@@ -14,7 +14,6 @@ import {
 } from '@/lib/codex-instructions.js';
 import {
   run,
-  sh,
   commandExists,
   npmViewVersion,
   invalidateVersionCache,
@@ -832,9 +831,28 @@ const opencode: PlatformHandler = {
 
   install: Effect.gen(function* () {
     // Clear cache to ensure fresh install from npm
-    yield* sh(`rm -rf ${homedir()}/.cache/opencode/packages/@maestria/opencode*`);
+    yield* Effect.tryPromise({
+      try: async () => {
+        const { readdir, rm } = await import('node:fs/promises');
+        const base = `${homedir()}/.cache/opencode/packages/@maestria`;
+        let entries: string[];
+        try {
+          entries = await readdir(base);
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+          throw error;
+        }
+        const stale = entries.filter((e) => e.startsWith('opencode'));
+        await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
+      },
+      catch: (error) =>
+        new CommandError({
+          command: `clear opencode cache ${homedir()}/.cache/opencode/packages/@maestria/opencode*`,
+          message: String(error),
+        }),
+    });
     // Install globally by default - install is a setup command, not per-project
-    yield* sh('opencode plugin @maestria/opencode@latest -g', 120_000);
+    yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g'], 120_000);
   }).pipe(Effect.as(void 0)),
 
   update: (version?: string) =>
@@ -842,7 +860,26 @@ const opencode: PlatformHandler = {
       const tag = version ?? 'latest';
 
       // Clear cache to ensure fresh install from npm
-      yield* sh(`rm -rf ${homedir()}/.cache/opencode/packages/@maestria/opencode*`);
+      yield* Effect.tryPromise({
+        try: async () => {
+          const { readdir, rm } = await import('node:fs/promises');
+          const base = `${homedir()}/.cache/opencode/packages/@maestria`;
+          let entries: string[];
+          try {
+            entries = await readdir(base);
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+            throw error;
+          }
+          const stale = entries.filter((e) => e.startsWith('opencode'));
+          await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
+        },
+        catch: (error) =>
+          new CommandError({
+            command: `clear opencode cache ${homedir()}/.cache/opencode/packages/@maestria/opencode*`,
+            message: String(error),
+          }),
+      });
 
       // Check if installed globally or at project level
       const globalConfig = yield* readOpenCodeConfig().pipe(
@@ -1477,8 +1514,9 @@ const hermes: PlatformHandler = {
   getLatestVersion: Effect.succeed('see GitHub releases'),
 
   install: Effect.gen(function* () {
-    yield* sh(
-      'hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable',
+    yield* run(
+      'hermes',
+      ['plugins', 'install', 'agustinusnathaniel/maestria/packages/hermes', '--enable'],
       120_000,
     );
   }).pipe(Effect.as(void 0)),
@@ -1491,11 +1529,11 @@ const hermes: PlatformHandler = {
             `Updating to latest from git.`,
         );
       }
-      yield* sh('hermes plugins update maestria-hermes', 60_000);
+      yield* run('hermes', ['plugins', 'update', 'maestria-hermes'], 60_000);
     }),
 
   uninstall: Effect.gen(function* () {
-    yield* sh('hermes plugins remove maestria-hermes', 15_000);
+    yield* run('hermes', ['plugins', 'remove', 'maestria-hermes'], 15_000);
   }).pipe(Effect.as(void 0)),
 };
 
@@ -1659,7 +1697,14 @@ const cursor: PlatformHandler = {
     }).pipe(Effect.as(void 0)),
 
   uninstall: Effect.gen(function* () {
-    yield* sh(`rm -rf "${CURSOR_PLUGIN_DIR}"`, 15_000);
+    yield* Effect.tryPromise({
+      try: () =>
+        import('node:fs/promises').then((m) =>
+          m.rm(CURSOR_PLUGIN_DIR, { recursive: true, force: true }),
+        ),
+      catch: (e) =>
+        new CommandError({ command: `rm -rf ${CURSOR_PLUGIN_DIR}`, message: String(e) }),
+    });
   }).pipe(Effect.as(void 0)),
 };
 
