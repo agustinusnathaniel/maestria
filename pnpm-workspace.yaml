@@ -81,3 +81,9 @@ minimumReleaseAgeExclude:
   - '@astrojs/*'
   - astro
   - effect
+  # opencode-v2 POC tracks @opencode-ai next-* prereleases, younger than minimumReleaseAge
+  - '@opencode-ai/*'
+  - '@opentui/*'
+  - baseline-browser-mapping
+  - electron-to-chromium
+  - update-browserslist-db
