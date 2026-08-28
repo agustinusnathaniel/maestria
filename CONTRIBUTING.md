@@ -31,6 +31,7 @@ maestria/
 │   ├── codex/             Codex CLI projection (published)
 │   ├── hermes/            Hermes Agent plugin (private, published on PyPI)
 │   └── shared/
+│       ├── mode/          Shared neutral mode mechanics (private, pure-TS, no host SDK)
 │       └── pi/            Shared pure-TS utilities for omp/pi (private)
 ├── apps/
 │   ├── docs/              Starlight documentation site (private)
