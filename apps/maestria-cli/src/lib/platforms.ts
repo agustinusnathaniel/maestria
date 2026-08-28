@@ -1,6 +1,6 @@
 import { Effect } from 'effect';
 import { homedir, tmpdir } from 'os';
-import { isAbsolute, win32 } from 'node:path';
+import { isAbsolute, join, win32 } from 'node:path';
 import picocolors from 'picocolors';
 
 import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
@@ -53,39 +53,40 @@ function installNpmTarball(
   const shortName = pkg.replace('@maestria/', '');
   const prefix = `maestria-${shortName}-`;
   const pkgAtTag = `${pkg}@${tag}`;
+  const tmpDir = tmpdir();
 
   return Effect.gen(function* () {
     // Remove stale tarballs and the destination dir before installing
     yield* Effect.tryPromise({
       try: async () => {
         const { readdir, unlink, rm } = await import('node:fs/promises');
-        const entries = await readdir('/tmp');
+        const entries = await readdir(tmpDir);
         const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-        await Promise.all(stale.map((e) => unlink(`/tmp/${e}`)));
+        await Promise.all(stale.map((e) => unlink(join(tmpDir, e))));
         await rm(dest, { recursive: true, force: true });
       },
       catch: (error) =>
         new CommandError({
-          command: `cleanup /tmp/${prefix}*.tgz and ${dest}`,
+          command: `cleanup ${tmpDir}/${prefix}*.tgz and ${dest}`,
           message: String(error),
         }),
     });
 
-    yield* run('npm', ['pack', pkgAtTag, '--pack-destination', '/tmp'], 120_000);
+    yield* run('npm', ['pack', pkgAtTag, '--pack-destination', tmpDir], 120_000);
 
     const tarballPath = yield* Effect.tryPromise({
       try: async () => {
         const { readdir } = await import('node:fs/promises');
-        const entries = await readdir('/tmp');
+        const entries = await readdir(tmpDir);
         const matches = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-        if (matches.length === 0) throw new Error(`no tarball found for ${pkgAtTag} in /tmp`);
+        if (matches.length === 0) throw new Error(`no tarball found for ${pkgAtTag} in ${tmpDir}`);
         if (matches.length > 1)
-          throw new Error(`ambiguous tarballs for ${pkgAtTag} in /tmp: ${matches.join(', ')}`);
-        return `/tmp/${matches[0]}`;
+          throw new Error(`ambiguous tarballs for ${pkgAtTag} in ${tmpDir}: ${matches.join(', ')}`);
+        return join(tmpDir, matches[0]);
       },
       catch: (error) =>
         new CommandError({
-          command: `find tarball /tmp/${prefix}*.tgz`,
+          command: `find tarball ${tmpDir}/${prefix}*.tgz`,
           message: String(error),
         }),
     });
