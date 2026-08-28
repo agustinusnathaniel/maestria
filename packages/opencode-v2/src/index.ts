@@ -5,6 +5,8 @@ import type { MaestriaPluginOptions } from '@/modes/types.js';
 import { maestriaOptionsSchema } from '@/modes/types.js';
 import { registerAgentTransforms } from '@/transforms/agents.js';
 import { registerReferenceTransforms } from '@/transforms/references.js';
+import { registerCommandTransforms } from '@/transforms/commands.js';
+import { registerSkillTransforms } from '@/transforms/skills.js';
 import { registerToolTransforms } from '@/transforms/tools.js';
 import { registerSessionHooks } from '@/hooks/session.js';
 
@@ -17,6 +19,8 @@ export default Plugin.define({
       yield* registerAgentTransforms(ctx);
       yield* registerReferenceTransforms(ctx);
       yield* registerSessionHooks(ctx, options);
+      yield* registerCommandTransforms(ctx);
+      yield* registerSkillTransforms(ctx);
       yield* registerToolTransforms(ctx);
       yield* Effect.sync(() =>
         console.log('[maestria-v2] Plugin initialized with ID: maestria.v2'),

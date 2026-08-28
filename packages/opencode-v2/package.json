@@ -15,6 +15,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./tui": {
+      "import": "./dist/tui.js",
+      "types": "./dist/tui.d.ts"
     }
   },
   "scripts": {
@@ -31,12 +35,18 @@
   "devDependencies": {
     "@maestria/shared-mode": "workspace:*",
     "@opencode-ai/plugin": "0.0.0-next-17444",
+    "@opentui/core": "0.5.9",
+    "@opentui/solid": "0.5.9",
     "@types/node": "catalog:",
+    "solid-js": "1.9.15",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=0.0.0-next-0"
+    "@opencode-ai/plugin": ">=0.0.0-next-0",
+    "@opentui/core": ">=0.5.8",
+    "@opentui/solid": ">=0.5.8",
+    "solid-js": ">=1.9.0"
   },
   "opencode": {
     "type": "plugin",

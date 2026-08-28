@@ -4,6 +4,16 @@ import type { MaestriaPluginOptions, ModeKeyword } from '@/modes/types.js';
 import { detectMode } from '@/modes/index.js';
 import { getModeMarker, getModePrompt } from '@/modes/prompts.js';
 
+/**
+ * Session hook registration.
+ *
+ * Ground truth: SessionDomain only exposes `context`, `http.request`, `http.response` hooks
+ * (see @opencode-ai/plugin/effect/session - SessionHooks). There is NO `prompt` hook in the
+ * current SDK (v2 beta `0.0.0-next-17444`). Mode handling must stay on `context` where
+ * `SessionContext` exposes `messages: Message[]` and mutable `system: SystemPart[]`.
+ * If a future SDK adds `prompt` or `message` hooks, re-evaluate splitting detection to that
+ * earlier hook - but keep the `context` hook as the canonical injection point.
+ */
 export function registerSessionHooks(
   ctx: PluginContext,
   options: MaestriaPluginOptions,
