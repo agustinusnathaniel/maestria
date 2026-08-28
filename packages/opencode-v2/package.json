@@ -24,6 +24,7 @@
     "check": "vp check"
   },
   "dependencies": {
+    "effect": "4.0.0-beta.101",
     "yaml": "^2.9.0",
     "zod": "^4.4.0"
   },

@@ -1,16 +1,12 @@
 // Plugin context and domain types for the V2 beta API.
-// Imported from the real @opencode-ai/plugin package (ground truth).
-// The package root re-exports Plugin as a namespace and does not re-export
-// domain types at the top level, so domain types come from subpath imports.
+// Effect API: ground truth from @opencode-ai/plugin/effect
 
-import type { Plugin } from '@opencode-ai/plugin';
-import type { SessionContext } from '@opencode-ai/plugin/promise/session';
-import type { AgentDraft } from '@opencode-ai/plugin/promise/agent';
-import type { ReferenceDraft } from '@opencode-ai/plugin/promise/reference';
-import type { Hooks, Transform, Registration } from '@opencode-ai/plugin/promise/registration';
+import type { Plugin } from '@opencode-ai/plugin/effect';
+import type { SessionContext } from '@opencode-ai/plugin/effect/session';
+import type { AgentDraft } from '@opencode-ai/plugin/effect/agent';
+import type { ReferenceDraft } from '@opencode-ai/plugin/effect/reference';
+import type { Hooks, Transform, Registration } from '@opencode-ai/plugin/effect/registration';
 
-// Plugin.Context resolves through the namespace re-export in the package root.
 export type PluginContext = Plugin.Context;
 
-// Convenience re-exports so the rest of the code imports from a single place.
 export type { SessionContext, AgentDraft, ReferenceDraft, Hooks, Transform, Registration };

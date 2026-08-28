@@ -1,3 +1,4 @@
+import { Effect } from 'effect';
 import { describe, it, expect } from 'vite-plus/test';
 import { join } from 'node:path';
 import type { AgentDraft, ReferenceDraft } from '../src/types.js';
@@ -17,14 +18,22 @@ describe('registerReferenceTransforms', () => {
     };
 
     let captured: ((draft: ReferenceDraft) => void) | undefined;
-    await registerReferenceTransforms({
-      reference: {
-        transform: async (callback) => {
-          captured = callback;
-          return { dispose: async () => {} };
-        },
-      },
-    });
+    await Effect.runPromise(
+      Effect.scoped(
+        registerReferenceTransforms({
+          reference: {
+            transform: (callback: (draft: ReferenceDraft) => void) => {
+              captured = callback;
+              return Effect.succeed({
+                dispose: Effect.void,
+              } as unknown as import('../src/types.js').Registration);
+            },
+          },
+        } as unknown as {
+          reference: { transform: import('../src/types.js').Transform<ReferenceDraft> };
+        }),
+      ),
+    );
 
     expect(captured).toBeTypeOf('function');
     captured?.(draft);
@@ -52,14 +61,20 @@ describe('registerAgentTransforms', () => {
     };
 
     let captured: ((registry: AgentDraft) => void) | undefined;
-    await registerAgentTransforms({
-      agent: {
-        transform: async (callback) => {
-          captured = callback;
-          return { dispose: async () => {} };
-        },
-      },
-    });
+    await Effect.runPromise(
+      Effect.scoped(
+        registerAgentTransforms({
+          agent: {
+            transform: (callback: (registry: AgentDraft) => void) => {
+              captured = callback;
+              return Effect.succeed({
+                dispose: Effect.void,
+              } as unknown as import('../src/types.js').Registration);
+            },
+          },
+        } as unknown as { agent: { transform: import('../src/types.js').Transform<AgentDraft> } }),
+      ),
+    );
     expect(captured).toBeTypeOf('function');
     captured?.(registry);
 
