@@ -14,6 +14,8 @@ import {
 } from '@/lib/codex-instructions.js';
 import {
   run,
+  readTextFile,
+  fileExists,
   commandExists,
   npmViewVersion,
   invalidateVersionCache,
@@ -26,9 +28,7 @@ import {
 function readOpenCodeConfig(): Effect.Effect<string, CommandError> {
   const jsoncPath = `${homedir()}/.config/opencode/opencode.jsonc`;
   const jsonPath = `${homedir()}/.config/opencode/opencode.json`;
-  return run('cat', [jsoncPath], 5_000).pipe(
-    Effect.catchCause(() => run('cat', [jsonPath], 5_000)),
-  );
+  return readTextFile(jsoncPath).pipe(Effect.catchCause(() => readTextFile(jsonPath)));
 }
 
 /**
@@ -811,9 +811,9 @@ const opencode: PlatformHandler = {
     }),
     Effect.flatMap((specifier) => {
       if (!specifier) return Effect.succeed('unknown');
-      return run('cat', [
+      return readTextFile(
         `${homedir()}/.cache/opencode/packages/@maestria/opencode@${specifier}/node_modules/@maestria/opencode/package.json`,
-      ]).pipe(
+      ).pipe(
         Effect.map((out) => {
           try {
             const pkg: { version?: string } = JSON.parse(out);
@@ -1045,18 +1045,11 @@ const pi: PlatformHandler = {
 
   detect: commandExists('pi'),
 
-  isInstalled: run(
-    'ls',
-    [`${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`],
-    2_000,
-  ).pipe(
-    Effect.map(() => true),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
+  isInstalled: fileExists(`${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`),
 
-  getInstalledVersion: run('cat', [
+  getInstalledVersion: readTextFile(
     `${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`,
-  ]).pipe(
+  ).pipe(
     Effect.map((out: string) => {
       try {
         const pkg: { version?: string } = JSON.parse(out);
@@ -1427,32 +1420,21 @@ const kimiCode: PlatformHandler = {
 
   detect: Effect.gen(function* () {
     if (yield* commandExists('kimi')) return true;
-    const hasRegistry = yield* run('ls', [kimiInstalledPath()], 2_000).pipe(
-      Effect.map(() => true),
-      Effect.catchCause(() => Effect.succeed(false)),
-    );
+    const hasRegistry = yield* fileExists(kimiInstalledPath());
     if (hasRegistry) return true;
-    return yield* run('ls', [`${kimiCodeHome()}/config.toml`], 2_000).pipe(
-      Effect.map(() => true),
-      Effect.catchCause(() => Effect.succeed(false)),
-    );
+    return yield* fileExists(`${kimiCodeHome()}/config.toml`);
   }),
 
   isInstalled: readKimiInstalled().pipe(
     Effect.map((file) => file.plugins.some((plugin) => plugin.id === MAESTRIA_PLUGIN)),
     Effect.flatMap((installed) =>
-      installed
-        ? Effect.succeed(true)
-        : run('ls', [`${kimiManagedPluginDir()}/kimi.plugin.json`], 2_000).pipe(
-            Effect.map(() => true),
-            Effect.catchCause(() => Effect.succeed(false)),
-          ),
+      installed ? Effect.succeed(true) : fileExists(`${kimiManagedPluginDir()}/kimi.plugin.json`),
     ),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
 
   getInstalledVersion: Effect.suspend(() =>
-    run('cat', [`${kimiManagedPluginDir()}/kimi.plugin.json`]).pipe(
+    readTextFile(`${kimiManagedPluginDir()}/kimi.plugin.json`).pipe(
       Effect.map((out: string) => {
         try {
           return JSON.parse(out).version ?? 'unknown';
@@ -1496,14 +1478,11 @@ const hermes: PlatformHandler = {
 
   detect: commandExists('hermes'),
 
-  isInstalled: run('ls', [`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`], 5_000).pipe(
-    Effect.map(() => true),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
+  isInstalled: fileExists(`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`),
 
-  getInstalledVersion: run('cat', [
+  getInstalledVersion: readTextFile(
     `${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`,
-  ]).pipe(
+  ).pipe(
     Effect.map((out: string) => {
       const match = out.match(/^version:\s*["']?(.+?)["']?\s*$/m);
       return match?.[1] ?? 'unknown';
@@ -1644,18 +1623,12 @@ const cursor: PlatformHandler = {
     // An unrelated `agent` binary (for example another vendor's CLI) must not
     // be rescued by the broad ~/.cursor directory fallback.
     if (yield* commandExists('agent')) return false;
-    return yield* run('ls', [`${homedir()}/.cursor`], 2_000).pipe(
-      Effect.map(() => true),
-      Effect.catchCause(() => Effect.succeed(false)),
-    );
+    return yield* fileExists(`${homedir()}/.cursor`);
   }),
 
-  isInstalled: run('ls', [CURSOR_PLUGIN_JSON], 2_000).pipe(
-    Effect.map(() => true),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
+  isInstalled: fileExists(CURSOR_PLUGIN_JSON),
 
-  getInstalledVersion: run('cat', [`${CURSOR_PLUGIN_DIR}/package.json`]).pipe(
+  getInstalledVersion: readTextFile(`${CURSOR_PLUGIN_DIR}/package.json`).pipe(
     Effect.map((out: string) => {
       try {
         const pkg: { version?: string } = JSON.parse(out);
@@ -1715,18 +1688,11 @@ const omp: PlatformHandler = {
 
   detect: commandExists('omp'),
 
-  isInstalled: run(
-    'ls',
-    [`${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`],
-    2_000,
-  ).pipe(
-    Effect.map(() => true),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
+  isInstalled: fileExists(`${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`),
 
-  getInstalledVersion: run('cat', [
+  getInstalledVersion: readTextFile(
     `${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`,
-  ]).pipe(
+  ).pipe(
     Effect.map((out: string) => {
       try {
         const pkg: { version?: string } = JSON.parse(out);
