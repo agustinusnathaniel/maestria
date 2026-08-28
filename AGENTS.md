@@ -37,7 +37,7 @@ Prefer small, verifiable changes over sweeping rewrites. Each change should pass
 - **`packages/core/`** - Zero platform-specific imports. Cannot import from opencode, kimi-code, pi, or any platform SDK. Zero Node.js-specific APIs that would prevent browser-side use. The `scripts/` directory is dev tooling and uses Node.js APIs where appropriate, but library modules are browser-safe. Contains the canonical `agent-directives/` (specialist prompts + rules) and shared scripts.
 - **`packages/opencode/`** - Depends on `@maestria/core` via the sync pipeline. Uses standard OpenCode SDK APIs only. Its `agents/` directory is **auto-generated** from core via the sync pipeline.
 - **`packages/claude-code/`** - Declarative Claude Code projection. Its agents, skills, and commands are **auto-generated** from core; the manifest and package docs are hand-authored.
-- **`packages/codex/`** - Provisional Codex CLI skills projection. Its skills are **auto-generated** from core; the manifest and package docs are hand-authored.
+- **`packages/codex/`** - Codex skills projection. Its skills are **auto-generated** from core; the manifest and package docs are hand-authored.
 - **`packages/kimi-code/`** - Depends on `@maestria/core` via the sync pipeline. Follows Kimi Code platform conventions.
 - **`packages/pi/`** - Depends on `@maestria/core` via the sync pipeline. Must not depend on any Node.js APIs (Pi is a terminal prompt, not an SDK plugin).
 

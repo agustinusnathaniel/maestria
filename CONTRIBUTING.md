@@ -65,7 +65,7 @@ maestria/
 | `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
 | `@maestria/prime-agent` | Yes | Skills-first: 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent, plus a verified executable extension subset (mode commands, mode prompt injection); native rlm dispatch and JSON/RPC remain deferred |
 | `@maestria/claude-code` | Yes | Declarative Claude Code plugin with 7 agents, skills, and workflow commands |
-| `@maestria/codex` | Yes | Provisional Codex CLI projection with namespaced methodology skills |
+| `@maestria/codex` | Yes | Codex CLI projection with namespaced methodology skills |
 | `@maestria/hermes` | No (PyPI) | Hermes Agent plugin - methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
 | `@maestria/shared-pi` | No | Shared pure-TS utilities for omp and pi (agent deployment, subagent validation, event constants) |
 | `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |

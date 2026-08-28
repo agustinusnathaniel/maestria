@@ -40,16 +40,16 @@ Maestria packages are pure plugins - no postinstall scripts, no file system side
 
 ## Packages
 
-| Package                 | Platform         | Status             |
-| ----------------------- | ---------------- | ------------------ |
-| `@maestria/opencode`    | OpenCode         | Published (v0.3.3) |
-| `@maestria/kimi-code`   | Kimi Code        | In development     |
-| `@maestria/cursor`      | Cursor IDE & CLI | In development     |
-| `@maestria/omp`         | Oh My Pi         | In development     |
-| `@maestria/claude-code` | Claude Code      | Native candidate   |
-| `@maestria/codex`       | Codex CLI        | Provisional        |
-| `@maestria/hermes`      | Hermes           | In development     |
-| `@maestria/pi`          | Pi               | Shipping (v0.1.0)  |
+| Package                 | Platform         |
+| ----------------------- | ---------------- |
+| `@maestria/opencode`    | OpenCode         |
+| `@maestria/kimi-code`   | Kimi Code        |
+| `@maestria/cursor`      | Cursor IDE & CLI |
+| `@maestria/omp`         | Oh My Pi         |
+| `@maestria/claude-code` | Claude Code      |
+| `@maestria/codex`       | Codex CLI        |
+| `@maestria/hermes`      | Hermes           |
+| `@maestria/pi`          | Pi               |
 
 ## How This Project Evolves
 
