@@ -336,6 +336,9 @@ importers:
         specifier: ^4.4.0
         version: 4.4.3
     devDependencies:
+      '@maestria/shared-mode':
+        specifier: workspace:*
+        version: link:../shared/mode
       '@opencode-ai/plugin':
         specifier: 0.0.0-next-17444
         version: 0.0.0-next-17444

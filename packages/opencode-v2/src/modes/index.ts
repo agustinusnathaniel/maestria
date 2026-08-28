@@ -1,36 +1,46 @@
-import type { ModeKeyword, ModeResult } from '@/modes/types.js';
-import { getModePrompt, getModeMarker } from '@/modes/prompts.js';
+import {
+  detectMode as sharedDetect,
+  stripKeyword as sharedStrip,
+  getModeMarker as sharedGetMarker,
+} from '@maestria/shared-mode';
+import { getModePrompt } from '@/modes/prompts.js';
+import type { ModeResult } from '@/modes/types.js';
 
-const MODE_PRIORITY: ModeKeyword[] = ['fein', 'sonar', 'blitz'];
-
-function isInsideCodeBlock(text: string, index: number): boolean {
-  // Count ``` before the index
-  const before = text.slice(0, index);
-  const matches = before.match(/```/g);
-  if (!matches) return false;
-  return matches.length % 2 !== 0;
+/**
+ * Detect a workflow mode keyword in the given text.
+ *
+ * Delegates pure detection (word-boundary, priority, code-block
+ * exclusion, disabled-keyword handling, case-insensitivity) to
+ * `@maestria/shared-mode` and augments with prompt/marker so the
+ * existing public API and result shape are preserved.
+ *
+ * Behavior (per ADR-OC-003) is unchanged: most restrictive wins
+ * (fein > sonar > blitz), code spans are excluded, unclosed fences
+ * are not excluded (accepted false-positive).
+ */
+export function detectMode(text: string, disabled?: Set<string>): ModeResult | null {
+  const pure = sharedDetect(text, disabled);
+  if (pure === null) return null;
+  return {
+    mode: pure.mode,
+    keyword: pure.keyword,
+    index: pure.index,
+    prompt: getModePrompt(pure.mode),
+    marker: sharedGetMarker(pure.mode),
+  };
 }
 
-export function detectMode(text: string, disabledKeywords?: Set<string>): ModeResult | null {
-  for (const mode of MODE_PRIORITY) {
-    if (disabledKeywords?.has(mode)) continue;
+/**
+ * Remove the matched keyword from the text, cleaning up any trailing colon
+ * or whitespace that may follow it.
+ */
+export function stripKeyword(text: string, result: ModeResult): string {
+  return sharedStrip(text, result);
+}
 
-    // Word-boundary regex: \bfein\b, case-insensitive
-    const regex = new RegExp(`\\b${mode}\\b`, 'i');
-    const match = regex.exec(text);
-    if (!match) continue;
-
-    const index = match.index;
-    if (isInsideCodeBlock(text, index)) continue;
-
-    return {
-      mode,
-      keyword: match[0],
-      index,
-      prompt: getModePrompt(mode),
-      marker: getModeMarker(mode),
-    };
-  }
-
-  return null;
+/**
+ * Get the mode marker string for a given mode name.
+ */
+export function getModeMarker(mode: string): string {
+  return sharedGetMarker(mode);
 }
