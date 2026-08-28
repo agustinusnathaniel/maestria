@@ -5,6 +5,16 @@ description: Release history for @maestria/codex.
 
 # Changelog
 
+## Unreleased
+
+### Native Codex orchestration
+
+- The Maestria CLI now installs seven native `maestria-*` Codex custom-agent roles.
+- The CLI adds a marked global instruction block so Codex's host-owned primary session activates
+  Maestria orchestration and delegates with native `agent_type` role names.
+- Updates preserve user model, reasoning, and service-tier settings, and uninstall removes only
+  Maestria-managed agent files and instruction content.
+
 ## 0.3.0
 
 _August 22, 2026_
@@ -28,7 +38,7 @@ _August 13, 2026_
 
 ## 0.2.0
 
-### Provisional Codex CLI projection
+### Codex CLI projection
 
 - Added the generated skills projection for the 7 specialists, orchestrator, global rules, handoff,
   iteration limits, and `fein`/`sonar`/`blitz` workflow modes.
@@ -40,6 +50,6 @@ _August 13, 2026_
 
 ## 0.1.0
 
-Initial provisional Codex CLI projection. It packages the canonical Maestria specialist,
+Initial Codex CLI projection. It packages the canonical Maestria specialist,
 orchestration, rules, handoff, iteration-limit, and workflow-mode directives as Codex skills through
 `.codex-plugin/plugin.json`.

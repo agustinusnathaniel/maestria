@@ -28,7 +28,7 @@ and extracts it into `~/.cursor/plugins/local/maestria`.
 
 To pin to a specific version:
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="update cursor@0.1.0" />
+<PackageManagers type="dlx" pkg="maestria@latest" args="update cursor --version 0.2.2" />
 
 <Aside type="tip" title="Restart required">
   Restart Cursor IDE after install so Customize → Plugins picks up the local plugin. For CLI, pass
@@ -55,7 +55,7 @@ To pin to a specific version:
 
 3. **Verify**
 
-   In Agent chat, confirm `/fein`, `/sonar`, `/blitz`, `/orchestrate` appear, and that specialist agents (builder, reviewer, …) are available.
+   In Agent chat, confirm `/fein`, `/sonar`, `/blitz`, `/orchestrator` appear, and that specialist agents (builder, reviewer, …) are available.
 
 </Steps>
 
@@ -72,7 +72,7 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 For non-interactive usage (CI, scripts):
 
 ```bash
-echo "your prompt" | agent --plugin-dir ~/.cursor/plugins/local/maestria --cli-mode
+agent --plugin-dir ~/.cursor/plugins/local/maestria --print "your prompt"
 ```
 
 ## What gets installed

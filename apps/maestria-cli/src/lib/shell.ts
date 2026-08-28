@@ -42,9 +42,29 @@ export function run(
   });
 }
 
-/** Run a command through a shell (supports globs, pipes, redirects) */
-export function sh(command: string, timeoutMs = 30_000): Effect.Effect<string, CommandError> {
-  return run('sh', ['-c', command], timeoutMs);
+export function readTextFile(filePath: string): Effect.Effect<string, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { readFile } = await import('node:fs/promises');
+      return await readFile(filePath, 'utf-8');
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `read ${filePath}`,
+        message: String(error),
+      }),
+  });
+}
+
+export function fileExists(filePath: string): Effect.Effect<boolean, never> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { access } = await import('node:fs/promises');
+      await access(filePath);
+      return true;
+    },
+    catch: () => false,
+  }).pipe(Effect.catchCause(() => Effect.succeed(false)));
 }
 
 export function commandExists(cmd: string): Effect.Effect<boolean, never> {
@@ -59,7 +79,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
   const cacheFile = `${cacheDir}/versions.json`;
 
   const readCache = (): Effect.Effect<string, never> =>
-    run('cat', [cacheFile], 2_000).pipe(
+    readTextFile(cacheFile).pipe(
       Effect.map((out) => {
         try {
           const cache: Record<string, { version: string }> = JSON.parse(out);
@@ -110,7 +130,7 @@ export function invalidateVersionCache(pkg: string): Effect.Effect<void, never> 
   const cacheFile = `${cacheDir}/versions.json`;
 
   return Effect.gen(function* () {
-    yield* run('cat', [cacheFile], 2_000).pipe(
+    yield* readTextFile(cacheFile).pipe(
       Effect.flatMap((out) => {
         try {
           const cache = JSON.parse(out);

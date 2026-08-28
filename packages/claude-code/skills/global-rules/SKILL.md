@@ -14,7 +14,7 @@ user-invocable: false
 
 # Global Agent Rules - @maestria/claude-code
 
-Cross-platform behavior contract: outcomes, evidence, safety, delegation, review, and bounded repair. The host runtime defines tool authority and lifecycle; specialists own their role methodology. Project rules constrain sequencing but cannot waive these floors.
+Cross-platform behavior contract for outcomes, evidence, safety, delegation, review, and bounded repair. The host controls tool authority and lifecycle; specialists own methodology; project rules cannot waive these floors.
 
 ## Universal Floors
 
@@ -25,7 +25,11 @@ Cross-platform behavior contract: outcomes, evidence, safety, delegation, review
 - **!!! Prefer reuse over reinvention.** Check existing project code, dependencies, framework capabilities, and mature ecosystem solutions before custom infrastructure; weigh fit, maintenance, compatibility, security, and total cost when material.
 - **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity. Ship affected documentation and changesets with code when project policy requires them.
 - **!!! Keep output self-contained and professional.** Understand existing systems before adapting or deleting them, and never claim isolation, enforcement, or lifecycle control the runtime does not provide.
-- **!!! Human-facing output.** In agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation, never emit Unicode U+2014 EM DASH in authored text. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
+- **!!! Human-facing output.** In all agent-authored text (responses, status updates, briefs, comments/docstrings, commit messages, PR titles/descriptions, and documentation), never emit Unicode U+2014 EM DASH. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
+
+### Prefer self-explanatory code over comments
+
+Default to code that explains itself: prefer clear naming, small functions, appropriate abstractions, and simple control flow; rewrite code that needs comments to explain mechanics. Do not add comments that merely restate what the code does. Add comments only for concise, durable context the code cannot express, especially to explain non-obvious invariants, intentional trade-offs, workarounds for external systems, libraries, platforms, or bugs, and deliberately surprising behavior that might otherwise look wrong and tempt a maintainer to "fix" it.
 
 ## Modes
 
@@ -33,9 +37,7 @@ Per-turn keywords when the host supports them: `fein` requests the full route wi
 
 ## Outcome and Scope
 
-Define the primary user outcome, acceptance evidence, and meaningful non-goals before substantial implementation or delegation; measure progress against them, not activity. Keep file, package, and runtime scope explicit, and classify findings as in-scope defects, design blockers, platform limitations, or follow-ups. Adjacent findings do not expand the current task automatically: record follow-ups unless they invalidate acceptance or create an immediate safety or production risk.
-
-Changes altering security, authentication, or permission boundaries are mandatory stops; ordinary in-scope security defects may be repaired autonomously.
+Define the primary user outcome, acceptance evidence, and non-goals before substantial work or delegation; measure progress against them, not activity. Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups, and do not expand scope for adjacent findings unless they invalidate acceptance or create an immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or evidence changes. Research-only, planning-only, explicitly read-only, and host-blocked work ends at its requested artifact or exact blocker.
 
 ## Delegation and Context
 
@@ -51,11 +53,9 @@ Default to one independent review and, only when blockers exist, one repair/re-r
 
 ## Authorization, Lifecycle, and Branches
 
-Safety and authorization override user intent, methodology, and brevity. Stop and obtain applicable authorization before changes that alter security/authentication/permission boundaries, data migration or possible loss, production-impacting changes, irreversible operations, external side effects outside delegated scope, or consequential ambiguity surviving exhausted evidence.
+Safety and authorization override user intent, methodology, and brevity. Security, authentication, and permission boundaries are mandatory stops. Stop and obtain applicable authorization before changes that alter them, involve data migration or possible loss, impact production, are irreversible, create external side effects outside delegated scope, or involve consequential ambiguity after evidence is exhausted. Ordinary in-scope security defects may be repaired autonomously.
 
 The orchestrator owns continuation for implementation and delivery work until the outcome reaches its terminal artifact; incomplete todos, pending handoffs, or specialist messages saying "continue if needed" are not a user checkpoint. Routine delivery is autonomous. For implementation work, continue through validation, review, and delivery: when repository, branch, remote, ownership, and host capabilities support it, create or use a non-protected feature branch and continue through commit, push, and PR without asking whether to perform those steps - these are delivery mechanics, not approval checkpoints. Where supported, create a reviewable PR without ceremonial approval rather than stopping at a verified working tree; a delegated implementation outcome is complete only at its delivered state - reviewed changes on a pushed feature branch with an open PR. Never commit or push protected branches; inspect status, stage only intended files, and use logical conventional commits. Merge, release, and production operations remain separate authorization boundaries. Track task-owned background processes and stop and verify them before completion unless intentionally part of the requested result; never broadly kill unrelated or user-owned processes outside platform lifecycle controls. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
-
-Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or its evidence changes. Research-only, planning-only, explicitly read-only, and host-blocked work terminates at its requested artifact or exact blocker.
 
 ## Canonical Source Invariant
 

@@ -1,6 +1,6 @@
 ---
 title: '@maestria/kimi-code'
-description: Declarative Kimi Code plugin that ships 8 specialized skills with swarm-aware orchestration - no build step, no SDK hooks.
+description: Declarative Kimi Code plugin that ships skills, native commands, and system-prompt instructions with swarm-aware orchestration.
 template: splash
 editUrl: false
 lastUpdated: false
@@ -22,7 +22,7 @@ import { marks } from '@/data/marks.js';
     <PlatformHero
       eyebrow="@MAESTRIA/KIMI-CODE"
       title="Eight skills, zero build step."
-      lead="Install one plugin. Get 8 specialized skills, swarm-aware orchestration, and global rules - all from a declarative manifest."
+      lead="Install one plugin. Get 8 specialized skills, native workflow commands, swarm-aware orchestration, and system-prompt instructions - all from a declarative manifest."
       mark={marks.kimiCode}
       primaryCta={{ href: '/kimi-code/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/kimi-code/getting-started/quick-start/', label: 'Quick start' }}
@@ -40,9 +40,9 @@ import { marks } from '@/data/marks.js';
           { title: '8 specialized skills', desc: 'The orchestrator plus seven specialists - adventurer, architect, builder, diagnose, planner, reviewer, writer - shipped as plain Kimi Code skills.' },
           { title: 'Swarm-aware orchestration', desc: "The orchestrator routes work across specialist skills and dispatches to Kimi Code's 3 built-in subagent profiles." },
           { title: 'Auto-loading methodology', desc: 'sessionStart.skill injects the full methodology and delegation rules into every session start - no commands to remember.' },
-          { title: 'Global rules, one-time copy', desc: 'Workflow directives live in ~/.kimi-code/AGENTS.md after a single copy and load automatically every session.' },
+          { title: 'Native system prompt', desc: 'Workflow directives are contributed through the plugin manifest\'s systemPromptPath without overwriting ~/.kimi-code/AGENTS.md.' },
           { title: 'Tool-layer safety', desc: 'Optional [[hooks]] and [[permission.rules]] blocks in config.toml enforce persona boundaries at the tool layer.' },
-          { title: 'No build step, no SDK hooks', desc: 'A declarative kimi.plugin.json manifest plus a directory of skills. Nothing compiles, nothing runs beyond Kimi Code itself.' },
+          { title: 'Native commands, no build step', desc: 'A declarative kimi.plugin.json manifest contributes skills, namespaced workflow commands, and system-prompt instructions without a runtime SDK.' },
         ]}
       />
     </PluginSection>
@@ -64,7 +64,7 @@ import { marks } from '@/data/marks.js';
         </li>
         <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
           <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
-          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Global rules load</strong> - <code>rules/AGENTS.md</code> is auto-loaded by Kimi Code from <code>~/.kimi-code/AGENTS.md</code> (one-time copy)</p>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">System prompt loads</strong> - <code>SYSTEM.md</code> is contributed through the manifest's native <code>systemPromptPath</code> field</p>
         </li>
         <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
           <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">4</span>
@@ -89,9 +89,9 @@ import { marks } from '@/data/marks.js';
       <PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
 
       <p class="!mt-6 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
-        The CLI pulls <code>@maestria/kimi-code</code> from npm and extracts it into
-        <code>~/.kimi-code/plugins/managed/maestria</code>, then copies the global rules
-        to <span class="whitespace-nowrap"><code>~/.kimi-code/AGENTS.md</code>.</span>
+        The CLI pulls <code>@maestria/kimi-code</code> from npm, extracts it into
+        <code>~/.kimi-code/plugins/managed/maestria</code>, and registers it in Kimi's native
+        <code>plugins/installed.json</code> registry.
       </p>
 
       <p class="!mt-4 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-muted">

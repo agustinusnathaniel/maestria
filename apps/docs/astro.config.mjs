@@ -38,7 +38,7 @@ export default defineConfig({
             'Includes @maestria/opencode (8 agents, global rules injection), ' +
             '@maestria/claude-code (declarative Claude Code plugin with specialist agents, ' +
             'orchestrator and global-rules skills, and fein/sonar/blitz workflow commands), ' +
-            '@maestria/codex (provisional Codex CLI skills projection with specialist workflows, ' +
+            '@maestria/codex (Codex CLI skills projection with specialist workflows, ' +
             'orchestration, handoffs, and review contracts), ' +
             '@maestria/kimi-code (8 skills, swarm-aware orchestration, no build step), ' +
             '@maestria/cursor (Cursor IDE & CLI plugin with specialist agents), ' +
@@ -103,6 +103,14 @@ export default defineConfig({
         Head: './src/components/StarlightHead.astro',
       },
       head: [
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'keywords',
+            content:
+              'Maestria, Maestria AI engineering praxis, Maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
+          },
+        },
         {
           tag: 'meta',
           attrs: {

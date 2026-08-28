@@ -3,7 +3,8 @@
  * Matches MAJOR.MINOR.PATCH with optional prerelease and build metadata.
  * Each prerelease/build identifier must be non-empty.
  */
-const SEMVER_REGEX = /^\d+\.\d+\.\d+(-[\w]+(\.[\w]+)*)?(\+[\w]+(\.[\w]+)*)?$/;
+const SEMVER_REGEX =
+  /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/;
 
 /**
  * Validate a version string. Accepts 'latest' and '' as special values.
@@ -36,7 +37,12 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
 
   if (!SEMVER_REGEX.test(a) || !SEMVER_REGEX.test(b)) return null;
 
-  const result = a.localeCompare(b, undefined, { numeric: true });
+  // Per semver 2.0.0 spec section 10, build metadata MUST be ignored
+  // when determining version precedence.
+  const aWithoutBuild = a.replace(/\+.*$/, '');
+  const bWithoutBuild = b.replace(/\+.*$/, '');
+
+  const result = aWithoutBuild.localeCompare(bWithoutBuild, undefined, { numeric: true });
   if (result === 0) return 0;
 
   // Fix prerelease ordering per semver spec:
@@ -44,12 +50,14 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
   // end-of-string (e.g., "1.0.0-alpha" > "1.0.0" with localeCompare).
   // If both share the same MAJOR.MINOR.PATCH and exactly one has a
   // prerelease tag, reverse the result.
-  const stripSuffix = /(-[\w]+(\.[\w]+)*)?(\+[\w]+(\.[\w]+)*)?$/;
-  const aBase = a.replace(stripSuffix, '');
-  const bBase = b.replace(stripSuffix, '');
+  const stripSuffix = /(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/;
+  const aBase = aWithoutBuild.replace(stripSuffix, '');
+  const bBase = bWithoutBuild.replace(stripSuffix, '');
   if (aBase === bBase) {
-    const aIsPrerelease = a.length > aBase.length && a[aBase.length] === '-';
-    const bIsPrerelease = b.length > bBase.length && b[bBase.length] === '-';
+    const aIsPrerelease =
+      aWithoutBuild.length > aBase.length && aWithoutBuild[aBase.length] === '-';
+    const bIsPrerelease =
+      bWithoutBuild.length > bBase.length && bWithoutBuild[bBase.length] === '-';
     if (aIsPrerelease !== bIsPrerelease) {
       return result > 0 ? -1 : 1;
     }

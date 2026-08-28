@@ -1,5 +1,19 @@
 # maestria
 
+## 0.11.0
+
+### Minor Changes
+
+- [#248](https://github.com/agustinusnathaniel/maestria/pull/248) [`93ff292`](https://github.com/agustinusnathaniel/maestria/commit/93ff292b83f5659b67af4889848de454d1661206) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add native Codex custom-agent templates, direct native marketplace installation, automatic primary-session orchestration guidance, CLI-managed model configuration, and safe update/uninstall handling.
+
+- [#248](https://github.com/agustinusnathaniel/maestria/pull/248) [`93ff292`](https://github.com/agustinusnathaniel/maestria/commit/93ff292b83f5659b67af4889848de454d1661206) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Update Kimi Code integration to use its native plugin registry, system-prompt, namespaced command, and current delegation contracts.
+
+### Patch Changes
+
+- [#248](https://github.com/agustinusnathaniel/maestria/pull/248) [`93ff292`](https://github.com/agustinusnathaniel/maestria/commit/93ff292b83f5659b67af4889848de454d1661206) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Align Cursor packaging and native per-agent model configuration while preserving existing user settings across plugin updates.
+
+- [#250](https://github.com/agustinusnathaniel/maestria/pull/250) [`085f7fe`](https://github.com/agustinusnathaniel/maestria/commit/085f7fe61263aedf458a8a14d518e4f1c15bf675) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Share neutral mode and skill validation logic through the hybrid package topology.
+
 ## 0.10.2
 
 ### Patch Changes

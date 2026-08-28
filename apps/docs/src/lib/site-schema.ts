@@ -37,7 +37,7 @@ function organizationEntity() {
     url: SITE_URL,
     description: SITE_DESCRIPTION,
     logo: `${SITE_URL}/favicon.svg`,
-    sameAs: [GITHUB_REPO_URL],
+    sameAs: [GITHUB_REPO_URL, 'https://www.npmjs.com/package/maestria'],
     // Deliberately no postal address, email, or phone: see the identity
     // policy above; GitHub issues remain the only contact surface.
     contactPoint: [
@@ -62,8 +62,10 @@ export function websiteSchema() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Maestria',
+    alternateName: 'Maestria AI Praxis',
     url: SITE_URL,
     description: SITE_DESCRIPTION,
+    inLanguage: 'en',
     publisher: organizationEntity(),
   };
 }

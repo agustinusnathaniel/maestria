@@ -1,135 +1,45 @@
-import { escapeRegExp } from 'es-toolkit';
+import {
+  detectMode as sharedDetectMode,
+  stripKeyword as sharedStripKeyword,
+  getModeMarker as sharedGetMarker,
+} from '@maestria/shared-mode';
 import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from '@/modes/prompts.js';
 import type { ModeKeyword, ModeResult } from '@/modes/types.js';
 
 /**
- * Priority mapping for mode keyword restrictiveness.
- * Higher number = more restrictive = wins when multiple keywords are present.
- * fein (3): full pipeline with mandatory gates
- * sonar (2): research only, no code
- * blitz (1): fast implementation, skip optional ceremony; required review remains
- */
-const MODE_PRIORITY: Record<ModeKeyword, number> = {
-  fein: 3,
-  sonar: 2,
-  blitz: 1,
-};
-
-/**
- * Regex matching fenced code blocks (```) and inline backtick spans (`).
- * Used to exclude keyword matches inside code spans.
- */
-// Note: Unclosed fenced code blocks (``` without closing ```) are not
-// excluded - the regex requires matching fences. This is an accepted
-// false-positive risk (see ADR-OC-003 consequences).
-const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/g;
-
-/**
- * Find ranges of code blocks and inline code spans in text.
- * Returns [start, end) positions. Keywords inside these ranges
- * are ignored during detection.
- */
-function findAllCodeBlockRanges(text: string): Array<[number, number]> {
-  const ranges: Array<[number, number]> = [];
-  let match: RegExpExecArray | null;
-  while ((match = CODE_BLOCK_RE.exec(text)) !== null) {
-    ranges.push([match.index, match.index + match[0].length]);
-  }
-  return ranges;
-}
-
-function isInRanges(index: number, ranges: Array<[number, number]>): boolean {
-  return ranges.some(([start, end]) => index >= start && index < end);
-}
-
-/**
- * Build a regex pattern for word-boundary matching of the given keyword.
- *
- * The pattern uses `\b` word boundaries to ensure we match whole words only,
- * and is case-insensitive so `Fein`, `FEIN`, `fein` all match.
- */
-function buildKeywordRegex(keyword: string): RegExp {
-  return new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'gi');
-}
-
-/**
  * Detect a workflow mode keyword in the given text.
  *
- * Detection rules (per ADR-OC-003):
- * - Word-boundary regex matching (`\bfein\b`, `\bsonar\b`, `\bblitz\b`)
- * - Most restrictive match wins (fein > sonar > blitz)
- * - Case-insensitive
- * - Disabled keywords are ignored
- * - Matches inside fenced code blocks (```) and inline backticks (`) are ignored
+ * Delegates pure detection (word-boundary, priority, code-block
+ * exclusion, disabled-keyword handling, case-insensitivity) to
+ * `@maestria/shared-mode` and augments with prompt/marker so the
+ * existing public API and result shape are preserved.
  *
- * @param text The user message to scan.
- * @param disabled Optional set of disabled mode keywords (lowercase).
- * @returns A `ModeResult` if a keyword was detected, or `null`.
+ * Behavior (per ADR-OC-003) is unchanged: most restrictive wins
+ * (fein > sonar > blitz), code spans are excluded, unclosed fences
+ * are not excluded (accepted false-positive).
  */
 export function detectMode(text: string, disabled?: Set<string>): ModeResult | null {
-  const codeRanges = findAllCodeBlockRanges(text);
-  // Normalize disabled keywords to lowercase for case-insensitive comparison
-  const normalizedDisabled = disabled
-    ? new Set(Array.from(disabled).map((k) => k.toLowerCase()))
-    : undefined;
-  let bestMatch: { keyword: string; index: number; mode: ModeKeyword } | null = null;
-
-  for (const keyword of VALID_KEYWORDS) {
-    if (normalizedDisabled?.has(keyword)) continue;
-
-    const regex = buildKeywordRegex(keyword);
-    let match: RegExpExecArray | null;
-
-    while ((match = regex.exec(text)) !== null) {
-      if (isInRanges(match.index, codeRanges)) continue;
-      // Most-restrictive wins: prefer higher-priority mode over position
-      if (bestMatch === null || MODE_PRIORITY[keyword] > MODE_PRIORITY[bestMatch.mode]) {
-        bestMatch = {
-          keyword: match[0],
-          index: match.index,
-          mode: keyword,
-        };
-      }
-    }
-  }
-
-  if (bestMatch === null) return null;
-
+  const pure = sharedDetectMode(text, disabled);
+  if (pure === null) return null;
   return {
-    mode: bestMatch.mode,
-    keyword: bestMatch.keyword,
-    index: bestMatch.index,
-    prompt: MODE_PROMPTS[bestMatch.mode],
-    marker: MODE_MARKERS[bestMatch.mode],
+    mode: pure.mode,
+    keyword: pure.keyword,
+    index: pure.index,
+    prompt: MODE_PROMPTS[pure.mode],
+    marker: MODE_MARKERS[pure.mode],
   };
 }
 
 /**
  * Remove the matched keyword from the text, cleaning up any trailing colon
  * or whitespace that may follow it.
- *
- * @param text The original message text.
- * @param result The `ModeResult` from `detectMode()`.
- * @returns The text with the keyword stripped.
  */
 export function stripKeyword(text: string, result: ModeResult): string {
-  const before = text.slice(0, result.index);
-  const after = text.slice(result.index + result.keyword.length);
-
-  // Remove any colon + optional whitespace after the keyword
-  // (e.g. "fein: do this" -> "do this")
-  const cleaned = after.replace(/^:\s*/, '');
-
-  // Collapse double spaces and trim both ends (handles keyword at start,
-  // end, or middle of text, plus extra whitespace around colon)
-  return (before + cleaned).replace(/ {2,}/g, ' ').trim();
+  return sharedStripKeyword(text, result);
 }
 
 /**
  * Get the mode prompt text for a given mode name.
- *
- * @param mode The mode keyword (e.g. "fein", "sonar", "blitz").
- * @returns The prompt string, or empty string if mode is unknown.
  */
 export function getModePrompt(mode: string): string {
   if (isModeKeyword(mode)) {
@@ -140,20 +50,14 @@ export function getModePrompt(mode: string): string {
 
 /**
  * Get the mode marker string for a given mode name.
- *
- * @param mode The mode keyword (e.g. "fein", "sonar", "blitz").
- * @returns The marker string (e.g. `[MODE: fein]`), or empty string if unknown.
  */
 export function getModeMarker(mode: string): string {
   if (isModeKeyword(mode)) {
-    return MODE_MARKERS[mode];
+    return sharedGetMarker(mode);
   }
   return '';
 }
 
-/**
- * Type guard to check if a string is a valid ModeKeyword.
- */
 function isModeKeyword(value: string): value is ModeKeyword {
   return (VALID_KEYWORDS as readonly string[]).includes(value);
 }

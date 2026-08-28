@@ -1,6 +1,6 @@
 {
   "name": "maestria",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Maestria methodology for Codex CLI: specialist workflow skills, orchestration, and review contracts",
   "author": {
     "name": "agustinusnathaniel"
@@ -12,7 +12,7 @@
   "interface": {
     "displayName": "Maestria",
     "shortDescription": "Specialist workflow skills for Codex CLI",
-    "longDescription": "A skills-only projection of Maestria's canonical agent methodology for Codex CLI. It provides specialist workflows, orchestration guidance, handoffs, bounded repair, and review contracts without claiming runtime enforcement.",
+    "longDescription": "Maestria's Codex CLI integration: namespaced specialist skills, native custom-agent roles, automatic orchestration guidance, handoffs, bounded repair, and review contracts. The host retains runtime and permission enforcement.",
     "developerName": "agustinusnathaniel",
     "category": "Developer Tools",
     "capabilities": ["Skills"],

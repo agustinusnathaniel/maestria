@@ -5,7 +5,7 @@ description: Your first session with @maestria/kimi-code - delegating to special
 
 import { Aside } from '@astrojs/starlight/components';
 
-Once you've installed the plugin, the orchestrator skill and global rules are loaded automatically in every session - no extra commands, no manual setup.
+Once you've installed the plugin, the orchestrator skill and native system-prompt contribution are loaded automatically in every session - no extra commands, no manual setup.
 
 <Aside type="caution" title="The orchestrator is not always the fastest path">
   Kimi Code can dispatch several subagents, but every dispatch adds model work and waiting time. Use
@@ -15,7 +15,7 @@ Once you've installed the plugin, the orchestrator skill and global rules are lo
 
 ## What to expect
 
-Launch Kimi Code as usual. At session start, the orchestrator skill auto-loads via `sessionStart.skill` in `kimi.plugin.json`. You'll see a `<plugin_session_start>` block in the system prompt referencing the orchestrator's methodology. The global rules from `~/.kimi-code/AGENTS.md` are also injected by Kimi Code's session-start context preparer.
+Launch Kimi Code as usual. At session start, the orchestrator skill auto-loads via `sessionStart.skill` in `kimi.plugin.json`. You'll see a plugin session-start block referencing the orchestrator's methodology, and the plugin's `SYSTEM.md` contribution is loaded through `systemPromptPath`.
 
 The orchestrator is the routing layer. It does not implement, debug, or edit code itself - it loads specialist skills via the `Skill` tool and dispatches them to Kimi Code's 3 built-in subagents (`coder`, `explore`, `plan`).
 
@@ -43,7 +43,7 @@ Each step verifies before handing off to the next.
 
 ## Try swarm fan-out
 
-For ≥3 uniform items, the orchestrator uses `AgentSwarm` (Kimi Code v0.12.0+):
+For ≥3 uniform items, the orchestrator uses `AgentSwarm`:
 
 > "Review these 5 files for security issues: src/auth.ts, src/api.ts, src/db.ts, src/routes.ts, src/middleware.ts."
 
@@ -66,12 +66,16 @@ The `planner` persona returns phases with success criteria and rollback points. 
 
 ## Common pitfalls
 
-- **Forgot `~/.kimi-code/AGENTS.md`** - global rules never load. Verify with `ls -la ~/.kimi-code/AGENTS.md`.
+- **Plugin not enabled** - run `/plugins list` and `/plugins info maestria`; then `/plugins reload` or `/new`.
 - **Forgot `[[hooks]]`** - destructive bash commands (`rm -rf`) slip through. Save the companion script as `~/.kimi-code/hooks/block-dangerous-bash.mjs`.
 - **Forgot `[[permission.rules]]`** - the `reviewer` persona can edit files because the `coder` subagent has Write/Edit tools. Persona text alone is advisory, not enforcement.
 - **Skipped `/new`** - plugin changes don't take effect in the current session. Run `/reload` then `/new`.
 - **Orchestrator starts writing code directly** - the orchestrator skill is supposed to route, not implement. Check `/plugins list` and confirm the session-start skill loaded.
-- **AgentSwarm not available** - requires Kimi Code v0.12.0+. On older versions, the orchestrator falls back to single `Agent` calls in parallel turns.
+- **AgentSwarm not available** - use Kimi Code v0.38.0+; older releases are outside the verified support boundary.
+
+## Native workflow commands
+
+Kimi namespaces commands contributed by plugins. Use `/maestria:fein`, `/maestria:sonar`, or `/maestria:blitz` when you want an explicit route.
 
 ## Pipeline reference
 

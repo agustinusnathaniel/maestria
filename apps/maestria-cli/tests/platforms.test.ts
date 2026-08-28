@@ -12,7 +12,12 @@ const fsMocks = vi.hoisted(() => {
   let originalMkdtemp: (typeof import('node:fs/promises'))['mkdtemp'] | undefined;
   let originalRm: (typeof import('node:fs/promises'))['rm'] | undefined;
   return {
-    readFile: vi.fn(async (_path: string) => JSON.stringify({ version: '0.2.0' })),
+    readFile: vi.fn(async (filePath: string) => {
+      if (filePath.endsWith('/.maestria-agents.json')) {
+        return JSON.stringify({ version: 1, files: [] });
+      }
+      return JSON.stringify({ version: '0.2.0' });
+    }),
     mkdtemp: vi.fn(async (prefix: string) => {
       if (!originalMkdtemp) throw new Error('original mkdtemp unavailable');
       return originalMkdtemp(prefix);
@@ -21,6 +26,7 @@ const fsMocks = vi.hoisted(() => {
       if (!originalRm) throw new Error('original rm unavailable');
       return originalRm(path, options);
     }),
+    access: vi.fn(async () => {}),
     setOriginals(
       readFile: (typeof import('node:fs/promises'))['readFile'],
       mkdtemp: (typeof import('node:fs/promises'))['mkdtemp'],
@@ -40,10 +46,12 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/shell.js')>();
   return {
     ...actual,
+    commandExists: vi.fn((cmd: string) => actual.commandExists(cmd)),
     // Return a real Effect so module-evaluation .pipe() chains in platforms.ts
     // keep working; executing it resolves without spawning any subprocess.
     run: vi.fn((_cmd: string, _args: string[], _timeoutMs?: number) => Effect.succeed('')),
-    sh: vi.fn((_command: string, _timeoutMs?: number) => Effect.succeed('')),
+    readTextFile: vi.fn((path: string) => actual.readTextFile(path)),
+    fileExists: vi.fn((path: string) => actual.fileExists(path)),
   };
 });
 
@@ -60,6 +68,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
     readFile: fsMocks.readFile,
     mkdtemp: fsMocks.mkdtemp,
     rm: fsMocks.rm,
+    access: fsMocks.access,
   };
 });
 
@@ -175,8 +184,73 @@ describe('marketplace-backed platform handlers', () => {
       'maestria@maestria',
       '--scope',
       'user',
+      '--yes',
     ]);
     expect(calls).toContainEqual(['codex', 'plugin', 'remove', 'maestria@maestria', '--json']);
+  });
+});
+
+describe('Cursor platform detection', () => {
+  it('accepts the cursor-agent alias', async () => {
+    vi.mocked(shell.commandExists).mockImplementation((cmd) =>
+      Effect.succeed(cmd === 'cursor-agent'),
+    );
+    vi.mocked(shell.run).mockImplementation((cmd, args) => {
+      if (cmd === 'which' && args[0] === 'cursor-agent') {
+        return Effect.succeed('/usr/local/bin/cursor-agent');
+      }
+      return Effect.succeed('');
+    });
+
+    const cursor = getPlatform('cursor');
+    expect(cursor).toBeDefined();
+    expect(await Effect.runPromise(cursor!.detect)).toBe(true);
+  });
+
+  it('does not treat an unrelated agent binary as Cursor', async () => {
+    vi.mocked(shell.commandExists).mockImplementation((cmd) => Effect.succeed(cmd === 'agent'));
+    vi.mocked(shell.run).mockImplementation((cmd, args) => {
+      if (cmd === 'which' && args[0] === 'agent') return Effect.succeed('/usr/local/bin/agent');
+      if (cmd === 'agent' && args[0] === '--version') return Effect.succeed('Grok Build TUI 1.0.0');
+      return Effect.succeed('');
+    });
+
+    const cursor = getPlatform('cursor');
+    expect(cursor).toBeDefined();
+    expect(await Effect.runPromise(cursor!.detect)).toBe(false);
+  });
+});
+
+describe('Kimi Code platform registration', () => {
+  it('recognizes the native installed.json registry instead of a global AGENTS.md marker', async () => {
+    const previousHome = process.env.KIMI_CODE_HOME;
+    process.env.KIMI_CODE_HOME = '/tmp/maestria-kimi-test';
+    fsMocks.readFile.mockImplementation(async (filePath: string) => {
+      if (filePath.endsWith('/plugins/installed.json')) {
+        return JSON.stringify({
+          version: 1,
+          plugins: [
+            {
+              id: 'maestria',
+              root: '/tmp/maestria-kimi-test/plugins/managed/maestria',
+              source: 'local-path',
+              enabled: true,
+              installedAt: '2026-08-26T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+      return JSON.stringify({ version: '0.2.0' });
+    });
+
+    try {
+      const kimi = getPlatform('kimi-code');
+      expect(kimi).toBeDefined();
+      expect(await Effect.runPromise(kimi!.isInstalled)).toBe(true);
+    } finally {
+      if (previousHome === undefined) delete process.env.KIMI_CODE_HOME;
+      else process.env.KIMI_CODE_HOME = previousHome;
+    }
   });
 });
 

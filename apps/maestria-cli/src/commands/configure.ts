@@ -102,7 +102,7 @@ export const configureCommand = defineCommand({
     platform: {
       type: 'positional',
       description:
-        'Platform to configure. One of: opencode, pi, omp. Pass directly to skip interactive selection.',
+        'Platform to configure. One of: opencode, codex, cursor, pi, omp. Pass directly to skip interactive selection.',
       required: false,
     },
     global: {
@@ -113,7 +113,7 @@ export const configureCommand = defineCommand({
     project: {
       type: 'boolean',
       description:
-        'Configure the project-level config (.opencode/ or .pi/agents/ or .omp/agents/).',
+        'Configure the project-level config (.opencode/, .codex/agents/, .cursor/agents/, .pi/agents/, or .omp/agents/).',
       default: false,
     },
     set: {
@@ -154,7 +154,7 @@ export const configureCommand = defineCommand({
       if (!h) {
         exitError(
           `Per-agent model configuration is not yet supported for '${platformId}'. ` +
-            `Supported: opencode, pi, omp.`,
+            `Supported: ${modelConfigHandlers.map((handler) => handler.id).join(', ')}.`,
         );
       }
       handler = h;
@@ -170,14 +170,14 @@ export const configureCommand = defineCommand({
       const picked = await select({
         message: 'Which platform do you want to configure?',
         options: modelConfigHandlers.map((h) => ({ value: h.id, label: h.label })),
-        maxItems: 3,
+        maxItems: 5,
       });
       if (isCancel(picked)) exitCancel();
       handler = getModelConfigHandler(picked as string)!;
     }
 
     // 2. Check the platform CLI exists
-    const cliAvailable = await Effect.runPromise(commandExists(handler.cli));
+    const cliAvailable = await Effect.runPromise(handler.isAvailable ?? commandExists(handler.cli));
     if (!cliAvailable) {
       exitError(`The '${handler.cli}' CLI was not found on PATH. Install ${handler.label} first.`);
     }

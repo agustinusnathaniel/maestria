@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Kimi Code v0.12.0+** - required for first-class `AgentSwarm` support. On older versions, fallback to single `Agent` calls.
+- **Kimi Code v0.38.0+** - required for the native plugin `systemPromptPath` contract used by this package. Older versions may still load the skills-only subset, but are outside the verified support boundary.
 
 ## Via maestria CLI (recommended)
 
@@ -11,15 +11,13 @@ pnpx maestria@latest install kimi-code
 pnpx maestria@latest status
 ```
 
-The CLI pulls `@maestria/kimi-code` from npm (`npm pack @maestria/kimi-code@latest`) and extracts it into:
+The CLI pulls `@maestria/kimi-code` from npm (`npm pack @maestria/kimi-code@latest`), extracts it into Kimi Code's managed plugin directory, and registers it in Kimi's native `plugins/installed.json` registry:
 
 ```text
-~/.kimi-code/plugins/managed/maestria
+${KIMI_CODE_HOME:-~/.kimi-code}/plugins/managed/maestria
 ```
 
-It also copies the global rules to `~/.kimi-code/AGENTS.md`.
-
-After install, add the recommended `[[hooks]]` and `[[permission.rules]]` blocks to `~/.kimi-code/config.toml` (see the [full installation guide](https://maestria.dev/kimi-code/getting-started/installation/)).
+The installer preserves existing plugin records and does not overwrite global instructions. After install, start a new session so the plugin's `sessionStart.skill` loads the orchestrator and Kimi contributes `SYSTEM.md` through its native `systemPromptPath`. Add any desired `[[hooks]]` and `[[permission.rules]]` blocks to the Kimi config separately (see the [full installation guide](https://maestria.dev/kimi-code/getting-started/installation/)).
 
 ### Updating
 
@@ -31,7 +29,7 @@ pnpx maestria@latest status
 To pin to a specific version:
 
 ```bash
-pnpx maestria@latest update kimi-code --version 0.4.6
+pnpx maestria@latest update kimi-code --version 0.5.2
 ```
 
 ## Verify
@@ -39,14 +37,13 @@ pnpx maestria@latest update kimi-code --version 0.4.6
 1. Start a new Kimi Code session (`/new`)
 2. Ask: "List your available specialists"
 3. The orchestrator should respond listing builder, adventurer, architect, planner, reviewer, writer, and diagnose.
-4. Confirm `ls ~/.kimi-code/AGENTS.md` exists.
+4. Confirm the plugin is enabled in `/plugins` and that Maestria's system-prompt rules appear in the active context.
+5. Optional workflow commands are namespaced as `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz`.
 
 ## Uninstall
 
 ```bash
 pnpx maestria@latest uninstall kimi-code
-# or
-rm -rf ~/.kimi-code/plugins/managed/maestria ~/.kimi-code/AGENTS.md
 ```
 
 Optionally remove the `[[hooks]]` and `[[permission.rules]]` blocks from `~/.kimi-code/config.toml`.

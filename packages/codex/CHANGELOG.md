@@ -1,5 +1,23 @@
 # @maestria/codex
 
+## 0.4.0
+
+### Minor Changes
+
+- [#248](https://github.com/agustinusnathaniel/maestria/pull/248) [`93ff292`](https://github.com/agustinusnathaniel/maestria/commit/93ff292b83f5659b67af4889848de454d1661206) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Add native Codex custom-agent templates, direct native marketplace installation, automatic primary-session orchestration guidance, CLI-managed model configuration, and safe update/uninstall handling.
+
+## Unreleased
+
+- Add seven native `maestria-*` custom-agent TOML templates. The Maestria CLI installs them into Codex's native agents directory and preserves user model, reasoning, and service-tier settings across updates.
+- Add an idempotent, marker-managed global Codex instruction block so the host-owned primary session activates the Maestria orchestrator and delegates through native roles automatically.
+- Align the orchestrator guidance with Codex's native `agent_type` role selection.
+
+## 0.3.2
+
+### Patch Changes
+
+- [#246](https://github.com/agustinusnathaniel/maestria/pull/246) [`e4b5d86`](https://github.com/agustinusnathaniel/maestria/commit/e4b5d867365aec4617fe349360e2b5f8407fb4ba) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Prefer self-explanatory code across all agent projections by emphasizing clear structure over explanatory comments and reserving comments for concise context the code cannot express.
+
 ## 0.3.1
 
 ### Patch Changes

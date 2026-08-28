@@ -26,6 +26,10 @@ describe('organizationSchema', () => {
     expect(schema.sameAs).toContain(GITHUB_REPO_URL);
   });
 
+  it('lists the npm package in sameAs for brand disambiguation', () => {
+    expect(schema.sameAs).toContain('https://www.npmjs.com/package/maestria');
+  });
+
   it('routes technical support through GitHub issues', () => {
     const contact = schema.contactPoint[0];
     expect(contact['@type']).toBe('ContactPoint');
@@ -93,6 +97,8 @@ describe('websiteSchema', () => {
     expect(schema['@context']).toBe('https://schema.org');
     expect(schema['@type']).toBe('WebSite');
     expect(schema.name).toBe('Maestria');
+    expect(schema.alternateName).toBe('Maestria AI Praxis');
+    expect(schema.inLanguage).toBe('en');
     expect(schema.url).toBe(SITE_URL);
     expect(schema.description).toBe(SITE_DESCRIPTION);
   });

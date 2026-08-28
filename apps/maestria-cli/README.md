@@ -17,7 +17,7 @@ npx maestria status
 | `maestria update [--all\|platforms]` | Update installed platforms; `--version 0.5.0` pins a version where the host supports it |
 | `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
 | `maestria check <platform>` | Verify a platform installation |
-| `maestria configure [platform] [--set agent=model,...]` | Choose which model each maestria specialist agent uses (opencode, pi, omp); `--set` configures non-interactively |
+| `maestria configure [platform] [--set agent=model,...]` | Choose which model each Maestria specialist agent uses (opencode, codex, cursor, pi, omp); `--set` configures non-interactively |
 
 All commands accept `--json` and `--quiet` for scripting and CI, and `--help` shows in-terminal examples, exit codes, and AI-agent usage tips. `--compact` is supported on every command except `check`, which requires a platform argument and outputs JSON by default. Wherever a platform has its own plugin manager, the CLI delegates to it rather than mutating host configuration directly.
 
@@ -25,7 +25,7 @@ All commands accept `--json` and `--quiet` for scripting and CI, and `--help` sh
 
 - **Unified plugin management** - `status`, `install`, `update`, `uninstall`, and `check` work the same way across every supported platform.
 - **Interactive and scriptable** - interactive multiselect prompts, plus `--all`, comma-separated platforms, and machine-readable output.
-- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install, Cursor plugin directory, Prime Agent package manager, Claude Code/Codex marketplaces).
+- **Host-native integration** - drives each platform's native mechanism (OpenCode plugin manager, Pi/OMP package registration, Kimi Code managed install, Cursor plugin directory, Prime Agent package manager, Claude Code/Codex marketplaces and native Codex agent files).
 
 ## Support / Platform Notes
 
@@ -34,7 +34,7 @@ All commands accept `--json` and `--quiet` for scripting and CI, and `--help` sh
 - Exact version pinning (`update <platform> --version`) is supported only where the host update path allows it; Claude Code, Codex CLI, and Prime Agent select the latest available package and reject `--version`.
 - Prime Agent support is deliberately global (user scope only): project registrations are never scanned or modified. A version-pinned user registration is reported as an error rather than silently skipped.
 - Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless removed separately.
-- The CLI manages plugin installation only; it does not run agents or enforce methodology.
+- The CLI manages plugin installation and native agent/model configuration where the host exposes a stable file format; it does not run agents or enforce methodology.
 
 ## Documentation and Changelog
 

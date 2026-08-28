@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.6.0
+
+### Minor Changes
+
+- [#248](https://github.com/agustinusnathaniel/maestria/pull/248) [`93ff292`](https://github.com/agustinusnathaniel/maestria/commit/93ff292b83f5659b67af4889848de454d1661206) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Update Kimi Code integration to use its native plugin registry, system-prompt, namespaced command, and current delegation contracts.
+
+## Unreleased
+
+- Align the orchestrator's `Agent` and `AgentSwarm` examples with Kimi Code 0.38's native schemas.
+- Register `fein`, `sonar`, and `blitz` as native namespaced plugin commands.
+- Register the npm-installed plugin through Kimi's `plugins/installed.json`, respect `KIMI_CODE_HOME`, and stop overwriting global `AGENTS.md`.
+- Deliver the shared rules through the native `systemPromptPath` plugin capability.
+
+## 0.5.2
+
+### Patch Changes
+
+- [#246](https://github.com/agustinusnathaniel/maestria/pull/246) [`e4b5d86`](https://github.com/agustinusnathaniel/maestria/commit/e4b5d867365aec4617fe349360e2b5f8407fb4ba) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Prefer self-explanatory code across all agent projections by emphasizing clear structure over explanatory comments and reserving comments for concise context the code cannot express.
+
 ## 0.5.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { compareVersions, isVersionEq, isVersionDifferent, isVersionGt } from '@/lib/version.js';
+import {
+  compareVersions,
+  isValidVersion,
+  isVersionEq,
+  isVersionDifferent,
+  isVersionGt,
+} from '@/lib/version.js';
 
 describe('compareVersions', () => {
   it('treats non-semver display sentinels as incomparable', () => {
@@ -67,5 +73,50 @@ describe('isVersionGt', () => {
 
   it('returns false for an empty (incomparable) version', () => {
     expect(isVersionGt('0.10.1', '')).toBe(false);
+  });
+});
+
+describe('semver regression - hyphen prerelease and underscore rejection', () => {
+  it('accepts prerelease with hyphen (alpha-1) as valid', () => {
+    expect(isValidVersion('1.0.0-alpha-1')).toBe(true);
+    expect(isValidVersion('1.0.0-alpha-1+build.1')).toBe(true);
+  });
+
+  it('compares prerelease with hyphen correctly (prerelease < release)', () => {
+    expect(compareVersions('1.0.0-alpha-1', '1.0.0')).toBe(-1);
+    expect(isVersionGt('1.0.0', '1.0.0-alpha-1')).toBe(true);
+  });
+
+  it('rejects underscore in prerelease (invalid per semver)', () => {
+    expect(isValidVersion('1.0.0-alpha_1')).toBe(false);
+    expect(compareVersions('1.0.0-alpha_1', '1.0.0')).toBe(null);
+  });
+
+  it('rejects underscore in build metadata', () => {
+    expect(isValidVersion('1.0.0+build_1')).toBe(false);
+  });
+});
+
+describe('semver regression - build metadata ignored for precedence', () => {
+  it('treats 1.0.0+build.1 as equal to 1.0.0', () => {
+    expect(compareVersions('1.0.0+build.1', '1.0.0')).toBe(0);
+    expect(isVersionEq('1.0.0+build.1', '1.0.0')).toBe(true);
+    expect(isVersionDifferent('1.0.0+build.1', '1.0.0')).toBe(false);
+  });
+
+  it('treats different build metadata as equal', () => {
+    expect(compareVersions('1.0.0+build.1', '1.0.0+build.2')).toBe(0);
+    expect(isVersionEq('1.0.0+build.1', '1.0.0+build.2')).toBe(true);
+    expect(isVersionDifferent('1.0.0+build.1', '1.0.0+build.2')).toBe(false);
+  });
+
+  it('ignores build metadata when prerelease is present', () => {
+    expect(compareVersions('1.0.0-alpha+build.1', '1.0.0-alpha+build.2')).toBe(0);
+    expect(compareVersions('1.0.0-alpha+build.1', '1.0.0-alpha')).toBe(0);
+  });
+
+  it('keeps prerelease < release ordering even with hyphen handling', () => {
+    expect(compareVersions('1.0.0-alpha', '1.0.0')).toBe(-1);
+    expect(compareVersions('1.0.0-alpha-1', '1.0.0')).toBe(-1);
   });
 });

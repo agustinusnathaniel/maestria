@@ -1,6 +1,6 @@
 {
   "name": "@maestria/pi",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "Maestria extension for the Pi coding agent",
   "keywords": [
     "agent-orchestration",
@@ -37,6 +37,7 @@
     "effect": "catalog:"
   },
   "devDependencies": {
+    "@maestria/core": "workspace:*",
     "@maestria/shared-pi": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",

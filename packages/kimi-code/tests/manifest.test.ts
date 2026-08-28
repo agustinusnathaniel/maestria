@@ -7,8 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
-const AGENTS_MD_MAX_BYTES = 32 * 1024;
-
+const SYSTEM_PROMPT_MAX_BYTES = 32 * 1024;
 const EXPECTED_SKILLS = [
   'orchestrator',
   'builder',
@@ -20,14 +19,7 @@ const EXPECTED_SKILLS = [
   'diagnose',
 ] as const;
 
-const COMMAND_SKILLS = ['fein', 'sonar', 'blitz'] as const;
-
-const ALL_SKILLS = [...EXPECTED_SKILLS, ...COMMAND_SKILLS] as const;
-
-/** Resolve the subdirectory for a given skill (command skills live under `commands/`). */
-function skillDir(skill: string): string {
-  return (COMMAND_SKILLS as readonly string[]).includes(skill) ? `commands/${skill}` : skill;
-}
+const EXPECTED_COMMANDS = ['fein', 'sonar', 'blitz'] as const;
 
 interface RawManifest {
   name?: string;
@@ -38,9 +30,15 @@ interface RawManifest {
   homepage?: string;
   license?: string;
   skills?: string | string[];
+  commands?: string | string[];
+  systemPromptPath?: string;
   sessionStart?: { skill?: string };
   skillInstructions?: string;
   interface?: Record<string, string | undefined>;
+}
+
+interface PackageManifest {
+  version?: string;
 }
 
 async function readJson<T>(relativePath: string): Promise<T> {
@@ -116,6 +114,14 @@ describe('kimi.plugin.json manifest', () => {
     expect(manifest.name).toMatch(PLUGIN_NAME_REGEX);
   });
 
+  it('keeps the plugin version aligned with package metadata', async () => {
+    const [manifest, pkg] = await Promise.all([
+      readJson<RawManifest>('kimi.plugin.json'),
+      readJson<PackageManifest>('package.json'),
+    ]);
+    expect(manifest.version).toBe(pkg.version);
+  });
+
   it('has "skills" field that starts with "./"', async () => {
     const manifest = await readJson<RawManifest>('kimi.plugin.json');
     expect(manifest.skills).toBeDefined();
@@ -130,12 +136,23 @@ describe('kimi.plugin.json manifest', () => {
     }
   });
 
+  it('declares native plugin slash commands', async () => {
+    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    expect(manifest.commands).toBe('./commands/');
+  });
+
   it('has "sessionStart.skill" pointing at the orchestrator skill', async () => {
     const manifest = await readJson<RawManifest>('kimi.plugin.json');
     expect(manifest.sessionStart).toBeDefined();
     expect(manifest.sessionStart?.skill).toBe('orchestrator');
     const skillPath = path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md');
     expect(await pathExists(skillPath)).toBe(true);
+  });
+
+  it('uses the native systemPromptPath for global rules', async () => {
+    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    expect(manifest.systemPromptPath).toBe('./SYSTEM.md');
+    expect(await pathExists(path.join(PACKAGE_ROOT, 'SYSTEM.md'))).toBe(true);
   });
 
   it('includes required interface fields', async () => {
@@ -159,7 +176,6 @@ describe('kimi.plugin.json manifest', () => {
     ) as Record<string, unknown>;
     const unsupported = [
       'tools',
-      'commands',
       'hooks',
       'apps',
       'inject',
@@ -174,15 +190,15 @@ describe('kimi.plugin.json manifest', () => {
 });
 
 describe('skills directory', () => {
-  it('contains all expected skills (8 specialist + 3 command)', async () => {
-    for (const skill of ALL_SKILLS) {
-      const skillPath = path.join(PACKAGE_ROOT, 'skills', skillDir(skill), 'SKILL.md');
+  it('contains all 8 methodology skills', async () => {
+    for (const skill of EXPECTED_SKILLS) {
+      const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
       expect(await pathExists(skillPath)).toBe(true);
     }
   });
 
-  for (const skill of ALL_SKILLS) {
-    const relDir = `skills/${skillDir(skill)}`;
+  for (const skill of EXPECTED_SKILLS) {
+    const relDir = `skills/${skill}`;
     describe(`${relDir}/SKILL.md`, () => {
       it('parses with valid frontmatter', async () => {
         const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
@@ -237,7 +253,7 @@ describe('skills directory', () => {
     );
 
     expect(orchestrator).toMatch(/Subagent profile.*`plan`/);
-    expect(orchestrator).toMatch(/do \*\*not\*\* have Write or Edit/i);
+    expect(orchestrator).toMatch(/do \*\*not\*\* have .*Write.*Edit/i);
     expect(orchestrator).toContain('builder | `coder`');
     expect(builder).toMatch(/Subagent profile.*`coder`/);
     expect(builder).toMatch(/Write, Edit/);
@@ -261,20 +277,29 @@ describe('skills directory', () => {
   });
 });
 
-describe('rules/AGENTS.md', () => {
-  it('exists', async () => {
-    const rulesPath = path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md');
-    expect(await pathExists(rulesPath)).toBe(true);
-  });
+describe('native plugin commands', () => {
+  for (const command of EXPECTED_COMMANDS) {
+    it(`commands/${command}.md exists with command frontmatter`, async () => {
+      const commandPath = path.join(PACKAGE_ROOT, 'commands', `${command}.md`);
+      expect(await pathExists(commandPath)).toBe(true);
+      const text = await readFile(commandPath, 'utf8');
+      const { data, body } = parseFrontmatter(text);
+      expect(data.name).toBe(command);
+      expect(typeof data.description).toBe('string');
+      expect(body).toContain(`[MODE: ${command}]`);
+    });
+  }
+});
 
+describe('SYSTEM.md plugin instructions', () => {
   it('is under the 32 KB Kimi Code truncation budget', async () => {
-    const rulesPath = path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md');
+    const rulesPath = path.join(PACKAGE_ROOT, 'SYSTEM.md');
     const stats = await stat(rulesPath);
-    expect(stats.size).toBeLessThanOrEqual(AGENTS_MD_MAX_BYTES);
+    expect(stats.size).toBeLessThanOrEqual(SYSTEM_PROMPT_MAX_BYTES);
   });
 
   it('contains the 7-specialist delegation table', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'SYSTEM.md'), 'utf8');
     for (const specialist of [
       'adventurer',
       'architect',
@@ -352,8 +377,8 @@ describe('tool name PascalCase compliance', () => {
     'curl', // CLI commands
   ]);
 
-  for (const skill of ALL_SKILLS) {
-    const relDir = `skills/${skillDir(skill)}`;
+  for (const skill of EXPECTED_SKILLS) {
+    const relDir = `skills/${skill}`;
     it(`${relDir}/SKILL.md has PascalCase tool references`, async () => {
       const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
       const text = await readFile(skillPath, 'utf8');

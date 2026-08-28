@@ -62,7 +62,6 @@ export const platforms: Platform[] = [
     href: '/codex/',
     blurb: 'Specialist and workflow skills for Codex CLI.',
     mark: 'codex',
-    badge: 'PROVISIONAL',
     installArgs: 'install codex',
   },
   {

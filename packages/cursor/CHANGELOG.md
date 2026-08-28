@@ -1,5 +1,17 @@
 # @maestria/cursor
 
+## 0.2.3
+
+### Patch Changes
+
+- [#248](https://github.com/agustinusnathaniel/maestria/pull/248) [`93ff292`](https://github.com/agustinusnathaniel/maestria/commit/93ff292b83f5659b67af4889848de454d1661206) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Align Cursor packaging and native per-agent model configuration while preserving existing user settings across plugin updates.
+
+## 0.2.2
+
+### Patch Changes
+
+- [#246](https://github.com/agustinusnathaniel/maestria/pull/246) [`e4b5d86`](https://github.com/agustinusnathaniel/maestria/commit/e4b5d867365aec4617fe349360e2b5f8407fb4ba) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Prefer self-explanatory code across all agent projections by emphasizing clear structure over explanatory comments and reserving comments for concise context the code cannot express.
+
 ## 0.2.1
 
 ### Patch Changes

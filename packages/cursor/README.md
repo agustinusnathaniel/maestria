@@ -1,6 +1,6 @@
 # @maestria/cursor
 
-A declarative [Cursor](https://cursor.com/) plugin that brings Maestria's structured agent orchestration to Cursor IDE and Cursor CLI (`agent`) - 7 specialist Task agents, an orchestrator skill, always-on global rules, and workflow commands.
+A declarative [Cursor](https://cursor.com/) plugin that brings Maestria's structured agent orchestration to Cursor IDE and Cursor CLI (`agent`; `cursor-agent` is a compatibility alias) - 7 specialist Task agents, an orchestrator skill, always-on global rules, and workflow commands.
 
 > This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -11,7 +11,7 @@ A declarative [Cursor](https://cursor.com/) plugin that brings Maestria's struct
 pnpx maestria@latest install cursor
 ```
 
-Restart Cursor IDE, or load the plugin in Cursor CLI with `agent --plugin-dir ~/.cursor/plugins/local/maestria`. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/INSTALL.md) for the full checklist, manual setup, verification, and uninstall.
+Restart Cursor IDE (or use **Developer: Reload Window**). Cursor CLI uses `agent` and discovers local plugins from `~/.cursor/plugins/local/maestria`. See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/cursor/INSTALL.md) for the full checklist, manual setup, verification, and uninstall.
 
 ## What It Provides
 
