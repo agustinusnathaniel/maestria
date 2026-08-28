@@ -20,21 +20,21 @@ The project uses [Vite+](https://viteplus.dev) as its unified toolchain. `vp che
 ```
 maestria/
 ├── packages/
-│   ├── core/              Canonical agent directives + sync pipeline (private, v0.7.5)
-│   ├── opencode/          OpenCode plugin (published, v0.6.23)
-│   ├── kimi-code/         Kimi Code plugin (published, v0.4.18)
-│   ├── omp/               Oh My Pi plugin (published, v0.4.5)
-│   ├── pi/                Pi extension (published, v0.6.10)
-│   ├── cursor/            Cursor IDE plugin (published, v0.1.10)
-│   ├── prime-agent/       Prime Agent skills-first package (published, v0.2.2)
-│   ├── claude-code/       Claude Code plugin (published, v0.2.3)
-│   ├── codex/             Codex CLI projection (published, v0.2.3)
-│   ├── hermes/            Hermes Agent plugin (private, v0.1.13, published on PyPI)
+│   ├── core/              Canonical agent directives + sync pipeline (private)
+│   ├── opencode/          OpenCode plugin (published)
+│   ├── kimi-code/         Kimi Code plugin (published)
+│   ├── omp/               Oh My Pi plugin (published)
+│   ├── pi/                Pi extension (published)
+│   ├── cursor/            Cursor IDE plugin (published)
+│   ├── prime-agent/       Prime Agent skills-first package (published)
+│   ├── claude-code/       Claude Code plugin (published)
+│   ├── codex/             Codex CLI projection (published)
+│   ├── hermes/            Hermes Agent plugin (private, published on PyPI)
 │   └── shared/
 │       └── pi/            Shared pure-TS utilities for omp/pi (private)
 ├── apps/
 │   ├── docs/              Starlight documentation site (private)
-│   └── maestria-cli/      CLI tool (published, v0.10.1)
+│   └── maestria-cli/      CLI tool (published)
 ├── scripts/
 │   ├── sync-all           Regenerate all plugin outputs from canonical sources
 │   └── check-sync         CI verification: fail if any output differs
@@ -63,7 +63,7 @@ maestria/
 | `@maestria/pi` | Yes | 7 specialists + 3 workflow modes as a Pi extension |
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
 | `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
-| `@maestria/prime-agent` | Yes (v0.2.2) | Skills-first: 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent, plus a verified executable extension subset (mode commands, mode prompt injection); native rlm dispatch and JSON/RPC remain deferred |
+| `@maestria/prime-agent` | Yes | Skills-first: 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent, plus a verified executable extension subset (mode commands, mode prompt injection); native rlm dispatch and JSON/RPC remain deferred |
 | `@maestria/claude-code` | Yes | Declarative Claude Code plugin with 7 agents, skills, and workflow commands |
 | `@maestria/codex` | Yes | Provisional Codex CLI projection with namespaced methodology skills |
 | `@maestria/hermes` | No (PyPI) | Hermes Agent plugin - methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
