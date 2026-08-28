@@ -38,7 +38,9 @@ maestria/
 │   ├── hermes/          - @maestria/hermes plugin (Python)
 │   ├── pi/              - @maestria/pi plugin
 │   ├── prime-agent/     - @maestria/prime-agent plugin (Prime Agent skills + extension)
-│   └── shared/pi/       - Shared pure-TS utilities for omp/pi
+│   └── shared/
+│       ├── mode/        - Shared neutral mode mechanics (private, pure-TS, no host SDK)
+│       └── pi/          - Shared pure-TS utilities for omp/pi (private)
 ├── scripts/             - Sync and CI verification scripts
 ├── VISION.md            - Project vision and principles
 ├── PATTERNS.md          - Reusable workflow patterns
