@@ -22,10 +22,6 @@ function getVersionCacheFile(): string {
   return join(getVersionCacheDir(), 'versions.json');
 }
 
-// Eager constants for backwards compat (evaluated at import); internal logic below uses dynamic getters
-const VERSION_CACHE_DIR = getMaestriaCacheDir();
-const VERSION_CACHE_FILE = join(VERSION_CACHE_DIR, 'versions.json');
-
 // ── Errors ───────────────────────────────────────────
 export class CommandError extends Data.TaggedError('CommandError')<{
   readonly command: string;
