@@ -1,5 +1,9 @@
 import { Effect, Data } from 'effect';
 import { homedir } from 'os';
+import { join } from 'node:path';
+
+const VERSION_CACHE_DIR = join(homedir(), '.cache', 'maestria');
+const VERSION_CACHE_FILE = join(VERSION_CACHE_DIR, 'versions.json');
 
 // ── Errors ───────────────────────────────────────────
 export class CommandError extends Data.TaggedError('CommandError')<{
@@ -75,11 +79,8 @@ export function commandExists(cmd: string): Effect.Effect<boolean, never> {
 }
 
 export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
-  const cacheDir = `${homedir()}/.cache/maestria`;
-  const cacheFile = `${cacheDir}/versions.json`;
-
   const readCache = (): Effect.Effect<string, never> =>
-    readTextFile(cacheFile).pipe(
+    readTextFile(VERSION_CACHE_FILE).pipe(
       Effect.map((out) => {
         try {
           const cache: Record<string, { version: string }> = JSON.parse(out);
@@ -95,16 +96,16 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
     Effect.tryPromise({
       try: async () => {
         const { mkdir, readFile, writeFile } = await import('node:fs/promises');
-        await mkdir(cacheDir, { recursive: true });
+        await mkdir(VERSION_CACHE_DIR, { recursive: true });
         let cache: Record<string, { version: string }> = {};
         try {
-          const existing = await readFile(cacheFile, 'utf-8');
+          const existing = await readFile(VERSION_CACHE_FILE, 'utf-8');
           cache = JSON.parse(existing);
         } catch {
           /* file doesn't exist or is invalid */
         }
         cache[pkg] = { version };
-        await writeFile(cacheFile, JSON.stringify(cache));
+        await writeFile(VERSION_CACHE_FILE, JSON.stringify(cache));
       },
       catch: () => {},
     }).pipe(Effect.catchCause(() => Effect.void));
@@ -126,11 +127,8 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
 
 /** Invalidate the version cache for a package (called after successful update) */
 export function invalidateVersionCache(pkg: string): Effect.Effect<void, never> {
-  const cacheDir = `${homedir()}/.cache/maestria`;
-  const cacheFile = `${cacheDir}/versions.json`;
-
   return Effect.gen(function* () {
-    yield* readTextFile(cacheFile).pipe(
+    yield* readTextFile(VERSION_CACHE_FILE).pipe(
       Effect.flatMap((out) => {
         try {
           const cache = JSON.parse(out);
@@ -138,7 +136,7 @@ export function invalidateVersionCache(pkg: string): Effect.Effect<void, never> 
           return Effect.tryPromise({
             try: async () => {
               const { writeFile } = await import('node:fs/promises');
-              await writeFile(cacheFile, JSON.stringify(cache));
+              await writeFile(VERSION_CACHE_FILE, JSON.stringify(cache));
             },
             catch: () => {},
           });
