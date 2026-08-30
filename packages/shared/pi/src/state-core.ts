@@ -103,7 +103,9 @@ export function recordFileRead(state: MaestriaState, path: string): MaestriaStat
 }
 
 export function recordSpecialistDelegated(state: MaestriaState, name: string): MaestriaState {
-  if (state.specialistsDelegated.includes(name)) return state;
+  if (state.specialistsDelegated.includes(name)) {
+    return state;
+  }
   return { ...state, specialistsDelegated: [...state.specialistsDelegated, name] };
 }
 

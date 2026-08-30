@@ -108,8 +108,11 @@ describe('Codex managed native agents', () => {
         code: 'ENOENT',
       });
     } finally {
-      if (previousHome === undefined) delete process.env.CODEX_HOME;
-      else process.env.CODEX_HOME = previousHome;
+      if (previousHome === undefined) {
+        delete process.env.CODEX_HOME;
+      } else {
+        process.env.CODEX_HOME = previousHome;
+      }
       await rm(root, { recursive: true, force: true });
     }
   });
@@ -152,8 +155,11 @@ describe('Codex managed native agents', () => {
         'default user instructions\n',
       );
     } finally {
-      if (previousHome === undefined) delete process.env.CODEX_HOME;
-      else process.env.CODEX_HOME = previousHome;
+      if (previousHome === undefined) {
+        delete process.env.CODEX_HOME;
+      } else {
+        process.env.CODEX_HOME = previousHome;
+      }
       await rm(root, { recursive: true, force: true });
     }
   });

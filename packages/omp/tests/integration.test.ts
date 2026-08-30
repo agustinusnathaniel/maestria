@@ -18,9 +18,21 @@ function createMockPi() {
     sendUserMessage: vi.fn(),
     zod: {
       object: vi.fn(() => ({})),
-      string: vi.fn(() => ({ describe: vi.fn(() => ({ optional: vi.fn(() => ({})) })) })),
-      array: vi.fn(() => ({ describe: vi.fn(() => ({ optional: vi.fn(() => ({})) })) })),
-      enum: vi.fn(() => ({ describe: vi.fn(() => ({ optional: vi.fn(() => ({})) })) })),
+      string: vi.fn(() => ({
+        describe: vi.fn(() => ({
+          optional: vi.fn(() => ({})),
+        })),
+      })),
+      array: vi.fn(() => ({
+        describe: vi.fn(() => ({
+          optional: vi.fn(() => ({})),
+        })),
+      })),
+      enum: vi.fn(() => ({
+        describe: vi.fn(() => ({
+          optional: vi.fn(() => ({})),
+        })),
+      })),
     },
   };
 }

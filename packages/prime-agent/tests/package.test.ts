@@ -38,8 +38,11 @@ async function readSrcFiles(): Promise<string[]> {
   async function walk(dir: string): Promise<void> {
     for (const entry of await readdir(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) await walk(full);
-      else if (entry.name.endsWith('.ts')) out.push(await readFile(full, 'utf8'));
+      if (entry.isDirectory()) {
+        await walk(full);
+      } else if (entry.name.endsWith('.ts')) {
+        out.push(await readFile(full, 'utf8'));
+      }
     }
   }
   await walk(SRC_DIR);

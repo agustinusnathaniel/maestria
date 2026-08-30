@@ -5,7 +5,9 @@ import { join } from 'node:path';
 /** Resolve the OS cache directory, respecting XDG_CACHE_HOME on Linux/macOS. */
 export function getCacheDir(): string {
   const xdg = process.env.XDG_CACHE_HOME?.trim();
-  if (xdg) return xdg;
+  if (xdg) {
+    return xdg;
+  }
   return join(homedir(), '.cache');
 }
 

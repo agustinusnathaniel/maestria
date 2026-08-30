@@ -1,3 +1,4 @@
+// oxlint-disable max-lines -- model-config aggregates 5 platform handlers (opencode/codex/pi/cursor/omp) plus shared parsers and FS helpers as a single cohesive registry; splitting would fragment the handler registration and create single-use modules with one call site.
 import { Effect } from 'effect';
 import { homedir } from 'os';
 // Import the ESM build directly - the UMD entry does runtime `require('./impl/*')`
@@ -108,7 +109,9 @@ export function parseCursorModels(out: string): string[] {
         : undefined;
     if (entries) {
       const models = entries.flatMap((entry) => {
-        if (typeof entry === 'string') return [entry];
+        if (typeof entry === 'string') {
+          return [entry];
+        }
         if (typeof entry === 'object' && entry !== null) {
           const value =
             (entry as { id?: unknown; slug?: unknown; name?: unknown }).id ??
@@ -118,7 +121,9 @@ export function parseCursorModels(out: string): string[] {
         }
         return [];
       });
-      if (models.length > 0) return [...new Set(models)];
+      if (models.length > 0) {
+        return [...new Set(models)];
+      }
     }
   } catch {
     // Cursor's human-readable output is the normal path.
@@ -169,7 +174,9 @@ export function parseFrontmatterModel(content: string): string | undefined {
 export function setFrontmatterModel(content: string, model: string): string {
   const fm = /^---\r?\n([\s\S]*?)\r?\n---(\r?\n?)/.exec(content);
   if (!fm) {
-    if (!model) return content;
+    if (!model) {
+      return content;
+    }
     return `---\nmodel: ${model}\n---\n\n${content}`;
   }
   const [, fmBody, afterClosing] = fm;
@@ -207,7 +214,9 @@ export function setConfigModelJsonc(text: string, agent: string, model: string):
 
 function hasConfigModel(text: string, agent: string): boolean {
   const tree = parseTree(text);
-  if (!tree) return false;
+  if (!tree) {
+    return false;
+  }
   return findNodeAtLocation(tree, ['agent', agent, 'model']) !== undefined;
 }
 
@@ -257,7 +266,9 @@ export function createCodexAgentConfig(
     `developer_instructions = ${JSON.stringify(instructions)}`,
     `model = ${JSON.stringify(model)}`,
   ];
-  if (readOnly.has(agent)) lines.push('sandbox_mode = "read-only"');
+  if (readOnly.has(agent)) {
+    lines.push('sandbox_mode = "read-only"');
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -392,7 +403,9 @@ const codex: ModelConfigHandler = {
         const result: AgentModels = {};
         for (let i = 0; i < MAESTRIA_AGENTS.length; i++) {
           const model = parseCodexAgentModel(contents[i] ?? '');
-          if (model) result[MAESTRIA_AGENTS[i]] = model;
+          if (model) {
+            result[MAESTRIA_AGENTS[i]] = model;
+          }
         }
         return result;
       }),
@@ -422,8 +435,12 @@ const codex: ModelConfigHandler = {
 
 function cursorConfigCli(): Effect.Effect<string | undefined, never> {
   return Effect.gen(function* () {
-    if (yield* commandExists('cursor-agent')) return 'cursor-agent';
-    if (!(yield* commandExists('agent'))) return undefined;
+    if (yield* commandExists('cursor-agent')) {
+      return 'cursor-agent';
+    }
+    if (!(yield* commandExists('agent'))) {
+      return undefined;
+    }
     const version = yield* run('agent', ['--version'], 3_000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
     );
@@ -473,9 +490,14 @@ interface AgentFilePlatform {
   readonly isAvailable?: Effect.Effect<boolean, never>;
 }
 
+function agentFilePath(cfg: AgentFilePlatform, level: ModelConfigLevel, agent: string): string {
+  return `${level === 'global' ? cfg.globalDir : cfg.projectDir}/${agent}.md`;
+}
+
+// oxlint-disable-next-line max-lines-per-function -- createAgentFileHandler is a cohesive factory for per-agent file handlers (pi/omp/cursor) sharing agentPath/resolveAgent and readCurrent/write for 7 agents. Splitting would fragment the single platform file-handling responsibility and create single-use helpers with one call site, hurting discoverability.
 function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
   const agentPath = (level: ModelConfigLevel, agent: string): string =>
-    `${level === 'global' ? cfg.globalDir : cfg.projectDir}/${agent}.md`;
+    agentFilePath(cfg, level, agent);
 
   /**
    * Resolve the target file and its starting content for an agent.
@@ -544,7 +566,6 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
           return result;
         }),
       ),
-
     write: (models, level) =>
       Effect.gen(function* () {
         for (const [agent, model] of Object.entries(models)) {

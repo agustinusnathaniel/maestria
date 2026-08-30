@@ -1,3 +1,4 @@
+// oxlint-disable max-lines -- platforms.ts is a cohesive registry aggregating 9 platform handlers (opencode, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex, omp) with shared helpers. Splitting the registry would fragment the single source for PLATFORM_IDS and platform lookup, harming discoverability and increasing cross-file churn for handler registration. The file's handlers share helpers (installNpmTarball, marketplace, codex agents) and are rarely edited together; file length is justified by cohesion.
 import { Effect } from 'effect';
 import { homedir, tmpdir } from 'os';
 import { isAbsolute, join, win32 } from 'node:path';
@@ -54,6 +55,53 @@ function readOpenCodeConfig(): Effect.Effect<string, CommandError> {
  * @param dest   Destination directory to extract into
  * @param opts   Optional npm dist-tag (default 'latest')
  */
+function cleanupStaleTarball(
+  tmpDir: string,
+  prefix: string,
+  dest: string,
+): Effect.Effect<void, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { readdir, unlink, rm } = await import('node:fs/promises');
+      const entries = await readdir(tmpDir);
+      const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
+      await Promise.all(stale.map((e) => unlink(join(tmpDir, e))));
+      await rm(dest, { recursive: true, force: true });
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `cleanup ${tmpDir}/${prefix}*.tgz and ${dest}`,
+        message: String(error),
+      }),
+  });
+}
+
+function findPackedTarball(
+  tmpDir: string,
+  prefix: string,
+  pkgAtTag: string,
+): Effect.Effect<string, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { readdir } = await import('node:fs/promises');
+      const entries = await readdir(tmpDir);
+      const matches = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
+      if (matches.length === 0) {
+        throw new Error(`no tarball found for ${pkgAtTag} in ${tmpDir}`);
+      }
+      if (matches.length > 1) {
+        throw new Error(`ambiguous tarballs for ${pkgAtTag} in ${tmpDir}: ${matches.join(', ')}`);
+      }
+      return join(tmpDir, matches[0]);
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `find tarball ${tmpDir}/${prefix}*.tgz`,
+        message: String(error),
+      }),
+  });
+}
+
 function installNpmTarball(
   pkg: string,
   dest: string,
@@ -64,67 +112,25 @@ function installNpmTarball(
   const prefix = `maestria-${shortName}-`;
   const pkgAtTag = `${pkg}@${tag}`;
   const tmpDir = tmpdir();
-
   return Effect.gen(function* () {
-    // Remove stale tarballs and the destination dir before installing
-    yield* Effect.tryPromise({
-      try: async () => {
-        const { readdir, unlink, rm } = await import('node:fs/promises');
-        const entries = await readdir(tmpDir);
-        const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-        await Promise.all(stale.map((e) => unlink(join(tmpDir, e))));
-        await rm(dest, { recursive: true, force: true });
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `cleanup ${tmpDir}/${prefix}*.tgz and ${dest}`,
-          message: String(error),
-        }),
-    });
-
+    yield* cleanupStaleTarball(tmpDir, prefix, dest);
     yield* run('npm', ['pack', pkgAtTag, '--pack-destination', tmpDir], 120_000);
-
-    const tarballPath = yield* Effect.tryPromise({
-      try: async () => {
-        const { readdir } = await import('node:fs/promises');
-        const entries = await readdir(tmpDir);
-        const matches = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-        if (matches.length === 0) throw new Error(`no tarball found for ${pkgAtTag} in ${tmpDir}`);
-        if (matches.length > 1)
-          throw new Error(`ambiguous tarballs for ${pkgAtTag} in ${tmpDir}: ${matches.join(', ')}`);
-        return join(tmpDir, matches[0]);
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `find tarball ${tmpDir}/${prefix}*.tgz`,
-          message: String(error),
-        }),
-    });
-
+    const tarballPath = yield* findPackedTarball(tmpDir, prefix, pkgAtTag);
     yield* Effect.tryPromise({
       try: async () => {
         const { mkdir } = await import('node:fs/promises');
         await mkdir(dest, { recursive: true });
       },
-      catch: (error) =>
-        new CommandError({
-          command: `mkdir -p ${dest}`,
-          message: String(error),
-        }),
+      catch: (error) => new CommandError({ command: `mkdir -p ${dest}`, message: String(error) }),
     });
-
     yield* run('tar', ['-xzf', tarballPath, '-C', dest, '--strip-components=1'], 120_000);
-
     yield* Effect.tryPromise({
       try: async () => {
         const { unlink } = await import('node:fs/promises');
         await unlink(tarballPath);
       },
       catch: (error) =>
-        new CommandError({
-          command: `rm -f ${tarballPath}`,
-          message: String(error),
-        }),
+        new CommandError({ command: `rm -f ${tarballPath}`, message: String(error) }),
     });
   });
 }
@@ -313,6 +319,32 @@ function codexGlobalInstructionsPath(file: CodexGlobalInstructionFilename): stri
   return `${codexHomePath()}/${file}`;
 }
 
+function validateCodexManifestContent(parsed: Partial<CodexManagedAgentManifest>): void {
+  if (parsed.version !== 1 || !Array.isArray(parsed.files)) {
+    throw new Error(`invalid Maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`);
+  }
+  if (
+    !parsed.files.every((file) => typeof file === 'string' && /^[A-Za-z0-9_-]+\.toml$/.test(file))
+  ) {
+    throw new Error(`invalid managed agent filename in ${codexManagedAgentManifestPath()}`);
+  }
+  if (
+    parsed.instructionsFile !== undefined &&
+    !CODEX_GLOBAL_INSTRUCTION_FILENAMES.includes(
+      parsed.instructionsFile as CodexGlobalInstructionFilename,
+    )
+  ) {
+    throw new Error(
+      `invalid managed Codex instruction filename in ${codexManagedAgentManifestPath()}`,
+    );
+  }
+  if (parsed.instructionsCreated !== undefined && typeof parsed.instructionsCreated !== 'boolean') {
+    throw new Error(
+      `invalid managed Codex instruction ownership in ${codexManagedAgentManifestPath()}`,
+    );
+  }
+}
+
 function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifest, CommandError> {
   return Effect.tryPromise({
     try: async () => {
@@ -327,39 +359,10 @@ function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifes
         throw error;
       }
       const parsed = JSON.parse(raw) as Partial<CodexManagedAgentManifest>;
-      if (parsed.version !== 1 || !Array.isArray(parsed.files)) {
-        throw new Error(
-          `invalid Maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`,
-        );
-      }
-      if (
-        !parsed.files.every(
-          (file) => typeof file === 'string' && /^[A-Za-z0-9_-]+\.toml$/.test(file),
-        )
-      ) {
-        throw new Error(`invalid managed agent filename in ${codexManagedAgentManifestPath()}`);
-      }
-      if (
-        parsed.instructionsFile !== undefined &&
-        !CODEX_GLOBAL_INSTRUCTION_FILENAMES.includes(
-          parsed.instructionsFile as CodexGlobalInstructionFilename,
-        )
-      ) {
-        throw new Error(
-          `invalid managed Codex instruction filename in ${codexManagedAgentManifestPath()}`,
-        );
-      }
-      if (
-        parsed.instructionsCreated !== undefined &&
-        typeof parsed.instructionsCreated !== 'boolean'
-      ) {
-        throw new Error(
-          `invalid managed Codex instruction ownership in ${codexManagedAgentManifestPath()}`,
-        );
-      }
+      validateCodexManifestContent(parsed);
       return {
         version: 1,
-        files: parsed.files,
+        files: parsed.files as string[],
         ...(parsed.instructionsFile !== undefined
           ? { instructionsFile: parsed.instructionsFile as CodexGlobalInstructionFilename }
           : {}),
@@ -396,7 +399,9 @@ function writeCodexManagedAgentManifest(
   });
 }
 
+// oxlint-disable-next-line max-lines-per-function -- installCodexManagedAgents is a single atomic Codex install transaction (read manifest, validate instructions, copy agent TOMLs with merge, clean stale files, sync global instructions). Splitting would obscure the required sequential ordering and create single-use helpers that hurt discoverability of the transaction flow. Cohesion is around one install operation.
 export function installCodexManagedAgents(packageRoot: string): Effect.Effect<void, CommandError> {
+  // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator orchestrates the same atomic Codex transaction; splitting the generator would duplicate manifest/sourceFiles/targetDir closure and hide the linear install steps. Kept intact for cohesion.
   return Effect.gen(function* () {
     const manifest = yield* readCodexManagedAgentManifest();
     const sourceDir = `${packageRoot}/agents`;
@@ -437,7 +442,9 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
               next = mergeCodexAgentSettings(bundled, existing);
               break;
             } catch (error) {
-              if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+              if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+                throw error;
+              }
             }
           }
           const tempPath = `${targetPath}.tmp`;
@@ -453,13 +460,16 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
       try: async () => {
         const { rm } = await import('node:fs/promises');
         for (const file of manifest.files) {
-          if (!currentFiles.has(file)) await rm(`${targetDir}/${file}`, { force: true });
+          if (!currentFiles.has(file)) {
+            await rm(`${targetDir}/${file}`, { force: true });
+          }
         }
       },
       catch: (error) => new Error(String(error)),
     });
 
     const instructionState = yield* Effect.tryPromise({
+      // oxlint-disable-next-line max-lines-per-function -- instruction sync is a cohesive atomic sequence: read existing global instruction files, determine target file, clean managed blocks, and atomically write the managed block. Splitting would fragment the file-selection and cleanup logic that shares existing/cleaned maps and manifest state.
       try: async () => {
         const { mkdir, readFile, rename, rm, writeFile } = await import('node:fs/promises');
         const existing = new Map<CodexGlobalInstructionFilename, string | undefined>();
@@ -467,8 +477,11 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           try {
             existing.set(file, await readFile(codexGlobalInstructionsPath(file), 'utf8'));
           } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') existing.set(file, undefined);
-            else throw error;
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+              existing.set(file, undefined);
+            } else {
+              throw error;
+            }
           }
         }
 
@@ -513,7 +526,9 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           }
           const original = existing.get(file);
           const next = cleaned.get(file);
-          if (original === undefined || next === undefined || next === original) continue;
+          if (original === undefined || next === undefined || next === original) {
+            continue;
+          }
           if (
             next.length === 0 &&
             manifest.instructionsCreated &&
@@ -571,11 +586,15 @@ export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
           try {
             content = await readFile(path, 'utf8');
           } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue;
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+              continue;
+            }
             throw error;
           }
           const next = removeCodexManagedInstructions(content);
-          if (next === content) continue;
+          if (next === content) {
+            continue;
+          }
           if (
             next.length === 0 &&
             manifest.instructionsCreated &&
@@ -689,7 +708,9 @@ function clearOpencodeCache(): Effect.Effect<void, CommandError> {
       try {
         entries = await readdir(base);
       } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          return;
+        }
         throw error;
       }
       const stale = entries.filter((e) => e.startsWith('opencode'));
@@ -721,7 +742,9 @@ const opencode: PlatformHandler = {
       return match?.[1] ?? null;
     }),
     Effect.flatMap((specifier) => {
-      if (!specifier) return Effect.succeed('unknown');
+      if (!specifier) {
+        return Effect.succeed('unknown');
+      }
       return readTextFile(
         join(
           getCacheDir(),
@@ -1048,7 +1071,9 @@ const ANSI_SGR_RE = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
 function primeUserScopeLines(output: string): string[] {
   const lines = output.replace(ANSI_SGR_RE, '').split('\n');
   const start = lines.findIndex((line) => /^\s*user\s+packages:\s*$/i.test(line));
-  if (start === -1) return [];
+  if (start === -1) {
+    return [];
+  }
   const end = lines.findIndex(
     (line, index) => index > start && /^\s*project\s+packages:\s*$/i.test(line),
   );
@@ -1121,10 +1146,14 @@ function isPrimeAbsolutePath(p: string): boolean {
 function primeMaestriaInstalledVersion(output: string): Effect.Effect<string, CommandError> {
   const lines = primeUserScopeLines(output);
   const sourceIndex = lines.findIndex((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
-  if (sourceIndex === -1) return Effect.succeed('unknown');
+  if (sourceIndex === -1) {
+    return Effect.succeed('unknown');
+  }
 
   const installedPath = lines[sourceIndex + 1]?.trim();
-  if (!installedPath || !isPrimeAbsolutePath(installedPath)) return Effect.succeed('unknown');
+  if (!installedPath || !isPrimeAbsolutePath(installedPath)) {
+    return Effect.succeed('unknown');
+  }
 
   return readPackageJsonVersion(`${installedPath}/package.json`).pipe(
     Effect.catchCause(() => Effect.succeed('unknown')),
@@ -1299,9 +1328,13 @@ const kimiCode: PlatformHandler = {
   npmPackage: '@maestria/kimi-code',
 
   detect: Effect.gen(function* () {
-    if (yield* commandExists('kimi')) return true;
+    if (yield* commandExists('kimi')) {
+      return true;
+    }
     const hasRegistry = yield* fileExists(kimiInstalledPath());
-    if (hasRegistry) return true;
+    if (hasRegistry) {
+      return true;
+    }
     return yield* fileExists(`${kimiCodeHome()}/config.toml`);
   }),
 
@@ -1410,8 +1443,12 @@ const CURSOR_AGENT_NAMES = [
 
 function cursorCliName(): Effect.Effect<string | undefined, never> {
   return Effect.gen(function* () {
-    if (yield* commandExists('cursor-agent')) return 'cursor-agent';
-    if (!(yield* commandExists('agent'))) return undefined;
+    if (yield* commandExists('cursor-agent')) {
+      return 'cursor-agent';
+    }
+    if (!(yield* commandExists('agent'))) {
+      return undefined;
+    }
 
     const version = yield* run('agent', ['--version'], 3_000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
@@ -1422,23 +1459,32 @@ function cursorCliName(): Effect.Effect<string | undefined, never> {
 
 function parseCursorAgentModel(content: string): string | undefined {
   const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content)?.[1];
-  if (frontmatter === undefined) return undefined;
+  if (frontmatter === undefined) {
+    return undefined;
+  }
   const match = /^model:\s*(?:"([^"]*)"|'([^']*)'|(.+?))\s*$/m.exec(frontmatter);
   return match?.[1] ?? match?.[2] ?? match?.[3];
 }
 
 function setCursorAgentModel(content: string, model: string): string {
   const match = /^(---\r?\n)([\s\S]*?)(\r?\n---(?:\r?\n)?)/.exec(content);
-  if (!match) return content;
+  if (!match) {
+    return content;
+  }
   const [, opening, body, closing] = match;
-  if (opening === undefined || body === undefined || closing === undefined) return content;
+  if (opening === undefined || body === undefined || closing === undefined) {
+    return content;
+  }
 
   const lines = body.split(/\r?\n/);
   const modelIndex = lines.findIndex((line) => /^model:\s*/.test(line));
   if (model) {
     const rendered = `model: ${model}`;
-    if (modelIndex >= 0) lines[modelIndex] = rendered;
-    else lines.push(rendered);
+    if (modelIndex >= 0) {
+      lines[modelIndex] = rendered;
+    } else {
+      lines.push(rendered);
+    }
   } else if (modelIndex >= 0) {
     lines.splice(modelIndex, 1);
   }
@@ -1455,9 +1501,13 @@ function readCursorAgentModels(): Effect.Effect<Record<string, string>, CommandE
         try {
           const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf8');
           const model = parseCursorAgentModel(content);
-          if (model) result[agent] = model;
+          if (model) {
+            result[agent] = model;
+          }
         } catch (error) {
-          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+            throw error;
+          }
         }
       }
       return result;
@@ -1499,10 +1549,14 @@ const cursor: PlatformHandler = {
   npmPackage: '@maestria/cursor',
 
   detect: Effect.gen(function* () {
-    if (yield* cursorCliName()) return true;
+    if (yield* cursorCliName()) {
+      return true;
+    }
     // An unrelated `agent` binary (for example another vendor's CLI) must not
     // be rescued by the broad ~/.cursor directory fallback.
-    if (yield* commandExists('agent')) return false;
+    if (yield* commandExists('agent')) {
+      return false;
+    }
     return yield* fileExists(`${homedir()}/.cursor`);
   }),
 

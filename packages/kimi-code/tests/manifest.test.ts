@@ -73,9 +73,13 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   const data: Record<string, unknown> = {};
   for (const line of yamlText.split(/\r?\n/)) {
     const m = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
-    if (m === null) continue;
+    if (m === null) {
+      continue;
+    }
     const [, key, rawValue] = m;
-    if (rawValue === undefined) continue;
+    if (rawValue === undefined) {
+      continue;
+    }
     const value = rawValue.trim();
     if (value === '[]' || value === '') {
       data[key] = value === '[]' ? [] : '';
@@ -388,11 +392,17 @@ describe('tool name PascalCase compliance', () => {
       for (const match of backtickWords) {
         const word = match.slice(1, -1); // strip backticks
         // Skip things that start with lowercase (unlikely to be tools)
-        if (word[0] === word[0]?.toLowerCase()) continue;
+        if (word[0] === word[0]?.toLowerCase()) {
+          continue;
+        }
         // Skip known non-tool words
-        if (ALLOWED_VARIATIONS.has(word)) continue;
+        if (ALLOWED_VARIATIONS.has(word)) {
+          continue;
+        }
         // If it looks like a tool name (PascalCase) but isn't in canonical list
-        if (CANONICAL_TOOLS.has(word)) continue;
+        if (CANONICAL_TOOLS.has(word)) {
+          continue;
+        }
         // Check for potential Kimi Code tool names that might be missing
         // We flag unrecognized PascalCase as warnings
         violations.push(word);

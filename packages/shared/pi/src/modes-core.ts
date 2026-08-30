@@ -85,10 +85,14 @@ export function detectModeInText(
   commandsDir: string,
   disabled?: Set<string>,
 ): ModeDetectResult | null {
-  if (!text) return null;
+  if (!text) {
+    return null;
+  }
 
   const pure = sharedDetectMode(text, disabled);
-  if (pure === null) return null;
+  if (pure === null) {
+    return null;
+  }
 
   const strippedText = sharedStripKeyword(text, pure);
 
@@ -131,7 +135,9 @@ export function installModeAutoDetect(
   onInput(async (event: unknown, ctx: unknown) => {
     const text = ((event as Record<string, unknown>).text as string) ?? '';
     const result = detectModeInText(text, commandsDir);
-    if (!result) return opts.noMatch;
+    if (!result) {
+      return opts.noMatch;
+    }
 
     if (state.reviewMode) {
       await opts.restoreOriginalState(ctx);

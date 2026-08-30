@@ -13,8 +13,12 @@ export type Freshness = 'current' | 'outdated' | 'unknown';
  */
 export function freshnessOf(installedVersion: string, latestVersion: string): Freshness {
   const comparison = compareVersions(installedVersion, latestVersion);
-  if (comparison === null) return 'unknown';
-  if (comparison === 0) return 'current';
+  if (comparison === null) {
+    return 'unknown';
+  }
+  if (comparison === 0) {
+    return 'current';
+  }
   if (comparison === -1 && isVersionDifferent(installedVersion, latestVersion)) {
     return 'outdated';
   }
@@ -40,6 +44,8 @@ export function needsUpdateOf(installedVersion: string, latestVersion: string): 
  * 3 = installed but outdated.
  */
 export function checkExitCode(freshness: Freshness, installed: boolean): number {
-  if (!installed) return 1;
+  if (!installed) {
+    return 1;
+  }
   return freshness === 'outdated' ? 3 : 0;
 }

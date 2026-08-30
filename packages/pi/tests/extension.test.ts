@@ -6,11 +6,15 @@ function createMockPi() {
   const handlers = new Map<string, Array<(...args: unknown[]) => unknown>>();
   return {
     on: vi.fn((event: string, handler: (...args: unknown[]) => unknown) => {
-      if (!handlers.has(event)) handlers.set(event, []);
+      if (!handlers.has(event)) {
+        handlers.set(event, []);
+      }
       handlers.get(event)!.push(handler);
       return () => {
         const h = handlers.get(event);
-        if (h) h.splice(h.indexOf(handler), 1);
+        if (h) {
+          h.splice(h.indexOf(handler), 1);
+        }
       };
     }),
     registerCommand: vi.fn(),

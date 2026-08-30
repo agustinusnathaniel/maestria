@@ -23,7 +23,9 @@ function makeSkillsDir(name: string, keyword: string, skillFile?: string): strin
 
 afterEach(() => {
   vi.restoreAllMocks();
-  for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 const SKILL_WITH_MODE_HEADING = [

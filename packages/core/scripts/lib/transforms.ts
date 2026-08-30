@@ -22,9 +22,13 @@ export function findAndReplace(content: string, ops: ReplaceOp[]): string {
 }
 
 export function serializeFrontmatter(data: Record<string, unknown> | string | null): string {
-  if (data === null) return '';
+  if (data === null) {
+    return '';
+  }
   if (typeof data === 'string') {
-    if (data.startsWith('---')) return data;
+    if (data.startsWith('---')) {
+      return data;
+    }
     return `---\n${data}\n---\n`;
   }
   return `---\n${yamlStringify(data, { lineWidth: 0 })}---\n`;

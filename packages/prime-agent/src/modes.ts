@@ -55,7 +55,9 @@ const _promptCache: Partial<Record<ModeKeyword, string>> = {};
  * packaging mistake degrades to "no injection" rather than an extension crash.
  */
 export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
-  if (keyword in _promptCache) return _promptCache[keyword]!;
+  if (keyword in _promptCache) {
+    return _promptCache[keyword]!;
+  }
 
   let prompt = '';
   try {
@@ -97,10 +99,14 @@ export function createModePromptHandler(
   skillsDir: string,
 ): (event: BeforeAgentStartEvent, _ctx: ExtensionContext) => BeforeAgentStartEventResult | void {
   return (event: BeforeAgentStartEvent): BeforeAgentStartEventResult | void => {
-    if (!state.mode) return;
+    if (!state.mode) {
+      return;
+    }
 
     const modePrompt = getModePrompt(state.mode, skillsDir);
-    if (!modePrompt) return;
+    if (!modePrompt) {
+      return;
+    }
 
     return {
       systemPrompt: [

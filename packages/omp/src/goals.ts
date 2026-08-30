@@ -20,7 +20,9 @@ function currentSessionEntries(ctx: ExtensionContext): PersistedStateEntry[] | n
   // from a sibling branch in the same session tree. Never fall back to
   // getEntries(), which spans the entire session tree.
   const sessionManager = ctx?.sessionManager;
-  if (typeof sessionManager?.getBranch !== 'function') return null;
+  if (typeof sessionManager?.getBranch !== 'function') {
+    return null;
+  }
 
   const branch = sessionManager.getBranch();
   return Array.isArray(branch) ? (branch as PersistedStateEntry[]) : null;
@@ -33,13 +35,21 @@ function isNativeGoalStatus(value: unknown): value is NativeGoalStatus {
 function nativeGoalFromSessionEntries(entries: PersistedStateEntry[]): MaestriaState['nativeGoal'] {
   for (let i = entries.length - 1; i >= 0; i--) {
     const entry = entries[i];
-    if (entry.type !== 'mode_change') continue;
-    if (entry.mode !== 'goal' && entry.mode !== 'goal_paused') return null;
-    if (!isRecord(entry.data) || !isRecord(entry.data.goal)) return null;
+    if (entry.type !== 'mode_change') {
+      continue;
+    }
+    if (entry.mode !== 'goal' && entry.mode !== 'goal_paused') {
+      return null;
+    }
+    if (!isRecord(entry.data) || !isRecord(entry.data.goal)) {
+      return null;
+    }
 
     const objective = entry.data.goal.objective;
     const status = entry.data.goal.status;
-    if (typeof objective !== 'string' || !isNativeGoalStatus(status)) return null;
+    if (typeof objective !== 'string' || !isNativeGoalStatus(status)) {
+      return null;
+    }
     return { objective, status };
   }
 
@@ -61,15 +71,21 @@ export function restoreMaestriaStateForSession(state: MaestriaState, ctx: Extens
 
   if (!entries) {
     const mutableState = state as unknown as Record<string, unknown>;
-    for (const key of Object.keys(mutableState)) delete mutableState[key];
+    for (const key of Object.keys(mutableState)) {
+      delete mutableState[key];
+    }
     Object.assign(state, next);
     return;
   }
 
   for (let i = entries.length - 1; i >= 0; i--) {
     const entry = entries[i];
-    if (entry.type !== 'custom' || entry.customType !== 'maestria_state') continue;
-    if (isRecord(entry.data)) Object.assign(next, entry.data);
+    if (entry.type !== 'custom' || entry.customType !== 'maestria_state') {
+      continue;
+    }
+    if (isRecord(entry.data)) {
+      Object.assign(next, entry.data);
+    }
     break;
   }
 
@@ -79,7 +95,9 @@ export function restoreMaestriaStateForSession(state: MaestriaState, ctx: Extens
   next.nativeGoal = nativeGoalFromSessionEntries(entries);
 
   const mutableState = state as unknown as Record<string, unknown>;
-  for (const key of Object.keys(mutableState)) delete mutableState[key];
+  for (const key of Object.keys(mutableState)) {
+    delete mutableState[key];
+  }
   Object.assign(state, next);
 }
 
@@ -117,7 +135,9 @@ export function installGoalEventHandlers(pi: ExtensionAPI, state: MaestriaState)
     const unchanged =
       state.nativeGoal?.objective === nativeGoal?.objective &&
       state.nativeGoal?.status === nativeGoal?.status;
-    if (unchanged) return;
+    if (unchanged) {
+      return;
+    }
 
     Object.assign(state, { nativeGoal });
     persistState(pi, state);

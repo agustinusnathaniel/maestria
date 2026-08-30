@@ -107,7 +107,9 @@ function isModeKeyword(value: string): value is ModeKeyword {
 }
 
 export function getModeMarker(mode: string): string {
-  if (isModeKeyword(mode)) return MODE_MARKERS[mode];
+  if (isModeKeyword(mode)) {
+    return MODE_MARKERS[mode];
+  }
   return '';
 }
 
@@ -126,7 +128,9 @@ export function getModeMarker(mode: string): string {
  * Returns the pure detection result (mode, matched keyword text, index) or null.
  */
 export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure | null {
-  if (!text) return null;
+  if (!text) {
+    return null;
+  }
   const codeRanges = findCodeBlockRanges(text);
   const normalizedDisabled = disabled
     ? new Set(Array.from(disabled).map((k) => k.toLowerCase()))
@@ -134,11 +138,15 @@ export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure
   let best: ModeDetectPure | null = null;
 
   for (const keyword of MODE_KEYWORDS) {
-    if (normalizedDisabled?.has(keyword)) continue;
+    if (normalizedDisabled?.has(keyword)) {
+      continue;
+    }
     const regex = buildKeywordRegex(keyword);
     let match: RegExpExecArray | null;
     while ((match = regex.exec(text)) !== null) {
-      if (isInRanges(match.index, codeRanges)) continue;
+      if (isInRanges(match.index, codeRanges)) {
+        continue;
+      }
       if (best === null || MODE_PRIORITY[keyword] > MODE_PRIORITY[best.mode]) {
         best = { mode: keyword, keyword: match[0], index: match.index };
       }

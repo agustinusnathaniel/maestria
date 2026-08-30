@@ -33,7 +33,9 @@ export const RECOVERY_LINKS = [
  * mature `negotiator` package rather than maintained locally.
  */
 export function wantsMarkdown(accept: string | null | undefined): boolean {
-  if (typeof accept !== 'string') return false;
+  if (typeof accept !== 'string') {
+    return false;
+  }
 
   // Ignore media-type parameters other than `q`: `negotiator` correctly
   // parses them, but treats parameters such as `charset` as part of the
@@ -74,13 +76,17 @@ export function markdownTwinPath(pathname: string): string {
   // Callers pass url.pathname; strip query/hash defensively anyway.
   let path = pathname.split('?')[0] ?? '';
   path = path.split('#')[0] ?? '';
-  if (!path.startsWith('/')) path = `/${path}`;
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
   if (path.length > 1 && path.endsWith('/')) {
     path = path.replace(/\/+$/, '');
   }
   if (path.length > 1 && path.toLowerCase().endsWith('.html')) {
     path = path.slice(0, -'.html'.length);
   }
-  if (path === '/' || path === '') return '/llms.txt';
+  if (path === '/' || path === '') {
+    return '/llms.txt';
+  }
   return `${path}.md`;
 }

@@ -101,7 +101,9 @@ function parseFrontmatter(text: string): { data: Record<string, string | string[
       continue;
     }
     const pair = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
-    if (pair === null) continue;
+    if (pair === null) {
+      continue;
+    }
     flushList();
     const [, key, rawValue] = pair;
     currentKey = key;

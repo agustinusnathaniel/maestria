@@ -89,7 +89,9 @@ export function validatePlatforms(input: string): Effect.Effect<ValidPlatform[],
  */
 export function validateVersion(input: string): Effect.Effect<string, ValidationError> {
   const trimmed = input.trim();
-  if (isValidVersion(trimmed)) return Effect.succeed(trimmed);
+  if (isValidVersion(trimmed)) {
+    return Effect.succeed(trimmed);
+  }
   return Effect.fail(
     new ValidationError({
       message: `Invalid version '${input}'. Use semver format (e.g., 0.5.0) or 'latest'.`,

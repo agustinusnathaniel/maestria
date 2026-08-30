@@ -40,7 +40,9 @@ function getHandler(
 ): ((args: string, ctx: any) => Promise<void>) | undefined {
   const calls: Array<[string, unknown]> = pi.registerCommand.mock.calls;
   const match = calls.find((c) => c[0] === name);
-  if (!match) return undefined;
+  if (!match) {
+    return undefined;
+  }
   const opts = match[1] as Record<string, unknown>;
   return typeof opts.handler === 'function'
     ? (opts.handler as (args: string, ctx: any) => Promise<void>)

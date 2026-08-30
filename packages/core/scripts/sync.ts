@@ -75,6 +75,7 @@ function parseCliArgs(): CliOptions {
 
 // ── Main ──
 
+// oxlint-disable-next-line max-lines-per-function -- main orchestrates CLI parsing, config loading, sync execution, and result summarization as a single cohesive entry flow; splitting would fragment the linear startup sequence that shares opts/config/results.
 async function main(): Promise<number> {
   const opts = parseCliArgs();
 
@@ -129,8 +130,12 @@ async function main(): Promise<number> {
 
   if (opts.check && (errors > 0 || removed > 0)) {
     const parts: string[] = [];
-    if (errors > 0) parts.push(`${errors} file(s) differ from expected`);
-    if (removed > 0) parts.push(`${removed} stale file(s) would be removed`);
+    if (errors > 0) {
+      parts.push(`${errors} file(s) differ from expected`);
+    }
+    if (removed > 0) {
+      parts.push(`${removed} stale file(s) would be removed`);
+    }
     console.error(`\nCheck failed: ${parts.join('; ')}`);
     return 1;
   }

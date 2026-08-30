@@ -82,14 +82,18 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
     const pair = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
-    if (pair === null) continue;
+    if (pair === null) {
+      continue;
+    }
     const [, key, rawValue] = pair;
     const value = rawValue.trim();
     if (value === '' || value.startsWith('|')) {
       // Block scalar (| or |-): collect the indented continuation lines.
       const body: string[] = [];
       for (const l of lines.slice(1, close)) {
-        if (/^\s{2}/.test(l)) body.push(l.trim());
+        if (/^\s{2}/.test(l)) {
+          body.push(l.trim());
+        }
       }
       data[key] = body.join(' ');
       continue;

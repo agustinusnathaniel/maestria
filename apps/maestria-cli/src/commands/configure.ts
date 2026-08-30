@@ -93,6 +93,200 @@ function renderConfigureJson(
   );
 }
 
+async function resolveConfigureHandler(
+  platformId: string | undefined,
+): Promise<ModelConfigHandler> {
+  if (platformId) {
+    const id = await validateOrExit(validatePlatform(platformId));
+    const h = getModelConfigHandler(id);
+    if (!h) {
+      exitError(
+        `Per-agent model configuration is not yet supported for '${id}'. Supported: ${modelConfigHandlers
+          .map((handler) => handler.id)
+          .join(', ')}.`,
+      );
+    }
+    return h;
+  }
+  if (!process.stdout.isTTY || !process.stdin.isTTY) {
+    console.error('No platform specified and not in an interactive terminal.');
+    console.error(
+      'Usage: maestria configure <platform> or maestria configure --set <agent>=<model>',
+    );
+    console.error("Run 'maestria configure --help' for details.");
+    process.exit(1);
+  }
+  const picked = await select({
+    message: 'Which platform do you want to configure?',
+    options: modelConfigHandlers.map((h) => ({ value: h.id, label: h.label })),
+    maxItems: 5,
+  });
+  if (isCancel(picked)) {
+    exitCancel();
+  }
+  return getModelConfigHandler(picked as string)!;
+}
+
+async function resolveConfigureLevel(
+  args: Record<string, unknown>,
+  _handler: ModelConfigHandler,
+): Promise<ModelConfigLevel> {
+  const bothFlags = (args.global && args.project) as boolean;
+  if (bothFlags) {
+    exitError('Cannot use --global and --project together. Choose one.');
+  }
+  if (args.global) {
+    return 'global';
+  }
+  if (args.project) {
+    return 'project';
+  }
+  if (process.stdout.isTTY && process.stdin.isTTY && !args.set) {
+    const picked = await select({
+      message: 'Where do you want to configure models?',
+      options: [
+        { value: 'global' as const, label: 'Global', hint: 'applies to all projects' },
+        { value: 'project' as const, label: 'Project', hint: 'applies to this project only' },
+      ],
+      initialValue: 'global',
+    });
+    if (isCancel(picked)) {
+      exitCancel();
+    }
+    return picked as ModelConfigLevel;
+  }
+  exitError('Specify --global or --project when using --set or in a non-interactive terminal.');
+}
+
+async function handleConfigureSet(
+  handler: ModelConfigHandler,
+  level: ModelConfigLevel,
+  setArg: string,
+  isQuiet: boolean,
+  isJson: boolean,
+  isCompact: boolean,
+): Promise<never> {
+  const models = parseSetPairs(setArg);
+  const spinner = createSpinner(isQuiet);
+  spinner.start(`Validating models for ${handler.label}...`);
+  const available = await runOrExit(
+    handler.listModels,
+    `Failed to list models for ${handler.label}.`,
+  );
+  spinner.stop('');
+  for (const [agent, model] of Object.entries(models)) {
+    if (model && !available.includes(model)) {
+      exitError(
+        `Unknown model '${model}' for ${agent}. Run 'maestria configure ${handler.id}' interactively to pick from available models, or check the model id.`,
+      );
+    }
+  }
+  spinner.start(`Writing config for ${handler.label}...`);
+  await runOrExit(handler.write(models, level), `Failed to write config for ${handler.label}.`);
+  spinner.stop('Done');
+  if (isJson) {
+    console.log(renderConfigureJson(handler, level, models));
+  } else if (isCompact) {
+    console.log(renderCompactConfigure(models));
+  } else {
+    console.log(renderConfigureSummary(handler.label, level, models));
+    console.log(`  ${picocolors.dim(handler.restartHint)}`);
+  }
+  process.exit(0);
+}
+
+// oxlint-disable-next-line max-lines-per-function -- handleConfigureInteractive orchestrates the interactive model configuration flow (load models, read current, groupMultiselect, per-agent prompts, write) as a single cohesive interaction; splitting would fragment the prompt sequence and duplicate handler/level closure.
+async function handleConfigureInteractive(
+  handler: ModelConfigHandler,
+  level: ModelConfigLevel,
+  isQuiet: boolean,
+  isJson: boolean,
+  isCompact: boolean,
+): Promise<never> {
+  if (!process.stdout.isTTY || !process.stdin.isTTY) {
+    console.error('No --set provided and not in an interactive terminal.');
+    console.error(
+      'Usage: maestria configure <platform> --set <agent>=<model>[,<agent>=<model>...]',
+    );
+    console.error("Run 'maestria configure --help' for details.");
+    process.exit(1);
+  }
+  const spinner = createSpinner(isQuiet);
+  spinner.start(`Loading models for ${handler.label}...`);
+  const available = await runOrExit(
+    handler.listModels,
+    `Failed to list models for ${handler.label}.`,
+  );
+  spinner.stop('');
+  if (available.length === 0) {
+    exitError(
+      `No models found for ${handler.label}. Make sure '${handler.cli}' is installed and authenticated.`,
+    );
+  }
+  spinner.start('Reading current configuration...');
+  const current = await runOrExit(
+    handler.readCurrent(level),
+    `Failed to read the current ${handler.label} configuration.`,
+  );
+  spinner.stop('');
+  const selectedAgents = await groupMultiselect({
+    message: 'Which agents do you want to configure?',
+    options: {
+      Specialists: handler.agents.map((agent) => ({
+        value: agent,
+        label: agent,
+        hint: current[agent as keyof AgentModels]
+          ? `currently ${current[agent as keyof AgentModels]}`
+          : 'inherit',
+      })),
+    },
+    selectableGroups: true,
+    required: true,
+    maxItems: 8,
+  });
+  if (isCancel(selectedAgents)) {
+    exitCancel();
+  }
+  const models: AgentModels = {};
+  for (const agent of selectedAgents as string[]) {
+    if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
+      continue;
+    }
+    const name = agent as keyof AgentModels;
+    const picked = await select({
+      message: `Model for @${name}${current[name] ? ` (currently ${current[name]})` : ''}`,
+      options: [
+        { value: '', label: 'Inherit', hint: 'use the session/primary agent model' },
+        ...available.map((model) => ({ value: model, label: model })),
+      ],
+      maxItems: 10,
+      initialValue: current[name] && available.includes(current[name]) ? current[name] : '',
+    });
+    if (isCancel(picked)) {
+      exitCancel();
+    }
+    if (picked) {
+      models[name] = picked as string;
+    }
+  }
+  if (Object.keys(models).length === 0) {
+    console.log('No changes. Nothing to write.');
+    process.exit(0);
+  }
+  spinner.start(`Writing config for ${handler.label}...`);
+  await runOrExit(handler.write(models, level), `Failed to write config for ${handler.label}.`);
+  spinner.stop('Done');
+  if (isJson) {
+    console.log(renderConfigureJson(handler, level, models));
+  } else if (isCompact) {
+    console.log(renderCompactConfigure(models));
+  } else {
+    console.log(renderConfigureSummary(handler.label, level, models));
+    console.log(`  ${picocolors.dim(handler.restartHint)}`);
+  }
+  process.exit(0);
+}
+
 export const configureCommand = defineCommand({
   meta: {
     name: 'configure',
@@ -145,188 +339,16 @@ export const configureCommand = defineCommand({
     const isQuiet = (args.quiet || args.compact) as boolean;
     const isCompact = args.compact as boolean;
     const isJson = args.json as boolean;
-
-    // 1. Resolve platform
-    let handler: ModelConfigHandler;
-    if (args.platform) {
-      const platformId = await validateOrExit(validatePlatform(args.platform as string));
-      const h = getModelConfigHandler(platformId);
-      if (!h) {
-        exitError(
-          `Per-agent model configuration is not yet supported for '${platformId}'. ` +
-            `Supported: ${modelConfigHandlers.map((handler) => handler.id).join(', ')}.`,
-        );
-      }
-      handler = h;
-    } else {
-      if (!process.stdout.isTTY || !process.stdin.isTTY) {
-        console.error('No platform specified and not in an interactive terminal.');
-        console.error(
-          'Usage: maestria configure <platform> or maestria configure --set <agent>=<model>',
-        );
-        console.error("Run 'maestria configure --help' for details.");
-        process.exit(1);
-      }
-      const picked = await select({
-        message: 'Which platform do you want to configure?',
-        options: modelConfigHandlers.map((h) => ({ value: h.id, label: h.label })),
-        maxItems: 5,
-      });
-      if (isCancel(picked)) exitCancel();
-      handler = getModelConfigHandler(picked as string)!;
-    }
-
-    // 2. Check the platform CLI exists
+    const handler = await resolveConfigureHandler(args.platform as string | undefined);
     const cliAvailable = await Effect.runPromise(handler.isAvailable ?? commandExists(handler.cli));
     if (!cliAvailable) {
       exitError(`The '${handler.cli}' CLI was not found on PATH. Install ${handler.label} first.`);
     }
-
-    // 3. Resolve config level
-    const bothFlags = (args.global && args.project) as boolean;
-    if (bothFlags) {
-      exitError('Cannot use --global and --project together. Choose one.');
-    }
-    let level: ModelConfigLevel;
-    if (args.global) {
-      level = 'global';
-    } else if (args.project) {
-      level = 'project';
-    } else if (process.stdout.isTTY && process.stdin.isTTY && !args.set) {
-      const picked = await select({
-        message: 'Where do you want to configure models?',
-        options: [
-          { value: 'global' as const, label: 'Global', hint: 'applies to all projects' },
-          { value: 'project' as const, label: 'Project', hint: 'applies to this project only' },
-        ],
-        initialValue: 'global',
-      });
-      if (isCancel(picked)) exitCancel();
-      level = picked as ModelConfigLevel;
-    } else {
-      exitError('Specify --global or --project when using --set or in a non-interactive terminal.');
-    }
-
-    // 4. Non-interactive: --set
+    const level = await resolveConfigureLevel(args, handler);
     if (args.set) {
-      const models = parseSetPairs(args.set as string);
-      const spinner = createSpinner(isQuiet);
-      spinner.start(`Validating models for ${handler.label}...`);
-      const available = await runOrExit(
-        handler.listModels,
-        `Failed to list models for ${handler.label}.`,
-      );
-      spinner.stop('');
-
-      for (const [agent, model] of Object.entries(models)) {
-        if (model && !available.includes(model)) {
-          exitError(
-            `Unknown model '${model}' for ${agent}. Run 'maestria configure ${handler.id}' ` +
-              `interactively to pick from available models, or check the model id.`,
-          );
-        }
-      }
-
-      spinner.start(`Writing config for ${handler.label}...`);
-      await runOrExit(handler.write(models, level), `Failed to write config for ${handler.label}.`);
-      spinner.stop('Done');
-
-      if (isJson) {
-        console.log(renderConfigureJson(handler, level, models));
-      } else if (isCompact) {
-        console.log(renderCompactConfigure(models));
-      } else {
-        console.log(renderConfigureSummary(handler.label, level, models));
-        console.log(`  ${picocolors.dim(handler.restartHint)}`);
-      }
-      process.exit(0);
-    }
-
-    // 5. Interactive
-    if (!process.stdout.isTTY || !process.stdin.isTTY) {
-      console.error('No --set provided and not in an interactive terminal.');
-      console.error(
-        'Usage: maestria configure <platform> --set <agent>=<model>[,<agent>=<model>...]',
-      );
-      console.error("Run 'maestria configure --help' for details.");
-      process.exit(1);
-    }
-
-    const spinner = createSpinner(isQuiet);
-    spinner.start(`Loading models for ${handler.label}...`);
-    const available = await runOrExit(
-      handler.listModels,
-      `Failed to list models for ${handler.label}.`,
-    );
-    spinner.stop('');
-    if (available.length === 0) {
-      exitError(
-        `No models found for ${handler.label}. Make sure '${handler.cli}' is installed and authenticated.`,
-      );
-    }
-
-    spinner.start('Reading current configuration...');
-    const current = await runOrExit(
-      handler.readCurrent(level),
-      `Failed to read the current ${handler.label} configuration.`,
-    );
-    spinner.stop('');
-
-    const selectedAgents = await groupMultiselect({
-      message: 'Which agents do you want to configure?',
-      options: {
-        Specialists: handler.agents.map((agent) => ({
-          value: agent,
-          label: agent,
-          hint: current[agent as keyof AgentModels]
-            ? `currently ${current[agent as keyof AgentModels]}`
-            : 'inherit',
-        })),
-      },
-      selectableGroups: true,
-      required: true,
-      maxItems: 8,
-    });
-    if (isCancel(selectedAgents)) exitCancel();
-
-    const models: AgentModels = {};
-    for (const agent of selectedAgents as string[]) {
-      if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
-        continue;
-      }
-      const name = agent as keyof AgentModels;
-      const picked = await select({
-        message: `Model for @${name}${current[name] ? ` (currently ${current[name]})` : ''}`,
-        options: [
-          { value: '', label: 'Inherit', hint: 'use the session/primary agent model' },
-          ...available.map((model) => ({ value: model, label: model })),
-        ],
-        maxItems: 10,
-        initialValue: current[name] && available.includes(current[name]) ? current[name] : '',
-      });
-      if (isCancel(picked)) exitCancel();
-      if (picked) {
-        models[name] = picked as string;
-      }
-    }
-
-    if (Object.keys(models).length === 0) {
-      console.log('No changes. Nothing to write.');
-      process.exit(0);
-    }
-
-    spinner.start(`Writing config for ${handler.label}...`);
-    await runOrExit(handler.write(models, level), `Failed to write config for ${handler.label}.`);
-    spinner.stop('Done');
-
-    if (isJson) {
-      console.log(renderConfigureJson(handler, level, models));
-    } else if (isCompact) {
-      console.log(renderCompactConfigure(models));
+      await handleConfigureSet(handler, level, args.set as string, isQuiet, isJson, isCompact);
     } else {
-      console.log(renderConfigureSummary(handler.label, level, models));
-      console.log(`  ${picocolors.dim(handler.restartHint)}`);
+      await handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact);
     }
-    process.exit(0);
   },
 });

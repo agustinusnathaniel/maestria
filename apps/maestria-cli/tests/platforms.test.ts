@@ -19,11 +19,15 @@ const fsMocks = vi.hoisted(() => {
       return JSON.stringify({ version: '0.2.0' });
     }),
     mkdtemp: vi.fn(async (prefix: string) => {
-      if (!originalMkdtemp) throw new Error('original mkdtemp unavailable');
+      if (!originalMkdtemp) {
+        throw new Error('original mkdtemp unavailable');
+      }
       return originalMkdtemp(prefix);
     }),
     rm: vi.fn(async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
-      if (!originalRm) throw new Error('original rm unavailable');
+      if (!originalRm) {
+        throw new Error('original rm unavailable');
+      }
       return originalRm(path, options);
     }),
     access: vi.fn(async () => {}),
@@ -210,8 +214,12 @@ describe('Cursor platform detection', () => {
   it('does not treat an unrelated agent binary as Cursor', async () => {
     vi.mocked(shell.commandExists).mockImplementation((cmd) => Effect.succeed(cmd === 'agent'));
     vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'which' && args[0] === 'agent') return Effect.succeed('/usr/local/bin/agent');
-      if (cmd === 'agent' && args[0] === '--version') return Effect.succeed('Grok Build TUI 1.0.0');
+      if (cmd === 'which' && args[0] === 'agent') {
+        return Effect.succeed('/usr/local/bin/agent');
+      }
+      if (cmd === 'agent' && args[0] === '--version') {
+        return Effect.succeed('Grok Build TUI 1.0.0');
+      }
       return Effect.succeed('');
     });
 
@@ -248,8 +256,11 @@ describe('Kimi Code platform registration', () => {
       expect(kimi).toBeDefined();
       expect(await Effect.runPromise(kimi!.isInstalled)).toBe(true);
     } finally {
-      if (previousHome === undefined) delete process.env.KIMI_CODE_HOME;
-      else process.env.KIMI_CODE_HOME = previousHome;
+      if (previousHome === undefined) {
+        delete process.env.KIMI_CODE_HOME;
+      } else {
+        process.env.KIMI_CODE_HOME = previousHome;
+      }
     }
   });
 });

@@ -11,9 +11,13 @@ const DOCS_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
 /** Strip a leading YAML frontmatter block, returning only the markdown body. */
 function stripFrontmatter(text: string): string {
   const lines = text.split(/\r?\n/);
-  if (lines[0]?.trim() !== '---') return text;
+  if (lines[0]?.trim() !== '---') {
+    return text;
+  }
   const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
-  if (close === -1) return text;
+  if (close === -1) {
+    return text;
+  }
   return lines.slice(close + 1).join('\n');
 }
 

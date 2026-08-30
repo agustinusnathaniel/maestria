@@ -21,7 +21,9 @@ export function codexManagedInstructionRange(content: string): ManagedInstructio
   const starts = markerOffsets(content, CODEX_MANAGED_INSTRUCTIONS_START);
   const ends = markerOffsets(content, CODEX_MANAGED_INSTRUCTIONS_END);
 
-  if (starts.length === 0 && ends.length === 0) return undefined;
+  if (starts.length === 0 && ends.length === 0) {
+    return undefined;
+  }
   if (starts.length !== 1 || ends.length !== 1 || starts[0]! > ends[0]!) {
     throw new Error('Codex Maestria instruction markers are malformed or duplicated');
   }
@@ -45,7 +47,9 @@ export function upsertCodexManagedInstructions(content: string, block: string): 
   }
 
   const newline = content.includes('\r\n') ? '\r\n' : '\n';
-  if (content.length === 0) return `${normalizedBlock}${newline}`;
+  if (content.length === 0) {
+    return `${normalizedBlock}${newline}`;
+  }
 
   const separator = content.endsWith('\n') ? newline : `${newline}${newline}`;
   return `${content}${separator}${normalizedBlock}${newline}`;
@@ -54,7 +58,9 @@ export function upsertCodexManagedInstructions(content: string, block: string): 
 /** Remove only the managed block, preserving unrelated instructions. */
 export function removeCodexManagedInstructions(content: string): string {
   const range = codexManagedInstructionRange(content);
-  if (!range) return content;
+  if (!range) {
+    return content;
+  }
 
   const before = content.slice(0, range.start);
   const after = content.slice(range.end);

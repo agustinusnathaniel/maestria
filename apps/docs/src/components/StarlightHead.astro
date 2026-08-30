@@ -31,11 +31,11 @@ const schemas = [organizationSchema(), softwareApplicationSchema(), websiteSchem
  */
 function markdownAlternateHref(pathname: string): string | undefined {
   const clean = pathname.split('?')[0]?.split('#')[0] ?? '/';
-  if (clean.endsWith('.md') || clean.endsWith('.txt')) return undefined;
+  if (clean.endsWith('.md') || clean.endsWith('.txt')) {return undefined;}
   const twin = markdownTwinPath(clean);
   const normalized =
     clean.length > 1 ? (clean.replace(/\/+$/, '').replace(/\.html$/, '') || '/') : '/';
-  if (twin === normalized) return undefined;
+  if (twin === normalized) {return undefined;}
   return new URL(twin, Astro.site ?? new URL(SITE_URL)).href;
 }
 

@@ -78,7 +78,9 @@ function parseFrontmatter(text: string): Record<string, string> {
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
     const match = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
-    if (match !== null && match[2] !== undefined) data[match[1]] = match[2];
+    if (match !== null && match[2] !== undefined) {
+      data[match[1]] = match[2];
+    }
   }
   return data;
 }

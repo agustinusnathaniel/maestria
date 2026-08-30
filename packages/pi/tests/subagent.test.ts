@@ -342,7 +342,9 @@ describe('installSubagentTool - event subscription persistence', () => {
     const handlers: Record<string, Array<(data: unknown) => void>> = {};
     return {
       on: vi.fn((event: string, handler: (data: unknown) => void) => {
-        if (!handlers[event]) handlers[event] = [];
+        if (!handlers[event]) {
+          handlers[event] = [];
+        }
         handlers[event].push(handler);
         return () => {}; // unsub
       }),
@@ -617,7 +619,9 @@ describe('installSubagentTool - parallel partial failure', () => {
     // "cleaned up before completion" -> the failed outcome must not discard
     // id-a's completed result.
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {
-      if (id === 'id-a') return { status: 'completed', result: 'RESULT_A_OK' };
+      if (id === 'id-a') {
+        return { status: 'completed', result: 'RESULT_A_OK' };
+      }
       return undefined; // id-b cleaned up
     });
 
@@ -654,8 +658,12 @@ describe('installSubagentTool - parallel partial failure', () => {
       return true;
     });
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {
-      if (aborted.has(id)) return { status: 'aborted' };
-      if (id === 'id-a') return { status: 'running' };
+      if (aborted.has(id)) {
+        return { status: 'aborted' };
+      }
+      if (id === 'id-a') {
+        return { status: 'running' };
+      }
       return undefined; // id-b cleaned up
     });
 
@@ -685,7 +693,9 @@ describe('installSubagentTool - parallel partial failure', () => {
     // id-a completes; id-b's record disappears -> poll throws -> the step
     // must be aborted and the chain must surface an error marker.
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {
-      if (id === 'id-a') return { status: 'completed', result: 'STEP_A_OK' };
+      if (id === 'id-a') {
+        return { status: 'completed', result: 'STEP_A_OK' };
+      }
       return undefined; // id-b cleaned up
     });
 
@@ -719,7 +729,9 @@ describe('installSubagentTool - parallel partial failure', () => {
     // id-a completes with a result containing $ sequences that a string-replacement
     // would corrupt ($& -> the placeholder itself, $' -> trailing text, $1 -> empty).
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {
-      if (id === 'id-a') return { status: 'completed', result: 'Use `echo $&` and $1 args' };
+      if (id === 'id-a') {
+        return { status: 'completed', result: 'Use `echo $&` and $1 args' };
+      }
       return { status: 'completed', result: 'DONE' };
     });
 
@@ -752,7 +764,9 @@ describe('installSubagentTool - parallel partial failure', () => {
       return true;
     });
     subagentsServiceMock.spawn.mockImplementation((agent: string) => {
-      if (agent === 'builder') return 'id-a';
+      if (agent === 'builder') {
+        return 'id-a';
+      }
       throw new Error('spawn failed for architect');
     });
 

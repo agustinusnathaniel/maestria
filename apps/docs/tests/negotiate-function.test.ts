@@ -28,10 +28,16 @@ function makeAssets(table: AssetTable): {
     const url =
       input instanceof URL ? input : input instanceof Request ? new URL(input.url) : new URL(input);
     const entry = table.get(url.pathname);
-    if (!entry || entry.status !== 200) return new Response(null, { status: 404 });
+    if (!entry || entry.status !== 200) {
+      return new Response(null, { status: 404 });
+    }
     const headers = new Headers({ 'Content-Type': entry.contentType ?? 'text/plain' });
-    if (entry.cacheControl) headers.set('Cache-Control', entry.cacheControl);
-    if (entry.vary) headers.set('Vary', entry.vary);
+    if (entry.cacheControl) {
+      headers.set('Cache-Control', entry.cacheControl);
+    }
+    if (entry.vary) {
+      headers.set('Vary', entry.vary);
+    }
     return new Response(entry.body ?? '', { status: 200, headers });
   });
   return { binding: { fetch: fetchSpy }, fetchSpy };
@@ -53,7 +59,9 @@ function makeContext(
   ),
 ): TestContext {
   const headers = new Headers();
-  if (init.accept !== undefined) headers.set('Accept', init.accept);
+  if (init.accept !== undefined) {
+    headers.set('Accept', init.accept);
+  }
   const { binding, fetchSpy } = makeAssets(table);
   return {
     request: new Request(url, { method: init.method ?? 'GET', headers }),
