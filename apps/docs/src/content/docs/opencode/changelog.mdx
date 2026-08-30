@@ -22,9 +22,7 @@ _August 13, 2026_
 
 ### Directive refinement
 
-- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge
-  reviews on material blockers, deliver routine engineering work through feature branches and PRs,
-  and clean up task-owned background processes before completion.
+- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
 
 ## v0.6.20
 
@@ -32,35 +30,24 @@ _August 12-13, 2026_
 
 ### Restored orchestrator autonomy (maker/checker preserved)
 
-The pure-dispatcher enforcement could block all orchestrator tools (read, grep, bash, edit) when a
-workflow mode was active, leaving no fallback when specialist dispatch timed out. The orchestrator
-now regains read-only tools (read, glob, grep, lsp, webfetch, read-only bash, tests) for routing and
-verification; mutations remain denied and delegated. Dispatch failure becomes a corrected-brief retry
-then read-only recon with precise blocked-state reporting - never a direct mutation and never a
-waived route/review floor.
+The pure-dispatcher enforcement could block all orchestrator tools (read, grep, bash, edit) when a workflow mode was active, leaving no fallback when specialist dispatch timed out. The orchestrator now regains read-only tools (read, glob, grep, lsp, webfetch, read-only bash, tests) for routing and verification; mutations remain denied and delegated. Dispatch failure becomes a corrected-brief retry then read-only recon with precise blocked-state reporting - never a direct mutation and never a waived route/review floor.
 
 ### Workflow contract clarity
 
-- Clarified agent workflow contracts while preserving detailed specialist guidance: routine validated
-  commits on recognized feature branches remain autonomous after required review; push and later
-  lifecycle actions stay separately gated.
-- Simplified and re-aligned directives around outcome, evidence, runtime authority, blind review,
-  bounded repair, and autonomous routine work, keeping all generated platform projections in sync.
+- Clarified agent workflow contracts while preserving detailed specialist guidance: routine validated commits on recognized feature branches remain autonomous after required review; push and later lifecycle actions stay separately gated.
+- Simplified and re-aligned directives around outcome, evidence, runtime authority, blind review, bounded repair, and autonomous routine work, keeping all generated platform projections in sync.
 
 ## v0.6.19
 
 _August 11, 2026_
 
-- Streamlined canonical agent directives by centralizing universal contracts, preserving
-  orchestration behavior in compact form, and adding bounded autonomy, work-unit budgets, scope
-  control, process lifecycle evidence, and checkpoint action boundaries.
+- Streamlined canonical agent directives by centralizing universal contracts, preserving orchestration behavior in compact form, and adding bounded autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action boundaries.
 
 ## v0.6.18
 
 _August 6, 2026_
 
-- Delegation is now more selective, handoffs stay concise, and Sonar research starts with the owning
-  specialist, adding another specialist only when a distinct required output remains.
+- Delegation is now more selective, handoffs stay concise, and Sonar research starts with the owning specialist, adding another specialist only when a distinct required output remains.
 
 ## v0.6.17
 
@@ -68,12 +55,7 @@ _August 3, 2026_
 
 ### Selective routing contract
 
-The orchestrator now routes by task class across three routes: `direct` (host executes, no Maestria
-specialist spawn), `focused` (one targeted specialist, one reviewer for non-trivial work), and
-`full` (bounded recon, design, implementation, and review). `fein` selects the full route, `sonar`
-is research-only, and `blitz` is an explicit low-risk/direct bypass that does not waive safety
-floors. Small explanations and tiny edits run directly or through one specialist; the full pipeline
-stays available for complex, high-risk, or explicitly `fein` work.
+The orchestrator now routes by task class across three routes: `direct` (host executes, no Maestria specialist spawn), `focused` (one targeted specialist, one reviewer for non-trivial work), and `full` (bounded recon, design, implementation, and review). `fein` selects the full route, `sonar` is research-only, and `blitz` is an explicit low-risk/direct bypass that does not waive safety floors. Small explanations and tiny edits run directly or through one specialist; the full pipeline stays available for complex, high-risk, or explicitly `fein` work.
 
 ## v0.6.16
 
@@ -169,8 +151,7 @@ _July 14, 2026_
 
 ### Auto-create feature branch when landing on main
 
-The agent no longer asks for confirmation before creating a feature branch
-when it lands on main. It just creates the branch and continues.
+The agent no longer asks for confirmation before creating a feature branch when it lands on main. It just creates the branch and continues.
 
 ### Work results format streamlined
 
@@ -180,8 +161,7 @@ The post-task summary has been redesigned:
 - Every change is prefixed with `+` (added), `~` (modified), or `-` (deleted)
 - Breaking changes are marked with `!`
 - Test file changes are annotated with `(test)`
-- The same table is reused in PR descriptions, so you see the same structured
-  summary without anyone writing it twice
+- The same table is reused in PR descriptions, so you see the same structured summary without anyone writing it twice
 
 ## v0.6.2
 
@@ -189,16 +169,11 @@ _July 14, 2026_
 
 ### Mandated work results format
 
-The structured `## Changes` summary table after builder tasks is now a
-hard requirement enforced by a non-negotiable CRITICAL RULE. This replaces
-the previous suggested behavior with a mandated format that overrides
-"write for humans" guidance for this specific output.
+The structured `## Changes` summary table after builder tasks is now a hard requirement enforced by a non-negotiable CRITICAL RULE. This replaces the previous suggested behavior with a mandated format that overrides "write for humans" guidance for this specific output.
 
 ### Mandated documentation audit before commits
 
-The documentation audit step before every commit is now explicitly required.
-It covers four categories: internal docs, user-facing docs site, user-facing
-changelogs, and changesets. A new checklist item reinforces this requirement.
+The documentation audit step before every commit is now explicitly required. It covers four categories: internal docs, user-facing docs site, user-facing changelogs, and changesets. A new checklist item reinforces this requirement.
 
 ## v0.6.1
 
@@ -276,19 +251,12 @@ _June 24, 2026_
 
 ### Project workflow configuration (.maestria/)
 
-Introduces a lightweight protocol for project-specific agent workflows. Projects
-can now define `.maestria/workflow.md` for custom delegation sequencing and
-`.maestria/rules.md` for project-specific non-negotiable rules.
+Introduces a lightweight protocol for project-specific agent workflows. Projects can now define `.maestria/workflow.md` for custom delegation sequencing and `.maestria/rules.md` for project-specific non-negotiable rules.
 
-The orchestrator prompt includes a new "Project Workflows (.maestria/)" section
-that instructs the orchestrator to load these files via `@adventurer` delegation
-and follow their guidance. Core rules always take precedence over project
-instructions.
+The orchestrator prompt includes a new "Project Workflows (.maestria/)" section that instructs the orchestrator to load these files via `@adventurer` delegation and follow their guidance. Core rules always take precedence over project instructions.
 
-- `packages/core/agent-directives/specialists/orchestrator.md` - new "Project
-  Workflows (.maestria/)" section
-- `packages/core/agent-directives/rules.md` - awareness bullet referencing the
-  protocol
+- `packages/core/agent-directives/specialists/orchestrator.md` - new "Project Workflows (.maestria/)" section
+- `packages/core/agent-directives/rules.md` - awareness bullet referencing the protocol
 
 ### Effort anthropomorphism guard and writing style guidance
 
@@ -330,12 +298,7 @@ _June 22, 2026_
 
 ### Commit authorization rules hardened
 
-The orchestrator now follows an explicit **COMMIT PROTOCOL** with five
-sequential steps: inspect git status, propose the full commit message via
-a user prompt, delegate to the builder with validation checks, report
-results, and ask separately before pushing. Rules now explicitly state that
-commit authorization resets to zero after each commit, preventing
-auto-committing on subsequent work instructions.
+The orchestrator now follows an explicit **COMMIT PROTOCOL** with five sequential steps: inspect git status, propose the full commit message via a user prompt, delegate to the builder with validation checks, report results, and ask separately before pushing. Rules now explicitly state that commit authorization resets to zero after each commit, preventing auto-committing on subsequent work instructions.
 
 Affected files:
 
@@ -371,11 +334,11 @@ _June 20, 2026_
 
 Three plain-word keywords that override the orchestrator's default delegation pipeline:
 
-| Keyword | Mode                | Pipeline                                                                              | Use case                                                |
-| ------- | ------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `fein`  | Full pipeline       | adventurer → architect/planner → builder → reviewer (mandatory gates, tests required) | Production-grade changes, cross-module work             |
-| `sonar` | Research only       | adventurer → architect/planner → STOP (no code, structured doc output)                | Discovery, feasibility, understanding before committing |
-| `blitz` | Fast implementation | builder direct (skip recon/design/review)                                             | Quick fixes, prototypes, known territory                |
+| Keyword | Mode | Pipeline | Use case |
+| --- | --- | --- | --- |
+| `fein` | Full pipeline | adventurer → architect/planner → builder → reviewer (mandatory gates, tests required) | Production-grade changes, cross-module work |
+| `sonar` | Research only | adventurer → architect/planner → STOP (no code, structured doc output) | Discovery, feasibility, understanding before committing |
+| `blitz` | Fast implementation | builder direct (skip recon/design/review) | Quick fixes, prototypes, known territory |
 
 Detection uses a word-boundary regex at any position in the message, is code-block-aware, and the most restrictive keyword wins (`fein` > `sonar` > `blitz`), and detection is case-insensitive. Modes can be disabled via `modes.disabledKeywords` in plugin options (denylist-only). The full design is documented in ADR-OC-003.
 

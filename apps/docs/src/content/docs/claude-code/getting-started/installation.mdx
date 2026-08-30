@@ -23,9 +23,7 @@ Install the published plugin at Claude Code's user scope:
 npx maestria install claude-code
 ```
 
-The CLI downloads `@maestria/claude-code` from npm, stages it in a local marketplace under
-`~/.cache/maestria/`, and delegates the actual install to Claude Code. This keeps plugin state and
-scope in the host runtime.
+The CLI downloads `@maestria/claude-code` from npm, stages it in a local marketplace under `~/.cache/maestria/`, and delegates the actual install to Claude Code. This keeps plugin state and scope in the host runtime.
 
 Check, update, or remove the installation with:
 
@@ -35,8 +33,7 @@ npx maestria update claude-code
 npx maestria uninstall claude-code
 ```
 
-Claude Code's marketplace update path selects the latest package. Exact version pinning is not
-available through `maestria update claude-code --version`.
+Claude Code's marketplace update path selects the latest package. Exact version pinning is not available through `maestria update claude-code --version`.
 
 ## Local validation (no install)
 
@@ -103,11 +100,11 @@ claude --plugin-dir ./packages/claude-code
 
 ## What's Inside
 
-| Component | Namespaced identifier                                  | Purpose                                                                                                |
-| --------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| Agents    | `@maestria:<agent>`                                    | 7 specialist agents: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer` |
-| Skills    | `/maestria:orchestrator`, `maestria:global-rules`      | Routing methodology (user-invocable) and universal rules contract (preload-only)                       |
-| Commands  | `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` | Full pipeline, research-only, and fast implementation modes                                            |
+| Component | Namespaced identifier | Purpose |
+| --- | --- | --- |
+| Agents | `@maestria:<agent>` | 7 specialist agents: `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer` |
+| Skills | `/maestria:orchestrator`, `maestria:global-rules` | Routing methodology (user-invocable) and universal rules contract (preload-only) |
+| Commands | `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz` | Full pipeline, research-only, and fast implementation modes |
 
 Every agent is configured to preload the `maestria:global-rules` skill at startup. Runtime resolution of the plugin-scoped skill preload is not yet verified against a live session.
 
@@ -127,8 +124,7 @@ For a persistent CLI-managed installation:
 npx maestria uninstall claude-code
 ```
 
-For a session-only `--plugin-dir` load, stop passing the flag. The local staging directory is safe
-to remove after uninstalling:
+For a session-only `--plugin-dir` load, stop passing the flag. The local staging directory is safe to remove after uninstalling:
 
 ```bash
 rm -rf ~/.cache/maestria/claude-code-marketplace

@@ -51,7 +51,7 @@ import {
 } from 'jsonc-parser';
 import { parseDocument } from 'yaml';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = path.resolve(import.meta.dirname, '..');
 
 // Versions are published semver (https://semver.org); anything else is a pipeline bug.
 const SEMVER_RE =
@@ -157,7 +157,7 @@ function rewriteYamlVersion(text: string, version: string): string {
 
 /** Return the version from the canonical `__version__ = "..."` line, or null. */
 function readPythonVersion(text: string): string | null {
-  return text.match(/__version__\s*=\s*"([^"]+)"/)?.[1] ?? null;
+  return /__version__\s*=\s*"([^"]+)"/.exec(text)?.[1] ?? null;
 }
 
 /** The canonical two-line _version.py content for a version. */

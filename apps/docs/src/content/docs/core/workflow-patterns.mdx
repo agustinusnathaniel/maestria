@@ -69,8 +69,7 @@ The Reviewer also prioritizes observing behavior over reasoning about correctnes
 
 For a full review, the orchestrator dispatches one independent general Reviewer. It adds a specialist lens only when the requirements or diff show a matching security, performance, architecture, or UX risk. This avoids generic reviewer fan-out while adding focused scrutiny where it is justified.
 
-> Orchestrator: Review this authentication change generally, with a security lens for injection risks, auth bypasses, and data exposure.
-> Orchestrator: Review this dashboard change generally, with a UX lens for accessibility, interaction patterns, and responsive states.
+> Orchestrator: Review this authentication change generally, with a security lens for injection risks, auth bypasses, and data exposure. Orchestrator: Review this dashboard change generally, with a UX lens for accessibility, interaction patterns, and responsive states.
 
 Available lenses: **Security**, **Architecture**, **Performance**, **UX**, and **General** (the full checklist). The general review always runs first; specialist lenses are added only when the corresponding risk is present. Reviews are blind and independent, and each lens has exclusive scope - no two reviewers cover the same ground.
 
@@ -104,41 +103,27 @@ The Writer follows structured patterns matched to the document type - purpose, u
 
 ## Investigate an uncertain problem
 
-Use **Parallel speculation** only when the right approach is genuinely unclear
-and multiple independent perspectives would materially improve the decision.
+Use **Parallel speculation** only when the right approach is genuinely unclear and multiple independent perspectives would materially improve the decision.
 
-> Orchestrator: I need to understand why the auth module keeps failing under
-> load. Adventurer, map the entry points. Architect, evaluate the auth
-> architecture. Diagnose, trace the failure path.
+> Orchestrator: I need to understand why the auth module keeps failing under load. Adventurer, map the entry points. Architect, evaluate the auth architecture. Diagnose, trace the failure path.
 
-The orchestrator dispatches the question to independent specialists with
-different lenses, then synthesizes the results before choosing a direction.
-Use this pattern only when:
+The orchestrator dispatches the question to independent specialists with different lenses, then synthesizes the results before choosing a direction. Use this pattern only when:
 
 - The root cause of a problem is genuinely unknown
 - A design decision has ambiguous trade-offs
 - You need to explore an unfamiliar domain from multiple angles
 
-For a clear, low-risk task, use one route and let the assigned specialist or
-host agent reason and act without unnecessary fan-out.
+For a clear, low-risk task, use one route and let the assigned specialist or host agent reason and act without unnecessary fan-out.
 
-This is different from parallel exploration (which fans out independent
-tasks). Parallel speculation fans out the _same_ question to get different
-perspectives on it.
+This is different from parallel exploration (which fans out independent tasks). Parallel speculation fans out the _same_ question to get different perspectives on it.
 
 ## Test an uncertain approach
 
-Use **Experiment framing** when a task has high uncertainty - unknown
-dependency, unvalidated approach, first exploration of a domain. Frame it
-as an experiment rather than a delivery.
+Use **Experiment framing** when a task has high uncertainty - unknown dependency, unvalidated approach, first exploration of a domain. Frame it as an experiment rather than a delivery.
 
-> Orchestrator: Experiment: Can we replace the in-memory cache with Redis
-> without increasing p99 latency? Hypothesis: Redis will add < 5ms to
-> cache lookups. Termination: if latency exceeds 5ms, revert.
+> Orchestrator: Experiment: Can we replace the in-memory cache with Redis without increasing p99 latency? Hypothesis: Redis will add < 5ms to cache lookups. Termination: if latency exceeds 5ms, revert.
 
-The orchestrator sets an explicit hypothesis and termination condition. The
-output is a validated (or invalidated) claim, not shipped code. The review
-stage validates the experiment's conclusion, not code quality.
+The orchestrator sets an explicit hypothesis and termination condition. The output is a validated (or invalidated) claim, not shipped code. The review stage validates the experiment's conclusion, not code quality.
 
 Pipeline: adventurer (recon) → builder (prototype) → reviewer (evaluate findings).
 
@@ -161,26 +146,18 @@ See [Pipeline & Roles](/core/pipeline/) for the full pipeline diagram and role d
 
 ## Project Workflows (.maestria/)
 
-Projects using maestria's agent directives can define custom workflow instructions in
-`.maestria/workflow.md` and `.maestria/rules.md` at the project root. These files tell
-the orchestrator how to sequence delegation for that specific project.
+Projects using maestria's agent directives can define custom workflow instructions in `.maestria/workflow.md` and `.maestria/rules.md` at the project root. These files tell the orchestrator how to sequence delegation for that specific project.
 
 ### How It Works
 
-The orchestrator checks for these files when starting work on a project by delegating
-to `@adventurer`. If found:
+The orchestrator checks for these files when starting work on a project by delegating to `@adventurer`. If found:
 
-- **`.maestria/workflow.md`** - Guides delegation sequencing. The orchestrator follows
-  this to determine what to do and in what order (e.g., read the README first, check
-  recent commits, read relevant ADRs before implementing).
-- **`.maestria/rules.md`** - Project-specific non-negotiable rules that supplement the
-  core rules. These are propagated to all subagents via delegation prompts.
+- **`.maestria/workflow.md`** - Guides delegation sequencing. The orchestrator follows this to determine what to do and in what order (e.g., read the README first, check recent commits, read relevant ADRs before implementing).
+- **`.maestria/rules.md`** - Project-specific non-negotiable rules that supplement the core rules. These are propagated to all subagents via delegation prompts.
 
 ### Precedence
 
-Runtime authority, selected-route safeguards, maker/checker review where applicable, bounded repair,
-and the commit protocol always take precedence over project instructions. If a conflict arises, the
-core principle wins.
+Runtime authority, selected-route safeguards, maker/checker review where applicable, bounded repair, and the commit protocol always take precedence over project instructions. If a conflict arises, the core principle wins.
 
 ### Example
 

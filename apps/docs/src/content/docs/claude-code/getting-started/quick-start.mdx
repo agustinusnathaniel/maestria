@@ -45,11 +45,11 @@ The orchestrator is the routing layer - it decomposes the task, delegates to spe
 
 Three workflow commands control the pipeline depth. They are namespaced and invoked like any Claude Code command:
 
-| Command           | Pipeline                                                                                  | Use case                                |
-| ----------------- | ----------------------------------------------------------------------------------------- | --------------------------------------- |
-| `/maestria:fein`  | Full pipeline: recon → design → implement → review                                        | Production-grade work, mandatory review |
-| `/maestria:sonar` | Research only: owning specialist → optional distinct specialist → STOP                    | Understanding before committing         |
-| `/maestria:blitz` | Fast path: direct or `maestria:builder` (skip optional ceremony; required review remains) | Quick fixes, known territory            |
+| Command | Pipeline | Use case |
+| --- | --- | --- |
+| `/maestria:fein` | Full pipeline: recon → design → implement → review | Production-grade work, mandatory review |
+| `/maestria:sonar` | Research only: owning specialist → optional distinct specialist → STOP | Understanding before committing |
+| `/maestria:blitz` | Fast path: direct or `maestria:builder` (skip optional ceremony; required review remains) | Quick fixes, known territory |
 
 ```markdown
 /maestria:fein add rate limiting to the API.

@@ -5,46 +5,31 @@ description: Release history for @maestria/hermes.
 
 ## 0.1.13
 
-- Clarified agent workflow contracts: routine validated commits on recognized feature branches remain
-  autonomous after required review; push and later lifecycle actions stay separately gated.
-- Simplified and re-aligned the shared directives around outcome, evidence, runtime authority, blind
-  review, bounded repair, and autonomous routine work.
+- Clarified agent workflow contracts: routine validated commits on recognized feature branches remain autonomous after required review; push and later lifecycle actions stay separately gated.
+- Simplified and re-aligned the shared directives around outcome, evidence, runtime authority, blind review, bounded repair, and autonomous routine work.
 
 ## 0.1.12 (2026-08-11)
 
-- Streamlined canonical agent directives by centralizing universal contracts and adding bounded
-  autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action
-  boundaries.
-- Hardened the Hermes adapter by wiring native session and subagent lifecycle trust, immutable mode
-  and child safety allowlists, and the current Hermes plugin registration contracts.
+- Streamlined canonical agent directives by centralizing universal contracts and adding bounded autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action boundaries.
+- Hardened the Hermes adapter by wiring native session and subagent lifecycle trust, immutable mode and child safety allowlists, and the current Hermes plugin registration contracts.
 
 ## 0.1.11 (2026-08-04)
 
 ### Fixed
 
-- Fixed the Hermes delegation rules adaptation in the synced global rules. The route-scoped rewrite
-  of the canonical Delegation section had left a sync `findAndReplace` transform silently no-oping, so
-  the generated `global-rules/SKILL.md` shipped the raw canonical wording instead of the Hermes
-  adaptation. Hermes agents again get the correct guidance: on focused/full routes, use only the 7
-  maestria specialists and never delegate to Hermes' built-in `explore` or `general` agents, which
-  bypass the pipeline.
+- Fixed the Hermes delegation rules adaptation in the synced global rules. The route-scoped rewrite of the canonical Delegation section had left a sync `findAndReplace` transform silently no-oping, so the generated `global-rules/SKILL.md` shipped the raw canonical wording instead of the Hermes adaptation. Hermes agents again get the correct guidance: on focused/full routes, use only the 7 maestria specialists and never delegate to Hermes' built-in `explore` or `general` agents, which bypass the pipeline.
 
 ## 0.1.10 (2026-08-03)
 
 ### Selective routing contract
 
-The orchestrator now routes by task class across `direct`, `focused`, and `full` routes. Small
-explanations and tiny edits run directly or through one specialist; complex or high-risk work uses
-the full pipeline. `fein` selects the full route, `sonar` is research-only, and `blitz` is an
-explicit low-risk/direct bypass that does not waive safety floors. Where the host cannot enforce
-separate sessions, the maker/checker split is advisory and stated as such.
+The orchestrator now routes by task class across `direct`, `focused`, and `full` routes. Small explanations and tiny edits run directly or through one specialist; complex or high-risk work uses the full pipeline. `fein` selects the full route, `sonar` is research-only, and `blitz` is an explicit low-risk/direct bypass that does not waive safety floors. Where the host cannot enforce separate sessions, the maker/checker split is advisory and stated as such.
 
 ## 0.1.9 (2026-07-29)
 
 ### Rule-override conditions and communication conventions
 
-- Added 6 explicit override conditions to the orchestrator prompt (user skip request, safety, mode
-  override, frustration escalation, rule conflicts, explanation requests).
+- Added 6 explicit override conditions to the orchestrator prompt (user skip request, safety, mode override, frustration escalation, rule conflicts, explanation requests).
 - Two new shared rules: report errors matter-of-factly and lead with the action.
 - Review triage now chains directly into the commit flow after approval.
 
@@ -52,10 +37,8 @@ separate sessions, the maker/checker split is advisory and stated as such.
 
 ### Blind review and fail-loud iteration exit
 
-- The reviewer no longer receives the builder's handoff notes or self-assessment; it evaluates only
-  the diff, requirements, and acceptance criteria.
-- When the review loop runs 3 cycles with unresolved issues, the pipeline stops and escalates with a
-  structured report requiring an explicit override to continue.
+- The reviewer no longer receives the builder's handoff notes or self-assessment; it evaluates only the diff, requirements, and acceptance criteria.
+- When the review loop runs 3 cycles with unresolved issues, the pipeline stops and escalates with a structured report requiring an explicit override to continue.
 
 ## 0.1.7 (2026-07-22)
 

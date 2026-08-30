@@ -12,22 +12,16 @@ _August 13, 2026_
 ### Prime Agent support
 
 - Added `prime-agent` platform detection to `status` and `check`.
-- Added `install`, `update`, and `uninstall` adapters that delegate to Prime's native package
-  manager (`prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`).
-- Prime support is deliberately global (user scope only): every Prime command runs from a freshly
-  created empty temporary directory, so project registrations are never scanned or modified, and
-  the temporary directory is removed afterwards.
-- Registration state is read from `prime-agent package list`, and the installed version is read
-  from the installed package's manifest.
-- Updates use Prime's latest-only package semantics, so exact version pinning is unavailable.
-  A version-pinned user registration is reported as an error rather than silently skipped.
+- Added `install`, `update`, and `uninstall` adapters that delegate to Prime's native package manager (`prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`).
+- Prime support is deliberately global (user scope only): every Prime command runs from a freshly created empty temporary directory, so project registrations are never scanned or modified, and the temporary directory is removed afterwards.
+- Registration state is read from `prime-agent package list`, and the installed version is read from the installed package's manifest.
+- Updates use Prime's latest-only package semantics, so exact version pinning is unavailable. A version-pinned user registration is reported as an error rather than silently skipped.
 
 ### Claude Code and Codex CLI support
 
 - Added `claude-code` and `codex` platform detection to `status` and `check`.
 - Added `install`, `update`, and `uninstall` adapters for both host CLIs.
-- The CLI stages the published npm packages under `~/.cache/maestria/` and delegates plugin state
-  to each host's native marketplace manager.
+- The CLI stages the published npm packages under `~/.cache/maestria/` and delegates plugin state to each host's native marketplace manager.
 - Exact version pinning is unavailable for these two marketplace-backed adapters.
 
 ## v0.8.0
@@ -84,17 +78,12 @@ _July 14, 2026_
 
 ### Network-first version lookup
 
-`maestria update` and `maestria status` no longer serve stale cached
-versions. The CLI always fetches the latest version from npm, falling
-back to the cache only when the network is unavailable.
+`maestria update` and `maestria status` no longer serve stale cached versions. The CLI always fetches the latest version from npm, falling back to the cache only when the network is unavailable.
 
 **Improvements:**
 
-- **No stale version window** - Previously, published versions were
-  missed for up to 1 hour due to TTL-based caching. Now the live npm
-  version is fetched every time the network is available.
-- **Offline fallback** - If the npm registry is unreachable, the CLI
-  falls back to the last known cached version instead of failing.
+- **No stale version window** - Previously, published versions were missed for up to 1 hour due to TTL-based caching. Now the live npm version is fetched every time the network is available.
+- **Offline fallback** - If the npm registry is unreachable, the CLI falls back to the last known cached version instead of failing.
 
 ## v0.4.0
 
@@ -102,18 +91,13 @@ _July 14, 2026_
 
 ### Multi-platform selection
 
-`maestria update` and `maestria install` now support comma-separated
-platform IDs (e.g., `maestria update opencode,pi`) and interactive
-multiselect with checkboxes instead of single-option pickers.
+`maestria update` and `maestria install` now support comma-separated platform IDs (e.g., `maestria update opencode,pi`) and interactive multiselect with checkboxes instead of single-option pickers.
 
 **Improvements:**
 
-- **Comma-separated platforms** - Target multiple platforms in one command:
-  `maestria install opencode,pi,kimi-code`
-- **Multiselect in interactive mode** - Checkbox-style picker replaces
-  the old single-select for both install and update commands
-- **All platforms shortcut** - Interactive `maestria update` includes a
-  convenient "All platforms" option to update everything at once
+- **Comma-separated platforms** - Target multiple platforms in one command: `maestria install opencode,pi,kimi-code`
+- **Multiselect in interactive mode** - Checkbox-style picker replaces the old single-select for both install and update commands
+- **All platforms shortcut** - Interactive `maestria update` includes a convenient "All platforms" option to update everything at once
 
 ## v0.3.11
 
@@ -161,26 +145,22 @@ Major improvements to make the CLI more suitable for AI agents and CI pipelines.
 
 **New flags:**
 
-- `--compact` - Minimal machine-friendly text output. Strips colors and decorative formatting.
-  Supports status, install, and update commands.
+- `--compact` - Minimal machine-friendly text output. Strips colors and decorative formatting. Supports status, install, and update commands.
 - `--version` - Print the CLI version and exit.
 - Root `--json` - The `maestria` command (no subcommand) now supports `--json`.
 - `--quiet` on status - Decoupled from `--json`; each flag works independently.
 
 **Enhanced `--help`:**
 
-All commands now show EXAMPLES, EXIT CODES, and TIP FOR AI AGENTS sections
-in addition to the standard flag documentation.
+All commands now show EXAMPLES, EXIT CODES, and TIP FOR AI AGENTS sections in addition to the standard flag documentation.
 
 **Proper exit codes:**
 
-The CLI now exits with `0` (success), `1` (validation/command error), or
-`130` (user cancelled in interactive mode).
+The CLI now exits with `0` (success), `1` (validation/command error), or `130` (user cancelled in interactive mode).
 
 **Non-interactive safety:**
 
-`install` and `update` commands detect non-TTY environments and print a
-clear error message instead of attempting an interactive prompt.
+`install` and `update` commands detect non-TTY environments and print a clear error message instead of attempting an interactive prompt.
 
 ## v0.2.1
 
@@ -188,10 +168,7 @@ _June 29, 2026_
 
 ### Idempotent updates
 
-The `update` command now detects when the installed version already matches
-the target version and skips the update gracefully. Previously, running
-`npx maestria update <platform>` when already on the latest version would
-re-run the install unnecessarily.
+The `update` command now detects when the installed version already matches the target version and skips the update gracefully. Previously, running `npx maestria update <platform>` when already on the latest version would re-run the install unnecessarily.
 
 ## v0.2.0
 
@@ -199,24 +176,18 @@ _June 22, 2026_
 
 ### Cross-platform plugin management
 
-Initial release of the `maestria` CLI - a unified interface for managing
-maestria plugins across OpenCode, Pi, and Kimi Code from a single command.
+Initial release of the `maestria` CLI - a unified interface for managing maestria plugins across OpenCode, Pi, and Kimi Code from a single command.
 
 **Three subcommands:**
 
-- **`install`** - Install maestria for one or all detected platforms. Supports
-  interactive mode (pick from a list), `--all` flag, and per-platform targets.
-- **`update`** - Update installed plugins to the latest (or specified) version.
-  Accepts `--version` for pinned updates and `--all` for bulk updates.
-- **`status`** - Show installation status across platforms. Detects available
-  coding agents on `$PATH` and reports installed vs. latest versions.
+- **`install`** - Install maestria for one or all detected platforms. Supports interactive mode (pick from a list), `--all` flag, and per-platform targets.
+- **`update`** - Update installed plugins to the latest (or specified) version. Accepts `--version` for pinned updates and `--all` for bulk updates.
+- **`status`** - Show installation status across platforms. Detects available coding agents on `$PATH` and reports installed vs. latest versions.
 
 **Key features:**
 
-- No `npm install` required - run via `npx` thanks to the bundled single-file
-  `.mjs` distribution
+- No `npm install` required - run via `npx` thanks to the bundled single-file `.mjs` distribution
 - `--json` flag on all commands for CI/script consumption
 - `--quiet` flag to suppress spinner animations
 - Version caching (1-hour TTL in `~/.cache/maestria/versions.json`)
-- Input validation with clear error messages for unknown platforms, invalid
-  versions, and conflicting flags
+- Input validation with clear error messages for unknown platforms, invalid versions, and conflicting flags

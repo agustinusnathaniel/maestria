@@ -42,11 +42,11 @@ Hermes:       [Adventurer explores, Architect designs, Builder route is capabili
 
 ## Modes at a Glance
 
-| Mode    | Pipeline                                          | When to Use                                                                     |
-| ------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `fein`  | Full: adventurer → architect → builder → reviewer | Production work, new features, anything that needs review                       |
-| `sonar` | Research: read-only adventurer/planner → stop     | Understanding a codebase, exploring options, no creation                        |
-| `blitz` | Direct, read/research/LLM-only                    | Explanation and discovery on known territory; code changes route through review |
+| Mode | Pipeline | When to Use |
+| --- | --- | --- |
+| `fein` | Full: adventurer → architect → builder → reviewer | Production work, new features, anything that needs review |
+| `sonar` | Research: read-only adventurer/planner → stop | Understanding a codebase, exploring options, no creation |
+| `blitz` | Direct, read/research/LLM-only | Explanation and discovery on known territory; code changes route through review |
 
 The mode directive is injected into every message automatically - no manual prompting needed.
 
@@ -54,11 +54,11 @@ The mode directive is injected into every message automatically - no manual prom
 
 The seven specialist names (adventurer, architect, builder, diagnose, planner, reviewer, writer) are methodology **routing roles** that the orchestrator dispatches to. They are not tool-granting identities on Hermes. Trust and tool capability are governed by the role-neutral child trust policy:
 
-| Context                                                                         | Allowed tools                                                                                                                 |
-| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Context | Allowed tools |
+| --- | --- |
 | **Trusted top-level session** (positively identified by native lifecycle state) | Normal direct behavior. In sonar: read/research only. In direct blitz: a literal read/research/LLM allowlist, no code changes |
-| **Delegated child** (spawned via `delegate_task`)                               | Fixed read/research/LLM-only policy. Cannot write, execute code, run a shell, delegate, or invoke OpenCode                    |
-| **Ambiguous / invalid / ended child**                                           | Fails closed - denied in all modes                                                                                            |
+| **Delegated child** (spawned via `delegate_task`) | Fixed read/research/LLM-only policy. Cannot write, execute code, run a shell, delegate, or invoke OpenCode |
+| **Ambiguous / invalid / ended child** | Fails closed - denied in all modes |
 
 Under this policy:
 
@@ -73,11 +73,11 @@ Direct code changes on Hermes are performed by a trusted top-level session (typi
 
 For multi-turn or long-running work, pair maestria pipelines with Hermes platform features:
 
-| Feature                      | How it helps                                                                                                                                                                       | Links                                                                                                                            |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **`/goal`**                  | Set a persistent objective (`/goal draft Run the fein pipeline to implement OAuth`). The goal loop survives session boundaries; mode and pipeline state restore on `/goal resume`. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) · [GitHub](https://github.com/nousresearch/hermes)  |
-| **Mnemosyne** (agent memory) | Cross-session agent memory remembers your mode preference, past pipeline context, and working patterns across sessions.                                                            | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/nousresearch/hermes) |
-| **Uteke** (knowledge base)   | Store specialist findings and pipeline decisions as searchable wiki documents for long-term project reference.                                                                     | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/codecoradev/uteke)   |
+| Feature | How it helps | Links |
+| --- | --- | --- |
+| **`/goal`** | Set a persistent objective (`/goal draft Run the fein pipeline to implement OAuth`). The goal loop survives session boundaries; mode and pipeline state restore on `/goal resume`. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) · [GitHub](https://github.com/nousresearch/hermes) |
+| **Mnemosyne** (agent memory) | Cross-session agent memory remembers your mode preference, past pipeline context, and working patterns across sessions. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/nousresearch/hermes) |
+| **Uteke** (knowledge base) | Store specialist findings and pipeline decisions as searchable wiki documents for long-term project reference. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/codecoradev/uteke) |
 
 Configure Mnemosyne or Uteke in `config.yaml` under `memory:`. See the [Installation Guide](/hermes/getting-started/installation/) for details.
 

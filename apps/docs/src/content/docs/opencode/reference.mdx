@@ -27,14 +27,14 @@ t3code sends a `permission` parameter in its `session.create()` call via its `bu
 
 ### What behaves differently
 
-| Aspect               | Native OpenCode                                                                                                                      | Under t3code                                                                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Config loading**   | `opencode.jsonc` is loaded normally                                                                                                  | Overridden by `OPENCODE_CONFIG_CONTENT="{}"` - file-based config is ignored                                                                      |
+| Aspect | Native OpenCode | Under t3code |
+| --- | --- | --- |
+| **Config loading** | `opencode.jsonc` is loaded normally | Overridden by `OPENCODE_CONFIG_CONTENT="{}"` - file-based config is ignored |
 | **Permission model** | Agent-level permissions are authoritative ([source](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/permission.ts)) | t3code injects session-level rules via SDK ([source](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/opencodeRuntime.ts)) |
-| **Permission UI**    | OpenCode's native prompt for approval requests                                                                                       | t3code intercepts `permission.asked` events and shows its own UI                                                                                 |
-| **Runtime mode**     | Agent permissions govern tool access                                                                                                 | t3code's `runtimeMode` setting (full-access / approval-required) affects the approval layer                                                      |
-| **Full-access mode** | Respects agent-level `deny` rules                                                                                                    | Flattens to blanket allow-all at t3code's level - agent denials may not surface correctly                                                        |
-| **Permission flow**  | Permission check -> agent config -> allow/deny/ask -> native UI                                                                      | Permission check -> agent config -> allow/deny/ask -> t3code intercepts -> t3code UI -> mapped back to OpenCode                                  |
+| **Permission UI** | OpenCode's native prompt for approval requests | t3code intercepts `permission.asked` events and shows its own UI |
+| **Runtime mode** | Agent permissions govern tool access | t3code's `runtimeMode` setting (full-access / approval-required) affects the approval layer |
+| **Full-access mode** | Respects agent-level `deny` rules | Flattens to blanket allow-all at t3code's level - agent denials may not surface correctly |
+| **Permission flow** | Permission check -> agent config -> allow/deny/ask -> native UI | Permission check -> agent config -> allow/deny/ask -> t3code intercepts -> t3code UI -> mapped back to OpenCode |
 
 ### Known limitations
 

@@ -10,10 +10,8 @@ description: Release history for @maestria/codex.
 ### Native Codex orchestration
 
 - The Maestria CLI now installs seven native `maestria-*` Codex custom-agent roles.
-- The CLI adds a marked global instruction block so Codex's host-owned primary session activates
-  Maestria orchestration and delegates with native `agent_type` role names.
-- Updates preserve user model, reasoning, and service-tier settings, and uninstall removes only
-  Maestria-managed agent files and instruction content.
+- The CLI adds a marked global instruction block so Codex's host-owned primary session activates Maestria orchestration and delegates with native `agent_type` role names.
+- Updates preserve user model, reasoning, and service-tier settings, and uninstall removes only Maestria-managed agent files and instruction content.
 
 ## 0.3.0
 
@@ -32,24 +30,17 @@ _August 13, 2026_
 
 ### Maestria CLI support
 
-- Added Maestria CLI compatibility: the CLI detects the Codex CLI host, stages the published npm
-  package in a local marketplace, and delegates install, update, status, check, and uninstall
-  operations to Codex's native plugin manager.
+- Added Maestria CLI compatibility: the CLI detects the Codex CLI host, stages the published npm package in a local marketplace, and delegates install, update, status, check, and uninstall operations to Codex's native plugin manager.
 
 ## 0.2.0
 
 ### Codex CLI projection
 
-- Added the generated skills projection for the 7 specialists, orchestrator, global rules, handoff,
-  iteration limits, and `fein`/`sonar`/`blitz` workflow modes.
-- Added Maestria CLI compatibility: `install`, `status`, `check`, `update`, and `uninstall` now
-  recognize the `codex` platform.
+- Added the generated skills projection for the 7 specialists, orchestrator, global rules, handoff, iteration limits, and `fein`/`sonar`/`blitz` workflow modes.
+- Added Maestria CLI compatibility: `install`, `status`, `check`, `update`, and `uninstall` now recognize the `codex` platform.
 - The CLI stages the npm package in a local Codex marketplace and delegates plugin state to Codex.
-- Codex desktop parity, hooks, MCP, model configuration, and hard read-only enforcement remain out
-  of scope.
+- Codex desktop parity, hooks, MCP, model configuration, and hard read-only enforcement remain out of scope.
 
 ## 0.1.0
 
-Initial Codex CLI projection. It packages the canonical Maestria specialist,
-orchestration, rules, handoff, iteration-limit, and workflow-mode directives as Codex skills through
-`.codex-plugin/plugin.json`.
+Initial Codex CLI projection. It packages the canonical Maestria specialist, orchestration, rules, handoff, iteration-limit, and workflow-mode directives as Codex skills through `.codex-plugin/plugin.json`.

@@ -55,6 +55,10 @@ When facing ambiguity or trade-offs, these rules of thumb apply:
 - **Incremental over radical** - A small, reviewable change that lands today is worth more than a perfect rewrite that never ships.
 - **Quality gates are not optional** - `vp check` before every commit. `scripts/check-sync` after every agent directive change. Post-implementation review by `@reviewer` is the default (maker/checker split).
 
+## Tooling
+
+Lint and format use Ultracite presets composed in `vite.config.ts` as the single source of truth (see ADR-CORE-021). Run `vp check` and `vp check --fix` (or `vp staged` via `.vite-hooks/pre-commit`) - do not run `ultracite fix` or `oxlint` directly.
+
 ## Reference
 
 ### Architecture Decision Records

@@ -63,21 +63,21 @@ Each specialist's prompt is authored in the canonical source and synced to SKILL
 
 The `kimi.plugin.json` manifest fields:
 
-| Field                | Type   | Description                                                       |
-| -------------------- | ------ | ----------------------------------------------------------------- |
-| `name`               | string | Plugin identifier (`maestria`)                                    |
-| `version`            | string | Semver version, follows the monorepo changeset pipeline           |
-| `description`        | string | One-line summary for the plugin marketplace                       |
-| `keywords`           | array  | Discovery keywords (`maestria`, `kimi-code`, `swarm`, etc.)       |
-| `author`             | object | `{ name, email }`                                                 |
-| `homepage`           | string | Project homepage URL                                              |
-| `license`            | string | SPDX license identifier                                           |
-| `skills`             | string | Path to the skills directory (e.g., `"./skills/"`)                |
-| `commands`           | string | Path to native plugin slash commands (e.g., `"./commands/"`)      |
-| `systemPromptPath`   | string | Path to native system-prompt instructions (e.g., `"./SYSTEM.md"`) |
-| `sessionStart.skill` | string | Name of the skill to auto-load at session start (`orchestrator`)  |
-| `skillInstructions`  | string | Plugin-wide instruction string injected alongside skills          |
-| `interface`          | object | Display metadata (`displayName`, `shortDescription`, etc.)        |
+| Field | Type | Description |
+| --- | --- | --- |
+| `name` | string | Plugin identifier (`maestria`) |
+| `version` | string | Semver version, follows the monorepo changeset pipeline |
+| `description` | string | One-line summary for the plugin marketplace |
+| `keywords` | array | Discovery keywords (`maestria`, `kimi-code`, `swarm`, etc.) |
+| `author` | object | `{ name, email }` |
+| `homepage` | string | Project homepage URL |
+| `license` | string | SPDX license identifier |
+| `skills` | string | Path to the skills directory (e.g., `"./skills/"`) |
+| `commands` | string | Path to native plugin slash commands (e.g., `"./commands/"`) |
+| `systemPromptPath` | string | Path to native system-prompt instructions (e.g., `"./SYSTEM.md"`) |
+| `sessionStart.skill` | string | Name of the skill to auto-load at session start (`orchestrator`) |
+| `skillInstructions` | string | Plugin-wide instruction string injected alongside skills |
+| `interface` | object | Display metadata (`displayName`, `shortDescription`, etc.) |
 
 ### Adding a new skill
 

@@ -58,12 +58,12 @@ scripts/check-sync        # CI check that generated files are in sync
 
 Each specialist is a Markdown file with YAML frontmatter in `packages/claude-code/agents/`, derived by `sync.config.ts`:
 
-| Field             | Type   | Description                                                              |
-| ----------------- | ------ | ------------------------------------------------------------------------ |
-| `name`            | string | Agent identifier (`adventurer`, `builder`, ...)                          |
-| `description`     | string | Role summary and when-to-use guidance                                    |
-| `model`           | string | `inherit` - agents use the session model                                 |
-| `skills`          | array  | Skills preloaded into the agent (`maestria:global-rules`)                |
+| Field | Type | Description |
+| --- | --- | --- |
+| `name` | string | Agent identifier (`adventurer`, `builder`, ...) |
+| `description` | string | Role summary and when-to-use guidance |
+| `model` | string | `inherit` - agents use the session model |
+| `skills` | array | Skills preloaded into the agent (`maestria:global-rules`) |
 | `disallowedTools` | string | Tools denied at runtime; `Write, Edit` on the three read-only roles only |
 
 ### Skill and command frontmatter

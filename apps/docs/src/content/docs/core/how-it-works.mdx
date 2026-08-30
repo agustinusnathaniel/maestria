@@ -56,11 +56,11 @@ A typical AI coding session starts with a single large context window. Every act
 
 The dispatcher model solves this through allocation. The orchestrator's context stays lean because it only makes routing decisions. Each specialist runs in its own task or session with role-specific prompts, but the exact context inherited by a subagent depends on the platform.
 
-| Property                 | Monolithic session                  | Maestria pipeline                                            |
-| ------------------------ | ----------------------------------- | ------------------------------------------------------------ |
-| Context allocation       | One window for all roles            | Separate tasks, with inheritance varying by platform         |
-| Role contamination       | Build assumptions carry into review | Role prompts reduce it; inherited context can reintroduce it |
-| Effective work per token | Degrades as window fills            | Depends on the model, platform, and task                     |
+| Property | Monolithic session | Maestria pipeline |
+| --- | --- | --- |
+| Context allocation | One window for all roles | Separate tasks, with inheritance varying by platform |
+| Role contamination | Build assumptions carry into review | Role prompts reduce it; inherited context can reintroduce it |
+| Effective work per token | Degrades as window fills | Depends on the model, platform, and task |
 
 Total token usage can be substantially higher than a direct session because every delegated stage has its own model turn and context. The trade-off is worthwhile only when focused roles, handoffs, or independent review reduce enough risk to justify that overhead. See [When to use Maestria](/core/when-to-use/) before choosing the full pipeline.
 

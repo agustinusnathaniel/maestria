@@ -5,13 +5,10 @@ description: Register @maestria/prime-agent with Prime Agent, enable the extensi
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-`@maestria/prime-agent` ships two resource types Prime discovers from the `pi` manifest key in
-`package.json`:
+`@maestria/prime-agent` ships two resource types Prime discovers from the `pi` manifest key in `package.json`:
 
 - **Skills** (`pi.skills: ["./skills"]`): the 14 Agent Skills (`skills/<name>/SKILL.md`).
-- **Extension** (`pi.extensions: ["./dist/extension.mjs"]`): a compiled Prime/Pi extension with the
-  workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and
-  mode prompt injection.
+- **Extension** (`pi.extensions: ["./dist/extension.mjs"]`): a compiled Prime/Pi extension with the workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and mode prompt injection.
 
 <Aside type="caution" title="Pinned support boundary">
   This package is a `Native candidate`. The generated skills match the documented Prime Agent Agent
@@ -24,9 +21,7 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 ## Prerequisites
 
 - **Prime Agent** installed (see Prime's [getting started](https://github.com/PrimeIntellect-ai/prime-agent)).
-- Node.js and pnpm are only needed if you are contributing to this repository to regenerate files
-  from the canonical core directives. Prime installs registered packages itself via npm; pnpm is not
-  required to consume this package.
+- Node.js and pnpm are only needed if you are contributing to this repository to regenerate files from the canonical core directives. Prime installs registered packages itself via npm; pnpm is not required to consume this package.
 
 ## Register the package (preferred, enables the extension)
 
@@ -36,16 +31,9 @@ Register the published package with Prime's package mechanism:
 prime-agent package install npm:@maestria/prime-agent
 ```
 
-- By default the package is recorded in global settings (`~/.prime/agent/settings.json`); add
-  `--local` to record it in project settings (`.prime/agent/settings.json`), which Prime installs
-  automatically at startup.
-- Prime reads the package's `pi.extensions` and `pi.skills` manifest entries to discover the
-  extension and the skills. This is the only documented install path that enables the extension
-  automatically.
-- **Git/local source installs are skills-only unless the package has been built.** Prime's git
-  installs clone the repository and run `npm install` but do **not** build, so `dist/extension.mjs`
-  is absent and the extension is silently skipped. To get the extension from a source install, build
-  the package first and point Prime at the built directory:
+- By default the package is recorded in global settings (`~/.prime/agent/settings.json`); add `--local` to record it in project settings (`.prime/agent/settings.json`), which Prime installs automatically at startup.
+- Prime reads the package's `pi.extensions` and `pi.skills` manifest entries to discover the extension and the skills. This is the only documented install path that enables the extension automatically.
+- **Git/local source installs are skills-only unless the package has been built.** Prime's git installs clone the repository and run `npm install` but do **not** build, so `dist/extension.mjs` is absent and the extension is silently skipped. To get the extension from a source install, build the package first and point Prime at the built directory:
 
   ```bash
   pnpm --filter @maestria/prime-agent build
@@ -54,8 +42,7 @@ prime-agent package install npm:@maestria/prime-agent
 
 ## Skills-only options (no extension)
 
-If you only want the skills, point Prime at the package's `skills/` directory in settings
-(`~/.prime/agent/settings.json` for your user, or `.prime/agent/settings.json` in the project):
+If you only want the skills, point Prime at the package's `skills/` directory in settings (`~/.prime/agent/settings.json` for your user, or `.prime/agent/settings.json` in the project):
 
 ```json
 {
@@ -79,9 +66,7 @@ ln -s /path/to/maestria/packages/prime-agent/skills/* ~/.prime/agent/skills/
 
 ### Enabling the extension for skills-only installs
 
-If you installed via a skills-only path and want the extension too, point the `extensions` setting
-at the compiled file (the npm package tarball includes `dist/extension.mjs`; a source clone needs
-`pnpm --filter @maestria/prime-agent build` first):
+If you installed via a skills-only path and want the extension too, point the `extensions` setting at the compiled file (the npm package tarball includes `dist/extension.mjs`; a source clone needs `pnpm --filter @maestria/prime-agent build` first):
 
 ```json
 {
@@ -102,13 +87,9 @@ at the compiled file (the npm package tarball includes `dist/extension.mjs`; a s
    /reload
    ```
 
-3. **Confirm the skills appear.** Run `/skill:orchestrator` or ask the agent to load the
-   `global-rules` skill.
+3. **Confirm the skills appear.** Run `/skill:orchestrator` or ask the agent to load the `global-rules` skill.
 
-4. **Confirm the extension loaded.** Run `/maestria-status` - it should report the current mode
-   (`none` initially) and the verified/deferred subset. Try `/fein`, `/sonar`, `/blitz`, and
-   `/mode-clear`; while a mode is active, the mode prompt is appended to the system prompt on each
-   agent turn.
+4. **Confirm the extension loaded.** Run `/maestria-status` - it should report the current mode (`none` initially) and the verified/deferred subset. Try `/fein`, `/sonar`, `/blitz`, and `/mode-clear`; while a mode is active, the mode prompt is appended to the system prompt on each agent turn.
 
 </Steps>
 
@@ -128,8 +109,7 @@ If you used the package registration path, unregister it:
 prime-agent package remove npm:@maestria/prime-agent
 ```
 
-Otherwise removal is simply dropping the settings `skills`/`extensions` entries or symlink that
-points Prime at the package.
+Otherwise removal is simply dropping the settings `skills`/`extensions` entries or symlink that points Prime at the package.
 
 ## Next Steps
 
