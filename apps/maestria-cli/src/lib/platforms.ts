@@ -28,7 +28,6 @@ import {
   kimiManagedPluginDir,
   kimiInstalledPath,
   readKimiInstalled,
-  writeKimiInstalled,
   registerKimiPlugin,
   removeKimiPlugin,
 } from '@/lib/kimi.js';
