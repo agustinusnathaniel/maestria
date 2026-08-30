@@ -786,7 +786,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
         t.setAttribute('aria-selected', 'false');
         t.setAttribute('tabindex', '-1');
       });
-      panels.forEach(p => {return p.setAttribute('hidden', '')});
+      panels.forEach(p => p.setAttribute('hidden', ''));
 
       tab.setAttribute('aria-selected', 'true');
       tab.setAttribute('tabindex', '0');
@@ -802,7 +802,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
     }
 
     tabs.forEach(tab => {
-      tab.addEventListener('click', () => {return activateTab(tab)});
+      tab.addEventListener('click', () => activateTab(tab));
     });
 
     document.addEventListener('keydown', (e) => {

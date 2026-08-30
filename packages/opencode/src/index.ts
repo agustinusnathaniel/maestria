@@ -65,9 +65,7 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
  */
 function loadAgents(): Record<string, Record<string, unknown>> {
   try {
-    const files = readdirSync(AGENTS_DIR).filter((f) => {
-      return f.endsWith('.md');
-    });
+    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith('.md'));
     const agents: Record<string, Record<string, unknown>> = {};
 
     for (const file of files) {
@@ -93,9 +91,7 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
   // Validate and parse options with zod
   const parsed = maestriaOptionsSchema.parse(options ?? {});
   const disabledKeywords = new Set<string>(
-    (parsed.modes?.disabledKeywords ?? []).map((k) => {
-      return k.toLowerCase();
-    }),
+    (parsed.modes?.disabledKeywords ?? []).map((k) => k.toLowerCase()),
   );
   const agents = loadAgents();
 
@@ -123,9 +119,9 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
       }
 
       // Find the first text part with user content
-      const textPart = hookOutput.parts.find((p) => {
-        return p.type === 'text';
-      }) as { text: string; type: 'text' } | undefined;
+      const textPart = hookOutput.parts.find((p) => p.type === 'text') as
+        | { text: string; type: 'text' }
+        | undefined;
       if (!textPart) {
         return;
       }

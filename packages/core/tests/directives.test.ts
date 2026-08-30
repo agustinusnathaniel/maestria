@@ -72,9 +72,7 @@ describe('canonical directive behavioral contracts', () => {
       'planner',
       'reviewer',
       'writer',
-    ].map((role) => {
-      return readDirective('specialists', `${role}.md`);
-    });
+    ].map((role) => readDirective('specialists', `${role}.md`));
 
     for (const directive of deliveryDirectives) {
       expect(directive).toMatch(

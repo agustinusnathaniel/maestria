@@ -16,9 +16,7 @@ describe('pollSubagentEffect', () => {
           id: 'subagent-1',
           label: 'builder',
           sendUpdates: false,
-          service: service(() => {
-            return record;
-          }),
+          service: service(() => record),
         }),
       ),
     ).resolves.toEqual(record);
@@ -31,9 +29,7 @@ describe('pollSubagentEffect', () => {
           id: 'subagent-missing',
           label: 'builder',
           sendUpdates: false,
-          service: service(() => {
-            return undefined;
-          }),
+          service: service(() => undefined),
         }),
       ),
     ).rejects.toMatchObject({
@@ -50,9 +46,7 @@ describe('pollSubagentEffect', () => {
         id: 'subagent-aborted',
         label: 'builder',
         sendUpdates: false,
-        service: service(() => {
-          return { status: 'running' };
-        }),
+        service: service(() => ({ status: 'running' })),
         signal: controller.signal,
         intervalMs: 5,
       }),
@@ -74,9 +68,7 @@ describe('pollSubagentEffect', () => {
           id: 'subagent-timeout',
           label: 'builder',
           sendUpdates: false,
-          service: service(() => {
-            return { status: 'running' };
-          }),
+          service: service(() => ({ status: 'running' })),
           intervalMs: 1,
           timeoutMs: 2,
         }),

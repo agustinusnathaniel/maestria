@@ -178,9 +178,7 @@ describe('prime-agent built extension artifact', () => {
 
     // Command behavior: `/fein <goal>` sets the mode, persists a custom entry,
     // and steers the goal to the agent.
-    const fein = commands.find((c) => {
-      return c.name === 'fein';
-    });
+    const fein = commands.find((c) => c.name === 'fein');
     expect(fein).toBeDefined();
     // Only the notify method is exercised by the command handler; the rest of
     // the context is a stub (same pattern as tests/extension.test.ts).
@@ -235,9 +233,7 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
     if (!result?.files) {
       throw new Error('npm pack --dry-run --json returned no file list');
     }
-    return result.files.map((f) => {
-      return f.path;
-    });
+    return result.files.map((f) => f.path);
   }
 
   // npm pack is relatively expensive in this workspace. Reuse the one
@@ -267,12 +263,8 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
         withFileTypes: true,
       })
     )
-      .filter((e) => {
-        return e.isDirectory();
-      })
-      .map((e) => {
-        return e.name;
-      });
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name);
     expect(skillNames.length).toBeGreaterThan(0);
 
     for (const name of skillNames) {
@@ -284,11 +276,7 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
 
   it('excludes source, tests, and dependency trees from the tarball', () => {
     for (const excluded of ['src/', 'tests/', 'node_modules/', 'scripts/']) {
-      expect(
-        packFiles.some((f) => {
-          return f.startsWith(excluded);
-        }),
-      ).toBe(false);
+      expect(packFiles.some((f) => f.startsWith(excluded))).toBe(false);
     }
   });
 });

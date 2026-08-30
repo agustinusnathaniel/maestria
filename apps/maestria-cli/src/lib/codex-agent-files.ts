@@ -55,9 +55,7 @@ export function setCodexTopLevelString(
       const comment = existing.match(/(\s+#.*)$/)?.[1] ?? '';
       lines[index] = `${rendered}${comment}`;
     } else {
-      const section = lines.findIndex((line) => {
-        return /^\s*\[/.test(line);
-      });
+      const section = lines.findIndex((line) => /^\s*\[/.test(line));
       lines.splice(section < 0 ? lines.length : section, 0, rendered);
     }
   } else if (index >= 0) {

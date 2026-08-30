@@ -16,17 +16,13 @@ describe('deploySpecialistAgents', () => {
     // deploySpecialistAgents with a missing source dir should not throw
     // It reads from the package's agents/ directory which should exist
     // when the package is built/synced. If missing, it logs a warning.
-    expect(() => {
-      return deploySpecialistAgents();
-    }).not.toThrow();
+    expect(() => deploySpecialistAgents()).not.toThrow();
   });
 
   it('does not throw when called with context', () => {
     const ctx = {} as any;
     // The function accepts optional ExtensionContext but is resilient
-    expect(() => {
-      return deploySpecialistAgents(ctx);
-    }).not.toThrow();
+    expect(() => deploySpecialistAgents(ctx)).not.toThrow();
   });
 });
 

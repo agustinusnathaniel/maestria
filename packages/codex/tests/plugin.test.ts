@@ -72,9 +72,7 @@ async function pathExists(relativePath: string): Promise<boolean> {
 function parseFrontmatter(text: string): Record<string, string> {
   const lines = text.split(/\r?\n/);
   expect(lines[0]?.trim()).toBe('---');
-  const close = lines.findIndex((line, index) => {
-    return index > 0 && line.trim() === '---';
-  });
+  const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
   expect(close).toBeGreaterThan(0);
 
   const data: Record<string, string> = {};
@@ -120,9 +118,7 @@ describe('repository marketplace entry', () => {
     const marketplace = JSON.parse(
       await readFile(path.join(PACKAGE_ROOT, '../../.agents/plugins/marketplace.json'), 'utf8'),
     ) as MarketplaceManifest;
-    const plugin = marketplace.plugins?.find((entry) => {
-      return entry.name === 'maestria';
-    });
+    const plugin = marketplace.plugins?.find((entry) => entry.name === 'maestria');
     expect(marketplace.name).toBe('maestria');
     expect(plugin?.source).toEqual({ source: 'npm', package: '@maestria/codex' });
   });
@@ -132,12 +128,8 @@ describe('generated skills', () => {
   it('contains exactly the projected skill directories', async () => {
     const entries = await readdir(path.join(PACKAGE_ROOT, 'skills'), { withFileTypes: true });
     const names = entries
-      .filter((entry) => {
-        return entry.isDirectory();
-      })
-      .map((entry) => {
-        return entry.name;
-      })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
       .sort();
     expect(names).toEqual([...EXPECTED_SKILLS].sort());
   });

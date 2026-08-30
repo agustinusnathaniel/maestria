@@ -62,12 +62,8 @@ async function readDirNames(relativePath: string): Promise<string[]> {
     withFileTypes: true,
   });
   return entries
-    .filter((entry) => {
-      return !entry.name.startsWith('.');
-    })
-    .map((entry) => {
-      return entry.name;
-    })
+    .filter((entry) => !entry.name.startsWith('.'))
+    .map((entry) => entry.name)
     .sort();
 }
 
@@ -82,9 +78,7 @@ function parseFrontmatter(text: string): { data: Record<string, string | string[
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
-  const close = lines.findIndex((line, index) => {
-    return index > 0 && line.trim() === '---';
-  });
+  const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
   if (close === -1) {
     throw new Error('missing closing frontmatter fence');
   }
@@ -120,11 +114,7 @@ function parseFrontmatter(text: string): { data: Record<string, string | string[
     if (value.startsWith('[') && value.endsWith(']')) {
       const inner = value.slice(1, -1).trim();
       data[key] =
-        inner === ''
-          ? []
-          : inner.split(',').map((e) => {
-              return e.trim().replace(/^["']|["']$/g, '');
-            });
+        inner === '' ? [] : inner.split(',').map((e) => e.trim().replace(/^["']|["']$/g, ''));
     } else if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
@@ -203,13 +193,7 @@ describe('.claude-plugin/plugin.json manifest', () => {
 describe('generated agents', () => {
   it('contains exactly the 7 expected specialist agents and nothing else', async () => {
     const names = await readDirNames('agents');
-    expect(names).toEqual(
-      [...EXPECTED_AGENTS]
-        .map((agent) => {
-          return `${agent}.md`;
-        })
-        .sort(),
-    );
+    expect(names).toEqual([...EXPECTED_AGENTS].map((agent) => `${agent}.md`).sort());
   });
 
   for (const agent of EXPECTED_AGENTS) {
@@ -249,12 +233,8 @@ describe('generated agents', () => {
         const disallowed = (data.disallowedTools ?? '').toString();
         const tools = disallowed
           .split(',')
-          .map((tool) => {
-            return tool.trim();
-          })
-          .filter((tool) => {
-            return tool.length > 0;
-          });
+          .map((tool) => tool.trim())
+          .filter((tool) => tool.length > 0);
         expect(tools).toEqual(['Write', 'Edit']);
       });
     }
@@ -317,13 +297,7 @@ describe('generated skills', () => {
 describe('generated commands', () => {
   it('contains exactly the 3 workflow commands and nothing else', async () => {
     const names = await readDirNames('commands');
-    expect(names).toEqual(
-      [...EXPECTED_COMMANDS]
-        .map((command) => {
-          return `${command}.md`;
-        })
-        .sort(),
-    );
+    expect(names).toEqual([...EXPECTED_COMMANDS].map((command) => `${command}.md`).sort());
   });
 
   for (const command of EXPECTED_COMMANDS) {

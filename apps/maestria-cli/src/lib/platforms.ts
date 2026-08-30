@@ -39,11 +39,7 @@ import {
 function readOpenCodeConfig(): Effect.Effect<string, CommandError> {
   const jsoncPath = `${homedir()}/.config/opencode/opencode.jsonc`;
   const jsonPath = `${homedir()}/.config/opencode/opencode.json`;
-  return readTextFile(jsoncPath).pipe(
-    Effect.catchCause(() => {
-      return readTextFile(jsonPath);
-    }),
-  );
+  return readTextFile(jsoncPath).pipe(Effect.catchCause(() => readTextFile(jsonPath)));
 }
 
 /**
@@ -68,22 +64,15 @@ function cleanupStaleTarball(
     try: async () => {
       const { readdir, unlink, rm } = await import('node:fs/promises');
       const entries = await readdir(tmpDir);
-      const stale = entries.filter((e) => {
-        return e.startsWith(prefix) && e.endsWith('.tgz');
-      });
-      await Promise.all(
-        stale.map((e) => {
-          return unlink(join(tmpDir, e));
-        }),
-      );
+      const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
+      await Promise.all(stale.map((e) => unlink(join(tmpDir, e))));
       await rm(dest, { recursive: true, force: true });
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `cleanup ${tmpDir}/${prefix}*.tgz and ${dest}`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -96,9 +85,7 @@ function findPackedTarball(
     try: async () => {
       const { readdir } = await import('node:fs/promises');
       const entries = await readdir(tmpDir);
-      const matches = entries.filter((e) => {
-        return e.startsWith(prefix) && e.endsWith('.tgz');
-      });
+      const matches = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
       if (matches.length === 0) {
         throw new Error(`no tarball found for ${pkgAtTag} in ${tmpDir}`);
       }
@@ -107,12 +94,11 @@ function findPackedTarball(
       }
       return join(tmpDir, matches[0]);
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `find tarball ${tmpDir}/${prefix}*.tgz`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -135,9 +121,7 @@ function installNpmTarball(
         const { mkdir } = await import('node:fs/promises');
         await mkdir(dest, { recursive: true });
       },
-      catch: (error) => {
-        return new CommandError({ command: `mkdir -p ${dest}`, message: String(error) });
-      },
+      catch: (error) => new CommandError({ command: `mkdir -p ${dest}`, message: String(error) }),
     });
     yield* run('tar', ['-xzf', tarballPath, '-C', dest, '--strip-components=1'], 120_000);
     yield* Effect.tryPromise({
@@ -145,9 +129,8 @@ function installNpmTarball(
         const { unlink } = await import('node:fs/promises');
         await unlink(tarballPath);
       },
-      catch: (error) => {
-        return new CommandError({ command: `rm -f ${tarballPath}`, message: String(error) });
-      },
+      catch: (error) =>
+        new CommandError({ command: `rm -f ${tarballPath}`, message: String(error) }),
     });
   });
 }
@@ -168,9 +151,7 @@ function jsonRecords(output: string, key?: string): JsonRecord[] {
         : parsed;
 
     return Array.isArray(value)
-      ? value.filter((entry): entry is JsonRecord => {
-          return typeof entry === 'object' && entry !== null;
-        })
+      ? value.filter((entry): entry is JsonRecord => typeof entry === 'object' && entry !== null)
       : [];
   } catch {
     return [];
@@ -178,9 +159,9 @@ function jsonRecords(output: string, key?: string): JsonRecord[] {
 }
 
 function hasMarketplace(output: string): boolean {
-  return jsonRecords(output, 'marketplaces').some((marketplace) => {
-    return marketplace.name === MAESTRIA_MARKETPLACE;
-  });
+  return jsonRecords(output, 'marketplaces').some(
+    (marketplace) => marketplace.name === MAESTRIA_MARKETPLACE,
+  );
 }
 
 function hasMaestriaPlugin(output: string): boolean {
@@ -220,9 +201,7 @@ function installedMaestriaVersion(output: string): string {
 }
 
 function hostPluginList(command: 'claude' | 'codex'): Effect.Effect<string, CommandError> {
-  return Effect.suspend(() => {
-    return run(command, ['plugin', 'list', '--json']);
-  });
+  return Effect.suspend(() => run(command, ['plugin', 'list', '--json']));
 }
 
 function prepareNpmMarketplace(
@@ -243,16 +222,14 @@ function prepareNpmMarketplace(
         await mkdir(dirname(marketplacePath), { recursive: true });
         await writeFile(marketplacePath, `${JSON.stringify(manifest, null, 2)}\n`);
       },
-      catch: (error) => {
-        return new CommandError({
+      catch: (error) =>
+        new CommandError({
           command: `write ${marketplacePath}`,
           message: String(error),
-        });
-      },
+        }),
     });
   });
 }
-
 
 const claudeMarketplaceManifest: JsonRecord = {
   $schema: 'https://anthropic.com/claude-code/marketplace.schema.json',
@@ -285,13 +262,13 @@ const codexMarketplaceManifest: JsonRecord = {
 
 function ensureClaudeMarketplace(): Effect.Effect<void, CommandError> {
   return run('claude', ['plugin', 'marketplace', 'list', '--json']).pipe(
-    Effect.flatMap((output) => {
-      return hasMarketplace(output)
+    Effect.flatMap((output) =>
+      hasMarketplace(output)
         ? Effect.void
         : run('claude', ['plugin', 'marketplace', 'add', CLAUDE_MARKETPLACE_DIR]).pipe(
             Effect.as(void 0),
-          );
-    }),
+          ),
+    ),
   );
 }
 
@@ -303,13 +280,13 @@ function refreshClaudeMarketplace(): Effect.Effect<void, CommandError> {
 
 function ensureCodexMarketplace(): Effect.Effect<void, CommandError> {
   return run('codex', ['plugin', 'marketplace', 'list', '--json']).pipe(
-    Effect.flatMap((output) => {
-      return hasMarketplace(output)
+    Effect.flatMap((output) =>
+      hasMarketplace(output)
         ? Effect.void
         : run('codex', ['plugin', 'marketplace', 'add', CODEX_MARKETPLACE_DIR]).pipe(
             Effect.as(void 0),
-          );
-    }),
+          ),
+    ),
   );
 }
 
@@ -347,9 +324,7 @@ function validateCodexManifestContent(parsed: Partial<CodexManagedAgentManifest>
     throw new Error(`invalid Maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`);
   }
   if (
-    !parsed.files.every((file) => {
-      return typeof file === 'string' && /^[A-Za-z0-9_-]+\.toml$/.test(file);
-    })
+    !parsed.files.every((file) => typeof file === 'string' && /^[A-Za-z0-9_-]+\.toml$/.test(file))
   ) {
     throw new Error(`invalid managed agent filename in ${codexManagedAgentManifestPath()}`);
   }
@@ -396,12 +371,11 @@ function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifes
           : {}),
       } satisfies CodexManagedAgentManifest;
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `read ${codexManagedAgentManifestPath()}`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -417,12 +391,11 @@ function writeCodexManagedAgentManifest(
       await writeFile(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
       await rename(tempPath, path);
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `write ${codexManagedAgentManifestPath()}`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -441,9 +414,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
         const { readFile } = await import('node:fs/promises');
         return await readFile(sourceInstructionsPath, 'utf8');
       },
-      catch: (error) => {
-        return new Error(String(error));
-      },
+      catch: (error) => new Error(String(error)),
     });
     yield* Effect.tryPromise({
       try: async () => {
@@ -451,9 +422,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           throw new Error(`missing Maestria instruction markers in ${sourceInstructionsPath}`);
         }
       },
-      catch: (error) => {
-        return new Error(String(error));
-      },
+      catch: (error) => new Error(String(error)),
     });
 
     yield* Effect.tryPromise({
@@ -483,9 +452,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           await rename(tempPath, targetPath);
         }
       },
-      catch: (error) => {
-        return new Error(String(error));
-      },
+      catch: (error) => new Error(String(error)),
     });
 
     const currentFiles = new Set(sourceFiles);
@@ -498,9 +465,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           }
         }
       },
-      catch: (error) => {
-        return new Error(String(error));
-      },
+      catch: (error) => new Error(String(error)),
     });
 
     const instructionState = yield* Effect.tryPromise({
@@ -585,9 +550,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           created: boolean;
         };
       },
-      catch: (error) => {
-        return new Error(String(error));
-      },
+      catch: (error) => new Error(String(error)),
     });
 
     yield* writeCodexManagedAgentManifest({
@@ -597,12 +560,13 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
       instructionsCreated: instructionState.created,
     });
   }).pipe(
-    Effect.mapError((error) => {
-      return new CommandError({
-        command: `install Codex native agents from ${packageRoot}`,
-        message: error instanceof CommandError ? error.message : String(error),
-      });
-    }),
+    Effect.mapError(
+      (error) =>
+        new CommandError({
+          command: `install Codex native agents from ${packageRoot}`,
+          message: error instanceof CommandError ? error.message : String(error),
+        }),
+    ),
   );
 }
 
@@ -646,12 +610,11 @@ export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
         }
         await rm(codexManagedAgentManifestPath(), { force: true });
       },
-      catch: (error) => {
-        return new CommandError({
+      catch: (error) =>
+        new CommandError({
           command: `remove Codex native agents from ${codexManagedAgentDirectory()}`,
           message: String(error),
-        });
-      },
+        }),
     });
   });
 }
@@ -750,21 +713,14 @@ function clearOpencodeCache(): Effect.Effect<void, CommandError> {
         }
         throw error;
       }
-      const stale = entries.filter((e) => {
-        return e.startsWith('opencode');
-      });
-      await Promise.all(
-        stale.map((e) => {
-          return rm(`${base}/${e}`, { recursive: true, force: true });
-        }),
-      );
+      const stale = entries.filter((e) => e.startsWith('opencode'));
+      await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `clear opencode cache ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -776,12 +732,8 @@ const opencode: PlatformHandler = {
   detect: commandExists('opencode'),
 
   isInstalled: readOpenCodeConfig().pipe(
-    Effect.map((out) => {
-      return out.includes('@maestria/opencode');
-    }),
-    Effect.catchCause(() => {
-      return Effect.succeed(false);
-    }),
+    Effect.map((out) => out.includes('@maestria/opencode')),
+    Effect.catchCause(() => Effect.succeed(false)),
   ),
 
   getInstalledVersion: readOpenCodeConfig().pipe(
@@ -815,9 +767,7 @@ const opencode: PlatformHandler = {
         }),
       );
     }),
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/opencode'),
@@ -828,25 +778,20 @@ const opencode: PlatformHandler = {
     yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g'], 120_000);
   }).pipe(Effect.as(void 0)),
 
-  update: (version?: string) => {
-    return Effect.gen(function* () {
+  update: (version?: string) =>
+    Effect.gen(function* () {
       const tag = version ?? 'latest';
 
       yield* clearOpencodeCache();
 
       // Check if installed globally or at project level
       const globalConfig = yield* readOpenCodeConfig().pipe(
-        Effect.map((out) => {
-          return out.includes('@maestria/opencode');
-        }),
-        Effect.catchCause(() => {
-          return Effect.succeed(false);
-        }),
+        Effect.map((out) => out.includes('@maestria/opencode')),
+        Effect.catchCause(() => Effect.succeed(false)),
       );
       const flag = globalConfig ? ['-g', '--force'] : ['--force'];
       yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag]);
-    });
-  },
+    }),
 
   uninstall: Effect.sync(() => {
     console.log(
@@ -868,16 +813,12 @@ const claudeCode: PlatformHandler = {
 
   isInstalled: hostPluginList('claude').pipe(
     Effect.map(hasMaestriaPlugin),
-    Effect.catchCause(() => {
-      return Effect.succeed(false);
-    }),
+    Effect.catchCause(() => Effect.succeed(false)),
   ),
 
   getInstalledVersion: hostPluginList('claude').pipe(
     Effect.map(installedMaestriaVersion),
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/claude-code'),
@@ -900,8 +841,8 @@ const claudeCode: PlatformHandler = {
     ]);
   }).pipe(Effect.as(void 0)),
 
-  update: (_version?: string) => {
-    return Effect.gen(function* () {
+  update: (_version?: string) =>
+    Effect.gen(function* () {
       yield* prepareNpmMarketplace(
         '@maestria/claude-code',
         CLAUDE_MARKETPLACE_DIR,
@@ -917,19 +858,18 @@ const claudeCode: PlatformHandler = {
         '--scope',
         'user',
       ]);
-    });
-  },
+    }),
 
-  uninstall: Effect.suspend(() => {
-    return run('claude', [
+  uninstall: Effect.suspend(() =>
+    run('claude', [
       'plugin',
       'uninstall',
       `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
       '--scope',
       'user',
       '--yes',
-    ]);
-  }).pipe(Effect.as(void 0)),
+    ]),
+  ).pipe(Effect.as(void 0)),
 };
 
 const codex: PlatformHandler = {
@@ -942,16 +882,12 @@ const codex: PlatformHandler = {
 
   isInstalled: hostPluginList('codex').pipe(
     Effect.map(hasMaestriaPlugin),
-    Effect.catchCause(() => {
-      return Effect.succeed(false);
-    }),
+    Effect.catchCause(() => Effect.succeed(false)),
   ),
 
   getInstalledVersion: hostPluginList('codex').pipe(
     Effect.map(installedMaestriaVersion),
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/codex'),
@@ -968,8 +904,8 @@ const codex: PlatformHandler = {
     yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
   }).pipe(Effect.as(void 0)),
 
-  update: (_version?: string) => {
-    return Effect.gen(function* () {
+  update: (_version?: string) =>
+    Effect.gen(function* () {
       yield* prepareNpmMarketplace(
         '@maestria/codex',
         CODEX_MARKETPLACE_DIR,
@@ -992,8 +928,7 @@ const codex: PlatformHandler = {
         '--json',
       ]);
       yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
-    });
-  },
+    }),
 
   uninstall: Effect.gen(function* () {
     yield* run('codex', [
@@ -1026,9 +961,7 @@ const pi: PlatformHandler = {
         return 'unknown';
       }
     }),
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/pi'),
@@ -1036,26 +969,21 @@ const pi: PlatformHandler = {
   install: Effect.gen(function* () {
     // Install prerequisite: @gotgenes/pi-subagents for subagent dispatch
     yield* run('pi', ['install', 'npm:@gotgenes/pi-subagents'], 60_000).pipe(
-      Effect.catchCause(() => {
-        return Effect.void;
-      }),
+      Effect.catchCause(() => Effect.void),
     );
     // Install main package
     yield* run('pi', ['install', 'npm:@maestria/pi'], 120_000);
   }).pipe(Effect.as(void 0)),
 
-  update: (version?: string) => {
-    return Effect.gen(function* () {
+  update: (version?: string) =>
+    Effect.gen(function* () {
       const tagged = version ? `npm:@maestria/pi@${version}` : 'npm:@maestria/pi@latest';
       // Ensure pi-subagents is installed (may not be for users who installed before v0.4.1)
       yield* run('pi', ['install', 'npm:@gotgenes/pi-subagents'], 60_000).pipe(
-        Effect.catchCause(() => {
-          return Effect.void;
-        }),
+        Effect.catchCause(() => Effect.void),
       );
       yield* run('pi', ['install', tagged], 120_000);
-    });
-  },
+    }),
 
   uninstall: run('pi', ['uninstall', 'npm:@maestria/pi']).pipe(Effect.as(void 0)),
 };
@@ -1142,23 +1070,19 @@ const ANSI_SGR_RE = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
  */
 function primeUserScopeLines(output: string): string[] {
   const lines = output.replace(ANSI_SGR_RE, '').split('\n');
-  const start = lines.findIndex((line) => {
-    return /^\s*user\s+packages:\s*$/i.test(line);
-  });
+  const start = lines.findIndex((line) => /^\s*user\s+packages:\s*$/i.test(line));
   if (start === -1) {
     return [];
   }
-  const end = lines.findIndex((line, index) => {
-    return index > start && /^\s*project\s+packages:\s*$/i.test(line);
-  });
+  const end = lines.findIndex(
+    (line, index) => index > start && /^\s*project\s+packages:\s*$/i.test(line),
+  );
   return lines.slice(start + 1, end === -1 ? undefined : end);
 }
 
 /** True when the user-scope section of `package list` contains our source. */
 function hasPrimeMaestriaPackage(output: string): boolean {
-  return primeUserScopeLines(output).some((line) => {
-    return PRIME_MAESTRIA_SOURCE_RE.test(line);
-  });
+  return primeUserScopeLines(output).some((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
 }
 
 /**
@@ -1169,9 +1093,7 @@ function hasPrimeMaestriaPackage(output: string): boolean {
  * update happened.
  */
 function primeMaestriaPinnedSource(output: string): string | undefined {
-  const source = primeUserScopeLines(output).find((line) => {
-    return PRIME_MAESTRIA_SOURCE_RE.test(line);
-  });
+  const source = primeUserScopeLines(output).find((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
   const trimmed = source?.trim();
   return trimmed && PRIME_MAESTRIA_PINNED_RE.test(trimmed) ? trimmed : undefined;
 }
@@ -1193,12 +1115,11 @@ export function readPackageJsonVersion(
       const pkg: { version?: string } = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
       return pkg.version ?? 'unknown';
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `read ${packageJsonPath}`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -1224,9 +1145,7 @@ function isPrimeAbsolutePath(p: string): boolean {
  */
 function primeMaestriaInstalledVersion(output: string): Effect.Effect<string, CommandError> {
   const lines = primeUserScopeLines(output);
-  const sourceIndex = lines.findIndex((line) => {
-    return PRIME_MAESTRIA_SOURCE_RE.test(line);
-  });
+  const sourceIndex = lines.findIndex((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
   if (sourceIndex === -1) {
     return Effect.succeed('unknown');
   }
@@ -1237,9 +1156,7 @@ function primeMaestriaInstalledVersion(output: string): Effect.Effect<string, Co
   }
 
   return readPackageJsonVersion(`${installedPath}/package.json`).pipe(
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   );
 }
 
@@ -1260,12 +1177,11 @@ function primeTempCwd(): Effect.Effect<string, CommandError> {
       const { join } = await import('node:path');
       return await mkdtemp(join(tmpdir(), 'maestria-prime-'));
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `create isolated temp cwd (${tmpdir()}/maestria-prime-*)`,
         message: `Failed to create an isolated working directory for Prime Agent: ${String(error)}`,
-      });
-    },
+      }),
   });
 }
 
@@ -1277,11 +1193,7 @@ function removePrimeTempCwd(dir: string): Effect.Effect<void, never> {
       await rm(dir, { recursive: true, force: true });
     },
     catch: () => {},
-  }).pipe(
-    Effect.catchCause(() => {
-      return Effect.void;
-    }),
-  );
+  }).pipe(Effect.catchCause(() => Effect.void));
 }
 
 /**
@@ -1304,9 +1216,9 @@ function withPrimeTempCwd<T>(
  * project settings are never consulted. Shared by detection, version reads,
  * and the per-update snapshot; the update flow captures it once per update.
  */
-const primePackageList: Effect.Effect<string, CommandError> = withPrimeTempCwd((cwd) => {
-  return run('prime-agent', ['package', 'list'], 120_000, cwd);
-});
+const primePackageList: Effect.Effect<string, CommandError> = withPrimeTempCwd((cwd) =>
+  run('prime-agent', ['package', 'list'], 120_000, cwd),
+);
 
 /**
  * Capture the per-update registration snapshot: one `prime-agent package list`
@@ -1368,16 +1280,12 @@ const primeAgent: PlatformHandler = {
 
   isInstalled: primePackageList.pipe(
     Effect.map(hasPrimeMaestriaPackage),
-    Effect.catchCause(() => {
-      return Effect.succeed(false);
-    }),
+    Effect.catchCause(() => Effect.succeed(false)),
   ),
 
   getInstalledVersion: primePackageList.pipe(
     Effect.flatMap(primeMaestriaInstalledVersion),
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/prime-agent'),
@@ -1390,31 +1298,28 @@ const primeAgent: PlatformHandler = {
   // Runs before the update command's "Already up to date" short-circuit so a
   // version-pinned registration is reported as an error even when the
   // installed version already equals the latest.
-  preflightUpdate: (snapshot?: PlatformUpdateSnapshot) => {
-    return primeUpdatePreflight(snapshot);
-  },
+  preflightUpdate: (snapshot?: PlatformUpdateSnapshot) => primeUpdatePreflight(snapshot),
 
-  install: withPrimeTempCwd((cwd) => {
-    return run('prime-agent', ['package', 'install', PRIME_MAESTRIA_SOURCE], 120_000, cwd);
-  }).pipe(Effect.as(void 0)),
+  install: withPrimeTempCwd((cwd) =>
+    run('prime-agent', ['package', 'install', PRIME_MAESTRIA_SOURCE], 120_000, cwd),
+  ).pipe(Effect.as(void 0)),
 
-  update: (_version?: string, snapshot?: PlatformUpdateSnapshot) => {
-    return Effect.gen(function* () {
+  update: (_version?: string, snapshot?: PlatformUpdateSnapshot) =>
+    Effect.gen(function* () {
       // Prime skips `package update` for version-pinned registrations. Detect
       // that state up front (from the per-update snapshot when available) and
       // fail with an accurate message rather than reporting a fake success
       // (which would also invalidate the version cache for a package that was
       // not updated).
       yield* primeUpdatePreflight(snapshot);
-      yield* withPrimeTempCwd((cwd) => {
-        return run('prime-agent', ['package', 'update', PRIME_MAESTRIA_SOURCE], 120_000, cwd);
-      });
-    }).pipe(Effect.as(void 0));
-  },
+      yield* withPrimeTempCwd((cwd) =>
+        run('prime-agent', ['package', 'update', PRIME_MAESTRIA_SOURCE], 120_000, cwd),
+      );
+    }).pipe(Effect.as(void 0)),
 
-  uninstall: withPrimeTempCwd((cwd) => {
-    return run('prime-agent', ['package', 'remove', PRIME_MAESTRIA_SOURCE], 60_000, cwd);
-  }).pipe(Effect.as(void 0)),
+  uninstall: withPrimeTempCwd((cwd) =>
+    run('prime-agent', ['package', 'remove', PRIME_MAESTRIA_SOURCE], 60_000, cwd),
+  ).pipe(Effect.as(void 0)),
 };
 
 const kimiCode: PlatformHandler = {
@@ -1434,23 +1339,15 @@ const kimiCode: PlatformHandler = {
   }),
 
   isInstalled: readKimiInstalled().pipe(
-    Effect.map((file) => {
-      return file.plugins.some((plugin) => {
-        return plugin.id === MAESTRIA_PLUGIN;
-      });
-    }),
-    Effect.flatMap((installed) => {
-      return installed
-        ? Effect.succeed(true)
-        : fileExists(`${kimiManagedPluginDir()}/kimi.plugin.json`);
-    }),
-    Effect.catchCause(() => {
-      return Effect.succeed(false);
-    }),
+    Effect.map((file) => file.plugins.some((plugin) => plugin.id === MAESTRIA_PLUGIN)),
+    Effect.flatMap((installed) =>
+      installed ? Effect.succeed(true) : fileExists(`${kimiManagedPluginDir()}/kimi.plugin.json`),
+    ),
+    Effect.catchCause(() => Effect.succeed(false)),
   ),
 
-  getInstalledVersion: Effect.suspend(() => {
-    return readTextFile(`${kimiManagedPluginDir()}/kimi.plugin.json`).pipe(
+  getInstalledVersion: Effect.suspend(() =>
+    readTextFile(`${kimiManagedPluginDir()}/kimi.plugin.json`).pipe(
       Effect.map((out: string) => {
         try {
           return JSON.parse(out).version ?? 'unknown';
@@ -1458,11 +1355,9 @@ const kimiCode: PlatformHandler = {
           return 'unknown';
         }
       }),
-      Effect.catchCause(() => {
-        return Effect.succeed('unknown');
-      }),
-    );
-  }),
+      Effect.catchCause(() => Effect.succeed('unknown')),
+    ),
+  ),
 
   getLatestVersion: npmViewVersion('@maestria/kimi-code'),
 
@@ -1475,19 +1370,16 @@ const kimiCode: PlatformHandler = {
     yield* registerKimiPlugin();
   }).pipe(Effect.as(void 0)),
 
-  update: (version?: string) => {
-    return Effect.gen(function* () {
+  update: (version?: string) =>
+    Effect.gen(function* () {
       const tag = version ?? 'latest';
       yield* readKimiInstalled();
       yield* installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir(), { tag });
       yield* registerKimiPlugin();
       yield* invalidateVersionCache('@maestria/kimi-code').pipe(
-        Effect.catchCause(() => {
-          return Effect.void;
-        }),
+        Effect.catchCause(() => Effect.void),
       );
-    }).pipe(Effect.as(void 0));
-  },
+    }).pipe(Effect.as(void 0)),
 
   uninstall: removeKimiPlugin().pipe(Effect.as(void 0)),
 };
@@ -1508,9 +1400,7 @@ const hermes: PlatformHandler = {
       const match = out.match(/^version:\s*["']?(.+?)["']?\s*$/m);
       return match?.[1] ?? 'unknown';
     }),
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: Effect.succeed('see GitHub releases'),
@@ -1523,8 +1413,8 @@ const hermes: PlatformHandler = {
     );
   }).pipe(Effect.as(void 0)),
 
-  update: (_version?: string) => {
-    return Effect.gen(function* () {
+  update: (_version?: string) =>
+    Effect.gen(function* () {
       if (_version) {
         console.log(
           `  ${picocolors.yellow('⚠')} Version pinning is not supported for git-based Hermes plugins. ` +
@@ -1532,8 +1422,7 @@ const hermes: PlatformHandler = {
         );
       }
       yield* run('hermes', ['plugins', 'update', 'maestria-hermes'], 60_000);
-    });
-  },
+    }),
 
   uninstall: Effect.gen(function* () {
     yield* run('hermes', ['plugins', 'remove', 'maestria-hermes'], 15_000);
@@ -1562,9 +1451,7 @@ function cursorCliName(): Effect.Effect<string | undefined, never> {
     }
 
     const version = yield* run('agent', ['--version'], 3_000).pipe(
-      Effect.catchCause(() => {
-        return Effect.succeed('');
-      }),
+      Effect.catchCause(() => Effect.succeed('')),
     );
     return /cursor/i.test(version) ? 'agent' : undefined;
   });
@@ -1590,9 +1477,7 @@ function setCursorAgentModel(content: string, model: string): string {
   }
 
   const lines = body.split(/\r?\n/);
-  const modelIndex = lines.findIndex((line) => {
-    return /^model:\s*/.test(line);
-  });
+  const modelIndex = lines.findIndex((line) => /^model:\s*/.test(line));
   if (model) {
     const rendered = `model: ${model}`;
     if (modelIndex >= 0) {
@@ -1627,12 +1512,11 @@ function readCursorAgentModels(): Effect.Effect<Record<string, string>, CommandE
       }
       return result;
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `read Cursor agent models from ${CURSOR_PLUGIN_DIR}/agents`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -1651,12 +1535,11 @@ function restoreCursorAgentModels(
         await writeFile(path, setCursorAgentModel(content, model), 'utf8');
       }
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `restore Cursor agent models in ${CURSOR_PLUGIN_DIR}/agents`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -1688,9 +1571,7 @@ const cursor: PlatformHandler = {
         return 'unknown';
       }
     }),
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/cursor'),
@@ -1702,42 +1583,34 @@ const cursor: PlatformHandler = {
         const { mkdir } = await import('node:fs/promises');
         await mkdir(`${homedir()}/.cursor/plugins/local`, { recursive: true });
       },
-      catch: (error) => {
-        return new CommandError({
+      catch: (error) =>
+        new CommandError({
           command: `mkdir -p ${homedir()}/.cursor/plugins/local`,
           message: String(error),
-        });
-      },
+        }),
     });
     yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR);
     yield* restoreCursorAgentModels(models);
   }).pipe(Effect.as(void 0)),
 
-  update: (version?: string) => {
-    return Effect.gen(function* () {
+  update: (version?: string) =>
+    Effect.gen(function* () {
       const tag = version ?? 'latest';
       const models = yield* readCursorAgentModels();
       yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR, { tag });
       yield* restoreCursorAgentModels(models);
       // Invalidate version cache so npmViewVersion doesn't return stale data
-      yield* invalidateVersionCache('@maestria/cursor').pipe(
-        Effect.catchCause(() => {
-          return Effect.void;
-        }),
-      );
-    }).pipe(Effect.as(void 0));
-  },
+      yield* invalidateVersionCache('@maestria/cursor').pipe(Effect.catchCause(() => Effect.void));
+    }).pipe(Effect.as(void 0)),
 
   uninstall: Effect.gen(function* () {
     yield* Effect.tryPromise({
-      try: () => {
-        return import('node:fs/promises').then((m) => {
-          return m.rm(CURSOR_PLUGIN_DIR, { recursive: true, force: true });
-        });
-      },
-      catch: (e) => {
-        return new CommandError({ command: `rm -rf ${CURSOR_PLUGIN_DIR}`, message: String(e) });
-      },
+      try: () =>
+        import('node:fs/promises').then((m) =>
+          m.rm(CURSOR_PLUGIN_DIR, { recursive: true, force: true }),
+        ),
+      catch: (e) =>
+        new CommandError({ command: `rm -rf ${CURSOR_PLUGIN_DIR}`, message: String(e) }),
     });
   }).pipe(Effect.as(void 0)),
 };
@@ -1762,9 +1635,7 @@ const omp: PlatformHandler = {
         return 'unknown';
       }
     }),
-    Effect.catchCause(() => {
-      return Effect.succeed('unknown');
-    }),
+    Effect.catchCause(() => Effect.succeed('unknown')),
   ),
 
   getLatestVersion: npmViewVersion('@maestria/omp'),
@@ -1774,12 +1645,11 @@ const omp: PlatformHandler = {
     yield* run('omp', ['plugin', 'install', '@maestria/omp'], 120_000);
   }).pipe(Effect.as(void 0)),
 
-  update: (version?: string) => {
-    return Effect.gen(function* () {
+  update: (version?: string) =>
+    Effect.gen(function* () {
       const tagged = version ? `@maestria/omp@${version}` : '@maestria/omp@latest';
       yield* run('omp', ['plugin', 'install', tagged], 120_000);
-    });
-  },
+    }),
 
   uninstall: run('omp', ['plugin', 'uninstall', '@maestria/omp']).pipe(Effect.as(void 0)),
 };
@@ -1798,7 +1668,5 @@ export const platforms: readonly PlatformHandler[] = [
 ];
 
 export function getPlatform(id: string): PlatformHandler | undefined {
-  return platforms.find((p) => {
-    return p.id === id;
-  });
+  return platforms.find((p) => p.id === id);
 }

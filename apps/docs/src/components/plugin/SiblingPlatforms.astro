@@ -14,7 +14,7 @@ interface Props {
 
 const { excludeId } = Astro.props;
 
-const siblings = platforms.filter((platform) => {return platform.id !== excludeId && platform.href !== '/ecosystem/'});
+const siblings = platforms.filter((platform) => platform.id !== excludeId && platform.href !== '/ecosystem/');
 ---
 
 <section class="home-section" aria-labelledby="siblings-title">

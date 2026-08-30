@@ -12,40 +12,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const COMMANDS_DIR = __dirname + '/../agents/commands';
 
 export function installModeAutoDetect(pi: ExtensionAPI, state: MaestriaState): void {
-  installAutoDetect(
-    (handler) => {
-      return pi.on('input', handler as never);
-    },
-    state,
-    COMMANDS_DIR,
-    {
-      restoreOriginalState: (ctx) => {
-        return restoreOriginalState(pi, ctx as ExtensionContext, state);
-      },
-      persistState: () => {
-        return persistState(pi, state);
-      },
-      noMatch: {},
-      transform: (text) => {
-        return { text };
-      },
-    },
-  );
+  installAutoDetect((handler) => pi.on('input', handler as never), state, COMMANDS_DIR, {
+    restoreOriginalState: (ctx) => restoreOriginalState(pi, ctx as ExtensionContext, state),
+    persistState: () => persistState(pi, state),
+    noMatch: {},
+    transform: (text) => ({ text }),
+  });
 }
 
 export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): void {
-  installCommands(
-    (name, opts) => {
-      return pi.registerCommand(name, opts as never);
-    },
-    state,
-    {
-      restoreOriginalState: (ctx) => {
-        return restoreOriginalState(pi, ctx as ExtensionContext, state);
-      },
-      persistState: () => {
-        return persistState(pi, state);
-      },
-    },
-  );
+  installCommands((name, opts) => pi.registerCommand(name, opts as never), state, {
+    restoreOriginalState: (ctx) => restoreOriginalState(pi, ctx as ExtensionContext, state),
+    persistState: () => persistState(pi, state),
+  });
 }

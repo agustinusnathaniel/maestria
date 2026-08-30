@@ -51,9 +51,7 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
-  const close = lines.findIndex((line, index) => {
-    return index > 0 && line.trim() === '---';
-  });
+  const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
   if (close === -1) {
     throw new Error('missing closing frontmatter fence');
   }

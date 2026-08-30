@@ -56,11 +56,7 @@ describe('validateSkills', () => {
     makeSkill(tmp, 'bad2', 'name: bad2', 'Body');
     const result = validateSkills({ root: tmp, skills: ['bad2'] });
     expect(result.valid).toBe(false);
-    expect(
-      result.errors.some((e) => {
-        return e.includes('description');
-      }),
-    ).toBe(true);
+    expect(result.errors.some((e) => e.includes('description'))).toBe(true);
   });
 
   it('fails for empty body', () => {
@@ -84,11 +80,7 @@ describe('validateSkills', () => {
     makeSkill(tmp, 'bad2', 'name: bad2', 'Body');
     const result = validateSkills({ root: tmp, skills: ['bad2'] });
     expect(result.valid).toBe(false);
-    expect(
-      result.errors.some((e) => {
-        return e.includes('description');
-      }),
-    ).toBe(true);
+    expect(result.errors.some((e) => e.includes('description'))).toBe(true);
     // Success line must still be present when frontmatter exists
     expect(result.successes).toEqual(['skills/bad2/SKILL.md']);
   });
@@ -120,12 +112,8 @@ describe('validateSkills', () => {
       const origLog = console.log;
       const origError = console.error;
       // eslint-disable-next-line no-console
-      console.log = (...args: unknown[]) => {
-        return out.push(args.join(' '));
-      };
-      console.error = (...args: unknown[]) => {
-        return err.push(args.join(' '));
-      };
+      console.log = (...args: unknown[]) => out.push(args.join(' '));
+      console.error = (...args: unknown[]) => err.push(args.join(' '));
       try {
         const ok = fn();
         return { ok, out, err };
@@ -137,9 +125,9 @@ describe('validateSkills', () => {
 
     it('logs ✅ to stdout for valid skills and returns true', () => {
       makeSkill(tmp, 'orchestrator', 'name: orchestrator\ndescription: Orchestrator skill', 'Body');
-      const { ok, out, err } = captureLog(() => {
-        return validateSkillsAndLog({ root: tmp, skills: ['orchestrator'] });
-      });
+      const { ok, out, err } = captureLog(() =>
+        validateSkillsAndLog({ root: tmp, skills: ['orchestrator'] }),
+      );
       expect(ok).toBe(true);
       expect(out).toEqual(['✅ skills/orchestrator/SKILL.md']);
       expect(err).toEqual([]);
@@ -147,28 +135,22 @@ describe('validateSkills', () => {
 
     it('logs ❌ to stderr and still logs ✅ to stdout when frontmatter exists but field missing', () => {
       makeSkill(tmp, 'bad2', 'name: bad2', 'Body');
-      const { ok, out, err } = captureLog(() => {
-        return validateSkillsAndLog({ root: tmp, skills: ['bad2'] });
-      });
+      const { ok, out, err } = captureLog(() =>
+        validateSkillsAndLog({ root: tmp, skills: ['bad2'] }),
+      );
       expect(ok).toBe(false);
-      expect(
-        err.some((m) => {
-          return m.includes('❌') && m.includes('description');
-        }),
-      ).toBe(true);
+      expect(err.some((m) => m.includes('❌') && m.includes('description'))).toBe(true);
       expect(out).toEqual(['✅ skills/bad2/SKILL.md']);
     });
 
     it('logs ❌ to stderr without ✅ for missing file', () => {
-      const { ok, out, err } = captureLog(() => {
-        return validateSkillsAndLog({ root: tmp, skills: ['missing'] });
-      });
+      const { ok, out, err } = captureLog(() =>
+        validateSkillsAndLog({ root: tmp, skills: ['missing'] }),
+      );
       expect(ok).toBe(false);
       expect(out).toEqual([]);
       expect(
-        err.some((m) => {
-          return m.includes('❌') && m.includes('Missing: skills/missing/SKILL.md');
-        }),
+        err.some((m) => m.includes('❌') && m.includes('Missing: skills/missing/SKILL.md')),
       ).toBe(true);
     });
 
@@ -176,15 +158,13 @@ describe('validateSkills', () => {
       const dir = join(tmp, 'skills', 'bad');
       mkdirSync(dir, { recursive: true });
       writeFileSync(join(dir, 'SKILL.md'), 'no frontmatter', 'utf-8');
-      const { ok, out, err } = captureLog(() => {
-        return validateSkillsAndLog({ root: tmp, skills: ['bad'] });
-      });
+      const { ok, out, err } = captureLog(() =>
+        validateSkillsAndLog({ root: tmp, skills: ['bad'] }),
+      );
       expect(ok).toBe(false);
       expect(out).toEqual([]);
       expect(
-        err.some((m) => {
-          return m.includes('❌') && m.includes('missing or invalid frontmatter');
-        }),
+        err.some((m) => m.includes('❌') && m.includes('missing or invalid frontmatter')),
       ).toBe(true);
     });
   });

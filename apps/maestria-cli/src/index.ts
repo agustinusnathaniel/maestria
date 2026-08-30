@@ -13,12 +13,8 @@ import { detectAll } from '@/lib/detect.js';
 import { createSpinner, renderStatusTable, renderCompactStatus } from '@/lib/output.js';
 
 // Ensure clean exit on signals - prevents Effect runtime from keeping process alive
-process.on('SIGINT', () => {
-  return process.exit(130);
-});
-process.on('SIGTERM', () => {
-  return process.exit(0);
-});
+process.on('SIGINT', () => process.exit(130));
+process.on('SIGTERM', () => process.exit(0));
 
 // ── Custom --help ────────────────────────────────────
 

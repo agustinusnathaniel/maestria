@@ -8,24 +8,20 @@ import { VALID_PLATFORMS } from '@/lib/validation.js';
 
 async function handleCheckAll(args: { json?: boolean; quiet?: boolean }): Promise<never> {
   const allStatus = await Effect.runPromise(detectAll());
-  const checked = allStatus.filter((s) => {
-    return s.available;
-  });
+  const checked = allStatus.filter((s) => s.available);
   if (checked.length === 0) {
     if (!args.quiet) {
       console.log('No supported coding agent platforms detected on this machine.');
     }
     process.exit(1);
   }
-  const freshnessList = checked.map((s) => {
-    return s.installed ? freshnessOf(s.installedVersion, s.latestVersion) : 'unknown';
-  });
+  const freshnessList = checked.map((s) =>
+    s.installed ? freshnessOf(s.installedVersion, s.latestVersion) : 'unknown',
+  );
   if (args.json) {
     console.log(
       JSON.stringify(
-        checked.map((s, i) => {
-          return { ...s, outdated: freshnessList[i] === 'outdated' };
-        }),
+        checked.map((s, i) => ({ ...s, outdated: freshnessList[i] === 'outdated' })),
         null,
         2,
       ),
@@ -34,13 +30,7 @@ async function handleCheckAll(args: { json?: boolean; quiet?: boolean }): Promis
     console.log(renderStatusTable(checked));
   }
   process.exit(
-    checked.every((s) => {
-      return s.installed;
-    })
-      ? freshnessList.includes('outdated')
-        ? 3
-        : 0
-      : 1,
+    checked.every((s) => s.installed) ? (freshnessList.includes('outdated') ? 3 : 0) : 1,
   );
 }
 

@@ -63,9 +63,9 @@ export function isReadOnlyBashCommand(rawCommand: string): boolean {
   if (withoutFdRedirects.includes('>')) {
     return false;
   }
-  return withoutFdRedirects.split(/[\n;&|]+/).every((segment) => {
-    return READ_ONLY_BASH_PREFIX.test(segment.trim());
-  });
+  return withoutFdRedirects
+    .split(/[\n;&|]+/)
+    .every((segment) => READ_ONLY_BASH_PREFIX.test(segment.trim()));
 }
 
 // ── Pure helpers ──
@@ -146,27 +146,18 @@ function checkOrchestratorBlock(
   delegationTool: string,
   hint: string,
 ): { block: boolean; reason: string } | undefined {
-  if (
-    state.mode === null ||
-    !options.getActiveTools().some((t) => {
-      return t === delegationTool;
-    })
-  ) {
+  if (state.mode === null || !options.getActiveTools().some((t) => t === delegationTool)) {
     return undefined;
   }
   const isMutationTool = options.isMutationTool
-    ? (e: ToolCallEventLike) => {
-        return options.isMutationTool!(e);
-      }
+    ? (e: ToolCallEventLike) => options.isMutationTool!(e)
     : (e: ToolCallEventLike) => {
         const name = (e as { toolName?: string }).toolName ?? '';
         const base = name === 'edit' || name === 'write' || name === 'patch' || name === 'bash';
         if (base) {
           return true;
         }
-        return !!options.extraMutations?.some((m) => {
-          return m === name;
-        });
+        return !!options.extraMutations?.some((m) => m === name);
       };
   if (!isMutationTool(event) || (event as { toolName: string }).toolName === delegationTool) {
     return undefined;

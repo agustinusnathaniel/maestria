@@ -67,12 +67,11 @@ export function readTextFile(filePath: string): Effect.Effect<string, CommandErr
       const { readFile } = await import('node:fs/promises');
       return await readFile(filePath, 'utf-8');
     },
-    catch: (error) => {
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `read ${filePath}`,
         message: String(error),
-      });
-    },
+      }),
   });
 }
 
@@ -83,30 +82,20 @@ export function fileExists(filePath: string): Effect.Effect<boolean, never> {
       await access(filePath);
       return true;
     },
-    catch: () => {
-      return false;
-    },
-  }).pipe(
-    Effect.catchCause(() => {
-      return Effect.succeed(false);
-    }),
-  );
+    catch: () => false,
+  }).pipe(Effect.catchCause(() => Effect.succeed(false)));
 }
 
 export function commandExists(cmd: string): Effect.Effect<boolean, never> {
   return run('which', [cmd]).pipe(
-    Effect.map((out: string) => {
-      return out.length > 0;
-    }),
-    Effect.catchCause(() => {
-      return Effect.succeed(false);
-    }),
+    Effect.map((out: string) => out.length > 0),
+    Effect.catchCause(() => Effect.succeed(false)),
   );
 }
 
 export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
-  const readCache = (): Effect.Effect<string, never> => {
-    return readTextFile(getVersionCacheFile()).pipe(
+  const readCache = (): Effect.Effect<string, never> =>
+    readTextFile(getVersionCacheFile()).pipe(
       Effect.map((out) => {
         try {
           const cache: Record<string, { version: string }> = JSON.parse(out);
@@ -115,14 +104,11 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
           return '';
         }
       }),
-      Effect.catchCause(() => {
-        return Effect.succeed('');
-      }),
+      Effect.catchCause(() => Effect.succeed('')),
     );
-  };
 
-  const updateCache = (version: string): Effect.Effect<void, never> => {
-    return Effect.tryPromise({
+  const updateCache = (version: string): Effect.Effect<void, never> =>
+    Effect.tryPromise({
       try: async () => {
         const { mkdir, readFile, writeFile } = await import('node:fs/promises');
         await mkdir(getMaestriaCacheDir(), { recursive: true });
@@ -137,35 +123,20 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
         await writeFile(getVersionCacheFile(), JSON.stringify(cache));
       },
       catch: () => {},
-    }).pipe(
-      Effect.catchCause(() => {
-        return Effect.void;
-      }),
-    );
-  };
+    }).pipe(Effect.catchCause(() => Effect.void));
 
   return Effect.gen(function* () {
     const version = yield* run('npm', ['view', pkg, 'version'], 5_000).pipe(
-      Effect.catchCause(() => {
-        return Effect.succeed('');
-      }),
+      Effect.catchCause(() => Effect.succeed('')),
     );
 
     if (version) {
-      yield* updateCache(version).pipe(
-        Effect.catchCause(() => {
-          return Effect.void;
-        }),
-      );
+      yield* updateCache(version).pipe(Effect.catchCause(() => Effect.void));
       return version;
     }
 
     // Network failed - fall back to cached version (any age)
-    return yield* readCache().pipe(
-      Effect.catchCause(() => {
-        return Effect.succeed('');
-      }),
-    );
+    return yield* readCache().pipe(Effect.catchCause(() => Effect.succeed('')));
   });
 }
 
@@ -188,9 +159,7 @@ export function invalidateVersionCache(pkg: string): Effect.Effect<void, never> 
           return Effect.void;
         }
       }),
-      Effect.catchCause(() => {
-        return Effect.void;
-      }),
+      Effect.catchCause(() => Effect.void),
     );
   });
 }

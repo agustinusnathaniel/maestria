@@ -6,16 +6,12 @@ import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 
 // Mock the subagents SDK so execute() can reach recordAndPersist (existing tests
 // keep the SDK-unavailable fallback by leaving getSubagentsServiceMock undefined).
-const subagentsServiceMock = vi.hoisted(() => {
-  return {
-    spawn: vi.fn(),
-    getRecord: vi.fn(),
-    abort: vi.fn(),
-  };
-});
-const getSubagentsServiceMock = vi.hoisted(() => {
-  return vi.fn();
-});
+const subagentsServiceMock = vi.hoisted(() => ({
+  spawn: vi.fn(),
+  getRecord: vi.fn(),
+  abort: vi.fn(),
+}));
+const getSubagentsServiceMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@gotgenes/pi-subagents', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@gotgenes/pi-subagents')>();
@@ -75,11 +71,7 @@ describe('validateHandoff', () => {
     const handoff = '**Goal:** \n\n';
     const result = validateHandoff(handoff);
     expect(result.valid).toBe(false);
-    expect(
-      result.errors.some((e) => {
-        return e.includes('Goal');
-      }),
-    ).toBe(true);
+    expect(result.errors.some((e) => e.includes('Goal'))).toBe(true);
   });
 });
 
@@ -200,12 +192,10 @@ describe('installSubagentTool - parallel mode', () => {
     installSubagentTool(pi as any, state);
 
     const toolDef = (pi as any).registerTool.mock.calls[0][0];
-    const tasks = Array.from({ length: 9 }, (_, i) => {
-      return {
-        agent: 'builder' as const,
-        task: `task ${i + 1}`,
-      };
-    });
+    const tasks = Array.from({ length: 9 }, (_, i) => ({
+      agent: 'builder' as const,
+      task: `task ${i + 1}`,
+    }));
     await expect(
       toolDef.execute('call-1', { mode: 'parallel', tasks }, undefined, undefined, {}),
     ).rejects.toThrow('at most 8');
@@ -360,9 +350,7 @@ describe('installSubagentTool - event subscription persistence', () => {
       }),
       emit: vi.fn(),
       _emit: (event: string, data: unknown) => {
-        handlers[event]?.forEach((h) => {
-          return h(data);
-        });
+        handlers[event]?.forEach((h) => h(data));
       },
       _handlers: handlers,
     };
@@ -624,9 +612,9 @@ describe('installSubagentTool - parallel partial failure', () => {
 
   it('preserves completed results when one subagent is cleaned up (poll throws)', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
-    subagentsServiceMock.spawn.mockImplementation((agent: string) => {
-      return agent === 'builder' ? 'id-a' : 'id-b';
-    });
+    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
+      agent === 'builder' ? 'id-a' : 'id-b',
+    );
     // id-a completes with a result; id-b's record disappears -> poll throws
     // "cleaned up before completion" -> the failed outcome must not discard
     // id-a's completed result.
@@ -659,9 +647,9 @@ describe('installSubagentTool - parallel partial failure', () => {
 
   it('aborts still-running sibling subagents when one fails instead of orphaning them', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
-    subagentsServiceMock.spawn.mockImplementation((agent: string) => {
-      return agent === 'builder' ? 'id-a' : 'id-b';
-    });
+    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
+      agent === 'builder' ? 'id-a' : 'id-b',
+    );
     // id-a keeps running (never terminal) until aborted; id-b cleaned up ->
     // poll throws -> the sibling abort must stop id-a and it must be called.
     const aborted = new Set<string>();
@@ -699,9 +687,9 @@ describe('installSubagentTool - parallel partial failure', () => {
 
   it('aborts and returns an error marker when a chain step record is cleaned up', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
-    subagentsServiceMock.spawn.mockImplementation((agent: string) => {
-      return agent === 'builder' ? 'id-a' : 'id-b';
-    });
+    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
+      agent === 'builder' ? 'id-a' : 'id-b',
+    );
     // id-a completes; id-b's record disappears -> poll throws -> the step
     // must be aborted and the chain must surface an error marker.
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {
@@ -735,9 +723,9 @@ describe('installSubagentTool - parallel partial failure', () => {
   it('substitutes {previous} literally when the previous result contains $ patterns', async () => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
     subagentsServiceMock.spawn.mockClear();
-    subagentsServiceMock.spawn.mockImplementation((agent: string) => {
-      return agent === 'builder' ? 'id-a' : 'id-b';
-    });
+    subagentsServiceMock.spawn.mockImplementation((agent: string) =>
+      agent === 'builder' ? 'id-a' : 'id-b',
+    );
     // id-a completes with a result containing $ sequences that a string-replacement
     // would corrupt ($& -> the placeholder itself, $' -> trailing text, $1 -> empty).
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {

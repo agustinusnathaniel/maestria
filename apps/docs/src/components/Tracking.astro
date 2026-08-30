@@ -24,7 +24,7 @@ const TRACKED_EXTERNAL_DOMAINS = [
 ];
 
 function isTrackedDomain(hostname: string): boolean {
-  return TRACKED_EXTERNAL_DOMAINS.some(d => {return hostname === d || hostname.endsWith('.' + d)});
+  return TRACKED_EXTERNAL_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
 }
 
 document.addEventListener('click', (e) => {

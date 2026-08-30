@@ -14,9 +14,7 @@ function stripFrontmatter(text: string): string {
   if (lines[0]?.trim() !== '---') {
     return text;
   }
-  const close = lines.findIndex((line, index) => {
-    return index > 0 && line.trim() === '---';
-  });
+  const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
   if (close === -1) {
     return text;
   }

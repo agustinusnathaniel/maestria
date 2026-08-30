@@ -90,9 +90,7 @@ function createFakePi(): FakePi {
 }
 
 function commandHandler(fake: FakePi, name: string) {
-  const command = fake.commands.find((c) => {
-    return c.name === name;
-  });
+  const command = fake.commands.find((c) => c.name === name);
   if (!command) {
     throw new Error(`command ${name} not registered`);
   }
@@ -105,12 +103,8 @@ function branchContext(entries: SessionEntry[]): ExtensionContext {
     hasUI: true,
     cwd: '/',
     sessionManager: {
-      getBranch: () => {
-        return entries;
-      },
-      getEntries: () => {
-        return entries;
-      },
+      getBranch: () => entries,
+      getEntries: () => entries,
     },
   } as ExtensionContext;
 }
@@ -143,9 +137,7 @@ describe('prime-agent extension entry point', () => {
   it('registers the mode commands, clear command, and status command', () => {
     const fake = createFakePi();
     extension(fake.pi);
-    const names = fake.commands.map((c) => {
-      return c.name;
-    });
+    const names = fake.commands.map((c) => c.name);
     expect(names).toEqual(['fein', 'sonar', 'blitz', 'mode-clear', STATUS_COMMAND]);
   });
 
@@ -172,9 +164,7 @@ describe('mode commands', () => {
     extension(fake.pi);
     const notifications: string[] = [];
     const ctx = commandContext({
-      notify: (m: string) => {
-        return notifications.push(m);
-      },
+      notify: (m: string) => notifications.push(m),
     });
 
     await commandHandler(fake, 'fein')('', ctx);
@@ -339,9 +329,7 @@ describe('status command', () => {
     extension(fake.pi);
     const texts: string[] = [];
     const ctx = commandContext({
-      setEditorText: (t: string) => {
-        return texts.push(t);
-      },
+      setEditorText: (t: string) => texts.push(t),
     });
 
     await commandHandler(fake, 'fein')('', ctx);

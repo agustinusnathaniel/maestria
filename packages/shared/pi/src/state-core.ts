@@ -79,9 +79,7 @@ export function createInitialState(): MaestriaState {
 }
 
 function prependDeduped(files: string[], path: string, cap: number): string[] {
-  const filtered = files.filter((f) => {
-    return f !== path;
-  });
+  const filtered = files.filter((f) => f !== path);
   return [path, ...filtered].slice(0, cap);
 }
 

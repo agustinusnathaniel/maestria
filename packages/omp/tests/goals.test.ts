@@ -22,18 +22,10 @@ function install(pi: MockPi, state: MaestriaState) {
   const calls = (pi.on as ReturnType<typeof vi.fn>).mock.calls as Array<
     [string, (...args: unknown[]) => unknown]
   >;
-  const goalUpdatedCall = calls.find(([event]) => {
-    return event === 'goal_updated';
-  });
-  const sessionSwitchCall = calls.find(([event]) => {
-    return event === 'session_switch';
-  });
-  const sessionBranchCall = calls.find(([event]) => {
-    return event === 'session_branch';
-  });
-  const sessionTreeCall = calls.find(([event]) => {
-    return event === 'session_tree';
-  });
+  const goalUpdatedCall = calls.find(([event]) => event === 'goal_updated');
+  const sessionSwitchCall = calls.find(([event]) => event === 'session_switch');
+  const sessionBranchCall = calls.find(([event]) => event === 'session_branch');
+  const sessionTreeCall = calls.find(([event]) => event === 'session_tree');
   expect(goalUpdatedCall).toBeDefined();
   expect(sessionSwitchCall).toBeDefined();
   expect(sessionBranchCall).toBeDefined();
@@ -49,12 +41,8 @@ function install(pi: MockPi, state: MaestriaState) {
 function sessionContext(entries: unknown[] = []) {
   return {
     sessionManager: {
-      getBranch: vi.fn(() => {
-        return entries;
-      }),
-      getEntries: vi.fn(() => {
-        return entries;
-      }),
+      getBranch: vi.fn(() => entries),
+      getEntries: vi.fn(() => entries),
     },
   };
 }
@@ -87,9 +75,7 @@ describe('installGoalEventHandlers', () => {
   it('registers goal and every public session transition handler', () => {
     const pi = createMockPi();
     install(pi, createInitialState());
-    const events = (pi.on as ReturnType<typeof vi.fn>).mock.calls.map((c: unknown[]) => {
-      return c[0];
-    });
+    const events = (pi.on as ReturnType<typeof vi.fn>).mock.calls.map((c: unknown[]) => c[0]);
     expect(events).toContain('goal_updated');
     expect(events).toContain('session_switch');
     expect(events).toContain('session_branch');
@@ -529,23 +515,19 @@ describe('installGoalEventHandlers', () => {
       nativeGoal: { objective: 'previous native goal', status: 'active' },
     };
     const { sessionTree } = install(pi, state);
-    const getEntries = vi.fn(() => {
-      return [
-        {
-          type: 'custom',
-          customType: 'maestria_state',
-          data: {
-            ...createInitialState(),
-            mode: 'blitz' as const,
-            activeTask: 'sibling task',
-            nativeGoal: { objective: 'sibling native goal', status: 'active' },
-          },
+    const getEntries = vi.fn(() => [
+      {
+        type: 'custom',
+        customType: 'maestria_state',
+        data: {
+          ...createInitialState(),
+          mode: 'blitz' as const,
+          activeTask: 'sibling task',
+          nativeGoal: { objective: 'sibling native goal', status: 'active' },
         },
-      ];
-    });
-    const getBranch = vi.fn(() => {
-      return null;
-    });
+      },
+    ]);
+    const getBranch = vi.fn(() => null);
 
     await sessionTree(
       { type: 'session_tree', oldLeafId: 'sibling-leaf', newLeafId: 'target-leaf' },

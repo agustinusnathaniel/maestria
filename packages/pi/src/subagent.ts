@@ -40,11 +40,9 @@ function abortSubagents(service: SubagentPollingService, ids: readonly string[])
 }
 
 function pollSubagentOrAbortEffect(options: Parameters<typeof pollSubagentEffect>[0]) {
-  return Effect.tapError(pollSubagentEffect(options), () => {
-    return Effect.sync(() => {
-      return abortSubagents(options.service, [options.id]);
-    });
-  });
+  return Effect.tapError(pollSubagentEffect(options), () =>
+    Effect.sync(() => abortSubagents(options.service, [options.id])),
+  );
 }
 
 function recordAndPersist(
@@ -160,8 +158,8 @@ async function handleParallelMode(
   }
   const outcomes = await Effect.runPromise(
     Effect.all(
-      spawnedIds.map((id, i) => {
-        return Effect.match(
+      spawnedIds.map((id, i) =>
+        Effect.match(
           pollSubagentEffect({
             id,
             label: `${taskList[i].agent} (${i + 1}/${taskList.length})`,
@@ -173,16 +171,14 @@ async function handleParallelMode(
             timeoutMs: POLL_TIMEOUT_MS,
           }),
           {
-            onSuccess: (record) => {
-              return { record };
-            },
+            onSuccess: (record) => ({ record }),
             onFailure: (error) => {
               abortSubagents(service, spawnedIds);
               return { error };
             },
           },
-        );
-      }),
+        ),
+      ),
       { concurrency: 'unbounded' },
     ),
   );
@@ -223,9 +219,7 @@ async function handleChainMode(
   for (let i = 0; i < taskList.length; i++) {
     let taskText = taskList[i].task;
     if (i > 0 && taskText.includes('{previous}')) {
-      taskText = taskText.replace(/\{previous\}/g, () => {
-        return previousResult;
-      });
+      taskText = taskText.replace(/\{previous\}/g, () => previousResult);
     }
     const id = service.spawn(taskList[i].agent, taskText, {
       description: taskText.slice(0, 80),
@@ -459,14 +453,7 @@ export function installSubagentTool(
       } catch (err) {
         console.warn('[maestria] Subagent dispatch failed:', err);
         const agentName = params.agent ?? params.tasks?.[0]?.agent ?? 'unknown';
-        const taskDesc =
-          params.task ??
-          params.tasks
-            ?.map((t) => {
-              return t.task;
-            })
-            .join('; ') ??
-          'unknown';
+        const taskDesc = params.task ?? params.tasks?.map((t) => t.task).join('; ') ?? 'unknown';
         return {
           content: [
             {

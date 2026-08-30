@@ -14,9 +14,7 @@ export function installOne(
     // On success, result is void.
     // On CommandError, catchTag replaces it with the error message string.
     const errorMessage: string | void = yield* platform.install.pipe(
-      Effect.catchTag('CommandError', (error) => {
-        return Effect.succeed(error.message);
-      }),
+      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
     );
 
     if (errorMessage === undefined) {

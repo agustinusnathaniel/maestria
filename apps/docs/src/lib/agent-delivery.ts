@@ -45,20 +45,16 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
     .split(',')
     .map((range) => {
       const [mediaType, ...parameters] = range.split(';');
-      const quality = parameters.find((parameter) => {
-        return parameter.trim().startsWith('q=');
-      });
+      const quality = parameters.find((parameter) => parameter.trim().startsWith('q='));
       return quality ? `${mediaType?.trim()};${quality.trim()}` : mediaType?.trim();
     })
-    .filter((range): range is string => {
-      return Boolean(range);
-    })
+    .filter((range): range is string => Boolean(range))
     .join(',');
   const negotiator = new Negotiator({ headers: { accept: normalizedAccept } });
   const acceptedRanges = negotiator.mediaTypes();
-  const acceptsText = acceptedRanges.some((range) => {
-    return range === 'text/markdown' || range === 'text/*';
-  });
+  const acceptsText = acceptedRanges.some(
+    (range) => range === 'text/markdown' || range === 'text/*',
+  );
 
   return acceptsText && negotiator.mediaType(SUPPORTED_MEDIA_TYPES) === 'text/markdown';
 }

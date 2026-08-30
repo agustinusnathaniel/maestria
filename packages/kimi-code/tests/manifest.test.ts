@@ -61,9 +61,7 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
-  const close = lines.findIndex((line, index) => {
-    return index > 0 && line.trim() === '---';
-  });
+  const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
   if (close === -1) {
     throw new Error('missing closing frontmatter fence');
   }
@@ -93,9 +91,7 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
       data[key] =
         inner === ''
           ? []
-          : inner.split(',').map((entry) => {
-              return entry.trim().replace(/^["']|["']$/g, '');
-            });
+          : inner.split(',').map((entry) => entry.trim().replace(/^["']|["']$/g, ''));
     } else if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))

@@ -319,9 +319,9 @@ function buildPreflight(
 }
 
 function collectSyncResults(preflight: Preflight[], version: string, check: boolean): string[] {
-  const blocked = preflight.some((m) => {
-    return m.missing === true || m.readError !== undefined || m.syncError !== undefined;
-  });
+  const blocked = preflight.some(
+    (m) => m.missing === true || m.readError !== undefined || m.syncError !== undefined,
+  );
   const results: string[] = [];
   for (const m of preflight) {
     if (m.missing === true) {
@@ -384,9 +384,7 @@ export function main(args: string[] = process.argv.slice(2), targets: Target[] =
     for (const result of results) {
       console.log(result);
     }
-    hadError ||= results.some((r) => {
-      return r.startsWith('DRIFT') || r.startsWith('ERROR');
-    });
+    hadError ||= results.some((r) => r.startsWith('DRIFT') || r.startsWith('ERROR'));
   }
 
   if (hadError) {

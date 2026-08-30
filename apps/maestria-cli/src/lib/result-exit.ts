@@ -9,9 +9,5 @@ import type { PlatformResult } from '@/types.js';
  * AI-agent consumers instead of always exiting 0.
  */
 export function exitCodeForResults(results: PlatformResult[]): number {
-  return results.every((r) => {
-    return r.ok;
-  })
-    ? 0
-    : 1;
+  return results.every((r) => r.ok) ? 0 : 1;
 }

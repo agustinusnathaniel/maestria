@@ -15,9 +15,7 @@ async function runInstallAll(isQuiet: boolean): Promise<PlatformResult[]> {
   spinner.start('Detecting platforms...');
   const allPlatforms = await Effect.runPromise(detectAll());
   spinner.stop('Done');
-  const toInstall = allPlatforms.filter((s) => {
-    return s.available && !s.installed;
-  });
+  const toInstall = allPlatforms.filter((s) => s.available && !s.installed);
   if (toInstall.length === 0) {
     console.log('All detected platforms already have maestria installed.');
     process.exit(0);
@@ -41,14 +39,14 @@ async function runInstallAll(isQuiet: boolean): Promise<PlatformResult[]> {
         yield* platform.install;
         return { id: platform.id, label: platform.label, ok: true, message: 'Installed' };
       }).pipe(
-        Effect.catchTag('CommandError', (error) => {
-          return Effect.succeed({
+        Effect.catchTag('CommandError', (error) =>
+          Effect.succeed({
             id: platform.id,
             label: platform.label,
             ok: false,
             message: error.message,
-          } satisfies PlatformResult);
-        }),
+          } satisfies PlatformResult),
+        ),
       ),
     );
     spinner.message(
@@ -71,15 +69,9 @@ async function runInstallInteractive(isQuiet: boolean): Promise<PlatformResult[]
   spinner.start('Detecting platforms...');
   const allPlatforms = await Effect.runPromise(detectAll());
   spinner.stop('Done');
-  const installable = allPlatforms.filter((s) => {
-    return s.available && !s.installed;
-  });
+  const installable = allPlatforms.filter((s) => s.available && !s.installed);
   if (installable.length === 0) {
-    if (
-      allPlatforms.every((s) => {
-        return !s.available;
-      })
-    ) {
+    if (allPlatforms.every((s) => !s.available)) {
       console.log('No supported coding agent platforms detected on this machine.');
     } else {
       console.log('Maestria is already installed for all detected platforms.');
@@ -89,9 +81,7 @@ async function runInstallInteractive(isQuiet: boolean): Promise<PlatformResult[]
   const selected = await groupMultiselect({
     message: 'Which platforms do you want to install maestria for?',
     options: {
-      'All platforms': installable.map((p) => {
-        return { value: p.id, label: p.label };
-      }),
+      'All platforms': installable.map((p) => ({ value: p.id, label: p.label })),
     },
     selectableGroups: true,
     required: true,

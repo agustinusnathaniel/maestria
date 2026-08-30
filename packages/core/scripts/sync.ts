@@ -115,21 +115,11 @@ async function main(): Promise<number> {
   });
 
   // Summarize
-  const written = results.filter((r) => {
-    return r.status === 'written';
-  }).length;
-  const unchanged = results.filter((r) => {
-    return r.status === 'unchanged';
-  }).length;
-  const removed = results.filter((r) => {
-    return r.status === 'removed';
-  }).length;
-  const errors = results.filter((r) => {
-    return r.status === 'error';
-  }).length;
-  const dryRunCount = results.filter((r) => {
-    return r.status === 'dry-run';
-  }).length;
+  const written = results.filter((r) => r.status === 'written').length;
+  const unchanged = results.filter((r) => r.status === 'unchanged').length;
+  const removed = results.filter((r) => r.status === 'removed').length;
+  const errors = results.filter((r) => r.status === 'error').length;
+  const dryRunCount = results.filter((r) => r.status === 'dry-run').length;
 
   if (opts.verbose) {
     console.log(

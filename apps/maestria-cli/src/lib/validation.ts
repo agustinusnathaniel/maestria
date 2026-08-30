@@ -19,20 +19,14 @@ export type ValidPlatform = PlatformId;
 const LEGACY_ORDER: readonly ValidPlatform[] = PLATFORM_IDS;
 
 const LEGACY_INDEX = new Map<ValidPlatform, number>(
-  LEGACY_ORDER.map((id, idx) => {
-    return [id, idx] as const;
-  }),
+  LEGACY_ORDER.map((id, idx) => [id, idx] as const),
 );
 
 // Derived from the canonical handler registry - single source for membership.
 // Sorted by LEGACY_ORDER to preserve prior help/error message ordering.
 export const VALID_PLATFORMS: readonly ValidPlatform[] = platforms
-  .map((p) => {
-    return p.id;
-  })
-  .sort((a, b) => {
-    return (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999);
-  });
+  .map((p) => p.id)
+  .sort((a, b) => (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999));
 
 function isValidPlatform(id: string): id is ValidPlatform {
   return (VALID_PLATFORMS as readonly string[]).includes(id);
@@ -64,9 +58,7 @@ export function validatePlatforms(input: string): Effect.Effect<ValidPlatform[],
     ...new Set(
       input
         .split(',')
-        .map((s) => {
-          return s.trim().toLowerCase();
-        })
+        .map((s) => s.trim().toLowerCase())
         .filter(Boolean),
     ),
   ];

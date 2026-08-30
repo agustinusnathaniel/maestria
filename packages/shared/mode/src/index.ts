@@ -77,9 +77,7 @@ export function findCodeBlockRanges(text: string): Array<[number, number]> {
 }
 
 export function isInRanges(index: number, ranges: Array<[number, number]>): boolean {
-  return ranges.some(([start, end]) => {
-    return index >= start && index < end;
-  });
+  return ranges.some(([start, end]) => index >= start && index < end);
 }
 
 /**
@@ -135,11 +133,7 @@ export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure
   }
   const codeRanges = findCodeBlockRanges(text);
   const normalizedDisabled = disabled
-    ? new Set(
-        Array.from(disabled).map((k) => {
-          return k.toLowerCase();
-        }),
-      )
+    ? new Set(Array.from(disabled).map((k) => k.toLowerCase()))
     : undefined;
   let best: ModeDetectPure | null = null;
 

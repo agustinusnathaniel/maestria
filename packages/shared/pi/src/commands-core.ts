@@ -157,11 +157,7 @@ function registerHandoffCommand(pi: CommandsPi, state: MaestriaState): void {
         '',
         '**Known problems:**',
         (state.blockers?.length ?? 0) > 0
-          ? state.blockers
-              .map((b: string) => {
-                return '- ' + b;
-              })
-              .join('\n')
+          ? state.blockers.map((b: string) => '- ' + b).join('\n')
           : '(no known problems documented)',
         '',
         '**Assumptions documented:**',
@@ -193,16 +189,10 @@ function registerReviewModel(pi: CommandsPi, state: MaestriaState): void {
       }
       const modelId = args.trim();
       const models = ctx.modelRegistry.getAll();
-      const model = models.find((m) => {
-        return m.id === modelId;
-      });
+      const model = models.find((m) => m.id === modelId);
       if (!model) {
         ctx.ui.notify(
-          `Unknown model: "${modelId}". Available: ${models
-            .map((m) => {
-              return m.id;
-            })
-            .join(', ')}`,
+          `Unknown model: "${modelId}". Available: ${models.map((m) => m.id).join(', ')}`,
         );
         return;
       }

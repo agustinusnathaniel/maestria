@@ -22,9 +22,7 @@ describe('validation', () => {
   });
 
   it('VALID_PLATFORMS derives from handler registry (no drift) but preserves legacy ordering', async () => {
-    const handlerIds = platforms.map((p) => {
-      return p.id;
-    });
+    const handlerIds = platforms.map((p) => p.id);
     // Set membership must match registry
     expect([...validation.VALID_PLATFORMS].sort()).toEqual([...handlerIds].sort());
     expect(validation.VALID_PLATFORMS.length).toBe(handlerIds.length);

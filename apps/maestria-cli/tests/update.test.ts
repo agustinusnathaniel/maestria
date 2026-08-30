@@ -5,17 +5,11 @@ import { Effect } from 'effect';
 // `cat`) plus the version-cache write so npmViewVersion cannot touch the real
 // home directory during tests, and the isolated temp-cwd create/remove so the
 // fail-closed path can be exercised deterministically.
-const fsMocks = vi.hoisted(() => {
-  return {
-    readFile: vi.fn(async (_path: string) => {
-      return JSON.stringify({ version: '0.2.0' });
-    }),
-    mkdtemp: vi.fn(async (prefix: string) => {
-      return `${prefix}test-dir`;
-    }),
-    rm: vi.fn(async () => {}),
-  };
-});
+const fsMocks = vi.hoisted(() => ({
+  readFile: vi.fn(async (_path: string) => JSON.stringify({ version: '0.2.0' })),
+  mkdtemp: vi.fn(async (prefix: string) => `${prefix}test-dir`),
+  rm: vi.fn(async () => {}),
+}));
 
 vi.mock('@/lib/shell.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/shell.js')>();
@@ -23,12 +17,8 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
     ...actual,
     // Return a real Effect so module-evaluation .pipe() chains in platforms.ts
     // keep working; executing it resolves without spawning any subprocess.
-    run: vi.fn((_cmd: string, _args: string[], _timeoutMs?: number) => {
-      return Effect.succeed('');
-    }),
-    sh: vi.fn((_command: string, _timeoutMs?: number) => {
-      return Effect.succeed('');
-    }),
+    run: vi.fn((_cmd: string, _args: string[], _timeoutMs?: number) => Effect.succeed('')),
+    sh: vi.fn((_command: string, _timeoutMs?: number) => Effect.succeed('')),
   };
 });
 
@@ -103,9 +93,12 @@ describe('update command - Prime Agent', () => {
     expect(result.message).not.toContain('Already up to date');
 
     // No Prime package update command may be issued for a pinned registration.
-    const updateCommands = vi.mocked(shell.run).mock.calls.filter((call) => {
-      return call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update';
-    });
+    const updateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update',
+      );
     expect(updateCommands).toHaveLength(0);
 
     // The version cache must not be invalidated (invalidateVersionCache reads
@@ -135,9 +128,12 @@ describe('update command - Prime Agent', () => {
     expect(result.nextVersion).toBe('0.2.0');
 
     // The preflight passes, so no Prime package update command is issued either.
-    const updateCommands = vi.mocked(shell.run).mock.calls.filter((call) => {
-      return call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update';
-    });
+    const updateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update',
+      );
     expect(updateCommands).toHaveLength(0);
   });
 
@@ -162,17 +158,22 @@ describe('update command - Prime Agent', () => {
     expect(result.message).toBe('Updated');
     expect(result.prevVersion).toBe('0.1.0');
 
-    const listCalls = vi.mocked(shell.run).mock.calls.filter((call) => {
-      return call[0] === 'prime-agent' && call[1]?.join(' ') === 'package list';
-    });
+    const listCalls = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) => call[0] === 'prime-agent' && call[1]?.join(' ') === 'package list',
+      );
     // One snapshot before the update command (shared by the version check, the
     // preflight, and the update step) plus one refresh after it. Before the
     // snapshot this was three lists before the update command and one after.
     expect(listCalls).toHaveLength(2);
 
-    const updateCommands = vi.mocked(shell.run).mock.calls.filter((call) => {
-      return call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update';
-    });
+    const updateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update',
+      );
     expect(updateCommands).toHaveLength(1);
     // The update command itself runs from an isolated temp cwd.
     expect(typeof updateCommands[0][3]).toBe('string');
@@ -209,9 +210,12 @@ describe('update command - Prime Agent', () => {
     expect(result.ok).toBe(true);
     expect(result.message).toBe('Updated');
 
-    const updateCommands = vi.mocked(shell.run).mock.calls.filter((call) => {
-      return call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update';
-    });
+    const updateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update',
+      );
     expect(updateCommands).toHaveLength(1);
     expect(updateCommands[0][1]).toEqual(['package', 'update', 'npm:@maestria/prime-agent']);
     // The update runs from a fresh isolated temp cwd (never the invoking
@@ -236,9 +240,12 @@ describe('update command - Prime Agent', () => {
     // package update command is issued.
     expect(result.ok).toBe(false);
     expect(result.message).toContain('Failed to create an isolated working directory');
-    const updateCommands = vi.mocked(shell.run).mock.calls.filter((call) => {
-      return call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update';
-    });
+    const updateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update',
+      );
     expect(updateCommands).toHaveLength(0);
   });
 });
@@ -267,9 +274,12 @@ describe('update command - no silent downgrade', () => {
     expect(result.message).toContain('skipping');
 
     // No Prime package update command may be issued for a downgrade.
-    const updateCommands = vi.mocked(shell.run).mock.calls.filter((call) => {
-      return call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update';
-    });
+    const updateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'prime-agent' && call[1]?.[0] === 'package' && call[1]?.[1] === 'update',
+      );
     expect(updateCommands).toHaveLength(0);
   });
 
@@ -298,21 +308,20 @@ describe('update command - no silent downgrade', () => {
     expect(result.message).not.toContain('skipping');
 
     // Proceeding past the guard means the pinned update command WAS issued.
-    const pinnedUpdateCommands = vi.mocked(shell.run).mock.calls.filter((call) => {
-      return (
-        call[0] === 'opencode' &&
-        call[1]?.[0] === 'plugin' &&
-        call[1]?.[1] === '@maestria/opencode@0.2.0'
+    const pinnedUpdateCommands = vi
+      .mocked(shell.run)
+      .mock.calls.filter(
+        (call) =>
+          call[0] === 'opencode' &&
+          call[1]?.[0] === 'plugin' &&
+          call[1]?.[1] === '@maestria/opencode@0.2.0',
       );
-    });
     expect(pinnedUpdateCommands).toHaveLength(1);
   });
 
   it('does not offer a newer-than-latest install in the interactive picker', async () => {
     vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation(() => {
-      return Effect.succeed('');
-    });
+    vi.mocked(shell.run).mockImplementation(() => Effect.succeed(''));
     fsMocks.readFile.mockResolvedValue(
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.99.0' }),
     );

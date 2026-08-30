@@ -20,50 +20,28 @@ function createMockPi() {
     registerCommand: vi.fn(),
     registerTool: vi.fn(),
     setActiveTools: vi.fn(),
-    getActiveTools: vi.fn(() => {
-      return [];
-    }),
+    getActiveTools: vi.fn(() => []),
     setModel: vi.fn(),
     appendEntry: vi.fn(),
     sendUserMessage: vi.fn(),
     events: undefined,
     zod: {
-      object: vi.fn(() => {
-        return {};
-      }),
-      string: vi.fn(() => {
-        return {
-          describe: vi.fn(() => {
-            return {
-              optional: vi.fn(() => {
-                return {};
-              }),
-            };
-          }),
-        };
-      }),
-      array: vi.fn(() => {
-        return {
-          describe: vi.fn(() => {
-            return {
-              optional: vi.fn(() => {
-                return {};
-              }),
-            };
-          }),
-        };
-      }),
-      enum: vi.fn(() => {
-        return {
-          describe: vi.fn(() => {
-            return {
-              optional: vi.fn(() => {
-                return {};
-              }),
-            };
-          }),
-        };
-      }),
+      object: vi.fn(() => ({})),
+      string: vi.fn(() => ({
+        describe: vi.fn(() => ({
+          optional: vi.fn(() => ({})),
+        })),
+      })),
+      array: vi.fn(() => ({
+        describe: vi.fn(() => ({
+          optional: vi.fn(() => ({})),
+        })),
+      })),
+      enum: vi.fn(() => ({
+        describe: vi.fn(() => ({
+          optional: vi.fn(() => ({})),
+        })),
+      })),
     },
   };
 }
@@ -91,9 +69,7 @@ describe('extension entry point', () => {
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const onEvents = onCalls.map((c: unknown[]) => {
-      return c[0];
-    });
+    const onEvents = onCalls.map((c: unknown[]) => c[0]);
     expect(onEvents).toContain('session_start');
     expect(onEvents).toContain('session_shutdown');
     expect(onEvents).toContain('before_agent_start');
@@ -125,16 +101,14 @@ describe('extension entry point', () => {
   it('restores state on session_start from custom entries', async () => {
     const pi = createMockPi();
     const mockState = { mode: 'fein', activeTask: 'test task' };
-    const getBranch = vi.fn(() => {
-      return [{ type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 }];
-    });
+    const getBranch = vi.fn(() => [
+      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+    ]);
     const ctx = { sessionManager: { getBranch } };
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionStartCall = onCalls.find((c: unknown[]) => {
-      return c[0] === 'session_start';
-    });
+    const sessionStartCall = onCalls.find((c: unknown[]) => c[0] === 'session_start');
     expect(sessionStartCall).toBeDefined();
     const handler = sessionStartCall![1];
     await handler({}, ctx);
@@ -145,12 +119,8 @@ describe('extension entry point', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const onCalls = (pi.on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionStart = onCalls.find((c: unknown[]) => {
-      return c[0] === 'session_start';
-    })![1];
-    const sessionTree = onCalls.find((c: unknown[]) => {
-      return c[0] === 'session_tree';
-    })![1];
+    const sessionStart = onCalls.find((c: unknown[]) => c[0] === 'session_start')![1];
+    const sessionTree = onCalls.find((c: unknown[]) => c[0] === 'session_tree')![1];
     const getBranch = vi.fn();
     const context = { sessionManager: { getBranch, getEntries: getBranch } };
     const parentState = {
@@ -169,9 +139,7 @@ describe('extension entry point', () => {
     );
 
     const statusCommand = (pi.registerCommand as ReturnType<typeof vi.fn>).mock.calls.find(
-      (call: unknown[]) => {
-        return call[0] === 'maestria-status';
-      },
+      (call: unknown[]) => call[0] === 'maestria-status',
     )![1] as { handler: (args: string, ctx: unknown) => Promise<void> };
     const setEditorText = vi.fn();
     const commandContext = { ui: { setEditorText, notify: vi.fn() } };

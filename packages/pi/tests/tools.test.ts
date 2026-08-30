@@ -84,9 +84,7 @@ describe('installToolInterceptors', () => {
     it('blocks mutation bash when workflow mode is active in orchestrator session', async () => {
       const pi = {
         on: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['subagent', 'read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
@@ -99,9 +97,7 @@ describe('installToolInterceptors', () => {
     it('blocks edit and write when workflow mode is active in orchestrator session', async () => {
       const pi = {
         on: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['subagent', 'read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
@@ -114,9 +110,7 @@ describe('installToolInterceptors', () => {
     it('allows read-only bash when workflow mode is active in orchestrator session', async () => {
       const pi = {
         on: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['subagent', 'read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
@@ -129,9 +123,7 @@ describe('installToolInterceptors', () => {
     it('blocks chained bash that hides a mutation behind a read-only prefix', async () => {
       const pi = {
         on: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['subagent', 'read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
@@ -147,9 +139,7 @@ describe('installToolInterceptors', () => {
     it('blocks command substitution in bash when workflow mode is active', async () => {
       const pi = {
         on: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['subagent', 'read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
@@ -165,9 +155,7 @@ describe('installToolInterceptors', () => {
     it('allows read-only bash pipelines when workflow mode is active', async () => {
       const pi = {
         on: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['subagent', 'read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
@@ -184,9 +172,7 @@ describe('installToolInterceptors', () => {
       const pi = {
         on: vi.fn(),
         appendEntry: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['subagent', 'read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
@@ -201,9 +187,7 @@ describe('installToolInterceptors', () => {
     it('allows maestria_subagent calls when workflow mode is active in orchestrator session', async () => {
       const pi = {
         on: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['subagent', 'read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['subagent', 'read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);
@@ -216,9 +200,7 @@ describe('installToolInterceptors', () => {
     it('does not block when subagent tool is absent (subagent session)', async () => {
       const pi = {
         on: vi.fn(),
-        getActiveTools: vi.fn(() => {
-          return ['read', 'bash'];
-        }),
+        getActiveTools: vi.fn(() => ['read', 'bash']),
       };
       const state = { ...createInitialState(), mode: 'fein' as const };
       installToolInterceptors(pi as any, state);

@@ -94,15 +94,12 @@ class TogglableGroupMultiSelectPrompt<
   }
 
   private _toggleAll() {
-    const allItems = this.options.filter((o): o is T & { group: string } => {
-      return typeof o.group === 'string' && (o as Record<string, unknown>).disabled !== true;
-    });
+    const allItems = this.options.filter(
+      (o): o is T & { group: string } =>
+        typeof o.group === 'string' && (o as Record<string, unknown>).disabled !== true,
+    );
     const allSelected = this.value !== undefined && this.value.length === allItems.length;
-    this.value = allSelected
-      ? ([] as T['value'][])
-      : allItems.map((o) => {
-          return o.value;
-        });
+    this.value = allSelected ? ([] as T['value'][]) : allItems.map((o) => o.value);
   }
 }
 
@@ -211,41 +208,31 @@ function createGroupRender<Value>(
     };
     if (this.state === 'submit') {
       const selectedOptions = rawOptions
-        .filter(({ value: v }) => {
-          return value.includes(v);
-        })
-        .map((o) => {
-          return opt(o as any, 'submitted');
-        });
+        .filter(({ value: v }) => value.includes(v))
+        .map((o) => opt(o as any, 'submitted'));
       const optionsText =
         selectedOptions.length === 0 ? '' : `  ${selectedOptions.join(styleText('dim', ', '))}`;
       return `${title}${guide ? styleText('gray', S_BAR) : ''}${optionsText}`;
     }
     if (this.state === 'cancel') {
       const label = rawOptions
-        .filter(({ value: v }) => {
-          return value.includes(v);
-        })
-        .map((o) => {
-          return opt(o as any, 'cancelled');
-        })
+        .filter(({ value: v }) => value.includes(v))
+        .map((o) => opt(o as any, 'cancelled'))
         .join(styleText('dim', ', '));
       return `${title}${guide ? `${styleText('gray', S_BAR)}  ` : ''}${label.trim() ? `${label}${guide ? `\n${styleText('gray', S_BAR)}` : ''}` : ''}`;
     }
     if (this.state === 'error') {
       const footer = this.error
         .split('\n')
-        .map((ln: string, i: number) => {
-          return i === 0
+        .map((ln: string, i: number) =>
+          i === 0
             ? `${guide ? `${styleText('yellow', S_BAR_END)}  ` : ''}${styleText('yellow', ln)}`
-            : `   ${ln}`;
-        })
+            : `   ${ln}`,
+        )
         .join('\n');
       const guidePrefix = guide ? `${styleText('yellow', S_BAR)}  ` : '';
       const optionsText = rawOptions
-        .map((option, idx) => {
-          return styleOption(option, idx === this.cursor);
-        })
+        .map((option, idx) => styleOption(option, idx === this.cursor))
         .join(`\n${guidePrefix}`);
       return `${title}${guidePrefix}${optionsText}\n${footer}\n`;
     }
@@ -257,9 +244,7 @@ function createGroupRender<Value>(
         : [];
     const footerText = footerLines.join('\n');
     const optionsText = rawOptions
-      .map((option, idx) => {
-        return styleOption(option, idx === this.cursor);
-      })
+      .map((option, idx) => styleOption(option, idx === this.cursor))
       .join(`\n${guidePrefix}`);
     return `${title}${guidePrefix}${optionsText}\n${footerText}\n`;
   };

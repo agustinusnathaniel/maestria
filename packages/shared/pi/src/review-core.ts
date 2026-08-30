@@ -37,9 +37,7 @@ export async function restoreOriginalState(
   if (originalModel) {
     try {
       const models = ctx.modelRegistry.getAll();
-      const model = models.find((m: { id: string }) => {
-        return m.id === originalModel;
-      });
+      const model = models.find((m: { id: string }) => m.id === originalModel);
       if (model) {
         await pi.setModel(model);
       }
@@ -62,9 +60,7 @@ export async function cycleToReviewModel(
   }
   try {
     const models = ctx.modelRegistry.getAll();
-    const model = models.find((m) => {
-      return m.id === reviewModel;
-    });
+    const model = models.find((m) => m.id === reviewModel);
     if (model) {
       await pi.setModel(model);
       return reviewModel;

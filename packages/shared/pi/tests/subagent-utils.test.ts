@@ -69,34 +69,24 @@ describe('MAESTRIA_EVENTS', () => {
 describe('assertValidAgent', () => {
   it('passes for every allowed agent', () => {
     for (const agent of ALLOWED_AGENTS) {
-      expect(() => {
-        return assertValidAgent(agent);
-      }).not.toThrow();
+      expect(() => assertValidAgent(agent)).not.toThrow();
     }
   });
 
   it('throws for an unknown agent name', () => {
-    expect(() => {
-      return assertValidAgent('unknown');
-    }).toThrow('Unknown agent');
+    expect(() => assertValidAgent('unknown')).toThrow('Unknown agent');
   });
 
   it('includes the unknown agent name in the error message', () => {
-    expect(() => {
-      return assertValidAgent('bad-agent');
-    }).toThrow('bad-agent');
+    expect(() => assertValidAgent('bad-agent')).toThrow('bad-agent');
   });
 
   it('includes the list of allowed agents in the error message', () => {
-    expect(() => {
-      return assertValidAgent('bad-agent');
-    }).toThrow(`Allowed: ${ALLOWED_AGENTS.join(', ')}`);
+    expect(() => assertValidAgent('bad-agent')).toThrow(`Allowed: ${ALLOWED_AGENTS.join(', ')}`);
   });
 
   it('throws for empty string', () => {
-    expect(() => {
-      return assertValidAgent('');
-    }).toThrow('Unknown agent');
+    expect(() => assertValidAgent('')).toThrow('Unknown agent');
   });
 
   it('returns undefined on success', () => {
@@ -108,39 +98,29 @@ describe('assertValidAgent', () => {
 
 describe('assertNonEmptyTask', () => {
   it('passes for a non-empty task string', () => {
-    expect(() => {
-      return assertNonEmptyTask('do something', 'Task is required');
-    }).not.toThrow();
+    expect(() => assertNonEmptyTask('do something', 'Task is required')).not.toThrow();
   });
 
   it('passes for a task with leading/trailing whitespace but content', () => {
-    expect(() => {
-      return assertNonEmptyTask('  valid task  ', 'Task is required');
-    }).not.toThrow();
+    expect(() => assertNonEmptyTask('  valid task  ', 'Task is required')).not.toThrow();
   });
 
   it('throws for undefined task', () => {
-    expect(() => {
-      return assertNonEmptyTask(undefined, 'Task is required');
-    }).toThrow('Task is required');
+    expect(() => assertNonEmptyTask(undefined, 'Task is required')).toThrow('Task is required');
   });
 
   it('throws for empty string', () => {
-    expect(() => {
-      return assertNonEmptyTask('', 'Task is required');
-    }).toThrow('Task is required');
+    expect(() => assertNonEmptyTask('', 'Task is required')).toThrow('Task is required');
   });
 
   it('throws for whitespace-only string', () => {
-    expect(() => {
-      return assertNonEmptyTask('   ', 'Task description must not be blank');
-    }).toThrow('Task description must not be blank');
+    expect(() => assertNonEmptyTask('   ', 'Task description must not be blank')).toThrow(
+      'Task description must not be blank',
+    );
   });
 
   it('uses the provided label in the error message', () => {
-    expect(() => {
-      return assertNonEmptyTask('', 'Custom error label');
-    }).toThrow('Custom error label');
+    expect(() => assertNonEmptyTask('', 'Custom error label')).toThrow('Custom error label');
   });
 });
 
@@ -199,11 +179,7 @@ describe('validateHandoff', () => {
     const handoff = '**Goal:** \n\n';
     const result = validateHandoff(handoff);
     expect(result.valid).toBe(false);
-    expect(
-      result.errors.some((e) => {
-        return e.includes('Goal');
-      }),
-    ).toBe(true);
+    expect(result.errors.some((e) => e.includes('Goal'))).toBe(true);
   });
 
   it('is case-insensitive for field matching', () => {
@@ -226,11 +202,7 @@ describe('validateHandoff', () => {
     expect(result).toHaveProperty('errors');
     expect(typeof result.valid).toBe('boolean');
     expect(Array.isArray(result.errors)).toBe(true);
-    expect(
-      result.errors.every((e) => {
-        return typeof e === 'string';
-      }),
-    ).toBe(true);
+    expect(result.errors.every((e) => typeof e === 'string')).toBe(true);
   });
 
   it('collects multiple field errors in a single call', () => {
@@ -266,11 +238,7 @@ describe('validateHandoff', () => {
     ].join('\n');
     const result = validateHandoff(handoff);
     expect(result.valid).toBe(false);
-    expect(
-      result.errors.some((e) => {
-        return e.includes('Context');
-      }),
-    ).toBe(true);
+    expect(result.errors.some((e) => e.includes('Context'))).toBe(true);
   });
 
   it('rejects handoff where a field appears at end of string with no content after colon', () => {
@@ -285,10 +253,6 @@ describe('validateHandoff', () => {
     ].join('\n');
     const result = validateHandoff(handoff);
     expect(result.valid).toBe(false);
-    expect(
-      result.errors.some((e) => {
-        return e.includes('Next step');
-      }),
-    ).toBe(true);
+    expect(result.errors.some((e) => e.includes('Next step'))).toBe(true);
   });
 });

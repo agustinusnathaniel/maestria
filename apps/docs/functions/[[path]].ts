@@ -63,19 +63,11 @@ function addNegotiatedVary(headers: Headers): void {
     headers
       .get('Vary')
       ?.split(',')
-      .map((value) => {
-        return value.trim();
-      })
+      .map((value) => value.trim())
       .filter(Boolean) ?? [];
-  const names = new Set(
-    existing.map((value) => {
-      return value.toLowerCase();
-    }),
-  );
+  const names = new Set(existing.map((value) => value.toLowerCase()));
 
-  for (const value of VARY_VALUE.split(',').map((name) => {
-    return name.trim();
-  })) {
+  for (const value of VARY_VALUE.split(',').map((name) => name.trim())) {
     if (!names.has(value.toLowerCase())) {
       existing.push(value);
       names.add(value.toLowerCase());
@@ -97,9 +89,7 @@ function markdownNotFoundResponse(isHead: boolean): Response {
     '',
     'Recovery paths:',
     '',
-    ...RECOVERY_LINKS.map(([label, href]) => {
-      return `- [${label}](${href})`;
-    }),
+    ...RECOVERY_LINKS.map(([label, href]) => `- [${label}](${href})`),
     '',
   ];
   const headers = new Headers({

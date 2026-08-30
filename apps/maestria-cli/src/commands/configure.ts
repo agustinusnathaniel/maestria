@@ -71,12 +71,8 @@ function renderConfigureSummary(
 function renderCompactConfigure(models: AgentModels): string {
   return (
     Object.entries(models)
-      .filter(([, model]) => {
-        return model;
-      })
-      .map(([agent, model]) => {
-        return `${agent}=${model}`;
-      })
+      .filter(([, model]) => model)
+      .map(([agent, model]) => `${agent}=${model}`)
       .join('\n') + '\n'
   );
 }
@@ -106,9 +102,7 @@ async function resolveConfigureHandler(
     if (!h) {
       exitError(
         `Per-agent model configuration is not yet supported for '${id}'. Supported: ${modelConfigHandlers
-          .map((handler) => {
-            return handler.id;
-          })
+          .map((handler) => handler.id)
           .join(', ')}.`,
       );
     }
@@ -124,9 +118,7 @@ async function resolveConfigureHandler(
   }
   const picked = await select({
     message: 'Which platform do you want to configure?',
-    options: modelConfigHandlers.map((h) => {
-      return { value: h.id, label: h.label };
-    }),
+    options: modelConfigHandlers.map((h) => ({ value: h.id, label: h.label })),
     maxItems: 5,
   });
   if (isCancel(picked)) {
@@ -240,15 +232,13 @@ async function handleConfigureInteractive(
   const selectedAgents = await groupMultiselect({
     message: 'Which agents do you want to configure?',
     options: {
-      Specialists: handler.agents.map((agent) => {
-        return {
-          value: agent,
-          label: agent,
-          hint: current[agent as keyof AgentModels]
-            ? `currently ${current[agent as keyof AgentModels]}`
-            : 'inherit',
-        };
-      }),
+      Specialists: handler.agents.map((agent) => ({
+        value: agent,
+        label: agent,
+        hint: current[agent as keyof AgentModels]
+          ? `currently ${current[agent as keyof AgentModels]}`
+          : 'inherit',
+      })),
     },
     selectableGroups: true,
     required: true,
@@ -267,9 +257,7 @@ async function handleConfigureInteractive(
       message: `Model for @${name}${current[name] ? ` (currently ${current[name]})` : ''}`,
       options: [
         { value: '', label: 'Inherit', hint: 'use the session/primary agent model' },
-        ...available.map((model) => {
-          return { value: model, label: model };
-        }),
+        ...available.map((model) => ({ value: model, label: model })),
       ],
       maxItems: 10,
       initialValue: current[name] && available.includes(current[name]) ? current[name] : '',

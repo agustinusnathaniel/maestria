@@ -108,11 +108,7 @@ describe('recordHandoff', () => {
     expect(state.handoffHistory[0].task).toBe('task6');
     // Oldest (1) should be dropped
     expect(state.handoffHistory[4].task).toBe('task2');
-    expect(
-      state.handoffHistory.some((e) => {
-        return e.task === 'task1';
-      }),
-    ).toBe(false);
+    expect(state.handoffHistory.some((e) => e.task === 'task1')).toBe(false);
   });
 });
 

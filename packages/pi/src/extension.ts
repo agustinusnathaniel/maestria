@@ -78,9 +78,7 @@ export default function (pi: ExtensionAPI): void {
   // Inject mode prompt when a workflow mode is active
   const handleModePrompt = createModePromptHandler(state);
 
-  pi.on('before_agent_start', (event, ctx) => {
-    return handleModePrompt(event, ctx);
-  });
+  pi.on('before_agent_start', (event, ctx) => handleModePrompt(event, ctx));
 
   // Deploy specialist agent files for pi-subagents discovery
   pi.on('session_start', (_event: SessionStartEvent, ctx) => {
