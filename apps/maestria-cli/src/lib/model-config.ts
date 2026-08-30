@@ -473,9 +473,14 @@ interface AgentFilePlatform {
   readonly isAvailable?: Effect.Effect<boolean, never>;
 }
 
+function agentFilePath(cfg: AgentFilePlatform, level: ModelConfigLevel, agent: string): string {
+  return `${level === 'global' ? cfg.globalDir : cfg.projectDir}/${agent}.md`;
+}
+
+// oxlint-disable-next-line max-lines-per-function -- createAgentFileHandler is a cohesive factory for per-agent file handlers (pi/omp/cursor) sharing agentPath/resolveAgent and readCurrent/write for 7 agents. Splitting would fragment the single platform file-handling responsibility and create single-use helpers with one call site, hurting discoverability.
 function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
   const agentPath = (level: ModelConfigLevel, agent: string): string =>
-    `${level === 'global' ? cfg.globalDir : cfg.projectDir}/${agent}.md`;
+    agentFilePath(cfg, level, agent);
 
   /**
    * Resolve the target file and its starting content for an agent.
@@ -537,14 +542,11 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
           const result: AgentModels = {};
           for (let i = 0; i < cfg.agents.length; i++) {
             const model = parseFrontmatterModel(contents[i]);
-            if (model) {
-              result[cfg.agents[i] as AgentName] = model;
-            }
+            if (model) result[cfg.agents[i] as AgentName] = model;
           }
           return result;
         }),
       ),
-
     write: (models, level) =>
       Effect.gen(function* () {
         for (const [agent, model] of Object.entries(models)) {

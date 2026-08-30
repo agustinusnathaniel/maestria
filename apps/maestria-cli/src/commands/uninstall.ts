@@ -9,6 +9,68 @@ import { exitCodeForResults } from '@/lib/result-exit.js';
 
 import type { PlatformResult } from '@/types.js';
 
+async function runUninstallAll(isQuiet: boolean): Promise<PlatformResult[]> {
+  const spinner = createSpinner(isQuiet);
+  spinner.start('Detecting platforms...');
+  const installed = await Effect.runPromise(detectInstalled());
+  spinner.stop('Done');
+  if (installed.length === 0) {
+    console.log('No maestria installations found to uninstall.');
+    process.exit(0);
+  }
+  const results: PlatformResult[] = [];
+  for (const p of installed) {
+    const platform = getPlatform(p.id);
+    if (!platform) {
+      results.push({
+        id: p.id,
+        label: p.label,
+        ok: false,
+        message: 'Platform definition not found. This is a bug.',
+      } satisfies PlatformResult);
+      continue;
+    }
+    results.push(await Effect.runPromise(uninstallOne(platform, isQuiet)));
+  }
+  return results;
+}
+
+async function runUninstallInteractive(isQuiet: boolean): Promise<PlatformResult[]> {
+  if (!process.stdout.isTTY || !process.stdin.isTTY) {
+    console.error('No platform specified and not in an interactive terminal.');
+    console.error('Usage: maestria uninstall <platform> or maestria uninstall --all');
+    console.error("Run 'maestria uninstall --help' for details.");
+    process.exit(1);
+  }
+  const spinner = createSpinner(isQuiet);
+  spinner.start('Detecting platforms...');
+  const installed = await Effect.runPromise(detectInstalled());
+  spinner.stop('Done');
+  if (installed.length === 0) {
+    console.log('No maestria installations found to uninstall.');
+    process.exit(0);
+  }
+  const selected = await select({
+    message: 'Which platform do you want to uninstall maestria for?',
+    options: installed.map((p) => ({ value: p.id, label: p.label })),
+  });
+  if (isCancel(selected) || !selected) {
+    cancel('Uninstall cancelled.');
+    process.exit(130);
+  }
+  const platform = getPlatform(String(selected));
+  if (!platform)
+    return [
+      {
+        id: String(selected),
+        label: String(selected),
+        ok: false,
+        message: 'Platform definition not found. This is a bug.',
+      } satisfies PlatformResult,
+    ];
+  return [await Effect.runPromise(uninstallOne(platform, isQuiet))];
+}
+
 export const uninstallCommand = defineCommand({
   meta: {
     name: 'uninstall',
@@ -47,9 +109,7 @@ export const uninstallCommand = defineCommand({
   run: async ({ args }) => {
     const isQuiet = (args.quiet || args.compact) as boolean;
     const isCompact = args.compact as boolean;
-
     const results: PlatformResult[] = [];
-
     if (args.platform) {
       const platform = getPlatform(args.platform as string);
       if (!platform) {
@@ -57,86 +117,12 @@ export const uninstallCommand = defineCommand({
         console.error(`Available: ${platforms.map((p) => p.id).join(', ')}`);
         process.exit(1);
       }
-
-      const result = await Effect.runPromise(uninstallOne(platform, isQuiet));
-      results.push(result);
-    } else if (args.all) {
-      const spinner = createSpinner(isQuiet);
-      spinner.start('Detecting platforms...');
-      const installed = await Effect.runPromise(detectInstalled());
-      spinner.stop('Done');
-
-      if (installed.length === 0) {
-        console.log('No maestria installations found to uninstall.');
-        process.exit(0);
-      }
-
-      for (const p of installed) {
-        const platform = getPlatform(p.id);
-        if (!platform) {
-          results.push({
-            id: p.id,
-            label: p.label,
-            ok: false,
-            message: 'Platform definition not found. This is a bug.',
-          } satisfies PlatformResult);
-          continue;
-        }
-        const result = await Effect.runPromise(uninstallOne(platform, isQuiet));
-        results.push(result);
-      }
-    } else {
-      if (!process.stdout.isTTY || !process.stdin.isTTY) {
-        console.error('No platform specified and not in an interactive terminal.');
-        console.error('Usage: maestria uninstall <platform> or maestria uninstall --all');
-        console.error("Run 'maestria uninstall --help' for details.");
-        process.exit(1);
-      }
-
-      const spinner = createSpinner(isQuiet);
-      spinner.start('Detecting platforms...');
-      const installed = await Effect.runPromise(detectInstalled());
-      spinner.stop('Done');
-
-      if (installed.length === 0) {
-        console.log('No maestria installations found to uninstall.');
-        process.exit(0);
-      }
-
-      const selected = await select({
-        message: 'Which platform do you want to uninstall maestria for?',
-        options: installed.map((p) => ({
-          value: p.id,
-          label: p.label,
-        })),
-      });
-
-      if (isCancel(selected) || !selected) {
-        cancel('Uninstall cancelled.');
-        process.exit(130);
-      }
-
-      const platform = getPlatform(String(selected));
-      if (!platform) {
-        results.push({
-          id: String(selected),
-          label: String(selected),
-          ok: false,
-          message: 'Platform definition not found. This is a bug.',
-        } satisfies PlatformResult);
-      } else {
-        const result = await Effect.runPromise(uninstallOne(platform, isQuiet));
-        results.push(result);
-      }
-    }
-
-    if (args.json) {
-      console.log(JSON.stringify(results, null, 2));
-    } else if (isCompact) {
-      console.log(renderCompactResults(results));
-    } else {
-      console.log(renderResults(results));
-    }
+      results.push(await Effect.runPromise(uninstallOne(platform, isQuiet)));
+    } else if (args.all) results.push(...(await runUninstallAll(isQuiet)));
+    else results.push(...(await runUninstallInteractive(isQuiet)));
+    if (args.json) console.log(JSON.stringify(results, null, 2));
+    else if (isCompact) console.log(renderCompactResults(results));
+    else console.log(renderResults(results));
     process.exit(exitCodeForResults(results));
   },
 });

@@ -36,7 +36,20 @@ export default defineConfig({
   lint: {
     ignorePatterns: ['dist/**'],
     jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
-    rules: { 'vite-plus/prefer-vite-plus-imports': 'error' },
+    rules: {
+      'vite-plus/prefer-vite-plus-imports': 'error',
+      'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
+      'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
+    },
+    overrides: [
+      {
+        files: ['**/*.test.ts', '**/*.test.tsx'],
+        rules: {
+          'max-lines': 'off',
+          'max-lines-per-function': 'off',
+        },
+      },
+    ],
     options: { typeAware: true, typeCheck: true },
   },
   run: {

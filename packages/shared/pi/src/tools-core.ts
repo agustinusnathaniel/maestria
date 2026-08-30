@@ -124,32 +124,98 @@ export interface ToolCallHandlerOptions {
   pi?: { appendEntry: (type: string, data: unknown) => void };
 }
 
-export function createToolCallHandler(options: ToolCallHandlerOptions) {
-  const delegationTool = options.delegationTool;
-  const hint =
-    options.delegationHint ??
+function resolveDelegationHint(delegationTool: string, hint?: string): string {
+  return (
+    hint ??
     (delegationTool === 'task'
       ? "Use 'maestria_subagent' or 'task()' to delegate mutations to specialists."
-      : "Use 'maestria_subagent' to delegate mutations to specialists.");
+      : "Use 'maestria_subagent' to delegate mutations to specialists.")
+  );
+}
 
-  const defaultIsMutation = (event: ToolCallEventLike): boolean => {
-    const name = (event as { toolName?: string }).toolName ?? '';
-    const base = name === 'edit' || name === 'write' || name === 'patch' || name === 'bash';
-    if (base) return true;
-    if (options.extraMutations?.includes(name)) return true;
-    return false;
+function checkOrchestratorBlock(
+  state: MaestriaState,
+  event: ToolCallEventLike,
+  options: ToolCallHandlerOptions,
+  delegationTool: string,
+  hint: string,
+): { block: boolean; reason: string } | undefined {
+  if (state.mode === null || !options.getActiveTools().some((t) => t === delegationTool))
+    return undefined;
+  const isMutationTool = options.isMutationTool
+    ? (e: ToolCallEventLike) => options.isMutationTool!(e)
+    : (e: ToolCallEventLike) => {
+        const name = (e as { toolName?: string }).toolName ?? '';
+        const base = name === 'edit' || name === 'write' || name === 'patch' || name === 'bash';
+        if (base) return true;
+        return !!options.extraMutations?.some((m) => m === name);
+      };
+  if (!isMutationTool(event) || (event as { toolName: string }).toolName === delegationTool)
+    return undefined;
+  if (options.isBashTool(event)) {
+    const input = (event as { input?: unknown }).input as { command?: unknown } | undefined;
+    const command = typeof input?.command === 'string' ? input.command : '';
+    if (isReadOnlyBashCommand(command)) return undefined;
+  }
+  return {
+    block: true,
+    reason: `Tool '${(event as { toolName: string }).toolName}' is blocked for the orchestrator. ${hint}`,
   };
+}
 
+async function checkDangerousPattern(
+  event: ToolCallEventLike,
+  options: ToolCallHandlerOptions,
+  ctx: { hasUI?: boolean; ui?: { confirm: (title: string, msg: string) => Promise<boolean> } },
+): Promise<{ block: boolean; reason: string } | undefined> {
+  if (!options.isBashTool(event)) return undefined;
+  const input = (event as { input?: unknown }).input;
+  if (!input || typeof input !== 'object') return undefined;
+  const command = (input as Record<string, unknown>).command;
+  if (typeof command !== 'string' || !command) return undefined;
+  const matched = findDangerousPattern(command);
+  if (!matched) return undefined;
+  if (ctx?.hasUI) {
+    const confirmed = await ctx.ui!.confirm(
+      'Dangerous Pattern Detected',
+      `This command matches a dangerous pattern:\n${command}\nProceed?`,
+    );
+    if (confirmed) return undefined;
+  }
+  return { block: true, reason: `Command matches dangerous pattern: ${matched}` };
+}
+
+function trackFileAccess(
+  state: MaestriaState,
+  event: ToolCallEventLike,
+  options: ToolCallHandlerOptions,
+): boolean {
+  if (options.isReadTool(event)) {
+    const p = ((event as { input?: unknown }).input as Record<string, unknown> | undefined)?.path;
+    if (typeof p === 'string' && p) {
+      Object.assign(state, recordFileRead(state, p));
+      return true;
+    }
+  } else if (options.isWriteTool(event)) {
+    const p = ((event as { input?: unknown }).input as Record<string, unknown> | undefined)?.path;
+    if (typeof p === 'string' && p) {
+      Object.assign(state, recordFileModified(state, p));
+      return true;
+    }
+  }
+  return false;
+}
+
+export function createToolCallHandler(options: ToolCallHandlerOptions) {
+  const delegationTool = options.delegationTool;
+  const hint = resolveDelegationHint(delegationTool, options.delegationHint);
   const doPersist = (): void => {
     if (options.persist) {
       options.persist();
       return;
     }
-    if (options.pi) {
-      persistStateCore(options.pi, options.getState());
-    }
+    if (options.pi) persistStateCore(options.pi, options.getState());
   };
-
   return async (
     event: ToolCallEventLike,
     ctx: { hasUI?: boolean; ui?: { confirm: (title: string, msg: string) => Promise<boolean> } },
@@ -157,84 +223,16 @@ export function createToolCallHandler(options: ToolCallHandlerOptions) {
     if (!event || !(event as { toolName?: unknown }).toolName) return undefined;
     const state = options.getState();
     const toolName = (event as { toolName: string }).toolName;
-    // Wrap optional method in arrow to avoid unbound-method diagnostic when
-    // the callback is a detached object method.
-    const isMutationTool = options.isMutationTool
-      ? (e: ToolCallEventLike) => options.isMutationTool!(e)
-      : defaultIsMutation;
-
-    // ── Orchestrator routing enforcement ──
-    if (state.mode !== null && options.getActiveTools().includes(delegationTool)) {
-      const isMutation = isMutationTool(event);
-      if (isMutation && toolName !== delegationTool) {
-        if (options.isBashTool(event)) {
-          const input = (event as { input?: unknown }).input as { command?: unknown } | undefined;
-          const command = typeof input?.command === 'string' ? input.command : '';
-          if (isReadOnlyBashCommand(command)) {
-            return undefined;
-          }
-        }
-        return {
-          block: true,
-          reason: `Tool '${toolName}' is blocked for the orchestrator. ${hint}`,
-        };
-      }
+    const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool, hint);
+    if (orchestrator) return orchestrator;
+    if (state.reviewMode && (options.isWriteTool(event) || options.isBashTool(event))) {
+      const reason =
+        getBlockedReviewReason(toolName) ?? 'Review mode is active. Report findings, do not edit.';
+      return { block: true, reason };
     }
-
-    // ── Review mode ──
-    if (state.reviewMode) {
-      if (options.isWriteTool(event) || options.isBashTool(event)) {
-        const reason =
-          getBlockedReviewReason(toolName) ??
-          'Review mode is active. Report findings, do not edit.';
-        return { block: true, reason };
-      }
-    }
-
-    // ── Dangerous patterns ──
-    if (options.isBashTool(event)) {
-      const input = (event as { input?: unknown }).input;
-      if (!input || typeof input !== 'object') return undefined;
-      const command = (input as Record<string, unknown>).command;
-      if (typeof command === 'string' && command) {
-        const matched = findDangerousPattern(command);
-        if (matched) {
-          if (ctx?.hasUI) {
-            const confirmed = await ctx.ui!.confirm(
-              'Dangerous Pattern Detected',
-              `This command matches a dangerous pattern:\n${command}\nProceed?`,
-            );
-            if (confirmed) return undefined;
-          }
-          return {
-            block: true,
-            reason: `Command matches dangerous pattern: ${matched}`,
-          };
-        }
-      }
-    }
-
-    // ── File tracking (ADR-PI-002) ──
-    let tracked = false;
-    if (options.isReadTool(event)) {
-      const path = (event as { input?: unknown }).input as Record<string, unknown> | undefined;
-      const p = path?.path;
-      if (typeof p === 'string' && p) {
-        Object.assign(state, recordFileRead(state, p));
-        tracked = true;
-      }
-    } else if (options.isWriteTool(event)) {
-      const path = (event as { input?: unknown }).input as Record<string, unknown> | undefined;
-      const p = path?.path;
-      if (typeof p === 'string' && p) {
-        Object.assign(state, recordFileModified(state, p));
-        tracked = true;
-      }
-    }
-    if (tracked) {
-      doPersist();
-    }
-
+    const dangerous = await checkDangerousPattern(event, options, ctx);
+    if (dangerous) return dangerous;
+    if (trackFileAccess(state, event, options)) doPersist();
     return undefined;
   };
 }

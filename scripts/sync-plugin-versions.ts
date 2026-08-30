@@ -208,45 +208,54 @@ function formatCurrent(current: unknown): string {
  * manifest in write mode). Write mode preflights every manifest first - any
  * failure aborts the whole target with no writes (see header).
  */
-export function syncTarget(packageDir: string, manifests: string[], check: boolean): string[] {
+function resolvePackageVersion(packageDir: string): { version?: string; error?: string } {
   const pkgJson = path.join(packageDir, 'package.json');
-  if (!fs.existsSync(pkgJson)) {
-    return [`ERROR: required target ${display(pkgJson)} not found`];
-  }
-
+  if (!fs.existsSync(pkgJson))
+    return { error: `ERROR: required target ${display(pkgJson)} not found` };
   let version: unknown;
   try {
     version = readJsonVersion(fs.readFileSync(pkgJson, 'utf-8'));
   } catch (err) {
-    return [`ERROR: cannot read ${display(pkgJson)}: ${message(err)}`];
+    return { error: `ERROR: cannot read ${display(pkgJson)}: ${message(err)}` };
   }
-  if (version === null) {
-    return [`ERROR: no version field in ${display(pkgJson)}`];
-  }
+  if (version === null) return { error: `ERROR: no version field in ${display(pkgJson)}` };
   if (typeof version !== 'string' || !version.trim()) {
-    return [
-      `ERROR: invalid version ${JSON.stringify(version)} in ${display(pkgJson)}: ` +
-        'expected a non-empty string',
-    ];
+    return {
+      error: `ERROR: invalid version ${JSON.stringify(version)} in ${display(pkgJson)}: expected a non-empty string`,
+    };
   }
-  if (!SEMVER_RE.test(version)) {
-    return [`ERROR: invalid semver version ${JSON.stringify(version)} in ${display(pkgJson)}`];
-  }
+  if (!SEMVER_RE.test(version))
+    return {
+      error: `ERROR: invalid semver version ${JSON.stringify(version)} in ${display(pkgJson)}`,
+    };
+  return { version };
+}
 
-  // Preflight: stage every manifest rewrite in memory first, so any failure
-  // aborts the whole target with no writes (no partial updates).
-  interface Preflight {
-    rel: string;
-    path: string;
-    current: unknown;
-    /** Set when the manifest could not be read or is not writable. */
-    readError?: string;
-    /** Set when the write-mode rewrite could not be computed. */
-    syncError?: string;
-    /** Staged rewritten content; present when write mode would update. */
-    updated?: string;
-    missing?: boolean;
-  }
+export function syncTarget(packageDir: string, manifests: string[], check: boolean): string[] {
+  const pkgResult = resolvePackageVersion(packageDir);
+  if (pkgResult.error) return [pkgResult.error];
+  const version = pkgResult.version!;
+
+  const preflight = buildPreflight(packageDir, manifests, version, check);
+  return collectSyncResults(preflight, version, check);
+}
+
+interface Preflight {
+  rel: string;
+  path: string;
+  current: unknown;
+  readError?: string;
+  syncError?: string;
+  updated?: string;
+  missing?: boolean;
+}
+
+function buildPreflight(
+  packageDir: string,
+  manifests: string[],
+  version: string,
+  check: boolean,
+): Preflight[] {
   const preflight: Preflight[] = [];
   for (const manifest of manifests) {
     const manifestPath = path.join(packageDir, manifest);
@@ -272,8 +281,6 @@ export function syncTarget(packageDir: string, manifests: string[], check: boole
       const current = readManifestVersion(manifestPath);
       const entry: Preflight = { rel, path: manifestPath, current };
       if (!check && current !== version) {
-        // Stage the rewrite now so a failure (e.g. missing "version" field)
-        // is caught before any file in the target is written.
         try {
           entry.updated = computeManifestVersion(manifestPath, version);
         } catch (err) {
@@ -285,11 +292,13 @@ export function syncTarget(packageDir: string, manifests: string[], check: boole
       preflight.push({ rel, path: manifestPath, current: null, readError: message(err) });
     }
   }
+  return preflight;
+}
 
+function collectSyncResults(preflight: Preflight[], version: string, check: boolean): string[] {
   const blocked = preflight.some(
     (m) => m.missing === true || m.readError !== undefined || m.syncError !== undefined,
   );
-
   const results: string[] = [];
   for (const m of preflight) {
     if (m.missing === true) {
@@ -309,21 +318,18 @@ export function syncTarget(packageDir: string, manifests: string[], check: boole
       continue;
     }
     if (check) {
-      results.push(`DRIFT: ${m.rel} expected ${version} found ${formatCurrent(m.current)}`);
+      results.push(
+        `DRIFT: ${m.rel} expected ${version} found ${formatCurrent(m.current as unknown)}`,
+      );
       continue;
     }
     if (blocked) {
-      // A sibling failed preflight; leave this one untouched too so the
-      // target is never partially updated. A refused repair is an ERROR,
-      // never a DRIFT line.
       results.push(
         `ERROR: skipped ${m.rel}: a sibling manifest failed preflight; no files were changed`,
       );
       continue;
     }
     try {
-      // Staged during preflight: every manifest here is drifted and
-      // unblocked, so `updated` is present.
       fs.writeFileSync(m.path, m.updated!, 'utf-8');
       results.push(`OK: synced ${m.rel} to ${version}`);
     } catch (err) {

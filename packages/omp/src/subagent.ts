@@ -15,6 +15,60 @@ function recordAndPersist(
   persistState(pi, state);
 }
 
+function validateOmpParams(params: {
+  agent?: string;
+  task?: string;
+  tasks?: Array<{ agent: string; task: string }>;
+  mode?: string;
+}): void {
+  const mode = params.mode ?? 'single';
+  if (mode === 'single') {
+    assertValidAgent(params.agent!);
+    assertNonEmptyTask(params.task, 'Task description is required');
+  } else {
+    if (!params.tasks || params.tasks.length < 2)
+      throw new Error('For parallel/chain mode, tasks array is required with at least 2 items');
+    for (const t of params.tasks) {
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
+    }
+  }
+}
+
+function handleSingleDispatch(
+  pi: ExtensionAPI,
+  state: MaestriaState,
+  params: { agent: string; task: string },
+) {
+  recordAndPersist(pi, state, 'orchestrator', params.agent, params.task);
+  return {
+    content: [
+      {
+        type: 'text' as const,
+        text: `## Delegation: ${params.agent}\n\nUse the native \`task\` tool to dispatch:\n\`\`\`\ntask(agent: "${params.agent}", task: """${params.task}""")\n\`\`\``,
+      },
+    ],
+  };
+}
+
+function handleMultiDispatch(
+  pi: ExtensionAPI,
+  state: MaestriaState,
+  params: { tasks: Array<{ agent: string; task: string }>; mode: 'parallel' | 'chain' },
+) {
+  for (const t of params.tasks) recordAndPersist(pi, state, 'orchestrator', t.agent, t.task);
+  const parts = [
+    `## ${params.mode === 'parallel' ? 'Parallel' : 'Chain'} Dispatch Plan (${params.tasks.length} tasks)\n`,
+  ];
+  for (let i = 0; i < params.tasks.length; i++) {
+    parts.push(`### ${i + 1}: ${params.tasks[i].agent}`);
+    parts.push(`\`task(agent: "${params.tasks[i].agent}", task: """${params.tasks[i].task}""")\``);
+    if (params.mode === 'chain' && i > 0)
+      parts.push('Previous result available via {previous} placeholder.');
+  }
+  return { content: [{ type: 'text' as const, text: parts.join('\n\n') }] };
+}
+
 export function installSubagentTool(
   pi: ExtensionAPI,
   state: MaestriaState,
@@ -33,12 +87,7 @@ export function installSubagentTool(
         ),
       task: pi.zod.string().describe('Task description for the subagent (required)'),
       tasks: pi.zod
-        .array(
-          pi.zod.object({
-            agent: pi.zod.string(),
-            task: pi.zod.string(),
-          }),
-        )
+        .array(pi.zod.object({ agent: pi.zod.string(), task: pi.zod.string() }))
         .describe('Array of task objects for parallel or chain dispatch')
         .optional(),
       mode: pi.zod
@@ -58,8 +107,7 @@ export function installSubagentTool(
       _onUpdate: unknown,
       _ctx: unknown,
     ) {
-      // Block subagent dispatch when in review mode
-      if (state.reviewMode) {
+      if (state.reviewMode)
         return {
           content: [
             {
@@ -68,63 +116,14 @@ export function installSubagentTool(
             },
           ],
         };
-      }
-
+      validateOmpParams(params);
       const mode = params.mode ?? 'single';
-
-      // Validate parameters
-      if (mode === 'single') {
-        assertValidAgent(params.agent!);
-        assertNonEmptyTask(params.task, 'Task description is required');
-      } else {
-        if (!params.tasks || params.tasks.length < 2) {
-          throw new Error('For parallel/chain mode, tasks array is required with at least 2 items');
-        }
-        for (const t of params.tasks) {
-          assertValidAgent(t.agent);
-          assertNonEmptyTask(t.task, 'Task description is required for all tasks');
-        }
-      }
-
-      // Build structured handoff for omp's built-in task tool.
-      // omp's task tool discovers our agents from ~/.omp/agent/agents/*.md,
-      // so we construct the delegation prompt that the LLM will process.
-      if (mode === 'single') {
-        const { agent, task } = params as { agent: string; task: string };
-        recordAndPersist(pi, state, 'orchestrator', agent, task);
-
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `## Delegation: ${agent}\n\nUse the native \`task\` tool to dispatch:\n\`\`\`\ntask(agent: "${agent}", task: """${task}""")\n\`\`\``,
-            },
-          ],
-        };
-      }
-
-      // For parallel/chain modes, generate a structured plan
-      const taskList = params.tasks!;
-      for (const t of taskList) {
-        recordAndPersist(pi, state, 'orchestrator', t.agent, t.task);
-      }
-
-      const parts = [
-        `## ${mode === 'parallel' ? 'Parallel' : 'Chain'} Dispatch Plan (${taskList.length} tasks)\n`,
-      ];
-      for (let i = 0; i < taskList.length; i++) {
-        parts.push(`### ${i + 1}: ${taskList[i].agent}`);
-        if (mode === 'chain' && i > 0) {
-          parts.push(`\`task(agent: "${taskList[i].agent}", task: """${taskList[i].task}""")\``);
-          parts.push('Previous result available via {previous} placeholder.');
-        } else {
-          parts.push(`\`task(agent: "${taskList[i].agent}", task: """${taskList[i].task}""")\``);
-        }
-      }
-
-      return {
-        content: [{ type: 'text' as const, text: parts.join('\n\n') }],
-      };
+      if (mode === 'single')
+        return handleSingleDispatch(pi, state, params as { agent: string; task: string });
+      return handleMultiDispatch(pi, state, {
+        tasks: params.tasks!,
+        mode: mode as 'parallel' | 'chain',
+      });
     },
   });
 

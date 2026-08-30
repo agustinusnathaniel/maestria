@@ -52,7 +52,7 @@ interface CommandsPi {
  */
 const READ_ONLY_TOOLS = ['read', 'grep', 'find', 'ls', 'glob'];
 
-export function installCommands(pi: CommandsPi, state: MaestriaState): void {
+function registerMaestriaStatus(pi: CommandsPi, state: MaestriaState): void {
   pi.registerCommand('maestria-status', {
     description: 'Show current maestria session state including handoff history',
     handler: async (_args: string, ctx) => {
@@ -64,7 +64,9 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
       ctx.ui.setEditorText(summary);
     },
   });
+}
 
+function registerReviewCommand(pi: CommandsPi, state: MaestriaState): void {
   pi.registerCommand('review', {
     description: 'Enter review mode. Blocks destructive tools, sets read-only toolset.',
     handler: async (args: string, ctx) => {
@@ -72,22 +74,15 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
         ctx.ui.notify('Usage: /review <target> - describe what to review');
         return;
       }
-
-      // 1. Save current model and tools for later restoration
       const currentModelId = ctx.model?.id ?? null;
       const currentTools = pi.getActiveTools();
-
-      // 2. Update state: mark review mode, store originals
-      const updatedState: MaestriaState = {
+      Object.assign(state, {
         ...state,
         reviewMode: true,
         originalModel: currentModelId,
         originalTools: currentTools,
-      };
-      Object.assign(state, updatedState);
+      } as MaestriaState);
       persistState(pi, state);
-
-      // 3. Switch to review model if configured
       if (state.reviewModel) {
         const switched = await cycleToReviewModel(pi, ctx, state);
         if (switched) {
@@ -99,10 +94,7 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
           });
         }
       }
-
-      // 4. Restrict to read-only tools
       void pi.setActiveTools(READ_ONLY_TOOLS);
-
       pi.sendUserMessage(
         [
           `[REVIEW: ${args}]`,
@@ -114,7 +106,9 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
       );
     },
   });
+}
 
+function registerRestoreModel(pi: CommandsPi, state: MaestriaState): void {
   pi.registerCommand('restore-model', {
     description:
       'Restore the original model and tools that were active before review mode was entered.',
@@ -133,7 +127,9 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
       });
     },
   });
+}
 
+function registerHandoffCommand(pi: CommandsPi, state: MaestriaState): void {
   pi.registerCommand('handoff', {
     description: 'Generate a structured handoff prompt for a new task context',
     handler: async (args: string, ctx) => {
@@ -141,8 +137,6 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
         ctx.ui.notify('Usage: /handoff <goal> - describe the task context for handoff');
         return;
       }
-
-      // Build a structured handoff document with 7 fields
       const goal = args.trim();
       const handoffPrompt = [
         '**Goal:** ' + goal,
@@ -178,18 +172,14 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
         '---',
         'Complete the fields above before sending.',
       ].join('\n');
-
-      // Record in state
       Object.assign(state, recordHandoff(state, 'current', 'next', goal));
-
-      // Persist state
       persistState(pi, state);
-
-      // Send as user message with steer delivery
       pi.sendUserMessage(handoffPrompt, { deliverAs: 'steer' });
     },
   });
+}
 
+function registerReviewModel(pi: CommandsPi, state: MaestriaState): void {
   pi.registerCommand('review-model', {
     description: 'Set which model to use when entering review mode',
     handler: async (args: string, ctx) => {
@@ -211,4 +201,12 @@ export function installCommands(pi: CommandsPi, state: MaestriaState): void {
       ctx.ui.notify(`Review model set to: ${modelId}`);
     },
   });
+}
+
+export function installCommands(pi: CommandsPi, state: MaestriaState): void {
+  registerMaestriaStatus(pi, state);
+  registerReviewCommand(pi, state);
+  registerRestoreModel(pi, state);
+  registerHandoffCommand(pi, state);
+  registerReviewModel(pi, state);
 }
