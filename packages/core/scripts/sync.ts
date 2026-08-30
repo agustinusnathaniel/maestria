@@ -97,12 +97,12 @@ async function main(): Promise<number> {
   let config;
   try {
     config = await loadConfig(configPath);
-  } catch (err) {
-    if (err instanceof ConfigError) {
-      console.error(`Configuration error: ${err.message}`);
+  } catch (error) {
+    if (error instanceof ConfigError) {
+      console.error(`Configuration error: ${error.message}`);
       return 2;
     }
-    console.error('Unexpected error loading config:', err);
+    console.error('Unexpected error loading config:', error);
     return 2;
   }
 
@@ -123,8 +123,9 @@ async function main(): Promise<number> {
 
   if (opts.verbose) {
     console.log(
-      `\nSummary: ${written} written, ${unchanged} unchanged, ${removed} removed, ${errors} errors` +
-        (opts.dryRun ? `, ${dryRunCount} dry-run` : ''),
+      `\nSummary: ${written} written, ${unchanged} unchanged, ${removed} removed, ${errors} errors${
+        opts.dryRun ? `, ${dryRunCount} dry-run` : ''
+      }`,
     );
   }
 

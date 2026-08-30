@@ -3,7 +3,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 const EXPECTED_SKILLS = [
@@ -49,14 +49,14 @@ interface PackageManifest {
 
 interface MarketplaceManifest {
   name?: string;
-  plugins?: Array<{
+  plugins?: {
     name?: string;
     source?: { source?: string; package?: string };
-  }>;
+  }[];
 }
 
 async function readJson<T>(relativePath: string): Promise<T> {
-  const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8');
+  const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf-8');
   return JSON.parse(text) as T;
 }
 
@@ -116,7 +116,7 @@ describe('.codex-plugin/plugin.json manifest', () => {
 describe('repository marketplace entry', () => {
   it('points the native Codex marketplace at the published npm package', async () => {
     const marketplace = JSON.parse(
-      await readFile(path.join(PACKAGE_ROOT, '../../.agents/plugins/marketplace.json'), 'utf8'),
+      await readFile(path.join(PACKAGE_ROOT, '../../.agents/plugins/marketplace.json'), 'utf-8'),
     ) as MarketplaceManifest;
     const plugin = marketplace.plugins?.find((entry) => entry.name === 'maestria');
     expect(marketplace.name).toBe('maestria');
@@ -139,7 +139,7 @@ describe('generated skills', () => {
       const relativePath = `skills/${skill}/SKILL.md`;
       expect(await pathExists(relativePath)).toBe(true);
       const frontmatter = parseFrontmatter(
-        await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8'),
+        await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf-8'),
       );
       expect(frontmatter.name).toBe(skill);
       expect(frontmatter.description).toBeTruthy();
@@ -147,7 +147,7 @@ describe('generated skills', () => {
   }
 
   it('uses Codex namespaced specialist references', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'skills/orchestrator/SKILL.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'skills/orchestrator/SKILL.md'), 'utf-8');
     expect(text).toContain('$maestria:builder');
     expect(text).toContain('$maestria:reviewer');
     expect(text).toContain('maestria-builder');
@@ -155,7 +155,7 @@ describe('generated skills', () => {
   });
 
   it('ships the automatic global orchestration instruction template', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'instructions/AGENTS.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'instructions/AGENTS.md'), 'utf-8');
     expect(text).toContain('maestria:codex-orchestrator:start');
     expect(text).toContain('$maestria:orchestrator');
     expect(text).toContain('agent_type');
@@ -165,7 +165,7 @@ describe('generated skills', () => {
 
   it('states that read-only role boundaries are advisory', async () => {
     for (const role of ['adventurer', 'planner', 'reviewer']) {
-      const text = await readFile(path.join(PACKAGE_ROOT, `skills/${role}/SKILL.md`), 'utf8');
+      const text = await readFile(path.join(PACKAGE_ROOT, `skills/${role}/SKILL.md`), 'utf-8');
       expect(text).toMatch(/advisory/i);
       expect(text).toMatch(/cannot enforce/i);
     }
@@ -176,7 +176,7 @@ describe('native Codex agent templates', () => {
   for (const agent of EXPECTED_NATIVE_AGENTS) {
     it(`${agent} has the required native TOML fields`, async () => {
       const relativePath = `agents/${agent}.toml`;
-      const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8');
+      const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf-8');
       expect(text).toMatch(new RegExp(`^name\\s*=\\s*"${agent}"`, 'm'));
       expect(text).toMatch(/^description\s*=\s*".+"/m);
       expect(text).toContain('developer_instructions = """');
@@ -191,7 +191,7 @@ describe('native Codex agent templates', () => {
     'maestria-reviewer',
   ]) {
     it(`${agent} declares Codex read-only sandboxing`, async () => {
-      const text = await readFile(path.join(PACKAGE_ROOT, `agents/${agent}.toml`), 'utf8');
+      const text = await readFile(path.join(PACKAGE_ROOT, `agents/${agent}.toml`), 'utf-8');
       expect(text).toContain('sandbox_mode = "read-only"');
     });
   }

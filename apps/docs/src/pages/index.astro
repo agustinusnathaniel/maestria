@@ -2,7 +2,8 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import InstallCommand from '@/components/plugin/InstallCommand.astro';
 import SiteFooter from '@/components/plugin/SiteFooter.astro';
-import { agents, type Agent } from '@/data/agents.js';
+import { agents } from '@/data/agents.js';
+import type { Agent } from '@/data/agents.js';
 import { platforms } from '@/data/platforms.js';
 import { marks, markAttrs } from '@/data/marks.js';
 
@@ -810,7 +811,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       const tab = target.closest('.agent-tab');
       if (!tab) {return;}
 
-      const tabsArray = Array.from(tabs);
+      const tabsArray = [...tabs];
       const index = tabsArray.indexOf(tab);
 
       // Roving tabindex. The tablist is laid out vertically, so Up/Down are

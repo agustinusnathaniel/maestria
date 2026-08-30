@@ -32,7 +32,7 @@ export async function walkDir(dir: string): Promise<string[]> {
 
 export async function atomicWrite(filePath: string, content: string): Promise<void> {
   await mkdir(dirname(filePath), { recursive: true });
-  const tmpPath = filePath + '.tmp.' + createHash('md5').update(filePath).digest('hex').slice(0, 8);
+  const tmpPath = `${filePath}.tmp.${createHash('md5').update(filePath).digest('hex').slice(0, 8)}`;
   await writeFile(tmpPath, content, 'utf-8');
   await rename(tmpPath, filePath);
 }
@@ -67,7 +67,7 @@ export async function autoClean(
     // Skip files that match preserve patterns
     if (
       config.preserve.length > 0 &&
-      config.preserve.some((p) => relOutPath === p || relOutPath.endsWith('/' + p))
+      config.preserve.some((p) => relOutPath === p || relOutPath.endsWith(`/${p}`))
     ) {
       if (verbose) {
         logger(`[${report}] Preserved: ${relative(process.cwd(), absOutPath)}`);

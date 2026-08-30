@@ -5,8 +5,8 @@ import { MODE_KEYWORDS, getModePrompt } from '@maestria/shared-pi/modes-core';
 import { installModeCommands } from '@/modes.js';
 import { createInitialState } from '@/state.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COMMANDS_DIR = __dirname + '/../agents/commands';
+const __dirname = import.meta.dirname;
+const COMMANDS_DIR = `${__dirname}/../agents/commands`;
 
 // ---------------------------------------------------------------------------
 // MODE_KEYWORDS

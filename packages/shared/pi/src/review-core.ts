@@ -19,7 +19,7 @@ interface ReviewPi {
 }
 
 interface ReviewCtx {
-  modelRegistry: { getAll(): Array<{ id: string }> };
+  modelRegistry: { getAll(): { id: string }[] };
   ui: { notify(msg: string): void };
 }
 
@@ -64,10 +64,9 @@ export async function cycleToReviewModel(
     if (model) {
       await pi.setModel(model);
       return reviewModel;
-    } else {
-      ctx.ui.notify(`Review model "${reviewModel}" not found in registry, staying on current.`);
-      return null;
     }
+    ctx.ui.notify(`Review model "${reviewModel}" not found in registry, staying on current.`);
+    return null;
   } catch {
     ctx.ui.notify(`Could not switch to review model "${reviewModel}", staying on current.`);
     return null;

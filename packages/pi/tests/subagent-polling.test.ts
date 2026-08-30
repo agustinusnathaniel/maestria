@@ -1,6 +1,7 @@
 import { Effect } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
-import { pollSubagentEffect, type SubagentRecord } from '@/subagent-polling.js';
+import { pollSubagentEffect } from '@/subagent-polling.js';
+import type { SubagentRecord } from '@/subagent-polling.js';
 
 function service(getRecord: (id: string) => SubagentRecord | undefined) {
   return { getRecord };
@@ -29,7 +30,7 @@ describe('pollSubagentEffect', () => {
           id: 'subagent-missing',
           label: 'builder',
           sendUpdates: false,
-          service: service(() => undefined),
+          service: service(() => {}),
         }),
       ),
     ).rejects.toMatchObject({

@@ -135,9 +135,7 @@ async function showEnhancedUsage<T extends ArgsDef = ArgsDef>(
   const parts: string[] = [help];
 
   if (section) {
-    parts.push('');
-    parts.push('EXAMPLES');
-    parts.push('');
+    parts.push('', 'EXAMPLES', '');
     for (const line of section.examples) {
       parts.push(`  ${line}`);
     }
@@ -146,9 +144,7 @@ async function showEnhancedUsage<T extends ArgsDef = ArgsDef>(
   parts.push(EXIT_CODES);
 
   if (section?.tip) {
-    parts.push('');
-    parts.push('TIP FOR AI AGENTS');
-    parts.push('');
+    parts.push('', 'TIP FOR AI AGENTS', '');
     for (const line of section.tip.split('\n')) {
       parts.push(`  ${line}`);
     }
@@ -226,7 +222,7 @@ const main = defineCommand({
   },
 });
 
-runMain(main, { showUsage: showEnhancedUsage }).catch((error) => {
+runMain(main, { showUsage: showEnhancedUsage }).catch((error: unknown) => {
   console.error(error);
   process.exit(1);
 });

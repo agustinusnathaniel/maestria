@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 const SKILLS_DIR = join(import.meta.dirname, '..', 'skills');
 
@@ -17,7 +17,7 @@ describe('skills', () => {
       expect(existsSync(path)).toBe(true);
 
       const content = readFileSync(path, 'utf-8');
-      const match = content.match(/^---\n([\s\S]*?)\n---/);
+      const match = /^---\n([\s\S]*?)\n---/.exec(content);
       expect(match).not.toBeNull();
 
       const frontmatter = match![1];
@@ -30,7 +30,7 @@ describe('skills', () => {
     for (const name of skills) {
       const path = join(SKILLS_DIR, name, 'SKILL.md');
       const content = readFileSync(path, 'utf-8');
-      const nameMatch = content.match(/^name:\s*(\S+)/m);
+      const nameMatch = /^name:\s*(\S+)/m.exec(content);
       expect(nameMatch).not.toBeNull();
       expect(nameMatch![1]).toBe(name);
     }

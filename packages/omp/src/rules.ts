@@ -8,8 +8,8 @@ import type {
 import type { MaestriaState } from '@/state.js';
 import { getModePrompt } from '@maestria/shared-pi/modes-core';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COMMANDS_DIR = __dirname + '/../agents/commands';
+const __dirname = import.meta.dirname;
+const COMMANDS_DIR = `${__dirname}/../agents/commands`;
 
 /**
  * Creates a before_agent_start handler that injects workflow mode prompts.

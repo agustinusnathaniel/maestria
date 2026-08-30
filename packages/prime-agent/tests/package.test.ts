@@ -11,7 +11,7 @@ import type {
 } from '../src/pi-api.ts';
 import { MODE_STATE_CUSTOM_TYPE } from '../src/state.ts';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 const SRC_DIR = path.join(PACKAGE_ROOT, 'src');
 const DIST_EXTENSION = path.join(PACKAGE_ROOT, 'dist', 'extension.mjs');
@@ -28,7 +28,7 @@ interface PackageJson {
 
 async function readJson<T>(relativePath: string): Promise<T> {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf8');
+  const raw = await readFile(absolute, 'utf-8');
   return JSON.parse(raw) as T;
 }
 
@@ -41,7 +41,7 @@ async function readSrcFiles(): Promise<string[]> {
       if (entry.isDirectory()) {
         await walk(full);
       } else if (entry.name.endsWith('.ts')) {
-        out.push(await readFile(full, 'utf8'));
+        out.push(await readFile(full, 'utf-8'));
       }
     }
   }
@@ -152,13 +152,12 @@ describe('prime-agent built extension artifact', () => {
     // beyond registration against a fake `pi` (no live Prime binary needed).
     const mod = (await import(DIST_EXTENSION)) as { default: (pi: ExtensionAPI) => void };
     const handlers = new Map<string, (event: unknown, ctx: unknown) => unknown>();
-    const commands: Array<{
+    const commands: {
       name: string;
       handler: (args: string, ctx: ExtensionCommandContext) => Promise<void>;
-    }> = [];
-    const entries: Array<{ customType: string; data?: unknown }> = [];
-    const sentMessages: Array<{ content: string; options?: { deliverAs?: 'steer' | 'followUp' } }> =
-      [];
+    }[] = [];
+    const entries: { customType: string; data?: unknown }[] = [];
+    const sentMessages: { content: string; options?: { deliverAs?: 'steer' | 'followUp' } }[] = [];
     const pi: ExtensionAPI = {
       on: ((event, handler) => {
         handlers.set(event, handler as (event: unknown, ctx: unknown) => unknown);
@@ -225,10 +224,10 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
   function npmPackFileList(): string[] {
     const stdout = execFileSync('npm', ['pack', '--dry-run', '--json'], {
       cwd: PACKAGE_ROOT,
-      encoding: 'utf8',
+      encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
-    const parsed = JSON.parse(stdout) as Array<{ files?: Array<{ path: string }> }>;
+    const parsed = JSON.parse(stdout) as { files?: { path: string }[] }[];
     const result = parsed[0];
     if (!result?.files) {
       throw new Error('npm pack --dry-run --json returned no file list');

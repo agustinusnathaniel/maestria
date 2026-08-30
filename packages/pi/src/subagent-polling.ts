@@ -3,7 +3,11 @@ import { Data, Effect } from 'effect';
 /** Terminal subagent statuses - agent will produce no more updates. */
 const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
 
-export type SubagentRecord = { status: string; result?: string; error?: string };
+export interface SubagentRecord {
+  status: string;
+  result?: string;
+  error?: string;
+}
 
 export type SubagentPollFailureReason = 'aborted' | 'timeout' | 'missing';
 
@@ -31,7 +35,7 @@ export interface PollSubagentOptions {
   readonly sendUpdates: boolean;
   readonly service: SubagentPollingService;
   readonly signal?: AbortSignal;
-  readonly onUpdate?: (result: { content: Array<{ type: string; text: string }> }) => void;
+  readonly onUpdate?: (result: { content: { type: string; text: string }[] }) => void;
   readonly intervalMs?: number;
   readonly timeoutMs?: number;
 }

@@ -61,7 +61,7 @@ export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
 
   let prompt = '';
   try {
-    const content = readFileSync(join(skillsDir, keyword, 'SKILL.md'), 'utf8');
+    const content = readFileSync(join(skillsDir, keyword, 'SKILL.md'), 'utf-8');
     const modeIdx = content.indexOf('## MODE:');
     if (modeIdx === -1) {
       // A generated skill without the mode section must not leak the whole

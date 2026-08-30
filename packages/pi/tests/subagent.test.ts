@@ -339,7 +339,7 @@ describe('installSubagentTool - chain mode', () => {
 
 describe('installSubagentTool - event subscription persistence', () => {
   function createMockEventBus() {
-    const handlers: Record<string, Array<(data: unknown) => void>> = {};
+    const handlers: Record<string, ((data: unknown) => void)[]> = {};
     return {
       on: vi.fn((event: string, handler: (data: unknown) => void) => {
         if (!handlers[event]) {
@@ -622,7 +622,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       if (id === 'id-a') {
         return { status: 'completed', result: 'RESULT_A_OK' };
       }
-      return undefined; // id-b cleaned up
+      return; // id-b cleaned up
     });
 
     const { toolDef } = install();
@@ -664,7 +664,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       if (id === 'id-a') {
         return { status: 'running' };
       }
-      return undefined; // id-b cleaned up
+      return; // id-b cleaned up
     });
 
     const { toolDef } = install();
@@ -696,7 +696,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       if (id === 'id-a') {
         return { status: 'completed', result: 'STEP_A_OK' };
       }
-      return undefined; // id-b cleaned up
+      return; // id-b cleaned up
     });
 
     const { toolDef } = install();

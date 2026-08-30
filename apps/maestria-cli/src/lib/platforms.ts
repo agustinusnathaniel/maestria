@@ -1,6 +1,6 @@
 // oxlint-disable max-lines -- platforms.ts is a cohesive registry aggregating 9 platform handlers (opencode, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex, omp) with shared helpers. Splitting the registry would fragment the single source for PLATFORM_IDS and platform lookup, harming discoverability and increasing cross-file churn for handler registration. The file's handlers share helpers (installNpmTarball, marketplace, codex agents) and are rarely edited together; file length is justified by cohesion.
 import { Effect } from 'effect';
-import { homedir, tmpdir } from 'os';
+import { homedir, tmpdir } from 'node:os';
 import { isAbsolute, join, win32 } from 'node:path';
 import picocolors from 'picocolors';
 
@@ -8,11 +8,11 @@ import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
 import { codexManagedAgentFileName, mergeCodexAgentSettings } from '@/lib/codex-agent-files.js';
 import {
   CODEX_GLOBAL_INSTRUCTION_FILENAMES,
-  type CodexGlobalInstructionFilename,
   hasCodexManagedInstructions,
   removeCodexManagedInstructions,
   upsertCodexManagedInstructions,
 } from '@/lib/codex-instructions.js';
+import type { CodexGlobalInstructionFilename } from '@/lib/codex-instructions.js';
 import {
   run,
   readTextFile,
@@ -65,7 +65,7 @@ function cleanupStaleTarball(
       const { readdir, unlink, rm } = await import('node:fs/promises');
       const entries = await readdir(tmpDir);
       const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-      await Promise.all(stale.map((e) => unlink(join(tmpDir, e))));
+      await Promise.all(stale.map(async (e) => await unlink(join(tmpDir, e))));
       await rm(dest, { recursive: true, force: true });
     },
     catch: (error) =>
@@ -351,7 +351,7 @@ function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifes
       const { readFile } = await import('node:fs/promises');
       let raw: string;
       try {
-        raw = await readFile(codexManagedAgentManifestPath(), 'utf8');
+        raw = await readFile(codexManagedAgentManifestPath(), 'utf-8');
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
           return { version: 1, files: [] } satisfies CodexManagedAgentManifest;
@@ -363,12 +363,12 @@ function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifes
       return {
         version: 1,
         files: parsed.files as string[],
-        ...(parsed.instructionsFile !== undefined
-          ? { instructionsFile: parsed.instructionsFile as CodexGlobalInstructionFilename }
-          : {}),
-        ...(parsed.instructionsCreated !== undefined
-          ? { instructionsCreated: parsed.instructionsCreated }
-          : {}),
+        ...(parsed.instructionsFile === undefined
+          ? {}
+          : { instructionsFile: parsed.instructionsFile as CodexGlobalInstructionFilename }),
+        ...(parsed.instructionsCreated === undefined
+          ? {}
+          : { instructionsCreated: parsed.instructionsCreated }),
       } satisfies CodexManagedAgentManifest;
     },
     catch: (error) =>
@@ -388,7 +388,7 @@ function writeCodexManagedAgentManifest(
       await mkdir(codexHomePath(), { recursive: true });
       const path = codexManagedAgentManifestPath();
       const tempPath = `${path}.tmp`;
-      await writeFile(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+      await writeFile(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf-8');
       await rename(tempPath, path);
     },
     catch: (error) =>
@@ -412,7 +412,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
     const sourceInstructions = yield* Effect.tryPromise({
       try: async () => {
         const { readFile } = await import('node:fs/promises');
-        return await readFile(sourceInstructionsPath, 'utf8');
+        return await readFile(sourceInstructionsPath, 'utf-8');
       },
       catch: (error) => new Error(String(error)),
     });
@@ -434,11 +434,11 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           const agent = MAESTRIA_AGENTS[index]!;
           const sourcePath = `${sourceDir}/${file}`;
           const targetPath = `${targetDir}/${file}`;
-          const bundled = await readFile(sourcePath, 'utf8');
+          const bundled = await readFile(sourcePath, 'utf-8');
           let next = bundled;
           for (const existingPath of [targetPath, `${targetDir}/${agent}.toml`]) {
             try {
-              const existing = await readFile(existingPath, 'utf8');
+              const existing = await readFile(existingPath, 'utf-8');
               next = mergeCodexAgentSettings(bundled, existing);
               break;
             } catch (error) {
@@ -448,7 +448,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
             }
           }
           const tempPath = `${targetPath}.tmp`;
-          await writeFile(tempPath, next, 'utf8');
+          await writeFile(tempPath, next, 'utf-8');
           await rename(tempPath, targetPath);
         }
       },
@@ -475,7 +475,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
         const existing = new Map<CodexGlobalInstructionFilename, string | undefined>();
         for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
           try {
-            existing.set(file, await readFile(codexGlobalInstructionsPath(file), 'utf8'));
+            existing.set(file, await readFile(codexGlobalInstructionsPath(file), 'utf-8'));
           } catch (error) {
             if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
               existing.set(file, undefined);
@@ -515,7 +515,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
         const writeAtomic = async (path: string, content: string): Promise<void> => {
           await mkdir(codexHomePath(), { recursive: true });
           const tempPath = `${path}.tmp`;
-          await writeFile(tempPath, content, 'utf8');
+          await writeFile(tempPath, content, 'utf-8');
           await rename(tempPath, path);
         };
 
@@ -584,7 +584,7 @@ export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
           const path = codexGlobalInstructionsPath(file);
           let content: string;
           try {
-            content = await readFile(path, 'utf8');
+            content = await readFile(path, 'utf-8');
           } catch (error) {
             if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
               continue;
@@ -604,7 +604,7 @@ export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
           } else {
             const { rename, writeFile } = await import('node:fs/promises');
             const tempPath = `${path}.tmp`;
-            await writeFile(tempPath, next, 'utf8');
+            await writeFile(tempPath, next, 'utf-8');
             await rename(tempPath, path);
           }
         }
@@ -665,10 +665,10 @@ export interface PlatformHandler {
   readonly id: PlatformId;
   readonly label: string;
   readonly npmPackage?: string;
-  readonly detect: Effect.Effect<boolean, never>;
-  readonly isInstalled: Effect.Effect<boolean, never>;
+  readonly detect: Effect.Effect<boolean>;
+  readonly isInstalled: Effect.Effect<boolean>;
   readonly getInstalledVersion: Effect.Effect<string, CommandError>;
-  readonly getLatestVersion: Effect.Effect<string, never>;
+  readonly getLatestVersion: Effect.Effect<string>;
   /** Whether `update --version` can select an exact package version. */
   readonly supportsVersionPinning?: boolean;
   /**
@@ -714,7 +714,9 @@ function clearOpencodeCache(): Effect.Effect<void, CommandError> {
         throw error;
       }
       const stale = entries.filter((e) => e.startsWith('opencode'));
-      await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
+      await Promise.all(
+        stale.map(async (e) => await rm(`${base}/${e}`, { recursive: true, force: true })),
+      );
     },
     catch: (error) =>
       new CommandError({
@@ -738,7 +740,7 @@ const opencode: PlatformHandler = {
 
   getInstalledVersion: readOpenCodeConfig().pipe(
     Effect.map((config) => {
-      const match = config.match(/@maestria\/opencode@(.+?)"/);
+      const match = /@maestria\/opencode@(.+?)"/.exec(config);
       return match?.[1] ?? null;
     }),
     Effect.flatMap((specifier) => {
@@ -1186,7 +1188,7 @@ function primeTempCwd(): Effect.Effect<string, CommandError> {
 }
 
 /** Remove a Prime Agent temp cwd. Best-effort: cleanup failures are ignored. */
-function removePrimeTempCwd(dir: string): Effect.Effect<void, never> {
+function removePrimeTempCwd(dir: string): Effect.Effect<void> {
   return Effect.tryPromise({
     try: async () => {
       const { rm } = await import('node:fs/promises');
@@ -1253,9 +1255,9 @@ function primeUpdatePreflight(
     // a direct call without a snapshot (e.g. invoking the handler's update in
     // isolation) needs to read the registration state now.
     const pinnedSource =
-      snapshot !== undefined
-        ? snapshot.pinnedSource
-        : yield* primePackageList.pipe(Effect.map(primeMaestriaPinnedSource));
+      snapshot === undefined
+        ? yield* primePackageList.pipe(Effect.map(primeMaestriaPinnedSource))
+        : snapshot.pinnedSource;
     if (pinnedSource) {
       yield* Effect.fail(
         new CommandError({
@@ -1397,7 +1399,7 @@ const hermes: PlatformHandler = {
     `${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`,
   ).pipe(
     Effect.map((out: string) => {
-      const match = out.match(/^version:\s*["']?(.+?)["']?\s*$/m);
+      const match = /^version:\s*["']?(.+?)["']?\s*$/m.exec(out);
       return match?.[1] ?? 'unknown';
     }),
     Effect.catchCause(() => Effect.succeed('unknown')),
@@ -1441,16 +1443,16 @@ const CURSOR_AGENT_NAMES = [
   'writer',
 ] as const;
 
-function cursorCliName(): Effect.Effect<string | undefined, never> {
+function cursorCliName(): Effect.Effect<string | undefined> {
   return Effect.gen(function* () {
     if (yield* commandExists('cursor-agent')) {
       return 'cursor-agent';
     }
     if (!(yield* commandExists('agent'))) {
-      return undefined;
+      return;
     }
 
-    const version = yield* run('agent', ['--version'], 3_000).pipe(
+    const version = yield* run('agent', ['--version'], 3000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
     );
     return /cursor/i.test(version) ? 'agent' : undefined;
@@ -1480,12 +1482,12 @@ function setCursorAgentModel(content: string, model: string): string {
   const modelIndex = lines.findIndex((line) => /^model:\s*/.test(line));
   if (model) {
     const rendered = `model: ${model}`;
-    if (modelIndex >= 0) {
-      lines[modelIndex] = rendered;
-    } else {
+    if (modelIndex === -1) {
       lines.push(rendered);
+    } else {
+      lines[modelIndex] = rendered;
     }
-  } else if (modelIndex >= 0) {
+  } else if (modelIndex !== -1) {
     lines.splice(modelIndex, 1);
   }
   return `${opening}${lines.join('\n')}${closing}${content.slice(match[0].length)}`;
@@ -1499,7 +1501,7 @@ function readCursorAgentModels(): Effect.Effect<Record<string, string>, CommandE
       const result: Record<string, string> = {};
       for (const agent of CURSOR_AGENT_NAMES) {
         try {
-          const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf8');
+          const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf-8');
           const model = parseCursorAgentModel(content);
           if (model) {
             result[agent] = model;
@@ -1531,8 +1533,8 @@ function restoreCursorAgentModels(
       await mkdir(agentDir, { recursive: true });
       for (const [agent, model] of Object.entries(models)) {
         const path = `${agentDir}/${agent}.md`;
-        const content = await readFile(path, 'utf8');
-        await writeFile(path, setCursorAgentModel(content, model), 'utf8');
+        const content = await readFile(path, 'utf-8');
+        await writeFile(path, setCursorAgentModel(content, model), 'utf-8');
       }
     },
     catch: (error) =>
@@ -1605,9 +1607,9 @@ const cursor: PlatformHandler = {
 
   uninstall: Effect.gen(function* () {
     yield* Effect.tryPromise({
-      try: () =>
-        import('node:fs/promises').then((m) =>
-          m.rm(CURSOR_PLUGIN_DIR, { recursive: true, force: true }),
+      try: async () =>
+        await import('node:fs/promises').then(
+          async (m) => await m.rm(CURSOR_PLUGIN_DIR, { recursive: true, force: true }),
         ),
       catch: (e) =>
         new CommandError({ command: `rm -rf ${CURSOR_PLUGIN_DIR}`, message: String(e) }),

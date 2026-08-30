@@ -48,7 +48,7 @@ for (const name of skills) {
     continue;
   }
   const content = readFileSync(path, 'utf-8');
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  const frontmatterMatch = /^---\n([\s\S]*?)\n---/.exec(content);
   if (!frontmatterMatch) {
     console.error(`❌ skills/${name}/SKILL.md: missing or invalid frontmatter`);
     allValid = false;

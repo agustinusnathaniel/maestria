@@ -26,8 +26,8 @@ export const MODE_PROMPTS: Record<ModeKeyword, string> = new Proxy(
         if (!(key in target)) {
           try {
             (target as Record<string, string>)[key] = loadModePrompt(key);
-          } catch (e) {
-            console.warn(`[maestria] Failed to load mode prompt "${key}":`, e);
+          } catch (error) {
+            console.warn(`[maestria] Failed to load mode prompt "${key}":`, error);
             (target as Record<string, string>)[key] = '';
           }
         }

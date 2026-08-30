@@ -1,9 +1,10 @@
 import type { Plugin } from '@opencode-ai/plugin';
 import { merge } from 'es-toolkit';
-import { readFileSync, readdirSync } from 'fs';
-import { join, basename } from 'path';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, basename } from 'node:path';
 import { parse as parseYaml } from 'yaml';
-import { type MaestriaPluginOptions, maestriaOptionsSchema } from '@/modes/types.js';
+import { maestriaOptionsSchema } from '@/modes/types.js';
+import type { MaestriaPluginOptions } from '@/modes/types.js';
 import { detectMode, stripKeyword, getModeMarker, getModePrompt } from '@/modes/index.js';
 import { AGENTS_DIR, RULES_PATH } from '@/root.js';
 
@@ -72,17 +73,19 @@ function loadAgents(): Record<string, Record<string, unknown>> {
       try {
         const { name, config } = parseAgentFile(join(AGENTS_DIR, file));
         agents[name] = config;
-      } catch (err) {
-        console.warn(`[maestria] Failed to parse agent file "${file}":`, err);
+      } catch (error) {
+        console.warn(`[maestria] Failed to parse agent file "${file}":`, error);
       }
     }
 
     return agents;
-  } catch (err) {
-    console.error(`[maestria] Failed to read agents directory:`, err);
+  } catch (error) {
+    console.error(`[maestria] Failed to read agents directory:`, error);
     throw new Error(
-      `[maestria] Failed to load agents from "${AGENTS_DIR}": ` +
-        (err instanceof Error ? err.message : String(err)),
+      `[maestria] Failed to load agents from "${AGENTS_DIR}": ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { cause: error },
     );
   }
 }

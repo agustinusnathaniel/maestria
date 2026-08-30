@@ -107,18 +107,18 @@ function markdownNotFoundResponse(isHead: boolean): Response {
 export async function handleAgentDelivery(context: EventContextLike): Promise<Response> {
   const { request } = context;
   if (request.method !== 'GET' && request.method !== 'HEAD') {
-    return context.next();
+    return await context.next();
   }
 
   const url = new URL(request.url);
   const pathname = url.pathname.toLowerCase();
   if (pathname.endsWith('.md') || pathname.endsWith('.txt')) {
-    return context.next();
+    return await context.next();
   }
 
   const accept = request.headers.get('accept');
   if (!wantsMarkdown(accept)) {
-    return context.next();
+    return await context.next();
   }
 
   // Responses to HEAD must not carry a body; pass null instead of a stream.

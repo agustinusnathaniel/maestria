@@ -24,7 +24,7 @@ const TRACKED_EXTERNAL_DOMAINS = [
 ];
 
 function isTrackedDomain(hostname: string): boolean {
-  return TRACKED_EXTERNAL_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
+  return TRACKED_EXTERNAL_DOMAINS.some(d => hostname === d || hostname.endsWith(`.${  d}`));
 }
 
 document.addEventListener('click', (e) => {
@@ -74,7 +74,7 @@ document.addEventListener('click', (e) => {
   }
 
   const extLink = target.closest('a[href^="http"]');
-  if (extLink && !extLink.hasAttribute('data-umami-event')) {
+  if (extLink && !Object.hasOwn(extLink.dataset, "umamiEvent")) {
     const href = getHref(extLink);
     try {
       const { hostname, pathname } = new URL(href);

@@ -1,6 +1,6 @@
 // oxlint-disable max-lines -- model-config aggregates 5 platform handlers (opencode/codex/pi/cursor/omp) plus shared parsers and FS helpers as a single cohesive registry; splitting would fragment the handler registration and create single-use modules with one call site.
 import { Effect } from 'effect';
-import { homedir } from 'os';
+import { homedir } from 'node:os';
 // Import the ESM build directly - the UMD entry does runtime `require('./impl/*')`
 // calls that the bundler does not inline.
 import {
@@ -56,7 +56,7 @@ export interface ModelConfigHandler {
   readonly configLevels: readonly ModelConfigLevel[];
   readonly restartHint: string;
   /** Optional host-specific identity check when the binary name is ambiguous. */
-  readonly isAvailable?: Effect.Effect<boolean, never>;
+  readonly isAvailable?: Effect.Effect<boolean>;
   readonly listModels: Effect.Effect<string[], CommandError>;
   readonly readCurrent: (level: ModelConfigLevel) => Effect.Effect<AgentModels, CommandError>;
   readonly write: (
@@ -184,12 +184,12 @@ export function setFrontmatterModel(content: string, model: string): string {
   const lines = fmBody.split(/\r?\n/);
   const idx = lines.findIndex((l) => l.startsWith('model:'));
   if (model) {
-    if (idx >= 0) {
-      lines[idx] = `model: ${model}`;
-    } else {
+    if (idx === -1) {
       lines.push(`model: ${model}`);
+    } else {
+      lines[idx] = `model: ${model}`;
     }
-  } else if (idx >= 0) {
+  } else if (idx !== -1) {
     lines.splice(idx, 1);
   }
   return `---\n${lines.join('\n')}\n---${afterClosing}${rest}`;
@@ -296,7 +296,7 @@ function writeFile(path: string, content: string): Effect.Effect<void, CommandEr
   });
 }
 
-function fileExists(path: string): Effect.Effect<boolean, never> {
+function fileExists(path: string): Effect.Effect<boolean> {
   return Effect.promise(async () => {
     const { stat } = await import('node:fs/promises');
     try {
@@ -323,7 +323,7 @@ const OPENCODE_PROJECT_CANDIDATES = [
 const OPENCODE_PROJECT_CREATE = '.opencode/opencode.jsonc';
 
 /** Resolve the config path for a level (first existing candidate, or the default to create) */
-function findOpenCodeConfigPath(level: ModelConfigLevel): Effect.Effect<string, never> {
+function findOpenCodeConfigPath(level: ModelConfigLevel): Effect.Effect<string> {
   const candidates = level === 'global' ? OPENCODE_GLOBAL_CANDIDATES : OPENCODE_PROJECT_CANDIDATES;
   const fallback = level === 'global' ? OPENCODE_GLOBAL_CANDIDATES[0] : OPENCODE_PROJECT_CREATE;
   return Effect.all(candidates.map((p) => fileExists(p))).pipe(
@@ -370,10 +370,7 @@ function codexAgentCandidates(level: ModelConfigLevel, agent: string): string[] 
   return [`${directory}/${codexManagedAgentFileName(agent)}`, `${directory}/${agent}.toml`];
 }
 
-function resolveCodexAgentPath(
-  level: ModelConfigLevel,
-  agent: string,
-): Effect.Effect<string, never> {
+function resolveCodexAgentPath(level: ModelConfigLevel, agent: string): Effect.Effect<string> {
   const candidates = codexAgentCandidates(level, agent);
   return Effect.all(candidates.map((path) => fileExists(path))).pipe(
     Effect.map((exists) => candidates[exists.indexOf(true)] ?? candidates[0]!),
@@ -433,15 +430,15 @@ const codex: ModelConfigHandler = {
 
 // ── Cursor agent-file handler ─────────────────────────
 
-function cursorConfigCli(): Effect.Effect<string | undefined, never> {
+function cursorConfigCli(): Effect.Effect<string | undefined> {
   return Effect.gen(function* () {
     if (yield* commandExists('cursor-agent')) {
       return 'cursor-agent';
     }
     if (!(yield* commandExists('agent'))) {
-      return undefined;
+      return;
     }
-    const version = yield* run('agent', ['--version'], 3_000).pipe(
+    const version = yield* run('agent', ['--version'], 3000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
     );
     return /cursor/i.test(version) ? 'agent' : undefined;
@@ -487,7 +484,7 @@ interface AgentFilePlatform {
   readonly projectDir: string;
   readonly listModels: Effect.Effect<string[], CommandError>;
   readonly restartHint: string;
-  readonly isAvailable?: Effect.Effect<boolean, never>;
+  readonly isAvailable?: Effect.Effect<boolean>;
 }
 
 function agentFilePath(cfg: AgentFilePlatform, level: ModelConfigLevel, agent: string): string {

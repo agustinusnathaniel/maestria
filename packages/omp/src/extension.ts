@@ -11,7 +11,7 @@ import { installGoalEventHandlers, restoreMaestriaStateForSession } from '@/goal
 
 export default function (pi: ExtensionAPI): void {
   const state = createInitialState();
-  const cleanups: Array<() => void> = [];
+  const cleanups: (() => void)[] = [];
 
   // Install mode commands: /fein, /sonar, /blitz
   installModeCommands(pi, state);

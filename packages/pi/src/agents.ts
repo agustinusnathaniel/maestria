@@ -3,8 +3,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deploySpecialistAgents as deployAgents } from '@maestria/shared-pi/agent-deployment';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = import.meta.filename;
+const __dirname = import.meta.dirname;
 
 const AGENTS_SRC = join(__dirname, '..', 'agents');
 

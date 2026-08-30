@@ -14,8 +14,10 @@ export function createSpinner(quiet: boolean) {
 /** Render a status table to terminal */
 export function renderStatusTable(platforms: PlatformStatus[]): string {
   const lines: string[] = [];
-  lines.push(picocolors.bold('\n  Maestria Status'));
-  lines.push(picocolors.dim('  ─────────────────────────────────────'));
+  lines.push(
+    picocolors.bold('\n  Maestria Status'),
+    picocolors.dim('  ─────────────────────────────────────'),
+  );
 
   for (const p of platforms) {
     const available = p.available ? picocolors.green('✓') : picocolors.red('✗');
@@ -35,14 +37,16 @@ export function renderStatusTable(platforms: PlatformStatus[]): string {
           ? picocolors.yellow('yes')
           : picocolors.dim('-');
 
-    lines.push(`  ${picocolors.bold(p.label)}`);
-    lines.push(`    Available:  ${available}`);
-    lines.push(`    Installed:  ${installed} ${version}`);
-    lines.push(`    Latest:     ${latest}`);
-    lines.push(`    Outdated:   ${outdated}`);
+    lines.push(
+      `  ${picocolors.bold(p.label)}`,
+      `    Available:  ${available}`,
+      `    Installed:  ${installed} ${version}`,
+      `    Latest:     ${latest}`,
+      `    Outdated:   ${outdated}`,
+    );
   }
 
-  return lines.join('\n') + '\n';
+  return `${lines.join('\n')}\n`;
 }
 
 /** Render result lines after install/update */
@@ -56,7 +60,7 @@ export function renderResults(results: PlatformResult[]): string {
       : `  ${r.label}: ${picocolors.red(r.message)}`;
     return `${status} ${msg}`;
   });
-  return lines.join('\n') + '\n';
+  return `${lines.join('\n')}\n`;
 }
 
 /** JSON output for status */
@@ -66,41 +70,37 @@ export function formatStatusJson(output: StatusOutput): string {
 
 /** Compact status output - one line per platform, no colors */
 export function renderCompactStatus(platforms: PlatformStatus[]): string {
-  return (
-    platforms
-      .map((p) => {
-        const avail = p.available ? 'available' : 'not-available';
-        const inst = p.installed ? `installed=${p.installedVersion}` : 'not-installed';
-        const latest =
-          p.latestVersion === 'check-failed'
-            ? 'latest=check-failed'
-            : p.latestVersion
-              ? `latest=${p.latestVersion}`
-              : '';
-        return `${p.id}: ${avail} ${inst}${latest ? ` ${latest}` : ''}`;
-      })
-      .join('\n') + '\n'
-  );
+  return `${platforms
+    .map((p) => {
+      const avail = p.available ? 'available' : 'not-available';
+      const inst = p.installed ? `installed=${p.installedVersion}` : 'not-installed';
+      const latest =
+        p.latestVersion === 'check-failed'
+          ? 'latest=check-failed'
+          : p.latestVersion
+            ? `latest=${p.latestVersion}`
+            : '';
+      return `${p.id}: ${avail} ${inst}${latest ? ` ${latest}` : ''}`;
+    })
+    .join('\n')}\n`;
 }
 
 /** Compact result output - one line per platform, no colors */
 export function renderCompactResults(results: PlatformResult[]): string {
-  return (
-    results
-      .map((r) => {
-        if (!r.ok) {
-          return `${r.id}: failed ${r.message}`;
-        }
-        if (r.message === 'Already up to date') {
-          return `${r.id}: already latest ${r.nextVersion || r.prevVersion || ''}`;
-        }
-        if (r.prevVersion && r.nextVersion && r.prevVersion !== r.nextVersion) {
-          return `${r.id}: updated ${r.prevVersion} -> ${r.nextVersion}`;
-        }
-        // Install or other success with a version
-        const version = r.nextVersion || r.prevVersion || '';
-        return `${r.id}: installed ${version}`;
-      })
-      .join('\n') + '\n'
-  );
+  return `${results
+    .map((r) => {
+      if (!r.ok) {
+        return `${r.id}: failed ${r.message}`;
+      }
+      if (r.message === 'Already up to date') {
+        return `${r.id}: already latest ${r.nextVersion || r.prevVersion || ''}`;
+      }
+      if (r.prevVersion && r.nextVersion && r.prevVersion !== r.nextVersion) {
+        return `${r.id}: updated ${r.prevVersion} -> ${r.nextVersion}`;
+      }
+      // Install or other success with a version
+      const version = r.nextVersion || r.prevVersion || '';
+      return `${r.id}: installed ${version}`;
+    })
+    .join('\n')}\n`;
 }

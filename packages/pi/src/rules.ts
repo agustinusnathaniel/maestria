@@ -8,7 +8,7 @@ import type {
 import type { MaestriaState } from '@/state.js';
 import { getModePrompt } from '@maestria/shared-pi/modes-core';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
 
 /**

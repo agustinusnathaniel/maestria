@@ -1,5 +1,5 @@
 import { Effect, Data } from 'effect';
-import { homedir } from 'os';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 /** Resolve the OS cache directory, respecting XDG_CACHE_HOME on Linux/macOS. */
@@ -75,7 +75,7 @@ export function readTextFile(filePath: string): Effect.Effect<string, CommandErr
   });
 }
 
-export function fileExists(filePath: string): Effect.Effect<boolean, never> {
+export function fileExists(filePath: string): Effect.Effect<boolean> {
   return Effect.tryPromise({
     try: async () => {
       const { access } = await import('node:fs/promises');
@@ -86,15 +86,15 @@ export function fileExists(filePath: string): Effect.Effect<boolean, never> {
   }).pipe(Effect.catchCause(() => Effect.succeed(false)));
 }
 
-export function commandExists(cmd: string): Effect.Effect<boolean, never> {
+export function commandExists(cmd: string): Effect.Effect<boolean> {
   return run('which', [cmd]).pipe(
     Effect.map((out: string) => out.length > 0),
     Effect.catchCause(() => Effect.succeed(false)),
   );
 }
 
-export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
-  const readCache = (): Effect.Effect<string, never> =>
+export function npmViewVersion(pkg: string): Effect.Effect<string> {
+  const readCache = (): Effect.Effect<string> =>
     readTextFile(getVersionCacheFile()).pipe(
       Effect.map((out) => {
         try {
@@ -107,7 +107,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
       Effect.catchCause(() => Effect.succeed('')),
     );
 
-  const updateCache = (version: string): Effect.Effect<void, never> =>
+  const updateCache = (version: string): Effect.Effect<void> =>
     Effect.tryPromise({
       try: async () => {
         const { mkdir, readFile, writeFile } = await import('node:fs/promises');
@@ -126,7 +126,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
     }).pipe(Effect.catchCause(() => Effect.void));
 
   return Effect.gen(function* () {
-    const version = yield* run('npm', ['view', pkg, 'version'], 5_000).pipe(
+    const version = yield* run('npm', ['view', pkg, 'version'], 5000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
     );
 
@@ -141,7 +141,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
 }
 
 /** Invalidate the version cache for a package (called after successful update) */
-export function invalidateVersionCache(pkg: string): Effect.Effect<void, never> {
+export function invalidateVersionCache(pkg: string): Effect.Effect<void> {
   return Effect.gen(function* () {
     yield* readTextFile(getVersionCacheFile()).pipe(
       Effect.flatMap((out) => {

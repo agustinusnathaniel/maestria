@@ -3,7 +3,7 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
@@ -43,7 +43,7 @@ interface PackageManifest {
 
 async function readJson<T>(relativePath: string): Promise<T> {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf8');
+  const raw = await readFile(absolute, 'utf-8');
   return JSON.parse(raw) as T;
 }
 
@@ -91,7 +91,7 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
       data[key] =
         inner === ''
           ? []
-          : inner.split(',').map((entry) => entry.trim().replace(/^["']|["']$/g, ''));
+          : inner.split(',').map((entry) => entry.trim().replaceAll(/^["']|["']$/g, ''));
     } else if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
@@ -176,7 +176,7 @@ describe('kimi.plugin.json manifest', () => {
 
   it('does not include unsupported runtime fields', async () => {
     const raw = JSON.parse(
-      await readFile(path.join(PACKAGE_ROOT, 'kimi.plugin.json'), 'utf8'),
+      await readFile(path.join(PACKAGE_ROOT, 'kimi.plugin.json'), 'utf-8'),
     ) as Record<string, unknown>;
     const unsupported = [
       'tools',
@@ -206,7 +206,7 @@ describe('skills directory', () => {
     describe(`${relDir}/SKILL.md`, () => {
       it('parses with valid frontmatter', async () => {
         const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
-        const text = await readFile(skillPath, 'utf8');
+        const text = await readFile(skillPath, 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.name).toBe('string');
         expect((data.name as string).length).toBeGreaterThan(0);
@@ -218,7 +218,7 @@ describe('skills directory', () => {
 
       it('has a whenToUse field', async () => {
         const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
-        const text = await readFile(skillPath, 'utf8');
+        const text = await readFile(skillPath, 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.whenToUse).toBe('string');
         expect((data.whenToUse as string).trim().length).toBeGreaterThan(0);
@@ -229,7 +229,7 @@ describe('skills directory', () => {
   it('orchestrator skill mentions AgentSwarm and the 7-specialist table', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
     expect(text).toContain('AgentSwarm');
     // The 7 specialist names appear in the orchestrator routing table.
@@ -249,11 +249,11 @@ describe('skills directory', () => {
   it('preserves the plan-to-coder capability split', async () => {
     const orchestrator = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
     const builder = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'builder', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
 
     expect(orchestrator).toMatch(/Subagent profile.*`plan`/);
@@ -265,7 +265,7 @@ describe('skills directory', () => {
   });
 
   it('reviewer skill has the explicit do-not-edit constraint near the top', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'skills', 'reviewer', 'SKILL.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'skills', 'reviewer', 'SKILL.md'), 'utf-8');
     const head = text.slice(0, 1500);
     expect(head).toMatch(/do not edit/i);
   });
@@ -273,7 +273,7 @@ describe('skills directory', () => {
   it('adventurer skill has the explicit read-only Bash constraint near the top', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'adventurer', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
     const head = text.slice(0, 2000);
     expect(head).toMatch(/read-only/i);
@@ -286,7 +286,7 @@ describe('native plugin commands', () => {
     it(`commands/${command}.md exists with command frontmatter`, async () => {
       const commandPath = path.join(PACKAGE_ROOT, 'commands', `${command}.md`);
       expect(await pathExists(commandPath)).toBe(true);
-      const text = await readFile(commandPath, 'utf8');
+      const text = await readFile(commandPath, 'utf-8');
       const { data, body } = parseFrontmatter(text);
       expect(data.name).toBe(command);
       expect(typeof data.description).toBe('string');
@@ -303,7 +303,7 @@ describe('SYSTEM.md plugin instructions', () => {
   });
 
   it('contains the 7-specialist delegation table', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'SYSTEM.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'SYSTEM.md'), 'utf-8');
     for (const specialist of [
       'adventurer',
       'architect',
@@ -385,7 +385,7 @@ describe('tool name PascalCase compliance', () => {
     const relDir = `skills/${skill}`;
     it(`${relDir}/SKILL.md has PascalCase tool references`, async () => {
       const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
-      const text = await readFile(skillPath, 'utf8');
+      const text = await readFile(skillPath, 'utf-8');
       // Find all backtick-quoted words
       const backtickWords = text.match(/`([A-Za-z][A-Za-z0-9_-]*)`/g) || [];
       const violations: string[] = [];

@@ -47,16 +47,21 @@ export interface GroupMultiSelectOptions<Value> {
 function symbol(state: string): string {
   switch (state) {
     case 'initial':
-    case 'active':
+    case 'active': {
       return styleText('cyan', S_SYMBOL_ACTIVE);
-    case 'cancel':
+    }
+    case 'cancel': {
       return styleText('red', S_SYMBOL_CANCEL);
-    case 'error':
+    }
+    case 'error': {
       return styleText('yellow', S_SYMBOL_ERROR);
-    case 'submit':
+    }
+    case 'submit': {
       return styleText('green', S_SYMBOL_SUBMIT);
-    default:
+    }
+    default: {
       return '';
+    }
   }
 }
 
@@ -71,7 +76,7 @@ const ENHANCED_INSTRUCTIONS = [
 
 function formatInstructions(hasGuide: boolean): string[] {
   const prefix = hasGuide ? `${styleText('cyan', S_BAR)}  ` : '';
-  const lastPrefix = hasGuide ? `${styleText('cyan', S_BAR_END)}` : '';
+  const lastPrefix = hasGuide ? styleText('cyan', S_BAR_END) : '';
   return ENHANCED_INSTRUCTIONS.map((text, i) => {
     const p = i === ENHANCED_INSTRUCTIONS.length - 1 ? lastPrefix : prefix;
     return `${p}${styleText('dim', styleText('gray', text))}`;
@@ -147,13 +152,13 @@ function createOptionRenderer<Value>(selectableGroups: boolean) {
       return `${spacer}${checkbox} ${styleText('dim', label)}${option.hint ? ` (${option.hint})` : ''}`;
     }
     if (state === 'cancelled') {
-      return `${styleText('strikethrough', styleText('dim', label))}`;
+      return styleText('strikethrough', styleText('dim', label));
     }
     if (state === 'active-selected') {
       return `${spacer}${styleText('green', S_CHECKBOX_SELECTED)} ${label}${option.hint ? ` ${styleText('dim', `(${option.hint})`)}` : ''}`;
     }
     if (state === 'submitted') {
-      return `${styleText('dim', label)}`;
+      return styleText('dim', label);
     }
     // inactive
     const checkbox = isItem || selectableGroups ? styleText('dim', S_CHECKBOX_INACTIVE) : '';
@@ -181,13 +186,18 @@ function createGroupRender<Value>(
     const guide = opts.withGuide ?? guideDefault;
     const title = `${guide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(this.state)}  ${opts.message}\n`;
     const value: Value[] = (this.value ?? []) as Value[];
-    type FlatOption = { value: Value; group: string | boolean; label?: string; hint?: string };
+    interface FlatOption {
+      value: Value;
+      group: string | boolean;
+      label?: string;
+      hint?: string;
+    }
     const rawOptions = this.options as FlatOption[];
     const styleOption = (option: FlatOption, active: boolean) => {
       const groupActive =
         !active &&
         typeof option.group === 'string' &&
-        rawOptions[this.cursor]?.value === (option as Record<string, unknown>).value;
+        rawOptions[this.cursor]?.value === (option as unknown as Record<string, unknown>).value;
       const selected =
         value.includes(option.value) ||
         (option.group === true && this.isGroupSelected(String(option.value)));
@@ -271,5 +281,5 @@ export async function groupMultiselect<Value>(
     render,
   };
   const prompt = new TogglableGroupMultiSelectPrompt(renderOptions as any);
-  return prompt.prompt() as Promise<Value[] | symbol>;
+  return await (prompt.prompt() as Promise<Value[] | symbol>);
 }

@@ -38,7 +38,7 @@ function getHandler(
   pi: any,
   name: string,
 ): ((args: string, ctx: any) => Promise<void>) | undefined {
-  const calls: Array<[string, unknown]> = pi.registerCommand.mock.calls;
+  const calls: [string, unknown][] = pi.registerCommand.mock.calls;
   const match = calls.find((c) => c[0] === name);
   if (!match) {
     return undefined;
@@ -55,9 +55,7 @@ describe('installCommands', () => {
     const state = createInitialState();
     installCommands(pi as any, state);
 
-    const registeredNames = (pi.registerCommand.mock.calls as Array<[string, unknown]>).map(
-      (c) => c[0],
-    );
+    const registeredNames = (pi.registerCommand.mock.calls as [string, unknown][]).map((c) => c[0]);
     expect(registeredNames).toContain('maestria-status');
     expect(registeredNames).toContain('review');
     expect(registeredNames).toContain('restore-model');

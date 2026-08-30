@@ -2,7 +2,8 @@ import { describe, it, expect, afterEach } from 'vite-plus/test';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { main, syncTarget, type Target } from './sync-plugin-versions.js';
+import { main, syncTarget } from './sync-plugin-versions.js';
+import type { Target } from './sync-plugin-versions.js';
 
 /**
  * Behavior-focused tests for scripts/sync-plugin-versions.ts.
@@ -51,7 +52,7 @@ function makePackage(
   }
   fs.writeFileSync(
     path.join(pkg, 'package.json'),
-    JSON.stringify(pkgJson, null, 2) + '\n',
+    `${JSON.stringify(pkgJson, null, 2)}\n`,
     'utf-8',
   );
   const manifestPaths: string[] = [];
@@ -319,12 +320,12 @@ describe('main wiring', () => {
     }
     fs.writeFileSync(
       path.join(hermesPkg, 'package.json'),
-      JSON.stringify({ name: '@maestria/hermes', version: '0.1.13' }, null, 2) + '\n',
+      `${JSON.stringify({ name: '@maestria/hermes', version: '0.1.13' }, null, 2)}\n`,
       'utf-8',
     );
     fs.writeFileSync(
       path.join(claudePkg, 'package.json'),
-      JSON.stringify({ name: '@maestria/claude-code', version: '0.2.0' }, null, 2) + '\n',
+      `${JSON.stringify({ name: '@maestria/claude-code', version: '0.2.0' }, null, 2)}\n`,
       'utf-8',
     );
     fs.mkdirSync(path.join(hermesPkg, 'src', 'maestria_hermes'), { recursive: true });

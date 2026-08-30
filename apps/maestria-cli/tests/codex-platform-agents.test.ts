@@ -56,20 +56,20 @@ describe('Codex managed native agents', () => {
       );
 
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
-      const installedInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf8');
+      const installedInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf-8');
       expect(installedInstructions).toContain('# Existing instructions');
       expect(installedInstructions).toContain('maestria:codex-orchestrator:start');
       expect(installedInstructions.match(/maestria:codex-orchestrator:start/g)).toHaveLength(1);
-      expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf8')).toContain(
+      expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf-8')).toContain(
         '"instructionsFile": "AGENTS.md"',
       );
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
-      expect(await readFile(join(codexHome, 'AGENTS.md'), 'utf8')).toBe(installedInstructions);
+      expect(await readFile(join(codexHome, 'AGENTS.md'), 'utf-8')).toBe(installedInstructions);
       const builderPath = join(codexHome, 'agents', 'maestria-builder.toml');
-      expect(await readFile(builderPath, 'utf8')).toContain('model = "gpt-5.6-luna"');
+      expect(await readFile(builderPath, 'utf-8')).toContain('model = "gpt-5.6-luna"');
       await writeFile(
         builderPath,
-        `${(await readFile(builderPath, 'utf8')).replace('gpt-5.6-luna', 'gpt-5.6-terra')}model_reasoning_effort = "high"\nservice_tier = "fast"\n`,
+        `${(await readFile(builderPath, 'utf-8')).replace('gpt-5.6-luna', 'gpt-5.6-terra')}model_reasoning_effort = "high"\nservice_tier = "fast"\n`,
       );
 
       await writeFile(
@@ -83,7 +83,7 @@ describe('Codex managed native agents', () => {
       );
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
 
-      const updated = await readFile(builderPath, 'utf8');
+      const updated = await readFile(builderPath, 'utf-8');
       expect(updated).toContain('description = "updated builder"');
       expect(updated).toContain('developer_instructions = "updated instructions"');
       expect(updated).toContain('model = "gpt-5.6-terra"');
@@ -91,20 +91,20 @@ describe('Codex managed native agents', () => {
       expect(updated).toContain('service_tier = "fast"');
 
       await Effect.runPromise(removeCodexManagedAgents());
-      const remainingInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf8');
+      const remainingInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf-8');
       expect(remainingInstructions).toBe('# Existing instructions\n');
-      await expect(readFile(builderPath, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+      await expect(readFile(builderPath, 'utf-8')).rejects.toMatchObject({ code: 'ENOENT' });
       await expect(
-        readFile(join(codexHome, '.maestria-agents.json'), 'utf8'),
+        readFile(join(codexHome, '.maestria-agents.json'), 'utf-8'),
       ).rejects.toMatchObject({ code: 'ENOENT' });
 
       await rm(join(codexHome, 'AGENTS.md'));
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
-      expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf8')).toContain(
+      expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf-8')).toContain(
         '"instructionsCreated": true',
       );
       await Effect.runPromise(removeCodexManagedAgents());
-      await expect(readFile(join(codexHome, 'AGENTS.md'), 'utf8')).rejects.toMatchObject({
+      await expect(readFile(join(codexHome, 'AGENTS.md'), 'utf-8')).rejects.toMatchObject({
         code: 'ENOENT',
       });
     } finally {
@@ -142,16 +142,16 @@ describe('Codex managed native agents', () => {
       await writeFile(join(codexHome, 'AGENTS.override.md'), 'override user instructions\n');
 
       await Effect.runPromise(installCodexManagedAgents(sourceRoot));
-      expect(await readFile(join(codexHome, 'AGENTS.override.md'), 'utf8')).toContain('managed');
-      expect(await readFile(join(codexHome, 'AGENTS.md'), 'utf8')).toBe(
+      expect(await readFile(join(codexHome, 'AGENTS.override.md'), 'utf-8')).toContain('managed');
+      expect(await readFile(join(codexHome, 'AGENTS.md'), 'utf-8')).toBe(
         'default user instructions\n',
       );
 
       await Effect.runPromise(removeCodexManagedAgents());
-      expect(await readFile(join(codexHome, 'AGENTS.override.md'), 'utf8')).toBe(
+      expect(await readFile(join(codexHome, 'AGENTS.override.md'), 'utf-8')).toBe(
         'override user instructions\n',
       );
-      expect(await readFile(join(codexHome, 'AGENTS.md'), 'utf8')).toBe(
+      expect(await readFile(join(codexHome, 'AGENTS.md'), 'utf-8')).toBe(
         'default user instructions\n',
       );
     } finally {

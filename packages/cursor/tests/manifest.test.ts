@@ -3,7 +3,7 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 const EXPECTED_AGENTS = [
@@ -33,7 +33,7 @@ interface PackageManifest {
 
 async function readJson<T>(relativePath: string): Promise<T> {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf8');
+  const raw = await readFile(absolute, 'utf-8');
   return JSON.parse(raw) as T;
 }
 
@@ -116,7 +116,7 @@ describe('agents directory', () => {
   for (const agent of EXPECTED_AGENTS) {
     describe(`agents/${agent}.md`, () => {
       it('has name and description frontmatter', async () => {
-        const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf8');
+        const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(data.name).toBe(agent);
         expect(typeof data.description).toBe('string');
@@ -126,13 +126,13 @@ describe('agents directory', () => {
   }
 
   it('reviewer agent forbids edits near the top', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'agents', 'reviewer.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'agents', 'reviewer.md'), 'utf-8');
     const head = text.slice(0, 1500);
     expect(head).toMatch(/do \*\*not\*\* use Write|do not edit|Checker only/i);
   });
 
   it('adventurer agent is read-only near the top', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'agents', 'adventurer.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'agents', 'adventurer.md'), 'utf-8');
     const head = text.slice(0, 1500);
     expect(head).toMatch(/Read-only/i);
   });
@@ -142,7 +142,7 @@ describe('skills/orchestrator', () => {
   it('exists with name and description', async () => {
     const skillPath = path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md');
     expect(await pathExists(skillPath)).toBe(true);
-    const text = await readFile(skillPath, 'utf8');
+    const text = await readFile(skillPath, 'utf-8');
     const { data } = parseFrontmatter(text);
     expect(data.name).toBe('orchestrator');
     expect(typeof data.description).toBe('string');
@@ -151,7 +151,7 @@ describe('skills/orchestrator', () => {
   it('mentions Task and all 7 specialists', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
     expect(text).toContain('Task');
     for (const specialist of EXPECTED_AGENTS) {
@@ -162,7 +162,7 @@ describe('skills/orchestrator', () => {
   it('keeps direct main-session capability distinct from specialist restrictions', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
 
     expect(text).toContain('Runtime Authority');
@@ -176,14 +176,14 @@ describe('rules/maestria-global.mdc', () => {
   it('exists with alwaysApply: true', async () => {
     const rulesPath = path.join(PACKAGE_ROOT, 'rules', 'maestria-global.mdc');
     expect(await pathExists(rulesPath)).toBe(true);
-    const text = await readFile(rulesPath, 'utf8');
+    const text = await readFile(rulesPath, 'utf-8');
     const { data } = parseFrontmatter(text);
     expect(data.alwaysApply).toBe(true);
     expect(typeof data.description).toBe('string');
   });
 
   it('contains delegation table with 7 specialists', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'rules', 'maestria-global.mdc'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'rules', 'maestria-global.mdc'), 'utf-8');
     expect(text).toContain('## Delegation');
     for (const specialist of EXPECTED_AGENTS) {
       expect(text).toContain(specialist);
@@ -196,7 +196,7 @@ describe('commands', () => {
     it(`commands/${command}.md exists with name frontmatter`, async () => {
       const commandPath = path.join(PACKAGE_ROOT, 'commands', `${command}.md`);
       expect(await pathExists(commandPath)).toBe(true);
-      const text = await readFile(commandPath, 'utf8');
+      const text = await readFile(commandPath, 'utf-8');
       const { data } = parseFrontmatter(text);
       expect(data.name).toBe(command);
       expect(typeof data.description).toBe('string');

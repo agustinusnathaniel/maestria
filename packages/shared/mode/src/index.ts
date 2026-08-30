@@ -63,10 +63,10 @@ export interface ModeDetectPure {
  * excluded - the regex requires matching fences. This is the accepted
  * false-positive behavior documented in ADR-OC-003.
  */
-export const CODE_BLOCK_RE: RegExp = /```[\s\S]*?```|`[^`]*`/g;
+export const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/gu;
 
-export function findCodeBlockRanges(text: string): Array<[number, number]> {
-  const ranges: Array<[number, number]> = [];
+export function findCodeBlockRanges(text: string): [number, number][] {
+  const ranges: [number, number][] = [];
   let match: RegExpExecArray | null;
   // Reset lastIndex in case callers reuse the exported regex
   CODE_BLOCK_RE.lastIndex = 0;
@@ -76,7 +76,7 @@ export function findCodeBlockRanges(text: string): Array<[number, number]> {
   return ranges;
 }
 
-export function isInRanges(index: number, ranges: Array<[number, number]>): boolean {
+export function isInRanges(index: number, ranges: [number, number][]): boolean {
   return ranges.some(([start, end]) => index >= start && index < end);
 }
 
@@ -89,13 +89,13 @@ export function isInRanges(index: number, ranges: Array<[number, number]>): bool
 export function extractModeSection(content: string): string {
   const modeIdx = content.indexOf('## MODE:');
   if (modeIdx !== -1) {
-    return content.slice(modeIdx).replace(/\s+$/, '') + '\n';
+    return `${content.slice(modeIdx).replace(/\s+$/, '')}\n`;
   }
-  return content.replace(/\s+$/, '') + '\n';
+  return `${content.replace(/\s+$/, '')}\n`;
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function buildKeywordRegex(keyword: string): RegExp {
@@ -133,7 +133,7 @@ export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure
   }
   const codeRanges = findCodeBlockRanges(text);
   const normalizedDisabled = disabled
-    ? new Set(Array.from(disabled).map((k) => k.toLowerCase()))
+    ? new Set([...disabled].map((k) => k.toLowerCase()))
     : undefined;
   let best: ModeDetectPure | null = null;
 
@@ -167,5 +167,5 @@ export function stripKeyword(text: string, result: { index: number; keyword: str
   const before = text.slice(0, result.index);
   const after = text.slice(result.index + result.keyword.length);
   const cleaned = after.replace(/^:\s*/, '');
-  return (before + cleaned).replace(/ {2,}/g, ' ').trim();
+  return (before + cleaned).replaceAll(/ {2,}/g, ' ').trim();
 }

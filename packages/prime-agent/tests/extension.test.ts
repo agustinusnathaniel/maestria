@@ -9,22 +9,23 @@ import type {
 import extension from '../src/extension.ts';
 import { MODE_STATE_CUSTOM_TYPE } from '../src/state.ts';
 import { STATUS_COMMAND } from '../src/modes.ts';
+
 interface FakePi {
   pi: ExtensionAPI;
   /** Handlers recorded per event name, in subscription order. */
-  handlers: Map<string, Array<(event: unknown, ctx: unknown) => unknown>>;
+  handlers: Map<string, ((event: unknown, ctx: unknown) => unknown)[]>;
   /** (name, options) pairs recorded per command. */
-  commands: Array<{
+  commands: {
     name: string;
     options: {
       description?: string;
       handler: (args: string, ctx: ExtensionCommandContext) => Promise<void>;
     };
-  }>;
+  }[];
   /** (customType, data) pairs recorded per appendEntry call. */
-  entries: Array<{ customType: string; data?: unknown }>;
+  entries: { customType: string; data?: unknown }[];
   /** (content, options) pairs recorded per sendUserMessage call. */
-  sentMessages: Array<{ content: string; options?: { deliverAs?: 'steer' | 'followUp' } }>;
+  sentMessages: { content: string; options?: { deliverAs?: 'steer' | 'followUp' } }[];
   /** Last systemPrompt passed to a before_agent_start handler, if any. */
   fire: {
     beforeAgentStart(systemPrompt: string): Promise<BeforeAgentStartEventResult | void>;
@@ -34,7 +35,7 @@ interface FakePi {
 }
 
 function createFakePi(): FakePi {
-  const handlers = new Map<string, Array<(event: unknown, ctx: unknown) => unknown>>();
+  const handlers = new Map<string, ((event: unknown, ctx: unknown) => unknown)[]>();
   const commands: FakePi['commands'] = [];
   const entries: FakePi['entries'] = [];
   const sentMessages: FakePi['sentMessages'] = [];

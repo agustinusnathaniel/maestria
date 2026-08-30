@@ -3,11 +3,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vite-plus/test';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const APP_ROOT = path.resolve(__dirname, '..');
 
 async function readAppFile(relativePath: string): Promise<string> {
-  return readFile(path.join(APP_ROOT, relativePath), 'utf8');
+  return await readFile(path.join(APP_ROOT, relativePath), 'utf-8');
 }
 
 describe('Cloudflare Pages _headers', () => {

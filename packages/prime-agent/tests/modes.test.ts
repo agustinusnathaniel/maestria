@@ -16,7 +16,7 @@ function makeSkillsDir(name: string, keyword: string, skillFile?: string): strin
   tempDirs.push(dir);
   if (skillFile !== undefined) {
     mkdirSync(join(dir, keyword), { recursive: true });
-    writeFileSync(join(dir, keyword, 'SKILL.md'), skillFile, 'utf8');
+    writeFileSync(join(dir, keyword, 'SKILL.md'), skillFile, 'utf-8');
   }
   return dir;
 }

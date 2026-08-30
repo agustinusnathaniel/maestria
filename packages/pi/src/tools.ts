@@ -1,4 +1,5 @@
-import { isToolCallEventType, type ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { isToolCallEventType } from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import type { MaestriaState } from '@/state.js';
 import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
 import { persistState } from '@/state.js';

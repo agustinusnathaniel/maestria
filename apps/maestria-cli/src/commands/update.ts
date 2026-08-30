@@ -80,13 +80,13 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
     console.log('No maestria installations found to update.');
     process.exit(0);
   }
-  const statuses: Array<{
+  const statuses: {
     id: string;
     label: string;
     installedVersion: string;
     latestVersion: string;
     needsUpdate: boolean;
-  }> = [];
+  }[] = [];
   for (const p of installed) {
     const platform = getPlatform(p.id);
     if (!platform) {
@@ -226,7 +226,7 @@ function previewVersionDiff(before: string, after: string): string {
 
 function captureSnapshot(
   platform: PlatformHandler,
-): Effect.Effect<PlatformUpdateSnapshot | { error: string } | undefined, never> {
+): Effect.Effect<PlatformUpdateSnapshot | { error: string } | undefined> {
   if (!platform.captureUpdateSnapshot) {
     return Effect.succeed(undefined);
   }
@@ -243,7 +243,7 @@ export function updateOne(
   platform: PlatformHandler,
   quiet: boolean,
   version?: string,
-): Effect.Effect<PlatformResult, never> {
+): Effect.Effect<PlatformResult> {
   // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator implements the same atomic update transaction as updateOne; splitting the generator would duplicate snapshot/version/preflight closure and hide the linear flow.
   return Effect.gen(function* () {
     if (version && platform.supportsVersionPinning === false) {

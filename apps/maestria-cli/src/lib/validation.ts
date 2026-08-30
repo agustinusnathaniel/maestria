@@ -1,6 +1,7 @@
 import { Data, Effect, Exit, Cause } from 'effect';
 import { isValidVersion } from './version.js';
-import { platforms, PLATFORM_IDS, type PlatformId } from './platforms.js';
+import { platforms, PLATFORM_IDS } from './platforms.js';
+import type { PlatformId } from './platforms.js';
 
 // ── Errors ───────────────────────────────────────────
 export class ValidationError extends Data.TaggedError('ValidationError')<{

@@ -69,8 +69,8 @@ export async function loadConfig(configPath: string): Promise<ResolvedSyncConfig
   let mod: { default?: SyncConfig };
   try {
     mod = await import(pathToFileURL(absPath).href);
-  } catch (err) {
-    throw new ConfigError(`Failed to load config file: ${absPath}`, { cause: err as Error });
+  } catch (error) {
+    throw new ConfigError(`Failed to load config file: ${absPath}`, { cause: error as Error });
   }
 
   const raw = mod.default;
@@ -123,7 +123,7 @@ function resolveFileConfig(
   const prepend = fileCfg.prepend ?? defaultCfg?.prepend ?? '';
   const append = fileCfg.append ?? defaultCfg?.append ?? '';
   const frontmatter =
-    fileCfg.frontmatter !== undefined ? fileCfg.frontmatter : defaultCfg?.frontmatter;
+    fileCfg.frontmatter === undefined ? defaultCfg?.frontmatter : fileCfg.frontmatter;
   const autoGenComment = fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? '';
 
   const baseDir = outputDir || configDir;

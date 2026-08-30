@@ -22,5 +22,5 @@ export async function cycleToReviewModel(
   ctx: ExtensionCommandContext,
   state: MaestriaState,
 ): Promise<string | null> {
-  return cycleCore(pi as never, ctx as never, state);
+  return await cycleCore(pi as never, ctx as never, state);
 }

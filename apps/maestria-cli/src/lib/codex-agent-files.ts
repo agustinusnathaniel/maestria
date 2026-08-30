@@ -52,11 +52,11 @@ export function setCodexTopLevelString(
     const rendered = `${key} = ${JSON.stringify(value)}`;
     if (index >= 0) {
       const existing = lines[index] ?? '';
-      const comment = existing.match(/(\s+#.*)$/)?.[1] ?? '';
+      const comment = /(\s+#.*)$/.exec(existing)?.[1] ?? '';
       lines[index] = `${rendered}${comment}`;
     } else {
       const section = lines.findIndex((line) => /^\s*\[/.test(line));
-      lines.splice(section < 0 ? lines.length : section, 0, rendered);
+      lines.splice(section === -1 ? lines.length : section, 0, rendered);
     }
   } else if (index >= 0) {
     lines.splice(index, 1);
@@ -99,5 +99,5 @@ function topLevelSettingLine(lines: readonly string[], key: string): number {
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

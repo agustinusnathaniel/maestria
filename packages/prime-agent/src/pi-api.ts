@@ -99,7 +99,7 @@ export interface ExtensionContext {
 }
 
 /** Extended context for command handlers (session-control methods not used). */
-export interface ExtensionCommandContext extends ExtensionContext {}
+export type ExtensionCommandContext = ExtensionContext;
 
 // ---------------------------------------------------------------------------
 // Events and event results

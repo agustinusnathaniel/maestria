@@ -39,16 +39,16 @@ function hasStagedChangesForFile(repoCwd: string, filePath: string): boolean {
       stdio: 'ignore',
     });
     return false;
-  } catch (err) {
+  } catch (error) {
     if (
-      typeof err === 'object' &&
-      err !== null &&
-      'status' in err &&
-      (err as { status?: number }).status === 1
+      typeof error === 'object' &&
+      error !== null &&
+      'status' in error &&
+      (error as { status?: number }).status === 1
     ) {
       return true;
     }
-    throw err;
+    throw error;
   }
 }
 
@@ -138,20 +138,18 @@ function buildTransformedContent(raw: string, fileCfg: ResolvedFileConfig): stri
     content = fileCfg.prepend + content;
   }
   if (fileCfg.append) {
-    content = content + fileCfg.append;
+    content += fileCfg.append;
   }
   const defaultComment = `<!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->`;
-  const autoGenComment = (fileCfg.autoGenComment || defaultComment) + '\n\n';
+  const autoGenComment = `${fileCfg.autoGenComment || defaultComment}\n\n`;
   if (fileCfg.frontmatter !== undefined) {
     const fm = serializeFrontmatter(fileCfg.frontmatter);
-    content = fm + '\n' + autoGenComment + content;
+    content = `${fm}\n${autoGenComment}${content}`;
   } else if (fileCfg.prepend) {
-    content =
-      content.slice(0, fileCfg.prepend.length) +
-      '\n' +
-      autoGenComment +
-      content.slice(fileCfg.prepend.length);
+    content = `${content.slice(0, fileCfg.prepend.length)}\n${
+      autoGenComment
+    }${content.slice(fileCfg.prepend.length)}`;
   } else {
     content = autoGenComment + content;
   }
@@ -256,7 +254,7 @@ export async function processFile(
       status: 'written',
       content: diff ? content : undefined,
     };
-  } catch (err) {
-    return { source: sourcePath, output: fileCfg.output, status: 'error', error: String(err) };
+  } catch (error) {
+    return { source: sourcePath, output: fileCfg.output, status: 'error', error: String(error) };
   }
 }

@@ -140,15 +140,15 @@ export const checkCommand = defineCommand({
     }
     if (args.all) {
       await handleCheckAll(args);
-    } else if (!platformId) {
+    } else if (platformId) {
+      await handleCheckSingle(platformId, args);
+    } else {
       if (!args.quiet) {
         console.error('Missing required platform argument.');
         console.error('Usage: maestria check <platform> or maestria check --all');
         console.error(`Available: ${VALID_PLATFORMS.join(', ')}`);
       }
       process.exit(1);
-    } else {
-      await handleCheckSingle(platformId, args);
     }
   },
 });

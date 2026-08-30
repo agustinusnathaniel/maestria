@@ -31,7 +31,7 @@ import { createModePromptHandler, installCommands } from './modes.js';
  * source (tests), it is the same package-relative location.
  */
 function resolveSkillsDir(): string {
-  const moduleDir = dirname(fileURLToPath(import.meta.url));
+  const moduleDir = import.meta.dirname;
   return resolve(moduleDir, '../skills');
 }
 

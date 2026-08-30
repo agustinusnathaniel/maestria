@@ -18,7 +18,7 @@ function recordAndPersist(
 function validateOmpParams(params: {
   agent?: string;
   task?: string;
-  tasks?: Array<{ agent: string; task: string }>;
+  tasks?: { agent: string; task: string }[];
   mode?: string;
 }): void {
   const mode = params.mode ?? 'single';
@@ -55,7 +55,7 @@ function handleSingleDispatch(
 function handleMultiDispatch(
   pi: ExtensionAPI,
   state: MaestriaState,
-  params: { tasks: Array<{ agent: string; task: string }>; mode: 'parallel' | 'chain' },
+  params: { tasks: { agent: string; task: string }[]; mode: 'parallel' | 'chain' },
 ) {
   for (const t of params.tasks) {
     recordAndPersist(pi, state, 'orchestrator', t.agent, t.task);
@@ -64,8 +64,10 @@ function handleMultiDispatch(
     `## ${params.mode === 'parallel' ? 'Parallel' : 'Chain'} Dispatch Plan (${params.tasks.length} tasks)\n`,
   ];
   for (let i = 0; i < params.tasks.length; i++) {
-    parts.push(`### ${i + 1}: ${params.tasks[i].agent}`);
-    parts.push(`\`task(agent: "${params.tasks[i].agent}", task: """${params.tasks[i].task}""")\``);
+    parts.push(
+      `### ${i + 1}: ${params.tasks[i].agent}`,
+      `\`task(agent: "${params.tasks[i].agent}", task: """${params.tasks[i].task}""")\``,
+    );
     if (params.mode === 'chain' && i > 0) {
       parts.push('Previous result available via {previous} placeholder.');
     }
@@ -76,7 +78,7 @@ function handleMultiDispatch(
 export function installSubagentTool(
   pi: ExtensionAPI,
   state: MaestriaState,
-  _cleanups?: Array<() => void>,
+  _cleanups?: (() => void)[],
 ): void {
   (pi.registerTool as any)({
     name: 'maestria_subagent',
@@ -104,7 +106,7 @@ export function installSubagentTool(
       params: {
         agent?: string;
         task?: string;
-        tasks?: Array<{ agent: string; task: string }>;
+        tasks?: { agent: string; task: string }[];
         mode?: 'parallel' | 'chain' | 'single';
       },
       _signal: AbortSignal | undefined,

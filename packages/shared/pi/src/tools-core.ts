@@ -8,11 +8,11 @@
  */
 
 import {
-  type MaestriaState,
   persistState as persistStateCore,
   recordFileModified,
   recordFileRead,
 } from './state-core.js';
+import type { MaestriaState } from './state-core.js';
 
 /**
  * Dangerous bash command patterns that should always be blocked,
@@ -59,7 +59,7 @@ export function isReadOnlyBashCommand(rawCommand: string): boolean {
   // Strip `2>&1`-style fd redirects first so the `&` inside them is not
   // mistaken for a command separator and the `>` is not counted as output
   // redirection.
-  const withoutFdRedirects = command.replace(/\d?>&[12]/g, '');
+  const withoutFdRedirects = command.replaceAll(/\d?>&[12]/g, '');
   if (withoutFdRedirects.includes('>')) {
     return false;
   }

@@ -21,7 +21,7 @@ interface CommandsCtx {
     setEditorText(text: string): void;
   };
   model?: { id: string };
-  modelRegistry: { getAll(): Array<{ id: string }> };
+  modelRegistry: { getAll(): { id: string }[] };
 }
 
 interface CommandsPi {
@@ -139,25 +139,27 @@ function registerHandoffCommand(pi: CommandsPi, state: MaestriaState): void {
       }
       const goal = args.trim();
       const handoffPrompt = [
-        '**Goal:** ' + goal,
+        `**Goal:** ${goal}`,
         '',
         '**Context:**',
-        '- Mode: ' + (state.mode ?? 'none'),
-        '- Active task: ' + (state.activeTask || 'none'),
-        '- Specialists delegated: ' +
-          ((state.specialistsDelegated?.length ?? 0) > 0
+        `- Mode: ${state.mode ?? 'none'}`,
+        `- Active task: ${state.activeTask || 'none'}`,
+        `- Specialists delegated: ${
+          (state.specialistsDelegated?.length ?? 0) > 0
             ? state.specialistsDelegated.join(', ')
-            : 'none'),
-        '- Recent handoffs: ' + (state.handoffHistory?.length ?? 0) + ' entries',
-        '- Files modified: ' +
-          ((state.filesModified?.length ?? 0) > 0 ? state.filesModified.join(', ') : 'none'),
+            : 'none'
+        }`,
+        `- Recent handoffs: ${state.handoffHistory?.length ?? 0} entries`,
+        `- Files modified: ${
+          (state.filesModified?.length ?? 0) > 0 ? state.filesModified.join(', ') : 'none'
+        }`,
         '',
         '**Requirements:**',
         '(fill in specific requirements)',
         '',
         '**Known problems:**',
         (state.blockers?.length ?? 0) > 0
-          ? state.blockers.map((b: string) => '- ' + b).join('\n')
+          ? state.blockers.map((b: string) => `- ${b}`).join('\n')
           : '(no known problems documented)',
         '',
         '**Assumptions documented:**',

@@ -46,9 +46,8 @@ import {
   modify,
   parseTree,
   printParseErrorCode,
-  type Node,
-  type ParseError,
 } from 'jsonc-parser';
+import type { Node, ParseError } from 'jsonc-parser';
 import { parseDocument } from 'yaml';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -233,8 +232,8 @@ function resolvePackageVersion(packageDir: string): { version?: string; error?: 
   let version: unknown;
   try {
     version = readJsonVersion(fs.readFileSync(pkgJson, 'utf-8'));
-  } catch (err) {
-    return { error: `ERROR: cannot read ${display(pkgJson)}: ${message(err)}` };
+  } catch (error) {
+    return { error: `ERROR: cannot read ${display(pkgJson)}: ${message(error)}` };
   }
   if (version === null) {
     return { error: `ERROR: no version field in ${display(pkgJson)}` };
@@ -290,12 +289,12 @@ function buildPreflight(
     if (!check) {
       try {
         fs.accessSync(manifestPath, fs.constants.W_OK);
-      } catch (err) {
+      } catch (error) {
         preflight.push({
           rel,
           path: manifestPath,
           current: null,
-          syncError: `not writable: ${message(err)}`,
+          syncError: `not writable: ${message(error)}`,
         });
         continue;
       }
@@ -306,13 +305,13 @@ function buildPreflight(
       if (!check && current !== version) {
         try {
           entry.updated = computeManifestVersion(manifestPath, version);
-        } catch (err) {
-          entry.syncError = message(err);
+        } catch (error) {
+          entry.syncError = message(error);
         }
       }
       preflight.push(entry);
-    } catch (err) {
-      preflight.push({ rel, path: manifestPath, current: null, readError: message(err) });
+    } catch (error) {
+      preflight.push({ rel, path: manifestPath, current: null, readError: message(error) });
     }
   }
   return preflight;
@@ -355,8 +354,8 @@ function collectSyncResults(preflight: Preflight[], version: string, check: bool
     try {
       fs.writeFileSync(m.path, m.updated!, 'utf-8');
       results.push(`OK: synced ${m.rel} to ${version}`);
-    } catch (err) {
-      results.push(`ERROR: cannot sync ${m.rel}: ${message(err)}`);
+    } catch (error) {
+      results.push(`ERROR: cannot sync ${m.rel}: ${message(error)}`);
     }
   }
   return results;

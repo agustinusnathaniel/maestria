@@ -10,9 +10,10 @@ import {
   setReviewMode,
   exitReviewMode,
   renderMaestriaSummary,
+  HANDOFF_HISTORY_CAP,
+  FILE_HISTORY_CAP,
 } from '@/state.js';
 import type { MaestriaState, HandoffEntry, SubagentStatusInfo } from '@/state.js';
-import { HANDOFF_HISTORY_CAP, FILE_HISTORY_CAP } from '@/state.js';
 
 const NEW_STATE_KEYS = [
   'mode',
@@ -39,7 +40,7 @@ describe('createInitialState', () => {
 
   it('should return a state object with the correct shape', () => {
     const state = createInitialState();
-    const keys = Object.keys(state) as Array<keyof MaestriaState>;
+    const keys = Object.keys(state) as (keyof MaestriaState)[];
     expect(keys.sort()).toEqual([...NEW_STATE_KEYS].sort());
     expect(typeof state.mode === 'string' || state.mode === null).toBe(true);
   });

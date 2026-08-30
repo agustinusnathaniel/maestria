@@ -10,9 +10,10 @@ import {
   assertNonEmptyTask,
   MAESTRIA_EVENTS,
 } from '@maestria/shared-pi/subagent-utils';
-import { pollSubagentEffect, type SubagentPollingService } from '@/subagent-polling.js';
+import { pollSubagentEffect } from '@/subagent-polling.js';
+import type { SubagentPollingService } from '@/subagent-polling.js';
 
-const ALLOWED_AGENT_NAMES: ReadonlyArray<string> = ALLOWED_AGENTS;
+const ALLOWED_AGENT_NAMES: readonly string[] = ALLOWED_AGENTS;
 
 export const POLL_TIMEOUT_MS = 180_000;
 export const POLL_INTERVAL_MS = 500;
@@ -62,7 +63,7 @@ function recordAndPersist(
 function validatePiParams(params: {
   agent?: string;
   task?: string;
-  tasks?: Array<{ agent: string; task: string }>;
+  tasks?: { agent: string; task: string }[];
   mode?: string;
 }): string {
   const mode = params.mode ?? 'single';
@@ -103,7 +104,7 @@ async function handleSingleMode(
   agent: string,
   task: string,
   signal: AbortSignal | undefined,
-  onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
+  onUpdate: ((result: { content: { type: string; text: string }[] }) => void) | undefined,
 ) {
   const id = service.spawn(agent, task, {
     description: task.slice(0, 80),
@@ -134,9 +135,9 @@ async function handleParallelMode(
   pi: ExtensionAPI,
   state: MaestriaState,
   service: SubagentSpawnService,
-  taskList: Array<{ agent: string; task: string }>,
+  taskList: { agent: string; task: string }[],
   signal: AbortSignal | undefined,
-  onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
+  onUpdate: ((result: { content: { type: string; text: string }[] }) => void) | undefined,
 ) {
   onUpdate?.({
     content: [{ type: 'text' as const, text: `Spawning ${taskList.length} parallel subagents...` }],
@@ -152,9 +153,9 @@ async function handleParallelMode(
       spawnedIds.push(id);
       recordAndPersist(pi, state, t.agent, t.task);
     }
-  } catch (err) {
+  } catch (error) {
     abortSubagents(service, spawnedIds);
-    throw err;
+    throw error;
   }
   const outcomes = await Effect.runPromise(
     Effect.all(
@@ -211,15 +212,15 @@ async function handleChainMode(
   pi: ExtensionAPI,
   state: MaestriaState,
   service: SubagentSpawnService,
-  taskList: Array<{ agent: string; task: string }>,
+  taskList: { agent: string; task: string }[],
   signal: AbortSignal | undefined,
-  onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
+  onUpdate: ((result: { content: { type: string; text: string }[] }) => void) | undefined,
 ) {
   let previousResult = '';
   for (let i = 0; i < taskList.length; i++) {
     let taskText = taskList[i].task;
     if (i > 0 && taskText.includes('{previous}')) {
-      taskText = taskText.replace(/\{previous\}/g, () => previousResult);
+      taskText = taskText.replaceAll('{previous}', () => previousResult);
     }
     const id = service.spawn(taskList[i].agent, taskText, {
       description: taskText.slice(0, 80),
@@ -277,21 +278,29 @@ async function dispatchByMode(
   params: {
     agent?: string;
     task?: string;
-    tasks?: Array<{ agent: string; task: string }>;
+    tasks?: { agent: string; task: string }[];
     mode?: string;
   },
   signal: AbortSignal | undefined,
-  onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
+  onUpdate: ((result: { content: { type: string; text: string }[] }) => void) | undefined,
 ) {
   const mode = params.mode ?? 'single';
   if (mode === 'single') {
-    return handleSingleMode(pi, state, service, params.agent!, params.task!, signal, onUpdate);
+    return await handleSingleMode(
+      pi,
+      state,
+      service,
+      params.agent!,
+      params.task!,
+      signal,
+      onUpdate,
+    );
   }
   if (mode === 'parallel') {
-    return handleParallelMode(pi, state, service, params.tasks!, signal, onUpdate);
+    return await handleParallelMode(pi, state, service, params.tasks!, signal, onUpdate);
   }
   if (mode === 'chain') {
-    return handleChainMode(pi, state, service, params.tasks!, signal, onUpdate);
+    return await handleChainMode(pi, state, service, params.tasks!, signal, onUpdate);
   }
   throw new Error('Unknown dispatch mode');
 }
@@ -299,7 +308,7 @@ async function dispatchByMode(
 function subscribeSubagentEvents(
   pi: ExtensionAPI,
   state: MaestriaState,
-  cleanups?: Array<() => void>,
+  cleanups?: (() => void)[],
 ): void {
   if (!pi.events) {
     return;
@@ -354,7 +363,7 @@ function subscribeSubagentEvents(
 export function installSubagentTool(
   pi: ExtensionAPI,
   state: MaestriaState,
-  cleanups?: Array<() => void>,
+  cleanups?: (() => void)[],
 ): void {
   pi.registerTool({
     name: 'maestria_subagent',
@@ -389,11 +398,11 @@ export function installSubagentTool(
       params: {
         agent?: string;
         task?: string;
-        tasks?: Array<{ agent: string; task: string }>;
+        tasks?: { agent: string; task: string }[];
         mode?: 'parallel' | 'chain' | 'single';
       },
       signal: AbortSignal | undefined,
-      onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
+      onUpdate: ((result: { content: { type: string; text: string }[] }) => void) | undefined,
       _ctx: ExtensionContext,
     ) {
       if (state.reviewMode) {
@@ -450,8 +459,8 @@ export function installSubagentTool(
           signal,
           onUpdate,
         );
-      } catch (err) {
-        console.warn('[maestria] Subagent dispatch failed:', err);
+      } catch (error) {
+        console.warn('[maestria] Subagent dispatch failed:', error);
         const agentName = params.agent ?? params.tasks?.[0]?.agent ?? 'unknown';
         const taskDesc = params.task ?? params.tasks?.map((t) => t.task).join('; ') ?? 'unknown';
         return {

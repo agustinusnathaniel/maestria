@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import { RECOVERY_LINKS } from '@/lib/agent-delivery.ts';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const DOCS_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
 
 /** Strip a leading YAML frontmatter block, returning only the markdown body. */
@@ -22,7 +22,7 @@ function stripFrontmatter(text: string): string {
 }
 
 async function readDoc(name: string): Promise<{ full: string; body: string }> {
-  const full = await readFile(path.join(DOCS_ROOT, name), 'utf8');
+  const full = await readFile(path.join(DOCS_ROOT, name), 'utf-8');
   return { full, body: stripFrontmatter(full) };
 }
 

@@ -138,7 +138,7 @@ export const uninstallCommand = defineCommand({
 function uninstallOne(
   platform: import('@/lib/platforms.js').PlatformHandler,
   quiet: boolean,
-): Effect.Effect<PlatformResult, never> {
+): Effect.Effect<PlatformResult> {
   return Effect.gen(function* () {
     const spinner = createSpinner(quiet);
     spinner.start(`Uninstalling ${platform.label}...`);

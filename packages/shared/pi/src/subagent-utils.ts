@@ -82,7 +82,7 @@ export function validateHandoff(handoff: string): HandoffValidation {
     // This avoids false positives when an empty field is followed by another field's `**` header.
     const pattern = `\\*\\*${field}:\\*\\*([\\s\\S]*?)(?=\
 \\*\\*|$)`;
-    const match = handoff.match(new RegExp(pattern, 'i'));
+    const match = new RegExp(pattern, 'i').exec(handoff);
     if (!match || !match[1] || !match[1].trim()) {
       errors.push(`Missing or empty field: "${field}"`);
     }

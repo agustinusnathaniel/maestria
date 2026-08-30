@@ -114,7 +114,7 @@ describe('extension smoke tests', () => {
 });
 
 describe('package.json metadata', () => {
-  const __dirname = fileURLToPath(new URL('.', import.meta.url));
+  const __dirname = import.meta.dirname;
   const pkgPath = join(__dirname, '..', 'package.json');
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
 

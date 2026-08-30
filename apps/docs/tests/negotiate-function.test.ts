@@ -1,11 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { MARKDOWN_MIME, VARY_VALUE } from '@/lib/agent-delivery.ts';
-import {
-  type AssetsBindingLike,
-  type EventContextLike,
-  handleAgentDelivery,
-} from '../functions/[[path]].ts';
+import { handleAgentDelivery } from '../functions/[[path]].ts';
+import type { AssetsBindingLike, EventContextLike } from '../functions/[[path]].ts';
 
 const ORIGIN = 'https://docs.example.com';
 

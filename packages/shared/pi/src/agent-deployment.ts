@@ -53,8 +53,8 @@ export function deploySpecialistAgents(agentsSrc: string, agentsDest: string): n
       const content = readFileSync(srcFile, 'utf-8');
       writeFileSync(destFile, content, 'utf-8');
       deployed++;
-    } catch (err) {
-      console.warn(`[maestria] Failed to deploy agent ${name}:`, err);
+    } catch (error) {
+      console.warn(`[maestria] Failed to deploy agent ${name}:`, error);
     }
   }
 

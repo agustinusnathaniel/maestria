@@ -19,9 +19,10 @@ function createMockPi(): MockPi {
 
 function install(pi: MockPi, state: MaestriaState) {
   installGoalEventHandlers(pi as any, state);
-  const calls = (pi.on as ReturnType<typeof vi.fn>).mock.calls as Array<
-    [string, (...args: unknown[]) => unknown]
-  >;
+  const calls = (pi.on as ReturnType<typeof vi.fn>).mock.calls as [
+    string,
+    (...args: unknown[]) => unknown,
+  ][];
   const goalUpdatedCall = calls.find(([event]) => event === 'goal_updated');
   const sessionSwitchCall = calls.find(([event]) => event === 'session_switch');
   const sessionBranchCall = calls.find(([event]) => event === 'session_branch');

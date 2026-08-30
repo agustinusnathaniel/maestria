@@ -3,7 +3,7 @@ import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import extension from '@/extension.js';
 
 function createMockPi() {
-  const handlers = new Map<string, Array<(...args: unknown[]) => unknown>>();
+  const handlers = new Map<string, ((...args: unknown[]) => unknown)[]>();
   return {
     on: vi.fn((event: string, handler: (...args: unknown[]) => unknown) => {
       if (!handlers.has(event)) {

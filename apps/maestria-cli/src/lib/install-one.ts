@@ -6,7 +6,7 @@ import type { PlatformResult } from '@/types.js';
 export function installOne(
   platform: PlatformHandler,
   quiet: boolean,
-): Effect.Effect<PlatformResult, never> {
+): Effect.Effect<PlatformResult> {
   return Effect.gen(function* () {
     const spinner = createSpinner(quiet);
     spinner.start(`Installing ${platform.label}...`);

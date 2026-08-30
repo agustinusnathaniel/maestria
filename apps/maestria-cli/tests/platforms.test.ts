@@ -22,13 +22,13 @@ const fsMocks = vi.hoisted(() => {
       if (!originalMkdtemp) {
         throw new Error('original mkdtemp unavailable');
       }
-      return originalMkdtemp(prefix);
+      return await originalMkdtemp(prefix);
     }),
     rm: vi.fn(async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
       if (!originalRm) {
         throw new Error('original rm unavailable');
       }
-      return originalRm(path, options);
+      return await originalRm(path, options);
     }),
     access: vi.fn(async () => {}),
     setOriginals(
@@ -523,10 +523,10 @@ describe('prime-agent platform handler', () => {
       );
       // Delegate the stubbed readFile to the real implementation for this test
       // so the helper is proven against the actual filesystem.
-      fsMocks.readFile.mockImplementation((path: string) =>
+      fsMocks.readFile.mockImplementation(async (path: string) =>
         originalReadFile
-          ? originalReadFile(path, 'utf-8')
-          : Promise.reject(new Error('original readFile unavailable')),
+          ? await originalReadFile(path, 'utf-8')
+          : await Promise.reject(new Error('original readFile unavailable')),
       );
       expect(await Effect.runPromise(readPackageJsonVersion(packageJsonPath))).toBe('1.2.3');
     } finally {

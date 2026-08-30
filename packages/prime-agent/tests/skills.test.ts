@@ -10,7 +10,7 @@ import {
   frontmatterValue,
 } from '../scripts/skill-validation.ts';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 const SKILLS_DIR = path.join(PACKAGE_ROOT, 'skills');
@@ -40,7 +40,7 @@ interface PackageJson {
 
 async function readJson<T>(relativePath: string): Promise<T> {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf8');
+  const raw = await readFile(absolute, 'utf-8');
   return JSON.parse(raw) as T;
 }
 
@@ -112,7 +112,7 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
 }
 
 async function readSkill(name: string): Promise<{ data: Record<string, string>; body: string }> {
-  const text = await readFile(path.join(SKILLS_DIR, name, 'SKILL.md'), 'utf8');
+  const text = await readFile(path.join(SKILLS_DIR, name, 'SKILL.md'), 'utf-8');
   return parseFrontmatter(text);
 }
 
@@ -139,7 +139,7 @@ describe('generated Prime Agent skills', () => {
       });
 
       it('has a non-empty body, the auto-generated comment, and no source comment', async () => {
-        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf8');
+        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
         const { body } = parseFrontmatter(text);
         expect(body.trim().length).toBeGreaterThan(0);
         expect(text).toContain('Auto-generated from @maestria/core');
@@ -147,12 +147,12 @@ describe('generated Prime Agent skills', () => {
       });
 
       it('never uses recursive-subagent call syntax (rlm(...))', async () => {
-        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf8');
+        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
         expect(text).not.toMatch(/rlm\s*\(/);
       });
 
       it('mentions JSON/RPC/headless/subagent dispatch only inside denials, never as available', async () => {
-        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf8');
+        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
         const sentences = text.split(/(?<=[.!?])\s+/);
         for (const sentence of sentences) {
           if (/(JSON|RPC|headless|rlm|subagent\s+dispatch|spawns?)/i.test(sentence)) {
@@ -162,7 +162,7 @@ describe('generated Prime Agent skills', () => {
       });
 
       it('has no unresolved specialist mention references', async () => {
-        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf8');
+        const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
         for (const mention of [
           'adventurer',
           'architect',
@@ -222,14 +222,14 @@ describe('Agent Skills name grammar and frontmatter normalization', () => {
 
 describe('content invariants', () => {
   it('keeps the direct-capable host semantics in the orchestrator skill', async () => {
-    const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf8');
+    const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
     expect(text).toContain('Runtime Authority');
     expect(text).toContain('direct work is available');
     expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/i);
   });
 
   it('frames the orchestrator delivery honestly: advisory, not a sandbox, rlm/JSON-RPC deferred', async () => {
-    const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf8');
+    const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
     expect(text).toContain('skills-first package');
     expect(text).toContain('not a sandbox');
     expect(text).toContain('advisory guidance');
@@ -250,7 +250,7 @@ describe('content invariants', () => {
   });
 
   it('generates the global-rules skill from canonical rules with the Prime heading', async () => {
-    const text = await readFile(path.join(SKILLS_DIR, 'global-rules', 'SKILL.md'), 'utf8');
+    const text = await readFile(path.join(SKILLS_DIR, 'global-rules', 'SKILL.md'), 'utf-8');
     expect(text).toContain('# Global Agent Rules - @maestria/prime-agent');
     expect(text).toContain('Universal Floors');
     expect(text).toContain('Prime Agent Integration');
@@ -259,7 +259,7 @@ describe('content invariants', () => {
 
   it('frames read-only roles as advisory, never as runtime-enforced', async () => {
     for (const role of ['adventurer', 'planner', 'reviewer']) {
-      const text = await readFile(path.join(SKILLS_DIR, role, 'SKILL.md'), 'utf8');
+      const text = await readFile(path.join(SKILLS_DIR, role, 'SKILL.md'), 'utf-8');
       expect(text).toContain('Read-only role (advisory)');
       expect(text).toContain('no runtime tool enforcement');
       expect(text).not.toMatch(/tools are denied|disallowed/i);
@@ -268,7 +268,7 @@ describe('content invariants', () => {
 
   it('projects the workflow modes as skills with mode semantics intact', async () => {
     for (const mode of ['fein', 'sonar', 'blitz']) {
-      const text = await readFile(path.join(SKILLS_DIR, mode, 'SKILL.md'), 'utf8');
+      const text = await readFile(path.join(SKILLS_DIR, mode, 'SKILL.md'), 'utf-8');
       expect(text).toContain(`## MODE: ${mode}`);
       expect(text).toContain('orchestrator');
     }

@@ -48,6 +48,6 @@ export function installCompactionHandlers(
         },
       };
     }
-    return undefined;
+    return;
   });
 }

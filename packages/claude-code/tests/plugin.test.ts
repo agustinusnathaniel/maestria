@@ -3,7 +3,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
@@ -43,7 +43,7 @@ interface PackageJson {
 
 async function readJson<T>(relativePath: string): Promise<T> {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf8');
+  const raw = await readFile(absolute, 'utf-8');
   return JSON.parse(raw) as T;
 }
 
@@ -114,7 +114,7 @@ function parseFrontmatter(text: string): { data: Record<string, string | string[
     if (value.startsWith('[') && value.endsWith(']')) {
       const inner = value.slice(1, -1).trim();
       data[key] =
-        inner === '' ? [] : inner.split(',').map((e) => e.trim().replace(/^["']|["']$/g, ''));
+        inner === '' ? [] : inner.split(',').map((e) => e.trim().replaceAll(/^["']|["']$/g, ''));
     } else if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
@@ -134,7 +134,7 @@ function parseFrontmatter(text: string): { data: Record<string, string | string[
 async function readAgent(
   agent: string,
 ): Promise<{ data: Record<string, string | string[]>; body: string }> {
-  const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf8');
+  const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf-8');
   return parseFrontmatter(text);
 }
 
@@ -174,7 +174,7 @@ describe('.claude-plugin/plugin.json manifest', () => {
 
   it('does not include policy-excluded or runtime fields', async () => {
     const raw = JSON.parse(
-      await readFile(path.join(PACKAGE_ROOT, '.claude-plugin', 'plugin.json'), 'utf8'),
+      await readFile(path.join(PACKAGE_ROOT, '.claude-plugin', 'plugin.json'), 'utf-8'),
     ) as Record<string, unknown>;
     const policyExcluded = [
       'hooks',
@@ -212,7 +212,7 @@ describe('generated agents', () => {
       });
 
       it('has the auto-generated comment and no source comment', async () => {
-        const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf8');
+        const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf-8');
         expect(text).toContain('Auto-generated from @maestria/core');
         expect(text).not.toMatch(/^<!--\s*Source:/m);
       });
@@ -257,7 +257,7 @@ describe('generated skills', () => {
   it('generates the global-rules skill from canonical rules', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'global-rules', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
     const { data, body } = parseFrontmatter(text);
     expect(data.name).toBe('global-rules');
@@ -269,7 +269,7 @@ describe('generated skills', () => {
   it('generates the orchestrator skill with scoped agent references', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
     const { data, body } = parseFrontmatter(text);
     expect(data.name).toBe('orchestrator');
@@ -284,7 +284,7 @@ describe('generated skills', () => {
   it('describes direct capability and advisory orchestration honestly', async () => {
     const text = await readFile(
       path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md'),
-      'utf8',
+      'utf-8',
     );
 
     expect(text).toContain('Runtime Authority');
@@ -302,7 +302,7 @@ describe('generated commands', () => {
 
   for (const command of EXPECTED_COMMANDS) {
     it(`has valid frontmatter for ${command}`, async () => {
-      const text = await readFile(path.join(PACKAGE_ROOT, 'commands', `${command}.md`), 'utf8');
+      const text = await readFile(path.join(PACKAGE_ROOT, 'commands', `${command}.md`), 'utf-8');
       const { data } = parseFrontmatter(text);
       expect(data.name).toBe(command);
       expect(typeof data.description).toBe('string');

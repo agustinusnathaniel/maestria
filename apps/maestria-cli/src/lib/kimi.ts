@@ -1,6 +1,6 @@
 /** Kimi-code plugin registry helpers — extracted from platforms.ts for cohesion. */
 import { Effect } from 'effect';
-import { homedir } from 'os';
+import { homedir } from 'node:os';
 
 import { CommandError } from '@/lib/shell.js';
 
@@ -44,7 +44,7 @@ export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandErr
       const filePath = kimiInstalledPath();
       let text: string;
       try {
-        text = await readFile(filePath, 'utf8');
+        text = await readFile(filePath, 'utf-8');
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
           return { version: 1, plugins: [] } satisfies KimiInstalledFile;
@@ -56,7 +56,7 @@ export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandErr
         throw new Error(`unsupported Kimi plugin registry version: ${String(parsed.version)}`);
       }
       if (!Array.isArray(parsed.plugins)) {
-        throw new Error('Kimi plugin registry must contain a plugins array');
+        throw new TypeError('Kimi plugin registry must contain a plugins array');
       }
       return {
         version: 1,
@@ -78,7 +78,7 @@ export function writeKimiInstalled(file: KimiInstalledFile): Effect.Effect<void,
       const filePath = kimiInstalledPath();
       await mkdir(`${kimiCodeHome()}/plugins`, { recursive: true });
       const tempPath = `${filePath}.tmp`;
-      await writeFile(tempPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
+      await writeFile(tempPath, `${JSON.stringify(file, null, 2)}\n`, 'utf-8');
       await rename(tempPath, filePath);
     },
     catch: (error) =>

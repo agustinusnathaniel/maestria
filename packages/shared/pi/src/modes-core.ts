@@ -50,8 +50,8 @@ export function getModePrompt(keyword: ModeKeyword, commandsDir: string): string
   if (!(keyword in _promptCache)) {
     try {
       _promptCache[keyword] = loadModePrompt(keyword, commandsDir);
-    } catch (e) {
-      console.warn(`[maestria] Failed to load mode prompt "${keyword}":`, e);
+    } catch (error) {
+      console.warn(`[maestria] Failed to load mode prompt "${keyword}":`, error);
       _promptCache[keyword] = '';
     }
   }

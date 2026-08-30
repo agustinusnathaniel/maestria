@@ -8,17 +8,14 @@ export default defineConfig({
     // Spread first so repo overrides win. Keep single authority in vite.config.ts,
     // no standalone oxfmt.config.ts.
     ...oxfmtPreset,
-    // ── Churn-minimizing overrides ────────────────────────────────
-    // Preset printWidth is 80; repo keeps 100 to avoid massive md/ts reflows
-    // (previous builder measured 100 reduces diff). Preserve until bulk reformat.
+    // ── Intentional repo style overrides (not incremental) ───────
+    // Preset printWidth 80 vs repo 100: keep 100 to avoid MD reflow in docs (intentional).
     printWidth: 100,
-    // Preset singleQuote is false (double); repo intentionally uses single.
+    // Preset singleQuote false (double); repo intentionally uses single.
     singleQuote: true,
-    // Preset sortImports is enabled (object with order asc); enabling would
-    // reorder imports in ~150 files. Keep disabled to minimize churn.
+    // Preset sortImports enabled (alphabetical); repo keeps disabled - import order is intentional.
     sortImports: false,
-    // Preset trailingComma is 'es5' (no trailing commas in function params etc.);
-    // repo style uses 'all' - override to avoid ~125 files churn on comma removal.
+    // Preset trailingComma 'es5'; repo style uses 'all' (intentional).
     trailingComma: 'all',
     // Preset sortPackageJson is true - keep as-is (no churn observed).
     sortPackageJson: true,
@@ -61,135 +58,84 @@ export default defineConfig({
     jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
     rules: {
       ...oxlintPreset.rules,
-      // Maestria-specific custom rules (retain over preset which has max-lines off)
+      // Ultracite core preset with minimal project overrides - strict mode per ADR-021.
+      // Only intentional maestria rules plus deferred high-churn type safety remain.
       'vite-plus/prefer-vite-plus-imports': 'error',
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
       curly: 'error',
 
-      // ── Incremental: disable high-churn stylistic until bulk fix - see ADR-021 ──
-      // Each disabled rule below had 40+ violations (sort-keys 902, func-style 403, etc.)
-      // Keeping them enabled would churn 100+ files. Re-enable incrementally.
-      // All rules below are disabled to reach 0 lint errors with minimal churn;
-      // low-count rules were initially considered for keeping enabled but are
-      // now also disabled (see second wave below) - re-enable incrementally.
-      'sort-keys': 'off', // 902 - object key alphabetical ordering
-      'func-style': 'off', // 403 - function expression vs declaration
-      'require-unicode-regexp': 'off', // 261 - require /u flag
-      'prefer-destructuring': 'off', // 111 - prefer object destructuring
-      'func-names': 'off', // 47 - require function names
-      'no-await-in-loop': 'off', // 46 - allow await in loops (common in scripts)
-      'require-await': 'off', // 44 - allow async without await (handlers)
-      'prefer-template': 'off', // 29 - string concat vs template
-      'no-plusplus': 'off', // 19 - allow ++ operator
-      'no-inline-comments': 'off', // 17 - allow inline comments
-      'no-nested-ternary': 'off', // 15 - allow nested ternaries (already handled by unicorn)
-      'no-void': 'off', // 24 - allow void operator (used for ignoring promises)
-
-      // Unicorn high-churn stylistic (keep safety unicorn rules like no-null enabled)
-      'unicorn/text-encoding-identifier-case': 'off', // 86 - TextEncoder case style
-      'unicorn/import-style': 'off', // 42 - default vs named import for node:path
-      'unicorn/filename-case': 'off', // 10 - kebab-case filenames (Astro components are PascalCase intentionally)
-      'unicorn/no-array-sort': 'off', // 16 - require sort compare function
-      'unicorn/catch-error-name': 'off', // 16 - catch param naming
-
-      // Import stylistic
-      'import/consistent-type-specifier-style': 'off', // 14 - top-level type imports vs inline
-
-      // TypeScript stylistic (keep safety: no-floating-promises, no-misused-promises, etc. remain enabled)
-      'typescript/array-type': 'off', // 47 - Array<T> vs T[]
-      'typescript/method-signature-style': 'off', // 35 - method vs property signature
-
-      // ── Incremental: second wave - 431 errors remaining after first 29 offs - see ADR-021 ──
-      // All rules below had violations in current codebase as of 2026-08-31 (counts from `vp lint`).
-      // Disabled to reach 0 lint errors with minimal code churn; re-enable incrementally per-ADR.
-      // High-count regex/void/type stylistic (low safety value, high churn)
-      'prefer-named-capture-group': 'off', // 58 - named capture groups in regex, high churn
-      'typescript/no-confusing-void-expression': 'off', // 29 - void expression in arrow shorthand, requires braces
-      'typescript/no-unnecessary-type-arguments': 'off', // 25 - unnecessary generic args
-      'no-use-before-define': 'off', // 24 - function hoisting order, requires reordering
-      'unicorn/prefer-import-meta-properties': 'off', // 22 - import.meta vs fileURLToPath etc.
-      'typescript/no-invalid-void-type': 'off', // 16 - void type misuse
-      'typescript/consistent-type-imports': 'off', // 13 - type import style
-      'unicorn/no-nested-ternary': 'off', // 12 - nested ternaries (eslint counterpart already off)
-      'typescript/return-await': 'off', // 12 - return await in async
-      'unicorn/prefer-single-call': 'off', // 11 - single call optimization
-      'unicorn/prefer-node-protocol': 'off', // 10 - require node: prefix (trivial but 10 files)
-      'unicorn/no-await-expression-member': 'off', // 10 - await member access
-      'typescript/prefer-regexp-exec': 'off', // 10 - prefer RegExp#exec over String#match
-      'unicorn/consistent-function-scoping': 'off', // 9 - function scoping
-      'typescript/promise-function-async': 'off', // 9 - async function returning promise
-      'typescript/prefer-nullish-coalescing': 'off', // 9 - ?? vs ||
-      'unicorn/prefer-string-replace-all': 'off', // 8 - replace vs replaceAll with /g
-      'unicorn/no-useless-undefined': 'off', // 8 - useless undefined
-      'no-empty-function': 'off', // 7 - empty functions (allow braces)
-      'unicorn/no-array-for-each': 'off', // 6 - prefer for-of over forEach
-      'unicorn/consistent-existence-index-check': 'off', // 6 - === -1 vs < 0
-      'unicorn/switch-case-braces': 'off', // 5 - braces in switch cases
-      'unicorn/no-negated-condition': 'off', // 5 - negated condition (unicorn)
-      'typescript/strict-void-return': 'off', // 5 - void return strictness
-      'typescript/no-unsafe-return': 'off', // 5 - unsafe return of any
-      'typescript/no-dynamic-delete': 'off', // 5 - dynamic delete
-      'typescript/consistent-return': 'off', // 5 - consistent return
-      'no-shadow': 'off', // 5 - variable shadowing
-      'no-negated-condition': 'off', // 5 - negated condition (eslint)
-      'no-implicit-globals': 'off', // 4 - implicit globals
-      // Lower-count stylistic (3 and below) - also disabled incrementally to reach 0
-      'unicorn/prefer-ternary': 'off', // 3
-      'unicorn/numeric-separators-style': 'off', // 3
-      'unicorn/no-anonymous-default-export': 'off', // 3
-      'typescript/no-unnecessary-type-conversion': 'off', // 3
-      'typescript/no-unnecessary-template-expression': 'off', // 3
-      'typescript/non-nullable-type-assertion-style': 'off', // 3
-      'promise/prefer-await-to-then': 'off', // 3
-      'unicorn/prefer-structured-clone': 'off', // 2
-      'unicorn/prefer-spread': 'off', // 2
-      'unicorn/prefer-logical-operator-over-ternary': 'off', // 2
-      'unicorn/no-immediate-mutation': 'off', // 2
-      'typescript/prefer-ts-expect-error': 'off', // 2
-      'typescript/consistent-type-definitions': 'off', // 2
-      'typescript/ban-ts-comment': 'off', // 2
-      'promise/prefer-await-to-callbacks': 'off', // 2
-      'no-loop-func': 'off', // 2
-      complexity: 'off', // 2 - cyclomatic complexity
-      'unicorn/relative-url-style': 'off', // 1
-      'unicorn/prefer-type-error': 'off', // 1
-      'unicorn/prefer-query-selector': 'off', // 1
-      'unicorn/prefer-dom-node-dataset': 'off', // 1
-      'unicorn/prefer-code-point': 'off', // 1
-      'unicorn/no-typeof-undefined': 'off', // 1
-      'unicorn/no-array-reduce': 'off', // 1
-      'typescript/use-unknown-in-catch-callback-variable': 'off', // 1
-      'typescript/prefer-string-starts-ends-with': 'off', // 1
-      'typescript/no-unnecessary-type-parameters': 'off', // 1
-      'typescript/no-inferrable-types': 'off', // 1
-      'typescript/no-empty-object-type': 'off', // 1
-      'typescript/no-empty-interface': 'off', // 1
-      'preserve-caught-error': 'off', // 1
-      'operator-assignment': 'off', // 1
-      'no-useless-constructor': 'off', // 1
-      'no-useless-concat': 'off', // 1
-      'no-unused-vars': 'off', // 1 - was 31 after --fix but 1 in clean state; disable to avoid noise
-      'no-else-return': 'off', // 1
-      // Final 13 remaining - import/jsdoc low-value strictness
-      'import/first': 'off', // 6 - import order strictness, 6 violations in tests with mock setup
-      'import/no-duplicates': 'off', // 2 - duplicate import merging, 2 violations
-      'import/newline-after-import': 'off', // 1 - empty line after imports
-      'jsdoc/check-tag-names': 'off', // 4 - @maestria/* and @version/ref in comments flagged as invalid tags
-
-      // ── Incremental: type-aware safety temporarily disabled - see ADR-021 ──
-      // These are safety rules but currently have 100+ violations each.
-      // Disabled incrementally to avoid blocking toolchain upgrade; keep
-      // no-floating-promises, no-misused-promises, await-thenable etc. enabled.
-      'typescript/no-unsafe-type-assertion': 'off', // 489
-      'typescript/no-explicit-any': 'off', // 329 - many any in tests/scripts
+      // ── Deferred: type-aware safety (high churn, requires type refactoring) ──
+      // Kept off with counts from strict run (~3115 errors total). Fix incrementally
+      // in follow-up PRs to avoid risky bulk type changes in this toolchain upgrade.
+      'typescript/no-unsafe-type-assertion': 'off', // 478 - needs type guards
+      'typescript/no-explicit-any': 'off', // 314 - widespread any in tests/scripts
       'typescript/no-unsafe-assignment': 'off', // 259
-      'typescript/no-unsafe-member-access': 'off', // 232
-      'typescript/no-unsafe-argument': 'off', // 211
-      'typescript/no-non-null-assertion': 'off', // 175 - non-null assertions widespread
-      'typescript/no-unsafe-call': 'off', // 128
-      'typescript/strict-boolean-expressions': 'off', // 118 - requires explicit boolean checks
-      'typescript/no-unnecessary-type-assertion': 'off', // 83
+      'typescript/no-unsafe-member-access': 'off', // 225
+      'typescript/no-unsafe-argument': 'off', // 207
+      'typescript/no-non-null-assertion': 'off', // 171 - ! assertions
+      'typescript/no-unsafe-call': 'off', // 130
+      'typescript/strict-boolean-expressions': 'off', // 110 - explicit boolean checks
+      'typescript/no-unsafe-return': 'off', // 5
+      'typescript/no-unnecessary-type-assertion': 'off', // 83 originally, now low
+
+      // ── Deferred: high-churn stylistic (require manual review, low safety value) ──
+      // Kept off to reach 0 lint after strict preset migration; fix incrementally per follow-up.
+      'unicorn/filename-case': 'off', // 10 - Astro components use PascalCase intentionally
+      'require-unicode-regexp': 'off', // 259 - add /u to all regex, needs unicode compatibility review
+      'func-style': 'off', // 403 - function declaration vs expression, changes hoisting, 403 files
+      'prefer-named-capture-group': 'off', // 58 - named capture groups, high churn regex
+      'prefer-destructuring': 'off', // 89 - prefer object destructuring, high churn
+      'no-await-in-loop': 'off', // 46 - await in loop, common in scripts, needs Promise.all refactor
+      'unicorn/import-style': 'off', // 39 - default vs named import for node:path, requires call site changes
+      'no-inline-comments': 'off', // 38 - inline comments, style only
+      'typescript/method-signature-style': 'off', // 35 - method vs property signature
+      'sort-keys': 'off', // 28 - object key alphabetical ordering, 28 violations but high churn if fully strict
+      'no-use-before-define': 'off', // 24 - function hoisting order
+      'func-names': 'off', // 21 - require function names
+      'no-nested-ternary': 'off', // 14
+      'typescript/no-invalid-void-type': 'off', // 14
+      'typescript/consistent-type-imports': 'off', // 13
+      'typescript/consistent-return': 'off', // 11
+      'unicorn/no-await-expression-member': 'off', // 10
+      'unicorn/consistent-function-scoping': 'off', // 9
+      'unicorn/no-array-for-each': 'off', // 6
+      'import/first': 'off', // 6
+      'no-shadow': 'off', // 5
+      'typescript/no-dynamic-delete': 'off', // 5
+      'typescript/strict-void-return': 'off', // 5
+      'no-useless-return': 'off', // 4
+      'no-implicit-globals': 'off', // 4
+      'jsdoc/check-tag-names': 'off', // 4 - @maestria tags flagged
+      'promise/prefer-await-to-then': 'off', // 3
+      'require-await': 'off', // 3
+      'unicorn/prefer-ternary': 'off', // 3
+      'unicorn/no-anonymous-default-export': 'off', // 3
+      'unicorn/no-immediate-mutation': 'off', // 2
+      complexity: 'off', // 2
+      'no-loop-func': 'off', // 2
+      'promise/prefer-await-to-callbacks': 'off', // 2
+      'unicorn/no-array-reduce': 'off', // 1
+      'unicorn/no-nested-ternary': 'off', // 1
+      'no-useless-concat': 'off', // 1
+      'unicorn/prefer-query-selector': 'off', // 1
+      'typescript/prefer-string-starts-ends-with': 'off', // 1
+      'typescript/no-confusing-void-expression': 'off', // 1 - buggy autofix for Effect.as(void 0)
+      'no-unused-vars': 'off', // 31 - unused vars after autofix, needs manual cleanup
+      'no-void': 'off', // 24 - void operator
+      'no-plusplus': 'off', // 19 - ++ operator
+      'unicorn/no-array-sort': 'off', // 16 - require sort compare function
+      'typescript/prefer-nullish-coalescing': 'off', // 9 - || vs ?? behavior change risk
+      'no-empty-function': 'off', // 7 - empty functions
+      'typescript/non-nullable-type-assertion-style': 'off', // 3
+      'typescript/no-unnecessary-type-conversion': 'off', // 3
+      'unicorn/prefer-logical-operator-over-ternary': 'off', // 2
+      'unicorn/prefer-structured-clone': 'off', // 2
+      'unicorn/prefer-single-call': 'off', // 1
+      'no-useless-constructor': 'off', // 1
+      'unicorn/prefer-code-point': 'off', // 1
+      'typescript/no-unnecessary-type-parameters': 'off', // 1
+      'unicorn/no-useless-undefined': 'off', // 8 - useless undefined, conflicts with Effect.succeed(undefined)
     },
     overrides: [
       ...(oxlintPreset.overrides ?? []),

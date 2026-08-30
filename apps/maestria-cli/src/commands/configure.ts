@@ -25,7 +25,7 @@ function parseSetPairs(input: string): AgentModels {
   const models: AgentModels = {};
   for (const pair of input.split(',')) {
     const eq = pair.indexOf('=');
-    if (eq < 0) {
+    if (eq === -1) {
       exitError(
         `Invalid --set entry '${pair}'. Use <agent>=<model>, e.g. --set builder=opencode-go/deepseek-v4-flash. ` +
           `Use <agent>= (empty) to reset to inherit.`,
@@ -58,23 +58,23 @@ function renderConfigureSummary(
   models: AgentModels,
 ): string {
   const lines: string[] = [];
-  lines.push(picocolors.bold(`\n  ${label} agent models (${level})`));
-  lines.push(picocolors.dim('  ─────────────────────────────────────'));
+  lines.push(
+    picocolors.bold(`\n  ${label} agent models (${level})`),
+    picocolors.dim('  ─────────────────────────────────────'),
+  );
   for (const agent of MAESTRIA_AGENTS) {
     const model = models[agent];
     const value = model ? picocolors.green(model) : picocolors.dim('inherit (session model)');
     lines.push(`  ${picocolors.bold(agent.padEnd(10))} ${value}`);
   }
-  return lines.join('\n') + '\n';
+  return `${lines.join('\n')}\n`;
 }
 
 function renderCompactConfigure(models: AgentModels): string {
-  return (
-    Object.entries(models)
-      .filter(([, model]) => model)
-      .map(([agent, model]) => `${agent}=${model}`)
-      .join('\n') + '\n'
-  );
+  return `${Object.entries(models)
+    .filter(([, model]) => model)
+    .map(([agent, model]) => `${agent}=${model}`)
+    .join('\n')}\n`;
 }
 
 function renderConfigureJson(

@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed (2026-08-31)
+Accepted (2026-08-31) - Strict preset enforced via vite.config.ts hybrid (see vite.config.ts for deferred rule counts).
 
 ## Context
 
@@ -60,7 +60,7 @@ Import `ultracite/oxlint/core` and `ultracite/oxfmt` from the root config. Exten
 - `semi: true`, `singleQuote: true`, `sortPackageJson: true`, and the existing Markdown `proseWrap: 'never'` overrides.
 - Existing generated-directory and changelog ignore patterns, merged with any required Ultracite ignore patterns rather than replaced.
 
-Project-specific rules and overrides remain later, explicit layers so they continue to win over the shared preset. New lint failures are reviewed as individual compatibility findings, not disabled wholesale.
+Project-specific rules and overrides remain later, explicit layers so they continue to win over the shared preset. Strict preset is now enforced: intentional style overrides (singleQuote, trailingComma, printWidth 100, sortImports false) remain, plus ~40 deferred rules with violation counts documented in vite.config.ts (type safety ~1500, stylistic high-churn ~800). Deferred rules are fixed incrementally in follow-ups; new lint failures are reviewed as individual compatibility findings.
 
 ### 3. Keep Vite+ as the only executable interface
 
