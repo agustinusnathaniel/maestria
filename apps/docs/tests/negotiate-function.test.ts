@@ -21,7 +21,7 @@ function makeAssets(table: AssetTable): {
   binding: AssetsBindingLike;
   fetchSpy: ReturnType<typeof vi.fn>;
 } {
-  const fetchSpy = vi.fn(async (input: Request | string | URL) => {
+  const fetchSpy = vi.fn((input: Request | string | URL) => {
     const url =
       input instanceof URL ? input : input instanceof Request ? new URL(input.url) : new URL(input);
     const entry = table.get(url.pathname);
@@ -35,7 +35,7 @@ function makeAssets(table: AssetTable): {
     if (entry.vary) {
       headers.set('Vary', entry.vary);
     }
-    return new Response(entry.body ?? '', { status: 200, headers });
+    return new Response(entry.body ?? '', { headers, status: 200 });
   });
   return { binding: { fetch: fetchSpy }, fetchSpy };
 }
@@ -51,8 +51,7 @@ function makeContext(
   init: { method?: string; accept?: string } = {},
   table: AssetTable = new Map(),
   next = vi.fn(
-    async () =>
-      new Response('next-html', { status: 200, headers: { 'Content-Type': 'text/html' } }),
+    () => new Response('next-html', { headers: { 'Content-Type': 'text/html' }, status: 200 }),
   ),
 ): TestContext {
   const headers = new Headers();
@@ -61,12 +60,12 @@ function makeContext(
   }
   const { binding, fetchSpy } = makeAssets(table);
   return {
-    request: new Request(url, { method: init.method ?? 'GET', headers }),
     env: { ASSETS: binding },
+    fetchSpy,
     next,
     nextSpy: next,
-    fetchSpy,
-  } as TestContext;
+    request: new Request(url, { headers, method: init.method ?? 'GET' }),
+  };
 }
 
 afterEach(() => {
@@ -79,10 +78,10 @@ describe('markdown content negotiation', () => {
       [
         '/opencode.md',
         {
-          status: 200,
           body: '# OpenCode\n',
-          contentType: 'text/markdown',
           cacheControl: 'public, max-age=3600',
+          contentType: 'text/markdown',
+          status: 200,
         },
       ],
     ]);
@@ -105,9 +104,9 @@ describe('markdown content negotiation', () => {
       [
         '/opencode.md',
         {
-          status: 200,
           body: '# OpenCode\n',
           contentType: 'text/markdown',
+          status: 200,
           vary: 'Accept-Language',
         },
       ],
@@ -147,11 +146,11 @@ describe('markdown content negotiation', () => {
 
   it('(c) passes through untouched when the page exists without a twin', async () => {
     const original = new Response('<html>fine</html>', {
-      status: 200,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      status: 200,
     });
     const assets: AssetsBindingLike = {
-      fetch: vi.fn(async (input: Request | string | URL) => {
+      fetch: vi.fn((input: Request | string | URL) => {
         const url =
           input instanceof URL
             ? input
@@ -161,7 +160,7 @@ describe('markdown content negotiation', () => {
         return url.pathname.endsWith('.md') ? new Response(null, { status: 404 }) : original;
       }),
     };
-    const next = vi.fn(async () => new Response('should-not-be-used'));
+    const next = vi.fn(() => new Response('should-not-be-used'));
     const context = makeContext(
       `${ORIGIN}/some-custom-page/`,
       { accept: 'text/markdown' },
@@ -182,7 +181,7 @@ describe('markdown content negotiation', () => {
   it('(d) lets browser requests through to next()', async () => {
     const browserAccept =
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8';
-    const next = vi.fn(async () => new Response('next-html'));
+    const next = vi.fn(() => new Response('next-html'));
     const context = makeContext(`${ORIGIN}/opencode/`, { accept: browserAccept }, new Map(), next);
 
     const res = await handleAgentDelivery(context);
@@ -194,7 +193,7 @@ describe('markdown content negotiation', () => {
 
   it('passes through requests that already target static Markdown or text artifacts', async () => {
     for (const pathname of ['/opencode.md', '/llms.txt']) {
-      const next = vi.fn(async () => new Response('static-artifact'));
+      const next = vi.fn(() => new Response('static-artifact'));
       const context = makeContext(
         `${ORIGIN}${pathname}`,
         { accept: 'text/markdown' },
@@ -211,10 +210,10 @@ describe('markdown content negotiation', () => {
   });
 
   it('(e) never negotiates on POST', async () => {
-    const next = vi.fn(async () => new Response('posted'));
+    const next = vi.fn(() => new Response('posted'));
     const context = makeContext(
       `${ORIGIN}/opencode/`,
-      { method: 'POST', accept: 'text/markdown' },
+      { accept: 'text/markdown', method: 'POST' },
       new Map(),
       next,
     );
@@ -225,10 +224,10 @@ describe('markdown content negotiation', () => {
   });
 
   it('answers HEAD with negotiated headers and no body', async () => {
-    const table: AssetTable = new Map([['/about.md', { status: 200, body: '# About\n' }]]);
+    const table: AssetTable = new Map([['/about.md', { body: '# About\n', status: 200 }]]);
     const context = makeContext(
       `${ORIGIN}/about/`,
-      { method: 'HEAD', accept: 'text/markdown' },
+      { accept: 'text/markdown', method: 'HEAD' },
       table,
     );
 

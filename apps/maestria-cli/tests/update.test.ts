@@ -6,8 +6,8 @@ import { Effect } from 'effect';
 // home directory during tests, and the isolated temp-cwd create/remove so the
 // fail-closed path can be exercised deterministically.
 const fsMocks = vi.hoisted(() => ({
-  readFile: vi.fn(async (_path: string) => JSON.stringify({ version: '0.2.0' })),
-  mkdtemp: vi.fn(async (prefix: string) => `${prefix}test-dir`),
+  mkdtemp: vi.fn((prefix: string) => `${prefix}test-dir`),
+  readFile: vi.fn((_path: string) => JSON.stringify({ version: '0.2.0' })),
   rm: vi.fn(async () => {}),
 }));
 
@@ -26,11 +26,11 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:fs/promises')>();
   return {
     ...actual,
-    readFile: fsMocks.readFile,
-    writeFile: vi.fn(async () => {}),
     mkdir: vi.fn(async () => {}),
     mkdtemp: fsMocks.mkdtemp,
+    readFile: fsMocks.readFile,
     rm: fsMocks.rm,
+    writeFile: vi.fn(async () => {}),
   };
 });
 

@@ -8,10 +8,10 @@ import type {
 
 describe('createModePromptHandler', () => {
   const baseEvent: BeforeAgentStartEvent = {
-    type: 'before_agent_start',
     prompt: 'build the feature',
     systemPrompt: 'You are an AI assistant.',
     systemPromptOptions: {} as any,
+    type: 'before_agent_start',
   };
 
   it('when mode is null, returns void (no modification)', () => {

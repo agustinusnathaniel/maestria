@@ -13,11 +13,11 @@ describe('Codex managed orchestration instructions', () => {
     const existing = '# User instructions\n';
     const installed = upsertCodexManagedInstructions(existing, BLOCK);
     expect(installed).toContain('# User instructions');
-    expect(installed.match(/maestria:codex-orchestrator:start/g)).toHaveLength(1);
+    expect(installed.match(/maestria:codex-orchestrator:start/gu)).toHaveLength(1);
     expect(upsertCodexManagedInstructions(installed, `${BLOCK}\nupdated`)).toContain('managed');
     expect(
       upsertCodexManagedInstructions(installed, `${BLOCK}\nupdated`).match(
-        /maestria:codex-orchestrator:start/g,
+        /maestria:codex-orchestrator:start/gu,
       ),
     ).toHaveLength(1);
   });
@@ -31,9 +31,9 @@ describe('Codex managed orchestration instructions', () => {
   it('rejects malformed or duplicated markers', () => {
     expect(() =>
       upsertCodexManagedInstructions(`${CODEX_MANAGED_INSTRUCTIONS_START}\n`, BLOCK),
-    ).toThrow(/malformed|duplicated/i);
+    ).toThrow(/malformed|duplicated/iu);
     expect(() => upsertCodexManagedInstructions(`${BLOCK}\n${BLOCK}`, BLOCK)).toThrow(
-      /malformed|duplicated/i,
+      /malformed|duplicated/iu,
     );
   });
 });

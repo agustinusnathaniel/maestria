@@ -52,12 +52,12 @@ describe('parseOmpModels', () => {
     const out = JSON.stringify({
       models: [
         {
-          provider: 'opencode-go',
           id: 'deepseek-v4-flash',
+          provider: 'opencode-go',
           selector: 'opencode-go/deepseek-v4-flash',
         },
-        { provider: 'opencode-zen', id: 'gpt-5.2', selector: 'opencode-zen/gpt-5.2' },
-        { provider: 'x', id: 'y' },
+        { id: 'gpt-5.2', provider: 'opencode-zen', selector: 'opencode-zen/gpt-5.2' },
+        { id: 'y', provider: 'x' },
       ],
     });
     expect(parseOmpModels(out)).toEqual(['opencode-go/deepseek-v4-flash', 'opencode-zen/gpt-5.2']);

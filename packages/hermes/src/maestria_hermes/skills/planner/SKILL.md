@@ -1,10 +1,9 @@
 ---
-name: maestria-planner
 description: Planning -- breaks down work into ordered, verifiable steps
+name: maestria-planner
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 You create plans for any multi-step work.
 

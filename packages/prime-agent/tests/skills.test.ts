@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import syncConfig from '../sync.config.js';
 import {
   DESCRIPTION_MAX,
@@ -61,7 +60,7 @@ async function readDirNames(relativePath: string): Promise<string[]> {
   return entries
     .filter((entry) => !entry.name.startsWith('.'))
     .map((entry) => entry.name)
-    .sort();
+    .toSorted();
 }
 
 /**
@@ -70,7 +69,7 @@ async function readDirNames(relativePath: string): Promise<string[]> {
  * frontmatter contains only `name` and `description`.
  */
 function parseFrontmatter(text: string): { data: Record<string, string>; body: string } {
-  const lines = text.split(/\r?\n/);
+  const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
@@ -81,7 +80,7 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
 
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
-    const pair = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
+    const pair = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/u.exec(line);
     if (pair === null) {
       continue;
     }
@@ -91,7 +90,7 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
       // Block scalar (| or |-): collect the indented continuation lines.
       const body: string[] = [];
       for (const l of lines.slice(1, close)) {
-        if (/^\s{2}/.test(l)) {
+        if (/^\s{2}/u.test(l)) {
           body.push(l.trim());
         }
       }
@@ -108,7 +107,7 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
     }
   }
   const body = lines.slice(close + 1).join('\n');
-  return { data, body };
+  return { body, data };
 }
 
 async function readSkill(name: string): Promise<{ data: Record<string, string>; body: string }> {
@@ -119,7 +118,7 @@ async function readSkill(name: string): Promise<{ data: Record<string, string>; 
 describe('generated Prime Agent skills', () => {
   it('contains exactly the 14 expected skills and nothing else', async () => {
     const names = await readDirNames('skills');
-    expect(names).toEqual([...EXPECTED_SKILLS].sort());
+    expect(names).toEqual([...EXPECTED_SKILLS].toSorted());
   });
 
   for (const skill of EXPECTED_SKILLS) {
@@ -143,20 +142,20 @@ describe('generated Prime Agent skills', () => {
         const { body } = parseFrontmatter(text);
         expect(body.trim().length).toBeGreaterThan(0);
         expect(text).toContain('Auto-generated from @maestria/core');
-        expect(text).not.toMatch(/^<!--\s*Source:/m);
+        expect(text).not.toMatch(/^<!--\s*Source:/mu);
       });
 
       it('never uses recursive-subagent call syntax (rlm(...))', async () => {
         const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
-        expect(text).not.toMatch(/rlm\s*\(/);
+        expect(text).not.toMatch(/rlm\s*\(/u);
       });
 
       it('mentions JSON/RPC/headless/subagent dispatch only inside denials, never as available', async () => {
         const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
-        const sentences = text.split(/(?<=[.!?])\s+/);
+        const sentences = text.split(/(?<=[.!?])\s+/u);
         for (const sentence of sentences) {
-          if (/(JSON|RPC|headless|rlm|subagent\s+dispatch|spawns?)/i.test(sentence)) {
-            expect(sentence).toMatch(/(no|not) |deferred/i);
+          if (/(JSON|RPC|headless|rlm|subagent\s+dispatch|spawns?)/iu.test(sentence)) {
+            expect(sentence).toMatch(/(no|not) |deferred/iu);
           }
         }
       });
@@ -173,7 +172,7 @@ describe('generated Prime Agent skills', () => {
           'writer',
           'orchestrator',
         ]) {
-          expect(text).not.toMatch(new RegExp(`@${mention}(?!:)`));
+          expect(text).not.toMatch(new RegExp(`@${mention}(?!:)`, 'u'));
         }
       });
     });
@@ -225,7 +224,7 @@ describe('content invariants', () => {
     const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
     expect(text).toContain('Runtime Authority');
     expect(text).toContain('direct work is available');
-    expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/i);
+    expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/iu);
   });
 
   it('frames the orchestrator delivery honestly: advisory, not a sandbox, rlm/JSON-RPC deferred', async () => {
@@ -242,7 +241,7 @@ describe('content invariants', () => {
     // Deferred: recursive-subagent dispatch and JSON/RPC headless mode.
     expect(text).toContain('Deferred: recursive-subagent dispatch');
     expect(text).toContain('are NOT provided');
-    expect(text).not.toMatch(/rlm\s*\(/);
+    expect(text).not.toMatch(/rlm\s*\(/u);
     expect(text).toContain('`global-rules` skill');
     expect(text).toContain('`fein`');
     expect(text).toContain('`sonar`');
@@ -262,7 +261,7 @@ describe('content invariants', () => {
       const text = await readFile(path.join(SKILLS_DIR, role, 'SKILL.md'), 'utf-8');
       expect(text).toContain('Read-only role (advisory)');
       expect(text).toContain('no runtime tool enforcement');
-      expect(text).not.toMatch(/tools are denied|disallowed/i);
+      expect(text).not.toMatch(/tools are denied|disallowed/iu);
     }
   });
 
@@ -283,17 +282,17 @@ describe('sync config source mapping', () => {
     'adventurer.md': 'adventurer/SKILL.md',
     'architect.md': 'architect/SKILL.md',
     'builder.md': 'builder/SKILL.md',
+    'commands/blitz.md': 'blitz/SKILL.md',
+    'commands/fein.md': 'fein/SKILL.md',
+    'commands/sonar.md': 'sonar/SKILL.md',
     'diagnose.md': 'diagnose/SKILL.md',
+    'orchestrator.md': 'orchestrator/SKILL.md',
     'planner.md': 'planner/SKILL.md',
     'reviewer.md': 'reviewer/SKILL.md',
-    'writer.md': 'writer/SKILL.md',
-    'orchestrator.md': 'orchestrator/SKILL.md',
     'rules.md': 'global-rules/SKILL.md',
     'skills/handoff.md': 'handoff/SKILL.md',
     'skills/iteration-limits.md': 'iteration-limits/SKILL.md',
-    'commands/fein.md': 'fein/SKILL.md',
-    'commands/sonar.md': 'sonar/SKILL.md',
-    'commands/blitz.md': 'blitz/SKILL.md',
+    'writer.md': 'writer/SKILL.md',
   };
 
   it('maps every intended canonical source to its expected skill output', () => {

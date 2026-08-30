@@ -19,6 +19,6 @@ vi.mock('node:fs', async (importOriginal) => {
 
 describe('plugin error handling', () => {
   it('should throw when agents directory is missing', async () => {
-    await expect(MaestriaPlugin({} as never)).rejects.toThrow(/Failed to load agents/);
+    await expect(MaestriaPlugin({} as never)).rejects.toThrow(/Failed to load agents/u);
   });
 });

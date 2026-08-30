@@ -17,7 +17,7 @@ describe('validateSkills', () => {
     tmp = mkdtempSync(join(tmpdir(), 'maestria-skill-'));
   });
   afterEach(() => {
-    rmSync(tmp, { recursive: true, force: true });
+    rmSync(tmp, { force: true, recursive: true });
   });
 
   it('passes for valid skills', () => {
@@ -116,7 +116,7 @@ describe('validateSkills', () => {
       console.error = (...args: unknown[]) => err.push(args.join(' '));
       try {
         const ok = fn();
-        return { ok, out, err };
+        return { err, ok, out };
       } finally {
         console.log = origLog;
         console.error = origError;

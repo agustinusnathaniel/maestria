@@ -1,10 +1,9 @@
 ---
-name: planner
 description: Phased implementation planning workflow with dependencies, verification criteria, timelines, and rollback points.
+name: planner
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 **Codex role note (advisory):** Use this skill for planning only. The Codex host may still expose write-capable tools; this skill cannot enforce a tool restriction, so do not edit production files while following it.
 

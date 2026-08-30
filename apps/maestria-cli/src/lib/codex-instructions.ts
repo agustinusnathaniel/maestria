@@ -24,13 +24,13 @@ export function codexManagedInstructionRange(content: string): ManagedInstructio
   if (starts.length === 0 && ends.length === 0) {
     return undefined;
   }
-  if (starts.length !== 1 || ends.length !== 1 || starts[0]! > ends[0]!) {
+  if (starts.length !== 1 || ends.length !== 1 || starts[0] > ends[0]) {
     throw new Error('Codex Maestria instruction markers are malformed or duplicated');
   }
 
   return {
-    start: starts[0]!,
-    end: ends[0]! + CODEX_MANAGED_INSTRUCTIONS_END.length,
+    end: ends[0] + CODEX_MANAGED_INSTRUCTIONS_END.length,
+    start: starts[0],
   };
 }
 

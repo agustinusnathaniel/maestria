@@ -1,19 +1,18 @@
 ---
-name: builder
+arguments: []
 description: |-
   Focused implementation agent for atomic tasks.
   Executes one verifiable unit of work with minimal context.
   Use for: targeted fixes, feature implementation, refactors, adding tests.
+name: builder
 type: prompt
 whenToUse: |-
   Feature implementation, bug fixing, test writing, refactoring within a
   single task scope. Use when the design is clear, recon is done, and the
   work is a concrete atomic unit.
-arguments: []
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 **Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to implement the task.
 

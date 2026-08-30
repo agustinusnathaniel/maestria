@@ -39,9 +39,9 @@ function withMarkdownVary(response: Response, isHead: boolean): Response {
   const headers = new Headers(response.headers);
   addNegotiatedVary(headers);
   return new Response(isHead ? null : response.body, {
+    headers,
     status: response.status,
     statusText: response.statusText,
-    headers,
   });
 }
 
@@ -51,9 +51,9 @@ function markdownResponse(response: Response, isHead: boolean): Response {
   headers.set('Content-Type', MARKDOWN_MIME);
   addNegotiatedVary(headers);
   return new Response(isHead ? null : response.body, {
+    headers,
     status: response.status,
     statusText: response.statusText,
-    headers,
   });
 }
 
@@ -93,11 +93,11 @@ function markdownNotFoundResponse(isHead: boolean): Response {
     '',
   ];
   const headers = new Headers({
+    'Cache-Control': 'no-store',
     'Content-Type': MARKDOWN_MIME,
     Vary: VARY_VALUE,
-    'Cache-Control': 'no-store',
   });
-  return new Response(isHead ? null : lines.join('\n'), { status: 404, headers });
+  return new Response(isHead ? null : lines.join('\n'), { headers, status: 404 });
 }
 
 /**

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
@@ -70,14 +69,14 @@ async function pathExists(relativePath: string): Promise<boolean> {
 }
 
 function parseFrontmatter(text: string): Record<string, string> {
-  const lines = text.split(/\r?\n/);
+  const lines = text.split(/\r?\n/u);
   expect(lines[0]?.trim()).toBe('---');
   const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
   expect(close).toBeGreaterThan(0);
 
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
-    const match = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
+    const match = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/u.exec(line);
     if (match !== null && match[2] !== undefined) {
       data[match[1]] = match[2];
     }
@@ -120,7 +119,7 @@ describe('repository marketplace entry', () => {
     ) as MarketplaceManifest;
     const plugin = marketplace.plugins?.find((entry) => entry.name === 'maestria');
     expect(marketplace.name).toBe('maestria');
-    expect(plugin?.source).toEqual({ source: 'npm', package: '@maestria/codex' });
+    expect(plugin?.source).toEqual({ package: '@maestria/codex', source: 'npm' });
   });
 });
 
@@ -130,8 +129,8 @@ describe('generated skills', () => {
     const names = entries
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
-      .sort();
-    expect(names).toEqual([...EXPECTED_SKILLS].sort());
+      .toSorted();
+    expect(names).toEqual([...EXPECTED_SKILLS].toSorted());
   });
 
   for (const skill of EXPECTED_SKILLS) {
@@ -166,8 +165,8 @@ describe('generated skills', () => {
   it('states that read-only role boundaries are advisory', async () => {
     for (const role of ['adventurer', 'planner', 'reviewer']) {
       const text = await readFile(path.join(PACKAGE_ROOT, `skills/${role}/SKILL.md`), 'utf-8');
-      expect(text).toMatch(/advisory/i);
-      expect(text).toMatch(/cannot enforce/i);
+      expect(text).toMatch(/advisory/iu);
+      expect(text).toMatch(/cannot enforce/iu);
     }
   });
 });
@@ -177,8 +176,8 @@ describe('native Codex agent templates', () => {
     it(`${agent} has the required native TOML fields`, async () => {
       const relativePath = `agents/${agent}.toml`;
       const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf-8');
-      expect(text).toMatch(new RegExp(`^name\\s*=\\s*"${agent}"`, 'm'));
-      expect(text).toMatch(/^description\s*=\s*".+"/m);
+      expect(text).toMatch(new RegExp(`^name\\s*=\\s*"${agent}"`, 'mu'));
+      expect(text).toMatch(/^description\s*=\s*".+"/mu);
       expect(text).toContain('developer_instructions = """');
       expect(text).toContain(`$maestria:${agent.replace('maestria-', '')}`);
     });

@@ -87,7 +87,7 @@ function renderConfigureJson(
     all[agent] = models[agent] ?? '';
   }
   return JSON.stringify(
-    { platform: handler.id, label: handler.label, level, models: all },
+    { label: handler.label, level, models: all, platform: handler.id },
     null,
     2,
   );
@@ -117,14 +117,14 @@ async function resolveConfigureHandler(
     process.exit(1);
   }
   const picked = await select({
-    message: 'Which platform do you want to configure?',
-    options: modelConfigHandlers.map((h) => ({ value: h.id, label: h.label })),
     maxItems: 5,
+    message: 'Which platform do you want to configure?',
+    options: modelConfigHandlers.map((h) => ({ label: h.label, value: h.id })),
   });
   if (isCancel(picked)) {
     exitCancel();
   }
-  return getModelConfigHandler(picked as string)!;
+  return getModelConfigHandler(picked)!;
 }
 
 async function resolveConfigureLevel(
@@ -143,12 +143,12 @@ async function resolveConfigureLevel(
   }
   if (process.stdout.isTTY && process.stdin.isTTY && !args.set) {
     const picked = await select({
+      initialValue: 'global',
       message: 'Where do you want to configure models?',
       options: [
-        { value: 'global' as const, label: 'Global', hint: 'applies to all projects' },
-        { value: 'project' as const, label: 'Project', hint: 'applies to this project only' },
+        { hint: 'applies to all projects', label: 'Global', value: 'global' as const },
+        { hint: 'applies to this project only', label: 'Project', value: 'project' as const },
       ],
-      initialValue: 'global',
     });
     if (isCancel(picked)) {
       exitCancel();
@@ -230,43 +230,43 @@ async function handleConfigureInteractive(
   );
   spinner.stop('');
   const selectedAgents = await groupMultiselect({
+    maxItems: 8,
     message: 'Which agents do you want to configure?',
     options: {
       Specialists: handler.agents.map((agent) => ({
-        value: agent,
-        label: agent,
         hint: current[agent as keyof AgentModels]
           ? `currently ${current[agent as keyof AgentModels]}`
           : 'inherit',
+        label: agent,
+        value: agent,
       })),
     },
-    selectableGroups: true,
     required: true,
-    maxItems: 8,
+    selectableGroups: true,
   });
   if (isCancel(selectedAgents)) {
     exitCancel();
   }
   const models: AgentModels = {};
-  for (const agent of selectedAgents as string[]) {
+  for (const agent of selectedAgents) {
     if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
       continue;
     }
     const name = agent as keyof AgentModels;
     const picked = await select({
+      initialValue: current[name] && available.includes(current[name]) ? current[name] : '',
+      maxItems: 10,
       message: `Model for @${name}${current[name] ? ` (currently ${current[name]})` : ''}`,
       options: [
-        { value: '', label: 'Inherit', hint: 'use the session/primary agent model' },
-        ...available.map((model) => ({ value: model, label: model })),
+        { hint: 'use the session/primary agent model', label: 'Inherit', value: '' },
+        ...available.map((model) => ({ label: model, value: model })),
       ],
-      maxItems: 10,
-      initialValue: current[name] && available.includes(current[name]) ? current[name] : '',
     });
     if (isCancel(picked)) {
       exitCancel();
     }
     if (picked) {
-      models[name] = picked as string;
+      models[name] = picked;
     }
   }
   if (Object.keys(models).length === 0) {
@@ -288,65 +288,65 @@ async function handleConfigureInteractive(
 }
 
 export const configureCommand = defineCommand({
-  meta: {
-    name: 'configure',
-    description: 'Configure per-agent models for a coding agent platform',
-  },
   args: {
+    compact: {
+      default: false,
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
+      type: 'boolean',
+    },
+    global: {
+      default: false,
+      description: 'Configure the global (user-level) config. Default in interactive mode.',
+      type: 'boolean',
+    },
+    json: {
+      default: false,
+      description:
+        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+      type: 'boolean',
+    },
     platform: {
-      type: 'positional',
       description:
         'Platform to configure. One of: opencode, codex, cursor, pi, omp. Pass directly to skip interactive selection.',
       required: false,
-    },
-    global: {
-      type: 'boolean',
-      description: 'Configure the global (user-level) config. Default in interactive mode.',
-      default: false,
+      type: 'positional',
     },
     project: {
-      type: 'boolean',
+      default: false,
       description:
         'Configure the project-level config (.opencode/, .codex/agents/, .cursor/agents/, .pi/agents/, or .omp/agents/).',
+      type: 'boolean',
+    },
+    quiet: {
       default: false,
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      type: 'boolean',
     },
     set: {
-      type: 'string',
+      default: undefined,
       description:
         'Set models non-interactively. Comma-separated <agent>=<model> pairs, e.g. ' +
         "'builder=opencode-go/deepseek-v4-flash'. Use <agent>= (empty value) to reset to inherit.",
-      default: undefined,
-    },
-    json: {
-      type: 'boolean',
-      description:
-        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
-      default: false,
-    },
-    quiet: {
-      type: 'boolean',
-      description:
-        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
-      default: false,
-    },
-    compact: {
-      type: 'boolean',
-      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
-      default: false,
+      type: 'string',
     },
   },
+  meta: {
+    description: 'Configure per-agent models for a coding agent platform',
+    name: 'configure',
+  },
   run: async ({ args }) => {
-    const isQuiet = (args.quiet || args.compact) as boolean;
-    const isCompact = args.compact as boolean;
-    const isJson = args.json as boolean;
-    const handler = await resolveConfigureHandler(args.platform as string | undefined);
+    const isQuiet = args.quiet || args.compact;
+    const isCompact = args.compact;
+    const isJson = args.json;
+    const handler = await resolveConfigureHandler(args.platform);
     const cliAvailable = await Effect.runPromise(handler.isAvailable ?? commandExists(handler.cli));
     if (!cliAvailable) {
       exitError(`The '${handler.cli}' CLI was not found on PATH. Install ${handler.label} first.`);
     }
     const level = await resolveConfigureLevel(args, handler);
     if (args.set) {
-      await handleConfigureSet(handler, level, args.set as string, isQuiet, isJson, isCompact);
+      await handleConfigureSet(handler, level, args.set, isQuiet, isJson, isCompact);
     } else {
       await handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact);
     }

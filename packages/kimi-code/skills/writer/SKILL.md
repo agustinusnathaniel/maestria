@@ -1,18 +1,17 @@
 ---
-name: writer
+arguments: []
 description: |-
   Documentation writing following structured patterns.
   Creates clear, comprehensive docs for code, APIs, systems.
   Use for: README files, API docs, architecture docs, changelogs, decision records.
+name: writer
 type: prompt
 whenToUse: |-
   "Document this", "write README", "ADR", "changelog", "API docs",
   "explain in prose". Turning code into human-readable artifacts.
-arguments: []
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 **Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to produce docs.
 

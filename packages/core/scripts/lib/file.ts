@@ -25,7 +25,7 @@ export async function walkDir(dir: string): Promise<string[]> {
   }
 
   await walk(dir);
-  return entries.sort();
+  return entries.toSorted();
 }
 
 // ── Atomic write (tmp + rename) ──
@@ -77,18 +77,18 @@ export async function autoClean(
 
     if (!generatedOutputs.has(absOutPath)) {
       if (dryRun) {
-        results.push({ source: '', output: absOutPath, status: 'dry-run' });
+        results.push({ output: absOutPath, source: '', status: 'dry-run' });
         if (verbose) {
           logger(`[dry-run] Would remove stale: ${relative(process.cwd(), absOutPath)}`);
         }
       } else if (check) {
-        results.push({ source: '', output: absOutPath, status: 'removed' });
+        results.push({ output: absOutPath, source: '', status: 'removed' });
         if (verbose) {
           logger(`[check] Would remove stale: ${relative(process.cwd(), absOutPath)}`);
         }
       } else {
         await unlink(absOutPath);
-        results.push({ source: '', output: absOutPath, status: 'removed' });
+        results.push({ output: absOutPath, source: '', status: 'removed' });
         if (verbose) {
           logger(`[${report}] Removed stale: ${relative(process.cwd(), absOutPath)}`);
         }

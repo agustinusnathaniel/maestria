@@ -1,10 +1,9 @@
 ---
-name: global-rules
 description: Universal Maestria rules for evidence, safety, authorization, delegation, review, bounded repair, and branch discipline.
+name: global-rules
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 # Global Agent Rules - @maestria/codex
 

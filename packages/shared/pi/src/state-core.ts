@@ -61,20 +61,20 @@ export interface MaestriaState {
 
 export function createInitialState(): MaestriaState {
   return {
-    mode: null,
     activeTask: '',
-    completionPromise: '',
-    specialistsDelegated: [],
     blockers: [],
+    completionPromise: '',
     filesModified: [],
     filesRead: [],
     handoffHistory: [],
-    reviewMode: false,
+    mode: null,
+    nativeGoal: null,
     originalModel: null,
     originalTools: null,
-    subagentStatus: {},
+    reviewMode: false,
     reviewModel: null,
-    nativeGoal: null,
+    specialistsDelegated: [],
+    subagentStatus: {},
   };
 }
 
@@ -89,7 +89,7 @@ export function recordHandoff(
   to: string,
   task: string,
 ): MaestriaState {
-  const entry: HandoffEntry = { from, to, task, timestamp: Date.now() };
+  const entry: HandoffEntry = { from, task, timestamp: Date.now(), to };
   const history = [entry, ...state.handoffHistory].slice(0, HANDOFF_HISTORY_CAP);
   return { ...state, handoffHistory: history };
 }
@@ -127,14 +127,14 @@ export function exitReviewMode(state: MaestriaState): {
   originalTools: string[] | null;
 } {
   return {
-    state: {
-      ...state,
-      reviewMode: false,
-      originalModel: null,
-      originalTools: null,
-    },
     originalModel: state.originalModel,
     originalTools: state.originalTools,
+    state: {
+      ...state,
+      originalModel: null,
+      originalTools: null,
+      reviewMode: false,
+    },
   };
 }
 

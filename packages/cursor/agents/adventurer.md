@@ -1,11 +1,10 @@
 ---
-name: adventurer
 description: Codebase reconnaissance agent. Maps unknown territory, traces call chains, maps module relationships. Use before implementation in unfamiliar code. Read-only - never implement or design.
+name: adventurer
 readonly: true
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 **Read-only.** You have Read, Glob, Grep, Shell, WebSearch, and WebFetch. Do **not** use Write, StrReplace, or Delete. Exploration only - never implement or design.
 

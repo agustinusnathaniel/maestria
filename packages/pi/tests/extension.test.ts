@@ -5,6 +5,9 @@ import extension from '@/extension.js';
 function createMockPi() {
   const handlers = new Map<string, ((...args: unknown[]) => unknown)[]>();
   return {
+    appendEntry: vi.fn(),
+    events: undefined,
+    getActiveTools: vi.fn(() => []),
     on: vi.fn((event: string, handler: (...args: unknown[]) => unknown) => {
       if (!handlers.has(event)) {
         handlers.set(event, []);
@@ -19,17 +22,14 @@ function createMockPi() {
     }),
     registerCommand: vi.fn(),
     registerTool: vi.fn(),
-    setActiveTools: vi.fn(),
-    getActiveTools: vi.fn(() => []),
-    setModel: vi.fn(),
-    appendEntry: vi.fn(),
     sendUserMessage: vi.fn(),
-    events: undefined,
+    setActiveTools: vi.fn(),
+    setModel: vi.fn(),
   };
 }
 
 describe('extension entry point', () => {
-  it('registers mode commands', async () => {
+  it('registers mode commands', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const { registerCommand } = pi;
@@ -39,14 +39,14 @@ describe('extension entry point', () => {
     expect(registerCommand).toHaveBeenCalledWith('blitz', expect.any(Object));
   });
 
-  it('registers subagent tool', async () => {
+  it('registers subagent tool', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const { registerTool } = pi;
     expect(registerTool).toHaveBeenCalled();
   });
 
-  it('subscribes to session events', async () => {
+  it('subscribes to session events', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
@@ -59,7 +59,7 @@ describe('extension entry point', () => {
     expect(onEvents).toContain('tool_call');
   });
 
-  it('registers orchestration commands', async () => {
+  it('registers orchestration commands', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const { registerCommand } = pi;
@@ -72,17 +72,17 @@ describe('extension entry point', () => {
 
   it('restores state on session_start from the current branch', async () => {
     const pi = createMockPi();
-    const mockState = { mode: 'fein', activeTask: 'test task' };
-    const siblingState = { mode: 'sonar', activeTask: 'sibling task' };
+    const mockState = { activeTask: 'test task', mode: 'fein' };
+    const siblingState = { activeTask: 'sibling task', mode: 'sonar' };
     const entries = [
-      { type: 'custom', customType: 'maestria_state', data: siblingState, timestamp: 50 },
+      { customType: 'maestria_state', data: siblingState, timestamp: 50, type: 'custom' },
     ];
     const getBranch = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const getEntries = vi.fn(() => [
       ...entries,
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const ctx = { sessionManager: { getBranch, getEntries } };
     extension(pi as unknown as ExtensionAPI);
@@ -97,13 +97,13 @@ describe('extension entry point', () => {
 
   it('does not restore sibling-branch state on session_start', async () => {
     const pi = createMockPi();
-    const mockState = { mode: 'fein', activeTask: 'test task' };
-    const siblingState = { mode: 'sonar', activeTask: 'sibling task' };
+    const mockState = { activeTask: 'test task', mode: 'fein' };
+    const siblingState = { activeTask: 'sibling task', mode: 'sonar' };
     const branchEntries = [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ];
     const allEntries = [
-      { type: 'custom', customType: 'maestria_state', data: siblingState, timestamp: 50 },
+      { customType: 'maestria_state', data: siblingState, timestamp: 50, type: 'custom' },
       ...branchEntries,
     ];
     const getBranch = vi.fn(() => branchEntries);
@@ -129,12 +129,12 @@ describe('extension entry point', () => {
 
   it('registers a session_tree handler that restores state from the current branch', async () => {
     const pi = createMockPi();
-    const mockState = { mode: 'fein', activeTask: 'test task' };
+    const mockState = { activeTask: 'test task', mode: 'fein' };
     const getBranch = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const getEntries = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const ctx = { sessionManager: { getBranch, getEntries } };
     extension(pi as unknown as ExtensionAPI);

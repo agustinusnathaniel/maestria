@@ -5,18 +5,19 @@ import { persistState } from '@/state.js';
 
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
   const handler = createToolCallHandler({
-    getState: () => state,
-    getActiveTools: () => pi.getActiveTools(),
     delegationTool: 'task',
+    getActiveTools: () => pi.getActiveTools(),
+    getState: () => state,
+    isBashTool: (e) => (e as { toolName?: string }).toolName === 'bash',
     isMutationTool: (e) =>
       ['edit', 'write', 'patch', 'bash', 'goal'].includes(
         (e as { toolName?: string }).toolName ?? '',
       ),
     isReadTool: (e) => (e as { toolName?: string }).toolName === 'read',
     isWriteTool: (e) => ['edit', 'write'].includes((e as { toolName?: string }).toolName ?? ''),
-    isBashTool: (e) => (e as { toolName?: string }).toolName === 'bash',
-    persist: () =>
-      persistState(pi as unknown as { appendEntry: (t: string, d: unknown) => void }, state),
+    persist: () => {
+      persistState(pi, state);
+    },
   });
   pi.on('tool_call', handler as never);
 }

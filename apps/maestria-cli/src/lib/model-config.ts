@@ -72,14 +72,14 @@ export function parseOpenCodeModels(out: string): string[] {
   return out
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => /^\S+\/\S+$/.test(line));
+    .filter((line) => /^\S+\/\S+$/u.test(line));
 }
 
 /** `pi --list-models` -> table with a header row */
 export function parsePiModels(out: string): string[] {
   return out
     .split('\n')
-    .map((line) => line.trim().split(/\s+/))
+    .map((line) => line.trim().split(/\s+/u))
     .filter((parts) => parts.length >= 2 && parts[0] !== 'provider')
     .map((parts) => `${parts[0]}/${parts[1]}`);
 }
@@ -133,8 +133,8 @@ export function parseCursorModels(out: string): string[] {
   for (const line of out.split('\n')) {
     const trimmed = line.trim();
     const match =
-      /^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s+-\s+.*)?(?:\s+\((?:current|default)\))?$/.exec(trimmed);
-    if (match?.[1] && !/^(available|models|filter)$/i.test(match[1])) {
+      /^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s+-\s+.*)?(?:\s+\((?:current|default)\))?$/u.exec(trimmed);
+    if (match?.[1] && !/^(available|models|filter)$/iu.test(match[1])) {
       models.push(match[1]);
     }
   }
@@ -161,9 +161,9 @@ export function parseCodexModels(out: string): string[] {
 
 /** Extract the `model:` value from a markdown agent file's frontmatter */
 export function parseFrontmatterModel(content: string): string | undefined {
-  const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content);
+  const fm = /^---\r?\n([\s\S]*?)\r?\n---/u.exec(content);
   const block = fm?.[1] ?? content;
-  const m = /^model:\s*(.+?)\s*$/m.exec(block);
+  const m = /^model:\s*(.+?)\s*$/mu.exec(block);
   return m?.[1];
 }
 
@@ -172,7 +172,7 @@ export function parseFrontmatterModel(content: string): string | undefined {
  * agent file's frontmatter. Preserves all other content byte-for-byte.
  */
 export function setFrontmatterModel(content: string, model: string): string {
-  const fm = /^---\r?\n([\s\S]*?)\r?\n---(\r?\n?)/.exec(content);
+  const fm = /^---\r?\n([\s\S]*?)\r?\n---(\r?\n?)/u.exec(content);
   if (!fm) {
     if (!model) {
       return content;
@@ -181,7 +181,7 @@ export function setFrontmatterModel(content: string, model: string): string {
   }
   const [, fmBody, afterClosing] = fm;
   const rest = content.slice(fm[0].length);
-  const lines = fmBody.split(/\r?\n/);
+  const lines = fmBody.split(/\r?\n/u);
   const idx = lines.findIndex((l) => l.startsWith('model:'));
   if (model) {
     if (idx === -1) {
@@ -208,7 +208,7 @@ export function setConfigModelJsonc(text: string, agent: string, model: string):
     // jsonc-parser >= 3.3 throws when removing a non-existent path
     return text;
   }
-  const edits = modify(text, ['agent', agent, 'model'], model ? model : undefined, JSONC_OPTIONS);
+  const edits = modify(text, ['agent', agent, 'model'], model || undefined, JSONC_OPTIONS);
   return applyEdits(text, edits);
 }
 
@@ -276,23 +276,23 @@ export function createCodexAgentConfig(
 
 function readFile(path: string): Effect.Effect<string, CommandError> {
   return Effect.tryPromise({
+    catch: (error) => new CommandError({ command: `read ${path}`, message: String(error) }),
     try: async () => {
       const { readFile } = await import('node:fs/promises');
       return await readFile(path, 'utf-8');
     },
-    catch: (error) => new CommandError({ command: `read ${path}`, message: String(error) }),
   });
 }
 
 function writeFile(path: string, content: string): Effect.Effect<void, CommandError> {
   return Effect.tryPromise({
+    catch: (error) => new CommandError({ command: `write ${path}`, message: String(error) }),
     try: async () => {
       const { writeFile, mkdir } = await import('node:fs/promises');
       const { dirname } = await import('node:path');
       await mkdir(dirname(path), { recursive: true });
       await writeFile(path, content, 'utf-8');
     },
-    catch: (error) => new CommandError({ command: `write ${path}`, message: String(error) }),
   });
 }
 
@@ -332,23 +332,20 @@ function findOpenCodeConfigPath(level: ModelConfigLevel): Effect.Effect<string> 
 }
 
 const opencode: ModelConfigHandler = {
+  agents: MAESTRIA_AGENTS,
+  cli: 'opencode',
+  configLevels: ['global', 'project'],
   id: 'opencode',
   label: 'OpenCode',
-  cli: 'opencode',
-  agents: MAESTRIA_AGENTS,
-  configLevels: ['global', 'project'],
-  restartHint: 'Restart OpenCode (or reload the config) for the changes to take effect.',
-
   listModels: run('opencode', ['models'], 30_000).pipe(Effect.map(parseOpenCodeModels)),
-
   readCurrent: (level) =>
     findOpenCodeConfigPath(level).pipe(
       Effect.flatMap((path) => readFile(path).pipe(Effect.catchCause(() => Effect.succeed('')))),
       Effect.map(parseConfigModels),
     ),
-
+  restartHint: 'Restart OpenCode (or reload the config) for the changes to take effect.',
   write: (models, level) =>
-    Effect.gen(function* () {
+    Effect.gen(function* write() {
       const path = yield* findOpenCodeConfigPath(level);
       const text = yield* readFile(path).pipe(Effect.catchCause(() => Effect.succeed('{}')));
       let next = text;
@@ -362,7 +359,7 @@ const opencode: ModelConfigHandler = {
 // ── Codex custom-agent handler ─────────────────────────
 
 function codexHome(): string {
-  return process.env.CODEX_HOME?.trim() || `${homedir()}/.codex`;
+  return process.env.CODEX_HOME?.trim() ?? `${homedir()}/.codex`;
 }
 
 function codexAgentCandidates(level: ModelConfigLevel, agent: string): string[] {
@@ -373,20 +370,17 @@ function codexAgentCandidates(level: ModelConfigLevel, agent: string): string[] 
 function resolveCodexAgentPath(level: ModelConfigLevel, agent: string): Effect.Effect<string> {
   const candidates = codexAgentCandidates(level, agent);
   return Effect.all(candidates.map((path) => fileExists(path))).pipe(
-    Effect.map((exists) => candidates[exists.indexOf(true)] ?? candidates[0]!),
+    Effect.map((exists) => candidates[exists.indexOf(true)] ?? candidates[0]),
   );
 }
 
 const codex: ModelConfigHandler = {
+  agents: MAESTRIA_AGENTS,
+  cli: 'codex',
+  configLevels: ['global', 'project'],
   id: 'codex',
   label: 'Codex CLI',
-  cli: 'codex',
-  agents: MAESTRIA_AGENTS,
-  configLevels: ['global', 'project'],
-  restartHint: 'Start a new Codex session for the custom-agent configuration to take effect.',
-
   listModels: run('codex', ['debug', 'models'], 30_000).pipe(Effect.map(parseCodexModels)),
-
   readCurrent: (level) =>
     Effect.all(
       MAESTRIA_AGENTS.map((agent) =>
@@ -398,7 +392,7 @@ const codex: ModelConfigHandler = {
     ).pipe(
       Effect.map((contents) => {
         const result: AgentModels = {};
-        for (let i = 0; i < MAESTRIA_AGENTS.length; i++) {
+        for (let i = 0; i < MAESTRIA_AGENTS.length; i += 1) {
           const model = parseCodexAgentModel(contents[i] ?? '');
           if (model) {
             result[MAESTRIA_AGENTS[i]] = model;
@@ -407,9 +401,9 @@ const codex: ModelConfigHandler = {
         return result;
       }),
     ),
-
+  restartHint: 'Start a new Codex session for the custom-agent configuration to take effect.',
   write: (models, level) =>
-    Effect.gen(function* () {
+    Effect.gen(function* write() {
       for (const [agent, model] of Object.entries(models)) {
         const path = yield* resolveCodexAgentPath(level, agent);
         const exists = yield* fileExists(path);
@@ -441,7 +435,7 @@ function cursorConfigCli(): Effect.Effect<string | undefined> {
     const version = yield* run('agent', ['--version'], 3000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
     );
-    return /cursor/i.test(version) ? 'agent' : undefined;
+    return /cursor/iu.test(version) ? 'agent' : undefined;
   });
 }
 
@@ -530,19 +524,17 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
               ),
         ),
       )
-      .pipe(Effect.map((content) => ({ path: target, content })));
+      .pipe(Effect.map((content) => ({ content, path: target })));
   };
 
   return {
-    id: cfg.id,
-    label: cfg.label,
-    cli: cfg.cli,
     agents: MAESTRIA_AGENTS,
+    cli: cfg.cli,
     configLevels: ['global', 'project'],
-    restartHint: cfg.restartHint,
+    id: cfg.id,
     isAvailable: cfg.isAvailable,
+    label: cfg.label,
     listModels: cfg.listModels,
-
     readCurrent: (level) =>
       Effect.all(
         cfg.agents.map((a) =>
@@ -554,7 +546,7 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
       ).pipe(
         Effect.map((contents) => {
           const result: AgentModels = {};
-          for (let i = 0; i < cfg.agents.length; i++) {
+          for (let i = 0; i < cfg.agents.length; i += 1) {
             const model = parseFrontmatterModel(contents[i]);
             if (model) {
               result[cfg.agents[i] as AgentName] = model;
@@ -563,8 +555,9 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
           return result;
         }),
       ),
+    restartHint: cfg.restartHint,
     write: (models, level) =>
-      Effect.gen(function* () {
+      Effect.gen(function* write() {
         for (const [agent, model] of Object.entries(models)) {
           const { path, content } = yield* resolveAgent(level, agent);
           yield* writeFile(path, setFrontmatterModel(content, model ?? ''));
@@ -574,13 +567,13 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
 }
 
 const pi = createAgentFileHandler({
+  agents: MAESTRIA_AGENTS,
+  cli: 'pi',
+  globalDir: `${homedir()}/.pi/agent/agents`,
   id: 'pi',
   label: 'Pi',
-  cli: 'pi',
-  agents: MAESTRIA_AGENTS,
-  globalDir: `${homedir()}/.pi/agent/agents`,
-  projectDir: '.pi/agents',
   listModels: run('pi', ['--list-models'], 30_000).pipe(Effect.map(parsePiModels)),
+  projectDir: '.pi/agents',
   restartHint: 'Start a new Pi session for the changes to take effect.',
 });
 
@@ -599,13 +592,13 @@ const cursor = createAgentFileHandler({
 });
 
 const omp = createAgentFileHandler({
+  agents: MAESTRIA_AGENTS,
+  cli: 'omp',
+  globalDir: `${homedir()}/.omp/agent/agents`,
   id: 'omp',
   label: 'Oh My Pi',
-  cli: 'omp',
-  agents: MAESTRIA_AGENTS,
-  globalDir: `${homedir()}/.omp/agent/agents`,
-  projectDir: '.omp/agents',
   listModels: run('omp', ['models', '--json'], 30_000).pipe(Effect.map(parseOmpModels)),
+  projectDir: '.omp/agents',
   restartHint: 'Restart omp (or start a new session) for the changes to take effect.',
 });
 

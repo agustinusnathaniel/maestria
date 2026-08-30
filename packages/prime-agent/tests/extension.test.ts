@@ -44,16 +44,16 @@ function createFakePi(): FakePi {
     if (!handlers.has(event)) {
       handlers.set(event, []);
     }
-    handlers.get(event)!.push(handler as (event: unknown, ctx: unknown) => unknown);
+    handlers.get(event)!.push(handler);
   }) as ExtensionAPI['on'];
 
   const pi: ExtensionAPI = {
+    appendEntry(customType, data) {
+      entries.push({ customType, data });
+    },
     on,
     registerCommand(name, options) {
       commands.push({ name, options });
-    },
-    appendEntry(customType, data) {
-      entries.push({ customType, data });
     },
     sendUserMessage(content, options) {
       sentMessages.push({ content, options });
@@ -67,7 +67,7 @@ function createFakePi(): FakePi {
         throw new Error('no before_agent_start handler subscribed');
       }
       return (await handler(
-        { type: 'before_agent_start', prompt: 'p', systemPrompt },
+        { prompt: 'p', systemPrompt, type: 'before_agent_start' },
         {},
       )) as BeforeAgentStartEventResult | void;
     },
@@ -76,18 +76,18 @@ function createFakePi(): FakePi {
       if (!handler) {
         throw new Error('no session_start handler subscribed');
       }
-      return handler({ type: 'session_start', reason: 'startup' }, ctx);
+      return handler({ reason: 'startup', type: 'session_start' }, ctx);
     },
     async sessionTree(ctx: ExtensionContext): Promise<unknown> {
       const handler = handlers.get('session_tree')?.[0];
       if (!handler) {
         throw new Error('no session_tree handler subscribed');
       }
-      return handler({ type: 'session_tree', newLeafId: null, oldLeafId: null }, ctx);
+      return handler({ newLeafId: null, oldLeafId: null, type: 'session_tree' }, ctx);
     },
   };
 
-  return { pi, handlers, commands, entries, sentMessages, fire };
+  return { commands, entries, fire, handlers, pi, sentMessages };
 }
 
 function commandHandler(fake: FakePi, name: string) {
@@ -100,14 +100,14 @@ function commandHandler(fake: FakePi, name: string) {
 
 function branchContext(entries: SessionEntry[]): ExtensionContext {
   return {
-    ui: { notify: () => {}, setEditorText: () => {} },
-    hasUI: true,
     cwd: '/',
+    hasUI: true,
     sessionManager: {
       getBranch: () => entries,
       getEntries: () => entries,
     },
-  } as ExtensionContext;
+    ui: { notify: () => {}, setEditorText: () => {} },
+  };
 }
 
 /** Command-handler context with a fake UI, for invoking registered commands. */
@@ -125,12 +125,12 @@ function modeEntry(mode: 'fein' | 'sonar' | 'blitz' | null, timestamp: number): 
   // fork); readModeStateFromEntries only inspects type/customType/data, but
   // the fixture must satisfy the full shape to mirror a real session read.
   return {
-    type: 'custom',
+    customType: MODE_STATE_CUSTOM_TYPE,
+    data: { mode },
     id: `e-${timestamp}`,
     parentId: null,
     timestamp: String(timestamp),
-    customType: MODE_STATE_CUSTOM_TYPE,
-    data: { mode },
+    type: 'custom',
   };
 }
 
@@ -145,7 +145,7 @@ describe('prime-agent extension entry point', () => {
   it('subscribes to before_agent_start, session_start, and session_tree', () => {
     const fake = createFakePi();
     extension(fake.pi);
-    expect([...fake.handlers.keys()].sort()).toEqual([
+    expect([...fake.handlers.keys()].toSorted()).toEqual([
       'before_agent_start',
       'session_start',
       'session_tree',

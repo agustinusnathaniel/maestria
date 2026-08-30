@@ -9,11 +9,7 @@
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 export default {
-  source: '../core/agent-directives/specialists',
-  output: 'agents',
-
   default: {
-    stripFrontmatter: true,
     replace: [
       { from: '@adventurer', to: 'adventurer' },
       { from: '@architect', to: 'architect' },
@@ -25,8 +21,8 @@ export default {
       // omp has a built-in task tool, so task( stays as task( - no rewrite needed
       { from: '@orchestrator', to: 'orchestrator' },
     ],
+    stripFrontmatter: true,
   },
-
   files: {
     // --- omp agent types (7 specialists) ---
     // Read-only sonar roles omit bash; architect/diagnose retain bash for evidence gathering.
@@ -199,6 +195,7 @@ export default {
         '\n',
     },
   },
-
+  output: 'agents',
   preserve: ['.gitkeep'],
+  source: '../core/agent-directives/specialists',
 } satisfies SyncConfig;

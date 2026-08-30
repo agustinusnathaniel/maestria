@@ -1,10 +1,9 @@
 ---
-name: maestria-command-blitz
 description: "Fast implementation mode: skip optional ceremony for familiar low-risk work; required review and safety floors remain"
+name: maestria-command-blitz
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 [MODE: blitz]
 

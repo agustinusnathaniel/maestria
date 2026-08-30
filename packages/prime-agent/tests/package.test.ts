@@ -3,7 +3,6 @@ import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type {
   BeforeAgentStartEventResult,
   ExtensionAPI,
@@ -94,8 +93,8 @@ describe('prime-agent dependency boundary', () => {
   it('imports no pi package at runtime from src (types are local and erased)', async () => {
     const sources = await readSrcFiles();
     for (const source of sources) {
-      expect(source).not.toMatch(/from\s+['"]@earendil-works\/pi-coding-agent['"]/);
-      expect(source).not.toMatch(/from\s+['"]@earendil-works\/pi-(ai|agent-core|tui)['"]/);
+      expect(source).not.toMatch(/from\s+['"]@earendil-works\/pi-coding-agent['"]/u);
+      expect(source).not.toMatch(/from\s+['"]@earendil-works\/pi-(ai|agent-core|tui)['"]/u);
     }
   });
 
@@ -104,14 +103,16 @@ describe('prime-agent dependency boundary', () => {
     for (const source of sources) {
       // Only import specifiers matter; comments legitimately cite the upstream
       // source path for the evidence pin.
-      expect(source).not.toMatch(/from\s+['"][^'"]*src\/core\//);
+      expect(source).not.toMatch(/from\s+['"][^'"]*src\/core\//u);
     }
   });
 
   it('performs no filesystem writes from src (state rides on host session entries)', async () => {
     const sources = await readSrcFiles();
     for (const source of sources) {
-      expect(source).not.toMatch(/writeFile|appendFile|mkdir|createWriteStream|openSync|writeSync/);
+      expect(source).not.toMatch(
+        /writeFile|appendFile|mkdir|createWriteStream|openSync|writeSync/u,
+      );
     }
   });
 });
@@ -136,11 +137,11 @@ describe('prime-agent built extension artifact', () => {
     const mod = (await import(DIST_EXTENSION)) as { default: (pi: ExtensionAPI) => void };
     const commands: string[] = [];
     const pi: ExtensionAPI = {
+      appendEntry: () => {},
       on: () => {},
       registerCommand: (name) => {
         commands.push(name);
       },
-      appendEntry: () => {},
       sendUserMessage: () => {},
     };
     mod.default(pi);
@@ -159,14 +160,14 @@ describe('prime-agent built extension artifact', () => {
     const entries: { customType: string; data?: unknown }[] = [];
     const sentMessages: { content: string; options?: { deliverAs?: 'steer' | 'followUp' } }[] = [];
     const pi: ExtensionAPI = {
-      on: ((event, handler) => {
-        handlers.set(event, handler as (event: unknown, ctx: unknown) => unknown);
-      }) as ExtensionAPI['on'],
-      registerCommand: (name, options) => {
-        commands.push({ name, handler: options.handler });
-      },
       appendEntry: (customType, data) => {
         entries.push({ customType, data });
+      },
+      on: (event, handler) => {
+        handlers.set(event, handler as (event: unknown, ctx: unknown) => unknown);
+      },
+      registerCommand: (name, options) => {
+        commands.push({ handler: options.handler, name });
       },
       sendUserMessage: (content, options) => {
         sentMessages.push({ content, options });
@@ -199,7 +200,7 @@ describe('prime-agent built extension artifact', () => {
     const beforeAgentStart = handlers.get('before_agent_start');
     expect(beforeAgentStart).toBeDefined();
     const result = (await beforeAgentStart!(
-      { type: 'before_agent_start', prompt: 'implement the pipeline', systemPrompt: 'BASE' },
+      { prompt: 'implement the pipeline', systemPrompt: 'BASE', type: 'before_agent_start' },
       {},
     )) as BeforeAgentStartEventResult | void;
     const systemPrompt = (result as BeforeAgentStartEventResult | undefined)?.systemPrompt;

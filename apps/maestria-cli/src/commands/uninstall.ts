@@ -25,8 +25,8 @@ async function runUninstallAll(isQuiet: boolean): Promise<PlatformResult[]> {
       results.push({
         id: p.id,
         label: p.label,
-        ok: false,
         message: 'Platform definition not found. This is a bug.',
+        ok: false,
       } satisfies PlatformResult);
       continue;
     }
@@ -52,20 +52,20 @@ async function runUninstallInteractive(isQuiet: boolean): Promise<PlatformResult
   }
   const selected = await select({
     message: 'Which platform do you want to uninstall maestria for?',
-    options: installed.map((p) => ({ value: p.id, label: p.label })),
+    options: installed.map((p) => ({ label: p.label, value: p.id })),
   });
   if (isCancel(selected) || !selected) {
     cancel('Uninstall cancelled.');
     process.exit(130);
   }
-  const platform = getPlatform(String(selected));
+  const platform = getPlatform(selected);
   if (!platform) {
     return [
       {
-        id: String(selected),
-        label: String(selected),
-        ok: false,
+        id: selected,
+        label: selected,
         message: 'Platform definition not found. This is a bug.',
+        ok: false,
       } satisfies PlatformResult,
     ];
   }
@@ -73,46 +73,46 @@ async function runUninstallInteractive(isQuiet: boolean): Promise<PlatformResult
 }
 
 export const uninstallCommand = defineCommand({
-  meta: {
-    name: 'uninstall',
-    description: 'Uninstall maestria plugins for coding agent platforms',
-  },
   args: {
-    platform: {
-      type: 'positional',
-      description: `Platform to uninstall. One of: ${VALID_PLATFORMS.join(', ')}. Pass directly to skip interactive selection.`,
-      required: false,
-    },
     all: {
-      type: 'boolean',
-      description: 'Uninstall all installed platforms',
       alias: 'a',
       default: false,
-    },
-    json: {
+      description: 'Uninstall all installed platforms',
       type: 'boolean',
-      description:
-        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
-      default: false,
-    },
-    quiet: {
-      type: 'boolean',
-      description:
-        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
-      default: false,
     },
     compact: {
-      type: 'boolean',
-      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       default: false,
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
+      type: 'boolean',
+    },
+    json: {
+      default: false,
+      description:
+        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+      type: 'boolean',
+    },
+    platform: {
+      description: `Platform to uninstall. One of: ${VALID_PLATFORMS.join(', ')}. Pass directly to skip interactive selection.`,
+      required: false,
+      type: 'positional',
+    },
+    quiet: {
+      default: false,
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      type: 'boolean',
     },
   },
+  meta: {
+    description: 'Uninstall maestria plugins for coding agent platforms',
+    name: 'uninstall',
+  },
   run: async ({ args }) => {
-    const isQuiet = (args.quiet || args.compact) as boolean;
-    const isCompact = args.compact as boolean;
+    const isQuiet = args.quiet || args.compact;
+    const isCompact = args.compact;
     const results: PlatformResult[] = [];
     if (args.platform) {
-      const platform = getPlatform(args.platform as string);
+      const platform = getPlatform(args.platform);
       if (!platform) {
         console.error(`Unknown platform: ${args.platform}`);
         console.error(`Available: ${platforms.map((p) => p.id).join(', ')}`);
@@ -152,8 +152,8 @@ function uninstallOne(
       return {
         id: platform.id,
         label: platform.label,
-        ok: true,
         message: 'Uninstalled',
+        ok: true,
       } satisfies PlatformResult;
     }
 
@@ -161,8 +161,8 @@ function uninstallOne(
     return {
       id: platform.id,
       label: platform.label,
-      ok: false,
       message: errorMessage,
+      ok: false,
     } satisfies PlatformResult;
   });
 }

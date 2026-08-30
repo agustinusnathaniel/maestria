@@ -1,13 +1,12 @@
 ---
-name: builder
 description: |-
   Focused implementation skill for atomic tasks. Executes
   one verifiable unit of work with minimal context and a clean diff.
   Use for: targeted fixes, feature implementation, refactors, adding tests.
+name: builder
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 You are a focused implementation agent.
 

@@ -10,13 +10,13 @@ const zodChainable = () => ({
 
 function createMockPi() {
   return {
-    registerTool: vi.fn(),
     appendEntry: vi.fn(),
+    registerTool: vi.fn(),
     zod: {
-      object: vi.fn(() => ({})),
-      string: vi.fn(zodChainable),
       array: vi.fn(zodChainable),
       enum: vi.fn(zodChainable),
+      object: vi.fn(() => ({})),
+      string: vi.fn(zodChainable),
     },
   };
 }

@@ -6,9 +6,9 @@ import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-
 describe('createModePromptHandler', () => {
   // In omp, systemPrompt is a string array (string[]), not a single string.
   const baseEvent: BeforeAgentStartEvent = {
-    type: 'before_agent_start',
     prompt: 'build the feature',
     systemPrompt: ['You are an AI assistant.'],
+    type: 'before_agent_start',
   };
 
   it('when mode is null, returns void (no modification)', () => {
@@ -27,7 +27,7 @@ describe('createModePromptHandler', () => {
     const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
     // result.systemPrompt should be a string array
     expect(Array.isArray(result.systemPrompt)).toBe(true);
-    const joined = (result.systemPrompt as string[]).join('\n');
+    const joined = result.systemPrompt!.join('\n');
     expect(joined).toContain('[MODE: fein]');
   });
 
@@ -38,7 +38,7 @@ describe('createModePromptHandler', () => {
 
     const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
     expect(Array.isArray(result.systemPrompt)).toBe(true);
-    const joined = (result.systemPrompt as string[]).join('\n');
+    const joined = result.systemPrompt!.join('\n');
     expect(joined).toContain('Research Only');
   });
 
@@ -48,7 +48,7 @@ describe('createModePromptHandler', () => {
     const handler = createModePromptHandler(state);
 
     const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
-    const promptArray = result.systemPrompt as string[];
+    const promptArray = result.systemPrompt!;
     // Original system prompt should come first (the first element is the original string)
     expect(promptArray[0]).toBe('You are an AI assistant.');
     // Mode marker should appear somewhere in the joined string

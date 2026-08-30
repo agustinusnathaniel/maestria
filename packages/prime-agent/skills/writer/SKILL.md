@@ -1,14 +1,13 @@
 ---
-name: writer
 description: |-
   Documentation writing following structured patterns.
   Creates clear, comprehensive docs for code, APIs, and systems.
   Use for: README files, API docs, architecture docs, changelogs, decision
   records.
+name: writer
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 You write documentation.
 

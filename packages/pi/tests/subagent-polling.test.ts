@@ -9,7 +9,7 @@ function service(getRecord: (id: string) => SubagentRecord | undefined) {
 
 describe('pollSubagentEffect', () => {
   it('returns a terminal record without waiting', async () => {
-    const record = { status: 'completed', result: 'done' };
+    const record = { result: 'done', status: 'completed' };
 
     await expect(
       Effect.runPromise(
@@ -45,11 +45,11 @@ describe('pollSubagentEffect', () => {
     const pending = Effect.runPromise(
       pollSubagentEffect({
         id: 'subagent-aborted',
+        intervalMs: 5,
         label: 'builder',
         sendUpdates: false,
         service: service(() => ({ status: 'running' })),
         signal: controller.signal,
-        intervalMs: 5,
       }),
     );
 
@@ -67,10 +67,10 @@ describe('pollSubagentEffect', () => {
       Effect.runPromise(
         pollSubagentEffect({
           id: 'subagent-timeout',
+          intervalMs: 1,
           label: 'builder',
           sendUpdates: false,
           service: service(() => ({ status: 'running' })),
-          intervalMs: 1,
           timeoutMs: 2,
         }),
       ),

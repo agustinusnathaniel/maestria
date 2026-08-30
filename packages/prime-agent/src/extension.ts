@@ -19,8 +19,7 @@
 // sandbox/enforcement claim is made. This extension writes no files (no
 // `~/.pi`, no `.prime/agent` writes): state rides on host session entries.
 
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import type { ExtensionAPI } from './pi-api.js';
 import { createInitialState, restoreModeState } from './state.js';
 import { createModePromptHandler, installCommands } from './modes.js';

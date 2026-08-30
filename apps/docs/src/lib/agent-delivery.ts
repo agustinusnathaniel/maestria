@@ -80,7 +80,7 @@ export function markdownTwinPath(pathname: string): string {
     path = `/${path}`;
   }
   if (path.length > 1 && path.endsWith('/')) {
-    path = path.replace(/\/+$/, '');
+    path = path.replace(/\/+$/u, '');
   }
   if (path.length > 1 && path.toLowerCase().endsWith('.html')) {
     path = path.slice(0, -'.html'.length);

@@ -156,11 +156,11 @@ describe('stripKeyword', () => {
     index: number,
   ): ModeResult {
     return {
-      mode,
-      keyword,
       index,
-      prompt: getModePrompt(mode),
+      keyword,
       marker: getModeMarker(mode),
+      mode,
+      prompt: getModePrompt(mode),
     };
   }
 
@@ -241,7 +241,7 @@ describe('MaestriaPlugin config validation', () => {
       MaestriaPlugin({} as never, {
         modes: { disabledKeywords: ['invalid'] as any },
       }),
-    ).rejects.toThrow(/Invalid option: expected one of \\"fein\\"\|\\"sonar\\"\|\\"blitz\\"/);
+    ).rejects.toThrow(/Invalid option: expected one of \\"fein\\"\|\\"sonar\\"\|\\"blitz\\"/u);
   });
 
   it('accepts valid config with disabled keywords', async () => {
@@ -297,21 +297,21 @@ describe('MaestriaPlugin chat.message hook', () => {
     });
     const hook = (plugin as any)['chat.message'];
 
-    const input = { sessionID: 's1', agent: 'orchestrator' };
+    const input = { agent: 'orchestrator', sessionID: 's1' };
     const textPart = {
       id: 'p1',
-      sessionID: 's1',
       messageID: 'm1',
-      type: 'text',
+      sessionID: 's1',
       text: 'build this feature',
+      type: 'text',
     };
     const output = {
       message: {
-        id: 'm1',
-        sessionID: 's1',
-        role: 'user',
-        time: { created: 1 },
         agent: 'orchestrator',
+        id: 'm1',
+        role: 'user',
+        sessionID: 's1',
+        time: { created: 1 },
       },
       parts: [textPart],
     };
@@ -328,21 +328,21 @@ describe('MaestriaPlugin chat.message hook', () => {
     });
     const hook = (plugin as any)['chat.message'];
 
-    const input = { sessionID: 's1', agent: 'orchestrator' };
+    const input = { agent: 'orchestrator', sessionID: 's1' };
     const textPart = {
       id: 'p1',
-      sessionID: 's1',
       messageID: 'm1',
-      type: 'text',
+      sessionID: 's1',
       text: 'fein build this',
+      type: 'text',
     };
     const output = {
       message: {
-        id: 'm1',
-        sessionID: 's1',
-        role: 'user',
-        time: { created: 1 },
         agent: 'orchestrator',
+        id: 'm1',
+        role: 'user',
+        sessionID: 's1',
+        time: { created: 1 },
       },
       parts: [textPart],
     };
@@ -367,21 +367,21 @@ describe('MaestriaPlugin chat.message hook', () => {
     const plugin = await MaestriaPlugin({} as never);
     const hook = (plugin as any)['chat.message'];
 
-    const input = { sessionID: 's1', agent: 'orchestrator' };
+    const input = { agent: 'orchestrator', sessionID: 's1' };
     const textPart = {
       id: 'p1',
-      sessionID: 's1',
       messageID: 'm1',
-      type: 'text',
+      sessionID: 's1',
       text: 'sonar research only',
+      type: 'text',
     };
     const output = {
       message: {
-        id: 'm1',
-        sessionID: 's1',
-        role: 'user',
-        time: { created: 1 },
         agent: 'orchestrator',
+        id: 'm1',
+        role: 'user',
+        sessionID: 's1',
+        time: { created: 1 },
       },
       parts: [textPart],
     };
@@ -397,16 +397,16 @@ describe('MaestriaPlugin chat.message hook', () => {
     const plugin = await MaestriaPlugin({} as never);
     const hook = (plugin as any)['chat.message'];
 
-    const input = { sessionID: 's1', agent: 'builder' };
+    const input = { agent: 'builder', sessionID: 's1' };
     const textPart = {
       id: 'p1',
-      sessionID: 's1',
       messageID: 'm1',
-      type: 'text',
+      sessionID: 's1',
       text: 'fein build this',
+      type: 'text',
     };
     const output = {
-      message: { id: 'm1', sessionID: 's1', role: 'user', time: { created: 1 }, agent: 'builder' },
+      message: { agent: 'builder', id: 'm1', role: 'user', sessionID: 's1', time: { created: 1 } },
       parts: [textPart],
     };
 
@@ -420,15 +420,15 @@ describe('MaestriaPlugin chat.message hook', () => {
     const plugin = await MaestriaPlugin({} as never);
     const hook = (plugin as any)['chat.message'];
 
-    const input = { sessionID: 's1', agent: 'orchestrator' };
-    const textPart = { id: 'p1', sessionID: 's1', messageID: 'm1', type: 'text', text: 'fein' };
+    const input = { agent: 'orchestrator', sessionID: 's1' };
+    const textPart = { id: 'p1', messageID: 'm1', sessionID: 's1', text: 'fein', type: 'text' };
     const output = {
       message: {
-        id: 'm1',
-        sessionID: 's1',
-        role: 'user',
-        time: { created: 1 },
         agent: 'orchestrator',
+        id: 'm1',
+        role: 'user',
+        sessionID: 's1',
+        time: { created: 1 },
       },
       parts: [textPart],
     };
@@ -458,16 +458,16 @@ async function createHook(disabledKeywords?: string[]) {
 function createMockMessage(text: string, agent = 'orchestrator') {
   const id = crypto.randomUUID();
   return {
-    input: { sessionID: 'test-session', agent, messageID: id },
+    input: { agent, messageID: id, sessionID: 'test-session' },
     output: {
       message: {
-        id,
-        sessionID: 'test-session',
-        role: 'user' as const,
         agent,
+        id,
+        role: 'user' as const,
+        sessionID: 'test-session',
         time: { created: Date.now() },
       },
-      parts: [{ id, sessionID: 'test-session', messageID: id, type: 'text' as const, text }],
+      parts: [{ id, messageID: id, sessionID: 'test-session', text, type: 'text' as const }],
     },
   };
 }

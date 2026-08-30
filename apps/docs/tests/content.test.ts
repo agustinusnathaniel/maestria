@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { RECOVERY_LINKS } from '@/lib/agent-delivery.ts';
@@ -10,7 +9,7 @@ const DOCS_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
 
 /** Strip a leading YAML frontmatter block, returning only the markdown body. */
 function stripFrontmatter(text: string): string {
-  const lines = text.split(/\r?\n/);
+  const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     return text;
   }
@@ -23,7 +22,7 @@ function stripFrontmatter(text: string): string {
 
 async function readDoc(name: string): Promise<{ full: string; body: string }> {
   const full = await readFile(path.join(DOCS_ROOT, name), 'utf-8');
-  return { full, body: stripFrontmatter(full) };
+  return { body: stripFrontmatter(full), full };
 }
 
 describe('trust anchor pages', () => {
@@ -97,7 +96,7 @@ describe('shipped content hygiene', () => {
     '%s has no placeholder or debug markers',
     async (name) => {
       const { full } = await readDoc(name);
-      expect(full).not.toMatch(/TODO|FIXME|Lorem ipsum/i);
+      expect(full).not.toMatch(/TODO|FIXME|Lorem ipsum/iu);
     },
   );
 });

@@ -45,8 +45,8 @@ function handleSingleDispatch(
   return {
     content: [
       {
-        type: 'text' as const,
         text: `## Delegation: ${params.agent}\n\nUse the native \`task\` tool to dispatch:\n\`\`\`\ntask(agent: "${params.agent}", task: """${params.task}""")\n\`\`\``,
+        type: 'text' as const,
       },
     ],
   };
@@ -63,7 +63,7 @@ function handleMultiDispatch(
   const parts = [
     `## ${params.mode === 'parallel' ? 'Parallel' : 'Chain'} Dispatch Plan (${params.tasks.length} tasks)\n`,
   ];
-  for (let i = 0; i < params.tasks.length; i++) {
+  for (let i = 0; i < params.tasks.length; i += 1) {
     parts.push(
       `### ${i + 1}: ${params.tasks[i].agent}`,
       `\`task(agent: "${params.tasks[i].agent}", task: """${params.tasks[i].task}""")\``,
@@ -72,7 +72,7 @@ function handleMultiDispatch(
       parts.push('Previous result available via {previous} placeholder.');
     }
   }
-  return { content: [{ type: 'text' as const, text: parts.join('\n\n') }] };
+  return { content: [{ text: parts.join('\n\n'), type: 'text' as const }] };
 }
 
 export function installSubagentTool(
@@ -81,27 +81,9 @@ export function installSubagentTool(
   _cleanups?: (() => void)[],
 ): void {
   (pi.registerTool as any)({
-    name: 'maestria_subagent',
-    label: 'Maestria Subagent',
     description:
       'Dispatch a task to a maestria specialist subagent (adventurer, architect, builder, diagnose, planner, reviewer, writer). Uses omp native task tool.',
-    parameters: pi.zod.object({
-      agent: pi.zod
-        .string()
-        .describe(
-          'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
-        ),
-      task: pi.zod.string().describe('Task description for the subagent (required)'),
-      tasks: pi.zod
-        .array(pi.zod.object({ agent: pi.zod.string(), task: pi.zod.string() }))
-        .describe('Array of task objects for parallel or chain dispatch')
-        .optional(),
-      mode: pi.zod
-        .enum(['parallel', 'chain', 'single'])
-        .describe('Dispatch mode: single (default), parallel, or chain')
-        .optional(),
-    }),
-    async execute(
+    execute(
       _toolCallId: string,
       params: {
         agent?: string;
@@ -117,8 +99,8 @@ export function installSubagentTool(
         return {
           content: [
             {
-              type: 'text' as const,
               text: 'Subagent dispatch is not available during review mode. Use /restore-model to exit review mode first.',
+              type: 'text' as const,
             },
           ],
         };
@@ -129,10 +111,28 @@ export function installSubagentTool(
         return handleSingleDispatch(pi, state, params as { agent: string; task: string });
       }
       return handleMultiDispatch(pi, state, {
+        mode: mode,
         tasks: params.tasks!,
-        mode: mode as 'parallel' | 'chain',
       });
     },
+    label: 'Maestria Subagent',
+    name: 'maestria_subagent',
+    parameters: pi.zod.object({
+      agent: pi.zod
+        .string()
+        .describe(
+          'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
+        ),
+      mode: pi.zod
+        .enum(['parallel', 'chain', 'single'])
+        .describe('Dispatch mode: single (default), parallel, or chain')
+        .optional(),
+      task: pi.zod.string().describe('Task description for the subagent (required)'),
+      tasks: pi.zod
+        .array(pi.zod.object({ agent: pi.zod.string(), task: pi.zod.string() }))
+        .describe('Array of task objects for parallel or chain dispatch')
+        .optional(),
+    }),
   });
 
   // No subagent lifecycle event subscriptions needed - omp's built-in task tool

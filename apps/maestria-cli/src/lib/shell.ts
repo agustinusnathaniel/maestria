@@ -42,13 +42,6 @@ export function run(
   cwd?: string,
 ): Effect.Effect<string, CommandError> {
   return Effect.tryPromise({
-    try: async () => {
-      const { execFile } = await import('node:child_process');
-      const { promisify } = await import('node:util');
-      const execFileAsync = promisify(execFile);
-      const { stdout } = await execFileAsync(cmd, args, { timeout: timeoutMs, cwd });
-      return stdout.trim();
-    },
     catch: (error) => {
       const err = error as Error & { stderr?: string; code?: number; signal?: string };
       const stderr = err.stderr?.trim() ?? '';
@@ -58,31 +51,38 @@ export function run(
         message,
       });
     },
+    try: async () => {
+      const { execFile } = await import('node:child_process');
+      const { promisify } = await import('node:util');
+      const execFileAsync = promisify(execFile);
+      const { stdout } = await execFileAsync(cmd, args, { cwd, timeout: timeoutMs });
+      return stdout.trim();
+    },
   });
 }
 
 export function readTextFile(filePath: string): Effect.Effect<string, CommandError> {
   return Effect.tryPromise({
-    try: async () => {
-      const { readFile } = await import('node:fs/promises');
-      return await readFile(filePath, 'utf-8');
-    },
     catch: (error) =>
       new CommandError({
         command: `read ${filePath}`,
         message: String(error),
       }),
+    try: async () => {
+      const { readFile } = await import('node:fs/promises');
+      return await readFile(filePath, 'utf-8');
+    },
   });
 }
 
 export function fileExists(filePath: string): Effect.Effect<boolean> {
   return Effect.tryPromise({
+    catch: () => false,
     try: async () => {
       const { access } = await import('node:fs/promises');
       await access(filePath);
       return true;
     },
-    catch: () => false,
   }).pipe(Effect.catchCause(() => Effect.succeed(false)));
 }
 
@@ -109,6 +109,9 @@ export function npmViewVersion(pkg: string): Effect.Effect<string> {
 
   const updateCache = (version: string): Effect.Effect<void> =>
     Effect.tryPromise({
+      catch: () => {
+        /* empty */
+      },
       try: async () => {
         const { mkdir, readFile, writeFile } = await import('node:fs/promises');
         await mkdir(getMaestriaCacheDir(), { recursive: true });
@@ -122,7 +125,6 @@ export function npmViewVersion(pkg: string): Effect.Effect<string> {
         cache[pkg] = { version };
         await writeFile(getVersionCacheFile(), JSON.stringify(cache));
       },
-      catch: () => {},
     }).pipe(Effect.catchCause(() => Effect.void));
 
   return Effect.gen(function* () {
@@ -149,11 +151,13 @@ export function invalidateVersionCache(pkg: string): Effect.Effect<void> {
           const cache = JSON.parse(out);
           delete cache[pkg];
           return Effect.tryPromise({
+            catch: () => {
+              /* empty */
+            },
             try: async () => {
               const { writeFile } = await import('node:fs/promises');
               await writeFile(getVersionCacheFile(), JSON.stringify(cache));
             },
-            catch: () => {},
           });
         } catch {
           return Effect.void;

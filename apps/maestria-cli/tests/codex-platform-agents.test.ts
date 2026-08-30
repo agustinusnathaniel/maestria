@@ -59,7 +59,7 @@ describe('Codex managed native agents', () => {
       const installedInstructions = await readFile(join(codexHome, 'AGENTS.md'), 'utf-8');
       expect(installedInstructions).toContain('# Existing instructions');
       expect(installedInstructions).toContain('maestria:codex-orchestrator:start');
-      expect(installedInstructions.match(/maestria:codex-orchestrator:start/g)).toHaveLength(1);
+      expect(installedInstructions.match(/maestria:codex-orchestrator:start/gu)).toHaveLength(1);
       expect(await readFile(join(codexHome, '.maestria-agents.json'), 'utf-8')).toContain(
         '"instructionsFile": "AGENTS.md"',
       );
@@ -113,7 +113,7 @@ describe('Codex managed native agents', () => {
       } else {
         process.env.CODEX_HOME = previousHome;
       }
-      await rm(root, { recursive: true, force: true });
+      await rm(root, { force: true, recursive: true });
     }
   });
 
@@ -160,7 +160,7 @@ describe('Codex managed native agents', () => {
       } else {
         process.env.CODEX_HOME = previousHome;
       }
-      await rm(root, { recursive: true, force: true });
+      await rm(root, { force: true, recursive: true });
     }
   });
 });

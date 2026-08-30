@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
@@ -47,7 +46,7 @@ async function pathExists(absolutePath: string): Promise<boolean> {
 }
 
 function parseFrontmatter(text: string): { data: Record<string, unknown>; body: string } {
-  const lines = text.split(/\r?\n/);
+  const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
@@ -57,8 +56,8 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   }
   const yamlText = lines.slice(1, close).join('\n').trim();
   const data: Record<string, unknown> = {};
-  for (const line of yamlText.split(/\r?\n/)) {
-    const m = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
+  for (const line of yamlText.split(/\r?\n/u)) {
+    const m = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/u.exec(line);
     if (m === null) {
       continue;
     }
@@ -81,7 +80,7 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
     }
   }
   const body = lines.slice(close + 1).join('\n');
-  return { data, body };
+  return { body, data };
 }
 
 describe('.cursor-plugin/plugin.json', () => {
@@ -128,13 +127,13 @@ describe('agents directory', () => {
   it('reviewer agent forbids edits near the top', async () => {
     const text = await readFile(path.join(PACKAGE_ROOT, 'agents', 'reviewer.md'), 'utf-8');
     const head = text.slice(0, 1500);
-    expect(head).toMatch(/do \*\*not\*\* use Write|do not edit|Checker only/i);
+    expect(head).toMatch(/do \*\*not\*\* use Write|do not edit|Checker only/iu);
   });
 
   it('adventurer agent is read-only near the top', async () => {
     const text = await readFile(path.join(PACKAGE_ROOT, 'agents', 'adventurer.md'), 'utf-8');
     const head = text.slice(0, 1500);
-    expect(head).toMatch(/Read-only/i);
+    expect(head).toMatch(/Read-only/iu);
   });
 });
 
@@ -168,7 +167,7 @@ describe('skills/orchestrator', () => {
     expect(text).toContain('Runtime Authority');
     expect(text).toContain('direct work is available');
     expect(text).not.toContain('Never implement routed code changes yourself');
-    expect(text).not.toMatch(/pure dispatcher/i);
+    expect(text).not.toMatch(/pure dispatcher/iu);
   });
 });
 

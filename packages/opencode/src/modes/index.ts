@@ -24,11 +24,11 @@ export function detectMode(text: string, disabled?: Set<string>): ModeResult | n
     return null;
   }
   return {
-    mode: pure.mode,
-    keyword: pure.keyword,
     index: pure.index,
-    prompt: MODE_PROMPTS[pure.mode],
+    keyword: pure.keyword,
     marker: MODE_MARKERS[pure.mode],
+    mode: pure.mode,
+    prompt: MODE_PROMPTS[pure.mode],
   };
 }
 

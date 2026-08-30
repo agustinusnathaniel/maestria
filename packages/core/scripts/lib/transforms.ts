@@ -5,7 +5,7 @@ import type { ReplaceOp } from './config.js';
 
 // ── Constants ──
 
-export const FRONTMATTER_RE = /^---[\s\S]*?\n---\n*/;
+export const FRONTMATTER_RE = /^---[\s\S]*?\n---\n*/u;
 
 // ── Transforms ──
 
@@ -35,7 +35,7 @@ export function serializeFrontmatter(data: Record<string, unknown> | string | nu
 }
 
 export function stripSourceComment(content: string): string {
-  return content.replace(/^<!--\s*Source:\s*[^\n]*-->\n?/, '');
+  return content.replace(/^<!--\s*Source:\s*[^\n]*-->\n?/u, '');
 }
 
 export function normalizeLineEndings(content: string): string {

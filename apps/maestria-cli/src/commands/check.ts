@@ -50,10 +50,10 @@ async function handleCheckSingle(
   const status = await Effect.runPromise(detectSingle(platformId));
   if (!status.available) {
     const result = {
-      platform: platformId,
       available: false,
-      pluginInstalled: false,
       message: `CLI tool for ${platform.label} is not available on this machine`,
+      platform: platformId,
+      pluginInstalled: false,
     };
     if (args.json) {
       console.log(JSON.stringify(result));
@@ -64,11 +64,11 @@ async function handleCheckSingle(
   }
   if (!status.installed) {
     const result = {
-      platform: platformId,
       available: true,
-      pluginInstalled: false,
-      message: `@maestria/${platformId} is not installed for ${platform.label}`,
       installedVersion: status.installedVersion,
+      message: `@maestria/${platformId} is not installed for ${platform.label}`,
+      platform: platformId,
+      pluginInstalled: false,
     };
     if (args.json) {
       console.log(JSON.stringify(result));
@@ -79,12 +79,12 @@ async function handleCheckSingle(
   }
   const freshness = freshnessOf(status.installedVersion, status.latestVersion);
   const result = {
-    platform: platformId,
     available: true,
-    pluginInstalled: true,
     installedVersion: status.installedVersion,
     latestVersion: status.latestVersion || undefined,
     outdated: freshness === 'outdated',
+    platform: platformId,
+    pluginInstalled: true,
   };
   if (args.json) {
     console.log(JSON.stringify(result));
@@ -101,37 +101,37 @@ async function handleCheckSingle(
 }
 
 export const checkCommand = defineCommand({
-  meta: {
-    name: 'check',
-    description:
-      'Check installation status of a maestria plugin on a specific platform and detect outdated installs',
-  },
   args: {
-    platform: {
-      type: 'positional',
-      description: `Platform to check (${VALID_PLATFORMS.join(', ')}).`,
-      required: false,
-    },
     all: {
-      type: 'boolean',
-      description: 'Check all detected platforms at once',
       alias: 'a',
       default: false,
+      description: 'Check all detected platforms at once',
+      type: 'boolean',
     },
     json: {
-      type: 'boolean',
+      default: false,
       description:
         'Output as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
-      default: false,
+      type: 'boolean',
+    },
+    platform: {
+      description: `Platform to check (${VALID_PLATFORMS.join(', ')}).`,
+      required: false,
+      type: 'positional',
     },
     quiet: {
-      type: 'boolean',
-      description: 'Suppress non-essential output. Exit code is the signal.',
       default: false,
+      description: 'Suppress non-essential output. Exit code is the signal.',
+      type: 'boolean',
     },
   },
+  meta: {
+    description:
+      'Check installation status of a maestria plugin on a specific platform and detect outdated installs',
+    name: 'check',
+  },
   run: async ({ args }) => {
-    const platformId = args.platform as string | undefined;
+    const platformId = args.platform;
     if (args.all && platformId) {
       if (!args.quiet) {
         console.error('Cannot use --all with a specific platform. Choose one.');

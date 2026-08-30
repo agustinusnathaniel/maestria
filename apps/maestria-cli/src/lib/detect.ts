@@ -34,11 +34,11 @@ function detectOne(platform: PlatformHandler): Effect.Effect<PlatformStatus> {
     }
 
     return {
-      id: platform.id,
-      label: platform.label,
       available,
+      id: platform.id,
       installed,
       installedVersion,
+      label: platform.label,
       latestVersion,
     };
   });
@@ -51,11 +51,11 @@ export function detectSingle(platformId: string): Effect.Effect<PlatformStatus> 
   const handler = getPlatform(platformId);
   if (!handler) {
     return Effect.succeed({
-      id: platformId,
-      label: platformId,
       available: false,
+      id: platformId,
       installed: false,
       installedVersion: '',
+      label: platformId,
       latestVersion: '',
     });
   }

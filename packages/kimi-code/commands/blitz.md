@@ -3,9 +3,6 @@ name: blitz
 description: 'Fast implementation mode: skip optional recon/design unless unknown; required review remains'
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
-
 **Workflow command:** use the fastest safe route allowed by the active Kimi profile, while retaining required review.
 
 [MODE: blitz]

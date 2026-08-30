@@ -22,8 +22,8 @@ export function installOne(
       return {
         id: platform.id,
         label: platform.label,
-        ok: true,
         message: 'Installed',
+        ok: true,
       } satisfies PlatformResult;
     }
 
@@ -31,8 +31,8 @@ export function installOne(
     return {
       id: platform.id,
       label: platform.label,
-      ok: false,
       message: errorMessage,
+      ok: false,
     } satisfies PlatformResult;
   });
 }

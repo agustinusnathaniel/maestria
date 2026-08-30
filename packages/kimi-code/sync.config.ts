@@ -4,9 +4,6 @@
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 export default {
-  source: '../core/agent-directives/specialists',
-  output: 'skills',
-
   default: {
     replace: [
       { from: '@adventurer', to: 'adventurer' },
@@ -34,135 +31,116 @@ export default {
       { from: 'run in parallel', to: 'run in parallel via `AgentSwarm`' },
     ],
   },
-
   files: {
     'adventurer.md': {
-      output: 'adventurer/SKILL.md',
-      prepend:
-        '**Subagent profile:** `explore` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
       frontmatter: {
-        name: 'adventurer',
+        arguments: [],
         description: `Codebase reconnaissance agent for deep code understanding.
 Maps unknown territory - traces call chains, maps module relationships,
 generates structured reports for downstream specialists.
 Use for: understanding unfamiliar code, tracing dependencies, gathering
 context before implementation, investigating module structures.
 One role per session: exploration only - never implement or design.`,
+        name: 'adventurer',
         type: 'prompt',
         whenToUse: `Understanding unfamiliar code, tracing dependencies, mapping a module
 before editing it. Use before any implementation in unknown territory.
 Read-only - never implement, design, or edit.`,
-        arguments: [],
       },
+      output: 'adventurer/SKILL.md',
+      prepend:
+        '**Subagent profile:** `explore` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.\n\n',
     },
     'architect.md': {
-      output: 'architect/SKILL.md',
-      prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
       frontmatter: {
-        name: 'architect',
+        arguments: [],
         description: `Architecture decisions using decision matrices and ADRs.
 Evaluates options with weighted criteria, clarifies business context first.
 Use for: technology choices, implementation approaches, trade-off analysis.`,
+        name: 'architect',
         type: 'prompt',
         whenToUse: `Technology choices, comparing approaches, "should we use X or Y",
 evaluating options with long-term consequences. Use when more than
 one approach is viable and the choice has downstream impact.`,
-        arguments: [],
       },
+      output: 'architect/SKILL.md',
+      prepend:
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
     },
     'builder.md': {
-      output: 'builder/SKILL.md',
-      prepend:
-        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to implement the task.\n\n',
       frontmatter: {
-        name: 'builder',
+        arguments: [],
         description: `Focused implementation agent for atomic tasks.
 Executes one verifiable unit of work with minimal context.
 Use for: targeted fixes, feature implementation, refactors, adding tests.`,
+        name: 'builder',
         type: 'prompt',
         whenToUse: `Feature implementation, bug fixing, test writing, refactoring within a
 single task scope. Use when the design is clear, recon is done, and the
 work is a concrete atomic unit.`,
-        arguments: [],
       },
+      output: 'builder/SKILL.md',
+      prepend:
+        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to implement the task.\n\n',
+    },
+    'commands/blitz.md': {
+      frontmatter:
+        "---\nname: blitz\ndescription: 'Fast implementation mode: skip optional recon/design unless unknown; required review remains'\n---\n",
+      output: '../commands/blitz.md',
+      prepend:
+        '**Workflow command:** use the fastest safe route allowed by the active Kimi profile, while retaining required review.\n\n',
+      replace: [
+        { from: '@adventurer', to: 'adventurer' },
+        { from: '@builder', to: 'builder' },
+        { from: '@reviewer', to: 'reviewer' },
+      ],
+      stripFrontmatter: true,
+    },
+    'commands/fein.md': {
+      frontmatter:
+        "---\nname: fein\ndescription: 'Full pipeline mode: recon, design, implement, review'\n---\n",
+      output: '../commands/fein.md',
+      prepend:
+        '**Workflow command:** use the Kimi Agent and its native Agent/AgentSwarm tools as permitted by the active profile.\n\n',
+      replace: [
+        { from: '@adventurer', to: 'adventurer' },
+        { from: '@architect', to: 'architect' },
+        { from: '@builder', to: 'builder' },
+        { from: '@planner', to: 'planner' },
+        { from: '@reviewer', to: 'reviewer' },
+      ],
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      frontmatter:
+        "---\nname: sonar\ndescription: 'Research-only mode: recon and design, no implementation'\n---\n",
+      output: '../commands/sonar.md',
+      prepend:
+        '**Workflow command:** keep this route read-only and stop before implementation.\n\n',
+      replace: [
+        { from: '@adventurer', to: 'adventurer' },
+        { from: '@architect', to: 'architect' },
+        { from: '@planner', to: 'planner' },
+      ],
+      stripFrontmatter: true,
     },
     'diagnose.md': {
-      output: 'diagnose/SKILL.md',
-      prepend:
-        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to investigate.\n\n',
       frontmatter: {
-        name: 'diagnose',
+        arguments: [],
         description: `Systematic 6-step regression tracing.
 From error message to root cause to prevention.
 Use for: cryptic errors, regressions, production bugs.`,
+        name: 'diagnose',
         type: 'prompt',
         whenToUse: `Regressions, cryptic errors, performance issues, "why is X happening",
 post-incident work. Use when the symptom is visible but the cause is
 not.`,
-        arguments: [],
       },
-    },
-    'planner.md': {
-      output: 'planner/SKILL.md',
+      output: 'diagnose/SKILL.md',
       prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
-      frontmatter: {
-        name: 'planner',
-        description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
-Breaks down complex features into verifiable milestones.
-Use for: complex features requiring multi-phase execution, when the plan needs review before building.`,
-        type: 'prompt',
-        whenToUse: `Multi-phase features requiring ordered work, migrations, rollouts, or
-any complex feature that needs review before building.`,
-        arguments: [],
-      },
-    },
-    'reviewer.md': {
-      output: 'reviewer/SKILL.md',
-      prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
-      frontmatter: {
-        name: 'reviewer',
-        description: `Code review with quality gates.
-Reviews code for correctness, edge cases, security, performance, maintainability,
-and adherence to conventions. Provides specific, actionable feedback.
-Use for: PR review, pre-commit review, architecture document review.`,
-        type: 'prompt',
-        whenToUse: `Pre-merge review, post-implementation validation, security audits,
-before-commit QA. In full routes, review after the integrated builder batch is
-reconciled; run the general review first, then risk-matched lenses sequentially.`,
-        arguments: [],
-      },
-    },
-    'writer.md': {
-      output: 'writer/SKILL.md',
-      prepend:
-        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to produce docs.\n\n',
-      frontmatter: {
-        name: 'writer',
-        description: `Documentation writing following structured patterns.
-Creates clear, comprehensive docs for code, APIs, systems.
-Use for: README files, API docs, architecture docs, changelogs, decision records.`,
-        type: 'prompt',
-        whenToUse: `"Document this", "write README", "ADR", "changelog", "API docs",
-"explain in prose". Turning code into human-readable artifacts.`,
-        arguments: [],
-      },
+        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to investigate.\n\n',
     },
     'orchestrator.md': {
-      output: 'orchestrator/SKILL.md',
-      prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, FetchURL, and WebSearch. You do **not** have Bash, Write, or Edit.\n\n',
-      frontmatter: {
-        name: 'orchestrator',
-        description: 'Methodology + delegation + swarm usage for the maestria workflow',
-        type: 'prompt',
-        whenToUse: `Multi-step or multi-file work, or any task spanning N≥3 independent items.
-Also: implementation planning, code review, debugging sessions, architecture
-decisions, and documentation generation under the maestria workflow.`,
-        arguments: [],
-      },
       append: `
 
 ## Specialist → Subagent Routing
@@ -305,48 +283,50 @@ To compact the conversation for transfer, output:
 
 This should appear at the end of your response when the user asks for a handoff, or when context pressure requires a fresh agent.
 `,
-    },
-
-    'commands/fein.md': {
-      output: '../commands/fein.md',
-      stripFrontmatter: true,
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@builder', to: 'builder' },
-        { from: '@planner', to: 'planner' },
-        { from: '@reviewer', to: 'reviewer' },
-      ],
+      frontmatter: {
+        arguments: [],
+        description: 'Methodology + delegation + swarm usage for the maestria workflow',
+        name: 'orchestrator',
+        type: 'prompt',
+        whenToUse: `Multi-step or multi-file work, or any task spanning N≥3 independent items.
+Also: implementation planning, code review, debugging sessions, architecture
+decisions, and documentation generation under the maestria workflow.`,
+      },
+      output: 'orchestrator/SKILL.md',
       prepend:
-        '**Workflow command:** use the Kimi Agent and its native Agent/AgentSwarm tools as permitted by the active profile.\n\n',
-      frontmatter:
-        "---\nname: fein\ndescription: 'Full pipeline mode: recon, design, implement, review'\n---\n",
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, FetchURL, and WebSearch. You do **not** have Bash, Write, or Edit.\n\n',
     },
-    'commands/sonar.md': {
-      output: '../commands/sonar.md',
-      stripFrontmatter: true,
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@planner', to: 'planner' },
-      ],
+    'planner.md': {
+      frontmatter: {
+        arguments: [],
+        description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
+Breaks down complex features into verifiable milestones.
+Use for: complex features requiring multi-phase execution, when the plan needs review before building.`,
+        name: 'planner',
+        type: 'prompt',
+        whenToUse: `Multi-phase features requiring ordered work, migrations, rollouts, or
+any complex feature that needs review before building.`,
+      },
+      output: 'planner/SKILL.md',
       prepend:
-        '**Workflow command:** keep this route read-only and stop before implementation.\n\n',
-      frontmatter:
-        "---\nname: sonar\ndescription: 'Research-only mode: recon and design, no implementation'\n---\n",
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
     },
-    'commands/blitz.md': {
-      output: '../commands/blitz.md',
-      stripFrontmatter: true,
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@builder', to: 'builder' },
-        { from: '@reviewer', to: 'reviewer' },
-      ],
+    'reviewer.md': {
+      frontmatter: {
+        arguments: [],
+        description: `Code review with quality gates.
+Reviews code for correctness, edge cases, security, performance, maintainability,
+and adherence to conventions. Provides specific, actionable feedback.
+Use for: PR review, pre-commit review, architecture document review.`,
+        name: 'reviewer',
+        type: 'prompt',
+        whenToUse: `Pre-merge review, post-implementation validation, security audits,
+before-commit QA. In full routes, review after the integrated builder batch is
+reconciled; run the general review first, then risk-matched lenses sequentially.`,
+      },
+      output: 'reviewer/SKILL.md',
       prepend:
-        '**Workflow command:** use the fastest safe route allowed by the active Kimi profile, while retaining required review.\n\n',
-      frontmatter:
-        "---\nname: blitz\ndescription: 'Fast implementation mode: skip optional recon/design unless unknown; required review remains'\n---\n",
+        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
     },
     'rules.md': {
       output: '../SYSTEM.md',
@@ -374,5 +354,22 @@ This should appear at the end of your response when the user asks for a handoff,
         },
       ],
     },
+    'writer.md': {
+      frontmatter: {
+        arguments: [],
+        description: `Documentation writing following structured patterns.
+Creates clear, comprehensive docs for code, APIs, systems.
+Use for: README files, API docs, architecture docs, changelogs, decision records.`,
+        name: 'writer',
+        type: 'prompt',
+        whenToUse: `"Document this", "write README", "ADR", "changelog", "API docs",
+"explain in prose". Turning code into human-readable artifacts.`,
+      },
+      output: 'writer/SKILL.md',
+      prepend:
+        '**Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to produce docs.\n\n',
+    },
   },
+  output: 'skills',
+  source: '../core/agent-directives/specialists',
 } satisfies SyncConfig;

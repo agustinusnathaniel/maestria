@@ -6,10 +6,10 @@ describe('installCompactionHandlers', () => {
   function createMockPi() {
     const handlers = new Map<string, (...args: any[]) => any>();
     return {
+      handlers,
       on: vi.fn((event: string, handler: (...args: any[]) => any) => {
         handlers.set(event, handler);
       }),
-      handlers,
     };
   }
 
@@ -33,18 +33,18 @@ describe('installCompactionHandlers', () => {
 
   describe('session_before_compact handler', () => {
     const baseCompactEvent = {
-      type: 'session_before_compact' as const,
-      preparation: {
-        firstKeptEntryId: '',
-        messagesToSummarize: [],
-        turnPrefixMessages: [],
-        isSplitTurn: false,
-        tokensBefore: 0,
-        fileOps: { reads: [], writes: [] },
-        settings: { enabled: true, reserveTokens: 0, keepRecentTokens: 0 },
-      },
       branchEntries: [],
+      preparation: {
+        fileOps: { reads: [], writes: [] },
+        firstKeptEntryId: '',
+        isSplitTurn: false,
+        messagesToSummarize: [],
+        settings: { enabled: true, keepRecentTokens: 0, reserveTokens: 0 },
+        tokensBefore: 0,
+        turnPrefixMessages: [],
+      },
       signal: new AbortController().signal,
+      type: 'session_before_compact' as const,
     };
 
     it('returns compaction.summary containing the Goal section when activeTask is set', () => {
@@ -58,9 +58,9 @@ describe('installCompactionHandlers', () => {
 
       expect(result).toEqual({
         compaction: {
-          summary: expect.stringContaining('**Goal:** build the feature'),
           details: expect.any(Object),
           firstKeptEntryId: '',
+          summary: expect.stringContaining('**Goal:** build the feature'),
           tokensBefore: 0,
         },
       });
@@ -68,7 +68,7 @@ describe('installCompactionHandlers', () => {
 
     it('returns compaction with mode and Goal sections', () => {
       const pi = createMockPi();
-      const state = { ...createInitialState(), mode: 'fein' as const, activeTask: 'test task' };
+      const state = { ...createInitialState(), activeTask: 'test task', mode: 'fein' as const };
       installCompactionHandlers(pi as any, state);
 
       const handler = pi.handlers.get('session_before_compact')!;
@@ -103,15 +103,15 @@ describe('installCompactionHandlers', () => {
 
   describe('session_before_tree handler', () => {
     const baseTreeEvent = {
-      type: 'session_before_tree' as const,
       preparation: {
-        targetId: 'test',
-        oldLeafId: null,
         commonAncestorId: null,
         entriesToSummarize: [],
+        oldLeafId: null,
+        targetId: 'test',
         userWantsSummary: false,
       },
       signal: new AbortController().signal,
+      type: 'session_before_tree' as const,
     };
 
     it('returns summary when preparation.userWantsSummary is true', () => {

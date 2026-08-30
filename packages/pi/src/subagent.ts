@@ -42,7 +42,9 @@ function abortSubagents(service: SubagentPollingService, ids: readonly string[])
 
 function pollSubagentOrAbortEffect(options: Parameters<typeof pollSubagentEffect>[0]) {
   return Effect.tapError(pollSubagentEffect(options), () =>
-    Effect.sync(() => abortSubagents(options.service, [options.id])),
+    Effect.sync(() => {
+      abortSubagents(options.service, [options.id]);
+    }),
   );
 }
 
@@ -115,17 +117,17 @@ async function handleSingleMode(
   const record = await Effect.runPromise(
     pollSubagentOrAbortEffect({
       id,
+      intervalMs: POLL_INTERVAL_MS,
       label: `Subagent ${agent}`,
+      onUpdate,
       sendUpdates: true,
       service,
       signal,
-      onUpdate,
-      intervalMs: POLL_INTERVAL_MS,
       timeoutMs: POLL_TIMEOUT_MS,
     }),
   );
   return {
-    content: [{ type: 'text' as const, text: record.result ?? record.error ?? 'No output.' }],
+    content: [{ text: record.result ?? record.error ?? 'No output.', type: 'text' as const }],
     details: { subagentId: id },
   };
 }
@@ -140,7 +142,7 @@ async function handleParallelMode(
   onUpdate: ((result: { content: { type: string; text: string }[] }) => void) | undefined,
 ) {
   onUpdate?.({
-    content: [{ type: 'text' as const, text: `Spawning ${taskList.length} parallel subagents...` }],
+    content: [{ text: `Spawning ${taskList.length} parallel subagents...`, type: 'text' as const }],
   });
   const spawnedIds: string[] = [];
   try {
@@ -163,20 +165,20 @@ async function handleParallelMode(
         Effect.match(
           pollSubagentEffect({
             id,
+            intervalMs: POLL_INTERVAL_MS,
             label: `${taskList[i].agent} (${i + 1}/${taskList.length})`,
+            onUpdate,
             sendUpdates: false,
             service,
             signal,
-            onUpdate,
-            intervalMs: POLL_INTERVAL_MS,
             timeoutMs: POLL_TIMEOUT_MS,
           }),
           {
-            onSuccess: (record) => ({ record }),
             onFailure: (error) => {
               abortSubagents(service, spawnedIds);
               return { error };
             },
+            onSuccess: (record) => ({ record }),
           },
         ),
       ),
@@ -185,11 +187,11 @@ async function handleParallelMode(
   );
   onUpdate?.({
     content: [
-      { type: 'text' as const, text: `All ${taskList.length} parallel subagents settled.` },
+      { text: `All ${taskList.length} parallel subagents settled.`, type: 'text' as const },
     ],
   });
   const parts = [`## Parallel Results (${taskList.length} tasks)\n`];
-  for (let i = 0; i < taskList.length; i++) {
+  for (let i = 0; i < taskList.length; i += 1) {
     const t = taskList[i];
     const outcome = outcomes[i];
     parts.push(`### ${i + 1}: ${t.agent}`);
@@ -202,7 +204,7 @@ async function handleParallelMode(
     }
   }
   return {
-    content: [{ type: 'text' as const, text: parts.join('\n\n') }],
+    content: [{ text: parts.join('\n\n'), type: 'text' as const }],
     details: { subagentIds: spawnedIds },
   };
 }
@@ -217,7 +219,7 @@ async function handleChainMode(
   onUpdate: ((result: { content: { type: string; text: string }[] }) => void) | undefined,
 ) {
   let previousResult = '';
-  for (let i = 0; i < taskList.length; i++) {
+  for (let i = 0; i < taskList.length; i += 1) {
     let taskText = taskList[i].task;
     if (i > 0 && taskText.includes('{previous}')) {
       taskText = taskText.replaceAll('{previous}', () => previousResult);
@@ -231,8 +233,8 @@ async function handleChainMode(
     onUpdate?.({
       content: [
         {
-          type: 'text' as const,
           text: `Chain step ${i + 1}/${taskList.length}: ${taskList[i].agent} running...`,
+          type: 'text' as const,
         },
       ],
     });
@@ -240,12 +242,12 @@ async function handleChainMode(
       const record = await Effect.runPromise(
         pollSubagentOrAbortEffect({
           id,
+          intervalMs: POLL_INTERVAL_MS,
           label: `Chain step ${i + 1}: ${taskList[i].agent}`,
+          onUpdate,
           sendUpdates: true,
           service,
           signal,
-          onUpdate,
-          intervalMs: POLL_INTERVAL_MS,
           timeoutMs: POLL_TIMEOUT_MS,
         }),
       );
@@ -258,15 +260,15 @@ async function handleChainMode(
       onUpdate?.({
         content: [
           {
-            type: 'text' as const,
             text: `Chain step ${i + 1}/${taskList.length}: ${taskList[i].agent} completed. Moving to next step.`,
+            type: 'text' as const,
           },
         ],
       });
     }
   }
   return {
-    content: [{ type: 'text' as const, text: previousResult }],
+    content: [{ text: previousResult, type: 'text' as const }],
     details: { subagentId: 'chain-completed' },
   };
 }
@@ -315,9 +317,9 @@ function subscribeSubagentEvents(
   }
   const unsubStarted = pi.events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
     const { id, type } = data as { id: string; type: string };
-    state.subagentStatus[id] = { type, status: 'running', startedAt: Date.now() };
+    state.subagentStatus[id] = { startedAt: Date.now(), status: 'running', type };
     persistState(pi, state);
-    pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_STARTED, { id, type, timestamp: Date.now() });
+    pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_STARTED, { id, timestamp: Date.now(), type });
   });
   const unsubCompleted = pi.events.on(SUBAGENT_EVENTS.COMPLETED, (data: unknown) => {
     const { id } = data as { id: string };
@@ -329,8 +331,8 @@ function subscribeSubagentEvents(
     persistState(pi, state);
     pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_COMPLETED, {
       id,
-      type: existing?.type,
       timestamp: Date.now(),
+      type: existing?.type,
     });
   });
   const unsubFailed = pi.events.on(SUBAGENT_EVENTS.FAILED, (data: unknown) => {
@@ -343,14 +345,14 @@ function subscribeSubagentEvents(
     persistState(pi, state);
     pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_FAILED, {
       id,
-      type: existing?.type,
       timestamp: Date.now(),
+      type: existing?.type,
     });
   });
   const unsubSteered = pi.events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
     const { id } = data as { id: string };
     if (!state.subagentStatus[id]) {
-      state.subagentStatus[id] = { type: 'unknown', status: 'running', startedAt: Date.now() };
+      state.subagentStatus[id] = { startedAt: Date.now(), status: 'running', type: 'unknown' };
     }
     persistState(pi, state);
   });
@@ -382,14 +384,14 @@ export function installSubagentTool(
         description:
           'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
       }),
+      mode: Type.Optional(
+        Type.Union([Type.Literal('parallel'), Type.Literal('chain'), Type.Literal('single')]),
+      ),
       task: Type.String({ description: 'Task description for the subagent (required)' }),
       tasks: Type.Optional(
         Type.Array(Type.Object({ agent: Type.String(), task: Type.String() }), {
           description: 'Array of task objects for parallel or chain dispatch',
         }),
-      ),
-      mode: Type.Optional(
-        Type.Union([Type.Literal('parallel'), Type.Literal('chain'), Type.Literal('single')]),
       ),
     }),
     // oxlint-disable-next-line max-lines-per-function -- execute validates params, checks reviewMode, and dispatches via @gotgenes/pi-subagents with single/parallel/chain modes sharing service/state/signal; splitting would duplicate validation and service lookup.
@@ -409,8 +411,8 @@ export function installSubagentTool(
         return {
           content: [
             {
-              type: 'text' as const,
               text: 'Subagent dispatch is not available during review mode. Use /restore-model to exit review mode first.',
+              type: 'text' as const,
             },
           ],
         };
@@ -420,8 +422,8 @@ export function installSubagentTool(
         return {
           content: [
             {
-              type: 'text' as const,
               text: `${mode} Re-dispatch with a valid agent name; the orchestrator may continue read-only exploration while the brief is corrected.`,
+              type: 'text' as const,
             },
           ],
         };
@@ -432,7 +434,6 @@ export function installSubagentTool(
         return {
           content: [
             {
-              type: 'text' as const,
               text: [
                 '## Subagent Dispatch Unavailable',
                 '',
@@ -446,6 +447,7 @@ export function installSubagentTool(
                 '',
                 'Then restart your Pi session.',
               ].join('\n'),
+              type: 'text' as const,
             },
           ],
         };
@@ -466,7 +468,6 @@ export function installSubagentTool(
         return {
           content: [
             {
-              type: 'text' as const,
               text: [
                 `## Subagent Handoff Required`,
                 ``,
@@ -476,6 +477,7 @@ export function installSubagentTool(
                 ``,
                 `Subagent dispatch failed. Please delegate this work manually.`,
               ].join('\n'),
+              type: 'text' as const,
             },
           ],
         };

@@ -46,30 +46,30 @@ function parseCliArgs(): CliOptions {
   const args = process.argv.slice(2);
 
   if (args.includes('--help') || args.includes('-h')) {
-    return { config: '', check: false, diff: false, dryRun: false, verbose: false, help: true };
+    return { check: false, config: '', diff: false, dryRun: false, help: true, verbose: false };
   }
 
   const { values } = parseArgs({
+    allowNegative: true,
     args,
     options: {
-      config: { type: 'string', short: 'c', default: '' },
-      check: { type: 'boolean', short: 'C', default: false },
-      diff: { type: 'boolean', short: 'd', default: false },
-      'dry-run': { type: 'boolean', short: 'n', default: false },
-      verbose: { type: 'boolean', short: 'v', default: false },
-      help: { type: 'boolean', short: 'h', default: false },
+      check: { default: false, short: 'C', type: 'boolean' },
+      config: { default: '', short: 'c', type: 'string' },
+      diff: { default: false, short: 'd', type: 'boolean' },
+      'dry-run': { default: false, short: 'n', type: 'boolean' },
+      help: { default: false, short: 'h', type: 'boolean' },
+      verbose: { default: false, short: 'v', type: 'boolean' },
     },
     strict: true,
-    allowNegative: true,
   });
 
   return {
-    config: values.config as string,
-    check: values.check as boolean,
-    diff: values.diff as boolean,
-    dryRun: values['dry-run'] as boolean,
-    verbose: values.verbose as boolean,
-    help: values.help as boolean,
+    check: values.check,
+    config: values.config,
+    diff: values.diff,
+    dryRun: values['dry-run'],
+    help: values.help,
+    verbose: values.verbose,
   };
 }
 
@@ -107,10 +107,10 @@ async function main(): Promise<number> {
   }
 
   const results = await runSync({
-    config,
-    dryRun: opts.dryRun,
     check: opts.check,
+    config,
     diff: opts.diff,
+    dryRun: opts.dryRun,
     verbose: opts.verbose,
   });
 

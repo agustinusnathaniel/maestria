@@ -54,7 +54,7 @@ export async function cycleToReviewModel(
   ctx: ReviewCtx,
   state: MaestriaState,
 ): Promise<string | null> {
-  const reviewModel = state.reviewModel;
+  const { reviewModel } = state;
   if (!reviewModel) {
     return null;
   }

@@ -1,34 +1,33 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, it, expect, vi } from 'vite-plus/test';
 import extension from '@/extension.js';
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 
 function createMockPi() {
   return {
-    on: vi.fn(),
-    registerTool: vi.fn(),
-    registerCommand: vi.fn(),
-    events: { on: vi.fn() },
     appendEntry: vi.fn(),
-    setModel: vi.fn(),
-    setActiveTools: vi.fn(),
+    events: { on: vi.fn() },
     getActiveTools: vi.fn(() => []),
+    on: vi.fn(),
+    registerCommand: vi.fn(),
+    registerTool: vi.fn(),
     sendUserMessage: vi.fn(),
+    setActiveTools: vi.fn(),
+    setModel: vi.fn(),
     zod: {
-      object: vi.fn(() => ({})),
-      string: vi.fn(() => ({
-        describe: vi.fn(() => ({
-          optional: vi.fn(() => ({})),
-        })),
-      })),
       array: vi.fn(() => ({
         describe: vi.fn(() => ({
           optional: vi.fn(() => ({})),
         })),
       })),
       enum: vi.fn(() => ({
+        describe: vi.fn(() => ({
+          optional: vi.fn(() => ({})),
+        })),
+      })),
+      object: vi.fn(() => ({})),
+      string: vi.fn(() => ({
         describe: vi.fn(() => ({
           optional: vi.fn(() => ({})),
         })),
@@ -44,7 +43,9 @@ describe('extension smoke tests', () => {
 
   it('wires up without crashing', () => {
     const mockPi = createMockPi();
-    expect(() => extension(mockPi as unknown as ExtensionAPI)).not.toThrow();
+    expect(() => {
+      extension(mockPi as unknown as ExtensionAPI);
+    }).not.toThrow();
   });
 
   it('registers the maestria_subagent tool', () => {

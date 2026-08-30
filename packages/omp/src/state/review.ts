@@ -14,7 +14,7 @@ export async function restoreOriginalState(
   ctx: ExtensionContext,
   state: MaestriaState,
 ): Promise<void> {
-  await restoreCore(pi as never, ctx as never, state);
+  await restoreCore(pi as never, ctx, state);
 }
 
 export async function cycleToReviewModel(
@@ -22,5 +22,5 @@ export async function cycleToReviewModel(
   ctx: ExtensionCommandContext,
   state: MaestriaState,
 ): Promise<string | null> {
-  return await cycleCore(pi as never, ctx as never, state);
+  return await cycleCore(pi as never, ctx, state);
 }

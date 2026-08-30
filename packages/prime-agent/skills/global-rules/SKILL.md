@@ -1,5 +1,4 @@
 ---
-name: global-rules
 description: |-
   Universal agent rules contract: universal floors,
   orchestration, delegation, context management, handoff, blind review, bounded
@@ -7,10 +6,10 @@ description: |-
   safety.
   Load once per session and apply to routing, delegation, review, and commit
   decisions.
+name: global-rules
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 # Global Agent Rules - @maestria/prime-agent
 

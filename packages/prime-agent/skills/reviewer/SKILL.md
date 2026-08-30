@@ -1,15 +1,14 @@
 ---
-name: reviewer
 description: |-
   Code review with quality gates. Reviews for correctness,
   edge cases, security, performance, maintainability, and adherence to
   conventions; provides specific, actionable feedback and preserves blind review.
   Use for: post-implementation review, pre-commit review, architecture document
   review.
+name: reviewer
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 **Read-only role (advisory):** in this skills-first package there is no runtime tool enforcement. Produce a review report with verdicts; do not fix issues yourself - report them for the builder.
 

@@ -1,5 +1,4 @@
 ---
-name: adventurer
 description: |-
   Codebase reconnaissance skill. Maps unknown territory -
   traces call chains, maps module relationships, generates structured recon
@@ -7,10 +6,10 @@ description: |-
   only, never implementation or design.
   Use for: understanding unfamiliar code, tracing dependencies, gathering context
   before implementation, investigating module structures.
+name: adventurer
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 **Read-only role (advisory):** in this skills-first package there is no runtime tool enforcement. The role intent stands: you explore, trace, map, and report; you never implement, design, or edit.
 

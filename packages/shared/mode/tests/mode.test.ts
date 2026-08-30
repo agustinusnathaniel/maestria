@@ -24,9 +24,9 @@ describe('MODE_KEYWORDS', () => {
 describe('MODE_MARKERS', () => {
   it('contains markers for all keywords', () => {
     expect(MODE_MARKERS).toEqual({
+      blitz: '[MODE: blitz]',
       fein: '[MODE: fein]',
       sonar: '[MODE: sonar]',
-      blitz: '[MODE: blitz]',
     });
   });
 });

@@ -35,7 +35,7 @@ function isModeState(value: unknown): value is MaestriaModeState {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
-  const mode = (value as Record<string, unknown>).mode;
+  const { mode } = value as Record<string, unknown>;
   return mode === null || mode === 'fein' || mode === 'sonar' || mode === 'blitz';
 }
 
@@ -51,7 +51,7 @@ export function readModeStateFromEntries(
   }
   // Entries are returned in tree order; the last matching entry is the most
   // recently appended one on the current branch.
-  for (let i = entries.length - 1; i >= 0; i--) {
+  for (let i = entries.length - 1; i >= 0; i -= 1) {
     const entry = entries[i];
     if (isCustomEntry(entry) && isModeState(entry.data)) {
       return entry.data;

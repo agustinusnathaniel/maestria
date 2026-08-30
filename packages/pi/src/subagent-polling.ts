@@ -52,15 +52,15 @@ function pollLoop(options: PollSubagentOptions): Effect.Effect<SubagentRecord, S
     while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
       yield* Effect.sleep(intervalMs);
       record = yield* Effect.sync(() => options.service.getRecord(options.id));
-      polls++;
+      polls += 1;
 
       if (options.sendUpdates) {
         yield* Effect.sync(() => {
           options.onUpdate?.({
             content: [
               {
-                type: 'text' as const,
                 text: `${options.label} running... (${Math.round((polls * intervalMs) / 1000)}s)`,
+                type: 'text' as const,
               },
             ],
           });
@@ -72,8 +72,8 @@ function pollLoop(options: PollSubagentOptions): Effect.Effect<SubagentRecord, S
       return yield* Effect.fail(
         new SubagentPollError({
           id: options.id,
-          reason: 'timeout',
           message: `Subagent ${options.id} timed out after ${timeoutMs}ms`,
+          reason: 'timeout',
         }),
       );
     }
@@ -82,8 +82,8 @@ function pollLoop(options: PollSubagentOptions): Effect.Effect<SubagentRecord, S
       return yield* Effect.fail(
         new SubagentPollError({
           id: options.id,
-          reason: 'missing',
           message: `Subagent ${options.id} was cleaned up before completion`,
+          reason: 'missing',
         }),
       );
     }
@@ -99,8 +99,8 @@ function abortEffect(id: string, signal: AbortSignal): Effect.Effect<never, Suba
         Effect.fail(
           new SubagentPollError({
             id,
-            reason: 'aborted',
             message: 'Maestria subagent call aborted',
+            reason: 'aborted',
           }),
         ),
       );
@@ -112,7 +112,9 @@ function abortEffect(id: string, signal: AbortSignal): Effect.Effect<never, Suba
     }
 
     signal.addEventListener('abort', onAbort, { once: true });
-    return Effect.sync(() => signal.removeEventListener('abort', onAbort));
+    return Effect.sync(() => {
+      signal.removeEventListener('abort', onAbort);
+    });
   });
 }
 

@@ -31,7 +31,7 @@ export const MODE_PROMPTS: Record<ModeKeyword, string> = new Proxy(
             (target as Record<string, string>)[key] = '';
           }
         }
-        return (target as Record<string, string>)[key as string];
+        return (target as Record<string, string>)[key];
       }
       return Reflect.get(target, key, receiver);
     },
@@ -43,9 +43,9 @@ export const MODE_PROMPTS: Record<ModeKeyword, string> = new Proxy(
  * Format: `[MODE: <keyword>]`
  */
 export const MODE_MARKERS: Record<ModeKeyword, string> = {
+  blitz: '[MODE: blitz]',
   fein: '[MODE: fein]',
   sonar: '[MODE: sonar]',
-  blitz: '[MODE: blitz]',
 };
 
 /**

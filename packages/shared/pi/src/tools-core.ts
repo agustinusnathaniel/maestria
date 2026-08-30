@@ -19,17 +19,17 @@ import type { MaestriaState } from './state-core.js';
  * regardless of mode or specialist role.
  */
 export const DANGEROUS_PATTERNS = [
-  /rm\s+-rf\s+\//,
-  /dd\s+if=/,
-  />\s*\/dev\/sd/,
-  /chmod\s+-R\s+777\s+\//,
-  /mkfs\.\w+/,
-  /:(){ :\|:& };:/,
-  />\s*\/etc\/(passwd|shadow|sudoers)/,
-  /\beval\b/,
-  /wget\s+-O\s*-\s*\|\s*(bash|sh)/,
-  /curl\s+.*\|\s*(bash|sh)/,
-  /crontab\s+-r/,
+  /rm\s+-rf\s+\//u,
+  /dd\s+if=/u,
+  />\s*\/dev\/sd/u,
+  /chmod\s+-R\s+777\s+\//u,
+  /mkfs\.\w+/u,
+  /:(){ :\|:& };:/u,
+  />\s*\/etc\/(passwd|shadow|sudoers)/u,
+  /\beval\b/u,
+  /wget\s+-O\s*-\s*\|\s*(bash|sh)/u,
+  /curl\s+.*\|\s*(bash|sh)/u,
+  /crontab\s+-r/u,
 ];
 
 /**
@@ -38,7 +38,7 @@ export const DANGEROUS_PATTERNS = [
  * blocked; mutations belong to specialists.
  */
 const READ_ONLY_BASH_PREFIX =
-  /^(ls|cat|head|tail|git status|git diff|git log|git branch|find|grep|rg|pnpm test|npm test|pwd|which)\b/;
+  /^(ls|cat|head|tail|git status|git diff|git log|git branch|find|grep|rg|pnpm test|npm test|pwd|which)\b/u;
 
 /**
  * True when a bash command performs no mutation.
@@ -59,12 +59,12 @@ export function isReadOnlyBashCommand(rawCommand: string): boolean {
   // Strip `2>&1`-style fd redirects first so the `&` inside them is not
   // mistaken for a command separator and the `>` is not counted as output
   // redirection.
-  const withoutFdRedirects = command.replaceAll(/\d?>&[12]/g, '');
+  const withoutFdRedirects = command.replaceAll(/\d?>&[12]/gu, '');
   if (withoutFdRedirects.includes('>')) {
     return false;
   }
   return withoutFdRedirects
-    .split(/[\n;&|]+/)
+    .split(/[\n;&|]+/u)
     .every((segment) => READ_ONLY_BASH_PREFIX.test(segment.trim()));
 }
 
@@ -183,11 +183,11 @@ async function checkDangerousPattern(
   if (!options.isBashTool(event)) {
     return undefined;
   }
-  const input = (event as { input?: unknown }).input;
+  const { input } = event as { input?: unknown };
   if (!input || typeof input !== 'object') {
     return undefined;
   }
-  const command = (input as Record<string, unknown>).command;
+  const { command } = input as Record<string, unknown>;
   if (typeof command !== 'string' || !command) {
     return undefined;
   }
@@ -229,7 +229,7 @@ function trackFileAccess(
 }
 
 export function createToolCallHandler(options: ToolCallHandlerOptions) {
-  const delegationTool = options.delegationTool;
+  const { delegationTool } = options;
   const hint = resolveDelegationHint(delegationTool, options.delegationHint);
   const doPersist = (): void => {
     if (options.persist) {
@@ -248,7 +248,7 @@ export function createToolCallHandler(options: ToolCallHandlerOptions) {
       return undefined;
     }
     const state = options.getState();
-    const toolName = (event as { toolName: string }).toolName;
+    const { toolName } = event as { toolName: string };
     const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool, hint);
     if (orchestrator) {
       return orchestrator;

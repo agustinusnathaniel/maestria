@@ -142,7 +142,7 @@ function buildTransformedContent(raw: string, fileCfg: ResolvedFileConfig): stri
   }
   const defaultComment = `<!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->`;
-  const autoGenComment = `${fileCfg.autoGenComment || defaultComment}\n\n`;
+  const autoGenComment = `${fileCfg.autoGenComment ?? defaultComment}\n\n`;
   if (fileCfg.frontmatter !== undefined) {
     const fm = serializeFrontmatter(fileCfg.frontmatter);
     content = `${fm}\n${autoGenComment}${content}`;
@@ -180,16 +180,16 @@ async function handleExistingComparison(
       );
     }
     return {
-      source: sourcePath,
-      output: fileCfg.output,
-      status: 'error',
       error: `Provenance violation: ${relOutput} was modified without changing canonical source at ${relSource}`,
+      output: fileCfg.output,
+      source: sourcePath,
+      status: 'error',
     };
   }
   if (verbose) {
     logger(`[${report}] Unchanged: ${relative(process.cwd(), fileCfg.output)}`);
   }
-  return { source: sourcePath, output: fileCfg.output, status: 'unchanged' };
+  return { output: fileCfg.output, source: sourcePath, status: 'unchanged' };
 }
 
 // oxlint-disable-next-line max-lines-per-function -- processFile orchestrates the single canonical transform pipeline (read → transform → dry-run/check/write) as a cohesive sequence; splitting would fragment the dispatch modes that share raw/content/existingContent state.
@@ -207,10 +207,10 @@ export async function processFile(
         logger(`[dry-run] Would write: ${relative(process.cwd(), fileCfg.output)}`);
       }
       return {
-        source: sourcePath,
-        output: fileCfg.output,
-        status: 'dry-run',
         content: diff ? content : undefined,
+        output: fileCfg.output,
+        source: sourcePath,
+        status: 'dry-run',
       };
     }
     const existingContent = existsSync(fileCfg.output)
@@ -234,11 +234,11 @@ export async function processFile(
         logger(`[check] Mismatch: ${relative(process.cwd(), fileCfg.output)}`);
       }
       return {
-        source: sourcePath,
-        output: fileCfg.output,
-        status: 'error',
-        error: 'Output differs from expected',
         content: diff ? content : undefined,
+        error: 'Output differs from expected',
+        output: fileCfg.output,
+        source: sourcePath,
+        status: 'error',
       };
     }
     await atomicWrite(fileCfg.output, content);
@@ -249,12 +249,12 @@ export async function processFile(
       logger(`[${report}] Written: ${relative(process.cwd(), fileCfg.output)}`);
     }
     return {
-      source: sourcePath,
-      output: fileCfg.output,
-      status: 'written',
       content: diff ? content : undefined,
+      output: fileCfg.output,
+      source: sourcePath,
+      status: 'written',
     };
   } catch (error) {
-    return { source: sourcePath, output: fileCfg.output, status: 'error', error: String(error) };
+    return { error: String(error), output: fileCfg.output, source: sourcePath, status: 'error' };
   }
 }

@@ -29,9 +29,9 @@ export function installCompactionHandlers(
       | undefined;
     return {
       compaction: {
-        summary: renderMaestriaSummary(state),
         details: { ...state },
         firstKeptEntryId: prep?.firstKeptEntryId,
+        summary: renderMaestriaSummary(state),
         tokensBefore: prep?.tokensBefore,
       },
     };

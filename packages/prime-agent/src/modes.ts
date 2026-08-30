@@ -30,15 +30,15 @@ export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
 
 /** Marker line prepended to injected mode content (shared with other Maestria platforms). */
 export const MODE_MARKERS: Record<ModeKeyword, string> = {
+  blitz: '[MODE: blitz]',
   fein: '[MODE: fein]',
   sonar: '[MODE: sonar]',
-  blitz: '[MODE: blitz]',
 };
 
 const MODE_COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
+  blitz: 'Set workflow mode to blitz (fast path)',
   fein: 'Set workflow mode to fein (full pipeline)',
   sonar: 'Set workflow mode to sonar (research only)',
-  blitz: 'Set workflow mode to blitz (fast path)',
 };
 
 // ---------------------------------------------------------------------------
@@ -72,7 +72,7 @@ export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
       );
     } else {
       const body = content.slice(modeIdx);
-      prompt = `${MODE_MARKERS[keyword]}\n\n${body.replace(/\s+$/, '')}\n`;
+      prompt = `${MODE_MARKERS[keyword]}\n\n${body.replace(/\s+$/u, '')}\n`;
     }
   } catch (error) {
     console.warn(
@@ -137,7 +137,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
   for (const keyword of MODE_KEYWORDS) {
     pi.registerCommand(keyword, {
       description: MODE_COMMAND_DESCRIPTIONS[keyword],
-      handler: async (args: string, ctx: ExtensionCommandContext) => {
+      handler: (args: string, ctx: ExtensionCommandContext) => {
         state.mode = keyword;
         persistModeState(pi, state);
         // Forward a goal argument (e.g. `/fein implement the pipeline`) so the
@@ -154,7 +154,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
 
   pi.registerCommand(MODE_CLEAR_COMMAND, {
     description: 'Clear workflow mode and return to neutral routing',
-    handler: async (_args: string, ctx: ExtensionCommandContext) => {
+    handler: (_args: string, ctx: ExtensionCommandContext) => {
       state.mode = null;
       persistModeState(pi, state);
       ctx.ui.notify('Workflow mode cleared. Neutral routing is active.');
@@ -163,7 +163,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
 
   pi.registerCommand(STATUS_COMMAND, {
     description: 'Show the current maestria workflow mode and extension subset',
-    handler: async (_args: string, ctx: ExtensionCommandContext) => {
+    handler: (_args: string, ctx: ExtensionCommandContext) => {
       const mode = state.mode ?? 'none';
       const summary = [
         '# Maestria status (prime-agent)',

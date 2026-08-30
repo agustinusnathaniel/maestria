@@ -5,6 +5,9 @@ import extension from '@/extension.js';
 function createMockPi() {
   const handlers = new Map<string, ((...args: unknown[]) => unknown)[]>();
   return {
+    appendEntry: vi.fn(),
+    events: undefined,
+    getActiveTools: vi.fn(() => []),
     on: vi.fn((event: string, handler: (...args: unknown[]) => unknown) => {
       if (!handlers.has(event)) {
         handlers.set(event, []);
@@ -19,19 +22,10 @@ function createMockPi() {
     }),
     registerCommand: vi.fn(),
     registerTool: vi.fn(),
-    setActiveTools: vi.fn(),
-    getActiveTools: vi.fn(() => []),
-    setModel: vi.fn(),
-    appendEntry: vi.fn(),
     sendUserMessage: vi.fn(),
-    events: undefined,
+    setActiveTools: vi.fn(),
+    setModel: vi.fn(),
     zod: {
-      object: vi.fn(() => ({})),
-      string: vi.fn(() => ({
-        describe: vi.fn(() => ({
-          optional: vi.fn(() => ({})),
-        })),
-      })),
       array: vi.fn(() => ({
         describe: vi.fn(() => ({
           optional: vi.fn(() => ({})),
@@ -42,12 +36,18 @@ function createMockPi() {
           optional: vi.fn(() => ({})),
         })),
       })),
+      object: vi.fn(() => ({})),
+      string: vi.fn(() => ({
+        describe: vi.fn(() => ({
+          optional: vi.fn(() => ({})),
+        })),
+      })),
     },
   };
 }
 
 describe('extension entry point', () => {
-  it('registers mode commands', async () => {
+  it('registers mode commands', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const { registerCommand } = pi;
@@ -57,14 +57,14 @@ describe('extension entry point', () => {
     expect(registerCommand).toHaveBeenCalledWith('blitz', expect.any(Object));
   });
 
-  it('registers subagent tool', async () => {
+  it('registers subagent tool', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const { registerTool } = pi;
     expect(registerTool).toHaveBeenCalled();
   });
 
-  it('subscribes to session events', async () => {
+  it('subscribes to session events', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
@@ -80,7 +80,7 @@ describe('extension entry point', () => {
     expect(onEvents).toContain('session_tree');
   });
 
-  it('registers orchestration commands', async () => {
+  it('registers orchestration commands', () => {
     const pi = createMockPi();
     extension(pi as unknown as ExtensionAPI);
     const { registerCommand } = pi;
@@ -100,9 +100,9 @@ describe('extension entry point', () => {
 
   it('restores state on session_start from custom entries', async () => {
     const pi = createMockPi();
-    const mockState = { mode: 'fein', activeTask: 'test task' };
+    const mockState = { activeTask: 'test task', mode: 'fein' };
     const getBranch = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const ctx = { sessionManager: { getBranch } };
     extension(pi as unknown as ExtensionAPI);
@@ -124,17 +124,17 @@ describe('extension entry point', () => {
     const getBranch = vi.fn();
     const context = { sessionManager: { getBranch, getEntries: getBranch } };
     const parentState = {
-      mode: 'fein',
       activeTask: 'parent task',
+      mode: 'fein',
       nativeGoal: { objective: 'parent goal', status: 'active' },
     };
     getBranch.mockReturnValue([
-      { type: 'custom', customType: 'maestria_state', data: parentState },
+      { customType: 'maestria_state', data: parentState, type: 'custom' },
     ]);
 
     await sessionStart({ type: 'session_start' }, context);
     await sessionTree(
-      { type: 'session_tree', oldLeafId: 'parent-leaf', newLeafId: 'target-leaf' },
+      { newLeafId: 'target-leaf', oldLeafId: 'parent-leaf', type: 'session_tree' },
       context,
     );
 
@@ -142,7 +142,7 @@ describe('extension entry point', () => {
       (call: unknown[]) => call[0] === 'maestria-status',
     )![1] as { handler: (args: string, ctx: unknown) => Promise<void> };
     const setEditorText = vi.fn();
-    const commandContext = { ui: { setEditorText, notify: vi.fn() } };
+    const commandContext = { ui: { notify: vi.fn(), setEditorText } };
     await statusCommand.handler('', commandContext);
     expect(setEditorText).toHaveBeenCalledWith(expect.stringContaining('**Goal:** parent task'));
     expect(setEditorText).toHaveBeenCalledWith(expect.not.stringContaining('**Native Goal:**'));

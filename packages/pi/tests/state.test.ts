@@ -41,7 +41,7 @@ describe('createInitialState', () => {
   it('should return a state object with the correct shape', () => {
     const state = createInitialState();
     const keys = Object.keys(state) as (keyof MaestriaState)[];
-    expect(keys.sort()).toEqual([...NEW_STATE_KEYS].sort());
+    expect(keys.toSorted()).toEqual([...NEW_STATE_KEYS].toSorted());
     expect(typeof state.mode === 'string' || state.mode === null).toBe(true);
   });
 
@@ -99,7 +99,7 @@ describe('recordHandoff', () => {
 
   it('caps at 5 entries, dropping oldest on overflow', () => {
     let state = createInitialState();
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 6; i += 1) {
       state = recordHandoff(state, `from${i}`, `to${i}`, `task${i}`);
     }
 
@@ -166,7 +166,7 @@ describe('recordFileModified', () => {
 
   it('caps at 10 entries', () => {
     let state = createInitialState();
-    for (let i = 1; i <= 11; i++) {
+    for (let i = 1; i <= 11; i += 1) {
       state = recordFileModified(state, `file${i}.ts`);
     }
 
@@ -198,7 +198,7 @@ describe('recordFileRead', () => {
 
   it('caps at 10 entries', () => {
     let state = createInitialState();
-    for (let i = 1; i <= 11; i++) {
+    for (let i = 1; i <= 11; i += 1) {
       state = recordFileRead(state, `file${i}.ts`);
     }
 
@@ -317,8 +317,8 @@ describe('state persistence pattern', () => {
         handoffHistory: expect.arrayContaining([
           expect.objectContaining({
             from: 'orchestrator',
-            to: 'builder',
             task: 'implement feature',
+            to: 'builder',
           }),
         ]),
       }),
@@ -330,9 +330,9 @@ describe('exitReviewMode', () => {
   it('clears reviewMode, originalModel, originalTools', () => {
     const state: MaestriaState = {
       ...createInitialState(),
-      reviewMode: true,
       originalModel: 'gpt-4o',
       originalTools: ['read', 'grep', 'bash'],
+      reviewMode: true,
     };
 
     const { state: next, originalModel, originalTools } = exitReviewMode(state);
@@ -347,9 +347,9 @@ describe('exitReviewMode', () => {
   it('is immutable - does not mutate the original state', () => {
     const state: MaestriaState = {
       ...createInitialState(),
-      reviewMode: true,
       originalModel: 'claude-sonnet',
       originalTools: ['read', 'grep'],
+      reviewMode: true,
     };
 
     exitReviewMode(state);
@@ -375,10 +375,10 @@ describe('exitReviewMode', () => {
 
 describe('cycleToReviewModel', () => {
   it('switches to configured reviewModel when found in registry', async () => {
-    const pi = { setModel: vi.fn().mockResolvedValue(true), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), setModel: vi.fn().mockResolvedValue(true) };
     const ctx = {
-      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]) },
       model: { id: 'claude-sonnet-4-20250514' },
+      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]) },
       ui: { notify: vi.fn() },
     };
     const state: MaestriaState = {
@@ -393,10 +393,10 @@ describe('cycleToReviewModel', () => {
   });
 
   it('returns null and notifies when configured model is not found', async () => {
-    const pi = { setModel: vi.fn(), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), setModel: vi.fn() };
     const ctx = {
-      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]) },
       model: { id: 'claude-sonnet-4-20250514' },
+      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]) },
       ui: { notify: vi.fn() },
     };
     const state: MaestriaState = {
@@ -412,12 +412,12 @@ describe('cycleToReviewModel', () => {
   });
 
   it('returns null when reviewModel is not set', async () => {
-    const pi = { setModel: vi.fn().mockResolvedValue(true), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), setModel: vi.fn().mockResolvedValue(true) };
     const ctx = {
+      model: { id: 'claude-sonnet-4-20250514' },
       modelRegistry: {
         getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
       },
-      model: { id: 'claude-sonnet-4-20250514' },
       ui: { notify: vi.fn() },
     };
     const state: MaestriaState = {
@@ -432,10 +432,10 @@ describe('cycleToReviewModel', () => {
   });
 
   it('returns null when setModel throws', async () => {
-    const pi = { setModel: vi.fn().mockRejectedValue(new Error('no key')), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), setModel: vi.fn().mockRejectedValue(new Error('no key')) };
     const ctx = {
-      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]) },
       model: { id: 'claude-sonnet-4-20250514' },
+      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]) },
       ui: { notify: vi.fn() },
     };
     const state: MaestriaState = {
@@ -456,7 +456,7 @@ describe('persistState', () => {
     const pi = { appendEntry: vi.fn() };
     const state = createInitialState();
 
-    persistState(pi as any, state);
+    persistState(pi, state);
 
     expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', { ...state });
     // Ensure it's a copy, not the original reference
@@ -494,7 +494,7 @@ describe('barrel re-exports (consolidated)', () => {
   it('persistState works via barrel', () => {
     const pi = { appendEntry: vi.fn() };
     const state = createInitialState();
-    persistState(pi as any, state);
+    persistState(pi, state);
     expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', { ...state });
   });
 
@@ -505,13 +505,13 @@ describe('barrel re-exports (consolidated)', () => {
   });
 
   it('re-exports types correctly from barrel', () => {
-    const handoff: HandoffEntry = { from: 'a', to: 'b', task: 't', timestamp: 0 };
+    const handoff: HandoffEntry = { from: 'a', task: 't', timestamp: 0, to: 'b' };
     expect(handoff.from).toBe('a');
     expect(handoff.to).toBe('b');
     expect(handoff.task).toBe('t');
     expect(typeof handoff.timestamp).toBe('number');
 
-    const status: SubagentStatusInfo = { type: 'builder', status: 'running', startedAt: 100 };
+    const status: SubagentStatusInfo = { startedAt: 100, status: 'running', type: 'builder' };
     expect(status.type).toBe('builder');
     expect(status.status).toBe('running');
     expect(status.startedAt).toBe(100);

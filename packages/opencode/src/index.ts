@@ -19,11 +19,11 @@ interface AgentFrontmatter {
 function parseFrontmatter(yamlStr: string): AgentFrontmatter {
   const result = parseYaml(yamlStr) as Record<string, unknown>;
   return {
+    color: result.color as string | undefined,
     description: (result.description as string) || '',
+    maxSteps: result.maxSteps ? Number(result.maxSteps) : undefined,
     mode: (result.mode as string) || 'subagent',
     permission: (result.permission as Record<string, unknown>) || {},
-    color: result.color as string | undefined,
-    maxSteps: result.maxSteps ? Number(result.maxSteps) : undefined,
   };
 }
 
@@ -46,8 +46,8 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
   const config: Record<string, unknown> = {
     description: frontmatter.description,
     mode: frontmatter.mode,
-    prompt,
     permission: frontmatter.permission,
+    prompt,
   };
 
   if (frontmatter.color) {
@@ -57,7 +57,7 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
     config.maxSteps = frontmatter.maxSteps;
   }
 
-  return { name, config };
+  return { config, name };
 }
 
 /**
@@ -90,7 +90,7 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   }
 }
 
-export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOptions) => {
+export const MaestriaPlugin: Plugin = (_input, options?: MaestriaPluginOptions) => {
   // Validate and parse options with zod
   const parsed = maestriaOptionsSchema.parse(options ?? {});
   const disabledKeywords = new Set<string>(
@@ -99,23 +99,7 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
   const agents = loadAgents();
 
   return {
-    config: async (input) => {
-      // Deep-merge plugin agent defaults over the user's agent entries. A
-      // shallow `{ ...input.agent, ...agents }` would replace each entry
-      // wholesale, dropping user-set keys (model, variant, temperature) for
-      // the 8 maestria agent names. Plugin defaults win on conflict; user
-      // keys the plugin does not set survive.
-      input.agent = merge(input.agent ?? {}, agents);
-      input.instructions = [...(input.instructions ?? []), RULES_PATH];
-    },
-    'experimental.session.compacting': async (_input, output) => {
-      output.context.push(
-        'Session was compacted. Task tracking is maintained via todowrite. ' +
-          'Active context (files, decisions, blockers) was captured before compaction. ' +
-          'Continue where you left off.',
-      );
-    },
-    'chat.message': async (hookInput, hookOutput) => {
+    'chat.message': (hookInput, hookOutput) => {
       // Only fire for the orchestrator agent
       if (hookInput.agent !== 'orchestrator') {
         return;
@@ -146,6 +130,22 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
         '',
         stripKeyword(textPart.text, result),
       ].join('\n');
+    },
+    config: (input) => {
+      // Deep-merge plugin agent defaults over the user's agent entries. A
+      // shallow `{ ...input.agent, ...agents }` would replace each entry
+      // wholesale, dropping user-set keys (model, variant, temperature) for
+      // the 8 maestria agent names. Plugin defaults win on conflict; user
+      // keys the plugin does not set survive.
+      input.agent = merge(input.agent ?? {}, agents);
+      input.instructions = [...(input.instructions ?? []), RULES_PATH];
+    },
+    'experimental.session.compacting': (_input, output) => {
+      output.context.push(
+        'Session was compacted. Task tracking is maintained via todowrite. ' +
+          'Active context (files, decisions, blockers) was captured before compaction. ' +
+          'Continue where you left off.',
+      );
     },
   };
 };

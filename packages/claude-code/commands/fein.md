@@ -1,10 +1,7 @@
 ---
-name: fein
 description: Full pipeline - recon, design, implement, review
+name: fein
 ---
-
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 [MODE: fein]
 

@@ -27,7 +27,7 @@ const LEGACY_INDEX = new Map<ValidPlatform, number>(
 // Sorted by LEGACY_ORDER to preserve prior help/error message ordering.
 export const VALID_PLATFORMS: readonly ValidPlatform[] = platforms
   .map((p) => p.id)
-  .sort((a, b) => (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999));
+  .toSorted((a, b) => (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999));
 
 function isValidPlatform(id: string): id is ValidPlatform {
   return (VALID_PLATFORMS as readonly string[]).includes(id);

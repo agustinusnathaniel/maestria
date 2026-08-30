@@ -52,9 +52,6 @@ export interface ResolvedFileConfig {
 
 export class ConfigError extends Error {
   override name = 'ConfigError';
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-  }
 }
 
 // ── Config Loading ──
@@ -100,13 +97,13 @@ function resolveConfig(raw: SyncConfig, configDir: string, configPath: string): 
   }
 
   return {
-    configPath,
     configDir,
-    source,
-    output,
+    configPath,
     default: raw.default,
     files: resolvedFiles,
+    output,
     preserve: raw.preserve ?? [],
+    source,
   };
 }
 
@@ -130,12 +127,12 @@ function resolveFileConfig(
   const fileOutput = fileCfg.output ? resolve(baseDir, fileCfg.output) : resolve(baseDir, filename);
 
   return {
-    output: fileOutput,
-    stripFrontmatter,
-    replace,
-    prepend,
     append,
-    frontmatter,
     autoGenComment,
+    frontmatter,
+    output: fileOutput,
+    prepend,
+    replace,
+    stripFrontmatter,
   };
 }

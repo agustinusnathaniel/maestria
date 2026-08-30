@@ -1,5 +1,4 @@
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve, join } from 'node:path';
+import { resolve, join } from 'node:path';
 
 const __dirname = import.meta.dirname;
 export const PACKAGE_ROOT = resolve(__dirname, '..');

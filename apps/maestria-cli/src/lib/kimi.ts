@@ -26,7 +26,7 @@ export interface KimiInstalledFile {
 }
 
 export function kimiCodeHome(): string {
-  return process.env.KIMI_CODE_HOME?.trim() || `${homedir()}/.kimi-code`;
+  return process.env.KIMI_CODE_HOME?.trim() ?? `${homedir()}/.kimi-code`;
 }
 
 export function kimiManagedPluginDir(): string {
@@ -39,6 +39,11 @@ export function kimiInstalledPath(): string {
 
 export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandError> {
   return Effect.tryPromise({
+    catch: (error) =>
+      new CommandError({
+        command: `read ${kimiInstalledPath()}`,
+        message: String(error),
+      }),
     try: async () => {
       const { readFile } = await import('node:fs/promises');
       const filePath = kimiInstalledPath();
@@ -47,7 +52,7 @@ export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandErr
         text = await readFile(filePath, 'utf-8');
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-          return { version: 1, plugins: [] } satisfies KimiInstalledFile;
+          return { plugins: [], version: 1 } satisfies KimiInstalledFile;
         }
         throw error;
       }
@@ -59,20 +64,20 @@ export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandErr
         throw new TypeError('Kimi plugin registry must contain a plugins array');
       }
       return {
+        plugins: parsed.plugins,
         version: 1,
-        plugins: parsed.plugins as KimiInstalledRecord[],
       } satisfies KimiInstalledFile;
     },
-    catch: (error) =>
-      new CommandError({
-        command: `read ${kimiInstalledPath()}`,
-        message: String(error),
-      }),
   });
 }
 
 export function writeKimiInstalled(file: KimiInstalledFile): Effect.Effect<void, CommandError> {
   return Effect.tryPromise({
+    catch: (error) =>
+      new CommandError({
+        command: `write ${kimiInstalledPath()}`,
+        message: String(error),
+      }),
     try: async () => {
       const { mkdir, rename, writeFile } = await import('node:fs/promises');
       const filePath = kimiInstalledPath();
@@ -81,11 +86,6 @@ export function writeKimiInstalled(file: KimiInstalledFile): Effect.Effect<void,
       await writeFile(tempPath, `${JSON.stringify(file, null, 2)}\n`, 'utf-8');
       await rename(tempPath, filePath);
     },
-    catch: (error) =>
-      new CommandError({
-        command: `write ${kimiInstalledPath()}`,
-        message: String(error),
-      }),
   });
 }
 
@@ -96,17 +96,17 @@ export function registerKimiPlugin(): Effect.Effect<void, CommandError> {
     const current = file.plugins.find((plugin) => plugin.id === MAESTRIA_PLUGIN);
     const record: KimiInstalledRecord = {
       ...current,
+      enabled: current?.enabled ?? true,
       id: MAESTRIA_PLUGIN,
+      installedAt: current?.installedAt ?? now,
+      originalSource: '@maestria/kimi-code',
       root: kimiManagedPluginDir(),
       source: 'local-path',
-      enabled: current?.enabled ?? true,
-      installedAt: current?.installedAt ?? now,
       updatedAt: now,
-      originalSource: '@maestria/kimi-code',
     };
     const plugins = file.plugins.filter((plugin) => plugin.id !== MAESTRIA_PLUGIN);
     plugins.push(record);
-    yield* writeKimiInstalled({ version: 1, plugins });
+    yield* writeKimiInstalled({ plugins, version: 1 });
   });
 }
 
@@ -115,18 +115,18 @@ export function removeKimiPlugin(): Effect.Effect<void, CommandError> {
     const file = yield* readKimiInstalled();
     const plugins = file.plugins.filter((plugin) => plugin.id !== MAESTRIA_PLUGIN);
     if (plugins.length !== file.plugins.length) {
-      yield* writeKimiInstalled({ version: 1, plugins });
+      yield* writeKimiInstalled({ plugins, version: 1 });
     }
     yield* Effect.tryPromise({
-      try: async () => {
-        const { rm } = await import('node:fs/promises');
-        await rm(kimiManagedPluginDir(), { recursive: true, force: true });
-      },
       catch: (error) =>
         new CommandError({
           command: `remove ${kimiManagedPluginDir()}`,
           message: String(error),
         }),
+      try: async () => {
+        const { rm } = await import('node:fs/promises');
+        await rm(kimiManagedPluginDir(), { force: true, recursive: true });
+      },
     });
   });
 }

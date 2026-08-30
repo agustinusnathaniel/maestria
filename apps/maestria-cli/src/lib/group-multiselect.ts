@@ -185,7 +185,7 @@ function createGroupRender<Value>(
   return function render(this: GroupMultiSelectPrompt<{ value: Value }>) {
     const guide = opts.withGuide ?? guideDefault;
     const title = `${guide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(this.state)}  ${opts.message}\n`;
-    const value: Value[] = (this.value ?? []) as Value[];
+    const value: Value[] = this.value ?? [];
     interface FlatOption {
       value: Value;
       group: string | boolean;
@@ -269,16 +269,16 @@ export async function groupMultiselect<Value>(
   const opt = createOptionRenderer<Value>(selectableGroups);
   const render = createGroupRender(opts, opt, true, showInstructions);
   const renderOptions = {
-    options: opts.options,
-    signal: opts.signal,
-    input: opts.input,
-    output: opts.output,
-    initialValues: opts.initialValues,
-    required,
     cursorAt: opts.cursorAt,
-    selectableGroups,
-    validate: buildValidate(required),
+    initialValues: opts.initialValues,
+    input: opts.input,
+    options: opts.options,
+    output: opts.output,
     render,
+    required,
+    selectableGroups,
+    signal: opts.signal,
+    validate: buildValidate(required),
   };
   const prompt = new TogglableGroupMultiSelectPrompt(renderOptions as any);
   return await (prompt.prompt() as Promise<Value[] | symbol>);

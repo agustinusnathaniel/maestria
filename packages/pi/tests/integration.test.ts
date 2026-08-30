@@ -1,21 +1,20 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, it, expect, vi } from 'vite-plus/test';
 import extension from '@/extension.js';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
 function createMockPi() {
   return {
-    on: vi.fn(),
-    registerTool: vi.fn(),
-    registerCommand: vi.fn(),
-    events: { on: vi.fn() },
     appendEntry: vi.fn(),
-    setModel: vi.fn(),
-    setActiveTools: vi.fn(),
+    events: { on: vi.fn() },
     getActiveTools: vi.fn(() => []),
+    on: vi.fn(),
+    registerCommand: vi.fn(),
+    registerTool: vi.fn(),
     sendUserMessage: vi.fn(),
+    setActiveTools: vi.fn(),
+    setModel: vi.fn(),
   };
 }
 
@@ -26,7 +25,9 @@ describe('extension smoke tests', () => {
 
   it('wires up without crashing', () => {
     const mockPi = createMockPi();
-    expect(() => extension(mockPi as unknown as ExtensionAPI)).not.toThrow();
+    expect(() => {
+      extension(mockPi as unknown as ExtensionAPI);
+    }).not.toThrow();
   });
 
   it('registers the maestria_subagent tool', () => {

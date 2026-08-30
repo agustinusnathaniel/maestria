@@ -87,41 +87,33 @@ export default {
   files: {
     // -- Command workflow modes (fein/sonar/blitz) --
     'commands/fein.md': {
+      frontmatter: {
+        description: 'Full pipeline mode: reconnaissance, design, implementation, review',
+        name: 'maestria-command-fein',
+      },
       output: 'commands/fein/SKILL.md',
       stripFrontmatter: true,
-      frontmatter: {
-        name: 'maestria-command-fein',
-        description: 'Full pipeline mode: reconnaissance, design, implementation, review',
-      },
     },
     'commands/sonar.md': {
+      frontmatter: {
+        description: 'Research-only mode: reconnaissance and design only, no implementation',
+        name: 'maestria-command-sonar',
+      },
       output: 'commands/sonar/SKILL.md',
       stripFrontmatter: true,
-      frontmatter: {
-        name: 'maestria-command-sonar',
-        description: 'Research-only mode: reconnaissance and design only, no implementation',
-      },
     },
     'commands/blitz.md': {
-      output: 'commands/blitz/SKILL.md',
-      stripFrontmatter: true,
       frontmatter: {
-        name: 'maestria-command-blitz',
         description:
           'Fast implementation mode: skip optional ceremony for familiar low-risk work; required review and safety floors remain',
+        name: 'maestria-command-blitz',
       },
+      output: 'commands/blitz/SKILL.md',
+      stripFrontmatter: true,
     },
 
     // -- Orchestrator: the methodology dispatcher --
     'orchestrator.md': {
-      output: 'orchestrator/SKILL.md',
-      frontmatter: {
-        name: 'maestria-orchestrator',
-        description:
-          'Methodology orchestrator -- runs single-thread by default, delegates to specialists for complex tasks',
-      },
-      prepend: '',
-      replace: [],
       append: [
         '',
         '## Hermes-Specific Notes',
@@ -134,24 +126,32 @@ export default {
         '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
         '- Dispatch reviewer for validation after the integrated builder batch is reconciled, never per individual builder delegation - general review first, then risk-matched lenses sequentially (not after direct single-thread work).',
       ].join('\n'),
+      frontmatter: {
+        description:
+          'Methodology orchestrator -- runs single-thread by default, delegates to specialists for complex tasks',
+        name: 'maestria-orchestrator',
+      },
+      output: 'orchestrator/SKILL.md',
+      prepend: '',
+      replace: [],
     },
     'adventurer.md': {
-      output: 'adventurer/SKILL.md',
       frontmatter: {
-        name: 'maestria-adventurer',
         description: 'Research and exploration -- gathers information from any source',
+        name: 'maestria-adventurer',
       },
+      output: 'adventurer/SKILL.md',
       replace: [],
     },
 
     // -- Architect: design and decision --
     'architect.md': {
-      output: 'architect/SKILL.md',
       frontmatter: {
-        name: 'maestria-architect',
         description:
           'Architecture and design -- evaluates options, makes decisions, designs solutions across any domain',
+        name: 'maestria-architect',
       },
+      output: 'architect/SKILL.md',
       replace: [
         {
           from: 'You make architecture decisions systematically.',
@@ -162,17 +162,6 @@ export default {
 
     // -- Builder: production and implementation --
     'builder.md': {
-      output: 'builder/SKILL.md',
-      frontmatter: {
-        name: 'maestria-builder',
-        description: 'Focused production -- implements, creates, and produces output',
-      },
-      replace: [
-        {
-          from: 'A single configuration change',
-          to: 'A single configuration change or content update',
-        },
-      ],
       append: [
         '',
         '## OpenCode Routing',
@@ -183,15 +172,26 @@ export default {
         '',
         'The PermissionRole for builder grants full access (read + write + bash + llm + coding).',
       ].join('\n'),
+      frontmatter: {
+        description: 'Focused production -- implements, creates, and produces output',
+        name: 'maestria-builder',
+      },
+      output: 'builder/SKILL.md',
+      replace: [
+        {
+          from: 'A single configuration change',
+          to: 'A single configuration change or content update',
+        },
+      ],
     },
 
     // -- Diagnose: root cause analysis --
     'diagnose.md': {
-      output: 'diagnose/SKILL.md',
       frontmatter: {
-        name: 'maestria-diagnose',
         description: 'Root cause analysis -- investigates problems and finds causes',
+        name: 'maestria-diagnose',
       },
+      output: 'diagnose/SKILL.md',
       replace: [
         { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
         {
@@ -211,8 +211,8 @@ export default {
     'planner.md': {
       output: 'planner/SKILL.md',
       frontmatter: {
-        name: 'maestria-planner',
         description: 'Planning -- breaks down work into ordered, verifiable steps',
+        name: 'maestria-planner',
       },
       // NOTE: no replace ops. The previous five generalization replaces
       // anchored to the canonical Guard Rails bullet lists, which were
@@ -222,11 +222,11 @@ export default {
 
     // -- Reviewer: quality validation --
     'reviewer.md': {
-      output: 'reviewer/SKILL.md',
       frontmatter: {
-        name: 'maestria-reviewer',
         description: 'Quality gates -- validates output, checks for issues, ensures correctness',
+        name: 'maestria-reviewer',
       },
+      output: 'reviewer/SKILL.md',
       replace: [
         { from: 'review code', to: 'review output' },
         { from: "Google's Code Review Guidelines", to: 'Peer review best practices' },
@@ -237,11 +237,11 @@ export default {
 
     // -- Writer: content creation --
     'writer.md': {
-      output: 'writer/SKILL.md',
       frontmatter: {
-        name: 'maestria-writer',
         description: 'Content creation -- produces clear, structured documentation and prose',
+        name: 'maestria-writer',
       },
+      output: 'writer/SKILL.md',
       replace: [],
     },
 
@@ -252,8 +252,8 @@ export default {
       output: 'global-rules/SKILL.md',
       stripFrontmatter: true,
       frontmatter: {
-        name: 'maestria-global-rules',
         description: 'Cross-cutting methodology rules for all specialists',
+        name: 'maestria-global-rules',
       },
       // NOTE: no replace ops. The previous four generalization replaces
       // anchored to canonical sentences/tables removed by earlier directive

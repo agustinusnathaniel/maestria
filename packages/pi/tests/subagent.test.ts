@@ -7,9 +7,9 @@ import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 // Mock the subagents SDK so execute() can reach recordAndPersist (existing tests
 // keep the SDK-unavailable fallback by leaving getSubagentsServiceMock undefined).
 const subagentsServiceMock = vi.hoisted(() => ({
-  spawn: vi.fn(),
-  getRecord: vi.fn(),
   abort: vi.fn(),
+  getRecord: vi.fn(),
+  spawn: vi.fn(),
 }));
 const getSubagentsServiceMock = vi.hoisted(() => vi.fn());
 
@@ -97,7 +97,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
       undefined,
       {},
     );
-    const text = result.content[0].text;
+    const { text } = result.content[0];
     expect(text).toContain('Invalid maestria_subagent call');
     expect(text).toContain('agent');
     expect(text).toContain('adventurer');
@@ -116,7 +116,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
       undefined,
       {},
     );
-    const text = result.content[0].text;
+    const { text } = result.content[0];
     expect(text).toContain('Invalid maestria_subagent call');
     expect(text).toContain('agent');
   });
@@ -133,7 +133,7 @@ describe('installSubagentTool - single mode (backward compat)', () => {
   });
 
   it('falls back to handoff text when SDK is unavailable', async () => {
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
@@ -149,14 +149,14 @@ describe('installSubagentTool - single mode (backward compat)', () => {
   });
 
   it('works with explicit mode=single', async () => {
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
     const toolDef = (pi as any).registerTool.mock.calls[0][0];
     const result = await toolDef.execute(
       'call-1',
-      { mode: 'single', agent: 'builder', task: 'do something' },
+      { agent: 'builder', mode: 'single', task: 'do something' },
       undefined,
       undefined,
       {},
@@ -248,7 +248,7 @@ describe('installSubagentTool - parallel mode', () => {
   });
 
   it('falls back to handoff text when SDK is unavailable (valid parallel)', async () => {
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
@@ -315,7 +315,7 @@ describe('installSubagentTool - chain mode', () => {
   });
 
   it('falls back to handoff text when SDK is unavailable (valid chain)', async () => {
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
@@ -341,6 +341,13 @@ describe('installSubagentTool - event subscription persistence', () => {
   function createMockEventBus() {
     const handlers: Record<string, ((data: unknown) => void)[]> = {};
     return {
+      _emit: (event: string, data: unknown) => {
+        handlers[event]?.forEach((h) => {
+          h(data);
+        });
+      },
+      _handlers: handlers,
+      emit: vi.fn(),
       on: vi.fn((event: string, handler: (data: unknown) => void) => {
         if (!handlers[event]) {
           handlers[event] = [];
@@ -348,17 +355,12 @@ describe('installSubagentTool - event subscription persistence', () => {
         handlers[event].push(handler);
         return () => {}; // unsub
       }),
-      emit: vi.fn(),
-      _emit: (event: string, data: unknown) => {
-        handlers[event]?.forEach((h) => h(data));
-      },
-      _handlers: handlers,
     };
   }
 
   it('persists state on STARTED event', () => {
     const events = createMockEventBus();
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn(), events };
+    const pi = { appendEntry: vi.fn(), events, registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
@@ -378,12 +380,12 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('persists state on COMPLETED event', () => {
     const events = createMockEventBus();
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn(), events };
+    const pi = { appendEntry: vi.fn(), events, registerTool: vi.fn() };
     const state = createInitialState();
     state.subagentStatus['agent-1'] = {
-      type: 'builder',
-      status: 'running',
       startedAt: Date.now(),
+      status: 'running',
+      type: 'builder',
     };
     installSubagentTool(pi as any, state);
 
@@ -402,12 +404,12 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('persists state on FAILED event', () => {
     const events = createMockEventBus();
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn(), events };
+    const pi = { appendEntry: vi.fn(), events, registerTool: vi.fn() };
     const state = createInitialState();
     state.subagentStatus['agent-1'] = {
-      type: 'builder',
-      status: 'running',
       startedAt: Date.now(),
+      status: 'running',
+      type: 'builder',
     };
     installSubagentTool(pi as any, state);
 
@@ -426,7 +428,7 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('persists state on STEERED event when agent is new', () => {
     const events = createMockEventBus();
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn(), events };
+    const pi = { appendEntry: vi.fn(), events, registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
@@ -446,12 +448,12 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('persists state on STEERED event when agent already exists', () => {
     const events = createMockEventBus();
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn(), events };
+    const pi = { appendEntry: vi.fn(), events, registerTool: vi.fn() };
     const state = createInitialState();
     state.subagentStatus['existing-agent'] = {
-      type: 'architect',
-      status: 'running',
       startedAt: Date.now(),
+      status: 'running',
+      type: 'architect',
     };
     installSubagentTool(pi as any, state);
 
@@ -465,7 +467,7 @@ describe('installSubagentTool - event subscription persistence', () => {
 
   it('emits maestria:subagent:started on STARTED event', () => {
     const events = createMockEventBus();
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn(), events };
+    const pi = { appendEntry: vi.fn(), events, registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
@@ -475,20 +477,20 @@ describe('installSubagentTool - event subscription persistence', () => {
       MAESTRIA_EVENTS.SUBAGENT_STARTED,
       expect.objectContaining({
         id: 'agent-1',
-        type: 'builder',
         timestamp: expect.any(Number),
+        type: 'builder',
       }),
     );
   });
 
   it('emits maestria:subagent:completed on COMPLETED event', () => {
     const events = createMockEventBus();
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn(), events };
+    const pi = { appendEntry: vi.fn(), events, registerTool: vi.fn() };
     const state = createInitialState();
     state.subagentStatus['agent-1'] = {
-      type: 'builder',
-      status: 'running',
       startedAt: Date.now(),
+      status: 'running',
+      type: 'builder',
     };
     installSubagentTool(pi as any, state);
 
@@ -498,20 +500,20 @@ describe('installSubagentTool - event subscription persistence', () => {
       MAESTRIA_EVENTS.SUBAGENT_COMPLETED,
       expect.objectContaining({
         id: 'agent-1',
-        type: 'builder',
         timestamp: expect.any(Number),
+        type: 'builder',
       }),
     );
   });
 
   it('emits maestria:subagent:failed on FAILED event', () => {
     const events = createMockEventBus();
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn(), events };
+    const pi = { appendEntry: vi.fn(), events, registerTool: vi.fn() };
     const state = createInitialState();
     state.subagentStatus['agent-1'] = {
-      type: 'builder',
-      status: 'running',
       startedAt: Date.now(),
+      status: 'running',
+      type: 'builder',
     };
     installSubagentTool(pi as any, state);
 
@@ -521,8 +523,8 @@ describe('installSubagentTool - event subscription persistence', () => {
       MAESTRIA_EVENTS.SUBAGENT_FAILED,
       expect.objectContaining({
         id: 'agent-1',
-        type: 'builder',
         timestamp: expect.any(Number),
+        type: 'builder',
       }),
     );
   });
@@ -556,11 +558,11 @@ describe('installSubagentTool - handoff recording', () => {
   beforeEach(() => {
     getSubagentsServiceMock.mockReturnValue(subagentsServiceMock);
     subagentsServiceMock.spawn.mockReturnValue('agent-1');
-    subagentsServiceMock.getRecord.mockReturnValue({ status: 'completed', result: 'done' });
+    subagentsServiceMock.getRecord.mockReturnValue({ result: 'done', status: 'completed' });
   });
 
   it('records specialist in state for single mode', async () => {
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
@@ -583,7 +585,7 @@ describe('installSubagentTool - handoff recording', () => {
   });
 
   it('deduplicates specialists across repeated delegation', async () => {
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
 
@@ -603,7 +605,7 @@ describe('installSubagentTool - handoff recording', () => {
 
 describe('installSubagentTool - parallel partial failure', () => {
   function install() {
-    const pi = { registerTool: vi.fn(), appendEntry: vi.fn() };
+    const pi = { appendEntry: vi.fn(), registerTool: vi.fn() };
     const state = createInitialState();
     installSubagentTool(pi as any, state);
     const toolDef = (pi as any).registerTool.mock.calls[0][0];
@@ -620,7 +622,7 @@ describe('installSubagentTool - parallel partial failure', () => {
     // id-a's completed result.
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {
       if (id === 'id-a') {
-        return { status: 'completed', result: 'RESULT_A_OK' };
+        return { result: 'RESULT_A_OK', status: 'completed' };
       }
       return; // id-b cleaned up
     });
@@ -640,7 +642,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       undefined,
       {},
     );
-    const text = result.content[0].text;
+    const { text } = result.content[0];
     expect(text).toContain('RESULT_A_OK');
     expect(text).not.toContain('Subagent Handoff Required');
   });
@@ -694,7 +696,7 @@ describe('installSubagentTool - parallel partial failure', () => {
     // must be aborted and the chain must surface an error marker.
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {
       if (id === 'id-a') {
-        return { status: 'completed', result: 'STEP_A_OK' };
+        return { result: 'STEP_A_OK', status: 'completed' };
       }
       return; // id-b cleaned up
     });
@@ -714,7 +716,7 @@ describe('installSubagentTool - parallel partial failure', () => {
       undefined,
       {},
     );
-    const text = result.content[0].text;
+    const { text } = result.content[0];
     expect(text).toContain('[error]');
     expect(text).not.toContain('Subagent Handoff Required');
     expect(subagentsServiceMock.abort).toHaveBeenCalledWith('id-b');
@@ -730,9 +732,9 @@ describe('installSubagentTool - parallel partial failure', () => {
     // would corrupt ($& -> the placeholder itself, $' -> trailing text, $1 -> empty).
     subagentsServiceMock.getRecord.mockImplementation((id: string) => {
       if (id === 'id-a') {
-        return { status: 'completed', result: 'Use `echo $&` and $1 args' };
+        return { result: 'Use `echo $&` and $1 args', status: 'completed' };
       }
-      return { status: 'completed', result: 'DONE' };
+      return { result: 'DONE', status: 'completed' };
     });
 
     const { toolDef } = install();

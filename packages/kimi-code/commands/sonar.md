@@ -3,9 +3,6 @@ name: sonar
 description: 'Research-only mode: recon and design, no implementation'
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
-
 **Workflow command:** keep this route read-only and stop before implementation.
 
 [MODE: sonar]

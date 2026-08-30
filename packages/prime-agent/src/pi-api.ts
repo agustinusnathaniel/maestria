@@ -172,7 +172,7 @@ export interface ExtensionAPI {
   sendUserMessage(content: string, options?: { deliverAs?: 'steer' | 'followUp' }): void;
 
   /** Append a custom entry to the session (persists, not sent to the LLM). */
-  appendEntry<T = unknown>(customType: string, data?: T): void;
+  appendEntry(customType: string, data?: unknown): void;
 }
 
 /** Default-export factory loaded by Prime's extension loader. */

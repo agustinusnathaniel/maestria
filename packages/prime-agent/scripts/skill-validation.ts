@@ -7,7 +7,7 @@
 // characters, lowercase letters, digits, and hyphens; no leading or trailing
 // hyphen; no consecutive hyphens. Matching the parent skill directory is
 // enforced separately by the validator.
-export const NAME_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+export const NAME_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u;
 export const NAME_MAX = 64;
 
 // Prime's documented description limit (Agent Skills specification).
@@ -47,17 +47,17 @@ function unquoteScalar(value: string): string {
  */
 export function frontmatterValue(frontmatter: string, key: string): string | undefined {
   const lines = frontmatter.split('\n');
-  const keyLine = lines.findIndex((line) => new RegExp(`^${key}:`).test(line));
+  const keyLine = lines.findIndex((line) => new RegExp(`^${key}:`, 'u').test(line));
   if (keyLine === -1) {
     return undefined;
   }
   const inline = lines[keyLine].slice(key.length + 1).trim();
-  if (inline !== '' && !/^[|>][-+]?$/.test(inline)) {
+  if (inline !== '' && !/^[|>][-+]?$/u.test(inline)) {
     return unquoteScalar(inline).trim();
   }
   return lines
     .slice(keyLine + 1)
-    .filter((line) => /^\s{2}/.test(line))
+    .filter((line) => /^\s{2}/u.test(line))
     .map((line) => line.trim())
     .join(' ')
     .trim();

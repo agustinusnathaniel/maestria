@@ -55,7 +55,7 @@ const READ_ONLY_TOOLS = ['read', 'grep', 'find', 'ls', 'glob'];
 function registerMaestriaStatus(pi: CommandsPi, state: MaestriaState): void {
   pi.registerCommand('maestria-status', {
     description: 'Show current maestria session state including handoff history',
-    handler: async (_args: string, ctx) => {
+    handler: (_args: string, ctx) => {
       const summary = renderMaestriaSummary(state);
       if (!summary) {
         ctx.ui.notify('No active maestria state to report.');
@@ -78,9 +78,9 @@ function registerReviewCommand(pi: CommandsPi, state: MaestriaState): void {
       const currentTools = pi.getActiveTools();
       Object.assign(state, {
         ...state,
-        reviewMode: true,
         originalModel: currentModelId,
         originalTools: currentTools,
+        reviewMode: true,
       } as MaestriaState);
       persistState(pi, state);
       if (state.reviewModel) {
@@ -132,7 +132,7 @@ function registerRestoreModel(pi: CommandsPi, state: MaestriaState): void {
 function registerHandoffCommand(pi: CommandsPi, state: MaestriaState): void {
   pi.registerCommand('handoff', {
     description: 'Generate a structured handoff prompt for a new task context',
-    handler: async (args: string, ctx) => {
+    handler: (args: string, ctx) => {
       if (!args.trim()) {
         ctx.ui.notify('Usage: /handoff <goal> - describe the task context for handoff');
         return;
@@ -184,7 +184,7 @@ function registerHandoffCommand(pi: CommandsPi, state: MaestriaState): void {
 function registerReviewModel(pi: CommandsPi, state: MaestriaState): void {
   pi.registerCommand('review-model', {
     description: 'Set which model to use when entering review mode',
-    handler: async (args: string, ctx) => {
+    handler: (args: string, ctx) => {
       if (!args.trim()) {
         ctx.ui.notify('Usage: /review-model <model-id>');
         return;

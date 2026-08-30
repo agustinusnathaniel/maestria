@@ -11,9 +11,9 @@
 export const MAESTRIA_EVENTS = {
   REVIEW_ACTIVATED: 'maestria:review:activated',
   REVIEW_DEACTIVATED: 'maestria:review:deactivated',
-  SUBAGENT_STARTED: 'maestria:subagent:started',
   SUBAGENT_COMPLETED: 'maestria:subagent:completed',
   SUBAGENT_FAILED: 'maestria:subagent:failed',
+  SUBAGENT_STARTED: 'maestria:subagent:started',
 } as const;
 
 /** The set of specialist agent types maestria supports. */
@@ -82,10 +82,10 @@ export function validateHandoff(handoff: string): HandoffValidation {
     // This avoids false positives when an empty field is followed by another field's `**` header.
     const pattern = `\\*\\*${field}:\\*\\*([\\s\\S]*?)(?=\
 \\*\\*|$)`;
-    const match = new RegExp(pattern, 'i').exec(handoff);
+    const match = new RegExp(pattern, 'iu').exec(handoff);
     if (!match || !match[1] || !match[1].trim()) {
       errors.push(`Missing or empty field: "${field}"`);
     }
   }
-  return { valid: errors.length === 0, errors };
+  return { errors, valid: errors.length === 0 };
 }

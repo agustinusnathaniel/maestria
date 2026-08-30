@@ -93,7 +93,7 @@ describe('findAndReplace', () => {
 
 describe('serializeFrontmatter', () => {
   it('serializes an object to YAML frontmatter', () => {
-    const result = serializeFrontmatter({ title: 'Test', order: 1 });
+    const result = serializeFrontmatter({ order: 1, title: 'Test' });
     expect(`---\n${result}`).toContain('---\n');
   });
 
@@ -183,7 +183,7 @@ describe('loadConfig', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('loads a valid config file', async () => {
@@ -202,7 +202,7 @@ describe('loadConfig', () => {
 
     const config = await loadConfig(configPath);
 
-    expect(config.source).toMatch(/agent-directives$/);
+    expect(config.source).toMatch(/agent-directives$/u);
     expect(config.configPath).toBe(configPath);
     expect(config.files).toEqual({});
   });
@@ -277,7 +277,7 @@ describe('loadConfig', () => {
   it('throws ConfigError on missing file', async () => {
     const missingPath = join(tmpDir, 'nonexistent.config.js');
     await expect(loadConfig(missingPath)).rejects.toThrow(ConfigError);
-    await expect(loadConfig(missingPath)).rejects.toThrow(/Config file not found/);
+    await expect(loadConfig(missingPath)).rejects.toThrow(/Config file not found/u);
   });
 
   it('throws ConfigError on invalid export (no default)', async () => {
@@ -285,7 +285,7 @@ describe('loadConfig', () => {
     writeFileSync(configPath, `export const foo = 'bar';\n`, 'utf-8');
 
     await expect(loadConfig(configPath)).rejects.toThrow(ConfigError);
-    await expect(loadConfig(configPath)).rejects.toThrow(/must export a default/);
+    await expect(loadConfig(configPath)).rejects.toThrow(/must export a default/u);
   });
 });
 
@@ -297,7 +297,7 @@ describe('config merge semantics', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('concatenates default.replace with file.replace', async () => {
@@ -398,7 +398,7 @@ describe('preserve option', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('preserves files matching preserve patterns from auto-clean', async () => {
@@ -421,12 +421,12 @@ describe('preserve option', () => {
     writeFileSync(join(outputDir, 'subdir', 'keep.md'), '# Keep\n', 'utf-8');
 
     const config: ResolvedSyncConfig = {
-      configPath: join(tmpDir, 'sync.config.ts'),
       configDir: tmpDir,
-      source: sourceDir,
+      configPath: join(tmpDir, 'sync.config.ts'),
+      files: {},
       output: outputDir,
       preserve: ['orchestrator.md', 'subdir/keep.md'],
-      files: {},
+      source: sourceDir,
     };
 
     const results = await runSync({ config });
@@ -459,12 +459,12 @@ describe('preserve option', () => {
 
     // No preserve patterns - both stale files get removed
     const config: ResolvedSyncConfig = {
-      configPath: join(tmpDir, 'sync.config.ts'),
       configDir: tmpDir,
-      source: sourceDir,
+      configPath: join(tmpDir, 'sync.config.ts'),
+      files: {},
       output: outputDir,
       preserve: [],
-      files: {},
+      source: sourceDir,
     };
 
     const results = await runSync({ config });
@@ -493,7 +493,7 @@ describe('secondary source loop', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('resolves nested keys under the parent of source (e.g. skills/handoff.md)', async () => {
@@ -513,20 +513,20 @@ describe('secondary source loop', () => {
     );
 
     const config: ResolvedSyncConfig = {
-      configPath: join(tmpDir, 'sync.config.ts'),
       configDir: tmpDir,
-      source: sourceDir,
-      output: outputDir,
-      preserve: [],
+      configPath: join(tmpDir, 'sync.config.ts'),
       files: {
         'skills/handoff.md': {
-          output: join(outputDir, 'handoff', 'SKILL.md'),
-          stripFrontmatter: false,
-          replace: [],
-          prepend: '---\nname: handoff\n---\n\n',
           append: '',
+          output: join(outputDir, 'handoff', 'SKILL.md'),
+          prepend: '---\nname: handoff\n---\n\n',
+          replace: [],
+          stripFrontmatter: false,
         },
       },
+      output: outputDir,
+      preserve: [],
+      source: sourceDir,
     };
 
     const results = await runSync({ config });
@@ -554,7 +554,7 @@ describe('checkProvenance', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('passes when output file is unchanged', async () => {
@@ -564,15 +564,15 @@ describe('checkProvenance', () => {
     writeFileSync(sourcePath, '# Source', 'utf-8');
 
     const fileCfg: ResolvedFileConfig = {
-      output: outputPath,
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
       append: '',
+      output: outputPath,
+      prepend: '',
+      replace: [],
+      stripFrontmatter: false,
     };
 
     // Generate output via processFile (includes auto-generated header)
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     // Commit so git state is clean
     execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
@@ -580,8 +580,8 @@ describe('checkProvenance', () => {
 
     const result = await processFile(sourcePath, fileCfg, {
       check: true,
-      report: 'check',
       logger: () => {},
+      report: 'check',
     });
 
     expect(result.status).toBe('unchanged');
@@ -595,15 +595,15 @@ describe('checkProvenance', () => {
     writeFileSync(sourcePath, '# Source', 'utf-8');
 
     const fileCfg: ResolvedFileConfig = {
-      output: outputPath,
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
       append: '',
+      output: outputPath,
+      prepend: '',
+      replace: [],
+      stripFrontmatter: false,
     };
 
     // Generate output from source (includes auto-generated header)
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     // Commit so git state is clean
     execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
@@ -622,8 +622,8 @@ describe('checkProvenance', () => {
     // Check should detect provenance violation
     const result = await processFile(sourcePath, fileCfg, {
       check: true,
-      report: 'check',
       logger: () => {},
+      report: 'check',
     });
 
     expect(result.status).toBe('error');
@@ -637,15 +637,15 @@ describe('checkProvenance', () => {
     writeFileSync(sourcePath, '# Source', 'utf-8');
 
     const fileCfg: ResolvedFileConfig = {
-      output: outputPath,
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
       append: '',
+      output: outputPath,
+      prepend: '',
+      replace: [],
+      stripFrontmatter: false,
     };
 
     // Generate output (includes auto-generated header)
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     // Commit both
     execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
@@ -655,13 +655,13 @@ describe('checkProvenance', () => {
     writeFileSync(sourcePath, '# Source updated', 'utf-8');
 
     // Re-generate output from updated source (legitimate workflow - both now dirty)
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     // Both files have uncommitted changes - check should pass
     const result = await processFile(sourcePath, fileCfg, {
       check: true,
-      report: 'check',
       logger: () => {},
+      report: 'check',
     });
 
     expect(result.status).toBe('unchanged');
@@ -676,14 +676,14 @@ describe('checkProvenance', () => {
     writeFileSync(configPath, "export default { append: '' };\n", 'utf-8');
 
     const fileCfg: ResolvedFileConfig = {
-      output: outputPath,
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
       append: '',
+      output: outputPath,
+      prepend: '',
+      replace: [],
+      stripFrontmatter: false,
     };
 
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
     execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
@@ -691,13 +691,13 @@ describe('checkProvenance', () => {
     // The config change drives this regenerated output in the real sync path.
     writeFileSync(configPath, "export default { append: 'Updated\\n' };\n", 'utf-8');
     fileCfg.append = 'Updated\n';
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     const result = await processFile(sourcePath, fileCfg, {
       check: true,
       configPath,
-      report: 'check',
       logger: () => {},
+      report: 'check',
     });
 
     expect(result.status).toBe('unchanged');
@@ -713,14 +713,14 @@ describe('checkProvenance', () => {
     writeFileSync(configPath, "export default { append: '' };\n", 'utf-8');
 
     const fileCfg: ResolvedFileConfig = {
-      output: outputPath,
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
       append: '',
+      output: outputPath,
+      prepend: '',
+      replace: [],
+      stripFrontmatter: false,
     };
 
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
     execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
@@ -738,8 +738,8 @@ describe('checkProvenance', () => {
     const result = await processFile(sourcePath, fileCfg, {
       check: true,
       configPath,
-      report: 'check',
       logger: () => {},
+      report: 'check',
     });
 
     expect(result.status).toBe('error');
@@ -753,14 +753,14 @@ describe('checkProvenance', () => {
     writeFileSync(sourcePath, '# Source', 'utf-8');
 
     const fileCfg: ResolvedFileConfig = {
-      output: outputPath,
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
       append: '',
+      output: outputPath,
+      prepend: '',
+      replace: [],
+      stripFrontmatter: false,
     };
 
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
     execSync('git commit -m "initial sync"', { cwd: tmpDir, stdio: 'ignore' });
@@ -772,8 +772,8 @@ describe('checkProvenance', () => {
 
     const result = await processFile(sourcePath, fileCfg, {
       check: true,
-      report: 'check',
       logger: () => {},
+      report: 'check',
     });
 
     expect(result.status).toBe('error');
@@ -798,24 +798,24 @@ describe('checkProvenance', () => {
     writeFileSync(join(sourceDir, 'handoff.md'), '# Handoff Contract', 'utf-8');
 
     const fileCfg: ResolvedFileConfig = {
-      output: outputPath,
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
       append: '',
+      output: outputPath,
+      prepend: '',
+      replace: [],
+      stripFrontmatter: false,
     };
 
     // Regenerate output from the new source
     await processFile(join(sourceDir, 'handoff.md'), fileCfg, {
-      report: 'sync',
       logger: () => {},
+      report: 'sync',
     });
 
     // Check must not flag a provenance violation
     const result = await processFile(join(sourceDir, 'handoff.md'), fileCfg, {
       check: true,
-      report: 'check',
       logger: () => {},
+      report: 'check',
     });
 
     expect(result.status).toBe('unchanged');
@@ -831,16 +831,16 @@ describe('checkProvenance', () => {
       writeFileSync(sourcePath, '# Source', 'utf-8');
 
       const fileCfg: ResolvedFileConfig = {
-        output: outputPath,
-        stripFrontmatter: false,
-        replace: [],
-        prepend: '',
         append: '',
+        output: outputPath,
+        prepend: '',
+        replace: [],
+        stripFrontmatter: false,
       };
 
       await processFile(sourcePath, fileCfg, {
-        report: 'sync',
         logger: () => {},
+        report: 'sync',
       });
 
       // Hand-edit output (no git repo, so check should skip gracefully)
@@ -848,15 +848,15 @@ describe('checkProvenance', () => {
 
       const result = await processFile(sourcePath, fileCfg, {
         check: true,
-        report: 'check',
         logger: () => {},
+        report: 'check',
       });
 
       // Without git, the check skips and falls through to content comparison
       expect(result.status).toBe('error');
       expect(result.error).toBe('Output differs from expected');
     } finally {
-      rmSync(nonGitDir, { recursive: true, force: true });
+      rmSync(nonGitDir, { force: true, recursive: true });
     }
   });
 
@@ -870,15 +870,15 @@ describe('checkProvenance', () => {
     writeFileSync(sourcePath, '# Source', 'utf-8');
 
     const fileCfg: ResolvedFileConfig = {
-      output: outputPath,
-      stripFrontmatter: false,
-      replace: [],
-      prepend: '',
       append: '',
+      output: outputPath,
+      prepend: '',
+      replace: [],
+      stripFrontmatter: false,
     };
 
     // Generate output via processFile (includes auto-generated header)
-    await processFile(sourcePath, fileCfg, { report: 'sync', logger: () => {} });
+    await processFile(sourcePath, fileCfg, { logger: () => {}, report: 'sync' });
 
     // Commit so git state is clean
     execSync('git add -A', { cwd: tmpDir, stdio: 'ignore' });
@@ -893,8 +893,8 @@ describe('checkProvenance', () => {
 
     const result = await processFile(sourcePath, fileCfg, {
       check: true,
-      report: 'check',
       logger: () => {},
+      report: 'check',
     });
 
     // Provenance violation is detected - and no PWNED file was created by

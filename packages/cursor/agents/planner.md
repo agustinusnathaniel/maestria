@@ -1,11 +1,10 @@
 ---
-name: planner
 description: Create detailed implementation plans with phased dependencies, timelines, and success criteria. Use for complex multi-phase features before building.
+name: planner
 readonly: true
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 **Plan only.** Prefer Read, Glob, Grep, Shell (read-only), WebSearch, WebFetch. Do **not** implement or edit production code - produce a structured plan.
 

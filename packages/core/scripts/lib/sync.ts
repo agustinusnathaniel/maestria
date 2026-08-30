@@ -62,27 +62,27 @@ async function processPrimarySources(
     const resolved: ResolvedFileConfig = isExplicit
       ? fileCfg
       : {
+          append: config.default?.append ?? '',
+          frontmatter: config.default?.frontmatter,
           output: config.output
             ? resolve(config.output, filename)
             : resolve(config.configDir, filename),
-          stripFrontmatter: config.default?.stripFrontmatter ?? false,
-          replace: [...(config.default?.replace ?? [])],
           prepend: config.default?.prepend ?? '',
-          append: config.default?.append ?? '',
-          frontmatter: config.default?.frontmatter,
+          replace: [...(config.default?.replace ?? [])],
+          stripFrontmatter: config.default?.stripFrontmatter ?? false,
         };
     if (!isExplicit && verbose) {
       logger(`[${report}] No config for ${relPath}, using defaults`);
     }
     generatedOutputs.add(resolved.output);
     const result = await processFile(sourceAbs, resolved, {
-      configPath: config.configPath,
-      dryRun,
       check,
+      configPath: config.configPath,
       diff,
-      verbose,
-      report,
+      dryRun,
       logger,
+      report,
+      verbose,
     });
     results.push(result);
     if (result.status === 'error' && verbose) {
@@ -120,13 +120,13 @@ async function processSecondarySources(
     }
     generatedOutputs.add(fileCfg.output);
     const result = await processFile(secondaryAbs, fileCfg, {
-      configPath: config.configPath,
-      dryRun,
       check,
+      configPath: config.configPath,
       diff,
-      verbose,
-      report,
+      dryRun,
       logger,
+      report,
+      verbose,
     });
     results.push(result);
     if (result.status === 'error' && verbose) {
@@ -150,24 +150,24 @@ export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
   await processPrimarySources(
     config,
     sourceFiles,
-    { dryRun, check, diff, verbose, report, logger },
+    { check, diff, dryRun, logger, report, verbose },
     generatedOutputs,
     results,
     matchedFiles,
   );
   await processSecondarySources(
     config,
-    { dryRun, check, diff, verbose, report, logger },
+    { check, diff, dryRun, logger, report, verbose },
     generatedOutputs,
     results,
     matchedFiles,
   );
   const cleanResults = await autoClean(config, generatedOutputs, {
-    dryRun,
     check,
-    verbose,
-    report,
+    dryRun,
     logger,
+    report,
+    verbose,
   });
   results.push(...cleanResults);
   return results;

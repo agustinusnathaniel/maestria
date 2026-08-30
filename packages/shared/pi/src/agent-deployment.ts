@@ -52,7 +52,7 @@ export function deploySpecialistAgents(agentsSrc: string, agentsDest: string): n
     try {
       const content = readFileSync(srcFile, 'utf-8');
       writeFileSync(destFile, content, 'utf-8');
-      deployed++;
+      deployed += 1;
     } catch (error) {
       console.warn(`[maestria] Failed to deploy agent ${name}:`, error);
     }

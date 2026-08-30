@@ -6,7 +6,17 @@ import type { PlatformStatus, StatusOutput, PlatformResult } from '@/types.js';
 /** Wrapper around @clack/prompts spinner that respects --quiet */
 export function createSpinner(quiet: boolean) {
   if (quiet) {
-    return { start: () => {}, stop: () => {}, message: () => {} };
+    return {
+      message: () => {
+        /* empty */
+      },
+      start: () => {
+        /* empty */
+      },
+      stop: () => {
+        /* empty */
+      },
+    };
   }
   return clackSpinner();
 }
@@ -26,9 +36,7 @@ export function renderStatusTable(platforms: PlatformStatus[]): string {
     const latest =
       p.latestVersion === 'check-failed'
         ? picocolors.yellow('check failed')
-        : p.latestVersion
-          ? p.latestVersion
-          : picocolors.dim('unknown');
+        : p.latestVersion || picocolors.dim('unknown');
     const freshness = p.installed ? freshnessOf(p.installedVersion, p.latestVersion) : 'unknown';
     const outdated =
       freshness === 'current'
@@ -93,13 +101,13 @@ export function renderCompactResults(results: PlatformResult[]): string {
         return `${r.id}: failed ${r.message}`;
       }
       if (r.message === 'Already up to date') {
-        return `${r.id}: already latest ${r.nextVersion || r.prevVersion || ''}`;
+        return `${r.id}: already latest ${(r.nextVersion ?? r.prevVersion) || ''}`;
       }
       if (r.prevVersion && r.nextVersion && r.prevVersion !== r.nextVersion) {
         return `${r.id}: updated ${r.prevVersion} -> ${r.nextVersion}`;
       }
       // Install or other success with a version
-      const version = r.nextVersion || r.prevVersion || '';
+      const version = (r.nextVersion ?? r.prevVersion) || '';
       return `${r.id}: installed ${version}`;
     })
     .join('\n')}\n`;

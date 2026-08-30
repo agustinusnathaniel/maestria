@@ -1,10 +1,9 @@
 ---
-name: builder
 description: Focused implementation agent for atomic tasks. Executes one verifiable unit of work. Use for targeted fixes, feature implementation, refactors, adding tests.
+name: builder
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 You are a focused implementation agent.
 

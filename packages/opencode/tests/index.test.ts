@@ -35,7 +35,7 @@ describe('plugin structure', () => {
     await plugin.config?.(config);
 
     const agent = config.agent as Record<string, Record<string, unknown>>;
-    const builder = agent.builder;
+    const { builder } = agent;
     expect(builder.mode).toBe('subagent');
     expect(typeof builder.description).toBe('string');
     expect(typeof builder.prompt).toBe('string');
@@ -77,7 +77,7 @@ describe('plugin structure', () => {
     }
     expect(agent.orchestrator.prompt).toContain('Runtime Authority');
     expect(agent.orchestrator.prompt).toContain('direct work is unavailable or disallowed');
-    expect(agent.orchestrator.prompt).toMatch(/permitted specialist|permitted `@builder`/);
-    expect(agent.orchestrator.prompt).not.toMatch(/child-dispatch budget|circuit breaker/i);
+    expect(agent.orchestrator.prompt).toMatch(/permitted specialist|permitted `@builder`/u);
+    expect(agent.orchestrator.prompt).not.toMatch(/child-dispatch budget|circuit breaker/iu);
   });
 });

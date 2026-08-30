@@ -96,7 +96,7 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
       };
 
       if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(command).then(announce).catch(() => {});
+        navigator.clipboard.writeText(command).then(announce).catch(() => { /* empty */ });
       }
     });
   });

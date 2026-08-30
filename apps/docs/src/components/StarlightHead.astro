@@ -14,9 +14,9 @@ import alanSansLatinUrl from '@fontsource-variable/alan-sans/files/alan-sans-lat
 import jetbrainsMonoLatinUrl from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url'
 
 const preloadedFonts = [
-  { href: snProLatinUrl, family: 'SN Pro Variable' },
-  { href: alanSansLatinUrl, family: 'Alan Sans Variable' },
-  { href: jetbrainsMonoLatinUrl, family: 'JetBrains Mono Variable' },
+  { family: 'SN Pro Variable', href: snProLatinUrl },
+  { family: 'Alan Sans Variable', href: alanSansLatinUrl },
+  { family: 'JetBrains Mono Variable', href: jetbrainsMonoLatinUrl },
 ];
 
 // Trust anchors for agents and search engines: Organization + SoftwareApplication
@@ -34,7 +34,7 @@ function markdownAlternateHref(pathname: string): string | undefined {
   if (clean.endsWith('.md') || clean.endsWith('.txt')) {return undefined;}
   const twin = markdownTwinPath(clean);
   const normalized =
-    clean.length > 1 ? (clean.replace(/\/+$/, '').replace(/\.html$/, '') || '/') : '/';
+    clean.length > 1 ? (clean.replace(/\/+$/u, '').replace(/\.html$/u, '') || '/') : '/';
   if (twin === normalized) {return undefined;}
   return new URL(twin, Astro.site ?? new URL(SITE_URL)).href;
 }

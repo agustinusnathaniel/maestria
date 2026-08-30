@@ -1,10 +1,9 @@
 ---
-name: sonar
 description: Research-only Maestria route using read-only specialist skills, then stop before implementation.
+name: sonar
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 [MODE: sonar]
 

@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vite-plus/test';
 
 const __dirname = import.meta.dirname;
@@ -79,7 +78,7 @@ describe('public/robots.txt', () => {
       const [directive] = line.split(':');
       expect(['User-agent', 'Allow', 'Sitemap']).toContain(directive?.trim());
       if (directive?.trim() === 'Sitemap') {
-        expect(line).toMatch(/Sitemap: https:\/\//);
+        expect(line).toMatch(/Sitemap: https:\/\//u);
       }
     }
   });

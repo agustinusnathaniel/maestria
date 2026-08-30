@@ -31,8 +31,8 @@ async function runDirectUpdate(
       results.push({
         id,
         label: id,
-        ok: false,
         message: 'Platform definition not found. This is a bug.',
+        ok: false,
       } satisfies PlatformResult);
       continue;
     }
@@ -57,8 +57,8 @@ async function runAllUpdate(isQuiet: boolean, version?: string): Promise<Platfor
       results.push({
         id: p.id,
         label: p.label,
-        ok: false,
         message: 'Platform definition not found. This is a bug.',
+        ok: false,
       } satisfies PlatformResult);
       continue;
     }
@@ -103,8 +103,8 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
     );
     statuses.push({
       id: p.id,
-      label: p.label,
       installedVersion: pv,
+      label: p.label,
       latestVersion: lv,
       needsUpdate: needsUpdateOf(pv, lv),
     });
@@ -122,19 +122,19 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
     message: 'Which platforms do you want to update?',
     options: {
       'All platforms': needsUpdate.map((s) => ({
-        value: s.id,
-        label: s.label,
         hint: `${s.installedVersion} → ${s.latestVersion}`,
+        label: s.label,
+        value: s.id,
       })),
     },
-    selectableGroups: true,
     required: true,
+    selectableGroups: true,
   });
   if (isCancel(selected) || !selected) {
     cancel('Update cancelled.');
     process.exit(130);
   }
-  const toUpdate = needsUpdate.filter((s) => (selected as string[]).includes(s.id));
+  const toUpdate = needsUpdate.filter((s) => selected.includes(s.id));
   const results: PlatformResult[] = [];
   for (const p of toUpdate) {
     results.push(await Effect.runPromise(updateOne(getPlatform(p.id)!, isQuiet, version)));
@@ -143,65 +143,63 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
 }
 
 export const updateCommand = defineCommand({
-  meta: {
-    name: 'update',
-    description: 'Update maestria plugins to the latest (or specified) version',
-  },
   args: {
-    platform: {
-      type: 'positional',
-      description: `Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). One of: ${VALID_PLATFORMS.join(', ')}. Pass directly to skip interactive selection.`,
-      required: false,
-    },
-    version: {
-      type: 'string',
-      description: 'Target version to install (e.g., 0.5.0). Defaults to latest available version.',
-      alias: 'V',
-      required: false,
-    },
     all: {
-      type: 'boolean',
-      description: 'Update all installed platforms',
       alias: 'a',
       default: false,
-    },
-    json: {
+      description: 'Update all installed platforms',
       type: 'boolean',
-      description:
-        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
-      default: false,
-    },
-    quiet: {
-      type: 'boolean',
-      description:
-        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
-      default: false,
     },
     compact: {
-      type: 'boolean',
-      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       default: false,
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
+      type: 'boolean',
+    },
+    json: {
+      default: false,
+      description:
+        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+      type: 'boolean',
+    },
+    platform: {
+      description: `Platform(s) to update. Comma-separated for multiple (e.g., opencode,pi). One of: ${VALID_PLATFORMS.join(', ')}. Pass directly to skip interactive selection.`,
+      required: false,
+      type: 'positional',
+    },
+    quiet: {
+      default: false,
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      type: 'boolean',
+    },
+    version: {
+      alias: 'V',
+      description: 'Target version to install (e.g., 0.5.0). Defaults to latest available version.',
+      required: false,
+      type: 'string',
     },
   },
+  meta: {
+    description: 'Update maestria plugins to the latest (or specified) version',
+    name: 'update',
+  },
   run: async ({ args }) => {
-    const isQuiet = (args.quiet || args.compact) as boolean;
-    const isCompact = args.compact as boolean;
+    const isQuiet = args.quiet || args.compact;
+    const isCompact = args.compact;
     let platformIds: string[] | undefined;
     if (args.platform) {
-      platformIds = await validateOrExit(validatePlatforms(args.platform as string));
+      platformIds = await validateOrExit(validatePlatforms(args.platform));
     }
     if (args.version) {
-      await validateOrExit(validateVersion(args.version as string));
+      await validateOrExit(validateVersion(args.version));
     }
     const results: PlatformResult[] = [];
     if (platformIds && platformIds.length > 0) {
-      results.push(
-        ...(await runDirectUpdate(platformIds, isQuiet, args.version as string | undefined)),
-      );
+      results.push(...(await runDirectUpdate(platformIds, isQuiet, args.version)));
     } else if (args.all) {
-      results.push(...(await runAllUpdate(isQuiet, args.version as string | undefined)));
+      results.push(...(await runAllUpdate(isQuiet, args.version)));
     } else {
-      results.push(...(await runInteractiveUpdate(isQuiet, args.version as string | undefined)));
+      results.push(...(await runInteractiveUpdate(isQuiet, args.version)));
     }
     if (args.json) {
       console.log(JSON.stringify(results, null, 2));
@@ -228,7 +226,7 @@ function captureSnapshot(
   platform: PlatformHandler,
 ): Effect.Effect<PlatformUpdateSnapshot | { error: string } | undefined> {
   if (!platform.captureUpdateSnapshot) {
-    return Effect.succeed(undefined);
+    return Effect.succeed();
   }
   return platform.captureUpdateSnapshot.pipe(
     Effect.match({
@@ -250,8 +248,8 @@ export function updateOne(
       return {
         id: platform.id,
         label: platform.label,
-        ok: false,
         message: `Version pinning is not supported for ${platform.label}; updating without --version is required.`,
+        ok: false,
       } satisfies PlatformResult;
     }
     const captured = yield* captureSnapshot(platform);
@@ -259,11 +257,11 @@ export function updateOne(
       return {
         id: platform.id,
         label: platform.label,
-        ok: false,
         message: captured.error,
+        ok: false,
       } satisfies PlatformResult;
     }
-    const snapshot = captured as PlatformUpdateSnapshot | undefined;
+    const snapshot = captured;
     const prevVersion = snapshot
       ? snapshot.installedVersion
       : yield* platform.getInstalledVersion.pipe(
@@ -280,8 +278,8 @@ export function updateOne(
         return {
           id: platform.id,
           label: platform.label,
-          ok: false,
           message: preflightError,
+          ok: false,
         } satisfies PlatformResult;
       }
     }
@@ -289,20 +287,20 @@ export function updateOne(
       return {
         id: platform.id,
         label: platform.label,
-        ok: true,
         message: 'Already up to date',
-        prevVersion,
         nextVersion: prevVersion,
+        ok: true,
+        prevVersion,
       } satisfies PlatformResult;
     }
     if (!version && isVersionGt(prevVersion, targetVersion)) {
       return {
         id: platform.id,
         label: platform.label,
-        ok: true,
         message: `Installed v${prevVersion} is newer than latest v${targetVersion}; skipping (use --version to pin)`,
-        prevVersion,
         nextVersion: prevVersion,
+        ok: true,
+        prevVersion,
       } satisfies PlatformResult;
     }
     const spinner = createSpinner(quiet);
@@ -315,8 +313,8 @@ export function updateOne(
       return {
         id: platform.id,
         label: platform.label,
-        ok: false,
         message: errorMessage,
+        ok: false,
       } satisfies PlatformResult;
     }
     const nextVersion = yield* platform.getInstalledVersion.pipe(
@@ -329,10 +327,10 @@ export function updateOne(
     return {
       id: platform.id,
       label: platform.label,
-      ok: true,
       message: 'Updated',
-      prevVersion,
       nextVersion,
+      ok: true,
+      prevVersion,
     } satisfies PlatformResult;
   });
 }

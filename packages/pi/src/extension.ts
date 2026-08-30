@@ -34,7 +34,7 @@ function currentSessionEntries(ctx: ExtensionContext): PersistedStateEntry[] | n
   }
 
   const branch = sessionManager.getBranch();
-  return Array.isArray(branch) ? (branch as PersistedStateEntry[]) : null;
+  return Array.isArray(branch) ? branch : null;
 }
 
 function restoreStateFromSession(state: MaestriaState, ctx: ExtensionContext): void {
@@ -50,7 +50,7 @@ function restoreStateFromSession(state: MaestriaState, ctx: ExtensionContext): v
     return;
   }
 
-  for (let i = entries.length - 1; i >= 0; i--) {
+  for (let i = entries.length - 1; i >= 0; i -= 1) {
     const entry = entries[i];
     if (entry.type === 'custom' && entry.customType === 'maestria_state') {
       if (isRecord(entry.data)) {

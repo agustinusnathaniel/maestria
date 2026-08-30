@@ -1,10 +1,9 @@
 ---
-name: sonar
 description: Research-only mode - read-only specialist work, then STOP before implementation. Load when the user invokes sonar or asks for research-only work.
+name: sonar
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 [MODE: sonar]
 

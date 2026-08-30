@@ -104,7 +104,7 @@ describe('websiteSchema', () => {
   });
 
   it('embeds the Organization as publisher without its own @context', () => {
-    const publisher = schema.publisher;
+    const { publisher } = schema;
     expect(publisher['@type']).toBe('Organization');
     expect('@context' in publisher).toBe(false);
     expect(publisher.name).toBe('Maestria');
@@ -115,12 +115,12 @@ describe('websiteSchema', () => {
     const org = organizationSchema();
     expect(schema.publisher).toEqual({
       '@type': org['@type'],
-      name: org.name,
-      url: org.url,
+      contactPoint: org.contactPoint,
       description: org.description,
       logo: org.logo,
+      name: org.name,
       sameAs: org.sameAs,
-      contactPoint: org.contactPoint,
+      url: org.url,
     });
   });
 });
@@ -131,7 +131,7 @@ describe('JSON-LD serialization round-trip', () => {
     ['softwareApplication', softwareApplicationSchema()],
     ['website', websiteSchema()],
   ])('%j survives JSON.stringify -> parse unchanged', (_name, schema) => {
-    const roundTripped = JSON.parse(JSON.stringify(schema));
+    const roundTripped = structuredClone(schema);
     expect(roundTripped).toEqual(schema);
   });
 });

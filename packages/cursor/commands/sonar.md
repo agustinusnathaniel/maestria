@@ -3,9 +3,6 @@ name: sonar
 description: Research-only Maestria mode (recon -> design, no implementation)
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
-
 [MODE: sonar]
 
 ## MODE: sonar (Research Only)

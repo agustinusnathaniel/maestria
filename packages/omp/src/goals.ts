@@ -25,7 +25,7 @@ function currentSessionEntries(ctx: ExtensionContext): PersistedStateEntry[] | n
   }
 
   const branch = sessionManager.getBranch();
-  return Array.isArray(branch) ? (branch as PersistedStateEntry[]) : null;
+  return Array.isArray(branch) ? branch : null;
 }
 
 function isNativeGoalStatus(value: unknown): value is NativeGoalStatus {
@@ -33,7 +33,7 @@ function isNativeGoalStatus(value: unknown): value is NativeGoalStatus {
 }
 
 function nativeGoalFromSessionEntries(entries: PersistedStateEntry[]): MaestriaState['nativeGoal'] {
-  for (let i = entries.length - 1; i >= 0; i--) {
+  for (let i = entries.length - 1; i >= 0; i -= 1) {
     const entry = entries[i];
     if (entry.type !== 'mode_change') {
       continue;
@@ -45,8 +45,8 @@ function nativeGoalFromSessionEntries(entries: PersistedStateEntry[]): MaestriaS
       return null;
     }
 
-    const objective = entry.data.goal.objective;
-    const status = entry.data.goal.status;
+    const { objective } = entry.data.goal;
+    const { status } = entry.data.goal;
     if (typeof objective !== 'string' || !isNativeGoalStatus(status)) {
       return null;
     }
@@ -78,7 +78,7 @@ export function restoreMaestriaStateForSession(state: MaestriaState, ctx: Extens
     return;
   }
 
-  for (let i = entries.length - 1; i >= 0; i--) {
+  for (let i = entries.length - 1; i >= 0; i -= 1) {
     const entry = entries[i];
     if (entry.type !== 'custom' || entry.customType !== 'maestria_state') {
       continue;

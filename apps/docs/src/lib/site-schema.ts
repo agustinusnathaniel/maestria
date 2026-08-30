@@ -43,9 +43,9 @@ function organizationEntity() {
     contactPoint: [
       {
         '@type': 'ContactPoint',
+        availableLanguage: ['en'],
         contactType: 'technical support',
         url: GITHUB_ISSUES_URL,
-        availableLanguage: ['en'],
       },
     ],
   };
@@ -61,12 +61,12 @@ export function websiteSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Maestria',
     alternateName: 'Maestria AI Praxis',
-    url: SITE_URL,
     description: SITE_DESCRIPTION,
     inLanguage: 'en',
+    name: 'Maestria',
     publisher: organizationEntity(),
+    url: SITE_URL,
   };
 }
 
@@ -75,15 +75,15 @@ export function softwareApplicationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'Maestria',
     applicationCategory: 'DeveloperApplication',
+    author: { '@type': 'Person', name: AUTHOR_NAME, url: AUTHOR_URL },
+    codeRepository: GITHUB_REPO_URL,
+    description: SITE_DESCRIPTION,
+    downloadUrl: 'https://www.npmjs.com/package/maestria',
+    license: `${GITHUB_REPO_URL}/blob/main/LICENSE`,
+    name: 'Maestria',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     operatingSystem: 'Node.js 22+',
     url: SITE_URL,
-    description: SITE_DESCRIPTION,
-    license: `${GITHUB_REPO_URL}/blob/main/LICENSE`,
-    author: { '@type': 'Person', name: AUTHOR_NAME, url: AUTHOR_URL },
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    downloadUrl: 'https://www.npmjs.com/package/maestria',
-    codeRepository: GITHUB_REPO_URL,
   };
 }

@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vite-plus/test';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
-const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/u;
 
 const EXPECTED_AGENTS = [
   'adventurer',
@@ -64,7 +63,7 @@ async function readDirNames(relativePath: string): Promise<string[]> {
   return entries
     .filter((entry) => !entry.name.startsWith('.'))
     .map((entry) => entry.name)
-    .sort();
+    .toSorted();
 }
 
 /**
@@ -74,7 +73,7 @@ async function readDirNames(relativePath: string): Promise<string[]> {
  * generated frontmatter contains no nested objects.
  */
 function parseFrontmatter(text: string): { data: Record<string, string | string[]>; body: string } {
-  const lines = text.split(/\r?\n/);
+  const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
@@ -95,12 +94,12 @@ function parseFrontmatter(text: string): { data: Record<string, string | string[
   };
 
   for (const line of lines.slice(1, close)) {
-    const blockItem = /^\s+-\s*(.*)$/.exec(line);
+    const blockItem = /^\s+-\s*(.*)$/u.exec(line);
     if (blockItem !== null && currentKey !== null) {
       listValues.push(blockItem[1].trim());
       continue;
     }
-    const pair = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
+    const pair = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/u.exec(line);
     if (pair === null) {
       continue;
     }
@@ -114,7 +113,7 @@ function parseFrontmatter(text: string): { data: Record<string, string | string[
     if (value.startsWith('[') && value.endsWith(']')) {
       const inner = value.slice(1, -1).trim();
       data[key] =
-        inner === '' ? [] : inner.split(',').map((e) => e.trim().replaceAll(/^["']|["']$/g, ''));
+        inner === '' ? [] : inner.split(',').map((e) => e.trim().replaceAll(/^["']|["']$/gu, ''));
     } else if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
@@ -128,7 +127,7 @@ function parseFrontmatter(text: string): { data: Record<string, string | string[
   flushList();
 
   const body = lines.slice(close + 1).join('\n');
-  return { data, body };
+  return { body, data };
 }
 
 async function readAgent(
@@ -193,7 +192,7 @@ describe('.claude-plugin/plugin.json manifest', () => {
 describe('generated agents', () => {
   it('contains exactly the 7 expected specialist agents and nothing else', async () => {
     const names = await readDirNames('agents');
-    expect(names).toEqual([...EXPECTED_AGENTS].map((agent) => `${agent}.md`).sort());
+    expect(names).toEqual([...EXPECTED_AGENTS].map((agent) => `${agent}.md`).toSorted());
   });
 
   for (const agent of EXPECTED_AGENTS) {
@@ -214,7 +213,7 @@ describe('generated agents', () => {
       it('has the auto-generated comment and no source comment', async () => {
         const text = await readFile(path.join(PACKAGE_ROOT, 'agents', `${agent}.md`), 'utf-8');
         expect(text).toContain('Auto-generated from @maestria/core');
-        expect(text).not.toMatch(/^<!--\s*Source:/m);
+        expect(text).not.toMatch(/^<!--\s*Source:/mu);
       });
 
       it('does not use ignored plugin-agent fields', async () => {
@@ -290,14 +289,14 @@ describe('generated skills', () => {
     expect(text).toContain('Runtime Authority');
     expect(text).toContain('direct work is available');
     expect(text).toContain('Methodology and skills are advisory guidance');
-    expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/i);
+    expect(text).not.toMatch(/pure dispatcher|Never implement routed code changes yourself/iu);
   });
 });
 
 describe('generated commands', () => {
   it('contains exactly the 3 workflow commands and nothing else', async () => {
     const names = await readDirNames('commands');
-    expect(names).toEqual([...EXPECTED_COMMANDS].map((command) => `${command}.md`).sort());
+    expect(names).toEqual([...EXPECTED_COMMANDS].map((command) => `${command}.md`).toSorted());
   });
 
   for (const command of EXPECTED_COMMANDS) {

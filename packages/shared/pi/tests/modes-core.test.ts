@@ -22,9 +22,9 @@ describe('MODE_KEYWORDS', () => {
 describe('MODE_MARKERS', () => {
   it('contains markers for all keywords', () => {
     expect(MODE_MARKERS).toEqual({
+      blitz: '[MODE: blitz]',
       fein: '[MODE: fein]',
       sonar: '[MODE: sonar]',
-      blitz: '[MODE: blitz]',
     });
   });
 });
@@ -58,7 +58,7 @@ describe('loadModePrompt', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('reads content after ## MODE: marker', () => {
@@ -98,7 +98,7 @@ describe('getModePrompt', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('returns marker + loaded prompt for a keyword', () => {
@@ -109,7 +109,7 @@ describe('getModePrompt', () => {
 
   it('separates marker and body with blank line', () => {
     const result = getModePrompt('sonar', tmpDir);
-    expect(result).toMatch(/^\[MODE: sonar\]\n\n## MODE:/);
+    expect(result).toMatch(/^\[MODE: sonar\]\n\n## MODE:/u);
   });
 
   it('returns marker with empty body for unknown prompt file', () => {
@@ -136,7 +136,7 @@ describe('detectModeInText', () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
   });
 
   it('detects fein at start of text', () => {

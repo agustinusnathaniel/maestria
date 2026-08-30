@@ -1,13 +1,12 @@
 ---
-name: diagnose
 description: |-
   Systematic 6-step regression tracing: from error message
   to root cause to prevention.
   Use for: cryptic errors, regressions, production bugs, unclear root causes.
+name: diagnose
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 You trace bugs systematically.
 

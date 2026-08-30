@@ -25,9 +25,9 @@ export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
 export const VALID_KEYWORDS: readonly ModeKeyword[] = MODE_KEYWORDS;
 
 export const MODE_MARKERS: Record<ModeKeyword, string> = {
+  blitz: '[MODE: blitz]',
   fein: '[MODE: fein]',
   sonar: '[MODE: sonar]',
-  blitz: '[MODE: blitz]',
 };
 
 /**
@@ -38,9 +38,9 @@ export const MODE_MARKERS: Record<ModeKeyword, string> = {
  * blitz (1): fast implementation, skip optional ceremony; required review remains
  */
 export const MODE_PRIORITY: Record<ModeKeyword, number> = {
+  blitz: 1,
   fein: 3,
   sonar: 2,
-  blitz: 1,
 };
 
 // ── Types ──
@@ -89,17 +89,17 @@ export function isInRanges(index: number, ranges: [number, number][]): boolean {
 export function extractModeSection(content: string): string {
   const modeIdx = content.indexOf('## MODE:');
   if (modeIdx !== -1) {
-    return `${content.slice(modeIdx).replace(/\s+$/, '')}\n`;
+    return `${content.slice(modeIdx).replace(/\s+$/u, '')}\n`;
   }
-  return `${content.replace(/\s+$/, '')}\n`;
+  return `${content.replace(/\s+$/u, '')}\n`;
 }
 
 function escapeRegExp(value: string): string {
-  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 }
 
 function buildKeywordRegex(keyword: string): RegExp {
-  return new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'gi');
+  return new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'giu');
 }
 
 function isModeKeyword(value: string): value is ModeKeyword {
@@ -148,7 +148,7 @@ export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure
         continue;
       }
       if (best === null || MODE_PRIORITY[keyword] > MODE_PRIORITY[best.mode]) {
-        best = { mode: keyword, keyword: match[0], index: match.index };
+        best = { index: match.index, keyword: match[0], mode: keyword };
       }
     }
   }
@@ -166,6 +166,6 @@ export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure
 export function stripKeyword(text: string, result: { index: number; keyword: string }): string {
   const before = text.slice(0, result.index);
   const after = text.slice(result.index + result.keyword.length);
-  const cleaned = after.replace(/^:\s*/, '');
-  return (before + cleaned).replaceAll(/ {2,}/g, ' ').trim();
+  const cleaned = after.replace(/^:\s*/u, '');
+  return (before + cleaned).replaceAll(/ {2,}/gu, ' ').trim();
 }

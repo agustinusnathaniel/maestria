@@ -4,7 +4,7 @@
  * Each prerelease/build identifier must be non-empty.
  */
 const SEMVER_REGEX =
-  /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/;
+  /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/u;
 
 /**
  * Validate a version string. Accepts 'latest' and '' as special values.
@@ -49,8 +49,8 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
 
   // Per semver 2.0.0 spec section 10, build metadata MUST be ignored
   // when determining version precedence.
-  const aWithoutBuild = a.replace(/\+.*$/, '');
-  const bWithoutBuild = b.replace(/\+.*$/, '');
+  const aWithoutBuild = a.replace(/\+.*$/u, '');
+  const bWithoutBuild = b.replace(/\+.*$/u, '');
 
   const result = aWithoutBuild.localeCompare(bWithoutBuild, undefined, { numeric: true });
   if (result === 0) {
@@ -62,7 +62,7 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
   // end-of-string (e.g., "1.0.0-alpha" > "1.0.0" with localeCompare).
   // If both share the same MAJOR.MINOR.PATCH and exactly one has a
   // prerelease tag, reverse the result.
-  const stripSuffix = /(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/;
+  const stripSuffix = /(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/u;
   const aBase = aWithoutBuild.replace(stripSuffix, '');
   const bBase = bWithoutBuild.replace(stripSuffix, '');
   if (aBase === bBase) {

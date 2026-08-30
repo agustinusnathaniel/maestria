@@ -3,7 +3,7 @@ import { exitCodeForResults } from '@/lib/result-exit.js';
 import type { PlatformResult } from '@/types.js';
 
 function result(ok: boolean): PlatformResult {
-  return { id: 'pi', label: 'Pi', ok, message: ok ? 'ok' : 'failed' };
+  return { id: 'pi', label: 'Pi', message: ok ? 'ok' : 'failed', ok };
 }
 
 describe('exitCodeForResults', () => {
@@ -27,10 +27,10 @@ describe('exitCodeForResults', () => {
     const upToDate: PlatformResult = {
       id: 'pi',
       label: 'Pi',
-      ok: true,
       message: 'Already up to date',
-      prevVersion: '0.2.0',
       nextVersion: '0.2.0',
+      ok: true,
+      prevVersion: '0.2.0',
     };
     expect(exitCodeForResults([upToDate])).toBe(0);
     expect(exitCodeForResults([result(true), upToDate])).toBe(0);

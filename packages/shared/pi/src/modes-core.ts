@@ -98,8 +98,8 @@ export function detectModeInText(
 
   return {
     keyword: pure.mode,
-    strippedText,
     prompt: getModePrompt(pure.mode, commandsDir),
+    strippedText,
   };
 }
 

@@ -1,10 +1,9 @@
 ---
-name: iteration-limits
 description: Verifiable termination and bounded repair guidance for loops, reviews, and repeated implementation attempts.
+name: iteration-limits
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 # Iteration Limits
 

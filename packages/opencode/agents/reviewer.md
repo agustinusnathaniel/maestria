@@ -6,12 +6,6 @@ description: |-
   Use for: PR review, pre-commit review, architecture document review.
 mode: subagent
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  skill: allow
-  edit: deny
   bash:
     "*": ask
     ls*: allow
@@ -40,11 +34,16 @@ permission:
     vp*: allow
     rtk*: allow
     node*: allow
+  edit: deny
+  glob: allow
+  grep: allow
+  lsp: allow
+  read: allow
+  skill: allow
   webfetch: allow
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 You review code for quality. You do not edit files (read-only checker only).
 

@@ -6,14 +6,14 @@ import type { MaestriaState } from '@/state.js';
 
 function createMockPi() {
   return {
-    registerCommand: vi.fn(),
+    appendEntry: vi.fn(),
     getActiveTools: vi
       .fn()
       .mockReturnValue(['read', 'grep', 'bash', 'edit', 'write', 'find', 'ls']),
+    registerCommand: vi.fn(),
+    sendUserMessage: vi.fn(),
     setActiveTools: vi.fn(),
     setModel: vi.fn().mockResolvedValue(true),
-    sendUserMessage: vi.fn(),
-    appendEntry: vi.fn(),
   };
 }
 
@@ -24,11 +24,11 @@ function createMockCtx(overrides: Record<string, unknown> = {}) {
     provider: 'anthropic',
   };
   return {
-    ui: { notify: vi.fn(), setEditorText: vi.fn() },
     model: mockModel,
     modelRegistry: {
       getAll: vi.fn().mockReturnValue([mockModel]),
     },
+    ui: { notify: vi.fn(), setEditorText: vi.fn() },
     ...overrides,
   };
 }
@@ -198,9 +198,9 @@ describe('/restore-model command', () => {
     const pi = createMockPi();
     const state: MaestriaState = {
       ...createInitialState(),
-      reviewMode: true,
       originalModel: 'claude-sonnet-4-20250514',
       originalTools: ['read', 'grep', 'bash', 'edit'],
+      reviewMode: true,
     };
     installCommands(pi as any, state);
 
@@ -237,9 +237,9 @@ describe('/restore-model command', () => {
     const pi = createMockPi();
     const state: MaestriaState = {
       ...createInitialState(),
-      reviewMode: true,
       originalModel: 'claude-sonnet-4-20250514',
       originalTools: ['read', 'grep', 'bash', 'edit'],
+      reviewMode: true,
     };
     installCommands(pi as any, state);
 
@@ -261,9 +261,9 @@ describe('/restore-model command', () => {
     const pi = { ...createMockPi(), events: { emit: vi.fn() } };
     const state: MaestriaState = {
       ...createInitialState(),
-      reviewMode: true,
       originalModel: 'claude-sonnet-4-20250514',
       originalTools: ['read', 'grep', 'bash', 'edit'],
+      reviewMode: true,
     };
     installCommands(pi as any, state);
 
@@ -412,9 +412,9 @@ describe('/handoff command', () => {
     const pi = createMockPi();
     const state: MaestriaState = {
       ...createInitialState(),
-      mode: 'fein',
       activeTask: 'design API',
       blockers: ['missing auth spec', 'performance concerns'],
+      mode: 'fein',
     };
     installCommands(pi as any, state);
 

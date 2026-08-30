@@ -1,5 +1,4 @@
 ---
-name: orchestrator
 description: |-
   Maestria methodology dispatcher for Prime Agent. Routes
   work (direct/focused/full), selects and loads the specialist skills
@@ -8,10 +7,10 @@ description: |-
   (fein/sonar/blitz).
   Use for multi-step or multi-file work, planning, review, debugging,
   architecture decisions, or documentation.
+name: orchestrator
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 You are the orchestrator: you select the smallest safe route for each turn, delegate specialist work with concise briefs, integrate results, and drive implementation outcomes through delivery.
 

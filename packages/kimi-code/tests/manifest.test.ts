@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vite-plus/test';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
-const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+const PLUGIN_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/u;
 const SYSTEM_PROMPT_MAX_BYTES = 32 * 1024;
 const EXPECTED_SKILLS = [
   'orchestrator',
@@ -57,7 +56,7 @@ async function pathExists(absolutePath: string): Promise<boolean> {
 }
 
 function parseFrontmatter(text: string): { data: Record<string, unknown>; body: string } {
-  const lines = text.split(/\r?\n/);
+  const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
@@ -71,8 +70,8 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   // robust YAML support, swap in `js-yaml`; we avoid the dependency
   // because this is a manifest validator, not a skill parser.
   const data: Record<string, unknown> = {};
-  for (const line of yamlText.split(/\r?\n/)) {
-    const m = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
+  for (const line of yamlText.split(/\r?\n/u)) {
+    const m = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/u.exec(line);
     if (m === null) {
       continue;
     }
@@ -91,7 +90,7 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
       data[key] =
         inner === ''
           ? []
-          : inner.split(',').map((entry) => entry.trim().replaceAll(/^["']|["']$/g, ''));
+          : inner.split(',').map((entry) => entry.trim().replaceAll(/^["']|["']$/gu, ''));
     } else if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
@@ -102,7 +101,7 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
     }
   }
   const body = lines.slice(close + 1).join('\n');
-  return { data, body };
+  return { body, data };
 }
 
 describe('kimi.plugin.json manifest', () => {
@@ -256,18 +255,18 @@ describe('skills directory', () => {
       'utf-8',
     );
 
-    expect(orchestrator).toMatch(/Subagent profile.*`plan`/);
-    expect(orchestrator).toMatch(/do \*\*not\*\* have .*Write.*Edit/i);
+    expect(orchestrator).toMatch(/Subagent profile.*`plan`/u);
+    expect(orchestrator).toMatch(/do \*\*not\*\* have .*Write.*Edit/iu);
     expect(orchestrator).toContain('builder | `coder`');
-    expect(builder).toMatch(/Subagent profile.*`coder`/);
-    expect(builder).toMatch(/Write, Edit/);
+    expect(builder).toMatch(/Subagent profile.*`coder`/u);
+    expect(builder).toMatch(/Write, Edit/u);
     expect(orchestrator).toContain('Runtime Authority');
   });
 
   it('reviewer skill has the explicit do-not-edit constraint near the top', async () => {
     const text = await readFile(path.join(PACKAGE_ROOT, 'skills', 'reviewer', 'SKILL.md'), 'utf-8');
     const head = text.slice(0, 1500);
-    expect(head).toMatch(/do not edit/i);
+    expect(head).toMatch(/do not edit/iu);
   });
 
   it('adventurer skill has the explicit read-only Bash constraint near the top', async () => {
@@ -276,8 +275,8 @@ describe('skills directory', () => {
       'utf-8',
     );
     const head = text.slice(0, 2000);
-    expect(head).toMatch(/read-only/i);
-    expect(head).toMatch(/Bash/);
+    expect(head).toMatch(/read-only/iu);
+    expect(head).toMatch(/Bash/u);
   });
 });
 
@@ -387,7 +386,7 @@ describe('tool name PascalCase compliance', () => {
       const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
       const text = await readFile(skillPath, 'utf-8');
       // Find all backtick-quoted words
-      const backtickWords = text.match(/`([A-Za-z][A-Za-z0-9_-]*)`/g) || [];
+      const backtickWords = text.match(/`([A-Za-z][A-Za-z0-9_-]*)`/gu) ?? [];
       const violations: string[] = [];
       for (const match of backtickWords) {
         const word = match.slice(1, -1); // strip backticks

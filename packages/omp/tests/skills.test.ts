@@ -17,7 +17,7 @@ describe('skills', () => {
       expect(existsSync(path)).toBe(true);
 
       const content = readFileSync(path, 'utf-8');
-      const match = /^---\n([\s\S]*?)\n---/.exec(content);
+      const match = /^---\n([\s\S]*?)\n---/u.exec(content);
       expect(match).not.toBeNull();
 
       const frontmatter = match![1];
@@ -30,7 +30,7 @@ describe('skills', () => {
     for (const name of skills) {
       const path = join(SKILLS_DIR, name, 'SKILL.md');
       const content = readFileSync(path, 'utf-8');
-      const nameMatch = /^name:\s*(\S+)/m.exec(content);
+      const nameMatch = /^name:\s*(\S+)/mu.exec(content);
       expect(nameMatch).not.toBeNull();
       expect(nameMatch![1]).toBe(name);
     }
@@ -42,6 +42,6 @@ describe('skills', () => {
     expect(text).toContain('Runtime Authority');
     expect(text).toContain('direct work is unavailable or disallowed');
     expect(text).toContain('direct work is available');
-    expect(text).not.toMatch(/\b(OpenCode|OMP|Kimi Code|Hermes|Cursor|Claude Code|Pi)\b/);
+    expect(text).not.toMatch(/\b(OpenCode|OMP|Kimi Code|Hermes|Cursor|Claude Code|Pi)\b/u);
   });
 });

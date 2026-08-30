@@ -12,25 +12,28 @@ const fsMocks = vi.hoisted(() => {
   let originalMkdtemp: (typeof import('node:fs/promises'))['mkdtemp'] | undefined;
   let originalRm: (typeof import('node:fs/promises'))['rm'] | undefined;
   return {
-    readFile: vi.fn(async (filePath: string) => {
-      if (filePath.endsWith('/.maestria-agents.json')) {
-        return JSON.stringify({ version: 1, files: [] });
-      }
-      return JSON.stringify({ version: '0.2.0' });
-    }),
+    access: vi.fn(async () => {}),
+    getOriginalReadFile() {
+      return originalReadFile;
+    },
     mkdtemp: vi.fn(async (prefix: string) => {
       if (!originalMkdtemp) {
         throw new Error('original mkdtemp unavailable');
       }
       return await originalMkdtemp(prefix);
     }),
+    readFile: vi.fn((filePath: string) => {
+      if (filePath.endsWith('/.maestria-agents.json')) {
+        return JSON.stringify({ files: [], version: 1 });
+      }
+      return JSON.stringify({ version: '0.2.0' });
+    }),
     rm: vi.fn(async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
       if (!originalRm) {
         throw new Error('original rm unavailable');
       }
-      return await originalRm(path, options);
+      await originalRm(path, options);
     }),
-    access: vi.fn(async () => {}),
     setOriginals(
       readFile: (typeof import('node:fs/promises'))['readFile'],
       mkdtemp: (typeof import('node:fs/promises'))['mkdtemp'],
@@ -39,9 +42,6 @@ const fsMocks = vi.hoisted(() => {
       originalReadFile = readFile;
       originalMkdtemp = mkdtemp;
       originalRm = rm;
-    },
-    getOriginalReadFile() {
-      return originalReadFile;
     },
   };
 });
@@ -69,10 +69,10 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   fsMocks.setOriginals(actual.readFile, actual.mkdtemp, actual.rm);
   return {
     ...actual,
-    readFile: fsMocks.readFile,
-    mkdtemp: fsMocks.mkdtemp,
-    rm: fsMocks.rm,
     access: fsMocks.access,
+    mkdtemp: fsMocks.mkdtemp,
+    readFile: fsMocks.readFile,
+    rm: fsMocks.rm,
   };
 });
 
@@ -152,9 +152,9 @@ describe('marketplace-backed platform handlers', () => {
           JSON.stringify({
             installed: [
               {
-                pluginId: 'maestria@maestria',
-                name: 'maestria',
                 marketplaceName: 'maestria',
+                name: 'maestria',
+                pluginId: 'maestria@maestria',
                 version: '0.2.0',
               },
             ],
@@ -233,19 +233,19 @@ describe('Kimi Code platform registration', () => {
   it('recognizes the native installed.json registry instead of a global AGENTS.md marker', async () => {
     const previousHome = process.env.KIMI_CODE_HOME;
     process.env.KIMI_CODE_HOME = '/tmp/maestria-kimi-test';
-    fsMocks.readFile.mockImplementation(async (filePath: string) => {
+    fsMocks.readFile.mockImplementation((filePath: string) => {
       if (filePath.endsWith('/plugins/installed.json')) {
         return JSON.stringify({
-          version: 1,
           plugins: [
             {
+              enabled: true,
               id: 'maestria',
+              installedAt: '2026-08-26T00:00:00.000Z',
               root: '/tmp/maestria-kimi-test/plugins/managed/maestria',
               source: 'local-path',
-              enabled: true,
-              installedAt: '2026-08-26T00:00:00.000Z',
             },
           ],
+          version: 1,
         });
       }
       return JSON.stringify({ version: '0.2.0' });
@@ -421,7 +421,7 @@ describe('prime-agent platform handler', () => {
       }
       return Effect.succeed('');
     });
-    fsMocks.readFile.mockImplementation(async (path: string) =>
+    fsMocks.readFile.mockImplementation((path: string) =>
       JSON.stringify(
         path.includes('@other/plugin')
           ? { name: '@other/plugin', version: '9.9.9' }
@@ -531,7 +531,7 @@ describe('prime-agent platform handler', () => {
       expect(await Effect.runPromise(readPackageJsonVersion(packageJsonPath))).toBe('1.2.3');
     } finally {
       fsMocks.readFile.mockResolvedValue(JSON.stringify({ version: '0.2.0' }));
-      await rm(dir, { recursive: true, force: true });
+      await rm(dir, { force: true, recursive: true });
     }
   });
 
@@ -589,8 +589,8 @@ describe('prime-agent platform handler', () => {
     expect(installCalls).toHaveLength(1);
     expect(installCalls[0][3]).toBe('/tmp/maestria-prime-test-abc123');
     expect(fsMocks.rm).toHaveBeenCalledWith('/tmp/maestria-prime-test-abc123', {
-      recursive: true,
       force: true,
+      recursive: true,
     });
   });
 
@@ -620,8 +620,8 @@ describe('prime-agent platform handler', () => {
     );
     expect(message).toContain('version-pinned');
     expect(fsMocks.rm).toHaveBeenCalledWith('/tmp/maestria-prime-test-def456', {
-      recursive: true,
       force: true,
+      recursive: true,
     });
   });
 

@@ -19,6 +19,46 @@ process.on('SIGTERM', () => process.exit(0));
 // ── Custom --help ────────────────────────────────────
 
 const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
+  check: {
+    examples: [
+      'maestria check opencode           Check if @maestria/opencode is installed',
+      'maestria check hermes             Check if @maestria/hermes is installed',
+      'maestria check prime-agent        Check if @maestria/prime-agent is installed',
+      'maestria check --all              Check all detected platforms',
+      'maestria check opencode --json    Output as JSON',
+      'maestria check opencode --quiet   Exit code only (for scripts)',
+    ],
+  },
+  configure: {
+    examples: [
+      'maestria configure opencode       Choose per-agent models interactively',
+      'maestria configure opencode --project  Configure for the current project only',
+      'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set one model',
+      'maestria configure omp --set adventurer=opencode-go/deepseek-v4-flash,writer=opencode-go/deepseek-v4-pro  Set several',
+      'maestria configure pi --set builder=  Reset an agent to inherit the session model',
+      'maestria configure opencode --json   Output the resulting config as JSON',
+      'maestria configure --quiet            Suppress spinner output (for CI)',
+    ],
+    tip: [
+      'Per-agent models are supported for: opencode (config file), codex (native agent TOML), cursor (native agent files), pi and omp (agent frontmatter).',
+      'Use --global (default) or --project to choose the config level.',
+      'For CI pipelines, pass --set with --global or --project and add --quiet.',
+    ].join('\n'),
+  },
+  install: {
+    examples: [
+      'maestria install opencode         Install for a specific platform',
+      'maestria install opencode,pi      Install for multiple platforms at once',
+      'maestria install --all            Install for all detected platforms',
+      'maestria install --json           Output results as JSON',
+      'maestria install --quiet          Suppress spinner output',
+      'maestria install hermes           Install for a specific platform',
+      'maestria install claude-code      Install for Claude Code',
+      'maestria install codex        Install for Codex CLI',
+      'maestria install prime-agent      Install for Prime Agent',
+      'maestria install --compact        Minimal machine-friendly output',
+    ],
+  },
   maestria: {
     examples: [
       'maestria                          Show status of all platforms',
@@ -49,18 +89,12 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'For CI pipelines, add --quiet to suppress spinner control sequences.',
     ].join('\n'),
   },
-  install: {
+  status: {
     examples: [
-      'maestria install opencode         Install for a specific platform',
-      'maestria install opencode,pi      Install for multiple platforms at once',
-      'maestria install --all            Install for all detected platforms',
-      'maestria install --json           Output results as JSON',
-      'maestria install --quiet          Suppress spinner output',
-      'maestria install hermes           Install for a specific platform',
-      'maestria install claude-code      Install for Claude Code',
-      'maestria install codex        Install for Codex CLI',
-      'maestria install prime-agent      Install for Prime Agent',
-      'maestria install --compact        Minimal machine-friendly output',
+      'maestria status                   Show status of all platforms',
+      'maestria status --json            Show status as JSON',
+      'maestria status --compact         Minimal machine-friendly output',
+      'maestria status --quiet           Suppress spinner output',
     ],
   },
   update: {
@@ -76,40 +110,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update prime-agent      Update Prime Agent to latest',
       'maestria update --compact         Minimal machine-friendly output',
     ],
-  },
-  status: {
-    examples: [
-      'maestria status                   Show status of all platforms',
-      'maestria status --json            Show status as JSON',
-      'maestria status --compact         Minimal machine-friendly output',
-      'maestria status --quiet           Suppress spinner output',
-    ],
-  },
-  check: {
-    examples: [
-      'maestria check opencode           Check if @maestria/opencode is installed',
-      'maestria check hermes             Check if @maestria/hermes is installed',
-      'maestria check prime-agent        Check if @maestria/prime-agent is installed',
-      'maestria check --all              Check all detected platforms',
-      'maestria check opencode --json    Output as JSON',
-      'maestria check opencode --quiet   Exit code only (for scripts)',
-    ],
-  },
-  configure: {
-    examples: [
-      'maestria configure opencode       Choose per-agent models interactively',
-      'maestria configure opencode --project  Configure for the current project only',
-      'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set one model',
-      'maestria configure omp --set adventurer=opencode-go/deepseek-v4-flash,writer=opencode-go/deepseek-v4-pro  Set several',
-      'maestria configure pi --set builder=  Reset an agent to inherit the session model',
-      'maestria configure opencode --json   Output the resulting config as JSON',
-      'maestria configure --quiet            Suppress spinner output (for CI)',
-    ],
-    tip: [
-      'Per-agent models are supported for: opencode (config file), codex (native agent TOML), cursor (native agent files), pi and omp (agent frontmatter).',
-      'Use --global (default) or --project to choose the config level.',
-      'For CI pipelines, pass --set with --global or --project and add --quiet.',
-    ].join('\n'),
   },
 };
 
@@ -156,41 +156,33 @@ async function showEnhancedUsage<T extends ArgsDef = ArgsDef>(
 // ── Main command ─────────────────────────────────────
 
 const main = defineCommand({
-  meta: {
-    name: 'maestria',
-    description: 'Manage maestria plugins across coding agent platforms',
-  },
   args: {
-    version: {
-      type: 'boolean',
-      description: 'Show version number',
-      default: false,
-    },
-    quiet: {
-      type: 'boolean',
-      description:
-        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
-      default: false,
-    },
     compact: {
-      type: 'boolean',
-      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       default: false,
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
+      type: 'boolean',
     },
     json: {
-      type: 'boolean',
+      default: false,
       description:
         'Output status as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+      type: 'boolean',
+    },
+    quiet: {
       default: false,
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      type: 'boolean',
+    },
+    version: {
+      default: false,
+      description: 'Show version number',
+      type: 'boolean',
     },
   },
-  subCommands: {
-    install: installCommand,
-    update: updateCommand,
-    uninstall: uninstallCommand,
-    status: statusCommand,
-    check: checkCommand,
-    configure: configureCommand,
+  meta: {
+    description: 'Manage maestria plugins across coding agent platforms',
+    name: 'maestria',
   },
   run: async ({ args }) => {
     if (args.version) {
@@ -198,9 +190,9 @@ const main = defineCommand({
       process.exit(0);
     }
 
-    const isQuiet = (args.quiet || args.compact) as boolean;
-    const isCompact = args.compact as boolean;
-    const isJson = args.json as boolean;
+    const isQuiet = args.quiet || args.compact;
+    const isCompact = args.compact;
+    const isJson = args.json;
 
     const spinner = createSpinner(isQuiet);
     spinner.start('Detecting platforms...');
@@ -219,6 +211,14 @@ const main = defineCommand({
       console.log(renderStatusTable(output));
     }
     process.exit(0);
+  },
+  subCommands: {
+    check: checkCommand,
+    configure: configureCommand,
+    install: installCommand,
+    status: statusCommand,
+    uninstall: uninstallCommand,
+    update: updateCommand,
   },
 });
 

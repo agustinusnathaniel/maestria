@@ -38,7 +38,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import {
   applyEdits,
   findNodeAtLocation,
@@ -54,7 +54,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 
 // Versions are published semver (https://semver.org); anything else is a pipeline bug.
 const SEMVER_RE =
-  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/u;
 
 // Canonical two-line _version.py content, matching the previous release helper.
 const VERSION_PY_HEADER = '"""Package version -- single source of truth."""';
@@ -156,7 +156,7 @@ function rewriteYamlVersion(text: string, version: string): string {
 
 /** Return the version from the canonical `__version__ = "..."` line, or null. */
 function readPythonVersion(text: string): string | null {
-  return /__version__\s*=\s*"([^"]+)"/.exec(text)?.[1] ?? null;
+  return /__version__\s*=\s*"([^"]+)"/u.exec(text)?.[1] ?? null;
 }
 
 /** The canonical two-line _version.py content for a version. */
@@ -283,7 +283,7 @@ function buildPreflight(
     const manifestPath = path.join(packageDir, manifest);
     const rel = display(manifestPath);
     if (!fs.existsSync(manifestPath)) {
-      preflight.push({ rel, path: manifestPath, current: null, missing: true });
+      preflight.push({ current: null, missing: true, path: manifestPath, rel });
       continue;
     }
     if (!check) {
@@ -291,9 +291,9 @@ function buildPreflight(
         fs.accessSync(manifestPath, fs.constants.W_OK);
       } catch (error) {
         preflight.push({
-          rel,
-          path: manifestPath,
           current: null,
+          path: manifestPath,
+          rel,
           syncError: `not writable: ${message(error)}`,
         });
         continue;
@@ -301,7 +301,7 @@ function buildPreflight(
     }
     try {
       const current = readManifestVersion(manifestPath);
-      const entry: Preflight = { rel, path: manifestPath, current };
+      const entry: Preflight = { current, path: manifestPath, rel };
       if (!check && current !== version) {
         try {
           entry.updated = computeManifestVersion(manifestPath, version);
@@ -311,7 +311,7 @@ function buildPreflight(
       }
       preflight.push(entry);
     } catch (error) {
-      preflight.push({ rel, path: manifestPath, current: null, readError: message(error) });
+      preflight.push({ current: null, path: manifestPath, readError: message(error), rel });
     }
   }
   return preflight;
@@ -340,9 +340,7 @@ function collectSyncResults(preflight: Preflight[], version: string, check: bool
       continue;
     }
     if (check) {
-      results.push(
-        `DRIFT: ${m.rel} expected ${version} found ${formatCurrent(m.current as unknown)}`,
-      );
+      results.push(`DRIFT: ${m.rel} expected ${version} found ${formatCurrent(m.current)}`);
       continue;
     }
     if (blocked) {

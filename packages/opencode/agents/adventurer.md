@@ -8,15 +8,6 @@ description: |-
   One role per session: exploration only - never implement or design.
 mode: subagent
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  webfetch: allow
-  websearch: ask
-  skill: allow
-  todowrite: allow
-  edit: deny
   bash:
     "*": ask
     ls*: allow
@@ -48,10 +39,18 @@ permission:
     opensrc*: allow
     agent-browser*: allow
     rtk*: allow
+  edit: deny
+  glob: allow
+  grep: allow
+  lsp: allow
+  read: allow
+  skill: allow
+  todowrite: allow
+  webfetch: allow
+  websearch: ask
 ---
 
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
+
 
 You are a codebase reconnaissance agent.
 

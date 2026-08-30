@@ -9,20 +9,33 @@ import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightPageActions from 'starlight-page-actions';
 
 export default defineConfig({
-  site: 'https://maestria.sznm.dev',
-  vite: {
-    plugins: [tailwindcss()],
-    resolve: {
-      alias: { '@': fileURLToPath(new URL('src', import.meta.url)) },
-    },
-  },
   integrations: [
     starlight({
-      title: 'Maestria',
+      components: {
+        Head: './src/components/StarlightHead.astro',
+      },
+      customCss: ['./src/styles/global.css'],
       description:
         'Portable AI engineering praxis plugins for OpenCode, Claude Code, Codex CLI, and beyond.',
       disable404Route: true,
-      customCss: ['./src/styles/global.css'],
+      head: [
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'keywords',
+            content:
+              'Maestria, Maestria AI engineering praxis, Maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
+          },
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            property: 'og:image',
+            content:
+              'https://og.sznm.dev/api/generate?heading=maestria&text=Portable%20AI%20Engineering%20Praxis%20Plugins&template=color',
+          },
+        },
+      ],
       plugins: [
         starlightLinksValidator({
           // The 404 hero's "Go home" action points at `/`, i.e. the custom
@@ -98,34 +111,6 @@ export default defineConfig({
             'effectively.',
         }),
         starlightAutoSidebar(),
-      ],
-      components: {
-        Head: './src/components/StarlightHead.astro',
-      },
-      head: [
-        {
-          tag: 'meta',
-          attrs: {
-            name: 'keywords',
-            content:
-              'Maestria, Maestria AI engineering praxis, Maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
-          },
-        },
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'og:image',
-            content:
-              'https://og.sznm.dev/api/generate?heading=maestria&text=Portable%20AI%20Engineering%20Praxis%20Plugins&template=color',
-          },
-        },
-      ],
-      social: [
-        {
-          icon: 'github',
-          href: 'https://github.com/agustinusnathaniel/maestria',
-          label: 'GitHub',
-        },
       ],
       sidebar: [
         {
@@ -276,6 +261,21 @@ export default defineConfig({
           ],
         },
       ],
+      social: [
+        {
+          icon: 'github',
+          href: 'https://github.com/agustinusnathaniel/maestria',
+          label: 'GitHub',
+        },
+      ],
+      title: 'Maestria',
     }),
   ],
+  site: 'https://maestria.sznm.dev',
+  vite: {
+    plugins: [tailwindcss()],
+    resolve: {
+      alias: { '@': fileURLToPath(new URL('src', import.meta.url)) },
+    },
+  },
 });
