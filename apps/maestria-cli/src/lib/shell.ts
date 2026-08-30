@@ -14,12 +14,8 @@ export function getMaestriaCacheDir(): string {
   return join(getCacheDir(), 'maestria');
 }
 
-function getVersionCacheDir(): string {
-  return getMaestriaCacheDir();
-}
-
-function getVersionCacheFile(): string {
-  return join(getVersionCacheDir(), 'versions.json');
+export function getVersionCacheFile(): string {
+  return join(getMaestriaCacheDir(), 'versions.json');
 }
 
 // ── Errors ───────────────────────────────────────────
@@ -113,7 +109,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
     Effect.tryPromise({
       try: async () => {
         const { mkdir, readFile, writeFile } = await import('node:fs/promises');
-        await mkdir(getVersionCacheDir(), { recursive: true });
+        await mkdir(getMaestriaCacheDir(), { recursive: true });
         let cache: Record<string, { version: string }> = {};
         try {
           const existing = await readFile(getVersionCacheFile(), 'utf-8');

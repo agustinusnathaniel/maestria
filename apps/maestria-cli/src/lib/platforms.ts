@@ -795,6 +795,29 @@ export interface PlatformHandler {
   readonly uninstall: Effect.Effect<void, CommandError>;
 }
 
+function clearOpencodeCache(): Effect.Effect<void, CommandError> {
+  return Effect.tryPromise({
+    try: async () => {
+      const { readdir, rm } = await import('node:fs/promises');
+      const base = join(getCacheDir(), 'opencode', 'packages', '@maestria');
+      let entries: string[];
+      try {
+        entries = await readdir(base);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+        throw error;
+      }
+      const stale = entries.filter((e) => e.startsWith('opencode'));
+      await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
+    },
+    catch: (error) =>
+      new CommandError({
+        command: `clear opencode cache ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}`,
+        message: String(error),
+      }),
+  });
+}
+
 const opencode: PlatformHandler = {
   id: 'opencode',
   label: 'OpenCode',
@@ -842,27 +865,7 @@ const opencode: PlatformHandler = {
   getLatestVersion: npmViewVersion('@maestria/opencode'),
 
   install: Effect.gen(function* () {
-    // Clear cache to ensure fresh install from npm
-    yield* Effect.tryPromise({
-      try: async () => {
-        const { readdir, rm } = await import('node:fs/promises');
-        const base = join(getCacheDir(), 'opencode', 'packages', '@maestria');
-        let entries: string[];
-        try {
-          entries = await readdir(base);
-        } catch (error) {
-          if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-          throw error;
-        }
-        const stale = entries.filter((e) => e.startsWith('opencode'));
-        await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `clear opencode cache ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}`,
-          message: String(error),
-        }),
-    });
+    yield* clearOpencodeCache();
     // Install globally by default - install is a setup command, not per-project
     yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g'], 120_000);
   }).pipe(Effect.as(void 0)),
@@ -871,27 +874,7 @@ const opencode: PlatformHandler = {
     Effect.gen(function* () {
       const tag = version ?? 'latest';
 
-      // Clear cache to ensure fresh install from npm
-      yield* Effect.tryPromise({
-        try: async () => {
-          const { readdir, rm } = await import('node:fs/promises');
-          const base = join(getCacheDir(), 'opencode', 'packages', '@maestria');
-          let entries: string[];
-          try {
-            entries = await readdir(base);
-          } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-            throw error;
-          }
-          const stale = entries.filter((e) => e.startsWith('opencode'));
-          await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
-        },
-        catch: (error) =>
-          new CommandError({
-            command: `clear opencode cache ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}`,
-            message: String(error),
-          }),
-      });
+      yield* clearOpencodeCache();
 
       // Check if installed globally or at project level
       const globalConfig = yield* readOpenCodeConfig().pipe(
@@ -907,7 +890,7 @@ const opencode: PlatformHandler = {
       `\n  To uninstall OpenCode:\n` +
         `  1. Edit ~/.config/opencode/opencode.jsonc (or .opencode/opencode.jsonc in your project)\n` +
         `  2. Remove "@maestria/opencode@latest" from the "plugin" array\n` +
-        `  3. Optionally clear cache: rm -rf ~/.cache/opencode/packages/@maestria/opencode*\n`,
+        `  3. Optionally clear cache: rm -rf ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}\n`,
     );
   }),
 };
