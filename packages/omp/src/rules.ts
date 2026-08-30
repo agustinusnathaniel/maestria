@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url';
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,

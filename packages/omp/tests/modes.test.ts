@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url';
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { MODE_KEYWORDS, getModePrompt } from '@maestria/shared-pi/modes-core';
 import { installModeCommands } from '@/modes.js';

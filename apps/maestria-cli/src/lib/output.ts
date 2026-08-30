@@ -101,13 +101,13 @@ export function renderCompactResults(results: PlatformResult[]): string {
         return `${r.id}: failed ${r.message}`;
       }
       if (r.message === 'Already up to date') {
-        return `${r.id}: already latest ${(r.nextVersion ?? r.prevVersion) || ''}`;
+        return `${r.id}: already latest ${r.nextVersion ?? r.prevVersion ?? ''}`;
       }
       if (r.prevVersion && r.nextVersion && r.prevVersion !== r.nextVersion) {
         return `${r.id}: updated ${r.prevVersion} -> ${r.nextVersion}`;
       }
       // Install or other success with a version
-      const version = (r.nextVersion ?? r.prevVersion) || '';
+      const version = r.nextVersion ?? r.prevVersion ?? '';
       return `${r.id}: installed ${version}`;
     })
     .join('\n')}\n`;

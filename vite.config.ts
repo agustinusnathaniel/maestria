@@ -26,6 +26,7 @@ export default defineConfig({
         'dist/**',
         '.changeset/**',
         'packages/*/agents/**',
+        'packages/*/commands/**',
         'packages/*/prompts/**',
         'packages/*/rules/**',
         'packages/**/skills/**',
@@ -63,14 +64,39 @@ export default defineConfig({
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
       curly: 'error',
+      // func-style 'expression' churns 392 files with low safety value (arrow vs function
+      // declaration is stylistic). Defer to last - keep off as single intentional exception
+      // pending codemod. See task notes: prioritize type-safe rules over stylistic.
+      'func-style': 'off',
     },
     overrides: [
       ...(oxlintPreset.overrides ?? []),
       {
-        files: ['**/*.test.ts', '**/*.test.tsx'],
+        files: [
+          '**/*.test.ts',
+          '**/*.test.tsx',
+          '**/*.spec.ts',
+          '**/*.spec.tsx',
+          '**/__tests__/**',
+        ],
         rules: {
           'max-lines': 'off',
           'max-lines-per-function': 'off',
+          // Type-aware safety is intentionally lax in tests — mocks, fixtures, and
+          // assertion helpers legitimately use `any` / unsafe access. Disabling
+          // here is more correct than a global off and matches Ultracite vitest preset
+          // intent. Reduces ~1.5k of 2.8k errors that are test-only.
+          'typescript/no-explicit-any': 'off',
+          'typescript/no-unsafe-assignment': 'off',
+          'typescript/no-unsafe-argument': 'off',
+          'typescript/no-unsafe-call': 'off',
+          'typescript/no-unsafe-member-access': 'off',
+          'typescript/no-unsafe-return': 'off',
+          'typescript/no-unsafe-type-assertion': 'off',
+          'typescript/no-non-null-assertion': 'off',
+          'typescript/strict-boolean-expressions': 'off',
+          'typescript/no-confusing-void-expression': 'off',
+          'typescript/no-floating-promises': 'off',
         },
       },
     ],

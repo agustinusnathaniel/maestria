@@ -269,17 +269,13 @@ function ensureClaudeMarketplace(): Effect.Effect<void, CommandError> {
     Effect.flatMap((output) =>
       hasMarketplace(output)
         ? Effect.void
-        : run('claude', ['plugin', 'marketplace', 'add', CLAUDE_MARKETPLACE_DIR]).pipe(
-            Effect.as(undefined),
-          ),
+        : run('claude', ['plugin', 'marketplace', 'add', CLAUDE_MARKETPLACE_DIR]).pipe(Effect.as()),
     ),
   );
 }
 
 function refreshClaudeMarketplace(): Effect.Effect<void, CommandError> {
-  return run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE]).pipe(
-    Effect.as(undefined),
-  );
+  return run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE]).pipe(Effect.as());
 }
 
 function ensureCodexMarketplace(): Effect.Effect<void, CommandError> {
@@ -287,9 +283,7 @@ function ensureCodexMarketplace(): Effect.Effect<void, CommandError> {
     Effect.flatMap((output) =>
       hasMarketplace(output)
         ? Effect.void
-        : run('codex', ['plugin', 'marketplace', 'add', CODEX_MARKETPLACE_DIR]).pipe(
-            Effect.as(undefined),
-          ),
+        : run('codex', ['plugin', 'marketplace', 'add', CODEX_MARKETPLACE_DIR]).pipe(Effect.as()),
     ),
   );
 }
@@ -771,7 +765,7 @@ const opencode: PlatformHandler = {
     yield* clearOpencodeCache();
     // Install globally by default - install is a setup command, not per-project
     yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g'], 120_000);
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   isInstalled: readOpenCodeConfig().pipe(
     Effect.map((out) => out.includes('@maestria/opencode')),
     Effect.catchCause(() => Effect.succeed(false)),
@@ -826,7 +820,7 @@ const claudeCode: PlatformHandler = {
       '--scope',
       'user',
     ]);
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   isInstalled: hostPluginList('claude').pipe(
     Effect.map(hasMaestriaPlugin),
     Effect.catchCause(() => Effect.succeed(false)),
@@ -843,7 +837,7 @@ const claudeCode: PlatformHandler = {
       'user',
       '--yes',
     ]),
-  ).pipe(Effect.as(undefined)),
+  ).pipe(Effect.as()),
   update: (_version?: string) =>
     Effect.gen(function* update() {
       yield* prepareNpmMarketplace(
@@ -882,7 +876,7 @@ const codex: PlatformHandler = {
     yield* ensureCodexMarketplace();
     yield* run('codex', ['plugin', 'add', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json']);
     yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   isInstalled: hostPluginList('codex').pipe(
     Effect.map(hasMaestriaPlugin),
     Effect.catchCause(() => Effect.succeed(false)),
@@ -898,7 +892,7 @@ const codex: PlatformHandler = {
       '--json',
     ]);
     yield* removeCodexManagedAgents();
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   update: (_version?: string) =>
     Effect.gen(function* update() {
       yield* prepareNpmMarketplace(
@@ -950,11 +944,11 @@ const pi: PlatformHandler = {
     );
     // Install main package
     yield* run('pi', ['install', 'npm:@maestria/pi'], 120_000);
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   isInstalled: fileExists(`${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`),
   label: 'Pi',
   npmPackage: '@maestria/pi',
-  uninstall: run('pi', ['uninstall', 'npm:@maestria/pi']).pipe(Effect.as(undefined)),
+  uninstall: run('pi', ['uninstall', 'npm:@maestria/pi']).pipe(Effect.as()),
   update: (version?: string) =>
     Effect.gen(function* update() {
       const tagged = version ? `npm:@maestria/pi@${version}` : 'npm:@maestria/pi@latest';
@@ -1247,7 +1241,7 @@ function primeUpdatePreflight(
         }),
       );
     }
-  }).pipe(Effect.as(undefined));
+  }).pipe(Effect.as());
 }
 
 const primeAgent: PlatformHandler = {
@@ -1282,7 +1276,7 @@ const primeAgent: PlatformHandler = {
 
   install: withPrimeTempCwd((cwd) =>
     run('prime-agent', ['package', 'install', PRIME_MAESTRIA_SOURCE], 120_000, cwd),
-  ).pipe(Effect.as(undefined)),
+  ).pipe(Effect.as()),
 
   update: (_version?: string, snapshot?: PlatformUpdateSnapshot) =>
     Effect.gen(function* update() {
@@ -1295,11 +1289,11 @@ const primeAgent: PlatformHandler = {
       yield* withPrimeTempCwd((cwd) =>
         run('prime-agent', ['package', 'update', PRIME_MAESTRIA_SOURCE], 120_000, cwd),
       );
-    }).pipe(Effect.as(undefined)),
+    }).pipe(Effect.as()),
 
   uninstall: withPrimeTempCwd((cwd) =>
     run('prime-agent', ['package', 'remove', PRIME_MAESTRIA_SOURCE], 60_000, cwd),
-  ).pipe(Effect.as(undefined)),
+  ).pipe(Effect.as()),
 };
 
 const kimiCode: PlatformHandler = {
@@ -1334,7 +1328,7 @@ const kimiCode: PlatformHandler = {
     yield* readKimiInstalled();
     yield* installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir());
     yield* registerKimiPlugin();
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   isInstalled: readKimiInstalled().pipe(
     Effect.map((file) => file.plugins.some((plugin) => plugin.id === MAESTRIA_PLUGIN)),
     Effect.flatMap((installed) =>
@@ -1344,7 +1338,7 @@ const kimiCode: PlatformHandler = {
   ),
   label: 'Kimi Code',
   npmPackage: '@maestria/kimi-code',
-  uninstall: removeKimiPlugin().pipe(Effect.as(undefined)),
+  uninstall: removeKimiPlugin().pipe(Effect.as()),
   update: (version?: string) =>
     Effect.gen(function* update() {
       const tag = version ?? 'latest';
@@ -1354,7 +1348,7 @@ const kimiCode: PlatformHandler = {
       yield* invalidateVersionCache('@maestria/kimi-code').pipe(
         Effect.catchCause(() => Effect.void),
       );
-    }).pipe(Effect.as(undefined)),
+    }).pipe(Effect.as()),
 };
 
 const hermes: PlatformHandler = {
@@ -1384,7 +1378,7 @@ const hermes: PlatformHandler = {
       ['plugins', 'install', 'agustinusnathaniel/maestria/packages/hermes', '--enable'],
       120_000,
     );
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
 
   update: (_version?: string) =>
     Effect.gen(function* update() {
@@ -1399,7 +1393,7 @@ const hermes: PlatformHandler = {
 
   uninstall: Effect.gen(function* uninstall() {
     yield* run('hermes', ['plugins', 'remove', 'maestria-hermes'], 15_000);
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
 };
 
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
@@ -1556,7 +1550,7 @@ const cursor: PlatformHandler = {
     });
     yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR);
     yield* restoreCursorAgentModels(models);
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   isInstalled: fileExists(CURSOR_PLUGIN_JSON),
   label: 'Cursor',
   npmPackage: '@maestria/cursor',
@@ -1566,11 +1560,11 @@ const cursor: PlatformHandler = {
         new CommandError({ command: `rm -rf ${CURSOR_PLUGIN_DIR}`, message: String(e) }),
       try: async () => {
         await import('node:fs/promises').then(async (m) => {
-          await m.rm(CURSOR_PLUGIN_DIR, { recursive: true, force: true });
+          await m.rm(CURSOR_PLUGIN_DIR, { force: true, recursive: true });
         });
       },
     });
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   update: (version?: string) =>
     Effect.gen(function* update() {
       const tag = version ?? 'latest';
@@ -1579,7 +1573,7 @@ const cursor: PlatformHandler = {
       yield* restoreCursorAgentModels(models);
       // Invalidate version cache so npmViewVersion doesn't return stale data
       yield* invalidateVersionCache('@maestria/cursor').pipe(Effect.catchCause(() => Effect.void));
-    }).pipe(Effect.as(undefined)),
+    }).pipe(Effect.as()),
 };
 
 const omp: PlatformHandler = {
@@ -1602,11 +1596,11 @@ const omp: PlatformHandler = {
   install: Effect.gen(function* install() {
     // omp has built-in task dispatch - no subagent prerequisite needed
     yield* run('omp', ['plugin', 'install', '@maestria/omp'], 120_000);
-  }).pipe(Effect.as(undefined)),
+  }).pipe(Effect.as()),
   isInstalled: fileExists(`${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`),
   label: 'Oh My Pi',
   npmPackage: '@maestria/omp',
-  uninstall: run('omp', ['plugin', 'uninstall', '@maestria/omp']).pipe(Effect.as(undefined)),
+  uninstall: run('omp', ['plugin', 'uninstall', '@maestria/omp']).pipe(Effect.as()),
   update: (version?: string) =>
     Effect.gen(function* update() {
       const tagged = version ? `@maestria/omp@${version}` : '@maestria/omp@latest';

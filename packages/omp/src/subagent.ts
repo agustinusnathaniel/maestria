@@ -111,7 +111,7 @@ export function installSubagentTool(
         return handleSingleDispatch(pi, state, params as { agent: string; task: string });
       }
       return handleMultiDispatch(pi, state, {
-        mode: mode,
+        mode,
         tasks: params.tasks!,
       });
     },
