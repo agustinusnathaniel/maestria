@@ -41,7 +41,6 @@ export default defineConfig({
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
       curly: 'error',
-      'arrow-body-style': ['error', 'always'],
     },
     overrides: [
       {
