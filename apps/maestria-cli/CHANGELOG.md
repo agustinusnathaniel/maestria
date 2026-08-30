@@ -1,5 +1,13 @@
 # maestria
 
+## 0.11.1
+
+### Patch Changes
+
+- [#258](https://github.com/agustinusnathaniel/maestria/pull/258) [`45ee346`](https://github.com/agustinusnathaniel/maestria/commit/45ee3463f46371725786037fc9ae061aec24865d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor(cli): consolidate version cache path and use tmpdir for tarball handling
+
+- [#260](https://github.com/agustinusnathaniel/maestria/pull/260) [`a49c33c`](https://github.com/agustinusnathaniel/maestria/commit/a49c33caaeb8c3fa756ff8e5255ac0c4ac761d80) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - refactor(cli): respect XDG_CACHE_HOME and centralize cache path helpers
+
 ## 0.11.0
 
 ### Minor Changes
