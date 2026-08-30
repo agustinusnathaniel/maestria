@@ -20,6 +20,8 @@ import {
   npmViewVersion,
   invalidateVersionCache,
   CommandError,
+  getCacheDir,
+  getMaestriaCacheDir,
 } from '@/lib/shell.js';
 
 // ── Shared helpers ───────────────────────────────────
@@ -119,8 +121,8 @@ function installNpmTarball(
   });
 }
 
-const CLAUDE_MARKETPLACE_DIR = `${homedir()}/.cache/maestria/claude-code-marketplace`;
-const CODEX_MARKETPLACE_DIR = `${homedir()}/.cache/maestria/codex-marketplace`;
+const CLAUDE_MARKETPLACE_DIR = join(getMaestriaCacheDir(), 'claude-code-marketplace');
+const CODEX_MARKETPLACE_DIR = join(getMaestriaCacheDir(), 'codex-marketplace');
 const MAESTRIA_MARKETPLACE = 'maestria';
 const MAESTRIA_PLUGIN = 'maestria';
 
@@ -813,7 +815,16 @@ const opencode: PlatformHandler = {
     Effect.flatMap((specifier) => {
       if (!specifier) return Effect.succeed('unknown');
       return readTextFile(
-        `${homedir()}/.cache/opencode/packages/@maestria/opencode@${specifier}/node_modules/@maestria/opencode/package.json`,
+        join(
+          getCacheDir(),
+          'opencode',
+          'packages',
+          `@maestria/opencode@${specifier}`,
+          'node_modules',
+          '@maestria',
+          'opencode',
+          'package.json',
+        ),
       ).pipe(
         Effect.map((out) => {
           try {
@@ -835,7 +846,7 @@ const opencode: PlatformHandler = {
     yield* Effect.tryPromise({
       try: async () => {
         const { readdir, rm } = await import('node:fs/promises');
-        const base = `${homedir()}/.cache/opencode/packages/@maestria`;
+        const base = join(getCacheDir(), 'opencode', 'packages', '@maestria');
         let entries: string[];
         try {
           entries = await readdir(base);
@@ -848,7 +859,7 @@ const opencode: PlatformHandler = {
       },
       catch: (error) =>
         new CommandError({
-          command: `clear opencode cache ${homedir()}/.cache/opencode/packages/@maestria/opencode*`,
+          command: `clear opencode cache ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}`,
           message: String(error),
         }),
     });
@@ -864,7 +875,7 @@ const opencode: PlatformHandler = {
       yield* Effect.tryPromise({
         try: async () => {
           const { readdir, rm } = await import('node:fs/promises');
-          const base = `${homedir()}/.cache/opencode/packages/@maestria`;
+          const base = join(getCacheDir(), 'opencode', 'packages', '@maestria');
           let entries: string[];
           try {
             entries = await readdir(base);
@@ -877,7 +888,7 @@ const opencode: PlatformHandler = {
         },
         catch: (error) =>
           new CommandError({
-            command: `clear opencode cache ${homedir()}/.cache/opencode/packages/@maestria/opencode*`,
+            command: `clear opencode cache ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}`,
             message: String(error),
           }),
       });
