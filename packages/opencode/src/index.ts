@@ -49,8 +49,12 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
     permission: frontmatter.permission,
   };
 
-  if (frontmatter.color) config.color = frontmatter.color;
-  if (frontmatter.maxSteps) config.maxSteps = frontmatter.maxSteps;
+  if (frontmatter.color) {
+    config.color = frontmatter.color;
+  }
+  if (frontmatter.maxSteps) {
+    config.maxSteps = frontmatter.maxSteps;
+  }
 
   return { name, config };
 }
@@ -61,7 +65,9 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
  */
 function loadAgents(): Record<string, Record<string, unknown>> {
   try {
-    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith('.md'));
+    const files = readdirSync(AGENTS_DIR).filter((f) => {
+      return f.endsWith('.md');
+    });
     const agents: Record<string, Record<string, unknown>> = {};
 
     for (const file of files) {
@@ -87,7 +93,9 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
   // Validate and parse options with zod
   const parsed = maestriaOptionsSchema.parse(options ?? {});
   const disabledKeywords = new Set<string>(
-    (parsed.modes?.disabledKeywords ?? []).map((k) => k.toLowerCase()),
+    (parsed.modes?.disabledKeywords ?? []).map((k) => {
+      return k.toLowerCase();
+    }),
   );
   const agents = loadAgents();
 
@@ -110,17 +118,23 @@ export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOpt
     },
     'chat.message': async (hookInput, hookOutput) => {
       // Only fire for the orchestrator agent
-      if (hookInput.agent !== 'orchestrator') return;
+      if (hookInput.agent !== 'orchestrator') {
+        return;
+      }
 
       // Find the first text part with user content
-      const textPart = hookOutput.parts.find((p) => p.type === 'text') as
-        | { text: string; type: 'text' }
-        | undefined;
-      if (!textPart) return;
+      const textPart = hookOutput.parts.find((p) => {
+        return p.type === 'text';
+      }) as { text: string; type: 'text' } | undefined;
+      if (!textPart) {
+        return;
+      }
 
       // Detect keyword in the text
       const result = detectMode(textPart.text, disabledKeywords);
-      if (!result) return;
+      if (!result) {
+        return;
+      }
 
       // Strip keyword from text and prepend mode marker + prompt inline.
       // We embed everything in the existing text part rather than injecting

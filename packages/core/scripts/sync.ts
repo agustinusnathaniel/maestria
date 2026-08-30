@@ -75,6 +75,7 @@ function parseCliArgs(): CliOptions {
 
 // ── Main ──
 
+// oxlint-disable-next-line max-lines-per-function -- main orchestrates CLI parsing, config loading, sync execution, and result summarization as a single cohesive entry flow; splitting would fragment the linear startup sequence that shares opts/config/results.
 async function main(): Promise<number> {
   const opts = parseCliArgs();
 
@@ -114,11 +115,21 @@ async function main(): Promise<number> {
   });
 
   // Summarize
-  const written = results.filter((r) => r.status === 'written').length;
-  const unchanged = results.filter((r) => r.status === 'unchanged').length;
-  const removed = results.filter((r) => r.status === 'removed').length;
-  const errors = results.filter((r) => r.status === 'error').length;
-  const dryRunCount = results.filter((r) => r.status === 'dry-run').length;
+  const written = results.filter((r) => {
+    return r.status === 'written';
+  }).length;
+  const unchanged = results.filter((r) => {
+    return r.status === 'unchanged';
+  }).length;
+  const removed = results.filter((r) => {
+    return r.status === 'removed';
+  }).length;
+  const errors = results.filter((r) => {
+    return r.status === 'error';
+  }).length;
+  const dryRunCount = results.filter((r) => {
+    return r.status === 'dry-run';
+  }).length;
 
   if (opts.verbose) {
     console.log(
@@ -129,8 +140,12 @@ async function main(): Promise<number> {
 
   if (opts.check && (errors > 0 || removed > 0)) {
     const parts: string[] = [];
-    if (errors > 0) parts.push(`${errors} file(s) differ from expected`);
-    if (removed > 0) parts.push(`${removed} stale file(s) would be removed`);
+    if (errors > 0) {
+      parts.push(`${errors} file(s) differ from expected`);
+    }
+    if (removed > 0) {
+      parts.push(`${removed} stale file(s) would be removed`);
+    }
     console.error(`\nCheck failed: ${parts.join('; ')}`);
     return 1;
   }

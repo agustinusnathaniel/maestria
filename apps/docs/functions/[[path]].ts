@@ -63,11 +63,19 @@ function addNegotiatedVary(headers: Headers): void {
     headers
       .get('Vary')
       ?.split(',')
-      .map((value) => value.trim())
+      .map((value) => {
+        return value.trim();
+      })
       .filter(Boolean) ?? [];
-  const names = new Set(existing.map((value) => value.toLowerCase()));
+  const names = new Set(
+    existing.map((value) => {
+      return value.toLowerCase();
+    }),
+  );
 
-  for (const value of VARY_VALUE.split(',').map((name) => name.trim())) {
+  for (const value of VARY_VALUE.split(',').map((name) => {
+    return name.trim();
+  })) {
     if (!names.has(value.toLowerCase())) {
       existing.push(value);
       names.add(value.toLowerCase());
@@ -89,7 +97,9 @@ function markdownNotFoundResponse(isHead: boolean): Response {
     '',
     'Recovery paths:',
     '',
-    ...RECOVERY_LINKS.map(([label, href]) => `- [${label}](${href})`),
+    ...RECOVERY_LINKS.map(([label, href]) => {
+      return `- [${label}](${href})`;
+    }),
     '',
   ];
   const headers = new Headers({
@@ -106,14 +116,20 @@ function markdownNotFoundResponse(isHead: boolean): Response {
  */
 export async function handleAgentDelivery(context: EventContextLike): Promise<Response> {
   const { request } = context;
-  if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return context.next();
+  }
 
   const url = new URL(request.url);
   const pathname = url.pathname.toLowerCase();
-  if (pathname.endsWith('.md') || pathname.endsWith('.txt')) return context.next();
+  if (pathname.endsWith('.md') || pathname.endsWith('.txt')) {
+    return context.next();
+  }
 
   const accept = request.headers.get('accept');
-  if (!wantsMarkdown(accept)) return context.next();
+  if (!wantsMarkdown(accept)) {
+    return context.next();
+  }
 
   // Responses to HEAD must not carry a body; pass null instead of a stream.
   const isHead = request.method === 'HEAD';
@@ -127,7 +143,9 @@ export async function handleAgentDelivery(context: EventContextLike): Promise<Re
   // No twin: re-fetch the original asset so known pages without a twin still
   // serve normally instead of turning into a 404.
   const original = await context.env.ASSETS.fetch(new URL(url.pathname, url.origin));
-  if (original.status === 200) return withMarkdownVary(original, isHead);
+  if (original.status === 200) {
+    return withMarkdownVary(original, isHead);
+  }
 
   return markdownNotFoundResponse(isHead);
 }

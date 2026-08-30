@@ -45,7 +45,9 @@ export function deploySpecialistAgents(agentsSrc: string, agentsDest: string): n
       continue;
     }
 
-    if (existsSync(destFile)) continue;
+    if (existsSync(destFile)) {
+      continue;
+    }
 
     try {
       const content = readFileSync(srcFile, 'utf-8');

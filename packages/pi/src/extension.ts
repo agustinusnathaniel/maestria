@@ -29,7 +29,9 @@ function currentSessionEntries(ctx: ExtensionContext): PersistedStateEntry[] | n
   // from a sibling branch in the same session tree. Never fall back to
   // getEntries(), which spans the entire session tree.
   const sessionManager = ctx?.sessionManager;
-  if (typeof sessionManager?.getBranch !== 'function') return null;
+  if (typeof sessionManager?.getBranch !== 'function') {
+    return null;
+  }
 
   const branch = sessionManager.getBranch();
   return Array.isArray(branch) ? (branch as PersistedStateEntry[]) : null;
@@ -41,7 +43,9 @@ function restoreStateFromSession(state: MaestriaState, ctx: ExtensionContext): v
 
   if (!entries) {
     const mutableState = state as unknown as Record<string, unknown>;
-    for (const key of Object.keys(mutableState)) delete mutableState[key];
+    for (const key of Object.keys(mutableState)) {
+      delete mutableState[key];
+    }
     Object.assign(state, next);
     return;
   }
@@ -49,13 +53,17 @@ function restoreStateFromSession(state: MaestriaState, ctx: ExtensionContext): v
   for (let i = entries.length - 1; i >= 0; i--) {
     const entry = entries[i];
     if (entry.type === 'custom' && entry.customType === 'maestria_state') {
-      if (isRecord(entry.data)) Object.assign(next, entry.data);
+      if (isRecord(entry.data)) {
+        Object.assign(next, entry.data);
+      }
       break;
     }
   }
 
   const mutableState = state as unknown as Record<string, unknown>;
-  for (const key of Object.keys(mutableState)) delete mutableState[key];
+  for (const key of Object.keys(mutableState)) {
+    delete mutableState[key];
+  }
   Object.assign(state, next);
 }
 
@@ -96,7 +104,9 @@ export default function (pi: ExtensionAPI): void {
 
   // Cleanup subscriptions on shutdown
   pi.on('session_shutdown', () => {
-    for (const cleanup of cleanups) cleanup();
+    for (const cleanup of cleanups) {
+      cleanup();
+    }
     cleanups.length = 0;
   });
 

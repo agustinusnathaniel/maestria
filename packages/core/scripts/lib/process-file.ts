@@ -85,12 +85,18 @@ function checkProvenance(
   try {
     const repoCwd = dirname(outputPath);
     const outputChanged = hasPorcelainChanges(repoCwd, outputPath);
-    if (!outputChanged) return true;
+    if (!outputChanged) {
+      return true;
+    }
     if (hasStagedChangesForFile(repoCwd, outputPath)) {
       return isStagedOutputValid(repoCwd, outputPath, expectedContent);
     }
-    if (hasPorcelainChanges(repoCwd, sourcePath)) return true;
-    if (configPath && hasPorcelainChanges(repoCwd, configPath)) return true;
+    if (hasPorcelainChanges(repoCwd, sourcePath)) {
+      return true;
+    }
+    if (configPath && hasPorcelainChanges(repoCwd, configPath)) {
+      return true;
+    }
     return false;
   } catch {
     return true;
@@ -121,11 +127,19 @@ export interface ProcessFileOpts {
  */
 function buildTransformedContent(raw: string, fileCfg: ResolvedFileConfig): string {
   let content = normalizeLineEndings(raw);
-  if (fileCfg.stripFrontmatter) content = stripFrontmatter(content);
-  if (fileCfg.replace.length > 0) content = findAndReplace(content, fileCfg.replace);
+  if (fileCfg.stripFrontmatter) {
+    content = stripFrontmatter(content);
+  }
+  if (fileCfg.replace.length > 0) {
+    content = findAndReplace(content, fileCfg.replace);
+  }
   content = stripSourceComment(content);
-  if (fileCfg.prepend) content = fileCfg.prepend + content;
-  if (fileCfg.append) content = content + fileCfg.append;
+  if (fileCfg.prepend) {
+    content = fileCfg.prepend + content;
+  }
+  if (fileCfg.append) {
+    content = content + fileCfg.append;
+  }
   const defaultComment = `<!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->`;
   const autoGenComment = (fileCfg.autoGenComment || defaultComment) + '\n\n';
@@ -142,7 +156,9 @@ function buildTransformedContent(raw: string, fileCfg: ResolvedFileConfig): stri
     content = autoGenComment + content;
   }
   content = normalizeLineEndings(content);
-  if (!content.endsWith('\n')) content += '\n';
+  if (!content.endsWith('\n')) {
+    content += '\n';
+  }
   return content;
 }
 
@@ -154,14 +170,17 @@ async function handleExistingComparison(
   existingContent: string | null,
 ): Promise<SyncFileResult | null> {
   const { configPath, check, verbose, report, logger } = opts;
-  if (existingContent !== content) return null;
+  if (existingContent !== content) {
+    return null;
+  }
   if (check && !checkProvenance(sourcePath, fileCfg.output, content, configPath)) {
     const relOutput = relative(process.cwd(), fileCfg.output);
     const relSource = relative(process.cwd(), sourcePath);
-    if (verbose)
+    if (verbose) {
       logger(
         `[check] Provenance violation: ${relOutput} was modified without changing ${relSource}`,
       );
+    }
     return {
       source: sourcePath,
       output: fileCfg.output,
@@ -169,10 +188,13 @@ async function handleExistingComparison(
       error: `Provenance violation: ${relOutput} was modified without changing canonical source at ${relSource}`,
     };
   }
-  if (verbose) logger(`[${report}] Unchanged: ${relative(process.cwd(), fileCfg.output)}`);
+  if (verbose) {
+    logger(`[${report}] Unchanged: ${relative(process.cwd(), fileCfg.output)}`);
+  }
   return { source: sourcePath, output: fileCfg.output, status: 'unchanged' };
 }
 
+// oxlint-disable-next-line max-lines-per-function -- processFile orchestrates the single canonical transform pipeline (read → transform → dry-run/check/write) as a cohesive sequence; splitting would fragment the dispatch modes that share raw/content/existingContent state.
 export async function processFile(
   sourcePath: string,
   fileCfg: ResolvedFileConfig,
@@ -183,7 +205,9 @@ export async function processFile(
     const raw = await readFile(sourcePath, 'utf-8');
     const content = buildTransformedContent(raw, fileCfg);
     if (dryRun) {
-      if (verbose) logger(`[dry-run] Would write: ${relative(process.cwd(), fileCfg.output)}`);
+      if (verbose) {
+        logger(`[dry-run] Would write: ${relative(process.cwd(), fileCfg.output)}`);
+      }
       return {
         source: sourcePath,
         output: fileCfg.output,
@@ -201,10 +225,16 @@ export async function processFile(
       content,
       existingContent,
     );
-    if (unchanged) return unchanged;
+    if (unchanged) {
+      return unchanged;
+    }
     if (check) {
-      if (diff) logger(unifiedDiff(fileCfg.output, fileCfg.output, existingContent ?? '', content));
-      if (verbose) logger(`[check] Mismatch: ${relative(process.cwd(), fileCfg.output)}`);
+      if (diff) {
+        logger(unifiedDiff(fileCfg.output, fileCfg.output, existingContent ?? '', content));
+      }
+      if (verbose) {
+        logger(`[check] Mismatch: ${relative(process.cwd(), fileCfg.output)}`);
+      }
       return {
         source: sourcePath,
         output: fileCfg.output,
@@ -214,8 +244,12 @@ export async function processFile(
       };
     }
     await atomicWrite(fileCfg.output, content);
-    if (diff) logger(unifiedDiff(fileCfg.output, fileCfg.output, existingContent ?? '', content));
-    if (verbose) logger(`[${report}] Written: ${relative(process.cwd(), fileCfg.output)}`);
+    if (diff) {
+      logger(unifiedDiff(fileCfg.output, fileCfg.output, existingContent ?? '', content));
+    }
+    if (verbose) {
+      logger(`[${report}] Written: ${relative(process.cwd(), fileCfg.output)}`);
+    }
     return {
       source: sourcePath,
       output: fileCfg.output,

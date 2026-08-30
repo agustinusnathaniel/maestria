@@ -89,12 +89,22 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
   }> = [];
   for (const p of installed) {
     const platform = getPlatform(p.id);
-    if (!platform) continue;
+    if (!platform) {
+      continue;
+    }
     const [pv, lv] = await Effect.runPromise(
       Effect.all(
         [
-          platform.getInstalledVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
-          platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
+          platform.getInstalledVersion.pipe(
+            Effect.catchCause(() => {
+              return Effect.succeed('unknown');
+            }),
+          ),
+          platform.getLatestVersion.pipe(
+            Effect.catchCause(() => {
+              return Effect.succeed('unknown');
+            }),
+          ),
         ],
         { concurrency: 2 },
       ),
@@ -107,11 +117,17 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
       needsUpdate: needsUpdateOf(pv, lv),
     });
   }
-  const needsUpdate = statuses.filter((s) => s.needsUpdate);
+  const needsUpdate = statuses.filter((s) => {
+    return s.needsUpdate;
+  });
   if (needsUpdate.length === 0) {
     const lines = statuses
-      .filter((s) => !s.needsUpdate)
-      .map((s) => `  ${picocolors.green('✓')} ${s.label}: ${s.installedVersion}`)
+      .filter((s) => {
+        return !s.needsUpdate;
+      })
+      .map((s) => {
+        return `  ${picocolors.green('✓')} ${s.label}: ${s.installedVersion}`;
+      })
       .join('\n');
     console.log(`\nAll platforms are up to date.\n${lines}\n`);
     process.exit(0);
@@ -119,11 +135,13 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
   const selected = await groupMultiselect({
     message: 'Which platforms do you want to update?',
     options: {
-      'All platforms': needsUpdate.map((s) => ({
-        value: s.id,
-        label: s.label,
-        hint: `${s.installedVersion} → ${s.latestVersion}`,
-      })),
+      'All platforms': needsUpdate.map((s) => {
+        return {
+          value: s.id,
+          label: s.label,
+          hint: `${s.installedVersion} → ${s.latestVersion}`,
+        };
+      }),
     },
     selectableGroups: true,
     required: true,
@@ -132,10 +150,13 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
     cancel('Update cancelled.');
     process.exit(130);
   }
-  const toUpdate = needsUpdate.filter((s) => (selected as string[]).includes(s.id));
+  const toUpdate = needsUpdate.filter((s) => {
+    return (selected as string[]).includes(s.id);
+  });
   const results: PlatformResult[] = [];
-  for (const p of toUpdate)
+  for (const p of toUpdate) {
     results.push(await Effect.runPromise(updateOne(getPlatform(p.id)!, isQuiet, version)));
+  }
   return results;
 }
 
@@ -184,36 +205,58 @@ export const updateCommand = defineCommand({
     const isQuiet = (args.quiet || args.compact) as boolean;
     const isCompact = args.compact as boolean;
     let platformIds: string[] | undefined;
-    if (args.platform)
+    if (args.platform) {
       platformIds = await validateOrExit(validatePlatforms(args.platform as string));
-    if (args.version) await validateOrExit(validateVersion(args.version as string));
+    }
+    if (args.version) {
+      await validateOrExit(validateVersion(args.version as string));
+    }
     const results: PlatformResult[] = [];
-    if (platformIds && platformIds.length > 0)
+    if (platformIds && platformIds.length > 0) {
       results.push(
         ...(await runDirectUpdate(platformIds, isQuiet, args.version as string | undefined)),
       );
-    else if (args.all)
+    } else if (args.all) {
       results.push(...(await runAllUpdate(isQuiet, args.version as string | undefined)));
-    else results.push(...(await runInteractiveUpdate(isQuiet, args.version as string | undefined)));
-    if (args.json) console.log(JSON.stringify(results, null, 2));
-    else if (isCompact) console.log(renderCompactResults(results));
-    else console.log(renderResults(results));
+    } else {
+      results.push(...(await runInteractiveUpdate(isQuiet, args.version as string | undefined)));
+    }
+    if (args.json) {
+      console.log(JSON.stringify(results, null, 2));
+    } else if (isCompact) {
+      console.log(renderCompactResults(results));
+    } else {
+      console.log(renderResults(results));
+    }
     process.exit(exitCodeForResults(results));
   },
 });
 
 function previewVersionDiff(before: string, after: string): string {
-  if (before === 'unknown' && after !== 'unknown') return `Installed v${after}`;
-  if (before === after) return `Already up to date (v${before})`;
+  if (before === 'unknown' && after !== 'unknown') {
+    return `Installed v${after}`;
+  }
+  if (before === after) {
+    return `Already up to date (v${before})`;
+  }
   return `Updated: v${before} → v${after}`;
 }
 
 function captureSnapshot(
   platform: PlatformHandler,
 ): Effect.Effect<PlatformUpdateSnapshot | { error: string } | undefined, never> {
-  if (!platform.captureUpdateSnapshot) return Effect.succeed(undefined);
+  if (!platform.captureUpdateSnapshot) {
+    return Effect.succeed(undefined);
+  }
   return platform.captureUpdateSnapshot.pipe(
-    Effect.match({ onFailure: (error) => ({ error: error.message }), onSuccess: (s) => s }),
+    Effect.match({
+      onFailure: (error) => {
+        return { error: error.message };
+      },
+      onSuccess: (s) => {
+        return s;
+      },
+    }),
   );
 }
 
@@ -225,43 +268,54 @@ export function updateOne(
 ): Effect.Effect<PlatformResult, never> {
   // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator implements the same atomic update transaction as updateOne; splitting the generator would duplicate snapshot/version/preflight closure and hide the linear flow.
   return Effect.gen(function* () {
-    if (version && platform.supportsVersionPinning === false)
+    if (version && platform.supportsVersionPinning === false) {
       return {
         id: platform.id,
         label: platform.label,
         ok: false,
         message: `Version pinning is not supported for ${platform.label}; updating without --version is required.`,
       } satisfies PlatformResult;
+    }
     const captured = yield* captureSnapshot(platform);
-    if (captured !== undefined && 'error' in captured)
+    if (captured !== undefined && 'error' in captured) {
       return {
         id: platform.id,
         label: platform.label,
         ok: false,
         message: captured.error,
       } satisfies PlatformResult;
+    }
     const snapshot = captured as PlatformUpdateSnapshot | undefined;
     const prevVersion = snapshot
       ? snapshot.installedVersion
       : yield* platform.getInstalledVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
+          Effect.catchCause(() => {
+            return Effect.succeed('unknown');
+          }),
         );
     const targetVersion =
       version ??
-      (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
+      (yield* platform.getLatestVersion.pipe(
+        Effect.catchCause(() => {
+          return Effect.succeed('latest');
+        }),
+      ));
     if (platform.preflightUpdate) {
-      const preflightError: string | void = yield* platform
-        .preflightUpdate(snapshot)
-        .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)));
-      if (preflightError !== undefined)
+      const preflightError: string | void = yield* platform.preflightUpdate(snapshot).pipe(
+        Effect.catchTag('CommandError', (error) => {
+          return Effect.succeed(error.message);
+        }),
+      );
+      if (preflightError !== undefined) {
         return {
           id: platform.id,
           label: platform.label,
           ok: false,
           message: preflightError,
         } satisfies PlatformResult;
+      }
     }
-    if (isVersionEq(prevVersion, targetVersion))
+    if (isVersionEq(prevVersion, targetVersion)) {
       return {
         id: platform.id,
         label: platform.label,
@@ -270,7 +324,8 @@ export function updateOne(
         prevVersion,
         nextVersion: prevVersion,
       } satisfies PlatformResult;
-    if (!version && isVersionGt(prevVersion, targetVersion))
+    }
+    if (!version && isVersionGt(prevVersion, targetVersion)) {
       return {
         id: platform.id,
         label: platform.label,
@@ -279,11 +334,14 @@ export function updateOne(
         prevVersion,
         nextVersion: prevVersion,
       } satisfies PlatformResult;
+    }
     const spinner = createSpinner(quiet);
     spinner.start(`Updating ${platform.label}: ${prevVersion} → ${targetVersion}...`);
-    const errorMessage: string | void = yield* platform
-      .update(version, snapshot)
-      .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)));
+    const errorMessage: string | void = yield* platform.update(version, snapshot).pipe(
+      Effect.catchTag('CommandError', (error) => {
+        return Effect.succeed(error.message);
+      }),
+    );
     if (errorMessage !== undefined) {
       spinner.stop(`Failed: ${errorMessage}`);
       return {
@@ -294,11 +352,18 @@ export function updateOne(
       } satisfies PlatformResult;
     }
     const nextVersion = yield* platform.getInstalledVersion.pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
+      Effect.catchCause(() => {
+        return Effect.succeed('unknown');
+      }),
     );
     spinner.stop(previewVersionDiff(prevVersion, nextVersion));
-    if (platform.npmPackage)
-      yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
+    if (platform.npmPackage) {
+      yield* invalidateVersionCache(platform.npmPackage).pipe(
+        Effect.catchCause(() => {
+          return Effect.void;
+        }),
+      );
+    }
     return {
       id: platform.id,
       label: platform.label,

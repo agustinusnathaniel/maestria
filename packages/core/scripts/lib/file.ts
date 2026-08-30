@@ -67,7 +67,9 @@ export async function autoClean(
     // Skip files that match preserve patterns
     if (
       config.preserve.length > 0 &&
-      config.preserve.some((p) => relOutPath === p || relOutPath.endsWith('/' + p))
+      config.preserve.some((p) => {
+        return relOutPath === p || relOutPath.endsWith('/' + p);
+      })
     ) {
       if (verbose) {
         logger(`[${report}] Preserved: ${relative(process.cwd(), absOutPath)}`);

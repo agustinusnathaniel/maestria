@@ -43,11 +43,15 @@ function pollLoop(options: PollSubagentOptions): Effect.Effect<SubagentRecord, S
 
   return Effect.gen(function* () {
     let polls = 0;
-    let record = yield* Effect.sync(() => options.service.getRecord(options.id));
+    let record = yield* Effect.sync(() => {
+      return options.service.getRecord(options.id);
+    });
 
     while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
       yield* Effect.sleep(intervalMs);
-      record = yield* Effect.sync(() => options.service.getRecord(options.id));
+      record = yield* Effect.sync(() => {
+        return options.service.getRecord(options.id);
+      });
       polls++;
 
       if (options.sendUpdates) {
@@ -108,7 +112,9 @@ function abortEffect(id: string, signal: AbortSignal): Effect.Effect<never, Suba
     }
 
     signal.addEventListener('abort', onAbort, { once: true });
-    return Effect.sync(() => signal.removeEventListener('abort', onAbort));
+    return Effect.sync(() => {
+      return signal.removeEventListener('abort', onAbort);
+    });
   });
 }
 

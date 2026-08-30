@@ -9,7 +9,9 @@ import type { PlatformStatus } from '@/types.js';
  */
 export function detectAll(): Effect.Effect<PlatformStatus[], never> {
   return Effect.all(
-    platforms.map((p) => detectOne(p)),
+    platforms.map((p) => {
+      return detectOne(p);
+    }),
     { concurrency: 'unbounded' },
   );
 }
@@ -25,11 +27,15 @@ function detectOne(platform: PlatformHandler): Effect.Effect<PlatformStatus, nev
       installed = yield* platform.isInstalled;
       if (installed) {
         installedVersion = yield* platform.getInstalledVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
+          Effect.catchCause(() => {
+            return Effect.succeed('unknown');
+          }),
         );
       }
       latestVersion = yield* platform.getLatestVersion.pipe(
-        Effect.catchCause(() => Effect.succeed('')),
+        Effect.catchCause(() => {
+          return Effect.succeed('');
+        }),
       );
     }
 
@@ -66,5 +72,11 @@ export function detectSingle(platformId: string): Effect.Effect<PlatformStatus, 
  * Get only the platforms that are both available and have maestria installed.
  */
 export function detectInstalled(): Effect.Effect<PlatformStatus[], never> {
-  return detectAll().pipe(Effect.map((stats) => stats.filter((s) => s.available && s.installed)));
+  return detectAll().pipe(
+    Effect.map((stats) => {
+      return stats.filter((s) => {
+        return s.available && s.installed;
+      });
+    }),
+  );
 }

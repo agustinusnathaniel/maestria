@@ -28,10 +28,16 @@ function makeAssets(table: AssetTable): {
     const url =
       input instanceof URL ? input : input instanceof Request ? new URL(input.url) : new URL(input);
     const entry = table.get(url.pathname);
-    if (!entry || entry.status !== 200) return new Response(null, { status: 404 });
+    if (!entry || entry.status !== 200) {
+      return new Response(null, { status: 404 });
+    }
     const headers = new Headers({ 'Content-Type': entry.contentType ?? 'text/plain' });
-    if (entry.cacheControl) headers.set('Cache-Control', entry.cacheControl);
-    if (entry.vary) headers.set('Vary', entry.vary);
+    if (entry.cacheControl) {
+      headers.set('Cache-Control', entry.cacheControl);
+    }
+    if (entry.vary) {
+      headers.set('Vary', entry.vary);
+    }
     return new Response(entry.body ?? '', { status: 200, headers });
   });
   return { binding: { fetch: fetchSpy }, fetchSpy };
@@ -47,13 +53,14 @@ function makeContext(
   url: string,
   init: { method?: string; accept?: string } = {},
   table: AssetTable = new Map(),
-  next = vi.fn(
-    async () =>
-      new Response('next-html', { status: 200, headers: { 'Content-Type': 'text/html' } }),
-  ),
+  next = vi.fn(async () => {
+    return new Response('next-html', { status: 200, headers: { 'Content-Type': 'text/html' } });
+  }),
 ): TestContext {
   const headers = new Headers();
-  if (init.accept !== undefined) headers.set('Accept', init.accept);
+  if (init.accept !== undefined) {
+    headers.set('Accept', init.accept);
+  }
   const { binding, fetchSpy } = makeAssets(table);
   return {
     request: new Request(url, { method: init.method ?? 'GET', headers }),
@@ -156,7 +163,9 @@ describe('markdown content negotiation', () => {
         return url.pathname.endsWith('.md') ? new Response(null, { status: 404 }) : original;
       }),
     };
-    const next = vi.fn(async () => new Response('should-not-be-used'));
+    const next = vi.fn(async () => {
+      return new Response('should-not-be-used');
+    });
     const context = makeContext(
       `${ORIGIN}/some-custom-page/`,
       { accept: 'text/markdown' },
@@ -177,7 +186,9 @@ describe('markdown content negotiation', () => {
   it('(d) lets browser requests through to next()', async () => {
     const browserAccept =
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8';
-    const next = vi.fn(async () => new Response('next-html'));
+    const next = vi.fn(async () => {
+      return new Response('next-html');
+    });
     const context = makeContext(`${ORIGIN}/opencode/`, { accept: browserAccept }, new Map(), next);
 
     const res = await handleAgentDelivery(context);
@@ -189,7 +200,9 @@ describe('markdown content negotiation', () => {
 
   it('passes through requests that already target static Markdown or text artifacts', async () => {
     for (const pathname of ['/opencode.md', '/llms.txt']) {
-      const next = vi.fn(async () => new Response('static-artifact'));
+      const next = vi.fn(async () => {
+        return new Response('static-artifact');
+      });
       const context = makeContext(
         `${ORIGIN}${pathname}`,
         { accept: 'text/markdown' },
@@ -206,7 +219,9 @@ describe('markdown content negotiation', () => {
   });
 
   it('(e) never negotiates on POST', async () => {
-    const next = vi.fn(async () => new Response('posted'));
+    const next = vi.fn(async () => {
+      return new Response('posted');
+    });
     const context = makeContext(
       `${ORIGIN}/opencode/`,
       { method: 'POST', accept: 'text/markdown' },

@@ -53,22 +53,28 @@ const READ_ONLY_BASH_PREFIX =
  */
 export function isReadOnlyBashCommand(rawCommand: string): boolean {
   const command = rawCommand.trim();
-  if (command.includes('$(') || command.includes('`')) return false;
+  if (command.includes('$(') || command.includes('`')) {
+    return false;
+  }
   // Strip `2>&1`-style fd redirects first so the `&` inside them is not
   // mistaken for a command separator and the `>` is not counted as output
   // redirection.
   const withoutFdRedirects = command.replace(/\d?>&[12]/g, '');
-  if (withoutFdRedirects.includes('>')) return false;
-  return withoutFdRedirects
-    .split(/[\n;&|]+/)
-    .every((segment) => READ_ONLY_BASH_PREFIX.test(segment.trim()));
+  if (withoutFdRedirects.includes('>')) {
+    return false;
+  }
+  return withoutFdRedirects.split(/[\n;&|]+/).every((segment) => {
+    return READ_ONLY_BASH_PREFIX.test(segment.trim());
+  });
 }
 
 // ── Pure helpers ──
 
 export function findDangerousPattern(command: string): RegExp | null {
   for (const pattern of DANGEROUS_PATTERNS) {
-    if (pattern.test(command)) return pattern;
+    if (pattern.test(command)) {
+      return pattern;
+    }
   }
   return null;
 }
@@ -140,22 +146,37 @@ function checkOrchestratorBlock(
   delegationTool: string,
   hint: string,
 ): { block: boolean; reason: string } | undefined {
-  if (state.mode === null || !options.getActiveTools().some((t) => t === delegationTool))
+  if (
+    state.mode === null ||
+    !options.getActiveTools().some((t) => {
+      return t === delegationTool;
+    })
+  ) {
     return undefined;
+  }
   const isMutationTool = options.isMutationTool
-    ? (e: ToolCallEventLike) => options.isMutationTool!(e)
+    ? (e: ToolCallEventLike) => {
+        return options.isMutationTool!(e);
+      }
     : (e: ToolCallEventLike) => {
         const name = (e as { toolName?: string }).toolName ?? '';
         const base = name === 'edit' || name === 'write' || name === 'patch' || name === 'bash';
-        if (base) return true;
-        return !!options.extraMutations?.some((m) => m === name);
+        if (base) {
+          return true;
+        }
+        return !!options.extraMutations?.some((m) => {
+          return m === name;
+        });
       };
-  if (!isMutationTool(event) || (event as { toolName: string }).toolName === delegationTool)
+  if (!isMutationTool(event) || (event as { toolName: string }).toolName === delegationTool) {
     return undefined;
+  }
   if (options.isBashTool(event)) {
     const input = (event as { input?: unknown }).input as { command?: unknown } | undefined;
     const command = typeof input?.command === 'string' ? input.command : '';
-    if (isReadOnlyBashCommand(command)) return undefined;
+    if (isReadOnlyBashCommand(command)) {
+      return undefined;
+    }
   }
   return {
     block: true,
@@ -168,19 +189,29 @@ async function checkDangerousPattern(
   options: ToolCallHandlerOptions,
   ctx: { hasUI?: boolean; ui?: { confirm: (title: string, msg: string) => Promise<boolean> } },
 ): Promise<{ block: boolean; reason: string } | undefined> {
-  if (!options.isBashTool(event)) return undefined;
+  if (!options.isBashTool(event)) {
+    return undefined;
+  }
   const input = (event as { input?: unknown }).input;
-  if (!input || typeof input !== 'object') return undefined;
+  if (!input || typeof input !== 'object') {
+    return undefined;
+  }
   const command = (input as Record<string, unknown>).command;
-  if (typeof command !== 'string' || !command) return undefined;
+  if (typeof command !== 'string' || !command) {
+    return undefined;
+  }
   const matched = findDangerousPattern(command);
-  if (!matched) return undefined;
+  if (!matched) {
+    return undefined;
+  }
   if (ctx?.hasUI) {
     const confirmed = await ctx.ui!.confirm(
       'Dangerous Pattern Detected',
       `This command matches a dangerous pattern:\n${command}\nProceed?`,
     );
-    if (confirmed) return undefined;
+    if (confirmed) {
+      return undefined;
+    }
   }
   return { block: true, reason: `Command matches dangerous pattern: ${matched}` };
 }
@@ -214,25 +245,35 @@ export function createToolCallHandler(options: ToolCallHandlerOptions) {
       options.persist();
       return;
     }
-    if (options.pi) persistStateCore(options.pi, options.getState());
+    if (options.pi) {
+      persistStateCore(options.pi, options.getState());
+    }
   };
   return async (
     event: ToolCallEventLike,
     ctx: { hasUI?: boolean; ui?: { confirm: (title: string, msg: string) => Promise<boolean> } },
   ): Promise<{ block: boolean; reason: string } | undefined> => {
-    if (!event || !(event as { toolName?: unknown }).toolName) return undefined;
+    if (!event || !(event as { toolName?: unknown }).toolName) {
+      return undefined;
+    }
     const state = options.getState();
     const toolName = (event as { toolName: string }).toolName;
     const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool, hint);
-    if (orchestrator) return orchestrator;
+    if (orchestrator) {
+      return orchestrator;
+    }
     if (state.reviewMode && (options.isWriteTool(event) || options.isBashTool(event))) {
       const reason =
         getBlockedReviewReason(toolName) ?? 'Review mode is active. Report findings, do not edit.';
       return { block: true, reason };
     }
     const dangerous = await checkDangerousPattern(event, options, ctx);
-    if (dangerous) return dangerous;
-    if (trackFileAccess(state, event, options)) doPersist();
+    if (dangerous) {
+      return dangerous;
+    }
+    if (trackFileAccess(state, event, options)) {
+      doPersist();
+    }
     return undefined;
   };
 }

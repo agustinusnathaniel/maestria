@@ -52,14 +52,16 @@ async function runUninstallInteractive(isQuiet: boolean): Promise<PlatformResult
   }
   const selected = await select({
     message: 'Which platform do you want to uninstall maestria for?',
-    options: installed.map((p) => ({ value: p.id, label: p.label })),
+    options: installed.map((p) => {
+      return { value: p.id, label: p.label };
+    }),
   });
   if (isCancel(selected) || !selected) {
     cancel('Uninstall cancelled.');
     process.exit(130);
   }
   const platform = getPlatform(String(selected));
-  if (!platform)
+  if (!platform) {
     return [
       {
         id: String(selected),
@@ -68,6 +70,7 @@ async function runUninstallInteractive(isQuiet: boolean): Promise<PlatformResult
         message: 'Platform definition not found. This is a bug.',
       } satisfies PlatformResult,
     ];
+  }
   return [await Effect.runPromise(uninstallOne(platform, isQuiet))];
 }
 
@@ -114,15 +117,28 @@ export const uninstallCommand = defineCommand({
       const platform = getPlatform(args.platform as string);
       if (!platform) {
         console.error(`Unknown platform: ${args.platform}`);
-        console.error(`Available: ${platforms.map((p) => p.id).join(', ')}`);
+        console.error(
+          `Available: ${platforms
+            .map((p) => {
+              return p.id;
+            })
+            .join(', ')}`,
+        );
         process.exit(1);
       }
       results.push(await Effect.runPromise(uninstallOne(platform, isQuiet)));
-    } else if (args.all) results.push(...(await runUninstallAll(isQuiet)));
-    else results.push(...(await runUninstallInteractive(isQuiet)));
-    if (args.json) console.log(JSON.stringify(results, null, 2));
-    else if (isCompact) console.log(renderCompactResults(results));
-    else console.log(renderResults(results));
+    } else if (args.all) {
+      results.push(...(await runUninstallAll(isQuiet)));
+    } else {
+      results.push(...(await runUninstallInteractive(isQuiet)));
+    }
+    if (args.json) {
+      console.log(JSON.stringify(results, null, 2));
+    } else if (isCompact) {
+      console.log(renderCompactResults(results));
+    } else {
+      console.log(renderResults(results));
+    }
     process.exit(exitCodeForResults(results));
   },
 });
@@ -136,7 +152,9 @@ function uninstallOne(
     spinner.start(`Uninstalling ${platform.label}...`);
 
     const errorMessage: string | void = yield* platform.uninstall.pipe(
-      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
+      Effect.catchTag('CommandError', (error) => {
+        return Effect.succeed(error.message);
+      }),
     );
 
     if (errorMessage === undefined) {

@@ -12,17 +12,40 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
 
 export function installModeAutoDetect(pi: ExtensionAPI, state: MaestriaState): void {
-  installAutoDetect((handler) => pi.on('input', handler as never), state, COMMANDS_DIR, {
-    restoreOriginalState: (ctx) => restoreOriginalState(pi, ctx as ExtensionContext, state),
-    persistState: () => persistState(pi, state),
-    noMatch: { action: 'continue' as const },
-    transform: (text) => ({ action: 'transform' as const, text }),
-  });
+  installAutoDetect(
+    (handler) => {
+      return pi.on('input', handler as never);
+    },
+    state,
+    COMMANDS_DIR,
+    {
+      restoreOriginalState: (ctx) => {
+        return restoreOriginalState(pi, ctx as ExtensionContext, state);
+      },
+      persistState: () => {
+        return persistState(pi, state);
+      },
+      noMatch: { action: 'continue' as const },
+      transform: (text) => {
+        return { action: 'transform' as const, text };
+      },
+    },
+  );
 }
 
 export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): void {
-  installCommands((name, opts) => pi.registerCommand(name, opts as never), state, {
-    restoreOriginalState: (ctx) => restoreOriginalState(pi, ctx as ExtensionContext, state),
-    persistState: () => persistState(pi, state),
-  });
+  installCommands(
+    (name, opts) => {
+      return pi.registerCommand(name, opts as never);
+    },
+    state,
+    {
+      restoreOriginalState: (ctx) => {
+        return restoreOriginalState(pi, ctx as ExtensionContext, state);
+      },
+      persistState: () => {
+        return persistState(pi, state);
+      },
+    },
+  );
 }

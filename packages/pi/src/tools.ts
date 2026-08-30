@@ -5,20 +5,33 @@ import { persistState } from '@/state.js';
 
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
   const handler = createToolCallHandler({
-    getState: () => state,
-    getActiveTools: () => pi.getActiveTools(),
+    getState: () => {
+      return state;
+    },
+    getActiveTools: () => {
+      return pi.getActiveTools();
+    },
     delegationTool: 'subagent',
-    isMutationTool: (e) =>
-      isToolCallEventType('edit', e as never) ||
-      isToolCallEventType('write', e as never) ||
-      isToolCallEventType('patch', e as never) ||
-      (e as { toolName?: string }).toolName === 'bash',
-    isReadTool: (e) => isToolCallEventType('read', e as never),
-    isWriteTool: (e) =>
-      isToolCallEventType('edit', e as never) || isToolCallEventType('write', e as never),
-    isBashTool: (e) => isToolCallEventType('bash', e as never),
-    persist: () =>
-      persistState(pi as unknown as { appendEntry: (t: string, d: unknown) => void }, state),
+    isMutationTool: (e) => {
+      return (
+        isToolCallEventType('edit', e as never) ||
+        isToolCallEventType('write', e as never) ||
+        isToolCallEventType('patch', e as never) ||
+        (e as { toolName?: string }).toolName === 'bash'
+      );
+    },
+    isReadTool: (e) => {
+      return isToolCallEventType('read', e as never);
+    },
+    isWriteTool: (e) => {
+      return isToolCallEventType('edit', e as never) || isToolCallEventType('write', e as never);
+    },
+    isBashTool: (e) => {
+      return isToolCallEventType('bash', e as never);
+    },
+    persist: () => {
+      return persistState(pi as unknown as { appendEntry: (t: string, d: unknown) => void }, state);
+    },
   });
   pi.on('tool_call', handler as never);
 }

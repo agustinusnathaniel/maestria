@@ -3,17 +3,23 @@ import { installSubagentTool } from '@/subagent.js';
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 import { createInitialState } from '@/state.js';
 
-const zodChainable = () => ({
-  describe: vi.fn(zodChainable),
-  optional: vi.fn(() => ({})),
-});
+const zodChainable = () => {
+  return {
+    describe: vi.fn(zodChainable),
+    optional: vi.fn(() => {
+      return {};
+    }),
+  };
+};
 
 function createMockPi() {
   return {
     registerTool: vi.fn(),
     appendEntry: vi.fn(),
     zod: {
-      object: vi.fn(() => ({})),
+      object: vi.fn(() => {
+        return {};
+      }),
       string: vi.fn(zodChainable),
       array: vi.fn(zodChainable),
       enum: vi.fn(zodChainable),

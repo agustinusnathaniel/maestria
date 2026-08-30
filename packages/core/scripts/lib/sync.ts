@@ -49,7 +49,9 @@ async function processPrimarySources(
   const { dryRun, check, diff, verbose, report, logger } = opts;
   for (const relPath of sourceFiles) {
     if (!relPath.endsWith('.md')) {
-      if (verbose) logger(`[${report}] Skipping non-.md file: ${relPath}`);
+      if (verbose) {
+        logger(`[${report}] Skipping non-.md file: ${relPath}`);
+      }
       continue;
     }
     const sourceAbs = resolve(config.source, relPath);
@@ -69,7 +71,9 @@ async function processPrimarySources(
           append: config.default?.append ?? '',
           frontmatter: config.default?.frontmatter,
         };
-    if (!isExplicit && verbose) logger(`[${report}] No config for ${relPath}, using defaults`);
+    if (!isExplicit && verbose) {
+      logger(`[${report}] No config for ${relPath}, using defaults`);
+    }
     generatedOutputs.add(resolved.output);
     const result = await processFile(sourceAbs, resolved, {
       configPath: config.configPath,
@@ -81,8 +85,9 @@ async function processPrimarySources(
       logger,
     });
     results.push(result);
-    if (result.status === 'error' && verbose)
+    if (result.status === 'error' && verbose) {
       logger(`[${report}] Error processing ${relPath}: ${result.error}`);
+    }
   }
 }
 
@@ -103,11 +108,14 @@ async function processSecondarySources(
   const { dryRun, check, diff, verbose, report, logger } = opts;
   const secondarySourceDir = dirname(config.source);
   for (const [filename, fileCfg] of Object.entries(config.files)) {
-    if (matchedFiles.has(filename)) continue;
+    if (matchedFiles.has(filename)) {
+      continue;
+    }
     const secondaryAbs = resolve(secondarySourceDir, filename);
     if (!existsSync(secondaryAbs)) {
-      if (verbose)
+      if (verbose) {
         logger(`[${report}] Config entry "${filename}" not found in source or secondary dir`);
+      }
       continue;
     }
     generatedOutputs.add(fileCfg.output);
@@ -121,8 +129,9 @@ async function processSecondarySources(
       logger,
     });
     results.push(result);
-    if (result.status === 'error' && verbose)
+    if (result.status === 'error' && verbose) {
       logger(`[${report}] Error processing secondary source ${filename}: ${result.error}`);
+    }
   }
 }
 

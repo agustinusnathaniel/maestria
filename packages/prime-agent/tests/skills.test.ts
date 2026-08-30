@@ -59,8 +59,12 @@ async function readDirNames(relativePath: string): Promise<string[]> {
     withFileTypes: true,
   });
   return entries
-    .filter((entry) => !entry.name.startsWith('.'))
-    .map((entry) => entry.name)
+    .filter((entry) => {
+      return !entry.name.startsWith('.');
+    })
+    .map((entry) => {
+      return entry.name;
+    })
     .sort();
 }
 
@@ -74,7 +78,9 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
-  const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
+  const close = lines.findIndex((line, index) => {
+    return index > 0 && line.trim() === '---';
+  });
   if (close === -1) {
     throw new Error('missing closing frontmatter fence');
   }
@@ -82,14 +88,18 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
     const pair = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
-    if (pair === null) continue;
+    if (pair === null) {
+      continue;
+    }
     const [, key, rawValue] = pair;
     const value = rawValue.trim();
     if (value === '' || value.startsWith('|')) {
       // Block scalar (| or |-): collect the indented continuation lines.
       const body: string[] = [];
       for (const l of lines.slice(1, close)) {
-        if (/^\s{2}/.test(l)) body.push(l.trim());
+        if (/^\s{2}/.test(l)) {
+          body.push(l.trim());
+        }
       }
       data[key] = body.join(' ');
       continue;

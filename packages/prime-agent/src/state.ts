@@ -32,7 +32,9 @@ function isCustomEntry(entry: SessionEntry): entry is CustomEntry & { data?: Mae
 }
 
 function isModeState(value: unknown): value is MaestriaModeState {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
   const mode = (value as Record<string, unknown>).mode;
   return mode === null || mode === 'fein' || mode === 'sonar' || mode === 'blitz';
 }
@@ -44,12 +46,16 @@ function isModeState(value: unknown): value is MaestriaModeState {
 export function readModeStateFromEntries(
   entries: SessionEntry[] | null | undefined,
 ): MaestriaModeState | null {
-  if (!Array.isArray(entries)) return null;
+  if (!Array.isArray(entries)) {
+    return null;
+  }
   // Entries are returned in tree order; the last matching entry is the most
   // recently appended one on the current branch.
   for (let i = entries.length - 1; i >= 0; i--) {
     const entry = entries[i];
-    if (isCustomEntry(entry) && isModeState(entry.data)) return entry.data;
+    if (isCustomEntry(entry) && isModeState(entry.data)) {
+      return entry.data;
+    }
   }
   return null;
 }

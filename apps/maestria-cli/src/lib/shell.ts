@@ -5,7 +5,9 @@ import { join } from 'node:path';
 /** Resolve the OS cache directory, respecting XDG_CACHE_HOME on Linux/macOS. */
 export function getCacheDir(): string {
   const xdg = process.env.XDG_CACHE_HOME?.trim();
-  if (xdg) return xdg;
+  if (xdg) {
+    return xdg;
+  }
   return join(homedir(), '.cache');
 }
 
@@ -65,11 +67,12 @@ export function readTextFile(filePath: string): Effect.Effect<string, CommandErr
       const { readFile } = await import('node:fs/promises');
       return await readFile(filePath, 'utf-8');
     },
-    catch: (error) =>
-      new CommandError({
+    catch: (error) => {
+      return new CommandError({
         command: `read ${filePath}`,
         message: String(error),
-      }),
+      });
+    },
   });
 }
 
@@ -80,20 +83,30 @@ export function fileExists(filePath: string): Effect.Effect<boolean, never> {
       await access(filePath);
       return true;
     },
-    catch: () => false,
-  }).pipe(Effect.catchCause(() => Effect.succeed(false)));
+    catch: () => {
+      return false;
+    },
+  }).pipe(
+    Effect.catchCause(() => {
+      return Effect.succeed(false);
+    }),
+  );
 }
 
 export function commandExists(cmd: string): Effect.Effect<boolean, never> {
   return run('which', [cmd]).pipe(
-    Effect.map((out: string) => out.length > 0),
-    Effect.catchCause(() => Effect.succeed(false)),
+    Effect.map((out: string) => {
+      return out.length > 0;
+    }),
+    Effect.catchCause(() => {
+      return Effect.succeed(false);
+    }),
   );
 }
 
 export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
-  const readCache = (): Effect.Effect<string, never> =>
-    readTextFile(getVersionCacheFile()).pipe(
+  const readCache = (): Effect.Effect<string, never> => {
+    return readTextFile(getVersionCacheFile()).pipe(
       Effect.map((out) => {
         try {
           const cache: Record<string, { version: string }> = JSON.parse(out);
@@ -102,11 +115,14 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
           return '';
         }
       }),
-      Effect.catchCause(() => Effect.succeed('')),
+      Effect.catchCause(() => {
+        return Effect.succeed('');
+      }),
     );
+  };
 
-  const updateCache = (version: string): Effect.Effect<void, never> =>
-    Effect.tryPromise({
+  const updateCache = (version: string): Effect.Effect<void, never> => {
+    return Effect.tryPromise({
       try: async () => {
         const { mkdir, readFile, writeFile } = await import('node:fs/promises');
         await mkdir(getMaestriaCacheDir(), { recursive: true });
@@ -121,20 +137,35 @@ export function npmViewVersion(pkg: string): Effect.Effect<string, never> {
         await writeFile(getVersionCacheFile(), JSON.stringify(cache));
       },
       catch: () => {},
-    }).pipe(Effect.catchCause(() => Effect.void));
+    }).pipe(
+      Effect.catchCause(() => {
+        return Effect.void;
+      }),
+    );
+  };
 
   return Effect.gen(function* () {
     const version = yield* run('npm', ['view', pkg, 'version'], 5_000).pipe(
-      Effect.catchCause(() => Effect.succeed('')),
+      Effect.catchCause(() => {
+        return Effect.succeed('');
+      }),
     );
 
     if (version) {
-      yield* updateCache(version).pipe(Effect.catchCause(() => Effect.void));
+      yield* updateCache(version).pipe(
+        Effect.catchCause(() => {
+          return Effect.void;
+        }),
+      );
       return version;
     }
 
     // Network failed - fall back to cached version (any age)
-    return yield* readCache().pipe(Effect.catchCause(() => Effect.succeed('')));
+    return yield* readCache().pipe(
+      Effect.catchCause(() => {
+        return Effect.succeed('');
+      }),
+    );
   });
 }
 
@@ -157,7 +188,9 @@ export function invalidateVersionCache(pkg: string): Effect.Effect<void, never> 
           return Effect.void;
         }
       }),
-      Effect.catchCause(() => Effect.void),
+      Effect.catchCause(() => {
+        return Effect.void;
+      }),
     );
   });
 }

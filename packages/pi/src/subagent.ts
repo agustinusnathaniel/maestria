@@ -27,7 +27,9 @@ type SubagentSpawnService = SubagentPollingService & {
 };
 
 function abortSubagents(service: SubagentPollingService, ids: readonly string[]): void {
-  if (typeof service.abort !== 'function') return;
+  if (typeof service.abort !== 'function') {
+    return;
+  }
   for (const id of ids) {
     try {
       service.abort(id);
@@ -38,9 +40,11 @@ function abortSubagents(service: SubagentPollingService, ids: readonly string[])
 }
 
 function pollSubagentOrAbortEffect(options: Parameters<typeof pollSubagentEffect>[0]) {
-  return Effect.tapError(pollSubagentEffect(options), () =>
-    Effect.sync(() => abortSubagents(options.service, [options.id])),
-  );
+  return Effect.tapError(pollSubagentEffect(options), () => {
+    return Effect.sync(() => {
+      return abortSubagents(options.service, [options.id]);
+    });
+  });
 }
 
 function recordAndPersist(
@@ -70,19 +74,22 @@ function validatePiParams(params: {
     }
     assertNonEmptyTask(params.task, 'Task description is required');
   } else if (mode === 'parallel') {
-    if (!params.tasks || params.tasks.length < 2)
+    if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For parallel mode, tasks array is required with at least 2 items');
-    if (params.tasks.length > MAX_PARALLEL_TASKS)
+    }
+    if (params.tasks.length > MAX_PARALLEL_TASKS) {
       throw new Error(
         `For parallel mode, tasks array may have at most ${MAX_PARALLEL_TASKS} items (got ${params.tasks.length})`,
       );
+    }
     for (const t of params.tasks) {
       assertValidAgent(t.agent);
       assertNonEmptyTask(t.task, 'Task description is required for all tasks');
     }
   } else if (mode === 'chain') {
-    if (!params.tasks || params.tasks.length < 2)
+    if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For chain mode, tasks array is required with at least 2 items');
+    }
     for (const t of params.tasks) {
       assertValidAgent(t.agent);
       assertNonEmptyTask(t.task, 'Task description is required for all tasks');
@@ -153,8 +160,8 @@ async function handleParallelMode(
   }
   const outcomes = await Effect.runPromise(
     Effect.all(
-      spawnedIds.map((id, i) =>
-        Effect.match(
+      spawnedIds.map((id, i) => {
+        return Effect.match(
           pollSubagentEffect({
             id,
             label: `${taskList[i].agent} (${i + 1}/${taskList.length})`,
@@ -166,14 +173,16 @@ async function handleParallelMode(
             timeoutMs: POLL_TIMEOUT_MS,
           }),
           {
-            onSuccess: (record) => ({ record }),
+            onSuccess: (record) => {
+              return { record };
+            },
             onFailure: (error) => {
               abortSubagents(service, spawnedIds);
               return { error };
             },
           },
-        ),
-      ),
+        );
+      }),
       { concurrency: 'unbounded' },
     ),
   );
@@ -187,11 +196,13 @@ async function handleParallelMode(
     const t = taskList[i];
     const outcome = outcomes[i];
     parts.push(`### ${i + 1}: ${t.agent}`);
-    if ('error' in outcome)
+    if ('error' in outcome) {
       parts.push(
         `⚠️ ${outcome.error instanceof Error ? outcome.error.message : String(outcome.error)}`,
       );
-    else parts.push(outcome.record.result ?? outcome.record.error ?? 'No output.');
+    } else {
+      parts.push(outcome.record.result ?? outcome.record.error ?? 'No output.');
+    }
   }
   return {
     content: [{ type: 'text' as const, text: parts.join('\n\n') }],
@@ -199,6 +210,7 @@ async function handleParallelMode(
   };
 }
 
+// oxlint-disable-next-line max-lines-per-function -- handleChainMode orchestrates chained subagent spawn/poll with previous-result interpolation and step notifications as a single cohesive flow; splitting would fragment the loop that shares previousResult/service/signal.
 async function handleChainMode(
   pi: ExtensionAPI,
   state: MaestriaState,
@@ -210,8 +222,11 @@ async function handleChainMode(
   let previousResult = '';
   for (let i = 0; i < taskList.length; i++) {
     let taskText = taskList[i].task;
-    if (i > 0 && taskText.includes('{previous}'))
-      taskText = taskText.replace(/\{previous\}/g, () => previousResult);
+    if (i > 0 && taskText.includes('{previous}')) {
+      taskText = taskText.replace(/\{previous\}/g, () => {
+        return previousResult;
+      });
+    }
     const id = service.spawn(taskList[i].agent, taskText, {
       description: taskText.slice(0, 80),
       foreground: true,
@@ -244,7 +259,7 @@ async function handleChainMode(
       previousResult = `[error] ${error instanceof Error ? error.message : String(error)}`;
       break;
     }
-    if (i < taskList.length - 1)
+    if (i < taskList.length - 1) {
       onUpdate?.({
         content: [
           {
@@ -253,6 +268,7 @@ async function handleChainMode(
           },
         ],
       });
+    }
   }
   return {
     content: [{ type: 'text' as const, text: previousResult }],
@@ -274,11 +290,15 @@ async function dispatchByMode(
   onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
 ) {
   const mode = params.mode ?? 'single';
-  if (mode === 'single')
+  if (mode === 'single') {
     return handleSingleMode(pi, state, service, params.agent!, params.task!, signal, onUpdate);
-  if (mode === 'parallel')
+  }
+  if (mode === 'parallel') {
     return handleParallelMode(pi, state, service, params.tasks!, signal, onUpdate);
-  if (mode === 'chain') return handleChainMode(pi, state, service, params.tasks!, signal, onUpdate);
+  }
+  if (mode === 'chain') {
+    return handleChainMode(pi, state, service, params.tasks!, signal, onUpdate);
+  }
   throw new Error('Unknown dispatch mode');
 }
 
@@ -287,7 +307,9 @@ function subscribeSubagentEvents(
   state: MaestriaState,
   cleanups?: Array<() => void>,
 ): void {
-  if (!pi.events) return;
+  if (!pi.events) {
+    return;
+  }
   const unsubStarted = pi.events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
     const { id, type } = data as { id: string; type: string };
     state.subagentStatus[id] = { type, status: 'running', startedAt: Date.now() };
@@ -324,11 +346,14 @@ function subscribeSubagentEvents(
   });
   const unsubSteered = pi.events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
     const { id } = data as { id: string };
-    if (!state.subagentStatus[id])
+    if (!state.subagentStatus[id]) {
       state.subagentStatus[id] = { type: 'unknown', status: 'running', startedAt: Date.now() };
+    }
     persistState(pi, state);
   });
-  if (cleanups) cleanups.push(unsubStarted, unsubCompleted, unsubFailed, unsubSteered);
+  if (cleanups) {
+    cleanups.push(unsubStarted, unsubCompleted, unsubFailed, unsubSteered);
+  }
 }
 
 // oxlint-disable-next-line max-lines-per-function -- installSubagentTool registers the maestria_subagent tool and subscribes to subagent lifecycle events as a single cohesive registration; splitting would fragment the tool definition and event subscriptions that share pi/state.
@@ -377,7 +402,7 @@ export function installSubagentTool(
       onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
       _ctx: ExtensionContext,
     ) {
-      if (state.reviewMode)
+      if (state.reviewMode) {
         return {
           content: [
             {
@@ -386,6 +411,7 @@ export function installSubagentTool(
             },
           ],
         };
+      }
       const mode = validatePiParams(params);
       if (typeof mode === 'string' && mode.startsWith('Invalid')) {
         return {
@@ -433,7 +459,14 @@ export function installSubagentTool(
       } catch (err) {
         console.warn('[maestria] Subagent dispatch failed:', err);
         const agentName = params.agent ?? params.tasks?.[0]?.agent ?? 'unknown';
-        const taskDesc = params.task ?? params.tasks?.map((t) => t.task).join('; ') ?? 'unknown';
+        const taskDesc =
+          params.task ??
+          params.tasks
+            ?.map((t) => {
+              return t.task;
+            })
+            .join('; ') ??
+          'unknown';
         return {
           content: [
             {

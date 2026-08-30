@@ -233,9 +233,21 @@ describe('syncTarget', () => {
       const { pkg, manifestPaths } = makePackage(root, '1.2.3', sibling);
       const results = syncTarget(pkg, manifestPaths, false);
       expect(results).toHaveLength(2);
-      expect(results.filter((r) => r.startsWith('ERROR: '))).toHaveLength(2);
-      expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
-      expect(results.some((r) => r.includes('skipped'))).toBe(true);
+      expect(
+        results.filter((r) => {
+          return r.startsWith('ERROR: ');
+        }),
+      ).toHaveLength(2);
+      expect(
+        results.some((r) => {
+          return r.startsWith('DRIFT');
+        }),
+      ).toBe(false);
+      expect(
+        results.some((r) => {
+          return r.includes('skipped');
+        }),
+      ).toBe(true);
       expect(fs.readFileSync(path.join(pkg, 'a.json'), 'utf-8')).toBe(drifted);
     }
   });
@@ -258,7 +270,11 @@ describe('syncTarget', () => {
     expect(results[0]).toMatch(/^ERROR: /);
     expect(results[0]).toContain('skipped');
     expect(results[1]).toContain('no "version" field found');
-    expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
+    expect(
+      results.some((r) => {
+        return r.startsWith('DRIFT');
+      }),
+    ).toBe(false);
     expect(fs.readFileSync(path.join(pkg, 'a.json'), 'utf-8')).toBe(drifted);
     expect(fs.readFileSync(path.join(pkg, 'b.json'), 'utf-8')).toBe(noVersion);
   });
@@ -276,7 +292,11 @@ describe('syncTarget', () => {
     expect(results[0]).toMatch(/^ERROR: /);
     expect(results[0]).toContain('skipped');
     expect(results[1]).toContain('no "version" field found');
-    expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
+    expect(
+      results.some((r) => {
+        return r.startsWith('DRIFT');
+      }),
+    ).toBe(false);
     expect(fs.readFileSync(path.join(pkg, 'a.json'), 'utf-8')).toBe(drifted);
     expect(fs.readFileSync(path.join(pkg, 'plugin.yaml'), 'utf-8')).toBe(noVersion);
   });

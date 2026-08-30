@@ -20,7 +20,9 @@ import type { ModeKeyword, ModeResult } from '@/modes/types.js';
  */
 export function detectMode(text: string, disabled?: Set<string>): ModeResult | null {
   const pure = sharedDetectMode(text, disabled);
-  if (pure === null) return null;
+  if (pure === null) {
+    return null;
+  }
   return {
     mode: pure.mode,
     keyword: pure.keyword,

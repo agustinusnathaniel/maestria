@@ -67,13 +67,21 @@ describe('isReadOnlyBashCommand', () => {
 describe('DANGEROUS_PATTERNS', () => {
   it('catches destructive commands', () => {
     for (const command of ['rm -rf /', 'dd if=/dev/zero of=/dev/sda', 'mkfs.ext4 /dev/sdb']) {
-      expect(DANGEROUS_PATTERNS.some((pattern) => pattern.test(command))).toBe(true);
+      expect(
+        DANGEROUS_PATTERNS.some((pattern) => {
+          return pattern.test(command);
+        }),
+      ).toBe(true);
     }
   });
 
   it('does not match benign commands', () => {
     for (const command of ['ls -la', 'git status', 'pnpm test']) {
-      expect(DANGEROUS_PATTERNS.some((pattern) => pattern.test(command))).toBe(false);
+      expect(
+        DANGEROUS_PATTERNS.some((pattern) => {
+          return pattern.test(command);
+        }),
+      ).toBe(false);
     }
   });
 });

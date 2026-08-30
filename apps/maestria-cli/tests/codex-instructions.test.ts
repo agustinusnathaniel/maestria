@@ -29,11 +29,11 @@ describe('Codex managed orchestration instructions', () => {
   });
 
   it('rejects malformed or duplicated markers', () => {
-    expect(() =>
-      upsertCodexManagedInstructions(`${CODEX_MANAGED_INSTRUCTIONS_START}\n`, BLOCK),
-    ).toThrow(/malformed|duplicated/i);
-    expect(() => upsertCodexManagedInstructions(`${BLOCK}\n${BLOCK}`, BLOCK)).toThrow(
-      /malformed|duplicated/i,
-    );
+    expect(() => {
+      return upsertCodexManagedInstructions(`${CODEX_MANAGED_INSTRUCTIONS_START}\n`, BLOCK);
+    }).toThrow(/malformed|duplicated/i);
+    expect(() => {
+      return upsertCodexManagedInstructions(`${BLOCK}\n${BLOCK}`, BLOCK);
+    }).toThrow(/malformed|duplicated/i);
   });
 });

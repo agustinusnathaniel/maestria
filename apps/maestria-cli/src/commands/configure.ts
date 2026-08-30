@@ -71,8 +71,12 @@ function renderConfigureSummary(
 function renderCompactConfigure(models: AgentModels): string {
   return (
     Object.entries(models)
-      .filter(([, model]) => model)
-      .map(([agent, model]) => `${agent}=${model}`)
+      .filter(([, model]) => {
+        return model;
+      })
+      .map(([agent, model]) => {
+        return `${agent}=${model}`;
+      })
       .join('\n') + '\n'
   );
 }
@@ -99,10 +103,15 @@ async function resolveConfigureHandler(
   if (platformId) {
     const id = await validateOrExit(validatePlatform(platformId));
     const h = getModelConfigHandler(id);
-    if (!h)
+    if (!h) {
       exitError(
-        `Per-agent model configuration is not yet supported for '${id}'. Supported: ${modelConfigHandlers.map((handler) => handler.id).join(', ')}.`,
+        `Per-agent model configuration is not yet supported for '${id}'. Supported: ${modelConfigHandlers
+          .map((handler) => {
+            return handler.id;
+          })
+          .join(', ')}.`,
       );
+    }
     return h;
   }
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
@@ -115,10 +124,14 @@ async function resolveConfigureHandler(
   }
   const picked = await select({
     message: 'Which platform do you want to configure?',
-    options: modelConfigHandlers.map((h) => ({ value: h.id, label: h.label })),
+    options: modelConfigHandlers.map((h) => {
+      return { value: h.id, label: h.label };
+    }),
     maxItems: 5,
   });
-  if (isCancel(picked)) exitCancel();
+  if (isCancel(picked)) {
+    exitCancel();
+  }
   return getModelConfigHandler(picked as string)!;
 }
 
@@ -127,9 +140,15 @@ async function resolveConfigureLevel(
   _handler: ModelConfigHandler,
 ): Promise<ModelConfigLevel> {
   const bothFlags = (args.global && args.project) as boolean;
-  if (bothFlags) exitError('Cannot use --global and --project together. Choose one.');
-  if (args.global) return 'global';
-  if (args.project) return 'project';
+  if (bothFlags) {
+    exitError('Cannot use --global and --project together. Choose one.');
+  }
+  if (args.global) {
+    return 'global';
+  }
+  if (args.project) {
+    return 'project';
+  }
   if (process.stdout.isTTY && process.stdin.isTTY && !args.set) {
     const picked = await select({
       message: 'Where do you want to configure models?',
@@ -139,7 +158,9 @@ async function resolveConfigureLevel(
       ],
       initialValue: 'global',
     });
-    if (isCancel(picked)) exitCancel();
+    if (isCancel(picked)) {
+      exitCancel();
+    }
     return picked as ModelConfigLevel;
   }
   exitError('Specify --global or --project when using --set or in a non-interactive terminal.');
@@ -161,17 +182,21 @@ async function handleConfigureSet(
     `Failed to list models for ${handler.label}.`,
   );
   spinner.stop('');
-  for (const [agent, model] of Object.entries(models))
-    if (model && !available.includes(model))
+  for (const [agent, model] of Object.entries(models)) {
+    if (model && !available.includes(model)) {
       exitError(
         `Unknown model '${model}' for ${agent}. Run 'maestria configure ${handler.id}' interactively to pick from available models, or check the model id.`,
       );
+    }
+  }
   spinner.start(`Writing config for ${handler.label}...`);
   await runOrExit(handler.write(models, level), `Failed to write config for ${handler.label}.`);
   spinner.stop('Done');
-  if (isJson) console.log(renderConfigureJson(handler, level, models));
-  else if (isCompact) console.log(renderCompactConfigure(models));
-  else {
+  if (isJson) {
+    console.log(renderConfigureJson(handler, level, models));
+  } else if (isCompact) {
+    console.log(renderCompactConfigure(models));
+  } else {
     console.log(renderConfigureSummary(handler.label, level, models));
     console.log(`  ${picocolors.dim(handler.restartHint)}`);
   }
@@ -201,10 +226,11 @@ async function handleConfigureInteractive(
     `Failed to list models for ${handler.label}.`,
   );
   spinner.stop('');
-  if (available.length === 0)
+  if (available.length === 0) {
     exitError(
       `No models found for ${handler.label}. Make sure '${handler.cli}' is installed and authenticated.`,
     );
+  }
   spinner.start('Reading current configuration...');
   const current = await runOrExit(
     handler.readCurrent(level),
@@ -214,34 +240,46 @@ async function handleConfigureInteractive(
   const selectedAgents = await groupMultiselect({
     message: 'Which agents do you want to configure?',
     options: {
-      Specialists: handler.agents.map((agent) => ({
-        value: agent,
-        label: agent,
-        hint: current[agent as keyof AgentModels]
-          ? `currently ${current[agent as keyof AgentModels]}`
-          : 'inherit',
-      })),
+      Specialists: handler.agents.map((agent) => {
+        return {
+          value: agent,
+          label: agent,
+          hint: current[agent as keyof AgentModels]
+            ? `currently ${current[agent as keyof AgentModels]}`
+            : 'inherit',
+        };
+      }),
     },
     selectableGroups: true,
     required: true,
     maxItems: 8,
   });
-  if (isCancel(selectedAgents)) exitCancel();
+  if (isCancel(selectedAgents)) {
+    exitCancel();
+  }
   const models: AgentModels = {};
   for (const agent of selectedAgents as string[]) {
-    if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) continue;
+    if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
+      continue;
+    }
     const name = agent as keyof AgentModels;
     const picked = await select({
       message: `Model for @${name}${current[name] ? ` (currently ${current[name]})` : ''}`,
       options: [
         { value: '', label: 'Inherit', hint: 'use the session/primary agent model' },
-        ...available.map((model) => ({ value: model, label: model })),
+        ...available.map((model) => {
+          return { value: model, label: model };
+        }),
       ],
       maxItems: 10,
       initialValue: current[name] && available.includes(current[name]) ? current[name] : '',
     });
-    if (isCancel(picked)) exitCancel();
-    if (picked) models[name] = picked as string;
+    if (isCancel(picked)) {
+      exitCancel();
+    }
+    if (picked) {
+      models[name] = picked as string;
+    }
   }
   if (Object.keys(models).length === 0) {
     console.log('No changes. Nothing to write.');
@@ -250,9 +288,11 @@ async function handleConfigureInteractive(
   spinner.start(`Writing config for ${handler.label}...`);
   await runOrExit(handler.write(models, level), `Failed to write config for ${handler.label}.`);
   spinner.stop('Done');
-  if (isJson) console.log(renderConfigureJson(handler, level, models));
-  else if (isCompact) console.log(renderCompactConfigure(models));
-  else {
+  if (isJson) {
+    console.log(renderConfigureJson(handler, level, models));
+  } else if (isCompact) {
+    console.log(renderCompactConfigure(models));
+  } else {
     console.log(renderConfigureSummary(handler.label, level, models));
     console.log(`  ${picocolors.dim(handler.restartHint)}`);
   }
@@ -313,11 +353,14 @@ export const configureCommand = defineCommand({
     const isJson = args.json as boolean;
     const handler = await resolveConfigureHandler(args.platform as string | undefined);
     const cliAvailable = await Effect.runPromise(handler.isAvailable ?? commandExists(handler.cli));
-    if (!cliAvailable)
+    if (!cliAvailable) {
       exitError(`The '${handler.cli}' CLI was not found on PATH. Install ${handler.label} first.`);
+    }
     const level = await resolveConfigureLevel(args, handler);
-    if (args.set)
+    if (args.set) {
       await handleConfigureSet(handler, level, args.set as string, isQuiet, isJson, isCompact);
-    else await handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact);
+    } else {
+      await handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact);
+    }
   },
 });

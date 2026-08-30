@@ -79,7 +79,9 @@ export function createInitialState(): MaestriaState {
 }
 
 function prependDeduped(files: string[], path: string, cap: number): string[] {
-  const filtered = files.filter((f) => f !== path);
+  const filtered = files.filter((f) => {
+    return f !== path;
+  });
   return [path, ...filtered].slice(0, cap);
 }
 
@@ -103,7 +105,9 @@ export function recordFileRead(state: MaestriaState, path: string): MaestriaStat
 }
 
 export function recordSpecialistDelegated(state: MaestriaState, name: string): MaestriaState {
-  if (state.specialistsDelegated.includes(name)) return state;
+  if (state.specialistsDelegated.includes(name)) {
+    return state;
+  }
   return { ...state, specialistsDelegated: [...state.specialistsDelegated, name] };
 }
 

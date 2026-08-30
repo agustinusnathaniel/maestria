@@ -13,11 +13,15 @@ export function codexManagedAgentFileName(agent: string): string {
 /** Read a top-level TOML string setting without entering a table section. */
 export function parseCodexTopLevelString(content: string, key: string): string | undefined {
   for (const line of content.split(/\r?\n/)) {
-    if (/^\s*\[/.test(line)) break;
+    if (/^\s*\[/.test(line)) {
+      break;
+    }
     const match = new RegExp(
       `^\\s*${escapeRegExp(key)}\\s*=\\s*(?:"((?:\\\\.|[^"])*)"|'([^']*)'|([^#\\s]+))`,
     ).exec(line);
-    if (!match) continue;
+    if (!match) {
+      continue;
+    }
     if (match[1] !== undefined) {
       try {
         return JSON.parse(`"${match[1]}"`) as string;
@@ -39,7 +43,9 @@ export function setCodexTopLevelString(
   const newline = content.includes('\r\n') ? '\r\n' : '\n';
   const hasFinalNewline = /\r?\n$/.test(content);
   const lines = content.split(/\r?\n/);
-  if (hasFinalNewline) lines.pop();
+  if (hasFinalNewline) {
+    lines.pop();
+  }
 
   const index = topLevelSettingLine(lines, key);
   if (value !== undefined) {
@@ -49,7 +55,9 @@ export function setCodexTopLevelString(
       const comment = existing.match(/(\s+#.*)$/)?.[1] ?? '';
       lines[index] = `${rendered}${comment}`;
     } else {
-      const section = lines.findIndex((line) => /^\s*\[/.test(line));
+      const section = lines.findIndex((line) => {
+        return /^\s*\[/.test(line);
+      });
       lines.splice(section < 0 ? lines.length : section, 0, rendered);
     }
   } else if (index >= 0) {
@@ -79,9 +87,15 @@ function topLevelSettingLine(lines: readonly string[], key: string): number {
   const pattern = new RegExp(`^\\s*${escapeRegExp(key)}\\s*=`);
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index];
-    if (line === undefined) continue;
-    if (/^\s*\[/.test(line)) break;
-    if (pattern.test(line)) return index;
+    if (line === undefined) {
+      continue;
+    }
+    if (/^\s*\[/.test(line)) {
+      break;
+    }
+    if (pattern.test(line)) {
+      return index;
+    }
   }
   return -1;
 }

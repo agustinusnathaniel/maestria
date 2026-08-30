@@ -51,7 +51,9 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
   }
-  const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
+  const close = lines.findIndex((line, index) => {
+    return index > 0 && line.trim() === '---';
+  });
   if (close === -1) {
     throw new Error('missing closing frontmatter fence');
   }
@@ -59,13 +61,19 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   const data: Record<string, unknown> = {};
   for (const line of yamlText.split(/\r?\n/)) {
     const m = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
-    if (m === null) continue;
+    if (m === null) {
+      continue;
+    }
     const [, key, rawValue] = m;
-    if (rawValue === undefined) continue;
+    if (rawValue === undefined) {
+      continue;
+    }
     const value = rawValue.trim();
-    if (value === 'true') data[key] = true;
-    else if (value === 'false') data[key] = false;
-    else if (
+    if (value === 'true') {
+      data[key] = true;
+    } else if (value === 'false') {
+      data[key] = false;
+    } else if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
     ) {

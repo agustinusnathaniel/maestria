@@ -82,7 +82,9 @@ export function validateSkillsAndLog(opts: ValidateSkillsOptions): boolean {
     for (const ok of result.successes) {
       console.log(`✅ ${ok}`);
     }
-    if (!result.valid) allValid = false;
+    if (!result.valid) {
+      allValid = false;
+    }
   }
   return allValid;
 }

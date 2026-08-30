@@ -1,3 +1,4 @@
+// oxlint-disable max-lines -- model-config aggregates 5 platform handlers (opencode/codex/pi/cursor/omp) plus shared parsers and FS helpers as a single cohesive registry; splitting would fragment the handler registration and create single-use modules with one call site.
 import { Effect } from 'effect';
 import { homedir } from 'os';
 // Import the ESM build directly - the UMD entry does runtime `require('./impl/*')`
@@ -70,17 +71,27 @@ export interface ModelConfigHandler {
 export function parseOpenCodeModels(out: string): string[] {
   return out
     .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => /^\S+\/\S+$/.test(line));
+    .map((line) => {
+      return line.trim();
+    })
+    .filter((line) => {
+      return /^\S+\/\S+$/.test(line);
+    });
 }
 
 /** `pi --list-models` -> table with a header row */
 export function parsePiModels(out: string): string[] {
   return out
     .split('\n')
-    .map((line) => line.trim().split(/\s+/))
-    .filter((parts) => parts.length >= 2 && parts[0] !== 'provider')
-    .map((parts) => `${parts[0]}/${parts[1]}`);
+    .map((line) => {
+      return line.trim().split(/\s+/);
+    })
+    .filter((parts) => {
+      return parts.length >= 2 && parts[0] !== 'provider';
+    })
+    .map((parts) => {
+      return `${parts[0]}/${parts[1]}`;
+    });
 }
 
 /** `omp models --json` -> { models: [{ provider, id, selector, ... }] } */
@@ -88,8 +99,12 @@ export function parseOmpModels(out: string): string[] {
   try {
     const data: { models?: { selector?: string }[] } = JSON.parse(out);
     return (data.models ?? [])
-      .map((m) => m.selector)
-      .filter((s): s is string => typeof s === 'string' && s.length > 0);
+      .map((m) => {
+        return m.selector;
+      })
+      .filter((s): s is string => {
+        return typeof s === 'string' && s.length > 0;
+      });
   } catch {
     return [];
   }
@@ -108,7 +123,9 @@ export function parseCursorModels(out: string): string[] {
         : undefined;
     if (entries) {
       const models = entries.flatMap((entry) => {
-        if (typeof entry === 'string') return [entry];
+        if (typeof entry === 'string') {
+          return [entry];
+        }
         if (typeof entry === 'object' && entry !== null) {
           const value =
             (entry as { id?: unknown; slug?: unknown; name?: unknown }).id ??
@@ -118,7 +135,9 @@ export function parseCursorModels(out: string): string[] {
         }
         return [];
       });
-      if (models.length > 0) return [...new Set(models)];
+      if (models.length > 0) {
+        return [...new Set(models)];
+      }
     }
   } catch {
     // Cursor's human-readable output is the normal path.
@@ -143,8 +162,12 @@ export function parseCodexModels(out: string): string[] {
     return [
       ...new Set(
         (data.models ?? [])
-          .map((model) => (typeof model.slug === 'string' ? model.slug : model.id))
-          .filter((model): model is string => typeof model === 'string' && model.length > 0),
+          .map((model) => {
+            return typeof model.slug === 'string' ? model.slug : model.id;
+          })
+          .filter((model): model is string => {
+            return typeof model === 'string' && model.length > 0;
+          }),
       ),
     ];
   } catch {
@@ -169,13 +192,17 @@ export function parseFrontmatterModel(content: string): string | undefined {
 export function setFrontmatterModel(content: string, model: string): string {
   const fm = /^---\r?\n([\s\S]*?)\r?\n---(\r?\n?)/.exec(content);
   if (!fm) {
-    if (!model) return content;
+    if (!model) {
+      return content;
+    }
     return `---\nmodel: ${model}\n---\n\n${content}`;
   }
   const [, fmBody, afterClosing] = fm;
   const rest = content.slice(fm[0].length);
   const lines = fmBody.split(/\r?\n/);
-  const idx = lines.findIndex((l) => l.startsWith('model:'));
+  const idx = lines.findIndex((l) => {
+    return l.startsWith('model:');
+  });
   if (model) {
     if (idx >= 0) {
       lines[idx] = `model: ${model}`;
@@ -207,7 +234,9 @@ export function setConfigModelJsonc(text: string, agent: string, model: string):
 
 function hasConfigModel(text: string, agent: string): boolean {
   const tree = parseTree(text);
-  if (!tree) return false;
+  if (!tree) {
+    return false;
+  }
   return findNodeAtLocation(tree, ['agent', agent, 'model']) !== undefined;
 }
 
@@ -257,7 +286,9 @@ export function createCodexAgentConfig(
     `developer_instructions = ${JSON.stringify(instructions)}`,
     `model = ${JSON.stringify(model)}`,
   ];
-  if (readOnly.has(agent)) lines.push('sandbox_mode = "read-only"');
+  if (readOnly.has(agent)) {
+    lines.push('sandbox_mode = "read-only"');
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -269,7 +300,9 @@ function readFile(path: string): Effect.Effect<string, CommandError> {
       const { readFile } = await import('node:fs/promises');
       return await readFile(path, 'utf-8');
     },
-    catch: (error) => new CommandError({ command: `read ${path}`, message: String(error) }),
+    catch: (error) => {
+      return new CommandError({ command: `read ${path}`, message: String(error) });
+    },
   });
 }
 
@@ -281,7 +314,9 @@ function writeFile(path: string, content: string): Effect.Effect<void, CommandEr
       await mkdir(dirname(path), { recursive: true });
       await writeFile(path, content, 'utf-8');
     },
-    catch: (error) => new CommandError({ command: `write ${path}`, message: String(error) }),
+    catch: (error) => {
+      return new CommandError({ command: `write ${path}`, message: String(error) });
+    },
   });
 }
 
@@ -315,8 +350,14 @@ const OPENCODE_PROJECT_CREATE = '.opencode/opencode.jsonc';
 function findOpenCodeConfigPath(level: ModelConfigLevel): Effect.Effect<string, never> {
   const candidates = level === 'global' ? OPENCODE_GLOBAL_CANDIDATES : OPENCODE_PROJECT_CANDIDATES;
   const fallback = level === 'global' ? OPENCODE_GLOBAL_CANDIDATES[0] : OPENCODE_PROJECT_CREATE;
-  return Effect.all(candidates.map((p) => fileExists(p))).pipe(
-    Effect.map((exists) => candidates[exists.indexOf(true)] ?? fallback),
+  return Effect.all(
+    candidates.map((p) => {
+      return fileExists(p);
+    }),
+  ).pipe(
+    Effect.map((exists) => {
+      return candidates[exists.indexOf(true)] ?? fallback;
+    }),
   );
 }
 
@@ -330,22 +371,34 @@ const opencode: ModelConfigHandler = {
 
   listModels: run('opencode', ['models'], 30_000).pipe(Effect.map(parseOpenCodeModels)),
 
-  readCurrent: (level) =>
-    findOpenCodeConfigPath(level).pipe(
-      Effect.flatMap((path) => readFile(path).pipe(Effect.catchCause(() => Effect.succeed('')))),
+  readCurrent: (level) => {
+    return findOpenCodeConfigPath(level).pipe(
+      Effect.flatMap((path) => {
+        return readFile(path).pipe(
+          Effect.catchCause(() => {
+            return Effect.succeed('');
+          }),
+        );
+      }),
       Effect.map(parseConfigModels),
-    ),
+    );
+  },
 
-  write: (models, level) =>
-    Effect.gen(function* () {
+  write: (models, level) => {
+    return Effect.gen(function* () {
       const path = yield* findOpenCodeConfigPath(level);
-      const text = yield* readFile(path).pipe(Effect.catchCause(() => Effect.succeed('{}')));
+      const text = yield* readFile(path).pipe(
+        Effect.catchCause(() => {
+          return Effect.succeed('{}');
+        }),
+      );
       let next = text;
       for (const [agent, model] of Object.entries(models)) {
         next = setConfigModelJsonc(next, agent, model ?? '');
       }
       yield* writeFile(path, next);
-    }),
+    });
+  },
 };
 
 // ── Codex custom-agent handler ─────────────────────────
@@ -364,8 +417,14 @@ function resolveCodexAgentPath(
   agent: string,
 ): Effect.Effect<string, never> {
   const candidates = codexAgentCandidates(level, agent);
-  return Effect.all(candidates.map((path) => fileExists(path))).pipe(
-    Effect.map((exists) => candidates[exists.indexOf(true)] ?? candidates[0]!),
+  return Effect.all(
+    candidates.map((path) => {
+      return fileExists(path);
+    }),
+  ).pipe(
+    Effect.map((exists) => {
+      return candidates[exists.indexOf(true)] ?? candidates[0]!;
+    }),
   );
 }
 
@@ -379,27 +438,34 @@ const codex: ModelConfigHandler = {
 
   listModels: run('codex', ['debug', 'models'], 30_000).pipe(Effect.map(parseCodexModels)),
 
-  readCurrent: (level) =>
-    Effect.all(
-      MAESTRIA_AGENTS.map((agent) =>
-        resolveCodexAgentPath(level, agent).pipe(
-          Effect.flatMap((path) => readFile(path)),
-          Effect.catchCause(() => Effect.succeed('')),
-        ),
-      ),
+  readCurrent: (level) => {
+    return Effect.all(
+      MAESTRIA_AGENTS.map((agent) => {
+        return resolveCodexAgentPath(level, agent).pipe(
+          Effect.flatMap((path) => {
+            return readFile(path);
+          }),
+          Effect.catchCause(() => {
+            return Effect.succeed('');
+          }),
+        );
+      }),
     ).pipe(
       Effect.map((contents) => {
         const result: AgentModels = {};
         for (let i = 0; i < MAESTRIA_AGENTS.length; i++) {
           const model = parseCodexAgentModel(contents[i] ?? '');
-          if (model) result[MAESTRIA_AGENTS[i]] = model;
+          if (model) {
+            result[MAESTRIA_AGENTS[i]] = model;
+          }
         }
         return result;
       }),
-    ),
+    );
+  },
 
-  write: (models, level) =>
-    Effect.gen(function* () {
+  write: (models, level) => {
+    return Effect.gen(function* () {
       for (const [agent, model] of Object.entries(models)) {
         const path = yield* resolveCodexAgentPath(level, agent);
         const exists = yield* fileExists(path);
@@ -415,17 +481,24 @@ const codex: ModelConfigHandler = {
         const content = yield* readFile(path);
         yield* writeFile(path, setCodexAgentModel(content, model ?? ''));
       }
-    }),
+    });
+  },
 };
 
 // ── Cursor agent-file handler ─────────────────────────
 
 function cursorConfigCli(): Effect.Effect<string | undefined, never> {
   return Effect.gen(function* () {
-    if (yield* commandExists('cursor-agent')) return 'cursor-agent';
-    if (!(yield* commandExists('agent'))) return undefined;
+    if (yield* commandExists('cursor-agent')) {
+      return 'cursor-agent';
+    }
+    if (!(yield* commandExists('agent'))) {
+      return undefined;
+    }
     const version = yield* run('agent', ['--version'], 3_000).pipe(
-      Effect.catchCause(() => Effect.succeed('')),
+      Effect.catchCause(() => {
+        return Effect.succeed('');
+      }),
     );
     return /cursor/i.test(version) ? 'agent' : undefined;
   });
@@ -433,28 +506,30 @@ function cursorConfigCli(): Effect.Effect<string | undefined, never> {
 
 function cursorConfigCliOrFail(): Effect.Effect<string, CommandError> {
   return cursorConfigCli().pipe(
-    Effect.flatMap((cli) =>
-      cli
+    Effect.flatMap((cli) => {
+      return cli
         ? Effect.succeed(cli)
         : Effect.fail(
             new CommandError({
               command: 'cursor agent',
               message: "Cursor's 'agent' or 'cursor-agent' CLI was not found on PATH.",
             }),
-          ),
-    ),
+          );
+    }),
   );
 }
 
 function listCursorModels(): Effect.Effect<string[], CommandError> {
   return cursorConfigCliOrFail().pipe(
-    Effect.flatMap((cli) =>
+    Effect.flatMap((cli) => {
       // `agent models` is the current command; retain the older flag as a
       // compatibility fallback for cursor-agent releases that still expose it.
-      run(cli, ['models'], 30_000).pipe(
-        Effect.catchCause(() => run(cli, ['--list-models'], 30_000)),
-      ),
-    ),
+      return run(cli, ['models'], 30_000).pipe(
+        Effect.catchCause(() => {
+          return run(cli, ['--list-models'], 30_000);
+        }),
+      );
+    }),
     Effect.map(parseCursorModels),
   );
 }
@@ -479,8 +554,9 @@ function agentFilePath(cfg: AgentFilePlatform, level: ModelConfigLevel, agent: s
 
 // oxlint-disable-next-line max-lines-per-function -- createAgentFileHandler is a cohesive factory for per-agent file handlers (pi/omp/cursor) sharing agentPath/resolveAgent and readCurrent/write for 7 agents. Splitting would fragment the single platform file-handling responsibility and create single-use helpers with one call site, hurting discoverability.
 function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
-  const agentPath = (level: ModelConfigLevel, agent: string): string =>
-    agentFilePath(cfg, level, agent);
+  const agentPath = (level: ModelConfigLevel, agent: string): string => {
+    return agentFilePath(cfg, level, agent);
+  };
 
   /**
    * Resolve the target file and its starting content for an agent.
@@ -496,8 +572,8 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
     const global = agentPath('global', agent);
     return readFile(target)
       .pipe(
-        Effect.catchCause(() =>
-          level === 'global'
+        Effect.catchCause(() => {
+          return level === 'global'
             ? Effect.fail(
                 new CommandError({
                   command: `read ${target}`,
@@ -505,18 +581,22 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
                 }),
               )
             : readFile(global).pipe(
-                Effect.catchCause(() =>
-                  Effect.fail(
+                Effect.catchCause(() => {
+                  return Effect.fail(
                     new CommandError({
                       command: `read ${global}`,
                       message: `Neither ${target} nor ${global} exists. Run 'maestria install ${cfg.id}' first.`,
                     }),
-                  ),
-                ),
-              ),
-        ),
+                  );
+                }),
+              );
+        }),
       )
-      .pipe(Effect.map((content) => ({ path: target, content })));
+      .pipe(
+        Effect.map((content) => {
+          return { path: target, content };
+        }),
+      );
   };
 
   return {
@@ -529,31 +609,39 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
     isAvailable: cfg.isAvailable,
     listModels: cfg.listModels,
 
-    readCurrent: (level) =>
-      Effect.all(
-        cfg.agents.map((a) =>
-          resolveAgent(level, a).pipe(
-            Effect.map(({ content }) => content),
-            Effect.catchCause(() => Effect.succeed('')),
-          ),
-        ),
+    readCurrent: (level) => {
+      return Effect.all(
+        cfg.agents.map((a) => {
+          return resolveAgent(level, a).pipe(
+            Effect.map(({ content }) => {
+              return content;
+            }),
+            Effect.catchCause(() => {
+              return Effect.succeed('');
+            }),
+          );
+        }),
       ).pipe(
         Effect.map((contents) => {
           const result: AgentModels = {};
           for (let i = 0; i < cfg.agents.length; i++) {
             const model = parseFrontmatterModel(contents[i]);
-            if (model) result[cfg.agents[i] as AgentName] = model;
+            if (model) {
+              result[cfg.agents[i] as AgentName] = model;
+            }
           }
           return result;
         }),
-      ),
-    write: (models, level) =>
-      Effect.gen(function* () {
+      );
+    },
+    write: (models, level) => {
+      return Effect.gen(function* () {
         for (const [agent, model] of Object.entries(models)) {
           const { path, content } = yield* resolveAgent(level, agent);
           yield* writeFile(path, setFrontmatterModel(content, model ?? ''));
         }
-      }),
+      });
+    },
   };
 }
 
@@ -577,7 +665,11 @@ const cursor = createAgentFileHandler({
   projectDir: '.cursor/agents',
   cli: 'agent',
   agents: MAESTRIA_AGENTS,
-  isAvailable: cursorConfigCli().pipe(Effect.map((cli) => cli !== undefined)),
+  isAvailable: cursorConfigCli().pipe(
+    Effect.map((cli) => {
+      return cli !== undefined;
+    }),
+  ),
   listModels: listCursorModels(),
   restartHint: 'Start a new Cursor Agent session for the changes to take effect.',
 });
@@ -604,5 +696,7 @@ export const modelConfigHandlers: readonly ModelConfigHandler[] = [
 ];
 
 export function getModelConfigHandler(id: string): ModelConfigHandler | undefined {
-  return modelConfigHandlers.find((h) => h.id === id);
+  return modelConfigHandlers.find((h) => {
+    return h.id === id;
+  });
 }

@@ -73,7 +73,7 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
   document.querySelectorAll<HTMLElement>('.install-cmd').forEach((root) => {
     const btn = root.querySelector<HTMLButtonElement>('.copy-btn');
     const live = root.querySelector<HTMLElement>('.copy-live');
-    if (!btn) return;
+    if (!btn) {return;}
 
     let revertTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -83,11 +83,11 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
 
       const announce = () => {
         btn.classList.add('copied');
-        if (live) live.textContent = 'Copied';
+        if (live) {live.textContent = 'Copied';}
         window.clearTimeout(revertTimer);
         revertTimer = setTimeout(() => {
           btn.classList.remove('copied');
-          if (live) live.textContent = '';
+          if (live) {live.textContent = '';}
         }, 1600);
 
         if (typeof window.umami !== 'undefined') {

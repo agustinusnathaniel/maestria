@@ -786,13 +786,13 @@ const INSTALL_CMD = 'npx maestria install opencode';
         t.setAttribute('aria-selected', 'false');
         t.setAttribute('tabindex', '-1');
       });
-      panels.forEach(p => p.setAttribute('hidden', ''));
+      panels.forEach(p => {return p.setAttribute('hidden', '')});
 
       tab.setAttribute('aria-selected', 'true');
       tab.setAttribute('tabindex', '0');
       const panelId = tab.getAttribute('aria-controls');
       const panel = document.getElementById(panelId!);
-      if (panel) panel.removeAttribute('hidden');
+      if (panel) {panel.removeAttribute('hidden');}
 
       // Track agent tab click
       if (typeof window !== 'undefined' && window.umami) {
@@ -802,13 +802,13 @@ const INSTALL_CMD = 'npx maestria install opencode';
     }
 
     tabs.forEach(tab => {
-      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('click', () => {return activateTab(tab)});
     });
 
     document.addEventListener('keydown', (e) => {
       const target = e.target as HTMLElement;
       const tab = target.closest('.agent-tab');
-      if (!tab) return;
+      if (!tab) {return;}
 
       const tabsArray = Array.from(tabs);
       const index = tabsArray.indexOf(tab);
@@ -817,10 +817,10 @@ const INSTALL_CMD = 'npx maestria install opencode';
       // the primary APG keys; Left/Right stay as aliases. preventDefault()
       // below keeps Up/Down from scrolling the page.
       let nextIndex: number | null = null;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabsArray.length;
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabsArray.length) % tabsArray.length;
-      if (e.key === 'Home') nextIndex = 0;
-      if (e.key === 'End') nextIndex = tabsArray.length - 1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {nextIndex = (index + 1) % tabsArray.length;}
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {nextIndex = (index - 1 + tabsArray.length) % tabsArray.length;}
+      if (e.key === 'Home') {nextIndex = 0;}
+      if (e.key === 'End') {nextIndex = tabsArray.length - 1;}
 
       if (nextIndex !== null) {
         e.preventDefault();

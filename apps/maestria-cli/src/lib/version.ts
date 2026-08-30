@@ -10,7 +10,9 @@ const SEMVER_REGEX =
  * Validate a version string. Accepts 'latest' and '' as special values.
  */
 export function isValidVersion(v: string): boolean {
-  if (v === 'latest' || v === '') return true;
+  if (v === 'latest' || v === '') {
+    return true;
+  }
   return SEMVER_REGEX.test(v);
 }
 
@@ -31,11 +33,19 @@ export function isValidVersion(v: string): boolean {
  *   or not a valid semver version
  */
 export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
-  if (a === 'unknown' || b === 'unknown') return null;
-  if (a === 'latest') return b === 'latest' ? 0 : 1;
-  if (b === 'latest') return -1;
+  if (a === 'unknown' || b === 'unknown') {
+    return null;
+  }
+  if (a === 'latest') {
+    return b === 'latest' ? 0 : 1;
+  }
+  if (b === 'latest') {
+    return -1;
+  }
 
-  if (!SEMVER_REGEX.test(a) || !SEMVER_REGEX.test(b)) return null;
+  if (!SEMVER_REGEX.test(a) || !SEMVER_REGEX.test(b)) {
+    return null;
+  }
 
   // Per semver 2.0.0 spec section 10, build metadata MUST be ignored
   // when determining version precedence.
@@ -43,7 +53,9 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
   const bWithoutBuild = b.replace(/\+.*$/, '');
 
   const result = aWithoutBuild.localeCompare(bWithoutBuild, undefined, { numeric: true });
-  if (result === 0) return 0;
+  if (result === 0) {
+    return 0;
+  }
 
   // Fix prerelease ordering per semver spec:
   // localeCompare reverses prerelease vs release because '-' sorts after
@@ -68,7 +80,9 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
 
 /** Strict semver equality check. Handles 'latest' and 'unknown'. */
 export function isVersionEq(a: string, b: string): boolean {
-  if (a === b) return true;
+  if (a === b) {
+    return true;
+  }
   return compareVersions(a, b) === 0;
 }
 
@@ -79,7 +93,9 @@ export function isVersionLt(a: string, b: string): boolean {
 
 /** Check if a differs from b (for "needs update" detection). Returns false if either is 'unknown' or incomparable (non-semver). */
 export function isVersionDifferent(a: string, b: string): boolean {
-  if (a === 'unknown' || b === 'unknown') return false;
+  if (a === 'unknown' || b === 'unknown') {
+    return false;
+  }
   const result = compareVersions(a, b);
   return result !== null && result !== 0;
 }

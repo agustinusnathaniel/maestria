@@ -442,7 +442,9 @@ describe('preserve option', () => {
     expect(existsSync(join(outputDir, 'test.md'))).toBe(true);
 
     // Verify the results: stale.md was removed, orchestrator.md was not
-    const removed = results.filter((r) => r.status === 'removed');
+    const removed = results.filter((r) => {
+      return r.status === 'removed';
+    });
     expect(removed.length).toBe(1);
     expect(removed[0].output).toBe(join(outputDir, 'stale.md'));
   });
@@ -472,7 +474,9 @@ describe('preserve option', () => {
     expect(existsSync(join(outputDir, 'stale.md'))).toBe(false);
     expect(existsSync(join(outputDir, 'orchestrator.md'))).toBe(false);
 
-    const removed = results.filter((r) => r.status === 'removed');
+    const removed = results.filter((r) => {
+      return r.status === 'removed';
+    });
     expect(removed.length).toBe(2);
   });
 });
@@ -531,7 +535,9 @@ describe('secondary source loop', () => {
 
     const results = await runSync({ config });
 
-    const written = results.filter((r) => r.status === 'written');
+    const written = results.filter((r) => {
+      return r.status === 'written';
+    });
     expect(written).toHaveLength(1);
 
     const outPath = join(outputDir, 'handoff', 'SKILL.md');

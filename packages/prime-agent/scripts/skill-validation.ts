@@ -47,14 +47,24 @@ function unquoteScalar(value: string): string {
  */
 export function frontmatterValue(frontmatter: string, key: string): string | undefined {
   const lines = frontmatter.split('\n');
-  const keyLine = lines.findIndex((line) => new RegExp(`^${key}:`).test(line));
-  if (keyLine === -1) return undefined;
+  const keyLine = lines.findIndex((line) => {
+    return new RegExp(`^${key}:`).test(line);
+  });
+  if (keyLine === -1) {
+    return undefined;
+  }
   const inline = lines[keyLine].slice(key.length + 1).trim();
-  if (inline !== '' && !/^[|>][-+]?$/.test(inline)) return unquoteScalar(inline).trim();
+  if (inline !== '' && !/^[|>][-+]?$/.test(inline)) {
+    return unquoteScalar(inline).trim();
+  }
   return lines
     .slice(keyLine + 1)
-    .filter((line) => /^\s{2}/.test(line))
-    .map((line) => line.trim())
+    .filter((line) => {
+      return /^\s{2}/.test(line);
+    })
+    .map((line) => {
+      return line.trim();
+    })
     .join(' ')
     .trim();
 }

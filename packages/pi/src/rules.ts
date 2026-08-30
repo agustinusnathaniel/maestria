@@ -28,7 +28,9 @@ export function createModePromptHandler(state: MaestriaState) {
     event: BeforeAgentStartEvent,
     _ctx: ExtensionContext,
   ): BeforeAgentStartEventResult | void => {
-    if (!state.mode) return;
+    if (!state.mode) {
+      return;
+    }
 
     const parts: string[] = [
       event.systemPrompt,

@@ -33,7 +33,9 @@ export const RECOVERY_LINKS = [
  * mature `negotiator` package rather than maintained locally.
  */
 export function wantsMarkdown(accept: string | null | undefined): boolean {
-  if (typeof accept !== 'string') return false;
+  if (typeof accept !== 'string') {
+    return false;
+  }
 
   // Ignore media-type parameters other than `q`: `negotiator` correctly
   // parses them, but treats parameters such as `charset` as part of the
@@ -43,16 +45,20 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
     .split(',')
     .map((range) => {
       const [mediaType, ...parameters] = range.split(';');
-      const quality = parameters.find((parameter) => parameter.trim().startsWith('q='));
+      const quality = parameters.find((parameter) => {
+        return parameter.trim().startsWith('q=');
+      });
       return quality ? `${mediaType?.trim()};${quality.trim()}` : mediaType?.trim();
     })
-    .filter((range): range is string => Boolean(range))
+    .filter((range): range is string => {
+      return Boolean(range);
+    })
     .join(',');
   const negotiator = new Negotiator({ headers: { accept: normalizedAccept } });
   const acceptedRanges = negotiator.mediaTypes();
-  const acceptsText = acceptedRanges.some(
-    (range) => range === 'text/markdown' || range === 'text/*',
-  );
+  const acceptsText = acceptedRanges.some((range) => {
+    return range === 'text/markdown' || range === 'text/*';
+  });
 
   return acceptsText && negotiator.mediaType(SUPPORTED_MEDIA_TYPES) === 'text/markdown';
 }
@@ -74,13 +80,17 @@ export function markdownTwinPath(pathname: string): string {
   // Callers pass url.pathname; strip query/hash defensively anyway.
   let path = pathname.split('?')[0] ?? '';
   path = path.split('#')[0] ?? '';
-  if (!path.startsWith('/')) path = `/${path}`;
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
   if (path.length > 1 && path.endsWith('/')) {
     path = path.replace(/\/+$/, '');
   }
   if (path.length > 1 && path.toLowerCase().endsWith('.html')) {
     path = path.slice(0, -'.html'.length);
   }
-  if (path === '/' || path === '') return '/llms.txt';
+  if (path === '/' || path === '') {
+    return '/llms.txt';
+  }
   return `${path}.md`;
 }

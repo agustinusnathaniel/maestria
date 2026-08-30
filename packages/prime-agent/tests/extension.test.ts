@@ -40,7 +40,9 @@ function createFakePi(): FakePi {
   const sentMessages: FakePi['sentMessages'] = [];
 
   const on: ExtensionAPI['on'] = ((event: string, handler: (...args: unknown[]) => unknown) => {
-    if (!handlers.has(event)) handlers.set(event, []);
+    if (!handlers.has(event)) {
+      handlers.set(event, []);
+    }
     handlers.get(event)!.push(handler as (event: unknown, ctx: unknown) => unknown);
   }) as ExtensionAPI['on'];
 
@@ -60,7 +62,9 @@ function createFakePi(): FakePi {
   const fire = {
     async beforeAgentStart(systemPrompt: string): Promise<BeforeAgentStartEventResult | void> {
       const handler = handlers.get('before_agent_start')?.[0];
-      if (!handler) throw new Error('no before_agent_start handler subscribed');
+      if (!handler) {
+        throw new Error('no before_agent_start handler subscribed');
+      }
       return (await handler(
         { type: 'before_agent_start', prompt: 'p', systemPrompt },
         {},
@@ -68,12 +72,16 @@ function createFakePi(): FakePi {
     },
     async sessionStart(ctx: ExtensionContext): Promise<unknown> {
       const handler = handlers.get('session_start')?.[0];
-      if (!handler) throw new Error('no session_start handler subscribed');
+      if (!handler) {
+        throw new Error('no session_start handler subscribed');
+      }
       return handler({ type: 'session_start', reason: 'startup' }, ctx);
     },
     async sessionTree(ctx: ExtensionContext): Promise<unknown> {
       const handler = handlers.get('session_tree')?.[0];
-      if (!handler) throw new Error('no session_tree handler subscribed');
+      if (!handler) {
+        throw new Error('no session_tree handler subscribed');
+      }
       return handler({ type: 'session_tree', newLeafId: null, oldLeafId: null }, ctx);
     },
   };
@@ -82,8 +90,12 @@ function createFakePi(): FakePi {
 }
 
 function commandHandler(fake: FakePi, name: string) {
-  const command = fake.commands.find((c) => c.name === name);
-  if (!command) throw new Error(`command ${name} not registered`);
+  const command = fake.commands.find((c) => {
+    return c.name === name;
+  });
+  if (!command) {
+    throw new Error(`command ${name} not registered`);
+  }
   return command.options.handler;
 }
 
@@ -92,7 +104,14 @@ function branchContext(entries: SessionEntry[]): ExtensionContext {
     ui: { notify: () => {}, setEditorText: () => {} },
     hasUI: true,
     cwd: '/',
-    sessionManager: { getBranch: () => entries, getEntries: () => entries },
+    sessionManager: {
+      getBranch: () => {
+        return entries;
+      },
+      getEntries: () => {
+        return entries;
+      },
+    },
   } as ExtensionContext;
 }
 
@@ -124,7 +143,9 @@ describe('prime-agent extension entry point', () => {
   it('registers the mode commands, clear command, and status command', () => {
     const fake = createFakePi();
     extension(fake.pi);
-    const names = fake.commands.map((c) => c.name);
+    const names = fake.commands.map((c) => {
+      return c.name;
+    });
     expect(names).toEqual(['fein', 'sonar', 'blitz', 'mode-clear', STATUS_COMMAND]);
   });
 
@@ -150,7 +171,11 @@ describe('mode commands', () => {
     const fake = createFakePi();
     extension(fake.pi);
     const notifications: string[] = [];
-    const ctx = commandContext({ notify: (m: string) => notifications.push(m) });
+    const ctx = commandContext({
+      notify: (m: string) => {
+        return notifications.push(m);
+      },
+    });
 
     await commandHandler(fake, 'fein')('', ctx);
 
@@ -313,7 +338,11 @@ describe('status command', () => {
     const fake = createFakePi();
     extension(fake.pi);
     const texts: string[] = [];
-    const ctx = commandContext({ setEditorText: (t: string) => texts.push(t) });
+    const ctx = commandContext({
+      setEditorText: (t: string) => {
+        return texts.push(t);
+      },
+    });
 
     await commandHandler(fake, 'fein')('', ctx);
     await commandHandler(fake, STATUS_COMMAND)('', ctx);

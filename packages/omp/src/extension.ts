@@ -44,7 +44,9 @@ export default function (pi: ExtensionAPI): void {
 
   // Cleanup subscriptions on shutdown
   pi.on('session_shutdown', () => {
-    for (const cleanup of cleanups) cleanup();
+    for (const cleanup of cleanups) {
+      cleanup();
+    }
     cleanups.length = 0;
   });
 

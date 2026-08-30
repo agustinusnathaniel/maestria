@@ -172,27 +172,44 @@ function pythonVersionText(version: string): string {
 export function readManifestVersion(p: string): unknown {
   const suffix = path.extname(p);
   const text = fs.readFileSync(p, 'utf-8');
-  if (suffix === '.py') return readPythonVersion(text);
-  if (suffix === '.yaml' || suffix === '.yml') return readYamlVersion(text);
-  if (suffix === '.json') return readJsonVersion(text);
+  if (suffix === '.py') {
+    return readPythonVersion(text);
+  }
+  if (suffix === '.yaml' || suffix === '.yml') {
+    return readYamlVersion(text);
+  }
+  if (suffix === '.json') {
+    return readJsonVersion(text);
+  }
   throw new Error(`unsupported manifest format: ${suffix}`);
 }
 
 /** Compute the rewritten manifest text with its version set (format-preserving, see header). */
 export function computeManifestVersion(p: string, version: string): string {
   const suffix = path.extname(p);
-  if (suffix === '.py') return pythonVersionText(version);
-  if (suffix === '.yaml' || suffix === '.yml')
+  if (suffix === '.py') {
+    return pythonVersionText(version);
+  }
+  if (suffix === '.yaml' || suffix === '.yml') {
     return rewriteYamlVersion(fs.readFileSync(p, 'utf-8'), version);
-  if (suffix === '.json') return rewriteJsonVersion(fs.readFileSync(p, 'utf-8'), version);
+  }
+  if (suffix === '.json') {
+    return rewriteJsonVersion(fs.readFileSync(p, 'utf-8'), version);
+  }
   throw new Error(`unsupported manifest format: ${suffix}`);
 }
 
 /** Format a manifest's current version for DRIFT reporting, mirroring Python's str(). */
 function formatCurrent(current: unknown): string {
-  if (current === null) return 'None';
-  if (current === true) return 'True';
-  if (current === false) return 'False';
+  if (current === null) {
+    return 'None';
+  }
+  if (current === true) {
+    return 'True';
+  }
+  if (current === false) {
+    return 'False';
+  }
   if (typeof current === 'string' || typeof current === 'number' || typeof current === 'bigint') {
     return String(current);
   }
@@ -210,30 +227,36 @@ function formatCurrent(current: unknown): string {
  */
 function resolvePackageVersion(packageDir: string): { version?: string; error?: string } {
   const pkgJson = path.join(packageDir, 'package.json');
-  if (!fs.existsSync(pkgJson))
+  if (!fs.existsSync(pkgJson)) {
     return { error: `ERROR: required target ${display(pkgJson)} not found` };
+  }
   let version: unknown;
   try {
     version = readJsonVersion(fs.readFileSync(pkgJson, 'utf-8'));
   } catch (err) {
     return { error: `ERROR: cannot read ${display(pkgJson)}: ${message(err)}` };
   }
-  if (version === null) return { error: `ERROR: no version field in ${display(pkgJson)}` };
+  if (version === null) {
+    return { error: `ERROR: no version field in ${display(pkgJson)}` };
+  }
   if (typeof version !== 'string' || !version.trim()) {
     return {
       error: `ERROR: invalid version ${JSON.stringify(version)} in ${display(pkgJson)}: expected a non-empty string`,
     };
   }
-  if (!SEMVER_RE.test(version))
+  if (!SEMVER_RE.test(version)) {
     return {
       error: `ERROR: invalid semver version ${JSON.stringify(version)} in ${display(pkgJson)}`,
     };
+  }
   return { version };
 }
 
 export function syncTarget(packageDir: string, manifests: string[], check: boolean): string[] {
   const pkgResult = resolvePackageVersion(packageDir);
-  if (pkgResult.error) return [pkgResult.error];
+  if (pkgResult.error) {
+    return [pkgResult.error];
+  }
   const version = pkgResult.version!;
 
   const preflight = buildPreflight(packageDir, manifests, version, check);
@@ -296,9 +319,9 @@ function buildPreflight(
 }
 
 function collectSyncResults(preflight: Preflight[], version: string, check: boolean): string[] {
-  const blocked = preflight.some(
-    (m) => m.missing === true || m.readError !== undefined || m.syncError !== undefined,
-  );
+  const blocked = preflight.some((m) => {
+    return m.missing === true || m.readError !== undefined || m.syncError !== undefined;
+  });
   const results: string[] = [];
   for (const m of preflight) {
     if (m.missing === true) {
@@ -361,7 +384,9 @@ export function main(args: string[] = process.argv.slice(2), targets: Target[] =
     for (const result of results) {
       console.log(result);
     }
-    hadError ||= results.some((r) => r.startsWith('DRIFT') || r.startsWith('ERROR'));
+    hadError ||= results.some((r) => {
+      return r.startsWith('DRIFT') || r.startsWith('ERROR');
+    });
   }
 
   if (hadError) {

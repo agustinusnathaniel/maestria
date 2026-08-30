@@ -26,8 +26,9 @@ function validateOmpParams(params: {
     assertValidAgent(params.agent!);
     assertNonEmptyTask(params.task, 'Task description is required');
   } else {
-    if (!params.tasks || params.tasks.length < 2)
+    if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For parallel/chain mode, tasks array is required with at least 2 items');
+    }
     for (const t of params.tasks) {
       assertValidAgent(t.agent);
       assertNonEmptyTask(t.task, 'Task description is required for all tasks');
@@ -56,15 +57,18 @@ function handleMultiDispatch(
   state: MaestriaState,
   params: { tasks: Array<{ agent: string; task: string }>; mode: 'parallel' | 'chain' },
 ) {
-  for (const t of params.tasks) recordAndPersist(pi, state, 'orchestrator', t.agent, t.task);
+  for (const t of params.tasks) {
+    recordAndPersist(pi, state, 'orchestrator', t.agent, t.task);
+  }
   const parts = [
     `## ${params.mode === 'parallel' ? 'Parallel' : 'Chain'} Dispatch Plan (${params.tasks.length} tasks)\n`,
   ];
   for (let i = 0; i < params.tasks.length; i++) {
     parts.push(`### ${i + 1}: ${params.tasks[i].agent}`);
     parts.push(`\`task(agent: "${params.tasks[i].agent}", task: """${params.tasks[i].task}""")\``);
-    if (params.mode === 'chain' && i > 0)
+    if (params.mode === 'chain' && i > 0) {
       parts.push('Previous result available via {previous} placeholder.');
+    }
   }
   return { content: [{ type: 'text' as const, text: parts.join('\n\n') }] };
 }
@@ -107,7 +111,7 @@ export function installSubagentTool(
       _onUpdate: unknown,
       _ctx: unknown,
     ) {
-      if (state.reviewMode)
+      if (state.reviewMode) {
         return {
           content: [
             {
@@ -116,10 +120,12 @@ export function installSubagentTool(
             },
           ],
         };
+      }
       validateOmpParams(params);
       const mode = params.mode ?? 'single';
-      if (mode === 'single')
+      if (mode === 'single') {
         return handleSingleDispatch(pi, state, params as { agent: string; task: string });
+      }
       return handleMultiDispatch(pi, state, {
         tasks: params.tasks!,
         mode: mode as 'parallel' | 'chain',

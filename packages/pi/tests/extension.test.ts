@@ -6,17 +6,23 @@ function createMockPi() {
   const handlers = new Map<string, Array<(...args: unknown[]) => unknown>>();
   return {
     on: vi.fn((event: string, handler: (...args: unknown[]) => unknown) => {
-      if (!handlers.has(event)) handlers.set(event, []);
+      if (!handlers.has(event)) {
+        handlers.set(event, []);
+      }
       handlers.get(event)!.push(handler);
       return () => {
         const h = handlers.get(event);
-        if (h) h.splice(h.indexOf(handler), 1);
+        if (h) {
+          h.splice(h.indexOf(handler), 1);
+        }
       };
     }),
     registerCommand: vi.fn(),
     registerTool: vi.fn(),
     setActiveTools: vi.fn(),
-    getActiveTools: vi.fn(() => []),
+    getActiveTools: vi.fn(() => {
+      return [];
+    }),
     setModel: vi.fn(),
     appendEntry: vi.fn(),
     sendUserMessage: vi.fn(),
@@ -47,7 +53,9 @@ describe('extension entry point', () => {
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const onEvents = onCalls.map((c: unknown[]) => c[0]);
+    const onEvents = onCalls.map((c: unknown[]) => {
+      return c[0];
+    });
     expect(onEvents).toContain('session_start');
     expect(onEvents).toContain('session_shutdown');
     expect(onEvents).toContain('before_agent_start');
@@ -73,18 +81,22 @@ describe('extension entry point', () => {
     const entries = [
       { type: 'custom', customType: 'maestria_state', data: siblingState, timestamp: 50 },
     ];
-    const getBranch = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
-    ]);
-    const getEntries = vi.fn(() => [
-      ...entries,
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
-    ]);
+    const getBranch = vi.fn(() => {
+      return [{ type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 }];
+    });
+    const getEntries = vi.fn(() => {
+      return [
+        ...entries,
+        { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      ];
+    });
     const ctx = { sessionManager: { getBranch, getEntries } };
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionStartCall = onCalls.find((c: unknown[]) => c[0] === 'session_start');
+    const sessionStartCall = onCalls.find((c: unknown[]) => {
+      return c[0] === 'session_start';
+    });
     expect(sessionStartCall).toBeDefined();
     const handler = sessionStartCall![1];
     await handler({}, ctx);
@@ -102,18 +114,26 @@ describe('extension entry point', () => {
       { type: 'custom', customType: 'maestria_state', data: siblingState, timestamp: 50 },
       ...branchEntries,
     ];
-    const getBranch = vi.fn(() => branchEntries);
-    const getEntries = vi.fn(() => allEntries);
+    const getBranch = vi.fn(() => {
+      return branchEntries;
+    });
+    const getEntries = vi.fn(() => {
+      return allEntries;
+    });
     const ctx = { sessionManager: { getBranch, getEntries } };
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionStartCall = onCalls.find((c: unknown[]) => c[0] === 'session_start');
+    const sessionStartCall = onCalls.find((c: unknown[]) => {
+      return c[0] === 'session_start';
+    });
     const handler = sessionStartCall![1];
     await handler({}, ctx);
 
     const statusCall = (pi.registerCommand as ReturnType<typeof vi.fn>).mock.calls.find(
-      (c: unknown[]) => c[0] === 'maestria-status',
+      (c: unknown[]) => {
+        return c[0] === 'maestria-status';
+      },
     );
     expect(statusCall).toBeDefined();
     const setEditorText = vi.fn();
@@ -126,17 +146,19 @@ describe('extension entry point', () => {
   it('registers a session_tree handler that restores state from the current branch', async () => {
     const pi = createMockPi();
     const mockState = { mode: 'fein', activeTask: 'test task' };
-    const getBranch = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
-    ]);
-    const getEntries = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
-    ]);
+    const getBranch = vi.fn(() => {
+      return [{ type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 }];
+    });
+    const getEntries = vi.fn(() => {
+      return [{ type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 }];
+    });
     const ctx = { sessionManager: { getBranch, getEntries } };
     extension(pi as unknown as ExtensionAPI);
     const { on } = pi;
     const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionTreeCall = onCalls.find((c: unknown[]) => c[0] === 'session_tree');
+    const sessionTreeCall = onCalls.find((c: unknown[]) => {
+      return c[0] === 'session_tree';
+    });
     expect(sessionTreeCall).toBeDefined();
     const handler = sessionTreeCall![1];
     await handler({}, ctx);
