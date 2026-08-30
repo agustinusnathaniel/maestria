@@ -133,6 +133,7 @@ export function installModeAutoDetect(
   },
 ): void {
   onInput(async (event: unknown, ctx: unknown) => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
     const text = ((event as Record<string, unknown>).text as string) ?? '';
     const result = detectModeInText(text, commandsDir);
     if (!result) {
@@ -176,6 +177,7 @@ export function installModeCommands(
       }
       state.mode = null;
       opts.persistState();
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
       ((ctx as Record<string, unknown>).ui as { notify: (msg: string) => void }).notify(
         'Workflow mode cleared. Neutral routing is active.',
       );
@@ -193,6 +195,7 @@ export function installModeCommands(
         state.mode = keyword;
         opts.persistState();
 
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
         ((ctx as Record<string, unknown>).ui as { notify: (msg: string) => void }).notify(
           `Mode set to ${keyword}. Describe what you'd like to work on.`,
         );

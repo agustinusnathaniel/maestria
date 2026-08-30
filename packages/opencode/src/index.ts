@@ -17,13 +17,21 @@ interface AgentFrontmatter {
 }
 
 function parseFrontmatter(yamlStr: string): AgentFrontmatter {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
   const result = parseYaml(yamlStr) as Record<string, unknown>;
   return {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from broader type via prior validation, safe string/boolean assertion
     color: result.color as string | undefined,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from broader type via prior validation, safe string/boolean assertion
     description: (result.description as string) || '',
-    maxSteps: result.maxSteps ? Number(result.maxSteps) : undefined,
+    maxSteps:
+      result.maxSteps !== undefined && result.maxSteps !== null && result.maxSteps !== ''
+        ? Number(result.maxSteps)
+        : undefined,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from broader type via prior validation, safe string/boolean assertion
     mode: (result.mode as string) || 'subagent',
-    permission: (result.permission as Record<string, unknown>) || {},
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
+    permission: (result.permission as Record<string, unknown>) ?? {},
   };
 }
 
@@ -50,10 +58,14 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
     prompt,
   };
 
-  if (frontmatter.color) {
+  if (frontmatter.color !== undefined && frontmatter.color !== null && frontmatter.color !== '') {
     config.color = frontmatter.color;
   }
-  if (frontmatter.maxSteps) {
+  if (
+    frontmatter.maxSteps !== undefined &&
+    frontmatter.maxSteps !== null &&
+    frontmatter.maxSteps !== 0
+  ) {
     config.maxSteps = frontmatter.maxSteps;
   }
 
@@ -106,6 +118,7 @@ export const MaestriaPlugin: Plugin = (_input, options?: MaestriaPluginOptions) 
       }
 
       // Find the first text part with user content
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: validated via prior type check, safe narrow
       const textPart = hookOutput.parts.find((p) => p.type === 'text') as
         | { text: string; type: 'text' }
         | undefined;

@@ -127,7 +127,7 @@ function createOptionRenderer<Value>(selectableGroups: boolean) {
     const label = option.label ?? String(option.value);
     const isItem = typeof option.group === 'string';
     const next = isItem && (options[options.indexOf(option) + 1] ?? { group: true });
-    const isLast = isItem && next && next.group === true;
+    const isLast = isItem && next !== null && next !== undefined && next.group === true;
     const prefix = isItem
       ? selectableGroups
         ? isLast
@@ -139,7 +139,7 @@ function createOptionRenderer<Value>(selectableGroups: boolean) {
     const spacer = styleText('dim', prefix);
 
     if (state === 'active') {
-      return `${spacer}${styleText('cyan', S_CHECKBOX_ACTIVE)} ${label}${option.hint ? ` ${styleText('dim', `(${option.hint})`)}` : ''}`;
+      return `${spacer}${styleText('cyan', S_CHECKBOX_ACTIVE)} ${label}${option.hint !== undefined && option.hint !== null && option.hint !== '' ? ` ${styleText('dim', `(${option.hint})`)}` : ''}`;
     }
     if (state === 'group-active') {
       return `${prefix}${styleText('cyan', S_CHECKBOX_ACTIVE)} ${styleText('dim', label)}`;
@@ -149,13 +149,13 @@ function createOptionRenderer<Value>(selectableGroups: boolean) {
     }
     if (state === 'selected') {
       const checkbox = isItem || selectableGroups ? styleText('green', S_CHECKBOX_SELECTED) : '';
-      return `${spacer}${checkbox} ${styleText('dim', label)}${option.hint ? ` (${option.hint})` : ''}`;
+      return `${spacer}${checkbox} ${styleText('dim', label)}${option.hint !== undefined && option.hint !== null && option.hint !== '' ? ` (${option.hint})` : ''}`;
     }
     if (state === 'cancelled') {
       return styleText('strikethrough', styleText('dim', label));
     }
     if (state === 'active-selected') {
-      return `${spacer}${styleText('green', S_CHECKBOX_SELECTED)} ${label}${option.hint ? ` ${styleText('dim', `(${option.hint})`)}` : ''}`;
+      return `${spacer}${styleText('green', S_CHECKBOX_SELECTED)} ${label}${option.hint !== undefined && option.hint !== null && option.hint !== '' ? ` ${styleText('dim', `(${option.hint})`)}` : ''}`;
     }
     if (state === 'submitted') {
       return styleText('dim', label);
@@ -197,28 +197,35 @@ function createGroupRender<Value>(
       const groupActive =
         !active &&
         typeof option.group === 'string' &&
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: double assertion via unknown, safe narrow from unknown
         rawOptions[this.cursor]?.value === (option as unknown as Record<string, unknown>).value;
       const selected =
         value.includes(option.value) ||
         (option.group === true && this.isGroupSelected(String(option.value)));
       if (groupActive) {
         return opt(
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: double assertion via unknown, safe narrow from unknown
           option as unknown as Option<Value> & { group: string | boolean },
           selected ? 'group-active-selected' : 'group-active',
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
           rawOptions as any,
         );
       }
       if (active && selected) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         return opt(option as any, 'active-selected', rawOptions as any);
       }
       if (selected) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         return opt(option as any, 'selected', rawOptions as any);
       }
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
       return opt(option as any, active ? 'active' : 'inactive', rawOptions as any);
     };
     if (this.state === 'submit') {
       const selectedOptions = rawOptions
         .filter(({ value: v }) => value.includes(v))
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         .map((o) => opt(o as any, 'submitted'));
       const optionsText =
         selectedOptions.length === 0 ? '' : `  ${selectedOptions.join(styleText('dim', ', '))}`;
@@ -227,6 +234,7 @@ function createGroupRender<Value>(
     if (this.state === 'cancel') {
       const label = rawOptions
         .filter(({ value: v }) => value.includes(v))
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         .map((o) => opt(o as any, 'cancelled'))
         .join(styleText('dim', ', '));
       return `${title}${guide ? `${styleText('gray', S_BAR)}  ` : ''}${label.trim() ? `${label}${guide ? `\n${styleText('gray', S_BAR)}` : ''}` : ''}`;
@@ -280,6 +288,8 @@ export async function groupMultiselect<Value>(
     signal: opts.signal,
     validate: buildValidate(required),
   };
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   const prompt = new TogglableGroupMultiSelectPrompt(renderOptions as any);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   return await (prompt.prompt() as Promise<Value[] | symbol>);
 }

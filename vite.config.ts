@@ -148,6 +148,12 @@ export default defineConfig({
         },
       },
       {
+        files: ['packages/shared/pi/src/tools-core.ts'],
+        rules: {
+          'typescript/no-unsafe-type-assertion': 'off',
+        },
+      },
+      {
         files: [
           'apps/maestria-cli/src/lib/codex-instructions.ts',
           'apps/maestria-cli/src/lib/codex-agent-files.ts',

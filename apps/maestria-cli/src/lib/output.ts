@@ -62,7 +62,7 @@ export function renderResults(results: PlatformResult[]): string {
   const lines = results.map((r) => {
     const status = r.ok ? picocolors.green('✓') : picocolors.red('✗');
     const msg = r.ok
-      ? r.prevVersion
+      ? r.prevVersion !== undefined && r.prevVersion !== null && r.prevVersion !== ''
         ? `  ${r.label}: ${r.prevVersion} → ${r.nextVersion}`
         : `  ${r.label}: ${r.message}`
       : `  ${r.label}: ${picocolors.red(r.message)}`;
@@ -103,7 +103,15 @@ export function renderCompactResults(results: PlatformResult[]): string {
       if (r.message === 'Already up to date') {
         return `${r.id}: already latest ${r.nextVersion ?? r.prevVersion ?? ''}`;
       }
-      if (r.prevVersion && r.nextVersion && r.prevVersion !== r.nextVersion) {
+      if (
+        r.prevVersion !== undefined &&
+        r.prevVersion !== null &&
+        r.prevVersion !== '' &&
+        r.nextVersion !== undefined &&
+        r.nextVersion !== null &&
+        r.nextVersion !== '' &&
+        r.prevVersion !== r.nextVersion
+      ) {
         return `${r.id}: updated ${r.prevVersion} -> ${r.nextVersion}`;
       }
       // Install or other success with a version

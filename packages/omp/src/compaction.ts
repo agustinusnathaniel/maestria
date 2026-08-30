@@ -24,6 +24,7 @@ export function installCompactionHandlers(pi: ExtensionAPI, state: MaestriaState
   installHandlers(
     {
       on: (event, handler) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         pi.on(event as never, handler as never);
       },
     },

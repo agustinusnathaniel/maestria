@@ -35,6 +35,7 @@ function isModeState(value: unknown): value is MaestriaModeState {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
   const { mode } = value as Record<string, unknown>;
   return mode === null || mode === 'fein' || mode === 'sonar' || mode === 'blitz';
 }

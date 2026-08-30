@@ -49,7 +49,7 @@ async function processPrimarySources(
   const { dryRun, check, diff, verbose, report, logger } = opts;
   for (const relPath of sourceFiles) {
     if (!relPath.endsWith('.md')) {
-      if (verbose) {
+      if (verbose === true) {
         logger(`[${report}] Skipping non-.md file: ${relPath}`);
       }
       continue;
@@ -71,7 +71,7 @@ async function processPrimarySources(
           replace: [...(config.default?.replace ?? [])],
           stripFrontmatter: config.default?.stripFrontmatter ?? false,
         };
-    if (!isExplicit && verbose) {
+    if (!isExplicit && verbose === true) {
       logger(`[${report}] No config for ${relPath}, using defaults`);
     }
     generatedOutputs.add(resolved.output);
@@ -85,7 +85,7 @@ async function processPrimarySources(
       verbose,
     });
     results.push(result);
-    if (result.status === 'error' && verbose) {
+    if (result.status === 'error' && verbose === true) {
       logger(`[${report}] Error processing ${relPath}: ${result.error}`);
     }
   }
@@ -113,7 +113,7 @@ async function processSecondarySources(
     }
     const secondaryAbs = resolve(secondarySourceDir, filename);
     if (!existsSync(secondaryAbs)) {
-      if (verbose) {
+      if (verbose === true) {
         logger(`[${report}] Config entry "${filename}" not found in source or secondary dir`);
       }
       continue;
@@ -129,7 +129,7 @@ async function processSecondarySources(
       verbose,
     });
     results.push(result);
-    if (result.status === 'error' && verbose) {
+    if (result.status === 'error' && verbose === true) {
       logger(`[${report}] Error processing secondary source ${filename}: ${result.error}`);
     }
   }
@@ -140,7 +140,7 @@ export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
   const logger = log ?? console.log;
   const results: SyncFileResult[] = [];
   const generatedOutputs = new Set<string>();
-  const report = dryRun ? (check ? 'check' : 'dry-run') : 'sync';
+  const report = dryRun === true ? (check === true ? 'check' : 'dry-run') : 'sync';
   if (!existsSync(config.source)) {
     logger(`[${report}] Source directory not found: ${config.source}`);
     return results;

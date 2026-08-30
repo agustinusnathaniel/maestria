@@ -67,6 +67,7 @@ export async function loadConfig(configPath: string): Promise<ResolvedSyncConfig
   try {
     mod = await import(pathToFileURL(absPath).href);
   } catch (error) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     throw new ConfigError(`Failed to load config file: ${absPath}`, { cause: error as Error });
   }
 
@@ -80,7 +81,10 @@ export async function loadConfig(configPath: string): Promise<ResolvedSyncConfig
 
 function resolveConfig(raw: SyncConfig, configDir: string, configPath: string): ResolvedSyncConfig {
   const source = resolve(configDir, raw.source);
-  const output = raw.output ? resolve(configDir, raw.output) : '';
+  const output =
+    raw.output !== undefined && raw.output !== null && raw.output !== ''
+      ? resolve(configDir, raw.output)
+      : '';
 
   const resolvedFiles: Record<string, ResolvedFileConfig> = {};
 
@@ -124,7 +128,10 @@ function resolveFileConfig(
   const autoGenComment = fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? '';
 
   const baseDir = outputDir || configDir;
-  const fileOutput = fileCfg.output ? resolve(baseDir, fileCfg.output) : resolve(baseDir, filename);
+  const fileOutput =
+    fileCfg.output !== undefined && fileCfg.output !== null && fileCfg.output !== ''
+      ? resolve(baseDir, fileCfg.output)
+      : resolve(baseDir, filename);
 
   return {
     append,

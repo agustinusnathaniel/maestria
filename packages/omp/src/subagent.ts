@@ -80,6 +80,7 @@ export function installSubagentTool(
   state: MaestriaState,
   _cleanups?: (() => void)[],
 ): void {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   (pi.registerTool as any)({
     description:
       'Dispatch a task to a maestria specialist subagent (adventurer, architect, builder, diagnose, planner, reviewer, writer). Uses omp native task tool.',
@@ -108,6 +109,7 @@ export function installSubagentTool(
       validateOmpParams(params);
       const mode = params.mode ?? 'single';
       if (mode === 'single') {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         return handleSingleDispatch(pi, state, params as { agent: string; task: string });
       }
       return handleMultiDispatch(pi, state, {

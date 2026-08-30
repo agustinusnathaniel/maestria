@@ -130,7 +130,7 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
     required: true,
     selectableGroups: true,
   });
-  if (isCancel(selected) || !selected) {
+  if (isCancel(selected) || selected === undefined || selected === null || selected === '') {
     cancel('Update cancelled.');
     process.exit(130);
   }
@@ -187,10 +187,10 @@ export const updateCommand = defineCommand({
     const isQuiet = args.quiet || args.compact;
     const isCompact = args.compact;
     let platformIds: string[] | undefined;
-    if (args.platform) {
+    if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
       platformIds = await validateOrExit(validatePlatforms(args.platform));
     }
-    if (args.version) {
+    if (args.version !== undefined && args.version !== null && args.version !== '') {
       await validateOrExit(validateVersion(args.version));
     }
     const results: PlatformResult[] = [];
@@ -226,7 +226,7 @@ function captureSnapshot(
   platform: PlatformHandler,
 ): Effect.Effect<PlatformUpdateSnapshot | { error: string } | undefined> {
   if (!platform.captureUpdateSnapshot) {
-    return Effect.succeed(undefined);
+    return Effect.succeed();
   }
   return platform.captureUpdateSnapshot.pipe(
     Effect.match({
@@ -244,7 +244,12 @@ export function updateOne(
 ): Effect.Effect<PlatformResult> {
   // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator implements the same atomic update transaction as updateOne; splitting the generator would duplicate snapshot/version/preflight closure and hide the linear flow.
   return Effect.gen(function* () {
-    if (version && platform.supportsVersionPinning === false) {
+    if (
+      version !== undefined &&
+      version !== null &&
+      version !== '' &&
+      platform.supportsVersionPinning === false
+    ) {
       return {
         id: platform.id,
         label: platform.label,
@@ -293,7 +298,10 @@ export function updateOne(
         prevVersion,
       } satisfies PlatformResult;
     }
-    if (!version && isVersionGt(prevVersion, targetVersion)) {
+    if (
+      (version === undefined || version === null || version === '') &&
+      isVersionGt(prevVersion, targetVersion)
+    ) {
       return {
         id: platform.id,
         label: platform.label,
@@ -321,7 +329,11 @@ export function updateOne(
       Effect.catchCause(() => Effect.succeed('unknown')),
     );
     spinner.stop(previewVersionDiff(prevVersion, nextVersion));
-    if (platform.npmPackage) {
+    if (
+      platform.npmPackage !== undefined &&
+      platform.npmPackage !== null &&
+      platform.npmPackage !== ''
+    ) {
       yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
     }
     return {

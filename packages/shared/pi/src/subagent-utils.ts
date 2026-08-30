@@ -52,6 +52,7 @@ export interface HandoffValidation {
  * @throws {Error} if the agent name is not in ALLOWED_AGENTS.
  */
 export function assertValidAgent(agent: string): asserts agent is AllowedAgent {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   if (!ALLOWED_AGENTS.includes(agent as AllowedAgent)) {
     throw new Error(`Unknown agent: "${agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
   }
@@ -65,7 +66,7 @@ export function assertNonEmptyTask(
   task: string | undefined,
   label: string,
 ): asserts task is string {
-  if (!task || !task.trim()) {
+  if (task === undefined || task === null || task === '' || !task.trim()) {
     throw new Error(label);
   }
 }

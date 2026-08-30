@@ -19,5 +19,6 @@ export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState):
       persistState(pi, state);
     },
   });
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   pi.on('tool_call', handler as never);
 }

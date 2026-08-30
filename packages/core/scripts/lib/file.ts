@@ -69,27 +69,27 @@ export async function autoClean(
       config.preserve.length > 0 &&
       config.preserve.some((p) => relOutPath === p || relOutPath.endsWith(`/${p}`))
     ) {
-      if (verbose) {
+      if (verbose === true) {
         logger(`[${report}] Preserved: ${relative(process.cwd(), absOutPath)}`);
       }
       continue;
     }
 
     if (!generatedOutputs.has(absOutPath)) {
-      if (dryRun) {
+      if (dryRun === true) {
         results.push({ output: absOutPath, source: '', status: 'dry-run' });
-        if (verbose) {
+        if (verbose === true) {
           logger(`[dry-run] Would remove stale: ${relative(process.cwd(), absOutPath)}`);
         }
-      } else if (check) {
+      } else if (check === true) {
         results.push({ output: absOutPath, source: '', status: 'removed' });
-        if (verbose) {
+        if (verbose === true) {
           logger(`[check] Would remove stale: ${relative(process.cwd(), absOutPath)}`);
         }
       } else {
         await unlink(absOutPath);
         results.push({ output: absOutPath, source: '', status: 'removed' });
-        if (verbose) {
+        if (verbose === true) {
           logger(`[${report}] Removed stale: ${relative(process.cwd(), absOutPath)}`);
         }
       }

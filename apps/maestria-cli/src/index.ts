@@ -134,7 +134,7 @@ async function showEnhancedUsage<T extends ArgsDef = ArgsDef>(
 
   const parts: string[] = [help];
 
-  if (section) {
+  if (section !== null && section !== undefined) {
     parts.push('', 'EXAMPLES', '');
     for (const line of section.examples) {
       parts.push(`  ${line}`);
@@ -143,7 +143,7 @@ async function showEnhancedUsage<T extends ArgsDef = ArgsDef>(
 
   parts.push(EXIT_CODES);
 
-  if (section?.tip) {
+  if (section?.tip !== undefined && section?.tip !== null && section?.tip !== '') {
     parts.push('', 'TIP FOR AI AGENTS', '');
     for (const line of section.tip.split('\n')) {
       parts.push(`  ${line}`);

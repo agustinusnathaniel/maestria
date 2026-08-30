@@ -86,7 +86,13 @@ async function runInstallInteractive(isQuiet: boolean): Promise<PlatformResult[]
     required: true,
     selectableGroups: true,
   });
-  if (isCancel(selected) || !selected || (Array.isArray(selected) && selected.length === 0)) {
+  if (
+    isCancel(selected) ||
+    selected === undefined ||
+    selected === null ||
+    selected === '' ||
+    (Array.isArray(selected) && selected.length === 0)
+  ) {
     cancel('Install cancelled.');
     process.exit(130);
   }
@@ -149,7 +155,7 @@ export const installCommand = defineCommand({
     const isQuiet = args.quiet || args.compact;
     const isCompact = args.compact;
     let platformIds: string[] | undefined;
-    if (args.platform) {
+    if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
       platformIds = await validateOrExit(validatePlatforms(args.platform));
     }
     const results: PlatformResult[] = [];

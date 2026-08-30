@@ -33,9 +33,11 @@ function parseSetPairs(input: string): AgentModels {
     }
     const agent = pair.slice(0, eq).trim();
     const model = pair.slice(eq + 1).trim();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
       exitError(`Unknown agent '${agent}'. Valid agents: ${MAESTRIA_AGENTS.join(', ')}`);
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     models[agent as keyof AgentModels] = model;
   }
   return models;
@@ -48,6 +50,7 @@ async function runOrExit<T>(effect: Effect.Effect<T, unknown>, fallback: string)
     return exit.value;
   }
   const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   const message = (firstFailure?.error as { message?: string } | undefined)?.message;
   exitError(message ?? fallback);
 }
@@ -64,7 +67,10 @@ function renderConfigureSummary(
   );
   for (const agent of MAESTRIA_AGENTS) {
     const model = models[agent];
-    const value = model ? picocolors.green(model) : picocolors.dim('inherit (session model)');
+    const value =
+      model !== undefined && model !== null && model !== ''
+        ? picocolors.green(model)
+        : picocolors.dim('inherit (session model)');
     lines.push(`  ${picocolors.bold(agent.padEnd(10))} ${value}`);
   }
   return `${lines.join('\n')}\n`;
@@ -96,7 +102,7 @@ function renderConfigureJson(
 async function resolveConfigureHandler(
   platformId: string | undefined,
 ): Promise<ModelConfigHandler> {
-  if (platformId) {
+  if (platformId !== undefined && platformId !== null && platformId !== '') {
     const id = await validateOrExit(validatePlatform(platformId));
     const h = getModelConfigHandler(id);
     if (!h) {
@@ -131,17 +137,21 @@ async function resolveConfigureLevel(
   args: Record<string, unknown>,
   _handler: ModelConfigHandler,
 ): Promise<ModelConfigLevel> {
-  const bothFlags = (args.global && args.project) as boolean;
+  const bothFlags = args.global === true && args.project === true;
   if (bothFlags) {
     exitError('Cannot use --global and --project together. Choose one.');
   }
-  if (args.global) {
+  if (args.global === true) {
     return 'global';
   }
-  if (args.project) {
+  if (args.project === true) {
     return 'project';
   }
-  if (process.stdout.isTTY && process.stdin.isTTY && !args.set) {
+  if (
+    process.stdout.isTTY &&
+    process.stdin.isTTY &&
+    (args.set === undefined || args.set === null || args.set === '')
+  ) {
     const picked = await select({
       initialValue: 'global',
       message: 'Where do you want to configure models?',
@@ -153,6 +163,7 @@ async function resolveConfigureLevel(
     if (isCancel(picked)) {
       exitCancel();
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     return picked as ModelConfigLevel;
   }
   exitError('Specify --global or --project when using --set or in a non-interactive terminal.');
@@ -234,9 +245,14 @@ async function handleConfigureInteractive(
     message: 'Which agents do you want to configure?',
     options: {
       Specialists: handler.agents.map((agent) => ({
-        hint: current[agent as keyof AgentModels]
-          ? `currently ${current[agent as keyof AgentModels]}`
-          : 'inherit',
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
+        hint:
+          current[agent as keyof AgentModels] !== undefined &&
+          current[agent as keyof AgentModels] !== null &&
+          current[agent as keyof AgentModels] !== ''
+            ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
+              `currently ${current[agent as keyof AgentModels]}`
+            : 'inherit',
         label: agent,
         value: agent,
       })),
@@ -249,14 +265,22 @@ async function handleConfigureInteractive(
   }
   const models: AgentModels = {};
   for (const agent of selectedAgents) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
       continue;
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     const name = agent as keyof AgentModels;
     const picked = await select({
-      initialValue: current[name] && available.includes(current[name]) ? current[name] : '',
+      initialValue:
+        current[name] !== undefined &&
+        current[name] !== null &&
+        current[name] !== '' &&
+        available.includes(current[name])
+          ? current[name]
+          : '',
       maxItems: 10,
-      message: `Model for @${name}${current[name] ? ` (currently ${current[name]})` : ''}`,
+      message: `Model for @${name}${current[name] !== undefined && current[name] !== null && current[name] !== '' ? ` (currently ${current[name]})` : ''}`,
       options: [
         { hint: 'use the session/primary agent model', label: 'Inherit', value: '' },
         ...available.map((model) => ({ label: model, value: model })),
@@ -345,7 +369,7 @@ export const configureCommand = defineCommand({
       exitError(`The '${handler.cli}' CLI was not found on PATH. Install ${handler.label} first.`);
     }
     const level = await resolveConfigureLevel(args, handler);
-    if (args.set) {
+    if (args.set !== undefined && args.set !== null && args.set !== '') {
       await handleConfigureSet(handler, level, args.set, isQuiet, isJson, isCompact);
     } else {
       await handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact);

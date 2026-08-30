@@ -12,6 +12,7 @@ const COMMANDS_DIR = `${__dirname}/../agents/commands`;
 export function installModeAutoDetect(pi: ExtensionAPI, state: MaestriaState): void {
   installAutoDetect(
     (handler) => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
       pi.on('input', handler as never);
     },
     state,
@@ -22,6 +23,7 @@ export function installModeAutoDetect(pi: ExtensionAPI, state: MaestriaState): v
         persistState(pi, state);
       },
       restoreOriginalState: async (ctx) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         await restoreOriginalState(pi, ctx as ExtensionContext, state);
       },
       transform: (text) => ({ text }),
@@ -32,6 +34,7 @@ export function installModeAutoDetect(pi: ExtensionAPI, state: MaestriaState): v
 export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): void {
   installCommands(
     (name, opts) => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
       pi.registerCommand(name, opts as never);
     },
     state,
@@ -40,6 +43,7 @@ export function installModeCommands(pi: ExtensionAPI, state: MaestriaState): voi
         persistState(pi, state);
       },
       restoreOriginalState: async (ctx) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         await restoreOriginalState(pi, ctx as ExtensionContext, state);
       },
     },

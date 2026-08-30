@@ -46,7 +46,9 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
     .map((range) => {
       const [mediaType, ...parameters] = range.split(';');
       const quality = parameters.find((parameter) => parameter.trim().startsWith('q='));
-      return quality ? `${mediaType?.trim()};${quality.trim()}` : mediaType?.trim();
+      return quality !== undefined && quality !== null && quality !== ''
+        ? `${mediaType?.trim()};${quality.trim()}`
+        : mediaType?.trim();
     })
     .filter((range): range is string => Boolean(range))
     .join(',');

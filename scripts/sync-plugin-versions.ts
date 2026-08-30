@@ -134,6 +134,7 @@ function readYamlVersion(text: string): string | null {
   if (doc.errors.length > 0) {
     throw new Error(`invalid YAML: ${doc.errors[0].message.split('\n')[0]}`);
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from broader type via prior validation, safe string/boolean assertion
   const value = doc.get('version') as string | number | bigint | boolean | null | undefined;
   return value === undefined || value === null ? null : String(value);
 }
@@ -253,7 +254,7 @@ function resolvePackageVersion(packageDir: string): { version?: string; error?: 
 
 export function syncTarget(packageDir: string, manifests: string[], check: boolean): string[] {
   const pkgResult = resolvePackageVersion(packageDir);
-  if (pkgResult.error) {
+  if (pkgResult.error !== undefined && pkgResult.error !== null && pkgResult.error !== '') {
     return [pkgResult.error];
   }
   const version = pkgResult.version!;

@@ -138,7 +138,11 @@ export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure
   let best: ModeDetectPure | null = null;
 
   for (const keyword of MODE_KEYWORDS) {
-    if (normalizedDisabled?.has(keyword)) {
+    if (
+      normalizedDisabled !== undefined &&
+      normalizedDisabled !== null &&
+      normalizedDisabled.has(keyword)
+    ) {
       continue;
     }
     const regex = buildKeywordRegex(keyword);

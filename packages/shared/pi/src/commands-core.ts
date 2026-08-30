@@ -83,9 +83,13 @@ function registerReviewCommand(pi: CommandsPi, state: MaestriaState): void {
         reviewMode: true,
       } as MaestriaState);
       persistState(pi, state);
-      if (state.reviewModel) {
+      if (
+        state.reviewModel !== null &&
+        state.reviewModel !== undefined &&
+        state.reviewModel !== ''
+      ) {
         const switched = await cycleToReviewModel(pi, ctx, state);
-        if (switched) {
+        if (switched !== null && switched !== undefined && switched !== '') {
           ctx.ui.notify(`Review mode: switched to ${switched}`);
           pi.events?.emit(MAESTRIA_EVENTS.REVIEW_ACTIVATED, {
             originalModel: state.originalModel,

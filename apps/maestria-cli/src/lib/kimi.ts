@@ -51,11 +51,13 @@ export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandErr
       try {
         text = await readFile(filePath, 'utf-8');
       } catch (error) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: fs error shape, ErrnoException code check safe after typeof object and 'code' in error guard
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
           return { plugins: [], version: 1 } satisfies KimiInstalledFile;
         }
         throw error;
       }
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
       const parsed = JSON.parse(text) as Partial<KimiInstalledFile>;
       if (parsed.version !== undefined && parsed.version !== 1) {
         throw new Error(`unsupported Kimi plugin registry version: ${String(parsed.version)}`);

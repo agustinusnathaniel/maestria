@@ -70,7 +70,12 @@ function validatePiParams(params: {
 }): string {
   const mode = params.mode ?? 'single';
   if (mode === 'single') {
-    if (!params.agent || !ALLOWED_AGENT_NAMES.includes(params.agent)) {
+    if (
+      params.agent === undefined ||
+      params.agent === null ||
+      params.agent === '' ||
+      !ALLOWED_AGENT_NAMES.includes(params.agent)
+    ) {
       return `Invalid maestria_subagent call: 'agent' is required and must be one of ${ALLOWED_AGENT_NAMES.join(', ')}.`;
     }
     assertNonEmptyTask(params.task, 'Task description is required');
@@ -312,19 +317,21 @@ function subscribeSubagentEvents(
   state: MaestriaState,
   cleanups?: (() => void)[],
 ): void {
-  if (!pi.events) {
+  if (pi.events === null || pi.events === undefined) {
     return;
   }
   const unsubStarted = pi.events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     const { id, type } = data as { id: string; type: string };
     state.subagentStatus[id] = { startedAt: Date.now(), status: 'running', type };
     persistState(pi, state);
     pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_STARTED, { id, timestamp: Date.now(), type });
   });
   const unsubCompleted = pi.events.on(SUBAGENT_EVENTS.COMPLETED, (data: unknown) => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     const { id } = data as { id: string };
     const existing = state.subagentStatus[id];
-    if (existing) {
+    if (existing !== null && existing !== undefined) {
       existing.status = 'completed';
       existing.completedAt = Date.now();
     }
@@ -336,9 +343,10 @@ function subscribeSubagentEvents(
     });
   });
   const unsubFailed = pi.events.on(SUBAGENT_EVENTS.FAILED, (data: unknown) => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     const { id, status } = data as { id: string; status: string };
     const existing = state.subagentStatus[id];
-    if (existing) {
+    if (existing !== null && existing !== undefined) {
       existing.status = status ?? 'error';
       existing.completedAt = Date.now();
     }
@@ -350,10 +358,9 @@ function subscribeSubagentEvents(
     });
   });
   const unsubSteered = pi.events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     const { id } = data as { id: string };
-    if (!state.subagentStatus[id]) {
-      state.subagentStatus[id] = { startedAt: Date.now(), status: 'running', type: 'unknown' };
-    }
+    state.subagentStatus[id] ??= { startedAt: Date.now(), status: 'running', type: 'unknown' };
     persistState(pi, state);
   });
   if (cleanups) {
@@ -367,6 +374,7 @@ export function installSubagentTool(
   state: MaestriaState,
   cleanups?: (() => void)[],
 ): void {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: validated via prior type check, safe narrow
   pi.registerTool({
     name: 'maestria_subagent',
     label: 'Maestria Subagent',

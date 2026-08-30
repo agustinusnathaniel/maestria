@@ -19,6 +19,7 @@ function loadModePrompt(name: string): string {
  * @see ADR-OC-003 (section "Mode Prompts")
  */
 export const MODE_PROMPTS: Record<ModeKeyword, string> = new Proxy(
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
   {} as Record<ModeKeyword, string>,
   {
     get(target, key, receiver) {

@@ -34,7 +34,7 @@ export async function restoreOriginalState(
     await pi.setActiveTools(originalTools);
   }
 
-  if (originalModel) {
+  if (originalModel !== undefined && originalModel !== null && originalModel !== '') {
     try {
       const models = ctx.modelRegistry.getAll();
       const model = models.find((m: { id: string }) => m.id === originalModel);
@@ -55,7 +55,7 @@ export async function cycleToReviewModel(
   state: MaestriaState,
 ): Promise<string | null> {
   const { reviewModel } = state;
-  if (!reviewModel) {
+  if (reviewModel === undefined || reviewModel === null || reviewModel === '') {
     return null;
   }
   try {

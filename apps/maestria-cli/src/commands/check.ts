@@ -10,7 +10,7 @@ async function handleCheckAll(args: { json?: boolean; quiet?: boolean }): Promis
   const allStatus = await Effect.runPromise(detectAll());
   const checked = allStatus.filter((s) => s.available);
   if (checked.length === 0) {
-    if (!args.quiet) {
+    if (args.quiet !== true) {
       console.log('No supported coding agent platforms detected on this machine.');
     }
     process.exit(1);
@@ -18,7 +18,7 @@ async function handleCheckAll(args: { json?: boolean; quiet?: boolean }): Promis
   const freshnessList = checked.map((s) =>
     s.installed ? freshnessOf(s.installedVersion, s.latestVersion) : 'unknown',
   );
-  if (args.json) {
+  if (args.json === true) {
     console.log(
       JSON.stringify(
         checked.map((s, i) => ({ ...s, outdated: freshnessList[i] === 'outdated' })),
@@ -41,7 +41,7 @@ async function handleCheckSingle(
 ): Promise<never> {
   const platform = getPlatform(platformId);
   if (!platform) {
-    if (!args.quiet) {
+    if (args.quiet !== true) {
       console.error(`Unknown platform: ${platformId}`);
       console.error(`Available: ${VALID_PLATFORMS.join(', ')}`);
     }
@@ -55,7 +55,7 @@ async function handleCheckSingle(
       platform: platformId,
       pluginInstalled: false,
     };
-    if (args.json) {
+    if (args.json === true) {
       console.log(JSON.stringify(result));
     } else {
       console.log(`${platform.label}: CLI tool is not available on this machine`);
@@ -70,7 +70,7 @@ async function handleCheckSingle(
       platform: platformId,
       pluginInstalled: false,
     };
-    if (args.json) {
+    if (args.json === true) {
       console.log(JSON.stringify(result));
     } else {
       console.log(`@maestria/${platformId} is not installed for ${platform.label}`);
@@ -86,10 +86,15 @@ async function handleCheckSingle(
     platform: platformId,
     pluginInstalled: true,
   };
-  if (args.json) {
+  if (args.json === true) {
     console.log(JSON.stringify(result));
   } else {
-    const version = status.installedVersion ? ` (v${status.installedVersion})` : '';
+    const version =
+      status.installedVersion !== undefined &&
+      status.installedVersion !== null &&
+      status.installedVersion !== ''
+        ? ` (v${status.installedVersion})`
+        : '';
     console.log(`@maestria/${platformId} is installed for ${platform.label}${version}`);
     if (freshness === 'outdated') {
       console.log(
@@ -132,7 +137,7 @@ export const checkCommand = defineCommand({
   },
   run: async ({ args }) => {
     const platformId = args.platform;
-    if (args.all && platformId) {
+    if (args.all && platformId !== undefined && platformId !== null && platformId !== '') {
       if (!args.quiet) {
         console.error('Cannot use --all with a specific platform. Choose one.');
       }
@@ -140,7 +145,7 @@ export const checkCommand = defineCommand({
     }
     if (args.all) {
       await handleCheckAll(args);
-    } else if (platformId) {
+    } else if (platformId !== undefined && platformId !== null && platformId !== '') {
       await handleCheckSingle(platformId, args);
     } else {
       if (!args.quiet) {

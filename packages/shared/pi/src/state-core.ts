@@ -156,7 +156,7 @@ export function renderMaestriaSummary(state: MaestriaState): string {
     parts.push(`**Mode:** ${state.mode.toUpperCase()}`);
   }
 
-  if (state.reviewModel) {
+  if (state.reviewModel !== null && state.reviewModel !== undefined && state.reviewModel !== '') {
     parts.push(`**Review Model:** ${state.reviewModel}`);
   }
 

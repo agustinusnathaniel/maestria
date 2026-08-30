@@ -24,6 +24,7 @@ export function installCompactionHandlers(
   state: MaestriaState,
 ): void {
   pi.on('session_before_compact', (event: unknown) => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
     const prep = (event as Record<string, unknown>).preparation as
       | Record<string, unknown>
       | undefined;
@@ -38,10 +39,11 @@ export function installCompactionHandlers(
   });
 
   pi.on('session_before_tree', (event: unknown) => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
     const prep = (event as Record<string, unknown>).preparation as
       | Record<string, unknown>
       | undefined;
-    if (prep?.userWantsSummary) {
+    if (prep?.userWantsSummary === true) {
       return {
         summary: {
           summary: renderMaestriaSummary(state),

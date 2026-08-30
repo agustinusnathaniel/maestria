@@ -5,7 +5,7 @@ import { join } from 'node:path';
 /** Resolve the OS cache directory, respecting XDG_CACHE_HOME on Linux/macOS. */
 export function getCacheDir(): string {
   const xdg = process.env.XDG_CACHE_HOME?.trim();
-  if (xdg) {
+  if (xdg !== undefined && xdg !== null && xdg !== '') {
     return xdg;
   }
   return join(homedir(), '.cache');
@@ -43,6 +43,7 @@ export function run(
 ): Effect.Effect<string, CommandError> {
   return Effect.tryPromise({
     catch: (error) => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
       const err = error as Error & { stderr?: string; code?: number; signal?: string };
       const stderr = err.stderr?.trim() ?? '';
       const message = stderr || err.message;

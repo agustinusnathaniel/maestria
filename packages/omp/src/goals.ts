@@ -70,6 +70,7 @@ export function restoreMaestriaStateForSession(state: MaestriaState, ctx: Extens
   const entries = currentSessionEntries(ctx);
 
   if (!entries) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: double assertion via unknown, safe narrow from unknown
     const mutableState = state as unknown as Record<string, unknown>;
     for (const key of Object.keys(mutableState)) {
       delete mutableState[key];
@@ -94,6 +95,7 @@ export function restoreMaestriaStateForSession(state: MaestriaState, ctx: Extens
   // mode entry or a later goal_updated event may establish this mirror.
   next.nativeGoal = nativeGoalFromSessionEntries(entries);
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: double assertion via unknown, safe narrow from unknown
   const mutableState = state as unknown as Record<string, unknown>;
   for (const key of Object.keys(mutableState)) {
     delete mutableState[key];

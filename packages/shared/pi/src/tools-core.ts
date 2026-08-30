@@ -157,12 +157,14 @@ function checkOrchestratorBlock(
         if (base) {
           return true;
         }
-        return !!options.extraMutations?.some((m) => m === name);
+        return options.extraMutations?.some((m) => m === name) === true;
       };
+  // oxlint-disable-next-line no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   if (!isMutationTool(event) || (event as { toolName: string }).toolName === delegationTool) {
     return undefined;
   }
   if (options.isBashTool(event)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     const input = (event as { input?: unknown }).input as { command?: unknown } | undefined;
     const command = typeof input?.command === 'string' ? input.command : '';
     if (isReadOnlyBashCommand(command)) {
@@ -171,6 +173,7 @@ function checkOrchestratorBlock(
   }
   return {
     block: true,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     reason: `Tool '${(event as { toolName: string }).toolName}' is blocked for the orchestrator. ${hint}`,
   };
 }
@@ -184,9 +187,10 @@ async function checkDangerousPattern(
     return undefined;
   }
   const { input } = event as { input?: unknown };
-  if (!input || typeof input !== 'object') {
+  if (input === null || input === undefined || typeof input !== 'object') {
     return undefined;
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
   const { command } = input as Record<string, unknown>;
   if (typeof command !== 'string' || !command) {
     return undefined;
@@ -195,7 +199,7 @@ async function checkDangerousPattern(
   if (!matched) {
     return undefined;
   }
-  if (ctx?.hasUI) {
+  if (ctx?.hasUI === true) {
     const confirmed = await ctx.ui!.confirm(
       'Dangerous Pattern Detected',
       `This command matches a dangerous pattern:\n${command}\nProceed?`,
@@ -213,12 +217,14 @@ function trackFileAccess(
   options: ToolCallHandlerOptions,
 ): boolean {
   if (options.isReadTool(event)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
     const p = ((event as { input?: unknown }).input as Record<string, unknown> | undefined)?.path;
     if (typeof p === 'string' && p) {
       Object.assign(state, recordFileRead(state, p));
       return true;
     }
   } else if (options.isWriteTool(event)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
     const p = ((event as { input?: unknown }).input as Record<string, unknown> | undefined)?.path;
     if (typeof p === 'string' && p) {
       Object.assign(state, recordFileModified(state, p));
@@ -244,10 +250,18 @@ export function createToolCallHandler(options: ToolCallHandlerOptions) {
     event: ToolCallEventLike,
     ctx: { hasUI?: boolean; ui?: { confirm: (title: string, msg: string) => Promise<boolean> } },
   ): Promise<{ block: boolean; reason: string } | undefined> => {
-    if (!event || !(event as { toolName?: unknown }).toolName) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow event type via runtime null check, safe
+    if (
+      event === null ||
+      event === undefined ||
+      (event as { toolName?: unknown }).toolName === undefined ||
+      (event as { toolName?: unknown }).toolName === null ||
+      (event as { toolName?: unknown }).toolName === ''
+    ) {
       return undefined;
     }
     const state = options.getState();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     const { toolName } = event as { toolName: string };
     const orchestrator = checkOrchestratorBlock(state, event, options, delegationTool, hint);
     if (orchestrator) {

@@ -14,6 +14,7 @@ export async function restoreOriginalState(
   ctx: ExtensionContext,
   state: MaestriaState,
 ): Promise<void> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   await restoreCore(pi as never, ctx, state);
 }
 
@@ -22,5 +23,6 @@ export async function cycleToReviewModel(
   ctx: ExtensionCommandContext,
   state: MaestriaState,
 ): Promise<string | null> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
   return await cycleCore(pi as never, ctx, state);
 }

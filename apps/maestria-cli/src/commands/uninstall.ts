@@ -111,7 +111,7 @@ export const uninstallCommand = defineCommand({
     const isQuiet = args.quiet || args.compact;
     const isCompact = args.compact;
     const results: PlatformResult[] = [];
-    if (args.platform) {
+    if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
       const platform = getPlatform(args.platform);
       if (!platform) {
         console.error(`Unknown platform: ${args.platform}`);

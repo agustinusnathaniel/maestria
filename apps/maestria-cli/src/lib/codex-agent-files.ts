@@ -25,6 +25,7 @@ export function parseCodexTopLevelString(content: string, key: string): string |
     }
     if (match[1] !== undefined) {
       try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from broader type via prior validation, safe string/boolean assertion
         return JSON.parse(`"${match[1]}"`) as string;
       } catch {
         return undefined;

@@ -44,6 +44,8 @@ function hasStagedChangesForFile(repoCwd: string, filePath: string): boolean {
       typeof error === 'object' &&
       error !== null &&
       'status' in error &&
+      // SAFETY: error is object with status, narrowing from unknown caught error to expected shape
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: checked typeof object and 'status' in error before assertion
       (error as { status?: number }).status === 1
     ) {
       return true;
@@ -94,7 +96,12 @@ function checkProvenance(
     if (hasPorcelainChanges(repoCwd, sourcePath)) {
       return true;
     }
-    if (configPath && hasPorcelainChanges(repoCwd, configPath)) {
+    if (
+      configPath !== undefined &&
+      configPath !== null &&
+      configPath !== '' &&
+      hasPorcelainChanges(repoCwd, configPath)
+    ) {
       return true;
     }
     return false;
@@ -171,10 +178,10 @@ async function handleExistingComparison(
   if (existingContent !== content) {
     return null;
   }
-  if (check && !checkProvenance(sourcePath, fileCfg.output, content, configPath)) {
+  if (check === true && !checkProvenance(sourcePath, fileCfg.output, content, configPath)) {
     const relOutput = relative(process.cwd(), fileCfg.output);
     const relSource = relative(process.cwd(), sourcePath);
-    if (verbose) {
+    if (verbose === true) {
       logger(
         `[check] Provenance violation: ${relOutput} was modified without changing ${relSource}`,
       );
@@ -186,7 +193,7 @@ async function handleExistingComparison(
       status: 'error',
     };
   }
-  if (verbose) {
+  if (verbose === true) {
     logger(`[${report}] Unchanged: ${relative(process.cwd(), fileCfg.output)}`);
   }
   return { output: fileCfg.output, source: sourcePath, status: 'unchanged' };
@@ -202,12 +209,12 @@ export async function processFile(
   try {
     const raw = await readFile(sourcePath, 'utf-8');
     const content = buildTransformedContent(raw, fileCfg);
-    if (dryRun) {
-      if (verbose) {
+    if (dryRun === true) {
+      if (verbose === true) {
         logger(`[dry-run] Would write: ${relative(process.cwd(), fileCfg.output)}`);
       }
       return {
-        content: diff ? content : undefined,
+        content: diff === true ? content : undefined,
         output: fileCfg.output,
         source: sourcePath,
         status: 'dry-run',
@@ -223,18 +230,18 @@ export async function processFile(
       content,
       existingContent,
     );
-    if (unchanged) {
+    if (unchanged !== null && unchanged !== undefined) {
       return unchanged;
     }
-    if (check) {
-      if (diff) {
+    if (check === true) {
+      if (diff === true) {
         logger(unifiedDiff(fileCfg.output, fileCfg.output, existingContent ?? '', content));
       }
-      if (verbose) {
+      if (verbose === true) {
         logger(`[check] Mismatch: ${relative(process.cwd(), fileCfg.output)}`);
       }
       return {
-        content: diff ? content : undefined,
+        content: diff === true ? content : undefined,
         error: 'Output differs from expected',
         output: fileCfg.output,
         source: sourcePath,
@@ -242,14 +249,14 @@ export async function processFile(
       };
     }
     await atomicWrite(fileCfg.output, content);
-    if (diff) {
+    if (diff === true) {
       logger(unifiedDiff(fileCfg.output, fileCfg.output, existingContent ?? '', content));
     }
-    if (verbose) {
+    if (verbose === true) {
       logger(`[${report}] Written: ${relative(process.cwd(), fileCfg.output)}`);
     }
     return {
-      content: diff ? content : undefined,
+      content: diff === true ? content : undefined,
       output: fileCfg.output,
       source: sourcePath,
       status: 'written',

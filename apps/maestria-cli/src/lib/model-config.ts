@@ -105,7 +105,8 @@ export function parseCursorModels(out: string): string[] {
       : typeof parsed === 'object' &&
           parsed !== null &&
           Array.isArray((parsed as { models?: unknown }).models)
-        ? (parsed as { models: unknown[] }).models
+        ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
+          (parsed as { models: unknown[] }).models
         : undefined;
     if (entries) {
       const models = entries.flatMap((entry) => {
@@ -114,8 +115,11 @@ export function parseCursorModels(out: string): string[] {
         }
         if (typeof entry === 'object' && entry !== null) {
           const value =
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
             (entry as { id?: unknown; slug?: unknown; name?: unknown }).id ??
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
             (entry as { slug?: unknown }).slug ??
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
             (entry as { name?: unknown }).name;
           return typeof value === 'string' ? [value] : [];
         }
@@ -134,7 +138,12 @@ export function parseCursorModels(out: string): string[] {
     const trimmed = line.trim();
     const match =
       /^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s+-\s+.*)?(?:\s+\((?:current|default)\))?$/u.exec(trimmed);
-    if (match?.[1] && !/^(available|models|filter)$/iu.test(match[1])) {
+    if (
+      match?.[1] !== undefined &&
+      match?.[1] !== null &&
+      match?.[1] !== '' &&
+      !/^(available|models|filter)$/iu.test(match[1])
+    ) {
       models.push(match[1]);
     }
   }
@@ -223,10 +232,12 @@ function hasConfigModel(text: string, agent: string): boolean {
 /** Read `agent.<name>.model` values from an opencode config file */
 export function parseConfigModels(text: string): AgentModels {
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
     const obj = parse(text) as { agent?: Record<string, { model?: string }> };
     const result: AgentModels = {};
     for (const [name, cfg] of Object.entries(obj.agent ?? {})) {
       if (typeof cfg?.model === 'string' && cfg.model) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         result[name as AgentName] = cfg.model;
       }
     }
@@ -394,7 +405,7 @@ const codex: ModelConfigHandler = {
         const result: AgentModels = {};
         for (let i = 0; i < MAESTRIA_AGENTS.length; i += 1) {
           const model = parseCodexAgentModel(contents[i] ?? '');
-          if (model) {
+          if (model !== undefined && model !== null && model !== '') {
             result[MAESTRIA_AGENTS[i]] = model;
           }
         }
@@ -411,6 +422,7 @@ const codex: ModelConfigHandler = {
           if (model) {
             yield* writeFile(
               path,
+              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
               createCodexAgentConfig(agent as AgentName, model, codexManagedAgentName(agent)),
             );
           }
@@ -442,7 +454,7 @@ function cursorConfigCli(): Effect.Effect<string | undefined> {
 function cursorConfigCliOrFail(): Effect.Effect<string, CommandError> {
   return cursorConfigCli().pipe(
     Effect.flatMap((cli) =>
-      cli
+      cli !== undefined && cli !== null && cli !== ''
         ? Effect.succeed(cli)
         : Effect.fail(
             new CommandError({
@@ -548,7 +560,8 @@ function createAgentFileHandler(cfg: AgentFilePlatform): ModelConfigHandler {
           const result: AgentModels = {};
           for (let i = 0; i < cfg.agents.length; i += 1) {
             const model = parseFrontmatterModel(contents[i]);
-            if (model) {
+            if (model !== undefined && model !== null && model !== '') {
+              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
               result[cfg.agents[i] as AgentName] = model;
             }
           }

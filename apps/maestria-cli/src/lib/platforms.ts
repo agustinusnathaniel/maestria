@@ -150,8 +150,14 @@ function jsonRecords(output: string, key?: string): JsonRecord[] {
   try {
     const parsed: unknown = JSON.parse(output);
     const value =
-      key && typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-        ? (parsed as JsonRecord)[key]
+      key !== null &&
+      key !== undefined &&
+      key !== '' &&
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      !Array.isArray(parsed)
+        ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: parsed is object JsonRecord, safe narrow from unknown via key check
+          (parsed as JsonRecord)[key]
         : parsed;
 
     return Array.isArray(value)
@@ -358,14 +364,17 @@ function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifes
       try {
         raw = await readFile(codexManagedAgentManifestPath(), 'utf-8');
       } catch (error) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: error from fs readFile is ErrnoException shape, code check
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
           return { files: [], version: 1 } satisfies CodexManagedAgentManifest;
         }
         throw error;
       }
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: JSON parsed content validated by validateCodexManifestContent immediately after
       const parsed = JSON.parse(raw) as Partial<CodexManagedAgentManifest>;
       validateCodexManifestContent(parsed);
       return {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: validateCodexManifestContent ensures files is string[]
         files: parsed.files as string[],
         version: 1,
         ...(parsed.instructionsFile === undefined
@@ -443,6 +452,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
               next = mergeCodexAgentSettings(bundled, existing);
               break;
             } catch (error) {
+              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: fs error code check for ENOENT, ErrnoException shape expected
               if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
                 throw error;
               }
@@ -477,6 +487,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           try {
             existing.set(file, await readFile(codexGlobalInstructionsPath(file), 'utf-8'));
           } catch (error) {
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: fs error code check for ENOENT, ErrnoException shape expected
             if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
               existing.set(file, undefined);
             } else {
@@ -493,11 +504,22 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
         const override = existing.get('AGENTS.override.md');
         const previousFile = manifest.instructionsFile;
         const target =
-          override?.trim() && !managedFiles.includes('AGENTS.override.md')
+          override?.trim() !== null &&
+          override?.trim() !== undefined &&
+          override?.trim() !== '' &&
+          !managedFiles.includes('AGENTS.override.md')
             ? 'AGENTS.override.md'
-            : previousFile && managedFiles.includes(previousFile)
+            : previousFile !== null &&
+                previousFile !== undefined &&
+                previousFile !== '' &&
+                managedFiles.includes(previousFile)
               ? previousFile
-              : (managedFiles[0] ?? (override?.trim() ? 'AGENTS.override.md' : 'AGENTS.md'));
+              : (managedFiles[0] ??
+                (override?.trim() !== null &&
+                override?.trim() !== undefined &&
+                override?.trim() !== ''
+                  ? 'AGENTS.override.md'
+                  : 'AGENTS.md'));
 
         const cleaned = new Map<CodexGlobalInstructionFilename, string | undefined>();
         for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
@@ -531,7 +553,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
           }
           if (
             next.length === 0 &&
-            manifest.instructionsCreated &&
+            manifest.instructionsCreated === true &&
             manifest.instructionsFile === file
           ) {
             await rm(codexGlobalInstructionsPath(file), { force: true });
@@ -591,6 +613,7 @@ export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
           try {
             content = await readFile(path, 'utf-8');
           } catch (error) {
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: fs error code check for ENOENT, ErrnoException shape expected
             if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
               continue;
             }
@@ -602,7 +625,7 @@ export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
           }
           if (
             next.length === 0 &&
-            manifest.instructionsCreated &&
+            manifest.instructionsCreated === true &&
             manifest.instructionsFile === file
           ) {
             await rm(path, { force: true });
@@ -713,6 +736,7 @@ function clearOpencodeCache(): Effect.Effect<void, CommandError> {
       try {
         entries = await readdir(base);
       } catch (error) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: fs error code check for ENOENT, ErrnoException shape expected
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
           return;
         }
@@ -736,7 +760,7 @@ const opencode: PlatformHandler = {
       return match?.[1] ?? null;
     }),
     Effect.flatMap((specifier) => {
-      if (!specifier) {
+      if (specifier === null || specifier === undefined || specifier === '') {
         return Effect.succeed('unknown');
       }
       return readTextFile(
@@ -955,7 +979,10 @@ const pi: PlatformHandler = {
   uninstall: run('pi', ['uninstall', 'npm:@maestria/pi']).pipe(Effect.asVoid),
   update: (version?: string) =>
     Effect.gen(function* update() {
-      const tagged = version ? `npm:@maestria/pi@${version}` : 'npm:@maestria/pi@latest';
+      const tagged =
+        version !== null && version !== undefined && version !== ''
+          ? `npm:@maestria/pi@${version}`
+          : 'npm:@maestria/pi@latest';
       // Ensure pi-subagents is installed (may not be for users who installed before v0.4.1)
       yield* run('pi', ['install', 'npm:@gotgenes/pi-subagents'], 60_000).pipe(
         Effect.catchCause(() => Effect.void),
@@ -1071,7 +1098,12 @@ function hasPrimeMaestriaPackage(output: string): boolean {
 function primeMaestriaPinnedSource(output: string): string | undefined {
   const source = primeUserScopeLines(output).find((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
   const trimmed = source?.trim();
-  return trimmed && PRIME_MAESTRIA_PINNED_RE.test(trimmed) ? trimmed : undefined;
+  return trimmed !== null &&
+    trimmed !== undefined &&
+    trimmed !== '' &&
+    PRIME_MAESTRIA_PINNED_RE.test(trimmed)
+    ? trimmed
+    : undefined;
 }
 
 /**
@@ -1234,7 +1266,7 @@ function primeUpdatePreflight(
       snapshot === undefined
         ? yield* primePackageList.pipe(Effect.map(primeMaestriaPinnedSource))
         : snapshot.pinnedSource;
-    if (pinnedSource) {
+    if (pinnedSource !== null && pinnedSource !== undefined && pinnedSource !== '') {
       yield* Effect.fail(
         new CommandError({
           command: `prime-agent package update ${PRIME_MAESTRIA_SOURCE}`,
@@ -1386,7 +1418,7 @@ const hermes: PlatformHandler = {
 
   update: (_version?: string) =>
     Effect.gen(function* update() {
-      if (_version) {
+      if (_version !== null && _version !== undefined && _version !== '') {
         console.log(
           `  ${picocolors.yellow('⚠')} Version pinning is not supported for git-based Hermes plugins. ` +
             `Updating to latest from git.`,
@@ -1477,10 +1509,11 @@ function readCursorAgentModels(): Effect.Effect<Record<string, string>, CommandE
         try {
           const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf-8');
           const model = parseCursorAgentModel(content);
-          if (model) {
+          if (model !== null && model !== undefined && model !== '') {
             result[agent] = model;
           }
         } catch (error) {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: fs error code check for ENOENT, ErrnoException shape expected
           if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
             throw error;
           }
@@ -1516,7 +1549,8 @@ function restoreCursorAgentModels(
 
 const cursor: PlatformHandler = {
   detect: Effect.gen(function* detect() {
-    if (yield* cursorCliName()) {
+    const cliName = yield* cursorCliName();
+    if (cliName !== null && cliName !== undefined && cliName !== '') {
       return true;
     }
     // An unrelated `agent` binary (for example another vendor's CLI) must not
@@ -1607,7 +1641,10 @@ const omp: PlatformHandler = {
   uninstall: run('omp', ['plugin', 'uninstall', '@maestria/omp']).pipe(Effect.asVoid),
   update: (version?: string) =>
     Effect.gen(function* update() {
-      const tagged = version ? `@maestria/omp@${version}` : '@maestria/omp@latest';
+      const tagged =
+        version !== null && version !== undefined && version !== ''
+          ? `@maestria/omp@${version}`
+          : '@maestria/omp@latest';
       yield* run('omp', ['plugin', 'install', tagged], 120_000);
     }),
 };
