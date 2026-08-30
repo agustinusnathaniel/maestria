@@ -1,5 +1,7 @@
 <!-- Auto-generated from @maestria/core. See the canonical file at packages/core/agent-directives/rules.md. -->
 
+
+
 # Global Agent Rules - @maestria/kimi-code
 
 Cross-platform behavior contract for outcomes, evidence, safety, delegation, review, and bounded repair. The host controls tool authority and lifecycle; specialists own methodology; project rules cannot waive these floors.

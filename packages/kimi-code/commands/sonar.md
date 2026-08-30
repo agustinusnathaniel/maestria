@@ -3,6 +3,8 @@ name: sonar
 description: 'Research-only mode: recon and design, no implementation'
 ---
 
+
+
 **Workflow command:** keep this route read-only and stop before implementation.
 
 [MODE: sonar]

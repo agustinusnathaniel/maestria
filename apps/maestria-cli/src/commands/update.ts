@@ -226,7 +226,7 @@ function captureSnapshot(
   platform: PlatformHandler,
 ): Effect.Effect<PlatformUpdateSnapshot | { error: string } | undefined> {
   if (!platform.captureUpdateSnapshot) {
-    return Effect.succeed();
+    return Effect.succeed(undefined);
   }
   return platform.captureUpdateSnapshot.pipe(
     Effect.match({

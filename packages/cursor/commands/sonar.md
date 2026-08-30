@@ -3,6 +3,8 @@ name: sonar
 description: Research-only Maestria mode (recon -> design, no implementation)
 ---
 
+
+
 [MODE: sonar]
 
 ## MODE: sonar (Research Only)

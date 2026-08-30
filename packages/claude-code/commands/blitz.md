@@ -3,6 +3,8 @@ description: Fast low-risk route - skip optional recon and design ceremony
 name: blitz
 ---
 
+
+
 [MODE: blitz]
 
 ## MODE: blitz (Fast Implementation)

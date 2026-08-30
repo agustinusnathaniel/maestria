@@ -3,6 +3,8 @@ name: blitz
 description: 'Fast implementation mode: skip optional recon/design unless unknown; required review remains'
 ---
 
+
+
 **Workflow command:** use the fastest safe route allowed by the active Kimi profile, while retaining required review.
 
 [MODE: blitz]
