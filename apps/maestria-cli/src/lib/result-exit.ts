@@ -8,6 +8,5 @@ import type { PlatformResult } from '@/types.js';
  * error) so install/update/uninstall expose partial failures to CI and
  * AI-agent consumers instead of always exiting 0.
  */
-export function exitCodeForResults(results: PlatformResult[]): number {
-  return results.every((r) => r.ok) ? 0 : 1;
-}
+export const exitCodeForResults = (results: PlatformResult[]): number =>
+  results.every((r) => r.ok) ? 0 : 1;

@@ -14,7 +14,8 @@
 // (canonical content lives in packages/core/agent-directives/, ADR-CORE-005).
 
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import path from 'node:path';
+
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
@@ -30,15 +31,15 @@ export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
 
 /** Marker line prepended to injected mode content (shared with other Maestria platforms). */
 export const MODE_MARKERS: Record<ModeKeyword, string> = {
+  blitz: '[MODE: blitz]',
   fein: '[MODE: fein]',
   sonar: '[MODE: sonar]',
-  blitz: '[MODE: blitz]',
 };
 
 const MODE_COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
+  blitz: 'Set workflow mode to blitz (fast path)',
   fein: 'Set workflow mode to fein (full pipeline)',
   sonar: 'Set workflow mode to sonar (research only)',
-  blitz: 'Set workflow mode to blitz (fast path)',
 };
 
 // ---------------------------------------------------------------------------
@@ -54,14 +55,15 @@ const _promptCache: Partial<Record<ModeKeyword, string>> = {};
  * (and warns) when the skill file is missing or has no mode section, so a
  * packaging mistake degrades to "no injection" rather than an extension crash.
  */
-export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
-  if (keyword in _promptCache) {
-    return _promptCache[keyword]!;
+export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string => {
+  const cachedPrompt = _promptCache[keyword];
+  if (cachedPrompt !== undefined) {
+    return cachedPrompt;
   }
 
   let prompt = '';
   try {
-    const content = readFileSync(join(skillsDir, keyword, 'SKILL.md'), 'utf8');
+    const content = readFileSync(path.join(skillsDir, keyword, 'SKILL.md'), 'utf-8');
     const modeIdx = content.indexOf('## MODE:');
     if (modeIdx === -1) {
       // A generated skill without the mode section must not leak the whole
@@ -72,7 +74,7 @@ export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
       );
     } else {
       const body = content.slice(modeIdx);
-      prompt = `${MODE_MARKERS[keyword]}\n\n${body.replace(/\s+$/, '')}\n`;
+      prompt = `${MODE_MARKERS[keyword]}\n\n${body.replace(/\s+$/u, '')}\n`;
     }
   } catch (error) {
     console.warn(
@@ -83,7 +85,7 @@ export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
   }
   _promptCache[keyword] = prompt;
   return prompt;
-}
+};
 
 // ---------------------------------------------------------------------------
 // before_agent_start mode prompt injection
@@ -94,18 +96,22 @@ export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
  * to the chained system prompt. Returns void when no mode is active (no
  * modification), so Prime's normal prompt assembly stands as-is.
  */
-export function createModePromptHandler(
-  state: MaestriaModeState,
-  skillsDir: string,
-): (event: BeforeAgentStartEvent, _ctx: ExtensionContext) => BeforeAgentStartEventResult | void {
-  return (event: BeforeAgentStartEvent): BeforeAgentStartEventResult | void => {
+export const createModePromptHandler =
+  (
+    state: MaestriaModeState,
+    skillsDir: string,
+  ): ((
+    event: BeforeAgentStartEvent,
+    _ctx: ExtensionContext,
+  ) => BeforeAgentStartEventResult | undefined) =>
+  (event: BeforeAgentStartEvent): BeforeAgentStartEventResult | undefined => {
     if (!state.mode) {
-      return;
+      return undefined;
     }
 
     const modePrompt = getModePrompt(state.mode, skillsDir);
     if (!modePrompt) {
-      return;
+      return undefined;
     }
 
     return {
@@ -118,7 +124,6 @@ export function createModePromptHandler(
       ].join('\n'),
     };
   };
-}
 
 // ---------------------------------------------------------------------------
 // Commands
@@ -133,7 +138,7 @@ export const STATUS_COMMAND = 'maestria-status';
  * as a session custom entry; the prompt is injected on the next agent turn by
  * the `before_agent_start` handler.
  */
-export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): void {
+export const installCommands = (pi: ExtensionAPI, state: MaestriaModeState): void => {
   for (const keyword of MODE_KEYWORDS) {
     pi.registerCommand(keyword, {
       description: MODE_COMMAND_DESCRIPTIONS[keyword],
@@ -148,6 +153,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
         } else {
           ctx.ui.notify(`Mode set to ${keyword}. Describe what you'd like to work on.`);
         }
+        await Promise.resolve();
       },
     });
   }
@@ -158,6 +164,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
       state.mode = null;
       persistModeState(pi, state);
       ctx.ui.notify('Workflow mode cleared. Neutral routing is active.');
+      await Promise.resolve();
     },
   });
 
@@ -176,6 +183,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
         'Recursive-subagent (rlm) dispatch and JSON/RPC headless mode are NOT provided by this package.',
       ].join('\n');
       ctx.ui.setEditorText(summary);
+      await Promise.resolve();
     },
   });
-}
+};

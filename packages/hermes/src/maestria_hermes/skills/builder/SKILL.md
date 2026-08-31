@@ -1,6 +1,6 @@
 ---
-name: maestria-builder
 description: Focused production -- implements, creates, and produces output
+name: maestria-builder
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

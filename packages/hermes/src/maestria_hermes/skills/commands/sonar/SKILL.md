@@ -1,6 +1,6 @@
 ---
-name: maestria-command-sonar
 description: "Research-only mode: reconnaissance and design only, no implementation"
+name: maestria-command-sonar
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

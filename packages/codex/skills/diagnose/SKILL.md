@@ -1,6 +1,6 @@
 ---
-name: diagnose
 description: Systematic regression-tracing workflow from symptom and error evidence to root cause, fix, and prevention.
+name: diagnose
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

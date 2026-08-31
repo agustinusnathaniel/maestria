@@ -1,10 +1,12 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import InstallCommand from '@/components/plugin/InstallCommand.astro';
-import SiteFooter from '@/components/plugin/SiteFooter.astro';
-import { agents, type Agent } from '@/data/agents.js';
+
+import InstallCommand from '@/components/plugin/install-command.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { agents } from '@/data/agents.js';
+import type { Agent } from '@/data/agents.js';
+import { markAttrs, marks } from '@/data/marks.js';
 import { platforms } from '@/data/platforms.js';
-import { marks, markAttrs } from '@/data/marks.js';
 
 interface DocLink {
   href: string;
@@ -23,9 +25,9 @@ const docsMap: { group: string; items: DocLink[] }[] = [
     group: 'CLI',
     items: [
       {
+        desc: 'Run maestria via npx anywhere Node 22+ is available - no install step.',
         href: '/cli/getting-started/',
         title: 'Getting Started',
-        desc: 'Run maestria via npx anywhere Node 22+ is available - no install step.',
       },
     ],
   },
@@ -33,24 +35,24 @@ const docsMap: { group: string; items: DocLink[] }[] = [
     group: 'Core',
     items: [
       {
+        desc: 'The dispatcher, seven specialists, and the staged pipeline.',
         href: '/core/how-it-works/',
         title: 'How It Works',
-        desc: 'The dispatcher, seven specialists, and the staged pipeline.',
       },
       {
+        desc: 'Thinker, worker, and verifier roles and the maker/checker split.',
         href: '/core/pipeline/',
         title: 'Pipeline & Roles',
-        desc: 'Thinker, worker, and verifier roles and the maker/checker split.',
       },
       {
+        desc: 'All eight agents: scope, artifact, and constraint for each.',
         href: '/core/agents/',
         title: 'Specialist Reference',
-        desc: 'All eight agents: scope, artifact, and constraint for each.',
       },
       {
+        desc: 'Decide between direct execution, a specialist, or the full pipeline.',
         href: '/core/when-to-use/',
         title: 'When to Use',
-        desc: 'Decide between direct execution, a specialist, or the full pipeline.',
       },
     ],
   },
@@ -58,20 +60,20 @@ const docsMap: { group: string; items: DocLink[] }[] = [
     group: 'Community',
     items: [
       {
-        href: 'https://github.com/agustinusnathaniel/maestria',
-        title: 'GitHub repository',
         desc: 'Source, issues, and releases for every package.',
         external: true,
+        href: 'https://github.com/agustinusnathaniel/maestria',
+        title: 'GitHub repository',
       },
       {
+        desc: 'Add an adapter or improve the core methodology.',
         href: '/core/contributing/',
         title: 'Contributing',
-        desc: 'Add an adapter or improve the core methodology.',
       },
       {
+        desc: 'What changed across the ecosystem.',
         href: '/core/changelog/',
         title: 'Changelog',
-        desc: 'What changed across the ecosystem.',
       },
     ],
   },
@@ -777,40 +779,44 @@ const INSTALL_CMD = 'npx maestria install opencode';
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  const setupAgentTabs = (): void => {
     const tabs = document.querySelectorAll('.agent-tab');
     const panels = document.querySelectorAll('.agent-panel');
 
-    function activateTab(tab: Element) {
-      tabs.forEach(t => {
+    const activateTab = (tab: Element): void => {
+      for (const t of tabs) {
         t.setAttribute('aria-selected', 'false');
         t.setAttribute('tabindex', '-1');
-      });
-      panels.forEach(p => p.setAttribute('hidden', ''));
+      }
+      for (const p of panels) {
+        p.setAttribute('hidden', '');
+      }
 
       tab.setAttribute('aria-selected', 'true');
       tab.setAttribute('tabindex', '0');
       const panelId = tab.getAttribute('aria-controls');
-      const panel = document.getElementById(panelId!);
-      if (panel) {panel.removeAttribute('hidden');}
+      if (panelId !== null) {
+        const panel = document.querySelector<HTMLElement>(`#${CSS.escape(panelId)}`);
+        panel?.removeAttribute('hidden');
+      }
 
       // Track agent tab click
       if (typeof window !== 'undefined' && window.umami) {
         const agentName = tab.querySelector('.agent-tab-name')?.textContent?.trim() || tab.textContent?.trim();
         window.umami.track('agent_tab_click', { agent: agentName });
       }
-    }
+    };
 
-    tabs.forEach(tab => {
+    for (const tab of tabs) {
       tab.addEventListener('click', () => activateTab(tab));
-    });
+    }
 
     document.addEventListener('keydown', (e) => {
       const target = e.target as HTMLElement;
       const tab = target.closest('.agent-tab');
       if (!tab) {return;}
 
-      const tabsArray = Array.from(tabs);
+      const tabsArray = [...tabs];
       const index = tabsArray.indexOf(tab);
 
       // Roving tabindex. The tablist is laid out vertically, so Up/Down are
@@ -829,6 +835,9 @@ const INSTALL_CMD = 'npx maestria install opencode';
       }
     });
 
+  };
+
+  const setupTranscript = (): void => {
     // Harness transcript: stagger lines in once when >=30% of the card is
     // visible. Gated behind prefers-reduced-motion; CSS keeps lines fully
     // visible by default so this is pure progressive enhancement.
@@ -841,17 +850,22 @@ const INSTALL_CMD = 'npx maestria install opencode';
     ) {
       const observer = new IntersectionObserver(
         (entries) => {
-          entries.forEach((entry) => {
+          for (const entry of entries) {
             if (entry.isIntersecting) {
               entry.target.classList.add('term-play');
               observer.unobserve(entry.target);
             }
-          });
+          }
         },
         { threshold: 0.3 },
       );
 
       observer.observe(term);
     }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setupAgentTabs();
+    setupTranscript();
   });
 </script>

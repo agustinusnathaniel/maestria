@@ -1,17 +1,19 @@
-import { beforeAll, describe, it, expect } from 'vite-plus/test';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { readFile, readdir } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { beforeAll, describe, expect, it } from 'vite-plus/test';
+
 import type {
-  BeforeAgentStartEventResult,
   ExtensionAPI,
-  ExtensionCommandContext,
+  ExtensionContext,
+  ExtensionEventRegistration,
+  ExtensionFactory,
+  RegisteredCommandOptions,
 } from '../src/pi-api.ts';
 import { MODE_STATE_CUSTOM_TYPE } from '../src/state.ts';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 const SRC_DIR = path.join(PACKAGE_ROOT, 'src');
 const DIST_EXTENSION = path.join(PACKAGE_ROOT, 'dist', 'extension.mjs');
@@ -26,55 +28,119 @@ interface PackageJson {
   pi?: { extensions?: string[]; skills?: string[] };
 }
 
-async function readJson<T>(relativePath: string): Promise<T> {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+const isStringRecord = (value: unknown): value is Record<string, string> =>
+  isRecord(value) && Object.values(value).every((item) => typeof item === 'string');
+
+const isPiManifest = (value: unknown): value is NonNullable<PackageJson['pi']> => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    (value.extensions === undefined || isStringArray(value.extensions)) &&
+    (value.skills === undefined || isStringArray(value.skills))
+  );
+};
+
+const isPackageJson = (value: unknown): value is PackageJson => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    (value.name === undefined || typeof value.name === 'string') &&
+    (value.files === undefined || isStringArray(value.files)) &&
+    (value.dependencies === undefined || isStringRecord(value.dependencies)) &&
+    (value.devDependencies === undefined || isStringRecord(value.devDependencies)) &&
+    (value.peerDependencies === undefined || isStringRecord(value.peerDependencies)) &&
+    (value.scripts === undefined || isStringRecord(value.scripts)) &&
+    (value.pi === undefined || isPiManifest(value.pi))
+  );
+};
+
+const readJson = async (relativePath: string): Promise<PackageJson> => {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
-  const raw = await readFile(absolute, 'utf8');
-  return JSON.parse(raw) as T;
-}
+  const raw = await readFile(absolute, 'utf-8');
+  const value: unknown = JSON.parse(raw);
+  if (!isPackageJson(value)) {
+    throw new Error(`${relativePath} does not contain a valid package manifest`);
+  }
+  return value;
+};
 
 /** Read all src file contents, recursively. */
-async function readSrcFiles(): Promise<string[]> {
-  const out: string[] = [];
-  async function walk(dir: string): Promise<void> {
-    for (const entry of await readdir(dir, { withFileTypes: true })) {
+const readSrcFilesRecursively = async (dir: string): Promise<string[]> => {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const nestedFiles = await Promise.all(
+    entries.map(async (entry) => {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        await walk(full);
-      } else if (entry.name.endsWith('.ts')) {
-        out.push(await readFile(full, 'utf8'));
+        return await readSrcFilesRecursively(full);
       }
-    }
+      return entry.name.endsWith('.ts') ? [await readFile(full, 'utf-8')] : [];
+    }),
+  );
+  return nestedFiles.flat();
+};
+
+const readSrcFiles = async (): Promise<string[]> => await readSrcFilesRecursively(SRC_DIR);
+
+const isUnknownArray = (value: unknown): value is unknown[] => Array.isArray(value);
+
+const isNpmPackFileList = (value: unknown): value is { path: string }[] =>
+  isUnknownArray(value) && value.every((file) => isRecord(file) && typeof file.path === 'string');
+
+const isExtensionFactory = (value: unknown): value is ExtensionFactory =>
+  typeof value === 'function';
+
+const loadExtensionFactory = async (): Promise<ExtensionFactory> => {
+  const moduleValue: unknown = await import(DIST_EXTENSION);
+  if (!isRecord(moduleValue) || !isExtensionFactory(moduleValue.default)) {
+    throw new Error('built extension does not export a default factory function');
   }
-  await walk(SRC_DIR);
-  return out;
-}
+  return moduleValue.default;
+};
+
+const extensionContext: ExtensionContext = {
+  cwd: '/',
+  hasUI: true,
+  sessionManager: {
+    getBranch: () => [],
+    getEntries: () => [],
+  },
+  ui: { notify: () => {}, setEditorText: () => {} },
+};
 
 describe('prime-agent package manifest (Prime/Pi discovery)', () => {
   it('declares the compiled extension under pi.extensions', async () => {
-    const pkg = await readJson<PackageJson>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.pi?.extensions).toContain('./dist/extension.mjs');
   });
 
   it('declares the skills projection under pi.skills', async () => {
-    const pkg = await readJson<PackageJson>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.pi?.skills).toContain('./skills');
   });
 
   it('ships dist/ and skills/ in the published files', async () => {
-    const pkg = await readJson<PackageJson>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.files).toContain('dist');
     expect(pkg.files).toContain('skills');
   });
 
   it('builds the declared extension file via the build script', async () => {
-    const pkg = await readJson<PackageJson>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.scripts?.build).toBe('vp pack');
   });
 });
 
 describe('prime-agent dependency boundary', () => {
   it('has no runtime, dev, or peer dependency on @maestria/pi', async () => {
-    const pkg = await readJson<PackageJson>('package.json');
+    const pkg = await readJson('package.json');
     for (const section of ['dependencies', 'devDependencies', 'peerDependencies'] as const) {
       expect(pkg[section]?.['@maestria/pi']).toBeUndefined();
     }
@@ -86,7 +152,7 @@ describe('prime-agent dependency boundary', () => {
     // the pi API into its runtime. The extension consumes the API exclusively
     // through the runtime-provided `pi` object with type-only local declarations,
     // so no runtime/peer dependency is declared.
-    const pkg = await readJson<PackageJson>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.dependencies).toBeUndefined();
     expect(pkg.peerDependencies?.['@earendil-works/pi-coding-agent']).toBeUndefined();
   });
@@ -94,8 +160,8 @@ describe('prime-agent dependency boundary', () => {
   it('imports no pi package at runtime from src (types are local and erased)', async () => {
     const sources = await readSrcFiles();
     for (const source of sources) {
-      expect(source).not.toMatch(/from\s+['"]@earendil-works\/pi-coding-agent['"]/);
-      expect(source).not.toMatch(/from\s+['"]@earendil-works\/pi-(ai|agent-core|tui)['"]/);
+      expect(source).not.toMatch(/from\s+['"]@earendil-works\/pi-coding-agent['"]/u);
+      expect(source).not.toMatch(/from\s+['"]@earendil-works\/pi-(?:ai|agent-core|tui)['"]/u);
     }
   });
 
@@ -104,14 +170,16 @@ describe('prime-agent dependency boundary', () => {
     for (const source of sources) {
       // Only import specifiers matter; comments legitimately cite the upstream
       // source path for the evidence pin.
-      expect(source).not.toMatch(/from\s+['"][^'"]*src\/core\//);
+      expect(source).not.toMatch(/from\s+['"][^'"]*src\/core\//u);
     }
   });
 
   it('performs no filesystem writes from src (state rides on host session entries)', async () => {
     const sources = await readSrcFiles();
     for (const source of sources) {
-      expect(source).not.toMatch(/writeFile|appendFile|mkdir|createWriteStream|openSync|writeSync/);
+      expect(source).not.toMatch(
+        /writeFile|appendFile|mkdir|createWriteStream|openSync|writeSync/u,
+      );
     }
   });
 });
@@ -128,63 +196,65 @@ describe('prime-agent built extension artifact', () => {
   });
 
   it('exports a default factory function (built artifact)', async () => {
-    const mod = (await import(DIST_EXTENSION)) as { default?: unknown };
-    expect(typeof mod.default).toBe('function');
+    const factory = await loadExtensionFactory();
+    expect(typeof factory).toBe('function');
   });
 
   it('registers the mode commands when invoked (built-artifact smoke)', async () => {
-    const mod = (await import(DIST_EXTENSION)) as { default: (pi: ExtensionAPI) => void };
+    const factory = await loadExtensionFactory();
     const commands: string[] = [];
     const pi: ExtensionAPI = {
+      appendEntry: () => {},
       on: () => {},
       registerCommand: (name) => {
         commands.push(name);
       },
-      appendEntry: () => {},
       sendUserMessage: () => {},
     };
-    mod.default(pi);
+    await factory(pi);
     expect(commands).toEqual(['fein', 'sonar', 'blitz', 'mode-clear', 'maestria-status']);
   });
 
   it('exercises command behavior and mode prompt injection (built-artifact smoke)', async () => {
     // The built artifact is the code Prime actually loads; exercise behavior
     // beyond registration against a fake `pi` (no live Prime binary needed).
-    const mod = (await import(DIST_EXTENSION)) as { default: (pi: ExtensionAPI) => void };
-    const handlers = new Map<string, (event: unknown, ctx: unknown) => unknown>();
-    const commands: Array<{
+    const factory = await loadExtensionFactory();
+    let beforeAgentStartHandler:
+      | Extract<ExtensionEventRegistration, ['before_agent_start', unknown]>[1]
+      | undefined;
+    const commands: {
       name: string;
-      handler: (args: string, ctx: ExtensionCommandContext) => Promise<void>;
-    }> = [];
-    const entries: Array<{ customType: string; data?: unknown }> = [];
-    const sentMessages: Array<{ content: string; options?: { deliverAs?: 'steer' | 'followUp' } }> =
-      [];
+      handler: RegisteredCommandOptions['handler'];
+    }[] = [];
+    const entries: { customType: string; data?: unknown }[] = [];
+    const sentMessages: { content: string; options?: { deliverAs?: 'steer' | 'followUp' } }[] = [];
     const pi: ExtensionAPI = {
-      on: ((event, handler) => {
-        handlers.set(event, handler as (event: unknown, ctx: unknown) => unknown);
-      }) as ExtensionAPI['on'],
-      registerCommand: (name, options) => {
-        commands.push({ name, handler: options.handler });
-      },
       appendEntry: (customType, data) => {
         entries.push({ customType, data });
+      },
+      on: (...[event, handler]: ExtensionEventRegistration) => {
+        if (event === 'before_agent_start') {
+          beforeAgentStartHandler = handler;
+        }
+      },
+      registerCommand: (name, options) => {
+        commands.push({ handler: options.handler, name });
       },
       sendUserMessage: (content, options) => {
         sentMessages.push({ content, options });
       },
     };
 
-    mod.default(pi);
+    await factory(pi);
 
     // Command behavior: `/fein <goal>` sets the mode, persists a custom entry,
     // and steers the goal to the agent.
     const fein = commands.find((c) => c.name === 'fein');
     expect(fein).toBeDefined();
-    // Only the notify method is exercised by the command handler; the rest of
-    // the context is a stub (same pattern as tests/extension.test.ts).
-    await fein!.handler('implement the pipeline', {
-      ui: { notify: () => {} },
-    } as unknown as ExtensionCommandContext);
+    if (fein === undefined) {
+      throw new Error('fein command was not registered');
+    }
+    await fein.handler('implement the pipeline', extensionContext);
     expect(entries.at(-1)).toEqual({
       customType: MODE_STATE_CUSTOM_TYPE,
       data: { mode: 'fein' },
@@ -197,14 +267,18 @@ describe('prime-agent built extension artifact', () => {
     // skills/fein/SKILL.md mode section to the chained system prompt on the
     // next agent turn. A missing skill file would degrade to "no injection"
     // and fail this assertion, so the test is not vacuous.
-    const beforeAgentStart = handlers.get('before_agent_start');
-    expect(beforeAgentStart).toBeDefined();
-    const result = (await beforeAgentStart!(
-      { type: 'before_agent_start', prompt: 'implement the pipeline', systemPrompt: 'BASE' },
-      {},
-    )) as BeforeAgentStartEventResult | void;
-    const systemPrompt = (result as BeforeAgentStartEventResult | undefined)?.systemPrompt;
+    if (beforeAgentStartHandler === undefined) {
+      throw new Error('before_agent_start handler was not registered');
+    }
+    const result = await beforeAgentStartHandler(
+      { prompt: 'implement the pipeline', systemPrompt: 'BASE', type: 'before_agent_start' },
+      extensionContext,
+    );
+    const systemPrompt = result?.systemPrompt;
     expect(systemPrompt).toBeDefined();
+    if (systemPrompt === undefined) {
+      throw new Error('before_agent_start did not return a system prompt');
+    }
     expect(systemPrompt).toContain('[MODE: fein]');
     expect(systemPrompt).toContain('## MODE: fein');
   });
@@ -222,19 +296,26 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
    * npm actually honors (gitignore does not exclude allowlisted files).
    * Deterministic: local-only, no network, no live Prime binary required.
    */
-  function npmPackFileList(): string[] {
+  const npmPackFileList = (): string[] => {
     const stdout = execFileSync('npm', ['pack', '--dry-run', '--json'], {
       cwd: PACKAGE_ROOT,
-      encoding: 'utf8',
+      encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
-    const parsed = JSON.parse(stdout) as Array<{ files?: Array<{ path: string }> }>;
-    const result = parsed[0];
-    if (!result?.files) {
+    const parsed: unknown = JSON.parse(stdout);
+    if (!isUnknownArray(parsed)) {
+      throw new TypeError('npm pack --dry-run --json returned an invalid response');
+    }
+    const [result] = parsed;
+    if (!isRecord(result) || result.files === undefined) {
       throw new Error('npm pack --dry-run --json returned no file list');
     }
-    return result.files.map((f) => f.path);
-  }
+    const { files } = result;
+    if (!isNpmPackFileList(files)) {
+      throw new TypeError('npm pack --dry-run --json returned an invalid file list');
+    }
+    return files.map((file) => file.path);
+  };
 
   // npm pack is relatively expensive in this workspace. Reuse the one
   // deterministic dry-run result across assertions so the tests do not race
@@ -258,13 +339,10 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
   });
 
   it('packs every generated skill directory', async () => {
-    const skillNames = (
-      await readdir(path.join(PACKAGE_ROOT, 'skills'), {
-        withFileTypes: true,
-      })
-    )
-      .filter((e) => e.isDirectory())
-      .map((e) => e.name);
+    const skillEntries = await readdir(path.join(PACKAGE_ROOT, 'skills'), {
+      withFileTypes: true,
+    });
+    const skillNames = skillEntries.filter((e) => e.isDirectory()).map((e) => e.name);
     expect(skillNames.length).toBeGreaterThan(0);
 
     for (const name of skillNames) {

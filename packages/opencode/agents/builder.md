@@ -5,14 +5,6 @@ description: |-
   Use for: targeted fixes, feature implementation, refactors, adding tests.
 mode: subagent
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  edit: allow
-  webfetch: allow
-  todowrite: allow
-  skill: allow
   bash:
     ls*: allow
     cat*: allow
@@ -43,6 +35,14 @@ permission:
     eslint*: allow
     prettier*: allow
     "*": ask
+  edit: allow
+  glob: allow
+  grep: allow
+  lsp: allow
+  read: allow
+  skill: allow
+  todowrite: allow
+  webfetch: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

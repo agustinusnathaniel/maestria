@@ -5,14 +5,6 @@ description: |-
   Use for: technology choices, implementation approaches, trade-off analysis.
 mode: subagent
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  webfetch: allow
-  websearch: ask
-  skill: allow
-  edit: deny
   bash:
     "*": ask
     ls*: allow
@@ -39,6 +31,14 @@ permission:
     pnpm*: allow
     npm*: allow
     npm view *: allow
+  edit: deny
+  glob: allow
+  grep: allow
+  lsp: allow
+  read: allow
+  skill: allow
+  webfetch: allow
+  websearch: ask
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

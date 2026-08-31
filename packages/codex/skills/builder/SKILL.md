@@ -1,6 +1,6 @@
 ---
-name: builder
 description: Focused implementation workflow for one atomic, verifiable feature, fix, test, or refactor.
+name: builder
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

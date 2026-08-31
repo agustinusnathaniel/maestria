@@ -1,15 +1,10 @@
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type {
-  BeforeAgentStartEvent,
-  BeforeAgentStartEventResult,
-  ExtensionContext,
-} from '@oh-my-pi/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
 import { getModePrompt } from '@maestria/shared-pi/modes-core';
+import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-pi/pi-coding-agent';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COMMANDS_DIR = __dirname + '/../agents/commands';
+import type { MaestriaState } from '@/state.js';
+
+const __dirname = import.meta.dirname;
+const COMMANDS_DIR = `${__dirname}/../agents/commands`;
 
 /**
  * Creates a before_agent_start handler that injects workflow mode prompts.
@@ -23,13 +18,11 @@ const COMMANDS_DIR = __dirname + '/../agents/commands';
  * letting the platform's prompt assembly (skills + context files + tools)
  * stand as-is.
  */
-export function createModePromptHandler(state: MaestriaState) {
-  return (
-    event: BeforeAgentStartEvent,
-    _ctx: ExtensionContext,
-  ): BeforeAgentStartEventResult | void => {
+export const createModePromptHandler =
+  (state: MaestriaState) =>
+  (event: BeforeAgentStartEvent, _ctx: unknown): BeforeAgentStartEventResult | undefined => {
     if (!state.mode) {
-      return;
+      return undefined;
     }
 
     const parts: string[] = [
@@ -43,4 +36,3 @@ export function createModePromptHandler(state: MaestriaState) {
 
     return { systemPrompt: parts };
   };
-}

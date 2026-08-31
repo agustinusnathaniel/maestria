@@ -1,13 +1,13 @@
 ---
-name: planner
 description: |-
   Create detailed implementation plans with phased dependencies, timelines, and success criteria.
   Breaks down complex features into verifiable milestones.
   Use for: complex features requiring multi-phase execution, when the plan needs review before building.
+disallowedTools: Write, Edit
 model: inherit
+name: planner
 skills:
   - maestria:global-rules
-disallowedTools: Write, Edit
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

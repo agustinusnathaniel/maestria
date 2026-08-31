@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
+
 import {
   compareVersions,
   isValidVersion,
-  isVersionEq,
   isVersionDifferent,
+  isVersionEq,
   isVersionGt,
 } from '@/lib/version.js';
 

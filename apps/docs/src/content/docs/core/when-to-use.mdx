@@ -11,28 +11,27 @@ Use this page before choosing full orchestration.
 
 ## Quick decision
 
-| Situation                                            | Recommended path                               | Reason                                                               |
-| ---------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------- |
-| One or two known files, obvious change               | Direct or native agent                         | The full pipeline adds coordination without much new information.    |
-| Small bug in unfamiliar code                         | `adventurer` or `diagnose` first               | Get the missing context without starting a full pipeline.            |
-| UI tweak, copy change, or interactive iteration      | Direct or `blitz`                              | Short feedback loops matter more than formal handoffs.               |
-| Multi-file feature in an unfamiliar codebase         | Orchestrator or `fein`                         | Reconnaissance and staged review can prevent expensive rework.       |
-| Security, migration, or other high-risk change       | Full pipeline with review                      | Independent review and explicit assumptions are worth the overhead.  |
-| Research or feasibility question                     | `sonar`                                        | Stop after recon and design instead of creating implementation work. |
-| Strong, expensive, or slow model                     | Direct execution or one specialist plus review | Multiple fresh sessions can multiply cost and waiting time.          |
-| Cheap, fast model that benefits from narrow contexts | Full pipeline can be a good trade              | Delegation overhead is lower, and focused roles may improve results. |
+| Situation | Recommended path | Reason |
+| --- | --- | --- |
+| One or two known files, obvious change | Direct or native agent | The full pipeline adds coordination without much new information. |
+| Small bug in unfamiliar code | `adventurer` or `diagnose` first | Get the missing context without starting a full pipeline. |
+| UI tweak, copy change, or interactive iteration | Direct or `blitz` | Short feedback loops matter more than formal handoffs. |
+| Multi-file feature in an unfamiliar codebase | Orchestrator or `fein` | Reconnaissance and staged review can prevent expensive rework. |
+| Security, migration, or other high-risk change | Full pipeline with review | Independent review and explicit assumptions are worth the overhead. |
+| Research or feasibility question | `sonar` | Stop after recon and design instead of creating implementation work. |
+| Strong, expensive, or slow model | Direct execution or one specialist plus review | Multiple fresh sessions can multiply cost and waiting time. |
+| Cheap, fast model that benefits from narrow contexts | Full pipeline can be a good trade | Delegation overhead is lower, and focused roles may improve results. |
 
 ## Route the turn
 
-Use these four classes as the default decision guide. They describe current
-choices, not an automatic router.
+Use these four classes as the default decision guide. They describe current choices, not an automatic router.
 
-| Turn class                  | Route now                                                                                                                 | Escalate when                                                                                |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Explanation or discovery    | Direct execution for an explanation; `adventurer`, `architect`, `diagnose`, or `sonar` for focused discovery              | The answer depends on several modules, an unclear design, or a consequential decision.       |
-| Tiny edit                   | Direct execution, or `blitz` where the platform supports it                                                               | The edit touches behavior, generated files, security-sensitive code, or an unfamiliar area.  |
-| Ordinary code change        | Direct implementation plus one focused specialist or reviewer; use `builder` when a separate implementation handoff helps | The change spans packages, has unclear requirements, or needs independent design and review. |
-| Complex or high-risk change | Full pipeline when explicitly selected or justified: recon, design, implementation, and review                            | Add a second review or more planning only when the task exposes new risk.                    |
+| Turn class | Route now | Escalate when |
+| --- | --- | --- |
+| Explanation or discovery | Direct execution for an explanation; `adventurer`, `architect`, `diagnose`, or `sonar` for focused discovery | The answer depends on several modules, an unclear design, or a consequential decision. |
+| Tiny edit | Direct execution, or `blitz` where the platform supports it | The edit touches behavior, generated files, security-sensitive code, or an unfamiliar area. |
+| Ordinary code change | Direct implementation plus one focused specialist or reviewer; use `builder` when a separate implementation handoff helps | The change spans packages, has unclear requirements, or needs independent design and review. |
+| Complex or high-risk change | Full pipeline when explicitly selected or justified: recon, design, implementation, and review | Add a second review or more planning only when the task exposes new risk. |
 
 <Aside type="caution" title="Full pipeline is an explicit trade-off">
   The full pipeline can spawn reconnaissance, design, implementation, review, and retry sessions.
@@ -87,33 +86,29 @@ Maestria shares a methodology across platforms, not identical runtime behavior. 
 - Whether parent context is inherited by subagents
 - How modes, compaction, and long-running work behave
 
-| Platform    | Runtime detail                                                                                                                                                        | Practical guidance                                                                                                                                                                                           |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| OpenCode    | The orchestrator is a separate agent. Specialists and tool permissions are registered through the plugin.                                                             | Use direct agents for small work. Choose `@orchestrator` when several stages add value.                                                                                                                      |
-| Pi and OMP  | The main session includes the orchestrator guidance. Mode activation and dispatch tools differ by platform.                                                           | Use a mode-free session for normal work, a single specialist for focused help, and `/fein` when full delegation is worth the cost. Read the [Pi and OMP reference](/pi-omp/reference/).                      |
-| Kimi Code   | The orchestrator skill is loaded into the main session and seven roles map onto three native subagent profiles.                                                       | Direct execution is not a separate Maestria mode. Use one `Agent` call for focused help, or let the orchestrator route full multi-stage work. Reviewer boundaries require separate permission configuration. |
-| Hermes      | The default mode is `fein`, which describes the full pipeline.                                                                                                        | Use `/blitz` for small tasks. Use the default full mode when the work is complex or risky.                                                                                                                   |
-| Cursor      | The orchestrator skill delegates through Cursor Task agents, with Cursor-specific runtime permissions.                                                                | Use `/fein` when the full pipeline is worth the cost; otherwise use a direct agent or one specialist.                                                                                                        |
-| Claude Code | The plugin provides namespaced agents, skills, and commands. `disallowedTools` protects three read-only roles; other methodology constraints remain advisory.         | Use `@maestria:<agent>` for focused work, `/maestria:orchestrator` for routing, and `/maestria:fein` when full review is worth the cost.                                                                     |
-| Codex CLI   | The projection provides namespaced skills. Specialist boundaries, orchestration, and review are advisory; Codex's own sandbox and approvals remain the host boundary. | Use `$maestria:<agent>` for focused work and `$maestria:fein`/`$maestria:sonar`/`$maestria:blitz` as skill-based routes.                                                                                     |
+| Platform | Runtime detail | Practical guidance |
+| --- | --- | --- |
+| OpenCode | The orchestrator is a separate agent. Specialists and tool permissions are registered through the plugin. | Use direct agents for small work. Choose `@orchestrator` when several stages add value. |
+| Pi and OMP | The main session includes the orchestrator guidance. Mode activation and dispatch tools differ by platform. | Use a mode-free session for normal work, a single specialist for focused help, and `/fein` when full delegation is worth the cost. Read the [Pi and OMP reference](/pi-omp/reference/). |
+| Kimi Code | The orchestrator skill is loaded into the main session and seven roles map onto three native subagent profiles. | Direct execution is not a separate Maestria mode. Use one `Agent` call for focused help, or let the orchestrator route full multi-stage work. Reviewer boundaries require separate permission configuration. |
+| Hermes | The default mode is `fein`, which describes the full pipeline. | Use `/blitz` for small tasks. Use the default full mode when the work is complex or risky. |
+| Cursor | The orchestrator skill delegates through Cursor Task agents, with Cursor-specific runtime permissions. | Use `/fein` when the full pipeline is worth the cost; otherwise use a direct agent or one specialist. |
+| Claude Code | The plugin provides namespaced agents, skills, and commands. `disallowedTools` protects three read-only roles; other methodology constraints remain advisory. | Use `@maestria:<agent>` for focused work, `/maestria:orchestrator` for routing, and `/maestria:fein` when full review is worth the cost. |
+| Codex CLI | The projection provides namespaced skills. Specialist boundaries, orchestration, and review are advisory; Codex's own sandbox and approvals remain the host boundary. | Use `$maestria:<agent>` for focused work and `$maestria:fein`/`$maestria:sonar`/`$maestria:blitz` as skill-based routes. |
 
-Hermes's default `fein` behavior does not mean every direct task receives an
-automatic maker/checker pair. Kimi's reviewer constraints are advisory unless a
-review-only permission/session setup is used. Pi and OMP inherit context and
-dispatch work through distinct paths. OpenCode provides the strongest tool-level
-maker/checker enforcement among the platforms documented here.
+Hermes's default `fein` behavior does not mean every direct task receives an automatic maker/checker pair. Kimi's reviewer constraints are advisory unless a review-only permission/session setup is used. Pi and OMP inherit context and dispatch work through distinct paths. OpenCode provides the strongest tool-level maker/checker enforcement among the platforms documented here.
 
 Read the platform-specific guide before assuming that a workflow transfers unchanged.
 
 ## Examples
 
-| Request                                           | Good starting point                                    |
-| ------------------------------------------------- | ------------------------------------------------------ |
-| "Add a JSDoc comment to this function"            | Direct execution                                       |
-| "Find where authentication tokens are refreshed"  | `adventurer`                                           |
-| "Trace this intermittent login failure"           | `diagnose`, then implement directly or use `builder`   |
-| "Migrate the auth system across several packages" | Full pipeline or `fein`                                |
-| "Review these changed files for security issues"  | `reviewer`, or a review mode supported by the platform |
+| Request | Good starting point |
+| --- | --- |
+| "Add a JSDoc comment to this function" | Direct execution |
+| "Find where authentication tokens are refreshed" | `adventurer` |
+| "Trace this intermittent login failure" | `diagnose`, then implement directly or use `builder` |
+| "Migrate the auth system across several packages" | Full pipeline or `fein` |
+| "Review these changed files for security issues" | `reviewer`, or a review mode supported by the platform |
 
 <Aside type="tip" title="A practical rule">
   If the task can be described as one atomic edit, do not start with the full pipeline. If the cost

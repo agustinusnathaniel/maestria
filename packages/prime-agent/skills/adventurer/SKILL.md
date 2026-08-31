@@ -1,5 +1,4 @@
 ---
-name: adventurer
 description: |-
   Codebase reconnaissance skill. Maps unknown territory -
   traces call chains, maps module relationships, generates structured recon
@@ -7,6 +6,7 @@ description: |-
   only, never implementation or design.
   Use for: understanding unfamiliar code, tracing dependencies, gathering context
   before implementation, investigating module structures.
+name: adventurer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import type { BeforeAgentStartEventResult, ExtensionContext } from '../src/pi-api.ts';
-import { MODE_MARKERS, createModePromptHandler, getModePrompt } from '../src/modes.ts';
+import path from 'node:path';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
+
+import { createModePromptHandler, getModePrompt, MODE_MARKERS } from '../src/modes.ts';
+import type { ExtensionContext } from '../src/pi-api.ts';
 import type { MaestriaModeState } from '../src/state.ts';
 
 // Note: modes.ts keeps a module-level prompt cache keyed by mode keyword, so
@@ -11,20 +12,30 @@ import type { MaestriaModeState } from '../src/state.ts';
 // under a temp dir (never the generated skills/) so these tests are
 // deterministic and independent of the sync-projected skills on disk.
 const tempDirs: string[] = [];
-function makeSkillsDir(name: string, keyword: string, skillFile?: string): string {
-  const dir = mkdtempSync(join(tmpdir(), `maestria-prime-agent-${name}-`));
+const makeSkillsDir = (name: string, keyword: string, skillFile?: string): string => {
+  const dir = mkdtempSync(path.join(tmpdir(), `maestria-prime-agent-${name}-`));
   tempDirs.push(dir);
   if (skillFile !== undefined) {
-    mkdirSync(join(dir, keyword), { recursive: true });
-    writeFileSync(join(dir, keyword, 'SKILL.md'), skillFile, 'utf8');
+    mkdirSync(path.join(dir, keyword), { recursive: true });
+    writeFileSync(path.join(dir, keyword, 'SKILL.md'), skillFile, 'utf-8');
   }
   return dir;
-}
+};
+
+const extensionContext: ExtensionContext = {
+  cwd: '/',
+  hasUI: true,
+  sessionManager: {
+    getBranch: () => [],
+    getEntries: () => [],
+  },
+  ui: { notify: () => {}, setEditorText: () => {} },
+};
 
 afterEach(() => {
   vi.restoreAllMocks();
   for (const dir of tempDirs.splice(0)) {
-    rmSync(dir, { recursive: true, force: true });
+    rmSync(dir, { force: true, recursive: true });
   }
 });
 
@@ -99,9 +110,9 @@ describe('before_agent_start mode prompt injection', () => {
     const handler = createModePromptHandler(state, dir);
 
     const result = handler(
-      { type: 'before_agent_start', prompt: 'p', systemPrompt: 'BASE SYSTEM PROMPT' },
-      {} as ExtensionContext,
-    ) as BeforeAgentStartEventResult | void;
+      { prompt: 'p', systemPrompt: 'BASE SYSTEM PROMPT', type: 'before_agent_start' },
+      extensionContext,
+    );
 
     // The generated sonar SKILL.md in this dir has no mode section: the whole
     // skill body must not be injected; the handler must leave the prompt
@@ -115,12 +126,15 @@ describe('before_agent_start mode prompt injection', () => {
     const handler = createModePromptHandler(state, dir);
 
     const result = handler(
-      { type: 'before_agent_start', prompt: 'p', systemPrompt: 'BASE SYSTEM PROMPT' },
-      {} as ExtensionContext,
-    ) as BeforeAgentStartEventResult | void;
+      { prompt: 'p', systemPrompt: 'BASE SYSTEM PROMPT', type: 'before_agent_start' },
+      extensionContext,
+    );
 
     expect(result).toBeDefined();
-    const systemPrompt = result!.systemPrompt!;
+    if (result?.systemPrompt === undefined) {
+      throw new Error('expected a system prompt');
+    }
+    const { systemPrompt } = result;
     expect(systemPrompt.startsWith('BASE SYSTEM PROMPT')).toBe(true);
     expect(systemPrompt).toContain(MODE_MARKERS.fein);
     expect(systemPrompt).toContain('## MODE: fein (Full Pipeline)');

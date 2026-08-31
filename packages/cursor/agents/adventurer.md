@@ -1,6 +1,6 @@
 ---
-name: adventurer
 description: Codebase reconnaissance agent. Maps unknown territory, traces call chains, maps module relationships. Use before implementation in unfamiliar code. Read-only - never implement or design.
+name: adventurer
 readonly: true
 ---
 

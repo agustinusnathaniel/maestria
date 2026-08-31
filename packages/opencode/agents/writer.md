@@ -5,14 +5,6 @@ description: |-
   Use for: README files, API docs, architecture docs, changelogs, decision records.
 mode: subagent
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  edit: allow
-  webfetch: allow
-  skill: allow
-  todowrite: allow
   bash:
     "*": ask
     ls*: allow
@@ -41,6 +33,14 @@ permission:
     npm view *: allow
     vp*: allow
     mkdir*: allow
+  edit: allow
+  glob: allow
+  grep: allow
+  lsp: allow
+  read: allow
+  skill: allow
+  todowrite: allow
+  webfetch: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

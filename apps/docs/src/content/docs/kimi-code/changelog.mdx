@@ -17,33 +17,26 @@ _August 22, 2026_
 
 _August 13, 2026_
 
-- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge
-  reviews on material blockers, deliver routine engineering work through feature branches and PRs,
-  and clean up task-owned background processes before completion.
+- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
 
 ## v0.4.15
 
 _August 12-13, 2026_
 
-- Clarified agent workflow contracts: routine validated commits on recognized feature branches remain
-  autonomous after required review; push and later lifecycle actions stay separately gated.
-- Simplified and re-aligned the shared directives around outcome, evidence, runtime authority, blind
-  review, bounded repair, and autonomous routine work.
+- Clarified agent workflow contracts: routine validated commits on recognized feature branches remain autonomous after required review; push and later lifecycle actions stay separately gated.
+- Simplified and re-aligned the shared directives around outcome, evidence, runtime authority, blind review, bounded repair, and autonomous routine work.
 
 ## v0.4.14
 
 _August 11, 2026_
 
-- Streamlined canonical agent directives by centralizing universal contracts and adding bounded
-  autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action
-  boundaries.
+- Streamlined canonical agent directives by centralizing universal contracts and adding bounded autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action boundaries.
 
 ## v0.4.13
 
 _August 6, 2026_
 
-- Delegation is more selective, handoffs stay concise, and Sonar research starts with the owning
-  specialist, adding another specialist only when a distinct required output remains.
+- Delegation is more selective, handoffs stay concise, and Sonar research starts with the owning specialist, adding another specialist only when a distinct required output remains.
 
 ## v0.4.12
 
@@ -51,10 +44,7 @@ _August 3, 2026_
 
 ### Selective routing contract
 
-The orchestrator now routes by task class across `direct`, `focused`, and `full` routes. Small
-explanations and tiny edits run directly or through one specialist; complex or high-risk work uses
-the full pipeline. `fein` selects the full route, `sonar` is research-only, and `blitz` is an
-explicit low-risk/direct bypass that does not waive safety floors.
+The orchestrator now routes by task class across `direct`, `focused`, and `full` routes. Small explanations and tiny edits run directly or through one specialist; complex or high-risk work uses the full pipeline. `fein` selects the full route, `sonar` is research-only, and `blitz` is an explicit low-risk/direct bypass that does not waive safety floors.
 
 ## v0.4.11
 
@@ -62,13 +52,9 @@ _July 29, 2026_
 
 ### Rule-override conditions and communication conventions
 
-- Added 6 explicit override conditions to the orchestrator prompt (user skip request, safety, mode
-  override, frustration escalation, rule conflicts, explanation requests) so agents know when and how
-  to deviate from defaults.
-- Two new shared rules: report errors matter-of-factly (state problem, cause, fix without hedging)
-  and lead with the action (first line actionable, context follows).
-- Review triage now chains directly into the commit flow after approval, guarded against unresolved
-  `[fix]`/`[escalate]` items.
+- Added 6 explicit override conditions to the orchestrator prompt (user skip request, safety, mode override, frustration escalation, rule conflicts, explanation requests) so agents know when and how to deviate from defaults.
+- Two new shared rules: report errors matter-of-factly (state problem, cause, fix without hedging) and lead with the action (first line actionable, context follows).
+- Review triage now chains directly into the commit flow after approval, guarded against unresolved `[fix]`/`[escalate]` items.
 
 ## v0.4.10
 
@@ -76,10 +62,8 @@ _July 28, 2026_
 
 ### Blind review and fail-loud iteration exit
 
-- The reviewer no longer receives the builder's handoff notes or self-assessment; it evaluates only
-  the diff, requirements, and acceptance criteria.
-- When the review loop runs 3 cycles with unresolved issues, the pipeline stops and escalates with a
-  structured report of what is still blocking, requiring an explicit override to continue.
+- The reviewer no longer receives the builder's handoff notes or self-assessment; it evaluates only the diff, requirements, and acceptance criteria.
+- When the review loop runs 3 cycles with unresolved issues, the pipeline stops and escalates with a structured report of what is still blocking, requiring an explicit override to continue.
 
 ## v0.4.9
 
@@ -91,15 +75,13 @@ _July 22, 2026_
 - Added structured handoff verification checklists to all specialist agents.
 - Standardized "before reporting done" completion checks across all agents.
 - Added a parallelization table and multi-lens review swarm capability.
-- Made prompt instructions platform-agnostic for consistent behavior across OpenCode, Cursor, Kimi
-  Code, Pi, and other platforms.
+- Made prompt instructions platform-agnostic for consistent behavior across OpenCode, Cursor, Kimi Code, Pi, and other platforms.
 
 ## v0.4.8
 
 _July 21, 2026_
 
-- Dependency updates across packages (diff, zod, @clack, effect, astro, and more). No user-facing
-  behavior change.
+- Dependency updates across packages (diff, zod, @clack, effect, astro, and more). No user-facing behavior change.
 
 ## v0.4.7
 
@@ -143,14 +125,11 @@ _July 14, 2026_
 
 ### Auto-create feature branch when landing on main
 
-The agent no longer asks for confirmation before creating a feature branch
-when it lands on main.
+The agent no longer asks for confirmation before creating a feature branch when it lands on main.
 
 ### Work results format streamlined
 
-The post-task summary now uses a table-first format. Changes are prefixed
-with `+` (added), `~` (modified), or `-` (deleted). Breaking changes are
-marked with `!`, and test file changes are annotated with `(test)`.
+The post-task summary now uses a table-first format. Changes are prefixed with `+` (added), `~` (modified), or `-` (deleted). Breaking changes are marked with `!`, and test file changes are annotated with `(test)`.
 
 ## v0.4.2
 
@@ -158,8 +137,7 @@ _July 14, 2026_
 
 ### Structured work results are now mandatory
 
-After every task, the agent must produce a `## Changes` summary table.
-Documentation audit before every commit is also now required.
+After every task, the agent must produce a `## Changes` summary table. Documentation audit before every commit is also now required.
 
 ## v0.4.1
 
@@ -210,10 +188,7 @@ _June 24, 2026_
 
 ### Project workflow configuration (.maestria/)
 
-Ships the `.maestria/` project workflow protocol. Projects using maestria's agent
-directives can now define `.maestria/workflow.md` for custom delegation sequencing
-and `.maestria/rules.md` for project-specific rules. The orchestrator loads these
-via `@adventurer` delegation.
+Ships the `.maestria/` project workflow protocol. Projects using maestria's agent directives can now define `.maestria/workflow.md` for custom delegation sequencing and `.maestria/rules.md` for project-specific rules. The orchestrator loads these via `@adventurer` delegation.
 
 ### Effort anthropomorphism guard and writing style guidance
 

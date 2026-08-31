@@ -1,6 +1,6 @@
 ---
-name: maestria-orchestrator
 description: Methodology orchestrator -- runs single-thread by default, delegates to specialists for complex tasks
+name: maestria-orchestrator
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

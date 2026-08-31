@@ -43,13 +43,13 @@ See [Adding or Modifying Agents](#adding-or-modifying-agents) above - global rul
 
 Each agent is a Markdown file with YAML frontmatter in `packages/opencode/agents/`. The frontmatter fields are:
 
-| Field         | Type              | Description                         | Values                      |
-| ------------- | ----------------- | ----------------------------------- | --------------------------- |
-| `description` | string            | What the agent does                 | Free text                   |
-| `mode`        | string            | Agent invocation mode               | `all`, `subagent`           |
-| `permission`  | object            | Tool access permissions             | See below                   |
-| `color`       | string (optional) | Tab color in the UI                 | Hex color (e.g., `#ff6600`) |
-| `maxSteps`    | number (optional) | Max delegation steps per invocation | Integer                     |
+| Field | Type | Description | Values |
+| --- | --- | --- | --- |
+| `description` | string | What the agent does | Free text |
+| `mode` | string | Agent invocation mode | `all`, `subagent` |
+| `permission` | object | Tool access permissions | See below |
+| `color` | string (optional) | Tab color in the UI | Hex color (e.g., `#ff6600`) |
+| `maxSteps` | number (optional) | Max delegation steps per invocation | Integer |
 
 **Permission model:** Each tool has one of three levels - `allow` (use freely), `ask` (prompt before use), `deny` (cannot use). Bash permissions support glob pattern matching for granular control.
 

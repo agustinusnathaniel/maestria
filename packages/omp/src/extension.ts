@@ -1,20 +1,25 @@
 import type { ExtensionAPI, SessionStartEvent } from '@oh-my-pi/pi-coding-agent';
-import { createInitialState } from '@/state.js';
-import { deploySpecialistAgents } from '@/agents.js';
-import { installModeCommands, installModeAutoDetect } from '@/modes.js';
-import { createModePromptHandler } from '@/rules.js';
-import { installCompactionHandlers } from '@/compaction.js';
-import { installSubagentTool } from '@/subagent.js';
-import { installCommands } from '@/commands.js';
-import { installToolInterceptors } from '@/tools.js';
-import { installGoalEventHandlers, restoreMaestriaStateForSession } from '@/goals.js';
 
-export default function (pi: ExtensionAPI): void {
+import { deploySpecialistAgents } from '@/agents.js';
+import { createCommandsApi, installCommands } from '@/commands.js';
+import { createCompactionApi, installCompactionHandlers } from '@/compaction.js';
+import {
+  createGoalApi,
+  installGoalEventHandlers,
+  restoreMaestriaStateForSession,
+} from '@/goals.js';
+import { createModeCommandsApi, installModeAutoDetect, installModeCommands } from '@/modes.js';
+import { createModePromptHandler } from '@/rules.js';
+import { createInitialState } from '@/state.js';
+import { installNativeSubagentTool } from '@/subagent.js';
+import { createToolApi, installToolInterceptors } from '@/tools.js';
+
+const extension = (pi: ExtensionAPI): void => {
   const state = createInitialState();
-  const cleanups: Array<() => void> = [];
+  const cleanups: (() => void)[] = [];
 
   // Install mode commands: /fein, /sonar, /blitz
-  installModeCommands(pi, state);
+  installModeCommands(createModeCommandsApi(pi), state);
   installModeAutoDetect(pi, state);
 
   // Inject mode prompt when a workflow mode is active
@@ -31,14 +36,14 @@ export default function (pi: ExtensionAPI): void {
   });
 
   // Install compaction preservation handlers
-  installCompactionHandlers(pi, state);
+  installCompactionHandlers(createCompactionApi(pi), state);
 
   // Install orchestration hooks: subagent tool and commands
-  installSubagentTool(pi, state, cleanups);
-  installCommands(pi, state);
+  installNativeSubagentTool(pi, state, cleanups);
+  installCommands(createCommandsApi(pi), state);
 
   // Mirror OMP's native goal state (goal_updated event) into Maestria state
-  installGoalEventHandlers(pi, state);
+  installGoalEventHandlers(createGoalApi(pi), state);
 
   // Cleanup subscriptions on shutdown
   pi.on('session_shutdown', () => {
@@ -49,5 +54,7 @@ export default function (pi: ExtensionAPI): void {
   });
 
   // Install tool call interceptors for review mode and dangerous patterns
-  installToolInterceptors(pi, state);
-}
+  installToolInterceptors(createToolApi(pi), state);
+};
+
+export default extension;

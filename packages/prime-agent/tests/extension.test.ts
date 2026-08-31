@@ -1,137 +1,184 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
+
+import extension from '../src/extension.ts';
+import { STATUS_COMMAND } from '../src/modes.ts';
 import type {
   BeforeAgentStartEventResult,
   ExtensionAPI,
   ExtensionCommandContext,
   ExtensionContext,
+  ExtensionEventRegistration,
+  RegisteredCommandOptions,
   SessionEntry,
 } from '../src/pi-api.ts';
-import extension from '../src/extension.ts';
 import { MODE_STATE_CUSTOM_TYPE } from '../src/state.ts';
-import { STATUS_COMMAND } from '../src/modes.ts';
+
 interface FakePi {
   pi: ExtensionAPI;
   /** Handlers recorded per event name, in subscription order. */
-  handlers: Map<string, Array<(event: unknown, ctx: unknown) => unknown>>;
+  handlers: Set<string>;
   /** (name, options) pairs recorded per command. */
-  commands: Array<{
+  commands: {
     name: string;
-    options: {
-      description?: string;
-      handler: (args: string, ctx: ExtensionCommandContext) => Promise<void>;
-    };
-  }>;
+    options: RegisteredCommandOptions;
+  }[];
   /** (customType, data) pairs recorded per appendEntry call. */
-  entries: Array<{ customType: string; data?: unknown }>;
+  entries: { customType: string; data?: unknown }[];
   /** (content, options) pairs recorded per sendUserMessage call. */
-  sentMessages: Array<{ content: string; options?: { deliverAs?: 'steer' | 'followUp' } }>;
+  sentMessages: { content: string; options?: { deliverAs?: 'steer' | 'followUp' } }[];
   /** Last systemPrompt passed to a before_agent_start handler, if any. */
   fire: {
-    beforeAgentStart(systemPrompt: string): Promise<BeforeAgentStartEventResult | void>;
-    sessionStart(ctx: ExtensionContext): Promise<unknown>;
-    sessionTree(ctx: ExtensionContext): Promise<unknown>;
+    beforeAgentStart: (systemPrompt: string) => Promise<BeforeAgentStartEventResult | undefined>;
+    sessionStart: (ctx: ExtensionContext) => Promise<unknown>;
+    sessionTree: (ctx: ExtensionContext) => Promise<unknown>;
   };
 }
 
-function createFakePi(): FakePi {
-  const handlers = new Map<string, Array<(event: unknown, ctx: unknown) => unknown>>();
+const emptyContext: ExtensionContext = {
+  cwd: '/',
+  hasUI: true,
+  sessionManager: {
+    getBranch: () => [],
+    getEntries: () => [],
+  },
+  ui: { notify: () => {}, setEditorText: () => {} },
+};
+
+const createFakePi = (): FakePi => {
+  const handlers = new Set<string>();
   const commands: FakePi['commands'] = [];
   const entries: FakePi['entries'] = [];
   const sentMessages: FakePi['sentMessages'] = [];
+  let beforeAgentStartHandler:
+    | Extract<ExtensionEventRegistration, ['before_agent_start', unknown]>[1]
+    | undefined;
+  let sessionStartHandler:
+    | Extract<ExtensionEventRegistration, ['session_start', unknown]>[1]
+    | undefined;
+  let sessionTreeHandler:
+    | Extract<ExtensionEventRegistration, ['session_tree', unknown]>[1]
+    | undefined;
 
-  const on: ExtensionAPI['on'] = ((event: string, handler: (...args: unknown[]) => unknown) => {
-    if (!handlers.has(event)) {
-      handlers.set(event, []);
+  const on = (...[event, handler]: ExtensionEventRegistration): void => {
+    handlers.add(event);
+    switch (event) {
+      case 'before_agent_start': {
+        beforeAgentStartHandler = handler;
+        break;
+      }
+      case 'session_start': {
+        sessionStartHandler = handler;
+        break;
+      }
+      case 'session_tree': {
+        sessionTreeHandler = handler;
+        break;
+      }
+      default: {
+        throw new Error('unsupported event');
+      }
     }
-    handlers.get(event)!.push(handler as (event: unknown, ctx: unknown) => unknown);
-  }) as ExtensionAPI['on'];
+  };
 
   const pi: ExtensionAPI = {
-    on,
-    registerCommand(name, options) {
-      commands.push({ name, options });
-    },
-    appendEntry(customType, data) {
+    appendEntry: (customType, data) => {
       entries.push({ customType, data });
     },
-    sendUserMessage(content, options) {
+    on,
+    registerCommand: (name, options) => {
+      commands.push({ name, options });
+    },
+    sendUserMessage: (content, options) => {
       sentMessages.push({ content, options });
     },
   };
 
   const fire = {
-    async beforeAgentStart(systemPrompt: string): Promise<BeforeAgentStartEventResult | void> {
-      const handler = handlers.get('before_agent_start')?.[0];
+    beforeAgentStart: async (
+      systemPrompt: string,
+    ): Promise<BeforeAgentStartEventResult | undefined> => {
+      const handler = beforeAgentStartHandler;
       if (!handler) {
         throw new Error('no before_agent_start handler subscribed');
       }
-      return (await handler(
-        { type: 'before_agent_start', prompt: 'p', systemPrompt },
-        {},
-      )) as BeforeAgentStartEventResult | void;
+      return await handler({ prompt: 'p', systemPrompt, type: 'before_agent_start' }, emptyContext);
     },
-    async sessionStart(ctx: ExtensionContext): Promise<unknown> {
-      const handler = handlers.get('session_start')?.[0];
+    sessionStart: async (ctx: ExtensionContext): Promise<unknown> => {
+      const handler = sessionStartHandler;
       if (!handler) {
         throw new Error('no session_start handler subscribed');
       }
-      return handler({ type: 'session_start', reason: 'startup' }, ctx);
+      return await handler({ reason: 'startup', type: 'session_start' }, ctx);
     },
-    async sessionTree(ctx: ExtensionContext): Promise<unknown> {
-      const handler = handlers.get('session_tree')?.[0];
+    sessionTree: async (ctx: ExtensionContext): Promise<unknown> => {
+      const handler = sessionTreeHandler;
       if (!handler) {
         throw new Error('no session_tree handler subscribed');
       }
-      return handler({ type: 'session_tree', newLeafId: null, oldLeafId: null }, ctx);
+      return await handler({ newLeafId: null, oldLeafId: null, type: 'session_tree' }, ctx);
     },
   };
 
-  return { pi, handlers, commands, entries, sentMessages, fire };
-}
+  return { commands, entries, fire, handlers, pi, sentMessages };
+};
 
-function commandHandler(fake: FakePi, name: string) {
+const commandHandler = (fake: FakePi, name: string): RegisteredCommandOptions['handler'] => {
   const command = fake.commands.find((c) => c.name === name);
   if (!command) {
     throw new Error(`command ${name} not registered`);
   }
   return command.options.handler;
-}
+};
 
-function branchContext(entries: SessionEntry[]): ExtensionContext {
-  return {
-    ui: { notify: () => {}, setEditorText: () => {} },
-    hasUI: true,
-    cwd: '/',
-    sessionManager: {
-      getBranch: () => entries,
-      getEntries: () => entries,
-    },
-  } as ExtensionContext;
-}
+const branchContext = (entries: SessionEntry[]): ExtensionContext => ({
+  cwd: '/',
+  hasUI: true,
+  sessionManager: {
+    getBranch: () => entries,
+    getEntries: () => entries,
+  },
+  ui: { notify: () => {}, setEditorText: () => {} },
+});
 
 /** Command-handler context with a fake UI, for invoking registered commands. */
-function commandContext(ui?: {
+const commandContext = (ui?: {
   notify?: (m: string) => void;
   setEditorText?: (t: string) => void;
-}): ExtensionCommandContext {
-  return {
-    ui: { notify: () => {}, setEditorText: () => {}, ...ui },
-  } as unknown as ExtensionCommandContext;
-}
+}): ExtensionCommandContext => ({
+  cwd: '/',
+  hasUI: true,
+  sessionManager: {
+    getBranch: () => [],
+    getEntries: () => [],
+  },
+  ui: { notify: () => {}, setEditorText: () => {}, ...ui },
+});
 
-function modeEntry(mode: 'fein' | 'sonar' | 'blitz' | null, timestamp: number): SessionEntry {
+const customEntry = (
+  data: unknown,
+  timestamp: number,
+  customType = MODE_STATE_CUSTOM_TYPE,
+): SessionEntry => ({
+  customType,
+  data,
+  id: `e-${timestamp}`,
+  parentId: null,
+  timestamp: String(timestamp),
+  type: 'custom',
+});
+
+const modeEntry = (mode: 'fein' | 'sonar' | 'blitz' | null, timestamp: number): SessionEntry =>
   // SessionEntryBase requires id/parentId/timestamp (aligned to the pinned
   // fork); readModeStateFromEntries only inspects type/customType/data, but
   // the fixture must satisfy the full shape to mirror a real session read.
-  return {
-    type: 'custom',
-    id: `e-${timestamp}`,
-    parentId: null,
-    timestamp: String(timestamp),
-    customType: MODE_STATE_CUSTOM_TYPE,
-    data: { mode },
-  };
-}
+  customEntry({ mode }, timestamp);
+
+const getSystemPrompt = (result: BeforeAgentStartEventResult | undefined): string => {
+  if (result?.systemPrompt === undefined) {
+    throw new Error('expected before_agent_start to return a system prompt');
+  }
+  return result.systemPrompt;
+};
 
 describe('prime-agent extension entry point', () => {
   it('registers the mode commands, clear command, and status command', () => {
@@ -144,7 +191,7 @@ describe('prime-agent extension entry point', () => {
   it('subscribes to before_agent_start, session_start, and session_tree', () => {
     const fake = createFakePi();
     extension(fake.pi);
-    expect([...fake.handlers.keys()].sort()).toEqual([
+    expect([...fake.handlers.keys()].toSorted()).toEqual([
       'before_agent_start',
       'session_start',
       'session_tree',
@@ -164,7 +211,9 @@ describe('mode commands', () => {
     extension(fake.pi);
     const notifications: string[] = [];
     const ctx = commandContext({
-      notify: (m: string) => notifications.push(m),
+      notify: (m: string) => {
+        notifications.push(m);
+      },
     });
 
     await commandHandler(fake, 'fein')('', ctx);
@@ -178,7 +227,7 @@ describe('mode commands', () => {
     // The active mode now drives prompt injection on the next agent turn.
     const result = await fake.fire.beforeAgentStart('BASE SYSTEM PROMPT');
     expect(result).toBeDefined();
-    const systemPrompt = (result as BeforeAgentStartEventResult).systemPrompt!;
+    const systemPrompt = getSystemPrompt(result);
     expect(systemPrompt.startsWith('BASE SYSTEM PROMPT')).toBe(true);
     expect(systemPrompt).toContain('[MODE: fein]');
     expect(systemPrompt).toContain('## MODE: fein');
@@ -186,14 +235,21 @@ describe('mode commands', () => {
   });
 
   it('registers all three mode keywords', async () => {
-    const fake = createFakePi();
-    extension(fake.pi);
-    for (const mode of ['sonar', 'blitz'] as const) {
-      const ctx = commandContext();
-      await commandHandler(fake, mode)('', ctx);
-      expect(fake.entries.at(-1)).toEqual({ customType: MODE_STATE_CUSTOM_TYPE, data: { mode } });
-      const result = await fake.fire.beforeAgentStart('BASE');
-      expect((result as BeforeAgentStartEventResult).systemPrompt).toContain(`[MODE: ${mode}]`);
+    const modeResults = await Promise.all(
+      (['sonar', 'blitz'] as const).map(async (mode) => {
+        const modeFake = createFakePi();
+        extension(modeFake.pi);
+        await commandHandler(modeFake, mode)('', commandContext());
+        return {
+          entries: modeFake.entries,
+          mode,
+          result: await modeFake.fire.beforeAgentStart('BASE'),
+        };
+      }),
+    );
+    for (const { entries, mode, result } of modeResults) {
+      expect(entries.at(-1)).toEqual({ customType: MODE_STATE_CUSTOM_TYPE, data: { mode } });
+      expect(getSystemPrompt(result)).toContain(`[MODE: ${mode}]`);
     }
   });
 
@@ -214,7 +270,7 @@ describe('mode commands', () => {
 
     // The steered turn receives the injected mode prompt.
     const result = await fake.fire.beforeAgentStart('BASE');
-    expect((result as BeforeAgentStartEventResult).systemPrompt).toContain('[MODE: fein]');
+    expect(getSystemPrompt(result)).toContain('[MODE: fein]');
   });
 
   it('does not forward a message when invoked with no goal argument', async () => {
@@ -256,7 +312,7 @@ describe('session state persistence', () => {
     await fake.fire.sessionStart(branchContext([modeEntry('sonar', 100)]));
 
     const result = await fake.fire.beforeAgentStart('BASE');
-    expect((result as BeforeAgentStartEventResult).systemPrompt).toContain('[MODE: sonar]');
+    expect(getSystemPrompt(result)).toContain('[MODE: sonar]');
   });
 
   it('prefers the most recent maestria_mode entry on the branch', async () => {
@@ -266,7 +322,7 @@ describe('session state persistence', () => {
       branchContext([modeEntry('fein', 50), modeEntry('blitz', 90), modeEntry('sonar', 120)]),
     );
     const result = await fake.fire.beforeAgentStart('BASE');
-    expect((result as BeforeAgentStartEventResult).systemPrompt).toContain('[MODE: sonar]');
+    expect(getSystemPrompt(result)).toContain('[MODE: sonar]');
   });
 
   it('never restores a sibling branch mode on session_start', async () => {
@@ -283,7 +339,7 @@ describe('session state persistence', () => {
     extension(fake.pi);
     await fake.fire.sessionTree(branchContext([modeEntry('blitz', 100)]));
     const result = await fake.fire.beforeAgentStart('BASE');
-    expect((result as BeforeAgentStartEventResult).systemPrompt).toContain('[MODE: blitz]');
+    expect(getSystemPrompt(result)).toContain('[MODE: blitz]');
   });
 
   it('resets the mode to null when a restored branch has no mode entry', async () => {
@@ -301,9 +357,7 @@ describe('session state persistence', () => {
     extension(fake.pi);
     // Malformed persisted data must never resurrect a mode or crash the
     // restore path: an unknown mode value is skipped (fail-closed to null).
-    await fake.fire.sessionStart(
-      branchContext([{ ...modeEntry('fein', 100), data: { mode: 'chaos' } } as SessionEntry]),
-    );
+    await fake.fire.sessionStart(branchContext([customEntry({ mode: 'chaos' }, 100)]));
     const result = await fake.fire.beforeAgentStart('BASE');
     expect(result).toBeUndefined();
   });
@@ -313,9 +367,9 @@ describe('session state persistence', () => {
     extension(fake.pi);
     await fake.fire.sessionStart(
       branchContext([
-        { ...modeEntry('fein', 100), data: 'not-an-object' } as SessionEntry,
-        { ...modeEntry('fein', 150), data: { mode: 7 } } as SessionEntry,
-        { ...modeEntry('fein', 200), customType: 'some-other-extension' } as SessionEntry,
+        customEntry('not-an-object', 100),
+        customEntry({ mode: 7 }, 150),
+        customEntry({ mode: 'fein' }, 200, 'some-other-extension'),
       ]),
     );
     const result = await fake.fire.beforeAgentStart('BASE');
@@ -329,13 +383,18 @@ describe('status command', () => {
     extension(fake.pi);
     const texts: string[] = [];
     const ctx = commandContext({
-      setEditorText: (t: string) => texts.push(t),
+      setEditorText: (t: string) => {
+        texts.push(t);
+      },
     });
 
     await commandHandler(fake, 'fein')('', ctx);
     await commandHandler(fake, STATUS_COMMAND)('', ctx);
 
-    const text = texts[0];
+    const [text] = texts;
+    if (text === undefined) {
+      throw new Error('status command did not set editor text');
+    }
     expect(text).toContain('Workflow mode: fein');
     expect(text).toContain('/sonar');
     expect(text).toContain('/mode-clear');

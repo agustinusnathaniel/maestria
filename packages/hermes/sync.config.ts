@@ -7,13 +7,7 @@
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 export default {
-  source: '../core/agent-directives/specialists',
-  output: 'src/maestria_hermes/skills',
-
   default: {
-    // Strip canonical YAML frontmatter (OpenCode-specific permission blocks)
-    stripFrontmatter: true,
-
     replace: [
       // Specialist mentions: @name -> name (Hermes uses bare names in skill context)
       { from: '@adventurer', to: 'adventurer' },
@@ -82,76 +76,28 @@ export default {
       { from: 'tsconfig.json or build output', to: 'configuration or build output' },
       { from: 'Related Agents', to: 'Related Specialists' },
     ],
+    // Strip canonical YAML frontmatter (OpenCode-specific permission blocks)
+    stripFrontmatter: true,
   },
 
   files: {
-    // -- Command workflow modes (fein/sonar/blitz) --
-    'commands/fein.md': {
-      output: 'commands/fein/SKILL.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'maestria-command-fein',
-        description: 'Full pipeline mode: reconnaissance, design, implementation, review',
-      },
-    },
-    'commands/sonar.md': {
-      output: 'commands/sonar/SKILL.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'maestria-command-sonar',
-        description: 'Research-only mode: reconnaissance and design only, no implementation',
-      },
-    },
-    'commands/blitz.md': {
-      output: 'commands/blitz/SKILL.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'maestria-command-blitz',
-        description:
-          'Fast implementation mode: skip optional ceremony for familiar low-risk work; required review and safety floors remain',
-      },
-    },
-
-    // -- Orchestrator: the methodology dispatcher --
-    'orchestrator.md': {
-      output: 'orchestrator/SKILL.md',
-      frontmatter: {
-        name: 'maestria-orchestrator',
-        description:
-          'Methodology orchestrator -- runs single-thread by default, delegates to specialists for complex tasks',
-      },
-      prepend: '',
-      replace: [],
-      append: [
-        '',
-        '## Hermes-Specific Notes',
-        '',
-        '- **Default: single-thread execution.** Hermes orchestrator has full tool access. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode").',
-        '- `delegate_task` is for multi-step tasks that benefit from parallelization or specialist expertise.',
-        '- Each specialist has a `PermissionRole` restricting its tools.',
-        '- Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.',
-        '- Sonar mode blocks write tools via pre_tool_call hook.',
-        '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
-        '- Dispatch reviewer for validation after the integrated builder batch is reconciled, never per individual builder delegation - general review first, then risk-matched lenses sequentially (not after direct single-thread work).',
-      ].join('\n'),
-    },
     'adventurer.md': {
-      output: 'adventurer/SKILL.md',
       frontmatter: {
-        name: 'maestria-adventurer',
         description: 'Research and exploration -- gathers information from any source',
+        name: 'maestria-adventurer',
       },
+      output: 'adventurer/SKILL.md',
       replace: [],
     },
 
     // -- Architect: design and decision --
     'architect.md': {
-      output: 'architect/SKILL.md',
       frontmatter: {
-        name: 'maestria-architect',
         description:
           'Architecture and design -- evaluates options, makes decisions, designs solutions across any domain',
+        name: 'maestria-architect',
       },
+      output: 'architect/SKILL.md',
       replace: [
         {
           from: 'You make architecture decisions systematically.',
@@ -162,17 +108,6 @@ export default {
 
     // -- Builder: production and implementation --
     'builder.md': {
-      output: 'builder/SKILL.md',
-      frontmatter: {
-        name: 'maestria-builder',
-        description: 'Focused production -- implements, creates, and produces output',
-      },
-      replace: [
-        {
-          from: 'A single configuration change',
-          to: 'A single configuration change or content update',
-        },
-      ],
       append: [
         '',
         '## OpenCode Routing',
@@ -183,15 +118,53 @@ export default {
         '',
         'The PermissionRole for builder grants full access (read + write + bash + llm + coding).',
       ].join('\n'),
+      frontmatter: {
+        description: 'Focused production -- implements, creates, and produces output',
+        name: 'maestria-builder',
+      },
+      output: 'builder/SKILL.md',
+      replace: [
+        {
+          from: 'A single configuration change',
+          to: 'A single configuration change or content update',
+        },
+      ],
+    },
+
+    // -- Command workflow modes (fein/sonar/blitz) --
+    'commands/blitz.md': {
+      frontmatter: {
+        description:
+          'Fast implementation mode: skip optional ceremony for familiar low-risk work; required review and safety floors remain',
+        name: 'maestria-command-blitz',
+      },
+      output: 'commands/blitz/SKILL.md',
+      stripFrontmatter: true,
+    },
+    'commands/fein.md': {
+      frontmatter: {
+        description: 'Full pipeline mode: reconnaissance, design, implementation, review',
+        name: 'maestria-command-fein',
+      },
+      output: 'commands/fein/SKILL.md',
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      frontmatter: {
+        description: 'Research-only mode: reconnaissance and design only, no implementation',
+        name: 'maestria-command-sonar',
+      },
+      output: 'commands/sonar/SKILL.md',
+      stripFrontmatter: true,
     },
 
     // -- Diagnose: root cause analysis --
     'diagnose.md': {
-      output: 'diagnose/SKILL.md',
       frontmatter: {
-        name: 'maestria-diagnose',
         description: 'Root cause analysis -- investigates problems and finds causes',
+        name: 'maestria-diagnose',
       },
+      output: 'diagnose/SKILL.md',
       replace: [
         { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
         {
@@ -207,26 +180,50 @@ export default {
       ],
     },
 
+    // -- Orchestrator: the methodology dispatcher --
+    'orchestrator.md': {
+      append: [
+        '',
+        '## Hermes-Specific Notes',
+        '',
+        '- **Default: single-thread execution.** Hermes orchestrator has full tool access. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode").',
+        '- `delegate_task` is for multi-step tasks that benefit from parallelization or specialist expertise.',
+        '- Each specialist has a `PermissionRole` restricting its tools.',
+        '- Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.',
+        '- Sonar mode blocks write tools via pre_tool_call hook.',
+        '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
+        '- Dispatch reviewer for validation after the integrated builder batch is reconciled, never per individual builder delegation - general review first, then risk-matched lenses sequentially (not after direct single-thread work).',
+      ].join('\n'),
+      frontmatter: {
+        description:
+          'Methodology orchestrator -- runs single-thread by default, delegates to specialists for complex tasks',
+        name: 'maestria-orchestrator',
+      },
+      output: 'orchestrator/SKILL.md',
+      prepend: '',
+      replace: [],
+    },
+
     // -- Planner: planning and execution --
     'planner.md': {
-      output: 'planner/SKILL.md',
-      frontmatter: {
-        name: 'maestria-planner',
-        description: 'Planning -- breaks down work into ordered, verifiable steps',
-      },
       // NOTE: no replace ops. The previous five generalization replaces
       // anchored to the canonical Guard Rails bullet lists, which were
       // consolidated into a single guard-rails line; that line is already
       // general-purpose wording.
+      frontmatter: {
+        description: 'Planning -- breaks down work into ordered, verifiable steps',
+        name: 'maestria-planner',
+      },
+      output: 'planner/SKILL.md',
     },
 
     // -- Reviewer: quality validation --
     'reviewer.md': {
-      output: 'reviewer/SKILL.md',
       frontmatter: {
-        name: 'maestria-reviewer',
         description: 'Quality gates -- validates output, checks for issues, ensures correctness',
+        name: 'maestria-reviewer',
       },
+      output: 'reviewer/SKILL.md',
       replace: [
         { from: 'review code', to: 'review output' },
         { from: "Google's Code Review Guidelines", to: 'Peer review best practices' },
@@ -235,33 +232,35 @@ export default {
       ],
     },
 
-    // -- Writer: content creation --
-    'writer.md': {
-      output: 'writer/SKILL.md',
-      frontmatter: {
-        name: 'maestria-writer',
-        description: 'Content creation -- produces clear, structured documentation and prose',
-      },
-      replace: [],
-    },
-
     // -- Rules: cross-cutting methodology rules --
     // rules.md lives at packages/core/agent-directives/rules.md (parent of specialists/)
     // The secondary source mechanism in sync.ts resolves it automatically.
     'rules.md': {
-      output: 'global-rules/SKILL.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'maestria-global-rules',
-        description: 'Cross-cutting methodology rules for all specialists',
-      },
       // NOTE: no replace ops. The previous four generalization replaces
       // anchored to canonical sentences/tables removed by earlier directive
       // revisions and silently no-op'd; the revised canonical rules body is
       // already general-purpose wording.
+      frontmatter: {
+        description: 'Cross-cutting methodology rules for all specialists',
+        name: 'maestria-global-rules',
+      },
+      output: 'global-rules/SKILL.md',
+      stripFrontmatter: true,
+    },
+
+    // -- Writer: content creation --
+    'writer.md': {
+      frontmatter: {
+        description: 'Content creation -- produces clear, structured documentation and prose',
+        name: 'maestria-writer',
+      },
+      output: 'writer/SKILL.md',
+      replace: [],
     },
   },
 
+  output: 'src/maestria_hermes/skills',
   // Preserve files in the output directory that aren't generated by sync
   preserve: ['.gitkeep'],
+  source: '../core/agent-directives/specialists',
 } satisfies SyncConfig;

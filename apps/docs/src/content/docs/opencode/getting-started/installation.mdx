@@ -15,8 +15,7 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Installation via CLI (Recommended)
 
-The [maestria CLI](/cli/) provides a unified interface for installing and managing
-maestria plugins across all supported platforms:
+The [maestria CLI](/cli/) provides a unified interface for installing and managing maestria plugins across all supported platforms:
 
 <PackageManagers
   type="dlx"
@@ -85,10 +84,7 @@ To update via the maestria CLI:
 <details>
 <summary>Alternative: Platform-native update</summary>
 
-OpenCode does not auto-update plugins. Packages are cached locally in
-`~/.cache/opencode/packages/<name>@<version>/` - the npm registry is not consulted if the
-package is already cached. To update, re-run the install command with the same scope as
-the original install:
+OpenCode does not auto-update plugins. Packages are cached locally in `~/.cache/opencode/packages/<name>@<version>/` - the npm registry is not consulted if the package is already cached. To update, re-run the install command with the same scope as the original install:
 
 ```bash
 # If installed globally
@@ -98,8 +94,7 @@ opencode plugin @maestria/opencode@latest -g --force
 opencode plugin @maestria/opencode@latest --force
 ```
 
-Use `--force` to replace an existing config entry. To force a fresh install from
-npm (bypassing the local cache), clear the cache first:
+Use `--force` to replace an existing config entry. To force a fresh install from npm (bypassing the local cache), clear the cache first:
 
 <Tabs syncKey="os">
   <TabItem label="macOS / Linux">
@@ -131,11 +126,11 @@ Run `opencode debug paths` to see the cache directory resolved for your platform
 
 The orchestrator responds to three mode keywords that adjust the pipeline depth:
 
-| Keyword | Full form           | Pipeline                                                     | Use case                           |
-| ------- | ------------------- | ------------------------------------------------------------ | ---------------------------------- |
-| `fein`  | Full pipeline       | thinker → worker → verifier (adaptive order)                 | Production-grade, mandatory review |
-| `sonar` | Research            | adventurer → architect/planner → STOP                        | Understanding before committing    |
-| `blitz` | Fast implementation | direct when the host permits; otherwise permitted specialist | Quick fixes, known territory       |
+| Keyword | Full form | Pipeline | Use case |
+| --- | --- | --- | --- |
+| `fein` | Full pipeline | thinker → worker → verifier (adaptive order) | Production-grade, mandatory review |
+| `sonar` | Research | adventurer → architect/planner → STOP | Understanding before committing |
+| `blitz` | Fast implementation | direct when the host permits; otherwise permitted specialist | Quick fixes, known territory |
 
 The keyword is detected at any position in your message, case-insensitively. Most restrictive keyword wins (fein > sonar > blitz). Code blocks are excluded from detection.
 
@@ -153,8 +148,7 @@ To disable a mode, set `modes.disabledKeywords` in your plugin configuration:
 
 ## Uninstalling
 
-There is no CLI command to remove a plugin. To uninstall, edit your OpenCode
-config file and remove the entry from the `plugin` array:
+There is no CLI command to remove a plugin. To uninstall, edit your OpenCode config file and remove the entry from the `plugin` array:
 
 <Steps>
 
@@ -176,8 +170,7 @@ config file and remove the entry from the `plugin` array:
 
 3. **Restart OpenCode**
 
-   The `@maestria/opencode` agents and rules will no longer be available.
-   Other OpenCode plugins you have installed remain unaffected.
+   The `@maestria/opencode` agents and rules will no longer be available. Other OpenCode plugins you have installed remain unaffected.
 
 </Steps>
 

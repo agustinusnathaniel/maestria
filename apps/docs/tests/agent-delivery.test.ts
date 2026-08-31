@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import {
   MARKDOWN_MIME,
-  VARY_VALUE,
   markdownTwinPath,
+  VARY_VALUE,
   wantsMarkdown,
 } from '@/lib/agent-delivery.ts';
 

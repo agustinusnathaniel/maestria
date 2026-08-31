@@ -1,10 +1,10 @@
 ---
-name: writer
 description: |-
   Documentation writing following structured patterns.
   Creates clear, comprehensive docs for code, APIs, systems.
   Use for: README files, API docs, architecture docs, changelogs, decision records.
 model: inherit
+name: writer
 skills:
   - maestria:global-rules
 ---

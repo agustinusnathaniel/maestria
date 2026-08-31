@@ -1,12 +1,13 @@
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { describe, it, expect, vi } from 'vite-plus/test';
-import { MODE_KEYWORDS, getModePrompt } from '@maestria/shared-pi/modes-core';
+import { getModePrompt, MODE_KEYWORDS } from '@maestria/shared-pi/modes-core';
+import path from 'node:path';
+import { describe, expect, it, vi } from 'vite-plus/test';
+
+import type { ModeCommandContext, ModeCommandsApi } from '@/modes.js';
 import { installModeCommands } from '@/modes.js';
 import { createInitialState } from '@/state.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
+const __dirname = import.meta.dirname;
+const COMMANDS_DIR = path.resolve(__dirname, '../agents/commands');
 
 // ---------------------------------------------------------------------------
 // MODE_KEYWORDS
@@ -60,26 +61,36 @@ describe('getModePrompt', () => {
 // installModeCommands
 // ---------------------------------------------------------------------------
 describe('installModeCommands', () => {
-  function createMockPi() {
-    const commands: Record<string, { description: string; handler: (...args: any[]) => any }> = {};
+  interface ModeCommand {
+    description: string;
+    handler: (args: string, ctx: ModeCommandContext) => Promise<void> | void;
+  }
+  interface MockPi extends ModeCommandsApi {
+    _commands: Record<string, ModeCommand>;
+    appendEntry: ReturnType<typeof vi.fn<(type: string, data?: unknown) => void>>;
+    registerCommand: (name: string, config: ModeCommand) => void;
+    setActiveTools: ReturnType<typeof vi.fn<ModeCommandsApi['setActiveTools']>>;
+    setModel: ReturnType<typeof vi.fn<ModeCommandsApi['setModel']>>;
+  }
+
+  const createMockPi = (): MockPi => {
+    const commands: Record<string, ModeCommand> = {};
     return {
-      registerCommand: (
-        name: string,
-        config: { description: string; handler: (...args: any[]) => any },
-      ) => {
+      _commands: commands,
+      appendEntry: vi.fn<(type: string, data?: unknown) => void>(),
+      registerCommand: (name: string, config: ModeCommand) => {
         commands[name] = config;
       },
-      sendUserMessage: (_content: string | unknown[], _options?: { deliverAs?: string }) => {},
-      appendEntry: vi.fn(),
-      _commands: commands,
-    } as any;
-  }
+      setActiveTools: vi.fn<ModeCommandsApi['setActiveTools']>(),
+      setModel: vi.fn<ModeCommandsApi['setModel']>(),
+    };
+  };
 
   it('calls pi.registerCommand for each keyword', () => {
     const pi = createMockPi();
     const state = createInitialState();
 
-    installModeCommands(pi as any, state);
+    installModeCommands(pi, state);
 
     expect(Object.keys(pi._commands)).toEqual(['mode-clear', 'fein', 'sonar', 'blitz']);
   });
@@ -88,8 +99,10 @@ describe('installModeCommands', () => {
     const pi = createMockPi();
     const state = createInitialState();
     state.mode = 'sonar';
-    installModeCommands(pi as any, state);
-    const ctx = { ui: { notify: vi.fn() } };
+    installModeCommands(pi, state);
+    const ctx: ModeCommandContext = {
+      ui: { notify: vi.fn<(message: string) => void>() },
+    };
     await pi._commands['mode-clear'].handler('', ctx);
     expect(state.mode).toBeNull();
     expect(ctx.ui.notify).toHaveBeenCalledWith('Workflow mode cleared. Neutral routing is active.');
@@ -99,7 +112,7 @@ describe('installModeCommands', () => {
     const pi = createMockPi();
     const state = createInitialState();
 
-    installModeCommands(pi as any, state);
+    installModeCommands(pi, state);
 
     expect(pi._commands.fein.description).toBe('Set workflow mode to fein');
     expect(pi._commands.sonar.description).toBe('Set workflow mode to sonar');
@@ -110,19 +123,12 @@ describe('installModeCommands', () => {
     it('with args, sets state.mode to "fein" and notifies (prompt injection via auto-detect)', async () => {
       let notifyMessage: string | undefined;
 
-      const pi = {
-        registerCommand: (name: string, config: any) => {
-          pi._commands[name] = config;
-        },
-        sendUserMessage: () => {},
-        appendEntry: vi.fn(),
-        _commands: {} as Record<string, any>,
-      };
+      const pi = createMockPi();
 
       const state = createInitialState();
-      installModeCommands(pi as any, state);
+      installModeCommands(pi, state);
 
-      const handler = pi._commands.fein.handler;
+      const { handler } = pi._commands.fein;
       const ctx = {
         ui: {
           notify: (msg: string) => {
@@ -139,9 +145,9 @@ describe('installModeCommands', () => {
     it('without args, sets state.mode but calls ctx.ui.notify instead', async () => {
       const pi = createMockPi();
       const state = createInitialState();
-      installModeCommands(pi as any, state);
+      installModeCommands(pi, state);
 
-      const handler = pi._commands.fein.handler;
+      const { handler } = pi._commands.fein;
       let notifyMessage: string | undefined;
       const ctx = {
         ui: {
@@ -160,9 +166,9 @@ describe('installModeCommands', () => {
     it('with whitespace-only args is treated as no args', async () => {
       const pi = createMockPi();
       const state = createInitialState();
-      installModeCommands(pi as any, state);
+      installModeCommands(pi, state);
 
-      const handler = pi._commands.fein.handler;
+      const { handler } = pi._commands.fein;
       let notifyMessage: string | undefined;
       const ctx = {
         ui: {
@@ -181,18 +187,11 @@ describe('installModeCommands', () => {
 
   describe('persists state on mode changes', () => {
     it('persists state via appendEntry after setting fein mode', async () => {
-      const pi = {
-        registerCommand: (name: string, config: any) => {
-          pi._commands[name] = config;
-        },
-        sendUserMessage: vi.fn(),
-        appendEntry: vi.fn(),
-        _commands: {} as Record<string, any>,
-      };
+      const pi = createMockPi();
       const state = createInitialState();
-      installModeCommands(pi as any, state);
+      installModeCommands(pi, state);
 
-      const handler = pi._commands.fein.handler;
+      const { handler } = pi._commands.fein;
       const ctx = { ui: { notify: vi.fn() } };
       await handler('build feature', ctx);
 
@@ -204,18 +203,11 @@ describe('installModeCommands', () => {
     });
 
     it('persists state via appendEntry after setting sonar mode', async () => {
-      const pi = {
-        registerCommand: (name: string, config: any) => {
-          pi._commands[name] = config;
-        },
-        sendUserMessage: vi.fn(),
-        appendEntry: vi.fn(),
-        _commands: {} as Record<string, any>,
-      };
+      const pi = createMockPi();
       const state = createInitialState();
-      installModeCommands(pi as any, state);
+      installModeCommands(pi, state);
 
-      const handler = pi._commands.sonar.handler;
+      const { handler } = pi._commands.sonar;
       const ctx = { ui: { notify: vi.fn() } };
       await handler('research', ctx);
 
@@ -227,18 +219,11 @@ describe('installModeCommands', () => {
     });
 
     it('persists state via appendEntry after setting blitz mode', async () => {
-      const pi = {
-        registerCommand: (name: string, config: any) => {
-          pi._commands[name] = config;
-        },
-        sendUserMessage: vi.fn(),
-        appendEntry: vi.fn(),
-        _commands: {} as Record<string, any>,
-      };
+      const pi = createMockPi();
       const state = createInitialState();
-      installModeCommands(pi as any, state);
+      installModeCommands(pi, state);
 
-      const handler = pi._commands.blitz.handler;
+      const { handler } = pi._commands.blitz;
       const ctx = { ui: { notify: vi.fn() } };
       await handler('implement quickly', ctx);
 

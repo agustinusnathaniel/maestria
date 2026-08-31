@@ -19,23 +19,28 @@
 // sandbox/enforcement claim is made. This extension writes no files (no
 // `~/.pi`, no `.prime/agent` writes): state rides on host session entries.
 
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { ExtensionAPI } from './pi-api.js';
-import { createInitialState, restoreModeState } from './state.js';
+import path from 'node:path';
+
 import { createModePromptHandler, installCommands } from './modes.js';
+import type {
+  ExtensionAPI,
+  ExtensionContext,
+  SessionStartEvent,
+  SessionTreeEvent,
+} from './pi-api.js';
+import { createInitialState, restoreModeState } from './state.js';
 
 /**
  * Resolve the package's generated `skills/` directory. When running from the
  * built `dist/extension.mjs`, this is `<packageRoot>/skills`; when running from
  * source (tests), it is the same package-relative location.
  */
-function resolveSkillsDir(): string {
-  const moduleDir = dirname(fileURLToPath(import.meta.url));
-  return resolve(moduleDir, '../skills');
-}
+const resolveSkillsDir = (): string => {
+  const moduleDir = import.meta.dirname;
+  return path.resolve(moduleDir, '../skills');
+};
 
-export default function (pi: ExtensionAPI): void {
+const extension = (pi: ExtensionAPI): void => {
   const state = createInitialState();
   const skillsDir = resolveSkillsDir();
 
@@ -48,11 +53,13 @@ export default function (pi: ExtensionAPI): void {
 
   // Restore the active mode when a session starts, is reloaded, resumed, or
   // forked, and when navigating the session tree to a different branch.
-  pi.on('session_start', (_event, ctx) => {
+  pi.on('session_start', (_event: SessionStartEvent, ctx: ExtensionContext) => {
     restoreModeState(state, ctx.sessionManager.getBranch());
   });
 
-  pi.on('session_tree', (_event, ctx) => {
+  pi.on('session_tree', (_event: SessionTreeEvent, ctx: ExtensionContext) => {
     restoreModeState(state, ctx.sessionManager.getBranch());
   });
-}
+};
+
+export default extension;

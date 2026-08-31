@@ -1,6 +1,6 @@
 ---
-name: blitz
 description: Fast capability-aware Maestria route that skips optional ceremony without waiving safety or review.
+name: blitz
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -1,6 +1,6 @@
 ---
-name: maestria-writer
 description: Content creation -- produces clear, structured documentation and prose
+name: maestria-writer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

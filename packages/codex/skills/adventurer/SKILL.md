@@ -1,6 +1,6 @@
 ---
-name: adventurer
 description: Codebase reconnaissance workflow for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.
+name: adventurer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -1,11 +1,11 @@
 ---
-name: planner
 description: |-
   Create detailed implementation plans with phased
   dependencies, timelines, verifiable success criteria, and rollback points.
   Breaks complex features into verifiable milestones.
   Use for: complex features requiring multi-phase execution, when the plan needs
   review before building.
+name: planner
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

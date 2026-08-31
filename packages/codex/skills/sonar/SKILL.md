@@ -1,6 +1,6 @@
 ---
-name: sonar
 description: Research-only Maestria route using read-only specialist skills, then stop before implementation.
+name: sonar
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

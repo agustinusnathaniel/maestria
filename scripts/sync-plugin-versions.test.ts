@@ -1,8 +1,10 @@
-import { describe, it, expect, afterEach } from 'vite-plus/test';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { main, syncTarget, type Target } from './sync-plugin-versions.js';
+import { afterEach, describe, expect, it } from 'vite-plus/test';
+
+import { main, syncTarget } from './sync-plugin-versions.js';
+import type { Target } from './sync-plugin-versions.js';
 
 /**
  * Behavior-focused tests for scripts/sync-plugin-versions.ts.
@@ -18,18 +20,31 @@ import { main, syncTarget, type Target } from './sync-plugin-versions.js';
 
 const tempDirs: string[] = [];
 
+type JsonObject = Record<string, unknown>;
+
+const isJsonObject = (value: unknown): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const parseJsonObject = (text: string): JsonObject => {
+  const value: unknown = JSON.parse(text);
+  if (!isJsonObject(value)) {
+    throw new Error('expected a JSON object');
+  }
+  return value;
+};
+
 afterEach(() => {
   for (const dir of tempDirs.splice(0)) {
-    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(dir, { force: true, recursive: true });
   }
 });
 
 /** Create a throwaway fixture dir under the OS temp dir, removed after the test. */
-function tempDir(): string {
+const tempDir = (): string => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sync-plugin-'));
   tempDirs.push(dir);
   return dir;
-}
+};
 
 /**
  * Create a fixture package dir.
@@ -38,11 +53,11 @@ function tempDir(): string {
  * omits the file (so the synchronizer must report it missing). Returns the
  * package dir and the manifest paths as passed to `syncTarget`.
  */
-function makePackage(
+const makePackage = (
   root: string,
   version: string | number | null,
   manifests: Record<string, string | null>,
-): { pkg: string; manifestPaths: string[] } {
+): { pkg: string; manifestPaths: string[] } => {
   const pkg = path.join(root, 'pkg');
   fs.mkdirSync(pkg, { recursive: true });
   const pkgJson: Record<string, unknown> = { name: 'fixture-pkg' };
@@ -51,7 +66,7 @@ function makePackage(
   }
   fs.writeFileSync(
     path.join(pkg, 'package.json'),
-    JSON.stringify(pkgJson, null, 2) + '\n',
+    `${JSON.stringify(pkgJson, null, 2)}\n`,
     'utf-8',
   );
   const manifestPaths: string[] = [];
@@ -63,8 +78,8 @@ function makePackage(
     }
     manifestPaths.push(rel);
   }
-  return { pkg, manifestPaths };
-}
+  return { manifestPaths, pkg };
+};
 
 describe('syncTarget', () => {
   it('reports OK when in sync under --check and does not write', () => {
@@ -73,7 +88,7 @@ describe('syncTarget', () => {
     const { pkg, manifestPaths } = makePackage(root, '1.2.3', { 'plugin.json': original });
     const results = syncTarget(pkg, manifestPaths, true);
     expect(results).toHaveLength(1);
-    expect(results[0]).toMatch(/^OK: /);
+    expect(results[0]).toMatch(/^OK: /u);
     expect(results[0].endsWith('plugin.json (1.2.3)')).toBe(true);
     expect(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8')).toBe(original);
   });
@@ -85,7 +100,7 @@ describe('syncTarget', () => {
     });
     const results = syncTarget(pkg, manifestPaths, true);
     expect(results).toHaveLength(1);
-    expect(results[0]).toMatch(/^DRIFT: /);
+    expect(results[0]).toMatch(/^DRIFT: /u);
     expect(results[0]).toContain('expected 1.2.3 found 1.2.2');
     expect(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8')).toContain('"version": "1.2.2"');
   });
@@ -97,10 +112,10 @@ describe('syncTarget', () => {
     const { pkg, manifestPaths } = makePackage(root, '0.2.0', { 'plugin.json': original });
     const results = syncTarget(pkg, manifestPaths, false);
     expect(results).toHaveLength(1);
-    expect(results[0]).toMatch(/^OK: synced /);
+    expect(results[0]).toMatch(/^OK: synced /u);
     expect(results[0].endsWith('to 0.2.0')).toBe(true);
     expect(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8')).toBe(
-      '{\n  "name": "maestria",\n  "version": "0.2.0",\n' + '  "description": "test"\n}\n',
+      '{\n  "name": "maestria",\n  "version": "0.2.0",\n  "description": "test"\n}\n',
     );
   });
 
@@ -111,9 +126,10 @@ describe('syncTarget', () => {
     const checkResults = syncTarget(pkg, manifestPaths, true);
     expect(checkResults[0]).toContain('expected 2.0.0 found 1.0.0');
     syncTarget(pkg, manifestPaths, false);
-    const manifest = JSON.parse(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8'));
+    const manifest = parseJsonObject(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8'));
     expect(manifest.version).toBe('2.0.0');
-    expect(manifest.meta.version).toBe('9.9.9');
+    const meta = isJsonObject(manifest.meta) ? manifest.meta : undefined;
+    expect(meta?.version).toBe('9.9.9');
   });
 
   it('rejects malformed JSON in check and write without writing', () => {
@@ -130,8 +146,8 @@ describe('syncTarget', () => {
       for (const check of [true, false]) {
         const results = syncTarget(pkg, manifestPaths, check);
         expect(results).toHaveLength(1);
-        expect(results[0]).toMatch(/^ERROR: /);
-        expect(results[0]).not.toMatch(/^DRIFT: /);
+        expect(results[0]).toMatch(/^ERROR: /u);
+        expect(results[0]).not.toMatch(/^DRIFT: /u);
       }
       expect(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8')).toBe(text);
     }
@@ -144,7 +160,7 @@ describe('syncTarget', () => {
     for (const check of [true, false]) {
       const results = syncTarget(pkg, manifestPaths, check);
       expect(results).toHaveLength(1);
-      expect(results[0]).toMatch(/^ERROR: /);
+      expect(results[0]).toMatch(/^ERROR: /u);
     }
     expect(fs.readFileSync(path.join(pkg, 'plugin.yaml'), 'utf-8')).toBe(malformed);
   });
@@ -178,7 +194,7 @@ describe('syncTarget', () => {
     });
     const results = syncTarget(pkg, manifestPaths, false);
     expect(results).toHaveLength(1);
-    expect(results[0]).toMatch(/^OK: synced /);
+    expect(results[0]).toMatch(/^OK: synced /u);
     expect(fs.readFileSync(path.join(pkg, 'src/maestria_hermes/_version.py'), 'utf-8')).toBe(
       '"""Package version -- single source of truth."""\n__version__ = "0.1.13"\n',
     );
@@ -191,7 +207,7 @@ describe('syncTarget', () => {
     for (const check of [true, false]) {
       const results = syncTarget(pkg, [], check);
       expect(results).toHaveLength(1);
-      expect(results[0]).toMatch(/^ERROR: /);
+      expect(results[0]).toMatch(/^ERROR: /u);
       expect(results[0]).toContain('not found');
     }
   });
@@ -199,11 +215,11 @@ describe('syncTarget', () => {
   it('fails on missing, non-string, or invalid-semver package version', () => {
     for (const version of [null, 42, '', 'not-semver'] as const) {
       const root = tempDir();
-      const { pkg } = makePackage(root, version as string | number | null, {});
+      const { pkg } = makePackage(root, version, {});
       for (const check of [true, false]) {
         const results = syncTarget(pkg, [], check);
         expect(results).toHaveLength(1);
-        expect(results[0]).toMatch(/^ERROR: /);
+        expect(results[0]).toMatch(/^ERROR: /u);
       }
     }
   });
@@ -212,10 +228,10 @@ describe('syncTarget', () => {
     const root = tempDir();
     const { pkg, manifestPaths } = makePackage(root, '1.2.3', { 'plugin.json': null });
     const checkResults = syncTarget(pkg, manifestPaths, true);
-    expect(checkResults[0]).toMatch(/^DRIFT: /);
+    expect(checkResults[0]).toMatch(/^DRIFT: /u);
     expect(checkResults[0]).toContain('not found');
     const writeResults = syncTarget(pkg, manifestPaths, false);
-    expect(writeResults[0]).toMatch(/^ERROR: /);
+    expect(writeResults[0]).toMatch(/^ERROR: /u);
     expect(writeResults[0]).toContain('not found');
   });
 
@@ -255,7 +271,7 @@ describe('syncTarget', () => {
     });
     const results = syncTarget(pkg, manifestPaths, false);
     expect(results).toHaveLength(2);
-    expect(results[0]).toMatch(/^ERROR: /);
+    expect(results[0]).toMatch(/^ERROR: /u);
     expect(results[0]).toContain('skipped');
     expect(results[1]).toContain('no "version" field found');
     expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
@@ -273,7 +289,7 @@ describe('syncTarget', () => {
     });
     const results = syncTarget(pkg, manifestPaths, false);
     expect(results).toHaveLength(2);
-    expect(results[0]).toMatch(/^ERROR: /);
+    expect(results[0]).toMatch(/^ERROR: /u);
     expect(results[0]).toContain('skipped');
     expect(results[1]).toContain('no "version" field found');
     expect(results.some((r) => r.startsWith('DRIFT'))).toBe(false);
@@ -282,13 +298,13 @@ describe('syncTarget', () => {
   });
 });
 
-describe('main wiring', () => {
-  /** Run main() against fixture targets. */
-  function runMain(pkg: string, manifests: string[], ...args: string[]): number {
-    const targets: Target[] = [[pkg, manifests]];
-    return main(args, targets);
-  }
+/** Run main() against fixture targets. */
+const runMain = (pkg: string, manifests: string[], ...args: string[]): number => {
+  const targets: Target[] = [[pkg, manifests]];
+  return main(args, targets);
+};
 
+describe('main wiring', () => {
   it('returns 0 when in sync under --check', () => {
     const root = tempDir();
     const { pkg, manifestPaths } = makePackage(root, '1.2.3', {
@@ -319,12 +335,12 @@ describe('main wiring', () => {
     }
     fs.writeFileSync(
       path.join(hermesPkg, 'package.json'),
-      JSON.stringify({ name: '@maestria/hermes', version: '0.1.13' }, null, 2) + '\n',
+      `${JSON.stringify({ name: '@maestria/hermes', version: '0.1.13' }, null, 2)}\n`,
       'utf-8',
     );
     fs.writeFileSync(
       path.join(claudePkg, 'package.json'),
-      JSON.stringify({ name: '@maestria/claude-code', version: '0.2.0' }, null, 2) + '\n',
+      `${JSON.stringify({ name: '@maestria/claude-code', version: '0.2.0' }, null, 2)}\n`,
       'utf-8',
     );
     fs.mkdirSync(path.join(hermesPkg, 'src', 'maestria_hermes'), { recursive: true });
@@ -357,7 +373,7 @@ describe('main wiring', () => {
     expect(fs.readFileSync(path.join(hermesPkg, 'plugin.yaml'), 'utf-8')).toContain(
       'version: 0.1.13',
     );
-    const claudeManifest = JSON.parse(
+    const claudeManifest = parseJsonObject(
       fs.readFileSync(path.join(claudePkg, '.claude-plugin', 'plugin.json'), 'utf-8'),
     );
     expect(claudeManifest.version).toBe('0.2.0');

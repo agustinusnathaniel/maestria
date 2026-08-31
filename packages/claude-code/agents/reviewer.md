@@ -1,14 +1,14 @@
 ---
-name: reviewer
 description: |-
   Code review with quality gates.
   Reviews code for correctness, edge cases, security, performance, maintainability,
   and adherence to conventions. Provides specific, actionable feedback.
   Use for: PR review, pre-commit review, architecture document review.
+disallowedTools: Write, Edit
 model: inherit
+name: reviewer
 skills:
   - maestria:global-rules
-disallowedTools: Write, Edit
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

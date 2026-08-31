@@ -16,8 +16,8 @@
     "changeset": "changeset",
     "version-packages": "changeset version && pnpm exec tsx scripts/sync-plugin-versions.ts",
     "release": "changeset publish",
-    "check": "vp check && vp run build && vp run test && vp run test-sync-plugin-versions && vp run check-manifest-versions",
-    "check:ci": "vp check && pnpm build:ci && vp run check-python && vp run test-sync-plugin-versions && vp run test && vp run check-manifest-versions",
+    "check": "vp run build & vp run check-fmt & wait && vp run check-lint && vp run test && vp run test-sync-plugin-versions && vp run check-manifest-versions",
+    "check:ci": "pnpm build:ci & vp run check-fmt & wait && vp run check-lint && vp run check-python && vp run test-sync-plugin-versions && vp run test && vp run check-manifest-versions",
     "clean": "vp cache clean",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",
@@ -35,6 +35,7 @@
     "all-contributors-cli": "catalog:",
     "jsonc-parser": "catalog:",
     "tsx": "4.23.12",
+    "ultracite": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "catalog:",
     "yaml": "^2.9.0"

@@ -1,17 +1,33 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { Effect } from 'effect';
+import { describe, expect, it, vi } from 'vite-plus/test';
+
+import type * as shell from '@/lib/shell.js';
 import {
-  parseOpenCodeModels,
-  parsePiModels,
-  parseOmpModels,
-  parseFrontmatterModel,
-  setFrontmatterModel,
-  setConfigModelJsonc,
+  createCodexAgentConfig,
+  getModelConfigHandler,
+  parseCodexAgentModel,
   parseConfigModels,
   parseCursorModels,
-  parseCodexAgentModel,
+  parseFrontmatterModel,
+  parseOmpModels,
+  parseOpenCodeModels,
+  parsePiModels,
   setCodexAgentModel,
-  createCodexAgentConfig,
+  setConfigModelJsonc,
+  setFrontmatterModel,
 } from '../src/lib/model-config.js';
+
+const shellMocks = vi.hoisted(() => ({
+  commandExists: vi.fn(),
+}));
+
+vi.mock('@/lib/shell.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof shell>();
+  return {
+    ...actual,
+    commandExists: shellMocks.commandExists,
+  };
+});
 
 describe('parseOpenCodeModels', () => {
   it('parses provider/model lines', () => {
@@ -52,12 +68,12 @@ describe('parseOmpModels', () => {
     const out = JSON.stringify({
       models: [
         {
-          provider: 'opencode-go',
           id: 'deepseek-v4-flash',
+          provider: 'opencode-go',
           selector: 'opencode-go/deepseek-v4-flash',
         },
-        { provider: 'opencode-zen', id: 'gpt-5.2', selector: 'opencode-zen/gpt-5.2' },
-        { provider: 'x', id: 'y' },
+        { id: 'gpt-5.2', provider: 'opencode-zen', selector: 'opencode-zen/gpt-5.2' },
+        { id: 'y', provider: 'x' },
       ],
     });
     expect(parseOmpModels(out)).toEqual(['opencode-go/deepseek-v4-flash', 'opencode-zen/gpt-5.2']);
@@ -85,6 +101,18 @@ describe('parseCursorModels', () => {
       'gpt-5.4',
       'auto',
     ]);
+  });
+});
+
+describe('Cursor model configuration availability', () => {
+  it('reports Cursor unavailable when neither supported CLI is present', async () => {
+    shellMocks.commandExists.mockReturnValue(Effect.succeed(false));
+    const handler = getModelConfigHandler('cursor');
+    if (handler?.isAvailable === undefined) {
+      throw new Error('Cursor model configuration handler has no availability check');
+    }
+
+    expect(await Effect.runPromise(handler.isAvailable)).toBe(false);
   });
 });
 

@@ -1,6 +1,6 @@
 ---
-name: maestria-planner
 description: Planning -- breaks down work into ordered, verifiable steps
+name: maestria-planner
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

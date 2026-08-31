@@ -1,6 +1,6 @@
 ---
-name: planner
 description: Create detailed implementation plans with phased dependencies, timelines, and success criteria. Use for complex multi-phase features before building.
+name: planner
 readonly: true
 ---
 

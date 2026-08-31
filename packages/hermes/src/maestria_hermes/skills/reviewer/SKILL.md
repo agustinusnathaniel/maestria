@@ -1,6 +1,6 @@
 ---
-name: maestria-reviewer
 description: Quality gates -- validates output, checks for issues, ensures correctness
+name: maestria-reviewer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

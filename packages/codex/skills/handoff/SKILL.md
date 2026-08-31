@@ -1,6 +1,6 @@
 ---
-name: handoff
 description: Concise handoff contract for passing outcome, constraints, evidence, blockers, and next steps between workflow stages.
+name: handoff
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

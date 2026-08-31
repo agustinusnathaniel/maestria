@@ -23,16 +23,16 @@ Every subagent dispatch records the parent task ID and specialist name in the se
 
 ## Commands
 
-| Command              | Description                                                                   |
-| -------------------- | ----------------------------------------------------------------------------- |
-| `/fein`              | Set workflow mode to full pipeline                                            |
-| `/sonar`             | Set workflow mode to research only                                            |
-| `/blitz`             | Set workflow mode to fast implementation                                      |
-| `/review <target>`   | Enter review mode - restricts toolset to read-only, optionally switches model |
-| `/restore-model`     | Exit review mode and restore original model and tools                         |
-| `/review-model <id>` | Configure which model to use when entering review mode                        |
-| `/handoff <goal>`    | Generate a structured handoff document for task context transfer              |
-| `/maestria-status`   | Show current session state including handoff history                          |
+| Command | Description |
+| --- | --- |
+| `/fein` | Set workflow mode to full pipeline |
+| `/sonar` | Set workflow mode to research only |
+| `/blitz` | Set workflow mode to fast implementation |
+| `/review <target>` | Enter review mode - restricts toolset to read-only, optionally switches model |
+| `/restore-model` | Exit review mode and restore original model and tools |
+| `/review-model <id>` | Configure which model to use when entering review mode |
+| `/handoff <goal>` | Generate a structured handoff document for task context transfer |
+| `/maestria-status` | Show current session state including handoff history |
 
 > **Mode keywords work two ways:**
 >
@@ -51,12 +51,7 @@ When a workflow mode is active (fein/sonar/blitz), the platform may restrict the
   restricted and retain their full specialist toolset.
 </Aside>
 
-OMP's public extension API exposes tool names but not the provenance of a tool call. Maestria
-therefore does not make a name-only exception for `goal`, because another extension could register
-a colliding tool. Native goal state remains observable, including paused goals, but OMP's native
-resume, complete, and drop operations remain OMP-owned and available through user-issued `/goal`
-slash commands. Maestria does not invoke those commands. Model `goal` tool calls remain blocked
-while pure-dispatcher enforcement is active because their provenance cannot be established.
+OMP's public extension API exposes tool names but not the provenance of a tool call. Maestria therefore does not make a name-only exception for `goal`, because another extension could register a colliding tool. Native goal state remains observable, including paused goals, but OMP's native resume, complete, and drop operations remain OMP-owned and available through user-issued `/goal` slash commands. Maestria does not invoke those commands. Model `goal` tool calls remain blocked while pure-dispatcher enforcement is active because their provenance cannot be established.
 
 ### Enforcement lifecycle
 
@@ -64,11 +59,11 @@ When you start a session, the orchestrator prompt and global rules are always ac
 
 Unlike OpenCode, Pi and OMP do not have a separate `@orchestrator` agent. The orchestrator skill is present in the main session. A mode keyword adds the mode prompt and, where supported, tool enforcement; it does not switch the session into a different agent.
 
-| Interaction                    | Enforcement | What happens                                                                   |
-| ------------------------------ | ----------- | ------------------------------------------------------------------------------ |
-| `implement login` (no keyword) | Inactive    | Orchestrator guidance is present and the main session retains its normal tools |
-| `fein implement login`         | Active      | AI restricted to delegation tools only                                         |
-| `/fein` (command)              | Active      | Mode set, enforcement active from next turn                                    |
+| Interaction | Enforcement | What happens |
+| --- | --- | --- |
+| `implement login` (no keyword) | Inactive | Orchestrator guidance is present and the main session retains its normal tools |
+| `fein implement login` | Active | AI restricted to delegation tools only |
+| `/fein` (command) | Active | Mode set, enforcement active from next turn |
 
 The mode persists across turns in the same process. Use `/mode-clear` to return to neutral routing without restarting.
 
@@ -116,13 +111,7 @@ Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are block
 
 **Session persistence.** Mode and delegation state survive session compaction, resume, and fork operations. Run `/maestria-status` to view the current state at any time.
 
-**Native goal state (OMP).** Maestria observes OMP's public `goal_updated` event and mirrors active,
-paused, and budget-limited goals into session state. Non-null complete and dropped terminal events
-clear the current-goal mirror after persisting the transition. Session start, switch, fork, branch,
-handoff, and tree-navigation transitions restore the target-session Maestria state and use a valid
-public native goal mode entry when available. If OMP provides no readable target goal state, the
-mirror resets to unknown (`null`) until a future public goal event. Maestria never activates goal
-mode or invokes native goal commands.
+**Native goal state (OMP).** Maestria observes OMP's public `goal_updated` event and mirrors active, paused, and budget-limited goals into session state. Non-null complete and dropped terminal events clear the current-goal mirror after persisting the transition. Session start, switch, fork, branch, handoff, and tree-navigation transitions restore the target-session Maestria state and use a valid public native goal mode entry when available. If OMP provides no readable target goal state, the mirror resets to unknown (`null`) until a future public goal event. Maestria never activates goal mode or invokes native goal commands.
 
 <Aside type="note">
   **Pi** depends on `@gotgenes/pi-subagents` for subagent lifecycle and state management. **OMP**

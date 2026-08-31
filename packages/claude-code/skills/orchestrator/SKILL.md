@@ -1,5 +1,4 @@
 ---
-name: orchestrator
 description: |-
   Maestria methodology dispatcher for Claude Code.
   Routes work (direct/focused/full), delegates to specialist agents
@@ -8,6 +7,7 @@ description: |-
   maker/checker split, handoff contracts, and workflow modes (fein/sonar/blitz).
   Use for multi-step or multi-file work, planning, review, debugging,
   architecture decisions, or documentation.
+name: orchestrator
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

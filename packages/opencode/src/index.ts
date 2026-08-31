@@ -1,39 +1,77 @@
-import type { Plugin } from '@opencode-ai/plugin';
+import type { Config, Hooks, Plugin, PluginInput } from '@opencode-ai/plugin';
 import { merge } from 'es-toolkit';
-import { readFileSync, readdirSync } from 'fs';
-import { join, basename } from 'path';
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
-import { type MaestriaPluginOptions, maestriaOptionsSchema } from '@/modes/types.js';
-import { detectMode, stripKeyword, getModeMarker, getModePrompt } from '@/modes/index.js';
+
+import { detectMode, getModeMarker, getModePrompt, stripKeyword } from '@/modes/index.js';
+import { maestriaOptionsSchema } from '@/modes/types.js';
+import type { MaestriaPluginOptions } from '@/modes/types.js';
 import { AGENTS_DIR, RULES_PATH } from '@/root.js';
+
+type OpenCodeAgentConfig = NonNullable<NonNullable<Config['agent']>[string]>;
+type AgentMode = NonNullable<OpenCodeAgentConfig['mode']>;
+type AgentPermission = NonNullable<OpenCodeAgentConfig['permission']> & Record<string, unknown>;
+type AgentConfig = Omit<OpenCodeAgentConfig, 'mode' | 'permission'> & {
+  mode: AgentMode;
+  permission: AgentPermission;
+};
+type ChatMessageHook = NonNullable<Hooks['chat.message']>;
+type ChatMessageInput = Parameters<ChatMessageHook>[0];
+type ChatMessageOutput = Parameters<ChatMessageHook>[1];
+type TextPart = Extract<ChatMessageOutput['parts'][number], { type: 'text' }>;
+type ConfigInput = Parameters<NonNullable<Hooks['config']>>[0];
+type CompactingOutput = Parameters<NonNullable<Hooks['experimental.session.compacting']>>[1];
 
 interface AgentFrontmatter {
   description: string;
-  mode: string;
-  permission: Record<string, unknown>;
+  mode: AgentMode;
+  permission: AgentPermission;
   color?: string;
   maxSteps?: number;
 }
 
-function parseFrontmatter(yamlStr: string): AgentFrontmatter {
-  const result = parseYaml(yamlStr) as Record<string, unknown>;
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isAgentMode = (value: unknown): value is AgentMode =>
+  value === 'all' || value === 'primary' || value === 'subagent';
+
+const parsePermission = (value: unknown): AgentPermission => {
+  if (!isRecord(value)) {
+    return {};
+  }
+
+  const permission: AgentPermission = {};
+  for (const [key, permissionValue] of Object.entries(value)) {
+    permission[key] = permissionValue;
+  }
+  return permission;
+};
+
+const parseFrontmatter = (yamlStr: string): AgentFrontmatter => {
+  const parsed = parseYaml(yamlStr) as unknown;
+  const result = isRecord(parsed) ? parsed : {};
+
   return {
-    description: (result.description as string) || '',
-    mode: (result.mode as string) || 'subagent',
-    permission: (result.permission as Record<string, unknown>) || {},
-    color: result.color as string | undefined,
-    maxSteps: result.maxSteps ? Number(result.maxSteps) : undefined,
+    color: typeof result.color === 'string' ? result.color : undefined,
+    description: typeof result.description === 'string' ? result.description : '',
+    maxSteps:
+      result.maxSteps !== undefined && result.maxSteps !== null && result.maxSteps !== ''
+        ? Number(result.maxSteps)
+        : undefined,
+    mode: isAgentMode(result.mode) ? result.mode : 'subagent',
+    permission: parsePermission(result.permission),
   };
-}
+};
 
 /**
  * Read an agent markdown file and split into frontmatter + prompt.
  */
-function parseAgentFile(filePath: string): { name: string; config: Record<string, unknown> } {
+const parseAgentFile = (filePath: string): { name: string; config: AgentConfig } => {
   const content = readFileSync(filePath, 'utf-8');
-  const name = basename(filePath, '.md');
+  const name = path.basename(filePath, '.md');
 
-  // Split on ---
   const parts = content.split('---');
   if (parts.length < 3) {
     throw new Error(`Invalid agent file: ${filePath} - missing frontmatter`);
@@ -42,107 +80,121 @@ function parseAgentFile(filePath: string): { name: string; config: Record<string
   const frontmatter = parseFrontmatter(parts[1].trim());
   const prompt = parts.slice(2).join('---').trim();
 
-  const config: Record<string, unknown> = {
+  const config: AgentConfig = {
     description: frontmatter.description,
     mode: frontmatter.mode,
-    prompt,
     permission: frontmatter.permission,
+    prompt,
   };
 
-  if (frontmatter.color) {
+  if (frontmatter.color !== undefined && frontmatter.color !== null && frontmatter.color !== '') {
     config.color = frontmatter.color;
   }
-  if (frontmatter.maxSteps) {
+  if (
+    frontmatter.maxSteps !== undefined &&
+    frontmatter.maxSteps !== null &&
+    frontmatter.maxSteps !== 0
+  ) {
     config.maxSteps = frontmatter.maxSteps;
   }
 
-  return { name, config };
-}
+  return { config, name };
+};
 
 /**
  * Load all agent configs from the bundled agents/ directory.
  * Returns partial results if some agent files fail to load.
  */
-function loadAgents(): Record<string, Record<string, unknown>> {
+const loadAgents = (): NonNullable<Config['agent']> => {
   try {
-    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith('.md'));
-    const agents: Record<string, Record<string, unknown>> = {};
+    const files = readdirSync(AGENTS_DIR).filter((file) => file.endsWith('.md'));
+    const agents: NonNullable<Config['agent']> = {};
 
     for (const file of files) {
       try {
-        const { name, config } = parseAgentFile(join(AGENTS_DIR, file));
+        const { name, config } = parseAgentFile(path.join(AGENTS_DIR, file));
         agents[name] = config;
-      } catch (err) {
-        console.warn(`[maestria] Failed to parse agent file "${file}":`, err);
+      } catch (error) {
+        console.warn(`[maestria] Failed to parse agent file "${file}":`, error);
       }
     }
 
     return agents;
-  } catch (err) {
-    console.error(`[maestria] Failed to read agents directory:`, err);
+  } catch (error) {
+    console.error('[maestria] Failed to read agents directory:', error);
     throw new Error(
-      `[maestria] Failed to load agents from "${AGENTS_DIR}": ` +
-        (err instanceof Error ? err.message : String(err)),
+      `[maestria] Failed to load agents from "${AGENTS_DIR}": ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { cause: error },
     );
   }
-}
+};
 
-export const MaestriaPlugin: Plugin = async (_input, options?: MaestriaPluginOptions) => {
-  // Validate and parse options with zod
+const applyModeToMessage = (
+  hookInput: ChatMessageInput,
+  hookOutput: ChatMessageOutput,
+  disabledKeywords: Set<string>,
+): void => {
+  if (hookInput.agent !== 'orchestrator') {
+    return;
+  }
+
+  const textPart = hookOutput.parts.find((part): part is TextPart => part.type === 'text');
+  if (textPart === undefined) {
+    return;
+  }
+
+  const result = detectMode(textPart.text, disabledKeywords);
+  if (result === null) {
+    return;
+  }
+
+  textPart.text = [
+    getModeMarker(result.mode),
+    '',
+    getModePrompt(result.mode),
+    '',
+    stripKeyword(textPart.text, result),
+  ].join('\n');
+};
+
+const configureAgents = (input: ConfigInput, agents: NonNullable<Config['agent']>): void => {
+  input.agent = merge(input.agent ?? {}, agents);
+  input.instructions = [...(input.instructions ?? []), RULES_PATH];
+};
+
+const appendCompactionContext = (output: CompactingOutput): void => {
+  output.context.push(
+    'Session was compacted. Task tracking is maintained via todowrite. ' +
+      'Active context (files, decisions, blockers) was captured before compaction. ' +
+      'Continue where you left off.',
+  );
+};
+
+export const MaestriaPlugin: Plugin = async (
+  _input: PluginInput,
+  options?: MaestriaPluginOptions,
+) => {
   const parsed = maestriaOptionsSchema.parse(options ?? {});
   const disabledKeywords = new Set<string>(
-    (parsed.modes?.disabledKeywords ?? []).map((k) => k.toLowerCase()),
+    (parsed.modes?.disabledKeywords ?? []).map((keyword) => keyword.toLowerCase()),
   );
   const agents = loadAgents();
+  await Promise.resolve();
 
   return {
-    config: async (input) => {
-      // Deep-merge plugin agent defaults over the user's agent entries. A
-      // shallow `{ ...input.agent, ...agents }` would replace each entry
-      // wholesale, dropping user-set keys (model, variant, temperature) for
-      // the 8 maestria agent names. Plugin defaults win on conflict; user
-      // keys the plugin does not set survive.
-      input.agent = merge(input.agent ?? {}, agents);
-      input.instructions = [...(input.instructions ?? []), RULES_PATH];
-    },
-    'experimental.session.compacting': async (_input, output) => {
-      output.context.push(
-        'Session was compacted. Task tracking is maintained via todowrite. ' +
-          'Active context (files, decisions, blockers) was captured before compaction. ' +
-          'Continue where you left off.',
-      );
-    },
     'chat.message': async (hookInput, hookOutput) => {
-      // Only fire for the orchestrator agent
-      if (hookInput.agent !== 'orchestrator') {
-        return;
-      }
-
-      // Find the first text part with user content
-      const textPart = hookOutput.parts.find((p) => p.type === 'text') as
-        | { text: string; type: 'text' }
-        | undefined;
-      if (!textPart) {
-        return;
-      }
-
-      // Detect keyword in the text
-      const result = detectMode(textPart.text, disabledKeywords);
-      if (!result) {
-        return;
-      }
-
-      // Strip keyword from text and prepend mode marker + prompt inline.
-      // We embed everything in the existing text part rather than injecting
-      // a second text part into `parts`, because the OpenCode runtime does
-      // not handle multiple text parts per message (causes a hang).
-      textPart.text = [
-        getModeMarker(result.mode),
-        '',
-        getModePrompt(result.mode),
-        '',
-        stripKeyword(textPart.text, result),
-      ].join('\n');
+      applyModeToMessage(hookInput, hookOutput, disabledKeywords);
+      await Promise.resolve();
+    },
+    config: async (input) => {
+      configureAgents(input, agents);
+      await Promise.resolve();
+    },
+    'experimental.session.compacting': async (_compactingInput, output) => {
+      appendCompactionContext(output);
+      await Promise.resolve();
     },
   };
 };

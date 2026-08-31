@@ -1,15 +1,15 @@
 ---
-name: architect
+arguments: []
 description: |-
   Architecture decisions using decision matrices and ADRs.
   Evaluates options with weighted criteria, clarifies business context first.
   Use for: technology choices, implementation approaches, trade-off analysis.
+name: architect
 type: prompt
 whenToUse: |-
   Technology choices, comparing approaches, "should we use X or Y",
   evaluating options with long-term consequences. Use when more than
   one approach is viable and the choice has downstream impact.
-arguments: []
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

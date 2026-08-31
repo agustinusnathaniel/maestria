@@ -6,12 +6,6 @@ description: |-
   Use for: PR review, pre-commit review, architecture document review.
 mode: subagent
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  skill: allow
-  edit: deny
   bash:
     "*": ask
     ls*: allow
@@ -40,6 +34,12 @@ permission:
     vp*: allow
     rtk*: allow
     node*: allow
+  edit: deny
+  glob: allow
+  grep: allow
+  lsp: allow
+  read: allow
+  skill: allow
   webfetch: allow
 ---
 

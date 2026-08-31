@@ -4,7 +4,7 @@ description: Install and use maestria to manage maestria plugins across OpenCode
 ---
 
 import { Aside } from '@astrojs/starlight/components';
-import AllPackageManagers from '@/components/AllPackageManagers.astro';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
 `maestria` runs anywhere Node.js 22+ is available. No install required - use `npx` to run it directly from npm.
 
@@ -130,8 +130,7 @@ All commands accept `--json` for machine-readable output. Useful for CI scripts,
 
 ## Compact Output
 
-Use `--compact` for minimal machine-friendly text output suitable for AI agents
-and token-sensitive environments:
+Use `--compact` for minimal machine-friendly text output suitable for AI agents and token-sensitive environments:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="status --compact" />
 
@@ -167,12 +166,9 @@ Use `--quiet` to suppress spinner animations. Commands still print final output:
 | `1`   | Validation or command error            |
 | `130` | User cancelled (interactive mode only) |
 
-The `install` and `update` commands detect non-interactive terminals (e.g., CI
-pipelines) and exit with code `1` showing a clear error message instead of
-attempting an interactive prompt.
+The `install` and `update` commands detect non-interactive terminals (e.g., CI pipelines) and exit with code `1` showing a clear error message instead of attempting an interactive prompt.
 
-Run any command with `--help` to see in-terminal examples, exit code documentation,
-and a TIP FOR AI AGENTS section with usage guidance for automated pipelines.
+Run any command with `--help` to see in-terminal examples, exit code documentation, and a TIP FOR AI AGENTS section with usage guidance for automated pipelines.
 
 ## Input Validation
 

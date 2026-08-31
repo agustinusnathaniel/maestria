@@ -5,15 +5,6 @@ description: |-
   Use for: cryptic errors, regressions, production bugs.
 mode: subagent
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  webfetch: allow
-  websearch: ask
-  skill: allow
-  todowrite: allow
-  edit: allow
   bash:
     ls*: allow
     cat*: allow
@@ -38,6 +29,15 @@ permission:
     env: allow
     pwd: allow
     "*": ask
+  edit: allow
+  glob: allow
+  grep: allow
+  lsp: allow
+  read: allow
+  skill: allow
+  todowrite: allow
+  webfetch: allow
+  websearch: ask
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

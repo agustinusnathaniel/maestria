@@ -1,6 +1,6 @@
 ---
-name: blitz
 description: Fast implementation mode - skip optional ceremony for familiar, low-risk work; never waive safety or required review. Load when the user invokes blitz or asks for a fast route.
+name: blitz
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

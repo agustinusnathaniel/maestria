@@ -1,35 +1,63 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
-import { installSubagentTool } from '@/subagent.js';
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
-import { createInitialState } from '@/state.js';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
-const zodChainable = () => ({
-  describe: vi.fn(zodChainable),
-  optional: vi.fn(() => ({})),
+import { createInitialState } from '@/state.js';
+import { installSubagentTool } from '@/subagent.js';
+import type { SubagentToolApi } from '@/subagent.js';
+
+interface ZodChainable {
+  describe: (description: string) => ZodChainable;
+  optional: () => ZodChainable;
+}
+
+const zodChainable = (): ZodChainable => ({
+  describe: zodChainable,
+  optional: zodChainable,
 });
 
-function createMockPi() {
-  return {
-    registerTool: vi.fn(),
-    appendEntry: vi.fn(),
-    zod: {
-      object: vi.fn(() => ({})),
-      string: vi.fn(zodChainable),
-      array: vi.fn(zodChainable),
-      enum: vi.fn(zodChainable),
-    },
+interface MockPi extends SubagentToolApi {
+  appendEntry: ReturnType<typeof vi.fn<SubagentToolApi['appendEntry']>>;
+  registerTool: ReturnType<typeof vi.fn<SubagentToolApi['registerTool']>>;
+  zod: {
+    array: ReturnType<typeof vi.fn<SubagentToolApi['zod']['array']>>;
+    enum: ReturnType<typeof vi.fn<SubagentToolApi['zod']['enum']>>;
+    object: ReturnType<typeof vi.fn<SubagentToolApi['zod']['object']>>;
+    string: ReturnType<typeof vi.fn<SubagentToolApi['zod']['string']>>;
   };
 }
 
-function getToolDef(pi: any): any {
-  return pi.registerTool.mock.calls[0][0];
-}
+const createMockPi = (): MockPi => ({
+  appendEntry: vi.fn(),
+  registerTool: vi.fn(),
+  zod: {
+    array: vi.fn(zodChainable),
+    enum: vi.fn(zodChainable),
+    object: vi.fn(zodChainable),
+    string: vi.fn(zodChainable),
+  },
+});
+
+const getToolDef = (pi: MockPi): Parameters<SubagentToolApi['registerTool']>[0] => {
+  const call = pi.registerTool.mock.calls.at(0);
+  if (call === undefined) {
+    throw new Error('maestria_subagent tool was not registered');
+  }
+  const [tool] = call;
+  if (tool === undefined) {
+    throw new Error('maestria_subagent tool definition was not provided');
+  }
+  return tool;
+};
+
+const install = (pi: MockPi, state: ReturnType<typeof createInitialState>): void => {
+  installSubagentTool(pi, state);
+};
 
 describe('installSubagentTool - tool registration', () => {
   it('registers a tool named "maestria_subagent"', () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
     const toolDef = getToolDef(pi);
     expect(toolDef.name).toBe('maestria_subagent');
   });
@@ -37,7 +65,7 @@ describe('installSubagentTool - tool registration', () => {
   it('registers the tool with label and description', () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
     const toolDef = getToolDef(pi);
     expect(toolDef.label).toBe('Maestria Subagent');
     expect(toolDef.description).toContain('Dispatch a task to a maestria specialist subagent');
@@ -46,7 +74,7 @@ describe('installSubagentTool - tool registration', () => {
   it('defines parameters using pi.zod', () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
     expect(pi.zod.object).toHaveBeenCalled();
     expect(pi.zod.string).toHaveBeenCalled();
     expect(pi.zod.array).toHaveBeenCalled();
@@ -57,7 +85,7 @@ describe('installSubagentTool - single mode', () => {
   it('rejects unknown agent names', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -74,7 +102,7 @@ describe('installSubagentTool - single mode', () => {
   it('rejects empty task description', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -85,7 +113,7 @@ describe('installSubagentTool - single mode', () => {
   it('returns delegation prompt for valid single mode', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     const result = await toolDef.execute(
@@ -105,7 +133,7 @@ describe('installSubagentTool - parallel mode', () => {
   it('throws for 1 task (below minimum of 2)', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -125,7 +153,7 @@ describe('installSubagentTool - parallel mode', () => {
   it('throws for unknown agent in tasks', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -148,7 +176,7 @@ describe('installSubagentTool - parallel mode', () => {
   it('throws when a task has empty description', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -171,7 +199,7 @@ describe('installSubagentTool - parallel mode', () => {
   it('returns dispatch plan for valid parallel mode', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     const result = await toolDef.execute(
@@ -199,7 +227,7 @@ describe('installSubagentTool - chain mode', () => {
   it('throws for 1 task (below minimum of 2)', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -219,7 +247,7 @@ describe('installSubagentTool - chain mode', () => {
   it('throws for unknown agent in tasks', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -242,7 +270,7 @@ describe('installSubagentTool - chain mode', () => {
   it('returns dispatch plan for valid chain mode', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     const result = await toolDef.execute(
@@ -269,7 +297,7 @@ describe('installSubagentTool - review mode blocks', () => {
   it('blocks dispatch during review mode', async () => {
     const pi = createMockPi();
     const state = { ...createInitialState(), reviewMode: true };
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     const result = await toolDef.execute(
@@ -288,7 +316,7 @@ describe('installSubagentTool - validation errors', () => {
   it('throws for mode=parallel without tasks', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -299,7 +327,7 @@ describe('installSubagentTool - validation errors', () => {
   it('throws for mode=chain without tasks', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await expect(
@@ -312,7 +340,7 @@ describe('installSubagentTool - handoff recording', () => {
   it('records handoff in state for single mode', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await toolDef.execute(
@@ -333,7 +361,7 @@ describe('installSubagentTool - handoff recording', () => {
   it('deduplicates specialists across repeated delegation', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await toolDef.execute('call-1', { agent: 'builder', task: 'build' }, undefined, undefined, {});
@@ -351,7 +379,7 @@ describe('installSubagentTool - handoff recording', () => {
   it('records handoffs in state for parallel mode', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await toolDef.execute(
@@ -381,17 +409,12 @@ describe('installSubagentTool - handoff recording', () => {
   it('persists state via appendEntry after handoff recording', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installSubagentTool(pi as any, state);
+    install(pi, state);
 
     const toolDef = getToolDef(pi);
     await toolDef.execute('call-1', { agent: 'builder', task: 'build' }, undefined, undefined, {});
 
-    expect(pi.appendEntry).toHaveBeenCalledWith(
-      'maestria_state',
-      expect.objectContaining({
-        handoffHistory: expect.arrayContaining([expect.objectContaining({ task: 'build' })]),
-      }),
-    );
+    expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', state);
   });
 });
 

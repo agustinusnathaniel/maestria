@@ -23,21 +23,21 @@ This separation prevents a single agent from grading its own homework. By enforc
 
 Thinkers gather information, evaluate options, and produce designs or plans. They are **read-heavy, write-light** - they consume context, produce analysis, and shape direction, but rarely modify production artifacts directly.
 
-| Specialist     | Function            | Scope                                                                            |
-| -------------- | ------------------- | -------------------------------------------------------------------------------- |
-| **Adventurer** | Reconnaissance      | Maps unfamiliar code, traces dependencies, gathers context before implementation |
-| **Architect**  | Design & decisions  | Evaluates trade-offs, selects approaches, documents architecture decisions       |
-| **Planner**    | Phased plans        | Breaks complex features into sequenced milestones with verification criteria     |
-| **Diagnose**   | Root cause analysis | Traces bugs from symptom to cause, determines the correct fix                    |
+| Specialist | Function | Scope |
+| --- | --- | --- |
+| **Adventurer** | Reconnaissance | Maps unfamiliar code, traces dependencies, gathers context before implementation |
+| **Architect** | Design & decisions | Evaluates trade-offs, selects approaches, documents architecture decisions |
+| **Planner** | Phased plans | Breaks complex features into sequenced milestones with verification criteria |
+| **Diagnose** | Root cause analysis | Traces bugs from symptom to cause, determines the correct fix |
 
 ### Worker
 
 Workers execute. They take a clear specification (from a Thinker) and produce the corresponding artifact. Workers are **write-heavy** - they edit files, run commands, and ship changes.
 
-| Specialist  | Function       | Scope                                                                   |
-| ----------- | -------------- | ----------------------------------------------------------------------- |
+| Specialist | Function | Scope |
+| --- | --- | --- |
 | **Builder** | Implementation | One atomic task per invocation - bug fix, feature slice, test, refactor |
-| **Writer**  | Documentation  | Structured docs - READMEs, API docs, changelogs, architecture decisions |
+| **Writer** | Documentation | Structured docs - READMEs, API docs, changelogs, architecture decisions |
 
 ### Verifier
 
@@ -110,11 +110,11 @@ Implementation turns end at a delivered state - reviewed changes on a pushed bra
 
 The pipeline supports three modes that control its depth. Each mode is suited to a different class of work.
 
-| Mode                    | Pipeline                                                                                                                                                | Use Case                                                                                              |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Full pipeline**       | Thinker → Worker → Verifier (adaptive sequencing)                                                                                                       | Explicitly chosen for high-risk or multi-phase work where the extra stages earn their cost.           |
-| **Research**            | Thinker only - STOP after analysis/design                                                                                                               | Understanding before committing. Reconnaissance, architecture evaluation, planning without execution. |
-| **Fast implementation** | Direct execution when the host permits it; otherwise the permitted specialist - skip optional recon/design ceremony and keep required safeguards/review | Quick fixes in known territory where the design is obvious and risk is low.                           |
+| Mode | Pipeline | Use Case |
+| --- | --- | --- |
+| **Full pipeline** | Thinker → Worker → Verifier (adaptive sequencing) | Explicitly chosen for high-risk or multi-phase work where the extra stages earn their cost. |
+| **Research** | Thinker only - STOP after analysis/design | Understanding before committing. Reconnaissance, architecture evaluation, planning without execution. |
+| **Fast implementation** | Direct execution when the host permits it; otherwise the permitted specialist - skip optional recon/design ceremony and keep required safeguards/review | Quick fixes in known territory where the design is obvious and risk is low. |
 
 The available mode names and activation rules depend on the platform. A task can also escalate from one mode to another - if a fast implementation hits unexpected complexity, the agent can fall back to the full pipeline. Strong or expensive models often work better with direct execution or a single specialist; see [When to use Maestria](/core/when-to-use/).
 

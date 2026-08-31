@@ -5,11 +5,6 @@ description: |-
   Use for: complex features requiring multi-phase execution, when the plan needs review before building.
 mode: subagent
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  lsp: allow
-  edit: ask
   bash:
     "*": ask
     ls*: allow
@@ -36,9 +31,14 @@ permission:
     mkdir*: allow
     pnpm*: allow
     npm*: allow
-  webfetch: allow
-  todowrite: allow
+  edit: ask
+  glob: allow
+  grep: allow
+  lsp: allow
+  read: allow
   skill: allow
+  todowrite: allow
+  webfetch: allow
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -1,21 +1,22 @@
-import { describe, it, expect } from 'vite-plus/test';
+import type { BeforeAgentStartEvent } from '@oh-my-pi/pi-coding-agent';
+import { describe, expect, it } from 'vite-plus/test';
+
 import { createModePromptHandler } from '@/rules.js';
 import { createInitialState } from '@/state.js';
-import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-pi/pi-coding-agent';
 
 describe('createModePromptHandler', () => {
   // In omp, systemPrompt is a string array (string[]), not a single string.
   const baseEvent: BeforeAgentStartEvent = {
-    type: 'before_agent_start',
     prompt: 'build the feature',
     systemPrompt: ['You are an AI assistant.'],
+    type: 'before_agent_start',
   };
 
   it('when mode is null, returns void (no modification)', () => {
     const state = createInitialState();
     const handler = createModePromptHandler(state);
 
-    const result = handler(baseEvent, {} as any);
+    const result = handler(baseEvent, {});
     expect(result).toBeUndefined();
   });
 
@@ -24,10 +25,12 @@ describe('createModePromptHandler', () => {
     state.mode = 'fein';
     const handler = createModePromptHandler(state);
 
-    const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
-    // result.systemPrompt should be a string array
+    const result = handler(baseEvent, {});
+    if (!result?.systemPrompt) {
+      throw new Error('Expected a system prompt');
+    }
     expect(Array.isArray(result.systemPrompt)).toBe(true);
-    const joined = (result.systemPrompt as string[]).join('\n');
+    const joined = result.systemPrompt.join('\n');
     expect(joined).toContain('[MODE: fein]');
   });
 
@@ -36,9 +39,12 @@ describe('createModePromptHandler', () => {
     state.mode = 'sonar';
     const handler = createModePromptHandler(state);
 
-    const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
+    const result = handler(baseEvent, {});
+    if (!result?.systemPrompt) {
+      throw new Error('Expected a system prompt');
+    }
     expect(Array.isArray(result.systemPrompt)).toBe(true);
-    const joined = (result.systemPrompt as string[]).join('\n');
+    const joined = result.systemPrompt.join('\n');
     expect(joined).toContain('Research Only');
   });
 
@@ -47,8 +53,11 @@ describe('createModePromptHandler', () => {
     state.mode = 'blitz';
     const handler = createModePromptHandler(state);
 
-    const result = handler(baseEvent, {} as any) as BeforeAgentStartEventResult;
-    const promptArray = result.systemPrompt as string[];
+    const result = handler(baseEvent, {});
+    if (!result?.systemPrompt) {
+      throw new Error('Expected a system prompt');
+    }
+    const promptArray = result.systemPrompt;
     // Original system prompt should come first (the first element is the original string)
     expect(promptArray[0]).toBe('You are an AI assistant.');
     // Mode marker should appear somewhere in the joined string

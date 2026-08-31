@@ -1,6 +1,6 @@
 ---
-name: orchestrator
 description: "Maestria workflow dispatcher for Codex CLI: route work, use specialist skills, preserve handoffs, and keep independent review explicit."
+name: orchestrator
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

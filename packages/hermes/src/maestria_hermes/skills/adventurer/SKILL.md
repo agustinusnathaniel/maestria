@@ -1,6 +1,6 @@
 ---
-name: maestria-adventurer
 description: Research and exploration -- gathers information from any source
+name: maestria-adventurer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

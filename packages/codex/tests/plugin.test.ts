@@ -1,9 +1,8 @@
-import { describe, it, expect } from 'vite-plus/test';
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vite-plus/test';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
 const EXPECTED_SKILLS = [
@@ -33,63 +32,52 @@ const EXPECTED_NATIVE_AGENTS = [
   'maestria-writer',
 ] as const;
 
-interface PluginManifest {
-  name?: string;
-  version?: string;
-  description?: string;
-  skills?: string;
-  hooks?: unknown;
-  mcpServers?: unknown;
-  apps?: unknown;
-}
+type JsonObject = Record<string, unknown>;
 
-interface PackageManifest {
-  version?: string;
-}
+const isJsonObject = (value: unknown): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
-interface MarketplaceManifest {
-  name?: string;
-  plugins?: Array<{
-    name?: string;
-    source?: { source?: string; package?: string };
-  }>;
-}
+const readJson = async (relativePath: string): Promise<JsonObject> => {
+  const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf-8');
+  const value: unknown = JSON.parse(text);
+  if (!isJsonObject(value)) {
+    throw new Error(`expected a JSON object: ${relativePath}`);
+  }
+  return value;
+};
 
-async function readJson<T>(relativePath: string): Promise<T> {
-  const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8');
-  return JSON.parse(text) as T;
-}
-
-async function pathExists(relativePath: string): Promise<boolean> {
+const pathExists = async (relativePath: string): Promise<boolean> => {
   try {
     await stat(path.join(PACKAGE_ROOT, relativePath));
     return true;
   } catch {
     return false;
   }
-}
+};
 
-function parseFrontmatter(text: string): Record<string, string> {
-  const lines = text.split(/\r?\n/);
+const parseFrontmatter = (text: string): Record<string, string> => {
+  const lines = text.split(/\r?\n/u);
   expect(lines[0]?.trim()).toBe('---');
   const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
   expect(close).toBeGreaterThan(0);
 
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
-    const match = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/.exec(line);
-    if (match !== null && match[2] !== undefined) {
-      data[match[1]] = match[2];
+    const match = /^(?<key>[A-Za-z][A-Za-z0-9_-]*):\s*(?<value>.*)$/u.exec(line);
+    const key = match?.groups?.key;
+    const value = match?.groups?.value;
+    if (key !== undefined && value !== undefined) {
+      data[key] = value;
     }
   }
   return data;
-}
+};
 
 describe('.codex-plugin/plugin.json manifest', () => {
   it('has the Codex plugin identity and skills entry point', async () => {
     const [manifest, pkg] = await Promise.all([
-      readJson<PluginManifest>('.codex-plugin/plugin.json'),
-      readJson<PackageManifest>('package.json'),
+      readJson('.codex-plugin/plugin.json'),
+      readJson('package.json'),
     ]);
     expect(manifest.name).toBe('maestria');
     expect(manifest.version).toBe(pkg.version);
@@ -99,14 +87,14 @@ describe('.codex-plugin/plugin.json manifest', () => {
 
   it('version aligns with package metadata', async () => {
     const [manifest, pkg] = await Promise.all([
-      readJson<PluginManifest>('.codex-plugin/plugin.json'),
-      readJson<{ version?: string }>('package.json'),
+      readJson('.codex-plugin/plugin.json'),
+      readJson('package.json'),
     ]);
     expect(manifest.version).toBe(pkg.version);
   });
 
   it('does not ship unimplemented integrations or hooks', async () => {
-    const manifest = await readJson<PluginManifest>('.codex-plugin/plugin.json');
+    const manifest = await readJson('.codex-plugin/plugin.json');
     expect(manifest.hooks).toBeUndefined();
     expect(manifest.mcpServers).toBeUndefined();
     expect(manifest.apps).toBeUndefined();
@@ -115,12 +103,13 @@ describe('.codex-plugin/plugin.json manifest', () => {
 
 describe('repository marketplace entry', () => {
   it('points the native Codex marketplace at the published npm package', async () => {
-    const marketplace = JSON.parse(
-      await readFile(path.join(PACKAGE_ROOT, '../../.agents/plugins/marketplace.json'), 'utf8'),
-    ) as MarketplaceManifest;
-    const plugin = marketplace.plugins?.find((entry) => entry.name === 'maestria');
+    const marketplace = await readJson('../../.agents/plugins/marketplace.json');
+    const plugins = Array.isArray(marketplace.plugins)
+      ? marketplace.plugins.filter(isJsonObject)
+      : [];
+    const plugin = plugins.find((entry) => entry.name === 'maestria');
     expect(marketplace.name).toBe('maestria');
-    expect(plugin?.source).toEqual({ source: 'npm', package: '@maestria/codex' });
+    expect(plugin?.source).toEqual({ package: '@maestria/codex', source: 'npm' });
   });
 });
 
@@ -130,8 +119,8 @@ describe('generated skills', () => {
     const names = entries
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
-      .sort();
-    expect(names).toEqual([...EXPECTED_SKILLS].sort());
+      .toSorted();
+    expect(names).toEqual([...EXPECTED_SKILLS].toSorted());
   });
 
   for (const skill of EXPECTED_SKILLS) {
@@ -139,7 +128,7 @@ describe('generated skills', () => {
       const relativePath = `skills/${skill}/SKILL.md`;
       expect(await pathExists(relativePath)).toBe(true);
       const frontmatter = parseFrontmatter(
-        await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8'),
+        await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf-8'),
       );
       expect(frontmatter.name).toBe(skill);
       expect(frontmatter.description).toBeTruthy();
@@ -147,7 +136,7 @@ describe('generated skills', () => {
   }
 
   it('uses Codex namespaced specialist references', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'skills/orchestrator/SKILL.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'skills/orchestrator/SKILL.md'), 'utf-8');
     expect(text).toContain('$maestria:builder');
     expect(text).toContain('$maestria:reviewer');
     expect(text).toContain('maestria-builder');
@@ -155,7 +144,7 @@ describe('generated skills', () => {
   });
 
   it('ships the automatic global orchestration instruction template', async () => {
-    const text = await readFile(path.join(PACKAGE_ROOT, 'instructions/AGENTS.md'), 'utf8');
+    const text = await readFile(path.join(PACKAGE_ROOT, 'instructions/AGENTS.md'), 'utf-8');
     expect(text).toContain('maestria:codex-orchestrator:start');
     expect(text).toContain('$maestria:orchestrator');
     expect(text).toContain('agent_type');
@@ -164,11 +153,13 @@ describe('generated skills', () => {
   });
 
   it('states that read-only role boundaries are advisory', async () => {
-    for (const role of ['adventurer', 'planner', 'reviewer']) {
-      const text = await readFile(path.join(PACKAGE_ROOT, `skills/${role}/SKILL.md`), 'utf8');
-      expect(text).toMatch(/advisory/i);
-      expect(text).toMatch(/cannot enforce/i);
-    }
+    await Promise.all(
+      ['adventurer', 'planner', 'reviewer'].map(async (role) => {
+        const text = await readFile(path.join(PACKAGE_ROOT, `skills/${role}/SKILL.md`), 'utf-8');
+        expect(text).toMatch(/advisory/iu);
+        expect(text).toMatch(/cannot enforce/iu);
+      }),
+    );
   });
 });
 
@@ -176,9 +167,9 @@ describe('native Codex agent templates', () => {
   for (const agent of EXPECTED_NATIVE_AGENTS) {
     it(`${agent} has the required native TOML fields`, async () => {
       const relativePath = `agents/${agent}.toml`;
-      const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf8');
-      expect(text).toMatch(new RegExp(`^name\\s*=\\s*"${agent}"`, 'm'));
-      expect(text).toMatch(/^description\s*=\s*".+"/m);
+      const text = await readFile(path.join(PACKAGE_ROOT, relativePath), 'utf-8');
+      expect(text).toMatch(new RegExp(`^name\\s*=\\s*"${agent}"`, 'mu'));
+      expect(text).toMatch(/^description\s*=\s*".+"/mu);
       expect(text).toContain('developer_instructions = """');
       expect(text).toContain(`$maestria:${agent.replace('maestria-', '')}`);
     });
@@ -191,7 +182,7 @@ describe('native Codex agent templates', () => {
     'maestria-reviewer',
   ]) {
     it(`${agent} declares Codex read-only sandboxing`, async () => {
-      const text = await readFile(path.join(PACKAGE_ROOT, `agents/${agent}.toml`), 'utf8');
+      const text = await readFile(path.join(PACKAGE_ROOT, `agents/${agent}.toml`), 'utf-8');
       expect(text).toContain('sandbox_mode = "read-only"');
     });
   }
@@ -199,7 +190,7 @@ describe('native Codex agent templates', () => {
 
 describe('package metadata', () => {
   it('matches the public workspace package identity', async () => {
-    const pkg = await readJson<Record<string, unknown>>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.name).toBe('@maestria/codex');
     expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');

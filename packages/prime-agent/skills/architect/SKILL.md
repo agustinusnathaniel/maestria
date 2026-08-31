@@ -1,10 +1,10 @@
 ---
-name: architect
 description: |-
   Architecture decisions using decision matrices and ADRs.
   Evaluates options with weighted criteria, clarifies business context first.
   Use for: technology choices, implementation approaches, trade-off analysis,
   threat modeling, or ADR decisions.
+name: architect
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

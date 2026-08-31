@@ -1,6 +1,6 @@
 ---
-name: maestria-diagnose
 description: Root cause analysis -- investigates problems and finds causes
+name: maestria-diagnose
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

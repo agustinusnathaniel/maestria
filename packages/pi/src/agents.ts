@@ -1,12 +1,10 @@
-import { homedir } from 'node:os';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { deploySpecialistAgents as deployAgents } from '@maestria/shared-pi/agent-deployment';
+import { homedir } from 'node:os';
+import path from 'node:path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = import.meta.dirname;
 
-const AGENTS_SRC = join(__dirname, '..', 'agents');
+const AGENTS_SRC = path.join(__dirname, '..', 'agents');
 
 /**
  * Deploy bundled specialist agent .md files to the pi-subagents agents directory.
@@ -17,7 +15,6 @@ const AGENTS_SRC = join(__dirname, '..', 'agents');
  *
  * Only creates files that don't already exist - never overwrites user-customized agents.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function deploySpecialistAgents(_ctx?: unknown): void {
-  deployAgents(AGENTS_SRC, join(homedir(), '.pi', 'agent', 'agents'));
-}
+export const deploySpecialistAgents = (_ctx?: unknown): void => {
+  deployAgents(AGENTS_SRC, path.join(homedir(), '.pi', 'agent', 'agents'));
+};

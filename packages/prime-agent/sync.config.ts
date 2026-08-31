@@ -67,102 +67,93 @@ Recursive-subagent (\`rlm\`) dispatch and JSON/RPC headless mode are NOT provide
 `;
 
 const MODE_APPENDS: Record<string, string> = {
+  blitz: `
+Fast implementation mode. Load the \`orchestrator\` skill if coordination is needed. The \`/blitz\` extension command also activates this mode for the session (a goal argument is forwarded to the agent; the mode prompt is injected on every turn; clear with \`/mode-clear\`). If the user provided a goal after invoking \`blitz\`, implement that goal now.`,
   fein: `
 Load the \`orchestrator\` skill for routing and delegation methodology. The \`/fein\` extension command also activates this mode for the session (a goal argument is forwarded to the agent; the mode prompt is injected on every turn; clear with \`/mode-clear\`). If the user provided a goal after invoking \`fein\`, run the full pipeline on that goal now.`,
   sonar: `
 Research-only mode. Load the \`orchestrator\` skill for routing and delegation methodology. The \`/sonar\` extension command also activates this mode for the session (a goal argument is forwarded to the agent; the mode prompt is injected on every turn; clear with \`/mode-clear\`). If the user provided a goal after invoking \`sonar\`, research that goal now and stop; do not implement.`,
-  blitz: `
-Fast implementation mode. Load the \`orchestrator\` skill if coordination is needed. The \`/blitz\` extension command also activates this mode for the session (a goal argument is forwarded to the agent; the mode prompt is injected on every turn; clear with \`/mode-clear\`). If the user provided a goal after invoking \`blitz\`, implement that goal now.`,
 };
 
 export default {
-  source: '../core/agent-directives/specialists',
-  output: 'skills',
-
   default: {
     replace: [...AGENT_REF_REPLACES],
   },
-
   files: {
     'adventurer.md': {
-      output: 'adventurer/SKILL.md',
-      prepend: READ_ONLY_PREPENDS.adventurer,
       frontmatter: {
-        name: 'adventurer',
         description: `Codebase reconnaissance skill. Maps unknown territory -
 traces call chains, maps module relationships, generates structured recon
 reports for downstream work. Read-only role intent: exploration and reporting
 only, never implementation or design.
 Use for: understanding unfamiliar code, tracing dependencies, gathering context
 before implementation, investigating module structures.`,
+        name: 'adventurer',
       },
+      output: 'adventurer/SKILL.md',
+      prepend: READ_ONLY_PREPENDS.adventurer,
     },
     'architect.md': {
-      output: 'architect/SKILL.md',
       frontmatter: {
-        name: 'architect',
         description: `Architecture decisions using decision matrices and ADRs.
 Evaluates options with weighted criteria, clarifies business context first.
 Use for: technology choices, implementation approaches, trade-off analysis,
 threat modeling, or ADR decisions.`,
+        name: 'architect',
       },
+      output: 'architect/SKILL.md',
     },
     'builder.md': {
-      output: 'builder/SKILL.md',
       frontmatter: {
-        name: 'builder',
         description: `Focused implementation skill for atomic tasks. Executes
 one verifiable unit of work with minimal context and a clean diff.
 Use for: targeted fixes, feature implementation, refactors, adding tests.`,
+        name: 'builder',
       },
+      output: 'builder/SKILL.md',
+    },
+    'commands/blitz.md': {
+      append: MODE_APPENDS.blitz,
+      frontmatter: {
+        description:
+          'Fast implementation mode - skip optional ceremony for familiar, low-risk work; never waive safety or required review. Load when the user invokes blitz or asks for a fast route.',
+        name: 'blitz',
+      },
+      output: 'blitz/SKILL.md',
+      stripFrontmatter: true,
+    },
+    'commands/fein.md': {
+      append: MODE_APPENDS.fein,
+      frontmatter: {
+        description:
+          'Full pipeline mode - reconnaissance or design, implementation, and independent review. Load when the user invokes fein or asks for the complete maestria pipeline.',
+        name: 'fein',
+      },
+      output: 'fein/SKILL.md',
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      append: MODE_APPENDS.sonar,
+      frontmatter: {
+        description:
+          'Research-only mode - read-only specialist work, then STOP before implementation. Load when the user invokes sonar or asks for research-only work.',
+        name: 'sonar',
+      },
+      output: 'sonar/SKILL.md',
+      stripFrontmatter: true,
     },
     'diagnose.md': {
-      output: 'diagnose/SKILL.md',
       frontmatter: {
-        name: 'diagnose',
         description: `Systematic 6-step regression tracing: from error message
 to root cause to prevention.
 Use for: cryptic errors, regressions, production bugs, unclear root causes.`,
+        name: 'diagnose',
       },
-    },
-    'planner.md': {
-      output: 'planner/SKILL.md',
-      prepend: READ_ONLY_PREPENDS.planner,
-      frontmatter: {
-        name: 'planner',
-        description: `Create detailed implementation plans with phased
-dependencies, timelines, verifiable success criteria, and rollback points.
-Breaks complex features into verifiable milestones.
-Use for: complex features requiring multi-phase execution, when the plan needs
-review before building.`,
-      },
-    },
-    'reviewer.md': {
-      output: 'reviewer/SKILL.md',
-      prepend: READ_ONLY_PREPENDS.reviewer,
-      frontmatter: {
-        name: 'reviewer',
-        description: `Code review with quality gates. Reviews for correctness,
-edge cases, security, performance, maintainability, and adherence to
-conventions; provides specific, actionable feedback and preserves blind review.
-Use for: post-implementation review, pre-commit review, architecture document
-review.`,
-      },
-    },
-    'writer.md': {
-      output: 'writer/SKILL.md',
-      frontmatter: {
-        name: 'writer',
-        description: `Documentation writing following structured patterns.
-Creates clear, comprehensive docs for code, APIs, and systems.
-Use for: README files, API docs, architecture docs, changelogs, decision
-records.`,
-      },
+      output: 'diagnose/SKILL.md',
     },
     'orchestrator.md': {
-      output: 'orchestrator/SKILL.md',
+      append: ORCHESTRATOR_APPEND,
       frontmatter: {
-        name: 'orchestrator',
         description: `Maestria methodology dispatcher for Prime Agent. Routes
 work (direct/focused/full), selects and loads the specialist skills
 (adventurer, architect, builder, diagnose, planner, reviewer, writer), and
@@ -170,79 +161,86 @@ applies the maker/checker split, handoff contracts, and workflow modes
 (fein/sonar/blitz).
 Use for multi-step or multi-file work, planning, review, debugging,
 architecture decisions, or documentation.`,
+        name: 'orchestrator',
       },
+      output: 'orchestrator/SKILL.md',
       replace: [
         {
           from: '`.maestria/workflow.md` and `.maestria/rules.md`',
           to: 'the `global-rules` skill',
         },
       ],
-      append: ORCHESTRATOR_APPEND,
+    },
+    'planner.md': {
+      frontmatter: {
+        description: `Create detailed implementation plans with phased
+dependencies, timelines, verifiable success criteria, and rollback points.
+Breaks complex features into verifiable milestones.
+Use for: complex features requiring multi-phase execution, when the plan needs
+review before building.`,
+        name: 'planner',
+      },
+      output: 'planner/SKILL.md',
+      prepend: READ_ONLY_PREPENDS.planner,
+    },
+    'reviewer.md': {
+      frontmatter: {
+        description: `Code review with quality gates. Reviews for correctness,
+edge cases, security, performance, maintainability, and adherence to
+conventions; provides specific, actionable feedback and preserves blind review.
+Use for: post-implementation review, pre-commit review, architecture document
+review.`,
+        name: 'reviewer',
+      },
+      output: 'reviewer/SKILL.md',
+      prepend: READ_ONLY_PREPENDS.reviewer,
     },
     'rules.md': {
-      output: 'global-rules/SKILL.md',
+      append: `\n\n## Prime Agent Integration\n\nThis package delivers the universal rules as the \`global-rules\` skill. Delivery is skills-first and advisory: methodology and rules are prompt guidance, not security enforcement. The package ships a small executable extension covering workflow-mode commands and mode prompt injection only; JSON/RPC headless modes and recursive-subagent dispatch remain deferred - do not claim them. Prime Agent is not a sandbox - it executes model-generated Python and project commands with your user permissions; restrict use to trusted repositories, skills, and instructions.\n`,
       frontmatter: {
-        name: 'global-rules',
         description: `Universal agent rules contract: universal floors,
 orchestration, delegation, context management, handoff, blind review, bounded
 autonomy, authorization checkpoints, process lifecycle, and commit and branch
 safety.
 Load once per session and apply to routing, delegation, review, and commit
 decisions.`,
+        name: 'global-rules',
       },
+      output: 'global-rules/SKILL.md',
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/prime-agent' },
       ],
-      append: `\n\n## Prime Agent Integration\n\nThis package delivers the universal rules as the \`global-rules\` skill. Delivery is skills-first and advisory: methodology and rules are prompt guidance, not security enforcement. The package ships a small executable extension covering workflow-mode commands and mode prompt injection only; JSON/RPC headless modes and recursive-subagent dispatch remain deferred - do not claim them. Prime Agent is not a sandbox - it executes model-generated Python and project commands with your user permissions; restrict use to trusted repositories, skills, and instructions.\n`,
     },
     'skills/handoff.md': {
-      output: 'handoff/SKILL.md',
       frontmatter: {
-        name: 'handoff',
         description: `The handoff contract for inter-specialist delegation.
 Load when receiving a task from another specialist, or when handing off work to
 the next stage in the pipeline.`,
+        name: 'handoff',
       },
+      output: 'handoff/SKILL.md',
     },
     'skills/iteration-limits.md': {
-      output: 'iteration-limits/SKILL.md',
       frontmatter: {
-        name: 'iteration-limits',
         description: `The iteration-limit pattern with verifiable termination
 and escalation format.
 Load when defining termination conditions for a loop, or when a loop is at risk
 of running too long.`,
+        name: 'iteration-limits',
       },
+      output: 'iteration-limits/SKILL.md',
     },
-    'commands/fein.md': {
-      output: 'fein/SKILL.md',
-      stripFrontmatter: true,
+    'writer.md': {
       frontmatter: {
-        name: 'fein',
-        description:
-          'Full pipeline mode - reconnaissance or design, implementation, and independent review. Load when the user invokes fein or asks for the complete maestria pipeline.',
+        description: `Documentation writing following structured patterns.
+Creates clear, comprehensive docs for code, APIs, and systems.
+Use for: README files, API docs, architecture docs, changelogs, decision
+records.`,
+        name: 'writer',
       },
-      append: MODE_APPENDS.fein,
-    },
-    'commands/sonar.md': {
-      output: 'sonar/SKILL.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'sonar',
-        description:
-          'Research-only mode - read-only specialist work, then STOP before implementation. Load when the user invokes sonar or asks for research-only work.',
-      },
-      append: MODE_APPENDS.sonar,
-    },
-    'commands/blitz.md': {
-      output: 'blitz/SKILL.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'blitz',
-        description:
-          'Fast implementation mode - skip optional ceremony for familiar, low-risk work; never waive safety or required review. Load when the user invokes blitz or asks for a fast route.',
-      },
-      append: MODE_APPENDS.blitz,
+      output: 'writer/SKILL.md',
     },
   },
+  output: 'skills',
+  source: '../core/agent-directives/specialists',
 } satisfies SyncConfig;

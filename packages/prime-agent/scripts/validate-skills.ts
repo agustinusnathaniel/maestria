@@ -6,17 +6,18 @@
 // non-empty `description` of at most 1024 characters, and the body is non-empty.
 // Prime does not load skills with a missing description; name mismatches and
 // other violations warn but still load.
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import {
-  NAME_MAX,
   DESCRIPTION_MAX,
-  isValidSkillName,
   frontmatterValue,
+  isValidSkillName,
+  NAME_MAX,
 } from './skill-validation.ts';
 
 const __dirname = import.meta.dirname;
-const root = join(__dirname, '..');
+const root = path.join(__dirname, '..');
 
 const skills = [
   'adventurer',
@@ -41,21 +42,20 @@ const skills = [
 let allValid = true;
 
 for (const name of skills) {
-  const path = join(root, 'skills', name, 'SKILL.md');
-  if (!existsSync(path)) {
+  const skillPath = path.join(root, 'skills', name, 'SKILL.md');
+  if (!existsSync(skillPath)) {
     console.error(`❌ Missing: skills/${name}/SKILL.md`);
     allValid = false;
     continue;
   }
-  const content = readFileSync(path, 'utf-8');
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!frontmatterMatch) {
+  const content = readFileSync(skillPath, 'utf-8');
+  const frontmatterMatch = /^---\n(?<frontmatter>[\s\S]*?)\n---/u.exec(content);
+  const frontmatter = frontmatterMatch?.groups?.frontmatter;
+  if (frontmatter === undefined) {
     console.error(`❌ skills/${name}/SKILL.md: missing or invalid frontmatter`);
     allValid = false;
     continue;
   }
-  const frontmatter = frontmatterMatch[1];
-
   const nameValue = frontmatterValue(frontmatter, 'name');
   if (nameValue === undefined) {
     console.error(`❌ skills/${name}/SKILL.md: frontmatter missing "name"`);

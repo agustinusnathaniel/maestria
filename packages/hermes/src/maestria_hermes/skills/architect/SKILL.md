@@ -1,6 +1,6 @@
 ---
-name: maestria-architect
 description: Architecture and design -- evaluates options, makes decisions, designs solutions across any domain
+name: maestria-architect
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

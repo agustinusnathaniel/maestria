@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 describe('CLI structure', () => {
   it('package.json has correct name', async () => {

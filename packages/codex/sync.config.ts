@@ -64,133 +64,131 @@ The Codex plugin manifest declares skills only; the companion Maestria CLI insta
 `;
 
 export default {
-  source: '../core/agent-directives/specialists',
-  output: 'skills',
-
   default: {
     replace: [...CODEX_COMPONENT_REPLACES],
   },
-
   files: {
     'adventurer.md': {
-      output: 'adventurer/SKILL.md',
-      prepend: CODEX_READ_ONLY_NOTES.adventurer,
       frontmatter: {
-        name: 'adventurer',
         description:
           'Codebase reconnaissance workflow for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.',
+        name: 'adventurer',
       },
+      output: 'adventurer/SKILL.md',
+      prepend: CODEX_READ_ONLY_NOTES.adventurer,
     },
     'architect.md': {
-      output: 'architect/SKILL.md',
       frontmatter: {
-        name: 'architect',
         description:
           'Architecture decision workflow for comparing implementation approaches, boundaries, threat models, and ADR decisions.',
+        name: 'architect',
       },
+      output: 'architect/SKILL.md',
     },
     'builder.md': {
-      output: 'builder/SKILL.md',
       frontmatter: {
-        name: 'builder',
         description:
           'Focused implementation workflow for one atomic, verifiable feature, fix, test, or refactor.',
+        name: 'builder',
       },
+      output: 'builder/SKILL.md',
+    },
+    'commands/blitz.md': {
+      frontmatter: {
+        description:
+          'Fast capability-aware Maestria route that skips optional ceremony without waiving safety or review.',
+        name: 'blitz',
+      },
+      output: 'blitz/SKILL.md',
+      stripFrontmatter: true,
+    },
+    'commands/fein.md': {
+      frontmatter: {
+        description:
+          'Full Maestria pipeline: reconnaissance, design, implementation, and independent review.',
+        name: 'fein',
+      },
+      output: 'fein/SKILL.md',
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      frontmatter: {
+        description:
+          'Research-only Maestria route using read-only specialist skills, then stop before implementation.',
+        name: 'sonar',
+      },
+      output: 'sonar/SKILL.md',
+      stripFrontmatter: true,
     },
     'diagnose.md': {
-      output: 'diagnose/SKILL.md',
       frontmatter: {
-        name: 'diagnose',
         description:
           'Systematic regression-tracing workflow from symptom and error evidence to root cause, fix, and prevention.',
+        name: 'diagnose',
       },
-    },
-    'planner.md': {
-      output: 'planner/SKILL.md',
-      prepend: CODEX_READ_ONLY_NOTES.planner,
-      frontmatter: {
-        name: 'planner',
-        description:
-          'Phased implementation planning workflow with dependencies, verification criteria, timelines, and rollback points.',
-      },
-    },
-    'reviewer.md': {
-      output: 'reviewer/SKILL.md',
-      prepend: CODEX_READ_ONLY_NOTES.reviewer,
-      frontmatter: {
-        name: 'reviewer',
-        description:
-          'Independent code review workflow covering correctness, security, performance, maintainability, and quality gates.',
-      },
-    },
-    'writer.md': {
-      output: 'writer/SKILL.md',
-      frontmatter: {
-        name: 'writer',
-        description:
-          'Structured documentation workflow for READMEs, API docs, architecture documents, changelogs, and decision records.',
-      },
+      output: 'diagnose/SKILL.md',
     },
     'orchestrator.md': {
-      output: 'orchestrator/SKILL.md',
+      append: ORCHESTRATOR_APPEND,
       frontmatter: {
-        name: 'orchestrator',
         description:
           'Maestria workflow dispatcher for Codex CLI: route work, use specialist skills, preserve handoffs, and keep independent review explicit.',
+        name: 'orchestrator',
       },
-      append: ORCHESTRATOR_APPEND,
+      output: 'orchestrator/SKILL.md',
+    },
+    'planner.md': {
+      frontmatter: {
+        description:
+          'Phased implementation planning workflow with dependencies, verification criteria, timelines, and rollback points.',
+        name: 'planner',
+      },
+      output: 'planner/SKILL.md',
+      prepend: CODEX_READ_ONLY_NOTES.planner,
+    },
+    'reviewer.md': {
+      frontmatter: {
+        description:
+          'Independent code review workflow covering correctness, security, performance, maintainability, and quality gates.',
+        name: 'reviewer',
+      },
+      output: 'reviewer/SKILL.md',
+      prepend: CODEX_READ_ONLY_NOTES.reviewer,
     },
     'rules.md': {
-      output: 'global-rules/SKILL.md',
       frontmatter: {
-        name: 'global-rules',
         description:
           'Universal Maestria rules for evidence, safety, authorization, delegation, review, bounded repair, and branch discipline.',
+        name: 'global-rules',
       },
+      output: 'global-rules/SKILL.md',
       replace: [{ from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/codex' }],
     },
     'skills/handoff.md': {
-      output: 'handoff/SKILL.md',
       frontmatter: {
-        name: 'handoff',
         description:
           'Concise handoff contract for passing outcome, constraints, evidence, blockers, and next steps between workflow stages.',
+        name: 'handoff',
       },
+      output: 'handoff/SKILL.md',
     },
     'skills/iteration-limits.md': {
-      output: 'iteration-limits/SKILL.md',
       frontmatter: {
-        name: 'iteration-limits',
         description:
           'Verifiable termination and bounded repair guidance for loops, reviews, and repeated implementation attempts.',
+        name: 'iteration-limits',
       },
+      output: 'iteration-limits/SKILL.md',
     },
-    'commands/fein.md': {
-      output: 'fein/SKILL.md',
-      stripFrontmatter: true,
+    'writer.md': {
       frontmatter: {
-        name: 'fein',
         description:
-          'Full Maestria pipeline: reconnaissance, design, implementation, and independent review.',
+          'Structured documentation workflow for READMEs, API docs, architecture documents, changelogs, and decision records.',
+        name: 'writer',
       },
-    },
-    'commands/sonar.md': {
-      output: 'sonar/SKILL.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'sonar',
-        description:
-          'Research-only Maestria route using read-only specialist skills, then stop before implementation.',
-      },
-    },
-    'commands/blitz.md': {
-      output: 'blitz/SKILL.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'blitz',
-        description:
-          'Fast capability-aware Maestria route that skips optional ceremony without waiving safety or review.',
-      },
+      output: 'writer/SKILL.md',
     },
   },
+  output: 'skills',
+  source: '../core/agent-directives/specialists',
 } satisfies SyncConfig;

@@ -1,63 +1,79 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
-import { installCommands } from '@/commands.js';
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
+import { describe, expect, it, vi } from 'vite-plus/test';
+
+import { installCommands } from '@/commands.js';
 import { createInitialState } from '@/state.js';
 import type { MaestriaState } from '@/state.js';
+import type { CommandsCtx, CommandsPi } from '@maestria/shared-pi/commands-core';
 
-function createMockPi() {
-  return {
-    registerCommand: vi.fn(),
-    getActiveTools: vi
-      .fn()
-      .mockReturnValue(['read', 'grep', 'bash', 'edit', 'write', 'find', 'ls']),
-    setActiveTools: vi.fn(),
-    setModel: vi.fn().mockResolvedValue(true),
-    sendUserMessage: vi.fn(),
-    appendEntry: vi.fn(),
-  };
+type CommandHandler = (args: string, ctx: CommandsCtx) => Promise<void> | void;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+interface MockPi {
+  appendEntry: ReturnType<typeof vi.fn<(type: string, data: unknown) => void>>;
+  events?: { emit: ReturnType<typeof vi.fn<(event: string, data: unknown) => void>> };
+  getActiveTools: ReturnType<typeof vi.fn<() => string[]>>;
+  registerCommand: ReturnType<typeof vi.fn<CommandsPi['registerCommand']>>;
+  sendUserMessage: ReturnType<
+    typeof vi.fn<(content: string | unknown[], options: { deliverAs: string }) => void>
+  >;
+  setActiveTools: ReturnType<typeof vi.fn<(tools: string[]) => void>>;
+  setModel: ReturnType<typeof vi.fn<(model: unknown) => Promise<void>>>;
 }
 
-function createMockCtx(overrides: Record<string, unknown> = {}) {
+const createMockPi = (): MockPi => ({
+  appendEntry: vi.fn<(type: string, data: unknown) => void>(),
+  getActiveTools: vi
+    .fn<() => string[]>()
+    .mockReturnValue(['read', 'grep', 'bash', 'edit', 'write', 'find', 'ls']),
+  registerCommand: vi.fn<CommandsPi['registerCommand']>(),
+  sendUserMessage: vi.fn<(content: string | unknown[], options: { deliverAs: string }) => void>(),
+  setActiveTools: vi.fn<(tools: string[]) => void>(),
+  setModel: vi.fn<(model: unknown) => Promise<void>>().mockResolvedValue(),
+});
+
+const createMockCtx = (overrides: Partial<CommandsCtx> = {}): CommandsCtx => {
   const mockModel = {
     id: 'claude-sonnet-4-20250514',
     name: 'Claude 4 Sonnet',
     provider: 'anthropic',
   };
   return {
-    ui: { notify: vi.fn(), setEditorText: vi.fn() },
     model: mockModel,
     modelRegistry: {
-      getAll: vi.fn().mockReturnValue([mockModel]),
+      getAll: vi.fn<() => { id: string }[]>().mockReturnValue([mockModel]),
+    },
+    ui: {
+      notify: vi.fn<(message: string) => void>(),
+      setEditorText: vi.fn<(text: string) => void>(),
     },
     ...overrides,
   };
-}
+};
 
 /** Find a command handler registered with pi.registerCommand. */
-function getHandler(
-  pi: any,
-  name: string,
-): ((args: string, ctx: any) => Promise<void>) | undefined {
-  const calls: Array<[string, unknown]> = pi.registerCommand.mock.calls;
-  const match = calls.find((c) => c[0] === name);
-  if (!match) {
-    return undefined;
+const getHandler = (pi: MockPi, name: string): CommandHandler | undefined => {
+  const match = pi.registerCommand.mock.calls.find(([commandName]) => commandName === name);
+  return match?.[1]?.handler;
+};
+
+const requireHandler = (pi: MockPi, name: string): CommandHandler => {
+  const handler = getHandler(pi, name);
+  if (handler === undefined) {
+    throw new Error(`Command handler was not registered: ${name}`);
   }
-  const opts = match[1] as Record<string, unknown>;
-  return typeof opts.handler === 'function'
-    ? (opts.handler as (args: string, ctx: any) => Promise<void>)
-    : undefined;
-}
+  return handler;
+};
 
 describe('installCommands', () => {
   it('registers all six commands', () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const registeredNames = (pi.registerCommand.mock.calls as Array<[string, unknown]>).map(
-      (c) => c[0],
-    );
+    const registeredNames = pi.registerCommand.mock.calls.map(([name]) => name);
     expect(registeredNames).toContain('maestria-status');
     expect(registeredNames).toContain('review');
     expect(registeredNames).toContain('restore-model');
@@ -70,9 +86,9 @@ describe('/review command', () => {
   it('saves original model and tools before switching', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review')!;
+    const handler = requireHandler(pi, 'review');
     const ctx = createMockCtx();
     await handler('review this feature', ctx);
 
@@ -84,14 +100,17 @@ describe('/review command', () => {
   it('restricts to read-only tools when entering review mode', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review')!;
+    const handler = requireHandler(pi, 'review');
     const ctx = createMockCtx();
     await handler('review code quality', ctx);
 
     expect(pi.setActiveTools).toHaveBeenCalled();
-    const toolsArg = pi.setActiveTools.mock.calls[0][0] as string[];
+    const [toolsArg] = pi.setActiveTools.mock.calls[0] ?? [];
+    if (toolsArg === undefined) {
+      throw new Error('setActiveTools was not called');
+    }
 
     // Should include read-only tools
     expect(toolsArg).toContain('read');
@@ -108,9 +127,9 @@ describe('/review command', () => {
   it('sends a review prompt to the user', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review')!;
+    const handler = requireHandler(pi, 'review');
     const ctx = createMockCtx();
     await handler('audit auth logic', ctx);
 
@@ -123,9 +142,9 @@ describe('/review command', () => {
   it('notifies on empty args', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review')!;
+    const handler = requireHandler(pi, 'review');
     const ctx = createMockCtx();
     await handler('', ctx);
 
@@ -136,9 +155,9 @@ describe('/review command', () => {
   it('handles null model gracefully', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review')!;
+    const handler = requireHandler(pi, 'review');
     const ctx = createMockCtx({ model: undefined });
     await handler('review with no model', ctx);
 
@@ -152,9 +171,9 @@ describe('/review command', () => {
       ...createInitialState(),
       reviewModel: 'gpt-4o',
     };
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review')!;
+    const handler = requireHandler(pi, 'review');
     const ctx = createMockCtx({
       modelRegistry: {
         getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
@@ -169,14 +188,17 @@ describe('/review command', () => {
   });
 
   it('emits maestria:review:activated when review model cycles', async () => {
-    const pi = { ...createMockPi(), events: { emit: vi.fn() } };
+    const pi = {
+      ...createMockPi(),
+      events: { emit: vi.fn<(event: string, data: unknown) => void>() },
+    };
     const state: MaestriaState = {
       ...createInitialState(),
       reviewModel: 'gpt-4o',
     };
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review')!;
+    const handler = requireHandler(pi, 'review');
     const ctx = createMockCtx({
       modelRegistry: {
         getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
@@ -184,14 +206,18 @@ describe('/review command', () => {
     });
     await handler('review code', ctx);
 
-    expect(pi.events.emit).toHaveBeenCalledWith(
-      MAESTRIA_EVENTS.REVIEW_ACTIVATED,
-      expect.objectContaining({
-        originalModel: 'claude-sonnet-4-20250514',
-        reviewModel: 'gpt-4o',
-        timestamp: expect.any(Number),
-      }),
-    );
+    const { events } = pi;
+    if (events === undefined) {
+      throw new Error('review activation event bus was not configured');
+    }
+    const [eventName, eventData] = events.emit.mock.calls[0] ?? [];
+    expect(eventName).toBe(MAESTRIA_EVENTS.REVIEW_ACTIVATED);
+    if (!isRecord(eventData)) {
+      throw new TypeError('review activation event data was not an object');
+    }
+    expect(eventData.originalModel).toBe('claude-sonnet-4-20250514');
+    expect(eventData.reviewModel).toBe('gpt-4o');
+    expect(typeof eventData.timestamp).toBe('number');
   });
 });
 
@@ -200,13 +226,13 @@ describe('/restore-model command', () => {
     const pi = createMockPi();
     const state: MaestriaState = {
       ...createInitialState(),
-      reviewMode: true,
       originalModel: 'claude-sonnet-4-20250514',
       originalTools: ['read', 'grep', 'bash', 'edit'],
+      reviewMode: true,
     };
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'restore-model')!;
+    const handler = requireHandler(pi, 'restore-model');
     const ctx = createMockCtx({
       modelRegistry: {
         getAll: vi
@@ -225,9 +251,9 @@ describe('/restore-model command', () => {
   it('notifies when not in review mode', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'restore-model')!;
+    const handler = requireHandler(pi, 'restore-model');
     const ctx = createMockCtx();
     await handler('', ctx);
 
@@ -239,13 +265,13 @@ describe('/restore-model command', () => {
     const pi = createMockPi();
     const state: MaestriaState = {
       ...createInitialState(),
-      reviewMode: true,
       originalModel: 'claude-sonnet-4-20250514',
       originalTools: ['read', 'grep', 'bash', 'edit'],
+      reviewMode: true,
     };
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'restore-model')!;
+    const handler = requireHandler(pi, 'restore-model');
     const ctx = createMockCtx({
       modelRegistry: {
         getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]),
@@ -260,16 +286,19 @@ describe('/restore-model command', () => {
   });
 
   it('emits maestria:review:deactivated after restoration', async () => {
-    const pi = { ...createMockPi(), events: { emit: vi.fn() } };
+    const pi = {
+      ...createMockPi(),
+      events: { emit: vi.fn<(event: string, data: unknown) => void>() },
+    };
     const state: MaestriaState = {
       ...createInitialState(),
-      reviewMode: true,
       originalModel: 'claude-sonnet-4-20250514',
       originalTools: ['read', 'grep', 'bash', 'edit'],
+      reviewMode: true,
     };
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'restore-model')!;
+    const handler = requireHandler(pi, 'restore-model');
     const ctx = createMockCtx({
       modelRegistry: {
         getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]),
@@ -277,13 +306,17 @@ describe('/restore-model command', () => {
     });
     await handler('', ctx);
 
-    expect(pi.events.emit).toHaveBeenCalledWith(
-      MAESTRIA_EVENTS.REVIEW_DEACTIVATED,
-      expect.objectContaining({
-        originalModel: 'claude-sonnet-4-20250514',
-        timestamp: expect.any(Number),
-      }),
-    );
+    const { events } = pi;
+    if (events === undefined) {
+      throw new Error('review deactivation event bus was not configured');
+    }
+    const [eventName, eventData] = events.emit.mock.calls[0] ?? [];
+    expect(eventName).toBe(MAESTRIA_EVENTS.REVIEW_DEACTIVATED);
+    if (!isRecord(eventData)) {
+      throw new TypeError('review deactivation event data was not an object');
+    }
+    expect(eventData.originalModel).toBe('claude-sonnet-4-20250514');
+    expect(typeof eventData.timestamp).toBe('number');
   });
 });
 
@@ -291,9 +324,9 @@ describe('/review-model command', () => {
   it('sets reviewModel and persists state', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review-model')!;
+    const handler = requireHandler(pi, 'review-model');
     const ctx = createMockCtx({
       modelRegistry: {
         getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
@@ -312,9 +345,9 @@ describe('/review-model command', () => {
   it('shows error for unknown model', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review-model')!;
+    const handler = requireHandler(pi, 'review-model');
     const ctx = createMockCtx({
       modelRegistry: {
         getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]),
@@ -330,9 +363,9 @@ describe('/review-model command', () => {
   it('shows usage for empty args', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'review-model')!;
+    const handler = requireHandler(pi, 'review-model');
     const ctx = createMockCtx();
     await handler('', ctx);
 
@@ -345,13 +378,16 @@ describe('/handoff command', () => {
   it('generates structured prompt with all 7 field headers', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'handoff')!;
+    const handler = requireHandler(pi, 'handoff');
     const ctx = createMockCtx();
     await handler('implement login feature', ctx);
 
-    const prompt = pi.sendUserMessage.mock.calls[0][0] as string;
+    const [prompt] = pi.sendUserMessage.mock.calls[0] ?? [];
+    if (typeof prompt !== 'string') {
+      throw new TypeError('handoff prompt was not sent');
+    }
     expect(prompt).toContain('**Goal:**');
     expect(prompt).toContain('**Context:**');
     expect(prompt).toContain('**Requirements:**');
@@ -364,9 +400,9 @@ describe('/handoff command', () => {
   it('shows usage for empty args', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'handoff')!;
+    const handler = requireHandler(pi, 'handoff');
     const ctx = createMockCtx();
     await handler('', ctx);
 
@@ -376,9 +412,9 @@ describe('/handoff command', () => {
   it('records handoff in state and persists via appendEntry', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'handoff')!;
+    const handler = requireHandler(pi, 'handoff');
     const ctx = createMockCtx();
     await handler('refactor auth module', ctx);
 
@@ -386,24 +422,22 @@ describe('/handoff command', () => {
     expect(state.handoffHistory[0].from).toBe('current');
     expect(state.handoffHistory[0].to).toBe('next');
     expect(state.handoffHistory[0].task).toBe('refactor auth module');
-    expect(state.handoffHistory[0].timestamp).toEqual(expect.any(Number));
+    const [handoff] = state.handoffHistory;
+    if (handoff === undefined) {
+      throw new Error('handoff was not recorded');
+    }
+    expect(typeof handoff.timestamp).toBe('number');
 
-    expect(pi.appendEntry).toHaveBeenCalledWith(
-      'maestria_state',
-      expect.objectContaining({
-        handoffHistory: expect.arrayContaining([
-          expect.objectContaining({ task: 'refactor auth module' }),
-        ]),
-      }),
-    );
+    expect(state.handoffHistory.some(({ task }) => task === 'refactor auth module')).toBe(true);
+    expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', expect.anything());
   });
 
   it('calls sendUserMessage with steer delivery', async () => {
     const pi = createMockPi();
     const state = createInitialState();
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'handoff')!;
+    const handler = requireHandler(pi, 'handoff');
     const ctx = createMockCtx();
     await handler('bump dependencies', ctx);
 
@@ -414,13 +448,13 @@ describe('/handoff command', () => {
     const pi = createMockPi();
     const state: MaestriaState = {
       ...createInitialState(),
-      mode: 'fein',
       activeTask: 'design API',
       blockers: ['missing auth spec', 'performance concerns'],
+      mode: 'fein',
     };
-    installCommands(pi as any, state);
+    installCommands(pi, state);
 
-    const handler = getHandler(pi, 'handoff')!;
+    const handler = requireHandler(pi, 'handoff');
     const ctx = createMockCtx();
     await handler('review architecture', ctx);
 

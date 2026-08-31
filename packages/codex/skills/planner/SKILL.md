@@ -1,6 +1,6 @@
 ---
-name: planner
 description: Phased implementation planning workflow with dependencies, verification criteria, timelines, and rollback points.
+name: planner
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

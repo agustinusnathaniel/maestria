@@ -1,12 +1,12 @@
 ---
-name: orchestrator
+arguments: []
 description: Methodology + delegation + swarm usage for the maestria workflow
+name: orchestrator
 type: prompt
 whenToUse: |-
   Multi-step or multi-file work, or any task spanning N≥3 independent items.
   Also: implementation planning, code review, debugging sessions, architecture
   decisions, and documentation generation under the maestria workflow.
-arguments: []
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

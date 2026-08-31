@@ -1,6 +1,6 @@
 ---
-name: orchestrator
 description: Maestria dispatcher for Cursor. Delegates to specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer) via Task. Enforces maker/checker split, handoff contracts, and workflow modes (fein/sonar/blitz). Use for multi-step or multi-file work.
+name: orchestrator
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

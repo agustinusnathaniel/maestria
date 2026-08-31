@@ -1,10 +1,10 @@
 ---
-name: diagnose
 description: |-
   Systematic 6-step regression tracing.
   From error message to root cause to prevention.
   Use for: cryptic errors, regressions, production bugs.
 model: inherit
+name: diagnose
 skills:
   - maestria:global-rules
 ---

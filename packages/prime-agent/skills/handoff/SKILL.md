@@ -1,9 +1,9 @@
 ---
-name: handoff
 description: |-
   The handoff contract for inter-specialist delegation.
   Load when receiving a task from another specialist, or when handing off work to
   the next stage in the pipeline.
+name: handoff
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

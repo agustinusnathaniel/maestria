@@ -70,14 +70,14 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
 
 <script>
   // One listener set per rendered chip; Astro dedupes this module per page.
-  document.querySelectorAll<HTMLElement>('.install-cmd').forEach((root) => {
+  for (const root of document.querySelectorAll<HTMLElement>('.install-cmd')) {
     const btn = root.querySelector<HTMLButtonElement>('.copy-btn');
     const live = root.querySelector<HTMLElement>('.copy-live');
-    if (!btn) {return;}
+    if (!btn) {continue;}
 
     let revertTimer: ReturnType<typeof setTimeout> | undefined;
 
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const command = btn.dataset.installCmd || '';
       const location = root.dataset.installLocation || 'unknown';
 
@@ -90,14 +90,19 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
           if (live) {live.textContent = '';}
         }, 1600);
 
-        if (typeof window.umami !== 'undefined') {
+        if (window.umami !== undefined) {
           window.umami.track('install_copy', { location });
         }
       };
 
       if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(command).then(announce).catch(() => {});
+        try {
+          await navigator.clipboard.writeText(command);
+          announce();
+        } catch {
+          // Clipboard access can be denied; leave the chip in its initial state.
+        }
       }
     });
-  });
+  }
 </script>

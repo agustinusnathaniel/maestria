@@ -5,17 +5,16 @@ description: |-
   Use for: multi-file features, cross-domain tasks, 3+ step workflows.
 mode: all
 permission:
-  read: deny
-  glob: deny
-  grep: deny
-  lsp: deny
-  webfetch: deny
-  edit: deny
   bash:
     "*": deny
     "* npx --yes skills@latest *": allow
+  edit: deny
+  glob: deny
+  grep: deny
+  lsp: deny
   question: allow
-  todowrite: allow
+  read: deny
+  skill: allow
   task:
     "*": deny
     adventurer: allow
@@ -25,7 +24,8 @@ permission:
     planner: allow
     reviewer: allow
     writer: allow
-  skill: allow
+  todowrite: allow
+  webfetch: deny
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

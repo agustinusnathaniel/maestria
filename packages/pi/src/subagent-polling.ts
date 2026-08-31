@@ -3,7 +3,11 @@ import { Data, Effect } from 'effect';
 /** Terminal subagent statuses - agent will produce no more updates. */
 const TERMINAL_STATUSES = new Set(['completed', 'steered', 'aborted', 'stopped', 'error']);
 
-export type SubagentRecord = { status: string; result?: string; error?: string };
+export interface SubagentRecord {
+  status: string;
+  result?: string;
+  error?: string;
+}
 
 export type SubagentPollFailureReason = 'aborted' | 'timeout' | 'missing';
 
@@ -21,7 +25,7 @@ export class SubagentPollError extends Data.TaggedError('SubagentPollError')<{
 }> {}
 
 export interface SubagentPollingService {
-  getRecord(id: string): SubagentRecord | undefined;
+  getRecord: (id: string) => SubagentRecord | undefined;
   abort?: (id: string) => boolean;
 }
 
@@ -31,36 +35,41 @@ export interface PollSubagentOptions {
   readonly sendUpdates: boolean;
   readonly service: SubagentPollingService;
   readonly signal?: AbortSignal;
-  readonly onUpdate?: (result: { content: Array<{ type: string; text: string }> }) => void;
+  readonly onUpdate?: (result: { content: { type: string; text: string }[] }) => void;
   readonly intervalMs?: number;
   readonly timeoutMs?: number;
 }
 
-function pollLoop(options: PollSubagentOptions): Effect.Effect<SubagentRecord, SubagentPollError> {
+const createPollUpdateEffect = (options: PollSubagentOptions, polls: number) =>
+  Effect.sync(() => {
+    options.onUpdate?.({
+      content: [
+        {
+          text: `${options.label} running... (${Math.round((polls * (options.intervalMs ?? 500)) / 1000)}s)`,
+          type: 'text' as const,
+        },
+      ],
+    });
+  });
+
+const pollLoop = (
+  options: PollSubagentOptions,
+): Effect.Effect<SubagentRecord, SubagentPollError> => {
   const intervalMs = options.intervalMs ?? 500;
   const timeoutMs = options.timeoutMs ?? 180_000;
   const maxPolls = Math.ceil(timeoutMs / intervalMs);
 
-  return Effect.gen(function* () {
+  return Effect.gen(function* pollLoopEffect() {
     let polls = 0;
     let record = yield* Effect.sync(() => options.service.getRecord(options.id));
 
     while (record && !TERMINAL_STATUSES.has(record.status) && polls < maxPolls) {
       yield* Effect.sleep(intervalMs);
       record = yield* Effect.sync(() => options.service.getRecord(options.id));
-      polls++;
+      polls += 1;
 
       if (options.sendUpdates) {
-        yield* Effect.sync(() => {
-          options.onUpdate?.({
-            content: [
-              {
-                type: 'text' as const,
-                text: `${options.label} running... (${Math.round((polls * intervalMs) / 1000)}s)`,
-              },
-            ],
-          });
-        });
+        yield* createPollUpdateEffect(options, polls);
       }
     }
 
@@ -68,8 +77,8 @@ function pollLoop(options: PollSubagentOptions): Effect.Effect<SubagentRecord, S
       return yield* Effect.fail(
         new SubagentPollError({
           id: options.id,
-          reason: 'timeout',
           message: `Subagent ${options.id} timed out after ${timeoutMs}ms`,
+          reason: 'timeout',
         }),
       );
     }
@@ -78,25 +87,25 @@ function pollLoop(options: PollSubagentOptions): Effect.Effect<SubagentRecord, S
       return yield* Effect.fail(
         new SubagentPollError({
           id: options.id,
-          reason: 'missing',
           message: `Subagent ${options.id} was cleaned up before completion`,
+          reason: 'missing',
         }),
       );
     }
 
     return record;
   });
-}
+};
 
-function abortEffect(id: string, signal: AbortSignal): Effect.Effect<never, SubagentPollError> {
-  return Effect.callback<never, SubagentPollError>((resume) => {
+const abortEffect = (id: string, signal: AbortSignal): Effect.Effect<never, SubagentPollError> =>
+  Effect.callback<never, SubagentPollError>((resume) => {
     const onAbort = () => {
       resume(
         Effect.fail(
           new SubagentPollError({
             id,
-            reason: 'aborted',
             message: 'Maestria subagent call aborted',
+            reason: 'aborted',
           }),
         ),
       );
@@ -104,13 +113,14 @@ function abortEffect(id: string, signal: AbortSignal): Effect.Effect<never, Suba
 
     if (signal.aborted) {
       onAbort();
-      return;
+    } else {
+      signal.addEventListener('abort', onAbort, { once: true });
     }
 
-    signal.addEventListener('abort', onAbort, { once: true });
-    return Effect.sync(() => signal.removeEventListener('abort', onAbort));
+    return Effect.sync(() => {
+      signal.removeEventListener('abort', onAbort);
+    });
   });
-}
 
 /**
  * Poll one subagent as a cancellable Effect.
@@ -120,9 +130,9 @@ function abortEffect(id: string, signal: AbortSignal): Effect.Effect<never, Suba
  * parallel dispatcher structured cancellation: a failed or aborted poll
  * interrupts its sibling poll fibers instead of leaving timers running.
  */
-export function pollSubagentEffect(
+export const pollSubagentEffect = (
   options: PollSubagentOptions,
-): Effect.Effect<SubagentRecord, SubagentPollError> {
+): Effect.Effect<SubagentRecord, SubagentPollError> => {
   const poll = pollLoop(options);
   return options.signal ? Effect.raceFirst(poll, abortEffect(options.id, options.signal)) : poll;
-}
+};

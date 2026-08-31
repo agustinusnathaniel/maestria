@@ -30,60 +30,53 @@ export const AUTHOR_URL = 'https://github.com/agustinusnathaniel';
  * Organization entity without `@context`, the shared shape used both as a
  * standalone JSON-LD entity and nested under WebSite.publisher.
  */
-function organizationEntity() {
-  return {
-    '@type': 'Organization',
-    name: 'Maestria',
-    url: SITE_URL,
-    description: SITE_DESCRIPTION,
-    logo: `${SITE_URL}/favicon.svg`,
-    sameAs: [GITHUB_REPO_URL, 'https://www.npmjs.com/package/maestria'],
-    // Deliberately no postal address, email, or phone: see the identity
-    // policy above; GitHub issues remain the only contact surface.
-    contactPoint: [
-      {
-        '@type': 'ContactPoint',
-        contactType: 'technical support',
-        url: GITHUB_ISSUES_URL,
-        availableLanguage: ['en'],
-      },
-    ],
-  };
-}
+const organizationEntity = () => ({
+  '@type': 'Organization',
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      availableLanguage: ['en'],
+      contactType: 'technical support',
+      url: GITHUB_ISSUES_URL,
+    },
+  ],
+  description: SITE_DESCRIPTION,
+  logo: `${SITE_URL}/favicon.svg`,
+  name: 'Maestria',
+  sameAs: [GITHUB_REPO_URL, 'https://www.npmjs.com/package/maestria'],
+  url: SITE_URL,
+});
 
 /** Organization entity for the site as a whole. */
-export function organizationSchema() {
-  return { '@context': 'https://schema.org', ...organizationEntity() };
-}
+export const organizationSchema = () => ({
+  '@context': 'https://schema.org',
+  ...organizationEntity(),
+});
 
 /** WebSite entity naming the docs site and its publishing organization. */
-export function websiteSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Maestria',
-    alternateName: 'Maestria AI Praxis',
-    url: SITE_URL,
-    description: SITE_DESCRIPTION,
-    inLanguage: 'en',
-    publisher: organizationEntity(),
-  };
-}
+export const websiteSchema = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  alternateName: 'Maestria AI Praxis',
+  description: SITE_DESCRIPTION,
+  inLanguage: 'en',
+  name: 'Maestria',
+  publisher: organizationEntity(),
+  url: SITE_URL,
+});
 
 /** SoftwareApplication entity for the Maestria plugin ecosystem itself. */
-export function softwareApplicationSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'Maestria',
-    applicationCategory: 'DeveloperApplication',
-    operatingSystem: 'Node.js 22+',
-    url: SITE_URL,
-    description: SITE_DESCRIPTION,
-    license: `${GITHUB_REPO_URL}/blob/main/LICENSE`,
-    author: { '@type': 'Person', name: AUTHOR_NAME, url: AUTHOR_URL },
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    downloadUrl: 'https://www.npmjs.com/package/maestria',
-    codeRepository: GITHUB_REPO_URL,
-  };
-}
+export const softwareApplicationSchema = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  applicationCategory: 'DeveloperApplication',
+  author: { '@type': 'Person', name: AUTHOR_NAME, url: AUTHOR_URL },
+  codeRepository: GITHUB_REPO_URL,
+  description: SITE_DESCRIPTION,
+  downloadUrl: 'https://www.npmjs.com/package/maestria',
+  license: `${GITHUB_REPO_URL}/blob/main/LICENSE`,
+  name: 'Maestria',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  operatingSystem: 'Node.js 22+',
+  url: SITE_URL,
+});

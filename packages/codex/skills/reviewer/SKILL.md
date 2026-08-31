@@ -1,6 +1,6 @@
 ---
-name: reviewer
 description: Independent code review workflow covering correctness, security, performance, maintainability, and quality gates.
+name: reviewer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

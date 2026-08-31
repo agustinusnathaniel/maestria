@@ -7,7 +7,7 @@
 // characters, lowercase letters, digits, and hyphens; no leading or trailing
 // hyphen; no consecutive hyphens. Matching the parent skill directory is
 // enforced separately by the validator.
-export const NAME_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+export const NAME_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u;
 export const NAME_MAX = 64;
 
 // Prime's documented description limit (Agent Skills specification).
@@ -18,9 +18,8 @@ export const DESCRIPTION_MAX = 1024;
  * lowercase a-z/0-9/hyphens, no leading/trailing hyphen, no consecutive
  * hyphens.
  */
-export function isValidSkillName(name: string): boolean {
-  return name.length >= 1 && name.length <= NAME_MAX && NAME_RE.test(name) && !name.includes('--');
-}
+export const isValidSkillName = (name: string): boolean =>
+  name.length >= 1 && name.length <= NAME_MAX && NAME_RE.test(name) && !name.includes('--');
 
 /**
  * Strips matching outer single or double quotes from a YAML scalar value so a
@@ -28,7 +27,7 @@ export function isValidSkillName(name: string): boolean {
  * plain and quoted scalar forms the generated frontmatter uses; does not
  * interpret escapes or multi-line quoted forms.
  */
-function unquoteScalar(value: string): string {
+const unquoteScalar = (value: string): string => {
   if (
     (value.startsWith('"') && value.endsWith('"')) ||
     (value.startsWith("'") && value.endsWith("'"))
@@ -36,7 +35,7 @@ function unquoteScalar(value: string): string {
     return value.slice(1, -1);
   }
   return value;
-}
+};
 
 /**
  * Extracts the normalized value of a frontmatter key (plain or quoted scalar,
@@ -45,20 +44,20 @@ function unquoteScalar(value: string): string {
  * value (a bare `key:` or an indicator with no indented continuation lines)
  * also yields `''`.
  */
-export function frontmatterValue(frontmatter: string, key: string): string | undefined {
+export const frontmatterValue = (frontmatter: string, key: string): string | undefined => {
   const lines = frontmatter.split('\n');
-  const keyLine = lines.findIndex((line) => new RegExp(`^${key}:`).test(line));
+  const keyLine = lines.findIndex((line) => new RegExp(`^${key}:`, 'u').test(line));
   if (keyLine === -1) {
     return undefined;
   }
   const inline = lines[keyLine].slice(key.length + 1).trim();
-  if (inline !== '' && !/^[|>][-+]?$/.test(inline)) {
+  if (inline !== '' && !/^[|>][-+]?$/u.test(inline)) {
     return unquoteScalar(inline).trim();
   }
   return lines
     .slice(keyLine + 1)
-    .filter((line) => /^\s{2}/.test(line))
+    .filter((line) => /^\s{2}/u.test(line))
     .map((line) => line.trim())
     .join(' ')
     .trim();
-}
+};

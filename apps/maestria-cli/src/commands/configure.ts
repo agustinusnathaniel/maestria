@@ -1,31 +1,39 @@
+import { cancel, isCancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
-import { Effect, Exit, Cause } from 'effect';
-import { isCancel, cancel, select } from '@clack/prompts';
+import { Cause, Effect, Exit } from 'effect';
 import picocolors from 'picocolors';
 
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { MAESTRIA_AGENTS, getModelConfigHandler, modelConfigHandlers } from '@/lib/model-config.js';
-import type { AgentModels, ModelConfigHandler, ModelConfigLevel } from '@/lib/model-config.js';
+import { getModelConfigHandler, MAESTRIA_AGENTS, modelConfigHandlers } from '@/lib/model-config.js';
+import type {
+  AgentModels,
+  AgentName,
+  ModelConfigHandler,
+  ModelConfigLevel,
+} from '@/lib/model-config.js';
 import { createSpinner } from '@/lib/output.js';
 import { commandExists } from '@/lib/shell.js';
-import { validatePlatform, validateOrExit } from '@/lib/validation.js';
+import { validateOrExit, validatePlatform } from '@/lib/validation.js';
 
-function exitError(message: string): never {
+const exitError = (message: string): never => {
   console.error(`  ${picocolors.red('✗')} ${message}`);
   process.exit(1);
-}
+};
 
-function exitCancel(): never {
+const exitCancel = (): never => {
   cancel('Cancelled.');
   process.exit(130);
-}
+};
+
+const isAgentName = (agent: string): agent is AgentName =>
+  MAESTRIA_AGENTS.some((knownAgent) => knownAgent === agent);
 
 /** Parse `--set adventurer=model,builder=` pairs. Empty model = inherit/unset. */
-function parseSetPairs(input: string): AgentModels {
+const parseSetPairs = (input: string): AgentModels => {
   const models: AgentModels = {};
   for (const pair of input.split(',')) {
     const eq = pair.indexOf('=');
-    if (eq < 0) {
+    if (eq === -1) {
       exitError(
         `Invalid --set entry '${pair}'. Use <agent>=<model>, e.g. --set builder=opencode-go/deepseek-v4-flash. ` +
           `Use <agent>= (empty) to reset to inherit.`,
@@ -33,70 +41,78 @@ function parseSetPairs(input: string): AgentModels {
     }
     const agent = pair.slice(0, eq).trim();
     const model = pair.slice(eq + 1).trim();
-    if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
+    if (!isAgentName(agent)) {
       exitError(`Unknown agent '${agent}'. Valid agents: ${MAESTRIA_AGENTS.join(', ')}`);
     }
-    models[agent as keyof AgentModels] = model;
+    Object.assign(models, { [agent]: model });
   }
   return models;
-}
+};
 
 /** Run an effect and extract the error message (or exit with a generic message) */
-async function runOrExit<T>(effect: Effect.Effect<T, unknown>, fallback: string): Promise<T> {
+const runOrExit = async <T>(effect: Effect.Effect<T, unknown>, fallback: string): Promise<T> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
   const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  const message = (firstFailure?.error as { message?: string } | undefined)?.message;
-  exitError(message ?? fallback);
-}
+  const failure = firstFailure?.error;
+  const message =
+    typeof failure === 'object' &&
+    failure !== null &&
+    'message' in failure &&
+    typeof failure.message === 'string'
+      ? failure.message
+      : undefined;
+  return exitError(message ?? fallback);
+};
 
-function renderConfigureSummary(
+const renderConfigureSummary = (
   label: string,
   level: ModelConfigLevel,
   models: AgentModels,
-): string {
-  const lines: string[] = [];
-  lines.push(picocolors.bold(`\n  ${label} agent models (${level})`));
-  lines.push(picocolors.dim('  ─────────────────────────────────────'));
+): string => {
+  const lines: string[] = [
+    picocolors.bold(`\n  ${label} agent models (${level})`),
+    picocolors.dim('  ─────────────────────────────────────'),
+  ];
   for (const agent of MAESTRIA_AGENTS) {
     const model = models[agent];
-    const value = model ? picocolors.green(model) : picocolors.dim('inherit (session model)');
+    const value =
+      model !== undefined && model !== null && model !== ''
+        ? picocolors.green(model)
+        : picocolors.dim('inherit (session model)');
     lines.push(`  ${picocolors.bold(agent.padEnd(10))} ${value}`);
   }
-  return lines.join('\n') + '\n';
-}
+  return `${lines.join('\n')}\n`;
+};
 
-function renderCompactConfigure(models: AgentModels): string {
-  return (
-    Object.entries(models)
-      .filter(([, model]) => model)
-      .map(([agent, model]) => `${agent}=${model}`)
-      .join('\n') + '\n'
-  );
-}
+const renderCompactConfigure = (models: AgentModels): string =>
+  `${Object.entries(models)
+    .filter(([, model]) => model)
+    .map(([agent, model]) => `${agent}=${model}`)
+    .join('\n')}\n`;
 
-function renderConfigureJson(
+const renderConfigureJson = (
   handler: ModelConfigHandler,
   level: ModelConfigLevel,
   models: AgentModels,
-): string {
+): string => {
   const all: Record<string, string> = {};
   for (const agent of MAESTRIA_AGENTS) {
     all[agent] = models[agent] ?? '';
   }
   return JSON.stringify(
-    { platform: handler.id, label: handler.label, level, models: all },
+    { label: handler.label, level, models: all, platform: handler.id },
     null,
     2,
   );
-}
+};
 
-async function resolveConfigureHandler(
+const resolveConfigureHandler = async (
   platformId: string | undefined,
-): Promise<ModelConfigHandler> {
-  if (platformId) {
+): Promise<ModelConfigHandler> => {
+  if (platformId !== undefined && platformId !== null && platformId !== '') {
     const id = await validateOrExit(validatePlatform(platformId));
     const h = getModelConfigHandler(id);
     if (!h) {
@@ -106,7 +122,7 @@ async function resolveConfigureHandler(
           .join(', ')}.`,
       );
     }
-    return h;
+    return h ?? exitError(`Per-agent model configuration is not yet supported for '${id}'.`);
   }
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     console.error('No platform specified and not in an interactive terminal.');
@@ -117,55 +133,113 @@ async function resolveConfigureHandler(
     process.exit(1);
   }
   const picked = await select({
-    message: 'Which platform do you want to configure?',
-    options: modelConfigHandlers.map((h) => ({ value: h.id, label: h.label })),
     maxItems: 5,
+    message: 'Which platform do you want to configure?',
+    options: modelConfigHandlers.map((h) => ({ label: h.label, value: h.id })),
   });
   if (isCancel(picked)) {
     exitCancel();
   }
-  return getModelConfigHandler(picked as string)!;
-}
+  if (typeof picked !== 'string') {
+    return exitCancel();
+  }
+  return getModelConfigHandler(picked) ?? exitError(`Unknown platform: ${picked}`);
+};
 
-async function resolveConfigureLevel(
+const resolveConfigureLevel = async (
   args: Record<string, unknown>,
   _handler: ModelConfigHandler,
-): Promise<ModelConfigLevel> {
-  const bothFlags = (args.global && args.project) as boolean;
+): Promise<ModelConfigLevel> => {
+  const bothFlags = args.global === true && args.project === true;
   if (bothFlags) {
     exitError('Cannot use --global and --project together. Choose one.');
   }
-  if (args.global) {
+  if (args.global === true) {
     return 'global';
   }
-  if (args.project) {
+  if (args.project === true) {
     return 'project';
   }
-  if (process.stdout.isTTY && process.stdin.isTTY && !args.set) {
+  if (
+    process.stdout.isTTY &&
+    process.stdin.isTTY &&
+    (args.set === undefined || args.set === null || args.set === '')
+  ) {
     const picked = await select({
+      initialValue: 'global',
       message: 'Where do you want to configure models?',
       options: [
-        { value: 'global' as const, label: 'Global', hint: 'applies to all projects' },
-        { value: 'project' as const, label: 'Project', hint: 'applies to this project only' },
+        { hint: 'applies to all projects', label: 'Global', value: 'global' as const },
+        { hint: 'applies to this project only', label: 'Project', value: 'project' as const },
       ],
-      initialValue: 'global',
     });
     if (isCancel(picked)) {
       exitCancel();
     }
-    return picked as ModelConfigLevel;
+    if (picked === 'global' || picked === 'project') {
+      return picked;
+    }
+    return exitError('Invalid configuration level selected.');
   }
-  exitError('Specify --global or --project when using --set or in a non-interactive terminal.');
-}
+  return exitError(
+    'Specify --global or --project when using --set or in a non-interactive terminal.',
+  );
+};
 
-async function handleConfigureSet(
+const promptForAgentModel = async (
+  name: AgentName,
+  current: AgentModels,
+  available: string[],
+): Promise<string> => {
+  const picked = await select({
+    initialValue:
+      current[name] !== undefined &&
+      current[name] !== null &&
+      current[name] !== '' &&
+      available.includes(current[name])
+        ? current[name]
+        : '',
+    maxItems: 10,
+    message: `Model for @${name}${current[name] !== undefined && current[name] !== null && current[name] !== '' ? ` (currently ${current[name]})` : ''}`,
+    options: [
+      { hint: 'use the session/primary agent model', label: 'Inherit', value: '' },
+      ...available.map((model) => ({ label: model, value: model })),
+    ],
+  });
+  if (typeof picked === 'string') {
+    return picked;
+  }
+  return exitCancel();
+};
+
+const promptSelectedAgentModels = async (
+  agents: readonly unknown[],
+  current: AgentModels,
+  available: string[],
+  index = 0,
+  models: AgentModels = {},
+): Promise<AgentModels> => {
+  const agent = agents[index];
+  if (agent === undefined) {
+    return models;
+  }
+  if (typeof agent === 'string' && isAgentName(agent)) {
+    const picked = await promptForAgentModel(agent, current, available);
+    if (picked !== '') {
+      models[agent] = picked;
+    }
+  }
+  return await promptSelectedAgentModels(agents, current, available, index + 1, models);
+};
+
+const handleConfigureSet = async (
   handler: ModelConfigHandler,
   level: ModelConfigLevel,
   setArg: string,
   isQuiet: boolean,
   isJson: boolean,
   isCompact: boolean,
-): Promise<never> {
+): Promise<never> => {
   const models = parseSetPairs(setArg);
   const spinner = createSpinner(isQuiet);
   spinner.start(`Validating models for ${handler.label}...`);
@@ -193,16 +267,16 @@ async function handleConfigureSet(
     console.log(`  ${picocolors.dim(handler.restartHint)}`);
   }
   process.exit(0);
-}
+};
 
 // oxlint-disable-next-line max-lines-per-function -- handleConfigureInteractive orchestrates the interactive model configuration flow (load models, read current, groupMultiselect, per-agent prompts, write) as a single cohesive interaction; splitting would fragment the prompt sequence and duplicate handler/level closure.
-async function handleConfigureInteractive(
+const handleConfigureInteractive = async (
   handler: ModelConfigHandler,
   level: ModelConfigLevel,
   isQuiet: boolean,
   isJson: boolean,
   isCompact: boolean,
-): Promise<never> {
+): Promise<never> => {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     console.error('No --set provided and not in an interactive terminal.');
     console.error(
@@ -230,45 +304,28 @@ async function handleConfigureInteractive(
   );
   spinner.stop('');
   const selectedAgents = await groupMultiselect({
+    maxItems: 8,
     message: 'Which agents do you want to configure?',
     options: {
       Specialists: handler.agents.map((agent) => ({
-        value: agent,
+        hint:
+          isAgentName(agent) &&
+          current[agent] !== undefined &&
+          current[agent] !== null &&
+          current[agent] !== ''
+            ? `currently ${current[agent]}`
+            : 'inherit',
         label: agent,
-        hint: current[agent as keyof AgentModels]
-          ? `currently ${current[agent as keyof AgentModels]}`
-          : 'inherit',
+        value: agent,
       })),
     },
-    selectableGroups: true,
     required: true,
-    maxItems: 8,
+    selectableGroups: true,
   });
-  if (isCancel(selectedAgents)) {
-    exitCancel();
-  }
-  const models: AgentModels = {};
-  for (const agent of selectedAgents as string[]) {
-    if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
-      continue;
-    }
-    const name = agent as keyof AgentModels;
-    const picked = await select({
-      message: `Model for @${name}${current[name] ? ` (currently ${current[name]})` : ''}`,
-      options: [
-        { value: '', label: 'Inherit', hint: 'use the session/primary agent model' },
-        ...available.map((model) => ({ value: model, label: model })),
-      ],
-      maxItems: 10,
-      initialValue: current[name] && available.includes(current[name]) ? current[name] : '',
-    });
-    if (isCancel(picked)) {
-      exitCancel();
-    }
-    if (picked) {
-      models[name] = picked as string;
-    }
-  }
+  const selectedAgentValues: unknown[] = Array.isArray(selectedAgents)
+    ? selectedAgents
+    : exitCancel();
+  const models = await promptSelectedAgentModels(selectedAgentValues, current, available);
   if (Object.keys(models).length === 0) {
     console.log('No changes. Nothing to write.');
     process.exit(0);
@@ -285,70 +342,68 @@ async function handleConfigureInteractive(
     console.log(`  ${picocolors.dim(handler.restartHint)}`);
   }
   process.exit(0);
-}
+};
 
 export const configureCommand = defineCommand({
-  meta: {
-    name: 'configure',
-    description: 'Configure per-agent models for a coding agent platform',
-  },
   args: {
+    compact: {
+      default: false,
+      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
+      type: 'boolean',
+    },
+    global: {
+      default: false,
+      description: 'Configure the global (user-level) config. Default in interactive mode.',
+      type: 'boolean',
+    },
+    json: {
+      default: false,
+      description:
+        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
+      type: 'boolean',
+    },
     platform: {
-      type: 'positional',
       description:
         'Platform to configure. One of: opencode, codex, cursor, pi, omp. Pass directly to skip interactive selection.',
       required: false,
-    },
-    global: {
-      type: 'boolean',
-      description: 'Configure the global (user-level) config. Default in interactive mode.',
-      default: false,
+      type: 'positional',
     },
     project: {
-      type: 'boolean',
+      default: false,
       description:
         'Configure the project-level config (.opencode/, .codex/agents/, .cursor/agents/, .pi/agents/, or .omp/agents/).',
+      type: 'boolean',
+    },
+    quiet: {
       default: false,
+      description:
+        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      type: 'boolean',
     },
     set: {
-      type: 'string',
+      default: undefined,
       description:
         'Set models non-interactively. Comma-separated <agent>=<model> pairs, e.g. ' +
         "'builder=opencode-go/deepseek-v4-flash'. Use <agent>= (empty value) to reset to inherit.",
-      default: undefined,
-    },
-    json: {
-      type: 'boolean',
-      description:
-        'Output results as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
-      default: false,
-    },
-    quiet: {
-      type: 'boolean',
-      description:
-        'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
-      default: false,
-    },
-    compact: {
-      type: 'boolean',
-      description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
-      default: false,
+      type: 'string',
     },
   },
+  meta: {
+    description: 'Configure per-agent models for a coding agent platform',
+    name: 'configure',
+  },
   run: async ({ args }) => {
-    const isQuiet = (args.quiet || args.compact) as boolean;
-    const isCompact = args.compact as boolean;
-    const isJson = args.json as boolean;
-    const handler = await resolveConfigureHandler(args.platform as string | undefined);
+    const isQuiet = args.quiet || args.compact;
+    const isCompact = args.compact;
+    const isJson = args.json;
+    const handler = await resolveConfigureHandler(args.platform);
     const cliAvailable = await Effect.runPromise(handler.isAvailable ?? commandExists(handler.cli));
     if (!cliAvailable) {
       exitError(`The '${handler.cli}' CLI was not found on PATH. Install ${handler.label} first.`);
     }
     const level = await resolveConfigureLevel(args, handler);
-    if (args.set) {
-      await handleConfigureSet(handler, level, args.set as string, isQuiet, isJson, isCompact);
-    } else {
-      await handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact);
-    }
+    await (args.set !== undefined && args.set !== null && args.set !== ''
+      ? handleConfigureSet(handler, level, args.set, isQuiet, isJson, isCompact)
+      : handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact));
   },
 });

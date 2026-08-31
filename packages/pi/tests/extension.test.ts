@@ -1,37 +1,76 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { describe, expect, it, vi } from 'vite-plus/test';
+
 import extension from '@/extension.js';
 
-function createMockPi() {
-  const handlers = new Map<string, Array<(...args: unknown[]) => unknown>>();
-  return {
-    on: vi.fn((event: string, handler: (...args: unknown[]) => unknown) => {
-      if (!handlers.has(event)) {
-        handlers.set(event, []);
-      }
-      handlers.get(event)!.push(handler);
-      return () => {
-        const h = handlers.get(event);
-        if (h) {
-          h.splice(h.indexOf(handler), 1);
-        }
-      };
-    }),
-    registerCommand: vi.fn(),
-    registerTool: vi.fn(),
-    setActiveTools: vi.fn(),
-    getActiveTools: vi.fn(() => []),
-    setModel: vi.fn(),
-    appendEntry: vi.fn(),
-    sendUserMessage: vi.fn(),
-    events: undefined,
-  };
+type MockHandler = (...args: unknown[]) => unknown;
+interface MockCommand {
+  description?: string;
+  handler: MockHandler;
+}
+type MockOn = (event: string, handler: MockHandler) => void;
+type MockRegisterCommand = (name: string, command: MockCommand) => void;
+
+interface MockPi {
+  appendEntry: ReturnType<typeof vi.fn>;
+  events: undefined;
+  getActiveTools: ReturnType<typeof vi.fn<() => string[]>>;
+  on: ReturnType<typeof vi.fn<MockOn>>;
+  registerCommand: ReturnType<typeof vi.fn<MockRegisterCommand>>;
+  registerTool: ReturnType<typeof vi.fn>;
+  sendUserMessage: ReturnType<typeof vi.fn>;
+  setActiveTools: ReturnType<typeof vi.fn>;
+  setModel: ReturnType<typeof vi.fn>;
 }
 
+const createMockPi = (): MockPi => ({
+  appendEntry: vi.fn(),
+  events: undefined,
+  getActiveTools: vi.fn(() => []),
+  on: vi.fn<MockOn>(),
+  registerCommand: vi.fn(),
+  registerTool: vi.fn(),
+  sendUserMessage: vi.fn(),
+  setActiveTools: vi.fn(),
+  setModel: vi.fn(),
+});
+
+const invokeExtension = (pi: MockPi): void => {
+  Reflect.apply(extension, undefined, [pi]);
+};
+
+const invokeHandler = async (pi: MockPi, eventName: string, ...args: unknown[]): Promise<void> => {
+  const registration = pi.on.mock.calls.find(([event]) => event === eventName);
+  if (registration === undefined) {
+    throw new Error(`${eventName} handler was not registered`);
+  }
+  const [, handler] = registration;
+  if (typeof handler !== 'function') {
+    throw new TypeError(`${eventName} handler is not callable`);
+  }
+  await Reflect.apply(handler, undefined, args);
+};
+
+const getCommandHandler = (pi: MockPi, commandName: string): MockHandler => {
+  const registration = pi.registerCommand.mock.calls.find(([name]) => name === commandName);
+  if (registration === undefined) {
+    throw new Error(`${commandName} command was not registered`);
+  }
+  const [, command] = registration;
+  if (
+    typeof command !== 'object' ||
+    command === null ||
+    !('handler' in command) ||
+    typeof command.handler !== 'function'
+  ) {
+    throw new TypeError(`${commandName} command definition is invalid`);
+  }
+  return command.handler;
+};
+
 describe('extension entry point', () => {
-  it('registers mode commands', async () => {
+  it('registers mode commands', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
+    invokeExtension(pi);
     const { registerCommand } = pi;
     // Three mode commands: fein, sonar, blitz
     expect(registerCommand).toHaveBeenCalledWith('fein', expect.any(Object));
@@ -39,19 +78,18 @@ describe('extension entry point', () => {
     expect(registerCommand).toHaveBeenCalledWith('blitz', expect.any(Object));
   });
 
-  it('registers subagent tool', async () => {
+  it('registers subagent tool', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
+    invokeExtension(pi);
     const { registerTool } = pi;
     expect(registerTool).toHaveBeenCalled();
   });
 
-  it('subscribes to session events', async () => {
+  it('subscribes to session events', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
+    invokeExtension(pi);
     const { on } = pi;
-    const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const onEvents = onCalls.map((c: unknown[]) => c[0]);
+    const onEvents = on.mock.calls.map(([event]) => event);
     expect(onEvents).toContain('session_start');
     expect(onEvents).toContain('session_shutdown');
     expect(onEvents).toContain('before_agent_start');
@@ -59,9 +97,9 @@ describe('extension entry point', () => {
     expect(onEvents).toContain('tool_call');
   });
 
-  it('registers orchestration commands', async () => {
+  it('registers orchestration commands', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
+    invokeExtension(pi);
     const { registerCommand } = pi;
     expect(registerCommand).toHaveBeenCalledWith('maestria-status', expect.any(Object));
     expect(registerCommand).toHaveBeenCalledWith('review', expect.any(Object));
@@ -72,78 +110,64 @@ describe('extension entry point', () => {
 
   it('restores state on session_start from the current branch', async () => {
     const pi = createMockPi();
-    const mockState = { mode: 'fein', activeTask: 'test task' };
-    const siblingState = { mode: 'sonar', activeTask: 'sibling task' };
+    const mockState = { activeTask: 'test task', mode: 'fein' };
+    const siblingState = { activeTask: 'sibling task', mode: 'sonar' };
     const entries = [
-      { type: 'custom', customType: 'maestria_state', data: siblingState, timestamp: 50 },
+      { customType: 'maestria_state', data: siblingState, timestamp: 50, type: 'custom' },
     ];
     const getBranch = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const getEntries = vi.fn(() => [
       ...entries,
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const ctx = { sessionManager: { getBranch, getEntries } };
-    extension(pi as unknown as ExtensionAPI);
-    const { on } = pi;
-    const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionStartCall = onCalls.find((c: unknown[]) => c[0] === 'session_start');
-    expect(sessionStartCall).toBeDefined();
-    const handler = sessionStartCall![1];
-    await handler({}, ctx);
+    invokeExtension(pi);
+    await invokeHandler(pi, 'session_start', {}, ctx);
     expect(getBranch).toHaveBeenCalled();
   });
 
   it('does not restore sibling-branch state on session_start', async () => {
     const pi = createMockPi();
-    const mockState = { mode: 'fein', activeTask: 'test task' };
-    const siblingState = { mode: 'sonar', activeTask: 'sibling task' };
+    const mockState = { activeTask: 'test task', mode: 'fein' };
+    const siblingState = { activeTask: 'sibling task', mode: 'sonar' };
     const branchEntries = [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ];
     const allEntries = [
-      { type: 'custom', customType: 'maestria_state', data: siblingState, timestamp: 50 },
+      { customType: 'maestria_state', data: siblingState, timestamp: 50, type: 'custom' },
       ...branchEntries,
     ];
     const getBranch = vi.fn(() => branchEntries);
     const getEntries = vi.fn(() => allEntries);
     const ctx = { sessionManager: { getBranch, getEntries } };
-    extension(pi as unknown as ExtensionAPI);
-    const { on } = pi;
-    const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionStartCall = onCalls.find((c: unknown[]) => c[0] === 'session_start');
-    const handler = sessionStartCall![1];
-    await handler({}, ctx);
+    invokeExtension(pi);
+    await invokeHandler(pi, 'session_start', {}, ctx);
 
-    const statusCall = (pi.registerCommand as ReturnType<typeof vi.fn>).mock.calls.find(
-      (c: unknown[]) => c[0] === 'maestria-status',
-    );
-    expect(statusCall).toBeDefined();
-    const setEditorText = vi.fn();
-    await statusCall![1].handler('', { ui: { setEditorText } });
-    const text = setEditorText.mock.calls[0][0] as string;
+    const statusHandler = getCommandHandler(pi, 'maestria-status');
+    const setEditorText = vi.fn<(text: string) => void>();
+    await Reflect.apply(statusHandler, undefined, ['', { ui: { setEditorText } }]);
+    const [text] = setEditorText.mock.calls[0] ?? [];
+    if (text === undefined) {
+      throw new Error('status command did not set editor text');
+    }
     expect(text).toContain('test task');
     expect(text).not.toContain('sibling task');
   });
 
   it('registers a session_tree handler that restores state from the current branch', async () => {
     const pi = createMockPi();
-    const mockState = { mode: 'fein', activeTask: 'test task' };
+    const mockState = { activeTask: 'test task', mode: 'fein' };
     const getBranch = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const getEntries = vi.fn(() => [
-      { type: 'custom', customType: 'maestria_state', data: mockState, timestamp: 100 },
+      { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const ctx = { sessionManager: { getBranch, getEntries } };
-    extension(pi as unknown as ExtensionAPI);
-    const { on } = pi;
-    const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionTreeCall = onCalls.find((c: unknown[]) => c[0] === 'session_tree');
-    expect(sessionTreeCall).toBeDefined();
-    const handler = sessionTreeCall![1];
-    await handler({}, ctx);
+    invokeExtension(pi);
+    await invokeHandler(pi, 'session_tree', {}, ctx);
     expect(getBranch).toHaveBeenCalled();
   });
 });

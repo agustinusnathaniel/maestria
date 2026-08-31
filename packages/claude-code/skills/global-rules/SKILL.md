@@ -1,11 +1,11 @@
 ---
-name: global-rules
 description: |-
   Universal agent rules contract: universal floors, orchestration, delegation,
   context management, handoff, blind review, bounded autonomy, authorization
   checkpoints, process lifecycle, iteration, and commit and branch safety.
   Load once per session and apply to routing, delegation, review, and commit
   decisions.
+name: global-rules
 user-invocable: false
 ---
 

@@ -1,24 +1,42 @@
-import { isToolCallEventType, type ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
+import type { ToolCallHandler } from '@maestria/shared-pi/tools-core';
+
+import type { MaestriaState } from '@/state.js';
 import { persistState } from '@/state.js';
 
-export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
-  const handler = createToolCallHandler({
-    getState: () => state,
-    getActiveTools: () => pi.getActiveTools(),
-    delegationTool: 'subagent',
-    isMutationTool: (e) =>
-      isToolCallEventType('edit', e as never) ||
-      isToolCallEventType('write', e as never) ||
-      isToolCallEventType('patch', e as never) ||
-      (e as { toolName?: string }).toolName === 'bash',
-    isReadTool: (e) => isToolCallEventType('read', e as never),
-    isWriteTool: (e) =>
-      isToolCallEventType('edit', e as never) || isToolCallEventType('write', e as never),
-    isBashTool: (e) => isToolCallEventType('bash', e as never),
-    persist: () =>
-      persistState(pi as unknown as { appendEntry: (t: string, d: unknown) => void }, state),
-  });
-  pi.on('tool_call', handler as never);
+export interface ToolApi {
+  appendEntry: (type: string, data: unknown) => void;
+  getActiveTools: () => string[];
+  on: (event: 'tool_call', handler: ToolCallHandler) => void;
 }
+
+export const createToolApi = (pi: ExtensionAPI): ToolApi => ({
+  appendEntry: (type, data) => {
+    pi.appendEntry(type, data);
+  },
+  getActiveTools: () => pi.getActiveTools(),
+  on: (_event, handler) => {
+    pi.on('tool_call', async (event, ctx) => await handler(event, ctx));
+  },
+});
+
+export const installToolInterceptors = (pi: ToolApi, state: MaestriaState): void => {
+  const handler = createToolCallHandler({
+    delegationTool: 'subagent',
+    getActiveTools: () => pi.getActiveTools(),
+    getState: () => state,
+    isBashTool: (e) => e.toolName === 'bash',
+    isMutationTool: (e) =>
+      e.toolName === 'edit' ||
+      e.toolName === 'write' ||
+      e.toolName === 'patch' ||
+      e.toolName === 'bash',
+    isReadTool: (e) => e.toolName === 'read',
+    isWriteTool: (e) => e.toolName === 'edit' || e.toolName === 'write',
+    persist: () => {
+      persistState(pi, state);
+    },
+  });
+  pi.on('tool_call', handler);
+};

@@ -1,6 +1,6 @@
 ---
-name: architect
 description: Architecture decision workflow for comparing implementation approaches, boundaries, threat models, and ADR decisions.
+name: architect
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -15,8 +15,7 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Installation via CLI (Recommended)
 
-The [maestria CLI](/cli/) provides a unified interface for installing and managing
-maestria plugins across all supported platforms:
+The [maestria CLI](/cli/) provides a unified interface for installing and managing maestria plugins across all supported platforms:
 
 <PackageManagers
   type="dlx"
@@ -43,11 +42,9 @@ maestria plugins across all supported platforms:
 
    <PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
 
-   This runs `npm pack @maestria/kimi-code@latest`, extracts the tarball into
-   a temporary directory, and installs it through Kimi's native plugin manager.
+   This runs `npm pack @maestria/kimi-code@latest`, extracts the tarball into a temporary directory, and installs it through Kimi's native plugin manager.
 
-   Alternatively, you can install directly from npm with the same commands used
-   internally:
+   Alternatively, you can install directly from npm with the same commands used internally:
 
    ```bash
    npm pack @maestria/kimi-code@latest --pack-destination /tmp

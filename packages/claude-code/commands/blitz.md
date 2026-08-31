@@ -1,6 +1,6 @@
 ---
-name: blitz
 description: Fast low-risk route - skip optional recon and design ceremony
+name: blitz
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

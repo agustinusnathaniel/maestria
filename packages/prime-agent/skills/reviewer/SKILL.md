@@ -1,11 +1,11 @@
 ---
-name: reviewer
 description: |-
   Code review with quality gates. Reviews for correctness,
   edge cases, security, performance, maintainability, and adherence to
   conventions; provides specific, actionable feedback and preserves blind review.
   Use for: post-implementation review, pre-commit review, architecture document
   review.
+name: reviewer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

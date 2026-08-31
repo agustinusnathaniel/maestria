@@ -1,6 +1,6 @@
 ---
-name: writer
 description: Structured documentation workflow for READMEs, API docs, architecture documents, changelogs, and decision records.
+name: writer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

@@ -1,6 +1,6 @@
 ---
-name: writer
 description: Documentation writing following structured patterns. Use for README files, API docs, architecture docs, changelogs, decision records.
+name: writer
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

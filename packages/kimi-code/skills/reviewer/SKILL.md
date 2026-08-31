@@ -1,16 +1,16 @@
 ---
-name: reviewer
+arguments: []
 description: |-
   Code review with quality gates.
   Reviews code for correctness, edge cases, security, performance, maintainability,
   and adherence to conventions. Provides specific, actionable feedback.
   Use for: PR review, pre-commit review, architecture document review.
+name: reviewer
 type: prompt
 whenToUse: |-
   Pre-merge review, post-implementation validation, security audits,
   before-commit QA. In full routes, review after the integrated builder batch is
   reconciled; run the general review first, then risk-matched lenses sequentially.
-arguments: []
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
