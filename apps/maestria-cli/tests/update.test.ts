@@ -1,5 +1,5 @@
 import { Effect } from 'effect';
-import { describe, it, expect, vi } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 // Stub the Prime version lookup's Node fs read (cross-platform, not a POSIX
 // `cat`) plus the version-cache write so npmViewVersion cannot touch the real

@@ -1,10 +1,10 @@
 import {
   detectMode as sharedDetectMode,
-  stripKeyword as sharedStripKeyword,
   getModeMarker as sharedGetMarker,
+  stripKeyword as sharedStripKeyword,
 } from '@maestria/shared-mode';
 
-import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from '@/modes/prompts.js';
+import { MODE_MARKERS, MODE_PROMPTS, VALID_KEYWORDS } from '@/modes/prompts.js';
 import type { ModeKeyword, ModeResult } from '@/modes/types.js';
 
 /**

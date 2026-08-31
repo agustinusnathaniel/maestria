@@ -2,8 +2,8 @@ import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-a
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 import {
   ALLOWED_AGENTS,
-  assertValidAgent,
   assertNonEmptyTask,
+  assertValidAgent,
   MAESTRIA_EVENTS,
 } from '@maestria/shared-pi/subagent-utils';
 import { Effect } from 'effect';

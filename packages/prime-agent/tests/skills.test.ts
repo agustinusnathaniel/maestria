@@ -1,12 +1,12 @@
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import {
   DESCRIPTION_MAX,
-  NAME_MAX,
-  isValidSkillName,
   frontmatterValue,
+  isValidSkillName,
+  NAME_MAX,
 } from '../scripts/skill-validation.ts';
 import syncConfig from '../sync.config.js';
 

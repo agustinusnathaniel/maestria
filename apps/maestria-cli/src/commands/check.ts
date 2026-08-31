@@ -2,7 +2,7 @@ import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 
 import { detectAll, detectSingle } from '@/lib/detect.js';
-import { freshnessOf, checkExitCode } from '@/lib/freshness.js';
+import { checkExitCode, freshnessOf } from '@/lib/freshness.js';
 import { renderStatusTable } from '@/lib/output.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';

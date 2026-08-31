@@ -2,8 +2,8 @@
 
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { readdir, writeFile, rename, unlink, mkdir } from 'node:fs/promises';
-import { resolve, relative, dirname } from 'node:path';
+import { mkdir, readdir, rename, unlink, writeFile } from 'node:fs/promises';
+import { dirname, relative, resolve } from 'node:path';
 
 import type { ResolvedSyncConfig } from './config.js';
 import type { SyncFileResult } from './sync.js';

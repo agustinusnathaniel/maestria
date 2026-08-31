@@ -1,16 +1,16 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import {
+  CODE_BLOCK_RE,
+  detectMode,
+  extractModeSection,
+  findCodeBlockRanges,
+  getModeMarker,
   MODE_KEYWORDS,
-  VALID_KEYWORDS,
   MODE_MARKERS,
   MODE_PRIORITY,
-  CODE_BLOCK_RE,
-  findCodeBlockRanges,
-  extractModeSection,
-  detectMode,
   stripKeyword,
-  getModeMarker,
+  VALID_KEYWORDS,
 } from '../src/index.js';
 
 describe('MODE_KEYWORDS', () => {

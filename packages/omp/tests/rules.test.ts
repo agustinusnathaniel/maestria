@@ -1,5 +1,5 @@
 import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-pi/pi-coding-agent';
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import { createModePromptHandler } from '@/rules.js';
 import { createInitialState } from '@/state.js';

@@ -16,9 +16,9 @@
  */
 import {
   MARKDOWN_MIME,
+  markdownTwinPath,
   RECOVERY_LINKS,
   VARY_VALUE,
-  markdownTwinPath,
   wantsMarkdown,
 } from '../src/lib/agent-delivery.ts';
 

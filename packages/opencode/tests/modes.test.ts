@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import { MaestriaPlugin } from '@/index.js';
-import { detectMode, stripKeyword, getModeMarker, getModePrompt } from '@/modes/index.js';
+import { detectMode, getModeMarker, getModePrompt, stripKeyword } from '@/modes/index.js';
 import type { ModeResult } from '@/modes/types.js';
 
 function expectNotNull<T>(value: T | null): asserts value is T {

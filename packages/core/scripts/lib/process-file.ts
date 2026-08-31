@@ -3,18 +3,18 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { relative, dirname } from 'node:path';
+import { dirname, relative } from 'node:path';
 
 import type { ResolvedFileConfig } from './config.js';
 import { unifiedDiff } from './diff.js';
 import { atomicWrite } from './file.js';
 import type { SyncFileResult } from './sync.js';
 import {
-  stripFrontmatter,
   findAndReplace,
-  stripSourceComment,
-  serializeFrontmatter,
   normalizeLineEndings,
+  serializeFrontmatter,
+  stripFrontmatter,
+  stripSourceComment,
 } from './transforms.js';
 
 // ── Git provenance check ──

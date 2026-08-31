@@ -1,11 +1,11 @@
 // oxlint-disable max-lines -- model-config aggregates 5 platform handlers (opencode/codex/pi/cursor/omp) plus shared parsers and FS helpers as a single cohesive registry; splitting would fragment the handler registration and create single-use modules with one call site.
 import { Effect } from 'effect';
 import {
-  modify,
   applyEdits,
+  findNodeAtLocation,
+  modify,
   parse,
   parseTree,
-  findNodeAtLocation,
 } from 'jsonc-parser/lib/esm/main.js';
 import { homedir } from 'node:os';
 
@@ -17,7 +17,7 @@ import {
   parseCodexTopLevelString,
   setCodexTopLevelString,
 } from '@/lib/codex-agent-files.js';
-import { run, commandExists, CommandError } from '@/lib/shell.js';
+import { CommandError, commandExists, run } from '@/lib/shell.js';
 
 // ── Types ─────────────────────────────────────────────
 

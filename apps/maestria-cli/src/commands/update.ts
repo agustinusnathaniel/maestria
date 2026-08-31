@@ -1,4 +1,4 @@
-import { isCancel, cancel } from '@clack/prompts';
+import { cancel, isCancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 import picocolors from 'picocolors';
@@ -6,16 +6,16 @@ import picocolors from 'picocolors';
 import { detectInstalled } from '@/lib/detect.js';
 import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
+import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
 import { getPlatform } from '@/lib/platforms.js';
 import type { PlatformHandler, PlatformUpdateSnapshot } from '@/lib/platforms.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
 import { invalidateVersionCache } from '@/lib/shell.js';
 import {
+  VALID_PLATFORMS,
+  validateOrExit,
   validatePlatforms,
   validateVersion,
-  validateOrExit,
-  VALID_PLATFORMS,
 } from '@/lib/validation.js';
 import { isVersionEq, isVersionGt } from '@/lib/version.js';
 import type { PlatformResult } from '@/types.js';

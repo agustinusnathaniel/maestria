@@ -1,5 +1,5 @@
 import { Effect } from 'effect';
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import { platforms } from '@/lib/platforms.js';
 import * as validation from '@/lib/validation.js';

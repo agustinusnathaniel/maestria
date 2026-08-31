@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 describe('dist bundle', () => {
   it('should import MaestriaPlugin from the built dist', async () => {

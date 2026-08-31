@@ -9,9 +9,9 @@
  */
 
 import {
+  extractModeSection,
   MODE_KEYWORDS as SHARED_KEYWORDS,
   MODE_MARKERS as SHARED_MARKERS,
-  extractModeSection,
   detectMode as sharedDetectMode,
   stripKeyword as sharedStripKeyword,
 } from '@maestria/shared-mode';

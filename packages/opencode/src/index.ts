@@ -1,10 +1,10 @@
 import type { Plugin, PluginInput } from '@opencode-ai/plugin';
 import { merge } from 'es-toolkit';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
-import { detectMode, stripKeyword, getModeMarker, getModePrompt } from '@/modes/index.js';
+import { detectMode, getModeMarker, getModePrompt, stripKeyword } from '@/modes/index.js';
 import { maestriaOptionsSchema } from '@/modes/types.js';
 import type { MaestriaPluginOptions } from '@/modes/types.js';
 import { AGENTS_DIR, RULES_PATH } from '@/root.js';

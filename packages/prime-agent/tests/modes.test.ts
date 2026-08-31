@@ -1,9 +1,9 @@
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { MODE_MARKERS, createModePromptHandler, getModePrompt } from '../src/modes.ts';
+import { createModePromptHandler, getModePrompt, MODE_MARKERS } from '../src/modes.ts';
 import type { ExtensionContext } from '../src/pi-api.ts';
 import type { MaestriaModeState } from '../src/state.ts';
 

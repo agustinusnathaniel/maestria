@@ -30,7 +30,6 @@ catalog:
   '@astrojs/starlight-tailwind': ^5.0.0
   negotiator: ^1.1.0
   '@types/negotiator': ^0.6.5
-  eslint-plugin-import-x: ^4.17.1
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'
@@ -81,7 +80,6 @@ allowBuilds:
   onnxruntime-node: true
   protobufjs: true
   sharp: true
-  'unrs-resolver@1.12.2': true
 minimumReleaseAgeExclude:
   - '@astrojs/*'
   - astro

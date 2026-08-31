@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vite-plus/test';
 import {
   GITHUB_ISSUES_URL,
   GITHUB_REPO_URL,
+  organizationSchema,
   SITE_DESCRIPTION,
   SITE_URL,
-  organizationSchema,
   softwareApplicationSchema,
   websiteSchema,
 } from '@/lib/site-schema.ts';

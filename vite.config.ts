@@ -61,10 +61,7 @@ export default defineConfig({
     ...oxlintPreset,
     ignorePatterns: [...new Set([...(oxlintPreset.ignorePatterns ?? []), 'dist/**'])],
     plugins: [...(oxlintPreset.plugins ?? [])],
-    jsPlugins: [
-      { name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' },
-      { name: 'import-js', specifier: 'eslint-plugin-import-x' },
-    ],
+    jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
     rules: {
       ...oxlintPreset.rules,
       // Strict Ultracite core preset - only intentional project overrides remain (see ADR-021)
@@ -78,15 +75,12 @@ export default defineConfig({
       'func-style': 'off',
       'unicorn/import-style': 'off',
       'sort-keys': 'off',
-      'import-js/order': [
+      'sort-imports': [
         'warn',
         {
-          groups: [['builtin', 'external'], ['internal', 'parent'], ['sibling', 'index'], 'object'],
-          'newlines-between': 'always',
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
+          allowSeparatedGroups: true,
+          ignoreDeclarationSort: true,
+          ignoreCase: true,
         },
       ],
     },

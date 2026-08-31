@@ -1,5 +1,5 @@
 import { Effect } from 'effect';
-import { describe, it, expect, vi } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 // State shared between the hoisted mock factory and the tests: the stubbed
 // `readFile` (the Prime version lookup reads package.json through Node's

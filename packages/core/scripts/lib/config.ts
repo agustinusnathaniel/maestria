@@ -1,7 +1,7 @@
 // packages/core/scripts/lib/config.ts - Config types, loader & merge
 
 import { existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 // ── Types ──

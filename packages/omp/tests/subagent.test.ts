@@ -1,5 +1,5 @@
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
-import { describe, it, expect, vi } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { createInitialState } from '@/state.js';
 import { installSubagentTool } from '@/subagent.js';

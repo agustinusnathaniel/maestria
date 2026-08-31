@@ -14,23 +14,23 @@ import {
 import type { CodexGlobalInstructionFilename } from '@/lib/codex-instructions.js';
 import {
   kimiCodeHome,
-  kimiManagedPluginDir,
   kimiInstalledPath,
+  kimiManagedPluginDir,
   readKimiInstalled,
   registerKimiPlugin,
   removeKimiPlugin,
 } from '@/lib/kimi.js';
 import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
 import {
-  run,
-  readTextFile,
-  fileExists,
-  commandExists,
-  npmViewVersion,
-  invalidateVersionCache,
   CommandError,
+  commandExists,
+  fileExists,
   getCacheDir,
   getMaestriaCacheDir,
+  invalidateVersionCache,
+  npmViewVersion,
+  readTextFile,
+  run,
 } from '@/lib/shell.js';
 
 // ── Shared helpers ───────────────────────────────────

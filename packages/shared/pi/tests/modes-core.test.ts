@@ -1,15 +1,15 @@
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 import {
+  buildModeText,
+  detectModeInText,
+  getModePrompt,
+  loadModePrompt,
   MODE_KEYWORDS,
   MODE_MARKERS,
-  loadModePrompt,
-  getModePrompt,
-  detectModeInText,
-  buildModeText,
 } from '../src/modes-core.js';
 
 // ── Constants ──

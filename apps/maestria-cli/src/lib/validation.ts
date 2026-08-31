@@ -1,6 +1,6 @@
-import { Data, Effect, Exit, Cause } from 'effect';
+import { Cause, Data, Effect, Exit } from 'effect';
 
-import { platforms, PLATFORM_IDS } from './platforms.js';
+import { PLATFORM_IDS, platforms } from './platforms.js';
 import type { PlatformId } from './platforms.js';
 import { isValidVersion } from './version.js';
 

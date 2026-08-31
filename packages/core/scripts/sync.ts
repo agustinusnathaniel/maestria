@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { loadConfig, ConfigError } from './lib/config.js';
+import { ConfigError, loadConfig } from './lib/config.js';
 import { runSync } from './lib/sync.js';
 
 // ── CLI Types ──

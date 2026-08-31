@@ -4,9 +4,9 @@ import { Effect } from 'effect';
 import { detectAll } from '@/lib/detect.js';
 import {
   createSpinner,
-  renderStatusTable,
-  renderCompactStatus,
   formatStatusJson,
+  renderCompactStatus,
+  renderStatusTable,
 } from '@/lib/output.js';
 import type { StatusOutput } from '@/types.js';
 

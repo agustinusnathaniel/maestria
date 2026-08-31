@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import {
   ALLOWED_AGENTS,
+  assertNonEmptyTask,
+  assertValidAgent,
   HANDOFF_FIELDS,
   MAESTRIA_EVENTS,
-  assertValidAgent,
-  assertNonEmptyTask,
   validateHandoff,
 } from '../src/subagent-utils.js';
 

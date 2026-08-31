@@ -3,7 +3,7 @@
 // Keeps the byte-identical logic from packages/pi/scripts/validate-skills.ts
 // and packages/omp/scripts/validate-skills.ts in one place.
 
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface ValidateSkillsOptions {

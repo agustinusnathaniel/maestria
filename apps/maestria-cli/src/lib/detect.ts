@@ -1,6 +1,6 @@
 import { Effect } from 'effect';
 
-import { platforms, getPlatform } from '@/lib/platforms.js';
+import { getPlatform, platforms } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformStatus } from '@/types.js';
 

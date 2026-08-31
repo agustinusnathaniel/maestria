@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 
 import extension from '../src/extension.ts';
 import { STATUS_COMMAND } from '../src/modes.ts';

@@ -5,10 +5,10 @@
 // not in the primary source dir, and auto-cleans stale output files.
 
 import { existsSync } from 'node:fs';
-import { resolve, dirname, basename } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 
-import type { ResolvedSyncConfig, ResolvedFileConfig } from './config.js';
-import { walkDir, autoClean } from './file.js';
+import type { ResolvedFileConfig, ResolvedSyncConfig } from './config.js';
+import { autoClean, walkDir } from './file.js';
 import { processFile } from './process-file.js';
 
 // ── Public Types ──

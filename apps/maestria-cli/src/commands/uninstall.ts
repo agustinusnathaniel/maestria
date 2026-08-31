@@ -1,10 +1,10 @@
-import { select, isCancel, cancel } from '@clack/prompts';
+import { cancel, isCancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 
 import { detectInstalled } from '@/lib/detect.js';
-import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
-import { platforms, getPlatform } from '@/lib/platforms.js';
+import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
+import { getPlatform, platforms } from '@/lib/platforms.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';

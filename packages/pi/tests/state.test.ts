@@ -1,20 +1,20 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 import {
   createInitialState,
   cycleToReviewModel,
+  exitReviewMode,
+  FILE_HISTORY_CAP,
+  HANDOFF_HISTORY_CAP,
   persistState,
-  recordHandoff,
   recordFileModified,
   recordFileRead,
+  recordHandoff,
   recordSpecialistDelegated,
-  setReviewMode,
-  exitReviewMode,
   renderMaestriaSummary,
-  HANDOFF_HISTORY_CAP,
-  FILE_HISTORY_CAP,
+  setReviewMode,
 } from '@/state.js';
-import type { MaestriaState, HandoffEntry, SubagentStatusInfo } from '@/state.js';
+import type { HandoffEntry, MaestriaState, SubagentStatusInfo } from '@/state.js';
 
 const NEW_STATE_KEYS = [
   'mode',

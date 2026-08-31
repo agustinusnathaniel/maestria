@@ -1,21 +1,21 @@
 import { execSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 // ── Imports ──
 
-import { loadConfig, ConfigError } from '../scripts/lib/config.js';
-import type { ReplaceOp, ResolvedSyncConfig, ResolvedFileConfig } from '../scripts/lib/config.js';
+import { ConfigError, loadConfig } from '../scripts/lib/config.js';
+import type { ReplaceOp, ResolvedFileConfig, ResolvedSyncConfig } from '../scripts/lib/config.js';
 import { processFile } from '../scripts/lib/process-file.js';
 import { runSync } from '../scripts/lib/sync.js';
 import {
-  stripFrontmatter,
   findAndReplace,
-  serializeFrontmatter,
-  stripSourceComment,
   normalizeLineEndings,
+  serializeFrontmatter,
+  stripFrontmatter,
+  stripSourceComment,
 } from '../scripts/lib/transforms.js';
 
 // ═══════════════════════════════════════════════

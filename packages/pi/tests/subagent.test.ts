@@ -1,6 +1,6 @@
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
-import { validateHandoff, MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { MAESTRIA_EVENTS, validateHandoff } from '@maestria/shared-pi/subagent-utils';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { createInitialState } from '@/state.js';
 import { installSubagentTool, MAX_PARALLEL_TASKS } from '@/subagent.js';

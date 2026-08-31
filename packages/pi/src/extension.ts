@@ -8,7 +8,7 @@ import type {
 import { deploySpecialistAgents } from '@/agents.js';
 import { installCommands } from '@/commands.js';
 import { installCompactionHandlers } from '@/compaction.js';
-import { installModeCommands, installModeAutoDetect } from '@/modes.js';
+import { installModeAutoDetect, installModeCommands } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
 import { createInitialState } from '@/state.js';
 import type { MaestriaState } from '@/state.js';

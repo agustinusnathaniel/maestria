@@ -6,14 +6,14 @@
 // non-empty `description` of at most 1024 characters, and the body is non-empty.
 // Prime does not load skills with a missing description; name mismatches and
 // other violations warn but still load.
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
-  NAME_MAX,
   DESCRIPTION_MAX,
-  isValidSkillName,
   frontmatterValue,
+  isValidSkillName,
+  NAME_MAX,
 } from './skill-validation.ts';
 
 const __dirname = import.meta.dirname;

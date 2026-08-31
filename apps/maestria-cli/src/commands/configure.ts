@@ -1,14 +1,14 @@
-import { isCancel, cancel, select } from '@clack/prompts';
+import { cancel, isCancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
-import { Effect, Exit, Cause } from 'effect';
+import { Cause, Effect, Exit } from 'effect';
 import picocolors from 'picocolors';
 
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { MAESTRIA_AGENTS, getModelConfigHandler, modelConfigHandlers } from '@/lib/model-config.js';
+import { getModelConfigHandler, MAESTRIA_AGENTS, modelConfigHandlers } from '@/lib/model-config.js';
 import type { AgentModels, ModelConfigHandler, ModelConfigLevel } from '@/lib/model-config.js';
 import { createSpinner } from '@/lib/output.js';
 import { commandExists } from '@/lib/shell.js';
-import { validatePlatform, validateOrExit } from '@/lib/validation.js';
+import { validateOrExit, validatePlatform } from '@/lib/validation.js';
 
 function exitError(message: string): never {
   console.error(`  ${picocolors.red('✗')} ${message}`);

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { installGoalEventHandlers } from '@/goals.js';
 import {
   createInitialState,
-  recordHandoff,
   recordFileModified,
+  recordHandoff,
   recordSubagentStatus,
 } from '@/state.js';
 import type { MaestriaState } from '@/state.js';
