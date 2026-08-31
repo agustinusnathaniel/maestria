@@ -4,8 +4,8 @@ import alanSansLatinUrl from '@fontsource-variable/alan-sans/files/alan-sans-lat
 import jetbrainsMonoLatinUrl from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url'
 import snProLatinUrl from '@fontsource-variable/sn-pro/files/sn-pro-latin-wght-normal.woff2?url'
 
-import Analytics from '@/components/Analytics.astro'
-import Tracking from '@/components/Tracking.astro'
+import Analytics from '@/components/analytics.astro';
+import Tracking from '@/components/tracking.astro';
 import { markdownTwinPath } from '@/lib/agent-delivery';
 import { organizationSchema, SITE_URL, softwareApplicationSchema, websiteSchema } from '@/lib/site-schema';
 
@@ -30,7 +30,7 @@ const schemas = [organizationSchema(), softwareApplicationSchema(), websiteSchem
  * markdown representation. Paths that already are markdown artifacts (*.md,
  * *.txt) are skipped - they have no further twin.
  */
-function markdownAlternateHref(pathname: string): string | undefined {
+const markdownAlternateHref = (pathname: string): string | undefined => {
   const clean = pathname.split('?')[0]?.split('#')[0] ?? '/';
   if (clean.endsWith('.md') || clean.endsWith('.txt')) {return undefined;}
   const twin = markdownTwinPath(clean);
@@ -38,7 +38,7 @@ function markdownAlternateHref(pathname: string): string | undefined {
     clean.length > 1 ? (clean.replace(/\/+$/u, '').replace(/\.html$/u, '') || '/') : '/';
   if (twin === normalized) {return undefined;}
   return new URL(twin, Astro.site ?? new URL(SITE_URL)).href;
-}
+};
 
 const alternateHref = markdownAlternateHref(Astro.url.pathname);
 const analyticsEnabled = Boolean(import.meta.env.UMAMI_SRC && import.meta.env.UMAMI_WEBSITE_ID);

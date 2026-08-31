@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { createModePromptHandler, getModePrompt, MODE_MARKERS } from '../src/modes.ts';
@@ -12,15 +12,25 @@ import type { MaestriaModeState } from '../src/state.ts';
 // under a temp dir (never the generated skills/) so these tests are
 // deterministic and independent of the sync-projected skills on disk.
 const tempDirs: string[] = [];
-function makeSkillsDir(name: string, keyword: string, skillFile?: string): string {
-  const dir = mkdtempSync(join(tmpdir(), `maestria-prime-agent-${name}-`));
+const makeSkillsDir = (name: string, keyword: string, skillFile?: string): string => {
+  const dir = mkdtempSync(path.join(tmpdir(), `maestria-prime-agent-${name}-`));
   tempDirs.push(dir);
   if (skillFile !== undefined) {
-    mkdirSync(join(dir, keyword), { recursive: true });
-    writeFileSync(join(dir, keyword, 'SKILL.md'), skillFile, 'utf-8');
+    mkdirSync(path.join(dir, keyword), { recursive: true });
+    writeFileSync(path.join(dir, keyword, 'SKILL.md'), skillFile, 'utf-8');
   }
   return dir;
-}
+};
+
+const extensionContext: ExtensionContext = {
+  cwd: '/',
+  hasUI: true,
+  sessionManager: {
+    getBranch: () => [],
+    getEntries: () => [],
+  },
+  ui: { notify: () => {}, setEditorText: () => {} },
+};
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -101,7 +111,7 @@ describe('before_agent_start mode prompt injection', () => {
 
     const result = handler(
       { prompt: 'p', systemPrompt: 'BASE SYSTEM PROMPT', type: 'before_agent_start' },
-      {} as ExtensionContext,
+      extensionContext,
     );
 
     // The generated sonar SKILL.md in this dir has no mode section: the whole
@@ -117,11 +127,14 @@ describe('before_agent_start mode prompt injection', () => {
 
     const result = handler(
       { prompt: 'p', systemPrompt: 'BASE SYSTEM PROMPT', type: 'before_agent_start' },
-      {} as ExtensionContext,
+      extensionContext,
     );
 
     expect(result).toBeDefined();
-    const systemPrompt = result!.systemPrompt!;
+    if (result?.systemPrompt === undefined) {
+      throw new Error('expected a system prompt');
+    }
+    const { systemPrompt } = result;
     expect(systemPrompt.startsWith('BASE SYSTEM PROMPT')).toBe(true);
     expect(systemPrompt).toContain(MODE_MARKERS.fein);
     expect(systemPrompt).toContain('## MODE: fein (Full Pipeline)');

@@ -5,23 +5,31 @@ import picocolors from 'picocolors';
 
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { getModelConfigHandler, MAESTRIA_AGENTS, modelConfigHandlers } from '@/lib/model-config.js';
-import type { AgentModels, ModelConfigHandler, ModelConfigLevel } from '@/lib/model-config.js';
+import type {
+  AgentModels,
+  AgentName,
+  ModelConfigHandler,
+  ModelConfigLevel,
+} from '@/lib/model-config.js';
 import { createSpinner } from '@/lib/output.js';
 import { commandExists } from '@/lib/shell.js';
 import { validateOrExit, validatePlatform } from '@/lib/validation.js';
 
-function exitError(message: string): never {
+const exitError = (message: string): never => {
   console.error(`  ${picocolors.red('✗')} ${message}`);
   process.exit(1);
-}
+};
 
-function exitCancel(): never {
+const exitCancel = (): never => {
   cancel('Cancelled.');
   process.exit(130);
-}
+};
+
+const isAgentName = (agent: string): agent is AgentName =>
+  MAESTRIA_AGENTS.some((knownAgent) => knownAgent === agent);
 
 /** Parse `--set adventurer=model,builder=` pairs. Empty model = inherit/unset. */
-function parseSetPairs(input: string): AgentModels {
+const parseSetPairs = (input: string): AgentModels => {
   const models: AgentModels = {};
   for (const pair of input.split(',')) {
     const eq = pair.indexOf('=');
@@ -33,38 +41,41 @@ function parseSetPairs(input: string): AgentModels {
     }
     const agent = pair.slice(0, eq).trim();
     const model = pair.slice(eq + 1).trim();
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-    if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
+    if (!isAgentName(agent)) {
       exitError(`Unknown agent '${agent}'. Valid agents: ${MAESTRIA_AGENTS.join(', ')}`);
     }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-    models[agent as keyof AgentModels] = model;
+    Object.assign(models, { [agent]: model });
   }
   return models;
-}
+};
 
 /** Run an effect and extract the error message (or exit with a generic message) */
-async function runOrExit<T>(effect: Effect.Effect<T, unknown>, fallback: string): Promise<T> {
+const runOrExit = async <T>(effect: Effect.Effect<T, unknown>, fallback: string): Promise<T> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
   const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-  const message = (firstFailure?.error as { message?: string } | undefined)?.message;
-  exitError(message ?? fallback);
-}
+  const failure = firstFailure?.error;
+  const message =
+    typeof failure === 'object' &&
+    failure !== null &&
+    'message' in failure &&
+    typeof failure.message === 'string'
+      ? failure.message
+      : undefined;
+  return exitError(message ?? fallback);
+};
 
-function renderConfigureSummary(
+const renderConfigureSummary = (
   label: string,
   level: ModelConfigLevel,
   models: AgentModels,
-): string {
-  const lines: string[] = [];
-  lines.push(
+): string => {
+  const lines: string[] = [
     picocolors.bold(`\n  ${label} agent models (${level})`),
     picocolors.dim('  ─────────────────────────────────────'),
-  );
+  ];
   for (const agent of MAESTRIA_AGENTS) {
     const model = models[agent];
     const value =
@@ -74,20 +85,19 @@ function renderConfigureSummary(
     lines.push(`  ${picocolors.bold(agent.padEnd(10))} ${value}`);
   }
   return `${lines.join('\n')}\n`;
-}
+};
 
-function renderCompactConfigure(models: AgentModels): string {
-  return `${Object.entries(models)
+const renderCompactConfigure = (models: AgentModels): string =>
+  `${Object.entries(models)
     .filter(([, model]) => model)
     .map(([agent, model]) => `${agent}=${model}`)
     .join('\n')}\n`;
-}
 
-function renderConfigureJson(
+const renderConfigureJson = (
   handler: ModelConfigHandler,
   level: ModelConfigLevel,
   models: AgentModels,
-): string {
+): string => {
   const all: Record<string, string> = {};
   for (const agent of MAESTRIA_AGENTS) {
     all[agent] = models[agent] ?? '';
@@ -97,11 +107,11 @@ function renderConfigureJson(
     null,
     2,
   );
-}
+};
 
-async function resolveConfigureHandler(
+const resolveConfigureHandler = async (
   platformId: string | undefined,
-): Promise<ModelConfigHandler> {
+): Promise<ModelConfigHandler> => {
   if (platformId !== undefined && platformId !== null && platformId !== '') {
     const id = await validateOrExit(validatePlatform(platformId));
     const h = getModelConfigHandler(id);
@@ -112,7 +122,7 @@ async function resolveConfigureHandler(
           .join(', ')}.`,
       );
     }
-    return h;
+    return h ?? exitError(`Per-agent model configuration is not yet supported for '${id}'.`);
   }
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     console.error('No platform specified and not in an interactive terminal.');
@@ -130,14 +140,16 @@ async function resolveConfigureHandler(
   if (isCancel(picked)) {
     exitCancel();
   }
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: isCancel check guarantees picked is string, handler is defined for valid platform id
-  return getModelConfigHandler(picked)!;
-}
+  if (typeof picked !== 'string') {
+    return exitCancel();
+  }
+  return getModelConfigHandler(picked) ?? exitError(`Unknown platform: ${picked}`);
+};
 
-async function resolveConfigureLevel(
+const resolveConfigureLevel = async (
   args: Record<string, unknown>,
   _handler: ModelConfigHandler,
-): Promise<ModelConfigLevel> {
+): Promise<ModelConfigLevel> => {
   const bothFlags = args.global === true && args.project === true;
   if (bothFlags) {
     exitError('Cannot use --global and --project together. Choose one.');
@@ -164,20 +176,70 @@ async function resolveConfigureLevel(
     if (isCancel(picked)) {
       exitCancel();
     }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-    return picked as ModelConfigLevel;
+    if (picked === 'global' || picked === 'project') {
+      return picked;
+    }
+    return exitError('Invalid configuration level selected.');
   }
-  exitError('Specify --global or --project when using --set or in a non-interactive terminal.');
-}
+  return exitError(
+    'Specify --global or --project when using --set or in a non-interactive terminal.',
+  );
+};
 
-async function handleConfigureSet(
+const promptForAgentModel = async (
+  name: AgentName,
+  current: AgentModels,
+  available: string[],
+): Promise<string> => {
+  const picked = await select({
+    initialValue:
+      current[name] !== undefined &&
+      current[name] !== null &&
+      current[name] !== '' &&
+      available.includes(current[name])
+        ? current[name]
+        : '',
+    maxItems: 10,
+    message: `Model for @${name}${current[name] !== undefined && current[name] !== null && current[name] !== '' ? ` (currently ${current[name]})` : ''}`,
+    options: [
+      { hint: 'use the session/primary agent model', label: 'Inherit', value: '' },
+      ...available.map((model) => ({ label: model, value: model })),
+    ],
+  });
+  if (typeof picked === 'string') {
+    return picked;
+  }
+  return exitCancel();
+};
+
+const promptSelectedAgentModels = async (
+  agents: readonly unknown[],
+  current: AgentModels,
+  available: string[],
+  index = 0,
+  models: AgentModels = {},
+): Promise<AgentModels> => {
+  const agent = agents[index];
+  if (agent === undefined) {
+    return models;
+  }
+  if (typeof agent === 'string' && isAgentName(agent)) {
+    const picked = await promptForAgentModel(agent, current, available);
+    if (picked !== '') {
+      models[agent] = picked;
+    }
+  }
+  return await promptSelectedAgentModels(agents, current, available, index + 1, models);
+};
+
+const handleConfigureSet = async (
   handler: ModelConfigHandler,
   level: ModelConfigLevel,
   setArg: string,
   isQuiet: boolean,
   isJson: boolean,
   isCompact: boolean,
-): Promise<never> {
+): Promise<never> => {
   const models = parseSetPairs(setArg);
   const spinner = createSpinner(isQuiet);
   spinner.start(`Validating models for ${handler.label}...`);
@@ -205,16 +267,16 @@ async function handleConfigureSet(
     console.log(`  ${picocolors.dim(handler.restartHint)}`);
   }
   process.exit(0);
-}
+};
 
 // oxlint-disable-next-line max-lines-per-function -- handleConfigureInteractive orchestrates the interactive model configuration flow (load models, read current, groupMultiselect, per-agent prompts, write) as a single cohesive interaction; splitting would fragment the prompt sequence and duplicate handler/level closure.
-async function handleConfigureInteractive(
+const handleConfigureInteractive = async (
   handler: ModelConfigHandler,
   level: ModelConfigLevel,
   isQuiet: boolean,
   isJson: boolean,
   isCompact: boolean,
-): Promise<never> {
+): Promise<never> => {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     console.error('No --set provided and not in an interactive terminal.');
     console.error(
@@ -246,13 +308,12 @@ async function handleConfigureInteractive(
     message: 'Which agents do you want to configure?',
     options: {
       Specialists: handler.agents.map((agent) => ({
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
         hint:
-          current[agent as keyof AgentModels] !== undefined &&
-          current[agent as keyof AgentModels] !== null &&
-          current[agent as keyof AgentModels] !== ''
-            ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-              `currently ${current[agent as keyof AgentModels]}`
+          isAgentName(agent) &&
+          current[agent] !== undefined &&
+          current[agent] !== null &&
+          current[agent] !== ''
+            ? `currently ${current[agent]}`
             : 'inherit',
         label: agent,
         value: agent,
@@ -261,39 +322,10 @@ async function handleConfigureInteractive(
     required: true,
     selectableGroups: true,
   });
-  if (isCancel(selectedAgents)) {
-    exitCancel();
-  }
-  const models: AgentModels = {};
-  for (const agent of selectedAgents) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-    if (!MAESTRIA_AGENTS.includes(agent as (typeof MAESTRIA_AGENTS)[number])) {
-      continue;
-    }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-    const name = agent as keyof AgentModels;
-    const picked = await select({
-      initialValue:
-        current[name] !== undefined &&
-        current[name] !== null &&
-        current[name] !== '' &&
-        available.includes(current[name])
-          ? current[name]
-          : '',
-      maxItems: 10,
-      message: `Model for @${name}${current[name] !== undefined && current[name] !== null && current[name] !== '' ? ` (currently ${current[name]})` : ''}`,
-      options: [
-        { hint: 'use the session/primary agent model', label: 'Inherit', value: '' },
-        ...available.map((model) => ({ label: model, value: model })),
-      ],
-    });
-    if (isCancel(picked)) {
-      exitCancel();
-    }
-    if (picked) {
-      models[name] = picked;
-    }
-  }
+  const selectedAgentValues: unknown[] = Array.isArray(selectedAgents)
+    ? selectedAgents
+    : exitCancel();
+  const models = await promptSelectedAgentModels(selectedAgentValues, current, available);
   if (Object.keys(models).length === 0) {
     console.log('No changes. Nothing to write.');
     process.exit(0);
@@ -310,7 +342,7 @@ async function handleConfigureInteractive(
     console.log(`  ${picocolors.dim(handler.restartHint)}`);
   }
   process.exit(0);
-}
+};
 
 export const configureCommand = defineCommand({
   args: {
@@ -370,10 +402,8 @@ export const configureCommand = defineCommand({
       exitError(`The '${handler.cli}' CLI was not found on PATH. Install ${handler.label} first.`);
     }
     const level = await resolveConfigureLevel(args, handler);
-    if (args.set !== undefined && args.set !== null && args.set !== '') {
-      await handleConfigureSet(handler, level, args.set, isQuiet, isJson, isCompact);
-    } else {
-      await handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact);
-    }
+    await (args.set !== undefined && args.set !== null && args.set !== ''
+      ? handleConfigureSet(handler, level, args.set, isQuiet, isJson, isCompact)
+      : handleConfigureInteractive(handler, level, isQuiet, isJson, isCompact));
   },
 });

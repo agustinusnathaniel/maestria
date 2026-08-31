@@ -1,41 +1,67 @@
-import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
+import packageJson from '../package.json';
 import extension from '@/extension.js';
 
-function createMockPi() {
-  return {
-    appendEntry: vi.fn(),
-    events: { on: vi.fn() },
-    getActiveTools: vi.fn(() => []),
-    on: vi.fn(),
-    registerCommand: vi.fn(),
-    registerTool: vi.fn(),
-    sendUserMessage: vi.fn(),
-    setActiveTools: vi.fn(),
-    setModel: vi.fn(),
-    zod: {
-      array: vi.fn(() => ({
-        describe: vi.fn(() => ({
-          optional: vi.fn(() => ({})),
-        })),
-      })),
-      enum: vi.fn(() => ({
-        describe: vi.fn(() => ({
-          optional: vi.fn(() => ({})),
-        })),
-      })),
-      object: vi.fn(() => ({})),
-      string: vi.fn(() => ({
-        describe: vi.fn(() => ({
-          optional: vi.fn(() => ({})),
-        })),
-      })),
-    },
-  };
+interface MockSchema {
+  describe: (description: string) => MockSchema;
+  optional: () => MockSchema;
 }
+
+interface MockZod {
+  array: (schema: MockSchema) => MockSchema;
+  enum: (values: readonly string[]) => MockSchema;
+  object: (shape: Record<string, MockSchema>) => MockSchema;
+  string: () => MockSchema;
+}
+
+type MockEventHandler = (...args: unknown[]) => unknown;
+type MockOn = (event: string, handler: MockEventHandler) => void;
+type MockCommandRegistration = (name: string, options: unknown) => void;
+type MockToolRegistration = (tool: unknown) => void;
+
+interface MockPi {
+  appendEntry: ReturnType<typeof vi.fn<(type: string, data?: unknown) => void>>;
+  events: { on: ReturnType<typeof vi.fn<() => void>> };
+  getActiveTools: ReturnType<typeof vi.fn<() => string[]>>;
+  on: ReturnType<typeof vi.fn<MockOn>>;
+  registerCommand: ReturnType<typeof vi.fn<MockCommandRegistration>>;
+  registerTool: ReturnType<typeof vi.fn<MockToolRegistration>>;
+  sendUserMessage: ReturnType<typeof vi.fn<(text: string, options?: unknown) => void>>;
+  setActiveTools: ReturnType<typeof vi.fn<(tools: string[]) => void>>;
+  setModel: ReturnType<typeof vi.fn<(model: unknown) => Promise<boolean>>>;
+  zod: MockZod;
+}
+
+const createMockZod = (): MockZod => {
+  const schema: MockSchema = {
+    describe: () => schema,
+    optional: () => schema,
+  };
+  return {
+    array: () => schema,
+    enum: () => schema,
+    object: () => schema,
+    string: () => schema,
+  };
+};
+
+const invokeExtension = (pi: MockPi): void => {
+  Reflect.apply(extension, undefined, [pi]);
+};
+
+const createMockPi = (): MockPi => ({
+  appendEntry: vi.fn<(type: string, data?: unknown) => void>(),
+  events: { on: vi.fn<() => void>() },
+  getActiveTools: vi.fn<() => string[]>(() => []),
+  on: vi.fn<MockOn>(),
+  registerCommand: vi.fn<MockCommandRegistration>(),
+  registerTool: vi.fn<MockToolRegistration>(),
+  sendUserMessage: vi.fn<(text: string, options?: unknown) => void>(),
+  setActiveTools: vi.fn<(tools: string[]) => void>(),
+  setModel: vi.fn<(model: unknown) => Promise<boolean>>(),
+  zod: createMockZod(),
+});
 
 describe('extension smoke tests', () => {
   it('exports a default function', () => {
@@ -45,16 +71,20 @@ describe('extension smoke tests', () => {
   it('wires up without crashing', () => {
     const mockPi = createMockPi();
     expect(() => {
-      extension(mockPi as unknown as ExtensionAPI);
+      invokeExtension(mockPi);
     }).not.toThrow();
   });
 
   it('registers the maestria_subagent tool', () => {
     const mockPi = createMockPi();
-    extension(mockPi as unknown as ExtensionAPI);
+    invokeExtension(mockPi);
 
     expect(mockPi.registerTool).toHaveBeenCalledTimes(1);
-    const toolDef = mockPi.registerTool.mock.calls[0][0];
+    const toolCall = mockPi.registerTool.mock.calls.at(0);
+    if (toolCall === undefined) {
+      throw new Error('maestria_subagent tool was not registered');
+    }
+    const [toolDef] = toolCall;
 
     // registerTool receives a single object argument with a name property
     if (typeof toolDef === 'object' && toolDef !== null) {
@@ -64,7 +94,7 @@ describe('extension smoke tests', () => {
 
   it('registers all expected mode and workflow commands', () => {
     const mockPi = createMockPi();
-    extension(mockPi as unknown as ExtensionAPI);
+    invokeExtension(mockPi);
 
     const commandNames = mockPi.registerCommand.mock.calls.map((call: unknown[]) => call[0]);
 
@@ -88,7 +118,7 @@ describe('extension smoke tests', () => {
 
   it('registers all expected lifecycle event hooks via pi.on', () => {
     const mockPi = createMockPi();
-    extension(mockPi as unknown as ExtensionAPI);
+    invokeExtension(mockPi);
 
     const eventNames = mockPi.on.mock.calls.map((call: unknown[]) => call[0]);
 
@@ -107,7 +137,7 @@ describe('extension smoke tests', () => {
 
   it('does not subscribe to subagent lifecycle events (omp uses native task tool)', () => {
     const mockPi = createMockPi();
-    extension(mockPi as unknown as ExtensionAPI);
+    invokeExtension(mockPi);
 
     // omp subagent does not subscribe to subagent lifecycle events since it
     // uses the built-in task tool instead of pi-subagents.
@@ -116,16 +146,12 @@ describe('extension smoke tests', () => {
 });
 
 describe('package.json metadata', () => {
-  const __dirname = import.meta.dirname;
-  const pkgPath = join(__dirname, '..', 'package.json');
-  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-
   it('has publishConfig.provenance set to true', () => {
-    expect(pkg.publishConfig?.provenance).toBe(true);
+    expect(packageJson.publishConfig?.provenance).toBe(true);
   });
 
   it('has omp-package keyword for npm discoverability', () => {
-    expect(pkg.keywords).toBeDefined();
-    expect(pkg.keywords).toContain('omp-package');
+    expect(packageJson.keywords).toBeDefined();
+    expect(packageJson.keywords).toContain('omp-package');
   });
 });

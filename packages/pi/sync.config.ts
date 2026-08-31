@@ -69,6 +69,19 @@ export default {
         '\n',
     },
 
+    'commands/blitz.md': {
+      output: 'commands/blitz.md',
+      stripFrontmatter: true,
+    },
+    'commands/fein.md': {
+      output: 'commands/fein.md',
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      output: 'commands/sonar.md',
+      stripFrontmatter: true,
+    },
+
     'diagnose.md': {
       prepend:
         '---\n' +
@@ -79,6 +92,20 @@ export default {
         'tools: read, bash, grep, find, ls\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +
+        '---\n' +
+        '\n',
+    },
+
+    'orchestrator.md': {
+      output: '../skills/orchestrator/SKILL.md',
+      prepend:
+        '---\n' +
+        'name: orchestrator\n' +
+        'description: >-\n' +
+        '  Maestria agent orchestration dispatcher. Delegates work to 7 specialist\n' +
+        '  subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer)\n' +
+        '  using spec-driven handoffs. Enforces maker/checker split, commit protocol,\n' +
+        '  and role-based pipeline sequencing.\n' +
         '---\n' +
         '\n',
     },
@@ -110,50 +137,6 @@ export default {
         'inherit_context: true\n' +
         '---\n' +
         '\n',
-    },
-
-    'writer.md': {
-      prepend:
-        '---\n' +
-        'description: >-\n' +
-        '  Documentation specialist. Creates clear, structured documentation\n' +
-        '  following progressive disclosure patterns for READMEs, API docs,\n' +
-        '  changelogs, and Architecture Decision Records.\n' +
-        'tools: read, bash, grep, find, ls, write, edit\n' +
-        'prompt_mode: append\n' +
-        'inherit_context: true\n' +
-        '---\n' +
-        '\n',
-    },
-
-    // --- Pi skills (orchestrator + global rules) ---
-    // Redirected to skills/ with Pi skill frontmatter
-
-    'orchestrator.md': {
-      output: '../skills/orchestrator/SKILL.md',
-      prepend:
-        '---\n' +
-        'name: orchestrator\n' +
-        'description: >-\n' +
-        '  Maestria agent orchestration dispatcher. Delegates work to 7 specialist\n' +
-        '  subagents (adventurer, architect, builder, diagnose, planner, reviewer, writer)\n' +
-        '  using spec-driven handoffs. Enforces maker/checker split, commit protocol,\n' +
-        '  and role-based pipeline sequencing.\n' +
-        '---\n' +
-        '\n',
-    },
-
-    'commands/fein.md': {
-      output: 'commands/fein.md',
-      stripFrontmatter: true,
-    },
-    'commands/sonar.md': {
-      output: 'commands/sonar.md',
-      stripFrontmatter: true,
-    },
-    'commands/blitz.md': {
-      output: 'commands/blitz.md',
-      stripFrontmatter: true,
     },
 
     // rules.md found via secondary source loop from dirname(source) = ../core/agent-directives/
@@ -191,6 +174,19 @@ export default {
         '  The iteration-limit pattern with verifiable termination and escalation format.\n' +
         '  Load when defining termination conditions for a loop, or when a loop is at risk of\n' +
         '  running too long.\n' +
+        '---\n' +
+        '\n',
+    },
+    'writer.md': {
+      prepend:
+        '---\n' +
+        'description: >-\n' +
+        '  Documentation specialist. Creates clear, structured documentation\n' +
+        '  following progressive disclosure patterns for READMEs, API docs,\n' +
+        '  changelogs, and Architecture Decision Records.\n' +
+        'tools: read, bash, grep, find, ls, write, edit\n' +
+        'prompt_mode: append\n' +
+        'inherit_context: true\n' +
         '---\n' +
         '\n',
     },

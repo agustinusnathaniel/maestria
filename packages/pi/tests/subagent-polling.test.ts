@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vite-plus/test';
 import { pollSubagentEffect } from '@/subagent-polling.js';
 import type { SubagentRecord } from '@/subagent-polling.js';
 
-function service(getRecord: (id: string) => SubagentRecord | undefined) {
-  return { getRecord };
-}
+const service = (getRecord: (id: string) => SubagentRecord | undefined) => ({
+  getRecord,
+});
 
 describe('pollSubagentEffect', () => {
   it('returns a terminal record without waiting', async () => {

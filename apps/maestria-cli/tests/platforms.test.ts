@@ -1,5 +1,22 @@
 import { Effect } from 'effect';
+import path from 'node:path';
 import { describe, expect, it, vi } from 'vite-plus/test';
+
+import { getPlatform, readPackageJsonVersion } from '@/lib/platforms.js';
+import type { PlatformHandler } from '@/lib/platforms.js';
+import * as shell from '@/lib/shell.js';
+
+type ReadFile = (filePath: string, encoding: 'utf-8') => Promise<string>;
+type Mkdtemp = (prefix: string) => Promise<string>;
+type Remove = (
+  filePath: string,
+  options?: { recursive?: boolean; force?: boolean },
+) => Promise<void>;
+interface FsPromisesModule {
+  readFile: ReadFile;
+  mkdtemp: Mkdtemp;
+  rm: Remove;
+}
 
 // State shared between the hoisted mock factory and the tests: the stubbed
 // `readFile` (the Prime version lookup reads package.json through Node's
@@ -8,9 +25,9 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 // around every package command) and handles on the real implementations for
 // the helper test that exercises the actual filesystem.
 const fsMocks = vi.hoisted(() => {
-  let originalReadFile: (typeof import('node:fs/promises'))['readFile'] | undefined;
-  let originalMkdtemp: (typeof import('node:fs/promises'))['mkdtemp'] | undefined;
-  let originalRm: (typeof import('node:fs/promises'))['rm'] | undefined;
+  let originalReadFile: ReadFile | undefined;
+  let originalMkdtemp: Mkdtemp | undefined;
+  let originalRm: Remove | undefined;
   return {
     access: vi.fn(async () => {}),
     getOriginalReadFile() {
@@ -28,17 +45,13 @@ const fsMocks = vi.hoisted(() => {
       }
       return JSON.stringify({ version: '0.2.0' });
     }),
-    rm: vi.fn(async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
+    rm: vi.fn(async (filePath: string, options?: { recursive?: boolean; force?: boolean }) => {
       if (!originalRm) {
         throw new Error('original rm unavailable');
       }
-      await originalRm(path, options);
+      await originalRm(filePath, options);
     }),
-    setOriginals(
-      readFile: (typeof import('node:fs/promises'))['readFile'],
-      mkdtemp: (typeof import('node:fs/promises'))['mkdtemp'],
-      rm: (typeof import('node:fs/promises'))['rm'],
-    ) {
+    setOriginals(readFile: ReadFile, mkdtemp: Mkdtemp, rm: Remove) {
       originalReadFile = readFile;
       originalMkdtemp = mkdtemp;
       originalRm = rm;
@@ -47,15 +60,15 @@ const fsMocks = vi.hoisted(() => {
 });
 
 vi.mock('@/lib/shell.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/lib/shell.js')>();
+  const actual = await importOriginal<typeof shell>();
   return {
     ...actual,
     commandExists: vi.fn((cmd: string) => actual.commandExists(cmd)),
+    fileExists: vi.fn((filePath: string) => actual.fileExists(filePath)),
     // Return a real Effect so module-evaluation .pipe() chains in platforms.ts
     // keep working; executing it resolves without spawning any subprocess.
+    readTextFile: vi.fn((filePath: string) => actual.readTextFile(filePath)),
     run: vi.fn((_cmd: string, _args: string[], _timeoutMs?: number) => Effect.succeed('')),
-    readTextFile: vi.fn((path: string) => actual.readTextFile(path)),
-    fileExists: vi.fn((path: string) => actual.fileExists(path)),
   };
 });
 
@@ -65,7 +78,7 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
 // deterministic without touching the real filesystem; the real reads are
 // proven by the readPackageJsonVersion test below.
 vi.mock('node:fs/promises', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs/promises')>();
+  const actual = await importOriginal<FsPromisesModule>();
   fsMocks.setOriginals(actual.readFile, actual.mkdtemp, actual.rm);
   return {
     ...actual,
@@ -76,25 +89,29 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   };
 });
 
-import { getPlatform, readPackageJsonVersion } from '@/lib/platforms.js';
-import * as shell from '@/lib/shell.js';
-
 // Handlers construct their run(...) effects at module load, so the command a
 // handler issues is visible in the recorded calls. Filter to pi uninstall to
 // isolate this handler from other platforms' module-load calls.
-function piUninstallCalls(): string[][] {
-  return vi
+const requirePlatform = (id: string): PlatformHandler => {
+  const platform = getPlatform(id);
+  if (platform === undefined) {
+    throw new Error(`Platform not found: ${id}`);
+  }
+  return platform;
+};
+
+const piUninstallCalls = (): string[][] =>
+  vi
     .mocked(shell.run)
     .mock.calls.filter((call) => call[0] === 'pi' && call[1]?.[0] === 'uninstall')
     .map((call) => call[1]);
-}
 
 describe('pi platform uninstall', () => {
   it('uninstalls @maestria/pi with the npm: package reference', async () => {
-    const pi = getPlatform('pi');
+    const pi = requirePlatform('pi');
     expect(pi).toBeDefined();
     // Executing the effect must resolve cleanly (no subprocess under the mock)
-    await Effect.runPromise(pi!.uninstall);
+    await Effect.runPromise(pi.uninstall);
 
     const uninstalls = piUninstallCalls();
     expect(uninstalls).toHaveLength(1);
@@ -102,9 +119,9 @@ describe('pi platform uninstall', () => {
   });
 
   it('does not uninstall the shared pi-subagents prerequisite', async () => {
-    const pi = getPlatform('pi');
+    const pi = requirePlatform('pi');
     expect(pi).toBeDefined();
-    await Effect.runPromise(pi!.uninstall);
+    await Effect.runPromise(pi.uninstall);
 
     const uninstalls = piUninstallCalls();
     expect(uninstalls).toHaveLength(1);
@@ -139,10 +156,9 @@ describe('marketplace-backed platform handlers', () => {
       return Effect.succeed('');
     });
 
-    const claudeCode = getPlatform('claude-code');
-    expect(claudeCode).toBeDefined();
-    expect(await Effect.runPromise(claudeCode!.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(claudeCode!.getInstalledVersion)).toBe('0.2.1');
+    const claudeCode = requirePlatform('claude-code');
+    expect(await Effect.runPromise(claudeCode.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(claudeCode.getInstalledVersion)).toBe('0.2.1');
   });
 
   it('recognizes the installed Codex CLI plugin from host JSON', async () => {
@@ -164,17 +180,16 @@ describe('marketplace-backed platform handlers', () => {
       return Effect.succeed('');
     });
 
-    const codex = getPlatform('codex');
-    expect(codex).toBeDefined();
-    expect(await Effect.runPromise(codex!.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(codex!.getInstalledVersion)).toBe('0.2.0');
+    const codex = requirePlatform('codex');
+    expect(await Effect.runPromise(codex.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(codex.getInstalledVersion)).toBe('0.2.0');
   });
 
   it('uses host-native uninstall commands', async () => {
     vi.clearAllMocks();
 
-    await Effect.runPromise(getPlatform('claude-code')!.uninstall);
-    await Effect.runPromise(getPlatform('codex')!.uninstall);
+    await Effect.runPromise(requirePlatform('claude-code').uninstall);
+    await Effect.runPromise(requirePlatform('codex').uninstall);
 
     const calls = vi
       .mocked(shell.run)
@@ -206,9 +221,8 @@ describe('Cursor platform detection', () => {
       return Effect.succeed('');
     });
 
-    const cursor = getPlatform('cursor');
-    expect(cursor).toBeDefined();
-    expect(await Effect.runPromise(cursor!.detect)).toBe(true);
+    const cursor = requirePlatform('cursor');
+    expect(await Effect.runPromise(cursor.detect)).toBe(true);
   });
 
   it('does not treat an unrelated agent binary as Cursor', async () => {
@@ -223,9 +237,8 @@ describe('Cursor platform detection', () => {
       return Effect.succeed('');
     });
 
-    const cursor = getPlatform('cursor');
-    expect(cursor).toBeDefined();
-    expect(await Effect.runPromise(cursor!.detect)).toBe(false);
+    const cursor = requirePlatform('cursor');
+    expect(await Effect.runPromise(cursor.detect)).toBe(false);
   });
 });
 
@@ -252,9 +265,8 @@ describe('Kimi Code platform registration', () => {
     });
 
     try {
-      const kimi = getPlatform('kimi-code');
-      expect(kimi).toBeDefined();
-      expect(await Effect.runPromise(kimi!.isInstalled)).toBe(true);
+      const kimi = requirePlatform('kimi-code');
+      expect(await Effect.runPromise(kimi.isInstalled)).toBe(true);
     } finally {
       if (previousHome === undefined) {
         delete process.env.KIMI_CODE_HOME;
@@ -301,10 +313,9 @@ describe('prime-agent platform handler', () => {
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
     );
 
-    const prime = getPlatform('prime-agent');
-    expect(prime).toBeDefined();
-    expect(await Effect.runPromise(prime!.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime!.getInstalledVersion)).toBe('0.2.0');
+    const prime = requirePlatform('prime-agent');
+    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('0.2.0');
     // The version is read via Node fs from the path Prime reports, not via a
     // POSIX shell command.
     expect(fsMocks.readFile).toHaveBeenCalledWith(
@@ -323,7 +334,7 @@ describe('prime-agent platform handler', () => {
       return Effect.succeed('');
     });
 
-    expect(await Effect.runPromise(getPlatform('prime-agent')!.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(requirePlatform('prime-agent').isInstalled)).toBe(true);
   });
 
   it('reports not installed when the package is absent from `package list`', async () => {
@@ -334,9 +345,9 @@ describe('prime-agent platform handler', () => {
       return Effect.succeed('');
     });
 
-    const prime = getPlatform('prime-agent');
-    expect(await Effect.runPromise(prime!.isInstalled)).toBe(false);
-    expect(await Effect.runPromise(prime!.getInstalledVersion)).toBe('unknown');
+    const prime = requirePlatform('prime-agent');
+    expect(await Effect.runPromise(prime.isInstalled)).toBe(false);
+    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('unknown');
   });
 
   it('does not count a project-only registration as installed (global scope is managed)', async () => {
@@ -353,9 +364,9 @@ describe('prime-agent platform handler', () => {
       return Effect.succeed('');
     });
 
-    const prime = getPlatform('prime-agent');
-    expect(await Effect.runPromise(prime!.isInstalled)).toBe(false);
-    expect(await Effect.runPromise(prime!.getInstalledVersion)).toBe('unknown');
+    const prime = requirePlatform('prime-agent');
+    expect(await Effect.runPromise(prime.isInstalled)).toBe(false);
+    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('unknown');
   });
 
   it('recognizes a versioned npm source and reads the version from its own path', async () => {
@@ -375,9 +386,9 @@ describe('prime-agent platform handler', () => {
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
     );
 
-    const prime = getPlatform('prime-agent');
-    expect(await Effect.runPromise(prime!.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime!.getInstalledVersion)).toBe('0.2.0');
+    const prime = requirePlatform('prime-agent');
+    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('0.2.0');
   });
 
   it('binds the version lookup to the current entry, not the next absolute path', async () => {
@@ -397,10 +408,10 @@ describe('prime-agent platform handler', () => {
       return Effect.succeed('');
     });
 
-    const prime = getPlatform('prime-agent');
-    expect(await Effect.runPromise(prime!.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime!.getInstalledVersion)).toBe('unknown');
-    const readPaths = fsMocks.readFile.mock.calls.map(([path]) => path);
+    const prime = requirePlatform('prime-agent');
+    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('unknown');
+    const readPaths = fsMocks.readFile.mock.calls.map(([filePath]) => filePath);
     expect(readPaths).not.toContain(
       '/home/user/.npm-global/lib/node_modules/@other/plugin/package.json',
     );
@@ -421,17 +432,17 @@ describe('prime-agent platform handler', () => {
       }
       return Effect.succeed('');
     });
-    fsMocks.readFile.mockImplementation((path: string) =>
+    fsMocks.readFile.mockImplementation((filePath: string) =>
       JSON.stringify(
-        path.includes('@other/plugin')
+        filePath.includes('@other/plugin')
           ? { name: '@other/plugin', version: '9.9.9' }
           : { name: '@maestria/prime-agent', version: '0.2.0' },
       ),
     );
 
-    const prime = getPlatform('prime-agent');
-    expect(await Effect.runPromise(prime!.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime!.getInstalledVersion)).toBe('0.2.0');
+    const prime = requirePlatform('prime-agent');
+    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('0.2.0');
   });
 
   it('does not run `package update` for a version-pinned registration and reports why', async () => {
@@ -449,9 +460,8 @@ describe('prime-agent platform handler', () => {
       return Effect.succeed('');
     });
 
-    const prime = getPlatform('prime-agent');
     const message = await Effect.runPromise(
-      prime!
+      requirePlatform('prime-agent')
         .update()
         .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message))),
     );
@@ -490,9 +500,9 @@ describe('prime-agent platform handler', () => {
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
     );
 
-    const prime = getPlatform('prime-agent');
-    expect(await Effect.runPromise(prime!.isInstalled)).toBe(true);
-    expect(await Effect.runPromise(prime!.getInstalledVersion)).toBe('0.2.0');
+    const prime = requirePlatform('prime-agent');
+    expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
+    expect(await Effect.runPromise(prime.getInstalledVersion)).toBe('0.2.0');
 
     // The Windows-style path is handed to the Node fs read (with the
     // `/package.json` suffix appended) rather than to a POSIX `cat`/`ls`, so
@@ -510,11 +520,10 @@ describe('prime-agent platform handler', () => {
   it('reads package versions through the real filesystem via Node fs (no POSIX shell)', async () => {
     const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
     const { tmpdir } = await import('node:os');
-    const { join } = await import('node:path');
 
-    const dir = await mkdtemp(join(tmpdir(), 'maestria-prime-test-'));
-    const packageJsonPath = join(dir, 'package.json');
-    const originalReadFile = fsMocks.getOriginalReadFile();
+    const dir = await mkdtemp(path.join(tmpdir(), 'maestria-prime-test-'));
+    const packageJsonPath = path.join(dir, 'package.json');
+    const realReadFile = fsMocks.getOriginalReadFile();
     try {
       await writeFile(
         packageJsonPath,
@@ -524,11 +533,12 @@ describe('prime-agent platform handler', () => {
       // Delegate the stubbed readFile to the real implementation for this test
       // so the helper is proven against the actual filesystem.
       // @ts-expect-error -- SAFETY: mock adapter bridges async real fs to sync mock signature for filesystem integration test, type mismatch is intentional for this test
-      fsMocks.readFile.mockImplementation(async (path: string) =>
-        originalReadFile
-          ? await originalReadFile(path, 'utf-8')
-          : await Promise.reject(new Error('original readFile unavailable')),
-      );
+      fsMocks.readFile.mockImplementation(async (filePath: string) => {
+        if (realReadFile === undefined) {
+          throw new Error('original readFile unavailable');
+        }
+        return await realReadFile(filePath, 'utf-8');
+      });
       expect(await Effect.runPromise(readPackageJsonVersion(packageJsonPath))).toBe('1.2.3');
     } finally {
       fsMocks.readFile.mockResolvedValue(JSON.stringify({ version: '0.2.0' }));
@@ -540,9 +550,9 @@ describe('prime-agent platform handler', () => {
     vi.clearAllMocks();
     vi.mocked(shell.run).mockImplementation((_cmd, _args) => Effect.succeed(''));
 
-    await Effect.runPromise(getPlatform('prime-agent')!.install);
-    await Effect.runPromise(getPlatform('prime-agent')!.update());
-    await Effect.runPromise(getPlatform('prime-agent')!.uninstall);
+    await Effect.runPromise(requirePlatform('prime-agent').install);
+    await Effect.runPromise(requirePlatform('prime-agent').update());
+    await Effect.runPromise(requirePlatform('prime-agent').uninstall);
 
     const calls = vi
       .mocked(shell.run)
@@ -558,8 +568,8 @@ describe('prime-agent platform handler', () => {
     vi.clearAllMocks();
     vi.mocked(shell.run).mockImplementation((_cmd, _args) => Effect.succeed(''));
 
-    await Effect.runPromise(getPlatform('prime-agent')!.install);
-    await Effect.runPromise(getPlatform('prime-agent')!.uninstall);
+    await Effect.runPromise(requirePlatform('prime-agent').install);
+    await Effect.runPromise(requirePlatform('prime-agent').uninstall);
 
     const calls = vi
       .mocked(shell.run)
@@ -580,7 +590,7 @@ describe('prime-agent platform handler', () => {
     vi.mocked(shell.run).mockImplementation((_cmd, _args) => Effect.succeed(''));
     fsMocks.mkdtemp.mockResolvedValueOnce('/tmp/maestria-prime-test-abc123');
 
-    await Effect.runPromise(getPlatform('prime-agent')!.install);
+    await Effect.runPromise(requirePlatform('prime-agent').install);
 
     // The install command was spawned with the isolated temp cwd, and the temp
     // cwd was removed afterwards.
@@ -615,7 +625,7 @@ describe('prime-agent platform handler', () => {
     // CommandError (Prime skips updates for pinned registrations) - but the
     // temp cwd created for the registration check must still be cleaned up.
     const message = await Effect.runPromise(
-      getPlatform('prime-agent')!
+      requirePlatform('prime-agent')
         .update()
         .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message))),
     );
@@ -632,7 +642,7 @@ describe('prime-agent platform handler', () => {
     fsMocks.mkdtemp.mockRejectedValueOnce(new Error('ENOSPC'));
 
     const message = await Effect.runPromise(
-      getPlatform('prime-agent')!.install.pipe(
+      requirePlatform('prime-agent').install.pipe(
         Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
       ),
     );

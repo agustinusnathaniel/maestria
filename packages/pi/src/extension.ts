@@ -6,14 +6,15 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 
 import { deploySpecialistAgents } from '@/agents.js';
-import { installCommands } from '@/commands.js';
-import { installCompactionHandlers } from '@/compaction.js';
-import { installModeAutoDetect, installModeCommands } from '@/modes.js';
+import { createCommandsApi, installCommands } from '@/commands.js';
+import { createCompactionApi, installCompactionHandlers } from '@/compaction.js';
+import { createModeCommandsApi, installModeAutoDetect, installModeCommands } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
 import { createInitialState } from '@/state.js';
 import type { MaestriaState } from '@/state.js';
 import { installSubagentTool } from '@/subagent.js';
-import { installToolInterceptors } from '@/tools.js';
+import { createSubagentToolApi } from '@/subagent-api.js';
+import { createToolApi, installToolInterceptors } from '@/tools.js';
 
 interface PersistedStateEntry {
   type: string;
@@ -21,11 +22,10 @@ interface PersistedStateEntry {
   data?: unknown;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
-function currentSessionEntries(ctx: ExtensionContext): PersistedStateEntry[] | null {
+const currentSessionEntries = (ctx: ExtensionContext): PersistedStateEntry[] | null => {
   // getBranch() is the public current-session view and avoids restoring state
   // from a sibling branch in the same session tree. Never fall back to
   // getEntries(), which spans the entire session tree.
@@ -36,18 +36,20 @@ function currentSessionEntries(ctx: ExtensionContext): PersistedStateEntry[] | n
 
   const branch = sessionManager.getBranch();
   return Array.isArray(branch) ? branch : null;
-}
+};
 
-function restoreStateFromSession(state: MaestriaState, ctx: ExtensionContext): void {
+const clearState = (state: MaestriaState): void => {
+  for (const key of Object.keys(state)) {
+    Reflect.deleteProperty(state, key);
+  }
+};
+
+const restoreStateFromSession = (state: MaestriaState, ctx: ExtensionContext): void => {
   const next = createInitialState();
   const entries = currentSessionEntries(ctx);
 
   if (!entries) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: double assertion via unknown, safe narrow from unknown
-    const mutableState = state as unknown as Record<string, unknown>;
-    for (const key of Object.keys(mutableState)) {
-      delete mutableState[key];
-    }
+    clearState(state);
     Object.assign(state, next);
     return;
   }
@@ -62,20 +64,16 @@ function restoreStateFromSession(state: MaestriaState, ctx: ExtensionContext): v
     }
   }
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: double assertion via unknown, safe narrow from unknown
-  const mutableState = state as unknown as Record<string, unknown>;
-  for (const key of Object.keys(mutableState)) {
-    delete mutableState[key];
-  }
+  clearState(state);
   Object.assign(state, next);
-}
+};
 
-export default function (pi: ExtensionAPI): void {
+const extension = (pi: ExtensionAPI): void => {
   const state = createInitialState();
   const cleanups: (() => void)[] = [];
 
   // Install mode commands: /fein, /sonar, /blitz
-  installModeCommands(pi, state);
+  installModeCommands(createModeCommandsApi(pi), state);
   installModeAutoDetect(pi, state);
 
   // Inject mode prompt when a workflow mode is active
@@ -97,11 +95,11 @@ export default function (pi: ExtensionAPI): void {
   });
 
   // Install compaction preservation handlers
-  installCompactionHandlers(pi, state);
+  installCompactionHandlers(createCompactionApi(pi), state);
 
   // Install orchestration hooks: subagent tool and commands
-  installSubagentTool(pi, state, cleanups);
-  installCommands(pi, state);
+  installSubagentTool(createSubagentToolApi(pi), state, cleanups);
+  installCommands(createCommandsApi(pi), state);
 
   // Cleanup subscriptions on shutdown
   pi.on('session_shutdown', () => {
@@ -112,5 +110,7 @@ export default function (pi: ExtensionAPI): void {
   });
 
   // Install tool call interceptors for review mode and dangerous patterns
-  installToolInterceptors(pi, state);
-}
+  installToolInterceptors(createToolApi(pi), state);
+};
+
+export default extension;

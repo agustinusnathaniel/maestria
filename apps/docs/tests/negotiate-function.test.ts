@@ -7,6 +7,21 @@ import { MARKDOWN_MIME, VARY_VALUE } from '@/lib/agent-delivery.ts';
 
 const ORIGIN = 'https://docs.example.com';
 
+const toUrl = (input: Request | string | URL): URL => {
+  if (input instanceof URL) {
+    return input;
+  }
+  if (input instanceof Request) {
+    return new URL(input.url);
+  }
+  return new URL(input);
+};
+
+const asyncResponse = async (response: Response): Promise<Response> => {
+  await Promise.resolve();
+  return response;
+};
+
 type AssetTable = Map<
   string,
   {
@@ -18,28 +33,29 @@ type AssetTable = Map<
   }
 >;
 
-function makeAssets(table: AssetTable): {
+const makeAssets = (
+  table: AssetTable,
+): {
   binding: AssetsBindingLike;
   fetchSpy: ReturnType<typeof vi.fn>;
-} {
+} => {
   const fetchSpy = vi.fn(async (input: Request | string | URL) => {
-    const url =
-      input instanceof URL ? input : input instanceof Request ? new URL(input.url) : new URL(input);
+    const url = toUrl(input);
     const entry = table.get(url.pathname);
     if (!entry || entry.status !== 200) {
-      return new Response(null, { status: 404 });
+      return await asyncResponse(new Response(null, { status: 404 }));
     }
     const headers = new Headers({ 'Content-Type': entry.contentType ?? 'text/plain' });
-    if (entry.cacheControl) {
+    if (entry.cacheControl !== undefined && entry.cacheControl !== '') {
       headers.set('Cache-Control', entry.cacheControl);
     }
-    if (entry.vary) {
+    if (entry.vary !== undefined && entry.vary !== '') {
       headers.set('Vary', entry.vary);
     }
-    return new Response(entry.body ?? '', { headers, status: 200 });
+    return await asyncResponse(new Response(entry.body ?? '', { headers, status: 200 }));
   });
   return { binding: { fetch: fetchSpy }, fetchSpy };
-}
+};
 
 /** Test context: the structural shape plus spy handles for assertions. */
 interface TestContext extends EventContextLike {
@@ -47,15 +63,17 @@ interface TestContext extends EventContextLike {
   fetchSpy: ReturnType<typeof vi.fn>;
 }
 
-function makeContext(
+const makeContext = (
   url: string,
   init: { method?: string; accept?: string } = {},
   table: AssetTable = new Map(),
   next = vi.fn(
     async () =>
-      new Response('next-html', { headers: { 'Content-Type': 'text/html' }, status: 200 }),
+      await asyncResponse(
+        new Response('next-html', { headers: { 'Content-Type': 'text/html' }, status: 200 }),
+      ),
   ),
-): TestContext {
+): TestContext => {
   const headers = new Headers();
   if (init.accept !== undefined) {
     headers.set('Accept', init.accept);
@@ -68,7 +86,7 @@ function makeContext(
     nextSpy: next,
     request: new Request(url, { headers, method: init.method ?? 'GET' }),
   };
-}
+};
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -153,16 +171,13 @@ describe('markdown content negotiation', () => {
     });
     const assets: AssetsBindingLike = {
       fetch: vi.fn(async (input: Request | string | URL) => {
-        const url =
-          input instanceof URL
-            ? input
-            : input instanceof Request
-              ? new URL(input.url)
-              : new URL(input);
-        return url.pathname.endsWith('.md') ? new Response(null, { status: 404 }) : original;
+        const url = toUrl(input);
+        return await asyncResponse(
+          url.pathname.endsWith('.md') ? new Response(null, { status: 404 }) : original,
+        );
       }),
     };
-    const next = vi.fn(async () => new Response('should-not-be-used'));
+    const next = vi.fn(async () => await asyncResponse(new Response('should-not-be-used')));
     const context = makeContext(
       `${ORIGIN}/some-custom-page/`,
       { accept: 'text/markdown' },
@@ -183,7 +198,7 @@ describe('markdown content negotiation', () => {
   it('(d) lets browser requests through to next()', async () => {
     const browserAccept =
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8';
-    const next = vi.fn(async () => new Response('next-html'));
+    const next = vi.fn(async () => await asyncResponse(new Response('next-html')));
     const context = makeContext(`${ORIGIN}/opencode/`, { accept: browserAccept }, new Map(), next);
 
     const res = await handleAgentDelivery(context);
@@ -194,25 +209,28 @@ describe('markdown content negotiation', () => {
   });
 
   it('passes through requests that already target static Markdown or text artifacts', async () => {
-    for (const pathname of ['/opencode.md', '/llms.txt']) {
-      const next = vi.fn(async () => new Response('static-artifact'));
-      const context = makeContext(
-        `${ORIGIN}${pathname}`,
-        { accept: 'text/markdown' },
-        new Map(),
-        next,
-      );
+    await Promise.all(
+      ['/opencode.md', '/llms.txt'].map(async (pathname) => {
+        const next = vi.fn(async () => await asyncResponse(new Response('static-artifact')));
+        const context = makeContext(
+          `${ORIGIN}${pathname}`,
+          { accept: 'text/markdown' },
+          new Map(),
+          next,
+        );
 
-      const res = await handleAgentDelivery(context);
+        const res = await handleAgentDelivery(context);
+        const body = await res.text();
 
-      expect(await res.text()).toBe('static-artifact');
-      expect(context.nextSpy).toHaveBeenCalledTimes(1);
-      expect(context.fetchSpy).not.toHaveBeenCalled();
-    }
+        expect(body).toBe('static-artifact');
+        expect(context.nextSpy).toHaveBeenCalledTimes(1);
+        expect(context.fetchSpy).not.toHaveBeenCalled();
+      }),
+    );
   });
 
   it('(e) never negotiates on POST', async () => {
-    const next = vi.fn(async () => new Response('posted'));
+    const next = vi.fn(async () => await asyncResponse(new Response('posted')));
     const context = makeContext(
       `${ORIGIN}/opencode/`,
       { accept: 'text/markdown', method: 'POST' },

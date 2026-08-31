@@ -1,16 +1,21 @@
 import { extractModeSection } from '@maestria/shared-mode';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import path from 'node:path';
 
 import type { ModeKeyword } from '@/modes/types.js';
 import { COMMANDS_DIR } from '@/root.js';
 
 const VALID_KEYWORDS: readonly ModeKeyword[] = ['fein', 'sonar', 'blitz'];
 
-function loadModePrompt(name: string): string {
-  const content = readFileSync(resolve(COMMANDS_DIR, `${name}.md`), 'utf-8');
+const loadModePrompt = (name: string): string => {
+  const content = readFileSync(path.resolve(COMMANDS_DIR, `${name}.md`), 'utf-8');
   return extractModeSection(content);
-}
+};
+
+const isModeKeyword = (value: string): value is ModeKeyword =>
+  VALID_KEYWORDS.some((keyword) => keyword === value);
+
+const modePromptTarget: Record<string, string> = {};
 
 /**
  * Mode prompt text for each keyword, lazily loaded on first access.
@@ -19,26 +24,22 @@ function loadModePrompt(name: string): string {
  *
  * @see ADR-OC-003 (section "Mode Prompts")
  */
-export const MODE_PROMPTS: Record<ModeKeyword, string> = new Proxy(
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
-  {} as Record<ModeKeyword, string>,
-  {
-    get(target, key, receiver) {
-      if (typeof key === 'string' && (VALID_KEYWORDS as readonly string[]).includes(key)) {
-        if (!(key in target)) {
-          try {
-            (target as Record<string, string>)[key] = loadModePrompt(key);
-          } catch (error) {
-            console.warn(`[maestria] Failed to load mode prompt "${key}":`, error);
-            (target as Record<string, string>)[key] = '';
-          }
+export const MODE_PROMPTS: Record<ModeKeyword, string> = new Proxy(modePromptTarget, {
+  get(target, key, receiver) {
+    if (typeof key === 'string' && isModeKeyword(key)) {
+      if (!(key in target)) {
+        try {
+          target[key] = loadModePrompt(key);
+        } catch (error) {
+          console.warn(`[maestria] Failed to load mode prompt "${key}":`, error);
+          target[key] = '';
         }
-        return (target as Record<string, string>)[key];
       }
-      return Reflect.get(target, key, receiver);
-    },
+      return target[key];
+    }
+    return Reflect.get(target, key, receiver) as unknown;
   },
-);
+});
 
 /**
  * Marker strings for each mode keyword, used to signal the active mode.

@@ -4,17 +4,17 @@
  * Each prerelease/build identifier must be non-empty.
  */
 const SEMVER_REGEX =
-  /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/u;
+  /^\d+\.\d+\.\d+(?<prerelease>-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?<build>\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
 
 /**
  * Validate a version string. Accepts 'latest' and '' as special values.
  */
-export function isValidVersion(v: string): boolean {
+export const isValidVersion = (v: string): boolean => {
   if (v === 'latest' || v === '') {
     return true;
   }
   return SEMVER_REGEX.test(v);
-}
+};
 
 /**
  * Compare two version strings using numeric-aware locale comparison.
@@ -32,7 +32,7 @@ export function isValidVersion(v: string): boolean {
  * @returns -1 if a < b, 0 if equal, 1 if a > b, null if either is 'unknown'
  *   or not a valid semver version
  */
-export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
+export const compareVersions = (a: string, b: string): -1 | 0 | 1 | null => {
   if (a === 'unknown' || b === 'unknown') {
     return null;
   }
@@ -62,7 +62,8 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
   // end-of-string (e.g., "1.0.0-alpha" > "1.0.0" with localeCompare).
   // If both share the same MAJOR.MINOR.PATCH and exactly one has a
   // prerelease tag, reverse the result.
-  const stripSuffix = /(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/u;
+  const stripSuffix =
+    /(?<prerelease>-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?<build>\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
   const aBase = aWithoutBuild.replace(stripSuffix, '');
   const bBase = bWithoutBuild.replace(stripSuffix, '');
   if (aBase === bBase) {
@@ -76,34 +77,30 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 | null {
   }
 
   return result < 0 ? -1 : 1;
-}
+};
 
 /** Strict semver equality check. Handles 'latest' and 'unknown'. */
-export function isVersionEq(a: string, b: string): boolean {
+export const isVersionEq = (a: string, b: string): boolean => {
   if (a === b) {
     return true;
   }
   return compareVersions(a, b) === 0;
-}
+};
 
 /** Check if a is strictly less than b. */
-export function isVersionLt(a: string, b: string): boolean {
-  return compareVersions(a, b) === -1;
-}
+export const isVersionLt = (a: string, b: string): boolean => compareVersions(a, b) === -1;
 
 /** Check if a differs from b (for "needs update" detection). Returns false if either is 'unknown' or incomparable (non-semver). */
-export function isVersionDifferent(a: string, b: string): boolean {
+export const isVersionDifferent = (a: string, b: string): boolean => {
   if (a === 'unknown' || b === 'unknown') {
     return false;
   }
   const result = compareVersions(a, b);
   return result !== null && result !== 0;
-}
+};
 
 /**
  * Check if a is strictly greater than b ('a' is ahead of 'b'). Returns false
  * if either is 'unknown' or incomparable (non-semver).
  */
-export function isVersionGt(a: string, b: string): boolean {
-  return compareVersions(a, b) === 1;
-}
+export const isVersionGt = (a: string, b: string): boolean => compareVersions(a, b) === 1;

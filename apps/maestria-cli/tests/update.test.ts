@@ -1,5 +1,10 @@
 import { Effect } from 'effect';
+import type * as FsPromises from 'node:fs/promises';
 import { describe, expect, it, vi } from 'vite-plus/test';
+
+import { updateOne } from '@/commands/update.js';
+import { getPlatform } from '@/lib/platforms.js';
+import * as shell from '@/lib/shell.js';
 
 // Stub the Prime version lookup's Node fs read (cross-platform, not a POSIX
 // `cat`) plus the version-cache write so npmViewVersion cannot touch the real
@@ -12,7 +17,7 @@ const fsMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/lib/shell.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/lib/shell.js')>();
+  const actual = await importOriginal<typeof shell>();
   return {
     ...actual,
     // Return a real Effect so module-evaluation .pipe() chains in platforms.ts
@@ -23,7 +28,7 @@ vi.mock('@/lib/shell.js', async (importOriginal) => {
 });
 
 vi.mock('node:fs/promises', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs/promises')>();
+  const actual = await importOriginal<typeof FsPromises>();
   return {
     ...actual,
     mkdir: vi.fn(async () => {}),
@@ -33,10 +38,6 @@ vi.mock('node:fs/promises', async (importOriginal) => {
     writeFile: vi.fn(async () => {}),
   };
 });
-
-import { updateOne } from '@/commands/update.js';
-import { getPlatform } from '@/lib/platforms.js';
-import * as shell from '@/lib/shell.js';
 
 const PRIME_PACKAGE_LIST = {
   /** Version-pinned user-scope registration, installed at 0.2.0. */
@@ -53,14 +54,20 @@ const PRIME_PACKAGE_LIST = {
   ].join('\n'),
 };
 
-function primePlatform(latestVersion = '0.2.0') {
-  return {
-    ...getPlatform('prime-agent')!,
-    // npmViewVersion closes over shell.run internally, so replace the handler
-    // effect at the command seam instead of allowing these tests to hit npm.
-    getLatestVersion: Effect.succeed(latestVersion),
-  };
-}
+const requirePlatform = (id: string): NonNullable<ReturnType<typeof getPlatform>> => {
+  const platform = getPlatform(id);
+  if (platform === undefined) {
+    throw new Error(`Platform not found: ${id}`);
+  }
+  return platform;
+};
+
+const primePlatform = (latestVersion = '0.2.0') => ({
+  ...requirePlatform('prime-agent'),
+  // npmViewVersion closes over shell.run internally, so replace the handler
+  // effect at the command seam instead of allowing these tests to hit npm.
+  getLatestVersion: Effect.succeed(latestVersion),
+});
 
 // updateOne is the per-platform routine behind `maestria update <platform>`
 // (and the --all / interactive paths). These are command-level regressions for
@@ -298,7 +305,7 @@ describe('update command - no silent downgrade', () => {
     });
 
     const openCodePlatform = {
-      ...getPlatform('opencode')!,
+      ...requirePlatform('opencode'),
       getLatestVersion: Effect.succeed('0.2.0'),
     };
     const result = await Effect.runPromise(updateOne(openCodePlatform, true, '0.2.0'));

@@ -36,25 +36,57 @@ const EXPECTED_SKILLS = [
 interface PackageJson {
   name?: string;
   files?: string[];
+  pi?: { extensions?: string[]; skills?: string[] };
 }
 
-async function readJson<T>(relativePath: string): Promise<T> {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+const isPiManifest = (value: unknown): value is NonNullable<PackageJson['pi']> => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    (value.extensions === undefined || isStringArray(value.extensions)) &&
+    (value.skills === undefined || isStringArray(value.skills))
+  );
+};
+
+const isPackageJson = (value: unknown): value is PackageJson => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    (value.name === undefined || typeof value.name === 'string') &&
+    (value.files === undefined || isStringArray(value.files)) &&
+    (value.pi === undefined || isPiManifest(value.pi))
+  );
+};
+
+const readJson = async (relativePath: string): Promise<PackageJson> => {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
   const raw = await readFile(absolute, 'utf-8');
-  return JSON.parse(raw) as T;
-}
+  const value: unknown = JSON.parse(raw);
+  if (!isPackageJson(value)) {
+    throw new Error(`${relativePath} does not contain a valid package manifest`);
+  }
+  return value;
+};
 
-async function pathExists(absolutePath: string): Promise<boolean> {
+const pathExists = async (absolutePath: string): Promise<boolean> => {
   try {
     await stat(absolutePath);
     return true;
   } catch {
     return false;
   }
-}
+};
 
 /** Lists a directory's entries (excluding dotfiles) in sorted order. */
-async function readDirNames(relativePath: string): Promise<string[]> {
+const readDirNames = async (relativePath: string): Promise<string[]> => {
   const entries = await readdir(path.join(PACKAGE_ROOT, relativePath), {
     withFileTypes: true,
   });
@@ -62,14 +94,14 @@ async function readDirNames(relativePath: string): Promise<string[]> {
     .filter((entry) => !entry.name.startsWith('.'))
     .map((entry) => entry.name)
     .toSorted();
-}
+};
 
 /**
  * Minimal YAML frontmatter parser for the subset used by generated files
  * (scalars only). Matches the repository test convention; the generated
  * frontmatter contains only `name` and `description`.
  */
-function parseFrontmatter(text: string): { data: Record<string, string>; body: string } {
+const parseFrontmatter = (text: string): { data: Record<string, string>; body: string } => {
   const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
@@ -81,11 +113,15 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
 
   const data: Record<string, string> = {};
   for (const line of lines.slice(1, close)) {
-    const pair = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/u.exec(line);
+    const pair = /^(?<key>[A-Za-z][A-Za-z0-9_-]*):\s*(?<rawValue>.*)$/u.exec(line);
     if (pair === null) {
       continue;
     }
-    const [, key, rawValue] = pair;
+    const { groups } = pair;
+    if (groups === undefined) {
+      continue;
+    }
+    const { key, rawValue } = groups;
     const value = rawValue.trim();
     if (value === '' || value.startsWith('|')) {
       // Block scalar (| or |-): collect the indented continuation lines.
@@ -98,23 +134,20 @@ function parseFrontmatter(text: string): { data: Record<string, string>; body: s
       data[key] = body.join(' ');
       continue;
     }
-    if (
+    data[key] =
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      data[key] = value.slice(1, -1);
-    } else {
-      data[key] = value;
-    }
+        ? value.slice(1, -1)
+        : value;
   }
   const body = lines.slice(close + 1).join('\n');
   return { body, data };
-}
+};
 
-async function readSkill(name: string): Promise<{ data: Record<string, string>; body: string }> {
+const readSkill = async (name: string): Promise<{ data: Record<string, string>; body: string }> => {
   const text = await readFile(path.join(SKILLS_DIR, name, 'SKILL.md'), 'utf-8');
   return parseFrontmatter(text);
-}
+};
 
 describe('generated Prime Agent skills', () => {
   it('contains exactly the 14 expected skills and nothing else', async () => {
@@ -155,8 +188,8 @@ describe('generated Prime Agent skills', () => {
         const text = await readFile(path.join(SKILLS_DIR, skill, 'SKILL.md'), 'utf-8');
         const sentences = text.split(/(?<=[.!?])\s+/u);
         for (const sentence of sentences) {
-          if (/(JSON|RPC|headless|rlm|subagent\s+dispatch|spawns?)/iu.test(sentence)) {
-            expect(sentence).toMatch(/(no|not) |deferred/iu);
+          if (/(?:JSON|RPC|headless|rlm|subagent\s+dispatch|spawns?)/iu.test(sentence)) {
+            expect(sentence).toMatch(/(?:no|not) |deferred/iu);
           }
         }
       });
@@ -258,8 +291,12 @@ describe('content invariants', () => {
   });
 
   it('frames read-only roles as advisory, never as runtime-enforced', async () => {
-    for (const role of ['adventurer', 'planner', 'reviewer']) {
-      const text = await readFile(path.join(SKILLS_DIR, role, 'SKILL.md'), 'utf-8');
+    const texts = await Promise.all(
+      ['adventurer', 'planner', 'reviewer'].map(
+        async (role) => await readFile(path.join(SKILLS_DIR, role, 'SKILL.md'), 'utf-8'),
+      ),
+    );
+    for (const text of texts) {
       expect(text).toContain('Read-only role (advisory)');
       expect(text).toContain('no runtime tool enforcement');
       expect(text).not.toMatch(/tools are denied|disallowed/iu);
@@ -267,8 +304,14 @@ describe('content invariants', () => {
   });
 
   it('projects the workflow modes as skills with mode semantics intact', async () => {
-    for (const mode of ['fein', 'sonar', 'blitz']) {
-      const text = await readFile(path.join(SKILLS_DIR, mode, 'SKILL.md'), 'utf-8');
+    const modes = ['fein', 'sonar', 'blitz'] as const;
+    const texts = await Promise.all(
+      modes.map(async (mode) => ({
+        mode,
+        text: await readFile(path.join(SKILLS_DIR, mode, 'SKILL.md'), 'utf-8'),
+      })),
+    );
+    for (const { mode, text } of texts) {
       expect(text).toContain(`## MODE: ${mode}`);
       expect(text).toContain('orchestrator');
     }
@@ -297,7 +340,7 @@ describe('sync config source mapping', () => {
   };
 
   it('maps every intended canonical source to its expected skill output', () => {
-    const files = (syncConfig.files ?? {}) as Record<string, { output?: string }>;
+    const files: Record<string, { output?: string }> = syncConfig.files ?? {};
     for (const [source, output] of Object.entries(EXPECTED_OUTPUTS)) {
       expect(files[source]?.output).toBe(output);
     }
@@ -306,7 +349,7 @@ describe('sync config source mapping', () => {
 
 describe('package boundary', () => {
   it('has the exact package identity "@maestria/prime-agent"', async () => {
-    const pkg = await readJson<PackageJson>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.name).toBe('@maestria/prime-agent');
   });
 
@@ -317,7 +360,7 @@ describe('package boundary', () => {
   });
 
   it('allowlists the skills projection, the compiled extension, and docs for packaging', async () => {
-    const pkg = await readJson<PackageJson>('package.json');
+    const pkg = await readJson('package.json');
     for (const entry of ['dist', 'skills', 'README.md', 'INSTALL.md', 'LICENSE']) {
       expect(pkg.files).toContain(entry);
     }
@@ -326,9 +369,7 @@ describe('package boundary', () => {
   });
 
   it('declares the compiled extension and skills under the pi manifest key', async () => {
-    const pkg = await readJson<PackageJson & { pi?: { extensions?: string[]; skills?: string[] } }>(
-      'package.json',
-    );
+    const pkg = await readJson('package.json');
     expect(pkg.pi?.extensions).toContain('./dist/extension.mjs');
     expect(pkg.pi?.skills).toContain('./skills');
   });

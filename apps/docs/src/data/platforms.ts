@@ -81,22 +81,22 @@ export const platforms: Platform[] = [
     name: '@maestria/cursor',
   },
   {
-    id: 'pi-omp',
-    name: '@maestria/pi & @maestria/omp',
-    href: '/pi-omp/',
     blurb: '7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.',
-    mark: 'piOmp',
+    href: '/pi-omp/',
+    id: 'pi-omp',
     // CLI positional arg is `pi` (see /cli/commands/), not `pi-omp`.
     installArgs: 'install pi',
+    mark: 'piOmp',
+    name: '@maestria/pi & @maestria/omp',
   },
   {
-    id: 'hermes',
-    name: '@maestria/hermes',
-    href: '/hermes/',
     blurb: 'Methodology layer for Hermes Agent: specialists, pipeline, and mode system.',
-    mark: 'hermes',
+    href: '/hermes/',
+    id: 'hermes',
     // Hermes installs via its own git-based plugin manager, not the maestria CLI.
     installArgs: '',
+    mark: 'hermes',
+    name: '@maestria/hermes',
   },
   {
     blurb: 'Skills-first Maestria for Prime Agent: specialists, orchestrator, and workflow modes.',

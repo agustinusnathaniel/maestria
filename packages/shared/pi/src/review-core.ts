@@ -14,20 +14,20 @@ import { exitReviewMode } from './state-core.js';
 // ── Duck-typed platform interfaces ──
 
 interface ReviewPi {
-  setActiveTools(tools: string[]): void | Promise<void>;
-  setModel(model: unknown): void | Promise<void>;
+  setActiveTools: (tools: string[]) => void | Promise<void>;
+  setModel: (model: unknown) => void | Promise<void>;
 }
 
 interface ReviewCtx {
-  modelRegistry: { getAll(): { id: string }[] };
-  ui: { notify(msg: string): void };
+  modelRegistry: { getAll: () => { id: string }[] };
+  ui: { notify: (msg: string) => void };
 }
 
-export async function restoreOriginalState(
+export const restoreOriginalState = async (
   pi: ReviewPi,
   ctx: ReviewCtx,
   state: MaestriaState,
-): Promise<void> {
+): Promise<void> => {
   const { state: clearedState, originalModel, originalTools } = exitReviewMode(state);
 
   if (originalTools && originalTools.length > 0) {
@@ -47,13 +47,13 @@ export async function restoreOriginalState(
   }
 
   Object.assign(state, clearedState);
-}
+};
 
-export async function cycleToReviewModel(
+export const cycleToReviewModel = async (
   pi: ReviewPi,
   ctx: ReviewCtx,
   state: MaestriaState,
-): Promise<string | null> {
+): Promise<string | null> => {
   const { reviewModel } = state;
   if (reviewModel === undefined || reviewModel === null || reviewModel === '') {
     return null;
@@ -71,4 +71,4 @@ export async function cycleToReviewModel(
     ctx.ui.notify(`Could not switch to review model "${reviewModel}", staying on current.`);
     return null;
   }
-}
+};

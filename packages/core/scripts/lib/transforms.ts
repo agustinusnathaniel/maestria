@@ -10,19 +10,17 @@ export const FRONTMATTER_RE = /^---[\s\S]*?\n---\n*/u;
 
 // ── Transforms ──
 
-export function stripFrontmatter(content: string): string {
-  return content.replace(FRONTMATTER_RE, '');
-}
+export const stripFrontmatter = (content: string): string => content.replace(FRONTMATTER_RE, '');
 
-export function findAndReplace(content: string, ops: ReplaceOp[]): string {
+export const findAndReplace = (content: string, ops: ReplaceOp[]): string => {
   let result = content;
   for (const op of ops) {
     result = result.split(op.from).join(op.to);
   }
   return result;
-}
+};
 
-export function serializeFrontmatter(data: Record<string, unknown> | string | null): string {
+export const serializeFrontmatter = (data: Record<string, unknown> | string | null): string => {
   if (data === null) {
     return '';
   }
@@ -33,12 +31,9 @@ export function serializeFrontmatter(data: Record<string, unknown> | string | nu
     return `---\n${data}\n---\n`;
   }
   return `---\n${yamlStringify(data, { lineWidth: 0 })}---\n`;
-}
+};
 
-export function stripSourceComment(content: string): string {
-  return content.replace(/^<!--\s*Source:\s*[^\n]*-->\n?/u, '');
-}
+export const stripSourceComment = (content: string): string =>
+  content.replace(/^<!--\s*Source:\s*[^\n]*-->\n?/u, '');
 
-export function normalizeLineEndings(content: string): string {
-  return content.replaceAll('\r\n', '\n');
-}
+export const normalizeLineEndings = (content: string): string => content.replaceAll('\r\n', '\n');

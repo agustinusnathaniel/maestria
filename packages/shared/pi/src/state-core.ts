@@ -59,97 +59,96 @@ export interface MaestriaState {
 
 // ── Transforms ──
 
-export function createInitialState(): MaestriaState {
-  return {
-    activeTask: '',
-    blockers: [],
-    completionPromise: '',
-    filesModified: [],
-    filesRead: [],
-    handoffHistory: [],
-    mode: null,
-    nativeGoal: null,
-    originalModel: null,
-    originalTools: null,
-    reviewMode: false,
-    reviewModel: null,
-    specialistsDelegated: [],
-    subagentStatus: {},
-  };
-}
+export const createInitialState = (): MaestriaState => ({
+  activeTask: '',
+  blockers: [],
+  completionPromise: '',
+  filesModified: [],
+  filesRead: [],
+  handoffHistory: [],
+  mode: null,
+  nativeGoal: null,
+  originalModel: null,
+  originalTools: null,
+  reviewMode: false,
+  reviewModel: null,
+  specialistsDelegated: [],
+  subagentStatus: {},
+});
 
-function prependDeduped(files: string[], path: string, cap: number): string[] {
+const prependDeduped = (files: string[], path: string, cap: number): string[] => {
   const filtered = files.filter((f) => f !== path);
   return [path, ...filtered].slice(0, cap);
-}
+};
 
-export function recordHandoff(
+export const recordHandoff = (
   state: MaestriaState,
   from: string,
   to: string,
   task: string,
-): MaestriaState {
+): MaestriaState => {
   const entry: HandoffEntry = { from, task, timestamp: Date.now(), to };
   const history = [entry, ...state.handoffHistory].slice(0, HANDOFF_HISTORY_CAP);
   return { ...state, handoffHistory: history };
-}
+};
 
-export function recordFileModified(state: MaestriaState, path: string): MaestriaState {
-  return { ...state, filesModified: prependDeduped(state.filesModified, path, FILE_HISTORY_CAP) };
-}
+export const recordFileModified = (state: MaestriaState, path: string): MaestriaState => ({
+  ...state,
+  filesModified: prependDeduped(state.filesModified, path, FILE_HISTORY_CAP),
+});
 
-export function recordFileRead(state: MaestriaState, path: string): MaestriaState {
-  return { ...state, filesRead: prependDeduped(state.filesRead, path, FILE_HISTORY_CAP) };
-}
+export const recordFileRead = (state: MaestriaState, path: string): MaestriaState => ({
+  ...state,
+  filesRead: prependDeduped(state.filesRead, path, FILE_HISTORY_CAP),
+});
 
-export function recordSpecialistDelegated(state: MaestriaState, name: string): MaestriaState {
+export const recordSpecialistDelegated = (state: MaestriaState, name: string): MaestriaState => {
   if (state.specialistsDelegated.includes(name)) {
     return state;
   }
   return { ...state, specialistsDelegated: [...state.specialistsDelegated, name] };
-}
+};
 
-export function recordSubagentStatus(
+export const recordSubagentStatus = (
   state: MaestriaState,
   id: string,
   info: SubagentStatusInfo,
-): MaestriaState {
-  return { ...state, subagentStatus: { ...state.subagentStatus, [id]: info } };
-}
+): MaestriaState => ({ ...state, subagentStatus: { ...state.subagentStatus, [id]: info } });
 
-export function setReviewMode(state: MaestriaState, active: boolean): MaestriaState {
-  return { ...state, reviewMode: active };
-}
+export const setReviewMode = (state: MaestriaState, active: boolean): MaestriaState => ({
+  ...state,
+  reviewMode: active,
+});
 
-export function exitReviewMode(state: MaestriaState): {
+export const exitReviewMode = (
+  state: MaestriaState,
+): {
   state: MaestriaState;
   originalModel: string | null;
   originalTools: string[] | null;
-} {
-  return {
-    originalModel: state.originalModel,
-    originalTools: state.originalTools,
-    state: {
-      ...state,
-      originalModel: null,
-      originalTools: null,
-      reviewMode: false,
-    },
-  };
-}
+} => ({
+  originalModel: state.originalModel,
+  originalTools: state.originalTools,
+  state: {
+    ...state,
+    originalModel: null,
+    originalTools: null,
+    reviewMode: false,
+  },
+});
 
 // ── Persistence ──
 
-export function persistState(
+export const persistState = (
   pi: { appendEntry: (type: string, data: unknown) => void },
   state: MaestriaState,
-): void {
+): void => {
   pi.appendEntry('maestria_state', { ...state });
-}
+};
 
 // ── Render ──
 
-export function renderMaestriaSummary(state: MaestriaState): string {
+export const renderMaestriaSummary = (state: MaestriaState): string => {
   const parts: string[] = [];
 
   if (state.mode) {
@@ -202,4 +201,4 @@ export function renderMaestriaSummary(state: MaestriaState): string {
   }
 
   return parts.join('\n\n');
-}
+};

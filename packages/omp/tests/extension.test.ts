@@ -1,56 +1,83 @@
-import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import extension from '@/extension.js';
 
-function createMockPi() {
-  const handlers = new Map<string, ((...args: unknown[]) => unknown)[]>();
-  return {
-    appendEntry: vi.fn(),
-    events: undefined,
-    getActiveTools: vi.fn(() => []),
-    on: vi.fn((event: string, handler: (...args: unknown[]) => unknown) => {
-      if (!handlers.has(event)) {
-        handlers.set(event, []);
-      }
-      handlers.get(event)!.push(handler);
-      return () => {
-        const h = handlers.get(event);
-        if (h) {
-          h.splice(h.indexOf(handler), 1);
-        }
-      };
-    }),
-    registerCommand: vi.fn(),
-    registerTool: vi.fn(),
-    sendUserMessage: vi.fn(),
-    setActiveTools: vi.fn(),
-    setModel: vi.fn(),
-    zod: {
-      array: vi.fn(() => ({
-        describe: vi.fn(() => ({
-          optional: vi.fn(() => ({})),
-        })),
-      })),
-      enum: vi.fn(() => ({
-        describe: vi.fn(() => ({
-          optional: vi.fn(() => ({})),
-        })),
-      })),
-      object: vi.fn(() => ({})),
-      string: vi.fn(() => ({
-        describe: vi.fn(() => ({
-          optional: vi.fn(() => ({})),
-        })),
-      })),
-    },
-  };
+interface MockSchema {
+  describe: (description: string) => MockSchema;
+  optional: () => MockSchema;
 }
+
+interface MockZod {
+  array: (schema: MockSchema) => MockSchema;
+  enum: (values: readonly string[]) => MockSchema;
+  object: (shape: Record<string, MockSchema>) => MockSchema;
+  string: () => MockSchema;
+}
+
+type MockEventHandler = (...args: unknown[]) => unknown;
+type MockOn = (event: string, handler: MockEventHandler) => void;
+type MockCommandRegistration = (name: string, options: unknown) => void;
+type MockToolRegistration = (tool: unknown) => void;
+
+interface MockPi {
+  appendEntry: ReturnType<typeof vi.fn<(type: string, data?: unknown) => void>>;
+  events: undefined;
+  getActiveTools: ReturnType<typeof vi.fn<() => string[]>>;
+  on: ReturnType<typeof vi.fn<MockOn>>;
+  registerCommand: ReturnType<typeof vi.fn<MockCommandRegistration>>;
+  registerTool: ReturnType<typeof vi.fn<MockToolRegistration>>;
+  sendUserMessage: ReturnType<typeof vi.fn<(text: string, options?: unknown) => void>>;
+  setActiveTools: ReturnType<typeof vi.fn<(tools: string[]) => void>>;
+  setModel: ReturnType<typeof vi.fn<(model: unknown) => Promise<boolean>>>;
+  zod: MockZod;
+}
+
+const createMockZod = (): MockZod => {
+  const schema: MockSchema = {
+    describe: () => schema,
+    optional: () => schema,
+  };
+  return {
+    array: () => schema,
+    enum: () => schema,
+    object: () => schema,
+    string: () => schema,
+  };
+};
+
+const invokeExtension = (pi: MockPi): void => {
+  Reflect.apply(extension, undefined, [pi]);
+};
+
+const createMockPi = (): MockPi => ({
+  appendEntry: vi.fn<(type: string, data?: unknown) => void>(),
+  events: undefined,
+  getActiveTools: vi.fn<() => string[]>(() => []),
+  on: vi.fn<MockOn>(),
+  registerCommand: vi.fn<MockCommandRegistration>(),
+  registerTool: vi.fn<MockToolRegistration>(),
+  sendUserMessage: vi.fn<(text: string, options?: unknown) => void>(),
+  setActiveTools: vi.fn<(tools: string[]) => void>(),
+  setModel: vi.fn<(model: unknown) => Promise<boolean>>(),
+  zod: createMockZod(),
+});
+
+const invokeHandler = async (pi: MockPi, eventName: string, ...args: unknown[]): Promise<void> => {
+  const registration = pi.on.mock.calls.find((call) => call[0] === eventName);
+  if (registration === undefined) {
+    throw new Error(`${eventName} handler was not registered`);
+  }
+  const [, handler] = registration;
+  if (typeof handler !== 'function') {
+    throw new TypeError(`${eventName} handler is not callable`);
+  }
+  await Reflect.apply(handler, undefined, args);
+};
 
 describe('extension entry point', () => {
   it('registers mode commands', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
+    invokeExtension(pi);
     const { registerCommand } = pi;
     // Three mode commands: fein, sonar, blitz
     expect(registerCommand).toHaveBeenCalledWith('fein', expect.any(Object));
@@ -60,17 +87,15 @@ describe('extension entry point', () => {
 
   it('registers subagent tool', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
+    invokeExtension(pi);
     const { registerTool } = pi;
     expect(registerTool).toHaveBeenCalled();
   });
 
   it('subscribes to session events', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
-    const { on } = pi;
-    const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const onEvents = onCalls.map((c: unknown[]) => c[0]);
+    invokeExtension(pi);
+    const onEvents = pi.on.mock.calls.map((call) => call[0]);
     expect(onEvents).toContain('session_start');
     expect(onEvents).toContain('session_shutdown');
     expect(onEvents).toContain('before_agent_start');
@@ -83,7 +108,7 @@ describe('extension entry point', () => {
 
   it('registers orchestration commands', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
+    invokeExtension(pi);
     const { registerCommand } = pi;
     expect(registerCommand).toHaveBeenCalledWith('maestria-status', expect.any(Object));
     expect(registerCommand).toHaveBeenCalledWith('review', expect.any(Object));
@@ -94,7 +119,7 @@ describe('extension entry point', () => {
 
   it('leaves OMP-owned native goal slash commands outside Maestria command registration', () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
+    invokeExtension(pi);
 
     expect(pi.registerCommand).not.toHaveBeenCalledWith('goal', expect.anything());
   });
@@ -106,22 +131,14 @@ describe('extension entry point', () => {
       { customType: 'maestria_state', data: mockState, timestamp: 100, type: 'custom' },
     ]);
     const ctx = { sessionManager: { getBranch } };
-    extension(pi as unknown as ExtensionAPI);
-    const { on } = pi;
-    const onCalls = (on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionStartCall = onCalls.find((c: unknown[]) => c[0] === 'session_start');
-    expect(sessionStartCall).toBeDefined();
-    const handler = sessionStartCall![1];
-    await handler({}, ctx);
+    invokeExtension(pi);
+    await invokeHandler(pi, 'session_start', {}, ctx);
     expect(getBranch).toHaveBeenCalled();
   });
 
   it('resets copied native state through tree navigation without inventing a goal event', async () => {
     const pi = createMockPi();
-    extension(pi as unknown as ExtensionAPI);
-    const onCalls = (pi.on as ReturnType<typeof vi.fn>).mock.calls;
-    const sessionStart = onCalls.find((c: unknown[]) => c[0] === 'session_start')![1];
-    const sessionTree = onCalls.find((c: unknown[]) => c[0] === 'session_tree')![1];
+    invokeExtension(pi);
     const getBranch = vi.fn();
     const context = { sessionManager: { getBranch, getEntries: getBranch } };
     const parentState = {
@@ -133,18 +150,30 @@ describe('extension entry point', () => {
       { customType: 'maestria_state', data: parentState, type: 'custom' },
     ]);
 
-    await sessionStart({ type: 'session_start' }, context);
-    await sessionTree(
+    await invokeHandler(pi, 'session_start', { type: 'session_start' }, context);
+    await invokeHandler(
+      pi,
+      'session_tree',
       { newLeafId: 'target-leaf', oldLeafId: 'parent-leaf', type: 'session_tree' },
       context,
     );
 
-    const statusCommand = (pi.registerCommand as ReturnType<typeof vi.fn>).mock.calls.find(
-      (call: unknown[]) => call[0] === 'maestria-status',
-    )![1] as { handler: (args: string, ctx: unknown) => Promise<void> };
+    const statusCall = pi.registerCommand.mock.calls.find((call) => call[0] === 'maestria-status');
+    if (statusCall === undefined) {
+      throw new Error('maestria-status command was not registered');
+    }
+    const [, statusDefinition] = statusCall;
+    if (
+      typeof statusDefinition !== 'object' ||
+      statusDefinition === null ||
+      !('handler' in statusDefinition) ||
+      typeof statusDefinition.handler !== 'function'
+    ) {
+      throw new TypeError('maestria-status definition is invalid');
+    }
     const setEditorText = vi.fn();
     const commandContext = { ui: { notify: vi.fn(), setEditorText } };
-    await statusCommand.handler('', commandContext);
+    await Reflect.apply(statusDefinition.handler, undefined, ['', commandContext]);
     expect(setEditorText).toHaveBeenCalledWith(expect.stringContaining('**Goal:** parent task'));
     expect(setEditorText).toHaveBeenCalledWith(expect.not.stringContaining('**Native Goal:**'));
   });

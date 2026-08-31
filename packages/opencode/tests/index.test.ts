@@ -1,8 +1,20 @@
+import type { Config } from '@opencode-ai/plugin';
 import { describe, expect, it } from 'vite-plus/test';
 
 import pkg from '../package.json' with { type: 'json' };
+import { pluginInput } from './helpers.js';
 
 import { MaestriaPlugin } from '@/index.js';
+
+type AgentConfig = NonNullable<NonNullable<Config['agent']>[string]>;
+
+const getAgentConfig = (config: Config, name: string): AgentConfig => {
+  const agent = config.agent?.[name];
+  if (agent === undefined) {
+    throw new Error(`Expected agent config for ${name}`);
+  }
+  return agent;
+};
 
 describe('plugin structure', () => {
   it('should have a valid package.json', () => {
@@ -15,11 +27,11 @@ describe('plugin structure', () => {
   });
 
   it('should load all 8 agents', async () => {
-    const plugin = await MaestriaPlugin({} as never);
-    const config = { agent: {} };
+    const plugin = await MaestriaPlugin(pluginInput);
+    const config: Config = { agent: {} };
     await plugin.config?.(config);
 
-    const agentNames = Object.keys(config.agent);
+    const agentNames = Object.keys(config.agent ?? {});
     expect(agentNames).toContain('orchestrator');
     expect(agentNames).toContain('adventurer');
     expect(agentNames).toContain('architect');
@@ -32,12 +44,11 @@ describe('plugin structure', () => {
   });
 
   it('should parse agent frontmatter correctly', async () => {
-    const plugin = await MaestriaPlugin({} as never);
-    const config = { agent: {} };
+    const plugin = await MaestriaPlugin(pluginInput);
+    const config: Config = { agent: {} };
     await plugin.config?.(config);
 
-    const agent = config.agent as Record<string, Record<string, unknown>>;
-    const { builder } = agent;
+    const builder = getAgentConfig(config, 'builder');
     expect(builder.mode).toBe('subagent');
     expect(typeof builder.description).toBe('string');
     expect(typeof builder.prompt).toBe('string');
@@ -45,8 +56,8 @@ describe('plugin structure', () => {
   });
 
   it('preserves user model and variant overrides on maestria agent entries', async () => {
-    const plugin = await MaestriaPlugin({} as never);
-    const config = {
+    const plugin = await MaestriaPlugin(pluginInput);
+    const config: Config = {
       agent: {
         builder: { model: 'opencode-go/deepseek-v4-pro', variant: 'high' },
         reviewer: { temperature: 0.1 },
@@ -54,32 +65,43 @@ describe('plugin structure', () => {
     };
     await plugin.config?.(config);
 
-    const agent = config.agent as Record<string, Record<string, unknown>>;
-    expect(agent.builder.model).toBe('opencode-go/deepseek-v4-pro');
-    expect(agent.builder.variant).toBe('high');
-    expect(agent.builder.mode).toBe('subagent');
-    expect(typeof agent.builder.prompt).toBe('string');
-    expect(agent.reviewer.temperature).toBe(0.1);
-    expect(agent.reviewer.mode).toBe('subagent');
+    const builder = getAgentConfig(config, 'builder');
+    const reviewer = getAgentConfig(config, 'reviewer');
+    expect(builder.model).toBe('opencode-go/deepseek-v4-pro');
+    expect(builder.variant).toBe('high');
+    expect(builder.mode).toBe('subagent');
+    expect(typeof builder.prompt).toBe('string');
+    expect(reviewer.temperature).toBe(0.1);
+    expect(reviewer.mode).toBe('subagent');
   });
 
   it('keeps direct code tools denied to the orchestrator and permitted to builder', async () => {
-    const plugin = await MaestriaPlugin({} as never);
-    const config = { agent: {} };
+    const plugin = await MaestriaPlugin(pluginInput);
+    const config: Config = { agent: {} };
     await plugin.config?.(config);
 
-    const agent = config.agent as Record<string, Record<string, any>>;
-    expect(agent.orchestrator.permission.read).toBe('deny');
-    expect(agent.orchestrator.permission.edit).toBe('deny');
-    expect(agent.orchestrator.permission.bash['*']).toBe('deny');
-    expect(agent.builder.permission.read).toBe('allow');
-    expect(agent.builder.permission.edit).toBe('allow');
-    for (const command of ['pnpm*', 'npm*', 'tsc*', 'vitest*', 'vp*']) {
-      expect(agent.builder.permission.bash[command]).toBe('allow');
+    const orchestrator = getAgentConfig(config, 'orchestrator');
+    const builder = getAgentConfig(config, 'builder');
+    const orchestratorBash = orchestrator.permission?.bash;
+    const builderBash = builder.permission?.bash;
+    if (typeof orchestratorBash !== 'object' || orchestratorBash === null) {
+      throw new Error('Expected orchestrator bash permissions');
     }
-    expect(agent.orchestrator.prompt).toContain('Runtime Authority');
-    expect(agent.orchestrator.prompt).toContain('direct work is unavailable or disallowed');
-    expect(agent.orchestrator.prompt).toMatch(/permitted specialist|permitted `@builder`/u);
-    expect(agent.orchestrator.prompt).not.toMatch(/child-dispatch budget|circuit breaker/iu);
+    if (typeof builderBash !== 'object' || builderBash === null) {
+      throw new Error('Expected builder bash permissions');
+    }
+
+    expect(Object.entries(orchestrator.permission ?? {})).toContainEqual(['read', 'deny']);
+    expect(orchestrator.permission?.edit).toBe('deny');
+    expect(orchestratorBash['*']).toBe('deny');
+    expect(Object.entries(builder.permission ?? {})).toContainEqual(['read', 'allow']);
+    expect(builder.permission?.edit).toBe('allow');
+    for (const command of ['pnpm*', 'npm*', 'tsc*', 'vitest*', 'vp*']) {
+      expect(builderBash[command]).toBe('allow');
+    }
+    expect(orchestrator.prompt).toContain('Runtime Authority');
+    expect(orchestrator.prompt).toContain('direct work is unavailable or disallowed');
+    expect(orchestrator.prompt).toMatch(/permitted specialist|permitted `@builder`/u);
+    expect(orchestrator.prompt).not.toMatch(/child-dispatch budget|circuit breaker/iu);
   });
 });

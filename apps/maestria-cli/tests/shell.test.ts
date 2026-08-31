@@ -1,8 +1,10 @@
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import * as shell from '@/lib/shell.js';
+
+const { join } = path;
 
 describe('shell execution', () => {
   it('exports CommandError class', () => {

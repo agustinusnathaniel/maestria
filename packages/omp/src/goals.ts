@@ -1,7 +1,12 @@
-import type { ExtensionAPI, ExtensionContext } from '@oh-my-pi/pi-coding-agent';
+import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 
 import type { MaestriaState } from '@/state.js';
 import { createInitialState, persistState } from '@/state.js';
+
+export interface GoalApi {
+  appendEntry: (type: string, data: unknown) => void;
+  on: (event: string, handler: (event: unknown, ctx: unknown) => Promise<void> | void) => void;
+}
 
 interface PersistedStateEntry {
   type: string;
@@ -12,11 +17,41 @@ interface PersistedStateEntry {
 
 type NativeGoalStatus = 'active' | 'paused' | 'budget-limited';
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+interface NativeGoalEvent {
+  goal: { objective: string; status: string } | null;
 }
 
-function currentSessionEntries(ctx: ExtensionContext): PersistedStateEntry[] | null {
+interface SessionContext {
+  sessionManager: {
+    getBranch: () => unknown;
+  };
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const isNativeGoalEvent = (value: unknown): value is NativeGoalEvent => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  if (value.goal === null) {
+    return true;
+  }
+  return (
+    isRecord(value.goal) &&
+    typeof value.goal.objective === 'string' &&
+    typeof value.goal.status === 'string'
+  );
+};
+
+const isSessionContext = (value: unknown): value is SessionContext => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return isRecord(value.sessionManager) && typeof value.sessionManager.getBranch === 'function';
+};
+
+const currentSessionEntries = (ctx: SessionContext): PersistedStateEntry[] | null => {
   // getBranch() is the public current-session view and avoids restoring state
   // from a sibling branch in the same session tree. Never fall back to
   // getEntries(), which spans the entire session tree.
@@ -27,13 +62,14 @@ function currentSessionEntries(ctx: ExtensionContext): PersistedStateEntry[] | n
 
   const branch = sessionManager.getBranch();
   return Array.isArray(branch) ? branch : null;
-}
+};
 
-function isNativeGoalStatus(value: unknown): value is NativeGoalStatus {
-  return value === 'active' || value === 'paused' || value === 'budget-limited';
-}
+const isNativeGoalStatus = (value: unknown): value is NativeGoalStatus =>
+  value === 'active' || value === 'paused' || value === 'budget-limited';
 
-function nativeGoalFromSessionEntries(entries: PersistedStateEntry[]): MaestriaState['nativeGoal'] {
+const nativeGoalFromSessionEntries = (
+  entries: PersistedStateEntry[],
+): MaestriaState['nativeGoal'] => {
   for (let i = entries.length - 1; i >= 0; i -= 1) {
     const entry = entries[i];
     if (entry.type !== 'mode_change') {
@@ -55,7 +91,7 @@ function nativeGoalFromSessionEntries(entries: PersistedStateEntry[]): MaestriaS
   }
 
   return null;
-}
+};
 
 /**
  * Replace the mutable extension state with the target session's state.
@@ -66,16 +102,11 @@ function nativeGoalFromSessionEntries(entries: PersistedStateEntry[]): MaestriaS
  * remains so until the target session publishes a public `goal_updated` event.
  * All other persisted Maestria fields are restored from the current branch.
  */
-export function restoreMaestriaStateForSession(state: MaestriaState, ctx: ExtensionContext): void {
+export const restoreMaestriaStateForSession = (state: MaestriaState, ctx: SessionContext): void => {
   const next = createInitialState();
   const entries = currentSessionEntries(ctx);
 
   if (!entries) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: double assertion via unknown, safe narrow from unknown
-    const mutableState = state as unknown as Record<string, unknown>;
-    for (const key of Object.keys(mutableState)) {
-      delete mutableState[key];
-    }
     Object.assign(state, next);
     return;
   }
@@ -96,13 +127,8 @@ export function restoreMaestriaStateForSession(state: MaestriaState, ctx: Extens
   // mode entry or a later goal_updated event may establish this mirror.
   next.nativeGoal = nativeGoalFromSessionEntries(entries);
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: double assertion via unknown, safe narrow from unknown
-  const mutableState = state as unknown as Record<string, unknown>;
-  for (const key of Object.keys(mutableState)) {
-    delete mutableState[key];
-  }
   Object.assign(state, next);
-}
+};
 
 /**
  * Mirror OMP's native goal state into Maestria state.
@@ -119,8 +145,11 @@ export function restoreMaestriaStateForSession(state: MaestriaState, ctx: Extens
  * mode, review state, etc.). It is persisted through the existing
  * `maestria_state` mechanism so session restoration keeps working.
  */
-export function installGoalEventHandlers(pi: ExtensionAPI, state: MaestriaState): void {
+export const installGoalEventHandlers = (pi: GoalApi, state: MaestriaState): void => {
   pi.on('goal_updated', (event) => {
+    if (!isNativeGoalEvent(event)) {
+      return;
+    }
     // OMP emits complete/dropped goals as non-null terminal objects. They are
     // meaningful lifecycle transitions, but are no longer current goals, so
     // clear the mirror rather than presenting a terminal goal as active.
@@ -149,12 +178,46 @@ export function installGoalEventHandlers(pi: ExtensionAPI, state: MaestriaState)
   // Every transition is a new target-session boundary. Rehydrate all
   // Maestria fields from that target, including only public native goal state.
   pi.on('session_switch', (_event, ctx) => {
-    restoreMaestriaStateForSession(state, ctx);
+    if (isSessionContext(ctx)) {
+      restoreMaestriaStateForSession(state, ctx);
+    }
   });
   pi.on('session_branch', (_event, ctx) => {
-    restoreMaestriaStateForSession(state, ctx);
+    if (isSessionContext(ctx)) {
+      restoreMaestriaStateForSession(state, ctx);
+    }
   });
   pi.on('session_tree', (_event, ctx) => {
-    restoreMaestriaStateForSession(state, ctx);
+    if (isSessionContext(ctx)) {
+      restoreMaestriaStateForSession(state, ctx);
+    }
   });
-}
+};
+
+export const createGoalApi = (pi: ExtensionAPI): GoalApi => ({
+  appendEntry: (type, data) => {
+    pi.appendEntry(type, data);
+  },
+  on: (event, handler) => {
+    if (event === 'goal_updated') {
+      pi.on('goal_updated', async (eventData, ctx) => {
+        await handler(eventData, ctx);
+      });
+    }
+    if (event === 'session_switch') {
+      pi.on('session_switch', async (eventData, ctx) => {
+        await handler(eventData, ctx);
+      });
+    }
+    if (event === 'session_branch') {
+      pi.on('session_branch', async (eventData, ctx) => {
+        await handler(eventData, ctx);
+      });
+    }
+    if (event === 'session_tree') {
+      pi.on('session_tree', async (eventData, ctx) => {
+        await handler(eventData, ctx);
+      });
+    }
+  },
+});

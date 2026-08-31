@@ -32,7 +32,7 @@ export const RECOVERY_LINKS = [
  * Markdown for Agents feature. The protocol parsing is delegated to the
  * mature `negotiator` package rather than maintained locally.
  */
-export function wantsMarkdown(accept: string | null | undefined): boolean {
+export const wantsMarkdown = (accept: string | null | undefined): boolean => {
   if (typeof accept !== 'string') {
     return false;
   }
@@ -59,7 +59,7 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
   );
 
   return acceptsText && negotiator.mediaType(SUPPORTED_MEDIA_TYPES) === 'text/markdown';
-}
+};
 
 /**
  * Map a site path to its markdown twin.
@@ -74,7 +74,7 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
  * - Query and hash are stripped defensively, and a trailing `.html` is
  *   dropped before appending `.md`.
  */
-export function markdownTwinPath(pathname: string): string {
+export const markdownTwinPath = (pathname: string): string => {
   // Callers pass url.pathname; strip query/hash defensively anyway.
   let path = pathname.split('?')[0] ?? '';
   path = path.split('#')[0] ?? '';
@@ -91,4 +91,4 @@ export function markdownTwinPath(pathname: string): string {
     return '/llms.txt';
   }
   return `${path}.md`;
-}
+};

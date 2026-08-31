@@ -20,33 +20,26 @@ export interface MaestriaModeState {
   mode: 'fein' | 'sonar' | 'blitz' | null;
 }
 
-export function createInitialState(): MaestriaModeState {
-  return { mode: null };
-}
+export const createInitialState = (): MaestriaModeState => ({ mode: null });
 
-function isCustomEntry(entry: SessionEntry): entry is CustomEntry & { data?: MaestriaModeState } {
-  // SessionEntryBase.type is a plain string, so a discriminated-union narrowing
-  // on `type` does not apply; cast to read the optional customType.
-  const maybe = entry as SessionEntry & { customType?: string };
-  return maybe.type === 'custom' && maybe.customType === MODE_STATE_CUSTOM_TYPE;
-}
+const isCustomEntry = (entry: SessionEntry): entry is CustomEntry =>
+  entry.type === 'custom' && 'customType' in entry && entry.customType === MODE_STATE_CUSTOM_TYPE;
 
-function isModeState(value: unknown): value is MaestriaModeState {
-  if (typeof value !== 'object' || value === null) {
+const isModeState = (value: unknown): value is MaestriaModeState => {
+  if (typeof value !== 'object' || value === null || !('mode' in value)) {
     return false;
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
-  const { mode } = value as Record<string, unknown>;
+  const { mode } = value;
   return mode === null || mode === 'fein' || mode === 'sonar' || mode === 'blitz';
-}
+};
 
 /**
  * Read the mode state from the current session branch: the most recent
  * `maestria_mode` custom entry wins. Returns null when no entry exists.
  */
-export function readModeStateFromEntries(
+export const readModeStateFromEntries = (
   entries: SessionEntry[] | null | undefined,
-): MaestriaModeState | null {
+): MaestriaModeState | null => {
   if (!Array.isArray(entries)) {
     return null;
   }
@@ -59,22 +52,22 @@ export function readModeStateFromEntries(
     }
   }
   return null;
-}
+};
 
 /** Persist the current mode as a session custom entry (no LLM context). */
-export function persistModeState(pi: ExtensionAPI, state: MaestriaModeState): void {
+export const persistModeState = (pi: ExtensionAPI, state: MaestriaModeState): void => {
   pi.appendEntry(MODE_STATE_CUSTOM_TYPE, { mode: state.mode });
-}
+};
 
 /**
  * Restore the mode state from the current session branch into `state`.
  * When the branch has no `maestria_mode` entry, mode resets to null
  * (fail-closed: never inherit a sibling branch's mode).
  */
-export function restoreModeState(
+export const restoreModeState = (
   state: MaestriaModeState,
   entries: SessionEntry[] | null | undefined,
-): void {
+): void => {
   const persisted = readModeStateFromEntries(entries);
   state.mode = persisted?.mode ?? null;
-}
+};

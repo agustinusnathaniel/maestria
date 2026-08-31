@@ -9,7 +9,7 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import path from 'node:path';
 
 import { ALLOWED_AGENTS } from './subagent-utils.js';
 
@@ -23,7 +23,7 @@ import { ALLOWED_AGENTS } from './subagent-utils.js';
  *                     (e.g. `join(homedir(), '.omp', 'agent', 'agents')`)
  * @returns The number of agents newly deployed
  */
-export function deploySpecialistAgents(agentsSrc: string, agentsDest: string): number {
+export const deploySpecialistAgents = (agentsSrc: string, agentsDest: string): number => {
   if (!existsSync(agentsSrc)) {
     console.warn('[maestria] Agents source directory not found:', agentsSrc);
     return 0;
@@ -38,8 +38,8 @@ export function deploySpecialistAgents(agentsSrc: string, agentsDest: string): n
 
   let deployed = 0;
   for (const name of ALLOWED_AGENTS) {
-    const srcFile = join(agentsSrc, `${name}.md`);
-    const destFile = join(agentsDest, `${name}.md`);
+    const srcFile = path.join(agentsSrc, `${name}.md`);
+    const destFile = path.join(agentsDest, `${name}.md`);
 
     if (!existsSync(srcFile)) {
       console.warn(`[maestria] Agent source not found: ${name}.md`);
@@ -64,4 +64,4 @@ export function deploySpecialistAgents(agentsSrc: string, agentsDest: string): n
   }
 
   return deployed;
-}
+};

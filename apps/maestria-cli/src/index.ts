@@ -123,10 +123,10 @@ EXIT CODES
   130 User cancelled (interactive mode)
 `;
 
-async function showEnhancedUsage<T extends ArgsDef = ArgsDef>(
+const showEnhancedUsage = async <T extends ArgsDef = ArgsDef>(
   cmd: CommandDef<T>,
   parent?: CommandDef<T>,
-): Promise<void> {
+): Promise<void> => {
   const help = await renderUsage(cmd, parent);
   const rawMeta = cmd.meta;
   const cmdMeta = rawMeta ? await (typeof rawMeta === 'function' ? rawMeta() : rawMeta) : undefined;
@@ -152,7 +152,7 @@ async function showEnhancedUsage<T extends ArgsDef = ArgsDef>(
   }
 
   console.log(parts.join('\n'));
-}
+};
 
 // ── Main command ─────────────────────────────────────
 
@@ -223,7 +223,13 @@ const main = defineCommand({
   },
 });
 
-runMain(main, { showUsage: showEnhancedUsage }).catch((error: unknown) => {
-  console.error(error);
-  process.exit(1);
-});
+const runCli = async (): Promise<void> => {
+  try {
+    await runMain(main, { showUsage: showEnhancedUsage });
+  } catch (error: unknown) {
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+await runCli();

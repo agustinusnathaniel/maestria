@@ -51,42 +51,41 @@ export interface HandoffValidation {
  * Asserts that `agent` is a known maestria specialist.
  * @throws {Error} if the agent name is not in ALLOWED_AGENTS.
  */
-export function assertValidAgent(agent: string): asserts agent is AllowedAgent {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-  if (!ALLOWED_AGENTS.includes(agent as AllowedAgent)) {
+export const assertValidAgent = (agent: string): asserts agent is AllowedAgent => {
+  if (!ALLOWED_AGENTS.some((allowedAgent) => allowedAgent === agent)) {
     throw new Error(`Unknown agent: "${agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
   }
-}
+};
 
 /**
  * Asserts that `task` is a non-empty, non-whitespace string.
  * @throws {Error} with the given label if task is falsy or all-whitespace.
  */
-export function assertNonEmptyTask(
+export const assertNonEmptyTask = (
   task: string | undefined,
   label: string,
-): asserts task is string {
+): asserts task is string => {
   if (task === undefined || task === null || task === '' || !task.trim()) {
     throw new Error(label);
   }
-}
+};
 
 /**
  * Validates that a handoff document contains all required fields
  * with non-empty content. Each field is expected in markdown bold format:
  * `**Field:** content`.
  */
-export function validateHandoff(handoff: string): HandoffValidation {
+export const validateHandoff = (handoff: string): HandoffValidation => {
   const errors: string[] = [];
   for (const field of HANDOFF_FIELDS) {
     // Match field header and capture content up to the next field or end of string.
     // This avoids false positives when an empty field is followed by another field's `**` header.
-    const pattern = `\\*\\*${field}:\\*\\*([\\s\\S]*?)(?=\
-\\*\\*|$)`;
+    const pattern = `\\*\\*${field}:\\*\\*(?<content>[\\s\\S]*?)(?=\\n\\*\\*|$)`;
     const match = new RegExp(pattern, 'iu').exec(handoff);
-    if (!match || !match[1] || !match[1].trim()) {
+    const content = match?.groups?.content?.trim();
+    if (content === undefined || content === '') {
       errors.push(`Missing or empty field: "${field}"`);
     }
   }
   return { errors, valid: errors.length === 0 };
-}
+};

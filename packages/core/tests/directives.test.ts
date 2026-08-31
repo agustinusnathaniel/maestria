@@ -1,14 +1,13 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-const DIRECTIVES_DIR = join(import.meta.dirname, '..', 'agent-directives');
+const DIRECTIVES_DIR = path.join(import.meta.dirname, '..', 'agent-directives');
 
-function readDirective(...segments: string[]): string {
-  return readFileSync(join(DIRECTIVES_DIR, ...segments), 'utf-8');
-}
+const readDirective = (...segments: string[]): string =>
+  readFileSync(path.join(DIRECTIVES_DIR, ...segments), 'utf-8');
 
-function assertOrdered(document: string, headings: string[]): void {
+const assertOrdered = (document: string, headings: string[]): void => {
   let previous = -1;
   for (const heading of headings) {
     const current = document.indexOf(heading);
@@ -16,7 +15,7 @@ function assertOrdered(document: string, headings: string[]): void {
     expect(current, `${heading} is out of order`).toBeGreaterThan(previous);
     previous = current;
   }
-}
+};
 
 describe('canonical directive behavioral contracts', () => {
   it('preserves safety, authorization, acceptance, branch, and sync floors', () => {
@@ -255,7 +254,9 @@ describe('canonical directive behavioral contracts', () => {
     }
 
     // Runtime-specific enforcement belongs in adapters, not the portable core.
-    expect(orchestrator).not.toMatch(/\b(OpenCode|OMP|Kimi Code|Hermes|Cursor|Claude Code|Pi)\b/u);
+    expect(orchestrator).not.toMatch(
+      /\b(?<platform>OpenCode|OMP|Kimi Code|Hermes|Cursor|Claude Code|Pi)\b/u,
+    );
   });
 
   it('does not reintroduce the removed runtime ledger or checkpoint protocol', () => {

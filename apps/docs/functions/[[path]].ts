@@ -24,7 +24,7 @@ import {
 
 /** Minimal structural shape of the ASSETS binding. */
 export interface AssetsBindingLike {
-  fetch(input: Request | string | URL, init?: RequestInit): Promise<Response>;
+  fetch: (input: Request | string | URL, init?: RequestInit) => Promise<Response>;
 }
 
 /** Minimal structural shape of a Pages Function event context. */
@@ -34,31 +34,8 @@ export interface EventContextLike {
   next: (input?: Request | string) => Promise<Response>;
 }
 
-/** Preserve the asset response while making the negotiated cache key explicit. */
-function withMarkdownVary(response: Response, isHead: boolean): Response {
-  const headers = new Headers(response.headers);
-  addNegotiatedVary(headers);
-  return new Response(isHead ? null : response.body, {
-    headers,
-    status: response.status,
-    statusText: response.statusText,
-  });
-}
-
-/** Serve a verified twin with its original cache and validator headers intact. */
-function markdownResponse(response: Response, isHead: boolean): Response {
-  const headers = new Headers(response.headers);
-  headers.set('Content-Type', MARKDOWN_MIME);
-  addNegotiatedVary(headers);
-  return new Response(isHead ? null : response.body, {
-    headers,
-    status: response.status,
-    statusText: response.statusText,
-  });
-}
-
 /** Preserve existing cache dimensions while adding the dimensions we vary on. */
-function addNegotiatedVary(headers: Headers): void {
+const addNegotiatedVary = (headers: Headers): void => {
   const existing =
     headers
       .get('Vary')
@@ -75,13 +52,36 @@ function addNegotiatedVary(headers: Headers): void {
   }
 
   headers.set('Vary', existing.join(', '));
-}
+};
+
+/** Preserve the asset response while making the negotiated cache key explicit. */
+const withMarkdownVary = (response: Response, isHead: boolean): Response => {
+  const headers = new Headers(response.headers);
+  addNegotiatedVary(headers);
+  return new Response(isHead ? null : response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
+};
+
+/** Serve a verified twin with its original cache and validator headers intact. */
+const markdownResponse = (response: Response, isHead: boolean): Response => {
+  const headers = new Headers(response.headers);
+  headers.set('Content-Type', MARKDOWN_MIME);
+  addNegotiatedVary(headers);
+  return new Response(isHead ? null : response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
+};
 
 /**
  * Markdown-formatted HTTP 404 for agents: short, parseable, with absolute
  * recovery links only (no relative URLs to resolve against a dead path).
  */
-function markdownNotFoundResponse(isHead: boolean): Response {
+const markdownNotFoundResponse = (isHead: boolean): Response => {
   const lines = [
     '# 404 - Not found',
     '',
@@ -98,13 +98,13 @@ function markdownNotFoundResponse(isHead: boolean): Response {
     Vary: VARY_VALUE,
   });
   return new Response(isHead ? null : lines.join('\n'), { headers, status: 404 });
-}
+};
 
 /**
  * Negotiated delivery handler. Exported separately from `onRequest` so tests
  * can drive it with a fake context.
  */
-export async function handleAgentDelivery(context: EventContextLike): Promise<Response> {
+export const handleAgentDelivery = async (context: EventContextLike): Promise<Response> => {
   const { request } = context;
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return await context.next();
@@ -138,6 +138,6 @@ export async function handleAgentDelivery(context: EventContextLike): Promise<Re
   }
 
   return markdownNotFoundResponse(isHead);
-}
+};
 
 export const onRequest = handleAgentDelivery;

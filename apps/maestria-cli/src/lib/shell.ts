@@ -1,24 +1,20 @@
 import { Data, Effect } from 'effect';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import path from 'node:path';
 
 /** Resolve the OS cache directory, respecting XDG_CACHE_HOME on Linux/macOS. */
-export function getCacheDir(): string {
+export const getCacheDir = (): string => {
   const xdg = process.env.XDG_CACHE_HOME?.trim();
   if (xdg !== undefined && xdg !== null && xdg !== '') {
     return xdg;
   }
-  return join(homedir(), '.cache');
-}
+  return path.join(homedir(), '.cache');
+};
 
 /** Maestria's own cache directory (e.g. ~/.cache/maestria or $XDG_CACHE_HOME/maestria). */
-export function getMaestriaCacheDir(): string {
-  return join(getCacheDir(), 'maestria');
-}
+export const getMaestriaCacheDir = (): string => path.join(getCacheDir(), 'maestria');
 
-export function getVersionCacheFile(): string {
-  return join(getMaestriaCacheDir(), 'versions.json');
-}
+export const getVersionCacheFile = (): string => path.join(getMaestriaCacheDir(), 'versions.json');
 
 // ── Errors ───────────────────────────────────────────
 export class CommandError extends Data.TaggedError('CommandError')<{
@@ -35,18 +31,22 @@ export class CommandError extends Data.TaggedError('CommandError')<{
  * temporary directory. Existing callers that pass no `cwd` keep spawning in the
  * invoking process's directory.
  */
-export function run(
+export const run = (
   cmd: string,
   args: string[],
   timeoutMs = 30_000,
   cwd?: string,
-): Effect.Effect<string, CommandError> {
-  return Effect.tryPromise({
+): Effect.Effect<string, CommandError> =>
+  Effect.tryPromise({
     catch: (error) => {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-      const err = error as Error & { stderr?: string; code?: number; signal?: string };
-      const stderr = err.stderr?.trim() ?? '';
-      const message = stderr || err.message;
+      const stderr =
+        typeof error === 'object' &&
+        error !== null &&
+        'stderr' in error &&
+        typeof error.stderr === 'string'
+          ? error.stderr.trim()
+          : '';
+      const message = stderr || (error instanceof Error ? error.message : String(error));
       return new CommandError({
         command: `${cmd} ${args.join(' ')}`,
         message,
@@ -54,16 +54,23 @@ export function run(
     },
     try: async () => {
       const { execFile } = await import('node:child_process');
-      const { promisify } = await import('node:util');
-      const execFileAsync = promisify(execFile);
-      const { stdout } = await execFileAsync(cmd, args, { cwd, timeout: timeoutMs });
+      const stdout = await Effect.runPromise(
+        Effect.callback<string, Error>((resume) => {
+          execFile(cmd, args, { cwd, encoding: 'utf-8', timeout: timeoutMs }, (error, output) => {
+            if (error) {
+              resume(Effect.fail(error));
+              return;
+            }
+            resume(Effect.succeed(output));
+          });
+        }),
+      );
       return stdout.trim();
     },
   });
-}
 
-export function readTextFile(filePath: string): Effect.Effect<string, CommandError> {
-  return Effect.tryPromise({
+export const readTextFile = (filePath: string): Effect.Effect<string, CommandError> =>
+  Effect.tryPromise({
     catch: (error) =>
       new CommandError({
         command: `read ${filePath}`,
@@ -74,10 +81,9 @@ export function readTextFile(filePath: string): Effect.Effect<string, CommandErr
       return await readFile(filePath, 'utf-8');
     },
   });
-}
 
-export function fileExists(filePath: string): Effect.Effect<boolean> {
-  return Effect.tryPromise({
+export const fileExists = (filePath: string): Effect.Effect<boolean> =>
+  Effect.tryPromise({
     catch: () => false,
     try: async () => {
       const { access } = await import('node:fs/promises');
@@ -85,21 +91,43 @@ export function fileExists(filePath: string): Effect.Effect<boolean> {
       return true;
     },
   }).pipe(Effect.catchCause(() => Effect.succeed(false)));
-}
 
-export function commandExists(cmd: string): Effect.Effect<boolean> {
-  return run('which', [cmd]).pipe(
+export const commandExists = (cmd: string): Effect.Effect<boolean> =>
+  run('which', [cmd]).pipe(
     Effect.map((out: string) => out.length > 0),
     Effect.catchCause(() => Effect.succeed(false)),
   );
-}
 
-export function npmViewVersion(pkg: string): Effect.Effect<string> {
+type VersionCache = Record<string, { version: string }>;
+type JsonRecord = Record<string, unknown>;
+
+const isJsonRecord = (value: unknown): value is JsonRecord =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const parseVersionCache = (text: string): VersionCache => {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (!isJsonRecord(parsed)) {
+      return {};
+    }
+    const cache: VersionCache = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (isJsonRecord(value) && typeof value.version === 'string') {
+        cache[key] = { version: value.version };
+      }
+    }
+    return cache;
+  } catch {
+    return {};
+  }
+};
+
+export const npmViewVersion = (pkg: string): Effect.Effect<string> => {
   const readCache = (): Effect.Effect<string> =>
     readTextFile(getVersionCacheFile()).pipe(
       Effect.map((out) => {
         try {
-          const cache: Record<string, { version: string }> = JSON.parse(out);
+          const cache = parseVersionCache(out);
           return cache[pkg]?.version ?? '';
         } catch {
           return '';
@@ -119,7 +147,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string> {
         let cache: Record<string, { version: string }> = {};
         try {
           const existing = await readFile(getVersionCacheFile(), 'utf-8');
-          cache = JSON.parse(existing);
+          cache = parseVersionCache(existing);
         } catch {
           /* file doesn't exist or is invalid */
         }
@@ -128,7 +156,7 @@ export function npmViewVersion(pkg: string): Effect.Effect<string> {
       },
     }).pipe(Effect.catchCause(() => Effect.void));
 
-  return Effect.gen(function* () {
+  return Effect.gen(function* npmViewVersionEffect() {
     const version = yield* run('npm', ['view', pkg, 'version'], 5000).pipe(
       Effect.catchCause(() => Effect.succeed('')),
     );
@@ -141,16 +169,19 @@ export function npmViewVersion(pkg: string): Effect.Effect<string> {
     // Network failed - fall back to cached version (any age)
     return yield* readCache().pipe(Effect.catchCause(() => Effect.succeed('')));
   });
-}
+};
 
 /** Invalidate the version cache for a package (called after successful update) */
-export function invalidateVersionCache(pkg: string): Effect.Effect<void> {
-  return Effect.gen(function* () {
+export const invalidateVersionCache = (pkg: string): Effect.Effect<void> =>
+  Effect.gen(function* invalidateVersionCacheEffect() {
     yield* readTextFile(getVersionCacheFile()).pipe(
       Effect.flatMap((out) => {
         try {
-          const cache = JSON.parse(out);
-          delete cache[pkg];
+          const parsed: unknown = JSON.parse(out);
+          if (!isJsonRecord(parsed)) {
+            return Effect.void;
+          }
+          const cache = Object.fromEntries(Object.entries(parsed).filter(([key]) => key !== pkg));
           return Effect.tryPromise({
             catch: () => {
               /* empty */
@@ -167,4 +198,3 @@ export function invalidateVersionCache(pkg: string): Effect.Effect<void> {
       Effect.catchCause(() => Effect.void),
     );
   });
-}

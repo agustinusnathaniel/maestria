@@ -6,7 +6,6 @@
  * orchestration lives in ./state/review.js since it depends on platform-specific
  * ExtensionAPI types.
  */
-/* eslint-disable @typescript-eslint/no-unused-vars -- barrel re-exports are intentionally unused */
 export type {
   MaestriaState,
   HandoffEntry,

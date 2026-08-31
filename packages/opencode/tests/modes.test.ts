@@ -1,13 +1,65 @@
+import type { Hooks } from '@opencode-ai/plugin';
 import crypto from 'node:crypto';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { MaestriaPlugin } from '@/index.js';
 import { detectMode, getModeMarker, getModePrompt, stripKeyword } from '@/modes/index.js';
-import type { ModeResult } from '@/modes/types.js';
+import type { ModeKeyword, ModeResult } from '@/modes/types.js';
+import { pluginInput } from './helpers.js';
 
-function expectNotNull<T>(value: T | null): asserts value is T {
+type ChatMessageHook = NonNullable<Hooks['chat.message']>;
+type ChatMessageInput = Parameters<ChatMessageHook>[0];
+type ChatMessageOutput = Parameters<ChatMessageHook>[1];
+type TextPart = Extract<ChatMessageOutput['parts'][number], { type: 'text' }>;
+
+const expectNotNull: <T>(value: T | null) => asserts value is T = (value) => {
   expect(value).not.toBeNull();
-}
+};
+
+const getChatMessageHook = (plugin: Hooks): ChatMessageHook => {
+  const hook = plugin['chat.message'];
+  if (hook === undefined) {
+    throw new Error('Expected chat.message hook');
+  }
+  return hook;
+};
+
+const getTextPart = (output: ChatMessageOutput): TextPart => {
+  const textPart = output.parts.find((part): part is TextPart => part.type === 'text');
+  if (textPart === undefined) {
+    throw new Error('Expected text part');
+  }
+  return textPart;
+};
+
+const makeResult = (mode: ModeKeyword, keyword: string, index: number): ModeResult => ({
+  index,
+  keyword,
+  marker: getModeMarker(mode),
+  mode,
+  prompt: getModePrompt(mode),
+});
+
+const createMockMessage = (
+  text: string,
+  agent = 'orchestrator',
+): { input: ChatMessageInput; output: ChatMessageOutput } => {
+  const id = crypto.randomUUID();
+  return {
+    input: { agent, messageID: id, sessionID: 'test-session' },
+    output: {
+      message: {
+        agent,
+        id,
+        model: { modelID: 'test-model', providerID: 'test-provider' },
+        role: 'user',
+        sessionID: 'test-session',
+        time: { created: Date.now() },
+      },
+      parts: [{ id, messageID: id, sessionID: 'test-session', text, type: 'text' }],
+    },
+  };
+};
 
 // ---------------------------------------------------------------------------
 // detectMode
@@ -152,20 +204,6 @@ describe('detectMode', () => {
 // stripKeyword
 // ---------------------------------------------------------------------------
 describe('stripKeyword', () => {
-  function makeResult(
-    mode: 'fein' | 'sonar' | 'blitz',
-    keyword: string,
-    index: number,
-  ): ModeResult {
-    return {
-      index,
-      keyword,
-      marker: getModeMarker(mode),
-      mode,
-      prompt: getModePrompt(mode),
-    };
-  }
-
   it('removes keyword from start', () => {
     const text = 'fein build the feature';
     const result = makeResult('fein', 'fein', 0);
@@ -240,14 +278,14 @@ describe('stripKeyword', () => {
 describe('MaestriaPlugin config validation', () => {
   it('throws on unknown keyword', async () => {
     await expect(
-      MaestriaPlugin({} as never, {
-        modes: { disabledKeywords: ['invalid'] as any },
+      MaestriaPlugin(pluginInput, {
+        modes: { disabledKeywords: ['invalid'] },
       }),
     ).rejects.toThrow(/Invalid option: expected one of \\"fein\\"\|\\"sonar\\"\|\\"blitz\\"/u);
   });
 
   it('accepts valid config with disabled keywords', async () => {
-    const plugin = await MaestriaPlugin({} as never, {
+    const plugin = await MaestriaPlugin(pluginInput, {
       modes: { disabledKeywords: ['blitz'] },
     });
     expect(plugin).toBeDefined();
@@ -255,13 +293,13 @@ describe('MaestriaPlugin config validation', () => {
   });
 
   it('accepts no options (all modes active)', async () => {
-    const plugin = await MaestriaPlugin({} as never);
+    const plugin = await MaestriaPlugin(pluginInput);
     expect(plugin).toBeDefined();
     expect(typeof plugin.config).toBe('function');
   });
 
   it('accepts empty disabledKeywords array', async () => {
-    const plugin = await MaestriaPlugin({} as never, {
+    const plugin = await MaestriaPlugin(pluginInput, {
       modes: { disabledKeywords: [] },
     });
     expect(plugin).toBeDefined();
@@ -270,8 +308,8 @@ describe('MaestriaPlugin config validation', () => {
 
   it('throws if disabledKeywords is not an array', async () => {
     await expect(
-      MaestriaPlugin({} as never, {
-        modes: { disabledKeywords: 'fein' as any },
+      MaestriaPlugin(pluginInput, {
+        modes: { disabledKeywords: 'fein' },
       }),
     ).rejects.toThrow('Invalid input: expected array, received string');
   });
@@ -282,72 +320,36 @@ describe('MaestriaPlugin config validation', () => {
 // ---------------------------------------------------------------------------
 describe('MaestriaPlugin chat.message hook', () => {
   it('includes chat.message hook when options are provided', async () => {
-    const plugin = await MaestriaPlugin({} as never, {
+    const plugin = await MaestriaPlugin(pluginInput, {
       modes: { disabledKeywords: [] },
     });
-    expect(typeof (plugin as any)['chat.message']).toBe('function');
+    expect(typeof getChatMessageHook(plugin)).toBe('function');
   });
 
   it('includes chat.message hook when no options', async () => {
-    const plugin = await MaestriaPlugin({} as never);
-    expect(typeof (plugin as any)['chat.message']).toBe('function');
+    const plugin = await MaestriaPlugin(pluginInput);
+    expect(typeof getChatMessageHook(plugin)).toBe('function');
   });
 
   it('passes through normal message without modification', async () => {
-    const plugin = await MaestriaPlugin({} as never, {
+    const plugin = await MaestriaPlugin(pluginInput, {
       modes: { disabledKeywords: [] },
     });
-    const hook = (plugin as any)['chat.message'];
-
-    const input = { agent: 'orchestrator', sessionID: 's1' };
-    const textPart = {
-      id: 'p1',
-      messageID: 'm1',
-      sessionID: 's1',
-      text: 'build this feature',
-      type: 'text',
-    };
-    const output = {
-      message: {
-        agent: 'orchestrator',
-        id: 'm1',
-        role: 'user',
-        sessionID: 's1',
-        time: { created: 1 },
-      },
-      parts: [textPart],
-    };
+    const hook = getChatMessageHook(plugin);
+    const { input, output } = createMockMessage('build this feature');
 
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toBe('build this feature');
+    expect(getTextPart(output).text).toBe('build this feature');
   });
 
   it('injects mode inline without adding new parts for keyword message', async () => {
-    const plugin = await MaestriaPlugin({} as never, {
+    const plugin = await MaestriaPlugin(pluginInput, {
       modes: { disabledKeywords: [] },
     });
-    const hook = (plugin as any)['chat.message'];
-
-    const input = { agent: 'orchestrator', sessionID: 's1' };
-    const textPart = {
-      id: 'p1',
-      messageID: 'm1',
-      sessionID: 's1',
-      text: 'fein build this',
-      type: 'text',
-    };
-    const output = {
-      message: {
-        agent: 'orchestrator',
-        id: 'm1',
-        role: 'user',
-        sessionID: 's1',
-        time: { created: 1 },
-      },
-      parts: [textPart],
-    };
+    const hook = getChatMessageHook(plugin);
+    const { input, output } = createMockMessage('fein build this');
 
     await hook(input, output);
 
@@ -355,122 +357,64 @@ describe('MaestriaPlugin chat.message hook', () => {
     expect(output.parts).toHaveLength(1);
 
     // Keyword stripped, mode marker + prompt prepended inline
-    expect(output.parts[0].text).toContain('[MODE: fein]');
-    expect(output.parts[0].text).toContain('Full Pipeline');
-    expect(output.parts[0].text).toContain('build this');
+    const { text } = getTextPart(output);
+    expect(text).toContain('[MODE: fein]');
+    expect(text).toContain('Full Pipeline');
+    expect(text).toContain('build this');
 
     // Marker appears before the user message
-    const markerIndex = output.parts[0].text.indexOf('[MODE: fein]');
-    const messageIndex = output.parts[0].text.indexOf('build this');
+    const markerIndex = text.indexOf('[MODE: fein]');
+    const messageIndex = text.indexOf('build this');
     expect(markerIndex).toBeLessThan(messageIndex);
   });
 
   it('injects sonar mode inline without adding new parts', async () => {
-    const plugin = await MaestriaPlugin({} as never);
-    const hook = (plugin as any)['chat.message'];
-
-    const input = { agent: 'orchestrator', sessionID: 's1' };
-    const textPart = {
-      id: 'p1',
-      messageID: 'm1',
-      sessionID: 's1',
-      text: 'sonar research only',
-      type: 'text',
-    };
-    const output = {
-      message: {
-        agent: 'orchestrator',
-        id: 'm1',
-        role: 'user',
-        sessionID: 's1',
-        time: { created: 1 },
-      },
-      parts: [textPart],
-    };
+    const plugin = await MaestriaPlugin(pluginInput);
+    const hook = getChatMessageHook(plugin);
+    const { input, output } = createMockMessage('sonar research only');
 
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toContain('[MODE: sonar]');
-    expect(output.parts[0].text).toContain('research only');
+    expect(getTextPart(output).text).toContain('[MODE: sonar]');
+    expect(getTextPart(output).text).toContain('research only');
   });
 
   it('does not fire for non-orchestrator agents', async () => {
-    const plugin = await MaestriaPlugin({} as never);
-    const hook = (plugin as any)['chat.message'];
-
-    const input = { agent: 'builder', sessionID: 's1' };
-    const textPart = {
-      id: 'p1',
-      messageID: 'm1',
-      sessionID: 's1',
-      text: 'fein build this',
-      type: 'text',
-    };
-    const output = {
-      message: { agent: 'builder', id: 'm1', role: 'user', sessionID: 's1', time: { created: 1 } },
-      parts: [textPart],
-    };
+    const plugin = await MaestriaPlugin(pluginInput);
+    const hook = getChatMessageHook(plugin);
+    const { input, output } = createMockMessage('fein build this', 'builder');
 
     await hook(input, output);
 
     // Must NOT modify text for non-orchestrator agents
-    expect(output.parts[0].text).toBe('fein build this');
+    expect(getTextPart(output).text).toBe('fein build this');
   });
 
   it('handles keyword-only message without crash', async () => {
-    const plugin = await MaestriaPlugin({} as never);
-    const hook = (plugin as any)['chat.message'];
-
-    const input = { agent: 'orchestrator', sessionID: 's1' };
-    const textPart = { id: 'p1', messageID: 'm1', sessionID: 's1', text: 'fein', type: 'text' };
-    const output = {
-      message: {
-        agent: 'orchestrator',
-        id: 'm1',
-        role: 'user',
-        sessionID: 's1',
-        time: { created: 1 },
-      },
-      parts: [textPart],
-    };
+    const plugin = await MaestriaPlugin(pluginInput);
+    const hook = getChatMessageHook(plugin);
+    const { input, output } = createMockMessage('fein');
 
     // Must not throw
     await expect(hook(input, output)).resolves.toBeUndefined();
 
     // Parts array still intact
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toContain('[MODE: fein]');
+    expect(getTextPart(output).text).toContain('[MODE: fein]');
   });
 });
 
 // ---------------------------------------------------------------------------
 // chat.message hook integration (realistic mock inputs via helper functions)
 // ---------------------------------------------------------------------------
-async function createHook(disabledKeywords?: string[]) {
+const createHook = async (disabledKeywords?: ModeKeyword[]): Promise<ChatMessageHook> => {
   const plugin = await MaestriaPlugin(
-    {} as never,
+    pluginInput,
     disabledKeywords ? { modes: { disabledKeywords } } : undefined,
   );
-  return (plugin as any)['chat.message'];
-}
-
-function createMockMessage(text: string, agent = 'orchestrator') {
-  const id = crypto.randomUUID();
-  return {
-    input: { agent, messageID: id, sessionID: 'test-session' },
-    output: {
-      message: {
-        agent,
-        id,
-        role: 'user' as const,
-        sessionID: 'test-session',
-        time: { created: Date.now() },
-      },
-      parts: [{ id, messageID: id, sessionID: 'test-session', text, type: 'text' as const }],
-    },
-  };
-}
+  return getChatMessageHook(plugin);
+};
 
 describe('chat.message hook integration', () => {
   it('prepends mode marker to existing text part for fein', async () => {
@@ -482,13 +426,13 @@ describe('chat.message hook integration', () => {
     // Should be exactly 1 part (no new parts added)
     expect(output.parts).toHaveLength(1);
     // The text should contain the mode marker
-    expect(output.parts[0].text).toContain('[MODE: fein]');
+    expect(getTextPart(output).text).toContain('[MODE: fein]');
     // The text should contain the mode prompt
-    expect(output.parts[0].text).toContain('Full Pipeline');
+    expect(getTextPart(output).text).toContain('Full Pipeline');
     // The keyword should NOT be in the text
-    expect(output.parts[0].text).not.toContain('fein build');
+    expect(getTextPart(output).text).not.toContain('fein build');
     // The user's message should still be present
-    expect(output.parts[0].text).toContain('build the api');
+    expect(getTextPart(output).text).toContain('build the api');
   });
 
   it('prepends mode marker to existing text part for sonar', async () => {
@@ -498,10 +442,10 @@ describe('chat.message hook integration', () => {
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toContain('[MODE: sonar]');
-    expect(output.parts[0].text).toContain('Research Only');
-    expect(output.parts[0].text).not.toContain('sonar research');
-    expect(output.parts[0].text).toContain('research the design');
+    expect(getTextPart(output).text).toContain('[MODE: sonar]');
+    expect(getTextPart(output).text).toContain('Research Only');
+    expect(getTextPart(output).text).not.toContain('sonar research');
+    expect(getTextPart(output).text).toContain('research the design');
   });
 
   it('prepends mode marker to existing text part for blitz', async () => {
@@ -511,10 +455,10 @@ describe('chat.message hook integration', () => {
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toContain('[MODE: blitz]');
-    expect(output.parts[0].text).toContain('Fast Implementation');
-    expect(output.parts[0].text).not.toContain('blitz implement');
-    expect(output.parts[0].text).toContain('implement the feature');
+    expect(getTextPart(output).text).toContain('[MODE: blitz]');
+    expect(getTextPart(output).text).toContain('Fast Implementation');
+    expect(getTextPart(output).text).not.toContain('blitz implement');
+    expect(getTextPart(output).text).toContain('implement the feature');
   });
 
   it('is no-op for non-orchestrator agents', async () => {
@@ -524,7 +468,7 @@ describe('chat.message hook integration', () => {
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toBe('fein build the api');
+    expect(getTextPart(output).text).toBe('fein build the api');
   });
 
   it('is no-op when no keyword present', async () => {
@@ -534,7 +478,7 @@ describe('chat.message hook integration', () => {
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toBe('build the api');
+    expect(getTextPart(output).text).toBe('build the api');
   });
 
   it('is no-op when all keywords disabled', async () => {
@@ -544,7 +488,7 @@ describe('chat.message hook integration', () => {
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toBe('fein build the api');
+    expect(getTextPart(output).text).toBe('fein build the api');
   });
 
   it('most restrictive keyword wins when multiple present', async () => {
@@ -554,9 +498,9 @@ describe('chat.message hook integration', () => {
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toContain('[MODE: fein]');
-    expect(output.parts[0].text).not.toContain('[MODE: blitz]');
-    expect(output.parts[0].text).toContain('research then build');
+    expect(getTextPart(output).text).toContain('[MODE: fein]');
+    expect(getTextPart(output).text).not.toContain('[MODE: blitz]');
+    expect(getTextPart(output).text).toContain('research then build');
   });
 
   it('does not detect keyword inside code block', async () => {
@@ -566,6 +510,6 @@ describe('chat.message hook integration', () => {
     await hook(input, output);
 
     expect(output.parts).toHaveLength(1);
-    expect(output.parts[0].text).toBe('run this:\n```\nfein command\n```\nthen check');
+    expect(getTextPart(output).text).toBe('run this:\n```\nfein command\n```\nthen check');
   });
 });

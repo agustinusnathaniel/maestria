@@ -4,7 +4,7 @@
 // and packages/omp/scripts/validate-skills.ts in one place.
 
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import path from 'node:path';
 
 export interface ValidateSkillsOptions {
   /** Directory that contains `skills/<name>/SKILL.md` relative structure. */
@@ -29,24 +29,24 @@ export interface ValidateSkillsResult {
  *
  * Pure I/O helper - callers own console logging and process exit.
  */
-export function validateSkills(opts: ValidateSkillsOptions): ValidateSkillsResult {
+export const validateSkills = (opts: ValidateSkillsOptions): ValidateSkillsResult => {
   const { root, skills } = opts;
   const errors: string[] = [];
   const successes: string[] = [];
 
   for (const name of skills) {
-    const path = join(root, 'skills', name, 'SKILL.md');
-    if (!existsSync(path)) {
+    const skillPath = path.join(root, 'skills', name, 'SKILL.md');
+    if (!existsSync(skillPath)) {
       errors.push(`Missing: skills/${name}/SKILL.md`);
       continue;
     }
-    const content = readFileSync(path, 'utf-8');
-    const frontmatterMatch = /^---\n([\s\S]*?)\n---/u.exec(content);
+    const content = readFileSync(skillPath, 'utf-8');
+    const frontmatterMatch = /^---\n(?<frontmatter>[\s\S]*?)\n---/u.exec(content);
     if (!frontmatterMatch) {
       errors.push(`skills/${name}/SKILL.md: missing or invalid frontmatter`);
       continue;
     }
-    const frontmatter = frontmatterMatch[1] ?? '';
+    const frontmatter = frontmatterMatch.groups?.frontmatter ?? '';
     if (!frontmatter.includes('name:')) {
       errors.push(`skills/${name}/SKILL.md: frontmatter missing "name"`);
     }
@@ -64,13 +64,13 @@ export function validateSkills(opts: ValidateSkillsOptions): ValidateSkillsResul
   }
 
   return { errors, successes, valid: errors.length === 0 };
-}
+};
 
 /**
  * CLI helper: validate and log to console with the original ✅/❌ format,
  * preserving per-skill interleaving. Returns `true` if all valid.
  */
-export function validateSkillsAndLog(opts: ValidateSkillsOptions): boolean {
+export const validateSkillsAndLog = (opts: ValidateSkillsOptions): boolean => {
   const { root, skills } = opts;
   let allValid = true;
   for (const name of skills) {
@@ -87,4 +87,4 @@ export function validateSkillsAndLog(opts: ValidateSkillsOptions): boolean {
     }
   }
   return allValid;
-}
+};

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { deploySpecialistAgents } from '@/agents.js';
@@ -23,7 +23,7 @@ describe('deploySpecialistAgents', () => {
   });
 
   it('does not throw when called with context', () => {
-    const ctx = {} as any;
+    const ctx: unknown = {};
     // The function accepts optional ExtensionContext but is resilient
     expect(() => {
       deploySpecialistAgents(ctx);
@@ -33,7 +33,7 @@ describe('deploySpecialistAgents', () => {
 
 describe('agents source directory', () => {
   it('contains agent .md files for all specialists', () => {
-    const agentsDir = join(import.meta.dirname, '..', 'agents');
+    const agentsDir = path.join(import.meta.dirname, '..', 'agents');
     for (const name of [
       'adventurer',
       'architect',
@@ -43,7 +43,7 @@ describe('agents source directory', () => {
       'reviewer',
       'writer',
     ]) {
-      const filePath = join(agentsDir, `${name}.md`);
+      const filePath = path.join(agentsDir, `${name}.md`);
       // Source files may not exist in dev mode (they're synced), so check existence non-critically
       if (existsSync(filePath)) {
         const content = readFileSync(filePath, 'utf-8');
@@ -56,7 +56,7 @@ describe('agents source directory', () => {
 describe('deploySpecialistAgents - target path', () => {
   it('targets ~/.omp/agent/agents/ directory', () => {
     // Verify the deploy path from the source code
-    const agentsSrc = join(import.meta.dirname, '..', 'src', 'agents.ts');
+    const agentsSrc = path.join(import.meta.dirname, '..', 'src', 'agents.ts');
     if (existsSync(agentsSrc)) {
       const content = readFileSync(agentsSrc, 'utf-8');
       expect(content).toContain('.omp');

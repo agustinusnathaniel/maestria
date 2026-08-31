@@ -15,29 +15,29 @@ import { MAESTRIA_EVENTS } from './subagent-utils.js';
 
 // ── Duck-typed platform interfaces ──
 
-interface CommandsCtx {
+export interface CommandsCtx {
   ui: {
-    notify(msg: string): void;
-    setEditorText(text: string): void;
+    notify: (msg: string) => void;
+    setEditorText: (text: string) => void;
   };
   model?: { id: string };
-  modelRegistry: { getAll(): { id: string }[] };
+  modelRegistry: { getAll: () => { id: string }[] };
 }
 
-interface CommandsPi {
-  registerCommand(
+export interface CommandsPi {
+  registerCommand: (
     name: string,
     opts: {
       description: string;
       handler: (args: string, ctx: CommandsCtx) => Promise<void> | void;
     },
-  ): void;
-  getActiveTools(): string[];
-  setActiveTools(tools: string[]): void | Promise<void>;
-  setModel(model: unknown): void | Promise<void>;
-  sendUserMessage(text: string, opts: { deliverAs: string }): void;
-  appendEntry(type: string, data: unknown): void;
-  events?: { emit(event: string, data: unknown): void };
+  ) => void;
+  getActiveTools: () => string[];
+  setActiveTools: (tools: string[]) => void | Promise<void>;
+  setModel: (model: unknown) => void | Promise<void>;
+  sendUserMessage: (text: string, opts: { deliverAs: string }) => void;
+  appendEntry: (type: string, data: unknown) => void;
+  events?: { emit: (event: string, data: unknown) => void };
 }
 
 /**
@@ -52,7 +52,7 @@ interface CommandsPi {
  */
 const READ_ONLY_TOOLS = ['read', 'grep', 'find', 'ls', 'glob'];
 
-function registerMaestriaStatus(pi: CommandsPi, state: MaestriaState): void {
+const registerMaestriaStatus = (pi: CommandsPi, state: MaestriaState): void => {
   pi.registerCommand('maestria-status', {
     description: 'Show current maestria session state including handoff history',
     handler: (_args: string, ctx) => {
@@ -64,9 +64,9 @@ function registerMaestriaStatus(pi: CommandsPi, state: MaestriaState): void {
       ctx.ui.setEditorText(summary);
     },
   });
-}
+};
 
-function registerReviewCommand(pi: CommandsPi, state: MaestriaState): void {
+const registerReviewCommand = (pi: CommandsPi, state: MaestriaState): void => {
   pi.registerCommand('review', {
     description: 'Enter review mode. Blocks destructive tools, sets read-only toolset.',
     handler: async (args: string, ctx) => {
@@ -110,9 +110,9 @@ function registerReviewCommand(pi: CommandsPi, state: MaestriaState): void {
       );
     },
   });
-}
+};
 
-function registerRestoreModel(pi: CommandsPi, state: MaestriaState): void {
+const registerRestoreModel = (pi: CommandsPi, state: MaestriaState): void => {
   pi.registerCommand('restore-model', {
     description:
       'Restore the original model and tools that were active before review mode was entered.',
@@ -131,9 +131,9 @@ function registerRestoreModel(pi: CommandsPi, state: MaestriaState): void {
       });
     },
   });
-}
+};
 
-function registerHandoffCommand(pi: CommandsPi, state: MaestriaState): void {
+const registerHandoffCommand = (pi: CommandsPi, state: MaestriaState): void => {
   pi.registerCommand('handoff', {
     description: 'Generate a structured handoff prompt for a new task context',
     handler: (args: string, ctx) => {
@@ -183,9 +183,9 @@ function registerHandoffCommand(pi: CommandsPi, state: MaestriaState): void {
       pi.sendUserMessage(handoffPrompt, { deliverAs: 'steer' });
     },
   });
-}
+};
 
-function registerReviewModel(pi: CommandsPi, state: MaestriaState): void {
+const registerReviewModel = (pi: CommandsPi, state: MaestriaState): void => {
   pi.registerCommand('review-model', {
     description: 'Set which model to use when entering review mode',
     handler: (args: string, ctx) => {
@@ -207,12 +207,12 @@ function registerReviewModel(pi: CommandsPi, state: MaestriaState): void {
       ctx.ui.notify(`Review model set to: ${modelId}`);
     },
   });
-}
+};
 
-export function installCommands(pi: CommandsPi, state: MaestriaState): void {
+export const installCommands = (pi: CommandsPi, state: MaestriaState): void => {
   registerMaestriaStatus(pi, state);
   registerReviewCommand(pi, state);
   registerRestoreModel(pi, state);
   registerHandoffCommand(pi, state);
   registerReviewModel(pi, state);
-}
+};

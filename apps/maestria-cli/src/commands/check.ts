@@ -7,7 +7,7 @@ import { renderStatusTable } from '@/lib/output.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 
-async function handleCheckAll(args: { json?: boolean; quiet?: boolean }): Promise<never> {
+const handleCheckAll = async (args: { json?: boolean; quiet?: boolean }): Promise<never> => {
   const allStatus = await Effect.runPromise(detectAll());
   const checked = allStatus.filter((s) => s.available);
   if (checked.length === 0) {
@@ -30,16 +30,15 @@ async function handleCheckAll(args: { json?: boolean; quiet?: boolean }): Promis
   } else {
     console.log(renderStatusTable(checked));
   }
-  process.exit(
-    checked.every((s) => s.installed) ? (freshnessList.includes('outdated') ? 3 : 0) : 1,
-  );
-}
+  const exitCode = checked.every((s) => s.installed) && freshnessList.includes('outdated') ? 3 : 0;
+  process.exit(checked.every((s) => s.installed) ? exitCode : 1);
+};
 
 // oxlint-disable-next-line max-lines-per-function -- handleCheckSingle is a cohesive status-reporting flow with sequential early exits for missing CLI, missing install, and version freshness; splitting would create single-use helpers that obscure the linear check sequence.
-async function handleCheckSingle(
+const handleCheckSingle = async (
   platformId: string,
   args: { json?: boolean; quiet?: boolean },
-): Promise<never> {
+): Promise<never> => {
   const platform = getPlatform(platformId);
   if (!platform) {
     if (args.quiet !== true) {
@@ -104,7 +103,7 @@ async function handleCheckSingle(
     }
   }
   process.exit(checkExitCode(freshness, status.installed));
-}
+};
 
 export const checkCommand = defineCommand({
   args: {

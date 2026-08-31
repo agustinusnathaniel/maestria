@@ -11,7 +11,7 @@ export default defineConfig({
   integrations: [
     starlight({
       components: {
-        Head: './src/components/StarlightHead.astro',
+        Head: './src/components/starlight-head.astro',
       },
       customCss: ['./src/styles/global.css'],
       description:

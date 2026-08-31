@@ -1,7 +1,10 @@
-import { describe, expect, it } from 'vite-plus/test';
+import { Effect } from 'effect';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
+import type * as shell from '@/lib/shell.js';
 import {
   createCodexAgentConfig,
+  getModelConfigHandler,
   parseCodexAgentModel,
   parseConfigModels,
   parseCursorModels,
@@ -13,6 +16,18 @@ import {
   setConfigModelJsonc,
   setFrontmatterModel,
 } from '../src/lib/model-config.js';
+
+const shellMocks = vi.hoisted(() => ({
+  commandExists: vi.fn(),
+}));
+
+vi.mock('@/lib/shell.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof shell>();
+  return {
+    ...actual,
+    commandExists: shellMocks.commandExists,
+  };
+});
 
 describe('parseOpenCodeModels', () => {
   it('parses provider/model lines', () => {
@@ -86,6 +101,18 @@ describe('parseCursorModels', () => {
       'gpt-5.4',
       'auto',
     ]);
+  });
+});
+
+describe('Cursor model configuration availability', () => {
+  it('reports Cursor unavailable when neither supported CLI is present', async () => {
+    shellMocks.commandExists.mockReturnValue(Effect.succeed(false));
+    const handler = getModelConfigHandler('cursor');
+    if (handler?.isAvailable === undefined) {
+      throw new Error('Cursor model configuration handler has no availability check');
+    }
+
+    expect(await Effect.runPromise(handler.isAvailable)).toBe(false);
   });
 });
 

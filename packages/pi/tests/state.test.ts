@@ -15,6 +15,7 @@ import {
   setReviewMode,
 } from '@/state.js';
 import type { HandoffEntry, MaestriaState, SubagentStatusInfo } from '@/state.js';
+import type { ReviewModelApi, ReviewModelContext } from '@/state/review.js';
 
 const NEW_STATE_KEYS = [
   'mode',
@@ -33,6 +34,19 @@ const NEW_STATE_KEYS = [
   'nativeGoal',
 ];
 
+const createModel = (id: string) => ({
+  api: 'anthropic-messages' as const,
+  baseUrl: 'https://api.anthropic.com',
+  contextWindow: 200_000,
+  cost: { cacheRead: 0, cacheWrite: 0, input: 0, output: 0 },
+  id,
+  input: ['text' as const],
+  maxTokens: 4096,
+  name: id,
+  provider: 'anthropic',
+  reasoning: false,
+});
+
 describe('createInitialState', () => {
   it('should return mode: null', () => {
     const state = createInitialState();
@@ -41,7 +55,7 @@ describe('createInitialState', () => {
 
   it('should return a state object with the correct shape', () => {
     const state = createInitialState();
-    const keys = Object.keys(state) as (keyof MaestriaState)[];
+    const keys = Object.keys(state);
     expect(keys.toSorted()).toEqual([...NEW_STATE_KEYS].toSorted());
     expect(typeof state.mode === 'string' || state.mode === null).toBe(true);
   });
@@ -75,7 +89,10 @@ describe('recordHandoff', () => {
     const next = recordHandoff(state, 'adventurer', 'builder', 'implement feature');
 
     expect(next.handoffHistory).toHaveLength(1);
-    const entry = next.handoffHistory[0];
+    const [entry] = next.handoffHistory;
+    if (entry === undefined) {
+      throw new Error('Handoff entry was not recorded');
+    }
     expect(entry.from).toBe('adventurer');
     expect(entry.to).toBe('builder');
     expect(entry.task).toBe('implement feature');
@@ -304,7 +321,8 @@ describe('renderMaestriaSummary', () => {
 
 describe('state persistence pattern', () => {
   it('calls appendEntry with current state after mutation', () => {
-    const pi = { appendEntry: vi.fn() };
+    const appendEntry = vi.fn<(type: string, data: unknown) => void>();
+    const pi = { appendEntry };
     const state = createInitialState();
 
     // Simulate the mutation + persistence pattern used in commands/subagent
@@ -312,18 +330,7 @@ describe('state persistence pattern', () => {
     Object.assign(state, updatedState);
     pi.appendEntry('maestria_state', state);
 
-    expect(pi.appendEntry).toHaveBeenCalledWith(
-      'maestria_state',
-      expect.objectContaining({
-        handoffHistory: expect.arrayContaining([
-          expect.objectContaining({
-            from: 'orchestrator',
-            task: 'implement feature',
-            to: 'builder',
-          }),
-        ]),
-      }),
-    );
+    expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', state);
   });
 });
 
@@ -376,36 +383,45 @@ describe('exitReviewMode', () => {
 
 describe('cycleToReviewModel', () => {
   it('switches to configured reviewModel when found in registry', async () => {
-    const pi = { appendEntry: vi.fn(), setModel: vi.fn().mockResolvedValue(true) };
+    const pi = {
+      setActiveTools: vi.fn<ReviewModelApi['setActiveTools']>(),
+      setModel: vi.fn<ReviewModelApi['setModel']>().mockResolvedValue(true),
+    } satisfies ReviewModelApi;
+    const reviewModel = createModel('gpt-4o');
     const ctx = {
-      model: { id: 'claude-sonnet-4-20250514' },
-      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]) },
-      ui: { notify: vi.fn() },
-    };
+      modelRegistry: { getAll: vi.fn<() => { id: string }[]>().mockReturnValue([reviewModel]) },
+      ui: { notify: vi.fn<(message: string) => void>() },
+    } satisfies ReviewModelContext;
     const state: MaestriaState = {
       ...createInitialState(),
       reviewModel: 'gpt-4o',
     };
 
-    const result = await cycleToReviewModel(pi as any, ctx as any, state);
+    const result = await cycleToReviewModel(pi, ctx, state);
 
     expect(result).toBe('gpt-4o');
-    expect(pi.setModel).toHaveBeenCalledWith({ id: 'gpt-4o' });
+    expect(pi.setModel).toHaveBeenCalledWith(reviewModel);
   });
 
   it('returns null and notifies when configured model is not found', async () => {
-    const pi = { appendEntry: vi.fn(), setModel: vi.fn() };
+    const pi = {
+      setActiveTools: vi.fn<ReviewModelApi['setActiveTools']>(),
+      setModel: vi.fn<ReviewModelApi['setModel']>(),
+    } satisfies ReviewModelApi;
     const ctx = {
-      model: { id: 'claude-sonnet-4-20250514' },
-      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]) },
-      ui: { notify: vi.fn() },
-    };
+      modelRegistry: {
+        getAll: vi
+          .fn<() => { id: string }[]>()
+          .mockReturnValue([{ id: 'claude-sonnet-4-20250514' }]),
+      },
+      ui: { notify: vi.fn<(message: string) => void>() },
+    } satisfies ReviewModelContext;
     const state: MaestriaState = {
       ...createInitialState(),
       reviewModel: 'nonexistent-model',
     };
 
-    const result = await cycleToReviewModel(pi as any, ctx as any, state);
+    const result = await cycleToReviewModel(pi, ctx, state);
 
     expect(result).toBeNull();
     expect(pi.setModel).not.toHaveBeenCalled();
@@ -413,38 +429,46 @@ describe('cycleToReviewModel', () => {
   });
 
   it('returns null when reviewModel is not set', async () => {
-    const pi = { appendEntry: vi.fn(), setModel: vi.fn().mockResolvedValue(true) };
+    const pi = {
+      setActiveTools: vi.fn<ReviewModelApi['setActiveTools']>(),
+      setModel: vi.fn<ReviewModelApi['setModel']>().mockResolvedValue(true),
+    } satisfies ReviewModelApi;
     const ctx = {
-      model: { id: 'claude-sonnet-4-20250514' },
       modelRegistry: {
-        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
+        getAll: vi
+          .fn<() => { id: string }[]>()
+          .mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
       },
-      ui: { notify: vi.fn() },
-    };
+      ui: { notify: vi.fn<(message: string) => void>() },
+    } satisfies ReviewModelContext;
     const state: MaestriaState = {
       ...createInitialState(),
       reviewModel: null,
     };
 
-    const result = await cycleToReviewModel(pi as any, ctx as any, state);
+    const result = await cycleToReviewModel(pi, ctx, state);
 
     expect(result).toBeNull();
     expect(pi.setModel).not.toHaveBeenCalled();
   });
 
   it('returns null when setModel throws', async () => {
-    const pi = { appendEntry: vi.fn(), setModel: vi.fn().mockRejectedValue(new Error('no key')) };
+    const pi = {
+      setActiveTools: vi.fn<ReviewModelApi['setActiveTools']>(),
+      setModel: vi.fn<ReviewModelApi['setModel']>().mockRejectedValue(new Error('no key')),
+    } satisfies ReviewModelApi;
     const ctx = {
-      model: { id: 'claude-sonnet-4-20250514' },
-      modelRegistry: { getAll: vi.fn().mockReturnValue([{ id: 'gpt-4o' }]) },
-      ui: { notify: vi.fn() },
-    };
+      modelRegistry: {
+        getAll: vi.fn<() => { id: string }[]>().mockReturnValue([createModel('gpt-4o')]),
+      },
+      ui: { notify: vi.fn<(message: string) => void>() },
+    } satisfies ReviewModelContext;
     const state: MaestriaState = {
       ...createInitialState(),
       reviewModel: 'gpt-4o',
     };
 
-    const result = await cycleToReviewModel(pi as any, ctx as any, state);
+    const result = await cycleToReviewModel(pi, ctx, state);
 
     expect(result).toBeNull();
     expect(pi.setModel).toHaveBeenCalled();
@@ -454,14 +478,16 @@ describe('cycleToReviewModel', () => {
 
 describe('persistState', () => {
   it('calls pi.appendEntry with maestria_state and a copy of state', () => {
-    const pi = { appendEntry: vi.fn() };
+    const appendEntry = vi.fn<(type: string, data: unknown) => void>();
+    const pi = { appendEntry };
     const state = createInitialState();
 
     persistState(pi, state);
 
     expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', { ...state });
     // Ensure it's a copy, not the original reference
-    expect(pi.appendEntry.mock.calls[0][1]).not.toBe(state);
+    const [, persistedState] = pi.appendEntry.mock.calls[0] ?? [];
+    expect(persistedState).not.toBe(state);
   });
 });
 

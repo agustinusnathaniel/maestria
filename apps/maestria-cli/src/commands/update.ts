@@ -20,29 +20,167 @@ import {
 import { isVersionEq, isVersionGt } from '@/lib/version.js';
 import type { PlatformResult } from '@/types.js';
 
-async function runDirectUpdate(
+const previewVersionDiff = (before: string, after: string): string => {
+  if (before === 'unknown' && after !== 'unknown') {
+    return `Installed v${after}`;
+  }
+  if (before === after) {
+    return `Already up to date (v${before})`;
+  }
+  return `Updated: v${before} → v${after}`;
+};
+
+const isSpecified = (value: string | null | undefined): value is string =>
+  value !== undefined && value !== null && value !== '';
+
+const captureSnapshot = (
+  platform: PlatformHandler,
+): Effect.Effect<PlatformUpdateSnapshot | { error: string } | null> => {
+  if (!platform.captureUpdateSnapshot) {
+    return Effect.succeed(null);
+  }
+  return platform.captureUpdateSnapshot.pipe(
+    Effect.match({
+      onFailure: (error) => ({ error: error.message }),
+      onSuccess: (s) => s,
+    }),
+  );
+};
+
+// oxlint-disable-next-line max-lines-per-function -- updateOne orchestrates the per-platform update transaction (snapshot capture, version checks, preflight, downgrade guard, spinner, cache invalidation) as a single atomic flow; splitting would obscure the sequential transaction and create single-use helpers.
+export const updateOne = (
+  platform: PlatformHandler,
+  quiet: boolean,
+  version?: string,
+): Effect.Effect<PlatformResult> =>
+  // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator implements the same atomic update transaction as updateOne; splitting the generator would duplicate snapshot/version/preflight closure and hide the linear flow.
+  Effect.gen(function* updateOneEffect() {
+    if (isSpecified(version) && platform.supportsVersionPinning === false) {
+      return {
+        id: platform.id,
+        label: platform.label,
+        message: `Version pinning is not supported for ${platform.label}; updating without --version is required.`,
+        ok: false,
+      } satisfies PlatformResult;
+    }
+    const captured = yield* captureSnapshot(platform);
+    if (captured !== null && 'error' in captured) {
+      return {
+        id: platform.id,
+        label: platform.label,
+        message: captured.error,
+        ok: false,
+      } satisfies PlatformResult;
+    }
+    const snapshot = captured;
+    const prevVersion = snapshot
+      ? snapshot.installedVersion
+      : yield* platform.getInstalledVersion.pipe(
+          Effect.catchCause(() => Effect.succeed('unknown')),
+        );
+    const targetVersion =
+      version ??
+      (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
+    if (platform.preflightUpdate) {
+      const preflightError: string | null = yield* platform
+        .preflightUpdate(snapshot ?? undefined)
+        .pipe(
+          Effect.as(null),
+          Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
+        );
+      if (preflightError !== null) {
+        return {
+          id: platform.id,
+          label: platform.label,
+          message: preflightError,
+          ok: false,
+        } satisfies PlatformResult;
+      }
+    }
+    if (isVersionEq(prevVersion, targetVersion)) {
+      return {
+        id: platform.id,
+        label: platform.label,
+        message: 'Already up to date',
+        nextVersion: prevVersion,
+        ok: true,
+        prevVersion,
+      } satisfies PlatformResult;
+    }
+    if (!isSpecified(version) && isVersionGt(prevVersion, targetVersion)) {
+      return {
+        id: platform.id,
+        label: platform.label,
+        message: `Installed v${prevVersion} is newer than latest v${targetVersion}; skipping (use --version to pin)`,
+        nextVersion: prevVersion,
+        ok: true,
+        prevVersion,
+      } satisfies PlatformResult;
+    }
+    const spinner = createSpinner(quiet);
+    spinner.start(`Updating ${platform.label}: ${prevVersion} → ${targetVersion}...`);
+    const errorMessage: string | null = yield* platform.update(version, snapshot ?? undefined).pipe(
+      Effect.as(null),
+      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
+    );
+    if (errorMessage !== null) {
+      spinner.stop(`Failed: ${errorMessage}`);
+      return {
+        id: platform.id,
+        label: platform.label,
+        message: errorMessage,
+        ok: false,
+      } satisfies PlatformResult;
+    }
+    const nextVersion = yield* platform.getInstalledVersion.pipe(
+      Effect.catchCause(() => Effect.succeed('unknown')),
+    );
+    spinner.stop(previewVersionDiff(prevVersion, nextVersion));
+    if (isSpecified(platform.npmPackage)) {
+      yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
+    }
+    return {
+      id: platform.id,
+      label: platform.label,
+      message: 'Updated',
+      nextVersion,
+      ok: true,
+      prevVersion,
+    } satisfies PlatformResult;
+  });
+
+interface UpdateStatus {
+  id: string;
+  label: string;
+  installedVersion: string;
+  latestVersion: string;
+  needsUpdate: boolean;
+}
+
+const runDirectUpdate = async (
   platformIds: string[],
   isQuiet: boolean,
   version?: string,
-): Promise<PlatformResult[]> {
-  const results: PlatformResult[] = [];
-  for (const id of platformIds) {
-    const platform = getPlatform(id);
-    if (!platform) {
-      results.push({
-        id,
-        label: id,
-        message: 'Platform definition not found. This is a bug.',
-        ok: false,
-      } satisfies PlatformResult);
-      continue;
-    }
-    results.push(await Effect.runPromise(updateOne(platform, isQuiet, version)));
-  }
-  return results;
-}
+): Promise<PlatformResult[]> =>
+  await Effect.runPromise(
+    Effect.all(
+      platformIds.map((id) => {
+        const platform = getPlatform(id);
+        if (!platform) {
+          return Effect.succeed({
+            id,
+            label: id,
+            message: 'Platform definition not found. This is a bug.',
+            ok: false,
+          } satisfies PlatformResult);
+        }
+        return updateOne(platform, isQuiet, version);
+      }),
+      { concurrency: 1 },
+    ),
+  );
 
-async function runAllUpdate(isQuiet: boolean, version?: string): Promise<PlatformResult[]> {
+const runAllUpdate = async (isQuiet: boolean, version?: string): Promise<PlatformResult[]> => {
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const installed = await Effect.runPromise(detectInstalled());
@@ -51,25 +189,30 @@ async function runAllUpdate(isQuiet: boolean, version?: string): Promise<Platfor
     console.log('No maestria installations found to update.');
     process.exit(0);
   }
-  const results: PlatformResult[] = [];
-  for (const p of installed) {
-    const platform = getPlatform(p.id);
-    if (!platform) {
-      results.push({
-        id: p.id,
-        label: p.label,
-        message: 'Platform definition not found. This is a bug.',
-        ok: false,
-      } satisfies PlatformResult);
-      continue;
-    }
-    results.push(await Effect.runPromise(updateOne(platform, isQuiet, version)));
-  }
-  return results;
-}
+  return await Effect.runPromise(
+    Effect.all(
+      installed.map((p) => {
+        const platform = getPlatform(p.id);
+        if (!platform) {
+          return Effect.succeed({
+            id: p.id,
+            label: p.label,
+            message: 'Platform definition not found. This is a bug.',
+            ok: false,
+          } satisfies PlatformResult);
+        }
+        return updateOne(platform, isQuiet, version);
+      }),
+      { concurrency: 1 },
+    ),
+  );
+};
 
 // oxlint-disable-next-line max-lines-per-function -- runInteractiveUpdate orchestrates the interactive update picker (version checks, needsUpdate filtering, groupMultiselect) as a single cohesive flow; splitting would fragment the picker's state (statuses/needsUpdate) and duplicate version-check logic.
-async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise<PlatformResult[]> {
+const runInteractiveUpdate = async (
+  isQuiet: boolean,
+  version?: string,
+): Promise<PlatformResult[]> => {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     console.error('No platform specified and not in an interactive terminal.');
     console.error('Usage: maestria update <platform> or maestria update --all');
@@ -81,35 +224,37 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
     console.log('No maestria installations found to update.');
     process.exit(0);
   }
-  const statuses: {
-    id: string;
-    label: string;
-    installedVersion: string;
-    latestVersion: string;
-    needsUpdate: boolean;
-  }[] = [];
-  for (const p of installed) {
-    const platform = getPlatform(p.id);
-    if (!platform) {
-      continue;
-    }
-    const [pv, lv] = await Effect.runPromise(
-      Effect.all(
-        [
-          platform.getInstalledVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
-          platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
-        ],
-        { concurrency: 2 },
-      ),
-    );
-    statuses.push({
-      id: p.id,
-      installedVersion: pv,
-      label: p.label,
-      latestVersion: lv,
-      needsUpdate: needsUpdateOf(pv, lv),
-    });
-  }
+  const statuses = await Effect.runPromise(
+    Effect.all(
+      installed.flatMap((p) => {
+        const platform = getPlatform(p.id);
+        if (!platform) {
+          return [];
+        }
+        return [
+          Effect.all(
+            [
+              platform.getInstalledVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
+              platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('unknown'))),
+            ],
+            { concurrency: 2 },
+          ).pipe(
+            Effect.map(
+              ([pv, lv]) =>
+                ({
+                  id: p.id,
+                  installedVersion: pv,
+                  label: p.label,
+                  latestVersion: lv,
+                  needsUpdate: needsUpdateOf(pv, lv),
+                }) satisfies UpdateStatus,
+            ),
+          ),
+        ];
+      }),
+      { concurrency: 1 },
+    ),
+  );
   const needsUpdate = statuses.filter((s) => s.needsUpdate);
   if (needsUpdate.length === 0) {
     const lines = statuses
@@ -131,24 +276,21 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
     required: true,
     selectableGroups: true,
   });
-  if (
-    isCancel(selected) ||
-    selected === undefined ||
-    selected === null ||
-    (selected as unknown) === '' ||
-    (Array.isArray(selected) && selected.length === 0)
-  ) {
+  if (isCancel(selected) || !Array.isArray(selected) || selected.length === 0) {
     cancel('Update cancelled.');
     process.exit(130);
   }
   const toUpdate = needsUpdate.filter((s) => selected.includes(s.id));
-  const results: PlatformResult[] = [];
-  for (const p of toUpdate) {
-    // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: filtered needsUpdate guarantees platform exists for id
-    results.push(await Effect.runPromise(updateOne(getPlatform(p.id)!, isQuiet, version)));
-  }
-  return results;
-}
+  return await Effect.runPromise(
+    Effect.all(
+      toUpdate.flatMap((p) => {
+        const platform = getPlatform(p.id);
+        return platform === undefined ? [] : [updateOne(platform, isQuiet, version)];
+      }),
+      { concurrency: 1 },
+    ),
+  );
+};
 
 export const updateCommand = defineCommand({
   args: {
@@ -219,138 +361,3 @@ export const updateCommand = defineCommand({
     process.exit(exitCodeForResults(results));
   },
 });
-
-function previewVersionDiff(before: string, after: string): string {
-  if (before === 'unknown' && after !== 'unknown') {
-    return `Installed v${after}`;
-  }
-  if (before === after) {
-    return `Already up to date (v${before})`;
-  }
-  return `Updated: v${before} → v${after}`;
-}
-
-function captureSnapshot(
-  platform: PlatformHandler,
-): Effect.Effect<PlatformUpdateSnapshot | { error: string } | undefined> {
-  if (!platform.captureUpdateSnapshot) {
-    return Effect.succeed(undefined);
-  }
-  return platform.captureUpdateSnapshot.pipe(
-    Effect.match({
-      onFailure: (error) => ({ error: error.message }),
-      onSuccess: (s) => s,
-    }),
-  );
-}
-
-// oxlint-disable-next-line max-lines-per-function -- updateOne orchestrates the per-platform update transaction (snapshot capture, version checks, preflight, downgrade guard, spinner, cache invalidation) as a single atomic flow; splitting would obscure the sequential transaction and create single-use helpers.
-export function updateOne(
-  platform: PlatformHandler,
-  quiet: boolean,
-  version?: string,
-): Effect.Effect<PlatformResult> {
-  // oxlint-disable-next-line max-lines-per-function -- Effect.gen generator implements the same atomic update transaction as updateOne; splitting the generator would duplicate snapshot/version/preflight closure and hide the linear flow.
-  return Effect.gen(function* () {
-    if (
-      version !== undefined &&
-      version !== null &&
-      version !== '' &&
-      platform.supportsVersionPinning === false
-    ) {
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: `Version pinning is not supported for ${platform.label}; updating without --version is required.`,
-        ok: false,
-      } satisfies PlatformResult;
-    }
-    const captured = yield* captureSnapshot(platform);
-    if (captured !== undefined && 'error' in captured) {
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: captured.error,
-        ok: false,
-      } satisfies PlatformResult;
-    }
-    const snapshot = captured;
-    const prevVersion = snapshot
-      ? snapshot.installedVersion
-      : yield* platform.getInstalledVersion.pipe(
-          Effect.catchCause(() => Effect.succeed('unknown')),
-        );
-    const targetVersion =
-      version ??
-      (yield* platform.getLatestVersion.pipe(Effect.catchCause(() => Effect.succeed('latest'))));
-    if (platform.preflightUpdate) {
-      const preflightError: string | void = yield* platform
-        .preflightUpdate(snapshot)
-        .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)));
-      if (preflightError !== undefined) {
-        return {
-          id: platform.id,
-          label: platform.label,
-          message: preflightError,
-          ok: false,
-        } satisfies PlatformResult;
-      }
-    }
-    if (isVersionEq(prevVersion, targetVersion)) {
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: 'Already up to date',
-        nextVersion: prevVersion,
-        ok: true,
-        prevVersion,
-      } satisfies PlatformResult;
-    }
-    if (
-      (version === undefined || version === null || version === '') &&
-      isVersionGt(prevVersion, targetVersion)
-    ) {
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: `Installed v${prevVersion} is newer than latest v${targetVersion}; skipping (use --version to pin)`,
-        nextVersion: prevVersion,
-        ok: true,
-        prevVersion,
-      } satisfies PlatformResult;
-    }
-    const spinner = createSpinner(quiet);
-    spinner.start(`Updating ${platform.label}: ${prevVersion} → ${targetVersion}...`);
-    const errorMessage: string | void = yield* platform
-      .update(version, snapshot)
-      .pipe(Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)));
-    if (errorMessage !== undefined) {
-      spinner.stop(`Failed: ${errorMessage}`);
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: errorMessage,
-        ok: false,
-      } satisfies PlatformResult;
-    }
-    const nextVersion = yield* platform.getInstalledVersion.pipe(
-      Effect.catchCause(() => Effect.succeed('unknown')),
-    );
-    spinner.stop(previewVersionDiff(prevVersion, nextVersion));
-    if (
-      platform.npmPackage !== undefined &&
-      platform.npmPackage !== null &&
-      platform.npmPackage !== ''
-    ) {
-      yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
-    }
-    return {
-      id: platform.id,
-      label: platform.label,
-      message: 'Updated',
-      nextVersion,
-      ok: true,
-      prevVersion,
-    } satisfies PlatformResult;
-  });
-}

@@ -2,8 +2,6 @@ import oxfmtPreset from 'ultracite/oxfmt';
 import oxlintPreset from 'ultracite/oxlint/core';
 import { defineConfig } from 'vite-plus';
 
-import { narrowOverrides } from './tooling/lint/narrow.js';
-import { stylisticDebt, stylisticDebtFiles } from './tooling/lint/stylistic-debt.js';
 import { testOverrides } from './tooling/lint/test-overrides.js';
 
 export default defineConfig({
@@ -13,17 +11,6 @@ export default defineConfig({
     // no standalone oxfmt.config.ts.
     ...oxfmtPreset,
     // ── Intentional repo style overrides (not incremental) ───────
-    // Preset printWidth 80 vs repo 100: keep 100 to avoid MD reflow in docs (intentional).
-    printWidth: 100,
-    // Preset singleQuote false (double); repo intentionally uses single.
-    singleQuote: true,
-    // Preset sortImports enabled (alphabetical); repo keeps disabled - import order is intentional.
-    sortImports: false,
-    // Preset trailingComma 'es5'; repo style uses 'all' (intentional).
-    trailingComma: 'all',
-    // Preset sortPackageJson is true - keep as-is (no churn observed).
-    sortPackageJson: true,
-    semi: true,
     ignorePatterns: [
       ...new Set([
         ...(oxfmtPreset.ignorePatterns ?? []),
@@ -54,43 +41,43 @@ export default defineConfig({
         },
       },
     ],
+    // Preset printWidth 80 vs repo 100: keep 100 to avoid MD reflow in docs (intentional).
+    printWidth: 100,
+    semi: true,
+    // Preset singleQuote false (double); repo intentionally uses single.
+    singleQuote: true,
+    // Preset sortImports enabled (alphabetical); repo keeps disabled - import order is intentional.
+    sortImports: false,
+    // Preset sortPackageJson is true - keep as-is (no churn observed).
+    sortPackageJson: true,
+    // Preset trailingComma 'es5'; repo style uses 'all' (intentional).
+    trailingComma: 'all',
   },
   lint: {
     // Ultracite oxlint/core preset as base - via vite-plus hybrid (ADR-CORE-021).
     // Spread first so repo rules win. No standalone oxlint.config.ts.
     ...oxlintPreset,
     ignorePatterns: [...new Set([...(oxlintPreset.ignorePatterns ?? []), 'dist/**'])],
-    plugins: [...(oxlintPreset.plugins ?? [])],
     jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
+    options: { typeAware: true, typeCheck: true },
+    overrides: [...(oxlintPreset.overrides ?? []), testOverrides],
+    plugins: [...(oxlintPreset.plugins ?? [])],
     rules: {
       ...oxlintPreset.rules,
       // Strict Ultracite core preset - only intentional project overrides remain (see ADR-021)
-      'vite-plus/prefer-vite-plus-imports': 'error',
+      curly: 'error',
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
-      curly: 'error',
-      // func-style 'expression' churns 392 files with low safety value (arrow vs function
-      // declaration is stylistic). Defer to last - keep off as single intentional exception
-      // pending codemod. See task notes: prioritize type-safe rules over stylistic.
-      'func-style': 'off',
-      'unicorn/import-style': 'off',
-      'sort-keys': 'off',
       'sort-imports': [
         'warn',
         {
           allowSeparatedGroups: true,
-          ignoreDeclarationSort: true,
           ignoreCase: true,
+          ignoreDeclarationSort: true,
         },
       ],
+      'vite-plus/prefer-vite-plus-imports': 'error',
     },
-    overrides: [
-      ...(oxlintPreset.overrides ?? []),
-      testOverrides,
-      ...narrowOverrides,
-      { files: stylisticDebtFiles, ...stylisticDebt },
-    ],
-    options: { typeAware: true, typeCheck: true },
   },
   resolve: {
     tsconfigPaths: true,

@@ -13,6 +13,15 @@ import {
   VALID_KEYWORDS,
 } from '../src/index.js';
 
+const requireDetection = (
+  result: ReturnType<typeof detectMode>,
+): NonNullable<ReturnType<typeof detectMode>> => {
+  if (result === null) {
+    throw new Error('expected mode detection result');
+  }
+  return result;
+};
+
 describe('MODE_KEYWORDS', () => {
   it('contains fein, sonar, blitz', () => {
     expect(MODE_KEYWORDS).toEqual(['fein', 'sonar', 'blitz']);
@@ -50,7 +59,7 @@ describe('CODE_BLOCK_RE', () => {
     // is not a fenced range. Inline `` may match as an empty span, but the
     // keyword after remains detectable.
     expect(detectMode('``` unclosed\nfein build')).not.toBeNull();
-    expect(detectMode('``` unclosed\nfein build')!.mode).toBe('fein');
+    expect(requireDetection(detectMode('``` unclosed\nfein build')).mode).toBe('fein');
   });
 });
 
@@ -94,32 +103,31 @@ describe('getModeMarker', () => {
 
 describe('detectMode', () => {
   it('detects at start', () => {
-    const r = detectMode('fein build the feature');
-    expect(r).not.toBeNull();
-    expect(r!.mode).toBe('fein');
-    expect(r!.keyword).toBe('fein');
-    expect(r!.index).toBe(0);
+    const r = requireDetection(detectMode('fein build the feature'));
+    expect(r.mode).toBe('fein');
+    expect(r.keyword).toBe('fein');
+    expect(r.index).toBe(0);
   });
   it('detects in middle', () => {
-    const r = detectMode("let's sonar this design");
-    expect(r!.mode).toBe('sonar');
+    const r = requireDetection(detectMode("let's sonar this design"));
+    expect(r.mode).toBe('sonar');
   });
   it('most restrictive wins regardless of position', () => {
-    expect(detectMode('fein sonar blitz')!.mode).toBe('fein');
-    expect(detectMode('blitz sonar fein')!.mode).toBe('fein');
-    expect(detectMode('blitz sonar')!.mode).toBe('sonar');
+    expect(requireDetection(detectMode('fein sonar blitz')).mode).toBe('fein');
+    expect(requireDetection(detectMode('blitz sonar fein')).mode).toBe('fein');
+    expect(requireDetection(detectMode('blitz sonar')).mode).toBe('sonar');
   });
   it('priority fein > sonar > blitz', () => {
-    expect(detectMode('blitz sonar')!.mode).toBe('sonar');
-    expect(detectMode('sonar blitz')!.mode).toBe('sonar');
+    expect(requireDetection(detectMode('blitz sonar')).mode).toBe('sonar');
+    expect(requireDetection(detectMode('sonar blitz')).mode).toBe('sonar');
   });
   it('null when no keyword', () => {
     expect(detectMode('please implement')).toBeNull();
   });
   it('case insensitive', () => {
-    expect(detectMode('FEIN upper')!.mode).toBe('fein');
-    expect(detectMode('Sonar title')!.mode).toBe('sonar');
-    expect(detectMode('BLITZ')!.mode).toBe('blitz');
+    expect(requireDetection(detectMode('FEIN upper')).mode).toBe('fein');
+    expect(requireDetection(detectMode('Sonar title')).mode).toBe('sonar');
+    expect(requireDetection(detectMode('BLITZ')).mode).toBe('blitz');
   });
   it('does not match inside word (coffein)', () => {
     expect(detectMode('coffein')).toBeNull();
@@ -130,49 +138,49 @@ describe('detectMode', () => {
     expect(detectMode('```blitz this```')).toBeNull();
   });
   it('detects outside code block', () => {
-    const r = detectMode('some code:\n```\nconst x=1;\n```\nfein then build');
-    expect(r!.mode).toBe('fein');
+    const r = requireDetection(detectMode('some code:\n```\nconst x=1;\n```\nfein then build'));
+    expect(r.mode).toBe('fein');
   });
   it('does not match inside inline backticks', () => {
     expect(detectMode('run `blitz` command')).toBeNull();
   });
   it('matches hyphenated (sonar-like)', () => {
-    expect(detectMode('sonar-like exploration')!.mode).toBe('sonar');
+    expect(requireDetection(detectMode('sonar-like exploration')).mode).toBe('sonar');
   });
   it('respects disabled keywords (case-insensitive)', () => {
-    const r = detectMode('fein research then blitz build', new Set(['Blitz']));
-    expect(r!.mode).toBe('fein');
+    const r = requireDetection(detectMode('fein research then blitz build', new Set(['Blitz'])));
+    expect(r.mode).toBe('fein');
     expect(detectMode('fein research', new Set(['fein', 'sonar', 'blitz']))).toBeNull();
   });
   it('handles empty string', () => {
     expect(detectMode('')).toBeNull();
   });
   it('detects with trailing colon', () => {
-    const r = detectMode('fein: build the feature');
-    expect(r!.mode).toBe('fein');
-    expect(r!.index).toBe(0);
+    const r = requireDetection(detectMode('fein: build the feature'));
+    expect(r.mode).toBe('fein');
+    expect(r.index).toBe(0);
   });
   it('unclosed fence not excluded', () => {
-    const r = detectMode('``` unclosed\nfein build');
-    expect(r!.mode).toBe('fein');
+    const r = requireDetection(detectMode('``` unclosed\nfein build'));
+    expect(r.mode).toBe('fein');
   });
 });
 
 describe('stripKeyword', () => {
   it('removes keyword and trailing colon', () => {
-    const r = detectMode('fein: build the feature')!;
+    const r = requireDetection(detectMode('fein: build the feature'));
     expect(stripKeyword('fein: build the feature', r)).toBe('build the feature');
   });
   it('collapses double spaces when keyword in middle', () => {
-    const r = detectMode('quick blitz fix')!;
+    const r = requireDetection(detectMode('quick blitz fix'));
     expect(stripKeyword('quick blitz fix', r)).toBe('quick fix');
   });
   it('trims ends', () => {
-    const r = detectMode('fein build')!;
+    const r = requireDetection(detectMode('fein build'));
     expect(stripKeyword('fein build', r)).toBe('build');
   });
   it('handles keyword at end', () => {
-    const r = detectMode('implement it blitz')!;
+    const r = requireDetection(detectMode('implement it blitz'));
     expect(stripKeyword('implement it blitz', r)).toBe('implement it');
   });
 });

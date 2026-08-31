@@ -1,14 +1,20 @@
 /**
  * Pi platform compaction handlers.
  *
- * Thin wrapper around the shared implementation in
- * @maestria/shared-pi/compaction-core.
+ * Thin wrapper around the shared compaction-core implementation.
  *
  * @module
  */
 
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { installCompactionHandlers as installHandlers } from '@maestria/shared-pi/compaction-core';
+import type {
+  CompactionEvent,
+  CompactionPi,
+  CompactionResult,
+  TreeEvent,
+  TreeResult,
+} from '@maestria/shared-pi/compaction-core';
 
 import type { MaestriaState } from '@/state.js';
 
@@ -17,18 +23,23 @@ import type { MaestriaState } from '@/state.js';
  * Delegates to the shared implementation which is duck-type compatible
  * with Pi's ExtensionAPI.
  */
-export function installCompactionHandlers(pi: ExtensionAPI, state: MaestriaState): void {
-  // Bridge: ExtensionAPI.on has overloaded event types incompatible with
-  // the duck-typed { on: (event: string, handler) => void } in the shared
-  // module. The as-never cast is safe at runtime - both SDKs share the same
-  // event shapes.
-  installHandlers(
-    {
-      on: (event, handler) => {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-        pi.on(event as never, handler as never);
-      },
-    },
-    state,
-  );
-}
+export const createCompactionApi = (pi: ExtensionAPI): CompactionPi => {
+  const on = (
+    ...args:
+      | ['session_before_compact', (event: CompactionEvent) => CompactionResult]
+      | ['session_before_tree', (event: TreeEvent) => TreeResult | undefined]
+  ): void => {
+    const [event, handler] = args;
+    if (event === 'session_before_compact') {
+      pi.on('session_before_compact', (eventData) => handler(eventData));
+    }
+    if (event === 'session_before_tree') {
+      pi.on('session_before_tree', (eventData) => handler(eventData));
+    }
+  };
+  return { on };
+};
+
+export const installCompactionHandlers = (pi: CompactionPi, state: MaestriaState): void => {
+  installHandlers(pi, state);
+};

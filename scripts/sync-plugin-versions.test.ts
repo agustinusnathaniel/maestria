@@ -20,6 +20,19 @@ import type { Target } from './sync-plugin-versions.js';
 
 const tempDirs: string[] = [];
 
+type JsonObject = Record<string, unknown>;
+
+const isJsonObject = (value: unknown): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const parseJsonObject = (text: string): JsonObject => {
+  const value: unknown = JSON.parse(text);
+  if (!isJsonObject(value)) {
+    throw new Error('expected a JSON object');
+  }
+  return value;
+};
+
 afterEach(() => {
   for (const dir of tempDirs.splice(0)) {
     fs.rmSync(dir, { force: true, recursive: true });
@@ -27,11 +40,11 @@ afterEach(() => {
 });
 
 /** Create a throwaway fixture dir under the OS temp dir, removed after the test. */
-function tempDir(): string {
+const tempDir = (): string => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sync-plugin-'));
   tempDirs.push(dir);
   return dir;
-}
+};
 
 /**
  * Create a fixture package dir.
@@ -40,11 +53,11 @@ function tempDir(): string {
  * omits the file (so the synchronizer must report it missing). Returns the
  * package dir and the manifest paths as passed to `syncTarget`.
  */
-function makePackage(
+const makePackage = (
   root: string,
   version: string | number | null,
   manifests: Record<string, string | null>,
-): { pkg: string; manifestPaths: string[] } {
+): { pkg: string; manifestPaths: string[] } => {
   const pkg = path.join(root, 'pkg');
   fs.mkdirSync(pkg, { recursive: true });
   const pkgJson: Record<string, unknown> = { name: 'fixture-pkg' };
@@ -66,7 +79,7 @@ function makePackage(
     manifestPaths.push(rel);
   }
   return { manifestPaths, pkg };
-}
+};
 
 describe('syncTarget', () => {
   it('reports OK when in sync under --check and does not write', () => {
@@ -102,7 +115,7 @@ describe('syncTarget', () => {
     expect(results[0]).toMatch(/^OK: synced /u);
     expect(results[0].endsWith('to 0.2.0')).toBe(true);
     expect(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8')).toBe(
-      '{\n  "name": "maestria",\n  "version": "0.2.0",\n' + '  "description": "test"\n}\n',
+      '{\n  "name": "maestria",\n  "version": "0.2.0",\n  "description": "test"\n}\n',
     );
   });
 
@@ -113,9 +126,10 @@ describe('syncTarget', () => {
     const checkResults = syncTarget(pkg, manifestPaths, true);
     expect(checkResults[0]).toContain('expected 2.0.0 found 1.0.0');
     syncTarget(pkg, manifestPaths, false);
-    const manifest = JSON.parse(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8'));
+    const manifest = parseJsonObject(fs.readFileSync(path.join(pkg, 'plugin.json'), 'utf-8'));
     expect(manifest.version).toBe('2.0.0');
-    expect(manifest.meta.version).toBe('9.9.9');
+    const meta = isJsonObject(manifest.meta) ? manifest.meta : undefined;
+    expect(meta?.version).toBe('9.9.9');
   });
 
   it('rejects malformed JSON in check and write without writing', () => {
@@ -284,13 +298,13 @@ describe('syncTarget', () => {
   });
 });
 
-describe('main wiring', () => {
-  /** Run main() against fixture targets. */
-  function runMain(pkg: string, manifests: string[], ...args: string[]): number {
-    const targets: Target[] = [[pkg, manifests]];
-    return main(args, targets);
-  }
+/** Run main() against fixture targets. */
+const runMain = (pkg: string, manifests: string[], ...args: string[]): number => {
+  const targets: Target[] = [[pkg, manifests]];
+  return main(args, targets);
+};
 
+describe('main wiring', () => {
   it('returns 0 when in sync under --check', () => {
     const root = tempDir();
     const { pkg, manifestPaths } = makePackage(root, '1.2.3', {
@@ -359,7 +373,7 @@ describe('main wiring', () => {
     expect(fs.readFileSync(path.join(hermesPkg, 'plugin.yaml'), 'utf-8')).toContain(
       'version: 0.1.13',
     );
-    const claudeManifest = JSON.parse(
+    const claudeManifest = parseJsonObject(
       fs.readFileSync(path.join(claudePkg, '.claude-plugin', 'plugin.json'), 'utf-8'),
     );
     expect(claudeManifest.version).toBe('0.2.0');

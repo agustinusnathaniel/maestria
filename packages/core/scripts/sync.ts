@@ -2,7 +2,7 @@
 // packages/core/scripts/sync.ts - CLI entry for config-driven agent directive syncing
 
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { ConfigError, loadConfig } from './lib/config.js';
@@ -21,7 +21,7 @@ interface CliOptions {
 
 // ── Help ──
 
-function printHelp(): void {
+const printHelp = (): void => {
   console.log(`
 core-sync - Config-driven agent directive syncing tool
 
@@ -39,11 +39,11 @@ EXIT CODES
   1  Check failed (output differs from expected)
   2  Configuration error
 `);
-}
+};
 
 // ── CLI Parsing ──
 
-function parseCliArgs(): CliOptions {
+const parseCliArgs = (): CliOptions => {
   const args = process.argv.slice(2);
 
   if (args.includes('--help') || args.includes('-h')) {
@@ -72,12 +72,12 @@ function parseCliArgs(): CliOptions {
     help: values.help,
     verbose: values.verbose,
   };
-}
+};
 
 // ── Main ──
 
 // oxlint-disable-next-line max-lines-per-function -- main orchestrates CLI parsing, config loading, sync execution, and result summarization as a single cohesive entry flow; splitting would fragment the linear startup sequence that shares opts/config/results.
-async function main(): Promise<number> {
+const main = async (): Promise<number> => {
   const opts = parseCliArgs();
 
   if (opts.help) {
@@ -88,11 +88,11 @@ async function main(): Promise<number> {
   // Auto-detect config: try .ts first, fall back to .js
   let configPath: string;
   if (opts.config) {
-    configPath = resolve(opts.config);
+    configPath = path.resolve(opts.config);
   } else {
     configPath = existsSync('./sync.config.ts')
-      ? resolve('./sync.config.ts')
-      : resolve('./sync.config.js');
+      ? path.resolve('./sync.config.ts')
+      : path.resolve('./sync.config.js');
   }
 
   let config;
@@ -143,7 +143,7 @@ async function main(): Promise<number> {
   }
 
   return 0;
-}
+};
 
 const exitCode = await main();
 process.exit(exitCode);

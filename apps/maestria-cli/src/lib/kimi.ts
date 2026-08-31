@@ -8,6 +8,29 @@ type JsonRecord = Record<string, unknown>;
 
 const MAESTRIA_PLUGIN = 'maestria';
 
+const isJsonRecord = (value: unknown): value is JsonRecord =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isKimiInstalledRecord = (value: unknown): value is KimiInstalledRecord => {
+  if (!isJsonRecord(value)) {
+    return false;
+  }
+  return (
+    typeof value.id === 'string' &&
+    typeof value.root === 'string' &&
+    (value.source === 'local-path' || value.source === 'zip-url' || value.source === 'github') &&
+    typeof value.enabled === 'boolean' &&
+    typeof value.installedAt === 'string' &&
+    (value.updatedAt === undefined || typeof value.updatedAt === 'string') &&
+    (value.originalSource === undefined || typeof value.originalSource === 'string') &&
+    (value.capabilities === undefined || isJsonRecord(value.capabilities)) &&
+    (value.github === undefined || isJsonRecord(value.github))
+  );
+};
+
+const isKimiInstalledRecords = (value: unknown): value is KimiInstalledRecord[] =>
+  Array.isArray(value) && value.every(isKimiInstalledRecord);
+
 export interface KimiInstalledRecord {
   readonly id: string;
   readonly root: string;
@@ -25,20 +48,16 @@ export interface KimiInstalledFile {
   readonly plugins: KimiInstalledRecord[];
 }
 
-export function kimiCodeHome(): string {
-  return process.env.KIMI_CODE_HOME?.trim() ?? `${homedir()}/.kimi-code`;
-}
+export const kimiCodeHome = (): string =>
+  process.env.KIMI_CODE_HOME?.trim() ?? `${homedir()}/.kimi-code`;
 
-export function kimiManagedPluginDir(): string {
-  return `${kimiCodeHome()}/plugins/managed/${MAESTRIA_PLUGIN}`;
-}
+export const kimiManagedPluginDir = (): string =>
+  `${kimiCodeHome()}/plugins/managed/${MAESTRIA_PLUGIN}`;
 
-export function kimiInstalledPath(): string {
-  return `${kimiCodeHome()}/plugins/installed.json`;
-}
+export const kimiInstalledPath = (): string => `${kimiCodeHome()}/plugins/installed.json`;
 
-export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandError> {
-  return Effect.tryPromise({
+export const readKimiInstalled = (): Effect.Effect<KimiInstalledFile, CommandError> =>
+  Effect.tryPromise({
     catch: (error) =>
       new CommandError({
         command: `read ${kimiInstalledPath()}`,
@@ -51,18 +70,30 @@ export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandErr
       try {
         text = await readFile(filePath, 'utf-8');
       } catch (error) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: fs error shape, ErrnoException code check safe after typeof object and 'code' in error guard
-        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
+          error.code === 'ENOENT'
+        ) {
           return { plugins: [], version: 1 } satisfies KimiInstalledFile;
         }
         throw error;
       }
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
-      const parsed = JSON.parse(text) as Partial<KimiInstalledFile>;
-      if (parsed.version !== undefined && parsed.version !== 1) {
-        throw new Error(`unsupported Kimi plugin registry version: ${String(parsed.version)}`);
+      const parsed: unknown = JSON.parse(text);
+      if (!isJsonRecord(parsed)) {
+        throw new TypeError('Kimi plugin registry must contain an object');
       }
-      if (!Array.isArray(parsed.plugins)) {
+      if (parsed.version !== undefined && parsed.version !== 1) {
+        const version =
+          typeof parsed.version === 'string' ||
+          typeof parsed.version === 'number' ||
+          typeof parsed.version === 'boolean'
+            ? String(parsed.version)
+            : JSON.stringify(parsed.version);
+        throw new Error(`unsupported Kimi plugin registry version: ${version}`);
+      }
+      if (!isKimiInstalledRecords(parsed.plugins)) {
         throw new TypeError('Kimi plugin registry must contain a plugins array');
       }
       return {
@@ -71,10 +102,9 @@ export function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandErr
       } satisfies KimiInstalledFile;
     },
   });
-}
 
-export function writeKimiInstalled(file: KimiInstalledFile): Effect.Effect<void, CommandError> {
-  return Effect.tryPromise({
+export const writeKimiInstalled = (file: KimiInstalledFile): Effect.Effect<void, CommandError> =>
+  Effect.tryPromise({
     catch: (error) =>
       new CommandError({
         command: `write ${kimiInstalledPath()}`,
@@ -89,10 +119,9 @@ export function writeKimiInstalled(file: KimiInstalledFile): Effect.Effect<void,
       await rename(tempPath, filePath);
     },
   });
-}
 
-export function registerKimiPlugin(): Effect.Effect<void, CommandError> {
-  return Effect.gen(function* () {
+export const registerKimiPlugin = (): Effect.Effect<void, CommandError> =>
+  Effect.gen(function* registerKimiPluginEffect() {
     const file = yield* readKimiInstalled();
     const now = new Date().toISOString();
     const current = file.plugins.find((plugin) => plugin.id === MAESTRIA_PLUGIN);
@@ -110,10 +139,9 @@ export function registerKimiPlugin(): Effect.Effect<void, CommandError> {
     plugins.push(record);
     yield* writeKimiInstalled({ plugins, version: 1 });
   });
-}
 
-export function removeKimiPlugin(): Effect.Effect<void, CommandError> {
-  return Effect.gen(function* () {
+export const removeKimiPlugin = (): Effect.Effect<void, CommandError> =>
+  Effect.gen(function* removeKimiPluginEffect() {
     const file = yield* readKimiInstalled();
     const plugins = file.plugins.filter((plugin) => plugin.id !== MAESTRIA_PLUGIN);
     if (plugins.length !== file.plugins.length) {
@@ -131,4 +159,3 @@ export function removeKimiPlugin(): Effect.Effect<void, CommandError> {
       },
     });
   });
-}

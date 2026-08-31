@@ -1,8 +1,8 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 
-import InstallCommand from '@/components/plugin/InstallCommand.astro';
-import SiteFooter from '@/components/plugin/SiteFooter.astro';
+import InstallCommand from '@/components/plugin/install-command.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
 import { agents } from '@/data/agents.js';
 import type { Agent } from '@/data/agents.js';
 import { markAttrs, marks } from '@/data/marks.js';
@@ -779,33 +779,37 @@ const INSTALL_CMD = 'npx maestria install opencode';
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  const setupAgentTabs = (): void => {
     const tabs = document.querySelectorAll('.agent-tab');
     const panels = document.querySelectorAll('.agent-panel');
 
-    function activateTab(tab: Element) {
-      tabs.forEach(t => {
+    const activateTab = (tab: Element): void => {
+      for (const t of tabs) {
         t.setAttribute('aria-selected', 'false');
         t.setAttribute('tabindex', '-1');
-      });
-      panels.forEach(p => p.setAttribute('hidden', ''));
+      }
+      for (const p of panels) {
+        p.setAttribute('hidden', '');
+      }
 
       tab.setAttribute('aria-selected', 'true');
       tab.setAttribute('tabindex', '0');
       const panelId = tab.getAttribute('aria-controls');
-      const panel = document.getElementById(panelId!);
-      if (panel) {panel.removeAttribute('hidden');}
+      if (panelId !== null) {
+        const panel = document.querySelector<HTMLElement>(`#${CSS.escape(panelId)}`);
+        panel?.removeAttribute('hidden');
+      }
 
       // Track agent tab click
       if (typeof window !== 'undefined' && window.umami) {
         const agentName = tab.querySelector('.agent-tab-name')?.textContent?.trim() || tab.textContent?.trim();
         window.umami.track('agent_tab_click', { agent: agentName });
       }
-    }
+    };
 
-    tabs.forEach(tab => {
+    for (const tab of tabs) {
       tab.addEventListener('click', () => activateTab(tab));
-    });
+    }
 
     document.addEventListener('keydown', (e) => {
       const target = e.target as HTMLElement;
@@ -831,6 +835,9 @@ const INSTALL_CMD = 'npx maestria install opencode';
       }
     });
 
+  };
+
+  const setupTranscript = (): void => {
     // Harness transcript: stagger lines in once when >=30% of the card is
     // visible. Gated behind prefers-reduced-motion; CSS keeps lines fully
     // visible by default so this is pure progressive enhancement.
@@ -843,17 +850,22 @@ const INSTALL_CMD = 'npx maestria install opencode';
     ) {
       const observer = new IntersectionObserver(
         (entries) => {
-          entries.forEach((entry) => {
+          for (const entry of entries) {
             if (entry.isIntersecting) {
               entry.target.classList.add('term-play');
               observer.unobserve(entry.target);
             }
-          });
+          }
         },
         { threshold: 0.3 },
       );
 
       observer.observe(term);
     }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setupAgentTabs();
+    setupTranscript();
   });
 </script>

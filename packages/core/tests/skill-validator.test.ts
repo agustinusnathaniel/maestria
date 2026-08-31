@@ -1,16 +1,39 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 import { validateSkills, validateSkillsAndLog } from '../scripts/lib/skill-validator.js';
 
-function makeSkill(dir: string, name: string, frontmatter: string, body: string): void {
-  const skillDir = join(dir, 'skills', name);
+const { join } = path;
+
+const makeSkill = (dir: string, name: string, frontmatter: string, body: string): void => {
+  const skillDir = path.join(dir, 'skills', name);
   mkdirSync(skillDir, { recursive: true });
   const content = `---\n${frontmatter}\n---\n\n${body}\n`;
-  writeFileSync(join(skillDir, 'SKILL.md'), content, 'utf-8');
-}
+  writeFileSync(path.join(skillDir, 'SKILL.md'), content, 'utf-8');
+};
+
+const captureLog = (fn: () => boolean): { ok: boolean; out: string[]; err: string[] } => {
+  const out: string[] = [];
+  const err: string[] = [];
+  const origLog = console.log;
+  const origError = console.error;
+  // eslint-disable-next-line no-console
+  console.log = (...args: unknown[]): void => {
+    out.push(args.join(' '));
+  };
+  console.error = (...args: unknown[]): void => {
+    err.push(args.join(' '));
+  };
+  try {
+    const ok = fn();
+    return { err, ok, out };
+  } finally {
+    console.log = origLog;
+    console.error = origError;
+  }
+};
 
 describe('validateSkills', () => {
   let tmp: string;
@@ -107,23 +130,6 @@ describe('validateSkills', () => {
   });
 
   describe('validateSkillsAndLog stdout/stderr contract', () => {
-    function captureLog(fn: () => boolean): { ok: boolean; out: string[]; err: string[] } {
-      const out: string[] = [];
-      const err: string[] = [];
-      const origLog = console.log;
-      const origError = console.error;
-      // eslint-disable-next-line no-console
-      console.log = (...args: unknown[]) => out.push(args.join(' '));
-      console.error = (...args: unknown[]) => err.push(args.join(' '));
-      try {
-        const ok = fn();
-        return { err, ok, out };
-      } finally {
-        console.log = origLog;
-        console.error = origError;
-      }
-    }
-
     it('logs ✅ to stdout for valid skills and returns true', () => {
       makeSkill(tmp, 'orchestrator', 'name: orchestrator\ndescription: Orchestrator skill', 'Body');
       const { ok, out, err } = captureLog(() =>

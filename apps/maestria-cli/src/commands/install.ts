@@ -11,7 +11,7 @@ import { exitCodeForResults } from '@/lib/result-exit.js';
 import { VALID_PLATFORMS, validateOrExit, validatePlatforms } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
-async function runInstallAll(isQuiet: boolean): Promise<PlatformResult[]> {
+const runInstallAll = async (isQuiet: boolean): Promise<PlatformResult[]> => {
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const allPlatforms = await Effect.runPromise(detectAll());
@@ -22,44 +22,47 @@ async function runInstallAll(isQuiet: boolean): Promise<PlatformResult[]> {
     process.exit(0);
   }
   spinner.start('Preparing...');
-  const results: PlatformResult[] = [];
-  for (const p of toInstall) {
-    const platform = getPlatform(p.id);
-    if (!platform) {
-      results.push({
-        id: p.id,
-        label: p.label,
-        message: 'Platform definition not found. This is a bug.',
-        ok: false,
-      } satisfies PlatformResult);
-      continue;
-    }
-    spinner.message(`Installing ${p.label}...`);
-    const result = await Effect.runPromise(
-      Effect.gen(function* result() {
-        yield* platform.install;
-        return { id: platform.id, label: platform.label, message: 'Installed', ok: true };
-      }).pipe(
-        Effect.catchTag('CommandError', (error) =>
-          Effect.succeed({
-            id: platform.id,
-            label: platform.label,
-            message: error.message,
+  const results = await Effect.runPromise(
+    Effect.all(
+      toInstall.map((p) => {
+        const platform = getPlatform(p.id);
+        if (!platform) {
+          return Effect.succeed({
+            id: p.id,
+            label: p.label,
+            message: 'Platform definition not found. This is a bug.',
             ok: false,
-          } satisfies PlatformResult),
-        ),
-      ),
-    );
-    spinner.message(
-      result.ok ? `✓ ${p.label} installed` : `✗ ${p.label} failed: ${result.message}`,
-    );
-    results.push(result);
-  }
+          } satisfies PlatformResult);
+        }
+        return Effect.gen(function* installPlatform() {
+          spinner.message(`Installing ${p.label}...`);
+          const result = yield* Effect.gen(function* installPlatformEffect() {
+            yield* platform.install;
+            return { id: platform.id, label: platform.label, message: 'Installed', ok: true };
+          }).pipe(
+            Effect.catchTag('CommandError', (error) =>
+              Effect.succeed({
+                id: platform.id,
+                label: platform.label,
+                message: error.message,
+                ok: false,
+              } satisfies PlatformResult),
+            ),
+          );
+          spinner.message(
+            result.ok ? `✓ ${p.label} installed` : `✗ ${p.label} failed: ${result.message}`,
+          );
+          return result;
+        });
+      }),
+      { concurrency: 1 },
+    ),
+  );
   spinner.stop('Done');
   return results;
-}
+};
 
-async function runInstallInteractive(isQuiet: boolean): Promise<PlatformResult[]> {
+const runInstallInteractive = async (isQuiet: boolean): Promise<PlatformResult[]> => {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     console.error('No platform specified and not in an interactive terminal.');
     console.error('Usage: maestria install <platform> or maestria install --all');
@@ -87,32 +90,28 @@ async function runInstallInteractive(isQuiet: boolean): Promise<PlatformResult[]
     required: true,
     selectableGroups: true,
   });
-  if (
-    isCancel(selected) ||
-    selected === undefined ||
-    selected === null ||
-    (selected as unknown) === '' ||
-    (Array.isArray(selected) && selected.length === 0)
-  ) {
+  if (isCancel(selected) || !Array.isArray(selected) || selected.length === 0) {
     cancel('Install cancelled.');
     process.exit(130);
   }
-  const results: PlatformResult[] = [];
-  for (const id of selected) {
-    const platform = getPlatform(id);
-    if (!platform) {
-      results.push({
-        id,
-        label: id,
-        message: 'Platform definition not found. This is a bug.',
-        ok: false,
-      } satisfies PlatformResult);
-      continue;
-    }
-    results.push(await Effect.runPromise(installOne(platform, isQuiet)));
-  }
-  return results;
-}
+  return await Effect.runPromise(
+    Effect.all(
+      selected.map((id) => {
+        const platform = getPlatform(id);
+        if (!platform) {
+          return Effect.succeed({
+            id,
+            label: id,
+            message: 'Platform definition not found. This is a bug.',
+            ok: false,
+          } satisfies PlatformResult);
+        }
+        return installOne(platform, isQuiet);
+      }),
+      { concurrency: 1 },
+    ),
+  );
+};
 
 export const installCommand = defineCommand({
   args: {
@@ -161,19 +160,25 @@ export const installCommand = defineCommand({
     }
     const results: PlatformResult[] = [];
     if (platformIds && platformIds.length > 0) {
-      for (const id of platformIds) {
-        const platform = getPlatform(id);
-        if (!platform) {
-          results.push({
-            id,
-            label: id,
-            message: 'Platform definition not found. This is a bug.',
-            ok: false,
-          } satisfies PlatformResult);
-          continue;
-        }
-        results.push(await Effect.runPromise(installOne(platform, isQuiet)));
-      }
+      results.push(
+        ...(await Effect.runPromise(
+          Effect.all(
+            platformIds.map((id) => {
+              const platform = getPlatform(id);
+              if (!platform) {
+                return Effect.succeed({
+                  id,
+                  label: id,
+                  message: 'Platform definition not found. This is a bug.',
+                  ok: false,
+                } satisfies PlatformResult);
+              }
+              return installOne(platform, isQuiet);
+            }),
+            { concurrency: 1 },
+          ),
+        )),
+      );
     } else if (args.all) {
       results.push(...(await runInstallAll(isQuiet)));
     } else {

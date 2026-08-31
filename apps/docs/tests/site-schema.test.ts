@@ -31,7 +31,7 @@ describe('organizationSchema', () => {
   });
 
   it('routes technical support through GitHub issues', () => {
-    const contact = schema.contactPoint[0];
+    const [contact] = schema.contactPoint;
     expect(contact['@type']).toBe('ContactPoint');
     expect(contact.contactType).toBe('technical support');
     expect(contact.url).toBe(GITHUB_ISSUES_URL);

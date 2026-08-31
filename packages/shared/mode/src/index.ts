@@ -65,7 +65,7 @@ export interface ModeDetectPure {
  */
 export const CODE_BLOCK_RE = /```[\s\S]*?```|`[^`]*`/gu;
 
-export function findCodeBlockRanges(text: string): [number, number][] {
+export const findCodeBlockRanges = (text: string): [number, number][] => {
   const ranges: [number, number][] = [];
   let match: RegExpExecArray | null;
   // Reset lastIndex in case callers reuse the exported regex
@@ -74,11 +74,10 @@ export function findCodeBlockRanges(text: string): [number, number][] {
     ranges.push([match.index, match.index + match[0].length]);
   }
   return ranges;
-}
+};
 
-export function isInRanges(index: number, ranges: [number, number][]): boolean {
-  return ranges.some(([start, end]) => index >= start && index < end);
-}
+export const isInRanges = (index: number, ranges: [number, number][]): boolean =>
+  ranges.some(([start, end]) => index >= start && index < end);
 
 /**
  * Extract the `## MODE:` section from a command file's content.
@@ -86,32 +85,28 @@ export function isInRanges(index: number, ranges: [number, number][]): boolean {
  * from there, trim trailing whitespace, append a single newline; if
  * no marker is found, normalize trailing whitespace the same way.
  */
-export function extractModeSection(content: string): string {
+export const extractModeSection = (content: string): string => {
   const modeIdx = content.indexOf('## MODE:');
   if (modeIdx !== -1) {
     return `${content.slice(modeIdx).replace(/\s+$/u, '')}\n`;
   }
   return `${content.replace(/\s+$/u, '')}\n`;
-}
+};
 
-function escapeRegExp(value: string): string {
-  return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-}
+const escapeRegExp = (value: string): string => value.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
-function buildKeywordRegex(keyword: string): RegExp {
-  return new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'giu');
-}
+const buildKeywordRegex = (keyword: string): RegExp =>
+  new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'giu');
 
-function isModeKeyword(value: string): value is ModeKeyword {
-  return (MODE_KEYWORDS as readonly string[]).includes(value);
-}
+const isModeKeyword = (value: string): value is ModeKeyword =>
+  (MODE_KEYWORDS as readonly string[]).includes(value);
 
-export function getModeMarker(mode: string): string {
+export const getModeMarker = (mode: string): string => {
   if (isModeKeyword(mode)) {
     return MODE_MARKERS[mode];
   }
   return '';
-}
+};
 
 // ── Detection ──
 
@@ -127,7 +122,7 @@ export function getModeMarker(mode: string): string {
  *
  * Returns the pure detection result (mode, matched keyword text, index) or null.
  */
-export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure | null {
+export const detectMode = (text: string, disabled?: Set<string>): ModeDetectPure | null => {
   if (!text) {
     return null;
   }
@@ -158,7 +153,7 @@ export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure
   }
 
   return best;
-}
+};
 
 /**
  * Remove the matched keyword from the text, cleaning up a trailing colon
@@ -167,9 +162,9 @@ export function detectMode(text: string, disabled?: Set<string>): ModeDetectPure
  * Mirrors both originals: strip a leading colon and surrounding whitespace
  * after the keyword, then collapse double spaces and trim.
  */
-export function stripKeyword(text: string, result: { index: number; keyword: string }): string {
+export const stripKeyword = (text: string, result: { index: number; keyword: string }): string => {
   const before = text.slice(0, result.index);
   const after = text.slice(result.index + result.keyword.length);
   const cleaned = after.replace(/^:\s*/u, '');
   return (before + cleaned).replaceAll(/ {2,}/gu, ' ').trim();
-}
+};

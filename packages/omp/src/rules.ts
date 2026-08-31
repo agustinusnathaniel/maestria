@@ -1,9 +1,5 @@
 import { getModePrompt } from '@maestria/shared-pi/modes-core';
-import type {
-  BeforeAgentStartEvent,
-  BeforeAgentStartEventResult,
-  ExtensionContext,
-} from '@oh-my-pi/pi-coding-agent';
+import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-pi/pi-coding-agent';
 
 import type { MaestriaState } from '@/state.js';
 
@@ -22,13 +18,11 @@ const COMMANDS_DIR = `${__dirname}/../agents/commands`;
  * letting the platform's prompt assembly (skills + context files + tools)
  * stand as-is.
  */
-export function createModePromptHandler(state: MaestriaState) {
-  return (
-    event: BeforeAgentStartEvent,
-    _ctx: ExtensionContext,
-  ): BeforeAgentStartEventResult | void => {
+export const createModePromptHandler =
+  (state: MaestriaState) =>
+  (event: BeforeAgentStartEvent, _ctx: unknown): BeforeAgentStartEventResult | undefined => {
     if (!state.mode) {
-      return;
+      return undefined;
     }
 
     const parts: string[] = [
@@ -42,4 +36,3 @@ export function createModePromptHandler(state: MaestriaState) {
 
     return { systemPrompt: parts };
   };
-}

@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 // ── Imports ──
@@ -17,6 +17,8 @@ import {
   stripFrontmatter,
   stripSourceComment,
 } from '../scripts/lib/transforms.js';
+
+const { join } = path;
 
 // ═══════════════════════════════════════════════
 // Transforms
@@ -354,10 +356,12 @@ describe('config merge semantics', () => {
     const config = await loadConfig(configPath);
     const fileCfg = config.files['test.md'];
 
-    expect(fileCfg.stripFrontmatter).toBe(false); // file overrides
-    expect(fileCfg.prepend).toBe('file-prepend\n'); // file overrides
-    expect(fileCfg.append).toBe('default-append\n'); // inherited from default
-    expect(fileCfg.frontmatter).toEqual({ key: 'file' }); // file overrides
+    // File-specific values override defaults.
+    expect(fileCfg.stripFrontmatter).toBe(false);
+    expect(fileCfg.prepend).toBe('file-prepend\n');
+    // Undefined file-specific values inherit defaults.
+    expect(fileCfg.append).toBe('default-append\n');
+    expect(fileCfg.frontmatter).toEqual({ key: 'file' });
   });
 
   it('leaves undefined default fields as defaults', async () => {

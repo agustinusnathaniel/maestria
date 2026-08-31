@@ -11,13 +11,45 @@ interface ManagedInstructionRange {
   readonly end: number;
 }
 
+const markerOffsets = (content: string, marker: string): number[] => {
+  const offsets: number[] = [];
+  let offset = content.indexOf(marker);
+  while (offset >= 0) {
+    offsets.push(offset);
+    offset = content.indexOf(marker, offset + marker.length);
+  }
+  return offsets;
+};
+
+const hasExactlyOne = (content: string, marker: string): boolean =>
+  markerOffsets(content, marker).length === 1;
+
+const normalizeManagedBlock = (block: string): string => {
+  const normalized = block.trim();
+  if (!hasExactlyOne(normalized, CODEX_MANAGED_INSTRUCTIONS_START)) {
+    throw new Error('Codex Maestria instruction block is missing its start marker');
+  }
+  if (!hasExactlyOne(normalized, CODEX_MANAGED_INSTRUCTIONS_END)) {
+    throw new Error('Codex Maestria instruction block is missing its end marker');
+  }
+  if (
+    normalized.indexOf(CODEX_MANAGED_INSTRUCTIONS_START) >
+    normalized.indexOf(CODEX_MANAGED_INSTRUCTIONS_END)
+  ) {
+    throw new Error('Codex Maestria instruction block markers are out of order');
+  }
+  return normalized;
+};
+
 /**
  * Return the one Maestria-managed block in a Codex instruction file.
  *
  * A malformed or duplicated marker is rejected so an install cannot silently
  * damage a user-owned instruction file.
  */
-export function codexManagedInstructionRange(content: string): ManagedInstructionRange | undefined {
+export const codexManagedInstructionRange = (
+  content: string,
+): ManagedInstructionRange | undefined => {
   const starts = markerOffsets(content, CODEX_MANAGED_INSTRUCTIONS_START);
   const ends = markerOffsets(content, CODEX_MANAGED_INSTRUCTIONS_END);
 
@@ -32,14 +64,13 @@ export function codexManagedInstructionRange(content: string): ManagedInstructio
     end: ends[0] + CODEX_MANAGED_INSTRUCTIONS_END.length,
     start: starts[0],
   };
-}
+};
 
-export function hasCodexManagedInstructions(content: string): boolean {
-  return codexManagedInstructionRange(content) !== undefined;
-}
+export const hasCodexManagedInstructions = (content: string): boolean =>
+  codexManagedInstructionRange(content) !== undefined;
 
 /** Add or refresh the managed block while leaving user-authored text intact. */
-export function upsertCodexManagedInstructions(content: string, block: string): string {
+export const upsertCodexManagedInstructions = (content: string, block: string): string => {
   const normalizedBlock = normalizeManagedBlock(block);
   const range = codexManagedInstructionRange(content);
   if (range) {
@@ -53,10 +84,10 @@ export function upsertCodexManagedInstructions(content: string, block: string): 
 
   const separator = content.endsWith('\n') ? newline : `${newline}${newline}`;
   return `${content}${separator}${normalizedBlock}${newline}`;
-}
+};
 
 /** Remove only the managed block, preserving unrelated instructions. */
-export function removeCodexManagedInstructions(content: string): string {
+export const removeCodexManagedInstructions = (content: string): string => {
   const range = codexManagedInstructionRange(content);
   if (!range) {
     return content;
@@ -75,35 +106,4 @@ export function removeCodexManagedInstructions(content: string): string {
     return after.slice(newline.length);
   }
   return `${before}${after}`;
-}
-
-function normalizeManagedBlock(block: string): string {
-  const normalized = block.trim();
-  if (!hasExactlyOne(normalized, CODEX_MANAGED_INSTRUCTIONS_START)) {
-    throw new Error('Codex Maestria instruction block is missing its start marker');
-  }
-  if (!hasExactlyOne(normalized, CODEX_MANAGED_INSTRUCTIONS_END)) {
-    throw new Error('Codex Maestria instruction block is missing its end marker');
-  }
-  if (
-    normalized.indexOf(CODEX_MANAGED_INSTRUCTIONS_START) >
-    normalized.indexOf(CODEX_MANAGED_INSTRUCTIONS_END)
-  ) {
-    throw new Error('Codex Maestria instruction block markers are out of order');
-  }
-  return normalized;
-}
-
-function markerOffsets(content: string, marker: string): number[] {
-  const offsets: number[] = [];
-  let offset = content.indexOf(marker);
-  while (offset >= 0) {
-    offsets.push(offset);
-    offset = content.indexOf(marker, offset + marker.length);
-  }
-  return offsets;
-}
-
-function hasExactlyOne(content: string, marker: string): boolean {
-  return markerOffsets(content, marker).length === 1;
-}
+};

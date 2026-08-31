@@ -1,15 +1,14 @@
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
-  ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import { getModePrompt } from '@maestria/shared-pi/modes-core';
-import { resolve } from 'node:path';
+import path from 'node:path';
 
 import type { MaestriaState } from '@/state.js';
 
 const __dirname = import.meta.dirname;
-const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
+const COMMANDS_DIR = path.resolve(__dirname, '../agents/commands');
 
 /**
  * Creates a before_agent_start handler that injects workflow mode prompts.
@@ -19,17 +18,15 @@ const COMMANDS_DIR = resolve(__dirname, '../agents/commands');
  * auto-injected by Pi's skill system via SKILL.md files registered in
  * the pi.skills manifest field - the standard Pi extension pattern.
  *
- * When no mode is active, the handler returns void (no modification),
+ * When no mode is active, the handler returns an empty result (no modification),
  * letting Pi's built-in prompt assembly (skills + context files + tools)
  * stand as-is.
  */
-export function createModePromptHandler(state: MaestriaState) {
-  return (
-    event: BeforeAgentStartEvent,
-    _ctx: ExtensionContext,
-  ): BeforeAgentStartEventResult | void => {
-    if (!state.mode) {
-      return;
+export const createModePromptHandler =
+  (state: MaestriaState) =>
+  (event: BeforeAgentStartEvent, _ctx: object): BeforeAgentStartEventResult => {
+    if (state.mode === null) {
+      return {};
     }
 
     const parts: string[] = [
@@ -43,4 +40,3 @@ export function createModePromptHandler(state: MaestriaState) {
 
     return { systemPrompt: parts.join('\n') };
   };
-}

@@ -5,11 +5,41 @@ import { Effect } from 'effect';
 import { detectInstalled } from '@/lib/detect.js';
 import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
 import { getPlatform, platforms } from '@/lib/platforms.js';
+import type { PlatformHandler } from '@/lib/platforms.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
-async function runUninstallAll(isQuiet: boolean): Promise<PlatformResult[]> {
+const uninstallOne = (platform: PlatformHandler, quiet: boolean): Effect.Effect<PlatformResult> =>
+  Effect.gen(function* uninstallOneEffect() {
+    const spinner = createSpinner(quiet);
+    spinner.start(`Uninstalling ${platform.label}...`);
+
+    const errorMessage: string | null = yield* platform.uninstall.pipe(
+      Effect.as(null),
+      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
+    );
+
+    if (errorMessage === null) {
+      spinner.stop('Uninstalled');
+      return {
+        id: platform.id,
+        label: platform.label,
+        message: 'Uninstalled',
+        ok: true,
+      } satisfies PlatformResult;
+    }
+
+    spinner.stop(`Failed: ${errorMessage}`);
+    return {
+      id: platform.id,
+      label: platform.label,
+      message: errorMessage,
+      ok: false,
+    } satisfies PlatformResult;
+  });
+
+const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[]> => {
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const installed = await Effect.runPromise(detectInstalled());
@@ -18,24 +48,26 @@ async function runUninstallAll(isQuiet: boolean): Promise<PlatformResult[]> {
     console.log('No maestria installations found to uninstall.');
     process.exit(0);
   }
-  const results: PlatformResult[] = [];
-  for (const p of installed) {
-    const platform = getPlatform(p.id);
-    if (!platform) {
-      results.push({
-        id: p.id,
-        label: p.label,
-        message: 'Platform definition not found. This is a bug.',
-        ok: false,
-      } satisfies PlatformResult);
-      continue;
-    }
-    results.push(await Effect.runPromise(uninstallOne(platform, isQuiet)));
-  }
-  return results;
-}
+  return await Effect.runPromise(
+    Effect.all(
+      installed.map((p) => {
+        const platform = getPlatform(p.id);
+        if (!platform) {
+          return Effect.succeed({
+            id: p.id,
+            label: p.label,
+            message: 'Platform definition not found. This is a bug.',
+            ok: false,
+          } satisfies PlatformResult);
+        }
+        return uninstallOne(platform, isQuiet);
+      }),
+      { concurrency: 1 },
+    ),
+  );
+};
 
-async function runUninstallInteractive(isQuiet: boolean): Promise<PlatformResult[]> {
+const runUninstallInteractive = async (isQuiet: boolean): Promise<PlatformResult[]> => {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     console.error('No platform specified and not in an interactive terminal.');
     console.error('Usage: maestria uninstall <platform> or maestria uninstall --all');
@@ -70,7 +102,7 @@ async function runUninstallInteractive(isQuiet: boolean): Promise<PlatformResult
     ];
   }
   return [await Effect.runPromise(uninstallOne(platform, isQuiet))];
-}
+};
 
 export const uninstallCommand = defineCommand({
   args: {
@@ -134,35 +166,3 @@ export const uninstallCommand = defineCommand({
     process.exit(exitCodeForResults(results));
   },
 });
-
-function uninstallOne(
-  platform: import('@/lib/platforms.js').PlatformHandler,
-  quiet: boolean,
-): Effect.Effect<PlatformResult> {
-  return Effect.gen(function* () {
-    const spinner = createSpinner(quiet);
-    spinner.start(`Uninstalling ${platform.label}...`);
-
-    const errorMessage: string | void = yield* platform.uninstall.pipe(
-      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
-    );
-
-    if (errorMessage === undefined) {
-      spinner.stop('Uninstalled');
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: 'Uninstalled',
-        ok: true,
-      } satisfies PlatformResult;
-    }
-
-    spinner.stop(`Failed: ${errorMessage}`);
-    return {
-      id: platform.id,
-      label: platform.label,
-      message: errorMessage,
-      ok: false,
-    } satisfies PlatformResult;
-  });
-}

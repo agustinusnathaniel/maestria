@@ -1,6 +1,8 @@
+import type * as NodeFs from 'node:fs';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { MaestriaPlugin } from '@/index.js';
+import { pluginInput } from './helpers.js';
 
 // Suppress expected console.error noise from ENOENT error path
 vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -9,7 +11,7 @@ vi.spyOn(console, 'error').mockImplementation(() => {});
 // This must be in a separate file because vi.mock is hoisted and would
 // affect the normal tests in index.test.ts.
 vi.mock('node:fs', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs')>();
+  const actual = await importOriginal<typeof NodeFs>();
   return {
     ...actual,
     readdirSync: () => {
@@ -20,6 +22,6 @@ vi.mock('node:fs', async (importOriginal) => {
 
 describe('plugin error handling', () => {
   it('should throw when agents directory is missing', async () => {
-    await expect(MaestriaPlugin({} as never)).rejects.toThrow(/Failed to load agents/u);
+    await expect(MaestriaPlugin(pluginInput)).rejects.toThrow(/Failed to load agents/u);
   });
 });

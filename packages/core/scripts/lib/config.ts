@@ -1,7 +1,7 @@
 // packages/core/scripts/lib/config.ts - Config types, loader & merge
 
 import { existsSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 // ── Types ──
@@ -54,36 +54,56 @@ export class ConfigError extends Error {
   override name = 'ConfigError';
 }
 
-// ── Config Loading ──
+type ResolvedFileConfigValues = Omit<ResolvedFileConfig, 'output'>;
 
-export async function loadConfig(configPath: string): Promise<ResolvedSyncConfig> {
-  const absPath = resolve(configPath);
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
-  if (!existsSync(absPath)) {
-    throw new ConfigError(`Config file not found: ${absPath}`);
+const isSyncConfig = (value: unknown): value is SyncConfig =>
+  isRecord(value) && typeof value.source === 'string';
+
+const mergeFileConfig = (
+  fileCfg: FileConfig,
+  defaultCfg: FileConfig | undefined,
+): ResolvedFileConfigValues => ({
+  append: fileCfg.append ?? defaultCfg?.append ?? '',
+  autoGenComment: fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? undefined,
+  frontmatter: fileCfg.frontmatter === undefined ? defaultCfg?.frontmatter : fileCfg.frontmatter,
+  prepend: fileCfg.prepend ?? defaultCfg?.prepend ?? '',
+  replace: [...(defaultCfg?.replace ?? []), ...(fileCfg.replace ?? [])],
+  stripFrontmatter: fileCfg.stripFrontmatter ?? defaultCfg?.stripFrontmatter ?? false,
+});
+
+const resolveFileOutput = (fileCfg: FileConfig, baseDir: string, filename: string): string => {
+  if (fileCfg.output !== undefined && fileCfg.output !== null && fileCfg.output !== '') {
+    return path.resolve(baseDir, fileCfg.output);
   }
+  return path.resolve(baseDir, filename);
+};
 
-  let mod: { default?: SyncConfig };
-  try {
-    mod = await import(pathToFileURL(absPath).href);
-  } catch (error) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-    throw new ConfigError(`Failed to load config file: ${absPath}`, { cause: error as Error });
-  }
+const resolveFileConfig = (
+  fileCfg: FileConfig,
+  defaultCfg: FileConfig | undefined,
+  configDir: string,
+  outputDir: string,
+  filename: string,
+): ResolvedFileConfig => {
+  const baseDir = outputDir || configDir;
+  return {
+    ...mergeFileConfig(fileCfg, defaultCfg),
+    output: resolveFileOutput(fileCfg, baseDir, filename),
+  };
+};
 
-  const raw = mod.default;
-  if (!raw) {
-    throw new ConfigError(`Config file must export a default object: ${absPath}`);
-  }
-
-  return resolveConfig(raw, dirname(absPath), absPath);
-}
-
-function resolveConfig(raw: SyncConfig, configDir: string, configPath: string): ResolvedSyncConfig {
-  const source = resolve(configDir, raw.source);
+const resolveConfig = (
+  raw: SyncConfig,
+  configDir: string,
+  configPath: string,
+): ResolvedSyncConfig => {
+  const source = path.resolve(configDir, raw.source);
   const output =
     raw.output !== undefined && raw.output !== null && raw.output !== ''
-      ? resolve(configDir, raw.output)
+      ? path.resolve(configDir, raw.output)
       : '';
 
   const resolvedFiles: Record<string, ResolvedFileConfig> = {};
@@ -109,37 +129,28 @@ function resolveConfig(raw: SyncConfig, configDir: string, configPath: string): 
     preserve: raw.preserve ?? [],
     source,
   };
-}
+};
 
-function resolveFileConfig(
-  fileCfg: FileConfig,
-  defaultCfg: FileConfig | undefined,
-  configDir: string,
-  outputDir: string,
-  filename: string,
-): ResolvedFileConfig {
-  const replace = [...(defaultCfg?.replace ?? []), ...(fileCfg.replace ?? [])];
+// ── Config Loading ──
 
-  const stripFrontmatter = fileCfg.stripFrontmatter ?? defaultCfg?.stripFrontmatter ?? false;
-  const prepend = fileCfg.prepend ?? defaultCfg?.prepend ?? '';
-  const append = fileCfg.append ?? defaultCfg?.append ?? '';
-  const frontmatter =
-    fileCfg.frontmatter === undefined ? defaultCfg?.frontmatter : fileCfg.frontmatter;
-  const autoGenComment = fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? undefined;
+export const loadConfig = async (configPath: string): Promise<ResolvedSyncConfig> => {
+  const absPath = path.resolve(configPath);
 
-  const baseDir = outputDir || configDir;
-  const fileOutput =
-    fileCfg.output !== undefined && fileCfg.output !== null && fileCfg.output !== ''
-      ? resolve(baseDir, fileCfg.output)
-      : resolve(baseDir, filename);
+  if (!existsSync(absPath)) {
+    throw new ConfigError(`Config file not found: ${absPath}`);
+  }
 
-  return {
-    append,
-    autoGenComment,
-    frontmatter,
-    output: fileOutput,
-    prepend,
-    replace,
-    stripFrontmatter,
-  };
-}
+  let mod: unknown;
+  try {
+    mod = await import(pathToFileURL(absPath).href);
+  } catch (error) {
+    throw new ConfigError(`Failed to load config file: ${absPath}`, { cause: error });
+  }
+
+  const raw = isRecord(mod) && isSyncConfig(mod.default) ? mod.default : undefined;
+  if (raw === undefined) {
+    throw new ConfigError(`Config file must export a default object: ${absPath}`);
+  }
+
+  return resolveConfig(raw, path.dirname(absPath), absPath);
+};

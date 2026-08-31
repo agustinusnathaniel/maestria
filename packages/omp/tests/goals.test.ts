@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { installGoalEventHandlers } from '@/goals.js';
+import type { GoalApi } from '@/goals.js';
 import {
   createInitialState,
   recordFileModified,
@@ -10,41 +11,39 @@ import {
 import type { MaestriaState } from '@/state.js';
 
 interface MockPi {
-  on: ReturnType<typeof vi.fn>;
-  appendEntry: ReturnType<typeof vi.fn>;
+  on: ReturnType<typeof vi.fn<GoalApi['on']>>;
+  appendEntry: ReturnType<typeof vi.fn<GoalApi['appendEntry']>>;
 }
 
-function createMockPi(): MockPi {
-  return { appendEntry: vi.fn(), on: vi.fn() };
-}
+type EventHandler = Parameters<GoalApi['on']>[1];
 
-function install(pi: MockPi, state: MaestriaState) {
-  installGoalEventHandlers(pi as any, state);
-  const calls = pi.on.mock.calls as [string, (...args: unknown[]) => unknown][];
-  const goalUpdatedCall = calls.find(([event]) => event === 'goal_updated');
-  const sessionSwitchCall = calls.find(([event]) => event === 'session_switch');
-  const sessionBranchCall = calls.find(([event]) => event === 'session_branch');
-  const sessionTreeCall = calls.find(([event]) => event === 'session_tree');
-  expect(goalUpdatedCall).toBeDefined();
-  expect(sessionSwitchCall).toBeDefined();
-  expect(sessionBranchCall).toBeDefined();
-  expect(sessionTreeCall).toBeDefined();
-  return {
-    goalUpdated: goalUpdatedCall![1],
-    sessionBranch: sessionBranchCall![1],
-    sessionSwitch: sessionSwitchCall![1],
-    sessionTree: sessionTreeCall![1],
+const createMockPi = (): MockPi => ({ appendEntry: vi.fn(), on: vi.fn() });
+
+const install = (pi: MockPi, state: MaestriaState) => {
+  installGoalEventHandlers(pi, state);
+  const { calls } = pi.on.mock;
+  const findHandler = (event: string): EventHandler => {
+    const call = calls.find(([registeredEvent]) => registeredEvent === event);
+    if (call === undefined) {
+      throw new Error(`${event} handler was not registered`);
+    }
+    const [, handler] = call;
+    return handler;
   };
-}
-
-function sessionContext(entries: unknown[] = []) {
   return {
-    sessionManager: {
-      getBranch: vi.fn(() => entries),
-      getEntries: vi.fn(() => entries),
-    },
+    goalUpdated: findHandler('goal_updated'),
+    sessionBranch: findHandler('session_branch'),
+    sessionSwitch: findHandler('session_switch'),
+    sessionTree: findHandler('session_tree'),
   };
-}
+};
+
+const sessionContext = (entries: unknown[] = []) => ({
+  sessionManager: {
+    getBranch: vi.fn(() => entries),
+    getEntries: vi.fn(() => entries),
+  },
+});
 
 const NATIVE_GOAL = {
   createdAt: 0,
@@ -56,7 +55,7 @@ const NATIVE_GOAL = {
   updatedAt: 1,
 };
 
-function maestriaOnlyState(): MaestriaState {
+const maestriaOnlyState = (): MaestriaState => {
   let state = createInitialState();
   state = { ...state, activeTask: 'maestria task', mode: 'fein' as const, reviewMode: true };
   state = recordHandoff(state, 'orchestrator', 'builder', 'implement');
@@ -68,7 +67,7 @@ function maestriaOnlyState(): MaestriaState {
   });
   state = { ...state, blockers: ['missing api key'], specialistsDelegated: ['builder'] };
   return state;
-}
+};
 
 describe('installGoalEventHandlers', () => {
   it('registers goal and every public session transition handler', () => {

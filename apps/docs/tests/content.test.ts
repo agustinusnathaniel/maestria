@@ -8,7 +8,7 @@ const __dirname = import.meta.dirname;
 const DOCS_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
 
 /** Strip a leading YAML frontmatter block, returning only the markdown body. */
-function stripFrontmatter(text: string): string {
+const stripFrontmatter = (text: string): string => {
   const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     return text;
@@ -18,12 +18,12 @@ function stripFrontmatter(text: string): string {
     return text;
   }
   return lines.slice(close + 1).join('\n');
-}
+};
 
-async function readDoc(name: string): Promise<{ full: string; body: string }> {
+const readDoc = async (name: string): Promise<{ full: string; body: string }> => {
   const full = await readFile(path.join(DOCS_ROOT, name), 'utf-8');
   return { body: stripFrontmatter(full), full };
-}
+};
 
 describe('trust anchor pages', () => {
   it.each([['about.mdx'], ['contact.mdx'], ['privacy.mdx']])(
@@ -35,9 +35,12 @@ describe('trust anchor pages', () => {
   );
 
   it('cross-link each other with relative links', async () => {
-    const about = (await readDoc('about.mdx')).body;
-    const contact = (await readDoc('contact.mdx')).body;
-    const privacy = (await readDoc('privacy.mdx')).body;
+    const aboutDoc = await readDoc('about.mdx');
+    const contactDoc = await readDoc('contact.mdx');
+    const privacyDoc = await readDoc('privacy.mdx');
+    const about = aboutDoc.body;
+    const contact = contactDoc.body;
+    const privacy = privacyDoc.body;
 
     expect(about).toContain('/contact/');
     expect(about).toContain('/privacy/');
@@ -48,7 +51,8 @@ describe('trust anchor pages', () => {
   });
 
   it('state verifiable repo facts without invented identity data', async () => {
-    const about = (await readDoc('about.mdx')).body;
+    const aboutDoc = await readDoc('about.mdx');
+    const about = aboutDoc.body;
     expect(about).toContain('MIT');
     expect(about).toContain('https://github.com/agustinusnathaniel/maestria');
     for (const specialist of [

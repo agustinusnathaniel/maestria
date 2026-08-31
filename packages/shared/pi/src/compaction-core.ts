@@ -10,46 +10,69 @@
 import { renderMaestriaSummary } from './state-core.js';
 import type { MaestriaState } from './state-core.js';
 
+export interface CompactionEvent {
+  preparation?: {
+    firstKeptEntryId?: string;
+    tokensBefore?: number;
+  };
+}
+
+export interface TreeEvent {
+  preparation?: {
+    userWantsSummary?: boolean;
+  };
+}
+
+export interface CompactionResult {
+  compaction?: {
+    details?: unknown;
+    firstKeptEntryId: string;
+    summary: string;
+    tokensBefore: number;
+  };
+}
+
+export interface TreeResult {
+  summary?: {
+    summary: string;
+  };
+}
+
+export type CompactionOn = (
+  ...args:
+    | ['session_before_compact', (event: CompactionEvent) => CompactionResult]
+    | ['session_before_tree', (event: TreeEvent) => TreeResult | undefined]
+) => void;
+
+export interface CompactionPi {
+  on: CompactionOn;
+}
+
 /**
  * Install handlers for session compaction and tree events to persist
  * and restore maestria state across session compaction boundaries.
- *
- * Uses duck-typed `pi` parameter - both Pi and OMP ExtensionAPI types
- * satisfy the `{ on(event: string, handler): void }` shape needed here.
  */
-export function installCompactionHandlers(
-  pi: {
-    on: (event: string, handler: (...args: unknown[]) => unknown) => void;
-  },
-  state: MaestriaState,
-): void {
-  pi.on('session_before_compact', (event: unknown) => {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
-    const prep = (event as Record<string, unknown>).preparation as
-      | Record<string, unknown>
-      | undefined;
+export const installCompactionHandlers = (pi: CompactionPi, state: MaestriaState): void => {
+  pi.on('session_before_compact', (event: CompactionEvent) => {
+    const prep = event.preparation;
     return {
       compaction: {
         details: { ...state },
-        firstKeptEntryId: prep?.firstKeptEntryId,
+        firstKeptEntryId: prep?.firstKeptEntryId ?? '',
         summary: renderMaestriaSummary(state),
-        tokensBefore: prep?.tokensBefore,
+        tokensBefore: prep?.tokensBefore ?? 0,
       },
     };
   });
 
-  pi.on('session_before_tree', (event: unknown) => {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown via runtime type guard, safe assertion
-    const prep = (event as Record<string, unknown>).preparation as
-      | Record<string, unknown>
-      | undefined;
-    if (prep?.userWantsSummary === true) {
-      return {
-        summary: {
-          summary: renderMaestriaSummary(state),
-        },
-      };
-    }
-    return;
+  pi.on('session_before_tree', (event: TreeEvent) => {
+    const prep = event.preparation;
+    return prep?.userWantsSummary === true
+      ? {
+          summary: {
+            summary: renderMaestriaSummary(state),
+          },
+        }
+      : undefined;
   });
-}
+};

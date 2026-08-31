@@ -3,9 +3,12 @@ import { describe, expect, it } from 'vite-plus/test';
 import { exitCodeForResults } from '@/lib/result-exit.js';
 import type { PlatformResult } from '@/types.js';
 
-function result(ok: boolean): PlatformResult {
-  return { id: 'pi', label: 'Pi', message: ok ? 'ok' : 'failed', ok };
-}
+const result = (ok: boolean): PlatformResult => ({
+  id: 'pi',
+  label: 'Pi',
+  message: ok ? 'ok' : 'failed',
+  ok,
+});
 
 describe('exitCodeForResults', () => {
   it('returns 0 for an empty results array', () => {

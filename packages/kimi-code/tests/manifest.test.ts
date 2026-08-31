@@ -20,42 +20,52 @@ const EXPECTED_SKILLS = [
 
 const EXPECTED_COMMANDS = ['fein', 'sonar', 'blitz'] as const;
 
-interface RawManifest {
-  name?: string;
-  version?: string;
-  description?: string;
-  keywords?: string[];
-  author?: { name?: string; email?: string };
-  homepage?: string;
-  license?: string;
-  skills?: string | string[];
-  commands?: string | string[];
-  systemPromptPath?: string;
-  sessionStart?: { skill?: string };
-  skillInstructions?: string;
-  interface?: Record<string, string | undefined>;
-}
+type JsonObject = Record<string, unknown>;
 
-interface PackageManifest {
-  version?: string;
-}
+const isJsonObject = (value: unknown): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
-async function readJson<T>(relativePath: string): Promise<T> {
+const isUnknownArray = (value: unknown): value is unknown[] => Array.isArray(value);
+
+const readJson = async (relativePath: string): Promise<JsonObject> => {
   const absolute = path.join(PACKAGE_ROOT, relativePath);
   const raw = await readFile(absolute, 'utf-8');
-  return JSON.parse(raw) as T;
-}
+  const value: unknown = JSON.parse(raw);
+  if (!isJsonObject(value)) {
+    throw new Error(`expected a JSON object: ${relativePath}`);
+  }
+  return value;
+};
 
-async function pathExists(absolutePath: string): Promise<boolean> {
+const pathExists = async (absolutePath: string): Promise<boolean> => {
   try {
     await stat(absolutePath);
     return true;
   } catch {
     return false;
   }
-}
+};
 
-function parseFrontmatter(text: string): { data: Record<string, unknown>; body: string } {
+const parseFrontmatterValue = (value: string): string | string[] => {
+  if (value === '[]' || value === '') {
+    return value === '[]' ? [] : '';
+  }
+  if (value.startsWith('[') && value.endsWith(']')) {
+    const inner = value.slice(1, -1).trim();
+    return inner === ''
+      ? []
+      : inner.split(',').map((entry) => entry.trim().replaceAll(/^['"]|['"]$/gu, ''));
+  }
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1);
+  }
+  return value;
+};
+
+const parseFrontmatter = (text: string): { data: Record<string, unknown>; body: string } => {
   const lines = text.split(/\r?\n/u);
   if (lines[0]?.trim() !== '---') {
     throw new Error('missing opening frontmatter fence');
@@ -71,112 +81,99 @@ function parseFrontmatter(text: string): { data: Record<string, unknown>; body: 
   // because this is a manifest validator, not a skill parser.
   const data: Record<string, unknown> = {};
   for (const line of yamlText.split(/\r?\n/u)) {
-    const m = /^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/u.exec(line);
-    if (m === null) {
-      continue;
-    }
-    const [, key, rawValue] = m;
-    if (rawValue === undefined) {
+    const m = /^(?<key>[A-Za-z][A-Za-z0-9_-]*):\s*(?<rawValue>.*)$/u.exec(line);
+    const key = m?.groups?.key;
+    const rawValue = m?.groups?.rawValue;
+    if (key === undefined || rawValue === undefined) {
       continue;
     }
     const value = rawValue.trim();
-    if (value === '[]' || value === '') {
-      data[key] = value === '[]' ? [] : '';
-      continue;
-    }
-    if (value.startsWith('[') && value.endsWith(']')) {
-      // basic array of strings
-      const inner = value.slice(1, -1).trim();
-      data[key] =
-        inner === ''
-          ? []
-          : inner.split(',').map((entry) => entry.trim().replaceAll(/^["']|["']$/gu, ''));
-    } else if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      data[key] = value.slice(1, -1);
-    } else {
-      data[key] = value;
-    }
+    data[key] = parseFrontmatterValue(value);
   }
   const body = lines.slice(close + 1).join('\n');
   return { body, data };
-}
+};
 
 describe('kimi.plugin.json manifest', () => {
   it('exists and parses as valid JSON', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(typeof manifest).toBe('object');
     expect(manifest).not.toBeNull();
   });
 
   it('has a "name" matching the Kimi Code PLUGIN_NAME_REGEX', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(typeof manifest.name).toBe('string');
     expect(manifest.name).toMatch(PLUGIN_NAME_REGEX);
   });
 
   it('keeps the plugin version aligned with package metadata', async () => {
     const [manifest, pkg] = await Promise.all([
-      readJson<RawManifest>('kimi.plugin.json'),
-      readJson<PackageManifest>('package.json'),
+      readJson('kimi.plugin.json'),
+      readJson('package.json'),
     ]);
     expect(manifest.version).toBe(pkg.version);
   });
 
   it('has "skills" field that starts with "./"', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
-    expect(manifest.skills).toBeDefined();
-    if (Array.isArray(manifest.skills)) {
-      expect(manifest.skills.length).toBeGreaterThan(0);
-      for (const entry of manifest.skills) {
-        expect(entry.startsWith('./')).toBe(true);
+    const manifest = await readJson('kimi.plugin.json');
+    const { skills } = manifest;
+    expect(skills).toBeDefined();
+    if (isUnknownArray(skills)) {
+      expect(skills.length).toBeGreaterThan(0);
+      for (const entry of skills) {
+        expect(typeof entry).toBe('string');
+        if (typeof entry === 'string') {
+          expect(entry.startsWith('./')).toBe(true);
+        }
       }
     } else {
-      expect(typeof manifest.skills).toBe('string');
-      expect(manifest.skills?.startsWith('./')).toBe(true);
+      expect(typeof skills).toBe('string');
+      if (typeof skills === 'string') {
+        expect(skills.startsWith('./')).toBe(true);
+      }
     }
   });
 
   it('declares native plugin slash commands', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(manifest.commands).toBe('./commands/');
   });
 
   it('has "sessionStart.skill" pointing at the orchestrator skill', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(manifest.sessionStart).toBeDefined();
-    expect(manifest.sessionStart?.skill).toBe('orchestrator');
+    const sessionStart = isJsonObject(manifest.sessionStart) ? manifest.sessionStart : undefined;
+    expect(sessionStart?.skill).toBe('orchestrator');
     const skillPath = path.join(PACKAGE_ROOT, 'skills', 'orchestrator', 'SKILL.md');
     expect(await pathExists(skillPath)).toBe(true);
   });
 
   it('uses the native systemPromptPath for global rules', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(manifest.systemPromptPath).toBe('./SYSTEM.md');
     expect(await pathExists(path.join(PACKAGE_ROOT, 'SYSTEM.md'))).toBe(true);
   });
 
   it('includes required interface fields', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
+    const manifest = await readJson('kimi.plugin.json');
     expect(manifest.interface).toBeDefined();
-    expect(manifest.interface?.displayName).toBeDefined();
-    expect(manifest.interface?.shortDescription).toBeDefined();
-    expect(manifest.interface?.longDescription).toBeDefined();
-    expect(manifest.interface?.developerName).toBeDefined();
-    expect(manifest.interface?.websiteURL).toBeDefined();
+    const manifestInterface = isJsonObject(manifest.interface) ? manifest.interface : undefined;
+    expect(manifestInterface?.displayName).toBeDefined();
+    expect(manifestInterface?.shortDescription).toBeDefined();
+    expect(manifestInterface?.longDescription).toBeDefined();
+    expect(manifestInterface?.developerName).toBeDefined();
+    expect(manifestInterface?.websiteURL).toBeDefined();
   });
 
   it('includes author with name', async () => {
-    const manifest = await readJson<RawManifest>('kimi.plugin.json');
-    expect(manifest.author?.name).toBeDefined();
+    const manifest = await readJson('kimi.plugin.json');
+    const author = isJsonObject(manifest.author) ? manifest.author : undefined;
+    expect(author?.name).toBeDefined();
   });
 
   it('does not include unsupported runtime fields', async () => {
-    const raw = JSON.parse(
-      await readFile(path.join(PACKAGE_ROOT, 'kimi.plugin.json'), 'utf-8'),
-    ) as Record<string, unknown>;
+    const raw = await readJson('kimi.plugin.json');
     const unsupported = [
       'tools',
       'hooks',
@@ -194,10 +191,12 @@ describe('kimi.plugin.json manifest', () => {
 
 describe('skills directory', () => {
   it('contains all 8 methodology skills', async () => {
-    for (const skill of EXPECTED_SKILLS) {
-      const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
-      expect(await pathExists(skillPath)).toBe(true);
-    }
+    await Promise.all(
+      EXPECTED_SKILLS.map(async (skill) => {
+        const skillPath = path.join(PACKAGE_ROOT, 'skills', skill, 'SKILL.md');
+        expect(await pathExists(skillPath)).toBe(true);
+      }),
+    );
   });
 
   for (const skill of EXPECTED_SKILLS) {
@@ -208,9 +207,13 @@ describe('skills directory', () => {
         const text = await readFile(skillPath, 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.name).toBe('string');
-        expect((data.name as string).length).toBeGreaterThan(0);
+        if (typeof data.name === 'string') {
+          expect(data.name.length).toBeGreaterThan(0);
+        }
         expect(typeof data.description).toBe('string');
-        expect((data.description as string).length).toBeGreaterThan(0);
+        if (typeof data.description === 'string') {
+          expect(data.description.length).toBeGreaterThan(0);
+        }
         expect(data.name).toBe(skill);
         expect(data.type).toBe('prompt');
       });
@@ -220,7 +223,9 @@ describe('skills directory', () => {
         const text = await readFile(skillPath, 'utf-8');
         const { data } = parseFrontmatter(text);
         expect(typeof data.whenToUse).toBe('string');
-        expect((data.whenToUse as string).trim().length).toBeGreaterThan(0);
+        if (typeof data.whenToUse === 'string') {
+          expect(data.whenToUse.trim().length).toBeGreaterThan(0);
+        }
       });
     });
   }
@@ -324,7 +329,7 @@ describe('SYSTEM.md plugin instructions', () => {
 
 describe('package.json', () => {
   it('has the expected name, private flag, and files', async () => {
-    const pkg = await readJson<Record<string, unknown>>('package.json');
+    const pkg = await readJson('package.json');
     expect(pkg.name).toBe('@maestria/kimi-code');
     expect(pkg.private).toBe(false);
     expect(pkg.type).toBe('module');
@@ -361,23 +366,28 @@ describe('tool name PascalCase compliance', () => {
   const ALLOWED_VARIATIONS = new Set([
     'explore',
     'plan',
-    'coder', // subagent types
+    // Subagent types.
+    'coder',
     'fein',
     'sonar',
-    'blitz', // workflow modes
+    // Workflow modes.
+    'blitz',
     'praise',
     'suggestion',
     'issue',
     'nitpick',
-    'question', // conventional comments
-    'opensrc', // skill name, not a tool
+    // Conventional comments.
+    'question',
+    // Skill name, not a tool.
+    'opensrc',
     'vp',
     'pnpm',
     'npm',
     'npx',
     'node',
     'git',
-    'curl', // CLI commands
+    // CLI commands.
+    'curl',
   ]);
 
   for (const skill of EXPECTED_SKILLS) {
@@ -386,12 +396,13 @@ describe('tool name PascalCase compliance', () => {
       const skillPath = path.join(PACKAGE_ROOT, relDir, 'SKILL.md');
       const text = await readFile(skillPath, 'utf-8');
       // Find all backtick-quoted words
-      const backtickWords = text.match(/`([A-Za-z][A-Za-z0-9_-]*)`/gu) ?? [];
+      const backtickWords = text.match(/`(?<word>[A-Za-z][A-Za-z0-9_-]*)`/gu) ?? [];
       const violations: string[] = [];
       for (const match of backtickWords) {
-        const word = match.slice(1, -1); // strip backticks
+        // Strip backticks.
+        const word = match.slice(1, -1);
         // Skip things that start with lowercase (unlikely to be tools)
-        if (word[0] === word[0]?.toLowerCase()) {
+        if (word.startsWith(word[0]?.toLowerCase() ?? '')) {
           continue;
         }
         // Skip known non-tool words

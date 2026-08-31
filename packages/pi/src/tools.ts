@@ -1,34 +1,42 @@
-import { isToolCallEventType } from '@earendil-works/pi-coding-agent';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
+import type { ToolCallHandler } from '@maestria/shared-pi/tools-core';
 
 import type { MaestriaState } from '@/state.js';
 import { persistState } from '@/state.js';
 
-export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
+export interface ToolApi {
+  appendEntry: (type: string, data: unknown) => void;
+  getActiveTools: () => string[];
+  on: (event: 'tool_call', handler: ToolCallHandler) => void;
+}
+
+export const createToolApi = (pi: ExtensionAPI): ToolApi => ({
+  appendEntry: (type, data) => {
+    pi.appendEntry(type, data);
+  },
+  getActiveTools: () => pi.getActiveTools(),
+  on: (_event, handler) => {
+    pi.on('tool_call', async (event, ctx) => await handler(event, ctx));
+  },
+});
+
+export const installToolInterceptors = (pi: ToolApi, state: MaestriaState): void => {
   const handler = createToolCallHandler({
     delegationTool: 'subagent',
     getActiveTools: () => pi.getActiveTools(),
     getState: () => state,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-    isBashTool: (e) => isToolCallEventType('bash', e as never),
+    isBashTool: (e) => e.toolName === 'bash',
     isMutationTool: (e) =>
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-      isToolCallEventType('edit', e as never) ||
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-      isToolCallEventType('write', e as never) ||
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-      isToolCallEventType('patch', e as never) ||
-      (e as { toolName?: string }).toolName === 'bash',
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-    isReadTool: (e) => isToolCallEventType('read', e as never),
-    isWriteTool: (e) =>
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-      isToolCallEventType('edit', e as never) || isToolCallEventType('write', e as never),
+      e.toolName === 'edit' ||
+      e.toolName === 'write' ||
+      e.toolName === 'patch' ||
+      e.toolName === 'bash',
+    isReadTool: (e) => e.toolName === 'read',
+    isWriteTool: (e) => e.toolName === 'edit' || e.toolName === 'write',
     persist: () => {
       persistState(pi, state);
     },
   });
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: narrow from unknown/union via runtime check, safe type assertion
-  pi.on('tool_call', handler as never);
-}
+  pi.on('tool_call', handler);
+};

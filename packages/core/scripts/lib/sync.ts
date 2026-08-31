@@ -5,11 +5,12 @@
 // not in the primary source dir, and auto-cleans stale output files.
 
 import { existsSync } from 'node:fs';
-import { basename, dirname, resolve } from 'node:path';
+import path from 'node:path';
 
 import type { ResolvedFileConfig, ResolvedSyncConfig } from './config.js';
 import { autoClean, walkDir } from './file.js';
 import { processFile } from './process-file.js';
+import type { ProcessFileOpts } from './process-file.js';
 
 // ── Public Types ──
 
@@ -30,24 +31,42 @@ export interface SyncOptions {
   log?: (msg: string) => void;
 }
 
+const processSourceFile = async (
+  sourcePath: string,
+  fileCfg: ResolvedFileConfig,
+  opts: ProcessFileOpts,
+  generatedOutputs: Set<string>,
+  results: SyncFileResult[],
+  label: string,
+): Promise<void> => {
+  generatedOutputs.add(fileCfg.output);
+  const result = await processFile(sourcePath, fileCfg, opts);
+  results.push(result);
+  if (result.status === 'error' && opts.verbose === true) {
+    opts.logger(`[${opts.report}] Error processing ${label}: ${result.error}`);
+  }
+};
+
+const processInSequence = async (
+  previous: Promise<void>,
+  task: () => Promise<void>,
+): Promise<void> => {
+  await previous;
+  await task();
+};
+
 // ── Orchestration ──
 
-async function processPrimarySources(
+const processPrimarySources = async (
   config: ResolvedSyncConfig,
   sourceFiles: string[],
-  opts: {
-    dryRun?: boolean;
-    check?: boolean;
-    diff?: boolean;
-    verbose?: boolean;
-    report: string;
-    logger: (m: string) => void;
-  },
+  opts: ProcessFileOpts,
   generatedOutputs: Set<string>,
   results: SyncFileResult[],
   matchedFiles: Set<string>,
-): Promise<void> {
+): Promise<void> => {
   const { dryRun, check, diff, verbose, report, logger } = opts;
+  let processing = Promise.resolve();
   for (const relPath of sourceFiles) {
     if (!relPath.endsWith('.md')) {
       if (verbose === true) {
@@ -55,8 +74,8 @@ async function processPrimarySources(
       }
       continue;
     }
-    const sourceAbs = resolve(config.source, relPath);
-    const filename = basename(relPath);
+    const sourceAbs = path.resolve(config.source, relPath);
+    const filename = path.basename(relPath);
     matchedFiles.add(filename);
     const fileCfg = config.files[filename];
     const isExplicit = filename in config.files;
@@ -66,8 +85,8 @@ async function processPrimarySources(
           append: config.default?.append ?? '',
           frontmatter: config.default?.frontmatter,
           output: config.output
-            ? resolve(config.output, filename)
-            : resolve(config.configDir, filename),
+            ? path.resolve(config.output, filename)
+            : path.resolve(config.configDir, filename),
           prepend: config.default?.prepend ?? '',
           replace: [...(config.default?.replace ?? [])],
           stripFrontmatter: config.default?.stripFrontmatter ?? false,
@@ -75,8 +94,7 @@ async function processPrimarySources(
     if (!isExplicit && verbose === true) {
       logger(`[${report}] No config for ${relPath}, using defaults`);
     }
-    generatedOutputs.add(resolved.output);
-    const result = await processFile(sourceAbs, resolved, {
+    const processOpts: ProcessFileOpts = {
       check,
       configPath: config.configPath,
       diff,
@@ -84,43 +102,36 @@ async function processPrimarySources(
       logger,
       report,
       verbose,
+    };
+    processing = processInSequence(processing, async () => {
+      await processSourceFile(sourceAbs, resolved, processOpts, generatedOutputs, results, relPath);
     });
-    results.push(result);
-    if (result.status === 'error' && verbose === true) {
-      logger(`[${report}] Error processing ${relPath}: ${result.error}`);
-    }
   }
-}
+  await processing;
+};
 
-async function processSecondarySources(
+const processSecondarySources = async (
   config: ResolvedSyncConfig,
-  opts: {
-    dryRun?: boolean;
-    check?: boolean;
-    diff?: boolean;
-    verbose?: boolean;
-    report: string;
-    logger: (m: string) => void;
-  },
+  opts: ProcessFileOpts,
   generatedOutputs: Set<string>,
   results: SyncFileResult[],
   matchedFiles: Set<string>,
-): Promise<void> {
+): Promise<void> => {
   const { dryRun, check, diff, verbose, report, logger } = opts;
-  const secondarySourceDir = dirname(config.source);
+  let processing = Promise.resolve();
+  const secondarySourceDir = path.dirname(config.source);
   for (const [filename, fileCfg] of Object.entries(config.files)) {
     if (matchedFiles.has(filename)) {
       continue;
     }
-    const secondaryAbs = resolve(secondarySourceDir, filename);
+    const secondaryAbs = path.resolve(secondarySourceDir, filename);
     if (!existsSync(secondaryAbs)) {
       if (verbose === true) {
         logger(`[${report}] Config entry "${filename}" not found in source or secondary dir`);
       }
       continue;
     }
-    generatedOutputs.add(fileCfg.output);
-    const result = await processFile(secondaryAbs, fileCfg, {
+    const processOpts: ProcessFileOpts = {
       check,
       configPath: config.configPath,
       diff,
@@ -128,20 +139,30 @@ async function processSecondarySources(
       logger,
       report,
       verbose,
+    };
+    processing = processInSequence(processing, async () => {
+      await processSourceFile(
+        secondaryAbs,
+        fileCfg,
+        processOpts,
+        generatedOutputs,
+        results,
+        `secondary source ${filename}`,
+      );
     });
-    results.push(result);
-    if (result.status === 'error' && verbose === true) {
-      logger(`[${report}] Error processing secondary source ${filename}: ${result.error}`);
-    }
   }
-}
+  await processing;
+};
 
-export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
+export const runSync = async (options: SyncOptions): Promise<SyncFileResult[]> => {
   const { config, dryRun, check, diff, verbose, log } = options;
   const logger = log ?? console.log;
   const results: SyncFileResult[] = [];
   const generatedOutputs = new Set<string>();
-  const report = dryRun === true ? (check === true ? 'check' : 'dry-run') : 'sync';
+  let report = 'sync';
+  if (dryRun === true) {
+    report = check === true ? 'check' : 'dry-run';
+  }
   if (!existsSync(config.source)) {
     logger(`[${report}] Source directory not found: ${config.source}`);
     return results;
@@ -172,4 +193,4 @@ export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
   });
   results.push(...cleanResults);
   return results;
-}
+};
