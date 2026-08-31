@@ -419,15 +419,17 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
     const sourceInstructionsPath = `${packageRoot}/instructions/AGENTS.md`;
 
     const sourceInstructions = yield* Effect.tryPromise({
-      catch: (error) => new Error(String(error)),
+      catch: (error) =>
+        new CommandError({ command: 'read codex instructions', message: String(error) }),
       try: async () => {
         const { readFile } = await import('node:fs/promises');
         return await readFile(sourceInstructionsPath, 'utf-8');
       },
     });
     yield* Effect.tryPromise({
-      catch: (error) => new Error(String(error)),
-      try: () => {
+      catch: (error) =>
+        new CommandError({ command: 'validate codex instructions', message: String(error) }),
+      try: async () => {
         if (!hasCodexManagedInstructions(sourceInstructions)) {
           throw new Error(`missing Maestria instruction markers in ${sourceInstructionsPath}`);
         }
@@ -511,7 +513,7 @@ export function installCodexManagedAgents(packageRoot: string): Effect.Effect<vo
             ? 'AGENTS.override.md'
             : previousFile !== null &&
                 previousFile !== undefined &&
-                previousFile !== '' &&
+                (previousFile as string) !== '' &&
                 managedFiles.includes(previousFile)
               ? previousFile
               : (managedFiles[0] ??

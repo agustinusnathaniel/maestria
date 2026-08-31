@@ -257,6 +257,7 @@ export function syncTarget(packageDir: string, manifests: string[], check: boole
   if (pkgResult.error !== undefined && pkgResult.error !== null && pkgResult.error !== '') {
     return [pkgResult.error];
   }
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: early return on error guarantees version is defined
   const version = pkgResult.version!;
 
   const preflight = buildPreflight(packageDir, manifests, version, check);
@@ -351,6 +352,7 @@ function collectSyncResults(preflight: Preflight[], version: string, check: bool
       continue;
     }
     try {
+      // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: preflight guarantees updated is set when not blocked and version mismatch
       fs.writeFileSync(m.path, m.updated!, 'utf-8');
       results.push(`OK: synced ${m.rel} to ${version}`);
     } catch (error) {

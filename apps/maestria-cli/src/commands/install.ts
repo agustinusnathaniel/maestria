@@ -90,7 +90,7 @@ async function runInstallInteractive(isQuiet: boolean): Promise<PlatformResult[]
     isCancel(selected) ||
     selected === undefined ||
     selected === null ||
-    selected === '' ||
+    (selected as unknown) === '' ||
     (Array.isArray(selected) && selected.length === 0)
   ) {
     cancel('Install cancelled.');

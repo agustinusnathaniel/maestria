@@ -127,7 +127,11 @@ function createOptionRenderer<Value>(selectableGroups: boolean) {
     const label = option.label ?? String(option.value);
     const isItem = typeof option.group === 'string';
     const next = isItem && (options[options.indexOf(option) + 1] ?? { group: true });
-    const isLast = isItem && next !== null && next !== undefined && next.group === true;
+    const isLast =
+      isItem &&
+      typeof next === 'object' &&
+      next !== null &&
+      (next as { group: unknown }).group === true;
     const prefix = isItem
       ? selectableGroups
         ? isLast

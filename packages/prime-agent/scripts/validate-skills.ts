@@ -48,12 +48,14 @@ for (const name of skills) {
     continue;
   }
   const content = readFileSync(path, 'utf-8');
+  // oxlint-disable-next-line prefer-named-capture-group -- SAFETY: intentional unnamed capture for frontmatter block, used via index [1], low value to name
   const frontmatterMatch = /^---\n([\s\S]*?)\n---/u.exec(content);
   if (!frontmatterMatch) {
     console.error(`❌ skills/${name}/SKILL.md: missing or invalid frontmatter`);
     allValid = false;
     continue;
   }
+  // oxlint-disable-next-line prefer-destructuring -- SAFETY: index access is clearer than destructuring for single capture group
   const frontmatter = frontmatterMatch[1];
 
   const nameValue = frontmatterValue(frontmatter, 'name');

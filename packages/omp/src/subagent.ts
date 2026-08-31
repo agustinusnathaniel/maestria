@@ -23,6 +23,7 @@ function validateOmpParams(params: {
 }): void {
   const mode = params.mode ?? 'single';
   if (mode === 'single') {
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: single mode validates agent is required string, assertion safe after mode check
     assertValidAgent(params.agent!);
     assertNonEmptyTask(params.task, 'Task description is required');
   } else {
@@ -114,6 +115,7 @@ export function installSubagentTool(
       }
       return handleMultiDispatch(pi, state, {
         mode,
+        // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: multi mode validates tasks array exists
         tasks: params.tasks!,
       });
     },

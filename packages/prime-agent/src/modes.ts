@@ -56,6 +56,7 @@ const _promptCache: Partial<Record<ModeKeyword, string>> = {};
  */
 export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
   if (keyword in _promptCache) {
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: cache check guarantees defined value for existing keyword
     return _promptCache[keyword]!;
   }
 
@@ -137,7 +138,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
   for (const keyword of MODE_KEYWORDS) {
     pi.registerCommand(keyword, {
       description: MODE_COMMAND_DESCRIPTIONS[keyword],
-      handler: (args: string, ctx: ExtensionCommandContext) => {
+      handler: async (args: string, ctx: ExtensionCommandContext) => {
         state.mode = keyword;
         persistModeState(pi, state);
         // Forward a goal argument (e.g. `/fein implement the pipeline`) so the
@@ -154,7 +155,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
 
   pi.registerCommand(MODE_CLEAR_COMMAND, {
     description: 'Clear workflow mode and return to neutral routing',
-    handler: (_args: string, ctx: ExtensionCommandContext) => {
+    handler: async (_args: string, ctx: ExtensionCommandContext) => {
       state.mode = null;
       persistModeState(pi, state);
       ctx.ui.notify('Workflow mode cleared. Neutral routing is active.');
@@ -163,7 +164,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
 
   pi.registerCommand(STATUS_COMMAND, {
     description: 'Show the current maestria workflow mode and extension subset',
-    handler: (_args: string, ctx: ExtensionCommandContext) => {
+    handler: async (_args: string, ctx: ExtensionCommandContext) => {
       const mode = state.mode ?? 'none';
       const summary = [
         '# Maestria status (prime-agent)',

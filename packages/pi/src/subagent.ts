@@ -297,16 +297,20 @@ async function dispatchByMode(
       pi,
       state,
       service,
+      // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: single mode validation guarantees agent and task are defined
       params.agent!,
+      // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: single mode validation guarantees task is defined
       params.task!,
       signal,
       onUpdate,
     );
   }
   if (mode === 'parallel') {
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: parallel mode validation guarantees tasks array is defined
     return await handleParallelMode(pi, state, service, params.tasks!, signal, onUpdate);
   }
   if (mode === 'chain') {
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: chain mode validation guarantees tasks array is defined
     return await handleChainMode(pi, state, service, params.tasks!, signal, onUpdate);
   }
   throw new Error('Unknown dispatch mode');

@@ -24,7 +24,8 @@ export const DANGEROUS_PATTERNS = [
   />\s*\/dev\/sd/u,
   /chmod\s+-R\s+777\s+\//u,
   /mkfs\.\w+/u,
-  /:(){ :\|:& };:/u,
+  // oxlint-disable-next-line prefer-named-capture-group -- SAFETY: fork bomb pattern is fixed literal, unnamed groups intentional, low value to name
+  /:\(\)\{ :\|:& \};:/u,
   />\s*\/etc\/(passwd|shadow|sudoers)/u,
   /\beval\b/u,
   /wget\s+-O\s*-\s*\|\s*(bash|sh)/u,
@@ -150,7 +151,8 @@ function checkOrchestratorBlock(
     return undefined;
   }
   const isMutationTool = options.isMutationTool
-    ? (e: ToolCallEventLike) => options.isMutationTool!(e)
+    ? // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: isMutationTool branch guarantees non-null when predicate is present
+      (e: ToolCallEventLike) => options.isMutationTool!(e)
     : (e: ToolCallEventLike) => {
         const name = (e as { toolName?: string }).toolName ?? '';
         const base = name === 'edit' || name === 'write' || name === 'patch' || name === 'bash';
@@ -200,6 +202,7 @@ async function checkDangerousPattern(
     return undefined;
   }
   if (ctx?.hasUI === true) {
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: hasUI check guarantees ui is defined
     const confirmed = await ctx.ui!.confirm(
       'Dangerous Pattern Detected',
       `This command matches a dangerous pattern:\n${command}\nProceed?`,

@@ -130,13 +130,20 @@ async function runInteractiveUpdate(isQuiet: boolean, version?: string): Promise
     required: true,
     selectableGroups: true,
   });
-  if (isCancel(selected) || selected === undefined || selected === null || selected === '') {
+  if (
+    isCancel(selected) ||
+    selected === undefined ||
+    selected === null ||
+    (selected as unknown) === '' ||
+    (Array.isArray(selected) && selected.length === 0)
+  ) {
     cancel('Update cancelled.');
     process.exit(130);
   }
   const toUpdate = needsUpdate.filter((s) => selected.includes(s.id));
   const results: PlatformResult[] = [];
   for (const p of toUpdate) {
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: filtered needsUpdate guarantees platform exists for id
     results.push(await Effect.runPromise(updateOne(getPlatform(p.id)!, isQuiet, version)));
   }
   return results;
@@ -226,7 +233,7 @@ function captureSnapshot(
   platform: PlatformHandler,
 ): Effect.Effect<PlatformUpdateSnapshot | { error: string } | undefined> {
   if (!platform.captureUpdateSnapshot) {
-    return Effect.succeed();
+    return Effect.succeed(undefined);
   }
   return platform.captureUpdateSnapshot.pipe(
     Effect.match({

@@ -130,6 +130,7 @@ async function resolveConfigureHandler(
   if (isCancel(picked)) {
     exitCancel();
   }
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- SAFETY: isCancel check guarantees picked is string, handler is defined for valid platform id
   return getModelConfigHandler(picked)!;
 }
 

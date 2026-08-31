@@ -523,6 +523,7 @@ describe('prime-agent platform handler', () => {
       );
       // Delegate the stubbed readFile to the real implementation for this test
       // so the helper is proven against the actual filesystem.
+      // @ts-expect-error -- SAFETY: mock adapter bridges async real fs to sync mock signature for filesystem integration test, type mismatch is intentional for this test
       fsMocks.readFile.mockImplementation(async (path: string) =>
         originalReadFile
           ? await originalReadFile(path, 'utf-8')

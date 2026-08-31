@@ -1,4 +1,4 @@
-import type { Plugin } from '@opencode-ai/plugin';
+import type { Plugin, PluginInput } from '@opencode-ai/plugin';
 import { merge } from 'es-toolkit';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
@@ -102,7 +102,10 @@ function loadAgents(): Record<string, Record<string, unknown>> {
   }
 }
 
-export const MaestriaPlugin: Plugin = (_input, options?: MaestriaPluginOptions) => {
+export const MaestriaPlugin: Plugin = async (
+  _input: PluginInput,
+  options?: MaestriaPluginOptions,
+) => {
   // Validate and parse options with zod
   const parsed = maestriaOptionsSchema.parse(options ?? {});
   const disabledKeywords = new Set<string>(
@@ -111,7 +114,8 @@ export const MaestriaPlugin: Plugin = (_input, options?: MaestriaPluginOptions) 
   const agents = loadAgents();
 
   return {
-    'chat.message': (hookInput, hookOutput) => {
+    // oxlint-disable-next-line typescript/no-explicit-any -- SAFETY: OpenCode hook types are untyped at plugin boundary, use any for runtime interop
+    'chat.message': async (hookInput: any, hookOutput: any) => {
       // Only fire for the orchestrator agent
       if (hookInput.agent !== 'orchestrator') {
         return;
@@ -119,7 +123,7 @@ export const MaestriaPlugin: Plugin = (_input, options?: MaestriaPluginOptions) 
 
       // Find the first text part with user content
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: validated via prior type check, safe narrow
-      const textPart = hookOutput.parts.find((p) => p.type === 'text') as
+      const textPart = hookOutput.parts.find((p: { type: string }) => p.type === 'text') as
         | { text: string; type: 'text' }
         | undefined;
       if (!textPart) {
@@ -144,7 +148,8 @@ export const MaestriaPlugin: Plugin = (_input, options?: MaestriaPluginOptions) 
         stripKeyword(textPart.text, result),
       ].join('\n');
     },
-    config: (input) => {
+    // oxlint-disable-next-line typescript/no-explicit-any -- SAFETY: OpenCode config input is untyped, use any for interop
+    config: async (input: any) => {
       // Deep-merge plugin agent defaults over the user's agent entries. A
       // shallow `{ ...input.agent, ...agents }` would replace each entry
       // wholesale, dropping user-set keys (model, variant, temperature) for
@@ -153,7 +158,8 @@ export const MaestriaPlugin: Plugin = (_input, options?: MaestriaPluginOptions) 
       input.agent = merge(input.agent ?? {}, agents);
       input.instructions = [...(input.instructions ?? []), RULES_PATH];
     },
-    'experimental.session.compacting': (_input, output) => {
+    // oxlint-disable-next-line typescript/no-explicit-any -- SAFETY: OpenCode compacting hook types untyped, use any
+    'experimental.session.compacting': async (_input: any, output: any) => {
       output.context.push(
         'Session was compacted. Task tracking is maintained via todowrite. ' +
           'Active context (files, decisions, blockers) was captured before compaction. ' +
