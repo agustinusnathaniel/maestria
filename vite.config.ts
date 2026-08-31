@@ -94,6 +94,40 @@ export default defineConfig({
   run: {
     cache: { scripts: true, tasks: true },
     tasks: {
+      '@maestria/docs#build': {
+        cache: true,
+        command: 'astro build',
+        // Astro writes and reads .astro during build (cooperative thrashing) -> always miss.
+        // Exclude .astro from fingerprint and archive only dist to enable cache hit.
+        // See https://viteplus.dev/guide/automatic-data-tracking#override-inputs-and-outputs
+        input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
+        output: ['dist/**'],
+      },
+      'check-fmt': {
+        cache: true,
+        command: 'vp fmt --check',
+        // fmt is input-heavy but doesn't need build outputs; exclude dist to stabilize cache
+        input: [{ auto: true }, '!dist/**', '!**/.astro/**', '!.astro/**'],
+        output: [],
+      },
+      'check-lint': {
+        cache: true,
+        command: 'vp lint',
+        // type-aware lint needs build outputs, so this task must run after build
+        // Cache on source + lint config; dist is excluded but lint still fingerprint sources
+        input: [
+          { auto: true },
+          '!dist/**',
+          '!**/.astro/**',
+          '!.astro/**',
+          'vite.config.ts',
+          'tooling/lint/**',
+          'tsconfig.json',
+          'packages/*/tsconfig.json',
+          'apps/*/tsconfig.json',
+        ],
+        output: [],
+      },
       'check-manifest-versions': {
         cache: true,
         command: 'pnpm exec tsx scripts/sync-plugin-versions.ts --check',

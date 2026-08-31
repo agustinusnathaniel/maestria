@@ -16,9 +16,16 @@ runs:
       with:
         cache: true
     - name: Restore vp task cache
-      uses: actions/cache@v6
+      id: vite-task-cache
+      uses: actions/cache/restore@v6
       with:
         path: node_modules/.vite/task-cache
-        key: vp-task-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: |
-          vp-task-cache-${{ runner.os }}-
+          vite-task-${{ runner.os }}-${{ runner.arch }}-
+    - name: Save vp task cache
+      if: success()
+      uses: actions/cache/save@v6
+      with:
+        path: node_modules/.vite/task-cache
+        key: ${{ steps.vite-task-cache.outputs.cache-primary-key }}
