@@ -30,6 +30,7 @@ export default defineConfig({
         'packages/*/prompts/**',
         'packages/*/rules/**',
         'packages/**/skills/**',
+        'packages/*/SYSTEM.md',
         '.agents',
         'CHANGELOG.md',
       ]),
