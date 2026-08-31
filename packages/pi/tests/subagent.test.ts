@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { installSubagentTool, MAX_PARALLEL_TASKS } from '@/subagent.js';
-import { validateHandoff, MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
-import { createInitialState } from '@/state.js';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
+import { validateHandoff, MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+
+import { createInitialState } from '@/state.js';
+import { installSubagentTool, MAX_PARALLEL_TASKS } from '@/subagent.js';
 
 // Mock the subagents SDK so execute() can reach recordAndPersist (existing tests
 // keep the SDK-unavailable fallback by leaving getSubagentsServiceMock undefined).

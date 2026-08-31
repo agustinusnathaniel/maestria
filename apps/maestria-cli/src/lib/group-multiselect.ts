@@ -8,8 +8,8 @@
 // Drop-in replacement for @clack/prompts's groupMultiselect.
 
 import { GroupMultiSelectPrompt } from '@clack/core';
-import { styleText } from 'node:util';
 import type { Option } from '@clack/prompts';
+import { styleText } from 'node:util';
 
 // ── Visual symbols ────────────────────────────────────
 

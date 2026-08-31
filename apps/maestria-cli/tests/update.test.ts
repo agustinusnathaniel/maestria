@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
 import { Effect } from 'effect';
+import { describe, it, expect, vi } from 'vite-plus/test';
 
 // Stub the Prime version lookup's Node fs read (cross-platform, not a POSIX
 // `cat`) plus the version-cache write so npmViewVersion cannot touch the real
@@ -34,9 +34,9 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   };
 });
 
-import * as shell from '@/lib/shell.js';
-import { getPlatform } from '@/lib/platforms.js';
 import { updateOne } from '@/commands/update.js';
+import { getPlatform } from '@/lib/platforms.js';
+import * as shell from '@/lib/shell.js';
 
 const PRIME_PACKAGE_LIST = {
   /** Version-pinned user-scope registration, installed at 0.2.0. */

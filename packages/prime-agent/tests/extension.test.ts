@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vite-plus/test';
+
+import extension from '../src/extension.ts';
+import { STATUS_COMMAND } from '../src/modes.ts';
 import type {
   BeforeAgentStartEventResult,
   ExtensionAPI,
@@ -6,9 +9,7 @@ import type {
   ExtensionContext,
   SessionEntry,
 } from '../src/pi-api.ts';
-import extension from '../src/extension.ts';
 import { MODE_STATE_CUSTOM_TYPE } from '../src/state.ts';
-import { STATUS_COMMAND } from '../src/modes.ts';
 
 interface FakePi {
   pi: ExtensionAPI;

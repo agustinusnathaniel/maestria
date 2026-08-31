@@ -1,8 +1,14 @@
 // packages/core/scripts/lib/process-file.ts - Single-file transform pipeline
 
-import { readFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { relative, dirname } from 'node:path';
+
+import type { ResolvedFileConfig } from './config.js';
+import { unifiedDiff } from './diff.js';
+import { atomicWrite } from './file.js';
+import type { SyncFileResult } from './sync.js';
 import {
   stripFrontmatter,
   findAndReplace,
@@ -10,11 +16,6 @@ import {
   serializeFrontmatter,
   normalizeLineEndings,
 } from './transforms.js';
-import { unifiedDiff } from './diff.js';
-import { atomicWrite } from './file.js';
-import type { ResolvedFileConfig } from './config.js';
-import type { SyncFileResult } from './sync.js';
-import { execFileSync } from 'node:child_process';
 
 // ── Git provenance check ──
 

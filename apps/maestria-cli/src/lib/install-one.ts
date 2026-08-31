@@ -1,4 +1,5 @@
 import { Effect } from 'effect';
+
 import { createSpinner } from '@/lib/output.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformResult } from '@/types.js';

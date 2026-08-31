@@ -1,7 +1,8 @@
+import { assertValidAgent, assertNonEmptyTask } from '@maestria/shared-pi/subagent-utils';
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
+
 import type { MaestriaState } from '@/state.js';
 import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
-import { assertValidAgent, assertNonEmptyTask } from '@maestria/shared-pi/subagent-utils';
 
 function recordAndPersist(
   pi: ExtensionAPI,

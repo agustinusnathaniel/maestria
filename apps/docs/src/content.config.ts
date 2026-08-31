@@ -1,6 +1,6 @@
-import { defineCollection } from 'astro:content';
 import { docsLoader } from '@astrojs/starlight/loaders';
 import { docsSchema } from '@astrojs/starlight/schema';
+import { defineCollection } from 'astro:content';
 import { autoSidebarLoader } from 'starlight-auto-sidebar/loader';
 import { autoSidebarSchema } from 'starlight-auto-sidebar/schema';
 

@@ -1,15 +1,16 @@
-import { Type } from 'typebox';
-import { Effect } from 'effect';
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
-import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
 import {
   ALLOWED_AGENTS,
   assertValidAgent,
   assertNonEmptyTask,
   MAESTRIA_EVENTS,
 } from '@maestria/shared-pi/subagent-utils';
+import { Effect } from 'effect';
+import { Type } from 'typebox';
+
+import type { MaestriaState } from '@/state.js';
+import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
 import { pollSubagentEffect } from '@/subagent-polling.js';
 import type { SubagentPollingService } from '@/subagent-polling.js';
 

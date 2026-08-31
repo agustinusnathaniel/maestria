@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
-import { installCommands } from '@/commands.js';
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
+import { describe, it, expect, vi } from 'vite-plus/test';
+
+import { installCommands } from '@/commands.js';
 import { createInitialState } from '@/state.js';
 import type { MaestriaState } from '@/state.js';
 

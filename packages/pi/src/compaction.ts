@@ -8,8 +8,9 @@
  */
 
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
 import { installCompactionHandlers as installHandlers } from '@maestria/shared-pi/compaction-core';
+
+import type { MaestriaState } from '@/state.js';
 
 /**
  * Install session compaction and tree event handlers for Pi.

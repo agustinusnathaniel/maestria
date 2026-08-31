@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+
 import { installGoalEventHandlers } from '@/goals.js';
 import {
   createInitialState,

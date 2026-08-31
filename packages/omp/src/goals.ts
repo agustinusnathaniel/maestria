@@ -1,4 +1,5 @@
 import type { ExtensionAPI, ExtensionContext } from '@oh-my-pi/pi-coding-agent';
+
 import type { MaestriaState } from '@/state.js';
 import { createInitialState, persistState } from '@/state.js';
 

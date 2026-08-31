@@ -10,6 +10,7 @@
 
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+
 import { ALLOWED_AGENTS } from './subagent-utils.js';
 
 /**

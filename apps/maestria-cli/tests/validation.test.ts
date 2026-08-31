@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { Effect } from 'effect';
-import * as validation from '@/lib/validation.js';
+import { describe, it, expect } from 'vite-plus/test';
+
 import { platforms } from '@/lib/platforms.js';
+import * as validation from '@/lib/validation.js';
 
 describe('validation', () => {
   it('exports ValidationError class', () => {

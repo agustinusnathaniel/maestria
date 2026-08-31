@@ -4,7 +4,6 @@ import { homedir, tmpdir } from 'node:os';
 import { isAbsolute, join, win32 } from 'node:path';
 import picocolors from 'picocolors';
 
-import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
 import { codexManagedAgentFileName, mergeCodexAgentSettings } from '@/lib/codex-agent-files.js';
 import {
   CODEX_GLOBAL_INSTRUCTION_FILENAMES,
@@ -13,6 +12,15 @@ import {
   upsertCodexManagedInstructions,
 } from '@/lib/codex-instructions.js';
 import type { CodexGlobalInstructionFilename } from '@/lib/codex-instructions.js';
+import {
+  kimiCodeHome,
+  kimiManagedPluginDir,
+  kimiInstalledPath,
+  readKimiInstalled,
+  registerKimiPlugin,
+  removeKimiPlugin,
+} from '@/lib/kimi.js';
+import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
 import {
   run,
   readTextFile,
@@ -24,14 +32,6 @@ import {
   getCacheDir,
   getMaestriaCacheDir,
 } from '@/lib/shell.js';
-import {
-  kimiCodeHome,
-  kimiManagedPluginDir,
-  kimiInstalledPath,
-  readKimiInstalled,
-  registerKimiPlugin,
-  removeKimiPlugin,
-} from '@/lib/kimi.js';
 
 // ── Shared helpers ───────────────────────────────────
 

@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
+
 import * as shell from '@/lib/shell.js';
 
 describe('shell execution', () => {

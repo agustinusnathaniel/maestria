@@ -7,9 +7,10 @@
  * @module
  */
 
-import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
 import { installCompactionHandlers as installHandlers } from '@maestria/shared-pi/compaction-core';
+import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
+
+import type { MaestriaState } from '@/state.js';
 
 /**
  * Install session compaction and tree event handlers for OMP.

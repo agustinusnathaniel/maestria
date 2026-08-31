@@ -8,9 +8,9 @@
  * @module
  */
 
+import { cycleToReviewModel, restoreOriginalState } from './review-core.js';
 import type { MaestriaState } from './state-core.js';
 import { persistState, recordHandoff, renderMaestriaSummary } from './state-core.js';
-import { cycleToReviewModel, restoreOriginalState } from './review-core.js';
 import { MAESTRIA_EVENTS } from './subagent-utils.js';
 
 // ── Duck-typed platform interfaces ──

@@ -1,11 +1,12 @@
-import { resolve } from 'node:path';
 import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
-import { persistState, restoreOriginalState } from '@/state.js';
 import {
   installModeAutoDetect as installAutoDetect,
   installModeCommands as installCommands,
 } from '@maestria/shared-pi/modes-core';
+import { resolve } from 'node:path';
+
+import type { MaestriaState } from '@/state.js';
+import { persistState, restoreOriginalState } from '@/state.js';
 
 const __dirname = import.meta.dirname;
 const COMMANDS_DIR = resolve(__dirname, '../agents/commands');

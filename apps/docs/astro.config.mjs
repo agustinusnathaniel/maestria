@@ -1,8 +1,7 @@
-import { fileURLToPath } from 'node:url';
-
 import starlight from '@astrojs/starlight';
-import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from 'astro/config';
+import { fileURLToPath } from 'node:url';
 import starlightAutoSidebar from 'starlight-auto-sidebar';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';

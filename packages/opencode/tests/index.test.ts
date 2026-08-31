@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { MaestriaPlugin } from '@/index.js';
+
 import pkg from '../package.json' with { type: 'json' };
+
+import { MaestriaPlugin } from '@/index.js';
 
 describe('plugin structure', () => {
   it('should have a valid package.json', () => {

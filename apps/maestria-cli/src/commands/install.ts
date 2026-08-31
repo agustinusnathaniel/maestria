@@ -1,13 +1,14 @@
+import { isCancel, cancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { isCancel, cancel } from '@clack/prompts';
-import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { getPlatform } from '@/lib/platforms.js';
+
 import { detectAll } from '@/lib/detect.js';
+import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { installOne } from '@/lib/install-one.js';
 import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
-import { validatePlatforms, validateOrExit, VALID_PLATFORMS } from '@/lib/validation.js';
+import { getPlatform } from '@/lib/platforms.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
+import { validatePlatforms, validateOrExit, VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
 async function runInstallAll(isQuiet: boolean): Promise<PlatformResult[]> {

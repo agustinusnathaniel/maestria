@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
 import { Effect } from 'effect';
+import { describe, it, expect, vi } from 'vite-plus/test';
 
 // State shared between the hoisted mock factory and the tests: the stubbed
 // `readFile` (the Prime version lookup reads package.json through Node's
@@ -76,8 +76,8 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   };
 });
 
-import * as shell from '@/lib/shell.js';
 import { getPlatform, readPackageJsonVersion } from '@/lib/platforms.js';
+import * as shell from '@/lib/shell.js';
 
 // Handlers construct their run(...) effects at module load, so the command a
 // handler issues is visible in the recorded calls. Filter to pi uninstall to

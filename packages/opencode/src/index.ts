@@ -3,9 +3,10 @@ import { merge } from 'es-toolkit';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { parse as parseYaml } from 'yaml';
+
+import { detectMode, stripKeyword, getModeMarker, getModePrompt } from '@/modes/index.js';
 import { maestriaOptionsSchema } from '@/modes/types.js';
 import type { MaestriaPluginOptions } from '@/modes/types.js';
-import { detectMode, stripKeyword, getModeMarker, getModePrompt } from '@/modes/index.js';
 import { AGENTS_DIR, RULES_PATH } from '@/root.js';
 
 interface AgentFrontmatter {

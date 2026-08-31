@@ -1,12 +1,12 @@
+import { select, isCancel, cancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { select, isCancel, cancel } from '@clack/prompts';
+
 import { detectInstalled } from '@/lib/detect.js';
 import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
 import { platforms, getPlatform } from '@/lib/platforms.js';
-import { VALID_PLATFORMS } from '@/lib/validation.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
-
+import { VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
 async function runUninstallAll(isQuiet: boolean): Promise<PlatformResult[]> {

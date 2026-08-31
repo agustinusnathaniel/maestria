@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+
 import { installCompactionHandlers } from '@/compaction.js';
 import { createInitialState } from '@/state.js';
 

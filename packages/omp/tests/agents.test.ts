@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vite-plus/test';
-import { deploySpecialistAgents } from '@/agents.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { describe, it, expect } from 'vite-plus/test';
+
+import { deploySpecialistAgents } from '@/agents.js';
 
 // We'll test deploySpecialistAgents by mocking the filesystem interactions
 // at the module level. The function reads from the `agents/` dir bundled with

@@ -1,5 +1,6 @@
-import picocolors from 'picocolors';
 import { spinner as clackSpinner } from '@clack/prompts';
+import picocolors from 'picocolors';
+
 import { freshnessOf } from '@/lib/freshness.js';
 import type { PlatformStatus, StatusOutput, PlatformResult } from '@/types.js';
 

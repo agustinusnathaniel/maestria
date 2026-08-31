@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
 import { MODE_KEYWORDS, getModePrompt } from '@maestria/shared-pi/modes-core';
+import { describe, it, expect, vi } from 'vite-plus/test';
+
 import { installModeCommands } from '@/modes.js';
 import { createInitialState } from '@/state.js';
 

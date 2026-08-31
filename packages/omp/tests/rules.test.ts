@@ -1,7 +1,8 @@
+import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-pi/pi-coding-agent';
 import { describe, it, expect } from 'vite-plus/test';
+
 import { createModePromptHandler } from '@/rules.js';
 import { createInitialState } from '@/state.js';
-import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-pi/pi-coding-agent';
 
 describe('createModePromptHandler', () => {
   // In omp, systemPrompt is a string array (string[]), not a single string.

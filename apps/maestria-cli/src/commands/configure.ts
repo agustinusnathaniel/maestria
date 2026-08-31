@@ -1,6 +1,6 @@
+import { isCancel, cancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect, Exit, Cause } from 'effect';
-import { isCancel, cancel, select } from '@clack/prompts';
 import picocolors from 'picocolors';
 
 import { groupMultiselect } from '@/lib/group-multiselect.js';

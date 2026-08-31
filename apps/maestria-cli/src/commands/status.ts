@@ -1,5 +1,6 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
+
 import { detectAll } from '@/lib/detect.js';
 import {
   createSpinner,

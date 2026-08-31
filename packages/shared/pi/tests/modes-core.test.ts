@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+
 import {
   MODE_KEYWORDS,
   MODE_MARKERS,

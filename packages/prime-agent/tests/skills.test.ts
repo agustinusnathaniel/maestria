@@ -1,13 +1,14 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
-import syncConfig from '../sync.config.js';
+import { describe, it, expect } from 'vite-plus/test';
+
 import {
   DESCRIPTION_MAX,
   NAME_MAX,
   isValidSkillName,
   frontmatterValue,
 } from '../scripts/skill-validation.ts';
+import syncConfig from '../sync.config.js';
 
 const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');

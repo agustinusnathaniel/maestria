@@ -8,6 +8,7 @@
 // other violations warn but still load.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+
 import {
   NAME_MAX,
   DESCRIPTION_MAX,

@@ -4,14 +4,15 @@ import type {
   SessionStartEvent,
   SessionTreeEvent,
 } from '@earendil-works/pi-coding-agent';
-import { createInitialState } from '@/state.js';
-import type { MaestriaState } from '@/state.js';
+
 import { deploySpecialistAgents } from '@/agents.js';
+import { installCommands } from '@/commands.js';
+import { installCompactionHandlers } from '@/compaction.js';
 import { installModeCommands, installModeAutoDetect } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
-import { installCompactionHandlers } from '@/compaction.js';
+import { createInitialState } from '@/state.js';
+import type { MaestriaState } from '@/state.js';
 import { installSubagentTool } from '@/subagent.js';
-import { installCommands } from '@/commands.js';
 import { installToolInterceptors } from '@/tools.js';
 
 interface PersistedStateEntry {

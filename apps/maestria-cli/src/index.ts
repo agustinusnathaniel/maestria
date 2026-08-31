@@ -1,16 +1,17 @@
 #!/usr/bin/env node
-import { version } from '^/package.json';
 import { defineCommand, runMain, renderUsage } from 'citty';
-import { Effect } from 'effect';
 import type { CommandDef, ArgsDef } from 'citty';
-import { installCommand } from '@/commands/install.js';
-import { updateCommand } from '@/commands/update.js';
-import { uninstallCommand } from '@/commands/uninstall.js';
-import { statusCommand } from '@/commands/status.js';
+import { Effect } from 'effect';
+
 import { checkCommand } from '@/commands/check.js';
 import { configureCommand } from '@/commands/configure.js';
+import { installCommand } from '@/commands/install.js';
+import { statusCommand } from '@/commands/status.js';
+import { uninstallCommand } from '@/commands/uninstall.js';
+import { updateCommand } from '@/commands/update.js';
 import { detectAll } from '@/lib/detect.js';
 import { createSpinner, renderStatusTable, renderCompactStatus } from '@/lib/output.js';
+import { version } from '^/package.json';
 
 // Ensure clean exit on signals - prevents Effect runtime from keeping process alive
 process.on('SIGINT', () => process.exit(130));

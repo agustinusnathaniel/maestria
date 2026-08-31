@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vite-plus/test';
 import { Effect } from 'effect';
 import { mkdtemp, readFile, rm, writeFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { describe, expect, it } from 'vite-plus/test';
+
 import { installCodexManagedAgents, removeCodexManagedAgents } from '@/lib/platforms.js';
 
 const AGENTS = [

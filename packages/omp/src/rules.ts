@@ -1,10 +1,11 @@
+import { getModePrompt } from '@maestria/shared-pi/modes-core';
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
   ExtensionContext,
 } from '@oh-my-pi/pi-coding-agent';
+
 import type { MaestriaState } from '@/state.js';
-import { getModePrompt } from '@maestria/shared-pi/modes-core';
 
 const __dirname = import.meta.dirname;
 const COMMANDS_DIR = `${__dirname}/../agents/commands`;

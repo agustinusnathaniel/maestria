@@ -1,13 +1,16 @@
-import picocolors from 'picocolors';
+import { isCancel, cancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
-import { isCancel, cancel } from '@clack/prompts';
+import picocolors from 'picocolors';
+
+import { detectInstalled } from '@/lib/detect.js';
+import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
+import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
 import { getPlatform } from '@/lib/platforms.js';
 import type { PlatformHandler, PlatformUpdateSnapshot } from '@/lib/platforms.js';
-import { detectInstalled } from '@/lib/detect.js';
+import { exitCodeForResults } from '@/lib/result-exit.js';
 import { invalidateVersionCache } from '@/lib/shell.js';
-import { createSpinner, renderResults, renderCompactResults } from '@/lib/output.js';
 import {
   validatePlatforms,
   validateVersion,
@@ -15,8 +18,6 @@ import {
   VALID_PLATFORMS,
 } from '@/lib/validation.js';
 import { isVersionEq, isVersionGt } from '@/lib/version.js';
-import { needsUpdateOf } from '@/lib/freshness.js';
-import { exitCodeForResults } from '@/lib/result-exit.js';
 import type { PlatformResult } from '@/types.js';
 
 async function runDirectUpdate(

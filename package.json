@@ -33,6 +33,7 @@
     "@changesets/cli": "catalog:",
     "@types/node": "catalog:",
     "all-contributors-cli": "catalog:",
+    "eslint-plugin-import-x": "catalog:",
     "jsonc-parser": "catalog:",
     "tsx": "4.23.12",
     "ultracite": "catalog:",

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { describe, it, expect, vi } from 'vite-plus/test';
+
 import extension from '@/extension.js';
 
 function createMockPi() {

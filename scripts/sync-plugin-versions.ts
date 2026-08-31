@@ -36,9 +36,6 @@
  * - @maestria/kimi-code    packages/kimi-code/package.json -> kimi.plugin.json
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import {
   applyEdits,
   findNodeAtLocation,
@@ -48,6 +45,9 @@ import {
   printParseErrorCode,
 } from 'jsonc-parser';
 import type { Node, ParseError } from 'jsonc-parser';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { parseDocument } from 'yaml';
 
 const ROOT = path.resolve(import.meta.dirname, '..');

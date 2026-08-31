@@ -1,6 +1,7 @@
-import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
 import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
+import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
+
+import type { MaestriaState } from '@/state.js';
 import { persistState } from '@/state.js';
 
 export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {

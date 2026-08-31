@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vite-plus/test';
-import { createModePromptHandler } from '@/rules.js';
-import { createInitialState } from '@/state.js';
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
 } from '@earendil-works/pi-coding-agent';
+import { describe, it, expect } from 'vite-plus/test';
+
+import { createModePromptHandler } from '@/rules.js';
+import { createInitialState } from '@/state.js';
 
 describe('createModePromptHandler', () => {
   const baseEvent: BeforeAgentStartEvent = {

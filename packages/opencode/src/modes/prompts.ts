@@ -1,8 +1,9 @@
+import { extractModeSection } from '@maestria/shared-mode';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { COMMANDS_DIR } from '@/root.js';
-import { extractModeSection } from '@maestria/shared-mode';
+
 import type { ModeKeyword } from '@/modes/types.js';
+import { COMMANDS_DIR } from '@/root.js';
 
 const VALID_KEYWORDS: readonly ModeKeyword[] = ['fein', 'sonar', 'blitz'];
 

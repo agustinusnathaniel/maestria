@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { describe, it, expect } from 'vite-plus/test';
 
 const SKILLS_DIR = join(import.meta.dirname, '..', 'skills');
 

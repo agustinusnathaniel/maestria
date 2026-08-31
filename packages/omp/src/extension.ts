@@ -1,13 +1,14 @@
 import type { ExtensionAPI, SessionStartEvent } from '@oh-my-pi/pi-coding-agent';
-import { createInitialState } from '@/state.js';
+
 import { deploySpecialistAgents } from '@/agents.js';
+import { installCommands } from '@/commands.js';
+import { installCompactionHandlers } from '@/compaction.js';
+import { installGoalEventHandlers, restoreMaestriaStateForSession } from '@/goals.js';
 import { installModeCommands, installModeAutoDetect } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
-import { installCompactionHandlers } from '@/compaction.js';
+import { createInitialState } from '@/state.js';
 import { installSubagentTool } from '@/subagent.js';
-import { installCommands } from '@/commands.js';
 import { installToolInterceptors } from '@/tools.js';
-import { installGoalEventHandlers, restoreMaestriaStateForSession } from '@/goals.js';
 
 export default function (pi: ExtensionAPI): void {
   const state = createInitialState();

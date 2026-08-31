@@ -3,11 +3,11 @@ import type {
   ExtensionCommandContext,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import {
   cycleToReviewModel as cycleCore,
   restoreOriginalState as restoreCore,
 } from '@maestria/shared-pi/review-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
 export async function restoreOriginalState(
   pi: ExtensionAPI,

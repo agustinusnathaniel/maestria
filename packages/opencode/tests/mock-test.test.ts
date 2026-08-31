@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
+
 import { MaestriaPlugin } from '@/index.js';
 
 // Suppress expected console.error noise from ENOENT error path

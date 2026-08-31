@@ -20,9 +20,10 @@
 // `~/.pi`, no `.prime/agent` writes): state rides on host session entries.
 
 import { resolve } from 'node:path';
+
+import { createModePromptHandler, installCommands } from './modes.js';
 import type { ExtensionAPI } from './pi-api.js';
 import { createInitialState, restoreModeState } from './state.js';
-import { createModePromptHandler, installCommands } from './modes.js';
 
 /**
  * Resolve the package's generated `skills/` directory. When running from the

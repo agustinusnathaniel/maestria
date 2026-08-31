@@ -8,8 +8,6 @@
  * @module
  */
 
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import {
   MODE_KEYWORDS as SHARED_KEYWORDS,
   MODE_MARKERS as SHARED_MARKERS,
@@ -18,6 +16,9 @@ import {
   stripKeyword as sharedStripKeyword,
 } from '@maestria/shared-mode';
 import type { ModeKeyword as SharedModeKeyword } from '@maestria/shared-mode';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import type { MaestriaState } from './state-core.js';
 
 // ── Constants (re-exported from shared-mode to preserve public API) ──

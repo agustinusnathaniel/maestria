@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
+
 import { validateSkills, validateSkillsAndLog } from '../scripts/lib/skill-validator.js';
 
 function makeSkill(dir: string, name: string, frontmatter: string, body: string): void {

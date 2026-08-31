@@ -2,8 +2,9 @@
 // packages/core/scripts/sync.ts - CLI entry for config-driven agent directive syncing
 
 import { existsSync } from 'node:fs';
-import { parseArgs } from 'node:util';
 import { resolve } from 'node:path';
+import { parseArgs } from 'node:util';
+
 import { loadConfig, ConfigError } from './lib/config.js';
 import { runSync } from './lib/sync.js';
 

@@ -1,11 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 
 // ── Imports ──
 
+import { loadConfig, ConfigError } from '../scripts/lib/config.js';
+import type { ReplaceOp, ResolvedSyncConfig, ResolvedFileConfig } from '../scripts/lib/config.js';
+import { processFile } from '../scripts/lib/process-file.js';
+import { runSync } from '../scripts/lib/sync.js';
 import {
   stripFrontmatter,
   findAndReplace,
@@ -13,12 +17,6 @@ import {
   stripSourceComment,
   normalizeLineEndings,
 } from '../scripts/lib/transforms.js';
-
-import { loadConfig, ConfigError } from '../scripts/lib/config.js';
-import { runSync } from '../scripts/lib/sync.js';
-import { processFile } from '../scripts/lib/process-file.js';
-
-import type { ReplaceOp, ResolvedSyncConfig, ResolvedFileConfig } from '../scripts/lib/config.js';
 
 // ═══════════════════════════════════════════════
 // Transforms

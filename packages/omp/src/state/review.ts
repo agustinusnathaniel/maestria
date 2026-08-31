@@ -1,13 +1,13 @@
+import {
+  cycleToReviewModel as cycleCore,
+  restoreOriginalState as restoreCore,
+} from '@maestria/shared-pi/review-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
   ExtensionContext,
 } from '@oh-my-pi/pi-coding-agent';
-import type { MaestriaState } from '@maestria/shared-pi/state-core';
-import {
-  cycleToReviewModel as cycleCore,
-  restoreOriginalState as restoreCore,
-} from '@maestria/shared-pi/review-core';
 
 export async function restoreOriginalState(
   pi: ExtensionAPI,

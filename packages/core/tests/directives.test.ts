@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vite-plus/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { describe, expect, it } from 'vite-plus/test';
 
 const DIRECTIVES_DIR = join(import.meta.dirname, '..', 'agent-directives');
 

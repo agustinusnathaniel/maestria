@@ -6,6 +6,7 @@
 
 import { existsSync } from 'node:fs';
 import { resolve, dirname, basename } from 'node:path';
+
 import type { ResolvedSyncConfig, ResolvedFileConfig } from './config.js';
 import { walkDir, autoClean } from './file.js';
 import { processFile } from './process-file.js';

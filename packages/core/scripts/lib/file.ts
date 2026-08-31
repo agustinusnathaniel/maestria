@@ -1,9 +1,10 @@
 // packages/core/scripts/lib/file.ts - File I/O utilities
 
-import { readdir, writeFile, rename, unlink, mkdir } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
-import { resolve, relative, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { readdir, writeFile, rename, unlink, mkdir } from 'node:fs/promises';
+import { resolve, relative, dirname } from 'node:path';
+
 import type { ResolvedSyncConfig } from './config.js';
 import type { SyncFileResult } from './sync.js';
 

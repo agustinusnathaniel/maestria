@@ -1,6 +1,6 @@
+import { deploySpecialistAgents as deployAgents } from '@maestria/shared-pi/agent-deployment';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { deploySpecialistAgents as deployAgents } from '@maestria/shared-pi/agent-deployment';
 
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;

@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite-plus';
 import oxfmtPreset from 'ultracite/oxfmt';
 import oxlintPreset from 'ultracite/oxlint/core';
+import { defineConfig } from 'vite-plus';
 
 import { narrowOverrides } from './tooling/lint/narrow.js';
 import { stylisticDebt, stylisticDebtFiles } from './tooling/lint/stylistic-debt.js';
@@ -61,7 +61,10 @@ export default defineConfig({
     ...oxlintPreset,
     ignorePatterns: [...new Set([...(oxlintPreset.ignorePatterns ?? []), 'dist/**'])],
     plugins: [...(oxlintPreset.plugins ?? [])],
-    jsPlugins: [{ name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' }],
+    jsPlugins: [
+      { name: 'vite-plus', specifier: 'vite-plus/oxlint-plugin' },
+      { name: 'import-js', specifier: 'eslint-plugin-import-x' },
+    ],
     rules: {
       ...oxlintPreset.rules,
       // Strict Ultracite core preset - only intentional project overrides remain (see ADR-021)
@@ -73,12 +76,19 @@ export default defineConfig({
       // declaration is stylistic). Defer to last - keep off as single intentional exception
       // pending codemod. See task notes: prioritize type-safe rules over stylistic.
       'func-style': 'off',
-      // import-style 'default import for node:path' churns 25 files requiring `import path` + `path.join` refactor
-      // with low safety value (named vs default is stylistic). Keep off as second intentional exception.
       'unicorn/import-style': 'off',
-      // sort-keys 'object keys should be sorted' churns 28 files with low safety (alphabetical key order
-      // is stylistic, not safety). Keep off as third intentional exception (within <2 beyond func-style budget is 2, this is second).
       'sort-keys': 'off',
+      'import-js/order': [
+        'warn',
+        {
+          groups: [['builtin', 'external'], ['internal', 'parent'], ['sibling', 'index'], 'object'],
+          'newlines-between': 'always',
+          alphabetize: {
+            order: 'asc',
+            caseInsensitive: true,
+          },
+        },
+      ],
     },
     overrides: [
       ...(oxlintPreset.overrides ?? []),

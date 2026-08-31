@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { ExtensionContext } from '../src/pi-api.ts';
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
+
 import { MODE_MARKERS, createModePromptHandler, getModePrompt } from '../src/modes.ts';
+import type { ExtensionContext } from '../src/pi-api.ts';
 import type { MaestriaModeState } from '../src/state.ts';
 
 // Note: modes.ts keeps a module-level prompt cache keyed by mode keyword, so
