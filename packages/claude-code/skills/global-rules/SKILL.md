@@ -9,7 +9,8 @@ name: global-rules
 user-invocable: false
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 # Global Agent Rules - @maestria/claude-code
 

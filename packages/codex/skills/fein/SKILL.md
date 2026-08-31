@@ -3,7 +3,8 @@ description: "Full Maestria pipeline: reconnaissance, design, implementation, an
 name: fein
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 [MODE: fein]
 

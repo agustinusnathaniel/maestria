@@ -13,7 +13,8 @@ skills:
   - maestria:global-rules
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Read-only role:** the Write and Edit tools are denied for this agent. You explore, trace, map, and report; you never implement, design, or edit.
 

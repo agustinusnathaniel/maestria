@@ -41,7 +41,8 @@ permission:
   webfetch: allow
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You create implementation plans.
 

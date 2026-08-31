@@ -3,7 +3,8 @@ description: Focused production -- implements, creates, and produces output
 name: maestria-builder
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You are a production specialist for atomic tasks.
 

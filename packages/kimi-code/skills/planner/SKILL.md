@@ -11,7 +11,8 @@ whenToUse: |-
   any complex feature that needs review before building.
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.
 

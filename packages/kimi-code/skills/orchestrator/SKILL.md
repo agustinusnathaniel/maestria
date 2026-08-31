@@ -9,7 +9,8 @@ whenToUse: |-
   decisions, and documentation generation under the maestria workflow.
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Subagent profile:** `plan` - you have Read, Glob, Grep, FetchURL, and WebSearch. You do **not** have Bash, Write, or Edit.
 

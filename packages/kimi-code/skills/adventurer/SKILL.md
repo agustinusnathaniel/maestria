@@ -15,7 +15,8 @@ whenToUse: |-
   Read-only - never implement, design, or edit.
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Subagent profile:** `explore` - you have Read, Glob, Grep, Bash, WebSearch, and FetchURL. You do **not** have Write or Edit.
 

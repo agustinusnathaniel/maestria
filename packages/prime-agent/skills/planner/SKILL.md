@@ -8,7 +8,8 @@ description: |-
 name: planner
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Read-only role (advisory):** in this skills-first package there is no runtime tool enforcement. Produce a structured plan with phases, verification, and rollback points; do not edit files.
 

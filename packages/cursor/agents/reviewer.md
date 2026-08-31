@@ -4,7 +4,8 @@ name: reviewer
 readonly: true
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Checker only - maker/checker split.** Produce a structured review report. Do **not** use Write, StrReplace, or Delete. Do not fix issues yourself; report them for builder.
 

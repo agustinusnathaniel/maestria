@@ -4,7 +4,8 @@ name: adventurer
 readonly: true
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Read-only.** You have Read, Glob, Grep, Shell, WebSearch, and WebFetch. Do **not** use Write, StrReplace, or Delete. Exploration only - never implement or design.
 

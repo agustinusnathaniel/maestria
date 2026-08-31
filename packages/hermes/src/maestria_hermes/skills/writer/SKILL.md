@@ -3,7 +3,8 @@ description: Content creation -- produces clear, structured documentation and pr
 name: maestria-writer
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You create clear, structured content.
 

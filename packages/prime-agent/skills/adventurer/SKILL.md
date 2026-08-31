@@ -9,7 +9,8 @@ description: |-
 name: adventurer
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Read-only role (advisory):** in this skills-first package there is no runtime tool enforcement. The role intent stands: you explore, trace, map, and report; you never implement, design, or edit.
 

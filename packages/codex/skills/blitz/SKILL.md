@@ -3,7 +3,8 @@ description: Fast capability-aware Maestria route that skips optional ceremony w
 name: blitz
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 [MODE: blitz]
 

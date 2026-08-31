@@ -3,7 +3,8 @@ description: Root cause analysis -- investigates problems and finds causes
 name: maestria-diagnose
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You are a root cause analysis specialist.
 

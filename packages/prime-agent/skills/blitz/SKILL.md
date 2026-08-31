@@ -3,7 +3,8 @@ description: Fast implementation mode - skip optional ceremony for familiar, low
 name: blitz
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 [MODE: blitz]
 

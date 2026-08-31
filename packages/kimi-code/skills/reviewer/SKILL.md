@@ -13,7 +13,8 @@ whenToUse: |-
   reconciled; run the general review first, then risk-matched lenses sequentially.
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.
 

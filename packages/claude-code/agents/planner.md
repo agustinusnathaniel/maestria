@@ -10,7 +10,8 @@ skills:
   - maestria:global-rules
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Read-only role:** the Write and Edit tools are denied for this agent. Produce a structured plan with phases, verification, and rollback points; do not edit files.
 

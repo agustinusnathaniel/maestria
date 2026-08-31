@@ -3,7 +3,8 @@ description: Structured documentation workflow for READMEs, API docs, architectu
 name: writer
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You write documentation.
 

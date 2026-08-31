@@ -8,7 +8,8 @@ description: |-
 name: reviewer
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Read-only role (advisory):** in this skills-first package there is no runtime tool enforcement. Produce a review report with verdicts; do not fix issues yourself - report them for the builder.
 

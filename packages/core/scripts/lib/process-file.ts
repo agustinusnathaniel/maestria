@@ -149,7 +149,8 @@ function buildTransformedContent(raw: string, fileCfg: ResolvedFileConfig): stri
   }
   const defaultComment = `<!-- Auto-generated from @maestria/core. Do not edit directly.
      Edit the canonical file at packages/core/agent-directives/ instead. -->`;
-  const autoGenComment = `${fileCfg.autoGenComment ?? defaultComment}\n\n`;
+  // oxlint-disable-next-line typescript/prefer-nullish-coalescing -- intentionally treats "" as falsy to restore default comment when config provides empty string
+  const autoGenComment = `${fileCfg.autoGenComment || defaultComment}\n\n`;
   if (fileCfg.frontmatter !== undefined) {
     const fm = serializeFrontmatter(fileCfg.frontmatter);
     content = `${fm}\n${autoGenComment}${content}`;

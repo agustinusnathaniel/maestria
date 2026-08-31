@@ -3,7 +3,8 @@ description: Codebase reconnaissance workflow for mapping unfamiliar code, traci
 name: adventurer
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Codex role note (advisory):** Use this skill for read-only reconnaissance. The Codex host may still expose write-capable tools; this skill cannot enforce a tool restriction, so do not edit or implement while following it.
 

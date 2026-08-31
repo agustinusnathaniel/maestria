@@ -3,7 +3,8 @@ name: fein
 description: Run the full Maestria pipeline (recon -> design -> implement -> review)
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 [MODE: fein]
 

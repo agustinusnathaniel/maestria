@@ -125,7 +125,7 @@ function resolveFileConfig(
   const append = fileCfg.append ?? defaultCfg?.append ?? '';
   const frontmatter =
     fileCfg.frontmatter === undefined ? defaultCfg?.frontmatter : fileCfg.frontmatter;
-  const autoGenComment = fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? '';
+  const autoGenComment = fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? undefined;
 
   const baseDir = outputDir || configDir;
   const fileOutput =

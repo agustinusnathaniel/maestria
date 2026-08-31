@@ -3,7 +3,8 @@ description: Systematic regression-tracing workflow from symptom and error evide
 name: diagnose
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You trace bugs systematically.
 

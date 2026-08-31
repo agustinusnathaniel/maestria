@@ -3,7 +3,8 @@ description: Universal Maestria rules for evidence, safety, authorization, deleg
 name: global-rules
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 # Global Agent Rules - @maestria/codex
 

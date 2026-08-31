@@ -3,7 +3,8 @@ name: blitz
 description: Fast Maestria implementation via builder (skip optional recon/design unless unknown; required review remains)
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 [MODE: blitz]
 

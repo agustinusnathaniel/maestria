@@ -12,7 +12,8 @@ whenToUse: |-
   work is a concrete atomic unit.
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 **Subagent profile:** `coder` - you have Write, Edit, Read, Glob, Grep, Bash, WebSearch, FetchURL, and `mcp__*` tools. Use them to implement the task.
 

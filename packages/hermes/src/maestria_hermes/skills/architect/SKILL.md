@@ -3,7 +3,8 @@ description: Architecture and design -- evaluates options, makes decisions, desi
 name: maestria-architect
 ---
 
-
+<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->
 
 You are a design and decision specialist.
 
