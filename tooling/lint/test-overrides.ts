@@ -1,0 +1,62 @@
+import type { OxlintOverride } from 'vite-plus/lint';
+
+export const testOverrides = {
+  files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx', '**/__tests__/**'],
+  rules: {
+    'max-lines': 'off',
+    'max-lines-per-function': 'off',
+    // Type-aware safety is intentionally lax in tests - mocks, fixtures, and
+    // assertion helpers legitimately use `any` / unsafe access. Disabling
+    // here is more correct than a global off and matches Ultracite vitest preset
+    // intent. Reduces ~1.5k of 2.8k errors that are test-only.
+    'typescript/no-explicit-any': 'off',
+    'typescript/no-unsafe-assignment': 'off',
+    'typescript/no-unsafe-argument': 'off',
+    'typescript/no-unsafe-call': 'off',
+    'typescript/no-unsafe-member-access': 'off',
+    'typescript/no-unsafe-return': 'off',
+    'typescript/no-unsafe-type-assertion': 'off',
+    'typescript/no-non-null-assertion': 'off',
+    'typescript/strict-boolean-expressions': 'off',
+    'typescript/no-confusing-void-expression': 'off',
+    'typescript/no-floating-promises': 'off',
+    // Stylistic and low-safety rules that are noisy in tests - fixtures,
+    // destructuring style, regex groups, import style etc. are intentionally
+    // relaxed for tests; keeping them strict in src preserves safety.
+    'prefer-destructuring': 'off',
+    'prefer-named-capture-group': 'off',
+    'no-await-in-loop': 'off',
+    'unicorn/import-style': 'off',
+    'no-inline-comments': 'off',
+    'unicorn/no-await-expression-member': 'off',
+    'unicorn/consistent-function-scoping': 'off',
+    'typescript/consistent-type-imports': 'off',
+    'sort-keys': 'off',
+    'typescript/method-signature-style': 'off',
+    'no-nested-ternary': 'off',
+    'unicorn/no-nested-ternary': 'off',
+    'typescript/no-invalid-void-type': 'off',
+    'typescript/strict-void-return': 'off',
+    'no-useless-return': 'off',
+    'func-names': 'off',
+    'no-useless-concat': 'off',
+    'unicorn/prefer-string-starts-ends-with': 'off',
+    'typescript/prefer-string-starts-ends-with': 'off',
+    'unicorn/prefer-query-selector': 'off',
+    'import/first': 'off',
+    'no-shadow': 'off',
+    'no-implicit-globals': 'off',
+    'jsdoc/check-tag-names': 'off',
+    'typescript/promise-function-async': 'off',
+    'eslint/require-await': 'off',
+    'typescript/require-await': 'off',
+    'eslint/prefer-destructuring': 'off',
+    'unicorn/prefer-ternary': 'off',
+    'unicorn/no-array-for-each': 'off',
+    'promise/prefer-await-to-callbacks': 'off',
+    'promise/prefer-await-to-then': 'off',
+    'typescript/consistent-return': 'off',
+    'typescript/no-unnecessary-type-assertion': 'off',
+    'typescript/no-unnecessary-type-conversion': 'off',
+  },
+} satisfies OxlintOverride;

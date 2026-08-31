@@ -62,6 +62,40 @@ Import `ultracite/oxlint/core` and `ultracite/oxfmt` from the root config. Exten
 
 Project-specific rules and overrides remain later, explicit layers so they continue to win over the shared preset. Strict preset is now enforced: intentional style overrides (singleQuote, trailingComma, printWidth 100, sortImports false) remain, plus ~40 deferred rules with violation counts documented in vite.config.ts (type safety ~1500, stylistic high-churn ~800). Deferred rules are fixed incrementally in follow-ups; new lint failures are reviewed as individual compatibility findings.
 
+### 2a. Isolate incremental debt in `tooling/lint/` via JavaScript imports
+
+Per VitePlus monorepo guide https://viteplus.dev/guide/monorepo "Composing Configuration Files", incremental lint debt is isolated in `tooling/lint/*.ts` and composed via normal JavaScript imports. This keeps `vite.config.ts` focused on global rules while making debt ownership explicit and diff-friendly:
+
+```ts
+import type { OxlintOverride } from 'vite-plus/lint';
+
+export const stylisticDebt = {
+  rules: {/* 38 rules */},
+} satisfies Omit<OxlintOverride, 'files'>;
+```
+
+```ts
+// vite.config.ts
+import { stylisticDebt, stylisticDebtFiles } from './tooling/lint/stylistic-debt.js';
+import { testOverrides } from './tooling/lint/test-overrides.js';
+import { narrowOverrides } from './tooling/lint/narrow.js';
+
+export default defineConfig({
+  lint: {
+    ...oxlintPreset,
+    rules: { ...oxlintPreset.rules, ...projectRules },
+    overrides: [testOverrides, ...narrowOverrides, { files: stylisticDebtFiles, ...stylisticDebt }],
+    options: { typeAware: true, typeCheck: true },
+  },
+});
+```
+
+- `tooling/lint/stylistic-debt.ts` - broad catch-all (~13 globs, 38 rules) documented as incremental debt, not inline in the root config.
+- `tooling/lint/test-overrides.ts` - test file relaxations (~48 rules).
+- `tooling/lint/narrow.ts` - narrow file-specific relaxations (10 overrides) covering intentional stylistic patterns in src.
+
+For monorepo sharing alternatives, see https://oxc.rs/docs/guide/usage/linter/nested-config.html#monorepo-pattern-share-a-base-config-with-extends - the repository uses `overrides` composition rather than `extends` with a shared base file because `overrides` keeps all behavior centralized in the single root `vite.config.ts` authority (single file to audit, no extra `extends` resolution, and VitePlus's `vp` commands read only the root config). Using `extends` would introduce a second config file and divergent resolution; `overrides` preserves the single-authority model documented in VitePlus.
+
 ### 3. Keep Vite+ as the only executable interface
 
 Retain the existing `package.json` scripts and call `vp check`, `vp lint`, `vp fmt`, and `vp staged` as before. Do not add `ultracite check` or `ultracite fix` scripts. The Ultracite package is used for presets and guidance, not as a competing runner.
