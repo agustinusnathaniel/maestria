@@ -81,6 +81,7 @@ allowBuilds:
   onnxruntime-node: true
   protobufjs: true
   sharp: true
+  'unrs-resolver@1.12.2': true
 minimumReleaseAgeExclude:
   - '@astrojs/*'
   - astro

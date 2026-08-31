@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { describe, it, expect } from 'vite-plus/test';
 
 import { MaestriaPlugin } from '@/index.js';
@@ -446,8 +447,6 @@ describe('MaestriaPlugin chat.message hook', () => {
 // ---------------------------------------------------------------------------
 // chat.message hook integration (realistic mock inputs via helper functions)
 // ---------------------------------------------------------------------------
-import crypto from 'node:crypto';
-
 async function createHook(disabledKeywords?: string[]) {
   const plugin = await MaestriaPlugin(
     {} as never,
