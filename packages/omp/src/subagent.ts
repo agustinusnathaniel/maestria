@@ -85,7 +85,8 @@ export function installSubagentTool(
   (pi.registerTool as any)({
     description:
       'Dispatch a task to a maestria specialist subagent (adventurer, architect, builder, diagnose, planner, reviewer, writer). Uses omp native task tool.',
-    execute(
+    // oxlint-disable-next-line typescript/require-await, typescript/promise-function-async -- keep async for Promise rejection semantics required by tests/platform
+    async execute(
       _toolCallId: string,
       params: {
         agent?: string;
