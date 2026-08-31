@@ -10,10 +10,4 @@ if ! python3 -c "import ruff" 2>/dev/null && ! command -v ruff >/dev/null 2>&1; 
   exit 1
 fi
 
-vp run build \
-  && vp run check-fmt \
-  && vp run check-lint \
-  && vp run test \
-  && vp run test-sync-plugin-versions \
-  && vp run check-manifest-versions \
-  && vp run check-python
+vp run check && vp run check-python
