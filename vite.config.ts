@@ -263,6 +263,15 @@ export default defineConfig({
           'typescript/no-non-null-assertion': 'off',
         },
       },
+      // Incremental broad suppression (tracked debt, not strict enforcement):
+      // This block covers ~12 src globs with ~36 rules off and effectively acts
+      // as a global via patterns. It is intentional incremental debt for low-value
+      // stylistic and low-safety rules (func-names, complexity, max-lines,
+      // destructuring, ternaries, await-in-loop, etc.) that would otherwise churn
+      // many files. Safety-critical rules like `typescript/no-unsafe-type-assertion`
+      // have been removed from this broad block and are now handled via narrow
+      // file-specific overrides or inline SAFETY comments. Tracked for follow-up:
+      // tighten further as codemods land. Do not add new rules here without ADR.
       {
         files: [
           'apps/maestria-cli/src/lib/**/*.ts',
@@ -301,7 +310,6 @@ export default defineConfig({
           'typescript/strict-boolean-expressions': 'off',
           'prefer-destructuring': 'off',
           'eslint/prefer-destructuring': 'off',
-          'typescript/no-unsafe-type-assertion': 'off',
           'typescript/consistent-type-imports': 'off',
           'typescript/method-signature-style': 'off',
           'typescript/no-unnecessary-type-assertion': 'off',
@@ -319,6 +327,16 @@ export default defineConfig({
           'prefer-named-capture-group': 'off',
           'max-lines': 'off',
           'max-lines-per-function': 'off',
+        },
+      },
+      // Narrow file-specific relaxation for configure.ts hint computation:
+      // `agent as keyof AgentModels` is safe after runtime check; broader
+      // `no-unsafe-type-assertion` is now enforced elsewhere, so this file
+      // gets a targeted off instead of the previous broad suppression.
+      {
+        files: ['apps/maestria-cli/src/commands/configure.ts'],
+        rules: {
+          'typescript/no-unsafe-type-assertion': 'off',
         },
       },
       {
