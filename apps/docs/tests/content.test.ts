@@ -100,11 +100,15 @@ describe('portable Agent Plugin documentation', () => {
     const { full } = await readDoc('agent-plugin/index.mdx');
 
     expect(full).toContain('@maestria/agent-plugin');
+    expect(full).toContain('compatible clients');
+    expect(full).toContain('Install `@maestria/agent-plugin`');
     expect(full).toContain('plugin.json');
     expect(full).toContain('skills/<name>/SKILL.md');
     expect(full).toContain('There is no universal `maestria install agent-plugin` command');
-    expect(full).toContain('scripts/sync-all');
-    expect(full).toContain('client-specific');
+    expect(full).toContain('The exact command depends on the client');
+    expect(full).toContain('native subagent registration');
+    expect(full).not.toContain('packages/core/agent-directives');
+    expect(full).not.toContain('sync.config.ts');
   });
 });
 
