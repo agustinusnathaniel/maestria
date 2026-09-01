@@ -1,7 +1,5 @@
 # @maestria/hermes - Hermes Plugin for Maestria Methodology
 
-> **Archive notice:** This is the historical design record. For the active package surface and runtime boundaries, read [Hermes plugin: current reference](hermes-plugin-current.md) first.
-
 ## Purpose
 
 Bring the maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes AI agent platform. Unlike @maestria/opencode which is domain-locked to software engineering, this plugin generalizes specialists to work across any domain - research, content, analysis, strategy, and coding.
