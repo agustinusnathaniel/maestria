@@ -83,14 +83,18 @@ import { marks } from '@/data/marks.js';
     >
       <div class="flex flex-col gap-6 max-w-46rem">
         <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
-          Hermes distributes plugins through its own git-based plugin manager -
-          there is no maestria CLI step. Install directly:
+          Hermes distributes plugins through its own git-based plugin manager. You can use the
+          Maestria CLI as a wrapper, or install directly with Hermes:
         </p>
       </div>
 
       ```bash
       hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
       ```
+
+      <p class="!mt-6 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        <code>npx maestria install hermes</code> delegates to the same Hermes plugin manager.
+      </p>
 
       <p class="!mt-6 mb-0 max-w-46rem text-[0.9375rem] leading-[1.65] text-home-text-soft">
         The plugin is fully self-configuring - Hermes discovers its hooks,

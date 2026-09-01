@@ -218,7 +218,7 @@ For implementation work, the canonical contract owns the path from repository in
 - `packages/core/agent-directives/specialists/adventurer.md` - exhausts data sources before proceeding
 - `packages/core/agent-directives/specialists/reviewer.md` - validates assumptions documented by other specialists
 - `packages/core/agent-directives/specialists/writer.md` - scoped out of question-elimination rules (documentation audience questions exempt)
-- `docs/PATTERNS.md` - documents the philosophy shift from "ask when unsure" to "exhaust data, proceed, review"
+- `PATTERNS.md` - documents the philosophy shift from "ask when unsure" to "exhaust data, proceed, review"
 - Internal: OpenCode session telemetry (June 10–July 10, 2026) - 5,675 sessions, 1,133 question() call analysis
 
 ## Date

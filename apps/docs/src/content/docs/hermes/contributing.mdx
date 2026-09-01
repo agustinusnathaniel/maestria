@@ -102,18 +102,18 @@ When you change any of the above, update this documentation to match the runtime
 
 ### Adding a command
 
-1. Create `commands/<name>.py` with an async function `async def cmd_<name>(ctx, args):`
+1. Add the handler in `src/maestria_hermes/__init__.py` or a focused module under `src/maestria_hermes/`.
 2. Register it in `__init__.py`'s `register()` via `ctx.register_command()`
 3. Add the command name to `plugin.yaml`'s `provides_commands` list
 
 ### Adding a hook
 
-1. Create `hooks/<name>.py` with the handler function
+1. Create `src/maestria_hermes/hooks/<name>.py` with the handler function
 2. Wire it in `__init__.py`'s `register()` via `ctx.register_hook()`
 3. Add the hook name to `plugin.yaml`'s `provides_hooks` list
 
 ### Adding a skill
 
-1. Create the `SKILL.md` file in `skills/`
+1. Create the `SKILL.md` file in `src/maestria_hermes/skills/<name>/`
 2. Register it via `ctx.register_skill(name, path, description="")` in `__init__.py`. The bare `name` must match `[a-zA-Z0-9_-]+` and contain no `:`; the namespace is derived automatically from the plugin name
 3. Skills are namespaced as `maestria-hermes:<name>` in Hermes (the prefix is the plugin name `maestria-hermes`, not a hand-written value)

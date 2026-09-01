@@ -96,7 +96,7 @@ import { marks } from '@/data/marks.js';
           { title: 'Verified subset only', desc: "The extension covers mode commands and mode prompt injection. Prime's recursive-subagent call (rlm(...)) is an IPython-side tool with no public JS extension bridge, so this package cannot spawn child agents from the extension." },
           { title: 'Advisory, not enforced', desc: 'Skills, rules, and the extension are advisory guidance, not security enforcement. Prime Agent has no skill-level tool-denial mechanism, so read-only roles state their role intent without claiming a runtime boundary.' },
           { title: 'Not a sandbox', desc: 'Prime Agent executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.' },
-          { title: 'No filesystem writes', desc: 'The extension writes nothing - no ~/.pi, no .prime/agent writes; mode state rides on host session entries.' },
+          { title: 'Extension has no filesystem writes', desc: "The compiled extension writes nothing to ~/.pi or .prime/agent; Prime's package manager still manages its own registration files, and mode state rides on host session entries." },
         ]}
       />
     </PluginSection>

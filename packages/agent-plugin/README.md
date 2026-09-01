@@ -2,13 +2,13 @@
 
 Maestria's portable [Agent Plugins v1](https://agent-plugins.org/) package. It delivers the methodology as standard [Agent Skills](https://agentskills.io/specification) for compatible agent clients.
 
-## Status and boundary
+## Status / Support Boundary
 
-This is the portable surface, not a replacement for Maestria's native runtime integrations. It contains one standard `plugin.json` manifest and 14 generated skills. It intentionally contains no executable agents, commands, hooks, MCP servers, or client-specific extensions.
+This is the portable surface, not a replacement for Maestria's native runtime integrations. The current checkout is pre-release (`package.json` and `plugin.json` are `0.0.0`); use the local checkout option below until the first npm release. It contains one standard `plugin.json` manifest and 14 generated skills, with no executable agents, commands, hooks, MCP servers, or client-specific extensions.
 
 Skills describe workflow behavior. The consuming client remains responsible for discovery, invocation, delegation, permissions, session state, installation, and trust decisions. Read-only roles are advisory in this package and do not enforce tool restrictions.
 
-## What it provides
+## What It Provides
 
 - **Specialist skills** - `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, and `writer`.
 - **Workflow skills** - `orchestrator`, `global-rules`, `handoff`, and `iteration-limits`.
@@ -18,9 +18,9 @@ The skills are generated from the canonical directives in `packages/core/agent-d
 
 ## Installation
 
-Use the consuming client's Agent Plugins installation flow with the published package or an extracted package directory. The plugin root must be the directory containing `plugin.json`; the standard skill root is `skills/`.
+Use the consuming client's Agent Plugins installation flow with a released package or an extracted package directory. The plugin root must be the directory containing `plugin.json`; the standard skill root is `skills/`.
 
-The Maestria CLI can fetch, validate, and stage the published package before you hand it to a compatible client:
+After the first npm release, the Maestria CLI can fetch, validate, and stage the package before you hand it to a compatible client:
 
 ```bash
 npx maestria plugin install
@@ -34,7 +34,22 @@ npx maestria plugin validate /path/to/plugin
 
 The CLI prints the staged directory, but the consuming client still owns activation, permissions, trust, and session behavior.
 
-For a local checkout, install the package directory at `packages/agent-plugin/` after running `scripts/sync-all`. See [INSTALL.md](./INSTALL.md) for source and package-manager guidance.
+For the current checkout, stage the local package explicitly after running `scripts/sync-all`:
+
+```bash
+npx maestria plugin install ./packages/agent-plugin
+```
+
+See the [installation guide](https://github.com/agustinusnathaniel/maestria/blob/main/packages/agent-plugin/INSTALL.md) for source and package-manager guidance.
+
+## Documentation
+
+- [User-facing documentation](https://maestria.sznm.dev/agent-plugin/)
+- [Compatibility matrix](https://maestria.sznm.dev/agent-plugin/compatibility/)
+
+## Contributing
+
+See the [contributing guide](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) for repository conventions.
 
 ## Development
 

@@ -295,7 +295,7 @@ Several details diverged from the original design during implementation. This se
 
 **Built:** A single `rules.md` file at the root of `agent-directives/`.
 
-**Why:** The rules are short (72 lines total) and rarely edited independently. Splitting them into 3 files added file-management overhead with no practical benefit. A single file is easier to read, edit, and sync. The `rules/` directory still appears in the agent-directives README as a legacy reference - it was never created.
+**Why:** The rules are short (72 lines total) and rarely edited independently. Splitting them into 3 files added file-management overhead with no practical benefit. A single file is easier to read, edit, and sync. Earlier drafts referenced a `rules/` directory; the current agent-directives README documents the single `rules.md` file.
 
 ### Config Format: Static, per-File, String-Based
 

@@ -24,6 +24,12 @@ Add `@maestria/agent-plugin` as a first-class public package with these properti
 
 Native packages remain independently published and continue to provide runtime-specific capabilities. The Agent Plugins package is additive and does not replace `@maestria/opencode`, `@maestria/codex`, `@maestria/cursor`, `@maestria/claude-code`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/omp`, `@maestria/prime-agent`, or the Hermes distribution.
 
+## Goals
+
+- Give compatible clients one portable package for Maestria's shared methodology.
+- Keep the portable projection generated from the canonical directives instead of maintaining a second hand-authored skill tree.
+- State the boundary between portable skills and runtime-owned capabilities clearly enough for clients and users to choose the right package.
+
 ## Mapping
 
 | Maestria source | Portable projection | Notes |
@@ -33,12 +39,18 @@ Native packages remain independently published and continue to provide runtime-s
 | `rules.md` | `skills/global-rules/SKILL.md` | Universal rules plus portable host boundary note |
 | `skills/{handoff,iteration-limits}.md` | `skills/{handoff,iteration-limits}/SKILL.md` | Shared supporting skills |
 
-## Non-goals
+## Non-Goals
 
 - Do not use Agent Plugins v1 as Maestria's canonical internal representation. Native runtime adapters need richer fields and behavior.
 - Do not build a universal runtime or merge Node, Python, and host SDK dependencies into one package.
 - Do not make the Maestria CLI activate portable packages in every client or own client permissions, trust, sandboxing, or lifecycle. The CLI may validate and stage an artifact, but client activation remains client-owned.
 - Do not add portable MCP configuration without a concrete, host-neutral capability and credential story.
+
+## Assumptions
+
+- `[verified]` Agent Plugins v1 clients own skill discovery, activation, permissions, trust, and session behavior; the package exposes only `plugin.json` and `skills/`.
+- `[verified]` `packages/agent-plugin/sync.config.ts` generates the 14 skills from `packages/core/agent-directives/`, and `scripts/check-sync` verifies the projection.
+- `[inferred]` A client that supports the Agent Plugins v1 manifest and Agent Skills layout can consume the package's shared methodology, but feature parity with native packages still depends on the client's supported components.
 
 ## Consequences
 
@@ -69,6 +81,20 @@ npx maestria plugin install packages/agent-plugin --destination /tmp/maestria-ag
 
 The package must also pass the repository formatting, lint, type, manifest-version, and packaging checks.
 
+## Alternatives Considered
+
+### Keep native packages as the only distribution surface
+
+Rejected. Clients that support the Agent Plugins v1 format would have no vendor-neutral way to consume the shared methodology without a platform-specific adapter.
+
+### Use Agent Plugins v1 as the canonical representation
+
+Rejected. The standard does not express Maestria's native agents, commands, hooks, delegation, permissions, or session behavior, so it cannot replace the richer canonical source and per-platform projections.
+
+### Add runtime code to the portable package
+
+Rejected. Runtime code would make the package client-specific and blur the boundary that lets compatible clients own activation and permissions.
+
 ## References
 
 - [Agent Plugins v1 specification](https://agent-plugins.org/specification)
@@ -76,3 +102,7 @@ The package must also pass the repository formatting, lint, type, manifest-versi
 - [ADR-CORE-005: Shared Agent Directives and Core Sync](ADR-CORE-005-shared-agent-directives-core-sync.md)
 - [ADR-CORE-014: Runtime Support and Adapter Policy](ADR-CORE-014-runtime-support-and-adapter-policy.md)
 - [ADR-CORE-020: Hybrid Package Topology](ADR-CORE-020-hybrid-package-topology.md)
+
+## Date
+
+2026-09-01

@@ -1,10 +1,18 @@
 # @maestria/hermes - Hermes Plugin for Maestria Methodology
 
+> **Archive notice:** This is the historical design record. For the active package surface and runtime boundaries, read [Hermes plugin: current reference](hermes-plugin-current.md) first.
+
 ## Purpose
 
 Bring the maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes AI agent platform. Unlike @maestria/opencode which is domain-locked to software engineering, this plugin generalizes specialists to work across any domain - research, content, analysis, strategy, and coding.
 
 Coding-specific work routes to the OpenCode CLI as an optional power-up, not a hard dependency.
+
+## Current implementation (2026-09-01)
+
+The current package version is `0.1.13`. For the registered public surface, treat `packages/hermes/plugin.yaml`, `src/maestria_hermes/__init__.py`, and the runtime tests as authoritative. The package currently declares 12 skills, 7 commands, 10 hooks, one middleware component, and the `opencode_route` tool.
+
+This document also preserves historical v0.2 planning, future v0.3 planning, and dated API research. Those sections are labeled; they are not a list of features currently available.
 
 ## Design Philosophy
 
@@ -446,7 +454,7 @@ packages/hermes/
 
 ```yaml
 name: maestria-hermes
-version: 0.1.11
+version: 0.1.13
 description: Maestria methodology plugin for Hermes Agent
 kind: standalone
 author: Maestria Contributors
@@ -540,7 +548,7 @@ def register(ctx):
 
 ## Phase 2 (v0.2): Full Roster + Hermes-Native Subsystems (Historical/Planned)
 
-> **Status: historical planning doc.** This section records the originally planned v0.2 roadmap. As of the current version (v0.1.11), much of it has shipped or been superseded: all 7 specialists are now registered, `subagent_start`/`subagent_stop` and `transform_tool_result` are registered, and permission gating uses the role-neutral child trust policy (literal allowlists), not the earlier role-based model. Items still marked "not yet implemented" describe work that remains outstanding.
+> **Status: historical planning doc.** This section records the originally planned v0.2 roadmap. As of the current version (v0.1.13), much of it has shipped or been superseded: all 7 specialists are now registered, `subagent_start`/`subagent_stop` and `transform_tool_result` are registered, and permission gating uses the role-neutral child trust policy (literal allowlists), not the earlier role-based model. Items still marked "not yet implemented" describe work that remains outstanding.
 
 All 7 specialists with full skill files, replacing custom JSON file persistence with Hermes' built-in subsystems.
 
@@ -647,7 +655,7 @@ def orchestrate_pipeline(ctx, pipeline, task):
 
 ## Phase 3 (v0.3): Advanced Features (Future, Not Shipped)
 
-> **Status: future planning doc.** None of the items in this section are implemented in the current version (v0.1.11). They describe a planned v0.3 roadmap that may or may not be pursued. In particular, only the `llm_execution` middleware kind is registered; `llm_request` remains a platform capability the plugin does not yet use.
+> **Status: future planning doc.** None of the items in this section are implemented in the current version (v0.1.13). They describe a planned v0.3 roadmap that may or may not be pursued. In particular, only the `llm_execution` middleware kind is registered; `llm_request` remains a platform capability the plugin does not yet use.
 
 Polished multi-tool orchestration with all Hermes features. Integrates with built-in Kanban task board and Goals system.
 

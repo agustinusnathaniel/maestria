@@ -4,6 +4,8 @@
 
 Built `@maestria/opencode` npm plugin from scratch. This session included the initial implementation, two major architectural pivots, and multiple agent definition iterations. These notes capture the mistakes, decisions, and learnings so future sessions don't repeat them.
 
+The referenced knowledge-base files were private working notes and are not part of this repository. Treat this document as historical context; use current package files, ADRs, and public docs for the active implementation.
+
 ---
 
 ## Mistakes Made
@@ -96,9 +98,7 @@ pnpx skills@latest add <repo> -g -y --skill <name>
 - User feedback: "this might be ambiguous"
 - Could mean "don't leak internal project names" or "don't cite projects as authoritative sources"
 
-**What we switched to:** "Don't reference internal project names in explanations
-
-- when describing patterns or sources, use generic descriptions."
+**What we switched to:** Don't reference internal project names in explanations. When describing patterns or sources, use generic descriptions.
 
 ---
 
@@ -233,7 +233,7 @@ Test: verify all 7 agents parse correctly with expected mode, description, permi
 
 ### When Publishing
 
-1. `vp run build` (prepublishOnly runs this)
+1. `pnpm --filter @maestria/opencode build`
 2. Verify `files` array in package.json includes dist, agents, rules
 3. Test on a fresh install: add to `opencode.jsonc`, restart, verify agents
 

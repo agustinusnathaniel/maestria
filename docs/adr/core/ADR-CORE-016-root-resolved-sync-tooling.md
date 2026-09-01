@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed (2026-08-12). This ADR records the root-pinned `tsx` runner decision for the shared agent-directive sync pipeline ([ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md)), made to make sync checks deterministic in clean CI. It accompanies the toolchain reproducibility pin in [ADR-CORE-015](ADR-CORE-015-claude-code-package-manager-reproducibility.md).
+Accepted (2026-08-12). This ADR records the root-pinned `tsx` runner decision for the shared agent-directive sync pipeline ([ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md)), made to make sync checks deterministic in clean CI. The Vite+ toolchain reference in its historical non-goals is now governed by [ADR-CORE-021](ADR-CORE-021-ultracite-via-vite-plus.md).
 
 ## Context
 
@@ -80,7 +80,7 @@ Rolling back the pin restores the previous resolution behavior (with its clean-C
 
 - No changes to sync pipeline semantics, transforms, config format, or generated outputs.
 - No runtime adapter behavior changes for any package.
-- No toolchain upgrades: `vite`/`vite-plus` remain pinned at `0.2.7` per ADR-CORE-015, and no unrelated lockfile drift is introduced.
+- No toolchain upgrades: this decision does not change the Vite+ toolchain governed by ADR-CORE-021, and no unrelated lockfile drift is introduced.
 - No workflow YAML, CLI/model registry, or unrelated package changes.
 - `tsx` upgrades beyond `4.23.12` are future deliberate policy changes, not part of this decision.
 

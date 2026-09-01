@@ -30,8 +30,12 @@ Each plugin has a `sync.config.ts` that defines how canonical content is adapted
 | `@maestria/opencode` | `packages/opencode/sync.config.ts` | Adds YAML frontmatter with permissions per specialist |
 | `@maestria/kimi-code` | `packages/kimi-code/sync.config.ts` | Converts to SKILL.md format with a set of text replacements adapting tool names and platform vocabulary, persona prepends, and routing table |
 | `@maestria/pi` | `packages/pi/sync.config.ts` | Text replacements adapting role prefixes and delegation calls (`@adventurer` → `/adventurer`, `task()` → `maestria_subagent()`) |
+| `@maestria/omp` | `packages/omp/sync.config.ts` | Keeps OMP's native `task()` dispatch and adapts role references for generated agents and skills |
+| `@maestria/cursor` | `packages/cursor/sync.config.ts` | Adapts role references, tool names, `Task` dispatch, and read-only frontmatter |
 | `@maestria/claude-code` | `packages/claude-code/sync.config.ts` | Namespaced agents and skills, Claude tool names, and read-only `disallowedTools` fields |
 | `@maestria/codex` | `packages/codex/sync.config.ts` | Namespaced skills, workflow modes as skills, and advisory role boundaries |
+| `@maestria/hermes` | `packages/hermes/sync.config.ts` | Adapts tool names and role references for Hermes skills and its general-purpose runtime |
+| `@maestria/prime-agent` | `packages/prime-agent/sync.config.ts` | Emits Agent Skills frontmatter, plain role references, and advisory read-only notes |
 | `@maestria/agent-plugin` | `packages/agent-plugin/sync.config.ts` | Agent Plugins v1 fixed `skills/<name>/SKILL.md` layout, plain role names, and advisory portable boundaries |
 
 ### Running the Docs Site
@@ -47,6 +51,12 @@ This starts the Astro dev server for the user-facing documentation at `apps/docs
 - [@maestria/opencode Contributing](/opencode/contributing/)
 - [@maestria/kimi-code Contributing](/kimi-code/contributing/)
 - [@maestria/pi & omp Contributing](/pi-omp/contributing/)
+- [@maestria/cursor Contributing](/cursor/contributing/)
+- [@maestria/claude-code Contributing](/claude-code/contributing/)
+- [@maestria/codex Contributing](/codex/contributing/)
+- [@maestria/hermes Contributing](/hermes/contributing/)
+- [@maestria/prime-agent Contributing](/prime-agent/contributing/)
+- [@maestria/agent-plugin installation and compatibility](/agent-plugin/)
 
 ## See Also
 

@@ -2,6 +2,20 @@
 
 > This is an internal convention guide, not a formal ADR. It is the single source of truth for how Maestria structures decision records, plans, notes, guides, and publishable READMEs.
 
+## Quick reference
+
+Use this table when starting or materially revising a document. The detailed guidance below explains the rationale and exceptions.
+
+| Document | Primary reader | Required structure |
+| --- | --- | --- |
+| ADR | Maintainers deciding or revisiting architecture | Status, Context, Goals, Non-Goals, Decision, Consequences, Assumptions, Alternatives Considered, Date |
+| Plan | Implementers and reviewers | Goal, Scope, Non-Goals, Dependencies, Acceptance, Verification, Rollback, Status |
+| Note or guide | Contributors using dated context or a process | Purpose, Audience, Dated evidence, Next step |
+| Published README | Package consumers | Description, installation or usage, support boundary, what it provides, documentation and release history where available, license; add development guidance only when useful |
+| Public docs page | End users | Task or concept in the title, shortest successful path first, deeper reference linked below |
+
+Use `[verified]` for facts confirmed by code, docs, a live run, or an immutable commit. Use `[inferred]` for conclusions that still need confirmation. Do not retrofit legacy documents unless you are already rewriting them substantively.
+
 ## Context
 
 This guide describes how we structure decision records and project documentation. It was inspired by the [Agent Trace RFC](https://agent-trace.dev/) format - Motivation → Goals → Non-Goals → Specification - which directly addresses gaps in our earlier documentation.
@@ -87,6 +101,8 @@ To:
 ## Non-Goals         (NEW - bulleted list of what this ADR explicitly excludes)
 ## Decision
 ## Consequences
+## Assumptions       (material assumptions, tagged [verified] or [inferred])
+## Alternatives Considered
 ## Date
 ```
 
@@ -102,7 +118,7 @@ Publishable package READMEs (packages published to npm/PyPI and the CLI app) are
 | Installation or Usage | Yes | One canonical command/path, plus short verification or quick usage when useful |
 | What It Provides | Yes | The features, components, or artifacts the package ships (short bullets) |
 | Support / Platform Notes | Yes | Material limitations and truthful support boundaries (see below) |
-| Documentation and Changelog | Yes | Links to the public docs route and the package changelog |
+| Documentation and release history | Yes | Link to the public docs route and the package changelog where one exists; state the pre-release status when it does not |
 | Development / Contributing | No | Only if useful; link to repository guidance rather than duplicating it |
 | License | Yes | SPDX license identifier |
 

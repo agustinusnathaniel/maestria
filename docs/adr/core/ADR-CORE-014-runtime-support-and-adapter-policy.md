@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed (2026-08-11). This ADR records a decision boundary and support policy, not a shipped implementation. It accompanies the evidence ledger in [runtime-support-matrix.md](../../runtime-support-matrix.md).
+Accepted (2026-08-11; updated 2026-08-26). This ADR records the runtime support policy and decision boundary. It accompanies the evidence ledger in [runtime-support-matrix.md](../../runtime-support-matrix.md).
 
-The original 2026-08-11 decision did not promote any runtime to `Native`. Package projections and separate CLI marketplace adapters may exist without changing the support level declared here. Promotion requires the gates below and a blind review of these repaired docs; review/promotion gates precede promotion or landing, and the native-candidate implementation may already exist before promotion review.
+The original 2026-08-11 decision did not promote any runtime to `Native`. Package projections and separate CLI marketplace adapters may exist without changing the support level declared here. The current support table records Codex CLI as `Native`; Claude Code and Prime Agent remain `Native candidate`, and the other listed runtimes retain their documented dispositions.
 
 The package projections and Maestria CLI marketplace adapters described by this policy have since been implemented. The Codex CLI rows were reverified against Codex CLI `0.145.0`, current official documentation, and current upstream source on 2026-08-26; that re-verification promotes Codex CLI to `Native` in the support table below. Other runtime rows retain their independently documented gates.
 
@@ -14,7 +14,7 @@ Maestria is a behavior layer for AI coding agents. The canonical methodology liv
 
 A feasibility review identified five additional runtimes that the community commonly asks about: Claude Code, Prime Agent, Codex (CLI and desktop), JCode, and Crush. Before committing engineering effort, we needed to establish which runtimes have a first-class package or extension API we can target, which only support projections or experiments, and what the security and trust boundaries are for each.
 
-This ADR records the verified findings from sources reviewed on 2026-08-11 (see the evidence ledger for the exact citations and dates) and sets the implementation boundary for the first batch. It deliberately does not assume that any runtime package has been built, released, or verified end to end.
+This ADR records the verified findings from sources reviewed on 2026-08-11 (see the evidence ledger for the exact citations and dates) and set the implementation boundary for the first batch. Later reverifications and amendments below record the packages and adapters that have since been built or promoted; they do not turn unverified runtime claims into support promises.
 
 The current upstream evidence is mostly unpinned moving documentation on `main`/`latest`. That documentation is research-only, not production support proof. Every material claim must be reverified before implementation, promotion, or re-promotion, after upstream API or security changes, or within 30 days of the review date.
 

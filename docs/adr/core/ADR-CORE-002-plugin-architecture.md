@@ -28,11 +28,15 @@ We studied reference implementations for patterns:
 | --- | --- | --- |
 | **Agent format** | Markdown files with YAML frontmatter | Readable, editable, versionable. No TypeScript factories needed. |
 | **Agent registration** | `config` hook reads agents/\*.md, parses frontmatter, injects into `input.agent` | Always current - no stale files. |
-| **Number of hooks** | Exactly 2 | `config`, `session.compacting`. More hooks = more surface area. We need 2. |
+| **Initial hook set** | 2 | `config`, `session.compacting`. More hooks = more surface area. |
 | **Rules injection** | `input.instructions` in `config` hook, not file copy | Rules always present regardless of user's existing AGENTS.md. |
 | **Build tool** | `tsc` | Package is ~200 lines, no bundling needed. `tsdown` is a sledgehammer for a thumbtack. |
 | **Skills distribution** | Not bundled; reference by name | Skills are installed separately via `pnpx skills@latest add`. Keeps plugin focused. |
 | **Postinstall** | None | Pure plugin has no side effects outside the npm package directory. |
+
+### Current implementation note (2026-09-01)
+
+The original decision described two hooks. The current OpenCode package declares three: `config`, `chat.message`, and `experimental.session.compacting`. The extra hook was added after this ADR to support current runtime behavior; the package manifest and tests are authoritative for the active hook inventory.
 
 ### What We Avoid (learned from reference implementations)
 

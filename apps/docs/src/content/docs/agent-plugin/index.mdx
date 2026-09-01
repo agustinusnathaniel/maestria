@@ -13,6 +13,12 @@ import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components'
   when you need deeper runtime features such as native subagents, hooks, commands, or tool controls.
 </Aside>
 
+<Aside type="caution" title="Pre-release package">
+  The current repository checkout is version `0.0.0` and is pending its first npm release. Until
+  then, use the local-checkout installation path below. The compatibility matrix records dated
+  client checks, not a production support promise for an unreleased artifact.
+</Aside>
+
 ## Before you install
 
 You need a client that supports Agent Plugins v1 and its skills component. You need Node.js and npm only when you use the Maestria CLI to fetch or stage the package. If your client already installs Agent Plugin packages, you can use its native installer instead.
@@ -37,7 +43,7 @@ The package contains 14 skills. The client loads each skill from the standard `s
 
 ### From the Maestria CLI
 
-Stage and validate the published package in the Maestria-managed cache:
+After the first npm release, stage and validate the package in the Maestria-managed cache:
 
 ```bash
 npx maestria plugin install

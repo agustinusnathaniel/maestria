@@ -1,13 +1,13 @@
 ---
 title: How Maestria Works
-description: How Harness Engineering structures AI agent work through a dispatcher, 7 specialists, and a staged pipeline, and the benefits that emerge from this design.
+description: How Harness Engineering structures AI agent work through a dispatcher, 7 specialists, and staged quality gates.
 sidebar:
   order: 3
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-Maestria is built on **Harness Engineering**: the principle that **Agent = Model + Harness**. The model provides raw capability. The harness provides reliability through methodology, rules, and quality gates. This page describes how the harness works, why that design is effective, and what benefits it produces, both designed and emergent.
+Maestria is built on **Harness Engineering**: the principle that **Agent = Model + Harness**. The model provides raw capability. The harness provides reliability through methodology, rules, and quality gates. This page explains how the harness works and separates its intended benefits from effects that emerge on some platforms.
 
 As stated in the project's [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md): "Most agent failures are harness failures, not model failures."
 
@@ -33,7 +33,7 @@ The dispatcher architecture addresses a core problem in AI-assisted development:
 
 These benefits were explicit design goals. The harness was built to deliver them.
 
-**Global rules.** Cross-cutting directives are injected into every session. Rules about commit policies, tool selection, and escalation format apply consistently across projects and sessions. No drift, no manual setup.
+**Global rules.** Native integrations inject cross-cutting directives into their sessions, so rules about commit policies, tool selection, and escalation format apply consistently without manual prompt setup. The portable package exposes the same contract as the `global-rules` skill; its client controls discovery and activation.
 
 **Maker/checker split.** The builder and reviewer are structurally different agents with different prompts, tools, and permissions. The specialist that writes the code never reviews it. A model grading its own work is too lenient.
 
@@ -85,13 +85,13 @@ One-shot work means the pipeline is designed to get things right on the first pa
 - **Implementation** (Builder) produces the artifact against a clear spec.
 - **Review** (Reviewer) catches implementation issues before they merge.
 
-The cost of fixing a bug increases by about an order of magnitude at each stage. The pipeline catches each error class at its cheapest correction point.
+Finding a problem earlier usually reduces rework. The pipeline catches each error class at the stage best equipped to identify it.
 
 The mode system controls which pipeline stages run. There are three modes: `fein` (full pipeline), `sonar` (research only), and `blitz` (direct execution when the host permits it, otherwise the permitted specialist). See [Primary Benefits](#primary-benefits) for how the mode system works.
 
 ### Bounded Failure
 
-One-Shot Work aims to get things right the first time. Bounded Failure governs what happens when things go wrong: fail fast, fail informatively.
+One-shot work aims to get things right the first time. Bounded failure governs what happens when things go wrong: fail fast, fail informatively.
 
 The pipeline does not just prevent errors. It bounds them. Each delegated repair loop normally allows three rounds. If the latest attempt shows observable progress, the bound may be extended; without observable progress, the pipeline stops and escalates.
 

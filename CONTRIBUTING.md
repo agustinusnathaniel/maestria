@@ -27,9 +27,10 @@ maestria/
 │   ├── pi/                Pi extension (published)
 │   ├── cursor/            Cursor IDE plugin (published)
 │   ├── prime-agent/       Prime Agent skills-first package (published)
+│   ├── agent-plugin/      Portable Agent Plugins v1 package (pending first npm release)
 │   ├── claude-code/       Claude Code plugin (published)
 │   ├── codex/             Codex CLI projection (published)
-│   ├── hermes/            Hermes Agent plugin (private, published on PyPI)
+│   ├── hermes/            Hermes Agent plugin (private npm package; Python distribution)
 │   └── shared/
 │       ├── mode/          Shared neutral mode mechanics (private, pure-TS, no host SDK)
 │       └── pi/            Shared pure-TS utilities for omp/pi (private)
@@ -65,9 +66,10 @@ maestria/
 | `@maestria/omp` | Yes | 7 specialist agents + orchestration for Oh My Pi via omp's built-in task dispatch |
 | `@maestria/cursor` | Yes | 7 specialist agents + orchestrator skill + global rules + workflow commands for Cursor IDE/CLI |
 | `@maestria/prime-agent` | Yes | Skills-first: 7 specialist roles + orchestrator + global rules + handoff/iteration-limits + fein/sonar/blitz modes as Agent Skills for Prime Agent, plus a verified executable extension subset (mode commands, mode prompt injection); native rlm dispatch and JSON/RPC remain deferred |
+| `@maestria/agent-plugin` | Pending npm release | Portable Agent Plugins v1 package with the canonical methodology as standard Agent Skills; no runtime adapter, commands, hooks, or MCP server |
 | `@maestria/claude-code` | Yes | Declarative Claude Code plugin with 7 agents, skills, and workflow commands |
-| `@maestria/codex` | Yes | Codex CLI projection with namespaced methodology skills |
-| `@maestria/hermes` | No (PyPI) | Hermes Agent plugin - methodology pipeline, specialist delegation, mode workflows (PyPI distribution) |
+| `@maestria/codex` | Yes | Codex CLI projection with namespaced methodology skills, native custom agents, and CLI-managed orchestration instructions |
+| `@maestria/hermes` | No (npm) | Git-based Hermes Agent plugin with a Python package layout; install through Hermes's plugin manager |
 | `@maestria/shared-pi` | No | Shared pure-TS utilities for omp and pi (agent deployment, subagent validation, event constants) |
 | `@maestria/docs` | No | User-facing docs site at [maestria.sznm.dev](https://maestria.sznm.dev) |
 
@@ -77,7 +79,7 @@ maestria/
 packages/core/agent-directives/  (canonical source)
     │
     ▼ (scripts/sync-all iterates packages/*/sync.config.ts)
-packages/*/  (every platform package - opencode, kimi-code, omp, pi, cursor, prime-agent, ...)
+packages/*/  (each projection package - opencode, kimi-code, omp, pi, cursor, prime-agent, agent-plugin, ...)
     sync.config.ts defines:
       • source (where canonical files live)
       • output (where generated files go)
@@ -201,7 +203,7 @@ To port Maestria to a new AI coding agent (e.g., Claude Code, Copilot):
    - String replacements for platform-specific tool names
    - Frontmatter/format adjustments for the target platform
    - Prepend/append for platform-required headers or routing tables
-3. **Implement the plugin:** write source code that hooks into the target platform's lifecycle (subagents, skills, extensions, etc.)
+3. **Implement the platform adapter:** use the target platform's native agents, skills, commands, hooks, or extension APIs as appropriate. A declarative package may need no runtime source code.
 4. **Sync integration:** the root `scripts/sync-all` auto-detects new `packages/*/sync.config.ts` files - no script registration needed
 5. **Document:** add a docs section in `apps/docs/src/content/docs/<name>/`
 6. **Test:** `vp check` must pass; add platform-specific tests
@@ -261,31 +263,31 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 
 ### cursor
 
-| Concern        | Details                                                           |
-| -------------- | ----------------------------------------------------------------- |
-| Format         | Declarative Cursor plugin - no build step (no `dist/`)            |
-| Manifest       | `.cursor-plugin/plugin.json`                                      |
-| Agents         | Auto-generated in `agents/*.md` from sync (7 specialists)         |
-| Skills         | Auto-generated `skills/orchestrator/SKILL.md`                     |
-| Rules          | Auto-generated `rules/maestria-global.mdc` (`alwaysApply: true`)  |
-| Commands       | Hand-authored `commands/{fein,sonar,blitz,orchestrate}.md`        |
-| Test           | `pnpm --filter @maestria/cursor test`                             |
-| Install        | CLI copies to `~/.cursor/plugins/local/maestria`                  |
+| Concern | Details |
+| --- | --- |
+| Format | Declarative Cursor plugin - no build step (no `dist/`) |
+| Manifest | `.cursor-plugin/plugin.json` |
+| Agents | Auto-generated in `agents/*.md` from sync (7 specialists) |
+| Skills | Auto-generated `skills/orchestrator/SKILL.md` |
+| Rules | Auto-generated `rules/maestria-global.mdc` (`alwaysApply: true`) |
+| Commands | Auto-generated `commands/{fein,sonar,blitz}.md` |
+| Test | `pnpm --filter @maestria/cursor test` |
+| Install | `npx maestria install cursor`; the CLI copies to Cursor's local plugin directory |
 | Key transforms | `task(` → `Task(`, `@name` → bare name, tools → Cursor PascalCase |
 
 ### hermes
 
 | Concern | Details |
 | --- | --- |
-| Format | Python plugin - PyPI distribution (`maestria-hermes`) |
+| Format | Python plugin with a git-based Hermes installation path |
 | Manifest | `plugin.yaml` - standalone Hermes Agent plugin |
 | Skills | Auto-generated in `src/maestria_hermes/skills/<name>/SKILL.md` from sync (7 specialists + orchestrator) |
 | Tools | Hand-authored `src/maestria_hermes/tools/` (provides `opencode_route` tool) |
-| Hooks | Hand-authored `src/maestria_hermes/hooks/` (6 hooks: pre_llm_call, pre_tool_call, subagent start/stop, etc.) |
+| Hooks | Hand-authored `src/maestria_hermes/hooks/` (10 hooks: gateway, LLM, tool, session, subagent, and result-transform lifecycle hooks) |
 | Middleware | Hand-authored `src/maestria_hermes/middleware/` (llm_execution) |
 | Commands | Hand-authored `{fein,sonar,blitz,mode,review,plan}` commands |
 | Validate | `ruff check src/` |
-| Install | `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable` or `pip install maestria-hermes` |
+| Install | `hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable` |
 | Key transforms | `task(` → `delegate_task(`, `@name` → bare name, tool generalizations, coding-specific → general-purpose adaptation |
 
 ### claude-code
@@ -305,12 +307,35 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 
 | Concern  | Details                                                                     |
 | -------- | --------------------------------------------------------------------------- |
-| Format   | Provisional Codex CLI plugin projection - skills only                       |
+| Format   | Codex CLI plugin projection with skills and CLI-managed native agents       |
 | Manifest | `.codex-plugin/plugin.json`                                                 |
 | Skills   | Auto-generated in `skills/*/SKILL.md`                                       |
 | Test     | `pnpm --filter @maestria/codex test`                                        |
 | Validate | Codex plugin-creator `validate_plugin.py`                                   |
 | Install  | `npx maestria install codex`; the CLI stages a local npm-backed marketplace |
+
+### prime-agent
+
+| Concern | Details |
+| --- | --- |
+| Format | Agent Skills projection plus a hand-authored Prime/Pi extension |
+| Skills | Auto-generated in `skills/<name>/SKILL.md` from the core sync pipeline |
+| Extension | Hand-authored `src/extension.ts`, compiled to `dist/extension.mjs` |
+| Test | `pnpm --filter @maestria/prime-agent test` |
+| Validate | `pnpm --filter @maestria/prime-agent validate` |
+| Install | `npx maestria install prime-agent` or Prime's native package flow |
+| Boundary | Mode commands and prompt injection are verified; native `rlm` dispatch and JSON/RPC remain deferred |
+
+### agent-plugin
+
+| Concern         | Details                                                                      |
+| --------------- | ---------------------------------------------------------------------------- |
+| Format          | Portable Agent Plugins v1 package; no runtime adapter                        |
+| Manifest        | `plugin.json`                                                                |
+| Skills          | Auto-generated in `skills/<name>/SKILL.md` from the core sync pipeline       |
+| Runtime surface | Skills only; no agents, commands, hooks, MCP server, or executable extension |
+| Test            | `pnpm --filter @maestria/agent-plugin test`                                  |
+| Validate        | `scripts/check-sync` plus the package tests                                  |
 
 ---
 

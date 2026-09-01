@@ -3,8 +3,6 @@ title: Contributing
 description: How to contribute to @maestria/pi or @maestria/omp - development setup, making changes, and submitting PRs.
 ---
 
-# Contributing
-
 > For general development setup, changesets, and pull request workflow, see the [Contributing Guide](/core/contributing/).
 
 ## Project Structure
@@ -97,9 +95,9 @@ pnpm --filter @maestria/omp validate
 
 Skills fall into two categories:
 
-**Canonical skills** (orchestrator, global-rules) - these are synced from core via `sync.config.ts`. Edit the canonical source, then run `scripts/sync-all` from the repository root.
+**Canonical skills** (orchestrator, global-rules, handoff, iteration-limits) - these are synced from core via `sync.config.ts`. Edit the canonical source, then run `scripts/sync-all` from the repository root.
 
-**Platform-only methodology skills** (handoff, iteration-limits) - these live in each package's `skills/` directory and have no canonical source. Each skill directory contains a `SKILL.md` file. To add a new platform-only skill, create a directory under `skills/` with a valid `SKILL.md` (frontmatter with `name` and `description`). Validate with:
+**Platform-only additions** - if a new skill is specific to one package, keep it in that package's `skills/` directory. Give it a valid `SKILL.md` with `name` and `description`, then validate with:
 
 ```bash
 pnpm --filter @maestria/pi validate-skills

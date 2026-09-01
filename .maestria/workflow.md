@@ -4,9 +4,9 @@ This file defines the project-specific delegation sequence for the maestria mono
 
 ## Sequencing
 
-### 1. Understand Project Context
+### 1. Understand project context
 
-Before proposing any change, delegate to `@adventurer`:
+Use direct execution for familiar, low-risk work. Delegate to `@adventurer` when the codebase is unfamiliar, the change crosses package boundaries, or the next decision depends on reconnaissance:
 
 - Read `README.md` for product overview and high-level architecture
 - Read `AGENTS.md` for project-specific agent conventions (this is the root AGENTS.md, not .maestria/)
@@ -14,35 +14,30 @@ Before proposing any change, delegate to `@adventurer`:
 - Read `VISION.md` for project motivation and philosophy
 - Check recent commits (`git log --oneline -20`) and diff (`git diff --name-only HEAD~5..HEAD`)
 - Read `package.json` and `pnpm-workspace.yaml` for workspace layout and scripts
-- Map the monorepo structure:
-  - `packages/core/` - canonical agent directives + sync pipeline (scripts/, tests/)
-  - `packages/opencode/` - OpenCode plugin (src/, agents/ [auto-gen], tests/)
-  - `packages/kimi-code/` - Kimi Code plugin (skills/ [auto-gen], tests/)
-  - `packages/pi/` - Pi extension (src/, agents/ [auto-gen], skills/ [auto-gen], tests/)
-  - `apps/docs/` - Astro + Starlight documentation site
-  - `scripts/` - sync-all and check-sync (bash)
-  - `docs/adr/` - architecture decision records (core/, opencode/, kimi-code/, pi/)
+- Map only the relevant package boundaries. The main areas are `packages/core/` (canonical directives and sync tooling), `packages/*/` (platform projections), `apps/docs/` (Astro + Starlight), `scripts/` (repository tooling), and `docs/adr/` (architecture decisions).
 
 ### 2. Understand the Problem
 
 - Read the linked issue, PR description, or task thoroughly
-- Identify the acceptance criteria. If ambiguous, ask clarifying questions via `question()` before delegating any implementation work
-- Determine which package(s) are affected: core, opencode, kimi-code, pi, docs, or scripts
+- Identify the acceptance criteria. If evidence cannot resolve consequential ambiguity, request clarification before implementation. For ordinary ambiguity, state the assumption and proceed.
+- Determine which package(s) are affected: core, agent-plugin, opencode, kimi-code, pi, omp, cursor, hermes, prime-agent, claude-code, codex, docs, or scripts
 - Map the problem to existing abstractions (sync pipeline, specialist prompts, modes, ADRs) before inventing new ones
 - Read `CONTRIBUTING.md` for comprehensive development guidance if the task involves unfamiliar areas
 
 ### 3. Read Relevant ADRs
 
-Delegate to `@adventurer` to read any ADR relevant to the change before implementing:
+Read any ADR relevant to the change before implementing. Delegate that reading to `@adventurer` when the ADR set is large or unfamiliar:
 
-| Scope                                             | Location              |
-| ------------------------------------------------- | --------------------- |
-| Monorepo-level (structure, conventions, sync)     | `docs/adr/core/`      |
-| OpenCode plugin (modes, permissions, commits)     | `docs/adr/opencode/`  |
-| Kimi Code plugin (distribution, architecture)     | `docs/adr/kimi-code/` |
-| Pi extension (rules injection, compaction, reuse) | `docs/adr/pi/`        |
+| Scope                                            | Location              |
+| ------------------------------------------------ | --------------------- |
+| Monorepo-level (structure, conventions, sync)    | `docs/adr/core/`      |
+| OpenCode plugin (modes, permissions, commits)    | `docs/adr/opencode/`  |
+| Kimi Code plugin (distribution, architecture)    | `docs/adr/kimi-code/` |
+| Cursor plugin (architecture)                     | `docs/adr/cursor/`    |
+| Hermes plugin (distribution, orchestration)      | `docs/adr/hermes/`    |
+| Pi and OMP extensions (rules, compaction, reuse) | `docs/adr/pi/`        |
 
-If the change introduces a new architectural pattern, dependency, or structural change, create a new ADR following the existing format (Status, Date, Context, Decision, Rationale, Alternatives, Consequences).
+If the change introduces a new architectural pattern, dependency, or structural change, create an ADR with `Status`, `Context`, `Goals`, `Non-Goals`, `Decision`, `Consequences`, `Assumptions`, `Alternatives Considered`, and `Date`. Follow [the documentation format guide](../docs/guides/doc-format.md).
 
 ### 4. Be Pragmatic - Reuse Before Reinventing
 
@@ -59,17 +54,16 @@ When delegating to `@builder`, include these principles:
 
 Delegate to `@builder` with these requirements:
 
-**Quality pipeline (all must pass before commit):**
+**Quality pipeline (run the smallest gate that covers the change):**
 
 ```bash
-pnpm ready    # runs: check + test + build
-# Or individually:
-pnpm typecheck
-pnpm test
-pnpm build
-pnpm lint
-pnpm check
+pnpm check                 # full local gate: build, format, lint, and tests
+pnpm typecheck             # explicit type-check gate
+pnpm check:ci              # CI-oriented gate, including package builds and tests
+pnpm --filter @maestria/docs build  # docs changes: build and validate internal links
 ```
+
+Use the individual `pnpm typecheck`, `pnpm test`, `pnpm build`, or `pnpm lint` scripts when narrowing a failure. Do not use a nonexistent `pnpm ready` script.
 
 **Sync pipeline verification (MANDATORY after any agent directive change):**
 
@@ -131,14 +125,20 @@ Split into multiple commits if the change spans unrelated concerns (e.g., core d
 
 If the change affects behavior, architecture, or user-facing features, delegate to `@writer` or `@builder` for doc updates:
 
-- **ADRs:** Create or update in the appropriate `docs/adr/` subdirectory (core/, opencode/, kimi-code/, pi/)
+- **ADRs:** Create or update in the appropriate `docs/adr/` subdirectory (core/, opencode/, kimi-code/, cursor/, hermes/, or pi/)
 - **Publishable docs:** Update the Astro Starlight site in `apps/docs/src/content/docs/`:
   - Core agents or pipeline changes → `apps/docs/src/content/docs/core/`
   - OpenCode plugin changes → `apps/docs/src/content/docs/opencode/`
   - Kimi Code plugin changes → `apps/docs/src/content/docs/kimi-code/`
-  - Pi plugin changes → `apps/docs/src/content/docs/pi/`
+  - Pi and OMP changes → `apps/docs/src/content/docs/pi-omp/`
+  - Cursor changes → `apps/docs/src/content/docs/cursor/`
+  - Hermes changes → `apps/docs/src/content/docs/hermes/`
+  - Claude Code changes → `apps/docs/src/content/docs/claude-code/`
+  - Codex changes → `apps/docs/src/content/docs/codex/`
+  - Prime Agent changes → `apps/docs/src/content/docs/prime-agent/`
+  - Portable Agent Plugin changes → `apps/docs/src/content/docs/agent-plugin/`
 - **Preview doc changes locally:** `pnpm dev`
-- **Verify:** `pnpm build` must pass without errors (which includes docs build via Vite+)
+- **Verify:** `pnpm --filter @maestria/docs build` must pass; it builds the site and validates internal links.
 
 ## Precedence
 

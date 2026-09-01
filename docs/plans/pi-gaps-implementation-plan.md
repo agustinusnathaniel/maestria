@@ -4,6 +4,8 @@
 
 Deliver a complete v0.2.0 of `@maestria/pi` by closing all identified gaps across 4 tiers: methodology-breaking fixes, feature completeness, and polish.
 
+**Status:** Historical implementation plan. The repository now tracks a later `@maestria/pi` release; the phases and unchecked criteria below are archival and are not the current work queue.
+
 ## Phases Overview & Dependency Graph
 
 ```

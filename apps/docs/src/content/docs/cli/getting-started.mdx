@@ -3,7 +3,6 @@ title: Getting Started
 description: Install and use maestria to manage runtime integrations and portable Agent Plugins across OpenCode, Kimi Code, Pi, Prime Agent, Hermes, Claude Code, and Codex CLI.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
 `maestria` runs anywhere Node.js 22+ is available. No install required - use `npx` to run it directly from npm.
@@ -33,6 +32,8 @@ This detects which coding agent platforms are available on your machine and show
     Latest:     unknown
 ```
 
+The versions in this example are illustrative. Your output reflects the packages installed on your machine and the versions currently available from their registries.
+
 Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> with no arguments - it defaults to `status`.
 
 ### Install for a platform
@@ -50,6 +51,9 @@ Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> with no arguments - 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install opencode" />
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install omp" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install cursor" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install claude-code" />
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install codex" />
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install prime-agent" />
@@ -111,7 +115,7 @@ Per-agent models are supported on opencode, codex, cursor, pi, and omp. See the 
 
 ## Prerequisites
 
-- **Node.js 22+** - required for the bundled `.mjs` distribution
+- **Node.js >=22.12.0** - required for the bundled `.mjs` distribution and the Maestria CLI path
 - **npm on `PATH`** - required when `plugin install` fetches a package from npm
 - **Agent Plugins v1 client** - required only for the portable package path; the client owns final activation, permissions, and session behavior
 - **Platform CLI tool** - the CLI detects platforms by checking for their binary on `$PATH`. The platform must be installed before maestria can be installed for it:
@@ -124,116 +128,9 @@ Per-agent models are supported on opencode, codex, cursor, pi, and omp. See the 
   - [Codex CLI](https://developers.openai.com/codex) - `codex` binary
   - [Cursor](https://cursor.com) - `agent` or `cursor-agent` binary
 
-## JSON Output
+## Further usage
 
-All commands accept `--json` for machine-readable output. Useful for CI scripts, dashboards, or IDE integrations:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="status --json" />
-
-```json
-{
-  "platforms": [
-    {
-      "id": "opencode",
-      "label": "OpenCode",
-      "available": true,
-      "installed": true,
-      "installedVersion": "0.6.0",
-      "latestVersion": "0.6.2"
-    }
-  ]
-}
-```
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all --json" />
-
-Portable commands return a validation report with `valid`, `name`, `version`, `root`, `skillNames`, `errors`, and `warnings`. `plugin install` also returns `destination` and `source`.
-
-## Compact Output
-
-Use `--compact` for minimal machine-friendly text output suitable for AI agents and token-sensitive environments:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="status --compact" />
-
-```
-opencode: available installed=0.2.1 latest=0.2.1
-pi: not-available not-installed
-```
-
-Compact output works on `install` and `update` too, showing one line per platform result:
-
-```
-opencode: installed 0.2.1
-```
-
-The compact flag implies `--quiet` (no spinner animations).
-
-## Quiet Mode
-
-Use `--quiet` to suppress spinner animations. Commands still print final output:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all --quiet" />
-
-<Aside type="tip">
-  Combine `--quiet` with `--json` for clean CI output:{' '}
-  <AllPackageManagers type="dlx" pkg="maestria@latest" args="status --json --quiet" />
-</Aside>
-
-## Exit Codes
-
-| Code  | Meaning                                |
-| ----- | -------------------------------------- |
-| `0`   | Success                                |
-| `1`   | Validation or command error            |
-| `130` | User cancelled (interactive mode only) |
-
-The `install` and `update` commands detect non-interactive terminals (e.g., CI pipelines) and exit with code `1` showing a clear error message instead of attempting an interactive prompt.
-
-`plugin validate` exits with `1` when the package is invalid. `plugin install` exits with `1` when fetching, validation, or staging fails.
-
-Run any command with `--help` to see in-terminal examples, exit code documentation, and a TIP FOR AI AGENTS section with usage guidance for automated pipelines.
-
-## Input Validation
-
-The CLI catches invalid input early with clear error messages:
-
-**Unknown platform:**
-
-```bash
-npx maestria update unknown-platform
-# > Unknown platform 'unknown-platform'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex
-```
-
-**Invalid version format:**
-
-```bash
-npx maestria update opencode --version 2.0
-# > Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
-```
-
-**Conflicting flags:**
-
-```bash
-npx maestria install opencode --all
-# > Cannot use --all with a specific platform. Choose one.
-```
-
-## Version Caching
-
-The CLI caches version lookups from npm for 1 hour in `~/.cache/maestria/versions.json`:
-
-```bash
-cat ~/.cache/maestria/versions.json
-# {"@maestria/opencode":{"version":"0.6.2","cachedAt":1719600000000}}
-```
-
-To force a fresh version check, delete the cache:
-
-```bash
-rm ~/.cache/maestria/versions.json
-```
-
-The cache is automatically invalidated after a successful update, ensuring `maestria status` always shows the correct latest version after an upgrade.
+The [command reference](/cli/commands/) covers JSON schemas, compact and quiet output, exit codes, validation errors, supported flags, and version caching. Keep this page focused on the first successful install; use the reference when you need a scriptable or diagnostic workflow.
 
 ## Next Steps
 

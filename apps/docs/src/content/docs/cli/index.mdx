@@ -31,6 +31,9 @@ Without the CLI, managing maestria means remembering per-platform commands:
 | OpenCode    | `opencode plugin @maestria/opencode@latest` | Re-run with `--force`                |
 | Kimi Code   | `maestria install kimi-code`                | `maestria update kimi-code`          |
 | Pi          | `pi install npm:@maestria/pi`               | `pi install npm:@maestria/pi@latest` |
+| Oh My Pi    | `maestria install omp`                      | `maestria update omp`                |
+| Cursor      | `maestria install cursor`                   | `maestria update cursor`             |
+| Hermes      | `maestria install hermes`                   | `maestria update hermes`             |
 | Prime Agent | `maestria install prime-agent`              | `maestria update prime-agent`        |
 | Claude Code | `maestria install claude-code`              | `maestria update claude-code`        |
 | Codex CLI   | `maestria install codex`                    | `maestria update codex`              |
@@ -39,7 +42,7 @@ With the CLI, one command does it all:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all" />
 
-No more context-switching between platform CLIs. No more hunting through READMEs for the right command.
+The CLI centralizes these adapters behind one command while preserving each host's native installation path.
 
 ### Stage a portable Agent Plugin
 

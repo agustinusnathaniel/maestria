@@ -2,7 +2,7 @@
 
 This document catalogs the two design patterns that Maestria adapts to each platform's native primitives. The patterns are shared; their dispatch, context, and tool enforcement are not identical.
 
-If you're porting maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to OpenCode's subagents, Kimi Code's AgentSwarm, or Claude Code's hooks.
+If you're porting Maestria to a new platform, this is your implementation guide. Each pattern section ends with platform-specific adaptation notes that map the pattern to the target runtime's native agents, skills, commands, hooks, or extension APIs.
 
 ---
 
@@ -79,7 +79,7 @@ How each platform implements this pattern:
 | **OpenCode** | `task()` subagents | Orchestrator delegates to specialist agents via the 7-agent pipeline. Each agent is a markdown file with frontmatter permissions. Orchestrator has `read` and `edit` denied, and Bash denied except `npx --yes skills@latest *` for skill installation. Git inspection and runtime queries are delegated to `@adventurer`, which allow-lists read-only shell and git commands. All other shell commands are denied. |
 | **Kimi Code** | AgentSwarm with persona-per-stage | Seven roles map onto three native profiles. Persona boundaries are advisory by default; `[[permission.rules]]` can enforce review-only behavior, but those rules apply to the session rather than one subagent. |
 | **Cursor** | Task subagents + skills/commands | Specialists ship as plugin `agents/*.md`; orchestrator as a skill; workflow modes as `commands/` (`fein`/`sonar`/`blitz`). Global rules via `alwaysApply` `.mdc`. Same bundle for IDE and CLI. |
-| **Claude Code** | Hooks and agent extensions | Stages are implemented as hooks that load agent definitions and tool configurations per phase. Handoff contracts pass through context variables. |
+| **Claude Code** | Declarative agents, skills, and commands | Specialists ship as generated `agents/*.md`; the orchestrator and global rules ship as generated skills; workflow modes ship as generated commands. `disallowedTools` protects the read-only roles. This package ships no hooks. |
 | **Pi** | `maestria_subagent` | Dispatch uses `@gotgenes/pi-subagents`. Subagents inherit parent context, so role prompts do not guarantee clean context isolation. |
 | **Oh My Pi** | native `task()` plus wrapper | OMP has a distinct dispatch path and tool behavior. Do not assume Pi's dispatch limits or lifecycle transfer to OMP. |
 
@@ -91,7 +91,7 @@ How each platform implements this pattern:
 
 The agent that produces work should not be the agent that validates it. In a full pipeline, a different agent performs verification. The strength of that boundary depends on the platform: OpenCode enforces it at the tool layer, while other platforms may provide only persona guidance unless users configure review-only permissions or sessions.
 
-The KB (from `loop-engineering.mdx`) puts it bluntly: _"The model that wrote the code is too nice grading its own homework."_ The model that produced a result has committed to it - every subsequent reasoning step is biased toward confirming correctness, not finding flaws. A fresh agent, seeing the work for the first time, catches what the implementer overlooked.
+The model that produced a result has already committed to it, so its later reasoning is biased toward confirming correctness instead of finding flaws. A fresh agent, seeing the work for the first time, can catch what the implementer overlooked.
 
 The maker/checker split applies recursively to _itself_: a fresh model decides if the work is done, not the one that did the work.
 
@@ -145,6 +145,6 @@ Self-review fails for three reasons, each documented from real sessions:
 | **OpenCode** | `edit: deny` in frontmatter | Reviewer agent YAML sets `permission.edit: deny` and restricts bash to git inspection only. No write tool access at the agent definition level. |
 | **Kimi Code** | Safety constraints + persona | Reviewer behavior is advisory by default. Review-only sessions can deny Write/Edit with `[[permission.rules]]`, but the session-wide rules also affect builder and writer work. |
 | **Cursor** | Two-layer enforcement (v1) | Runtime `readonly: true` flag on adventurer/planner/reviewer agents blocks write tools (Write, StrReplace, Delete). Prompt-level instructions serve as a backup layer. |
-| **Claude Code** | Read-only tool access | Reviewer is spawned via `new Agent({ tools: { Edit: false, Read: true, Bash: false } })` or equivalent tool-level permission gating. No hooks can escalate write access. |
+| **Claude Code** | `disallowedTools: Write, Edit` in agent frontmatter | The generated reviewer, adventurer, and planner agents deny `Write` and `Edit` at runtime. Prompt guidance backs up the boundary, but other methodology rules remain advisory and the package ships no hooks. |
 | **Pi** | Read-only role guidance plus platform dispatch | Context inheritance and platform configuration affect isolation. Do not treat a reviewer persona as automatic tool-level enforcement. |
 | **Oh My Pi** | Native task dispatch and role guidance | OMP has distinct dispatch and context behavior. A direct session does not automatically create a maker/checker pair. |
