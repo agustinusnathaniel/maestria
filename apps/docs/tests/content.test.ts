@@ -114,6 +114,7 @@ describe('portable Agent Plugin documentation', () => {
 
   it('documents the portable CLI path across user entry points', async () => {
     const agentPlugin = await readDoc('agent-plugin/index.mdx');
+    const compatibility = await readDoc('agent-plugin/compatibility.mdx');
     const cli = await readDoc('cli/index.mdx');
     const gettingStarted = await readDoc('cli/getting-started.mdx');
     const commands = await readDoc('cli/commands.mdx');
@@ -124,6 +125,10 @@ describe('portable Agent Plugin documentation', () => {
 
     expect(agentPlugin.full).toContain('npx maestria plugin install');
     expect(agentPlugin.full).toContain('https://agent-plugins.org/compatible-clients');
+    expect(agentPlugin.full).toContain('[compatibility matrix](/agent-plugin/compatibility/)');
+    expect(compatibility.full).toContain('Hermes Agent 0.20.3');
+    expect(compatibility.full).toContain('Grok Bot CLI 1.0.0');
+    expect(compatibility.full).toContain('Activation remains client-owned');
     expect(cli.full).toContain('Stage a portable Agent Plugin');
     expect(cli.full).toContain('href="/agent-plugin/"');
     expect(gettingStarted.full).toContain('--destination ./staged-plugin');

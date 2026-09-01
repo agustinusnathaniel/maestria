@@ -1,0 +1,49 @@
+---
+title: Compatibility
+description: Live activation checks and client-specific verification notes for @maestria/agent-plugin.
+sidebar:
+  order: 2
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+This page records how `@maestria/agent-plugin` has been verified in Agent Plugins v1 clients. The package contains standard skills only, so a successful check confirms that the client can discover and load those skills. It does not imply support for Maestria's native agents, commands, hooks, permissions, or session behavior.
+
+The [official compatible clients list](https://agent-plugins.org/compatible-clients) is the source for the current ecosystem list and each client's supported component types.
+
+## Verification matrix
+
+Last checked: 2026-09-01.
+
+| Client | Status | Evidence or next check |
+| --- | --- | --- |
+| Hermes Agent 0.20.3 | Live smoke passed | Installed and enabled the npm-packed artifact in an isolated Hermes home; `hermes plugins list --user --json` reported `maestria` as enabled and `hermes plugins doctor maestria --ci` passed. |
+| Grok Bot CLI 1.0.0 | Live smoke passed | Installed the local package with `agent plugin install <path> --trust`; `agent plugin list --json`, `agent plugin details maestria`, and `agent plugin validate <path>` all passed in an isolated Grok home. |
+| Cursor 3.15.19 | Manual client check | Put the package under `~/.cursor/plugins/local/maestria`, restart or reload Cursor, then open Customize and confirm the 14 skills appear. See [Cursor plugin documentation](https://cursor.com/docs/plugins). |
+| Visual Studio Code 1.108.2 | Manual client check | Enable Agent Plugins in the Agent Customizations UI, install the package from a marketplace or local source, reload, and confirm the skills appear. See [VS Code Agent Plugins documentation](https://code.visualstudio.com/docs/agent-customization/agent-plugins). |
+| GitHub Copilot | Account and client check | Install through Copilot CLI, the Copilot app, or the configured marketplace, then confirm the skills appear in the client's customization surface. See [GitHub Copilot plugin documentation](https://docs.github.com/en/copilot/concepts/agents/about-plugins). |
+| ChatGPT and Codex | Desktop check | Add the package to a local marketplace, restart the ChatGPT desktop app, install it, and verify the plugin and skills in a new chat. See [OpenAI plugin documentation](https://developers.openai.com/plugins). |
+| Kiro | Manual client check | Follow the setup flow in the [official compatible clients list](https://agent-plugins.org/compatible-clients), then verify skill discovery in Kiro. |
+| OpenClaw | Manual client check | Install the directory bundle, run `openclaw plugins inspect <id>`, and confirm the Agent Plugins bundle exposes its skills. See [OpenClaw bundle documentation](https://docs.openclaw.ai/plugins/bundles). |
+| NanoClaw | Manual client check | Install the package in the containerized NanoClaw setup and verify the skill is available to a new agent session. See the [NanoClaw templates](https://github.com/nanocoai/nanoclaw/blob/main/docs/templates.md). |
+
+## What the live smoke covers
+
+The verified Hermes and Grok runs exercised the client-owned lifecycle against the packaged directory:
+
+1. Install or copy the package through the client's plugin mechanism.
+2. Enable or trust the package.
+3. List the installed plugin and inspect its component inventory.
+4. Run the client's own manifest and skill validation.
+
+Both clients discovered the `maestria` manifest and the portable skills directory. No client-specific runtime files were added to the package.
+
+## Why some checks are manual
+
+Agent Plugins standardizes the package shape and component discovery. It does not standardize each client's UI, account state, marketplace setup, enablement controls, or session test interface. VS Code, Cursor, ChatGPT, and GitHub Copilot require a desktop or signed-in client flow; Kiro, OpenClaw, and NanoClaw are not installed in the verification environment.
+
+<Aside type="caution" title="Activation remains client-owned">
+  A client can pass package validation and still require a separate enable, trust, reload, or
+  permission step. If skills do not appear, follow the client-specific check in the matrix and then
+  start a new session.
+</Aside>

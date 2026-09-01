@@ -2,7 +2,6 @@ import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 import { fileURLToPath } from 'node:url';
-import starlightAutoSidebar from 'starlight-auto-sidebar';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightPageActions from 'starlight-page-actions';
@@ -76,6 +75,11 @@ export default defineConfig({
               url: 'https://maestria.sznm.dev/agent-plugin/',
             },
             {
+              description: 'Live smoke results and manual activation checks by client.',
+              label: 'Maestria Agent Plugin compatibility',
+              url: 'https://maestria.sznm.dev/agent-plugin/compatibility/',
+            },
+            {
               description: 'Install with `npx maestria install <platform>`.',
               label: 'Maestria CLI getting started',
               url: 'https://maestria.sznm.dev/cli/getting-started/',
@@ -115,7 +119,6 @@ export default defineConfig({
             'effectively.',
           share: true,
         }),
-        starlightAutoSidebar(),
       ],
       sidebar: [
         {
@@ -133,7 +136,10 @@ export default defineConfig({
         },
         {
           collapsed: true,
-          items: [{ label: 'Overview', link: '/agent-plugin/' }],
+          items: [
+            { label: 'Overview', link: '/agent-plugin/' },
+            { label: 'Compatibility', link: '/agent-plugin/compatibility/' },
+          ],
           label: '@maestria/agent-plugin',
         },
         {
