@@ -97,7 +97,7 @@ describe('404 page', () => {
 
 describe('portable Agent Plugin documentation', () => {
   it('documents the artifact boundary and installation path', async () => {
-    const { full } = await readDoc('ecosystem/agent-plugin.mdx');
+    const { full } = await readDoc('agent-plugin/index.mdx');
 
     expect(full).toContain('@maestria/agent-plugin');
     expect(full).toContain('plugin.json');
