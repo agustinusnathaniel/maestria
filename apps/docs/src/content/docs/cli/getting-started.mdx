@@ -60,7 +60,16 @@ When your client supports Agent Plugins v1, stage the portable Maestria package 
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-The command validates the package and prints its local directory. Give that directory to the client's Agent Plugins installer or local-plugin setting. For a local package, run `maestria plugin validate /path/to/plugin` before staging it.
+The command validates the package and prints its local directory. Give that directory to the client's Agent Plugins installer or local-plugin setting. The portable package is not added to `maestria status` and the CLI does not activate it in the client.
+
+For a local package, validate it first and choose an explicit staging directory:
+
+```bash
+npx maestria plugin validate /path/to/plugin
+npx maestria plugin install /path/to/plugin --destination ./staged-plugin
+```
+
+The source can also be an npm package specifier, such as `@maestria/agent-plugin@1.2.3`. The destination must not already exist. Add `--json` when another tool needs the validation or staging report.
 
 ### Update to the latest version
 
@@ -103,6 +112,8 @@ Per-agent models are supported on opencode, codex, cursor, pi, and omp. See the 
 ## Prerequisites
 
 - **Node.js 22+** - required for the bundled `.mjs` distribution
+- **npm on `PATH`** - required when `plugin install` fetches a package from npm
+- **Agent Plugins v1 client** - required only for the portable package path; the client owns final activation, permissions, and session behavior
 - **Platform CLI tool** - the CLI detects platforms by checking for their binary on `$PATH`. The platform must be installed before maestria can be installed for it:
   - [OpenCode](https://opencode.ai) - `opencode` binary
   - [Pi](https://pi.ai) - `pi` binary
@@ -135,6 +146,8 @@ All commands accept `--json` for machine-readable output. Useful for CI scripts,
 ```
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all --json" />
+
+Portable commands return a validation report with `valid`, `name`, `version`, `root`, `skillNames`, `errors`, and `warnings`. `plugin install` also returns `destination` and `source`.
 
 ## Compact Output
 
@@ -175,6 +188,8 @@ Use `--quiet` to suppress spinner animations. Commands still print final output:
 | `130` | User cancelled (interactive mode only) |
 
 The `install` and `update` commands detect non-interactive terminals (e.g., CI pipelines) and exit with code `1` showing a clear error message instead of attempting an interactive prompt.
+
+`plugin validate` exits with `1` when the package is invalid. `plugin install` exits with `1` when fetching, validation, or staging fails.
 
 Run any command with `--help` to see in-terminal examples, exit code documentation, and a TIP FOR AI AGENTS section with usage guidance for automated pipelines.
 

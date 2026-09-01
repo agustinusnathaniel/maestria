@@ -13,6 +13,12 @@ import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components'
   when you need deeper runtime features such as native subagents, hooks, commands, or tool controls.
 </Aside>
 
+## Before you install
+
+You need a client that supports Agent Plugins v1 and its skills component. You need Node.js and npm only when you use the Maestria CLI to fetch or stage the package. If your client already installs Agent Plugin packages, you can use its native installer instead.
+
+Check the [compatible clients list](https://agent-plugins.org/compatible-clients) before choosing the client's activation step. Clients can support different Agent Plugins components and expose different installation, trust, and permission controls.
+
 ## What you get
 
 The package gives your agent a consistent set of workflow skills:
@@ -45,6 +51,8 @@ npx maestria plugin validate /path/to/plugin
 
 Use `--json` with either command for machine-readable output.
 
+The CLI does not add the portable package to `maestria status`, modify client configuration, or grant permissions. It validates the package, copies it to the cache or the destination you choose, and prints the directory for the client to activate.
+
 ### In a compatible client
 
 <Steps>
@@ -70,6 +78,21 @@ If your client accepts a local directory, point it at the package root:
 ```
 
 Choose the directory containing `plugin.json`. Do not point the client only at the nested `skills/` directory when it expects a complete Agent Plugin.
+
+To validate a local package before handing it to the client:
+
+```bash
+npx maestria plugin validate /path/to/plugin
+```
+
+If the package is already in a checkout of Maestria, the package root is `packages/agent-plugin/`.
+
+## If skills do not appear
+
+- Confirm that the selected directory contains `plugin.json` and `skills/`.
+- Reload the client's installed plugins or start a new session after activation.
+- Check the client's supported Agent Plugins component types and its own permission or trust settings.
+- If `maestria plugin install` reports that the destination exists, choose another destination or remove the old staged copy intentionally.
 
 ## Use the skills
 

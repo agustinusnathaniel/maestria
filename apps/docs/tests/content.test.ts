@@ -111,6 +111,28 @@ describe('portable Agent Plugin documentation', () => {
     expect(full).not.toContain('packages/core/agent-directives');
     expect(full).not.toContain('sync.config.ts');
   });
+
+  it('documents the portable CLI path across user entry points', async () => {
+    const agentPlugin = await readDoc('agent-plugin/index.mdx');
+    const cli = await readDoc('cli/index.mdx');
+    const gettingStarted = await readDoc('cli/getting-started.mdx');
+    const commands = await readDoc('cli/commands.mdx');
+    const about = await readDoc('about.mdx');
+    const decisionGuide = await readDoc('core/when-to-use.mdx');
+    const howItWorks = await readDoc('core/how-it-works.mdx');
+    const changelog = await readDoc('cli/changelog.mdx');
+
+    expect(agentPlugin.full).toContain('npx maestria plugin install');
+    expect(agentPlugin.full).toContain('https://agent-plugins.org/compatible-clients');
+    expect(cli.full).toContain('Stage a portable Agent Plugin');
+    expect(cli.full).toContain('href="/agent-plugin/"');
+    expect(gettingStarted.full).toContain('--destination ./staged-plugin');
+    expect(commands.full).toContain('~/.cache/maestria/agent-plugins/<name>/<version>/');
+    expect(about.full).toContain('npx maestria plugin install');
+    expect(decisionGuide.full).toContain('[Portable Agent Plugin](/agent-plugin/)');
+    expect(howItWorks.full).toContain('[Agent Plugin package](/agent-plugin/)');
+    expect(changelog.full).toContain('maestria plugin validate');
+  });
 });
 
 describe('shipped content hygiene', () => {
