@@ -1,61 +1,8 @@
-import { getModePrompt, MODE_KEYWORDS } from '@maestria/shared-pi/modes-core';
-import path from 'node:path';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import type { ModeCommandContext, ModeCommandsApi } from '@/modes.js';
 import { installModeCommands } from '@/modes.js';
 import { createInitialState } from '@/state.js';
-
-const __dirname = import.meta.dirname;
-const COMMANDS_DIR = path.resolve(__dirname, '../agents/commands');
-
-// ---------------------------------------------------------------------------
-// MODE_KEYWORDS
-// ---------------------------------------------------------------------------
-describe('MODE_KEYWORDS', () => {
-  it('should contain fein, sonar, blitz', () => {
-    expect(MODE_KEYWORDS).toEqual(['fein', 'sonar', 'blitz']);
-  });
-
-  it('is a readonly tuple', () => {
-    // Type-level check - the const assertion ensures this is a tuple
-    expect(MODE_KEYWORDS.length).toBe(3);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// getModePrompt
-// ---------------------------------------------------------------------------
-describe('getModePrompt', () => {
-  it('returns a string containing the marker for each keyword', () => {
-    for (const kw of MODE_KEYWORDS) {
-      const prompt = getModePrompt(kw, COMMANDS_DIR);
-      expect(prompt).toContain(`[MODE: ${kw}]`);
-    }
-  });
-
-  it('returns the marker at the start of the prompt', () => {
-    for (const kw of MODE_KEYWORDS) {
-      const prompt = getModePrompt(kw, COMMANDS_DIR);
-      expect(prompt.startsWith(`[MODE: ${kw}]`)).toBe(true);
-    }
-  });
-
-  it('getModePrompt("fein") contains "Full Pipeline"', () => {
-    const prompt = getModePrompt('fein', COMMANDS_DIR);
-    expect(prompt).toContain('Full Pipeline');
-  });
-
-  it('getModePrompt("sonar") contains "Research Only"', () => {
-    const prompt = getModePrompt('sonar', COMMANDS_DIR);
-    expect(prompt).toContain('Research Only');
-  });
-
-  it('getModePrompt("blitz") contains "Fast Implementation"', () => {
-    const prompt = getModePrompt('blitz', COMMANDS_DIR);
-    expect(prompt).toContain('Fast Implementation');
-  });
-});
 
 // ---------------------------------------------------------------------------
 // installModeCommands

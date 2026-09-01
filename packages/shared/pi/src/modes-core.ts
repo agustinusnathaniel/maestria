@@ -31,8 +31,8 @@ export const MODE_MARKERS: Record<ModeKeyword, string> = SHARED_MARKERS;
 
 // ── Prompt loading ──
 
-/** Lazily cached mode prompts - shared across Pi-family. */
-const _promptCache: Partial<Record<ModeKeyword, string>> = {};
+/** Lazily cached mode prompts, scoped by commands directory and keyword. */
+const _promptCache = new Map<string, string>();
 
 /**
  * Load and cache a mode prompt from a commands directory.
@@ -48,15 +48,16 @@ export const loadModePrompt = (name: string, commandsDir: string): string => {
  * the given commands directory on first access.
  */
 export const getModePrompt = (keyword: ModeKeyword, commandsDir: string): string => {
-  if (!(keyword in _promptCache)) {
+  const cacheKey = `${path.resolve(commandsDir)}\0${keyword}`;
+  if (!_promptCache.has(cacheKey)) {
     try {
-      _promptCache[keyword] = loadModePrompt(keyword, commandsDir);
+      _promptCache.set(cacheKey, loadModePrompt(keyword, commandsDir));
     } catch (error) {
       console.warn(`[maestria] Failed to load mode prompt "${keyword}":`, error);
-      _promptCache[keyword] = '';
+      _promptCache.set(cacheKey, '');
     }
   }
-  return `${MODE_MARKERS[keyword]}\n\n${_promptCache[keyword]}`;
+  return `${MODE_MARKERS[keyword]}\n\n${_promptCache.get(cacheKey) ?? ''}`;
 };
 
 // ── Keyword detection ──

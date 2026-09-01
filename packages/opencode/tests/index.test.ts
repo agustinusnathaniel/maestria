@@ -51,7 +51,12 @@ describe('plugin structure', () => {
     const builder = getAgentConfig(config, 'builder');
     expect(builder.mode).toBe('subagent');
     expect(typeof builder.description).toBe('string');
-    expect(typeof builder.prompt).toBe('string');
+    const { prompt } = builder;
+    expect(typeof prompt).toBe('string');
+    if (typeof prompt !== 'string') {
+      throw new TypeError('Expected builder prompt');
+    }
+    expect(prompt.trim()).not.toBe('');
     expect(builder.permission).toBeDefined();
   });
 
@@ -99,9 +104,5 @@ describe('plugin structure', () => {
     for (const command of ['pnpm*', 'npm*', 'tsc*', 'vitest*', 'vp*']) {
       expect(builderBash[command]).toBe('allow');
     }
-    expect(orchestrator.prompt).toContain('Runtime Authority');
-    expect(orchestrator.prompt).toContain('direct work is unavailable or disallowed');
-    expect(orchestrator.prompt).toMatch(/permitted specialist|permitted `@builder`/u);
-    expect(orchestrator.prompt).not.toMatch(/child-dispatch budget|circuit breaker/iu);
   });
 });

@@ -72,7 +72,8 @@ describe('trust anchor pages', () => {
 describe('404 page', () => {
   it('points agents at llms.txt and the sitemap via absolute links', async () => {
     const { body } = await readDoc('404.mdx');
-    expect(body).toContain('RECOVERY_LINKS.map');
+    expect(body).toContain('## Recovery paths for agents and humans');
+    expect(body).toContain('Every link below is absolute');
     expect(RECOVERY_LINKS).toContainEqual([
       'Markdown summary for agents',
       'https://maestria.sznm.dev/llms.txt',

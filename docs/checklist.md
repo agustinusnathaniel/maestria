@@ -2,7 +2,7 @@
 
 Before marking any task as complete in this repo:
 
-- [ ] Quality pipeline passes (`vp test`, `pnpm typecheck`, `pnpm build`, `pnpm lint`, `pnpm check`)
+- [ ] Quality pipeline passes (`pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm lint`, `pnpm check`)
 - [ ] If editing canonical agent directives: `scripts/sync-all` run && `scripts/check-sync` passes
 - [ ] If adding/removing files: `package.json` files array and export map are up to date
 - [ ] If changing agent prompts: README in `core/agent-directives/` is still accurate

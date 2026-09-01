@@ -1,7 +1,7 @@
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import {
   buildModeText,
@@ -98,8 +98,7 @@ describe('getModePrompt', () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = path.join(tmpdir(), `maestria-prompt-${Date.now()}`);
-    mkdirSync(tmpDir, { recursive: true });
+    tmpDir = mkdtempSync(path.join(tmpdir(), 'maestria-prompt-'));
     // Create minimal prompt files
     for (const kw of MODE_KEYWORDS) {
       writeFileSync(path.join(tmpDir, `${kw}.md`), `## MODE: ${kw}\n\nFull pipeline for ${kw}.`);
@@ -122,11 +121,36 @@ describe('getModePrompt', () => {
   });
 
   it('returns marker with empty body for unknown prompt file', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     // Remove one file to simulate missing prompt
     rmSync(path.join(tmpDir, 'blitz.md'));
-    const result = getModePrompt('blitz', tmpDir);
-    // Should still produce the marker, empty body due to catch in getModePrompt
-    expect(result).toBe('[MODE: blitz]\n\n');
+    try {
+      const result = getModePrompt('blitz', tmpDir);
+      // Should still produce the marker, empty body due to catch in getModePrompt
+      expect(result).toBe('[MODE: blitz]\n\n');
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load mode prompt "blitz"'),
+        expect.any(Error),
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('loads prompt content independently for each commands directory', () => {
+    const initial = getModePrompt('fein', tmpDir);
+    expect(initial).toContain('Full pipeline for fein.');
+
+    const alternateDir = mkdtempSync(path.join(tmpdir(), 'maestria-prompt-alt-'));
+    try {
+      writeFileSync(
+        path.join(alternateDir, 'fein.md'),
+        '## MODE: fein\n\nAlternate pipeline for fein.',
+      );
+      expect(getModePrompt('fein', alternateDir)).toContain('Alternate pipeline for fein.');
+    } finally {
+      rmSync(alternateDir, { force: true, recursive: true });
+    }
   });
 });
 
@@ -136,8 +160,7 @@ describe('detectModeInText', () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = path.join(tmpdir(), `maestria-detect-${Date.now()}`);
-    mkdirSync(tmpDir, { recursive: true });
+    tmpDir = mkdtempSync(path.join(tmpdir(), 'maestria-detect-'));
     // Create minimal prompt files
     for (const kw of MODE_KEYWORDS) {
       writeFileSync(path.join(tmpDir, `${kw}.md`), `## MODE: ${kw}\n\nFull pipeline for ${kw}.`);

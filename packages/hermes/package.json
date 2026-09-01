@@ -2,5 +2,8 @@
   "name": "@maestria/hermes",
   "version": "0.1.13",
   "private": true,
-  "description": "Version tracking for changeset only. NOT published to npm. PyPI distribution at maestria-hermes."
+  "description": "Version tracking for changeset only. NOT published to npm. PyPI distribution at maestria-hermes.",
+  "scripts": {
+    "test": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m unittest discover -b -s tests -p 'test_*.py'"
+  }
 }
