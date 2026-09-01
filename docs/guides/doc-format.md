@@ -2,20 +2,6 @@
 
 > This is an internal convention guide, not a formal ADR. It is the single source of truth for how Maestria structures decision records, plans, notes, guides, and publishable READMEs.
 
-## Quick reference
-
-Use this table when starting or materially revising a document. The detailed guidance below explains the rationale and exceptions.
-
-| Document | Primary reader | Required structure |
-| --- | --- | --- |
-| ADR | Maintainers deciding or revisiting architecture | Status, Context, Goals, Non-Goals, Decision, Consequences, Assumptions, Alternatives Considered, Date |
-| Plan | Implementers and reviewers | Goal, Scope, Non-Goals, Dependencies, Acceptance, Verification, Rollback, Status |
-| Note or guide | Contributors using dated context or a process | Purpose, Audience, Dated evidence, Next step |
-| Published README | Package consumers | Description, installation or usage, support boundary, what it provides, documentation and release history where available, license; add development guidance only when useful |
-| Public docs page | End users | Task or concept in the title, shortest successful path first, deeper reference linked below |
-
-Use `[verified]` for facts confirmed by code, docs, a live run, or an immutable commit. Use `[inferred]` for conclusions that still need confirmation. Do not retrofit legacy documents unless you are already rewriting them substantively.
-
 ## Context
 
 This guide describes how we structure decision records and project documentation. It was inspired by the [Agent Trace RFC](https://agent-trace.dev/) format - Motivation → Goals → Non-Goals → Specification - which directly addresses gaps in our earlier documentation.

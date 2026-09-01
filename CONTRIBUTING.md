@@ -314,29 +314,6 @@ The canonical sync pipeline handles content derivation. The plugin package handl
 | Validate | Codex plugin-creator `validate_plugin.py`                                   |
 | Install  | `npx maestria install codex`; the CLI stages a local npm-backed marketplace |
 
-### prime-agent
-
-| Concern | Details |
-| --- | --- |
-| Format | Agent Skills projection plus a hand-authored Prime/Pi extension |
-| Skills | Auto-generated in `skills/<name>/SKILL.md` from the core sync pipeline |
-| Extension | Hand-authored `src/extension.ts`, compiled to `dist/extension.mjs` |
-| Test | `pnpm --filter @maestria/prime-agent test` |
-| Validate | `pnpm --filter @maestria/prime-agent validate` |
-| Install | `npx maestria install prime-agent` or Prime's native package flow |
-| Boundary | Mode commands and prompt injection are verified; native `rlm` dispatch and JSON/RPC remain deferred |
-
-### agent-plugin
-
-| Concern         | Details                                                                      |
-| --------------- | ---------------------------------------------------------------------------- |
-| Format          | Portable Agent Plugins v1 package; no runtime adapter                        |
-| Manifest        | `plugin.json`                                                                |
-| Skills          | Auto-generated in `skills/<name>/SKILL.md` from the core sync pipeline       |
-| Runtime surface | Skills only; no agents, commands, hooks, MCP server, or executable extension |
-| Test            | `pnpm --filter @maestria/agent-plugin test`                                  |
-| Validate        | `scripts/check-sync` plus the package tests                                  |
-
 ---
 
 ## 7. Testing Philosophy
