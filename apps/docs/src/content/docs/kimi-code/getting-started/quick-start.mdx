@@ -1,94 +1,81 @@
 ---
 title: Quick Start
-description: Your first session with @maestria/kimi-code - delegating to specialists and using the orchestrator's swarm fan-out.
+description: Use @maestria/kimi-code for a focused delegation, a staged fix, or a parallel review.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-Once you've installed the plugin, the orchestrator skill and native system-prompt contribution are loaded automatically in every session - no extra commands, no manual setup.
+After installation, Kimi Code loads the orchestrator skill and the native system-prompt contribution at session start. Start a new session after installing or updating the plugin.
 
-<Aside type="caution" title="The orchestrator is not always the fastest path">
-  Kimi Code can dispatch several subagents, but every dispatch adds model work and waiting time. Use
-  [the usage decision guide](/core/when-to-use/) before routing a small task or an expensive model
-  through the full pipeline.
+<Aside type="caution" title="Choose the route that fits the task">
+  Delegation adds model work and waiting time. Use [When to Use Maestria](/core/when-to-use/) before
+  sending a small task or an expensive model through the full pipeline.
 </Aside>
 
-## What to expect
+## Delegate One Focused Task
 
-Launch Kimi Code as usual. At session start, the orchestrator skill auto-loads via `sessionStart.skill` in `kimi.plugin.json`. You'll see a plugin session-start block referencing the orchestrator's methodology, and the plugin's `SYSTEM.md` contribution is loaded through `systemPromptPath`.
+Give the orchestrator a concrete task:
 
-The orchestrator is the routing layer. It does not implement, debug, or edit code itself - it loads specialist skills via the `Skill` tool and dispatches them to Kimi Code's 3 built-in subagents (`coder`, `explore`, `plan`).
+> Use builder to add a JSDoc comment to the add function in src/math.ts.
 
-## Try a single delegation
+The orchestrator loads the builder skill and sends the task to Kimi Code's coder subagent. The coder has Write, Edit, and Bash access by default.
 
-Hand a concrete, scoped task to the `builder` persona (dispatched to the `coder` subagent):
+## Run a Staged Fix
 
-> "Use builder to add a JSDoc comment to the `add` function in `src/math.ts`."
+For a task with an unknown cause and a clear need for review:
 
-The orchestrator loads the `builder` SKILL.md, inlines the persona into an `Agent` call, and dispatches to the `coder` subagent. The `coder` subagent has Write/Edit/Bash access by default.
+> The login flow throws on an empty email. Trace the bug, fix it, and review the fix.
 
-## Try a multi-step task
+The usual sequence is:
 
-For work that spans multiple specialists, hand the whole thing to the orchestrator:
+1. diagnose finds and explains the cause.
+2. builder applies the confirmed fix.
+3. reviewer checks the result.
 
-> "The login flow throws on empty email. Trace the bug, fix it, and review the fix."
+The orchestrator passes the acceptance evidence and unresolved assumptions between stages. Use direct execution for a small, familiar change.
 
-The orchestrator decomposes the work:
+## Review Several Similar Items
 
-1. `diagnose` (coder) - 6-step root cause trace
-2. `builder` (coder) - apply the minimal fix
-3. `reviewer` (coder; no-edit only in a review-only session with Write/Edit denied) - validate the fix
+For three or more independent, uniform items, ask for a parallel review:
 
-Each step verifies before handing off to the next.
+> Review these five files for security issues: src/auth.ts, src/api.ts, src/db.ts, src/routes.ts, and src/middleware.ts.
 
-## Try swarm fan-out
+Kimi Code can use AgentSwarm to fan out the same reviewer task. The swarm call must be the only tool call in that turn; do not combine it with an exploratory call.
 
-For ≥3 uniform items, the orchestrator uses `AgentSwarm`:
+## Plan a Larger Change
 
-> "Review these 5 files for security issues: src/auth.ts, src/api.ts, src/db.ts, src/routes.ts, src/middleware.ts."
+Ask planner for ordered milestones before implementation:
 
-The orchestrator:
+> Use planner to draft a migration plan from REST to GraphQL.
 
-1. Identifies ≥3 uniform independent items.
-2. Loads the `reviewer` persona.
-3. Calls `AgentSwarm` with a `prompt_template` that includes the `reviewer` persona + `{{item}}` placeholder.
-4. Returns a single `<agent_swarm_result>` envelope with one `<subagent>` per file.
+The plan should contain phases, success criteria, and rollback points. Give it to the orchestrator for execution or to builder for one phase at a time.
 
-`AgentSwarm` must be the only tool call in the turn (exclusive-deny policy) - no "explore first, then swarm" in one turn.
+## Native Workflow Commands
 
-## Try a multi-phase plan
+Use a namespaced command when you want an explicit route:
 
-For complex features, get a phased plan from `planner` (dispatched to the `plan` subagent) before implementing:
+```text
+/maestria:fein
+/maestria:sonar
+/maestria:blitz
+```
 
-> "Use planner to draft a migration plan from REST to GraphQL."
+- fein runs the full pipeline.
+- sonar stops after research and design.
+- blitz skips optional reconnaissance and design when the host permits direct execution.
 
-The `planner` persona returns phases with success criteria and rollback points. Hand the plan to the orchestrator for execution, or to `builder` for individual phases.
+## Common Problems
 
-## Common pitfalls
-
-- **Plugin not enabled** - run `/plugins list` and `/plugins info maestria`; then `/plugins reload` or `/new`.
-- **Forgot `[[hooks]]`** - destructive bash commands (`rm -rf`) slip through. Save the companion script as `~/.kimi-code/hooks/block-dangerous-bash.mjs`.
-- **Forgot `[[permission.rules]]`** - the `reviewer` persona can edit files because the `coder` subagent has Write/Edit tools. Persona text alone is advisory, not enforcement.
-- **Skipped `/new`** - plugin changes don't take effect in the current session. Run `/reload` then `/new`.
-- **Orchestrator starts writing code directly** - the orchestrator skill is supposed to route, not implement. Check `/plugins list` and confirm the session-start skill loaded.
-- **AgentSwarm not available** - use Kimi Code v0.38.0+; older releases are outside the verified support boundary.
-
-## Native workflow commands
-
-Kimi namespaces commands contributed by plugins. Use `/maestria:fein`, `/maestria:sonar`, or `/maestria:blitz` when you want an explicit route.
-
-## Pipeline reference
-
-The full pipeline diagram is in [Pipeline & Roles](/core/pipeline/).
-
-<Aside type="tip">
-  Choose the smallest safe route. Use direct execution for known, low-risk work when the host
-  permits it; use recon (`adventurer`) or design (`architect`) when the code is unfamiliar or the
-  approach is uncertain. The orchestrator handles this routing automatically - but you can also
-  invoke specialists directly when you know which one you want.
-</Aside>
+| Symptom | First check |
+| --- | --- |
+| Plugin changes do not appear | Run /reload, then /new |
+| Orchestrator writes code directly | Check /plugins info maestria and confirm the session-start skill is orchestrator |
+| Reviewer can edit | Persona text is advisory; Kimi permission rules apply to the whole session |
+| AgentSwarm is unavailable | Verify Kimi Code v0.38.0 or later |
 
 ## Next Steps
 
-- [Skill Reference](/core/agents/) - Full reference for all 8 skills
-- [Workflow Patterns](/core/workflow-patterns/) - Practical examples for each skill
+- [Installation](/kimi-code/getting-started/installation/)
+- [When to Use Maestria](/core/when-to-use/)
+- [Workflow Patterns](/core/workflow-patterns/)
+- [Skill Reference](/core/agents/)

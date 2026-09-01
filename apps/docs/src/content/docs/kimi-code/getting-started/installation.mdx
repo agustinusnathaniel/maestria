@@ -1,288 +1,115 @@
 ---
 title: Installation & Setup
-description: Install @maestria/kimi-code in your Kimi Code CLI. No npm install, no build step - just a manifest and a few config blocks.
+description: Install @maestria/kimi-code in Kimi Code. The package is a declarative plugin with generated skills, native commands, and a system-prompt contribution.
 ---
 
-import { Steps, Aside, Tabs } from '@astrojs/starlight/components';
-import { PackageManagers } from 'starlight-package-managers';
+import { Aside } from '@astrojs/starlight/components';
+import { PackageManagers as PackageManagerCommands } from 'starlight-package-managers';
 
-`@maestria/kimi-code` is a declarative Kimi Code plugin - a manifest, skills, native slash commands, and a system-prompt contribution. The plugin is loaded by Kimi Code at session start, and the orchestrator skill auto-injects the methodology.
+@maestria/kimi-code is a declarative Kimi Code plugin. It contributes skills, namespaced workflow commands, and a system prompt. There is no build step.
 
 ## Prerequisites
 
-- **Kimi Code v0.38.0+** - the verified version for native plugin `systemPromptPath`, plugin commands, and the current plugin registry. Older versions may load the skills-only subset, but are outside the supported boundary.
-- **Node.js >=22.12.0 and npm** - required for the Maestria CLI path. A direct Kimi Code installation follows Kimi's own prerequisites.
+- Kimi Code v0.38.0 or later for the verified plugin registry, systemPromptPath, and AgentSwarm behavior.
+- Node.js 22.12 or later and npm when using the Maestria CLI.
+- Kimi's own prerequisites when installing directly.
 
-## Installation via CLI (Recommended)
+## Install via the Maestria CLI
 
-The [maestria CLI](/cli/) provides a unified interface for installing and managing maestria plugins across all supported platforms:
+This is the recommended path:
 
-<PackageManagers
+<PackageManagerCommands
   type="dlx"
   pkg="maestria"
   args="install kimi-code"
-  comment="Install for this platform"
+  comment="Install for Kimi Code"
 />
-<PackageManagers type="dlx" pkg="maestria" args="status" comment="Verify installation" />
 
-<Aside type="caution" title="Additional setup required">
-  The CLI installs and registers the plugin without overwriting global instructions. You still need
-  to add the recommended hooks and permission rules to `~/.kimi-code/config.toml`. See the manual
-  setup section below for the complete steps.
-</Aside>
+Check the native plugin record:
 
-<details>
-<summary>Alternative: Manual setup</summary>
+<PackageManagerCommands type="dlx" pkg="maestria" args="status" comment="Check installation" />
 
-<Steps>
+The CLI downloads the npm package, installs it through Kimi's plugin manager, and preserves existing plugin records and global instructions. Start a new Kimi Code session after installation so the session-start skill and system-prompt contribution load.
 
-1. **Install the plugin**
+```text
+/reload
+/new
+```
 
-   The plugin is distributed via npm. The maestria CLI downloads and extracts it directly:
+## Install manually
 
-   <PackageManagers type="dlx" pkg="maestria" args="install kimi-code" />
-
-   This runs `npm pack @maestria/kimi-code@latest`, extracts the tarball into a temporary directory, and installs it through Kimi's native plugin manager.
-
-   Alternatively, you can install directly from npm with the same commands used internally:
-
-   ```bash
-   npm pack @maestria/kimi-code@latest --pack-destination /tmp
-   mkdir -p /tmp/maestria-kimi-code
-   tar -xzf /tmp/maestria-kimi-code-*.tgz -C /tmp/maestria-kimi-code --strip-components=1
-   # In Kimi Code, run: /plugins install /tmp/maestria-kimi-code
-   rm -f /tmp/maestria-kimi-code-*.tgz
-   ```
-
-2. **Verify the plugin (REQUIRED)**
-
-   Kimi owns the install record and managed copy. Verify both through the native plugin manager:
-
-   ```text
-   /plugins list
-   /plugins info maestria
-   ```
-
-   <Aside type="caution">
-     `SYSTEM.md` is contributed through the plugin's native `systemPromptPath`. Kimi limits each
-     plugin system-prompt file to **32 KB**; the packaged file is tested against that limit.
-   </Aside>
-
-3. **Add lifecycle hooks to `config.toml` (recommended)**
-
-   Open `~/.kimi-code/config.toml` and add the following `[[hooks]]` blocks. These block destructive bash commands, inject a per-turn orchestrator reminder, and observe compaction cycles.
-
-   ```toml
-   # Block destructive bash commands
-   [[hooks]]
-   event = "PreToolUse"
-   matcher = "Bash"
-   command = "node ~/.kimi-code/hooks/block-dangerous-bash.mjs"
-   timeout = 5
-
-   # Per-turn orchestrator reminder
-   [[hooks]]
-   event = "UserPromptSubmit"
-   matcher = ""
-   command = "echo 'Maestria active: delegate via the orchestrator skill. Prefer adventurer for recon, architect for design, builder for implementation, diagnose for bugs, reviewer for QA, writer for docs, planner for multi-phase work.'"
-   timeout = 5
-
-   # Observe compaction cycles (observation-only)
-   [[hooks]]
-   event = "PreCompact"
-   matcher = ".*"
-   command = "echo \"compact start: $(date -Is)\" >> ~/.kimi-code/compact.log"
-   timeout = 5
-
-   [[hooks]]
-   event = "PostCompact"
-   matcher = ".*"
-   command = "echo \"compact end:   $(date -Is)\" >> ~/.kimi-code/compact.log"
-   timeout = 5
-   ```
-
-   Save the companion script as `~/.kimi-code/hooks/block-dangerous-bash.mjs`:
-
-   ```js
-   let input = '';
-   process.stdin.on('data', (chunk) => {
-     input += chunk;
-   });
-   process.stdin.on('end', () => {
-     const payload = JSON.parse(input);
-     const command = payload.tool_input?.command ?? '';
-     if (command.includes('rm -rf')) {
-       console.error('Dangerous command detected, blocked');
-       process.exit(2);
-     }
-   });
-   ```
-
-4. **Optional: add review-only permission rules**
-
-   <Aside type="caution" title="These rules apply to the whole session">
-     By default, the 3 built-in Kimi Code subagents have full tool access. The `reviewer` and
-     `adventurer` personas _describe_ safety constraints in their SKILL.md text ("do not edit
-     files", "read-only Bash"), but those constraints are advisory only. The deny rules below apply
-     at session scope, so they also block Write/Edit for `builder` and `writer`. Use them only for a
-     review-only session, not as a permanent general-purpose configuration.
-   </Aside>
-
-   Add the following to `~/.kimi-code/config.toml`:
-
-   ```toml
-   # === Builder (coder) - read-only git + test commands ===
-   # 6 separate rules because each `pattern` matches one command.
-   # scope = "session-runtime" applies to the current session only.
-
-   [[permission.rules]]
-   decision = "allow"
-   pattern = "Bash(git status*)"
-   scope = "session-runtime"
-   reason = "Builder: read-only git status"
-
-   [[permission.rules]]
-   decision = "allow"
-   pattern = "Bash(git diff*)"
-   scope = "session-runtime"
-   reason = "Builder: read-only git diff"
-
-   [[permission.rules]]
-   decision = "allow"
-   pattern = "Bash(git log*)"
-   scope = "session-runtime"
-   reason = "Builder: read-only git log"
-
-   [[permission.rules]]
-   decision = "allow"
-   pattern = "Bash(npm test*)"
-   scope = "session-runtime"
-   reason = "Builder: run npm tests"
-
-   [[permission.rules]]
-   decision = "allow"
-   pattern = "Bash(pnpm test*)"
-   scope = "session-runtime"
-   reason = "Builder: run pnpm tests"
-
-   [[permission.rules]]
-   decision = "allow"
-   pattern = "Bash(npx tsc*)"
-   scope = "session-runtime"
-   reason = "Builder: run TypeScript type check"
-
-   # === Review-only session - deny Write/Edit for every coder subagent ===
-   # Do not use these session-wide denies while running builder or writer work.
-
-   [[permission.rules]]
-   decision = "deny"
-   pattern = "Write"
-   scope = "session-runtime"
-   reason = "Review-only session: block all Write tools"
-
-   [[permission.rules]]
-   decision = "deny"
-   pattern = "Edit"
-   scope = "session-runtime"
-   reason = "Review-only session: block all Edit tools"
-   ```
-
-   The `scope` field controls temporal granularity (`turn-override`, `session-runtime`, `project`, `user`) - it is not per-subagent granularity. Subagent tool lists come from the hardcoded profile (`coder`/`explore`/`plan`), not from per-agent rules. These rules provide session-wide tool enforcement for a review-only session; they cannot safely enforce reviewer boundaries while builder or writer work runs in the same session.
-
-5. **Reload plugins and start a new session**
-
-   Plugin changes only take effect in new sessions. After installing, run:
-
-   ```
-   /reload
-   /new
-   ```
-
-6. **Verify**
-
-   In the fresh session, ask:
-
-   > "Review these 5 files for security issues: src/auth.ts, src/api.ts, src/db.ts, src/routes.ts, src/middleware.ts"
-
-   The orchestrator should:
-   1. Auto-load (via `sessionStart.skill`).
-   2. Identify the work as ≥3 uniform items → use `AgentSwarm` with the `reviewer` persona.
-   3. Dispatch a swarm across the 5 files.
-
-   If the orchestrator starts writing code directly, check `/plugins list` and confirm the session-start skill loaded.
-
-7. **Use native workflow commands (optional)**
-
-   Kimi namespaces commands contributed by plugins:
-
-   ```text
-   /maestria:fein
-   /maestria:sonar
-   /maestria:blitz
-   ```
-
-</Steps>
-
-</details>
-
-## Troubleshooting
-
-### Orchestrator not loading
-
-- Check `/plugins list` - `maestria` should appear with `enabled: true`.
-- Check `/plugins info maestria` for manifest diagnostics and confirm `sessionStart.skill` is `orchestrator`.
-- Restart Kimi Code completely (not just the session).
-
-### AgentSwarm not available
-
-- Use Kimi Code v0.38.0+; older releases are outside the verified support boundary for this package.
-
-### System prompt gets truncated
-
-- The 32 KB plugin system-prompt budget is enforced by Kimi Code. Keep long detail in specialist SKILL.md files, loaded on demand via the `Skill` tool.
-
-## Updating
-
-To update via the maestria CLI:
-
-<PackageManagers type="dlx" pkg="maestria" args="update kimi-code" />
-
-To pin to a specific version:
-
-<PackageManagers type="dlx" pkg="maestria" args="update kimi-code --version 0.5.2" />
-
-<details>
-<summary>Alternative: Manual update</summary>
-
-The CLI uses npm to fetch the latest version. The same commands work manually:
+Use this only when you need to control the package extraction or invoke Kimi's native installer yourself:
 
 ```bash
 npm pack @maestria/kimi-code@latest --pack-destination /tmp
 mkdir -p /tmp/maestria-kimi-code
 tar -xzf /tmp/maestria-kimi-code-*.tgz -C /tmp/maestria-kimi-code --strip-components=1
-# In Kimi Code, run: /plugins install /tmp/maestria-kimi-code
-rm -f /tmp/maestria-kimi-code-*.tgz
 ```
 
-<Aside type="caution">
-  Updates overwrite any local edits to the bundled SKILL.md files. If you have customized them, fork
-  the repository or back up your changes before re-installing.
-</Aside>
+Then install the extracted directory from a Kimi Code session:
 
-</details>
+```text
+/plugins install /tmp/maestria-kimi-code
+```
 
-## Uninstalling
+The CLI path and the manual path both produce the same Kimi-managed plugin. Delete the temporary tarball and directory when you no longer need them.
 
-<PackageManagers type="dlx" pkg="maestria" args="uninstall kimi-code" />
+## Optional Session Controls
 
-```bash
-# or from a Kimi Code session:
+Maestria does not add hooks or permission rules to Kimi Code. Add them only if your workflow needs them.
+
+- Hooks can block selected commands, add a per-turn reminder, or observe compaction.
+- Permission rules apply to the whole Kimi session, not to one persona. A deny rule intended for review also blocks builder and writer work in that session.
+- Persona text alone is advisory. It does not make reviewer or adventurer read-only.
+
+Treat custom hooks as executable code and review them before enabling them. Keep the default installation path free of optional controls.
+
+## Verify the Installation
+
+In Kimi Code, run:
+
+```text
+/plugins list
+/plugins info maestria
+```
+
+Confirm that the plugin is enabled and that its session-start skill is orchestrator. In a new session, ask the orchestrator to list its available specialists.
+
+Kimi limits each plugin system-prompt file to 32 KB. The packaged SYSTEM.md is tested against that limit. If AgentSwarm is unavailable, verify that Kimi Code is v0.38.0 or later.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Plugin is missing | Run /plugins list and /plugins info maestria, then restart Kimi Code |
+| Orchestrator does not load | Confirm sessionStart.skill is orchestrator and start a new session |
+| System prompt is truncated | Keep long detail in specialist SKILL.md files; Kimi enforces the 32 KB file limit |
+| Reviewer can edit | Configure session-wide permission rules; the persona prompt is not enforcement |
+
+## Update
+
+<PackageManagerCommands type="dlx" pkg="maestria" args="update kimi-code" />
+
+To pin a version:
+
+<PackageManagerCommands type="dlx" pkg="maestria" args="update kimi-code --version 0.5.2" />
+
+Updates replace the managed package. Back up local edits before updating.
+
+## Uninstall
+
+<PackageManagerCommands type="dlx" pkg="maestria" args="uninstall kimi-code" />
+
+Or from a Kimi Code session:
+
+```text
 /plugins remove maestria
 ```
 
-Optionally remove the `[[hooks]]` and `[[permission.rules]]` blocks from `~/.kimi-code/config.toml`.
+If you added custom hooks or permission rules, remove those blocks from ~/.kimi-code/config.toml separately.
 
 ## Next Steps
 
-- [Quick Start](/kimi-code/getting-started/quick-start/) - Your first session with the plugin
-- [Skill Reference](/core/agents/) - Detailed documentation for each skill
+- [Quick Start](/kimi-code/getting-started/quick-start/) for your first delegated task
+- [Skill Reference](/core/agents/) for the specialist roles
+- [Kimi Code Contributing](/kimi-code/contributing/) for package changes

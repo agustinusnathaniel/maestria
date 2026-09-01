@@ -1,114 +1,75 @@
 ---
 title: Contributing
-description: How to contribute to @maestria/kimi-code - project structure, editing skills, and submitting PRs.
+description: Kimi Code-specific package structure, sync behavior, and validation for @maestria/kimi-code.
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
 
-Thank you for your interest in contributing to `@maestria/kimi-code`! This guide covers project structure, editing skills, and submitting PRs.
+For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For the shared source workflow, see [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
 
-> For general development setup, changesets, and pull request workflow, see the [Contributing Guide](/core/contributing/).
+## Package Boundary
 
-## Project Structure
+Kimi Code is a declarative package. Its source is the manifest, generated skills and commands, system-prompt file, tests, and sync configuration:
 
-Unlike `@maestria/opencode` (TypeScript SDK with a `src/index.ts` entry point), `@maestria/kimi-code` is a **declarative plugin** - there is no build step and no source code. The "package source" is the manifest, skills, native commands, and system-prompt file.
-
-```
-maestria/
-├── apps/
-│   └── docs/                # Documentation site
-└── packages/
-    └── kimi-code/           # @maestria/kimi-code plugin
-        ├── kimi.plugin.json # Plugin manifest (skills, commands, systemPromptPath, sessionStart.skill)
-        ├── skills/          # SKILL.md files (orchestrator + 7 specialists)
-        │   ├── orchestrator/
-        │   ├── builder/
-        │   ├── adventurer/
-        │   ├── architect/
-        │   ├── planner/
-        │   ├── reviewer/
-        │   ├── writer/
-        │   └── diagnose/
-        ├── commands/         # Native namespaced workflow commands
-        │   ├── fein.md
-        │   ├── sonar.md
-        │   └── blitz.md
-        ├── SYSTEM.md         # Native systemPromptPath contribution
-        ├── tests/            # Vitest assertions for manifest + safety
-        ├── INSTALL.md        # Step-by-step setup checklist
-        ├── README.md         # Overview
-        └── CHANGELOG.md      # Release notes
+```text
+packages/kimi-code/
+├── kimi.plugin.json   manifest and native entry points
+├── skills/            generated orchestrator and specialist skills
+├── commands/          generated workflow commands
+├── SYSTEM.md          generated system-prompt contribution
+├── sync.config.ts     Kimi-specific transforms
+├── tests/
+├── INSTALL.md
+└── README.md
 ```
 
-## Making Changes
+There is no runtime SDK or build step. Platform behavior comes from Kimi Code; the sync configuration adapts the canonical prompts to Kimi's skill, command, and system-prompt formats.
 
-### Editing a skill
+## Change Shared Methodology
 
-Each specialist's prompt is authored in the canonical source and synced to SKILL.md format via the sync pipeline. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide.
+Edit packages/core/agent-directives/, never packages/kimi-code/skills/, commands/, or SYSTEM.md. Regenerate and verify from the repository root:
 
-### SKILL.md frontmatter reference
+```bash
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/kimi-code test
+```
 
-| Field                    | Type    | Description                                       |
-| ------------------------ | ------- | ------------------------------------------------- |
-| `name`                   | string  | Skill identifier (matches the directory name)     |
-| `description`            | string  | One-line role summary                             |
-| `type`                   | string  | Always `"prompt"` for persona content             |
-| `whenToUse`              | string  | Multi-line trigger phrases for the orchestrator   |
-| `arguments`              | array   | Optional positional arguments the skill accepts   |
-| `disableModelInvocation` | boolean | If true, only humans can invoke; the model cannot |
+Kimi-specific changes belong in sync.config.ts or the manifest. Keep platform transforms small and do not copy canonical prompt text into the package.
 
-### Manifest reference
+## Manifest Contract
 
-The `kimi.plugin.json` manifest fields:
+The manifest owns the Kimi-native entry points:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `name` | string | Plugin identifier (`maestria`) |
-| `version` | string | Semver version, follows the monorepo changeset pipeline |
-| `description` | string | One-line summary for the plugin marketplace |
-| `keywords` | array | Discovery keywords (`maestria`, `kimi-code`, `swarm`, etc.) |
-| `author` | object | `{ name, email }` |
-| `homepage` | string | Project homepage URL |
-| `license` | string | SPDX license identifier |
-| `skills` | string | Path to the skills directory (e.g., `"./skills/"`) |
-| `commands` | string | Path to native plugin slash commands (e.g., `"./commands/"`) |
-| `systemPromptPath` | string | Path to native system-prompt instructions (e.g., `"./SYSTEM.md"`) |
-| `sessionStart.skill` | string | Name of the skill to auto-load at session start (`orchestrator`) |
-| `skillInstructions` | string | Plugin-wide instruction string injected alongside skills |
-| `interface` | object | Display metadata (`displayName`, `shortDescription`, etc.) |
+| Field                      | Purpose                                               |
+| -------------------------- | ----------------------------------------------------- |
+| name, version, description | Plugin identity and release metadata                  |
+| skills                     | Generated skills directory                            |
+| commands                   | Namespaced workflow commands                          |
+| systemPromptPath           | Native system-prompt contribution                     |
+| sessionStart.skill         | Skill loaded at session start, currently orchestrator |
+| skillInstructions          | Plugin-wide instruction text                          |
 
-### Adding a new skill
-
-1. **Create the canonical prompt** - See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide. No frontmatter needed - the canonical source is plain Markdown.
-2. **Add a sync config entry** - Add a new entry in `packages/kimi-code/sync.config.ts` specifying frontmatter (name, description, type, whenToUse triggers), the subagent type mapping (`coder` for write/edit access, `explore` for read-only, or `plan` for research-only), and add the new specialist to the orchestrator's `append` section routing table.
-3. **Add tests** - Add vitest assertions in `packages/kimi-code/tests/manifest.test.ts` (or a new test file) to validate the new skill's frontmatter and any safety constraints.
-4. **Run `vp test`** - Verify everything passes before submitting a PR.
+The generated frontmatter maps each skill to a Kimi subagent profile: explore for read-only work, coder for implementation, or plan for planning and research. Kimi permission rules apply to the session, not to an individual persona.
 
 <Aside type="caution">
-  The "7 specialists" label in the orchestrator skill is load-bearing - the table count and the
-  persona constraints (reviewer no-edit, adventurer read-only) are the trust model. If you add an
-  8th specialist that needs different subagent routing, update both tables and add tests for the new
-  safety constraints.
+  The reviewer and adventurer prompts describe read-only behavior, but prompt text is advisory. If a
+  review-only session needs tool enforcement, configure Kimi's session-wide permission rules and
+  verify that they do not block builder or writer work in the same session.
 </Aside>
 
-## Skill Prescription
+## Add a Skill
 
-Each SKILL.md carries a compact `## Skills` paragraph instead of a long catalog. The paragraph names the skills to load on trigger with their situations in parentheses, plus an always-load entry where the role requires one, and states skip guidance inline:
+1. Add the canonical prompt under packages/core/agent-directives/ or make a platform-only addition only when Kimi requires behavior that does not belong in core.
+2. Add the Kimi transform and subagent profile in sync.config.ts.
+3. Add the skill to the orchestrator routing table when it is a specialist.
+4. Add manifest and safety assertions in packages/kimi-code/tests/.
+5. Run the sync and test commands above.
 
-```markdown
-## Skills
-
-Always: `architecture-decision-framework`. Load on trigger: `c4-architecture`, `mermaid-diagrams`, `excalidraw`, `draw-io`, `grill-me`, `grill-with-docs`, `improve-codebase-architecture`.
-```
-
-```markdown
-## Skills
-
-Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests), `pnpm` (package/lockfile changes), `mcp-builder` (MCP servers), `webapp-testing` (browser-level testing), `frontend-design` (UI build tasks), `commit-work` (staging and commit messages). Skip skill loads for mechanical one-line fixes.
-```
-
-When writing or editing a skill, list only skills that are verifiably present in the environment - canonical catalogs must not reference skills that do not exist. Discovery of niche skills relies on host-side skill descriptions rather than hard-coded catalog lines. The orchestrator's Skill tool loads specialist skills on demand; the Skills paragraph is what the model uses to decide which additional skills to load.
+The seven-specialist roster is part of the current routing contract. If that count or a persona's access model changes, update the routing table and tests together.
 
 ## See Also
 
-- [Contributing Guide](/core/contributing/) - General setup, changesets, and PR process
+- [Installation](/kimi-code/getting-started/installation/)
+- [Quick Start](/kimi-code/getting-started/quick-start/)
+- [Kimi Code README](https://github.com/agustinusnathaniel/maestria/blob/main/packages/kimi-code/README.md)

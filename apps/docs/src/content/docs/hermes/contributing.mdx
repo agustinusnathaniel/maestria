@@ -1,119 +1,63 @@
 ---
 title: Contributing
-description: Project structure, development setup, and how to extend @maestria/hermes.
+description: Hermes-specific package structure, runtime boundaries, and validation for @maestria/hermes.
 ---
 
-`@maestria/hermes` lives in the [maestria monorepo](https://github.com/agustinusnathaniel/maestria) under `packages/hermes/`. It is a Python Hermes plugin using the Hermes Plugin API.
+For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
 
-## Project Structure
+## Package Boundary
 
-```
+The Hermes package is a Python plugin. Its adapter code is hand-authored; its methodology skills are generated from packages/core/agent-directives/:
+
+```text
 packages/hermes/
-├── plugin.yaml                  # Plugin manifest (provides_hooks, middleware, commands, tools)
-├── pyproject.toml               # Python package metadata (src layout)
-├── __init__.py                  # Root shim re-exporting the src/maestria_hermes package
-├── sync.config.ts               # Sync configuration for agent directives
+├── plugin.yaml             manifest and resource inventory
+├── pyproject.toml          Python package metadata
+├── sync.config.ts          directive transforms
 ├── src/maestria_hermes/
-│   ├── __init__.py              # register() entry point + all handlers
-│   ├── permissions.py           # Literal tool allowlists (SONAR/BLITZ_DIRECT/CHILD_SAFE) + native child topology roles
-│   ├── modes.py                 # Mode persistence (atomic JSON writes)
-│   ├── session.py               # Session trust-state registry (trusted top-level / delegated child)
-│   ├── _version.py              # Single source of truth for version
-│   ├── hooks/
-│   │   ├── pre_gateway.py       # Slash-command dispatch before the agent-busy check
-│   │   ├── pre_llm.py           # Mode injection into user messages
-│   │   ├── pre_tool.py          # Lifecycle trust-based tool gating
-│   │   └── transform.py         # Tool result annotations
-│   ├── middleware/
-│   │   └── llm_output.py        # LLM execution wrapper (opt-in mode footer)
-│   ├── tools/
-│   │   └── opencode.py          # OpenCode CLI routing tool
-│   └── skills/                  # SKILL.md files (9 methodology + 3 command skills)
-└── tests/
-    └── test_hooks.py            # Plugin registration + hook behavior tests
+│   ├── hooks/              lifecycle handlers
+│   ├── middleware/         optional LLM output wrapper
+│   ├── tools/              OpenCode routing tool
+│   ├── skills/             generated skills
+│   └── runtime modules     permissions, modes, state, and registration
+└── tests/                  manifest and hook behavior tests
 ```
 
-## Development Setup
+The plugin has no startup probes for external tools or packages. The opencode_route tool delegates to OpenCode only when invoked.
+
+## Design Rules
+
+- Keep reusable methodology in packages/core/agent-directives/, not in Hermes-only prompts.
+- Use Hermes-native APIs for commands, delegation, LLM calls, goals, and memory integration.
+- Keep trust decisions in the native topology and permission boundary. Specialist names do not grant child capabilities.
+- Keep optional integrations such as memory providers and mode-footer output outside the core plugin path.
+
+See [ADR-HM-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/hermes/ADR-HM-001-long-lived-goals-scope.md) for the long-lived goal boundary.
+
+## Test Local Changes
 
 ```bash
-# Clone the monorepo
-git clone https://github.com/agustinusnathaniel/maestria
-cd maestria
-
-# Install dependencies
-pnpm install
-
-# Build
-pnpm build
-```
-
-## Installing Local Changes
-
-To test local changes without publishing:
-
-```bash
-# Point the hermes plugin to your local clone
 hermes plugins install /path/to/maestria/packages/hermes --enable
-```
-
-Or symlink the plugin directory:
-
-```bash
-ln -s /path/to/maestria/packages/hermes ~/.hermes/plugins/maestria-hermes
-```
-
-## Design Principles
-
-1. **Methodology portable, adapter thin** - Plugin code is the Hermes adapter; the real methodology lives in `packages/core/agent-directives/`
-2. **Hermes-native first + memory-agnostic** - Use Hermes' built-in subsystems (`delegate_task`, `ctx.llm`, `/goal`, `kanban_*`) rather than reimplementing them. Memory is a platform concern (8 providers), not a plugin concern.
-3. **Self-contained** - The plugin has no startup probes for external tools or packages. The `opencode_route` tool delegates to OpenCode CLI if installed, but does not verify or probe for it at startup.
-4. **Feel native** - Commands, hooks, and config follow Hermes Plugin API conventions
-
-See the [ADR-HM-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/hermes/ADR-HM-001-long-lived-goals-scope.md) for the design rationale behind specific scope decisions.
-
-## Testing
-
-```bash
-# Run plugin-specific tests
 pytest packages/hermes/
-
-# Run the full monorepo quality gates
-vp check
+ruff check packages/hermes/src/
 ```
 
-### Documentation validation
+For the full workspace, run the commands in the [Contributing Guide](/core/contributing/).
 
-The docs site has no MDX prose test suite. Documentation is validated by the docs build (including link checks) and by exact source checks against the runtime contracts:
+## Extend the Plugin
 
-```bash
-# Build the docs site; runs starlight-links-validator and rejects broken links
-pnpm --filter @maestria/docs build
-```
+| Change | Edit | Also update |
+| --- | --- | --- |
+| Command | A handler and register_command() | plugin.yaml provides_commands |
+| Hook | A module under src/maestria_hermes/hooks/ and register_hook() | plugin.yaml provides_hooks |
+| Skill | The canonical source, unless Hermes-only | sync output and tests |
+| Middleware | A module and register_middleware() | plugin.yaml provides_middleware |
+| Tool | A module and register_tool() | plugin.yaml provides_tools |
 
-Contract accuracy is maintained by exact source checks rather than brittle prose tests. The authoritative sources for the plugin's public surface are:
+When a skill is Hermes-only, place its namespaced SKILL.md under src/maestria_hermes/skills/ and register it with the bare skill name. The namespace is derived from the plugin name.
 
-- `packages/hermes/plugin.yaml` - the `provides_hooks`, `provides_middleware`, `provides_tools`, and `provides_commands` lists
-- `packages/hermes/src/maestria_hermes/__init__.py` - the `register()` entry point wiring
-- `packages/hermes/tests/test_hooks.py` - asserts the manifest (`plugin.yaml`) exactly matches the runtime inventory registered by `register()`
+## Keep the Inventory Accurate
 
-When you change any of the above, update this documentation to match the runtime contract. Verify any documented signature (for example `ctx.register_skill(name, path, description="")`) against the Hermes SDK source before writing it.
+The authoritative runtime inventory is split across plugin.yaml and src/maestria_hermes/**init**.py. The tests compare the manifest to register(). Update both when adding or removing a resource, then run the focused tests and the docs build if the public contract changes.
 
-## Extending
-
-### Adding a command
-
-1. Add the handler in `src/maestria_hermes/__init__.py` or a focused module under `src/maestria_hermes/`.
-2. Register it in `__init__.py`'s `register()` via `ctx.register_command()`
-3. Add the command name to `plugin.yaml`'s `provides_commands` list
-
-### Adding a hook
-
-1. Create `src/maestria_hermes/hooks/<name>.py` with the handler function
-2. Wire it in `__init__.py`'s `register()` via `ctx.register_hook()`
-3. Add the hook name to `plugin.yaml`'s `provides_hooks` list
-
-### Adding a skill
-
-1. Create the `SKILL.md` file in `src/maestria_hermes/skills/<name>/`
-2. Register it via `ctx.register_skill(name, path, description="")` in `__init__.py`. The bare `name` must match `[a-zA-Z0-9_-]+` and contain no `:`; the namespace is derived automatically from the plugin name
-3. Skills are namespaced as `maestria-hermes:<name>` in Hermes (the prefix is the plugin name `maestria-hermes`, not a hand-written value)
+Use the [Hermes commands](/hermes/commands/) and [installation guide](/hermes/getting-started/installation/) for user-facing behavior.

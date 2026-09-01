@@ -1,62 +1,58 @@
 ---
 title: Contributing
-description: Contributing guides for each Maestria plugin - links to platform-specific contributing docs.
+description: Where to edit Maestria methodology, how to regenerate platform projections, and where to find platform-specific contribution guides.
 ---
 
-Each Maestria plugin has its own contributing guide with project structure, source file locations, and build commands. Developer documentation is at the repository root.
+This page explains the shared workflow. The repository root [CONTRIBUTING.md](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) covers development setup, testing, changesets, and pull requests.
 
 ## Canonical Source Workflow
 
-Agent prompts, specialist personas, and global rules are authored in a single canonical source at `packages/core/agent-directives/` and synced to all plugin packages via the config-driven sync pipeline.
+Shared agent prompts, workflow modes, and global rules have one source: packages/core/agent-directives/. Platform packages contain generated projections plus any host-specific adapter code.
 
-**Never edit the generated files** in plugin-specific directories (`packages/opencode/agents/`, `packages/pi/agents/`, `packages/pi/skills/`, `packages/kimi-code/skills/`, `packages/cursor/agents/`, `packages/cursor/skills/`, `packages/claude-code/agents/`, `packages/claude-code/skills/`, `packages/claude-code/commands/`, `packages/codex/skills/`, `packages/agent-plugin/skills/`, or any `rules/` directory) - they are overwritten on every sync.
+Never edit generated agents, skills, commands, rules, or other projection files directly. Your edits will be overwritten by the next sync.
 
-### Editing the Canonical Source
+To change shared methodology:
 
-To modify an agent prompt or global rule:
-
-1. Edit the corresponding file in `packages/core/agent-directives/specialists/` (e.g., `builder.md` for the Builder specialist) or `packages/core/agent-directives/rules.md` for global rules
-2. Run `scripts/sync-all` from the repo root to regenerate all plugin-specific files
-3. Verify with `scripts/check-sync` (also run as part of `vp check`)
-
-The canonical source is plain Markdown without platform-specific syntax, YAML frontmatter, or role prefixes (`@`). Platform adaptations are handled by the sync pipeline's transforms.
-
-### How the Sync Pipeline Works
-
-Each plugin has a `sync.config.ts` that defines how canonical content is adapted:
-
-| Plugin | Config | Transforms |
-| --- | --- | --- |
-| `@maestria/opencode` | `packages/opencode/sync.config.ts` | Adds YAML frontmatter with permissions per specialist |
-| `@maestria/kimi-code` | `packages/kimi-code/sync.config.ts` | Converts to SKILL.md format with a set of text replacements adapting tool names and platform vocabulary, persona prepends, and routing table |
-| `@maestria/pi` | `packages/pi/sync.config.ts` | Text replacements adapting role prefixes and delegation calls (`@adventurer` → `/adventurer`, `task()` → `maestria_subagent()`) |
-| `@maestria/omp` | `packages/omp/sync.config.ts` | Keeps OMP's native `task()` dispatch and adapts role references for generated agents and skills |
-| `@maestria/cursor` | `packages/cursor/sync.config.ts` | Adapts role references, tool names, `Task` dispatch, and read-only frontmatter |
-| `@maestria/claude-code` | `packages/claude-code/sync.config.ts` | Namespaced agents and skills, Claude tool names, and read-only `disallowedTools` fields |
-| `@maestria/codex` | `packages/codex/sync.config.ts` | Namespaced skills, workflow modes as skills, and advisory role boundaries |
-| `@maestria/hermes` | `packages/hermes/sync.config.ts` | Adapts tool names and role references for Hermes skills and its general-purpose runtime |
-| `@maestria/prime-agent` | `packages/prime-agent/sync.config.ts` | Emits Agent Skills frontmatter, plain role references, and advisory read-only notes |
-| `@maestria/agent-plugin` | `packages/agent-plugin/sync.config.ts` | Agent Plugins v1 fixed `skills/<name>/SKILL.md` layout, plain role names, and advisory portable boundaries |
-
-### Running the Docs Site
+1. Edit the matching Markdown file in packages/core/agent-directives/.
+2. Run the sync from the repository root.
+3. Check every projection before committing.
 
 ```bash
-vp run @maestria/docs#dev
+scripts/sync-all
+scripts/check-sync
 ```
 
-This starts the Astro dev server for the user-facing documentation at `apps/docs/`.
+The sync configuration for each package adapts names, frontmatter, tool syntax, and host-specific boundaries. Keep those transforms in the platform package. Keep reusable methodology in core.
 
-## Plugin-Specific Guides
+## Platform Guides
 
-- [@maestria/opencode Contributing](/opencode/contributing/)
-- [@maestria/kimi-code Contributing](/kimi-code/contributing/)
-- [@maestria/pi & omp Contributing](/pi-omp/contributing/)
-- [@maestria/cursor Contributing](/cursor/contributing/)
-- [@maestria/claude-code Contributing](/claude-code/contributing/)
-- [@maestria/codex Contributing](/codex/contributing/)
-- [@maestria/hermes Contributing](/hermes/contributing/)
-- [@maestria/prime-agent Contributing](/prime-agent/contributing/)
-- [@maestria/agent-plugin installation and compatibility](/agent-plugin/)
+Use the platform guide for the package's authored files, generated outputs, runtime boundary, and focused validation:
+
+| Package          | Guide                                            |
+| ---------------- | ------------------------------------------------ |
+| OpenCode         | [Contributing](/opencode/contributing/)          |
+| Kimi Code        | [Contributing](/kimi-code/contributing/)         |
+| Pi and Oh My Pi  | [Contributing](/pi-omp/contributing/)            |
+| Cursor           | [Contributing](/cursor/contributing/)            |
+| Claude Code      | [Contributing](/claude-code/contributing/)       |
+| Codex CLI        | [Contributing](/codex/contributing/)             |
+| Hermes Agent     | [Contributing](/hermes/contributing/)            |
+| Prime Agent      | [Contributing](/prime-agent/contributing/)       |
+| Agent Plugins v1 | [Installation and compatibility](/agent-plugin/) |
+
+## Documentation Site
+
+Run the site locally from the repository root:
+
+```bash
+pnpm dev
+```
+
+After editing docs, build the site to validate MDX and internal links:
+
+```bash
+pnpm --filter @maestria/docs build
+```
 
 ## See Also
 
