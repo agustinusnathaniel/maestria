@@ -57,7 +57,8 @@ export default defineConfig({
             '@maestria/hermes (methodology layer for Hermes Agent), ' +
             '@maestria/prime-agent (Maestria methodology for Prime Agent as Agent Skills ' +
             'plus a verified Prime/Pi extension for workflow modes), and ' +
-            '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX).',
+            '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX), ' +
+            '@maestria/agent-plugin (the portable Agent Plugins v1 skills-only package).',
           details:
             'For dedicated usage guidance, installation instructions, and machine-readable resource links, read [Maestria agent instructions](https://maestria.sznm.dev/agents.md).',
           optionalLinks: [
@@ -68,6 +69,11 @@ export default defineConfig({
             {
               label: 'Maestria When to Use guide',
               url: 'https://maestria.sznm.dev/core/when-to-use/',
+            },
+            {
+              description: 'Installable Agent Plugins v1 package with the standard skills layout.',
+              label: 'Maestria portable Agent Plugin',
+              url: 'https://maestria.sznm.dev/ecosystem/agent-plugin/',
             },
             {
               description: 'Install with `npx maestria install <platform>`.',
@@ -148,6 +154,7 @@ export default defineConfig({
             { label: 'CodeGraph', link: '/ecosystem/codegraph/' },
             { label: 'RTK', link: '/ecosystem/rtk/' },
             { label: 'OpenCode Goal Plugin', link: '/ecosystem/opencode-goal-plugin/' },
+            { label: 'Portable Agent Plugin', link: '/ecosystem/agent-plugin/' },
           ],
           label: 'Ecosystem',
         },

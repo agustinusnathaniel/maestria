@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "maestria",
+  "version": "0.0.0",
+  "description": "Portable Maestria engineering methodology delivered as Agent Skills for compatible clients.",
+  "author": {
+    "name": "agustinusnathaniel",
+    "url": "https://github.com/agustinusnathaniel"
+  },
+  "homepage": "https://maestria.sznm.dev/",
+  "repository": "https://github.com/agustinusnathaniel/maestria",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "ai-engineering",
+    "maestria",
+    "orchestration",
+    "pipeline",
+    "specialists"
+  ]
+}

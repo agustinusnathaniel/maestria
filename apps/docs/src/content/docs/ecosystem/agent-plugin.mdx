@@ -1,0 +1,144 @@
+---
+title: Portable Agent Plugin
+description: Installable Agent Plugins v1 package that delivers Maestria's methodology as standard Agent Skills.
+---
+
+import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
+`@maestria/agent-plugin` is Maestria's portable [Agent Plugins v1](https://agent-plugins.org/) package. It delivers the methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the format.
+
+<Aside type="tip" title="This is an artifact, not a CLI platform">
+  The package has no Maestria CLI platform ID because it does not own a runtime lifecycle. The
+  consuming client owns installation, discovery, invocation, permissions, session state, and trust.
+  Use the Maestria CLI for native runtime integrations; use this package when the client supports
+  the portable Agent Plugins format.
+</Aside>
+
+## The portable path
+
+The package adds a standard distribution boundary to the existing canonical-source pipeline:
+
+```text
+packages/core/agent-directives/
+          |
+          v
+@maestria/agent-plugin
+  plugin.json + skills/
+          |
+          v
+Compatible Agent Plugins clients
+```
+
+Native packages remain available when you need runtime-specific agents, commands, hooks, permissions, extensions, or executable integrations.
+
+## What it contains
+
+The package contains 14 generated skills:
+
+| Group | Skills |
+| --- | --- |
+| Specialists | `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer` |
+| Coordination | `orchestrator`, `global-rules`, `handoff`, `iteration-limits` |
+| Workflow modes | `fein`, `sonar`, `blitz` |
+
+Every skill uses the standard `skills/<name>/SKILL.md` layout and required `name` and `description` frontmatter. The portable projection replaces Maestria's internal role references with plain sibling skill names.
+
+## What it does not contain
+
+Agent Plugins v1 defines portable skills and MCP configuration. This package intentionally declares skills only:
+
+- no native executable agents or subagent registration
+- no slash-command component
+- no lifecycle hooks or tool interception
+- no MCP server
+- no permission, sandbox, trust, or session-state implementation
+- no client-specific extension namespace
+
+The role boundaries are methodology guidance. They are not a security boundary.
+
+## Package layout
+
+```text
+@maestria/agent-plugin/
+├── plugin.json
+└── skills/
+    ├── adventurer/SKILL.md
+    ├── architect/SKILL.md
+    ├── builder/SKILL.md
+    ├── diagnose/SKILL.md
+    ├── fein/SKILL.md
+    ├── global-rules/SKILL.md
+    ├── handoff/SKILL.md
+    ├── iteration-limits/SKILL.md
+    ├── orchestrator/SKILL.md
+    ├── planner/SKILL.md
+    ├── reviewer/SKILL.md
+    ├── sonar/SKILL.md
+    └── writer/SKILL.md
+```
+
+`plugin.json` is at the package root because that is the portable manifest location. The manifest does not contain a client-specific `skills` path or runtime configuration.
+
+## Installation
+
+### Use a compatible client
+
+Use the client's Agent Plugins installation flow with the published `@maestria/agent-plugin` package or an extracted package directory. The client must receive the directory containing `plugin.json`, not only the nested `skills/` directory.
+
+There is no universal `maestria install agent-plugin` command. Agent Plugins deliberately leaves distribution and lifecycle behavior to each client, and this package has no runtime-specific state for the Maestria CLI to manage.
+
+### Use a local checkout
+
+<Steps>
+
+1. Regenerate the package from the canonical directives:
+
+   ```bash
+   scripts/sync-all
+   ```
+
+2. Point the compatible client at this directory:
+
+   ```text
+   /path/to/maestria/packages/agent-plugin/
+   ```
+
+3. Start or reload the client, then ask it to load the `global-rules` or `orchestrator` skill.
+
+</Steps>
+
+## Using the skills
+
+Load `global-rules` once at the start of work when the client supports explicit skill loading. Use `orchestrator` to choose the smallest safe route, then load the relevant specialist skill:
+
+| Need                           | Skill        |
+| ------------------------------ | ------------ |
+| Understand unfamiliar code     | `adventurer` |
+| Choose an approach             | `architect`  |
+| Implement one focused change   | `builder`    |
+| Trace a regression             | `diagnose`   |
+| Plan multi-stage work          | `planner`    |
+| Independently review work      | `reviewer`   |
+| Write structured documentation | `writer`     |
+
+The exact invocation syntax is client-specific. Follow the consuming client's skill-loading and permission model.
+
+## Resources
+
+<CardGrid>
+  <LinkCard
+    title="Agent Plugins specification"
+    description="Portable manifest, fixed component locations, and client-conformance rules."
+    href="https://agent-plugins.org/specification"
+  />
+  <LinkCard
+    title="Package source"
+    description="Manifest, generated skills, installation guide, and sync configuration."
+    href="https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugin"
+  />
+  <LinkCard
+    title="Core contributing guide"
+    description="Canonical directives, generated projections, and the sync pipeline."
+    href="/core/contributing/"
+  />
+</CardGrid>

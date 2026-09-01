@@ -1,0 +1,50 @@
+{
+  "name": "@maestria/agent-plugin",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Maestria's portable Agent Plugins v1 package: workflow methodology as Agent Skills",
+  "keywords": [
+    "agent-plugins",
+    "agent-skills",
+    "ai",
+    "maestria",
+    "orchestration",
+    "pipeline",
+    "portable"
+  ],
+  "homepage": "https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/agustinusnathaniel/maestria/issues"
+  },
+  "license": "MIT",
+  "author": "agustinusnathaniel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agustinusnathaniel/maestria.git",
+    "directory": "packages/agent-plugin"
+  },
+  "files": [
+    "plugin.json",
+    "skills",
+    "INSTALL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

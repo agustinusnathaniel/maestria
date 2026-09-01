@@ -38,12 +38,13 @@ Prefer small, verifiable changes over sweeping rewrites. Each change should pass
 - **`packages/opencode/`** - Depends on `@maestria/core` via the sync pipeline. Uses standard OpenCode SDK APIs only. Its `agents/` directory is **auto-generated** from core via the sync pipeline.
 - **`packages/claude-code/`** - Declarative Claude Code projection. Its agents, skills, and commands are **auto-generated** from core; the manifest and package docs are hand-authored.
 - **`packages/codex/`** - Codex skills projection. Its skills are **auto-generated** from core; the manifest and package docs are hand-authored.
+- **`packages/agent-plugin/`** - Portable Agent Plugins v1 projection. Its `skills/` directory is **auto-generated** from core; the root `plugin.json` and package docs are hand-authored. It declares skills only and must not absorb host runtime behavior.
 - **`packages/kimi-code/`** - Depends on `@maestria/core` via the sync pipeline. Follows Kimi Code platform conventions.
 - **`packages/pi/`** - Depends on `@maestria/core` via the sync pipeline. Must not depend on any Node.js APIs (Pi is a terminal prompt, not an SDK plugin).
 
 ### Canonical source flow
 
-The 8 pipeline agents (7 specialists + orchestrator) are defined in `packages/core/agent-directives/specialists/` and synced to plugin agent/skill directories (`packages/opencode/agents/`, `packages/claude-code/agents/`, `packages/codex/skills/`, etc.) via `scripts/sync-all`. **Always edit the canonical source, never the generated copy.** See `packages/core/agent-directives/README.md` for the content ownership guide. Reference ADR CORE-005 for the sync bridge design.
+The 8 pipeline agents (7 specialists + orchestrator) are defined in `packages/core/agent-directives/specialists/` and synced to plugin agent/skill directories (`packages/opencode/agents/`, `packages/claude-code/agents/`, `packages/codex/skills/`, `packages/agent-plugin/skills/`, etc.) via `scripts/sync-all`. **Always edit the canonical source, never the generated copy.** See `packages/core/agent-directives/README.md` for the content ownership guide. Reference ADR CORE-005 for the sync bridge design.
 
 ## Decision-Making Guide
 
@@ -67,7 +68,7 @@ Read the relevant ADRs before modifying plugin architecture, sync pipeline, or a
 
 | Area | Key ADRs | When to read |
 | --- | --- | --- |
-| Core | CORE-002 (Plugin Architecture), CORE-005 (Core Sync) | Plugin loading, agent directives |
+| Core | CORE-002 (Plugin Architecture), CORE-005 (Core Sync), CORE-022 (Portable Agent Plugins) | Plugin loading, agent directives, portable package projection |
 | OpenCode | OC-001 (Tool Permissions), OC-003 (Workflow Modes) | Agent frontmatter, chat hooks |
 | Kimi Code | KC-000, KC-001 | Kimi platform work |
 | Pi | PI-001 (Rules Injection), PI-002 (Compaction) | Pi platform work |

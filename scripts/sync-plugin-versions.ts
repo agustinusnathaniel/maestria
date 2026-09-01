@@ -29,6 +29,7 @@
  *   previous release helper did.
  *
  * Targets:
+ * - @maestria/agent-plugin packages/agent-plugin/package.json -> plugin.json
  * - @maestria/hermes       packages/hermes/package.json -> src/maestria_hermes/_version.py, plugin.yaml
  * - @maestria/claude-code  packages/claude-code/package.json -> .claude-plugin/plugin.json
  * - @maestria/codex        packages/codex/package.json -> .codex-plugin/plugin.json
@@ -63,6 +64,7 @@ const VERSION_PY_HEADER = '"""Package version -- single source of truth."""';
 export type Target = [packageDir: string, manifests: string[]];
 
 export const TARGETS: Target[] = [
+  [path.join(ROOT, 'packages', 'agent-plugin'), [path.join('plugin.json')]],
   [
     path.join(ROOT, 'packages', 'hermes'),
     [path.join('src', 'maestria_hermes', '_version.py'), path.join('plugin.yaml')],

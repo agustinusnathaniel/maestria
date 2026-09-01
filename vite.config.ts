@@ -125,7 +125,11 @@ export default defineConfig({
         input: [
           'scripts/sync-plugin-versions.ts',
           'packages/*/package.json',
-          'packages/claude-code/.claude-plugin/plugin.json',
+          'packages/*/plugin.json',
+          'packages/*/.claude-plugin/plugin.json',
+          'packages/*/.codex-plugin/plugin.json',
+          'packages/*/.cursor-plugin/plugin.json',
+          'packages/*/kimi.plugin.json',
           'packages/hermes/plugin.yaml',
           'packages/hermes/src/maestria_hermes/_version.py',
         ],
@@ -147,7 +151,14 @@ export default defineConfig({
           'packages/core/agent-directives/**/*.md',
           'packages/*/sync.config.ts',
         ],
-        output: ['packages/*/agents/**', 'packages/*/prompts/**', 'packages/*/rules/**'],
+        output: [
+          'packages/*/agents/**',
+          'packages/*/commands/**',
+          'packages/*/prompts/**',
+          'packages/*/rules/**',
+          'packages/**/skills/**',
+          'packages/*/SYSTEM.md',
+        ],
       },
       'test-sync-plugin-versions': {
         cache: true,

@@ -95,6 +95,19 @@ describe('404 page', () => {
   });
 });
 
+describe('portable Agent Plugin documentation', () => {
+  it('documents the artifact boundary and installation path', async () => {
+    const { full } = await readDoc('ecosystem/agent-plugin.mdx');
+
+    expect(full).toContain('@maestria/agent-plugin');
+    expect(full).toContain('plugin.json');
+    expect(full).toContain('skills/<name>/SKILL.md');
+    expect(full).toContain('There is no universal `maestria install agent-plugin` command');
+    expect(full).toContain('scripts/sync-all');
+    expect(full).toContain('client-specific');
+  });
+});
+
 describe('shipped content hygiene', () => {
   it.each([['404.mdx'], ['about.mdx'], ['contact.mdx'], ['privacy.mdx']])(
     '%s has no placeholder or debug markers',
