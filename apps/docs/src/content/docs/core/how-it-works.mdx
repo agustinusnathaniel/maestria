@@ -7,100 +7,77 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-Maestria is built on **Harness Engineering**: the principle that **Agent = Model + Harness**. The model provides raw capability. The harness provides reliability through methodology, rules, and quality gates. This page explains how the harness works and separates its intended benefits from effects that emerge on some platforms.
+Maestria applies **Harness Engineering**: the model supplies capability, while the harness supplies the method that makes work repeatable. In Maestria, the harness is a dispatcher, a set of specialist roles, explicit handoffs, and independent verification.
 
-As stated in the project's [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md): "Most agent failures are harness failures, not model failures."
+The short version is:
 
-## How It Works
+```text
+request -> route -> focused work -> evidence -> result
+```
 
-The harness is built around a dispatcher that delegates work to 7 specialized agents. Each agent handles one domain - reconnaissance, architecture, implementation, planning, diagnosis, review, or documentation. Work flows through pipeline stages with structured handoffs between them.
+The [Pipeline & Roles](/core/pipeline/) page describes the mechanics. This page explains the intended benefits and their limits.
 
-See [Pipeline & Roles](/core/pipeline/) for the full pipeline breakdown.
+## The Core Model
 
-## Why It Works
+The orchestrator decides which work is needed and delegates it to one or more of the 7 specialists. A specialist returns a focused artifact: reconnaissance, a decision, a plan, an implementation, a diagnosis, a review, or documentation.
 
-The dispatcher architecture addresses a core problem in AI-assisted development: a single agent trying to be good at everything ends up average at everything. A single context window carries reconnaissance data, design decisions, implementation details, and review criteria. Compressing all of this into one window degrades performance on every front.
+| Boundary             | Purpose                                                              |
+| -------------------- | -------------------------------------------------------------------- |
+| Focused specialist   | Keeps one concern and its evidence in view                           |
+| Handoff              | Carries the context, constraints, acceptance evidence, and next step |
+| Stage gate           | Stops the workflow when the output is incomplete or unsafe           |
+| Independent reviewer | Checks the maker's result without editing it                         |
 
-**Single-responsibility agents.** Each specialist masters one role. The adventurer focuses on codebase reconnaissance. The architect evaluates trade-offs. The reviewer checks completed work. Each has prompts and tools sized to its domain.
+Direct execution remains valid for small, familiar work. Delegation earns its cost only when it adds information, reduces risk, or provides an independent check.
 
-**Focused context per stage.** Each specialist runs in its own task or session with role-specific prompts. This can reduce role contamination, but the exact context inherited by a subagent depends on the platform. A separate context is not free: it can add prompt tokens, cache reads, and waiting time.
+## Designed Benefits
 
-**Stage gating.** Each pipeline stage catches a specific type of error before it reaches the next stage. Design mistakes are caught before implementation starts. Implementation issues are caught before review. The error is stopped where it is cheapest to fix.
+| Benefit | How the harness provides it |
+| --- | --- |
+| Focus | Specialists receive a narrow responsibility instead of one prompt that mixes discovery, design, implementation, and review. |
+| Earlier correction | Thinkers can expose missing context or a bad approach before a worker spends time implementing it. |
+| Independent validation | The reviewer is a separate role with read-only responsibilities and different incentives from the maker. |
+| Bounded failure | Repair loops use a verifiable stopping condition, normally allow about three attempts, and escalate when progress stops. |
+| Consistent expectations | Global rules define evidence, authorization, escalation, and commit behavior across the native integrations. |
 
-**Iteration limits.** Without bounds, an agent can loop indefinitely on an unsolvable problem. Each repair loop has a practical normal bound of three rounds. The bound may be extended only when the latest attempt shows observable progress; otherwise the pipeline fails loud with a structured escalation instead of looping.
+These are design goals, not guarantees. Quality still depends on the task, model, host runtime, and quality of the evidence produced.
 
-## Primary Benefits
-
-These benefits were explicit design goals. The harness was built to deliver them.
-
-**Global rules.** Native integrations inject cross-cutting directives into their sessions, so rules about commit policies, tool selection, and escalation format apply consistently without manual prompt setup. The portable package exposes the same contract as the `global-rules` skill; its client controls discovery and activation.
-
-**Maker/checker split.** The builder and reviewer are structurally different agents with different prompts, tools, and permissions. The specialist that writes the code never reviews it. A model grading its own work is too lenient.
-
-<Aside type="caution">
-  The maker/checker split is non-negotiable. Always use a different specialist for review. See
-  [Pipeline & Roles](/core/pipeline/#makerchecker-split) for details.
+<Aside type="caution" title="The pipeline has a cost">
+  Every delegated stage adds model work, context transfer, and waiting time. Use the [usage decision
+  guide](/core/when-to-use/) to decide whether that cost is justified.
 </Aside>
 
-**Mode system.** Three workflow modes make the quality-speed trade-off explicit where the platform supports them. `fein` runs the full pipeline, `sonar` runs research only, and `blitz` uses direct execution when the host permits it - otherwise the permitted specialist - skipping optional recon/design and keeping required safeguards/review. Their activation, persistence, and tool enforcement vary by platform.
+## A Typical Full Route
 
-**Portable plugins.** The [Agent Plugin package](/agent-plugin/) carries the methodology as standard skills for compatible clients. Native packages adapt the same role contracts to OpenCode, Kimi Code, Pi, OMP, Cursor, Hermes, Claude Code, and Codex CLI. Portability means adapted behavior, not identical runtime behavior.
+```text
+orchestrator
+    -> thinker: adventurer, architect, planner, or diagnose
+    -> worker: builder or writer
+    -> verifier: reviewer
+```
 
-## Emergent Benefits
+The route is adaptive. A small change may go directly to a worker. A bug may start with diagnose. A design uncertainty may require architect before builder. A research-only request stops after the thinker stage.
 
-These benefits were not design goals. They are structural side effects of the dispatcher architecture, and they depend on the model and platform in use.
+The verifier accepts the result only when the stated acceptance evidence is present. If it finds an implementation defect, the worker repairs it. If it finds a design defect, the orchestrator returns to the thinker instead of asking the worker to guess.
 
-### Context Engineering
+## What Depends on the Platform
 
-A typical AI coding session starts with a single large context window. Every action competes for the same limited space. As the window fills, the model's ability to reason about any single concern degrades.
+Native integrations can provide stronger runtime boundaries, such as read-only permissions, lifecycle hooks, or native subagents. The [Agent Plugin package](/agent-plugin/) provides the skills and contracts, while the consuming client owns discovery, permissions, activation, and session behavior.
 
-The dispatcher model solves this through allocation. The orchestrator's context stays lean because it only makes routing decisions. Each specialist runs in its own task or session with role-specific prompts, but the exact context inherited by a subagent depends on the platform.
+Platform behavior also differs in context inheritance and parallel dispatch. A new specialist session may still inherit part of its parent's context, so treat the handoff as the reliable boundary rather than assuming isolation.
 
-| Property | Monolithic session | Maestria pipeline |
-| --- | --- | --- |
-| Context allocation | One window for all roles | Separate tasks, with inheritance varying by platform |
-| Role contamination | Build assumptions carry into review | Role prompts reduce it; inherited context can reintroduce it |
-| Effective work per token | Degrades as window fills | Depends on the model, platform, and task |
+Read the relevant platform guide before relying on a permission or lifecycle claim. The core methodology describes the intended contract; each adapter documents what its host can actually enforce.
 
-Total token usage can be substantially higher than a direct session because every delegated stage has its own model turn and context. The trade-off is worthwhile only when focused roles, handoffs, or independent review reduce enough risk to justify that overhead. See [When to use Maestria](/core/when-to-use/) before choosing the full pipeline.
+## What It Does Not Promise
 
-**Handoff contracts** between stages structure each transition. Each stage produces a focused artifact that preserves what matters for the next stage rather than forwarding raw context.
-
-### Parallel Fan-Out
-
-The orchestrator delegates 3-5 independent tasks to specialists in a single turn. A monolithic agent does this sequentially: explore first, then design, then plan. Each step waits for the previous one to finish.
-
-The dispatcher runs independent stages at the same time. The adventurer maps the codebase, the architect evaluates approaches, and the planner scopes milestones. All run at the same time. Wall-clock time shrinks because independent work runs in parallel.
-
-Separate specialist sessions can reduce cross-contamination, but the degree of isolation depends on the platform. Some runtimes inherit parent context into subagents, so treat the handoff contract as a boundary rather than assuming a clean context.
-
-### One-Shot Work
-
-One-shot work means the pipeline is designed to get things right on the first pass through each stage, without expensive rework loops.
-
-**Stage gating.** Each pipeline stage prevents a specific class of errors from propagating:
-
-- **Reconnaissance** (Adventurer) catches design misunderstandings before code is written.
-- **Design** (Architect, Planner) validates the approach before implementation starts.
-- **Implementation** (Builder) produces the artifact against a clear spec.
-- **Review** (Reviewer) catches implementation issues before they merge.
-
-Finding a problem earlier usually reduces rework. The pipeline catches each error class at the stage best equipped to identify it.
-
-The mode system controls which pipeline stages run. There are three modes: `fein` (full pipeline), `sonar` (research only), and `blitz` (direct execution when the host permits it, otherwise the permitted specialist). See [Primary Benefits](#primary-benefits) for how the mode system works.
-
-### Bounded Failure
-
-One-shot work aims to get things right the first time. Bounded failure governs what happens when things go wrong: fail fast, fail informatively.
-
-The pipeline does not just prevent errors. It bounds them. Each delegated repair loop normally allows three rounds. If the latest attempt shows observable progress, the bound may be extended; without observable progress, the pipeline stops and escalates.
-
-The escalation follows a fixed format: "Tried X, Y, Z. Blocked by cause. Need input." This converts what would be a silent failure into a structured signal. The system does not burn tokens on impossible tasks.
-
-Without bounds, agent systems can loop indefinitely on unsolvable problems. A builder might rewrite the same module ten times, each attempt as confident as the first. The bound makes the system predictable in failure mode. It stops and asks for help instead of consuming resources on a hopeless iteration.
+- It does not make every task faster than direct execution.
+- It does not replace the host's sandbox, permission system, or model configuration.
+- It does not make advisory rules into security controls.
+- It does not remove the need for tests, evidence, or human judgment on consequential work.
 
 ## See Also
 
-- [Pipeline & Roles](/core/pipeline/): the Thinker-Worker-Verifier pipeline
-- [Specialist Reference](/core/agents/): the 7 specialists and their domains
-- [Workflow Patterns](/core/workflow-patterns/): practical patterns for using the pipeline
+- [Specialist Reference](/core/agents/)
+- [Pipeline & Roles](/core/pipeline/)
+- [Workflow Patterns](/core/workflow-patterns/)
+- [When to use Maestria](/core/when-to-use/)

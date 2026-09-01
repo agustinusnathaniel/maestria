@@ -1,199 +1,113 @@
 ---
 title: Workflow Patterns
-description: Practical patterns for using Maestria specialists together - from simple tasks to complex multi-step workflows.
+description: Practical patterns for choosing and combining Maestria routes without adding unnecessary delegation.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-For routed or full-pipeline work, the 7 specialists can work as a team. The orchestrator manages that flow - it decomposes complex requests into phases, delegates each phase to the appropriate specialist, and verifies completion before moving on.
+Use this page to choose a useful starting point for a task. Read [Specialist Reference](/core/agents/) for role details, [Pipeline & Roles](/core/pipeline/) for the execution model, and [When to use Maestria](/core/when-to-use/) for the cost and risk trade-off.
 
-> This page builds on the [specialist roles and pipeline model](/core/agents/) documented in the Specialist Reference. When selected, the pipeline routes work through thinker → worker → verifier roles with dynamic sequencing.
+## Match the Task to a Route
 
-## Explore a codebase
+| Task | Start with | Continue with |
+| --- | --- | --- |
+| Familiar, atomic change | Direct execution | Review only if the risk warrants it |
+| Unfamiliar codebase or dependency path | adventurer | Implement directly or hand the map to builder |
+| Architecture or technology choice | architect | Record the decision, then implement |
+| Multi-step feature or migration | planner | builder for each atomic milestone, then reviewer |
+| Bug with an unclear cause | diagnose | Implement the confirmed fix, then review |
+| Documentation or release notes | writer | Review the rendered or published result |
+| Pre-merge validation | reviewer | Fix findings, then rerun the relevant checks |
+| Complex or high-risk change | Full pipeline | Stop when the verifier accepts the result |
 
-Send **Adventurer** to map unfamiliar code before making changes.
+The full pipeline is a trade-off, not a default. Add a stage when it supplies missing information, reduces a material risk, or creates a useful independent check.
 
-> Adventurer: Map the API layer - find all routes, middleware, and error handlers.
+## Keep Handoffs Small
 
-The Adventurer traces call chains, maps modules, and reports back with a structured reconnaissance report. Start here whenever you edit code you haven't worked with before.
+A handoff should give the next specialist enough information to act without copying the entire conversation:
 
-## Make a design decision
+```text
+Outcome: what the recipient must produce
+Context and constraints: relevant files, decisions, and limits
+Acceptance/evidence: how to tell the result is complete
+Next step: who consumes the result
+```
 
-Delegate to **Architect** when you need to evaluate options.
+Prefer links to existing artifacts. Omit empty fields and keep the brief proportional to the task.
 
-> Architect: Should we use REST or GraphQL for the new public API? Evaluate trade-offs.
+Useful handoffs look like this:
 
-The Architect returns a trade-off analysis with a clear recommendation, often accompanied by a lightweight Architecture Decision Record.
+> Adventurer: Map the authentication entry points and session writes in src/auth/. Return file paths, call paths, and the smallest relevant risks. Do not edit files. Architect receives the map.
 
-## Plan a feature
+> Architect: Compare the two proposed session-refresh approaches. Recommend one against the repository's constraints and record rejected alternatives. Builder receives the decision.
 
-Get a phased plan from **Planner** before implementing multi-step features.
+> Builder: Implement the accepted session-refresh design as one atomic change. Run the focused tests and report changed files, evidence, and any unresolved assumptions. Reviewer receives the result.
 
-> Planner: Plan the implementation for a multi-tenant organization feature.
+> Reviewer: Check the changed session code against the acceptance criteria and run the focused tests. Report only actionable findings with evidence and severity. Do not edit files.
 
-The Planner breaks work into ordered milestones with verification criteria and rollback points. Plans are pure strategy - the orchestrator consumes them and dispatches each phase to the appropriate specialist.
+## Common Sequences
 
-## Build something
+### Understand, Then Implement
 
-Use the orchestrator for end-to-end feature work when the task is unfamiliar, multi-module, or high risk. For a small, known change, direct execution is usually cheaper and faster.
+Use this sequence when the code is unfamiliar but the change itself is clear:
 
-> Orchestrator: We need a WebSocket-based notification system. Explore, plan, implement, and review.
+```text
+adventurer -> direct implementation or builder -> reviewer when needed
+```
 
-The orchestrator delegates to the right specialists in sequence, following the pipeline model. Inside the full pipeline, code changes go through Builder and reviews through Reviewer. Direct execution skips both when the change does not justify the chain.
+Stop reconnaissance when the entry points, dependencies, and relevant constraints are known. Do not turn a small edit into a full pipeline because the repository is large.
 
-## Fix a bug
+### Decide, Then Implement
 
-Start with **Diagnose** to find the root cause, then hand the fix to the orchestrator.
+Use architect when multiple approaches have meaningful consequences:
 
-> Diagnose: Users are getting a 503 error when uploading files over 10MB. Find the root cause.
+```text
+architect -> builder -> reviewer
+```
 
-Then:
+Use planner instead when the approach is already chosen but delivery needs ordered milestones, verification criteria, or rollback points.
 
-> Orchestrator: Fix the upload issue that Diagnose identified.
+### Diagnose, Then Fix
 
-The Diagnose specialist runs a systematic tracing loop - error to source to git history to blast radius to minimal fix to prevention - and reports the root cause with a suggested fix.
+Use diagnose when the symptom does not identify the cause:
 
-## Review code
+```text
+diagnose -> builder or direct implementation -> reviewer
+```
 
-Let **Reviewer** check your changes before committing.
+The implementation stage should receive the confirmed cause, affected paths, smallest safe fix, and prevention evidence. Do not ask the builder to repeat an unresolved investigation.
 
-> Reviewer: Review my current changes before I commit.
+### Research Only
 
-The Reviewer performs a general quality and safety review across correctness, edge cases, security, performance, maintainability, test coverage, assumptions, and style as relevant. The Reviewer is read-only and never edits files directly.
+Use the research route when the output is understanding or a decision, not a code change:
 
-The Reviewer also prioritizes observing behavior over reasoning about correctness - each review includes a command, API request, or browser interaction that produces visible proof.
+```text
+adventurer -> architect or planner -> stop
+```
 
-## Risk-matched review
+sonar packages this boundary where the platform supports it. A research result should state what was learned, what remains uncertain, and what would justify implementation.
 
-For a full review, the orchestrator dispatches one independent general Reviewer. It adds a specialist lens only when the requirements or diff show a matching security, performance, architecture, or UX risk. This avoids generic reviewer fan-out while adding focused scrutiny where it is justified.
+## Review Proportionally
 
-> Orchestrator: Review this authentication change generally, with a security lens for injection risks, auth bypasses, and data exposure. Orchestrator: Review this dashboard change generally, with a UX lens for accessibility, interaction patterns, and responsive states.
+Use one independent reviewer for ordinary pre-merge validation. Add a security, architecture, performance, or UX lens only when the requirements or diff expose that risk. The maker must not review the same artifact.
 
-Available lenses: **Security**, **Architecture**, **Performance**, **UX**, and **General** (the full checklist). The general review always runs first; specialist lenses are added only when the corresponding risk is present. Reviews are blind and independent, and each lens has exclusive scope - no two reviewers cover the same ground.
-
-### Review triage
-
-After all lenses return, the orchestrator triages the combined feedback into three categories:
-
-- **[fix]** - Actionable issues dispatched to Builder for implementation
-- **[dismiss]** - Nits resolved with a comment, no code change needed
-- **[escalate]** - Ambiguous or high-risk issues surfaced to the user via question
-
-Conflict resolution: if lenses disagree on the same issue, the more conservative categorization wins. If any lens escalates, the whole issue escalates.
-
-### When to add a specialist lens
-
-| General review only           | General review plus a specialist lens              |
-| ----------------------------- | -------------------------------------------------- |
-| Trivial changes, docs, config | Security-sensitive or performance-critical changes |
-| Diffs under ~100 lines        | Architecture changes with boundary or seam risk    |
-| Pure documentation            | UX changes involving accessibility or interaction  |
-
-Mandatory review after every Builder change is the default inside the full pipeline. It is an intentional cost: use a direct specialist or a single reviewer when the change does not justify a complete chain.
-
-## Document something
-
-Delegate READMEs, ADRs, changelogs, and API docs to **Writer**.
-
-> Writer: Write a README for the new caching package.
-
-The Writer follows structured patterns matched to the document type - purpose, usage, details. Description in, complete document out.
-
-## Investigate an uncertain problem
-
-Use **Parallel speculation** only when the right approach is genuinely unclear and multiple independent perspectives would materially improve the decision.
-
-> Orchestrator: I need to understand why the auth module keeps failing under load. Adventurer, map the entry points. Architect, evaluate the auth architecture. Diagnose, trace the failure path.
-
-The orchestrator dispatches the question to independent specialists with different lenses, then synthesizes the results before choosing a direction. Use this pattern only when:
-
-- The root cause of a problem is genuinely unknown
-- A design decision has ambiguous trade-offs
-- You need to explore an unfamiliar domain from multiple angles
-
-For a clear, low-risk task, use one route and let the assigned specialist or host agent reason and act without unnecessary fan-out.
-
-This is different from parallel exploration (which fans out independent tasks). Parallel speculation fans out the _same_ question to get different perspectives on it.
-
-## Test an uncertain approach
-
-Use **Experiment framing** when a task has high uncertainty - unknown dependency, unvalidated approach, first exploration of a domain. Frame it as an experiment rather than a delivery.
-
-> Orchestrator: Experiment: Can we replace the in-memory cache with Redis without increasing p99 latency? Hypothesis: Redis will add < 5ms to cache lookups. Termination: if latency exceeds 5ms, revert.
-
-The orchestrator sets an explicit hypothesis and termination condition. The output is a validated (or invalidated) claim, not shipped code. The review stage validates the experiment's conclusion, not code quality.
-
-Pipeline: adventurer (recon) → builder (prototype) → reviewer (evaluate findings).
-
-## Parallel exploration
-
-Fan out multiple Adventurers to understand several areas at once.
-
-> Orchestrator: I need to understand both the auth system and the payment system. Map them in parallel.
-
-The orchestrator spawns independent exploration tasks simultaneously and presents a combined report.
-
-## Pipeline reference
-
-See [Pipeline & Roles](/core/pipeline/) for the full pipeline diagram and role descriptions.
-
-<Aside type="tip">
-  Choose the smallest safe route. Use direct execution for known, low-risk work when the host
-  permits it; use recon or design when the code is unfamiliar or the approach is uncertain.
+<Aside type="caution" title="Bound the loop">
+  Define the acceptance evidence before delegating. If a repair attempt produces no new evidence or
+  the same cause recurs, change strategy or escalate instead of repeating the same handoff.
 </Aside>
 
-## Project Workflows (.maestria/)
+## Project-Specific Workflows
 
-Projects using maestria's agent directives can define custom workflow instructions in `.maestria/workflow.md` and `.maestria/rules.md` at the project root. These files tell the orchestrator how to sequence delegation for that specific project.
+Projects may add .maestria/workflow.md for sequencing and .maestria/rules.md for local non-negotiable constraints. The orchestrator reads them when it starts work.
 
-### How It Works
+- workflow.md describes project context, required reading, and quality gates.
+- rules.md adds constraints that apply to delegated work.
+- Runtime safeguards, selected-route protections, review independence, bounded retries, and commit authorization still take precedence.
 
-The orchestrator checks for these files when starting work on a project by delegating to `@adventurer`. If found:
-
-- **`.maestria/workflow.md`** - Guides delegation sequencing. The orchestrator follows this to determine what to do and in what order (e.g., read the README first, check recent commits, read relevant ADRs before implementing).
-- **`.maestria/rules.md`** - Project-specific non-negotiable rules that supplement the core rules. These are propagated to all subagents via delegation prompts.
-
-### Precedence
-
-Runtime authority, selected-route safeguards, maker/checker review where applicable, bounded repair, and the commit protocol always take precedence over project instructions. If a conflict arises, the core principle wins.
-
-### Example
-
-Here's a minimal `.maestria/workflow.md`:
-
-```
-## Sequencing
-
-### 1. Understand Context
-Delegate to @adventurer:
-- Read README.md for project overview
-- Check recent commits (git log --oneline -10)
-- Read package.json and workspace config
-
-### 2. Read Relevant ADRs
-Delegate to @adventurer to read ADRs in docs/adr/ before implementing.
-
-### 3. Implement and Test
-Delegate to @builder with the project's quality pipeline:
-pnpm typecheck
-pnpm test
-pnpm build
-```
-
-### When to Use
-
-Create a `.maestria/workflow.md` when your project has:
-
-- Specific conventions for how work should be sequenced (recon → design → implement → docs)
-- Project-specific quality gates (particular test commands, linting, build steps)
-- A structured ADR or decision documentation process
-- Multiple packages with different conventions
-
-The file is entirely opt-in - projects without `.maestria/` files see no change in agent behavior.
+Keep these files short. Put reusable methodology in the canonical Maestria directives, project decisions in ADRs, and one-off task details in the handoff.
 
 ## See Also
 
 - [Specialist Reference](/core/agents/)
 - [Pipeline & Roles](/core/pipeline/)
-- Orchestrator prompt "Project Workflows (.maestria/)" section
-- Core agents documentation
+- [When to use Maestria](/core/when-to-use/)
