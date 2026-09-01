@@ -20,6 +20,7 @@ Add `@maestria/agent-plugin` as a first-class public package with these properti
 - The package contains no `mcp.json`, executable agent registration, commands, hooks, or client-specific extension data.
 - `packages/core/agent-directives/` remains the content source. `packages/agent-plugin/sync.config.ts` is the projection adapter, and `scripts/sync-all` remains the generation entrypoint.
 - The package version and portable manifest version are synchronized by `scripts/sync-plugin-versions.ts` and released through Changesets.
+- The Maestria CLI exposes `plugin validate` and `plugin install` as artifact operations. It validates local or npm sources and stages a package in the Maestria cache or an explicit directory without registering the artifact as a runtime platform.
 
 Native packages remain independently published and continue to provide runtime-specific capabilities. The Agent Plugins package is additive and does not replace `@maestria/opencode`, `@maestria/codex`, `@maestria/cursor`, `@maestria/claude-code`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/omp`, `@maestria/prime-agent`, or the Hermes distribution.
 
@@ -36,7 +37,7 @@ Native packages remain independently published and continue to provide runtime-s
 
 - Do not use Agent Plugins v1 as Maestria's canonical internal representation. Native runtime adapters need richer fields and behavior.
 - Do not build a universal runtime or merge Node, Python, and host SDK dependencies into one package.
-- Do not make the Maestria CLI install or manage arbitrary third-party portable plugins in this change. Installation, trust, sandboxing, and lifecycle remain client-owned until a separate security and distribution design exists.
+- Do not make the Maestria CLI activate portable packages in every client or own client permissions, trust, sandboxing, or lifecycle. The CLI may validate and stage an artifact, but client activation remains client-owned.
 - Do not add portable MCP configuration without a concrete, host-neutral capability and credential story.
 
 ## Consequences
@@ -46,12 +47,14 @@ Native packages remain independently published and continue to provide runtime-s
 - Compatible clients can consume Maestria's core methodology directly from one standard package.
 - The portable artifact is generated from the existing canonical source, so methodology changes do not require hand-editing a second content tree.
 - Native runtime behavior remains isolated, preserving permissions, hooks, subagent registration, and host-specific UX.
+- Users have a first-party way to validate and stage a portable artifact before handing it to a compatible client's installer or directory loader.
 - Package tests verify the closed manifest surface, fixed skill layout, portable references, and package boundary.
 
 ### Negative
 
 - A new public package and manifest-version target must be maintained.
 - Portable skills cannot promise runtime enforcement or native delegation semantics.
+- CLI staging does not activate a package in a client, so users still need the target client's installation or directory-loading step.
 - Some native wording and capabilities intentionally do not fit the portable surface and must continue to be expressed in host adapters.
 
 ## Verification
@@ -60,6 +63,8 @@ Native packages remain independently published and continue to provide runtime-s
 scripts/sync-all
 scripts/check-sync
 pnpm --filter @maestria/agent-plugin test
+npx maestria plugin validate packages/agent-plugin
+npx maestria plugin install packages/agent-plugin --destination /tmp/maestria-agent-plugin-staged
 ```
 
 The package must also pass the repository formatting, lint, type, manifest-version, and packaging checks.

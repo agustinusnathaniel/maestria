@@ -20,6 +20,20 @@ The skills are generated from the canonical directives in `packages/core/agent-d
 
 Use the consuming client's Agent Plugins installation flow with the published package or an extracted package directory. The plugin root must be the directory containing `plugin.json`; the standard skill root is `skills/`.
 
+The Maestria CLI can fetch, validate, and stage the published package before you hand it to a compatible client:
+
+```bash
+npx maestria plugin install
+```
+
+For a local package, validate it without changing it:
+
+```bash
+npx maestria plugin validate /path/to/plugin
+```
+
+The CLI prints the staged directory, but the consuming client still owns activation, permissions, trust, and session behavior.
+
 For a local checkout, install the package directory at `packages/agent-plugin/` after running `scripts/sync-all`. See [INSTALL.md](./INSTALL.md) for source and package-manager guidance.
 
 ## Development

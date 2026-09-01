@@ -2,6 +2,23 @@
 
 This package is a standard Agent Plugins v1 directory package. Use a client that supports the Agent Plugins format, then provide the package root containing `plugin.json`.
 
+## Maestria CLI
+
+The Maestria CLI can fetch, validate, and stage the published package:
+
+```bash
+npx maestria plugin install
+```
+
+For a local package, validate it before staging:
+
+```bash
+npx maestria plugin validate /path/to/plugin
+npx maestria plugin install /path/to/plugin
+```
+
+The command prints the staged directory. Give that directory to the compatible client's Agent Plugins installer or local-plugin setting; the CLI does not activate the package in every client.
+
 ## Published package
 
 Install or download `@maestria/agent-plugin` through the client-specific package or plugin flow. The client must extract or materialize the package as a directory before discovering its `plugin.json` and `skills/` directory. A normal dependency install alone does not make a client discover the plugin unless that client documents this behavior.

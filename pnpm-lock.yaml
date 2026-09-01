@@ -186,6 +186,9 @@ importers:
       '@clack/core':
         specifier: ^1.4.3
         version: 1.4.3
+      yaml:
+        specifier: ^2.9.0
+        version: 2.9.0
     devDependencies:
       '@clack/prompts':
         specifier: ^1.7.0

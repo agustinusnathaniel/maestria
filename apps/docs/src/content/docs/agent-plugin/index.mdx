@@ -27,21 +27,39 @@ The package contains 14 skills. The client loads each skill from the standard `s
 
 ## Install it
 
+### From the Maestria CLI
+
+Stage and validate the published package in the Maestria-managed cache:
+
+```bash
+npx maestria plugin install
+```
+
+The command prints the staged directory. Point a compatible client's plugin installer or local-plugin setting at that directory.
+
+To validate a local package without changing it:
+
+```bash
+npx maestria plugin validate /path/to/plugin
+```
+
+Use `--json` with either command for machine-readable output.
+
 ### In a compatible client
 
 <Steps>
 
 1. Open your client's plugin or extension installer, or follow its documented Agent Plugins installation flow.
 
-2. Install `@maestria/agent-plugin`, or select an extracted package directory containing `plugin.json`.
+2. Install `@maestria/agent-plugin`, or select the directory printed by `maestria plugin install`.
 
 3. Start a new session or reload installed skills, then load `global-rules` and `orchestrator` when your client supports explicit skill loading.
 
 </Steps>
 
-The exact command depends on the client. Agent Plugins standardizes the package shape, while each client chooses how packages are discovered, installed, updated, and enabled.
+The exact activation command depends on the client. Agent Plugins standardizes the package shape, while each client chooses how packages are discovered, installed, updated, and enabled.
 
-There is no universal `maestria install agent-plugin` command because this package is not a runtime platform. Use the client's installer for portable Agent Plugins.
+The command is intentionally namespaced as `maestria plugin ...`: `maestria install` manages runtime integrations, while `maestria plugin` manages portable artifacts. The client still owns the final activation step.
 
 ### From a local package directory
 

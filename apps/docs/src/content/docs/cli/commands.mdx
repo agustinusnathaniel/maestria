@@ -1,6 +1,6 @@
 ---
 title: Command Reference
-description: Complete reference for all maestria commands - status, install, update, uninstall, check, configure - with flags, options, and examples.
+description: Complete reference for all maestria commands - status, install, plugin, update, uninstall, check, and configure - with flags, options, and examples.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -153,6 +153,29 @@ Prime Agent manages packages through its native package manager. `maestria` dele
 ### Example
 
 <PackageManagers type="dlx" pkg="maestria" args="install --all" />
+
+---
+
+## `plugin`
+
+Validate and stage portable Agent Plugins v1 directory packages. This workflow is separate from the runtime platform registry: it prepares a package for a compatible client's own installer or directory loader.
+
+```bash
+maestria plugin validate <path> [--json]
+maestria plugin install [source] [--destination <path>] [--json]
+```
+
+### Commands
+
+| Invocation | What happens |
+| --- | --- |
+| `maestria plugin validate ./my-plugin` | Validates `plugin.json`, skills, optional MCP configuration, and package path containment without writing files |
+| `maestria plugin validate ./my-plugin --json` | Emits the validation report as JSON |
+| `maestria plugin install` | Fetches `@maestria/agent-plugin`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
+| `maestria plugin install ./my-plugin` | Validates and stages a local package |
+| `maestria plugin install ./my-plugin --destination ./staged-plugin` | Stages a validated package at an explicit directory |
+
+The staged directory contains the root `plugin.json` and fixed `skills/` layout. The command does not activate the package in every client: installation scope, permissions, trust, and session behavior remain client-owned.
 
 ---
 

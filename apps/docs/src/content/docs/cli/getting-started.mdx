@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install and use maestria to manage maestria plugins across OpenCode, Kimi Code, Pi, Prime Agent, Hermes, Claude Code, and Codex CLI.
+description: Install and use maestria to manage runtime integrations and portable Agent Plugins across OpenCode, Kimi Code, Pi, Prime Agent, Hermes, Claude Code, and Codex CLI.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -53,6 +53,14 @@ Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> with no arguments - 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install claude-code" />
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install codex" />
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install prime-agent" />
+
+### Stage the portable Agent Plugin
+
+When your client supports Agent Plugins v1, stage the portable Maestria package with the CLI:
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
+
+The command validates the package and prints its local directory. Give that directory to the client's Agent Plugins installer or local-plugin setting. For a local package, run `maestria plugin validate /path/to/plugin` before staging it.
 
 ### Update to the latest version
 

@@ -104,8 +104,9 @@ describe('portable Agent Plugin documentation', () => {
     expect(full).toContain('Install `@maestria/agent-plugin`');
     expect(full).toContain('plugin.json');
     expect(full).toContain('skills/<name>/SKILL.md');
-    expect(full).toContain('There is no universal `maestria install agent-plugin` command');
-    expect(full).toContain('The exact command depends on the client');
+    expect(full).toContain('The command is intentionally namespaced as `maestria plugin ...`');
+    expect(full).toContain('`maestria install` manages runtime integrations');
+    expect(full).toContain('The exact activation command depends on the client');
     expect(full).toContain('native subagent registration');
     expect(full).not.toContain('packages/core/agent-directives');
     expect(full).not.toContain('sync.config.ts');
