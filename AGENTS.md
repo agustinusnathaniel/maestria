@@ -60,6 +60,14 @@ When facing ambiguity or trade-offs, these rules of thumb apply:
 
 Lint and format use Ultracite presets composed in `vite.config.ts` as the single source of truth (see ADR-CORE-021). Run `vp check` and `vp check --fix` (or `vp staged` via `.vite-hooks/pre-commit`) - do not run `ultracite fix` or `oxlint` directly.
 
+## Testing
+
+- Test observable contracts at the highest practical boundary, choosing unit, integration, runtime, or browser verification based on risk.
+- Add coverage for durable contracts and plausible regressions, not every implementation detail or fix.
+- Prefer existing tests, real lightweight boundaries, and explicit fakes over broad mocks.
+- New test files are opt-in, not the default. Explain the concrete regression benefit and ask before creating one.
+- See [Testing Philosophy](docs/testing.md) for detailed guidance.
+
 ## Reference
 
 ### Architecture Decision Records
