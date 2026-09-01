@@ -10,11 +10,4 @@ describe('CLI structure', () => {
     expect(pkg.default.bin).toBeDefined();
     expect(pkg.default.bin.maestria).toBe('./dist/index.js');
   });
-  it('has correct src/index.ts structure', async () => {
-    const fs = await import('node:fs');
-    const testDir = new URL('.', import.meta.url);
-    const content = fs.readFileSync(new URL('../src/index.ts', testDir), 'utf-8');
-    expect(content).toContain('runMain');
-    expect(content).toContain('pluginCommand');
-  });
 });

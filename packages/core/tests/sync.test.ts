@@ -94,7 +94,10 @@ describe('findAndReplace', () => {
 describe('serializeFrontmatter', () => {
   it('serializes an object to YAML frontmatter', () => {
     const result = serializeFrontmatter({ order: 1, title: 'Test' });
-    expect(`---\n${result}`).toContain('---\n');
+    expect(result).toMatch(/order:\s+1/u);
+    expect(result).toMatch(/title:\s+Test/u);
+    expect(result.startsWith('---\n')).toBe(true);
+    expect(result.endsWith('---\n')).toBe(true);
   });
 
   it('serializes multiline descriptions correctly', () => {
@@ -106,12 +109,6 @@ describe('serializeFrontmatter', () => {
     expect(result).toContain('Line one');
     expect(result).toContain('Line two');
     expect(result).toContain('Line three');
-  });
-
-  it('wraps in --- delimiters', () => {
-    const result = serializeFrontmatter({ key: 'val' });
-    expect(result.startsWith('---\n')).toBe(true);
-    expect(result.endsWith('---\n')).toBe(true);
   });
 
   it('returns empty string for null data', () => {
