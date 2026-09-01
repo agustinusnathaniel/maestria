@@ -132,6 +132,7 @@ describe('portable Agent Plugin documentation', () => {
     expect(decisionGuide.full).toContain('[Portable Agent Plugin](/agent-plugin/)');
     expect(howItWorks.full).toContain('[Agent Plugin package](/agent-plugin/)');
     expect(changelog.full).toContain('maestria plugin validate');
+    expect(changelog.full).toContain('## v0.11.1');
   });
 });
 

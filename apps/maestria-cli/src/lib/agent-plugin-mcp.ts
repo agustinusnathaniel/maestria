@@ -1,4 +1,5 @@
 import { readFile, realpath, stat } from 'node:fs/promises';
+import { isIP } from 'node:net';
 import path from 'node:path';
 
 export const AGENT_PLUGIN_MCP_SCHEMA = 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json';
@@ -89,8 +90,19 @@ const validateWorkingDirectory = (
   }
   if (value === PLUGIN_DATA_PLACEHOLDER || value.startsWith(`${PLUGIN_DATA_PLACEHOLDER}/`)) {
     const suffix = value.slice(PLUGIN_DATA_PLACEHOLDER.length).replace(/^\//u, '');
-    const normalized = path.posix.normalize(suffix);
-    if (normalized === '..' || normalized.startsWith('../')) {
+    const posixRoot = '/__maestria_plugin_data__';
+    const windowsRoot = 'C:\\__maestria_plugin_data__';
+    const posixTarget = path.posix.resolve(posixRoot, suffix);
+    const windowsTarget = path.win32.resolve(windowsRoot, suffix);
+    const posixRelative = path.posix.relative(posixRoot, posixTarget);
+    const windowsRelative = path.win32.relative(windowsRoot, windowsTarget);
+    const posixWithin =
+      posixRelative === '' ||
+      (!posixRelative.startsWith('..') && !path.posix.isAbsolute(posixRelative));
+    const windowsWithin =
+      windowsRelative === '' ||
+      (!windowsRelative.startsWith('..') && !path.win32.isAbsolute(windowsRelative));
+    if (!posixWithin || !windowsWithin) {
       addError(report, `${label} escapes PLUGIN_DATA`);
     }
     return;
@@ -135,11 +147,12 @@ const validateRemoteUrl = (value: unknown, label: string, report: McpValidationR
   }
   try {
     const url = new URL(value);
+    const hostname = url.hostname.replaceAll(/^\[|\]$/gu, '');
+    const ipVersion = isIP(hostname);
     const loopback =
-      url.hostname === 'localhost' ||
-      url.hostname === '127.0.0.1' ||
-      url.hostname.startsWith('127.') ||
-      url.hostname === '[::1]';
+      hostname === 'localhost' ||
+      (ipVersion === 4 && hostname.startsWith('127.')) ||
+      (ipVersion === 6 && hostname === '::1');
     const validProtocol = ['http:', 'https:'].includes(url.protocol);
     if (!validProtocol || url.username || url.password || url.hash) {
       addError(report, `${label} is not a valid Agent Plugins v1 URL`);

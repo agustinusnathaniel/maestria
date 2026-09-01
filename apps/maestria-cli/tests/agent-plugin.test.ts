@@ -6,6 +6,7 @@ import { stageAgentPlugin, validateAgentPlugin } from '@/lib/agent-plugin.js';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
 const PORTABLE_PACKAGE = path.join(REPO_ROOT, 'packages/agent-plugin');
+const PLUGIN_DATA_PLACEHOLDER = ['$', '{PLUGIN_DATA}'].join('');
 const tempDirectories: string[] = [];
 
 const makeTempDirectory = async (): Promise<string> => {
@@ -66,7 +67,13 @@ describe('Agent Plugin validation', () => {
       `${JSON.stringify({
         $schema: 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
         mcpServers: {
+          data: {
+            command: 'server',
+            cwd: `${PLUGIN_DATA_PLACEHOLDER}/..\\\\outside`,
+            type: 'stdio',
+          },
           local: { command: './bin/server', cwd: './../outside', type: 'stdio' },
+          loopback: { type: 'streamable-http', url: 'http://127.0.0.1/mcp' },
           remote: {
             headers: {
               Authorization: 'embedded',
@@ -74,7 +81,7 @@ describe('Agent Plugin validation', () => {
               'bad header': 'value',
             },
             type: 'streamable-http',
-            url: 'http://example.com/mcp',
+            url: 'http://127.0.0.1.attacker.example/mcp',
           },
         },
       })}\n`,
@@ -86,9 +93,11 @@ describe('Agent Plugin validation', () => {
     expect(report.errors).toEqual(
       expect.arrayContaining([
         expect.stringContaining('local'),
+        expect.stringContaining('escapes PLUGIN_DATA'),
         expect.stringContaining('remote'),
         expect.stringContaining('duplicate header name'),
         expect.stringContaining('valid HTTP header name'),
+        expect.stringContaining('must use HTTPS outside loopback hosts'),
       ]),
     );
     expect(report.warnings).toEqual(
@@ -116,6 +125,31 @@ describe('Agent Plugin staging', () => {
     ) as unknown;
     expect(manifest).toMatchObject({ name: 'maestria' });
   });
+
+  it('fetches, stages, and revalidates an npm package source', async () => {
+    const parent = await makeTempDirectory();
+    const destination = path.join(parent, 'staged');
+    const previousNpmCache = process.env.npm_config_cache;
+    process.env.npm_config_cache = path.join(parent, 'npm-cache');
+
+    try {
+      const staged = await stageAgentPlugin({
+        destination,
+        source: `file:${PORTABLE_PACKAGE}`,
+      });
+
+      expect(staged.destination).toBe(destination);
+      expect(staged.source).toBe(`file:${PORTABLE_PACKAGE}`);
+      expect(staged.valid).toBe(true);
+      expect(staged.skillNames).toHaveLength(14);
+    } finally {
+      if (previousNpmCache === undefined) {
+        delete process.env.npm_config_cache;
+      } else {
+        process.env.npm_config_cache = previousNpmCache;
+      }
+    }
+  }, 30_000);
 
   it('refuses to overwrite an existing destination', async () => {
     const parent = await makeTempDirectory();

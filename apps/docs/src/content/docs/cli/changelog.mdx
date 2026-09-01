@@ -12,6 +12,48 @@ description: Release history for the maestria CLI.
 - Added `maestria plugin validate` for read-only validation of Agent Plugins v1 directory packages.
 - Added `maestria plugin install` to fetch or stage a validated portable package for a compatible client's own installer or directory loader.
 - Portable packages remain separate from runtime platform detection, status, and native activation.
+- Hardened portable MCP validation against lookalike loopback domains and cross-platform `PLUGIN_DATA` path traversal.
+
+## v0.11.1
+
+### CLI cache handling
+
+- Centralized the version cache path and tarball temporary-directory handling.
+- Respect `XDG_CACHE_HOME` when resolving Maestria's cache directory.
+
+## v0.11.0
+
+### Native Codex and Kimi Code support
+
+- Added native Codex custom-agent templates, marketplace installation, primary-session orchestration guidance, and CLI-managed model configuration.
+- Updated the Kimi Code integration to use its native plugin registry, system prompt, namespaced commands, and current delegation contracts.
+
+### Cursor and shared validation
+
+- Aligned Cursor packaging and native per-agent model configuration while preserving user settings across updates.
+- Shared neutral mode and skill validation logic through the hybrid package topology.
+
+## v0.10.2
+
+### Safer status and update checks
+
+- `maestria check` now reports when an installed integration is behind the latest published version and exits with a distinct outdated status.
+- Implicit updates no longer downgrade installations that are newer than the registry's latest version.
+
+## v0.10.1
+
+### Reliable command results
+
+- `install`, `update`, and `uninstall` now exit non-zero when any selected platform fails.
+- Non-semver latest-version values are treated as incomparable during update detection.
+
+## v0.10.0
+
+### Prime Agent support
+
+- Added Prime Agent detection and native package-manager-backed install, update, status, check, and uninstall support.
+- Prime operations are user-scoped and do not scan or modify project registrations.
+- Exact version pinning is unavailable because Prime updates always select the latest package.
 
 ## v0.9.0
 
