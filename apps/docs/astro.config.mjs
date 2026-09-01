@@ -2,7 +2,6 @@ import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 import { fileURLToPath } from 'node:url';
-import starlightAutoSidebar from 'starlight-auto-sidebar';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightPageActions from 'starlight-page-actions';
@@ -57,7 +56,8 @@ export default defineConfig({
             '@maestria/hermes (methodology layer for Hermes Agent), ' +
             '@maestria/prime-agent (Maestria methodology for Prime Agent as Agent Skills ' +
             'plus a verified Prime/Pi extension for workflow modes), and ' +
-            '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX).',
+            '@maestria/omp / Oh My Pi (the Pi Coding Agent launcher, session manager, and UX), ' +
+            '@maestria/agent-plugin (the portable Agent Plugins v1 skills-only package).',
           details:
             'For dedicated usage guidance, installation instructions, and machine-readable resource links, read [Maestria agent instructions](https://maestria.sznm.dev/agents.md).',
           optionalLinks: [
@@ -68,6 +68,16 @@ export default defineConfig({
             {
               label: 'Maestria When to Use guide',
               url: 'https://maestria.sznm.dev/core/when-to-use/',
+            },
+            {
+              description: 'Installable Agent Plugins v1 package with the standard skills layout.',
+              label: 'Maestria portable Agent Plugin',
+              url: 'https://maestria.sznm.dev/agent-plugin/',
+            },
+            {
+              description: 'Live smoke results and manual activation checks by client.',
+              label: 'Maestria Agent Plugin compatibility',
+              url: 'https://maestria.sznm.dev/agent-plugin/compatibility/',
             },
             {
               description: 'Install with `npx maestria install <platform>`.',
@@ -109,7 +119,6 @@ export default defineConfig({
             'effectively.',
           share: true,
         }),
-        starlightAutoSidebar(),
       ],
       sidebar: [
         {
@@ -124,6 +133,14 @@ export default defineConfig({
             { label: 'Changelog', link: '/core/changelog/' },
           ],
           label: 'Core Concepts',
+        },
+        {
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/agent-plugin/' },
+            { label: 'Compatibility', link: '/agent-plugin/compatibility/' },
+          ],
+          label: '@maestria/agent-plugin',
         },
         {
           items: [

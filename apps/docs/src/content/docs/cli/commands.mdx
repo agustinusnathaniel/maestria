@@ -1,6 +1,6 @@
 ---
 title: Command Reference
-description: Complete reference for all maestria commands - status, install, update, uninstall, check, configure - with flags, options, and examples.
+description: Complete reference for all maestria commands - status, install, plugin, update, uninstall, check, and configure - with flags, options, and examples.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -8,14 +8,14 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Global Flags
 
-These flags work on every command:
+These flags work across the CLI:
 
-| Flag      | Description                                      |
-| --------- | ------------------------------------------------ |
-| `--json`  | Output results as JSON instead of formatted text |
-| `--quiet` | Suppress spinner animations                      |
+| Flag      | Description                                                       |
+| --------- | ----------------------------------------------------------------- |
+| `--json`  | Output results as JSON instead of formatted text on every command |
+| `--quiet` | Suppress spinner animations on runtime platform commands          |
 
-`--compact` (machine-friendly text output) is supported on every command except `check`, which outputs JSON by default instead. `--help` is available on every command and shows in-terminal examples, exit codes, and AI-agent usage tips.
+`--compact` (machine-friendly text output) is supported on runtime platform commands except `check`, which outputs JSON by default instead. `--help` is available on every command and shows in-terminal examples, exit codes, and AI-agent usage tips.
 
 Running `maestria` with no arguments is equivalent to `maestria status`.
 
@@ -153,6 +153,55 @@ Prime Agent manages packages through its native package manager. `maestria` dele
 ### Example
 
 <PackageManagers type="dlx" pkg="maestria" args="install --all" />
+
+---
+
+## `plugin`
+
+Validate and stage portable Agent Plugins v1 directory packages. This workflow is separate from the runtime platform registry: it prepares a package for a compatible client's own installer or directory loader.
+
+```bash
+maestria plugin validate <path> [--json]
+maestria plugin install [source] [--destination <path>] [--json]
+```
+
+### Commands
+
+| Invocation | What happens |
+| --- | --- |
+| `maestria plugin validate ./my-plugin` | Validates `plugin.json`, skills, optional MCP configuration, and package path containment without writing files |
+| `maestria plugin validate ./my-plugin --json` | Emits the validation report as JSON |
+| `maestria plugin install` | Fetches `@maestria/agent-plugin`, validates it, and stages it under `~/.cache/maestria/agent-plugins/` |
+| `maestria plugin install ./my-plugin` | Validates and stages a local package |
+| `maestria plugin install ./my-plugin --destination ./staged-plugin` | Stages a validated package at an explicit directory |
+
+The staged directory contains the root `plugin.json` and fixed `skills/` layout. The command does not activate the package in every client: installation scope, permissions, trust, and session behavior remain client-owned.
+
+### Sources and destinations
+
+`source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/agent-plugin`:
+
+```bash
+maestria plugin install
+maestria plugin install @maestria/agent-plugin@1.2.3
+maestria plugin install ./my-plugin
+```
+
+Without `--destination`, the package is staged under:
+
+```text
+~/.cache/maestria/agent-plugins/<name>/<version>/
+```
+
+On systems that set `XDG_CACHE_HOME`, the path starts at `$XDG_CACHE_HOME/maestria/` instead.
+
+Use `--destination` to choose another directory. The CLI refuses to overwrite an existing destination, so choose a new directory when staging a second copy.
+
+### Validation report
+
+`plugin validate --json` returns `valid`, `name`, `version` when present, `root`, `skillNames`, `errors`, and `warnings`. `plugin install --json` returns the same validation fields plus `destination` and the original `source`.
+
+The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter and layout, optional `mcp.json` configuration, and filesystem containment. It does not execute package code or grant the client any permissions.
 
 ---
 

@@ -15,5 +15,6 @@ describe('CLI structure', () => {
     const testDir = new URL('.', import.meta.url);
     const content = fs.readFileSync(new URL('../src/index.ts', testDir), 'utf-8');
     expect(content).toContain('runMain');
+    expect(content).toContain('pluginCommand');
   });
 });

@@ -9,7 +9,7 @@ Each Maestria plugin has its own contributing guide with project structure, sour
 
 Agent prompts, specialist personas, and global rules are authored in a single canonical source at `packages/core/agent-directives/` and synced to all plugin packages via the config-driven sync pipeline.
 
-**Never edit the generated files** in plugin-specific directories (`packages/opencode/agents/`, `packages/pi/agents/`, `packages/pi/skills/`, `packages/kimi-code/skills/`, `packages/cursor/agents/`, `packages/cursor/skills/`, `packages/claude-code/agents/`, `packages/claude-code/skills/`, `packages/claude-code/commands/`, `packages/codex/skills/`, or any `rules/` directory) - they are overwritten on every sync.
+**Never edit the generated files** in plugin-specific directories (`packages/opencode/agents/`, `packages/pi/agents/`, `packages/pi/skills/`, `packages/kimi-code/skills/`, `packages/cursor/agents/`, `packages/cursor/skills/`, `packages/claude-code/agents/`, `packages/claude-code/skills/`, `packages/claude-code/commands/`, `packages/codex/skills/`, `packages/agent-plugin/skills/`, or any `rules/` directory) - they are overwritten on every sync.
 
 ### Editing the Canonical Source
 
@@ -32,6 +32,7 @@ Each plugin has a `sync.config.ts` that defines how canonical content is adapted
 | `@maestria/pi` | `packages/pi/sync.config.ts` | Text replacements adapting role prefixes and delegation calls (`@adventurer` → `/adventurer`, `task()` → `maestria_subagent()`) |
 | `@maestria/claude-code` | `packages/claude-code/sync.config.ts` | Namespaced agents and skills, Claude tool names, and read-only `disallowedTools` fields |
 | `@maestria/codex` | `packages/codex/sync.config.ts` | Namespaced skills, workflow modes as skills, and advisory role boundaries |
+| `@maestria/agent-plugin` | `packages/agent-plugin/sync.config.ts` | Agent Plugins v1 fixed `skills/<name>/SKILL.md` layout, plain role names, and advisory portable boundaries |
 
 ### Running the Docs Site
 

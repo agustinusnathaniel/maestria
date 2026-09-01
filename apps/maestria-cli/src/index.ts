@@ -6,6 +6,7 @@ import { Effect } from 'effect';
 import { checkCommand } from '@/commands/check.js';
 import { configureCommand } from '@/commands/configure.js';
 import { installCommand } from '@/commands/install.js';
+import { pluginCommand } from '@/commands/plugin.js';
 import { statusCommand } from '@/commands/status.js';
 import { uninstallCommand } from '@/commands/uninstall.js';
 import { updateCommand } from '@/commands/update.js';
@@ -81,6 +82,8 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria configure codex          Configure native Codex custom-agent models',
       'maestria configure cursor        Configure native Cursor agent models',
       'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set a model non-interactively',
+      'maestria plugin install            Stage a portable Agent Plugin',
+      'maestria plugin validate ./my-plugin  Validate a portable Agent Plugin directory',
       'maestria --help                   Show this help',
     ],
     tip: [
@@ -88,6 +91,18 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'Use --compact for minimal token-efficient text output.',
       'Use a positional platform arg (or comma-separated list), --all, or interactive prompts.',
       'For CI pipelines, add --quiet to suppress spinner control sequences.',
+    ].join('\n'),
+  },
+  plugin: {
+    examples: [
+      'maestria plugin validate ./my-plugin     Validate a local Agent Plugin directory',
+      'maestria plugin install                 Stage @maestria/agent-plugin in the Maestria cache',
+      'maestria plugin install ./my-plugin --destination ./staged-plugin  Stage a local package',
+      'maestria plugin validate ./my-plugin --json  Output a validation report as JSON',
+    ],
+    tip: [
+      "The portable workflow stages and validates a directory package; it does not replace each client's own activation or permission model.",
+      'Use a client-specific plugin installer or point the client at the staged directory.',
     ].join('\n'),
   },
   status: {
@@ -114,6 +129,25 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   },
 };
 
+const PLUGIN_SUBCOMMAND_SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
+  install: {
+    examples: [
+      'maestria plugin install                 Stage @maestria/agent-plugin in the Maestria cache',
+      'maestria plugin install ./my-plugin     Stage a local Agent Plugin directory',
+      'maestria plugin install ./my-plugin --destination ./staged-plugin  Choose the destination',
+      'maestria plugin install --json          Output the staged package report as JSON',
+    ],
+    tip: 'The command stages a validated directory package; use the compatible client to activate it.',
+  },
+  validate: {
+    examples: [
+      'maestria plugin validate ./my-plugin       Validate a local Agent Plugin directory',
+      'maestria plugin validate ./my-plugin --json  Output the validation report as JSON',
+    ],
+    tip: 'Validation is read-only and checks the manifest, skills, optional MCP configuration, and package paths.',
+  },
+};
+
 const EXIT_CODES = `
 EXIT CODES
 
@@ -131,7 +165,12 @@ const showEnhancedUsage = async <T extends ArgsDef = ArgsDef>(
   const rawMeta = cmd.meta;
   const cmdMeta = rawMeta ? await (typeof rawMeta === 'function' ? rawMeta() : rawMeta) : undefined;
   const cmdName = cmdMeta?.name ?? '';
-  const section = SECTIONS[cmdName];
+  const rawParentMeta = parent?.meta;
+  const parentMeta = rawParentMeta
+    ? await (typeof rawParentMeta === 'function' ? rawParentMeta() : rawParentMeta)
+    : undefined;
+  const section =
+    parentMeta?.name === 'plugin' ? PLUGIN_SUBCOMMAND_SECTIONS[cmdName] : SECTIONS[cmdName];
 
   const parts: string[] = [help];
 
@@ -182,7 +221,7 @@ const main = defineCommand({
     },
   },
   meta: {
-    description: 'Manage maestria plugins across coding agent platforms',
+    description: 'Manage maestria plugins across coding agent platforms and portable packages',
     name: 'maestria',
   },
   run: async ({ args }) => {
@@ -217,6 +256,7 @@ const main = defineCommand({
     check: checkCommand,
     configure: configureCommand,
     install: installCommand,
+    plugin: pluginCommand,
     status: statusCommand,
     uninstall: uninstallCommand,
     update: updateCommand,
