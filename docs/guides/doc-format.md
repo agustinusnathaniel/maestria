@@ -87,6 +87,8 @@ To:
 ## Non-Goals         (NEW - bulleted list of what this ADR explicitly excludes)
 ## Decision
 ## Consequences
+## Assumptions       (material assumptions, tagged [verified] or [inferred])
+## Alternatives Considered
 ## Date
 ```
 
@@ -102,7 +104,7 @@ Publishable package READMEs (packages published to npm/PyPI and the CLI app) are
 | Installation or Usage | Yes | One canonical command/path, plus short verification or quick usage when useful |
 | What It Provides | Yes | The features, components, or artifacts the package ships (short bullets) |
 | Support / Platform Notes | Yes | Material limitations and truthful support boundaries (see below) |
-| Documentation and Changelog | Yes | Links to the public docs route and the package changelog |
+| Documentation and release history | Yes | Link to the public docs route and the package changelog where one exists; state the pre-release status when it does not |
 | Development / Contributing | No | Only if useful; link to repository guidance rather than duplicating it |
 | License | Yes | SPDX license identifier |
 

@@ -1,145 +1,82 @@
 # Maestria Project Workflow
 
-This file defines the project-specific delegation sequence for the maestria monorepo. The orchestrator reads this file and follows its sequencing guidance. Subagent-level conventions are propagated via delegation prompt "Access list" and "Context" sections.
+Project-specific routing for the Maestria monorepo. Use the smallest safe route: direct execution for familiar, low-risk work; reconnaissance or design when the code or approach is uncertain; full orchestration when independent stages materially reduce risk.
 
-## Sequencing
+## Before Changing Files
 
-### 1. Understand Project Context
+1. Read the task, issue, or PR and extract acceptance evidence.
+2. Read AGENTS.md for repository rules.
+3. Read README.md, VISION.md, or PATTERNS.md only when the change needs that context.
+4. Map the affected package and read its README or relevant ADRs.
+5. Inspect recent history when the change depends on prior behavior.
 
-Before proposing any change, delegate to `@adventurer`:
+Use @adventurer for unfamiliar code, cross-package changes, or reconnaissance that another stage will consume. Do not delegate context gathering for a familiar, atomic edit.
 
-- Read `README.md` for product overview and high-level architecture
-- Read `AGENTS.md` for project-specific agent conventions (this is the root AGENTS.md, not .maestria/)
-- Read `PATTERNS.md` for core design patterns (Pipeline Composition + Maker/Checker Split)
-- Read `VISION.md` for project motivation and philosophy
-- Check recent commits (`git log --oneline -20`) and diff (`git diff --name-only HEAD~5..HEAD`)
-- Read `package.json` and `pnpm-workspace.yaml` for workspace layout and scripts
-- Map the monorepo structure:
-  - `packages/core/` - canonical agent directives + sync pipeline (scripts/, tests/)
-  - `packages/opencode/` - OpenCode plugin (src/, agents/ [auto-gen], tests/)
-  - `packages/kimi-code/` - Kimi Code plugin (skills/ [auto-gen], tests/)
-  - `packages/pi/` - Pi extension (src/, agents/ [auto-gen], skills/ [auto-gen], tests/)
-  - `apps/docs/` - Astro + Starlight documentation site
-  - `scripts/` - sync-all and check-sync (bash)
-  - `docs/adr/` - architecture decision records (core/, opencode/, kimi-code/, pi/)
+## ADRs and Design
 
-### 2. Understand the Problem
+Read relevant decisions before changing architecture, package boundaries, sync behavior, permissions, or platform integration:
 
-- Read the linked issue, PR description, or task thoroughly
-- Identify the acceptance criteria. If ambiguous, ask clarifying questions via `question()` before delegating any implementation work
-- Determine which package(s) are affected: core, opencode, kimi-code, pi, docs, or scripts
-- Map the problem to existing abstractions (sync pipeline, specialist prompts, modes, ADRs) before inventing new ones
-- Read `CONTRIBUTING.md` for comprehensive development guidance if the task involves unfamiliar areas
+| Area                                                 | ADR directory       |
+| ---------------------------------------------------- | ------------------- |
+| Core structure, directives, tooling, and conventions | docs/adr/core/      |
+| OpenCode                                             | docs/adr/opencode/  |
+| Kimi Code                                            | docs/adr/kimi-code/ |
+| Cursor                                               | docs/adr/cursor/    |
+| Hermes                                               | docs/adr/hermes/    |
+| Pi and Oh My Pi                                      | docs/adr/pi/        |
 
-### 3. Read Relevant ADRs
+Create an ADR for a new architectural pattern, dependency, or structural boundary. Use the required fields in the documentation format guide at ../docs/guides/doc-format.md.
 
-Delegate to `@adventurer` to read any ADR relevant to the change before implementing:
+## Reuse Before Adding
 
-| Scope                                             | Location              |
-| ------------------------------------------------- | --------------------- |
-| Monorepo-level (structure, conventions, sync)     | `docs/adr/core/`      |
-| OpenCode plugin (modes, permissions, commits)     | `docs/adr/opencode/`  |
-| Kimi Code plugin (distribution, architecture)     | `docs/adr/kimi-code/` |
-| Pi extension (rules injection, compaction, reuse) | `docs/adr/pi/`        |
+Before @builder changes code:
 
-If the change introduces a new architectural pattern, dependency, or structural change, create a new ADR following the existing format (Status, Date, Context, Decision, Rationale, Alternatives, Consequences).
+- Search for an existing utility, directive, sync transform, or package pattern.
+- Check packages/core/agent-directives/ before adding methodology.
+- Check the relevant sync.config.ts before adding a platform transform.
+- Justify new dependencies against the lightweight, platform-independent design.
 
-### 4. Be Pragmatic - Reuse Before Reinventing
+## Implement and Verify
 
-When delegating to `@builder`, include these principles:
-
-- Search the existing codebase for utilities, patterns, or tasks that already solve similar problems
-- Check `packages/core/agent-directives/` for existing specialist prompts that can serve as a reference
-- Check `packages/core/scripts/` for sync pipeline utilities before writing new ones
-- Check `packages/*/sync.config.ts` for existing sync configuration patterns
-- Prefer wrapping, composing, or extending existing directives over adding new ones
-- If introducing a new dependency, justify it in reasoning and ensure it aligns with the project's philosophy (lightweight, platform-independent, no runtime bloat)
-
-### 5. Implement and Test
-
-Delegate to `@builder` with these requirements:
-
-**Quality pipeline (all must pass before commit):**
+Run the smallest gate that covers the change, then expand it when evidence requires:
 
 ```bash
-pnpm ready    # runs: check + test + build
-# Or individually:
+pnpm check
 pnpm typecheck
 pnpm test
 pnpm build
-pnpm lint
-pnpm check
 ```
 
-**Sync pipeline verification (MANDATORY after any agent directive change):**
+For documentation changes, also run:
 
 ```bash
-bash scripts/check-sync
+pnpm --filter @maestria/docs test
+pnpm --filter @maestria/docs build
+git diff --check
 ```
 
-A corrupted sync breaks agents across all platforms. If check-sync fails, run:
+After any change under packages/core/agent-directives/:
 
 ```bash
-bash scripts/sync-all
+scripts/sync-all
+scripts/check-sync
 ```
 
-Then re-verify with `scripts/check-sync`.
+Generated projections must match the canonical source. Add tests for new behavior and verify idempotence when changing installers, sync, or mode detection.
 
-**Test expectations:**
+## Commit and Documentation
 
-- Tests are colocated with packages (e.g., `packages/core/tests/`, `packages/opencode/tests/`)
-- Add or update tests for any new behavior, especially for:
-  - New specialist prompts or directive changes in `packages/core/tests/`
-  - Mode detection changes in `packages/opencode/tests/`
-  - Plugin behavior changes in the respective package's tests
-- Ensure changes are **idempotent** - running the same operation twice produces the same result
-- For mode detection changes, verify both keyword detection and deactivated-mode behavior
+Follow the commit, changeset, and pull request guidance in CONTRIBUTING.md. Split unrelated concerns into separate commits. A changeset is required for user-facing package changes.
 
-### 6. Commit Conventions
+Update documentation when behavior, architecture, or user-facing workflows change. Use the matching location:
 
-Before delegating commit work to `@builder`, include these conventions:
-
-**Changeset:** Required for user-facing changes. Run:
-
-```bash
-pnpm changeset
-```
-
-Bump type rules:
-
-- **`minor`**: only for actual new features or user-facing additions (`feat` commits)
-- **`patch`**: everything else - refactors, fixes, chores, docs, tests, tooling
-- **`major`**: breaking changes only
-
-**Commit messages:** Follow Conventional Commits:
-
-| Type       | Changeset bump | When to use                                  |
-| ---------- | -------------- | -------------------------------------------- |
-| `feat`     | minor          | Actual new feature or user-facing capability |
-| `fix`      | patch          | Bug fix                                      |
-| `refactor` | patch          | Restructuring, no new behavior               |
-| `chore`    | patch          | Maintenance, tooling, deps                   |
-| `docs`     | patch          | Documentation                                |
-| `test`     | patch          | Tests                                        |
-| `style`    | patch          | Formatting                                   |
-
-Only `feat` warrants a minor bump - all others are patch.
-
-Split into multiple commits if the change spans unrelated concerns (e.g., core directive change + plugin mode change + docs update should be separate commits).
-
-### 7. Update Documentation
-
-If the change affects behavior, architecture, or user-facing features, delegate to `@writer` or `@builder` for doc updates:
-
-- **ADRs:** Create or update in the appropriate `docs/adr/` subdirectory (core/, opencode/, kimi-code/, pi/)
-- **Publishable docs:** Update the Astro Starlight site in `apps/docs/src/content/docs/`:
-  - Core agents or pipeline changes → `apps/docs/src/content/docs/core/`
-  - OpenCode plugin changes → `apps/docs/src/content/docs/opencode/`
-  - Kimi Code plugin changes → `apps/docs/src/content/docs/kimi-code/`
-  - Pi plugin changes → `apps/docs/src/content/docs/pi/`
-- **Preview doc changes locally:** `pnpm dev`
-- **Verify:** `pnpm build` must pass without errors (which includes docs build via Vite+)
+| Change                       | Documentation                                                 |
+| ---------------------------- | ------------------------------------------------------------- |
+| Core methodology or pipeline | apps/docs/src/content/docs/core/                              |
+| Platform behavior            | apps/docs/src/content/docs/<platform>/ and the package README |
+| Architecture or boundary     | docs/adr/<area>/                                              |
+| Project-wide rule or pattern | AGENTS.md, PATTERNS.md, or VISION.md                          |
 
 ## Precedence
 
-Core rules (delegate don't implement, maker/checker split, commit protocol, etc.) always take precedence over these project workflow instructions. If a conflict arises, the core rule wins.
+Repository rules, host permissions, maker/checker independence, bounded retries, and commit authorization take precedence over this file. If an instruction conflicts, follow the higher-priority rule and record the constraint in the handoff.

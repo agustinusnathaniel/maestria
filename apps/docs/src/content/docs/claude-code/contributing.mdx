@@ -1,116 +1,64 @@
 ---
 title: Contributing
-description: How to contribute to @maestria/claude-code - project structure, the sync pipeline, and extending the plugin.
+description: Claude Code-specific package structure, sync behavior, and validation for @maestria/claude-code.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
 
-# Contributing
+## Package Boundary
 
-Thank you for your interest in contributing to `@maestria/claude-code`! This guide covers project structure, the sync pipeline, and how to extend the plugin.
+Claude Code is a declarative plugin. It has no runtime adapter:
 
-> For general development setup, changesets, and pull request workflow, see the [Contributing Guide](/core/contributing/).
-
-## Project Structure
-
-Like `@maestria/kimi-code`, `@maestria/claude-code` is a **declarative plugin** - there is no build step and no runtime source code. The "package source" is the manifest, the generated agent/skill/command files, and the sync config that produces them.
-
-```
-maestria/
-├── apps/
-│   └── docs/                # Documentation site
-└── packages/
-    ├── core/
-    │   └── agent-directives/ # Canonical agent prompts (.md files) and rules.md
-    └── claude-code/          # @maestria/claude-code plugin
-        ├── .claude-plugin/
-        │   └── plugin.json   # Plugin manifest (name, version, description)
-        ├── agents/           # Generated specialist agents (do not edit directly)
-        ├── skills/           # Generated SKILL.md files (do not edit directly)
-        │   ├── orchestrator/
-        │   └── global-rules/
-        ├── commands/         # Generated workflow commands (do not edit directly)
-        ├── tests/            # Vitest assertions for manifest + generated files
-        ├── sync.config.ts    # Platform derivation: frontmatter, namespacing, restrictions
-        ├── INSTALL.md        # Step-by-step validation/loading checklist
-        ├── README.md         # Overview
-        └── CHANGELOG.md      # Release notes
-
-The repository-level `.claude-plugin/marketplace.json` is the host-CLI marketplace entry. It points
-to the published npm package, while the package-level `.claude-plugin/plugin.json` describes the
-plugin itself.
+```text
+packages/claude-code/
+├── .claude-plugin/plugin.json   hand-authored manifest
+├── agents/                      generated specialist agents
+├── skills/                      generated orchestrator and global-rules skills
+├── commands/                    generated workflow commands
+├── sync.config.ts               Claude-specific transforms
+├── tests/
+├── INSTALL.md
+└── README.md
 ```
 
-## Making Changes
+The repository marketplace entry points the host CLI to the published package. The package manifest describes the plugin; the sync output supplies its agents, skills, and commands.
 
-### Editing agent prompts or global rules
+## Change Methodology
 
-All methodology content is authored in the canonical source under `packages/core/agent-directives/` and synced to Claude Code format via the sync pipeline. See [Canonical Source Workflow](/core/contributing/#canonical-source-workflow) in the Contributing Guide. Never hand-edit files under `agents/`, `skills/`, or `commands/`.
-
-After changing canonical content, regenerate and verify from the repository root:
+Edit packages/core/agent-directives/, never generated files under agents/, skills/, or commands/. Then regenerate and verify:
 
 ```bash
-scripts/sync-all          # regenerate every platform package
-scripts/check-sync        # CI check that generated files are in sync
+scripts/sync-all
+scripts/check-sync
+pnpm --filter @maestria/claude-code test
 ```
 
-### Agent frontmatter reference
+Keep Claude-specific namespacing, tool names, frontmatter, and restrictions in sync.config.ts. Do not duplicate canonical prompt text in the package.
 
-Each specialist is a Markdown file with YAML frontmatter in `packages/claude-code/agents/`, derived by `sync.config.ts`:
+## Host Contract
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `name` | string | Agent identifier (`adventurer`, `builder`, ...) |
-| `description` | string | Role summary and when-to-use guidance |
-| `model` | string | `inherit` - agents use the session model |
-| `skills` | array | Skills preloaded into the agent (`maestria:global-rules`) |
-| `disallowedTools` | string | Tools denied at runtime; `Write, Edit` on the three read-only roles only |
+| Output              | Purpose                                            |
+| ------------------- | -------------------------------------------------- |
+| agents/             | Seven specialist agents with generated frontmatter |
+| skills/orchestrator | User-invocable routing skill                       |
+| skills/global-rules | Preloaded global rules contract                    |
+| commands/           | fein, sonar, and blitz workflow commands           |
 
-### Skill and command frontmatter
+The sync config namespaces references as `maestria:<agent>`. It sets model inheritance and preloads global-rules. The adventurer, planner, and reviewer agents receive `disallowedTools: Write, Edit`; the restriction is the package's runtime read-only boundary.
 
-Skills live in `skills/<name>/SKILL.md`. Fields: `name`, `description`, and `user-invocable` (set to `false` on `global-rules`, which is preload-only). Commands live in `commands/<name>.md` with `name` and `description` frontmatter.
+## Validate the Package
 
-### Manifest reference
-
-The `.claude-plugin/plugin.json` manifest fields:
-
-| Field         | Type   | Description                                             |
-| ------------- | ------ | ------------------------------------------------------- |
-| `name`        | string | Plugin identifier (`maestria`)                          |
-| `displayName` | string | Human-readable plugin name (`Maestria`)                 |
-| `version`     | string | Semver version, follows the monorepo changeset pipeline |
-| `description` | string | One-line summary                                        |
-| `author`      | object | `{ name }`                                              |
-| `homepage`    | string | Project homepage URL                                    |
-| `repository`  | string | Project repository URL                                  |
-| `license`     | string | SPDX license identifier                                 |
-| `keywords`    | array  | Discovery keywords                                      |
-
-### Adding a new agent, skill, or command
-
-1. **Create the canonical prompt** in `packages/core/agent-directives/` - plain Markdown, no frontmatter.
-2. **Add a sync config entry** in `packages/claude-code/sync.config.ts` specifying the output file, frontmatter (name, description, model, skills preload), and any read-only role prepend or `disallowedTools` restriction. The config also handles namespacing (`maestria:<agent>`) and Claude Code tool name casing.
-3. **Add tests** - add Vitest assertions in `packages/claude-code/tests/plugin.test.ts` to validate the new file's frontmatter and any safety constraints.
-4. **Run `vp test`** - verify everything passes before submitting a PR.
-
-<Aside type="caution">
-  The three read-only roles (`adventurer`, `planner`, `reviewer`) are load-bearing - their
-  `disallowedTools: Write, Edit` restrictions are the only runtime enforcement in the package. If
-  you change roles, update the sync config, the tests, and the README's enforcement claims together.
-</Aside>
-
-## Validating the plugin
-
-Requires the Claude Code CLI (`claude` on `PATH`):
+The focused checks require the Claude Code CLI:
 
 ```bash
 cd packages/claude-code
-pnpm test          # manifest and generated-file assertions
-pnpm validate      # claude plugin validate . --strict
+pnpm test
+pnpm validate
 ```
 
-`pnpm validate` runs `claude plugin validate . --strict` - `--strict` treats warnings as errors and is the current automated gate. Runtime behavior (skill preload resolution, command pipelines) is not yet tested end to end; see the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
+The validator checks package structure and frontmatter. Runtime behavior such as skill preload resolution and command execution still needs end-to-end verification; see the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
 
 ## See Also
 
-- [Contributing Guide](/core/contributing/) - General setup, changesets, and PR process
+- [Installation](/claude-code/getting-started/installation/)
+- [Quick Start](/claude-code/getting-started/quick-start/)

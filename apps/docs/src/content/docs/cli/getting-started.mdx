@@ -3,99 +3,61 @@ title: Getting Started
 description: Install and use maestria to manage runtime integrations and portable Agent Plugins across OpenCode, Kimi Code, Pi, Prime Agent, Hermes, Claude Code, and Codex CLI.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`maestria` runs anywhere Node.js 22+ is available. No install required - use `npx` to run it directly from npm.
+The maestria CLI runs on Node.js 22.12 or later. You do not need to install it: use npx or another package runner to invoke it from npm.
 
 ## Quick Start
 
-### Check what's installed
+### Check Your Platforms
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="status" />
 
-This detects which coding agent platforms are available on your machine and shows the install status for each:
+This checks which supported coding-agent CLIs are on your PATH and reports whether Maestria is installed for each one. With no command, maestria defaults to status.
 
-```
-  Maestria Status
-  ─────────────────────────────────────
-  OpenCode
-    Available:  ✓
-    Installed:  ✓ v0.6.0
-    Latest:     0.6.2
-  Pi
-    Available:  ✓
-    Installed:  - not installed
-    Latest:     0.4.1
-  Kimi Code
-    Available:  ✗
-    Installed:  - not installed
-    Latest:     unknown
-```
+### Install a Runtime Integration
 
-Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> with no arguments - it defaults to `status`.
-
-### Install for a platform
-
-**Interactive install** (pick from a list of detected platforms):
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install" />
-
-**Install for all detected platforms:**
+Install all detected platforms:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all" />
 
-**Install for a specific platform:**
+Or select one platform:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install opencode" />
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install kimi-code" />
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install claude-code" />
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install codex" />
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install prime-agent" />
 
-### Stage the portable Agent Plugin
+Replace opencode with the platform ID you want. The [command reference](/cli/commands/#install) lists every supported ID and the native installation path behind it.
 
-When your client supports Agent Plugins v1, stage the portable Maestria package with the CLI:
+### Stage a Portable Agent Plugin
+
+Use the plugin namespace when the client supports Agent Plugins v1:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-The command validates the package and prints its local directory. Give that directory to the client's Agent Plugins installer or local-plugin setting. The portable package is not added to `maestria status` and the CLI does not activate it in the client.
+The CLI validates the package, stages it, and prints its directory. Give that directory to the client's own plugin installer or local-plugin setting. The client controls activation, permissions, trust, and session behavior.
 
-For a local package, validate it first and choose an explicit staging directory:
+For a local package:
 
 ```bash
 npx maestria plugin validate /path/to/plugin
 npx maestria plugin install /path/to/plugin --destination ./staged-plugin
 ```
 
-The source can also be an npm package specifier, such as `@maestria/agent-plugin@1.2.3`. The destination must not already exist. Add `--json` when another tool needs the validation or staging report.
+### Update an Integration
 
-### Update to the latest version
-
-**Interactive update:**
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="update" />
-
-**Update all:**
+Update all installed integrations:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="update --all" />
 
-**Update a specific platform:**
+To update one platform or pin a version:
 
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode" />
+```bash
+npx maestria update opencode
+npx maestria update opencode --version 0.5.0
+```
 
-**Update to a specific version:**
+### Configure Specialist Models
 
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode --version 0.5.0" />
-
-### Configure per-agent models
-
-Give each maestria specialist its own model. Interactively:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="configure opencode" />
-
-Or non-interactively for CI:
+Assign a model to a specialist when the platform supports per-agent configuration:
 
 <AllPackageManagers
   type="dlx"
@@ -103,138 +65,31 @@ Or non-interactively for CI:
   args="configure pi --global --quiet --set builder=opencode-go/deepseek-v4-flash"
 />
 
-Use an empty value to reset an agent to inherit the session model:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="configure opencode --set reviewer=" />
-
-Per-agent models are supported on opencode, codex, cursor, pi, and omp. See the [command reference](/cli/commands/#configure) for details.
+Per-agent models are supported on OpenCode, Codex CLI, Cursor, Pi, and Oh My Pi. See the [configure reference](/cli/commands/#configure) for supported platforms and reset syntax.
 
 ## Prerequisites
 
-- **Node.js 22+** - required for the bundled `.mjs` distribution
-- **npm on `PATH`** - required when `plugin install` fetches a package from npm
-- **Agent Plugins v1 client** - required only for the portable package path; the client owns final activation, permissions, and session behavior
-- **Platform CLI tool** - the CLI detects platforms by checking for their binary on `$PATH`. The platform must be installed before maestria can be installed for it:
-  - [OpenCode](https://opencode.ai) - `opencode` binary
-  - [Pi](https://pi.ai) - `pi` binary
-  - [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent) - `prime-agent` binary
-  - [Kimi Code](https://kimi.ai) - `kimi` binary
-  - [Hermes Agent](https://hermes-agent.nousresearch.com) - `hermes` binary
-  - [Claude Code](https://code.claude.com) - `claude` binary
-  - [Codex CLI](https://developers.openai.com/codex) - `codex` binary
-  - [Cursor](https://cursor.com) - `agent` or `cursor-agent` binary
+- Node.js 22.12 or later
+- npm on PATH when plugin install fetches a package from npm
+- The target platform installed before Maestria can detect or install its integration
+- An Agent Plugins v1 client for the portable package path
 
-## JSON Output
+The CLI detects runtime platforms by their executable:
 
-All commands accept `--json` for machine-readable output. Useful for CI scripts, dashboards, or IDE integrations:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="status --json" />
-
-```json
-{
-  "platforms": [
-    {
-      "id": "opencode",
-      "label": "OpenCode",
-      "available": true,
-      "installed": true,
-      "installedVersion": "0.6.0",
-      "latestVersion": "0.6.2"
-    }
-  ]
-}
-```
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all --json" />
-
-Portable commands return a validation report with `valid`, `name`, `version`, `root`, `skillNames`, `errors`, and `warnings`. `plugin install` also returns `destination` and `source`.
-
-## Compact Output
-
-Use `--compact` for minimal machine-friendly text output suitable for AI agents and token-sensitive environments:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="status --compact" />
-
-```
-opencode: available installed=0.2.1 latest=0.2.1
-pi: not-available not-installed
-```
-
-Compact output works on `install` and `update` too, showing one line per platform result:
-
-```
-opencode: installed 0.2.1
-```
-
-The compact flag implies `--quiet` (no spinner animations).
-
-## Quiet Mode
-
-Use `--quiet` to suppress spinner animations. Commands still print final output:
-
-<AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all --quiet" />
-
-<Aside type="tip">
-  Combine `--quiet` with `--json` for clean CI output:{' '}
-  <AllPackageManagers type="dlx" pkg="maestria@latest" args="status --json --quiet" />
-</Aside>
-
-## Exit Codes
-
-| Code  | Meaning                                |
-| ----- | -------------------------------------- |
-| `0`   | Success                                |
-| `1`   | Validation or command error            |
-| `130` | User cancelled (interactive mode only) |
-
-The `install` and `update` commands detect non-interactive terminals (e.g., CI pipelines) and exit with code `1` showing a clear error message instead of attempting an interactive prompt.
-
-`plugin validate` exits with `1` when the package is invalid. `plugin install` exits with `1` when fetching, validation, or staging fails.
-
-Run any command with `--help` to see in-terminal examples, exit code documentation, and a TIP FOR AI AGENTS section with usage guidance for automated pipelines.
-
-## Input Validation
-
-The CLI catches invalid input early with clear error messages:
-
-**Unknown platform:**
-
-```bash
-npx maestria update unknown-platform
-# > Unknown platform 'unknown-platform'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex
-```
-
-**Invalid version format:**
-
-```bash
-npx maestria update opencode --version 2.0
-# > Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.
-```
-
-**Conflicting flags:**
-
-```bash
-npx maestria install opencode --all
-# > Cannot use --all with a specific platform. Choose one.
-```
-
-## Version Caching
-
-The CLI caches version lookups from npm for 1 hour in `~/.cache/maestria/versions.json`:
-
-```bash
-cat ~/.cache/maestria/versions.json
-# {"@maestria/opencode":{"version":"0.6.2","cachedAt":1719600000000}}
-```
-
-To force a fresh version check, delete the cache:
-
-```bash
-rm ~/.cache/maestria/versions.json
-```
-
-The cache is automatically invalidated after a successful update, ensuring `maestria status` always shows the correct latest version after an upgrade.
+| Platform     | Executable            |
+| ------------ | --------------------- |
+| OpenCode     | opencode              |
+| Pi           | pi                    |
+| Oh My Pi     | omp                   |
+| Prime Agent  | prime-agent           |
+| Kimi Code    | kimi                  |
+| Hermes Agent | hermes                |
+| Claude Code  | claude                |
+| Codex CLI    | codex                 |
+| Cursor       | agent or cursor-agent |
 
 ## Next Steps
 
-- [Command Reference](/cli/commands/) - full reference for all commands and flags
+- [Command Reference](/cli/commands/) for every command, flag, JSON schema, and exit code
+- [Platform guides](/) for host-specific installation and usage
+- [Portable Agent Plugin](/agent-plugin/) for client-owned activation and permissions

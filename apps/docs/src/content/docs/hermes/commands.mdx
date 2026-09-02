@@ -1,13 +1,11 @@
 ---
 title: Commands
-description: Complete reference for all @maestria/hermes slash commands - modes, review, planning, session management, and roles.
+description: Reference for @maestria/hermes mode, review, planning, and session commands.
 ---
 
 The plugin registers 7 slash commands that are available in every Hermes session.
 
 ## Mode Commands
-
-## Mode state and reset
 
 Hermes persists the selected mode globally in `$HERMES_HOME/maestria-mode.json`, so it can affect other Hermes sessions using the same home directory. This is a platform limitation, not session isolation. `/mode-clear` writes neutral state and stops mode prompt injection; `/mode` then reports `neutral`. A fresh installation without a state file starts in `fein`.
 

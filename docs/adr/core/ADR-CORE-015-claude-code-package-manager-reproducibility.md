@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed (2026-08-12). This ADR records a workspace-level package manager policy decision made to land the `@maestria/claude-code` plugin package reproducibly. It accompanies the runtime decision boundary in [ADR-CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md) and the evidence ledger in [runtime-support-matrix.md](../../runtime-support-matrix.md).
+Superseded (2026-08-31) by [ADR-CORE-021](ADR-CORE-021-ultracite-via-vite-plus.md). This ADR records the historical workspace package-manager policy that landed the `@maestria/claude-code` plugin reproducibly. Its reproducibility principle remains useful; the current Vite+ toolchain is defined by ADR-CORE-021.
 
 ## Context
 

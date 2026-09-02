@@ -21,7 +21,7 @@ npx maestria status
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
 | `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the Maestria cache or an explicit destination |
 
-All commands accept `--json` and `--quiet` for scripting and CI, and `--help` shows in-terminal examples, exit codes, and AI-agent usage tips. `--compact` is supported on every command except `check`, which requires a platform argument and outputs JSON by default. Wherever a platform has its own plugin manager, the CLI delegates to it rather than mutating host configuration directly.
+All commands accept `--json`. Runtime platform commands also accept `--quiet` and `--compact`; `check` requires a platform argument and outputs JSON by default. The portable `plugin` commands support `--json` but not the runtime output flags. `--help` shows in-terminal examples, exit codes, and AI-agent usage tips. Wherever a platform has its own plugin manager, the CLI delegates to it rather than mutating host configuration directly.
 
 ## What It Provides
 

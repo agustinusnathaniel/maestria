@@ -4,7 +4,7 @@
 
 Let users give each maestria specialist agent (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) its own model, per coding-agent platform, from a single CLI command.
 
-**Status:** Implemented for opencode, pi, omp (maestria-cli 0.8.0). See [cli/commands.mdx](/cli/commands/#configure) for user docs.
+**Status:** Historical implementation record. The initial implementation covered OpenCode, Pi, and OMP; later CLI support also added Codex CLI and Cursor. See the [CLI command reference](https://maestria.sznm.dev/cli/commands/#configure) for current user docs.
 
 ## Design decisions
 

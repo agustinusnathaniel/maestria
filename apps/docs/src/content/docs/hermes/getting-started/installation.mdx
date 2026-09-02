@@ -1,109 +1,86 @@
 ---
 title: Installation & Setup
-description: How to install @maestria/hermes on your Hermes Agent and what you get - 9 methodology skills plus 3 command skills, 7 slash commands, and role-neutral child trust boundaries.
+description: Install @maestria/hermes in Hermes Agent and verify its skills, commands, hooks, and trust boundary.
 ---
 
-import { Steps, Aside, Tabs, TabItem, Code } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
 import { PackageManagers } from 'starlight-package-managers';
 
-`@maestria/hermes` is a git-based Hermes plugin that turns your Hermes Agent into a disciplined methodology worker. It registers 9 methodology skills plus 3 command skills, 7 slash commands, role-neutral child trust, and lifecycle hooks - all installed with a single `hermes plugins install` command.
+@maestria/hermes is a git-based Hermes plugin. It adds Maestria skills, workflow commands, lifecycle hooks, and an optional OpenCode routing tool.
 
 ## Prerequisites
 
-- [Hermes Agent](https://hermes-agent.nousresearch.com) (latest version)
-- **Git CLI** - required for plugin resolution from the GitHub repository
+- [Hermes Agent](https://hermes-agent.nousresearch.com)
+- Git, for plugin resolution from the repository
 
-## Installation
+## Install
 
-The maestria CLI provides a unified interface for installing and managing maestria plugins:
+The recommended path uses the Maestria CLI:
 
-<Steps>
+<PackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
 
-1. **Install via the maestria CLI**
+Verify the native plugin record:
 
-   <PackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
+```bash
+hermes plugins list
+```
 
-   This runs the equivalent Hermes command automatically.
-
-2. **Verify installation**
-
-   ```bash
-   hermes plugins list
-   ```
-
-   You should see `maestria-hermes` in the list with status `enabled`.
-
-</Steps>
-
-### Manual installation
-
-If you prefer to install directly:
+You should see maestria-hermes enabled. The equivalent manual installation is:
 
 ```bash
 hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
 ```
 
-This clones the maestria repo, extracts `packages/hermes/` into `~/.hermes/plugins/maestria-hermes/`, and enables the plugin in your Hermes config.
+The manual command installs the package from the repository and enables it in Hermes.
 
-## What Gets Installed
+## What the Plugin Adds
 
-| Resource | What |
+| Surface | Contents |
 | --- | --- |
-| 12 skills (9 methodology + 3 command) | 9 methodology skills (7 specialists + orchestrator + global rules) plus 3 command workflow skills (`/fein`, `/sonar`, `/blitz`) |
-| 7 commands | `/fein`, `/sonar`, `/blitz`, `/mode`, `/mode-clear`, `/review`, `/plan` |
-| Lifecycle trust | Trust comes from effective native topology roles (`leaf`/`orchestrator`) and recognized top-level bindings; Maestria specialist names are not trust identities. Delegated children get a fixed read/research/LLM-only policy (role-neutral child trust); no child role grants write/execute/shell/delegate/OpenCode capability |
-| Hooks | `pre_gateway_dispatch`, `pre_llm_call`, `pre_tool_call`, `on_session_start`, `on_session_end`, `on_session_finalize`, `on_session_reset`, `subagent_start`, `subagent_stop`, `transform_tool_result` |
-| Middleware | `llm_execution` (mode footer annotation, opt-in via `MAESTRIA_MODE_FOOTER=1`) |
-| External probes | None - the plugin does not probe for any external CLI or package at startup |
+| Skills | 12 skills: 9 methodology skills and 3 workflow-command skills |
+| Commands | 7 commands, including /fein, /sonar, /blitz, /mode, /mode-clear, /review, and /plan |
+| Hooks | 10 lifecycle hooks for gateway, LLM, tool, session, subagent, and result-transform events |
+| Middleware | Optional llm_execution mode-footer annotation, enabled with MAESTRIA_MODE_FOOTER=1 |
+| External startup work | None; the plugin does not probe for tools or packages at startup |
 
-## Recommended Setup
+<Aside type="caution" title="Trust is host-owned">
+  Hermes determines trust from its native topology and permissions. Specialist names do not grant
+  child capabilities. Delegated children receive the plugin's fixed read, research, and LLM-only
+  policy; the child role does not grant write, execute, shell, or delegation access.
+</Aside>
 
-The plugin works standalone - install and go. For the best experience, pair it with these Hermes platform features:
+The optional opencode_route tool invokes the OpenCode CLI only when you use it. Optional memory providers and Hermes goals remain host features; the plugin does not require either.
 
-| Feature | What it adds | Why pair with maestria | Links |
-| --- | --- | --- | --- |
-| **Mnemosyne** (agent memory) | Cross-session memory with semantic recall, sleep cycles, and canonical facts. Remembers preferences, decisions, and task state across sessions. | Your mode preference and pipeline context carry across sessions. The agent learns your working style and recalls past pipeline outcomes. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/nousresearch/hermes) |
-| **Uteke** (knowledge base) | Local-first semantic wiki for project docs, architecture decisions, and reference material. Single Rust binary, zero config, fully offline. | Specialist findings and pipeline decisions can be saved as searchable knowledge-base documents for long-term project memory. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/codecoradev/uteke) |
-| **`/goal`** (persistent objectives) | Multi-turn objectives with auto-continuation, turn budgets, and judge evaluation. Survives session boundaries. | Long pipelines survive `/resume`. Mode and pipeline state restore on `/goal resume`. Pair with `/fein` for production-grade multi-session work. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) · [GitHub](https://github.com/nousresearch/hermes) |
+## Verify a New Session
 
-Configure Mnemosyne or Uteke in your Hermes `config.yaml` under `memory:`. The plugin is memory-engine agnostic - it works identically regardless of which provider (or none) is active.
+Start Hermes and run:
 
-## Verifying Installation
-
-If you see the mode directive injected into your messages, the plugin is active:
-
-```
-[MAESTRIA MODE: fein]
-Full methodology pipeline is active. All stages execute:
-1. Reconnaissance (adventurer)
-2. Design / planning (architect / planner)
-3. Implementation (builder)
-4. Review (reviewer)
+```text
+/mode
 ```
 
-To check status, type `/mode`:
+The response should show the active mode. Ask the agent to list the Maestria specialists, then try one focused task. If the mode marker or skills do not appear, restart Hermes and run hermes plugins list again.
 
-## Updating
+## Update
 
 <PackageManagers type="dlx" pkg="maestria@latest" args="update hermes" />
 
-Or directly:
+Or update the native plugin:
 
 ```bash
 hermes plugins update maestria-hermes
 ```
 
-This pulls the latest version from the git repository and refreshes the plugin files.
-
-## Uninstalling
+## Uninstall
 
 ```bash
 hermes plugins remove maestria-hermes
 ```
 
-The plugin files are removed from `~/.hermes/plugins/maestria-hermes/` and the entry is removed from your Hermes config. Other plugins remain unaffected.
+This removes the plugin files and its Hermes registration. Other plugins remain installed.
 
 ## Next Steps
 
-- [Quick Start](/hermes/getting-started/quick-start/) - Your first session with the plugin
-- [Commands](/hermes/commands/) - Full reference for all slash commands
+- [Quick Start](/hermes/getting-started/quick-start/)
+- [Commands](/hermes/commands/)
+- [Contributing](/hermes/contributing/)

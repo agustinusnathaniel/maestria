@@ -154,17 +154,17 @@ The `prompt_mode: append` field is critical - it ensures the specialist prompt m
 
 Each specialist has an appropriate tool allowlist matching its role:
 
-| Agent      | Tools                                   | Purpose                             |
-| ---------- | --------------------------------------- | ----------------------------------- |
-| adventurer | read, bash, grep, find, ls, glob        | Codebase reconnaissance (read-only) |
-| architect  | read, bash, grep, find, ls              | Architecture analysis (read-only)   |
-| builder    | read, bash, grep, find, ls, write, edit | Implementation (full access)        |
-| diagnose   | read, bash, grep, find, ls              | Bug tracing (read-only)             |
-| planner    | read, bash, grep, find, ls              | Planning (read-only)                |
-| reviewer   | read, bash, grep, find, ls, glob        | Code review (read-only)             |
-| writer     | read, bash, grep, find, ls, write, edit | Documentation (full access)         |
+| Agent | Tools | Purpose |
+| --- | --- | --- |
+| adventurer | read, bash, grep, find, ls, glob | Codebase reconnaissance; no write/edit tools |
+| architect | read, bash, grep, find, ls | Architecture analysis; Bash is available for evidence gathering |
+| builder | read, bash, grep, find, ls, write, edit | Implementation (full access) |
+| diagnose | read, bash, grep, find, ls | Bug tracing; Bash is available for evidence gathering |
+| planner | read, bash, grep, find, ls | Planning; no write/edit tools |
+| reviewer | read, bash, grep, find, ls, glob | Code review; no write/edit tools |
+| writer | read, bash, grep, find, ls, write, edit | Documentation (full access) |
 
-This enforces the maker/checker split at the subagent tool level - builder and writer have write access, everyone else is read-only.
+This enforces the maker/checker split at the subagent tool level: builder and writer have write access, while the other roles have no write/edit tools. Architect and Diagnose retain Bash for evidence gathering, so their role boundaries are not a universal no-execution sandbox.
 
 ### Persistence
 

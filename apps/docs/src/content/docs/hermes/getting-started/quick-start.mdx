@@ -1,89 +1,67 @@
 ---
 title: Quick Start
-description: Your first session with @maestria/hermes - switching modes, using slash commands, and dispatching specialists.
+description: Use @maestria/hermes for a deliberate full pipeline, a research route, or a bounded direct task.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-Once you've installed the plugin, all skills, commands, and hooks are loaded automatically in every Hermes session. Hermes starts with `fein` as its default mode, which describes the full pipeline.
+After installation, Hermes loads the Maestria skills, commands, and hooks at startup. The default mode is fein, which describes the full pipeline.
 
 <Aside type="caution" title="Use full mode deliberately">
-  Use `/blitz` for small or well-scoped tasks. Use the default mode when the task benefits from
-  review and specialist handoffs. Read [the usage decision guide](/core/when-to-use/) before
-  choosing a full pipeline, especially with an expensive or slow model.
+  Use /blitz for a small or well-scoped task. Use the default full mode when specialist handoffs and
+  independent review justify the extra model work. See [When to Use Maestria](/core/when-to-use/).
 </Aside>
 
 ## Start a Session
 
-Launch Hermes as usual. The plugin wires itself in at startup. It does not require startup probes for external tools.
+Launch Hermes in the project you want to work on. The plugin does not probe for external tools at startup.
 
-## Try the Commands
+## Choose a Route
 
-All features are accessible via slash commands:
-
-```bash
-/mode        # Show current mode and role
-/mode-clear  # Return to neutral routing
-/fein        # Full pipeline: explore → design → build → review
-/sonar       # Research only: explore → analyze → stop
-/blitz       # Fast execution: build directly
-/review      # Trigger review of last output
-/plan        # Trigger a planning session
-```
-
-**Example workflow:**
-
-```
-You:          /fein
-Hermes:       Mode set to fein
-You:          Research the auth patterns in this codebase
-Hermes:       [Adventurer explores, Architect designs, Builder route is capability-gated, Reviewer checks]
-```
-
-## Modes at a Glance
-
-| Mode | Pipeline | When to Use |
+| Command | Route | Use it for |
 | --- | --- | --- |
-| `fein` | Full: adventurer → architect → builder → reviewer | Production work, new features, anything that needs review |
-| `sonar` | Research: read-only adventurer/planner → stop | Understanding a codebase, exploring options, no creation |
-| `blitz` | Direct, read/research/LLM-only | Explanation and discovery on known territory; code changes route through review |
+| /fein | Full pipeline | Unfamiliar, multi-stage, or high-risk work |
+| /sonar | Research only, then stop | Understanding a codebase or comparing approaches |
+| /blitz | Direct read, research, and LLM work | Small work where direct execution is appropriate |
+| /review | Review the latest output | An independent check before committing |
+| /plan | Create a phased plan | Work that needs milestones and rollback points |
+| /mode or /mode-clear | Show or clear the mode | Inspecting state or returning to neutral routing |
 
-The mode directive is injected into every message automatically - no manual prompting needed.
+The mode directive is added to each message. A mode command changes the mode for all sessions that share the same HERMES_HOME; use /mode-clear when that persistence is not wanted.
 
-## Specialist Roles and Tool Boundaries
+## Try a Task
 
-The seven specialist names (adventurer, architect, builder, diagnose, planner, reviewer, writer) are methodology **routing roles** that the orchestrator dispatches to. They are not tool-granting identities on Hermes. Trust and tool capability are governed by the role-neutral child trust policy:
+For a full route, describe the outcome after activating fein:
 
-| Context | Allowed tools |
-| --- | --- |
-| **Trusted top-level session** (positively identified by native lifecycle state) | Normal direct behavior. In sonar: read/research only. In direct blitz: a literal read/research/LLM allowlist, no code changes |
-| **Delegated child** (spawned via `delegate_task`) | Fixed read/research/LLM-only policy. Cannot write, execute code, run a shell, delegate, or invoke OpenCode |
-| **Ambiguous / invalid / ended child** | Fails closed - denied in all modes |
+```text
+/fein
+Research the authentication patterns in this codebase, fix the empty-email failure, and review the fix.
+```
 
-Under this policy:
+The orchestrator selects the needed specialists and passes evidence between stages. For a small, known change, use direct execution instead:
 
-- Native Hermes child roles are `leaf`/`orchestrator` topology roles only, not Maestria specialist roles.
-- User or delegation text cannot grant capabilities; role markers in messages are ignored.
-- Review/landing enforcement is advisory (Hermes has no native review-state or landing gate).
-- Role-specific delegated builder writes are deferred until Hermes provides an authenticated capability channel.
+```text
+/blitz
+Add a JSDoc comment to the add function in src/math.ts.
+```
 
-Direct code changes on Hermes are performed by a trusted top-level session (typically fein), not by a delegated `builder` child.
+## Understand the Boundary
 
-## Pairing with Platform Features
+Maestria specialist names are routing roles, not permission identities on Hermes.
 
-For multi-turn or long-running work, pair maestria pipelines with Hermes platform features:
+- A trusted top-level session performs direct code changes.
+- Delegated children receive a fixed read, research, and LLM-only policy.
+- The policy does not allow children to write files, execute code, run a shell, delegate, or invoke OpenCode.
+- Review and landing remain advisory because Hermes has no native review-state gate.
 
-| Feature | How it helps | Links |
-| --- | --- | --- |
-| **`/goal`** | Set a persistent objective (`/goal draft Run the fein pipeline to implement OAuth`). The goal loop survives session boundaries; mode and pipeline state restore on `/goal resume`. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals) · [GitHub](https://github.com/nousresearch/hermes) |
-| **Mnemosyne** (agent memory) | Cross-session agent memory remembers your mode preference, past pipeline context, and working patterns across sessions. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/nousresearch/hermes) |
-| **Uteke** (knowledge base) | Store specialist findings and pipeline decisions as searchable wiki documents for long-term project reference. | [Docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) · [GitHub](https://github.com/codecoradev/uteke) |
+The [Hermes installation guide](/hermes/getting-started/installation/) lists the hooks, commands, and trust surfaces added by the plugin. The [commands reference](/hermes/commands/) documents each command's behavior.
 
-Configure Mnemosyne or Uteke in `config.yaml` under `memory:`. See the [Installation Guide](/hermes/getting-started/installation/) for details.
+## Long-Running Work
+
+Use Hermes's /goal feature when the objective must survive session boundaries. Mnemosyne and Uteke are optional Hermes features; Maestria does not require a memory provider.
 
 ## Next Steps
 
-- [Commands](/hermes/commands/) - Full reference for all slash commands
-- [Core Concepts](/core/agents/) - Specialist reference and pipeline patterns
-
-> **Mode lifetime:** Hermes stores mode globally in `$HERMES_HOME`; use `/mode-clear` to return to neutral routing for all sessions sharing that home.
+- [Installation](/hermes/getting-started/installation/)
+- [Commands](/hermes/commands/)
+- [Core Concepts](/core/agents/)

@@ -56,6 +56,8 @@ Detects which coding agent CLIs are available on `$PATH`, checks whether maestri
 }
 ```
 
+The version values in this example are illustrative. The command reports the versions found on your machine and the versions currently available from each registry.
+
 Each platform object:
 
 | Field | Type | Description |
@@ -239,7 +241,7 @@ Use `--version` to pin a specific version instead of the latest:
 maestria update opencode --version 0.5.0
 ```
 
-Exact version pinning is not available for `claude-code`, `codex`, or `prime-agent`; those host adapters update from the latest staged npm package and return a validation result if `--version` is passed.
+Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`, or `hermes`. The first three update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the requested version, warns, and updates from its git-based plugin installation.
 
 | Invocation | What happens |
 | --- | --- |
@@ -409,7 +411,7 @@ For a partial assignment, set a model for any role you want to change:
 maestria configure <platform> --global --set planner=<model-id>
 ```
 
-Unmentioned agents remain unchanged. Configuration currently supports OpenCode, Pi, and OMP.
+Unmentioned agents remain unchanged. Configuration currently supports OpenCode, Codex CLI, Cursor, Pi, and OMP.
 
 ### Flags
 
