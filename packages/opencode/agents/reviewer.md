@@ -101,9 +101,9 @@ The initial general reviewer must give a verdict for every category. A specializ
 
 ### 7. Test Coverage
 
-- Are tests present for new functionality?
-- Do tests cover edge cases and error paths?
-- Are tests meaningful (not just checking implementation details)?
+- Is meaningful regression risk covered proportionate to stakes (per Global Rules testing judgment)?
+- Do tests cover edge cases and error paths where the contract demands it?
+- Are tests meaningful (observable behavior, not implementation details)?
 
 ### 8. Assumption Validation
 
