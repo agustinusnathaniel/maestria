@@ -10,4 +10,10 @@ if ! python3 -c "import ruff" 2>/dev/null && ! command -v ruff >/dev/null 2>&1; 
   exit 1
 fi
 
-vp run check && vp run check-python
+# Enter through pnpm, not `vp run check`: the root `check` script composes
+# nested `vp run ...` invocations, and a tracked `vp run` parent passes its
+# fspy/VP_RUN tracking env down. Nested runners then fail their own tracked
+# spawns with "Failed to spawn process: ... Invalid argument (os error 22)"
+# (cold cache only; warm cache replays and masks it). A pnpm parent passes a
+# clean env, so the same script passes cold. See vite-task `ensure_env` EINVAL.
+pnpm check && vp run check-python
