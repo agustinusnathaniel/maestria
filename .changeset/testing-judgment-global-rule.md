@@ -2,7 +2,9 @@
 '@maestria/agent-plugin': patch
 '@maestria/claude-code': patch
 '@maestria/codex': patch
+'@maestria/core': patch
 '@maestria/cursor': patch
+'@maestria/hermes': patch
 '@maestria/kimi-code': patch
 '@maestria/omp': patch
 '@maestria/opencode': patch
