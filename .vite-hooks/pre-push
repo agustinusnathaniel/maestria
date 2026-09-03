@@ -10,4 +10,4 @@ if ! python3 -c "import ruff" 2>/dev/null && ! command -v ruff >/dev/null 2>&1; 
   exit 1
 fi
 
-vp run check && vp run check-python
+pnpm check && vp run check-python
