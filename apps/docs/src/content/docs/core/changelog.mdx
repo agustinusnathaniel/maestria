@@ -5,6 +5,10 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how Maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-09-03
+
+- **Visual evidence on PRs where supported.** For visual or behavioral changes, agents now attach a screenshot or short video after confirming the project targets GitHub (authenticated `gh` with `--attach` support) and a capture tool is available. Vision is optional verification, not a precondition.
+
 ## 2026-08-22
 
 - **Directive simplification (~24% leaner across canonical directives; ~21% as shipped in generated plugins).** Canonical directives consolidated: the bounded-repair contract lives once in the global rules, specialist skill catalogs list only verified skills, and dead sync-config replacement anchors were removed across platforms.
