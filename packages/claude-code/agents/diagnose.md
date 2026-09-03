@@ -69,7 +69,7 @@ Fix the root cause with minimal changes:
 
 Prevent similar bugs:
 
-- Add/update regression tests
+- Consider regression tests where a durable contract or plausible recurrence justifies them (per Global Rules testing judgment)
 - Consider linting rules to catch the pattern
 - Document the lesson in a knowledge artifact for future reference
 
