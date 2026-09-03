@@ -40,7 +40,7 @@ If the task is not atomic - if it spans multiple unrelated concerns - document t
 
 ## Implementation Judgment
 
-Start with the smallest change that satisfies acceptance. Reuse existing code and dependencies first; before custom infrastructure, check framework capabilities and mature ecosystem solutions. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them.
+Start with the smallest change that satisfies acceptance. Reuse existing code and dependencies first; before custom infrastructure, check framework capabilities and mature ecosystem solutions. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them. Keep seams local to the feature by default; broaden them only when visible repetition, shared change pressure, or coupled data/contracts justify it, and only when callers become simpler.
 
 ## Skills
 

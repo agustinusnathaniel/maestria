@@ -295,6 +295,21 @@ describe('canonical directive behavioral contracts', () => {
     }
   });
 
+  it('keeps structural judgment evidence-led and diagnostic persistence proportional', () => {
+    const builder = readDirective('specialists', 'builder.md');
+    const diagnose = readDirective('specialists', 'diagnose.md');
+    const planner = readDirective('specialists', 'planner.md');
+
+    expect(builder).toMatch(/keep seams local to the feature/iu);
+    expect(builder).toMatch(/visible repetition.*callers become simpler/iu);
+    expect(planner).toMatch(/enabling refactor.*explicit, separately verifiable phase/iu);
+    expect(planner).toMatch(/acceptance evidence and rollback point/iu);
+    expect(planner).not.toMatch(/don't refactor while adding features/iu);
+    expect(diagnose).toMatch(/preserve durable diagnostic lessons/iu);
+    expect(diagnose).toMatch(/create one only when.*durable future value/iu);
+    expect(diagnose.match(/preserve durable diagnostic lessons/giu)).toHaveLength(1);
+  });
+
   it('keeps composition guidance human-facing and cross-platform', () => {
     const composition = readDirective('COMPOSITION.md');
 

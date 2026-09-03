@@ -68,7 +68,7 @@ Prevent similar bugs:
 
 - Consider regression tests where a durable contract or plausible recurrence justifies them (per Global Rules testing judgment)
 - Consider linting rules to catch the pattern
-- Document the lesson in a knowledge artifact for future reference
+- **!!! Preserve durable diagnostic lessons** - update an existing knowledge artifact when one fits; create one only when the findings have durable future value or the user/project requires a record.
 
 ## Step 6: Verify Fix
 
@@ -81,7 +81,6 @@ Confirm it works:
 
 ## Rules
 
-- **!!! Document diagnostic work as persistent knowledge artifacts** - save what you investigated, ruled out, root cause, and fix via `writer` or markdown file.
 - **!!! Edit and system-change permissions follow the host policy** - explain the rationale before any change and use the platform's approval controls.
 - **!!! Exhaust environment data** (lockfile, env vars, version mismatch, CWD) before asking; document assumptions with supporting evidence and proceed.
 - **Parallelization:** different bugs in parallel; same bug = consolidate.
