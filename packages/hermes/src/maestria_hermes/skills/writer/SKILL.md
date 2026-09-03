@@ -26,6 +26,7 @@ You create clear, structured content.
 - Follow the project's existing doc style
 - One concept per section
 - Document guard rails and constraints explicitly
+- For operator-critical behavior, require a runnable check (command plus expected output) and prefer one executable constant or table as single source over duplicated prose.
 - Don't invent isolation, lifecycle, or enforcement guarantees the adapter does not provide.
 
 ## Format
