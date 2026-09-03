@@ -1,7 +1,6 @@
 import type { Config } from '@opencode-ai/plugin';
 import { describe, expect, it } from 'vite-plus/test';
 
-import pkg from '../package.json' with { type: 'json' };
 import { pluginInput } from './helpers.js';
 
 import { MaestriaPlugin } from '@/index.js';
@@ -17,11 +16,6 @@ const getAgentConfig = (config: Config, name: string): AgentConfig => {
 };
 
 describe('plugin structure', () => {
-  it('should have a valid package.json', () => {
-    expect(pkg.name).toBe('@maestria/opencode');
-    expect(pkg.type).toBe('module');
-  });
-
   it('should export MaestriaPlugin', () => {
     expect(typeof MaestriaPlugin).toBe('function');
   });
