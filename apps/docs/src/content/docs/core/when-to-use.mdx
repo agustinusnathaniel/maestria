@@ -5,92 +5,48 @@ description: Choose between direct execution, a specialist, and the full pipelin
 
 import { Aside } from '@astrojs/starlight/components';
 
-Maestria adds structure through delegation, handoffs, and review. That structure costs model work, context transfer, and waiting time. Use it when the extra information or independent check is worth the cost.
+Maestria adds structure through delegation, handoffs, and review. That structure costs model work, context transfer, and waiting time.
+
+Default to direct execution. Use the orchestrator only for complex, huge, or long-running tasks where context management and parallel delegation pay for that cost. For straightforward, clear-scoped work, skip the orchestrator: extra directives add coordination without new information.
+
+## Default Rule
+
+1. **Direct execution first.** Familiar code, a clear scope, and easy verification mean the platform's normal agent is the fastest and cheapest path.
+2. **One specialist when one capability is missing.** Unfamiliar code (adventurer), unknown cause (diagnose), a consequential choice (architect), or a second pair of eyes (reviewer). Then implement directly.
+3. **Orchestrator only when the task needs staged handoffs, parallel work, or independent review.** That means cross-module features, migrations, high-risk changes, unfamiliar systems, or durable handoffs across sessions.
 
 ## Quick Decision
 
-| Situation | Start with | Why |
-| --- | --- | --- |
-| One or two known files and an obvious change | Direct execution | Delegation adds coordination without much new information |
-| Small bug in unfamiliar code | adventurer or diagnose | Recover the missing context before changing files |
-| UI, copy, or interactive iteration | Direct execution or blitz | Short feedback loops matter more than formal handoffs |
-| Shared workflow across compatible clients | [Portable Agent Plugin](/agent-plugin/) | Share skills while the client owns activation and permissions |
-| Multi-file work in an unfamiliar codebase | Orchestrator or fein | Reconnaissance and staged review reduce rework |
-| Security, migration, or other high-risk work | Full pipeline with review | Independent validation justifies the overhead |
-| Research or feasibility question | sonar | Stop after analysis instead of creating implementation work |
+| Task | Start with |
+| --- | --- |
+| One or two known files and an obvious change | Direct execution |
+| Small bug in unfamiliar code | adventurer or diagnose, then direct |
+| UI, copy, or interactive iteration | Direct execution or blitz |
+| Research or feasibility question | sonar (stop, no implementation) |
+| Cross-module feature, migration, high-risk or long-running work | Orchestrator or fein |
 
-## Choose the Route
-
-| Turn | Default route | Escalate when |
-| --- | --- | --- |
-| Explanation or discovery | Direct answer or one focused specialist | The answer depends on several modules or a consequential decision |
-| Tiny edit | Direct execution | It touches behavior, generated files, or a security-sensitive boundary |
-| Ordinary code change | Direct implementation plus focused review | The change spans packages or has unclear requirements |
-| Complex or high-risk change | Full pipeline | New evidence exposes design, security, or operational risk |
-
-The mode names vary by platform, but the trade-off is the same:
-
-- fein selects the full pipeline.
-- sonar stops after research or design.
-- blitz keeps only the required safeguards and validation around a fast implementation path.
-
-<Aside type="caution" title="Full pipeline is an explicit trade-off">
-  Do not choose the full pipeline only because a task has several steps. Choose it when separate
-  stages add information, reduce risk, or create an independent check.
+<Aside type="caution" title="Overhead without payoff">
+  Do not choose the orchestrator only because a task has several steps, or because the repository is
+  large. If delegation adds round-trips but no new information, no parallel speedup, and no
+  independent check, it only slows the task down.
 </Aside>
 
-## Three Ways to Work
+## Do Not Use the Orchestrator For
 
-### Direct Execution
+- A single atomic edit in known files.
+- An obvious change that is easy to verify (comment, copy, config, small fix).
+- A quick fix in familiar territory with short feedback loops.
+- Sharing a workflow across clients (use the [Portable Agent Plugin](/agent-plugin/) instead; the client owns activation and permissions).
 
-Use the platform's normal agent when the task is familiar, small, or easy to verify. This is often the fastest and cheapest path.
+## Modes
 
-### Specialist Delegation
+The mode names vary by platform, but the trade-off is the same: fein selects the full pipeline, sonar stops after research or design, blitz keeps only required safeguards around a fast implementation path.
 
-Use one specialist when you need one kind of help:
+## Costs
 
-- adventurer maps unfamiliar code.
-- architect compares approaches.
-- diagnose traces a failure.
-- planner creates phased milestones.
-- reviewer checks a result independently.
-- writer produces structured documentation.
+Each delegated stage adds another model turn and its prompt tokens, context transfer, waiting before the next dependent stage, and repair work if review finds a problem. Strong or expensive models favor direct execution or one specialist; fast, inexpensive models can make narrow delegation a reasonable trade. Start with the smallest route and escalate when uncertainty or risk appears.
 
-Combine that result with direct implementation when a full pipeline would add little value.
-
-### Full Orchestration
-
-Use the orchestrator for cross-module features, risky changes, unfamiliar systems, or work that needs a durable handoff across sessions. The [Pipeline & Roles](/core/pipeline/) page explains the stages.
-
-## Model and Platform Costs
-
-Each delegated stage can add:
-
-- another model turn and its prompt tokens
-- context transfer and cache reads
-- waiting before the next dependent stage
-- more repair work if review finds a problem
-
-Strong or expensive models often make direct execution or one specialist the better choice. Fast, inexpensive models can make narrow delegation a reasonable trade. Start with the smallest route and escalate when uncertainty or risk appears.
-
-Platform behavior also changes the trade-off:
-
-- OpenCode and Claude Code provide the strongest package-level tool boundaries described by their guides.
-- Codex CLI, Cursor, and Prime Agent rely more on host controls and advisory methodology boundaries.
-- Kimi Code applies permission rules to the session; Pi and OMP differ in dispatch and context inheritance; Hermes uses role-neutral child trust.
-- The portable Agent Plugin provides skills, while the consuming client owns discovery, activation, permissions, and session behavior.
-
-Read the platform guide before assuming that a route, permission, or lifecycle behavior transfers unchanged.
-
-## Examples
-
-| Request                                  | Good starting point           |
-| ---------------------------------------- | ----------------------------- |
-| Add a JSDoc comment to a known function  | Direct execution              |
-| Find where authentication tokens refresh | adventurer                    |
-| Trace an intermittent login failure      | diagnose                      |
-| Migrate authentication across packages   | Full pipeline or fein         |
-| Review changed files for security issues | reviewer with a security lens |
+Platform behavior also changes the trade-off, so read the platform guide before assuming that a route, permission, or lifecycle behavior transfers unchanged.
 
 <Aside type="tip" title="A practical rule">
   If the task is one atomic edit, start directly. If a wrong assumption is expensive, add a

@@ -31,9 +31,7 @@ Three workflow modes are available to control pipeline depth. Their activation a
 
 ## When to Use the Orchestrator
 
-The orchestrator adds structure and validation at the cost of coordination overhead. It is most valuable for work that spans multiple phases or sessions - tasks that benefit from dedicated exploration before implementation, or multi-step processes where built-in commit discipline and progress tracking prevent drift.
-
-If you mostly use strong, expensive, or slow models and already have a clear, well-scoped goal, going without the orchestrator is often faster and cheaper. Direct execution or a single specialist avoids delegation round-trips, context transfers, and review loops. The orchestrator trades speed and token usage for structure and validation. Choose the approach that fits the task, and start with the [usage decision guide](/core/when-to-use/).
+The orchestrator is the exception, not the default. Use it only for complex, huge, or long-running tasks where staged handoffs and parallel delegation pay for their coordination cost; for clear-scoped work, execute directly or delegate to one specialist. See the [usage decision guide](/core/when-to-use/).
 
 ## Specialist Reference
 
