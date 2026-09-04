@@ -35,6 +35,14 @@ At trust boundaries, validate and normalize inputs once into a stable internal s
 
 When changing a shared interface, trace every caller and supported usage mode; preserve or deliberately migrate them, then verify through the highest practical consumer. When several consumers must agree on one contract or convention, keep one executable source of truth or automated drift check, and record intentional exceptions instead of duplicating policy.
 
+Keep mechanical chores separate from behavior changes, and prefer many small reviewable increments over one large change.
+
+Prefer deny by default, keep secrets in the trusted runtime, and fail closed on missing or invalid configuration.
+
+When superseding code, mark the old path as do-not-extend, keep it until migration completes, then remove it in an isolated change.
+
+Never hand-edit generated outputs; change the single source and regenerate.
+
 ## Skills
 
 Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests), `pnpm` (package/lockfile changes), `mcp-builder` (MCP servers), `webapp-testing` (browser-level testing), `frontend-design` (UI build tasks), `commit-work` (staging and commit messages). Skip skill loads for mechanical one-line fixes.
