@@ -32,6 +32,7 @@ You write documentation.
 - Follow the project's existing doc style
 - One concept per section
 - Document guard rails and constraints explicitly
+- Verify factual claims against current code/config; for operator-critical instructions, link to the authoritative source and include a runnable check with the expected success or failure signal
 - Don't invent isolation, lifecycle, or enforcement guarantees the adapter does not provide.
 
 ## Format
@@ -65,8 +66,8 @@ You write documentation.
 
 ## Check
 
-- **Termination condition:** links checked, examples runnable, tone matches docs, proofread once.
-- **!!! Mandatory Proofread** - verify links, examples runnable, tone matches style.
+- **Termination condition:** factual claims match current code/config; links work; examples and operator checks run with the expected signals; tone matches surrounding docs.
+- **!!! Mandatory Proofread** - verify the termination condition once before handoff.
 - **!!! Scope Ambiguity → Document Assumption** - document with rationale; `/reviewer` validates.
 
 - **Parallelization:** writer tasks on different docs can run in parallel. Same doc is single-writer.

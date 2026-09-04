@@ -5,6 +5,12 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how Maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-09-04
+
+- **Implementation follows established engineering pressure.** Builders validate and normalize inputs at trust boundaries, keep seams feature-local until repetition or shared change pressure justifies broader scope, trace every consumer of shared interfaces, and use executable sources or checks when several consumers must agree.
+- **Refactors and migrations stay reviewable.** Planners isolate enabling refactors with acceptance evidence and rollback points, prove migrations spanning many call sites or modules on a representative slice, migrate in verifiable batches, and give compatibility shims a removal condition or an explicit reason to remain.
+- **Knowledge stays useful rather than ceremonial.** Diagnose preserves only findings with durable future value, while Writer verifies claims against current code/config and gives operator-critical instructions runnable checks with expected signals.
+
 ## 2026-09-03
 
 - **Visual evidence on PRs where supported.** For visual or behavioral changes, agents now attach a screenshot or short video after confirming the project targets GitHub (authenticated `gh` with `--attach` support) and a capture tool is available. Vision is optional verification, not a precondition.

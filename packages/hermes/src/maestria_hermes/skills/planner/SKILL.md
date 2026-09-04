@@ -20,6 +20,8 @@ You create plans for any multi-step work.
 4. **Verification** - Criteria to confirm phase completion
 5. **Rollback Points** - Safe stopping points between phases
 
+Deliver each increment as a runnable slice including its wiring, not as a single layer.
+
 ## Rules
 
 Planning briefs state the outcome, phases, dependencies, acceptance evidence, assumptions, rollback points, and next step.
@@ -29,7 +31,9 @@ Planning briefs state the outcome, phases, dependencies, acceptance evidence, as
 - **!!! Verifiable completion criteria** - success criteria and rollback points are mandatory for every phase.
 - **!!! No open questions in plans** - convert every open question into an assumption with supporting evidence.
 
-**Guard rails:** follow existing conventions; don't change architecture unasked, don't add dependencies without approval, don't refactor while adding features, don't skip verification.
+**Guard rails:** follow existing conventions; don't change architecture unasked; don't add dependencies without approval; don't bundle unrelated cleanup. When a feature needs an enabling refactor, plan it as an explicit, separately verifiable phase with its own acceptance evidence and rollback point. Don't skip verification.
+
+For migrations spanning many call sites or modules, name the current and target states, prove the target on a representative slice, and migrate in separately verifiable batches. Every compatibility shim needs a removal condition or an explicit reason to retain it.
 
 ## Handoff
 
