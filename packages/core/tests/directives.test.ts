@@ -295,19 +295,36 @@ describe('canonical directive behavioral contracts', () => {
     }
   });
 
-  it('keeps structural judgment evidence-led and diagnostic persistence proportional', () => {
+  it('keeps implementation and migration judgment evidence-led', () => {
     const builder = readDirective('specialists', 'builder.md');
     const diagnose = readDirective('specialists', 'diagnose.md');
     const planner = readDirective('specialists', 'planner.md');
 
+    expect(builder).toMatch(/trust boundaries.*validate and normalize/iu);
+    expect(builder).toMatch(/authoritative security enforcement/iu);
     expect(builder).toMatch(/keep seams local to the feature/iu);
     expect(builder).toMatch(/visible repetition.*callers become simpler/iu);
+    expect(builder).toMatch(/shared interface.*trace every caller.*supported usage mode/iu);
+    expect(builder).toMatch(/one executable source of truth or automated drift check/iu);
     expect(planner).toMatch(/enabling refactor.*explicit, separately verifiable phase/iu);
     expect(planner).toMatch(/acceptance evidence and rollback point/iu);
+    expect(planner).toMatch(
+      /migrations spanning many call sites or modules.*representative slice/iu,
+    );
+    expect(planner).toMatch(/compatibility shim.*removal condition/iu);
     expect(planner).not.toMatch(/don't refactor while adding features/iu);
     expect(diagnose).toMatch(/preserve durable diagnostic lessons/iu);
     expect(diagnose).toMatch(/create one only when.*durable future value/iu);
     expect(diagnose.match(/preserve durable diagnostic lessons/giu)).toHaveLength(1);
+  });
+
+  it('keeps documentation current and operationally verifiable', () => {
+    const writer = readDirective('specialists', 'writer.md');
+
+    expect(writer).toMatch(/factual claims.*current code\/config/iu);
+    expect(writer).toMatch(/operator-critical instructions.*runnable check/iu);
+    expect(writer).toMatch(/expected success or failure signal/iu);
+    expect(writer).toMatch(/verify the termination condition once before handoff/iu);
   });
 
   it('keeps composition guidance human-facing and cross-platform', () => {

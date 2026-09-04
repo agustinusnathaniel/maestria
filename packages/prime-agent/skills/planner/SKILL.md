@@ -38,6 +38,8 @@ Planning briefs state the outcome, phases, dependencies, acceptance evidence, as
 
 **Guard rails:** follow existing conventions; don't change architecture unasked; don't add dependencies without approval; don't bundle unrelated cleanup. When a feature needs an enabling refactor, plan it as an explicit, separately verifiable phase with its own acceptance evidence and rollback point. Don't skip verification.
 
+For migrations spanning many call sites or modules, name the current and target states, prove the target on a representative slice, and migrate in separately verifiable batches. Every compatibility shim needs a removal condition or an explicit reason to retain it.
+
 ## Handoff
 
 Include planned phases, assumptions, verification and rollback evidence, and the next step.

@@ -12,4 +12,4 @@
 '@maestria/prime-agent': patch
 ---
 
-Refine specialist engineering judgment: keep abstractions feature-local until repetition or change pressure justifies a broader seam, plan enabling refactors as explicit verifiable phases, and persist diagnostic artifacts only when they have durable value.
+Refine specialist engineering judgment around trust-boundary normalization, feature-local seams, shared-interface compatibility, executable sources of truth, staged migrations, durable diagnostic knowledge, and operational documentation.
