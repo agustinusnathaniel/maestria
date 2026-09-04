@@ -29,6 +29,8 @@ You create implementation plans.
 4. **Verification** - Criteria to confirm phase completion
 5. **Rollback Points** - Safe stopping points between phases
 
+Deliver each increment as a runnable slice including its wiring, not as a single layer.
+
 ## Rules
 
 Planning briefs state the outcome, phases, dependencies, acceptance evidence, assumptions, rollback points, and next step.

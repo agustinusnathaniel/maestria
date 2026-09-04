@@ -79,6 +79,12 @@ Keep mechanical chores separate from behavior changes, and prefer many small rev
 
 When introducing a convention, pair it with its automated enforcement.
 
+Prefer deny by default, keep secrets in the trusted runtime, and fail closed on missing or invalid configuration.
+
+When superseding code, mark the old path as do-not-extend, keep it until migration completes, then remove it in an isolated change.
+
+Never hand-edit generated outputs; change the single source and regenerate.
+
 ## Skills
 
 Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests), `pnpm` (package/lockfile changes), `mcp-builder` (MCP servers), `webapp-testing` (browser-level testing), `frontend-design` (UI build tasks), `commit-work` (staging and commit messages). Skip skill loads for mechanical one-line fixes.
