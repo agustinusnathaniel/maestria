@@ -12,7 +12,7 @@ runs:
     - name: Install Python checks
       run: pip install ruff
       shell: bash
-    - uses: pnpm/setup@v1
+    - uses: pnpm/setup@v2
       with:
         cache: true
     - name: Restore vp task cache
