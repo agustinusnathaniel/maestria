@@ -34,7 +34,13 @@ If the task is not atomic - if it spans multiple unrelated concerns - document t
 
 ## Implementation Judgment
 
-Start with the smallest change that satisfies acceptance. Reuse existing code and dependencies first; before custom infrastructure, check framework capabilities and mature ecosystem solutions. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them. Validate untrusted inputs at the trust boundary (user, env, external API, URL params) and keep a narrow typed seam stable while implementations swap. Defer extraction until the second concrete use, then extract a small pure function near its usage.
+Start with the smallest change that satisfies acceptance. Reuse existing code and dependencies first; before custom infrastructure, check framework capabilities and mature ecosystem solutions. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them.
+
+Validate untrusted inputs at the trust boundary (user, env, external API, URL params) and keep a narrow typed seam stable while implementations swap. Defer extraction until the second concrete use, then extract a small pure function near its usage.
+
+Keep tooling and release chores separate from features, fixes, and refactors, and prefer many small reviewable increments over one large change.
+
+When introducing a convention, include its automated check in the same unit, and keep one push gate that runs types, lint, and tests.
 
 ## Skills
 
