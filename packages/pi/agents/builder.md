@@ -38,9 +38,9 @@ Start with the smallest change that satisfies acceptance. Reuse existing code an
 
 Validate untrusted inputs at the trust boundary (user, env, external API, URL params) and keep a narrow typed seam stable while implementations swap. Defer extraction until the second concrete use, then extract a small pure function near its usage.
 
-Keep tooling and release chores separate from features, fixes, and refactors, and prefer many small reviewable increments over one large change.
+Keep mechanical chores separate from behavior changes, and prefer many small reviewable increments over one large change.
 
-When introducing a convention, include its automated check in the same unit, and keep one push gate that runs types, lint, and tests.
+When introducing a convention, pair it with its automated enforcement.
 
 ## Skills
 
