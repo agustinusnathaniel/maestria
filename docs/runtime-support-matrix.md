@@ -34,6 +34,7 @@ The CLI adapters are management wrappers around host-native capabilities. They s
 | Codex desktop | Deferred | Common-subset projection | no CLI parity | Common-subset projection only; no CLI parity claim | E-CODEX-DESKTOP-01 | 2026-08-11 |
 | JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 | 2026-08-11 |
 | Crush | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-CRUSH-01 | 2026-08-11 |
+| DeepSeek Harness | Provisional | Projection + native plugin + agent preset | shipped provisional package, unverified against a live runtime | 14-skill projection plus a Cordis plugin (prompt sections, persona variables, skills provider) and a self-contained Maestria agent preset with per-specialist subagent delegation; typechecked and unit-tested against the published `@deepseek-ai/*` RC types, not verified against a live `dsh` deployment | E-DSH-01 | 2026-09-06 |
 
 ---
 
@@ -267,6 +268,43 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 
 ---
 
+## DeepSeek Harness
+
+**Support level:** Provisional. **Delivery:** Projection + native plugin + agent preset. **Disposition:** shipped provisional package, unverified against a live runtime. **Rationale:** DSH is a developer-preview runtime; the package is verified against published RC types and unit tests only, so no native claim is made yet.
+
+### Evidence (reviewed 2026-09-06)
+
+| Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E-DSH-01 | DeepSeek Harness | Product | Open-source agent harness in developer preview; every agent capability (models, tools, skills, sessions, sandboxes, storage) is a Cordis plugin composed via `cordis.yml`/profiles | unpinned - reverify before promotion | https://www.deepseek.com/harness/en/ ; https://github.com/deepseek-ai/deepseek-harness | 2026-09-06 | not tested |
+| E-DSH-02 | DeepSeek Harness | Skills | Agent-Skills `SKILL.md` (`name`/`description`, optional `whenToUse`, invocation controls); discovery roots include `<projectRoot>/.dsh/skills`, `<projectRoot>/.agents/skills`, `<agentsHome>/skills`; `ctx.skills.registerProvider` merges provider catalogs; skill-name grammar is kebab-case | unpinned - reverify before promotion | docs/subsystems/skills.md; `@deepseek-ai/dsh-skill@0.0.1-rc.1` types | 2026-09-06 | tested: typecheck + package unit tests |
+| E-DSH-03 | DeepSeek Harness | Subagents | Named-provider registry (`ctx.subagents.registerProvider`); in-process backends advertise `persona`, `toolFilter`, `depthLimit`, `agentOptions` capabilities; one-shot runs resolve `SubagentResult` with typed stop reasons | unpinned - reverify before promotion | docs/subsystems/subagent.md; `packages/subagent/tool-subagent/README.md` | 2026-09-06 | not tested |
+| E-DSH-04 | DeepSeek Harness | Delegation tool | `dsh-tool-subagent` config: `provider`, `toolName`, `persona`, `toolFilter {allow,deny}`, `maxDepth`, `backgroundMode`; unknown `toolFilter` names fail startup; one instance per tool | unpinned - reverify before promotion | docs/config-catalog.md (`@deepseek-ai/dsh-tool-subagent`) | 2026-09-06 | not tested |
+| E-DSH-05 | DeepSeek Harness | System prompt | Ordered `PromptSection`/`PromptContext` registrations; strict `{{variable}}` interpolation (unknown or valueless references throw); external contributions may use any finite order | unpinned - reverify before promotion | docs/subsystems/system-prompt.md; `@deepseek-ai/dsh-system-prompt@0.0.1-rc.1` README | 2026-09-06 | tested: `{{`-free body gate in package unit tests |
+| E-DSH-06 | DeepSeek Harness | Agent presets | Preset = directory with `agent.cordis.yml` + `preset.yml` under `<dshHome>/.agent-presets`; standing mount per preset; services need `isolate` realms; tool/skill rows register into the preset layer; the `subagents` registry and spawn/fork backends stay in the host composition | unpinned - reverify before promotion | packages/preset/agent-presets/README.md; shipped `standard` preset | 2026-09-06 | not tested |
+| E-DSH-07 | DeepSeek Harness | Plugin model | Function plugin: named-export `apply(ctx)` plus `inject: [...]`; entries are module specifiers (relative path or npm package) in `cordis.yml`; registration disposers unwind on unload | unpinned - reverify before promotion | docs/cordis-primer.md; docs/cordis-tutorial/01-first-plugin.md; docs/cordis-tutorial/07-into-the-harness.md | 2026-09-06 | tested: plugin contract unit tests against explicit fake contexts |
+| E-DSH-08 | DeepSeek Harness | Distribution | npm packages published under the `@deepseek-ai` scope: `@deepseek-ai/cordis` 4.0.2, `@deepseek-ai/dsh-skill` 0.0.1-rc.1, `@deepseek-ai/dsh-system-prompt` 0.0.1-rc.1, `@deepseek-ai/dsh` 0.1.2-rc.1 (CLI: profile boot, plugin management) | unpinned - reverify before promotion | https://registry.npmjs.org (npm view, 2026-09-06) | 2026-09-06 | tested: devDependency typecheck in `packages/deepseek` |
+
+### Capability vs control
+
+| Evidence ID | Mechanism | Capability | Control | Note |
+| --- | --- | --- | --- | --- |
+| E-DSH-02, E-DSH-07 | Skills (filesystem roots + provider) | Supported | Advisory | Discovery and invocation are not security controls |
+| E-DSH-05 | Prompt sections and variables | Supported | Advisory | Owner plugins contribute facts; assembly is not a permission boundary |
+| E-DSH-03, E-DSH-04 | Subagent delegation with personas | Supported | Advisory | Personas guide child behavior; they do not restrict tools |
+| E-DSH-04 | `toolFilter` on delegation tools | Supported | Control (host-enforced) | Filtered tools vanish from the child's prompt and refuse execution; not shipped by default because denied names are host-composition-dependent and unknown names fail startup |
+| E-DSH-01 | Sandbox, approvals, permission presets | Host-owned | Control | The host owns confinement and trust; the projection makes no claims |
+
+### Statuses and gates
+
+- **Provisional:** the package ships (`@maestria/deepseek`) with a verified type-level and unit-test surface, but no live-`dsh` verification; no native claim.
+- **Promotion to `Native`:** requires verification against a live `dsh` deployment (preset mounts, delegation tools appear, personas resolve, skills discoverable) plus reconfirmation of the pinned `@deepseek-ai/*` versions after RC churn.
+- **Rollback:** remove `packages/deepseek`, the CLI handler entry, and the staged `<dshHome>/.agent-presets/maestria` directory.
+- **Withdrawal:** remove claims and package; keep the evidence ledger entry.
+- **Re-promotion:** only after the runtime surfaces are reconfirmed.
+
+---
+
 ## Cross-cutting boundaries
 
 ### Capability vs control summary
@@ -347,6 +385,11 @@ Each previously unresolved question now has an explicit status or gate:
 | E-JCODE-01, E-JCODE-03 | JCode | https://github.com/1jehuang/jcode | 2026-08-11 | not tested |
 | E-JCODE-02 | JCode | https://jcode.sh/sdk | 2026-08-11 | not tested |
 | E-CRUSH-01, E-CRUSH-02, E-CRUSH-03, E-CRUSH-04, E-CRUSH-05 | Crush | https://github.com/charmbracelet/crush | 2026-08-11 | not tested |
+| E-DSH-01 | DeepSeek Harness | https://www.deepseek.com/harness/en/ ; https://github.com/deepseek-ai/deepseek-harness | 2026-09-06 | not tested |
+| E-DSH-02, E-DSH-07 | DeepSeek Harness | https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md ; https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cordis-primer.md ; https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cordis-tutorial/01-first-plugin.md | 2026-09-06 | tested: typecheck + unit tests |
+| E-DSH-03, E-DSH-04, E-DSH-06 | DeepSeek Harness | https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/subagent.md ; https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/config-catalog.md ; https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/preset/agent-presets/README.md | 2026-09-06 | not tested |
+| E-DSH-05 | DeepSeek Harness | https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/system-prompt.md | 2026-09-06 | tested |
+| E-DSH-08 | DeepSeek Harness | https://registry.npmjs.org (npm view, 2026-09-06) | 2026-09-06 | tested: typecheck |
 
 Upstream sources above are research-only (`unpinned - reverify before implementation`) and must be reverified before implementation, promotion, or re-promotion. E-CLAUDE-08 and E-PRIME-08 are local working-tree package snapshots (`Working-tree package snapshot; verify at landing`), not upstream research sources.
 

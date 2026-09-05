@@ -41,6 +41,7 @@ describe('validation', () => {
       'cursor',
       'claude-code',
       'codex',
+      'deepseek',
     ]);
   });
 
@@ -58,7 +59,7 @@ describe('validation', () => {
         | { error: { message: string } }
         | undefined;
       expect(fail?.error.message).toBe(
-        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex",
+        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex, deepseek",
       );
     }
   });
@@ -72,7 +73,7 @@ describe('validation', () => {
         | { error: { message: string } }
         | undefined;
       expect(fail?.error.message).toBe(
-        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex",
+        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex, deepseek",
       );
     }
   });
