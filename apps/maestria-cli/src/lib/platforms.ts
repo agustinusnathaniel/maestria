@@ -1,4 +1,4 @@
-// oxlint-disable max-lines -- platforms.ts is a cohesive registry aggregating 9 platform handlers (opencode, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex, omp) with shared helpers. Splitting the registry would fragment the single source for PLATFORM_IDS and platform lookup, harming discoverability and increasing cross-file churn for handler registration. The file's handlers share helpers (installNpmTarball, marketplace, codex agents) and are rarely edited together; file length is justified by cohesion.
+// oxlint-disable max-lines -- platforms.ts is a cohesive registry aggregating 10 platform handlers (opencode, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex, omp, deepseek) with shared helpers. Splitting the registry would fragment the single source for PLATFORM_IDS and platform lookup, harming discoverability and increasing cross-file churn for handler registration. The file's handlers share helpers (installNpmTarball, marketplace, codex agents) and are rarely edited together; file length is justified by cohesion.
 import { Effect } from 'effect';
 import { homedir, tmpdir } from 'node:os';
 import nodePath from 'node:path';
@@ -694,6 +694,7 @@ export const PLATFORM_IDS = [
   'cursor',
   'claude-code',
   'codex',
+  'deepseek',
 ] as const;
 
 export type PlatformId = (typeof PLATFORM_IDS)[number];
@@ -979,6 +980,86 @@ const codex: PlatformHandler = {
       ]);
       yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
     }),
+};
+
+// ── DeepSeek Harness ─────────────────────────────────
+
+const dshHomePath = (): string => {
+  const fromEnv = process.env.DSH_HOME?.trim();
+  return fromEnv !== undefined && fromEnv !== '' ? fromEnv : `${homedir()}/.dsh`;
+};
+const deepseekPresetDir = (): string => `${dshHomePath()}/.agent-presets/maestria`;
+const DEEPSEEK_STAGING_DIR = join(getMaestriaCacheDir(), 'deepseek-package');
+
+/**
+ * Stage the Maestria agent preset into the harness's user preset root.
+ *
+ * The npm tarball is extracted into a cache staging dir, then the preset
+ * composition (`preset/maestria`) and the bundled plugin (`dist`) are copied
+ * into `<dshHome>/.agent-presets/maestria`. The preset references the plugin
+ * by the relative `./plugin/index.js`, so the staged preset is
+ * self-contained and needs no npm resolvability at harness runtime.
+ */
+const stageDeepseekPreset = (tag: string): Effect.Effect<void, CommandError> =>
+  Effect.gen(function* stageDeepseekPresetEffect() {
+    yield* installNpmTarball('@maestria/deepseek', DEEPSEEK_STAGING_DIR, { tag });
+    yield* Effect.tryPromise({
+      catch: (error) =>
+        new CommandError({
+          command: `stage preset into ${deepseekPresetDir()}`,
+          message: String(error),
+        }),
+      try: async () => {
+        const { cp, mkdir, rm } = await import('node:fs/promises');
+        const presetDir = deepseekPresetDir();
+        await rm(presetDir, { force: true, recursive: true });
+        await mkdir(presetDir, { recursive: true });
+        await cp(join(DEEPSEEK_STAGING_DIR, 'preset', 'maestria'), presetDir, { recursive: true });
+        await cp(join(DEEPSEEK_STAGING_DIR, 'dist'), join(presetDir, 'plugin'), {
+          recursive: true,
+        });
+      },
+    });
+  }).pipe(Effect.asVoid);
+
+const deepseek: PlatformHandler = {
+  detect: Effect.gen(function* detect() {
+    if (yield* commandExists('dsh')) {
+      return true;
+    }
+    return yield* fileExists(`${deepseekPresetDir()}/agent.cordis.yml`);
+  }),
+  getInstalledVersion: Effect.suspend(() =>
+    readTextFile(`${deepseekPresetDir()}/plugin/package.json`).pipe(
+      Effect.map((out: string) => {
+        try {
+          const pkg = parseJsonRecord(out);
+          return typeof pkg?.version === 'string' ? pkg.version : 'unknown';
+        } catch {
+          return 'unknown';
+        }
+      }),
+      Effect.catchCause(() => Effect.succeed('unknown')),
+    ),
+  ),
+  getLatestVersion: npmViewVersion('@maestria/deepseek'),
+  id: 'deepseek',
+  install: stageDeepseekPreset('latest'),
+  isInstalled: fileExists(`${deepseekPresetDir()}/agent.cordis.yml`),
+  label: 'DeepSeek Harness',
+  npmPackage: '@maestria/deepseek',
+  uninstall: Effect.tryPromise({
+    catch: (error) =>
+      new CommandError({
+        command: `rm -r ${deepseekPresetDir()}`,
+        message: String(error),
+      }),
+    try: async () => {
+      const { rm } = await import('node:fs/promises');
+      await rm(deepseekPresetDir(), { force: true, recursive: true });
+    },
+  }).pipe(Effect.asVoid),
+  update: (version?: string) => stageDeepseekPreset(version ?? 'latest'),
 };
 
 const pi: PlatformHandler = {
@@ -1672,6 +1753,7 @@ export const platforms: readonly PlatformHandler[] = [
   omp,
   claudeCode,
   codex,
+  deepseek,
 ];
 
 export const getPlatform = (id: string): PlatformHandler | undefined =>

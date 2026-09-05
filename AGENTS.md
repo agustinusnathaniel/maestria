@@ -4,7 +4,7 @@
 
 ## Project Snapshot
 
-Maestria is a meta-project: it builds the **agent methodology** (dispatcher + 7 specialists) that AI agents use. The canonical agent directives live in `packages/core/agent-directives/` and are synced to platform-specific plugins (OpenCode, Kimi Code, Pi, Cursor, Hermes, Claude Code, Codex CLI) via `scripts/sync-all`.
+Maestria is a meta-project: it builds the **agent methodology** (dispatcher + 7 specialists) that AI agents use. The canonical agent directives live in `packages/core/agent-directives/` and are synced to platform-specific plugins (OpenCode, Kimi Code, Pi, Cursor, Hermes, Claude Code, Codex CLI, DeepSeek Harness) via `scripts/sync-all`.
 
 See [VISION.md](VISION.md) for the project's motivation and [PATTERNS.md](PATTERNS.md) for the two core design patterns (Pipeline Composition + Maker/Checker Split).
 
@@ -38,6 +38,7 @@ Prefer small, verifiable changes over sweeping rewrites. Each change should pass
 - **`packages/opencode/`** - Depends on `@maestria/core` via the sync pipeline. Uses standard OpenCode SDK APIs only. Its `agents/` directory is **auto-generated** from core via the sync pipeline.
 - **`packages/claude-code/`** - Declarative Claude Code projection. Its agents, skills, and commands are **auto-generated** from core; the manifest and package docs are hand-authored.
 - **`packages/codex/`** - Codex skills projection. Its skills are **auto-generated** from core; the manifest and package docs are hand-authored.
+- **`packages/deepseek/`** - DeepSeek Harness projection (skills + Cordis plugin + agent preset). Its skills are **auto-generated** from core; the plugin, preset, and package docs are hand-authored. Provisional per ADR-CORE-014 (developer-preview runtime).
 - **`packages/agent-plugin/`** - Portable Agent Plugins v1 projection. Its `skills/` directory is **auto-generated** from core; the root `plugin.json` and package docs are hand-authored. It declares skills only and must not absorb host runtime behavior.
 - **`packages/kimi-code/`** - Depends on `@maestria/core` via the sync pipeline. Follows Kimi Code platform conventions.
 - **`packages/pi/`** - Depends on `@maestria/core` via the sync pipeline. Must not depend on any Node.js APIs (Pi is a terminal prompt, not an SDK plugin).
