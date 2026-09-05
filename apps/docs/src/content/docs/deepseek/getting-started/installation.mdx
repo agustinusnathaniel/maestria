@@ -1,0 +1,79 @@
+---
+title: Installation & Setup
+description: Stage the Maestria agent preset for DeepSeek Harness through the Maestria CLI.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+`@maestria/deepseek` ships three layers: 14 generated Agent Skills, a Cordis plugin (prompt sections, specialist persona variables, and a skills provider), and a full agent preset with seven per-specialist delegation tools. The Maestria CLI stages the preset and plugin into the harness home as one self-contained directory; it does not touch your project files or register models, MCP servers, or hooks.
+
+<Aside type="caution" title="Developer-preview runtime">
+  DeepSeek Harness is a developer preview. This package was verified against the published
+  `@deepseek-ai/*` RC types (2026-09-06) but not against a live `dsh` deployment. Reverify the
+  preset composition and tool surfaces after harness updates.
+</Aside>
+
+## Prerequisites
+
+- A DeepSeek Harness deployment whose host composition provides the standard registries (the same assumptions as the shipped `standard` preset, including the `subagents` registry with the `spawn` backend).
+- Node.js >=22.12.0 and npm on `PATH` for the Maestria CLI and npm package staging.
+
+## Stage the preset through Maestria
+
+```bash
+npx maestria install deepseek
+```
+
+The CLI downloads the published `@maestria/deepseek` package and stages a self-contained preset at `$DSH_HOME/.agent-presets/maestria` (default `~/.dsh/.agent-presets/maestria`):
+
+| Staged file        | Role                                                                      |
+| ------------------ | ------------------------------------------------------------------------- |
+| `agent.cordis.yml` | The agent-plane composition (persona, plugin row, delegation tools)       |
+| `preset.yml`       | Roster display metadata                                                   |
+| `plugin/index.js`  | The bundled Cordis plugin, referenced by the relative `./plugin/index.js` |
+
+<Steps>
+
+1. **Select the Maestria preset**
+
+   Start or create a session with the `Maestria` preset (preset picker in the Web UI, or the preset selection your deployment exposes). Sessions join the preset's standing composition; a session can switch presets only while it has produced nothing.
+
+2. **Confirm the prompt sections**
+
+   The session persona is the Maestria orchestrator methodology, and the routing/global-rules sections are part of the assembled system prompt.
+
+3. **Confirm the delegation tools**
+
+   The tool catalog should list `maestria_adventurer`, `maestria_architect`, `maestria_builder`, `maestria_diagnose`, `maestria_planner`, `maestria_reviewer`, and `maestria_writer`, alongside the generic `subagent` tools.
+
+4. **Confirm the skills catalog**
+
+   The `skill` tool's catalog should list the Maestria skills (orchestrator, global-rules, workflow modes, and the specialists).
+
+</Steps>
+
+## Skills-only alternative (no runtime integration)
+
+Without the preset, copy the generated skills into a DSH skill root, such as `~/.agents/skills`:
+
+```bash
+npm pack @maestria/deepseek
+tar -xzf maestria-deepseek-*.tgz
+mkdir -p ~/.agents/skills
+cp -R package/skills/* ~/.agents/skills/
+```
+
+This route is purely advisory: the model loads skills through the `skill` tool, with no prompt sections, personas, or delegation tools.
+
+## Enforcing read-only roles
+
+`maestria_adventurer`, `maestria_planner`, and `maestria_reviewer` carry advisory persona notes only. To enforce them, add a `toolFilter: { deny: [...] }` to those rows in the staged `agent.cordis.yml`. Denied tool names depend on your host composition (`bash` vs `pwsh`, filesystem editors), and `dsh-tool-subagent` fails startup on unknown names, so no default list ships.
+
+## Update and remove
+
+```bash
+npx maestria update deepseek
+npx maestria uninstall deepseek
+```
+
+`uninstall` removes only the staged preset directory. Sessions already running on the preset keep running on it.
