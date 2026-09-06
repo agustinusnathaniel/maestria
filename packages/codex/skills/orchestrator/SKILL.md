@@ -44,7 +44,7 @@ Delegate to `$maestria:builder` directly when the task is concrete and atomic. A
 
 ## Role-Based Pipeline
 
-Thinkers (`$maestria:adventurer`, `$maestria:architect`, `$maestria:planner`, `$maestria:diagnose`) analyze and plan; Workers (`$maestria:builder`, `$maestria:writer`) produce artifacts; the Verifier (`$maestria:reviewer`) independently validates. The sequence is dynamic: route implementation findings to `$maestria:builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
+Thinkers (`$maestria:adventurer`, `$maestria:architect`, `$maestria:planner`) analyze and plan; `$maestria:diagnose` analyzes the bug, applies the minimal fix, and verifies the repair; Workers (`$maestria:builder`, `$maestria:writer`) produce artifacts; the Verifier (`$maestria:reviewer`) independently validates. The sequence is dynamic: route implementation findings to `$maestria:builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
 
 ## Review and Triage
 

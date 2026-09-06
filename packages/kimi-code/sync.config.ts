@@ -3,6 +3,11 @@
 
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
+// Shared `plan`-profile capability line (architect, orchestrator, planner,
+// reviewer): one copy so a toolset change cannot drift across roles.
+const PLAN_PROFILE_PREPEND =
+  '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n';
+
 export default {
   default: {
     replace: [
@@ -13,21 +18,6 @@ export default {
       { from: '@planner', to: 'planner' },
       { from: '@reviewer', to: 'reviewer' },
       { from: '@writer', to: 'writer' },
-      { from: 'task(', to: 'Agent(' },
-      { from: '@orchestrator', to: 'orchestrator' },
-      { from: 'webfetch', to: 'FetchURL' },
-      { from: 'grep(', to: 'Grep(' },
-      { from: 'glob(', to: 'Glob(' },
-      { from: 'question(', to: 'AskUserQuestion(' },
-      { from: '`webfetch`', to: '`FetchURL`' },
-      { from: 'websearch', to: 'WebSearch' },
-      { from: '`read`', to: '`Read`' },
-      { from: '`glob`', to: '`Glob`' },
-      { from: '`grep`', to: '`Grep`' },
-      { from: '`lsp`', to: 'a language server protocol' },
-      { from: 'Related Agents', to: 'Related Skills' },
-      { from: '`edit`', to: '`Edit`' },
-      { from: '`write`', to: '`Write`' },
       { from: 'run in parallel', to: 'run in parallel via `AgentSwarm`' },
     ],
   },
@@ -64,8 +54,7 @@ evaluating options with long-term consequences. Use when more than
 one approach is viable and the choice has downstream impact.`,
       },
       output: 'architect/SKILL.md',
-      prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
+      prepend: PLAN_PROFILE_PREPEND,
     },
     'builder.md': {
       frontmatter: {
@@ -89,11 +78,6 @@ work is a concrete atomic unit.`,
       output: '../commands/blitz.md',
       prepend:
         '**Workflow command:** use the fastest safe route allowed by the active Kimi profile, while retaining required review.\n\n',
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@builder', to: 'builder' },
-        { from: '@reviewer', to: 'reviewer' },
-      ],
       stripFrontmatter: true,
     },
     'commands/fein.md': {
@@ -102,13 +86,6 @@ work is a concrete atomic unit.`,
       output: '../commands/fein.md',
       prepend:
         '**Workflow command:** use the Kimi Agent and its native Agent/AgentSwarm tools as permitted by the active profile.\n\n',
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@builder', to: 'builder' },
-        { from: '@planner', to: 'planner' },
-        { from: '@reviewer', to: 'reviewer' },
-      ],
       stripFrontmatter: true,
     },
     'commands/sonar.md': {
@@ -117,11 +94,6 @@ work is a concrete atomic unit.`,
       output: '../commands/sonar.md',
       prepend:
         '**Workflow command:** keep this route read-only and stop before implementation.\n\n',
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@planner', to: 'planner' },
-      ],
       stripFrontmatter: true,
     },
     'diagnose.md': {
@@ -249,16 +221,6 @@ const results = await AgentSwarm(
 - \`reviewer\` - Code review with quality gates
 - \`writer\` - Documentation
 
-## Skill Prescription
-
-**Always load:** \`architecture-decision-records\`, \`improve\`, \`session-handoff\`
-
-**Load on trigger:** \`cavecrew\`, \`caveman-review\`, \`caveman-stats\`, \`customize-opencode\`, \`handoff\`, \`impeccable\`, \`mermaid-diagrams\`, \`prioritizing-roadmap\`, \`technical-roadmaps\`, \`to-prd\`, \`vite\`, \`vitest\`, \`writing-prds\`
-
-**Defer (load only after context is collected):** \`to-issues\`, \`triage\`
-
-**Skip:** \`commit-work\` (orchestrator never commits), \`dedicated-tests\` (covered by builder)
-
 ### Pre-load before dispatch
 
 Before delegating to a specialist via \`Skill\`, load the skill first. If the \`Skill\` tool is not available to the subagent profile, inline the persona's core content directly:
@@ -293,8 +255,7 @@ Also: implementation planning, code review, debugging sessions, architecture
 decisions, and documentation generation under the maestria workflow.`,
       },
       output: 'orchestrator/SKILL.md',
-      prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, FetchURL, and WebSearch. You do **not** have Bash, Write, or Edit.\n\n',
+      prepend: PLAN_PROFILE_PREPEND,
     },
     'planner.md': {
       frontmatter: {
@@ -308,8 +269,7 @@ Use for: complex features requiring multi-phase execution, when the plan needs r
 any complex feature that needs review before building.`,
       },
       output: 'planner/SKILL.md',
-      prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
+      prepend: PLAN_PROFILE_PREPEND,
     },
     'reviewer.md': {
       frontmatter: {
@@ -325,8 +285,7 @@ before-commit QA. In full routes, review after the integrated builder batch is
 reconciled; run the general review first, then risk-matched lenses sequentially.`,
       },
       output: 'reviewer/SKILL.md',
-      prepend:
-        '**Subagent profile:** `plan` - you have Read, Glob, Grep, WebSearch, and FetchURL. You do **not** have Bash, Write, or Edit.\n\n',
+      prepend: PLAN_PROFILE_PREPEND,
     },
     'rules.md': {
       output: '../SYSTEM.md',
@@ -334,15 +293,6 @@ reconciled; run the general review first, then risk-matched lenses sequentially.
         '<!-- Auto-generated from @maestria/core. See the canonical file at packages/core/agent-directives/rules.md. -->\n',
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/kimi-code' },
-        { from: '`read`', to: '`Read`' },
-        { from: '`glob`', to: '`Glob`' },
-        { from: '`grep`', to: '`Grep`' },
-        { from: '`bash`', to: '`Bash`' },
-        { from: '`lsp`', to: 'language server protocol' },
-        { from: '`bash --help`', to: '`Bash --help`' },
-        { from: 'treat it seriously.', to: 'treat it seriously, not a preference.' },
-        { from: 'websearch', to: 'WebSearch' },
-        { from: 'read-only', to: 'Read-only' },
         // Add Kimi's built-in-agent guard after the canonical delegation
         // heading. Re-anchored 2026-08: the heading is "## Delegation and
         // Context"; the old '## Delegation\n' anchor silently no-op'd. The

@@ -36,7 +36,7 @@ Delegate to `@builder` directly when the task is concrete and atomic. Add reconn
 
 ## Role-Based Pipeline
 
-Thinkers (`@adventurer`, `@architect`, `@planner`, `@diagnose`) analyze and plan; Workers (`@builder`, `@writer`) produce artifacts; the Verifier (`@reviewer`) independently validates. The sequence is dynamic: route implementation findings to `@builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
+Thinkers (`@adventurer`, `@architect`, `@planner`) analyze and plan; `@diagnose` analyzes the bug, applies the minimal fix, and verifies the repair; Workers (`@builder`, `@writer`) produce artifacts; the Verifier (`@reviewer`) independently validates. The sequence is dynamic: route implementation findings to `@builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
 
 ## Review and Triage
 
