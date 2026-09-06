@@ -116,7 +116,7 @@ Then re-run the install command (with or without `-g` as appropriate).
 Run `opencode debug paths` to see the cache directory resolved for your platform.
 
 <Aside type="tip">
-  To pin a specific version, use `"@maestria/opencode@0.3.3"` instead of
+  To pin a specific version, use `"@maestria/opencode@0.7.5"` instead of
   `"@maestria/opencode@latest"`.
 </Aside>
 
@@ -148,7 +148,7 @@ To disable a mode, set `modes.disabledKeywords` in your plugin configuration:
 
 ## Uninstalling
 
-There is no CLI command to remove a plugin. To uninstall, edit your OpenCode config file and remove the entry from the `plugin` array:
+OpenCode has no built-in command to remove a plugin. The maestria CLI can print the removal steps for your platform: run `maestria uninstall opencode` (see [CLI uninstall](/cli/commands/#uninstall)). To uninstall manually, remove the entry from the `plugin` array in your OpenCode config file:
 
 <Steps>
 

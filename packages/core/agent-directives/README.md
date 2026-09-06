@@ -14,11 +14,12 @@ This directory holds the shared methodology, rules, workflow modes, and skill pr
 agent-directives/
   README.md          - This file
   COMPOSITION.md     - Human-facing composition guidance
-  specialists/       - Role definitions for the 7 pipeline agents
+  specialists/       - Role definitions for the 8 pipeline agents (7 specialists + orchestrator)
     adventurer.md    - Codebase reconnaissance
     architect.md     - Architecture decisions and ADRs
     builder.md       - Focused implementation
     diagnose.md      - Systematic bug tracing
+    orchestrator.md  - Orchestration and delegation
     planner.md       - Implementation plans
     reviewer.md      - Code review with quality gates
     writer.md        - Documentation writing

@@ -43,4 +43,4 @@ Include planned phases, assumptions, verification and rollback evidence, and the
 
 ## Skills
 
-Load on trigger: `requirements-clarity`, `game-changing-features`, `to-issues`, `to-prd`, `prototype`. Skip for one-step plans.
+Load on trigger: `requirements-clarity`, `game-changing-features`, `to-tickets`, `prd`, `prototype`. Skip for one-step plans.

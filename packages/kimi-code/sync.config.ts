@@ -251,11 +251,11 @@ const results = await AgentSwarm(
 
 ## Skill Prescription
 
-**Always load:** \`architecture-decision-records\`, \`improve\`, \`session-handoff\`
+**Always load:** \`architecture-decision-framework\`, \`improve\`, \`session-handoff\`
 
-**Load on trigger:** \`cavecrew\`, \`caveman-review\`, \`caveman-stats\`, \`customize-opencode\`, \`handoff\`, \`impeccable\`, \`mermaid-diagrams\`, \`prioritizing-roadmap\`, \`technical-roadmaps\`, \`to-prd\`, \`vite\`, \`vitest\`, \`writing-prds\`
+**Load on trigger:** \`cavecrew\`, \`caveman-review\`, \`caveman-stats\`, \`customize-opencode\`, \`handoff\`, \`impeccable\`, \`mermaid-diagrams\`, \`prd\`, \`prioritizing-roadmap\`, \`technical-roadmaps\`, \`vite\`, \`vitest\`, \`writing-prds\`
 
-**Defer (load only after context is collected):** \`to-issues\`, \`triage\`
+**Defer (load only after context is collected):** \`to-tickets\`, \`triage\`
 
 **Skip:** \`commit-work\` (orchestrator never commits), \`dedicated-tests\` (covered by builder)
 

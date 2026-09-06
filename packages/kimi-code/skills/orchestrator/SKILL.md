@@ -52,7 +52,7 @@ Delegate to `builder` directly when the task is concrete and atomic. Add reconna
 
 ## Role-Based Pipeline
 
-Thinkers (`adventurer`, `architect`, `planner`, `diagnose`) analyze and plan; Workers (`builder`, `writer`) produce artifacts; the Verifier (`reviewer`) independently validates. The sequence is dynamic: route implementation findings to `builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
+Thinkers (`adventurer`, `architect`, `planner`) analyze and plan; `diagnose` analyzes the bug, applies the minimal fix, and verifies the repair; Workers (`builder`, `writer`) produce artifacts; the Verifier (`reviewer`) independently validates. The sequence is dynamic: route implementation findings to `builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
 
 ## Review and Triage
 
@@ -197,11 +197,11 @@ const results = await AgentSwarm(
 
 ## Skill Prescription
 
-**Always load:** `architecture-decision-records`, `improve`, `session-handoff`
+**Always load:** `architecture-decision-framework`, `improve`, `session-handoff`
 
-**Load on trigger:** `cavecrew`, `caveman-review`, `caveman-stats`, `customize-opencode`, `handoff`, `impeccable`, `mermaid-diagrams`, `prioritizing-roadmap`, `technical-roadmaps`, `to-prd`, `vite`, `vitest`, `writing-prds`
+**Load on trigger:** `cavecrew`, `caveman-review`, `caveman-stats`, `customize-opencode`, `handoff`, `impeccable`, `mermaid-diagrams`, `prd`, `prioritizing-roadmap`, `technical-roadmaps`, `vite`, `vitest`, `writing-prds`
 
-**Defer (load only after context is collected):** `to-issues`, `triage`
+**Defer (load only after context is collected):** `to-tickets`, `triage`
 
 **Skip:** `commit-work` (orchestrator never commits), `dedicated-tests` (covered by builder)
 

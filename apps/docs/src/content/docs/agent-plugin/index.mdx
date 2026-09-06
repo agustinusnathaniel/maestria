@@ -13,11 +13,6 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
   features such as native subagents, hooks, commands, or tool controls.
 </Aside>
 
-<Aside type="caution" title="Pre-release package">
-  The current checkout and manifest are version 0.0.0 and the package is pending its first npm
-  release. Until then, use the local-checkout path or a client that accepts a local directory.
-</Aside>
-
 ## Before You Install
 
 You need a client that supports Agent Plugins v1 and its skills component. Check the [compatible clients](https://agent-plugins.org/compatible-clients) list before choosing an installation path.
@@ -38,7 +33,7 @@ The package contains 14 skills. Each one lives at `skills/<name>/SKILL.md` and u
 
 ### With the Maestria CLI
 
-After the first npm release, stage and validate the package:
+Stage and validate the package:
 
 ```bash
 npx maestria plugin install
@@ -72,7 +67,7 @@ Point a client that accepts local plugins at:
 /path/to/maestria/packages/agent-plugin/
 ```
 
-Choose the directory containing plugin.json, not only its nested skills directory. If the package is not yet released, this is the supported local path.
+Choose the directory containing plugin.json, not only its nested skills directory. A local checkout is useful when testing unreleased changes.
 
 ## Use the Skills
 
