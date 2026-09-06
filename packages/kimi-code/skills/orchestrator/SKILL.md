@@ -201,13 +201,7 @@ const results = await AgentSwarm(
 
 ## Skill Prescription
 
-**Always load:** `architecture-decision-framework`, `improve`, `session-handoff`
-
-**Load on trigger:** `cavecrew`, `caveman-review`, `caveman-stats`, `customize-opencode`, `handoff`, `impeccable`, `mermaid-diagrams`, `prd`, `prioritizing-roadmap`, `technical-roadmaps`, `vite`, `vitest`, `writing-prds`
-
-**Defer (load only after context is collected):** `to-tickets`, `triage`
-
-**Skip:** `commit-work` (orchestrator never commits), `dedicated-tests` (covered by builder)
+Load skills when the assignment calls for them; skip the rest. Reach for `architecture-decision-framework` on consequential trade-offs, `improve` on surveys that end in delegated fixes, and `session-handoff` on formal context transfers. Match supporting skills to their trigger: `mermaid-diagrams` for architecture visuals, `prd`, `prioritizing-roadmap`, `technical-roadmaps`, and `writing-prds` for product discovery and PRD work, `impeccable` for UI polish, `handoff` for lightweight transfers, `cavecrew`, `caveman-review`, and `caveman-stats` for review and stats passes, `customize-opencode` for OpenCode configuration, and `vite` and `vitest` for frontend and test-runner tasks. Defer `to-tickets` and `triage` until context is collected, since tickets and triage need verified findings first. Skip `commit-work` (the orchestrator never commits) and `dedicated-tests` (covered by `builder`).
 
 ### Pre-load before dispatch
 
