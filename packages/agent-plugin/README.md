@@ -4,7 +4,7 @@ Maestria's portable [Agent Plugins v1](https://agent-plugins.org/) package. It d
 
 ## Status / Support Boundary
 
-This is the portable surface, not a replacement for Maestria's native runtime integrations. The current checkout is pre-release (`package.json` and `plugin.json` are `0.0.0`); use the local checkout option below until the first npm release. It contains one standard `plugin.json` manifest and 14 generated skills, with no executable agents, commands, hooks, MCP servers, or client-specific extensions.
+This package contains a standard `plugin.json` manifest and 14 generated skills. Use a native Maestria integration if you need executable agents, commands, hooks, MCP servers, or client-specific extensions.
 
 Skills describe workflow behavior. The consuming client remains responsible for discovery, invocation, delegation, permissions, session state, installation, and trust decisions. Read-only roles are advisory in this package and do not enforce tool restrictions.
 
@@ -20,11 +20,13 @@ The skills are generated from the canonical directives in `packages/core/agent-d
 
 Use the consuming client's Agent Plugins installation flow with a released package or an extracted package directory. The plugin root must be the directory containing `plugin.json`; the standard skill root is `skills/`.
 
-After the first npm release, the Maestria CLI can fetch, validate, and stage the package before you hand it to a compatible client:
+To fetch, validate, and stage a published npm release:
 
 ```bash
 npx maestria plugin install
 ```
+
+The install command prints the staged directory. Give that directory to your compatible client to activate the plugin.
 
 For a local package, validate it without changing it:
 
@@ -32,9 +34,7 @@ For a local package, validate it without changing it:
 npx maestria plugin validate /path/to/plugin
 ```
 
-The CLI prints the staged directory, but the consuming client still owns activation, permissions, trust, and session behavior.
-
-For the current checkout, stage the local package explicitly after running `scripts/sync-all`:
+To stage a repository checkout, first run `scripts/sync-all`, then:
 
 ```bash
 npx maestria plugin install ./packages/agent-plugin

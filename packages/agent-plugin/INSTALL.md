@@ -4,7 +4,7 @@ This package is a standard Agent Plugins v1 directory package. Use a client that
 
 ## Maestria CLI
 
-After the first npm release, the Maestria CLI can fetch, validate, and stage the package:
+To fetch, validate, and stage a published npm release:
 
 ```bash
 npx maestria plugin install
@@ -21,9 +21,9 @@ The command prints the staged directory. Give that directory to the compatible c
 
 ## Current checkout and released package
 
-The current checkout is pre-release (`0.0.0`). From the repository, run `scripts/sync-all` and stage `packages/agent-plugin/` with the local-package command above.
+To use a checkout, follow [Local checkout](#local-checkout) below.
 
-After release, install or download `@maestria/agent-plugin` through the client-specific package or plugin flow. The client must extract or materialize the package as a directory before discovering its `plugin.json` and `skills/` directory. A normal dependency install alone does not make a client discover the plugin unless that client documents this behavior.
+For a released version, install or download `@maestria/agent-plugin` through the client-specific package or plugin flow. The client must extract or materialize the package as a directory before discovering its `plugin.json` and `skills/` directory. A normal dependency install alone does not make a client discover the plugin unless that client documents this behavior.
 
 ## Local checkout
 

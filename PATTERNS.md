@@ -27,7 +27,14 @@ Each arrow carries a concise, material handoff, not a loose "figure it out" dele
 
 #### Handoff Contract
 
-Every delegation crossing an agent boundary should be a concise, outcome-oriented brief containing whatever the recipient needs to act: relevant context and constraints, acceptance evidence, material assumptions or blockers, and the next step. This is guidance, not a fixed schema; omit empty parts, keep the brief proportional to the task, and reference existing artifacts instead of copying history.
+Give each recipient the information needed to act:
+
+- Relevant context and constraints.
+- Acceptance evidence.
+- Material assumptions or blockers.
+- The next step.
+
+This is guidance, not a fixed schema. Omit empty parts, scale the brief to the task, and link existing artifacts instead of copying history.
 
 Example:
 
@@ -66,7 +73,7 @@ Every substantial pipeline stage needs three controls:
 
 3. **Parallel fan-out is allowed for independent tasks** - keep the fan-out bounded by usefulness and host limits. Examples: `@adventurer` mapping auth and tracing billing in parallel; `@reviewer` checking PR #7, `@builder` fixing bug #42, and `@architect` evaluating a dependency decision.
 
-4. **Stages are ordered by dependency** - later stages cannot proceed without earlier stages' output. The builder cannot implement what the planner hasn't scoped. The reviewer cannot validate what the builder hasn't built. This seems obvious. It gets violated when someone tries to parallelize dependent work.
+4. **Stages are ordered by dependency** - wait for prerequisite outputs before starting dependent work. For example, finish scoping before implementation and implementation before review. Parallelize only independent tasks.
 
 ### Platform Adaptation
 

@@ -131,11 +131,18 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 | `claude-code` | Claude Code | npm package staged into a local Claude Code marketplace |
 | `codex`       | Codex CLI   | npm package staged into a local Codex marketplace       |
 
-### Error handling
+### Platform-specific installation behavior
 
 Claude Code and Codex CLI use their host-native marketplace managers. The Maestria CLI stages the published npm package under `~/.cache/maestria/` before invoking those managers. Claude Code configuration remains host-owned; Codex also receives Maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
 
-Prime Agent manages packages through its native package manager. `maestria` delegates `install`, `update`, and `uninstall` to `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent` and reads registration state from `prime-agent package list`; it does not write Prime configuration files directly. Prime support is deliberately global (user scope only): Prime's package commands resolve project settings from the current working directory, so every Prime command runs from a freshly created empty temporary directory. From that isolated cwd only the user (global) scope is visible - a project's registrations are never scanned, counted as installed, or modified - and the temporary directory is removed after each command. Prime's package manager accepts no version spec: updates always target the latest release and skip versioned/pinned registrations. When the user-scope `npm:@maestria/prime-agent` registration is version-pinned, the CLI detects the pin up front and reports an error instead of silently skipping the update.
+**Prime Agent** uses its native package manager. Maestria delegates installation, updates, and removal to `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`, reads registration state with `prime-agent package list`, and does not edit Prime configuration files directly.
+
+Prime has two additional constraints:
+
+- **Global scope only.** Maestria never scans, counts, or modifies project registrations. Each Prime command runs in a fresh, empty temporary directory so only user settings are visible; the directory is removed afterward.
+- **Latest version only.** Prime's package manager accepts no version specifier and skips pinned registrations during updates. Maestria detects a pinned user-scope registration and reports an error before updating, rather than silently skipping it.
+
+### Error handling
 
 **Input validation** - the CLI catches invalid arguments before any platform work begins:
 
