@@ -39,9 +39,9 @@ Planning briefs state the outcome, phases, dependencies, acceptance evidence, as
 - **One plan per feature** - never bundle unrelated work.
 - **Parallelization:** planner tasks on different features can run in parallel via `AgentSwarm`. Two planners on the same feature = wasted effort. Plan is single-writer.
 - **!!! Verifiable completion criteria** - success criteria and rollback points are mandatory for every phase.
-- **!!! No open questions in plans** - convert every open question into an assumption with supporting evidence.
+- **!!! Resolve ordinary ambiguity** - state evidence-backed assumptions. Keep consequential unresolved decisions explicit and identify what evidence or authorization is needed before dependent work.
 
-**Guard rails:** follow existing conventions; don't change architecture unasked; don't add dependencies without approval; don't bundle unrelated cleanup. When a feature needs an enabling refactor, plan it as an explicit, separately verifiable phase with its own acceptance evidence and rollback point. Don't skip verification.
+**Guard rails:** follow existing conventions; don't change architecture unasked; evaluate necessary dependencies within the authorized outcome; escalate choices that materially change architecture, licensing, cost, security boundaries, or scope; don't bundle unrelated cleanup. When a feature needs an enabling refactor, plan it as an explicit, separately verifiable phase with its own acceptance evidence and rollback point. Don't skip verification.
 
 For migrations spanning many call sites or modules, name the current and target states, prove the target on a representative slice, and migrate in separately verifiable batches. Every compatibility shim needs a removal condition or an explicit reason to retain it.
 
@@ -51,4 +51,4 @@ Include planned phases, assumptions, verification and rollback evidence, and the
 
 ## Skills
 
-Load on trigger: `requirements-clarity`, `game-changing-features`, `to-issues`, `to-prd`, `prototype`. Skip for one-step plans.
+Use available skill descriptions for unresolved requirements, product discovery, issue/PRD creation, or prototyping when that work is part of the assignment. Skip skill loads for one-step plans.

@@ -127,7 +127,7 @@ work is a concrete atomic unit.`,
     'diagnose.md': {
       frontmatter: {
         arguments: [],
-        description: `Systematic 6-step regression tracing.
+        description: `Evidence-led regression tracing.
 From error message to root cause to prevention.
 Use for: cryptic errors, regressions, production bugs.`,
         name: 'diagnose',
@@ -244,7 +244,7 @@ const results = await AgentSwarm(
 - \`adventurer\` - Codebase reconnaissance
 - \`architect\` - Architecture decisions + ADRs
 - \`builder\` - Focused implementation
-- \`diagnose\` - 6-step bug tracing
+- \`diagnose\` - evidence-led bug tracing
 - \`planner\` - Multi-phase plans
 - \`reviewer\` - Code review with quality gates
 - \`writer\` - Documentation

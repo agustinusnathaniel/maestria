@@ -86,9 +86,9 @@ export default {
       prepend:
         '---\n' +
         'description: >-\n' +
-        '  Systematic bug tracing specialist. Follows a 6-step regression protocol\n' +
-        '  from error message to root cause to prevention, covering blast radius\n' +
-        '  and similar-problem scanning.\n' +
+        '  Bug tracing specialist. Follows relevant evidence\n' +
+        '  from symptoms to root cause and prevention; expands to similar sites\n' +
+        '  when the cause indicates a shared defect.\n' +
         'tools: read, bash, grep, find, ls\n' +
         'prompt_mode: append\n' +
         'inherit_context: true\n' +

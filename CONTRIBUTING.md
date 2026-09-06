@@ -106,16 +106,16 @@ When a platform's behavior differs from the core contract, document the boundary
 
 Test observable contracts at the highest practical boundary. Prefer real lightweight boundaries or explicit fakes over mocks, and add regression tests only for durable contracts or meaningful failure modes.
 
-Before a commit, run:
+Before a commit, the delivery owner runs:
 
 ```bash
 pnpm check
-pnpm test
-pnpm typecheck
-pnpm build
+vp check
 ```
 
-For docs-only changes, also run:
+`pnpm check` includes the builds, workspace tests, formatting, lint/type analysis, and sync/version checks. Reuse these results rather than rerunning their constituent commands without a relevant change or failure.
+
+For focused docs verification, use the commands below. The repository pipeline already includes the docs tests and build:
 
 ```bash
 pnpm --filter @maestria/docs test

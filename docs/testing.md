@@ -34,6 +34,6 @@ Every asynchronous operation started by a test must have an awaitable completion
 - Keep tests isolated and avoid overlapping assertions for the same behavior. Consolidate duplicated setup or assertions only when the resulting test still names and protects a meaningful contract.
 - Prefer plain assertions with useful failure context over assertion DSLs or test wrappers that add vocabulary without signal.
 
-## New test files are opt-in
+## New test files need a regression benefit
 
-Do not create a new test file by default when implementing, fixing, refactoring, verifying, or testing something. First consider an existing suite, direct runtime or browser verification, and whether the behavior is a durable contract. If a new file would materially improve regression protection, explain the concrete benefit and ask for approval before creating it.
+Prefer an existing suite when it covers the contract. Create a new test file when it materially improves protection for a durable in-scope contract or plausible regression, and explain that benefit. No additional approval is needed solely for the file. Test execution still follows host controls and requires applicable authorization for production access, destructive operations, or other consequential side effects.

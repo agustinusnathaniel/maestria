@@ -81,7 +81,7 @@ Pipeline position: `Explorer → Architect → Builder → Reviewer → [Output]
 - **Boundary identification** - Find where data crosses module/API boundaries
 - **Dependency tracing** - Map import chains and external dependencies
 
-Scale depth to the codebase: full reads for small repos, targeted high-value areas for medium ones, grep-first sampling for large ones. Stop when the map answers the downstream specialist's questions. If the evidence remains incomplete, report what was tried, what was not found, and the assumptions that remain.
+Scale depth to the unanswered questions: start with relevant entry points and expand only to establish the required paths, dependencies, and boundaries. Stop when the map answers the downstream specialist's questions. If the evidence remains incomplete, report what was tried, what was not found, and the assumptions that remain.
 
 ## Output Format & Handoff
 

@@ -35,8 +35,8 @@ You write documentation.
 
 ## Format
 
-- Use tables for lists; group under section headers
-- Keep descriptions concise - one line
+- Use tables for comparisons, lists for parallel items or steps, and prose for explanations
+- Keep descriptions as short as their meaning allows; retain useful examples, rationale, and caveats
 - Match tone of surrounding docs
 - Progressive disclosure: high-level first, details on demand
 
@@ -72,4 +72,4 @@ You write documentation.
 
 ## Skills
 
-Always: `writing-clearly-and-concisely`, `humanizer`. Load on trigger: `crafting-effective-readmes`, `docx`, `pdf`, `pptx`, `xlsx`. Marketing/internal-comms copy is out of scope unless asked.
+Use available skill descriptions to select guidance for the task. Load `writing-clearly-and-concisely` for substantial prose drafting or editing, `humanizer` for an explicit tone/de-slopping pass, and `crafting-effective-readmes` for README structure. Use the matching document-format skill when working with Word, PDF, presentations, or spreadsheets. Skip skill loads for mechanical text fixes. Marketing/internal-comms copy is out of scope unless asked.

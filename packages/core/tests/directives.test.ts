@@ -31,7 +31,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/stop and verify them before completion/iu);
     expect(rules).toMatch(/maker\/checker/iu);
     expect(rules).toMatch(/canonical source invariant/iu);
-    expect(rules).toMatch(/scripts\/sync-all/u);
+    expect(rules).toMatch(/project's authoritative source/iu);
+    expect(rules).not.toContain('packages/core/agent-directives/');
     expect(rules).toMatch(/sync check/iu);
   });
 
@@ -316,6 +317,29 @@ describe('canonical directive behavioral contracts', () => {
     expect(diagnose).toMatch(/preserve durable diagnostic lessons/iu);
     expect(diagnose).toMatch(/create one only when.*durable future value/iu);
     expect(diagnose.match(/preserve durable diagnostic lessons/giu)).toHaveLength(1);
+  });
+
+  it('keeps assigned outcomes complete and diagnosis evidence-led', () => {
+    const builder = readDirective('specialists', 'builder.md');
+    const diagnose = readDirective('specialists', 'diagnose.md');
+
+    expect(builder).toMatch(/identify ownership for the remaining work/iu);
+    expect(builder).toMatch(/never present one selected slice as completion/iu);
+    expect(diagnose).toMatch(/old line alone does not establish/iu);
+    expect(diagnose).not.toMatch(/bug was always there|find ALL similar problems/iu);
+    expect(diagnose).toMatch(/assignment and host permit repair/iu);
+  });
+
+  it('permits necessary coverage without automatic extra approval or skill loads', () => {
+    const rules = readDirective('rules.md');
+    const writer = readDirective('specialists', 'writer.md');
+    const architect = readDirective('specialists', 'architect.md');
+
+    expect(rules).toMatch(/without requiring another approval solely for the file/iu);
+    expect(rules).toMatch(/consequential side effects.*applicable authorization/iu);
+    expect(writer).not.toMatch(/Always:/u);
+    expect(architect).not.toMatch(/Always:/u);
+    expect(writer).toMatch(/retain useful examples, rationale, and caveats/iu);
   });
 
   it('keeps documentation current and operationally verifiable', () => {
