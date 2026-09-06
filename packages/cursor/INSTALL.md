@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - **Cursor IDE** and/or **Cursor CLI** (`agent` on `$PATH`)
-- No Node toolchain required for end-user install (declarative plugin files)
+- The plugin itself requires no Node.js runtime. The Maestria CLI install below requires Node.js, pnpm (`pnpx`), and npm.
 
 ## Via maestria CLI (recommended)
 

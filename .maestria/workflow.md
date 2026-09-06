@@ -7,7 +7,7 @@ Project-specific routing for the Maestria monorepo. Use the smallest safe route:
 1. Read the task, issue, or PR and extract acceptance evidence.
 2. Read AGENTS.md for repository rules.
 3. Read README.md, VISION.md, or PATTERNS.md only when the change needs that context.
-4. Map the affected package and read its README or relevant ADRs.
+4. Inspect the affected package and its README or ADRs when needed to resolve missing context.
 5. Inspect recent history when the change depends on prior behavior.
 
 Use @adventurer for unfamiliar code, cross-package changes, or reconnaissance that another stage will consume. Do not delegate context gathering for a familiar, atomic edit.
@@ -38,22 +38,7 @@ Before @builder changes code:
 
 ## Implement and Verify
 
-Run the smallest gate that covers the change, then expand it when evidence requires:
-
-```bash
-pnpm check
-pnpm typecheck
-pnpm test
-pnpm build
-```
-
-For documentation changes, also run:
-
-```bash
-pnpm --filter @maestria/docs test
-pnpm --filter @maestria/docs build
-git diff --check
-```
+Run affected checks that establish acceptance during implementation. Before delivery, follow `docs/checklist.md` once on the integrated result. Reuse passing results; rerun affected checks after changes or failures. Documentation changes need the docs tests/build and `git diff --check`; a successful repository pipeline already includes the docs tests/build.
 
 After any change under packages/core/agent-directives/:
 

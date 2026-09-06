@@ -60,6 +60,14 @@ The route is adaptive. A small change may go directly to a worker. A bug may sta
 
 The verifier accepts the result only when the stated acceptance evidence is present. If it finds an implementation defect, the worker repairs it. If it finds a design defect, the orchestrator returns to the thinker instead of asking the worker to guess.
 
+## How Much Process to Expect
+
+Specialists choose investigation and checks that establish the requested outcome. A diagnosis may use Git history or search similar code when that evidence helps; it does not require a repository-wide audit for every bug. Documentation and review outputs use the structure needed to explain the result, and extra skills load only when relevant.
+
+The implementer runs affected checks. The delivery owner runs required repository gates on the integrated result and reuses passing results until a relevant change or failure requires another run. Necessary in-scope regression coverage does not require approval merely because it needs a new test file. Host permissions and consequential operations still require applicable authorization.
+
+A specialist's partial result is a handoff, not completion of the user's whole request. The orchestrator owns remaining work through the agreed outcome, including required review and delivery. Research-only work ends at the requested research artifact.
+
 ## What Depends on the Platform
 
 Native integrations can provide stronger runtime boundaries, such as read-only permissions, lifecycle hooks, or native subagents. The [Agent Plugin package](/agent-plugin/) provides the skills and contracts, while the consuming client owns discovery, permissions, activation, and session behavior.
