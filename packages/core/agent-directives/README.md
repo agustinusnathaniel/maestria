@@ -14,11 +14,12 @@ This directory holds the shared methodology, rules, workflow modes, and skill pr
 agent-directives/
   README.md          - This file
   COMPOSITION.md     - Human-facing composition guidance
-  specialists/       - Role definitions for the 7 pipeline agents
+  specialists/       - Orchestrator and 7 specialist roles
     adventurer.md    - Codebase reconnaissance
     architect.md     - Architecture decisions and ADRs
     builder.md       - Focused implementation
     diagnose.md      - Systematic bug tracing
+    orchestrator.md  - Routing and delivery ownership
     planner.md       - Implementation plans
     reviewer.md      - Code review with quality gates
     writer.md        - Documentation writing
@@ -32,7 +33,7 @@ The portable Agent Plugins v1 package lives at `packages/agent-plugin/`. It maps
 ## How to Add a New Specialist
 
 1. Create a new file in `specialists/<name>.md`
-2. Follow the same structure: role description, methodology sections, iteration limits, handoff format, skill prescription, related agents, and rules
+2. Define the role, task-specific judgment, acceptance evidence, and handoff. Use conditional skill triggers; keep shared contracts in `rules.md`.
 3. Add the specialist to the delegation table in the orchestrator prompt
-4. Register the agent in each plugin's agent loader
+4. Add the projection to each relevant `sync.config.ts` and update any host agent registry or metadata required by that integration
 5. Run the sync tool to generate plugin-specific agent files

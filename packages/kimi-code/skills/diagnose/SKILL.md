@@ -1,7 +1,7 @@
 ---
 arguments: []
 description: |-
-  Systematic 6-step regression tracing.
+  Evidence-led regression tracing.
   From error message to root cause to prevention.
   Use for: cryptic errors, regressions, production bugs.
 name: diagnose
@@ -23,9 +23,9 @@ You trace bugs systematically.
 
 - **!!! Human-facing output.** Apply the canonical human-facing output contract to authored responses, reports, comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation. Never emit Unicode U+2014 EM DASH. Preserve code syntax, literals, quoted source, and user-provided text.
 
-## Phase 0: Start from First Principles
+## Investigation Strategy
 
-Before diving into tracing steps, strip away assumptions about what might be broken. Ask yourself: "What's the simplest, most fundamental thing that could be wrong?" Let the evidence, not prior hypotheses, guide your investigation.
+Start from the observed failure and choose the next check that distinguishes plausible causes. The sections below are investigation aids, not a mandatory itinerary. Stop investigating when the cause and affected contract are supported by evidence; continue through any authorized repair and verification.
 
 ## Step 1: Error -> Source Location
 
@@ -37,38 +37,40 @@ Translate error message into actual source code:
 
 ## Step 1.5: Check Environment (Autonomously)
 
-Rule out environmental causes by gathering data directly - do not ask about these:
+Rule out environmental causes by gathering data directly when symptoms suggest configuration or runtime differences:
 
 - Check relevant dependency manifests and lockfiles for recent changes using the project's diff/version-control tools
 - Check `.env.example` vs `.env` for missing vars
 - Check relevant runtime and package-manager versions for known incompatibilities
-- Check working directory assumptions against actual project structure Document what you checked, what you ruled out, and any assumptions you made about the environment.
+- Check working directory assumptions against actual project structure
+
+Document relevant checks, ruled-out causes, and material assumptions without exposing secret values.
 
 ## Step 2: Source -> Git History
 
-Find when the bug was introduced:
+Inspect history when it helps locate a regression or explain surprising behavior:
 
 - `git blame` on the problematic line
 - Read the commit message and diff
-- Was it intentional, accidental, or a refactor? If no regression commit exists (line is old): the bug was always there but never exercised (missing test coverage). Document this.
+- Consider source, caller, dependency, configuration, and environment changes. An old line alone does not establish when the failure began; report uncertainty when history cannot establish the trigger.
 
 ## Step 3: Git History -> Blast Radius
 
-Find ALL similar problems in the codebase:
+Expand to similar sites when the cause indicates a shared defect or the requested scope includes an audit:
 
 - Search for the same unsafe pattern
-- Create an audit table: File, Line, Pattern, Safe?, Notes
+- Report affected sites and evidence; use a table when comparison helps
 - Document which are safe vs unsafe
 
 ## Step 4: Blast Radius -> Minimal Fix
 
-Fix the root cause with minimal changes:
+If the assignment and host permit repair, fix the root cause with minimal changes; otherwise hand the supported diagnosis to the implementation owner:
 
 - Fix root cause, not symptom
-- Use existing dependencies - don't add new packages
-- One-line fix > rewriting the function
-- Add safeguards (try-catch, validation)
-- Ask "is it safe?" before any system change
+- Prefer existing dependencies; assess any necessary addition against scope, maintenance, and authorization constraints
+- Choose the smallest correct repair, not the fewest lines
+- Add validation or error handling only where it addresses the demonstrated cause
+- Check the consequence of a system change and obtain any missing authorization
 
 ## Step 5: Fix -> Prevention
 
@@ -90,7 +92,7 @@ Confirm it works:
 ## Rules
 
 - **!!! Edit and system-change permissions follow the host policy** - explain the rationale before any change and use the platform's approval controls.
-- **!!! Exhaust environment data** (lockfile, env vars, version mismatch, CWD) before asking; document assumptions with supporting evidence and proceed.
+- **!!! Use relevant available evidence before asking**; document material assumptions with supporting evidence and proceed on ordinary ambiguity.
 - **Parallelization:** different bugs in parallel; same bug = consolidate.
 
 ## Output Format & Handoff

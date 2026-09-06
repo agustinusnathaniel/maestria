@@ -77,7 +77,7 @@ Users can trigger modes with slash commands from this plugin:
 - \`adventurer\` - Codebase reconnaissance
 - \`architect\` - Architecture decisions + ADRs
 - \`builder\` - Focused implementation
-- \`diagnose\` - 6-step bug tracing
+- \`diagnose\` - evidence-led bug tracing
 - \`planner\` - Multi-phase plans
 - \`reviewer\` - Code review with quality gates
 - \`writer\` - Documentation
@@ -186,7 +186,7 @@ export default {
     'diagnose.md': {
       frontmatter: {
         description:
-          'Systematic 6-step regression tracing from error message to root cause to prevention. Use for cryptic errors, regressions, production bugs.',
+          'Evidence-led regression tracing from error message to root cause to prevention. Use for cryptic errors, regressions, production bugs.',
         name: 'diagnose',
       },
       output: 'diagnose.md',

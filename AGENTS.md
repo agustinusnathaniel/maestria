@@ -1,87 +1,41 @@
-<!-- This is the root AGENTS.md for AI agents working on **maestria itself** (not
-     maestria-powered agents working on user projects). See
-     packages/core/agent-directives/README.md for the content ownership guide. -->
+<!-- Instructions for agents working on Maestria itself. Downstream behavior lives
+     in packages/core/agent-directives/. -->
 
-## Project Snapshot
+## Project and Ownership
 
-Maestria is a meta-project: it builds the **agent methodology** (dispatcher + 7 specialists) that AI agents use. The canonical agent directives live in `packages/core/agent-directives/` and are synced to platform-specific plugins (OpenCode, Kimi Code, Pi, Cursor, Hermes, Claude Code, Codex CLI) via `scripts/sync-all`.
+Maestria packages a shared agent methodology as platform-specific integrations. Edit prompts, rules, and workflow modes only in `packages/core/agent-directives/`, then run `scripts/sync-all` and `scripts/check-sync`. Platform agent, skill, command, and rule projections are generated; package manifests and READMEs are hand-authored. See the [content ownership guide](packages/core/agent-directives/README.md) when changing directives or adding a specialist.
 
-See [VISION.md](VISION.md) for the project's motivation and [PATTERNS.md](PATTERNS.md) for the two core design patterns (Pipeline Composition + Maker/Checker Split).
+## Engineering Boundaries
 
-## Priorities & Values
+- `packages/core/` library modules are platform-independent and browser-safe: no platform SDK imports or Node.js APIs. Its `scripts/` directory is development tooling and may use Node.js.
+- Platform adapters belong in their own `packages/<platform>/`. Shared code belongs in the appropriate neutral package, not in another platform's package.
+- OpenCode uses its standard SDK. Claude Code and Codex have declarative projections; their host-specific integration belongs outside core. The portable `agent-plugin` package declares skills only, with no runtime adapter, commands, hooks, or MCP component.
+- Pi is a runtime extension and may use Node.js APIs. Keep host-neutral shared utilities separate from its runtime adapter.
+- Prefer small, reviewable changes. Preserve canonical ownership, package boundaries, and sync correctness when choosing between approaches.
 
-These priorities govern trade-off decisions in this project:
+## Work and Verification
 
-### 1. Canonical source purity
+Use existing context and inspect missing or changed evidence needed for the task. Read project vision and patterns when the change depends on methodology; do not build a full repository map for a familiar edit.
 
-Agent directives are single-sourced in `packages/core/agent-directives/`. Edit canonical sources only - never edit generated copies under `packages/opencode/agents/`. The sync pipeline exists to prevent drift; bypassing it creates technical debt.
+Test observable contracts at the highest practical boundary. Reuse existing tests and lightweight real boundaries or explicit fakes before broad mocks. Add coverage for durable contracts and plausible regressions. A new test file is permitted when it materially protects an in-scope contract; explain that benefit without asking solely because the coverage needs a new file.
 
-### 2. Platform independence
+Run affected checks during implementation and fix failures caused by the requested change. Reuse still-valid evidence; rerun checks when a relevant change, failure, or unresolved concern warrants it. Before committing or delivering implementation, the delivery owner runs the [completion gates](docs/checklist.md) on the integrated result. Independent review is required for meaningful implementation; formatting, comments, and mechanical non-behavioral edits need it only when risk is uncertain. The implementer may validate its work but must not approve its own required review.
 
-Core agent logic (`packages/core/`) must not depend on any specific platform (OpenCode, Kimi Code, Pi, etc.). Platform-specific concerns belong in the respective plugin package. When designing features, keep `core/` platform-agnostic.
+Lint and format use Ultracite presets in `vite.config.ts`. Use `vp check`, `vp check --fix`, or `vp staged`; do not run `ultracite fix` or `oxlint` directly. `vp check` is the built-in format/lint/type check; `pnpm check` runs the repository build/test/verification pipeline.
 
-### 3. Explicit boundaries
+## Contextual References
 
-Every package has a clear role and import constraints. Don't blur boundaries for convenience. If a module needs to be shared, extract it to the appropriate package rather than adding a cross-package dependency.
+Read relevant ADRs before changing architecture, sync behavior, or agent conventions:
 
-### 4. Sync pipeline correctness
+| Change | Read |
+| --- | --- |
+| Plugin architecture or canonical sync | [CORE-002](docs/adr/core/ADR-CORE-002-plugin-architecture.md), [CORE-005](docs/adr/core/ADR-CORE-005-shared-agent-directives-core-sync.md) |
+| Portable Agent Plugins projection | [CORE-022](docs/adr/core/ADR-CORE-022-agent-plugins-portable-projection.md) |
+| Agent routing, persistence, or instruction policy | [CORE-019](docs/adr/core/ADR-CORE-019-directive-simplification.md), [CORE-023](docs/adr/core/ADR-CORE-023-evidence-led-directives.md) |
+| OpenCode permissions or workflow modes | [OC-001](docs/adr/opencode/ADR-OC-001-tool-permission-design.md), [OC-003](docs/adr/opencode/ADR-OC-003-keyword-triggered-workflow-modes.md) |
+| Kimi Code integration | [KC-000](docs/adr/kimi-code/ADR-KC-000-kimi-code-distribution.md), [KC-001](docs/adr/kimi-code/ADR-KC-001-kimi-code-architecture.md) |
+| Pi rules or compaction | [PI-001](docs/adr/pi/ADR-PI-001-rules-injection.md), [PI-002](docs/adr/pi/ADR-PI-002-compaction-state-preservation.md) |
 
-The agent directive sync pipeline is the most critical data flow in the project. Accuracy matters more than speed - a corrupted sync creates inconsistent agent behavior across platforms. Always verify with `scripts/check-sync` before committing.
-
-### 5. Incremental over radical
-
-Prefer small, verifiable changes over sweeping rewrites. Each change should pass `vp check`, have clear scope, and be reviewable in one sitting.
-
-## Package Roles
-
-- **`packages/core/`** - Zero platform-specific imports. Cannot import from opencode, kimi-code, pi, or any platform SDK. Zero Node.js-specific APIs that would prevent browser-side use. The `scripts/` directory is dev tooling and uses Node.js APIs where appropriate, but library modules are browser-safe. Contains the canonical `agent-directives/` (specialist prompts + rules) and shared scripts.
-- **`packages/opencode/`** - Depends on `@maestria/core` via the sync pipeline. Uses standard OpenCode SDK APIs only. Its `agents/` directory is **auto-generated** from core via the sync pipeline.
-- **`packages/claude-code/`** - Declarative Claude Code projection. Its agents, skills, and commands are **auto-generated** from core; the manifest and package docs are hand-authored.
-- **`packages/codex/`** - Codex skills projection. Its skills are **auto-generated** from core; the manifest and package docs are hand-authored.
-- **`packages/agent-plugin/`** - Portable Agent Plugins v1 projection. Its `skills/` directory is **auto-generated** from core; the root `plugin.json` and package docs are hand-authored. It declares skills only and must not absorb host runtime behavior.
-- **`packages/kimi-code/`** - Depends on `@maestria/core` via the sync pipeline. Follows Kimi Code platform conventions.
-- **`packages/pi/`** - Depends on `@maestria/core` via the sync pipeline. Must not depend on any Node.js APIs (Pi is a terminal prompt, not an SDK plugin).
-
-### Canonical source flow
-
-The 8 pipeline agents (7 specialists + orchestrator) are defined in `packages/core/agent-directives/specialists/` and synced to plugin agent/skill directories (`packages/opencode/agents/`, `packages/claude-code/agents/`, `packages/codex/skills/`, `packages/agent-plugin/skills/`, etc.) via `scripts/sync-all`. **Always edit the canonical source, never the generated copy.** See `packages/core/agent-directives/README.md` for the content ownership guide. Reference ADR CORE-005 for the sync bridge design.
-
-## Decision-Making Guide
-
-When facing ambiguity or trade-offs, these rules of thumb apply:
-
-- **Sync accuracy over speed** - When the sync pipeline is involved, verify correctness before proceeding. A corrupted sync breaks agents across all platforms.
-- **Platform independence over convenience** - If a feature can be implemented in core (platform-agnostic) vs. a plugin, put it in core. Platform coupling is forever.
-- **Boundaries over shortcuts** - If code crosses package boundaries, extract it to the right package rather than adding a cross-package dependency. Boundary violations accumulate into architecture rot.
-- **Incremental over radical** - A small, reviewable change that lands today is worth more than a perfect rewrite that never ships.
-- **Quality gates are not optional** - `vp check` before every commit. `scripts/check-sync` after every agent directive change. Post-implementation review by `@reviewer` is the default (maker/checker split).
-
-## Tooling
-
-Lint and format use Ultracite presets composed in `vite.config.ts` as the single source of truth (see ADR-CORE-021). Run `vp check` and `vp check --fix` (or `vp staged` via `.vite-hooks/pre-commit`) - do not run `ultracite fix` or `oxlint` directly.
-
-## Testing
-
-- Test observable contracts at the highest practical boundary, choosing unit, integration, runtime, or browser verification based on risk.
-- Add coverage for durable contracts and plausible regressions, not every implementation detail or fix.
-- Prefer existing tests, real lightweight boundaries, and explicit fakes over broad mocks.
-- New test files are opt-in, not the default. Explain the concrete regression benefit and ask before creating one.
-- See [Testing Philosophy](docs/testing.md) for detailed guidance.
-
-## Reference
-
-### Architecture Decision Records
-
-Read the relevant ADRs before modifying plugin architecture, sync pipeline, or agent conventions:
-
-| Area | Key ADRs | When to read |
-| --- | --- | --- |
-| Core | CORE-002 (Plugin Architecture), CORE-005 (Core Sync), CORE-022 (Portable Agent Plugins) | Plugin loading, agent directives, portable package projection |
-| OpenCode | OC-001 (Tool Permissions), OC-003 (Workflow Modes) | Agent frontmatter, chat hooks |
-| Kimi Code | KC-000, KC-001 | Kimi platform work |
-| Pi | PI-001 (Rules Injection), PI-002 (Compaction) | Pi platform work |
-
-### Detailed Guidelines
-
-- [Testing Philosophy](docs/testing.md) - Test from contracts, avoid mocks
-- [Completion Checklist](docs/checklist.md) - Pre-commit verification gates
+- [Testing philosophy](docs/testing.md): choosing coverage, test boundaries, and fixtures.
+- [Contributing](CONTRIBUTING.md): setup, package workflows, changesets, and delivery.
+- [Vision](VISION.md) and [patterns](PATTERNS.md): methodology rationale and design principles.
