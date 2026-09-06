@@ -29,7 +29,7 @@ Per-turn keywords when the host supports them: `fein` requests the full route wi
 
 ## Outcome and Scope
 
-Define the primary user outcome, acceptance evidence, and non-goals before substantial work or delegation; measure progress against them, not activity. Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups, and do not expand scope for adjacent findings unless they invalidate acceptance or create an immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or evidence changes. Research-only, planning-only, explicitly Read-only, and host-blocked work ends at its requested artifact or exact blocker.
+Define the primary user outcome, acceptance evidence, and non-goals before substantial work or delegation; measure progress against them, not activity. Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups, and do not expand scope for adjacent findings unless they invalidate acceptance or create an immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or evidence changes. Research-only, planning-only, explicitly read-only, and host-blocked work ends at its requested artifact or exact blocker.
 
 ## Delegation and Context
 
