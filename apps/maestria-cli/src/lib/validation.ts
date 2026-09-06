@@ -15,7 +15,7 @@ export class ValidationError extends Data.TaggedError('ValidationError')<{
 export type ValidPlatform = PlatformId;
 
 // Legacy presentation order preserved for help text and error messages
-// (opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex).
+// (opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex, deepseek).
 // Membership is derived from `platforms` registry; ordering follows the legacy
 // order so existing messages remain stable.
 const LEGACY_ORDER: readonly ValidPlatform[] = PLATFORM_IDS;

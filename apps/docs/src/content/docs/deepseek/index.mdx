@@ -1,0 +1,143 @@
+---
+title: '@maestria/deepseek'
+description: DeepSeek Harness integration that packages Maestria's methodology as Agent Skills, a Cordis plugin, and a full agent preset with per-specialist delegation.
+template: splash
+editUrl: false
+lastUpdated: false
+---
+
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PluginSection from '@/components/plugin/plugin-section.astro';
+import FeatureGrid from '@/components/plugin/feature-grid.astro';
+import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+
+<div class="plugin-root">
+  <div class="home-glow" aria-hidden="true"></div>
+  <div class="home-grid" aria-hidden="true"></div>
+
+  <div class="home-inner">
+    <div class="relative min-w-0">
+      <PlatformHero
+        eyebrow="@MAESTRIA/DEEPSEEK"
+        title="Maestria for DeepSeek Harness."
+        lead="Run Maestria as a DeepSeek Harness agent preset: the orchestrator methodology as the session persona, seven specialist subagent delegation tools, and the generated skill tree."
+        mark={marks.deepseek}
+        primaryCta={{ href: '/deepseek/getting-started/installation/', label: 'Get started' }}
+        secondaryCta={{ href: '/deepseek/getting-started/quick-start/', label: 'Quick start' }}
+        installCommand="npx maestria install deepseek"
+      />
+    </div>
+
+    <PluginSection
+      index="01"
+      kicker="WHAT YOU GET"
+      title="Methodology as skills, personas, and a preset."
+      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <FeatureGrid
+        items={[
+          { title: 'Agent Skills', desc: 'The 14-skill roster (adventurer through writer, global-rules, handoff, iteration-limits, fein/sonar/blitz) in the Agent Skills format DSH discovers from its skill roots.' },
+          { title: 'Specialist delegation tools', desc: 'Seven maestria_<role> subagent tools, each composing its child with the canonical specialist persona from the generated skills.' },
+          { title: 'Orchestrator persona and routing', desc: 'The Maestria agent preset composes sessions with the orchestrator methodology and a routing section for the direct/focused/full pipeline.' },
+          { title: 'Global rules as a prompt section', desc: 'The preset injects the universal evidence, safety, authorization, and review contract directly into the assembled system prompt.' },
+          { title: 'Bounded delegation', desc: 'Specialist delegations are one-shot with maxDepth 2, keeping maker/checker stages explicit while the generic subagent tools stay available.' },
+          { title: 'Workflow-mode skills', desc: 'fein, sonar, and blitz expose the workflow mode system as model-invocable skills.' },
+          { title: 'Advisory by design', desc: 'Prompt sections and personas guide behavior; DeepSeek Harness owns tool restrictions, sandboxing, and approvals.' },
+        ]}
+      />
+    </PluginSection>
+
+    <PluginSection
+      index="02"
+      kicker="HOW IT WIRES IN"
+      title="CLI stages, the preset roster mounts."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <ol class="list-none m-0 p-0 border-t border-home-border">
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">1</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">CLI stages</strong> - <code>npx maestria install deepseek</code> copies the preset composition and bundled plugin into <code>$DSH_HOME/.agent-presets/maestria</code>, self-contained with no npm resolution at harness runtime</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">2</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Roster picks it up</strong> - DeepSeek Harness's agent-preset roster scans the harness home; new sessions can join the <code>Maestria</code> preset</p>
+        </li>
+        <li class="flex items-baseline gap-4 py-3.5 px-0.5 border-b border-home-border">
+          <span class="font-mono text-sm text-home-accent opacity-75 tabular-nums">3</span>
+          <p class="m-0 text-[0.9375rem] leading-[1.6] text-home-text-soft"><strong class="font-semibold text-home-text">Composition mounts</strong> - joined sessions get the Maestria persona, prompt sections, delegation tools, and the generated skill catalog</p>
+        </li>
+      </ol>
+    </PluginSection>
+
+    <PluginSection
+      index="03"
+      kicker="INSTALL PATHS"
+      title="Preset, or skills only."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div class="flex flex-col gap-6 max-w-46rem">
+        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+          The Maestria CLI is the supported path for the full preset:
+        </p>
+      </div>
+
+      ```bash
+      npx maestria install deepseek
+      ```
+
+      <p class="!mt-6 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
+        Check, update, and remove it with the same CLI:
+      </p>
+
+      ```bash
+      npx maestria status
+      npx maestria update deepseek
+      npx maestria uninstall deepseek
+      ```
+
+      <div class="pt-8">
+        <aside class="max-w-46rem border border-home-border bg-home-surface px-[clamp(1.1rem,2vw,1.5rem)] py-4">
+          <p class="m-0 mb-1.5 font-mono text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-home-accent">Provisional</p>
+          <p class="m-0 text-sm leading-[1.65] text-home-text-muted">
+            DeepSeek Harness is a developer-preview runtime. This package is typechecked and
+            unit-tested against the published <code>@deepseek-ai/*</code> RC types but is not yet
+            verified against a live <code>dsh</code> deployment. Reverify after harness updates; see
+            the runtime support matrix for the promotion gates.
+          </p>
+        </aside>
+      </div>
+    </PluginSection>
+
+    <PluginSection
+      index="04"
+      kicker="FIND YOUR WAY"
+      title="Start with the preset."
+      class="mb-[clamp(4rem,9vw,7rem)]"
+    >
+      <div>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/deepseek/getting-started/installation/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Stage the Maestria agent preset, join a session, and verify the delegation tools.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Core Methodology</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Roles, permissions, and when to use each of the 7 specialists.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md">
+          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Support Matrix</span>
+          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Evidence ledger, capability-vs-control boundaries, and promotion gates.</span>
+          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </PluginSection>
+
+    <SiblingPlatforms excludeId="deepseek" />
+
+    <SiteFooter />
+
+  </div>
+</div>

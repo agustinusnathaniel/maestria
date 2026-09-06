@@ -225,6 +225,17 @@ export default defineConfig({
         {
           collapsed: true,
           items: [
+            { label: 'Overview', link: '/deepseek/' },
+            {
+              items: [{ autogenerate: { directory: 'deepseek/getting-started' } }],
+              label: 'Getting Started',
+            },
+          ],
+          label: '@maestria/deepseek',
+        },
+        {
+          collapsed: true,
+          items: [
             { label: 'Overview', link: '/cursor/' },
             {
               items: [{ autogenerate: { directory: 'cursor/getting-started' } }],
