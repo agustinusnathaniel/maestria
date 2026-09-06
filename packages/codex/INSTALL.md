@@ -7,21 +7,9 @@
 - Codex CLI 0.145.0 or a later version whose plugin and skills behavior has been independently reverified.
 - npm on `PATH` when using the Maestria CLI installer.
 
-## Package validation
-
-Validate the package before installing it:
-
-```bash
-python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
-```
-
-Replace the placeholder with the `validate_plugin.py` path from the plugin-creator skill in your Codex installation.
-
-The validator checks the `.codex-plugin/plugin.json` manifest and the packaged layout. This does not prove that a live Codex session activates every skill.
-
 ## Persistent installation through Maestria
 
-Install the published projection and register it with Codex's native plugin manager:
+Install the published package and register it with Codex's native plugin manager:
 
 ```bash
 npx maestria install codex
@@ -64,11 +52,11 @@ Codex loads plugins through a configured marketplace. Install the package from t
 
 These skills are advisory. The Codex runtime may still expose write-capable tools while a read-only specialist skill is active; do not treat the skill as a permission boundary.
 
-5. **Use native specialist agents**
+### Use native specialist agents
 
 The CLI-installed native roles are `maestria-adventurer`, `maestria-architect`, `maestria-builder`, `maestria-diagnose`, `maestria-planner`, `maestria-reviewer`, and `maestria-writer`. Ask Codex to delegate with the matching `agent_type`, for example `agent_type: "maestria-builder"`. Read-only roles use Codex's native `sandbox_mode = "read-only"`.
 
-6. **Automatic primary-session routing**
+### Automatic primary-session routing
 
 After `maestria install codex`, start a new Codex session. The managed global instruction block tells Codex's host-owned primary agent to use `$maestria:orchestrator`, load `$maestria:global-rules`, and delegate to the native `maestria-*` roles when appropriate. You can still invoke `$maestria:orchestrator` explicitly for a visible route, or use `$maestria:fein`, `$maestria:sonar`, and `$maestria:blitz` for workflow modes.
 
@@ -81,11 +69,23 @@ npx maestria configure codex --global --set builder=gpt-5.6-terra
 npx maestria configure codex --project --set reviewer=gpt-5.6-luna
 ```
 
-Global files are written under `~/.codex/agents/`; project files are written under `.codex/agents/`. Existing TOML is edited surgically. Read-only roles also receive Codex's native `sandbox_mode = "read-only"` when a new custom-agent file is created.
+Global files are written under `~/.codex/agents/`; project files are written under `.codex/agents/`. Existing unrelated TOML settings are preserved. Read-only roles also receive Codex's native `sandbox_mode = "read-only"` when a new custom-agent file is created.
 
 ## Scope deliberately excluded
 
 The plugin manifest does not itself declare agents, write `config.toml`, register a model, add MCP, or ship lifecycle hooks. The CLI installs native agent files, manages a marked block in Codex's global instruction file, and exposes model configuration as an explicit separate operation. The package also does not claim Codex desktop parity.
+
+## Contributor package validation
+
+When testing a local checkout, validate its manifest and layout:
+
+```bash
+python3 /path/to/plugin-creator/scripts/validate_plugin.py packages/codex
+```
+
+Replace the placeholder with the `validate_plugin.py` path from the plugin-creator skill in your Codex installation.
+
+The validator checks the `.codex-plugin/plugin.json` manifest and the packaged layout. This does not prove that a live Codex session activates every skill.
 
 ## Updating generated content
 

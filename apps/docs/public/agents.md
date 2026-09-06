@@ -1,6 +1,6 @@
 # Maestria agent instructions
 
-Maestria is portable AI engineering praxis: installable plugins that wire a dispatcher-plus-specialist methodology (adventurer, architect, builder, diagnose, planner, reviewer, writer around a dispatch-only orchestrator) into coding agents.
+Maestria provides installable plugins for structured AI engineering work. An orchestrator routes tasks to seven specialists: adventurer, architect, builder, diagnose, planner, reviewer, and writer. Small, familiar tasks can run directly in the host session; delegation and permissions depend on the platform.
 
 ## When to use Maestria
 

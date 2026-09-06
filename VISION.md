@@ -2,19 +2,19 @@
 
 ## Motivation
 
-AI coding agents - OpenCode, Claude Code, Codex, Kimi Code - provide excellent infrastructure: tools, sandboxes, permissions, model access. But they can't prescribe how an agent _behaves_ - how it makes decisions, orchestrates work, delegates tasks, structures reasoning. That level of opinionation is too specific to ship as a platform default. The result: every team re-invents the same patterns, badly.
+AI coding agents provide tools, sandboxes, permissions, and model access. Teams still need to decide how agents plan work, delegate tasks, and review results.
 
-Maestria is a **behavior layer** for AI coding agents. It packages proven methodology - design patterns, agent prompts, workflow rules - as reusable, installable, versioned packages. One per platform. Same patterns, adapted to each platform's native primitives. The principle is straightforward: **Agent = Model + Harness.** The model provides capability. The harness provides reliability. Most agent failures are harness failures, not model failures.
+Maestria is a **behavior layer** for these agents. It packages design patterns, agent prompts, and workflow rules as reusable, versioned plugins adapted to each platform. The guiding principle is **Agent = Model + Harness**: the model provides capability; the harness shapes how reliably it is used.
 
-The patterns in Maestria were extracted from months of daily AI-assisted engineering work. They're scar tissue from real failures, not theoretical best practices. The maker/checker split, delegation chains, handoff contracts, iteration limits - all of these came from specific mistakes that happened more than once. These are the patterns _we stopped making_. Published under MIT so others don't have to make them either.
+The patterns come from months of daily AI-assisted engineering. Independent review, delegation chains, handoff contracts, and iteration limits address recurring failures from that work. They are published under MIT so other teams can reuse them.
 
 Maestria packages do not use automatic postinstall scripts. Direct plugin installers read the package's agents, skills, and rules, while the `maestria` CLI may stage packages or update host-owned files when you explicitly ask it to. The portable Agent Plugin package contains only its manifest and skills. Check each platform guide for the host-specific installation and update behavior.
 
 ## Goals
 
-- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code gets declarative agents, skills, and commands. Codex gets skills plus CLI-managed native agents and instructions. The pattern is the same; the implementation adapts.
+- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code gets declarative agents, skills, and commands. Codex gets skills plus CLI-managed native agents and instructions.
 
-- **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context. These are first-class concepts, not afterthoughts.
+- **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context.
 
 - **Transparency.** Every agent is a markdown file with YAML frontmatter. No TypeScript abstraction layer between you and the prompts. What you see is what the agent runs.
 
@@ -55,4 +55,4 @@ Maestria packages do not use automatic postinstall scripts. Direct plugin instal
 
 ## How This Project Evolves
 
-Patterns are curated from experience, documented in the knowledge base, then promoted into Maestria packages when proven. All changes flow through human review. No autonomous code changes. See **PATTERNS.md** for the catalog of design patterns that each platform package implements.
+Patterns are curated from experience, documented in the knowledge base, then promoted into Maestria packages when proven. All changes flow through human review. No autonomous code changes. See [PATTERNS.md](PATTERNS.md) for the catalog of design patterns that each platform package implements.

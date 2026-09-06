@@ -1,6 +1,8 @@
 # Runtime Support Matrix
 
-Internal evidence ledger for runtime support and adapter policy. This is the supporting evidence for [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). It records verified facts, `[inferred]` assumptions, capability vs control status, statuses and gates, evidence records, and sources. It is a living document for maintainers, not a public support promise.
+Maintainer evidence ledger supporting [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). Use it to assess runtime capabilities, enforcement, and promotion gates. Dated findings and inferred assumptions are research evidence, not a public support promise.
+
+Start with the [snapshot](#snapshot) for support decisions, then follow each Evidence ID to its runtime section for sources and verification limits.
 
 ## How to read this document
 
@@ -10,9 +12,12 @@ Internal evidence ledger for runtime support and adapter policy. This is the sup
 - **Support level** uses the controlled vocabulary from ADR-CORE-014 (`Native`, `Native candidate`, `Provisional`, `Deferred`, `Withdrawn`) and contains no delivery terms.
 - **Capability** (`Supported`, `Available`, `Unverified`, `Unavailable`) records what a runtime can do.
 - **Control** (`Enforced`, `Trust-gated`, `Ignored`, `Advisory`, `Not a sandbox`, `Unsupported`) records what a runtime actually enforces. Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled security `Enforced`.
-- **Test status** is `tested` or `not tested`. Local working-tree package evidence uses qualified labels that distinguish verification levels: `tested: source inspection` (pinned upstream source read, no runtime execution), `tested: package/unit tests` (skills/manifest/dependency-boundary/behavior tests against a fake host API), and `tested: built-artifact smoke` (the compiled artifact is built and its behavior exercised); these labels never imply a live runtime E2E. Almost all upstream evidence here is `not tested` and unpinned; treat it as research-only, not production support proof.
+- **Test status** is `tested` or `not tested`. Qualified labels describe the verification boundary; none implies a live runtime end-to-end test. Almost all upstream evidence is untested and unpinned, so it is research-only, not production support proof.
+  - `tested: source inspection`: pinned upstream source read; no runtime execution.
+  - `tested: package/unit tests`: skills, manifest, dependency-boundary, or behavior tests against a fake host API.
+  - `tested: built-artifact smoke`: compiled artifact built and its behavior exercised.
 - **Pinned state:** each evidence record states the exact release/version/immutable commit/docs revision, or the exact text `unpinned - reverify before implementation`.
-- **Evidence ID:** every snapshot, evidence, capability/control, and source row carries one or more `Evidence ID`s (for example `E-CLAUDE-01`) that are the traceability link to a complete evidence record. A complete evidence record is a row in the per-runtime Evidence tables below; it contains the runtime/surface, the claim, the pinned state, the source URL/path, the review date, and the test status. Section headings do not provide implicit metadata (runtime, review date, or source); each row is self-contained and must be read together with its evidence record, never inferred from its heading.
+- **Evidence ID:** every snapshot, evidence, capability/control, and source row links to a complete per-runtime Evidence record through one or more IDs (for example `E-CLAUDE-01`). Read each row with that record, which specifies the runtime/surface, claim, pinned state, source URL/path, review date, and test status. Each row is self-contained: do not infer runtime, date, or source from its section heading.
 
 ## Maestria CLI adapter evidence (reviewed 2026-08-13)
 

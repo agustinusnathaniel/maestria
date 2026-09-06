@@ -138,6 +138,8 @@ For a pull request:
 
 ## Documentation Locations
 
+Use the [engineering documentation index](docs/README.md) to find current guidance, design rationale, and historical records.
+
 | Need                               | Location                                |
 | ---------------------------------- | --------------------------------------- |
 | User-facing guides                 | `apps/docs/`                            |

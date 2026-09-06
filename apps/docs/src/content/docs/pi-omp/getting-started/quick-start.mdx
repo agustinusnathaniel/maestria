@@ -51,19 +51,15 @@ Mode set to fein. Describe what you'd like to work on.
 
 ## How Dispatch Works
 
-<Aside type="note">
-  **Pi** dispatches specialists via `maestria_subagent(agent, task)` through the
-  `@gotgenes/pi-subagents` extension. **OMP** dispatches specialists directly via its built-in
-  `task(agent: "...", task: "...")` tool - no external dependency needed.
-</Aside>
+Pi dispatches specialists through `maestria_subagent(agent, task)` from the `@gotgenes/pi-subagents` extension. OMP uses its built-in `task(agent: "...", task: "...")` tool and needs no external dispatch dependency.
 
-Dispatch behavior is platform-specific. Pi uses `maestria_subagent` through `@gotgenes/pi-subagents`; OMP also exposes its native `task()` tool. Their limits, context inheritance, and enforcement behavior are not interchangeable. See the [Pi and OMP reference](/pi-omp/reference/) before designing a workflow around parallel or chained dispatch.
+Their limits, context inheritance, and enforcement differ. See the [Pi and OMP reference](/pi-omp/reference/) before relying on parallel or chained dispatch.
 
 When a workflow mode activates enforcement, the current platform can restrict the main session to delegation tools. This is not a universal property of every session: mode-free sessions and specialist sessions have different tool access.
 
 ## Your First Task
 
-Try it with a simple request:
+For a task that warrants the full pipeline:
 
 1. Start a session (`pi` or `omp`).
 2. Type `fein` followed by your task (e.g. `fein Add user authentication`).
@@ -75,11 +71,9 @@ Try it with a simple request:
 
 ## About Agent Switching
 
-Unlike OpenCode (where the orchestrator is a separate agent you switch to via `@orchestrator`), **Pi and OMP are single-agent platforms** - the orchestrator IS the session. The mode keyword (`fein`/`sonar`/`blitz`) is the equivalent of switching to the orchestrator agent. There is no separate "switch to orchestrator" step.
+In Pi and OMP, the main session applies the orchestrator guidance and dispatches specialists. There is no separate agent to switch to: activate a workflow mode to select the route and its enforcement.
 
 ## What's Next?
 
 - Read the [Installation Guide](/pi-omp/getting-started/installation/) for setup options.
 - Learn about the [specialist subagents](/core/agents/) and their roles.
-
-> **Mode commands:** `/fein`, `/sonar`, and `/blitz` set persistent process mode; describe the goal in your next message. Use `/mode-clear` to return to neutral routing.
