@@ -1,5 +1,11 @@
 # @maestria/omp
 
+## 0.5.7
+
+### Patch Changes
+
+- [#282](https://github.com/agustinusnathaniel/maestria/pull/282) [`2394993`](https://github.com/agustinusnathaniel/maestria/commit/239499367ab8abc3094be5800c0ad61f86e388b6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Stop publishing generated JavaScript sourcemaps from the CLI and platform packages to reduce published package sizes while keeping the compiled runtime artifacts unchanged.
+
 ## 0.5.6
 
 ### Patch Changes
