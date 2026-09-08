@@ -52,3 +52,6 @@ __pycache__/
 *.pfx
 
 **/handoffs/
+
+# xtarterize internal artifacts
+/.xtarterize/
