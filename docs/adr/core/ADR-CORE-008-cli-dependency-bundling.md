@@ -71,7 +71,6 @@ The `dependencies` field is removed entirely - the CLI has no runtime dependenci
    pack: {
      entry: ['src/index.ts'],
      target: 'node22',
-     sourcemap: true,
      minify: true,
      fixedExtension: false,
 +    deps: {
@@ -139,7 +138,7 @@ Rejected because: this creates a confusing mismatch between `dependencies` (whic
 
 Replace vite-plus with a raw esbuild script that produces a single self-contained file. Drop the `vp pack` dependency.
 
-Rejected because: vite-plus provides sourcemaps, TypeScript path resolution, test integration, and monorepo-consistent config. Using raw esbuild would duplicate this infrastructure and create an inconsistency with how every other package builds. The bundling change is a config diff, not a toolchain diff.
+Rejected because: vite-plus provides TypeScript path resolution, test integration, and monorepo-consistent config. Using raw esbuild would duplicate this infrastructure and create an inconsistency with how every other package builds. The bundling change is a config diff, not a toolchain diff.
 
 ## Related Decisions
 
@@ -149,3 +148,7 @@ Rejected because: vite-plus provides sourcemaps, TypeScript path resolution, tes
 ## Date
 
 2026-06-30
+
+## Revision
+
+On 2026-09-08, the CLI stopped publishing generated JavaScript sourcemaps. The maps were substantially larger than the bundled runtime and were not consumed by an error-reporting pipeline. The build continues to use vite-plus/tsdown; its default `sourcemap: false` keeps the published CLI artifact lean.

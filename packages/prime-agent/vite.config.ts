@@ -4,7 +4,6 @@ export default defineConfig({
   pack: {
     entry: ['src/extension.ts'],
     minify: true,
-    sourcemap: true,
     target: 'node22',
   },
   test: {

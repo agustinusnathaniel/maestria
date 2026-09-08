@@ -29,7 +29,7 @@ prime-agent package install npm:@maestria/prime-agent
 
 Prime installs it via npm and records it in global settings (`~/.prime/agent/settings.json`). Add `--local` to use project settings (`.prime/agent/settings.json`), which Prime installs automatically at startup.
 
-The published package includes the compiled `dist/extension.mjs` and its sourcemap. Prime discovers both resources through the package's `pi.skills` and `pi.extensions` entries.
+The published package includes the compiled `dist/extension.mjs`. Prime discovers the extension and skills through the package's `pi.extensions` and `pi.skills` entries.
 
 #### Installing from source
 
