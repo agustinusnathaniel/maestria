@@ -79,30 +79,12 @@ export const findDangerousPattern = (command: string): RegExp | null => {
   return null;
 };
 
-/** Alias for findDangerousPattern - returns matching pattern or null. */
-export const isDangerousCommand = findDangerousPattern;
-
-export const shouldBlockForOrchestrator = (
-  state: { mode: unknown },
-  activeTools: string[],
-  delegationTool: string,
-): boolean => state.mode !== null && activeTools.includes(delegationTool);
-
 export const getBlockedReviewReason = (toolName: string): string | null => {
   if (toolName === 'edit' || toolName === 'write' || toolName === 'bash') {
     return 'Review mode is active. Report findings, do not edit.';
   }
   return null;
 };
-
-export const isOrchestratorBlocked = (
-  state: { mode: unknown },
-  activeTools: string[],
-  delegationTool: string,
-): boolean => shouldBlockForOrchestrator(state, activeTools, delegationTool);
-
-export const findDangerousPatternForCommand = (command: string): RegExp | null =>
-  findDangerousPattern(command);
 
 // ── Factory ──
 
