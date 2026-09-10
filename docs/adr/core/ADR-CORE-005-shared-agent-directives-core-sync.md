@@ -65,11 +65,12 @@ Content rules:
 
 ### 2. Sync Tool: `packages/core/scripts/sync.ts`
 
-A single TypeScript script (not a separate package) run via a root-pinned `tsx` runner (see [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md)). It lives at `packages/core/scripts/sync.ts` (159 lines) backed by 9 library modules (line counts as of 2026-09-11):
+A single TypeScript script (not a separate package) run via a root-pinned `tsx` runner (see [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md)). It lives at `packages/core/scripts/sync.ts` (159 lines) backed by 10 library modules (line counts as of 2026-09-11):
 
 | Module | Lines | Purpose |
 | --- | --- | --- |
 | `scripts/sync.ts` | 159 | CLI entry - arg parsing, help, main loop |
+| `scripts/lib/agent-directive-sync.ts` | 206 | Shared Pi/OMP directive mapping - one 14-file table parameterized by command prefix and agent family; consumed by thin `packages/pi/sync.config.ts` and `packages/omp/sync.config.ts` wrappers (ADR-CORE-025) |
 | `scripts/lib/anchors.ts` | 156 | Anchor liveness validation - replays the resolved plan's replace ops to fail a run on a dead anchor (ADR-CORE-024) |
 | `scripts/lib/config.ts` | 175 | Config types (`SyncConfig`, `FileConfig`), loading, merging default + per-file config |
 | `scripts/lib/diff.ts` | 16 | Unified diff wrapper (via `diff` package) |

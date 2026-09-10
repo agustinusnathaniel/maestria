@@ -70,6 +70,8 @@ For full session persistence (survives `/reload` and `/new`), `pi.appendEntry` w
 
 ## Implementation Notes (Post-Implementation)
 
+> Moved 2026-09-11: the module-scope state and its renderer now live in `@maestria/shared-pi/state-core` (shared by Pi and OMP), and the `packages/pi/src/state.ts` re-export barrel was deleted. Consumers import `state-core` directly and the renderer is `renderMaestriaSummary`. The behavior described below is unchanged; see [ADR-CORE-025](../core/ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
+
 ### ✅ `MaestriaState` Module-Scope Object Implemented
 
 Module-scope `MaestriaState` object implemented in `packages/pi/src/state.ts`. The object tracks all 7 fields (activeTask, completionPromise, blockers, filesRead, filesModified, handoffHistory, reviewMode) and is importable across the extension.
