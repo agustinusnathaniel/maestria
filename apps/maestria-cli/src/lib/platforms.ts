@@ -1440,15 +1440,7 @@ const hermes: PlatformHandler = {
 
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
-const CURSOR_AGENT_NAMES = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
+export const CURSOR_AGENT_NAMES = MAESTRIA_AGENTS;
 
 const cursorCliName = (): Effect.Effect<string | undefined> =>
   Effect.gen(function* cursorCliNameEffect() {
