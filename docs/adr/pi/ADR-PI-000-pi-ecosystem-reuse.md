@@ -120,7 +120,7 @@ Six additional Pi gallery packages were evaluated in a follow-up survey (July 20
 
 1. **Spec-driven orchestration** - Each specialist's assigned spec (from the orchestrator's workflow DAG) is passed alongside the handoff contract. Phase gates validate that each specialist completes its spec before the next stage begins.
 2. **Session tree integration** - Each subagent invocation records its parent task ID for session tree reconstruction.
-3. **Structured cross-agent context** - Handoff contracts are validated before dispatch (7-field pre-check), not just advisory.
+3. **Structured cross-agent context** - Handoff contracts are validated before dispatch (7-field pre-check), not just advisory. _Corrected 2026-09-11: the field-level pre-check was removed; dispatch now asserts the specialist name and a non-empty task only. See the implementation note below._
 
 ### Defer `pi-crew` and `pi-dynamic-workflows` to v1.1
 
@@ -169,7 +169,9 @@ The package was tested with `@earendil-works/pi-coding-agent@0.79.9`. The `Subag
 
 ### ✅ Handoff Validation Pre-Check Implemented
 
-As designed in the ADR, `validateHandoff()` (from `@maestria/shared-pi/subagent-utils`) checks all 7 handoff fields (Goal, Context, Requirements, Known Problems, Assumptions Documented, Success Criteria, Next Step) before dispatching. Rejects with clear error if a field is missing.
+As designed in the ADR, handoff inputs are checked before dispatching: `assertValidAgent()` rejects specialist names outside `ALLOWED_AGENTS`, and `assertNonEmptyTask()` rejects empty or whitespace-only tasks. Both live in `@maestria/shared-pi/subagent-utils`.
+
+> Corrected 2026-09-11: the original implementation used `validateHandoff()` from the same module to parse all 7 handoff fields (Goal, Context, Requirements, Known Problems, Assumptions Documented, Success Criteria, Next Step) and reject a missing or empty field. That function, its `HANDOFF_FIELDS` constant, and its result type were removed in the consumer-driven simplification pass after an audit found no production callers. The 7-field contract remains the methodology contract in the handoff skill; it is no longer machine-validated at dispatch time.
 
 ### ✅ Recursion Guard Respected
 
@@ -181,4 +183,4 @@ The `subagent.ts` module catches errors from `@gotgenes/pi-subagents` and return
 
 ## Date
 
-2026-06-19 (ADR), 2026-06-22 (implementation notes)
+2026-06-19 (ADR), 2026-06-22 (implementation notes), 2026-09-11 (dispatch validation corrections)

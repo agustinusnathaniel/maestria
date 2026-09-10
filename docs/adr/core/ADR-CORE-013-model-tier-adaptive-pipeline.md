@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed evolution (2026-07-31). Unit 1 documents the contract; no adaptive routing is implemented by this ADR.
+Accepted (2026-07-31; updated 2026-09-10). Unit 1's three-route contract (direct, focused, full) is implemented in the canonical directives. Unit 2's model-economics tier model and selective routing remain proposed; `MAESTRIA_TIER` and automatic route selection are not implemented.
 
 ## Context
 
@@ -44,6 +44,10 @@ Unit 2 may implement selective routing informed by model economics. That future 
 ### Runtime authority clarification (2026-08-12)
 
 The shared directive defines route selection and behavioral principles; the host runtime defines execution authority. OpenCode, OMP, and Kimi may require pure-dispatcher behavior where their adapters or session permissions restrict the orchestrator. Direct-capable runtimes may execute a direct route when their host permits it. Delegated work remains owned by its designated specialist, and maker/checker requirements remain honest about the enforcement the host actually provides.
+
+### Unit 1 implementation status (2026-09-10)
+
+The three-route contract from Unit 1 is implemented in the canonical directives: `specialists/orchestrator.md` defines the `direct`/`focused`/`full` routing table, and `rules.md` carries the smallest-route rule and mode overrides. Unit 2 (model-economics-aware selective routing) remains unimplemented: there is no `MAESTRIA_TIER` variable and no automatic route selection.
 
 ### Proposed future tier model
 

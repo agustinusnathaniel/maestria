@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted (2026-07-03)
 
 ## Context
 
@@ -120,6 +120,8 @@ Two reasons support this decision:
 2. **The OC-001 read-side experiment's lesson is noted but scoped differently.** The orchestrator's read/glob/grep bypass was systematic and happened within a single session. MCP tool access is narrower: `codegraph_explore` is a single tool, not a family of general-purpose capabilities. If the orchestrator is observed using `codegraph_explore` to investigate code instead of delegating to `@adventurer`, this decision should be revisited with Option A.
 
 If revisited, **Option A (per-server explicit blocking via `codegraph_*: deny`)** is the recommended approach. It matches the existing permission pattern, is straightforward to implement, and is visible in the `sync.config.ts` diff.
+
+Reviewed 2026-09-10: the orchestrator permission block in `packages/opencode/sync.config.ts` still has no explicit MCP deny, so the no-structural-change decision remains in effect and the revisit trigger below is unchanged.
 
 ## Consequences
 

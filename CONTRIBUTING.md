@@ -90,7 +90,7 @@ Use the package README for detailed setup. This table shows where changes normal
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
-| `kimi-code` | `kimi.plugin.json` and transforms | `skills/` | `vp test` |
+| `kimi-code` | `kimi.plugin.json` and transforms | `skills/` | `pnpm --filter @maestria/kimi-code test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 | `omp` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/omp test` and `validate` |
 | `cursor` | `.cursor-plugin/` manifest and declarative files | `agents/`, `skills/`, `rules/`, `commands/` | `pnpm --filter @maestria/cursor test` |
