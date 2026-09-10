@@ -1,5 +1,6 @@
 import { Cause, Data, Effect, Exit } from 'effect';
 
+import { CliError } from './command-result.js';
 import { PLATFORM_IDS, platforms } from './platforms.js';
 import type { PlatformId } from './platforms.js';
 import { isValidVersion } from './version.js';
@@ -104,14 +105,13 @@ export const validateVersion = (input: string): Effect.Effect<string, Validation
 
 /**
  * Run a validation effect at the CLI boundary.
- * Prints the error and exits with code 1 on failure, returns the value on success.
+ * Throws CliError with exit code 1 on failure, returns the value on success.
  */
-export const validateOrExit = async <A>(effect: Effect.Effect<A, ValidationError>): Promise<A> => {
+export const validateOrThrow = async <A>(effect: Effect.Effect<A, ValidationError>): Promise<A> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
   const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  console.error(firstFailure?.error?.message ?? 'Validation failed');
-  return process.exit(1);
+  throw new CliError(firstFailure?.error?.message ?? 'Validation failed', 1);
 };

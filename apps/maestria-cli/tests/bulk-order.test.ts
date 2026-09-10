@@ -1,11 +1,9 @@
 import { Effect } from 'effect';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { runCommand } from 'citty';
-
-import { installCommand } from '@/commands/install.js';
-import { uninstallCommand } from '@/commands/uninstall.js';
-import { updateCommand } from '@/commands/update.js';
+import { handleInstall } from '@/commands/install.js';
+import { handleUninstall } from '@/commands/uninstall.js';
+import { handleUpdate } from '@/commands/update.js';
 import type * as detect from '@/lib/detect.js';
 import type * as platforms from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
@@ -89,16 +87,12 @@ describe('bulk CLI side-effect ordering', () => {
   });
 
   it('updates direct platform selections sequentially', async () => {
-    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('test exit');
+    const result = await handleUpdate({
+      compact: true,
+      platform: 'opencode,pi',
+      quiet: true,
+      version: '1.0.0',
     });
-    vi.spyOn(console, 'log').mockImplementation(() => {});
-
-    await expect(
-      runCommand(updateCommand, {
-        rawArgs: ['opencode,pi', '--version', '1.0.0', '--quiet', '--compact'],
-      }),
-    ).rejects.toThrow('test exit');
 
     expect(events).toEqual([
       'update:start:opencode',
@@ -106,21 +100,18 @@ describe('bulk CLI side-effect ordering', () => {
       'update:start:pi',
       'update:finish:pi',
     ]);
-    expect(exit).toHaveBeenCalledWith(0);
+    expect(result.exitCode).toBe(0);
   });
 
   it('updates all detected platforms sequentially', async () => {
-    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('test exit');
-    });
-    vi.spyOn(console, 'log').mockImplementation(() => {});
     detectMocks.detectInstalled.mockReturnValue(Effect.succeed(installedStatuses));
 
-    await expect(
-      runCommand(updateCommand, {
-        rawArgs: ['--all', '--version', '1.0.0', '--quiet', '--compact'],
-      }),
-    ).rejects.toThrow('test exit');
+    const result = await handleUpdate({
+      all: true,
+      compact: true,
+      quiet: true,
+      version: '1.0.0',
+    });
 
     expect(events).toEqual([
       'update:start:opencode',
@@ -128,20 +119,15 @@ describe('bulk CLI side-effect ordering', () => {
       'update:start:pi',
       'update:finish:pi',
     ]);
-    expect(exit).toHaveBeenCalledWith(0);
+    expect(result.exitCode).toBe(0);
   });
 
   it('installs direct platform selections sequentially', async () => {
-    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('test exit');
+    const result = await handleInstall({
+      compact: true,
+      platform: 'opencode,pi',
+      quiet: true,
     });
-    vi.spyOn(console, 'log').mockImplementation(() => {});
-
-    await expect(
-      runCommand(installCommand, {
-        rawArgs: ['opencode,pi', '--quiet', '--compact'],
-      }),
-    ).rejects.toThrow('test exit');
 
     expect(events).toEqual([
       'install:start:opencode',
@@ -149,21 +135,13 @@ describe('bulk CLI side-effect ordering', () => {
       'install:start:pi',
       'install:finish:pi',
     ]);
-    expect(exit).toHaveBeenCalledWith(0);
+    expect(result.exitCode).toBe(0);
   });
 
   it('installs all detected platforms sequentially', async () => {
-    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('test exit');
-    });
-    vi.spyOn(console, 'log').mockImplementation(() => {});
     detectMocks.detectAll.mockReturnValue(Effect.succeed(installableStatuses));
 
-    await expect(
-      runCommand(installCommand, {
-        rawArgs: ['--all', '--quiet', '--compact'],
-      }),
-    ).rejects.toThrow('test exit');
+    const result = await handleInstall({ all: true, compact: true, quiet: true });
 
     expect(events).toEqual([
       'install:start:opencode',
@@ -171,21 +149,13 @@ describe('bulk CLI side-effect ordering', () => {
       'install:start:pi',
       'install:finish:pi',
     ]);
-    expect(exit).toHaveBeenCalledWith(0);
+    expect(result.exitCode).toBe(0);
   });
 
   it('uninstalls all detected platforms sequentially', async () => {
-    const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('test exit');
-    });
-    vi.spyOn(console, 'log').mockImplementation(() => {});
     detectMocks.detectInstalled.mockReturnValue(Effect.succeed(installedStatuses));
 
-    await expect(
-      runCommand(uninstallCommand, {
-        rawArgs: ['--all', '--quiet', '--compact'],
-      }),
-    ).rejects.toThrow('test exit');
+    const result = await handleUninstall({ all: true, compact: true, quiet: true });
 
     expect(events).toEqual([
       'uninstall:start:opencode',
@@ -193,6 +163,6 @@ describe('bulk CLI side-effect ordering', () => {
       'uninstall:start:pi',
       'uninstall:finish:pi',
     ]);
-    expect(exit).toHaveBeenCalledWith(0);
+    expect(result.exitCode).toBe(0);
   });
 });

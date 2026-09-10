@@ -1,82 +1,100 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 
+import { toCommandRun } from '@/lib/command-runner.js';
+import { CliError } from '@/lib/command-result.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll, detectSingle } from '@/lib/detect.js';
 import { checkExitCode, freshnessOf } from '@/lib/freshness.js';
 import { renderStatusTable } from '@/lib/output.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
+import type { PlatformStatus } from '@/types.js';
 
-const handleCheckAll = async (args: { json?: boolean; quiet?: boolean }): Promise<never> => {
+export interface CheckArgs {
+  all?: boolean;
+  json?: boolean;
+  platform?: string;
+  quiet?: boolean;
+}
+
+const handleCheckAll = async (args: CheckArgs): Promise<CommandResult> => {
   const allStatus = await Effect.runPromise(detectAll());
   const checked = allStatus.filter((s) => s.available);
   if (checked.length === 0) {
-    if (args.quiet !== true) {
-      console.log('No supported coding agent platforms detected on this machine.');
-    }
-    process.exit(1);
+    return {
+      exitCode: 1,
+      output:
+        args.quiet === true ? '' : 'No supported coding agent platforms detected on this machine.',
+    };
   }
   const freshnessList = checked.map((s) =>
     s.installed ? freshnessOf(s.installedVersion, s.latestVersion) : 'unknown',
   );
-  if (args.json === true) {
-    console.log(
-      JSON.stringify(
-        checked.map((s, i) => ({ ...s, outdated: freshnessList[i] === 'outdated' })),
-        null,
-        2,
-      ),
-    );
-  } else {
-    console.log(renderStatusTable(checked));
+  const output =
+    args.json === true
+      ? JSON.stringify(
+          checked.map((s, i) => ({ ...s, outdated: freshnessList[i] === 'outdated' })),
+          null,
+          2,
+        )
+      : renderStatusTable(checked);
+  const installed = checked.every((s) => s.installed);
+  let exitCode = 1;
+  if (installed) {
+    exitCode = freshnessList.includes('outdated') ? 3 : 0;
   }
-  const exitCode = checked.every((s) => s.installed) && freshnessList.includes('outdated') ? 3 : 0;
-  process.exit(checked.every((s) => s.installed) ? exitCode : 1);
+  return { exitCode, output };
 };
 
-// oxlint-disable-next-line max-lines-per-function -- handleCheckSingle is a cohesive status-reporting flow with sequential early exits for missing CLI, missing install, and version freshness; splitting would create single-use helpers that obscure the linear check sequence.
-const handleCheckSingle = async (
+const buildUnavailableResult = (
   platformId: string,
-  args: { json?: boolean; quiet?: boolean },
-): Promise<never> => {
-  const platform = getPlatform(platformId);
-  if (!platform) {
-    if (args.quiet !== true) {
-      console.error(`Unknown platform: ${platformId}`);
-      console.error(`Available: ${VALID_PLATFORMS.join(', ')}`);
-    }
-    process.exit(1);
-  }
-  const status = await Effect.runPromise(detectSingle(platformId));
-  if (!status.available) {
-    const result = {
-      available: false,
-      message: `CLI tool for ${platform.label} is not available on this machine`,
-      platform: platformId,
-      pluginInstalled: false,
-    };
-    if (args.json === true) {
-      console.log(JSON.stringify(result));
-    } else {
-      console.log(`${platform.label}: CLI tool is not available on this machine`);
-    }
-    process.exit(1);
-  }
-  if (!status.installed) {
-    const result = {
-      available: true,
-      installedVersion: status.installedVersion,
-      message: `@maestria/${platformId} is not installed for ${platform.label}`,
-      platform: platformId,
-      pluginInstalled: false,
-    };
-    if (args.json === true) {
-      console.log(JSON.stringify(result));
-    } else {
-      console.log(`@maestria/${platformId} is not installed for ${platform.label}`);
-    }
-    process.exit(1);
-  }
+  label: string,
+  args: CheckArgs,
+): CommandResult => {
+  const result = {
+    available: false,
+    message: `CLI tool for ${label} is not available on this machine`,
+    platform: platformId,
+    pluginInstalled: false,
+  };
+  return {
+    exitCode: 1,
+    output:
+      args.json === true
+        ? JSON.stringify(result)
+        : `${label}: CLI tool is not available on this machine`,
+  };
+};
+
+const buildNotInstalledResult = (
+  platformId: string,
+  label: string,
+  installedVersion: string,
+  args: CheckArgs,
+): CommandResult => {
+  const result = {
+    available: true,
+    installedVersion,
+    message: `@maestria/${platformId} is not installed for ${label}`,
+    platform: platformId,
+    pluginInstalled: false,
+  };
+  return {
+    exitCode: 1,
+    output:
+      args.json === true
+        ? JSON.stringify(result)
+        : `@maestria/${platformId} is not installed for ${label}`,
+  };
+};
+
+const buildInstalledResult = (
+  platformId: string,
+  label: string,
+  status: PlatformStatus,
+  args: CheckArgs,
+): CommandResult => {
   const freshness = freshnessOf(status.installedVersion, status.latestVersion);
   const result = {
     available: true,
@@ -87,22 +105,67 @@ const handleCheckSingle = async (
     pluginInstalled: true,
   };
   if (args.json === true) {
-    console.log(JSON.stringify(result));
-  } else {
-    const version =
-      status.installedVersion !== undefined &&
-      status.installedVersion !== null &&
-      status.installedVersion !== ''
-        ? ` (v${status.installedVersion})`
-        : '';
-    console.log(`@maestria/${platformId} is installed for ${platform.label}${version}`);
-    if (freshness === 'outdated') {
-      console.log(
-        `update available: v${status.installedVersion} -> v${status.latestVersion} (run 'maestria update ${platformId}')`,
-      );
-    }
+    return { exitCode: checkExitCode(freshness, status.installed), output: JSON.stringify(result) };
   }
-  process.exit(checkExitCode(freshness, status.installed));
+  const version =
+    status.installedVersion !== undefined &&
+    status.installedVersion !== null &&
+    status.installedVersion !== ''
+      ? ` (v${status.installedVersion})`
+      : '';
+  const lines = [`@maestria/${platformId} is installed for ${label}${version}`];
+  if (freshness === 'outdated') {
+    lines.push(
+      `update available: v${status.installedVersion} -> v${status.latestVersion} (run 'maestria update ${platformId}')`,
+    );
+  }
+  return { exitCode: checkExitCode(freshness, status.installed), output: lines.join('\n') };
+};
+
+const handleCheckSingle = async (platformId: string, args: CheckArgs): Promise<CommandResult> => {
+  const platform = getPlatform(platformId);
+  if (!platform) {
+    throw new CliError(
+      args.quiet === true
+        ? ''
+        : `Unknown platform: ${platformId}\nAvailable: ${VALID_PLATFORMS.join(', ')}`,
+      1,
+    );
+  }
+  const status = await Effect.runPromise(detectSingle(platformId));
+  if (!status.available) {
+    return buildUnavailableResult(platformId, platform.label, args);
+  }
+  if (!status.installed) {
+    return buildNotInstalledResult(platformId, platform.label, status.installedVersion, args);
+  }
+  return buildInstalledResult(platformId, platform.label, status, args);
+};
+
+export const handleCheck = async (args: CheckArgs): Promise<CommandResult> => {
+  const platformId = args.platform;
+  if (args.all === true && platformId !== undefined && platformId !== null && platformId !== '') {
+    throw new CliError(
+      args.quiet === true ? '' : 'Cannot use --all with a specific platform. Choose one.',
+      1,
+    );
+  }
+  if (args.all === true) {
+    return await handleCheckAll(args);
+  }
+  if (platformId !== undefined && platformId !== null && platformId !== '') {
+    return await handleCheckSingle(platformId, args);
+  }
+  throw new CliError(
+    args.quiet === true
+      ? ''
+      : [
+          'Missing required platform argument.',
+          'Usage: maestria check <platform> or maestria check --all',
+          `Available: ${VALID_PLATFORMS.join(', ')}`,
+        ].join('\n'),
+    1,
+  );
 };
 
 export const checkCommand = defineCommand({
@@ -135,25 +198,5 @@ export const checkCommand = defineCommand({
       'Check installation status of a maestria plugin on a specific platform and detect outdated installs',
     name: 'check',
   },
-  run: async ({ args }) => {
-    const platformId = args.platform;
-    if (args.all && platformId !== undefined && platformId !== null && platformId !== '') {
-      if (!args.quiet) {
-        console.error('Cannot use --all with a specific platform. Choose one.');
-      }
-      process.exit(1);
-    }
-    if (args.all) {
-      await handleCheckAll(args);
-    } else if (platformId !== undefined && platformId !== null && platformId !== '') {
-      await handleCheckSingle(platformId, args);
-    } else {
-      if (!args.quiet) {
-        console.error('Missing required platform argument.');
-        console.error('Usage: maestria check <platform> or maestria check --all');
-        console.error(`Available: ${VALID_PLATFORMS.join(', ')}`);
-      }
-      process.exit(1);
-    }
-  },
+  run: toCommandRun(handleCheck),
 });

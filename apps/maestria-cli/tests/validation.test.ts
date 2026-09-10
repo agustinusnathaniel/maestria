@@ -11,8 +11,22 @@ describe('validation', () => {
   it('exports validatePlatform function', () => {
     expect(typeof validation.validatePlatform).toBe('function');
   });
-  it('exports validateOrExit function', () => {
-    expect(typeof validation.validateOrExit).toBe('function');
+  it('exports validateOrThrow function', () => {
+    expect(typeof validation.validateOrThrow).toBe('function');
+  });
+
+  it('validateOrThrow returns the validated value on success', async () => {
+    expect(await validation.validateOrThrow(validation.validatePlatform('pi'))).toBe('pi');
+  });
+
+  it('validateOrThrow throws CliError with exit code 1 and the validation message', async () => {
+    await expect(
+      validation.validateOrThrow(validation.validatePlatform('unknown')),
+    ).rejects.toMatchObject({
+      exitCode: 1,
+      message:
+        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex",
+    });
   });
   it('accepts prime-agent as a valid platform', async () => {
     expect(await Effect.runPromise(validation.validatePlatform('prime-agent'))).toBe('prime-agent');
