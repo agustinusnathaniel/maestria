@@ -19,11 +19,6 @@
 export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
 export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
 
-/**
- * Backward-compatible alias used by OpenCode (`VALID_KEYWORDS`).
- */
-export const VALID_KEYWORDS: readonly ModeKeyword[] = MODE_KEYWORDS;
-
 export const MODE_MARKERS: Record<ModeKeyword, string> = {
   blitz: '[MODE: blitz]',
   fein: '[MODE: fein]',
@@ -98,7 +93,8 @@ const escapeRegExp = (value: string): string => value.replaceAll(/[.*+?^${}()|[\
 const buildKeywordRegex = (keyword: string): RegExp =>
   new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'giu');
 
-const isModeKeyword = (value: string): value is ModeKeyword =>
+/** Type guard for the known mode keywords. */
+export const isModeKeyword = (value: string): value is ModeKeyword =>
   (MODE_KEYWORDS as readonly string[]).includes(value);
 
 export const getModeMarker = (mode: string): string => {
