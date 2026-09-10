@@ -36,7 +36,7 @@ ADRs record why a design was chosen, including alternatives and trade-offs. Read
 
 ## Plans and Research
 
-[Plans](plans/) and [notes](notes/) preserve implementation and investigation context. Check each document's status and evidence date before treating it as current guidance. The [Hermes design document](hermes-maestria-plugin.md) combines design history, research, and proposed work; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
+[Plans](plans/) and [notes](notes/) preserve implementation and investigation context. Check each document's status and evidence date before treating it as current guidance. The [Hermes design document](hermes-maestria-plugin.md) describes the current plugin design and architecture; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
 
 ## Dated Evidence
 
