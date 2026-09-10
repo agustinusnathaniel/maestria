@@ -17,18 +17,9 @@ export default {
       { from: '@planner', to: 'planner' },
       { from: '@reviewer', to: 'reviewer' },
       { from: '@writer', to: 'writer' },
-      { from: '@orchestrator', to: 'orchestrator' },
-
-      // Dispatch mechanism: task() -> delegate_task() (Hermes native subagent tool)
-      { from: 'task(', to: 'delegate_task(' },
 
       // Domain generalization: broaden coding-specific language for general-purpose agent
-      { from: 'Codebase exploration', to: 'Research and exploration' },
-      { from: 'code review', to: 'quality review and validation' },
-      { from: 'review PR', to: 'review work' },
       { from: 'code for quality', to: 'output for quality' },
-      { from: 'code changes', to: 'changes' },
-      { from: 'code review guidelines', to: 'review guidelines' },
       { from: 'Critique code, not developers', to: 'Critique work, not the person' },
 
       // Generalize role identities
@@ -49,32 +40,13 @@ export default {
         to: 'You are a root cause analysis specialist.',
       },
       { from: 'You create implementation plans.', to: 'You create plans for any multi-step work.' },
-      { from: 'You review code for quality.', to: 'You review output for quality.' },
       { from: 'You write documentation.', to: 'You create clear, structured content.' },
-
-      // Tool references: adapt to Hermes tool names
-      { from: '`opensrc`', to: '`webfetch`/`browser`' },
-      { from: 'opensrc', to: 'webfetch' },
-      { from: '`lsp`', to: '`grep`/`codegraph`' },
-      { from: 'lsp', to: 'grep' },
-      { from: '`websearch`', to: '`web_search`' },
-      { from: 'websearch', to: 'web_search' },
-
-      // Git-specific: generalize since git operations happen via OpenCode or direct tools
-      { from: 'git diff', to: 'diff' },
-      { from: 'git status', to: 'status' },
-      { from: 'git log', to: 'log' },
-      { from: 'git add', to: 'stage' },
 
       // Coding-specific references in rules and processes
       {
         from: 'Run tests or type checks to confirm correctness',
         to: 'Verify correctness through available validation methods',
       },
-      { from: 'tests, type check, lint', to: 'verification results' },
-      { from: 'TypeScript errors', to: 'issues or errors' },
-      { from: 'tsconfig.json or build output', to: 'configuration or build output' },
-      { from: 'Related Agents', to: 'Related Specialists' },
     ],
     // Strip canonical YAML frontmatter (OpenCode-specific permission blocks)
     stripFrontmatter: true,
@@ -98,12 +70,7 @@ export default {
         name: 'maestria-architect',
       },
       output: 'architect/SKILL.md',
-      replace: [
-        {
-          from: 'You make architecture decisions systematically.',
-          to: 'You make design and architecture decisions systematically, across any domain.',
-        },
-      ],
+      replace: [],
     },
 
     // -- Builder: production and implementation --
@@ -225,7 +192,6 @@ export default {
       },
       output: 'reviewer/SKILL.md',
       replace: [
-        { from: 'review code', to: 'review output' },
         { from: "Google's Code Review Guidelines", to: 'Peer review best practices' },
         { from: 'The Standard of Code Review', to: 'Standard review practices' },
         { from: 'What to Look For in a Code Review', to: 'What to look for in a review' },

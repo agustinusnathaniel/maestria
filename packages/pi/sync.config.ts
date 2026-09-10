@@ -18,8 +18,6 @@ export default {
       { from: '@planner', to: '/planner' },
       { from: '@reviewer', to: '/reviewer' },
       { from: '@writer', to: '/writer' },
-      { from: 'task(', to: 'maestria_subagent(' },
-      { from: '@orchestrator', to: '/orchestrator' },
     ],
     stripFrontmatter: true,
   },
