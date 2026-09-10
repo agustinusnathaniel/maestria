@@ -141,21 +141,17 @@ const buildTransformedContent = (raw: string, fileCfg: ResolvedFileConfig): stri
   if (fileCfg.append) {
     content += fileCfg.append;
   }
-  const defaultComment = `<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->`;
-  const configuredComment = fileCfg.autoGenComment;
-  const autoGenComment = `${
-    configuredComment === undefined || configuredComment === '' ? defaultComment : configuredComment
-  }\n\n`;
+  const generatedComment = `<!-- Auto-generated from @maestria/core. Do not edit directly.
+     Edit the canonical file at packages/core/agent-directives/ instead. -->\n\n`;
   if (fileCfg.frontmatter !== undefined) {
     const fm = serializeFrontmatter(fileCfg.frontmatter);
-    content = `${fm}\n${autoGenComment}${content}`;
+    content = `${fm}\n${generatedComment}${content}`;
   } else if (fileCfg.prepend) {
     content = `${content.slice(0, fileCfg.prepend.length)}\n${
-      autoGenComment
+      generatedComment
     }${content.slice(fileCfg.prepend.length)}`;
   } else {
-    content = autoGenComment + content;
+    content = generatedComment + content;
   }
   content = normalizeLineEndings(content);
   if (!content.endsWith('\n')) {
@@ -206,33 +202,34 @@ export const processFile = async (
   try {
     const raw = await readFile(sourcePath, 'utf-8');
     const content = buildTransformedContent(raw, fileCfg);
+    const existingContent = existsSync(fileCfg.output)
+      ? normalizeLineEndings(await readFile(fileCfg.output, 'utf-8'))
+      : null;
     if (dryRun === true) {
+      if (diff === true) {
+        logger(unifiedDiff(sourcePath, fileCfg.output, existingContent ?? '', content));
+      }
       if (verbose === true) {
         logger(`[dry-run] Would write: ${path.relative(process.cwd(), fileCfg.output)}`);
       }
       return {
-        content: diff === true ? content : undefined,
         output: fileCfg.output,
         source: sourcePath,
         status: 'dry-run',
       };
     }
-    const existingContent = existsSync(fileCfg.output)
-      ? normalizeLineEndings(await readFile(fileCfg.output, 'utf-8'))
-      : null;
     const unchanged = handleExistingComparison(sourcePath, fileCfg, opts, content, existingContent);
     if (unchanged !== null && unchanged !== undefined) {
       return unchanged;
     }
     if (check === true) {
       if (diff === true) {
-        logger(unifiedDiff(fileCfg.output, fileCfg.output, existingContent ?? '', content));
+        logger(unifiedDiff(sourcePath, fileCfg.output, existingContent ?? '', content));
       }
       if (verbose === true) {
         logger(`[check] Mismatch: ${path.relative(process.cwd(), fileCfg.output)}`);
       }
       return {
-        content: diff === true ? content : undefined,
         error: 'Output differs from expected',
         output: fileCfg.output,
         source: sourcePath,
@@ -241,13 +238,12 @@ export const processFile = async (
     }
     await atomicWrite(fileCfg.output, content);
     if (diff === true) {
-      logger(unifiedDiff(fileCfg.output, fileCfg.output, existingContent ?? '', content));
+      logger(unifiedDiff(sourcePath, fileCfg.output, existingContent ?? '', content));
     }
     if (verbose === true) {
       logger(`[${report}] Written: ${path.relative(process.cwd(), fileCfg.output)}`);
     }
     return {
-      content: diff === true ? content : undefined,
       output: fileCfg.output,
       source: sourcePath,
       status: 'written',

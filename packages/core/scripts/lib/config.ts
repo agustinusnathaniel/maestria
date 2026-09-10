@@ -20,7 +20,6 @@ export interface FileConfig {
   replace?: ReplaceOp[];
   prepend?: string;
   append?: string;
-  autoGenComment?: string;
   frontmatter?: Record<string, unknown> | string | null;
 }
 
@@ -50,7 +49,6 @@ export interface ResolvedFileConfig {
   prepend: string;
   append: string;
   frontmatter?: Record<string, unknown> | string | null;
-  autoGenComment?: string;
 }
 
 export class ConfigError extends Error {
@@ -70,7 +68,6 @@ const mergeFileConfig = (
   defaultCfg?: FileConfig,
 ): ResolvedFileConfigValues => ({
   append: fileCfg.append ?? defaultCfg?.append ?? '',
-  autoGenComment: fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? undefined,
   frontmatter: fileCfg.frontmatter === undefined ? defaultCfg?.frontmatter : fileCfg.frontmatter,
   prepend: fileCfg.prepend ?? defaultCfg?.prepend ?? '',
   replace: [

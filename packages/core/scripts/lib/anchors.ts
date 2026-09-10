@@ -1,16 +1,13 @@
 // packages/core/scripts/lib/anchors.ts - Anchor liveness validation
 //
-// Mirrors the engine's file sweep (primary .md files, then secondary config
-// entries) and replays each resolved file's replace ops in order to prove every
-// anchor still matches. Validation runs before any processing so a dead anchor
-// fails the run instead of silently no-oping a transform.
+// Replays the resolved sync plan's replace ops in order to prove every anchor
+// still matches. Validation runs before any processing so a dead anchor fails
+// the run instead of silently no-oping a transform.
 
-import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 
 import type { ResolvedFileConfig, ResolvedReplaceOp, ResolvedSyncConfig } from './config.js';
-import { resolveSourceFile } from './config.js';
+import type { SyncPlanEntry } from './plan.js';
 import { applyReplaceOps, normalizeLineEndings, stripFrontmatter } from './transforms.js';
 
 // ── Public Types ──
@@ -37,9 +34,9 @@ const ALL_FILES = 'all files';
 // ── Internal Helpers ──
 
 interface AnchorTarget {
-  label: string;
-  config: ResolvedFileConfig;
   content: string;
+  label: string;
+  replace: ResolvedReplaceOp[];
 }
 
 const prepareContent = (raw: string, fileCfg: ResolvedFileConfig): string => {
@@ -47,42 +44,18 @@ const prepareContent = (raw: string, fileCfg: ResolvedFileConfig): string => {
   return fileCfg.stripFrontmatter ? stripFrontmatter(normalized) : normalized;
 };
 
-const collectPrimaryTargets = async (
-  config: ResolvedSyncConfig,
-  sourceFiles: string[],
-  matchedFiles: Set<string>,
-): Promise<AnchorTarget[]> => {
-  const markdownFiles = sourceFiles.filter((relPath) => relPath.endsWith('.md'));
-  for (const relPath of markdownFiles) {
-    matchedFiles.add(path.basename(relPath));
-  }
-  return await Promise.all(
-    markdownFiles.map(async (relPath) => {
-      const fileCfg = resolveSourceFile(config, path.basename(relPath));
-      const raw = await readFile(path.resolve(config.source, relPath), 'utf-8');
-      return { config: fileCfg, content: prepareContent(raw, fileCfg), label: relPath };
+const collectTargets = async (plan: SyncPlanEntry[]): Promise<AnchorTarget[]> => {
+  const targets = await Promise.all(
+    plan.map(async (entry) => {
+      const raw = await readFile(entry.sourcePath, 'utf-8');
+      return {
+        content: prepareContent(raw, entry.fileCfg),
+        label: entry.label,
+        replace: entry.fileCfg.replace,
+      };
     }),
   );
-};
-
-const collectSecondaryTargets = async (
-  config: ResolvedSyncConfig,
-  matchedFiles: Set<string>,
-): Promise<AnchorTarget[]> => {
-  const secondarySourceDir = path.dirname(config.source);
-  const entries = Object.entries(config.files).flatMap(([filename, fileCfg]) => {
-    if (matchedFiles.has(filename)) {
-      return [];
-    }
-    const absPath = path.resolve(secondarySourceDir, filename);
-    return existsSync(absPath) ? [{ absPath, fileCfg, filename }] : [];
-  });
-  return await Promise.all(
-    entries.map(async ({ absPath, fileCfg, filename }) => {
-      const raw = await readFile(absPath, 'utf-8');
-      return { config: fileCfg, content: prepareContent(raw, fileCfg), label: filename };
-    }),
-  );
+  return targets;
 };
 
 const opKey = (op: ResolvedReplaceOp): string => `${op.from}\u0000${op.to}`;
@@ -117,22 +90,18 @@ const toViolation = (
 
 export const validateAnchors = async (
   config: ResolvedSyncConfig,
-  sourceFiles: string[],
+  plan: SyncPlanEntry[],
 ): Promise<AnchorReport> => {
-  const matchedFiles = new Set<string>();
-  const targets: AnchorTarget[] = [
-    ...(await collectPrimaryTargets(config, sourceFiles, matchedFiles)),
-    ...(await collectSecondaryTargets(config, matchedFiles)),
-  ];
+  const targets = await collectTargets(plan);
 
   const applied = targets.map((target) => ({
-    matches: applyReplaceOps(target.content, target.config.replace).matches,
+    matches: applyReplaceOps(target.content, target.replace).matches,
     target,
   }));
 
   const defaultTotals = new Map<string, number>();
   for (const { matches, target } of applied) {
-    for (const [index, op] of target.config.replace.entries()) {
+    for (const [index, op] of target.replace.entries()) {
       if (op.scope !== 'default') {
         continue;
       }
@@ -144,7 +113,7 @@ export const validateAnchors = async (
   const violations: AnchorViolation[] = [];
   const reportedDefaults = new Set<string>();
   for (const { matches, target } of applied) {
-    for (const [index, op] of target.config.replace.entries()) {
+    for (const [index, op] of target.replace.entries()) {
       const count = matches[index] ?? 0;
       if (op.scope === 'default') {
         const key = opKey(op);

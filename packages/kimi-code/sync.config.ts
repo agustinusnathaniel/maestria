@@ -293,11 +293,7 @@ reconciled; run the general review first, then risk-matched lenses sequentially.
         '<!-- Auto-generated from @maestria/core. See the canonical file at packages/core/agent-directives/rules.md. -->\n',
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/kimi-code' },
-        // Add Kimi's built-in-agent guard after the canonical delegation
-        // heading. Re-anchored 2026-08: the heading is "## Delegation and
-        // Context"; the old '## Delegation\n' anchor silently no-op'd. The
-        // guard names the seven personas because the revised canonical rules
-        // body no longer carries the specialist roster.
+        // Add Kimi's built-in-agent guard after the canonical delegation heading.
         {
           from: '## Delegation and Context\n',
           to: '## Delegation and Context\n\nWhen delegating through `Agent()` or `AgentSwarm()`, use only the seven specialist personas - adventurer, architect, builder, diagnose, planner, reviewer, writer. Never substitute platform-native built-in agents unless this mapping explicitly authorizes it.\n',

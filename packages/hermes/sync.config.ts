@@ -59,7 +59,6 @@ export default {
         name: 'maestria-adventurer',
       },
       output: 'adventurer/SKILL.md',
-      replace: [],
     },
 
     // -- Architect: design and decision --
@@ -70,7 +69,6 @@ export default {
         name: 'maestria-architect',
       },
       output: 'architect/SKILL.md',
-      replace: [],
     },
 
     // -- Builder: production and implementation --
@@ -135,8 +133,6 @@ export default {
       replace: [
         { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
         {
-          // Re-anchored 2026-08: the canonical Step 1.5 sentence was reworded
-          // upstream and the old lockfile-specific anchor silently no-op'd.
           from: "Check relevant dependency manifests and lockfiles for recent changes using the project's diff/version-control tools",
           to: 'Check for recent changes in configuration or dependencies',
         },
@@ -167,16 +163,10 @@ export default {
         name: 'maestria-orchestrator',
       },
       output: 'orchestrator/SKILL.md',
-      prepend: '',
-      replace: [],
     },
 
     // -- Planner: planning and execution --
     'planner.md': {
-      // NOTE: no replace ops. The previous five generalization replaces
-      // anchored to the canonical Guard Rails bullet lists, which were
-      // consolidated into a single guard-rails line; that line is already
-      // general-purpose wording.
       frontmatter: {
         description: 'Planning -- breaks down work into ordered, verifiable steps',
         name: 'maestria-planner',
@@ -202,10 +192,6 @@ export default {
     // rules.md lives at packages/core/agent-directives/rules.md (parent of specialists/)
     // The secondary source mechanism in sync.ts resolves it automatically.
     'rules.md': {
-      // NOTE: no replace ops. The previous four generalization replaces
-      // anchored to canonical sentences/tables removed by earlier directive
-      // revisions and silently no-op'd; the revised canonical rules body is
-      // already general-purpose wording.
       frontmatter: {
         description: 'Cross-cutting methodology rules for all specialists',
         name: 'maestria-global-rules',
@@ -221,7 +207,6 @@ export default {
         name: 'maestria-writer',
       },
       output: 'writer/SKILL.md',
-      replace: [],
     },
   },
 

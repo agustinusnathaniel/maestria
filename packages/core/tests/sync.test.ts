@@ -22,6 +22,8 @@ import type {
   ResolvedSyncConfig,
 } from '../scripts/lib/config.js';
 import { validateAnchors } from '../scripts/lib/anchors.js';
+import type { AnchorReport } from '../scripts/lib/anchors.js';
+import { resolveSyncPlan } from '../scripts/lib/plan.js';
 import { processFile } from '../scripts/lib/process-file.js';
 import { runSync } from '../scripts/lib/sync.js';
 import {
@@ -33,6 +35,22 @@ import {
 } from '../scripts/lib/transforms.js';
 
 const { join } = path;
+
+const configForOutput = (output: string): ResolvedFileConfig => ({
+  append: '',
+  output,
+  prepend: '',
+  replace: [],
+  stripFrontmatter: false,
+});
+
+const validateAnchorsFor = async (
+  config: ResolvedSyncConfig,
+  sourceFiles: string[],
+): Promise<AnchorReport> => {
+  const plan = resolveSyncPlan(config, sourceFiles);
+  return await validateAnchors(config, plan);
+};
 
 // ═══════════════════════════════════════════════
 // Transforms
@@ -430,11 +448,11 @@ describe('resolveSourceFile', () => {
       configPath,
       `export default {
         source: './agent-directives',
-        default: { autoGenComment: 'fallback comment' },
+        default: { prepend: 'fallback prepend\\n' },
         files: {
           'explicit.md': {
             output: 'custom/out.md',
-            autoGenComment: 'explicit comment',
+            prepend: 'explicit prepend\\n',
             replace: [{ from: 'a', to: 'b' }],
           },
         },
@@ -446,17 +464,17 @@ describe('resolveSourceFile', () => {
     const resolved = resolveSourceFile(config, 'explicit.md');
 
     expect(resolved).toBe(config.files['explicit.md']);
-    expect(resolved.autoGenComment).toBe('explicit comment');
+    expect(resolved.prepend).toBe('explicit prepend\n');
+    expect(resolved.output).toBe(join(tmpDir, 'custom', 'out.md'));
   });
 
-  it('merges the fallback including autoGenComment for an implicit file', async () => {
+  it('merges the fallback for an implicit file', async () => {
     const configPath = join(tmpDir, 'sync.config.js');
     writeFileSync(
       configPath,
       `export default {
         source: './agent-directives',
         default: {
-          autoGenComment: '<!-- configured -->',
           prepend: 'pre\\n',
           replace: [{ from: 'x', to: 'y' }],
           stripFrontmatter: true,
@@ -469,7 +487,6 @@ describe('resolveSourceFile', () => {
     const config = await loadConfig(configPath);
     const resolved = resolveSourceFile(config, 'implicit.md');
 
-    expect(resolved.autoGenComment).toBe('<!-- configured -->');
     expect(resolved.prepend).toBe('pre\n');
     expect(resolved.replace).toEqual([{ from: 'x', scope: 'default', to: 'y' }]);
     expect(resolved.stripFrontmatter).toBe(true);
@@ -522,7 +539,7 @@ describe('implicit source default inheritance', () => {
     rmSync(tmpDir, { force: true, recursive: true });
   });
 
-  it('applies default.autoGenComment to a source file absent from files', async () => {
+  it('applies the default generated comment to a source file absent from files', async () => {
     const sourceDir = join(tmpDir, 'source');
     const outputDir = join(tmpDir, 'output');
     mkdirSync(sourceDir, { recursive: true });
@@ -535,7 +552,6 @@ describe('implicit source default inheritance', () => {
       `export default {
         source: './source',
         output: './output',
-        default: { autoGenComment: '<!-- configured comment -->' },
         files: {},
       };\n`,
       'utf-8',
@@ -545,8 +561,8 @@ describe('implicit source default inheritance', () => {
     await runSync({ config });
 
     const out = readFileSync(join(outputDir, 'implicit.md'), 'utf-8');
-    expect(out).toContain('<!-- configured comment -->');
-    expect(out).not.toContain('Auto-generated from @maestria/core');
+    expect(out).toContain('<!-- Auto-generated from @maestria/core');
+    expect(out).toContain('Edit the canonical file at packages/core/agent-directives/ instead.');
     expect(out).toContain('# Implicit');
   });
 
@@ -564,7 +580,7 @@ describe('implicit source default inheritance', () => {
       `export default {
         source: './source',
         output: './output',
-        default: { autoGenComment: '<!-- shared default -->' },
+        default: { prepend: '<!-- shared prepend -->\\n' },
         files: { 'listed.md': {} },
       };\n`,
       'utf-8',
@@ -645,7 +661,7 @@ describe('anchor validation', () => {
     writeFileSync(join(sourceDir, 'b.md'), '# Beta\n', 'utf-8');
 
     const config = makeConfig({ defaultReplace: [defaultOp('missing text', 'replacement')] });
-    const report = await validateAnchors(config, ['a.md', 'b.md']);
+    const report = await validateAnchorsFor(config, ['a.md', 'b.md']);
 
     expect(report.violations).toEqual([
       {
@@ -665,7 +681,7 @@ describe('anchor validation', () => {
     writeFileSync(join(sourceDir, 'b.md'), '# Beta\n', 'utf-8');
 
     const config = makeConfig({ defaultReplace: [defaultOp('needle', 'thread')] });
-    const report = await validateAnchors(config, ['a.md', 'b.md']);
+    const report = await validateAnchorsFor(config, ['a.md', 'b.md']);
 
     expect(report.violations).toEqual([]);
   });
@@ -676,7 +692,7 @@ describe('anchor validation', () => {
     const config = makeConfig({
       files: { 'a.md': fileEntry([fileOp('missing text', 'x')]) },
     });
-    const report = await validateAnchors(config, ['a.md']);
+    const report = await validateAnchorsFor(config, ['a.md']);
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toMatchObject({
@@ -695,7 +711,7 @@ describe('anchor validation', () => {
       defaultReplace: [defaultOp('hello', 'hi')],
       files: { 'a.md': fileEntry([fileOp('hello world', 'x')]) },
     });
-    const report = await validateAnchors(config, ['a.md']);
+    const report = await validateAnchorsFor(config, ['a.md']);
 
     expect(report.violations).toHaveLength(1);
     expect(report.violations[0]).toMatchObject({
@@ -713,7 +729,7 @@ describe('anchor validation', () => {
     const defaultConfig = makeConfig({
       defaultReplace: [defaultOp('foo', 'foo'), defaultOp('', 'x')],
     });
-    const defaultReport = await validateAnchors(defaultConfig, ['a.md']);
+    const defaultReport = await validateAnchorsFor(defaultConfig, ['a.md']);
 
     expect(defaultReport.violations).toHaveLength(2);
     expect(defaultReport.violations[0]).toMatchObject({
@@ -733,7 +749,7 @@ describe('anchor validation', () => {
     const fileConfig = makeConfig({
       files: { 'a.md': fileEntry([fileOp('foo bar', 'foo bar')]) },
     });
-    const fileReport = await validateAnchors(fileConfig, ['a.md']);
+    const fileReport = await validateAnchorsFor(fileConfig, ['a.md']);
 
     expect(fileReport.violations).toHaveLength(1);
     expect(fileReport.violations[0]).toMatchObject({
@@ -752,7 +768,7 @@ describe('anchor validation', () => {
       defaultReplace: [defaultOp('hello', 'hello world')],
       files: { 'a.md': fileEntry([fileOp('hello world', 'hi')]) },
     });
-    const report = await validateAnchors(config, ['a.md']);
+    const report = await validateAnchorsFor(config, ['a.md']);
 
     expect(report.violations).toEqual([]);
   });
@@ -786,7 +802,7 @@ describe('anchor validation', () => {
       source: primaryDir,
     };
 
-    const liveReport = await validateAnchors(config, []);
+    const liveReport = await validateAnchorsFor(config, []);
     expect(liveReport.violations).toEqual([]);
 
     const deadConfig = {
@@ -798,7 +814,7 @@ describe('anchor validation', () => {
         },
       },
     };
-    const deadReport = await validateAnchors(deadConfig, []);
+    const deadReport = await validateAnchorsFor(deadConfig, []);
     expect(deadReport.violations).toHaveLength(1);
     expect(deadReport.violations[0]).toMatchObject({
       file: 'skills/handoff.md',
@@ -837,6 +853,74 @@ describe('anchor validation', () => {
     expect(results.map((result) => result.status)).toEqual(['written']);
     const out = readFileSync(join(outputDir, 'a.md'), 'utf-8');
     expect(out).toContain('goodbye world');
+  });
+});
+
+// ═══════════════════════════════════════════════
+// Plan resolution (single ordered file list)
+// ═══════════════════════════════════════════════
+
+describe('resolveSyncPlan', () => {
+  let tmpDir: string;
+  let sourceDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'core-sync-plan-'));
+    sourceDir = join(tmpDir, 'specialists');
+    mkdirSync(join(tmpDir, 'skills'), { recursive: true });
+    mkdirSync(sourceDir, { recursive: true });
+    writeFileSync(join(sourceDir, 'alpha.md'), '# Alpha\n', 'utf-8');
+    writeFileSync(join(sourceDir, 'beta.md'), '# Beta\n', 'utf-8');
+    writeFileSync(join(sourceDir, 'notes.txt'), 'notes\n', 'utf-8');
+    writeFileSync(join(tmpDir, 'skills', 'handoff.md'), '# Handoff\n', 'utf-8');
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { force: true, recursive: true });
+  });
+
+  const makePlanConfig = (files: Record<string, ResolvedFileConfig>): ResolvedSyncConfig => ({
+    configDir: tmpDir,
+    configPath: join(tmpDir, 'sync.config.ts'),
+    files,
+    output: join(tmpDir, 'out'),
+    preserve: [],
+    source: sourceDir,
+  });
+
+  it('orders primary .md files before secondary config entries', () => {
+    const config = makePlanConfig({
+      'alpha.md': configForOutput(join(tmpDir, 'out', 'alpha.md')),
+      'skills/handoff.md': configForOutput(join(tmpDir, 'out', 'handoff.md')),
+    });
+
+    const plan = resolveSyncPlan(config, ['alpha.md', 'beta.md', 'notes.txt']);
+
+    expect(plan.map((entry) => [entry.origin, entry.label])).toEqual([
+      ['primary', 'alpha.md'],
+      ['primary', 'beta.md'],
+      ['secondary', 'skills/handoff.md'],
+    ]);
+    expect(plan.map((entry) => entry.sourcePath)).toEqual([
+      join(sourceDir, 'alpha.md'),
+      join(sourceDir, 'beta.md'),
+      join(tmpDir, 'skills', 'handoff.md'),
+    ]);
+    expect(plan[0].fileCfg).toBe(config.files['alpha.md']);
+    expect(plan[1].fileCfg.output).toBe(join(tmpDir, 'out', 'beta.md'));
+  });
+
+  it('throws one ConfigError naming every missing secondary entry in declaration order', () => {
+    const config = makePlanConfig({
+      'aaa-missing.md': configForOutput(join(tmpDir, 'out', 'aaa-missing.md')),
+      'skills/handoff.md': configForOutput(join(tmpDir, 'out', 'handoff.md')),
+      'zzz-missing.md': configForOutput(join(tmpDir, 'out', 'zzz-missing.md')),
+    });
+
+    expect(() => resolveSyncPlan(config, [])).toThrow(ConfigError);
+    expect(() => resolveSyncPlan(config, [])).toThrow(
+      'Config entries not found in source or secondary dir: aaa-missing.md, zzz-missing.md',
+    );
   });
 });
 
@@ -993,6 +1077,110 @@ describe('secondary source loop', () => {
     const out = readFileSync(outPath, 'utf-8');
     expect(out).toContain('name: handoff');
     expect(out).toContain('# Handoff Contract');
+  });
+
+  it('throws one ConfigError naming every entry missing from source and secondary dirs', async () => {
+    const sourceDir = join(tmpDir, 'specialists');
+    const outputDir = join(tmpDir, 'output');
+    mkdirSync(sourceDir, { recursive: true });
+    writeFileSync(join(sourceDir, 'present.md'), '# Present\n', 'utf-8');
+
+    const config: ResolvedSyncConfig = {
+      configDir: tmpDir,
+      configPath: join(tmpDir, 'sync.config.ts'),
+      files: {
+        'commands/foo.md': configForOutput(join(outputDir, 'foo.md')),
+        'missing.md': configForOutput(join(outputDir, 'missing.md')),
+        'present.md': configForOutput(join(outputDir, 'present.md')),
+      },
+      output: outputDir,
+      preserve: [],
+      source: sourceDir,
+    };
+
+    await expect(runSync({ config })).rejects.toThrow(ConfigError);
+    await expect(runSync({ config })).rejects.toThrow(
+      /Config entries not found in source or secondary dir: commands\/foo\.md, missing\.md/u,
+    );
+    // Resolution fails before any file is processed, so present.md is not written.
+    expect(existsSync(outputDir)).toBe(false);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// Failure modes and diff output
+// ═══════════════════════════════════════════════════════════
+
+describe('failure modes and diff output', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'core-sync-failures-'));
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { force: true, recursive: true });
+  });
+
+  it('throws ConfigError when the source directory is missing', async () => {
+    const config: ResolvedSyncConfig = {
+      configDir: tmpDir,
+      configPath: join(tmpDir, 'sync.config.ts'),
+      files: {},
+      output: join(tmpDir, 'output'),
+      preserve: [],
+      source: join(tmpDir, 'missing-source'),
+    };
+
+    await expect(runSync({ config })).rejects.toThrow(ConfigError);
+    await expect(runSync({ config })).rejects.toThrow(/Source directory not found/u);
+  });
+
+  it('logs a unified diff between existing output and transformed content in dry-run', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, 'output.md');
+    writeFileSync(sourcePath, '# New body\n', 'utf-8');
+    writeFileSync(outputPath, '# Old body\n', 'utf-8');
+
+    const logs: string[] = [];
+    const result = await processFile(sourcePath, configForOutput(outputPath), {
+      diff: true,
+      dryRun: true,
+      logger: (msg) => {
+        logs.push(msg);
+      },
+      report: 'dry-run',
+    });
+
+    expect(result.status).toBe('dry-run');
+    const diffOutput = logs.join('\n');
+    expect(diffOutput).toContain(`--- ${sourcePath}`);
+    expect(diffOutput).toContain(`+++ ${outputPath}`);
+    expect(diffOutput).toContain('-# Old body');
+    expect(diffOutput).toContain('+# New body');
+  });
+
+  it('labels the source path as the old path in check-mode diffs', async () => {
+    const sourcePath = join(tmpDir, 'source.md');
+    const outputPath = join(tmpDir, 'output.md');
+    writeFileSync(sourcePath, '# New body\n', 'utf-8');
+    writeFileSync(outputPath, '# Old body\n', 'utf-8');
+
+    const logs: string[] = [];
+    const result = await processFile(sourcePath, configForOutput(outputPath), {
+      check: true,
+      diff: true,
+      logger: (msg) => {
+        logs.push(msg);
+      },
+      report: 'check',
+    });
+
+    expect(result.status).toBe('error');
+    const diffOutput = logs.join('\n');
+    expect(diffOutput).toContain(`--- ${sourcePath}`);
+    expect(diffOutput).toContain(`+++ ${outputPath}`);
+    expect(diffOutput).not.toContain(`--- ${outputPath}`);
   });
 });
 
