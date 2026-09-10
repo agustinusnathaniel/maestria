@@ -101,7 +101,6 @@ from maestria_hermes.session import (
     _tombstones,
     clear_trust,
     contains_unicode_control,
-    create_session_hooks,
     end_trust,
     get_trust_state,
     is_valid_lifecycle_id,
@@ -110,6 +109,22 @@ from maestria_hermes.session import (
     mark_trusted_child,
     revoke_all_trust,
 )
+
+
+def session_lifecycle_hooks(manager: SessionManager):
+    """Return the session lifecycle hooks as register() wires them.
+
+    register() binds these SessionManager methods directly (there is no
+    factory), so these bound methods are the exact callables Hermes
+    invokes for each lifecycle event.
+    """
+    return (
+        manager.on_session_start,
+        manager.on_session_end,
+        manager.on_session_finalize,
+        manager.on_session_reset,
+    )
+
 
 # Tools that must NEVER be available to a delegated child, in any mode.
 # "create" is a write-family mutator, so it is forbidden like every other
@@ -444,7 +459,7 @@ class NativeIdentifierTests(HookTestBase):
 class TopLevelLifecycleTests(HookTestBase):
     def test_on_session_start_first_turn_marks_top_level(self):
         manager = SessionManager()
-        on_start, _, _, _ = create_session_hooks(manager)
+        on_start, _, _, _ = session_lifecycle_hooks(manager)
         on_start(session_id="cli-sess", platform="cli")
         self.cleanup_trust("cli-sess")
         self.assertEqual(get_trust_state("cli-sess"), TOP_LEVEL)
@@ -453,7 +468,7 @@ class TopLevelLifecycleTests(HookTestBase):
         """Every recognized native platform value marks the session TOP_LEVEL
         (explicit allowlist verified from Hermes call sites/config)."""
         manager = SessionManager()
-        on_start, _, _, _ = create_session_hooks(manager)
+        on_start, _, _, _ = session_lifecycle_hooks(manager)
         for platform in RECOGNIZED_TOP_LEVEL_PLATFORMS:
             with self.subTest(platform=platform):
                 sid = f"plat-{platform}"
@@ -463,7 +478,7 @@ class TopLevelLifecycleTests(HookTestBase):
 
     def test_on_session_start_child_platform_never_marks_top_level(self):
         manager = SessionManager()
-        on_start, _, _, _ = create_session_hooks(manager)
+        on_start, _, _, _ = session_lifecycle_hooks(manager)
         for session_id, platform in (
             ("child-one", "subagent"),
             ("child-two", ""),
@@ -479,7 +494,7 @@ class TopLevelLifecycleTests(HookTestBase):
         """Unknown, whitespace-padded, case-variant, and malformed platform
         values never grant top-level trust: exact allowlist membership only."""
         manager = SessionManager()
-        on_start, _, _, _ = create_session_hooks(manager)
+        on_start, _, _, _ = session_lifecycle_hooks(manager)
         untrusted_platforms = (
             "  cli  ",
             "cli ",
@@ -522,7 +537,7 @@ class TopLevelLifecycleTests(HookTestBase):
 
     def test_on_session_start_malformed_ids_never_trust(self):
         manager = SessionManager()
-        on_start, _, _, _ = create_session_hooks(manager)
+        on_start, _, _, _ = session_lifecycle_hooks(manager)
         for session_id in (
             None, "", 7, "unknown",
             "  ", "\t", "\n",
@@ -538,7 +553,7 @@ class TopLevelLifecycleTests(HookTestBase):
         """on_session_end fires per turn; trust survives so the next turn
         keeps working (resumable, not terminal)."""
         manager = SessionManager()
-        on_start, on_end, _, _ = create_session_hooks(manager)
+        on_start, on_end, _, _ = session_lifecycle_hooks(manager)
         on_start(session_id="multi-turn", platform="cli")
         self.cleanup_trust("multi-turn")
         hook = self.make_hook("fein")
@@ -585,7 +600,7 @@ class TopLevelLifecycleTests(HookTestBase):
         """An explicitly ended session never regains direct access from a
         coincidental task_id == session_id binding."""
         manager = SessionManager()
-        on_start, _, on_finalize, _ = create_session_hooks(manager)
+        on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
         on_start(session_id="ended-sess", platform="cli")
         on_finalize(session_id="ended-sess", reason="new_session")
         self.cleanup_trust("ended-sess")
@@ -744,7 +759,7 @@ class ChildLifecycleTests(HookTestBase):
         child's on_session_start (platform='subagent') must NOT overwrite
         the active child trust."""
         manager = SessionManager()
-        on_start, _, _, _ = create_session_hooks(manager)
+        on_start, _, _, _ = session_lifecycle_hooks(manager)
         self.start_child("child-before-start", "leaf")
 
         # The child's own first-turn lifecycle event arrives afterwards.
@@ -998,7 +1013,7 @@ class FullPolicyMatrixTests(HookTestBase):
 class TerminalBoundaryTests(HookTestBase):
     def test_on_session_finalize_clears_top_level_trust(self):
         manager = SessionManager()
-        on_start, _, on_finalize, _ = create_session_hooks(manager)
+        on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
         on_start(session_id="final-top", platform="cli")
         self.assertEqual(get_trust_state("final-top"), TOP_LEVEL)
         self.cleanup_trust("final-top")
@@ -1011,7 +1026,7 @@ class TerminalBoundaryTests(HookTestBase):
 
     def test_on_session_reset_clears_old_session_trust(self):
         manager = SessionManager()
-        on_start, _, _, on_reset = create_session_hooks(manager)
+        on_start, _, _, on_reset = session_lifecycle_hooks(manager)
         on_start(session_id="old-sess", platform="cli")
         self.cleanup_trust("old-sess")
         self.assertEqual(get_trust_state("old-sess"), TOP_LEVEL)
@@ -1029,7 +1044,7 @@ class TerminalBoundaryTests(HookTestBase):
         tracked old-session identity for THIS agent instance without
         revoking an unrelated concurrent session in the same process."""
         manager = SessionManager()
-        on_start, _, _, on_reset = create_session_hooks(manager)
+        on_start, _, _, on_reset = session_lifecycle_hooks(manager)
         # This agent instance's session (tracked by the manager).
         on_start(session_id="old-sess", platform="cli")
         # An unrelated concurrent session from another agent instance.
@@ -1052,7 +1067,7 @@ class TerminalBoundaryTests(HookTestBase):
         gateway/slash_commands.py passes alongside old_session_id) is also
         manager-scoped when the old id is absent."""
         manager = SessionManager()
-        on_start, _, _, on_reset = create_session_hooks(manager)
+        on_start, _, _, on_reset = session_lifecycle_hooks(manager)
         on_start(session_id="old-sess", platform="cli")
         mark_top_level("other-sess")
         self.cleanup_trust("old-sess", "other-sess")
@@ -1066,7 +1081,7 @@ class TerminalBoundaryTests(HookTestBase):
         """A CLI-shape reset from an untracked manager cannot identify the
         old session; it fails closed by revoking all active trust."""
         manager = SessionManager()
-        _, _, _, on_reset = create_session_hooks(manager)
+        _, _, _, on_reset = session_lifecycle_hooks(manager)
         mark_top_level("concurrent-sess")
         self.cleanup_trust("concurrent-sess")
 
@@ -1084,7 +1099,7 @@ class TerminalBoundaryTests(HookTestBase):
         identity is ambiguous (ending it would kill the NEW session), so it
         fails closed by revoking all active trust."""
         manager = SessionManager()
-        on_start, _, _, on_reset = create_session_hooks(manager)
+        on_start, _, _, on_reset = session_lifecycle_hooks(manager)
         on_start(session_id="sess-a", platform="cli")
         mark_top_level("other-sess")
         self.cleanup_trust("sess-a", "other-sess")
@@ -1126,7 +1141,7 @@ class TerminalBoundaryTests(HookTestBase):
 
     def test_finalize_clears_child_trust_too(self):
         manager = SessionManager()
-        _, _, on_finalize, _ = create_session_hooks(manager)
+        _, _, on_finalize, _ = session_lifecycle_hooks(manager)
         self.start_child("final-child", "leaf")
         on_finalize(session_id="final-child", reason="new_session")
         self.cleanup_trust("final-child")
@@ -1136,7 +1151,7 @@ class TerminalBoundaryTests(HookTestBase):
         """A terminal boundary only affects the session it names; other
         sessions keep their resumable trust."""
         manager = SessionManager()
-        on_start, on_end, on_finalize, _ = create_session_hooks(manager)
+        on_start, on_end, on_finalize, _ = session_lifecycle_hooks(manager)
 
         on_start(session_id="survivor", platform="cli")
         on_start(session_id="victim", platform="cli")
@@ -1167,7 +1182,7 @@ class TerminalBoundaryTests(HookTestBase):
         ):
             with self.subTest(finalize_kwargs=finalize_kwargs):
                 manager = SessionManager()
-                on_start, _, on_finalize, _ = create_session_hooks(manager)
+                on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
                 on_start(session_id="real-sess", platform="cli")
                 self.assertEqual(get_trust_state("real-sess"), TOP_LEVEL)
                 on_finalize(**finalize_kwargs)
@@ -1183,7 +1198,7 @@ class TerminalBoundaryTests(HookTestBase):
         revoke-all safety net runs but has nothing to end; nothing raises
         and no trust is created."""
         manager = SessionManager()
-        _, _, on_finalize, _ = create_session_hooks(manager)
+        _, _, on_finalize, _ = session_lifecycle_hooks(manager)
         for kwargs in ({"session_id": "  "}, {}, {"session_id": None}):
             with self.subTest(kwargs=kwargs):
                 on_finalize(**kwargs)
@@ -1194,7 +1209,7 @@ class TerminalBoundaryTests(HookTestBase):
         on_session_start (platform='subagent') tracks its id, and the
         fail-closed fallback ends it."""
         manager = SessionManager()
-        on_start, _, on_finalize, _ = create_session_hooks(manager)
+        on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
         self.start_child("final-child-malformed", "leaf")
         self.assertEqual(get_trust_state("final-child-malformed"), TRUSTED_CHILD)
         # The child's first turn fires on_session_start with the subagent
@@ -1228,7 +1243,7 @@ class TerminalBoundaryTests(HookTestBase):
         ):
             with self.subTest(reset_kwargs=reset_kwargs):
                 manager = SessionManager()
-                on_start, _, _, on_reset = create_session_hooks(manager)
+                on_start, _, _, on_reset = session_lifecycle_hooks(manager)
                 on_start(session_id="old-sess", platform="cli")
                 self.assertEqual(get_trust_state("old-sess"), TOP_LEVEL)
                 on_reset(**reset_kwargs)
@@ -1244,7 +1259,7 @@ class TerminalBoundaryTests(HookTestBase):
         revoke-all safety net runs but has nothing to end; nothing raises
         and no trust is created."""
         manager = SessionManager()
-        _, _, _, on_reset = create_session_hooks(manager)
+        _, _, _, on_reset = session_lifecycle_hooks(manager)
         for kwargs in ({"old_session_id": "  "}, {}, {"old_session_id": None}):
             with self.subTest(kwargs=kwargs):
                 on_reset(**kwargs)
@@ -1254,7 +1269,7 @@ class TerminalBoundaryTests(HookTestBase):
         """Terminal events with any payload shape never mark anything
         trusted - worst case they deny (ENDED) a tracked session."""
         manager = SessionManager()
-        on_start, _, on_finalize, on_reset = create_session_hooks(manager)
+        on_start, _, on_finalize, on_reset = session_lifecycle_hooks(manager)
         on_start(session_id="t-sess", platform="cli")
         self.cleanup_trust("t-sess")
         for hook_call in (
@@ -1286,7 +1301,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         """A valid finalize ends only the named session; other concurrent
         sessions keep their trust (event-scoped, not process-scoped)."""
         manager = SessionManager()
-        on_start, _, on_finalize, _ = create_session_hooks(manager)
+        on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
         on_start(session_id="sess-a", platform="cli")
         on_start(session_id="sess-b", platform="cli")
         self.cleanup_trust("sess-a", "sess-b")
@@ -1302,7 +1317,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         """A finalize whose explicit id is malformed cannot be scoped, so
         EVERY trusted session is ended - none is left trusted."""
         manager = SessionManager()
-        on_start, _, on_finalize, _ = create_session_hooks(manager)
+        on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
         on_start(session_id="sess-a", platform="cli")
         on_start(session_id="sess-b", platform="cli")
         self.cleanup_trust("sess-a", "sess-b")
@@ -1315,7 +1330,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         """Active parent (top-level) and child trust are both revoked by an
         unscoped finalize."""
         manager = SessionManager()
-        on_start, _, on_finalize, _ = create_session_hooks(manager)
+        on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
         on_start(session_id="parent-sess", platform="cli")
         self.start_child("child-sess", "leaf")
         self.cleanup_trust("parent-sess", "child-sess")
@@ -1332,7 +1347,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         manager's tracked session: an unrelated concurrent session keeps
         its trust instead of being revoked with it."""
         manager = SessionManager()
-        on_start, _, _, on_reset = create_session_hooks(manager)
+        on_start, _, _, on_reset = session_lifecycle_hooks(manager)
         on_start(session_id="tracked-sess", platform="cli")
         mark_top_level("other-sess")
         self.cleanup_trust("tracked-sess", "other-sess")
@@ -1345,7 +1360,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         """A reset with no usable old session id and no usable new session
         id cannot be scoped at all; every trusted session is ended."""
         manager = SessionManager()
-        on_start, _, _, on_reset = create_session_hooks(manager)
+        on_start, _, _, on_reset = session_lifecycle_hooks(manager)
         on_start(session_id="old-sess", platform="cli")
         on_start(session_id="other-sess", platform="cli")
         self.cleanup_trust("old-sess", "other-sess")
@@ -1360,7 +1375,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         """A stop with no usable child session id cannot be scoped; every
         session - including a trusted parent - is ended."""
         manager = SessionManager()
-        on_start, _, _, _ = create_session_hooks(manager)
+        on_start, _, _, _ = session_lifecycle_hooks(manager)
         on_start(session_id="parent-sess", platform="cli")
         self.start_child("child-a", "leaf")
         self.start_child("child-b", "leaf")
@@ -1395,7 +1410,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         """After an unscoped terminal event revokes all trust, every
         previously trusted session denies ALL tools in every mode."""
         manager = SessionManager()
-        on_start, _, on_finalize, _ = create_session_hooks(manager)
+        on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
         on_start(session_id="denied-top", platform="cli")
         self.start_child("denied-child", "leaf")
         self.cleanup_trust("denied-top", "denied-child")
@@ -1416,7 +1431,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         """A revoked session must be re-established by a fresh trusted
         lifecycle event before it is trusted again."""
         manager = SessionManager()
-        on_start, _, on_finalize, _ = create_session_hooks(manager)
+        on_start, _, on_finalize, _ = session_lifecycle_hooks(manager)
         on_start(session_id="revoked-top", platform="cli")
         self.cleanup_trust("revoked-top")
         on_finalize(session_id="bad id ")
@@ -1447,7 +1462,7 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         """Hostile/malformed payload shapes never raise from the terminal
         handlers; they fail closed instead."""
         manager = SessionManager()
-        on_start, _, on_finalize, on_reset = create_session_hooks(manager)
+        on_start, _, on_finalize, on_reset = session_lifecycle_hooks(manager)
         on_start(session_id="no-raise", platform="cli")
         self.cleanup_trust("no-raise")
         for call in (
@@ -2146,6 +2161,29 @@ class PluginRegistrationTests(unittest.TestCase):
         for cmd in ("fein", "sonar", "blitz", "mode", "review", "plan"):
             with self.subTest(cmd=cmd):
                 self.assertIn(cmd, ctx.commands)
+
+    def test_register_binds_session_lifecycle_methods_directly(self):
+        """The session lifecycle hooks are the SessionManager bound
+        methods themselves (no factory wrapper), matching the callables
+        the lifecycle tests invoke."""
+        from maestria_hermes import register
+
+        home = tempfile.TemporaryDirectory()
+        self.addCleanup(home.cleanup)
+        with patch.dict(os.environ, {"HERMES_HOME": home.name}, clear=False):
+            ctx = _FakeCtx()
+            register(ctx)
+
+        for hook_name in (
+            "on_session_start",
+            "on_session_end",
+            "on_session_finalize",
+            "on_session_reset",
+        ):
+            with self.subTest(hook=hook_name):
+                hook = ctx.hooks[hook_name]
+                self.assertIsInstance(hook.__self__, SessionManager)
+                self.assertEqual(hook.__name__, hook_name)
 
     def test_plugin_yaml_provides_hooks_matches_register_exactly(self):
         """plugin.yaml's provides_hooks list must EQUAL the runtime hook

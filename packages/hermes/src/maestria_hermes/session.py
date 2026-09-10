@@ -344,22 +344,6 @@ def _set_trust_state(key: str, state: str) -> bool:
     return True
 
 
-def _refresh_tombstone_position(key: str) -> None:
-    """Move *key* to the back of the FIFO tombstone queue.
-
-    Re-arms reuse protection for a key that is (or just became) a
-    tombstone: a repeated end/invalid terminal transition refreshes the
-    key's recency instead of leaving it at a stale oldest position where
-    it would be the next eviction victim.  The key appears at most once
-    in the queue; a key not currently queued is simply appended.
-    """
-    try:
-        _tombstones.remove(key)
-    except ValueError:
-        pass
-    _tombstones.append(key)
-
-
 def _evict_one_tombstone() -> bool:
     """Evict the oldest evictable tombstone, if any.
 
@@ -513,8 +497,7 @@ def revoke_all_trust() -> None:
     never a grant.
     """
     for key in list(_session_trust):
-        _session_trust[key] = ENDED
-        _refresh_tombstone_position(key)
+        _set_trust_state(key, ENDED)
     _prune_tombstones()
 
 
@@ -699,26 +682,3 @@ class SessionManager:
             _safe_repr(old_session_id),
         )
         revoke_all_trust()
-
-
-def create_session_hooks(session_manager: SessionManager):
-    """Create lifecycle hook closures bound to *session_manager*.
-
-    Returns (on_start, on_end, on_finalize, on_reset) closures for
-    on_session_start, on_session_end, on_session_finalize, and
-    on_session_reset.
-    """
-
-    def on_start(**kwargs):
-        session_manager.on_session_start(**kwargs)
-
-    def on_end(**kwargs):
-        session_manager.on_session_end(**kwargs)
-
-    def on_finalize(**kwargs):
-        session_manager.on_session_finalize(**kwargs)
-
-    def on_reset(**kwargs):
-        session_manager.on_session_reset(**kwargs)
-
-    return on_start, on_end, on_finalize, on_reset

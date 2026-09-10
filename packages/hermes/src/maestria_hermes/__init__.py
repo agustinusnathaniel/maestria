@@ -19,7 +19,6 @@ from maestria_hermes.middleware.llm_output import create_llm_output_middleware
 from maestria_hermes.modes import ModeManager
 from maestria_hermes.session import (
     SessionManager,
-    create_session_hooks,
     end_trust,
     is_valid_lifecycle_id,
     mark_invalid_child,
@@ -78,12 +77,10 @@ def register(ctx):
 
     # -- Phase 2: Full lifecycle hooks --------------------------------------
 
-    on_start, on_end, on_finalize, on_reset = create_session_hooks(session_manager)
-
-    ctx.register_hook("on_session_start", on_start)
-    ctx.register_hook("on_session_end", on_end)
-    ctx.register_hook("on_session_finalize", on_finalize)
-    ctx.register_hook("on_session_reset", on_reset)
+    ctx.register_hook("on_session_start", session_manager.on_session_start)
+    ctx.register_hook("on_session_end", session_manager.on_session_end)
+    ctx.register_hook("on_session_finalize", session_manager.on_session_finalize)
+    ctx.register_hook("on_session_reset", session_manager.on_session_reset)
     ctx.register_hook("subagent_start", _on_subagent_start)
     ctx.register_hook("subagent_stop", _on_subagent_stop)
     ctx.register_hook("transform_tool_result", create_transform_tool_result_hook(mode_manager))
