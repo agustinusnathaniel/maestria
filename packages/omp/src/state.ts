@@ -23,4 +23,4 @@ export {
   persistState,
   renderMaestriaSummary,
 } from '@maestria/shared-pi/state-core';
-export { restoreOriginalState, cycleToReviewModel } from './state/review.js';
+export { restoreOriginalState } from './state/review.js';

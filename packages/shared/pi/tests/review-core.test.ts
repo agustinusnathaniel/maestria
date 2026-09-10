@@ -143,4 +143,17 @@ describe('cycleToReviewModel', () => {
     expect(result).toBeNull();
     expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('Could not switch'));
   });
+
+  it('notifies and returns null when the model switch rejects', async () => {
+    const pi = createMockPi();
+    pi.setModel.mockRejectedValue(new Error('no key'));
+    const ctx = createMockCtx([{ id: 'review-model' }]);
+    const state: MaestriaState = { ...createInitialState(), reviewModel: 'review-model' };
+
+    const result = await cycleToReviewModel(pi, ctx, state);
+
+    expect(result).toBeNull();
+    expect(pi.setModel).toHaveBeenCalled();
+    expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining('Could not switch'));
+  });
 });
