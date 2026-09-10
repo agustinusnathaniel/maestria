@@ -4,40 +4,11 @@ import { Effect } from 'effect';
 
 import { detectInstalled } from '@/lib/detect.js';
 import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
-import { getPlatform, platforms } from '@/lib/platforms.js';
-import type { PlatformHandler } from '@/lib/platforms.js';
+import { getPlatform, getPlatformOrResult, platforms } from '@/lib/platforms.js';
+import { uninstallOne } from '@/lib/platform-transaction.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
-
-const uninstallOne = (platform: PlatformHandler, quiet: boolean): Effect.Effect<PlatformResult> =>
-  Effect.gen(function* uninstallOneEffect() {
-    const spinner = createSpinner(quiet);
-    spinner.start(`Uninstalling ${platform.label}...`);
-
-    const errorMessage: string | null = yield* platform.uninstall.pipe(
-      Effect.as(null),
-      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
-    );
-
-    if (errorMessage === null) {
-      spinner.stop('Uninstalled');
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: 'Uninstalled',
-        ok: true,
-      } satisfies PlatformResult;
-    }
-
-    spinner.stop(`Failed: ${errorMessage}`);
-    return {
-      id: platform.id,
-      label: platform.label,
-      message: errorMessage,
-      ok: false,
-    } satisfies PlatformResult;
-  });
 
 const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[]> => {
   const spinner = createSpinner(isQuiet);
@@ -51,16 +22,8 @@ const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[]> => {
   return await Effect.runPromise(
     Effect.all(
       installed.map((p) => {
-        const platform = getPlatform(p.id);
-        if (!platform) {
-          return Effect.succeed({
-            id: p.id,
-            label: p.label,
-            message: 'Platform definition not found. This is a bug.',
-            ok: false,
-          } satisfies PlatformResult);
-        }
-        return uninstallOne(platform, isQuiet);
+        const platform = getPlatformOrResult(p.id, p.label);
+        return 'ok' in platform ? Effect.succeed(platform) : uninstallOne(platform, isQuiet);
       }),
       { concurrency: 1 },
     ),
@@ -90,16 +53,9 @@ const runUninstallInteractive = async (isQuiet: boolean): Promise<PlatformResult
     cancel('Uninstall cancelled.');
     process.exit(130);
   }
-  const platform = getPlatform(selected);
-  if (!platform) {
-    return [
-      {
-        id: selected,
-        label: selected,
-        message: 'Platform definition not found. This is a bug.',
-        ok: false,
-      } satisfies PlatformResult,
-    ];
+  const platform = getPlatformOrResult(selected);
+  if ('ok' in platform) {
+    return [platform];
   }
   return [await Effect.runPromise(uninstallOne(platform, isQuiet))];
 };

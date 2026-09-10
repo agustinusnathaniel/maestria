@@ -2,7 +2,7 @@ import { Effect } from 'effect';
 import type * as FsPromises from 'node:fs/promises';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { updateOne } from '@/commands/update.js';
+import { updateOne } from '@/lib/platform-transaction.js';
 import { getPlatform } from '@/lib/platforms.js';
 import * as shell from '@/lib/shell.js';
 
