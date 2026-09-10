@@ -2,42 +2,83 @@ import { cancel, isCancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 
+import { toCommandRun } from '@/lib/command-runner.js';
+import { CliError } from '@/lib/command-result.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
 import { getPlatformOrResult } from '@/lib/platforms.js';
 import { installOne } from '@/lib/platform-transaction.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
-import { VALID_PLATFORMS, validateOrExit, validatePlatforms } from '@/lib/validation.js';
+import { VALID_PLATFORMS, validateOrThrow, validatePlatforms } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
-const runInstallAll = async (isQuiet: boolean): Promise<PlatformResult[]> => {
+export interface InstallArgs {
+  all?: boolean;
+  compact?: boolean;
+  json?: boolean;
+  platform?: string;
+  quiet?: boolean;
+}
+
+const renderInstallOutput = (
+  results: PlatformResult[],
+  args: { compact?: boolean; json?: boolean },
+): string => {
+  if (args.json === true) {
+    return JSON.stringify(results, null, 2);
+  }
+  if (args.compact === true) {
+    return renderCompactResults(results);
+  }
+  return renderResults(results);
+};
+
+const installSelected = async (
+  selections: { id: string; label?: string }[],
+  isQuiet: boolean,
+): Promise<PlatformResult[]> =>
+  await Effect.runPromise(
+    Effect.all(
+      selections.map(({ id, label }) => {
+        const platform = getPlatformOrResult(id, label);
+        return 'ok' in platform ? Effect.succeed(platform) : installOne(platform, isQuiet);
+      }),
+      { concurrency: 1 },
+    ),
+  );
+
+const runInstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | CommandResult> => {
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const allPlatforms = await Effect.runPromise(detectAll());
   spinner.stop('Done');
   const toInstall = allPlatforms.filter((s) => s.available && !s.installed);
   if (toInstall.length === 0) {
-    console.log('All detected platforms already have maestria installed.');
-    process.exit(0);
+    return {
+      exitCode: 0,
+      output: 'All detected platforms already have maestria installed.',
+    };
   }
-  return await Effect.runPromise(
-    Effect.all(
-      toInstall.map((p) => {
-        const platform = getPlatformOrResult(p.id, p.label);
-        return 'ok' in platform ? Effect.succeed(platform) : installOne(platform, isQuiet);
-      }),
-      { concurrency: 1 },
-    ),
+  return await installSelected(
+    toInstall.map((p) => ({ id: p.id, label: p.label })),
+    isQuiet,
   );
 };
 
-const runInstallInteractive = async (isQuiet: boolean): Promise<PlatformResult[]> => {
+const runInstallInteractive = async (
+  isQuiet: boolean,
+): Promise<PlatformResult[] | CommandResult> => {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
-    console.error('No platform specified and not in an interactive terminal.');
-    console.error('Usage: maestria install <platform> or maestria install --all');
-    console.error("Run 'maestria install --help' for details.");
-    process.exit(1);
+    throw new CliError(
+      [
+        'No platform specified and not in an interactive terminal.',
+        'Usage: maestria install <platform> or maestria install --all',
+        "Run 'maestria install --help' for details.",
+      ].join('\n'),
+      1,
+    );
   }
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
@@ -45,12 +86,12 @@ const runInstallInteractive = async (isQuiet: boolean): Promise<PlatformResult[]
   spinner.stop('Done');
   const installable = allPlatforms.filter((s) => s.available && !s.installed);
   if (installable.length === 0) {
-    if (allPlatforms.every((s) => !s.available)) {
-      console.log('No supported coding agent platforms detected on this machine.');
-    } else {
-      console.log('Maestria is already installed for all detected platforms.');
-    }
-    process.exit(0);
+    return {
+      exitCode: 0,
+      output: allPlatforms.every((s) => !s.available)
+        ? 'No supported coding agent platforms detected on this machine.'
+        : 'Maestria is already installed for all detected platforms.',
+    };
   }
   const selected = await groupMultiselect({
     message: 'Which platforms do you want to install maestria for?',
@@ -62,17 +103,40 @@ const runInstallInteractive = async (isQuiet: boolean): Promise<PlatformResult[]
   });
   if (isCancel(selected) || !Array.isArray(selected) || selected.length === 0) {
     cancel('Install cancelled.');
-    process.exit(130);
+    throw new CliError('', 130);
   }
-  return await Effect.runPromise(
-    Effect.all(
-      selected.map((id) => {
-        const platform = getPlatformOrResult(id);
-        return 'ok' in platform ? Effect.succeed(platform) : installOne(platform, isQuiet);
-      }),
-      { concurrency: 1 },
-    ),
+  return await installSelected(
+    selected.map((id) => ({ id })),
+    isQuiet,
   );
+};
+
+export const handleInstall = async (args: InstallArgs): Promise<CommandResult> => {
+  const isQuiet = args.quiet === true || args.compact === true;
+  let platformIds: string[] | undefined;
+  if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
+    platformIds = await validateOrThrow(validatePlatforms(args.platform));
+  }
+  let results: PlatformResult[];
+  if (platformIds && platformIds.length > 0) {
+    results = await installSelected(
+      platformIds.map((id) => ({ id })),
+      isQuiet,
+    );
+  } else if (args.all === true) {
+    const outcome = await runInstallAll(isQuiet);
+    if (!Array.isArray(outcome)) {
+      return outcome;
+    }
+    results = outcome;
+  } else {
+    const outcome = await runInstallInteractive(isQuiet);
+    if (!Array.isArray(outcome)) {
+      return outcome;
+    }
+    results = outcome;
+  }
+  return { exitCode: exitCodeForResults(results), output: renderInstallOutput(results, args) };
 };
 
 export const installCommand = defineCommand({
@@ -113,38 +177,5 @@ export const installCommand = defineCommand({
     description: 'Install maestria plugins for coding agent platforms',
     name: 'install',
   },
-  run: async ({ args }) => {
-    const isQuiet = args.quiet || args.compact;
-    const isCompact = args.compact;
-    let platformIds: string[] | undefined;
-    if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
-      platformIds = await validateOrExit(validatePlatforms(args.platform));
-    }
-    const results: PlatformResult[] = [];
-    if (platformIds && platformIds.length > 0) {
-      results.push(
-        ...(await Effect.runPromise(
-          Effect.all(
-            platformIds.map((id) => {
-              const platform = getPlatformOrResult(id);
-              return 'ok' in platform ? Effect.succeed(platform) : installOne(platform, isQuiet);
-            }),
-            { concurrency: 1 },
-          ),
-        )),
-      );
-    } else if (args.all) {
-      results.push(...(await runInstallAll(isQuiet)));
-    } else {
-      results.push(...(await runInstallInteractive(isQuiet)));
-    }
-    if (args.json) {
-      console.log(JSON.stringify(results, null, 2));
-    } else if (isCompact) {
-      console.log(renderCompactResults(results));
-    } else {
-      console.log(renderResults(results));
-    }
-    process.exit(exitCodeForResults(results));
-  },
+  run: toCommandRun(handleInstall),
 });

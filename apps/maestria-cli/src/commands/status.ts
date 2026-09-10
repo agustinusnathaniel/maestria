@@ -1,6 +1,8 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 
+import { toCommandRun } from '@/lib/command-runner.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import {
   createSpinner,
@@ -9,6 +11,37 @@ import {
   renderStatusTable,
 } from '@/lib/output.js';
 import type { StatusOutput } from '@/types.js';
+
+export interface StatusArgs {
+  compact?: boolean;
+  json?: boolean;
+  quiet?: boolean;
+}
+
+export const handleStatus = async (args: StatusArgs): Promise<CommandResult> => {
+  const isQuiet = args.quiet === true || args.compact === true;
+  const isCompact = args.compact === true;
+
+  const spinner = createSpinner(isQuiet);
+  spinner.start('Detecting platforms...');
+
+  const output = await Effect.runPromise(detectAll());
+
+  let rendered: string;
+  if (args.json === true) {
+    spinner.stop('');
+    const jsonOutput: StatusOutput = { platforms: output };
+    rendered = formatStatusJson(jsonOutput);
+  } else if (isCompact) {
+    spinner.stop('');
+    rendered = renderCompactStatus(output);
+  } else {
+    spinner.stop('Done');
+    rendered = renderStatusTable(output);
+  }
+
+  return { exitCode: 0, output: rendered };
+};
 
 export const statusCommand = defineCommand({
   args: {
@@ -33,27 +66,5 @@ export const statusCommand = defineCommand({
     description: 'Show installed maestria plugins and version info',
     name: 'status',
   },
-  run: async ({ args }) => {
-    const isQuiet = args.quiet || args.compact;
-    const isCompact = args.compact;
-
-    const spinner = createSpinner(isQuiet);
-    spinner.start('Detecting platforms...');
-
-    const output = await Effect.runPromise(detectAll());
-
-    if (args.json) {
-      spinner.stop('');
-      const jsonOutput: StatusOutput = { platforms: output };
-      console.log(formatStatusJson(jsonOutput));
-    } else if (isCompact) {
-      spinner.stop('');
-      console.log(renderCompactStatus(output));
-    } else {
-      spinner.stop('Done');
-      console.log(renderStatusTable(output));
-    }
-
-    process.exit(0);
-  },
+  run: toCommandRun(handleStatus),
 });

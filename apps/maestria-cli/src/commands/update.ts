@@ -3,6 +3,9 @@ import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 import picocolors from 'picocolors';
 
+import { toCommandRun } from '@/lib/command-runner.js';
+import { CliError } from '@/lib/command-result.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
@@ -12,11 +15,20 @@ import { updateOne } from '@/lib/platform-transaction.js';
 import { exitCodeForResults } from '@/lib/result-exit.js';
 import {
   VALID_PLATFORMS,
-  validateOrExit,
+  validateOrThrow,
   validatePlatforms,
   validateVersion,
 } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
+
+export interface UpdateArgs {
+  all?: boolean;
+  compact?: boolean;
+  json?: boolean;
+  platform?: string;
+  quiet?: boolean;
+  version?: string;
+}
 
 interface UpdateStatus {
   id: string;
@@ -26,38 +38,52 @@ interface UpdateStatus {
   needsUpdate: boolean;
 }
 
-const runDirectUpdate = async (
-  platformIds: string[],
+const renderUpdateOutput = (
+  results: PlatformResult[],
+  args: { compact?: boolean; json?: boolean },
+): string => {
+  if (args.json === true) {
+    return JSON.stringify(results, null, 2);
+  }
+  if (args.compact === true) {
+    return renderCompactResults(results);
+  }
+  return renderResults(results);
+};
+
+const updateSelected = async (
+  selections: { id: string; label?: string }[],
   isQuiet: boolean,
   version?: string,
 ): Promise<PlatformResult[]> =>
   await Effect.runPromise(
     Effect.all(
-      platformIds.map((id) => {
-        const platform = getPlatformOrResult(id);
+      selections.map(({ id, label }) => {
+        const platform = getPlatformOrResult(id, label);
         return 'ok' in platform ? Effect.succeed(platform) : updateOne(platform, isQuiet, version);
       }),
       { concurrency: 1 },
     ),
   );
 
-const runAllUpdate = async (isQuiet: boolean, version?: string): Promise<PlatformResult[]> => {
+const runAllUpdate = async (
+  isQuiet: boolean,
+  version?: string,
+): Promise<PlatformResult[] | CommandResult> => {
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const installed = await Effect.runPromise(detectInstalled());
   spinner.stop('Done');
   if (installed.length === 0) {
-    console.log('No maestria installations found to update.');
-    process.exit(0);
+    return {
+      exitCode: 0,
+      output: 'No maestria installations found to update.',
+    };
   }
-  return await Effect.runPromise(
-    Effect.all(
-      installed.map((p) => {
-        const platform = getPlatformOrResult(p.id, p.label);
-        return 'ok' in platform ? Effect.succeed(platform) : updateOne(platform, isQuiet, version);
-      }),
-      { concurrency: 1 },
-    ),
+  return await updateSelected(
+    installed.map((p) => ({ id: p.id, label: p.label })),
+    isQuiet,
+    version,
   );
 };
 
@@ -65,17 +91,23 @@ const runAllUpdate = async (isQuiet: boolean, version?: string): Promise<Platfor
 const runInteractiveUpdate = async (
   isQuiet: boolean,
   version?: string,
-): Promise<PlatformResult[]> => {
+): Promise<PlatformResult[] | CommandResult> => {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
-    console.error('No platform specified and not in an interactive terminal.');
-    console.error('Usage: maestria update <platform> or maestria update --all');
-    console.error("Run 'maestria update --help' for details.");
-    process.exit(1);
+    throw new CliError(
+      [
+        'No platform specified and not in an interactive terminal.',
+        'Usage: maestria update <platform> or maestria update --all',
+        "Run 'maestria update --help' for details.",
+      ].join('\n'),
+      1,
+    );
   }
   const installed = await Effect.runPromise(detectInstalled());
   if (installed.length === 0) {
-    console.log('No maestria installations found to update.');
-    process.exit(0);
+    return {
+      exitCode: 0,
+      output: 'No maestria installations found to update.',
+    };
   }
   const statuses = await Effect.runPromise(
     Effect.all(
@@ -114,8 +146,7 @@ const runInteractiveUpdate = async (
       .filter((s) => !s.needsUpdate)
       .map((s) => `  ${picocolors.green('✓')} ${s.label}: ${s.installedVersion}`)
       .join('\n');
-    console.log(`\nAll platforms are up to date.\n${lines}\n`);
-    process.exit(0);
+    return { exitCode: 0, output: `\nAll platforms are up to date.\n${lines}\n` };
   }
   const selected = await groupMultiselect({
     message: 'Which platforms do you want to update?',
@@ -131,18 +162,45 @@ const runInteractiveUpdate = async (
   });
   if (isCancel(selected) || !Array.isArray(selected) || selected.length === 0) {
     cancel('Update cancelled.');
-    process.exit(130);
+    throw new CliError('', 130);
   }
   const toUpdate = needsUpdate.filter((s) => selected.includes(s.id));
-  return await Effect.runPromise(
-    Effect.all(
-      toUpdate.flatMap((p) => {
-        const platform = getPlatform(p.id);
-        return platform === undefined ? [] : [updateOne(platform, isQuiet, version)];
-      }),
-      { concurrency: 1 },
-    ),
+  const selections = toUpdate.flatMap((p) =>
+    getPlatform(p.id) === undefined ? [] : [{ id: p.id, label: p.label }],
   );
+  return await updateSelected(selections, isQuiet, version);
+};
+
+export const handleUpdate = async (args: UpdateArgs): Promise<CommandResult> => {
+  const isQuiet = args.quiet === true || args.compact === true;
+  let platformIds: string[] | undefined;
+  if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
+    platformIds = await validateOrThrow(validatePlatforms(args.platform));
+  }
+  if (args.version !== undefined && args.version !== null && args.version !== '') {
+    await validateOrThrow(validateVersion(args.version));
+  }
+  let results: PlatformResult[];
+  if (platformIds && platformIds.length > 0) {
+    results = await updateSelected(
+      platformIds.map((id) => ({ id })),
+      isQuiet,
+      args.version,
+    );
+  } else if (args.all === true) {
+    const outcome = await runAllUpdate(isQuiet, args.version);
+    if (!Array.isArray(outcome)) {
+      return outcome;
+    }
+    results = outcome;
+  } else {
+    const outcome = await runInteractiveUpdate(isQuiet, args.version);
+    if (!Array.isArray(outcome)) {
+      return outcome;
+    }
+    results = outcome;
+  }
+  return { exitCode: exitCodeForResults(results), output: renderUpdateOutput(results, args) };
 };
 
 export const updateCommand = defineCommand({
@@ -186,31 +244,5 @@ export const updateCommand = defineCommand({
     description: 'Update maestria plugins to the latest (or specified) version',
     name: 'update',
   },
-  run: async ({ args }) => {
-    const isQuiet = args.quiet || args.compact;
-    const isCompact = args.compact;
-    let platformIds: string[] | undefined;
-    if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
-      platformIds = await validateOrExit(validatePlatforms(args.platform));
-    }
-    if (args.version !== undefined && args.version !== null && args.version !== '') {
-      await validateOrExit(validateVersion(args.version));
-    }
-    const results: PlatformResult[] = [];
-    if (platformIds && platformIds.length > 0) {
-      results.push(...(await runDirectUpdate(platformIds, isQuiet, args.version)));
-    } else if (args.all) {
-      results.push(...(await runAllUpdate(isQuiet, args.version)));
-    } else {
-      results.push(...(await runInteractiveUpdate(isQuiet, args.version)));
-    }
-    if (args.json) {
-      console.log(JSON.stringify(results, null, 2));
-    } else if (isCompact) {
-      console.log(renderCompactResults(results));
-    } else {
-      console.log(renderResults(results));
-    }
-    process.exit(exitCodeForResults(results));
-  },
+  run: toCommandRun(handleUpdate),
 });

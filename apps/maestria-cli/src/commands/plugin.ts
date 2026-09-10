@@ -1,10 +1,56 @@
 import { defineCommand } from 'citty';
 
+import { toCommandRun } from '@/lib/command-runner.js';
+import { CliError } from '@/lib/command-result.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import {
   formatAgentPluginValidation,
   stageAgentPlugin,
   validateAgentPlugin,
 } from '@/lib/agent-plugin.js';
+
+export interface PluginValidateArgs {
+  json?: boolean;
+  path: string;
+}
+
+export interface PluginInstallArgs {
+  destination?: string;
+  json?: boolean;
+  source?: string;
+}
+
+export const handlePluginValidate = async (args: PluginValidateArgs): Promise<CommandResult> => {
+  const report = await validateAgentPlugin(args.path);
+  return {
+    exitCode: report.valid ? 0 : 1,
+    output:
+      args.json === true ? JSON.stringify(report, null, 2) : formatAgentPluginValidation(report),
+  };
+};
+
+export const handlePluginInstall = async (args: PluginInstallArgs): Promise<CommandResult> => {
+  try {
+    const staged = await stageAgentPlugin({
+      destination: args.destination,
+      source: args.source,
+    });
+    if (args.json === true) {
+      return { exitCode: 0, output: JSON.stringify(staged, null, 2) };
+    }
+    const versionSuffix =
+      staged.version === undefined || staged.version === '' ? '' : `@${staged.version}`;
+    return {
+      exitCode: 0,
+      output: [
+        `Staged ${staged.name ?? 'Agent Plugin'}${versionSuffix} at ${staged.destination}`,
+        'Point a compatible client at this directory to load the portable package.',
+      ].join('\n'),
+    };
+  } catch (error) {
+    throw new CliError(error instanceof Error ? error.message : String(error), 1);
+  }
+};
 
 const validateCommand = defineCommand({
   args: {
@@ -23,11 +69,7 @@ const validateCommand = defineCommand({
     description: 'Validate an Agent Plugins v1 directory package',
     name: 'validate',
   },
-  run: async ({ args }) => {
-    const report = await validateAgentPlugin(args.path);
-    console.log(args.json ? JSON.stringify(report, null, 2) : formatAgentPluginValidation(report));
-    process.exit(report.valid ? 0 : 1);
-  },
+  run: toCommandRun(handlePluginValidate),
 });
 
 const installCommand = defineCommand({
@@ -51,28 +93,7 @@ const installCommand = defineCommand({
     description: 'Fetch, validate, and stage a portable Agent Plugin',
     name: 'install',
   },
-  run: async ({ args }) => {
-    try {
-      const staged = await stageAgentPlugin({
-        destination: args.destination,
-        source: args.source,
-      });
-      if (args.json) {
-        console.log(JSON.stringify(staged, null, 2));
-      } else {
-        const versionSuffix =
-          staged.version === undefined || staged.version === '' ? '' : `@${staged.version}`;
-        console.log(
-          `Staged ${staged.name ?? 'Agent Plugin'}${versionSuffix} at ${staged.destination}`,
-        );
-        console.log('Point a compatible client at this directory to load the portable package.');
-      }
-      process.exit(0);
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : String(error));
-      process.exit(1);
-    }
-  },
+  run: toCommandRun(handlePluginInstall),
 });
 
 export const pluginCommand = defineCommand({
