@@ -7,18 +7,6 @@ import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.
 const validateAgent: typeof assertValidAgent = assertValidAgent;
 const validateTask: typeof assertNonEmptyTask = assertNonEmptyTask;
 
-interface SubagentSchema {
-  describe: (description: string) => SubagentSchema;
-  optional: () => SubagentSchema;
-}
-
-interface SubagentZod {
-  array: (schema: SubagentSchema) => SubagentSchema;
-  enum: (values: readonly string[]) => SubagentSchema;
-  object: (shape: Record<string, SubagentSchema>) => SubagentSchema;
-  string: () => SubagentSchema;
-}
-
 export interface SubagentToolParams {
   agent?: string;
   mode?: 'parallel' | 'chain' | 'single';
@@ -28,26 +16,6 @@ export interface SubagentToolParams {
 
 export interface SubagentToolResult {
   content: [{ text: string; type: 'text' }];
-}
-
-export interface SubagentToolDefinition {
-  description: string;
-  execute: (
-    toolCallId: string,
-    params: SubagentToolParams,
-    signal: AbortSignal | undefined,
-    onUpdate: unknown,
-    ctx: unknown,
-  ) => Promise<SubagentToolResult>;
-  label: string;
-  name: string;
-  parameters: SubagentSchema;
-}
-
-export interface SubagentToolApi {
-  appendEntry: (type: string, data: unknown) => void;
-  registerTool: (tool: SubagentToolDefinition) => void;
-  zod: SubagentZod;
 }
 
 interface SubagentDispatchApi {
@@ -162,38 +130,6 @@ const executeSubagent = async (
   });
 };
 
-const createSubagentTool = (pi: SubagentToolApi, state: MaestriaState): SubagentToolDefinition => ({
-  description:
-    'Dispatch a task to a maestria specialist subagent (adventurer, architect, builder, diagnose, planner, reviewer, writer). Uses omp native task tool.',
-  async execute(
-    _toolCallId: string,
-    params: SubagentToolParams,
-    _signal: AbortSignal | undefined,
-    _onUpdate: unknown,
-    _ctx: unknown,
-  ): Promise<SubagentToolResult> {
-    return await executeSubagent(pi, state, params);
-  },
-  label: 'Maestria Subagent',
-  name: 'maestria_subagent',
-  parameters: pi.zod.object({
-    agent: pi.zod
-      .string()
-      .describe(
-        'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
-      ),
-    mode: pi.zod
-      .enum(['parallel', 'chain', 'single'])
-      .describe('Dispatch mode: single (default), parallel, or chain')
-      .optional(),
-    task: pi.zod.string().describe('Task description for the subagent (required)'),
-    tasks: pi.zod
-      .array(pi.zod.object({ agent: pi.zod.string(), task: pi.zod.string() }))
-      .describe('Array of task objects for parallel or chain dispatch')
-      .optional(),
-  }),
-});
-
 const isSubagentToolParams = (value: unknown): value is SubagentToolParams => {
   if (!isRecord(value)) {
     return false;
@@ -240,15 +176,4 @@ export const installNativeSubagentTool = (
         .optional(),
     }),
   });
-};
-
-export const installSubagentTool = (
-  pi: SubagentToolApi,
-  state: MaestriaState,
-  _cleanups?: (() => void)[],
-): void => {
-  pi.registerTool(createSubagentTool(pi, state));
-
-  // No subagent lifecycle event subscriptions needed - omp's built-in task tool
-  // handles all dispatch lifecycle natively.
 };
