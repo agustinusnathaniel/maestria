@@ -34,7 +34,7 @@ const extension = (pi: ExtensionAPI): void => {
 
   // Deploy specialist agent files for pi-subagents discovery
   pi.on('session_start', (_event: SessionStartEvent, ctx) => {
-    deploySpecialistAgents(ctx);
+    deploySpecialistAgents();
 
     // Restore persisted state on session start (reload/resume/fork)
     replaceState(state, stateFromSessionEntries(readSessionBranch(ctx)));

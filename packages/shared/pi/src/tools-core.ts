@@ -79,7 +79,7 @@ export const findDangerousPattern = (command: string): RegExp | null => {
   return null;
 };
 
-export const getBlockedReviewReason = (toolName: string): string | null => {
+const getBlockedReviewReason = (toolName: string): string | null => {
   if (toolName === 'edit' || toolName === 'write' || toolName === 'bash') {
     return 'Review mode is active. Report findings, do not edit.';
   }

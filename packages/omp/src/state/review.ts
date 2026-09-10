@@ -1,4 +1,5 @@
 import {
+  createReviewApi,
   cycleToReviewModel as cycleCore,
   restoreOriginalState as restoreCore,
 } from '@maestria/shared-pi/review-core';
@@ -24,38 +25,11 @@ export const restoreOriginalState = async (
   ctx: ReviewModelContext,
   state: MaestriaState,
 ): Promise<void> => {
-  await restoreCore(
-    {
-      setActiveTools: async (tools) => {
-        await pi.setActiveTools(tools);
-      },
-      setModel: async (model) => {
-        if (isOmpModel(model)) {
-          await pi.setModel(model);
-        }
-      },
-    },
-    ctx,
-    state,
-  );
+  await restoreCore(createReviewApi(pi, isOmpModel), ctx, state);
 };
 
 export const cycleToReviewModel = async (
-  pi: ReviewModelApi,
+  pi: ReviewApi,
   ctx: ReviewModelContext,
   state: MaestriaState,
-): Promise<string | null> =>
-  await cycleCore(
-    {
-      setActiveTools: async (tools) => {
-        await pi.setActiveTools(tools);
-      },
-      setModel: async (model) => {
-        if (isOmpModel(model)) {
-          await pi.setModel(model);
-        }
-      },
-    },
-    ctx,
-    state,
-  );
+): Promise<string | null> => await cycleCore(createReviewApi(pi, isOmpModel), ctx, state);

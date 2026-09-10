@@ -4,9 +4,7 @@ import {
   ALLOWED_AGENTS,
   assertNonEmptyTask,
   assertValidAgent,
-  HANDOFF_FIELDS,
   MAESTRIA_EVENTS,
-  validateHandoff,
 } from '../src/subagent-utils.js';
 import type { AllowedAgent } from '../src/subagent-utils.js';
 
@@ -31,24 +29,6 @@ describe('ALLOWED_AGENTS', () => {
 
   it('contains no duplicate agent names', () => {
     expect(new Set(ALLOWED_AGENTS).size).toBe(ALLOWED_AGENTS.length);
-  });
-});
-
-describe('HANDOFF_FIELDS', () => {
-  it('contains the 7 required handoff fields matching the orchestrator delegation pattern', () => {
-    expect(HANDOFF_FIELDS).toEqual([
-      'Goal',
-      'Context',
-      'Requirements',
-      'Known problems',
-      'Assumptions documented',
-      'Success criteria',
-      'Next step',
-    ]);
-  });
-
-  it('contains no duplicate field names', () => {
-    expect(new Set(HANDOFF_FIELDS).size).toBe(HANDOFF_FIELDS.length);
   });
 });
 
@@ -147,138 +127,5 @@ describe('assertNonEmptyTask', () => {
     expect(() => {
       assertTask('', 'Custom error label');
     }).toThrow('Custom error label');
-  });
-});
-
-// ── validateHandoff ────────────────────────────────────────────────
-
-describe('validateHandoff', () => {
-  it('returns valid=true for a handoff with all 7 fields', () => {
-    const handoff = [
-      '**Goal:** build feature',
-      '**Context:** in repo root',
-      '**Requirements:** must be fast',
-      '**Known problems:** none',
-      '**Assumptions documented:** pipeline must be installed',
-      '**Success criteria:** tests pass',
-      '**Next step:** merge PR',
-    ].join('\n');
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(true);
-    expect(result.errors).toEqual([]);
-  });
-
-  it('returns valid=false and lists missing fields', () => {
-    const handoff = '**Goal:** build feature\n**Context:** missing some fields';
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Missing or empty field: "Requirements"');
-    expect(result.errors).toContain('Missing or empty field: "Known problems"');
-    expect(result.errors).toContain('Missing or empty field: "Assumptions documented"');
-    expect(result.errors).toContain('Missing or empty field: "Success criteria"');
-    expect(result.errors).toContain('Missing or empty field: "Next step"');
-  });
-
-  it('returns valid=false and errors for a completely empty handoff', () => {
-    const result = validateHandoff('');
-    expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(HANDOFF_FIELDS.length);
-  });
-
-  it('accepts multi-line field values across line breaks', () => {
-    const handoff = [
-      '**Goal:** Build something',
-      '  that spans multiple',
-      '  lines of text',
-      '**Context:** in repo root',
-      '**Requirements:** must be fast',
-      '**Known problems:** none',
-      '**Assumptions documented:** agent knows the project',
-      '**Success criteria:** tests pass',
-      '**Next step:** merge PR',
-    ].join('\n');
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(true);
-  });
-
-  it('rejects a field with only whitespace and nothing following', () => {
-    const handoff = '**Goal:** \n\n';
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes('Goal'))).toBe(true);
-  });
-
-  it('is case-insensitive for field matching', () => {
-    const handoff = [
-      '**goal:** build feature',
-      '**context:** in repo root',
-      '**requirements:** must be fast',
-      '**Known problems:** none',
-      '**assumptions documented:** pipeline must be installed',
-      '**Success criteria:** tests pass',
-      '**Next step:** merge PR',
-    ].join('\n');
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(true);
-  });
-
-  it('returns valid object with correct HandoffValidation shape', () => {
-    const result = validateHandoff('incomplete');
-    expect(result).toHaveProperty('valid');
-    expect(result).toHaveProperty('errors');
-    expect(typeof result.valid).toBe('boolean');
-    expect(Array.isArray(result.errors)).toBe(true);
-    expect(result.errors.every((e) => typeof e === 'string')).toBe(true);
-  });
-
-  it('collects multiple field errors in a single call', () => {
-    const handoff = '**Goal:** build feature\n**Context:** in repo root';
-    const result = validateHandoff(handoff);
-    // Only Goal and Context present; 5 fields missing
-    expect(result.errors.length).toBe(5);
-  });
-
-  it('handles fields with colon in content correctly', () => {
-    const handoff = [
-      '**Goal:** fix bug: handle edge case',
-      '**Context:** issue #42: null pointer',
-      '**Requirements:** must: handle all cases',
-      '**Known problems:** none found',
-      '**Assumptions documented:** assume: standard env',
-      '**Success criteria:** all tests: pass',
-      '**Next step:** create: PR',
-    ].join('\n');
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(true);
-  });
-
-  it('rejects handoff where a field has no content (empty after colon, followed by another field)', () => {
-    const handoff = [
-      '**Goal:** build feature',
-      '**Context:**',
-      '**Requirements:** must be fast',
-      '**Known problems:** none',
-      '**Assumptions documented:** agent knows the project',
-      '**Success criteria:** tests pass',
-      '**Next step:** merge PR',
-    ].join('\n');
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes('Context'))).toBe(true);
-  });
-
-  it('rejects handoff where a field appears at end of string with no content after colon', () => {
-    const handoff = [
-      '**Goal:** build feature',
-      '**Context:** in repo root',
-      '**Requirements:** must be fast',
-      '**Known problems:** none',
-      '**Assumptions documented:** agent knows the project',
-      '**Success criteria:** tests pass',
-      '**Next step:** ',
-    ].join('\n');
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes('Next step'))).toBe(true);
   });
 });

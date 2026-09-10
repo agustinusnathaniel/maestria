@@ -16,7 +16,6 @@ import { createToolApi, installToolInterceptors } from '@/tools.js';
 
 const extension = (pi: ExtensionAPI): void => {
   const state = createInitialState();
-  const cleanups: (() => void)[] = [];
 
   // Install mode commands: /fein, /sonar, /blitz
   installModeCommands(createModeCommandsApi(pi), state);
@@ -29,7 +28,7 @@ const extension = (pi: ExtensionAPI): void => {
 
   // Deploy specialist agent files for omp subagent discovery
   pi.on('session_start', (_event: SessionStartEvent, ctx) => {
-    deploySpecialistAgents(ctx);
+    deploySpecialistAgents();
 
     // Restore the complete target-session state from public session entries.
     restoreMaestriaStateForSession(state, ctx);
@@ -39,19 +38,11 @@ const extension = (pi: ExtensionAPI): void => {
   installCompactionHandlers(createCompactionApi(pi), state);
 
   // Install orchestration hooks: subagent tool and commands
-  installNativeSubagentTool(pi, state, cleanups);
+  installNativeSubagentTool(pi, state);
   installCommands(createCommandsApi(pi), state);
 
   // Mirror OMP's native goal state (goal_updated event) into Maestria state
   installGoalEventHandlers(createGoalApi(pi), state);
-
-  // Cleanup subscriptions on shutdown
-  pi.on('session_shutdown', () => {
-    for (const cleanup of cleanups) {
-      cleanup();
-    }
-    cleanups.length = 0;
-  });
 
   // Install tool call interceptors for review mode and dangerous patterns
   installToolInterceptors(createToolApi(pi), state);

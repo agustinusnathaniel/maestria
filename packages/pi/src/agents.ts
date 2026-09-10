@@ -15,6 +15,6 @@ const AGENTS_SRC = path.join(__dirname, '..', 'agents');
  *
  * Only creates files that don't already exist - never overwrites user-customized agents.
  */
-export const deploySpecialistAgents = (_ctx?: unknown): void => {
+export const deploySpecialistAgents = (): void => {
   deployAgents(AGENTS_SRC, path.join(homedir(), '.pi', 'agent', 'agents'));
 };

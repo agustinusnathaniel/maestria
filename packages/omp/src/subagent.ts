@@ -143,11 +143,7 @@ const isSubagentToolParams = (value: unknown): value is SubagentToolParams => {
   );
 };
 
-export const installNativeSubagentTool = (
-  pi: ExtensionAPI,
-  state: MaestriaState,
-  _cleanups?: (() => void)[],
-): void => {
+export const installNativeSubagentTool = (pi: ExtensionAPI, state: MaestriaState): void => {
   pi.registerTool({
     description:
       'Dispatch a task to a maestria specialist subagent (adventurer, architect, builder, diagnose, planner, reviewer, writer). Uses omp native task tool.',

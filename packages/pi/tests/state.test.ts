@@ -12,7 +12,6 @@ import {
   recordHandoff,
   recordSpecialistDelegated,
   renderMaestriaSummary,
-  setReviewMode,
 } from '@/state.js';
 import type { HandoffEntry, MaestriaState, SubagentStatusInfo } from '@/state.js';
 import type { ReviewModelApi, ReviewModelContext } from '@/state/review.js';
@@ -222,29 +221,6 @@ describe('recordFileRead', () => {
 
     expect(state.filesRead).toHaveLength(10);
     expect(state.filesRead.includes('file1.ts')).toBe(false);
-  });
-});
-
-describe('setReviewMode', () => {
-  it('sets reviewMode to true', () => {
-    const state = createInitialState();
-    const next = setReviewMode(state, true);
-
-    expect(next.reviewMode).toBe(true);
-  });
-
-  it('clears reviewMode when active is false', () => {
-    const state = createInitialState();
-    const enabled = setReviewMode(state, true);
-    const next = setReviewMode(enabled, false);
-
-    expect(next.reviewMode).toBe(false);
-  });
-
-  it('is immutable - does not mutate the original state', () => {
-    const state = createInitialState();
-    setReviewMode(state, true);
-    expect(state.reviewMode).toBe(false);
   });
 });
 

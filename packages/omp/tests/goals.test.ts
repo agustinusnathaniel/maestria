@@ -2,12 +2,7 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { installGoalEventHandlers } from '@/goals.js';
 import type { GoalApi } from '@/goals.js';
-import {
-  createInitialState,
-  recordFileModified,
-  recordHandoff,
-  recordSubagentStatus,
-} from '@/state.js';
+import { createInitialState, recordFileModified, recordHandoff } from '@/state.js';
 import type { MaestriaState } from '@/state.js';
 
 interface MockPi {
@@ -60,11 +55,10 @@ const maestriaOnlyState = (): MaestriaState => {
   state = { ...state, activeTask: 'maestria task', mode: 'fein' as const, reviewMode: true };
   state = recordHandoff(state, 'orchestrator', 'builder', 'implement');
   state = recordFileModified(state, 'src/foo.ts');
-  state = recordSubagentStatus(state, 'builder', {
-    startedAt: 1,
-    status: 'running',
-    type: 'builder',
-  });
+  state = {
+    ...state,
+    subagentStatus: { builder: { startedAt: 1, status: 'running', type: 'builder' } },
+  };
   state = { ...state, blockers: ['missing api key'], specialistsDelegated: ['builder'] };
   return state;
 };

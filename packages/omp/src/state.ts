@@ -19,8 +19,6 @@ export {
   recordFileModified,
   recordFileRead,
   recordSpecialistDelegated,
-  recordSubagentStatus,
-  setReviewMode,
   exitReviewMode,
   persistState,
   renderMaestriaSummary,
