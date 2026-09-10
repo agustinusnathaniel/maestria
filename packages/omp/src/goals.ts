@@ -1,13 +1,11 @@
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 import {
+  persistState,
   readSessionBranch,
   replaceState,
   stateFromSessionEntries,
 } from '@maestria/shared-pi/state-core';
-import type { SessionEntry } from '@maestria/shared-pi/state-core';
-
-import type { MaestriaState } from '@/state.js';
-import { persistState } from '@/state.js';
+import type { MaestriaState, SessionEntry } from '@maestria/shared-pi/state-core';
 
 export interface GoalApi {
   appendEntry: (type: string, data: unknown) => void;

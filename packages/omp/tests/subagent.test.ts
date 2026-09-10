@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { createInitialState } from '@/state.js';
-import type { MaestriaState } from '@/state.js';
+import { createInitialState } from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import { installNativeSubagentTool } from '@/subagent.js';
 import type { SubagentToolParams, SubagentToolResult } from '@/subagent.js';
 

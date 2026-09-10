@@ -1,9 +1,9 @@
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { installCommands } from '@/commands.js';
-import { createInitialState } from '@/state.js';
-import type { MaestriaState } from '@/state.js';
+import { installCommands } from '@maestria/shared-pi/commands-core';
+import { createInitialState } from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import type { CommandsCtx, CommandsPi } from '@maestria/shared-pi/commands-core';
 
 type CommandHandler = (args: string, ctx: CommandsCtx) => Promise<void> | void;

@@ -1,9 +1,7 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import { installCommands as installCommandsCore } from '@maestria/shared-pi/commands-core';
 import type { CommandsPi } from '@maestria/shared-pi/commands-core';
 
 import { isPiModel } from '@/model.js';
-import type { MaestriaState } from '@/state.js';
 
 export const createCommandsApi = (pi: ExtensionAPI): CommandsPi => ({
   appendEntry: (type, data) => {
@@ -33,7 +31,3 @@ export const createCommandsApi = (pi: ExtensionAPI): CommandsPi => ({
     }
   },
 });
-
-export const installCommands = (pi: CommandsPi, state: MaestriaState): void => {
-  installCommandsCore(pi, state);
-};

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { createInitialState } from '@/state.js';
+import { createInitialState } from '@maestria/shared-pi/state-core';
 import { installToolInterceptors } from '@/tools.js';
 import type { ToolApi } from '@/tools.js';
 import type { ToolCallHandler, ToolCallResult } from '@maestria/shared-pi/tools-core';

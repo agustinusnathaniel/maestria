@@ -1,8 +1,12 @@
 import { assertNonEmptyTask, assertValidAgent } from '@maestria/shared-pi/subagent-utils';
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 
-import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import {
+  persistState,
+  recordHandoff,
+  recordSpecialistDelegated,
+} from '@maestria/shared-pi/state-core';
 
 const validateAgent: typeof assertValidAgent = assertValidAgent;
 const validateTask: typeof assertNonEmptyTask = assertNonEmptyTask;

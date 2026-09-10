@@ -1,9 +1,9 @@
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
+import { createInitialState } from '@maestria/shared-pi/state-core';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { createInitialState } from '@/state.js';
-import { installSubagentTool, MAX_PARALLEL_TASKS } from '@/subagent.js';
+import { installSubagentTool } from '@/subagent.js';
 import type { SubagentToolApi, SubagentToolDefinition, ToolResult } from '@/subagent.js';
 import type { SubagentRecord } from '@/subagent-polling.js';
 
@@ -131,12 +131,6 @@ const getResultText = (result: ToolResult): string => {
   }
   return content.text;
 };
-
-describe('MAX_PARALLEL_TASKS', () => {
-  it('is exported as 8', () => {
-    expect(MAX_PARALLEL_TASKS).toBe(8);
-  });
-});
 
 describe('installSubagentTool - single mode (backward compat)', () => {
   it('registers a tool named "maestria_subagent"', () => {

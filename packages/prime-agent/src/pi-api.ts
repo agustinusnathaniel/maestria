@@ -37,7 +37,7 @@
  * session-manager.ts`): all fields are required on read - `id`, `parentId`
  * (null for the root entry), and an ISO-string `timestamp`.
  */
-export interface SessionEntryBase {
+interface SessionEntryBase {
   type: string;
   /** Session-tree node id (entry id in the session tree). */
   id: string;
@@ -74,7 +74,7 @@ export type SessionEntry = CustomEntry | SessionEntryBase;
  * (a `Pick` of `SessionManager`); this package uses `getBranch()` (the current
  * branch, never a sibling branch of the session tree) and `getEntries()`.
  */
-export interface ReadonlySessionManager {
+interface ReadonlySessionManager {
   getBranch: (fromId?: string) => SessionEntry[];
   getEntries: () => SessionEntry[];
 }
@@ -84,7 +84,7 @@ export interface ReadonlySessionManager {
 // ---------------------------------------------------------------------------
 
 /** UI methods usable from extension handlers. */
-export interface ExtensionUIContext {
+interface ExtensionUIContext {
   notify: (message: string, type?: 'info' | 'warning' | 'error') => void;
   /** Replace the core input editor text (used by the status command). */
   setEditorText: (text: string) => void;
@@ -175,7 +175,7 @@ export type ExtensionEventRegistration =
         | undefined,
     ];
 
-export interface ExtensionEventRegistrationHandler {
+interface ExtensionEventRegistrationHandler {
   (
     event: 'session_start',
     handler: (event: SessionStartEvent, ctx: ExtensionContext) => unknown,

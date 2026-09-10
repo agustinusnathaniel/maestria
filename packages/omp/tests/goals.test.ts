@@ -2,8 +2,12 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { installGoalEventHandlers } from '@/goals.js';
 import type { GoalApi } from '@/goals.js';
-import { createInitialState, recordFileModified, recordHandoff } from '@/state.js';
-import type { MaestriaState } from '@/state.js';
+import {
+  createInitialState,
+  recordFileModified,
+  recordHandoff,
+} from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
 interface MockPi {
   on: ReturnType<typeof vi.fn<GoalApi['on']>>;

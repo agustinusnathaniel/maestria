@@ -129,7 +129,7 @@ export const createModePromptHandler =
 // Commands
 // ---------------------------------------------------------------------------
 
-export const MODE_CLEAR_COMMAND = 'mode-clear';
+const MODE_CLEAR_COMMAND = 'mode-clear';
 export const STATUS_COMMAND = 'maestria-status';
 
 /**

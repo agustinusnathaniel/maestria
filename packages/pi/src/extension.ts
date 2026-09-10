@@ -3,28 +3,29 @@ import type {
   SessionStartEvent,
   SessionTreeEvent,
 } from '@earendil-works/pi-coding-agent';
+import { installCommands as installCommandsCore } from '@maestria/shared-pi/commands-core';
 import {
+  createInitialState,
   readSessionBranch,
   replaceState,
   stateFromSessionEntries,
 } from '@maestria/shared-pi/state-core';
 
 import { deploySpecialistAgents } from '@/agents.js';
-import { createCommandsApi, installCommands } from '@/commands.js';
-import { createCompactionApi, installCompactionHandlers } from '@/compaction.js';
-import { createModeCommandsApi, installModeAutoDetect, installModeCommands } from '@/modes.js';
+import { createCommandsApi } from '@/commands.js';
+import { installCompactionHandlers } from '@/compaction.js';
+import { installModeAutoDetect, installModeCommands } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
-import { createInitialState } from '@/state.js';
 import { installSubagentTool } from '@/subagent.js';
 import { createSubagentToolApi } from '@/subagent-api.js';
-import { createToolApi, installToolInterceptors } from '@/tools.js';
+import { installToolInterceptors } from '@/tools.js';
 
 const extension = (pi: ExtensionAPI): void => {
   const state = createInitialState();
   const cleanups: (() => void)[] = [];
 
   // Install mode commands: /fein, /sonar, /blitz
-  installModeCommands(createModeCommandsApi(pi), state);
+  installModeCommands(pi, state);
   installModeAutoDetect(pi, state);
 
   // Inject mode prompt when a workflow mode is active
@@ -46,11 +47,11 @@ const extension = (pi: ExtensionAPI): void => {
   });
 
   // Install compaction preservation handlers
-  installCompactionHandlers(createCompactionApi(pi), state);
+  installCompactionHandlers(pi, state);
 
   // Install orchestration hooks: subagent tool and commands
   installSubagentTool(createSubagentToolApi(pi), state, cleanups);
-  installCommands(createCommandsApi(pi), state);
+  installCommandsCore(createCommandsApi(pi), state);
 
   // Cleanup subscriptions on shutdown
   pi.on('session_shutdown', () => {
@@ -61,7 +62,7 @@ const extension = (pi: ExtensionAPI): void => {
   });
 
   // Install tool call interceptors for review mode and dangerous patterns
-  installToolInterceptors(createToolApi(pi), state);
+  installToolInterceptors(pi, state);
 };
 
 export default extension;

@@ -156,7 +156,7 @@ export const installModeAutoDetect = <Context, Result>(
  * and show a notification. Task description injection is handled by the
  * auto-detect handler instead.
  */
-interface ModeCommandContext {
+export interface ModeCommandContext {
   ui: { notify: (msg: string) => void };
 }
 

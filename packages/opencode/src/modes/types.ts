@@ -14,7 +14,7 @@ import { z } from 'zod';
  * - `"sonar"` -- Research only (recon + design, stop before build)
  * - `"blitz"` -- Fast implementation (builder direct, skip optional recon/design; required review remains)
  */
-export const modeKeywordSchema = z.enum(MODE_KEYWORDS);
+const modeKeywordSchema = z.enum(MODE_KEYWORDS);
 export type ModeKeyword = z.infer<typeof modeKeywordSchema>;
 
 /**

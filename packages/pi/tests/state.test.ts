@@ -12,8 +12,8 @@ import {
   recordHandoff,
   recordSpecialistDelegated,
   renderMaestriaSummary,
-  restoreOriginalState,
-} from '@/state.js';
+} from '@maestria/shared-pi/state-core';
+import { restoreOriginalState } from '@/state/review.js';
 
 const createModel = (id: string) => ({
   api: 'anthropic-messages' as const,
@@ -28,8 +28,8 @@ const createModel = (id: string) => ({
   reasoning: false,
 });
 
-describe('state barrel', () => {
-  it('re-exports the shared state API and the pi restore helper', () => {
+describe('state modules', () => {
+  it('exposes the shared state API and the pi restore helper', () => {
     expect(HANDOFF_HISTORY_CAP).toBe(5);
     expect(FILE_HISTORY_CAP).toBe(10);
     expect(typeof createInitialState).toBe('function');
@@ -43,7 +43,7 @@ describe('state barrel', () => {
     expect(typeof restoreOriginalState).toBe('function');
   });
 
-  it('serves shared initial state through the barrel', () => {
+  it('serves shared initial state', () => {
     const state = createInitialState();
 
     expect(state.mode).toBeNull();
