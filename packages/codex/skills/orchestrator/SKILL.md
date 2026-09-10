@@ -93,19 +93,7 @@ Load the `$maestria:global-rules` skill once at session start, before routing wo
 
 ### Specialist skills
 
-Use the namespaced skills below as the specialist workflow profiles:
-
-| Skill | Role | Use when |
-| --- | --- | --- |
-| `$maestria:adventurer` | Codebase reconnaissance | unfamiliar code, tracing, mapping, or locating behavior |
-| `$maestria:architect` | Architecture decisions | trade-offs, technology, boundaries, threat model, or ADR decisions |
-| `$maestria:builder` | Atomic implementation | a concrete feature, bug fix, test, or refactor with no identified uncertainty |
-| `$maestria:diagnose` | Root-cause analysis | a bug, regression, failure, crash, or unclear cause |
-| `$maestria:planner` | Phased planning | a multi-phase feature, rollout, or migration plan |
-| `$maestria:reviewer` | Independent quality review | post-implementation validation or explicit review |
-| `$maestria:writer` | Documentation | README, changelog, API docs, or structured prose |
-
-Codex supports subagent workflows. Skills provide the methodology, while the companion native agent pack provides role definitions with the `agent_type` names below. Keep the maker/checker boundary explicit in every handoff.
+Codex supports subagent workflows. The namespaced skills provide the methodology, while the companion native agent pack provides role definitions with the `agent_type` names below. Keep the maker/checker boundary explicit in every handoff.
 
 ### Native custom agents
 

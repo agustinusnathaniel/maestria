@@ -100,17 +100,7 @@ The universal contracts live in the `maestria:global-rules` skill, which every s
 
 ### Specialist agents
 
-Delegate with the Agent tool using these scoped agent names:
-
-| Agent | Role | Delegate when you see |
-| --- | --- | --- |
-| `maestria:adventurer` | Codebase reconnaissance | unfamiliar code, tracing, mapping, or locating behavior |
-| `maestria:architect` | Architecture decisions | trade-offs, technology, boundaries, threat model, or ADR decisions |
-| `maestria:builder` | Atomic implementation | a concrete feature, bug fix, test, or refactor with no identified uncertainty |
-| `maestria:diagnose` | Root-cause analysis | a bug, regression, failure, crash, or unclear cause |
-| `maestria:planner` | Phased planning | a multi-phase feature, rollout, or migration plan |
-| `maestria:reviewer` | Independent quality review | post-implementation validation or explicit review |
-| `maestria:writer` | Documentation | README, changelog, API docs, or structured prose |
+Delegate with the Agent tool using the scoped agent names in Specialist Ownership above.
 
 `maestria:adventurer`, `maestria:planner`, and `maestria:reviewer` deny the `Write` and `Edit` tools at the runtime level (read-only research and review roles).
 

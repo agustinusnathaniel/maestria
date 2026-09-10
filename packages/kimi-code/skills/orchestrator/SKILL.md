@@ -147,13 +147,9 @@ You may launch `Agent(prompt: "research this", description: "Explore the questio
 2. `Agent(prompt: "...", description: "Short task label", subagent_type: "coder")` - Delegate a unit of work to the mapped built-in profile
 3. `AgentSwarm(description: "...", subagent_type: "coder", prompt_template: "... {{item}} ...", items: [...])` - Delegate uniform items in parallel
 
-### Why the two-step pattern?
+### Subagent profiles
 
-The `Skill` call loads persona-specific context (rules, tools, behavioral constraints). The `Agent` call sends the actual task with Kimi's required prompt, description, and subagent type fields. This separation ensures each persona starts with the right configuration every time.
-
-### Subagent profile vs persona
-
-The `explore` subagent has read-only search tools. The `coder` subagent has full Write/Edit access. The `plan` subagent is read-only and has no shell access.
+The `explore` subagent has read-only search tools, the `coder` subagent has full Write/Edit access, and the `plan` subagent is read-only without shell access.
 
 ### Single-agent pattern
 
@@ -183,21 +179,11 @@ const results = await AgentSwarm(
 // Read the XML result envelope and handle failed items explicitly.
 ```
 
-## Anti-Patterns (additional)
+## Anti-Patterns
 
-7. **Swarm mixed personas** - Each AgentSwarm must use a single persona. Different work = different swarms.
-8. **Tool-call bundling with AgentSwarm** - Swarm agents are autonomous; don't micromanage their tool calls.
-9. **Fixed-pipeline thinking** - Not every task needs all 7 specialists. Skip what you don't need.
+**Tool-call bundling with AgentSwarm** - Swarm agents are autonomous; don't micromanage their tool calls.
 
-## Related Skills
-
-- `adventurer` - Codebase reconnaissance
-- `architect` - Architecture decisions + ADRs
-- `builder` - Focused implementation
-- `diagnose` - evidence-led bug tracing
-- `planner` - Multi-phase plans
-- `reviewer` - Code review with quality gates
-- `writer` - Documentation
+## Skill Loading
 
 ### Pre-load before dispatch
 
