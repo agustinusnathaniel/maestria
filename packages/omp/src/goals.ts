@@ -1,18 +1,21 @@
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
+import {
+  readSessionBranch,
+  replaceState,
+  stateFromSessionEntries,
+} from '@maestria/shared-pi/state-core';
+import type { SessionEntry } from '@maestria/shared-pi/state-core';
 
 import type { MaestriaState } from '@/state.js';
-import { createInitialState, persistState } from '@/state.js';
+import { persistState } from '@/state.js';
 
 export interface GoalApi {
   appendEntry: (type: string, data: unknown) => void;
   on: (event: string, handler: (event: unknown, ctx: unknown) => Promise<void> | void) => void;
 }
 
-interface PersistedStateEntry {
-  type: string;
-  customType?: string;
+interface PersistedStateEntry extends SessionEntry {
   mode?: string;
-  data?: unknown;
 }
 
 type NativeGoalStatus = 'active' | 'paused' | 'budget-limited';
@@ -49,19 +52,6 @@ const isSessionContext = (value: unknown): value is SessionContext => {
     return false;
   }
   return isRecord(value.sessionManager) && typeof value.sessionManager.getBranch === 'function';
-};
-
-const currentSessionEntries = (ctx: SessionContext): PersistedStateEntry[] | null => {
-  // getBranch() is the public current-session view and avoids restoring state
-  // from a sibling branch in the same session tree. Never fall back to
-  // getEntries(), which spans the entire session tree.
-  const sessionManager = ctx?.sessionManager;
-  if (typeof sessionManager?.getBranch !== 'function') {
-    return null;
-  }
-
-  const branch = sessionManager.getBranch();
-  return Array.isArray(branch) ? branch : null;
 };
 
 const isNativeGoalStatus = (value: unknown): value is NativeGoalStatus =>
@@ -103,31 +93,15 @@ const nativeGoalFromSessionEntries = (
  * All other persisted Maestria fields are restored from the current branch.
  */
 export const restoreMaestriaStateForSession = (state: MaestriaState, ctx: SessionContext): void => {
-  const next = createInitialState();
-  const entries = currentSessionEntries(ctx);
-
-  if (!entries) {
-    Object.assign(state, next);
-    return;
-  }
-
-  for (let i = entries.length - 1; i >= 0; i -= 1) {
-    const entry = entries[i];
-    if (entry.type !== 'custom' || entry.customType !== 'maestria_state') {
-      continue;
-    }
-    if (isRecord(entry.data)) {
-      Object.assign(next, entry.data);
-    }
-    break;
-  }
+  const entries = readSessionBranch(ctx);
+  const next = stateFromSessionEntries(entries);
 
   // Do not trust a copied/persisted host mirror. Fork and handoff can copy the
   // Maestria entry before OMP reconciles its native goal, so only OMP's public
   // mode entry or a later goal_updated event may establish this mirror.
-  next.nativeGoal = nativeGoalFromSessionEntries(entries);
+  next.nativeGoal = entries ? nativeGoalFromSessionEntries(entries) : null;
 
-  Object.assign(state, next);
+  replaceState(state, next);
 };
 
 /**

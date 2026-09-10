@@ -146,6 +146,77 @@ export const persistState = (
   pi.appendEntry('maestria_state', { ...state });
 };
 
+// ── Session restore ──
+
+/** Minimal shape of a persisted session entry that restore logic inspects. */
+export interface SessionEntry {
+  type: string;
+  customType?: string;
+  data?: unknown;
+}
+
+export interface SessionBranchContext {
+  sessionManager?: { getBranch?: () => unknown };
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+/**
+ * Read the current branch of the host session, or null when unavailable.
+ *
+ * getBranch() is the public current-session view and avoids restoring state
+ * from a sibling branch in the same session tree. Never fall back to
+ * getEntries(), which spans the entire session tree.
+ */
+export const readSessionBranch = (ctx?: SessionBranchContext | null): SessionEntry[] | null => {
+  const sessionManager = ctx?.sessionManager;
+  if (typeof sessionManager?.getBranch !== 'function') {
+    return null;
+  }
+
+  const branch = sessionManager.getBranch();
+  return Array.isArray(branch) ? branch : null;
+};
+
+/**
+ * Build a fresh state from the last persisted `maestria_state` entry.
+ *
+ * The last matching entry wins, reflecting the latest persisted snapshot on
+ * the branch. Null entries produce the initial state.
+ */
+export const stateFromSessionEntries = (entries?: SessionEntry[] | null): MaestriaState => {
+  const next = createInitialState();
+  if (!entries) {
+    return next;
+  }
+
+  for (let i = entries.length - 1; i >= 0; i -= 1) {
+    const entry = entries[i];
+    if (entry.type === 'custom' && entry.customType === 'maestria_state') {
+      if (isRecord(entry.data)) {
+        Object.assign(next, entry.data);
+      }
+      break;
+    }
+  }
+
+  return next;
+};
+
+/**
+ * Replace every own key on `state` with the values from `next`.
+ *
+ * Deleting stale keys first keeps the mutable extension state in sync with
+ * the restored snapshot instead of leaking fields absent from it.
+ */
+export const replaceState = (state: MaestriaState, next: MaestriaState): void => {
+  for (const key of Object.keys(state)) {
+    Reflect.deleteProperty(state, key);
+  }
+  Object.assign(state, next);
+};
+
 // ── Render ──
 
 export const renderMaestriaSummary = (state: MaestriaState): string => {
