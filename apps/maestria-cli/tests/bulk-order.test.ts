@@ -12,7 +12,7 @@ import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformStatus } from '@/types.js';
 
 const platformMocks = vi.hoisted(() => ({
-  getPlatform: vi.fn(),
+  getPlatform: vi.fn<(id: string) => PlatformHandler | undefined>(),
 }));
 const detectMocks = vi.hoisted(() => ({
   detectAll: vi.fn(),
@@ -21,7 +21,12 @@ const detectMocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/platforms.js', async (importOriginal) => {
   const actual = await importOriginal<typeof platforms>();
-  return { ...actual, getPlatform: platformMocks.getPlatform };
+  return {
+    ...actual,
+    getPlatform: platformMocks.getPlatform,
+    getPlatformOrResult: (id: string, fallbackLabel?: string) =>
+      platformMocks.getPlatform(id) ?? actual.getPlatformOrResult(id, fallbackLabel),
+  };
 });
 
 vi.mock('@/lib/detect.js', async (importOriginal) => {

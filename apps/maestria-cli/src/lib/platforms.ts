@@ -32,6 +32,7 @@ import {
   readTextFile,
   run,
 } from '@/lib/shell.js';
+import type { PlatformResult } from '@/types.js';
 
 const { isAbsolute, join, win32 } = nodePath;
 
@@ -1668,3 +1669,14 @@ export const platforms: readonly PlatformHandler[] = [
 
 export const getPlatform = (id: string): PlatformHandler | undefined =>
   platforms.find((p) => p.id === id);
+
+export const getPlatformOrResult = (
+  id: string,
+  fallbackLabel?: string,
+): PlatformHandler | PlatformResult =>
+  getPlatform(id) ?? {
+    id,
+    label: fallbackLabel ?? id,
+    message: 'Platform definition not found. This is a bug.',
+    ok: false,
+  };
