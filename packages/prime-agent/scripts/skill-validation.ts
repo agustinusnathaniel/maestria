@@ -7,7 +7,7 @@
 // characters, lowercase letters, digits, and hyphens; no leading or trailing
 // hyphen; no consecutive hyphens. Matching the parent skill directory is
 // enforced separately by the validator.
-export const NAME_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u;
+const NAME_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u;
 export const NAME_MAX = 64;
 
 // Prime's documented description limit (Agent Skills specification).
