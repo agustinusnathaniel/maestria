@@ -19,14 +19,6 @@ const AGENT_REF_REPLACES = [
   { from: '@writer', to: 'maestria:writer' },
 ] as const;
 
-// Claude Code tool names are PascalCase; canonical content uses lowercase or
-// backticked generic names.
-const CLAUDE_TOOL_REPLACES = [
-  { from: '`read`', to: '`Read`' },
-  { from: '`glob`', to: '`Glob`' },
-  { from: '`grep`', to: '`Grep`' },
-] as const;
-
 // Global rules skill preloaded into every specialist agent. The namespaced
 // identifier matches the plugin manifest name (`maestria`).
 const GLOBAL_RULES_PRELOAD = ['maestria:global-rules'];
@@ -95,7 +87,7 @@ Research-only mode. Load the \`maestria:orchestrator\` skill for routing and del
 
 export default {
   default: {
-    replace: [...AGENT_REF_REPLACES, ...CLAUDE_TOOL_REPLACES],
+    replace: [...AGENT_REF_REPLACES],
   },
   files: {
     'adventurer.md': {
@@ -187,10 +179,6 @@ architecture decisions, or documentation.`,
       replace: [
         {
           from: '`.maestria/workflow.md` and `.maestria/rules.md`',
-          to: 'the `maestria:global-rules` skill',
-        },
-        {
-          from: 'the universal rules contract',
           to: 'the `maestria:global-rules` skill',
         },
       ],

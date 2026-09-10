@@ -29,7 +29,6 @@ const AGENT_REF_REPLACES = [
   { from: '@planner', to: 'planner' },
   { from: '@reviewer', to: 'reviewer' },
   { from: '@writer', to: 'writer' },
-  { from: '@orchestrator', to: 'orchestrator' },
 ] as const;
 
 // Read-only role notes. Prime Agent has no skill-level tool enforcement (the

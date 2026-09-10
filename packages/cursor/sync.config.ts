@@ -11,23 +11,6 @@ const CURSOR_TOOL_REPLACES = [
   { from: '@planner', to: 'planner' },
   { from: '@reviewer', to: 'reviewer' },
   { from: '@writer', to: 'writer' },
-  { from: '@orchestrator', to: 'orchestrator' },
-  { from: 'task(', to: 'Task(' },
-  { from: 'question()', to: 'ask the user' },
-  { from: 'question(', to: 'ask the user(' },
-  { from: 'webfetch', to: 'WebFetch' },
-  { from: 'websearch', to: 'WebSearch' },
-  { from: '`webfetch`', to: '`WebFetch`' },
-  { from: '`read`', to: '`Read`' },
-  { from: '`glob`', to: '`Glob`' },
-  { from: '`grep`', to: '`Grep`' },
-  { from: '`edit`', to: '`StrReplace`' },
-  { from: '`write`', to: '`Write`' },
-  { from: '`bash`', to: '`Shell`' },
-  { from: 'grep(', to: 'Grep(' },
-  { from: 'glob(', to: 'Glob(' },
-  { from: '`lsp`', to: 'a language server protocol' },
-  { from: 'Related Agents', to: 'Related Agents' },
   { from: 'run in parallel', to: 'run in parallel via multiple `Task` calls' },
 ] as const;
 
@@ -130,11 +113,6 @@ export default {
         '---',
         '',
       ].join('\n'),
-      replace: [
-        { from: '@builder', to: 'builder' },
-        { from: '@reviewer', to: 'reviewer' },
-        { from: '@adventurer', to: 'adventurer' },
-      ],
       stripFrontmatter: true,
     },
     'commands/fein.md': {
@@ -152,13 +130,6 @@ export default {
         '---',
         '',
       ].join('\n'),
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@builder', to: 'builder' },
-        { from: '@reviewer', to: 'reviewer' },
-        { from: '@planner', to: 'planner' },
-      ],
       stripFrontmatter: true,
     },
     'commands/sonar.md': {
@@ -176,11 +147,6 @@ export default {
         '---',
         '',
       ].join('\n'),
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@planner', to: 'planner' },
-      ],
       stripFrontmatter: true,
     },
     'diagnose.md': {
@@ -231,7 +197,6 @@ export default {
       output: '../rules/maestria-global.mdc',
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/cursor' },
-        { from: '<cmd> --help', to: '`Shell` help / skill docs' },
         // The revised canonical rules body no longer carries the specialist
         // roster; keep the delegation section self-contained for Cursor rules.
         {

@@ -19,7 +19,6 @@ export default {
       { from: '@reviewer', to: 'reviewer' },
       { from: '@writer', to: 'writer' },
       // omp has a built-in task tool, so task( stays as task( - no rewrite needed
-      { from: '@orchestrator', to: 'orchestrator' },
     ],
     stripFrontmatter: true,
   },

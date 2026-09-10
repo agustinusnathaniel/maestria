@@ -14,7 +14,6 @@ const CODEX_COMPONENT_REPLACES = [
   { from: '@planner', to: '$maestria:planner' },
   { from: '@reviewer', to: '$maestria:reviewer' },
   { from: '@writer', to: '$maestria:writer' },
-  { from: '@orchestrator', to: '$maestria:orchestrator' },
 ] as const;
 
 const CODEX_READ_ONLY_NOTES: Record<string, string> = {
