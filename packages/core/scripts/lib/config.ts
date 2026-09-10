@@ -11,6 +11,9 @@ export interface ReplaceOp {
   to: string;
 }
 
+/** A replace op tagged with where it was declared: `default` or a specific file entry. */
+export type ResolvedReplaceOp = ReplaceOp & { scope: 'default' | 'file' };
+
 export interface FileConfig {
   output?: string;
   stripFrontmatter?: boolean;
@@ -43,7 +46,7 @@ export interface ResolvedSyncConfig {
 export interface ResolvedFileConfig {
   output: string;
   stripFrontmatter: boolean;
-  replace: ReplaceOp[];
+  replace: ResolvedReplaceOp[];
   prepend: string;
   append: string;
   frontmatter?: Record<string, unknown> | string | null;
@@ -70,7 +73,10 @@ const mergeFileConfig = (
   autoGenComment: fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? undefined,
   frontmatter: fileCfg.frontmatter === undefined ? defaultCfg?.frontmatter : fileCfg.frontmatter,
   prepend: fileCfg.prepend ?? defaultCfg?.prepend ?? '',
-  replace: [...(defaultCfg?.replace ?? []), ...(fileCfg.replace ?? [])],
+  replace: [
+    ...(defaultCfg?.replace ?? []).map((op): ResolvedReplaceOp => ({ ...op, scope: 'default' })),
+    ...(fileCfg.replace ?? []).map((op): ResolvedReplaceOp => ({ ...op, scope: 'file' })),
+  ],
   stripFrontmatter: fileCfg.stripFrontmatter ?? defaultCfg?.stripFrontmatter ?? false,
 });
 

@@ -10,7 +10,7 @@ import { unifiedDiff } from './diff.js';
 import { atomicWrite } from './file.js';
 import type { SyncFileResult } from './sync.js';
 import {
-  findAndReplace,
+  applyReplaceOps,
   normalizeLineEndings,
   serializeFrontmatter,
   stripFrontmatter,
@@ -132,7 +132,7 @@ const buildTransformedContent = (raw: string, fileCfg: ResolvedFileConfig): stri
     content = stripFrontmatter(content);
   }
   if (fileCfg.replace.length > 0) {
-    content = findAndReplace(content, fileCfg.replace);
+    ({ content } = applyReplaceOps(content, fileCfg.replace));
   }
   content = stripSourceComment(content);
   if (fileCfg.prepend) {

@@ -12,12 +12,30 @@ export const FRONTMATTER_RE = /^---[\s\S]*?\n---\n*/u;
 
 export const stripFrontmatter = (content: string): string => content.replace(FRONTMATTER_RE, '');
 
-export const findAndReplace = (content: string, ops: ReplaceOp[]): string => {
+const countOccurrences = (content: string, needle: string): number => {
+  if (needle === '') {
+    return 0;
+  }
+  let count = 0;
+  let index = content.indexOf(needle);
+  while (index !== -1) {
+    count += 1;
+    index = content.indexOf(needle, index + needle.length);
+  }
+  return count;
+};
+
+export const applyReplaceOps = (
+  content: string,
+  ops: ReplaceOp[],
+): { content: string; matches: number[] } => {
   let result = content;
+  const matches: number[] = [];
   for (const op of ops) {
+    matches.push(countOccurrences(result, op.from));
     result = result.split(op.from).join(op.to);
   }
-  return result;
+  return { content: result, matches };
 };
 
 export const serializeFrontmatter = (data: Record<string, unknown> | string | null): string => {

@@ -7,8 +7,9 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
+import { formatAnchorViolations, validateAnchors } from './anchors.js';
 import type { ResolvedFileConfig, ResolvedSyncConfig } from './config.js';
-import { resolveSourceFile } from './config.js';
+import { ConfigError, resolveSourceFile } from './config.js';
 import { autoClean, walkDir } from './file.js';
 import { processFile } from './process-file.js';
 import type { ProcessFileOpts } from './process-file.js';
@@ -157,6 +158,10 @@ export const runSync = async (options: SyncOptions): Promise<SyncFileResult[]> =
     return results;
   }
   const sourceFiles = await walkDir(config.source);
+  const anchorReport = await validateAnchors(config, sourceFiles);
+  if (anchorReport.violations.length > 0) {
+    throw new ConfigError(formatAnchorViolations(config.configPath, anchorReport));
+  }
   const matchedFiles = new Set<string>();
   await processPrimarySources(
     config,
