@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 // ── Imports ──
 
-import { ConfigError, loadConfig } from '../scripts/lib/config.js';
+import { ConfigError, loadConfig, resolveSourceFile } from '../scripts/lib/config.js';
 import type { ReplaceOp, ResolvedFileConfig, ResolvedSyncConfig } from '../scripts/lib/config.js';
 import { processFile } from '../scripts/lib/process-file.js';
 import { runSync } from '../scripts/lib/sync.js';
@@ -382,6 +382,172 @@ describe('config merge semantics', () => {
     expect(fileCfg.prepend).toBe('');
     expect(fileCfg.append).toBe('');
     expect(fileCfg.frontmatter).toBeUndefined();
+  });
+});
+
+describe('resolveSourceFile', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'core-sync-resolve-'));
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { force: true, recursive: true });
+  });
+
+  it('returns an explicit file entry as pre-resolved', async () => {
+    const configPath = join(tmpDir, 'sync.config.js');
+    writeFileSync(
+      configPath,
+      `export default {
+        source: './agent-directives',
+        default: { autoGenComment: 'fallback comment' },
+        files: {
+          'explicit.md': {
+            output: 'custom/out.md',
+            autoGenComment: 'explicit comment',
+            replace: [{ from: 'a', to: 'b' }],
+          },
+        },
+      };\n`,
+      'utf-8',
+    );
+
+    const config = await loadConfig(configPath);
+    const resolved = resolveSourceFile(config, 'explicit.md');
+
+    expect(resolved).toBe(config.files['explicit.md']);
+    expect(resolved.autoGenComment).toBe('explicit comment');
+  });
+
+  it('merges the fallback including autoGenComment for an implicit file', async () => {
+    const configPath = join(tmpDir, 'sync.config.js');
+    writeFileSync(
+      configPath,
+      `export default {
+        source: './agent-directives',
+        default: {
+          autoGenComment: '<!-- configured -->',
+          prepend: 'pre\\n',
+          replace: [{ from: 'x', to: 'y' }],
+          stripFrontmatter: true,
+        },
+        files: {},
+      };\n`,
+      'utf-8',
+    );
+
+    const config = await loadConfig(configPath);
+    const resolved = resolveSourceFile(config, 'implicit.md');
+
+    expect(resolved.autoGenComment).toBe('<!-- configured -->');
+    expect(resolved.prepend).toBe('pre\n');
+    expect(resolved.replace).toEqual([{ from: 'x', to: 'y' }]);
+    expect(resolved.stripFrontmatter).toBe(true);
+  });
+
+  it('resolves implicit output against config.output when set', async () => {
+    const configPath = join(tmpDir, 'sync.config.js');
+    writeFileSync(
+      configPath,
+      `export default {
+        source: './agent-directives',
+        output: './generated',
+        files: {},
+      };\n`,
+      'utf-8',
+    );
+
+    const config = await loadConfig(configPath);
+    const resolved = resolveSourceFile(config, 'implicit.md');
+
+    expect(resolved.output).toBe(join(tmpDir, 'generated', 'implicit.md'));
+  });
+
+  it('resolves implicit output against configDir when output is unset', async () => {
+    const configPath = join(tmpDir, 'sync.config.js');
+    writeFileSync(
+      configPath,
+      `export default {
+        source: './agent-directives',
+        files: {},
+      };\n`,
+      'utf-8',
+    );
+
+    const config = await loadConfig(configPath);
+    const resolved = resolveSourceFile(config, 'implicit.md');
+
+    expect(resolved.output).toBe(join(tmpDir, 'implicit.md'));
+  });
+});
+
+describe('implicit source default inheritance', () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'core-sync-implicit-'));
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { force: true, recursive: true });
+  });
+
+  it('applies default.autoGenComment to a source file absent from files', async () => {
+    const sourceDir = join(tmpDir, 'source');
+    const outputDir = join(tmpDir, 'output');
+    mkdirSync(sourceDir, { recursive: true });
+
+    writeFileSync(join(sourceDir, 'implicit.md'), '# Implicit\n', 'utf-8');
+
+    const configPath = join(tmpDir, 'sync.config.js');
+    writeFileSync(
+      configPath,
+      `export default {
+        source: './source',
+        output: './output',
+        default: { autoGenComment: '<!-- configured comment -->' },
+        files: {},
+      };\n`,
+      'utf-8',
+    );
+
+    const config = await loadConfig(configPath);
+    await runSync({ config });
+
+    const out = readFileSync(join(outputDir, 'implicit.md'), 'utf-8');
+    expect(out).toContain('<!-- configured comment -->');
+    expect(out).not.toContain('Auto-generated from @maestria/core');
+    expect(out).toContain('# Implicit');
+  });
+
+  it('produces byte-identical output for an explicit {} entry and an unlisted file', async () => {
+    const sourceDir = join(tmpDir, 'source');
+    const outputDir = join(tmpDir, 'output');
+    mkdirSync(sourceDir, { recursive: true });
+
+    writeFileSync(join(sourceDir, 'listed.md'), '# Shared body\n', 'utf-8');
+    writeFileSync(join(sourceDir, 'unlisted.md'), '# Shared body\n', 'utf-8');
+
+    const configPath = join(tmpDir, 'sync.config.js');
+    writeFileSync(
+      configPath,
+      `export default {
+        source: './source',
+        output: './output',
+        default: { autoGenComment: '<!-- shared default -->' },
+        files: { 'listed.md': {} },
+      };\n`,
+      'utf-8',
+    );
+
+    const config = await loadConfig(configPath);
+    await runSync({ config });
+
+    const listed = readFileSync(join(outputDir, 'listed.md'), 'utf-8');
+    const unlisted = readFileSync(join(outputDir, 'unlisted.md'), 'utf-8');
+    expect(listed).toBe(unlisted);
   });
 });
 

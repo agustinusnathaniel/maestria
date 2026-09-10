@@ -8,6 +8,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import type { ResolvedFileConfig, ResolvedSyncConfig } from './config.js';
+import { resolveSourceFile } from './config.js';
 import { autoClean, walkDir } from './file.js';
 import { processFile } from './process-file.js';
 import type { ProcessFileOpts } from './process-file.js';
@@ -77,20 +78,8 @@ const processPrimarySources = async (
     const sourceAbs = path.resolve(config.source, relPath);
     const filename = path.basename(relPath);
     matchedFiles.add(filename);
-    const fileCfg = config.files[filename];
     const isExplicit = filename in config.files;
-    const resolved: ResolvedFileConfig = isExplicit
-      ? fileCfg
-      : {
-          append: config.default?.append ?? '',
-          frontmatter: config.default?.frontmatter,
-          output: config.output
-            ? path.resolve(config.output, filename)
-            : path.resolve(config.configDir, filename),
-          prepend: config.default?.prepend ?? '',
-          replace: [...(config.default?.replace ?? [])],
-          stripFrontmatter: config.default?.stripFrontmatter ?? false,
-        };
+    const resolved = resolveSourceFile(config, filename);
     if (!isExplicit && verbose === true) {
       logger(`[${report}] No config for ${relPath}, using defaults`);
     }
