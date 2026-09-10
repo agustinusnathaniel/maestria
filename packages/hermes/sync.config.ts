@@ -81,7 +81,7 @@ export default {
         '',
         '**Prerequisite:** Install OpenCode CLI: `npm i -g opencode-ai@latest`',
         '',
-        'The PermissionRole for builder grants full access (read + write + bash + llm + coding).',
+        'Tool access is fixed by the runtime: a trusted top-level fein session has full access, while delegated children are limited to read, research, and reasoning tools and cannot invoke `opencode_route`.',
       ].join('\n'),
       frontmatter: {
         description: 'Focused production -- implements, creates, and produces output',
@@ -151,10 +151,10 @@ export default {
         '',
         '- **Default: single-thread execution.** Hermes orchestrator has full tool access. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode").',
         '- `delegate_task` is for multi-step tasks that benefit from parallelization or specialist expertise.',
-        '- Each specialist has a `PermissionRole` restricting its tools.',
+        '- Tool access is enforced by fixed allowlists rather than configurable roles: sonar and direct blitz sessions use literal tool lists, and delegated children get the same role-neutral read/research/reasoning policy in every mode.',
         '- Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.',
         '- Sonar mode blocks write tools via pre_tool_call hook.',
-        '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
+        '- Specialist names in `delegate_task` are routing labels, not permission grants; `[MAESTRIA_ROLE: <role>]` markers in task or user text are ignored.',
         '- Dispatch reviewer for validation after the integrated builder batch is reconciled, never per individual builder delegation - general review first, then risk-matched lenses sequentially (not after direct single-thread work).',
       ].join('\n'),
       frontmatter: {
