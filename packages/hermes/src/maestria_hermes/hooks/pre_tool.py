@@ -39,7 +39,7 @@ from __future__ import annotations
 
 import logging
 
-from maestria_hermes.modes import VALID_MODES, ModeManager
+from maestria_hermes.modes import ModeManager
 from maestria_hermes.permissions import (
     BLITZ_DIRECT_ALLOWED_TOOLS,
     CHILD_SAFE_ALLOWED_TOOLS,
@@ -92,7 +92,7 @@ def create_pre_tool_hook(mode_manager: ModeManager):
 
     The caller's trust is classified BEFORE any mode allowlist.  The hook
     never raises: malformed tool names and unexpected payload shapes are
-    blocked, and an invalid mode denies all tools.
+    blocked.
     """
 
     def _exact_task_session_binding(session_id: object, task_id: object) -> bool:
@@ -176,9 +176,6 @@ def create_pre_tool_hook(mode_manager: ModeManager):
         tool_name = str(tool_name)
 
         mode = mode_manager.get_mode()
-        if mode is not None and mode not in VALID_MODES:
-            logger.warning("invalid maestria mode denied tool=%s mode=%r", tool_name, mode)
-            return _block("Tool access denied: invalid maestria mode.")
 
         session_id = kwargs.get("session_id", "")
         task_id = kwargs.get("task_id", "")

@@ -19,8 +19,8 @@ Covers the approved conservative child trust policy (ADR-HM-002):
   on_session_end is per-turn and preserves resumable trust;
   on_session_finalize / reset / subagent_stop are terminal boundaries.
 - Child state always outranks any task_id == session_id binding.
-- Malformed tool names, invalid modes, and missing/unknown identifiers
-  fail closed without raising.
+- Malformed tool names and missing/unknown identifiers fail closed
+  without raising.
 - Tool names are never normalized: padded names such as ``" write "`` are
   rejected, never stripped before the allowlist lookup.
 - Session identifiers are validated strictly: non-empty strings with no
@@ -87,7 +87,6 @@ from maestria_hermes.permissions import (
     CHILD_SAFE_ALLOWED_TOOLS,
     NATIVE_CHILD_ROLES,
     SONAR_ALLOWED_TOOLS,
-    TOOL_CATEGORIES,
 )
 from maestria_hermes.session import (
     _TRUST_REGISTRY_CAP,
@@ -104,7 +103,6 @@ from maestria_hermes.session import (
     contains_unicode_control,
     create_session_hooks,
     end_trust,
-    get_child_topology_role,
     get_trust_state,
     is_valid_lifecycle_id,
     mark_invalid_child,
@@ -114,8 +112,8 @@ from maestria_hermes.session import (
 )
 
 # Tools that must NEVER be available to a delegated child, in any mode.
-# "create" is a mutator in TOOL_CATEGORIES["write"], so it is forbidden
-# like every other write-family tool.
+# "create" is a write-family mutator, so it is forbidden like every other
+# write-family tool.
 _CHILD_FORBIDDEN_TOOLS = (
     "write",
     "write_file",
@@ -279,25 +277,6 @@ class TrustStateMachineTests(HookTestBase):
         self.cleanup_trust("reuse-id2")
         self.assertFalse(mark_trusted_child("reuse-id2", "builder"))
         self.assertEqual(get_trust_state("reuse-id2"), INVALID_CHILD)
-
-    def test_child_topology_role_is_stored_only_for_trusted_children(self):
-        mark_trusted_child("child-leaf", "leaf")
-        self.cleanup_trust("child-leaf")
-        self.assertEqual(get_child_topology_role("child-leaf"), "leaf")
-        mark_trusted_child("child-orch", "orchestrator")
-        self.cleanup_trust("child-orch")
-        self.assertEqual(get_child_topology_role("child-orch"), "orchestrator")
-        mark_top_level("top")
-        self.cleanup_trust("top")
-        self.assertEqual(get_child_topology_role("top"), "")
-        self.assertEqual(get_child_topology_role("unknown-sess"), "")
-
-    def test_ended_state_has_no_topology(self):
-        mark_trusted_child("ending-child", "leaf")
-        end_trust("ending-child")
-        self.cleanup_trust("ending-child")
-        self.assertEqual(get_trust_state("ending-child"), ENDED)
-        self.assertEqual(get_child_topology_role("ending-child"), "")
 
 
 class NativeIdentifierTests(HookTestBase):
@@ -858,7 +837,6 @@ class ChildLifecycleTests(HookTestBase):
                 sid = f"case-role-{i}"
                 self.start_child(sid, role)
                 self.assertEqual(get_trust_state(sid), INVALID_CHILD)
-                self.assertEqual(get_child_topology_role(sid), "")
                 hook = self.make_hook("fein")
                 self.assertEqual(hook(tool_name="read", session_id=sid)["action"], "block")
                 self.assertEqual(hook(tool_name="write", session_id=sid)["action"], "block")
@@ -870,7 +848,6 @@ class ChildLifecycleTests(HookTestBase):
                 sid = f"exact-role-{role}"
                 self.start_child(sid, role)
                 self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
-                self.assertEqual(get_child_topology_role(sid), role)
                 hook = self.make_hook("fein")
                 self.assertIsNone(hook(tool_name="read", session_id=sid))
                 self.assertEqual(hook(tool_name="write", session_id=sid)["action"], "block")
@@ -1010,8 +987,8 @@ class FullPolicyMatrixTests(HookTestBase):
                         )
 
     def test_child_forbidden_includes_create_mutator(self):
-        """create is a write-family mutator in TOOL_CATEGORIES, so it is
-        forbidden to children and never appears in the child-safe set."""
+        """create is a write-family mutator, so it is forbidden to children
+        and never appears in the child-safe set."""
         self.assertIn("create", _CHILD_FORBIDDEN_TOOLS)
         self.assertNotIn("create", CHILD_SAFE_ALLOWED_TOOLS)
         self.assertNotIn("create", SONAR_ALLOWED_TOOLS)
@@ -1349,7 +1326,6 @@ class TerminalUnscopedRevocationTests(HookTestBase):
 
         self.assertEqual(get_trust_state("parent-sess"), ENDED)
         self.assertEqual(get_trust_state("child-sess"), ENDED)
-        self.assertEqual(get_child_topology_role("child-sess"), "")
 
     def test_cli_shape_reset_is_scoped_to_tracked_session_not_global(self):
         """A CLI-shape reset payload (new session id only) is scoped to the
@@ -1465,7 +1441,6 @@ class TerminalUnscopedRevocationTests(HookTestBase):
         self.assertEqual(get_trust_state("top-a"), ENDED)
         self.assertEqual(get_trust_state("top-b"), ENDED)
         self.assertEqual(get_trust_state("child-a"), ENDED)
-        self.assertEqual(get_child_topology_role("child-a"), "")
         self.assertEqual(get_trust_state("never-seen"), UNKNOWN)
 
     def test_unscoped_terminal_events_never_raise(self):
@@ -1579,8 +1554,6 @@ class TrustRegistryBoundTests(HookTestBase):
         self.assertEqual(len(_session_trust), _TRUST_REGISTRY_CAP)
         for i in range(n):
             self.assertEqual(get_trust_state(f"child-{i}"), UNKNOWN)
-        # No topology role is stored for a refused child admission.
-        self.assertEqual(get_child_topology_role("child-0"), "")
         # Existing active trust is fully preserved.
         for i in range(_TRUST_REGISTRY_CAP):
             self.assertEqual(get_trust_state(f"active-{i}"), TOP_LEVEL)
@@ -1600,7 +1573,6 @@ class TrustRegistryBoundTests(HookTestBase):
         self.assertEqual(get_trust_state("overflow-top"), UNKNOWN)
         self.assertFalse(mark_trusted_child("overflow-child", "leaf"))
         self.assertEqual(get_trust_state("overflow-child"), UNKNOWN)
-        self.assertEqual(get_child_topology_role("overflow-child"), "")
         mark_invalid_child("overflow-invalid")
         self.assertEqual(get_trust_state("overflow-invalid"), UNKNOWN)
         end_trust("overflow-ended")
@@ -1900,23 +1872,6 @@ class FailClosedTests(HookTestBase):
             with self.subTest(tool_name=tool_name):
                 self.assertIsNone(hook(tool_name=tool_name, session_id=session_id))
 
-    def test_invalid_mode_denies_all_tools(self):
-        home = tempfile.TemporaryDirectory()
-        self.addCleanup(home.cleanup)
-        with patch.dict(os.environ, {"HERMES_HOME": home.name}, clear=False):
-            manager = ModeManager()
-            manager.set_mode("fein")
-            hook = create_pre_tool_hook(manager)
-            session_id = "invalid-mode-sess"
-            mark_top_level(session_id)
-            self.cleanup_trust(session_id)
-            # Corrupt the mode state to something invalid.
-            with patch.object(manager, "get_mode", return_value="turbo"):
-                result = hook(tool_name="read", session_id=session_id)
-                self.assertEqual(result["action"], "block")
-            # The valid-mode fallback still works.
-            self.assertIsNone(hook(tool_name="read", session_id=session_id))
-
     def test_missing_session_context_fails_closed(self):
         hook = self.make_hook("fein")
         self.assertEqual(hook(tool_name="read")["action"], "block")
@@ -1964,32 +1919,6 @@ class AllowlistTests(HookTestBase):
 
     def test_child_safe_is_a_frozenset(self):
         self.assertIsInstance(CHILD_SAFE_ALLOWED_TOOLS, frozenset)
-
-    def test_allowlists_are_literal_and_isolated_from_categories(self):
-        """Future TOOL_CATEGORIES additions must not silently expand the
-        safety-critical allowlists (sonar, direct-blitz, child-safe)."""
-        before_sonar = frozenset(SONAR_ALLOWED_TOOLS)
-        before_blitz = frozenset(BLITZ_DIRECT_ALLOWED_TOOLS)
-        before_child = frozenset(CHILD_SAFE_ALLOWED_TOOLS)
-
-        TOOL_CATEGORIES["read"].add("future_read_tool")
-        TOOL_CATEGORIES["llm"].add("future_llm_tool")
-        TOOL_CATEGORIES.setdefault("future_cat", {"future_mutating_tool"})
-        self.addCleanup(TOOL_CATEGORIES["read"].discard, "future_read_tool")
-        self.addCleanup(TOOL_CATEGORIES["llm"].discard, "future_llm_tool")
-        self.addCleanup(TOOL_CATEGORIES.pop, "future_cat", None)
-
-        self.assertEqual(SONAR_ALLOWED_TOOLS, before_sonar)
-        self.assertEqual(BLITZ_DIRECT_ALLOWED_TOOLS, before_blitz)
-        self.assertEqual(CHILD_SAFE_ALLOWED_TOOLS, before_child)
-        self.assertNotIn("future_read_tool", SONAR_ALLOWED_TOOLS)
-        self.assertNotIn("future_read_tool", BLITZ_DIRECT_ALLOWED_TOOLS)
-        self.assertNotIn("future_read_tool", CHILD_SAFE_ALLOWED_TOOLS)
-        self.assertNotIn("future_llm_tool", BLITZ_DIRECT_ALLOWED_TOOLS)
-        self.assertNotIn("future_llm_tool", CHILD_SAFE_ALLOWED_TOOLS)
-        self.assertNotIn("future_mutating_tool", SONAR_ALLOWED_TOOLS)
-        self.assertNotIn("future_mutating_tool", BLITZ_DIRECT_ALLOWED_TOOLS)
-        self.assertNotIn("future_mutating_tool", CHILD_SAFE_ALLOWED_TOOLS)
 
     def test_sonar_and_blitz_sets_stay_exact(self):
         self.assertEqual(
@@ -2102,7 +2031,6 @@ class RoleProvenanceIntegrationTests(HookTestBase):
                 effective = self._delegate_child(sid, requested_role)
                 self.assertEqual(effective, "leaf")
                 self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
-                self.assertEqual(get_child_topology_role(sid), "leaf")
                 self._assert_child_safe_policy(sid)
 
     def test_requested_orchestrator_variants_arrive_as_effective_role(self):
@@ -2115,7 +2043,6 @@ class RoleProvenanceIntegrationTests(HookTestBase):
                 effective = self._delegate_child(sid, requested_role)
                 self.assertEqual(effective, "orchestrator")
                 self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
-                self.assertEqual(get_child_topology_role(sid), "orchestrator")
                 self._assert_child_safe_policy(sid)
 
     def test_effective_role_never_grants_write_in_any_mode(self):

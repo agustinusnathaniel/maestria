@@ -104,13 +104,6 @@ _EVICTABLE_STATES = frozenset((ENDED, INVALID_CHILD))
 # every other id is UNKNOWN by construction.
 _session_trust: Dict[str, str] = {}
 
-# session_id -> native topology role ("leaf" / "orchestrator") for
-# TRUSTED_CHILD sessions.  Stored for observability only; it never changes
-# the child's tool policy (role-neutral).  Only ACTIVE trusted children are
-# keyed - terminal cleanup pops the role, so this stays bounded by the
-# active child count.
-_child_topology: Dict[str, str] = {}
-
 # FIFO of tombstone keys (ENDED / INVALID_CHILD) in the order they became
 # tombstones, oldest first.  Drives deterministic eviction when the
 # registry exceeds _TRUST_REGISTRY_CAP: the oldest ended/invalid entries
@@ -379,7 +372,6 @@ def _evict_one_tombstone() -> bool:
         key = _tombstones.popleft()
         if _session_trust.get(key) in _EVICTABLE_STATES:
             _session_trust.pop(key, None)
-            _child_topology.pop(key, None)
             return True
     return False
 
@@ -412,34 +404,6 @@ def get_trust_state(session_id: object) -> str:
     return _session_trust.get(_session_key(session_id), UNKNOWN)
 
 
-def get_child_topology_role(session_id: object) -> str:
-    """Return the native topology role of a TRUSTED_CHILD session.
-
-    Returns "" for sessions that are not trusted children.  The topology
-    role is observability only and never changes the child's tool policy.
-    """
-    key = _session_key(session_id)
-    if _session_trust.get(key) != TRUSTED_CHILD:
-        return ""
-    return _child_topology.get(key, "")
-
-
-def is_trusted_top_level(session_id: object) -> bool:
-    """Return True when *session_id* is a trusted top-level session."""
-    return get_trust_state(session_id) == TOP_LEVEL
-
-
-def is_trusted_child(session_id: object) -> bool:
-    """Return True when *session_id* is a delegated child with valid
-    native topology state."""
-    return get_trust_state(session_id) == TRUSTED_CHILD
-
-
-def is_invalid_child(session_id: object) -> bool:
-    """Return True when *session_id* carries invalid child lifecycle state."""
-    return get_trust_state(session_id) == INVALID_CHILD
-
-
 def mark_top_level(session_id: object) -> None:
     """Record *session_id* as a trusted top-level session.
 
@@ -454,7 +418,6 @@ def mark_top_level(session_id: object) -> None:
     if _session_trust.get(key) in (TRUSTED_CHILD, INVALID_CHILD):
         return
     _set_trust_state(key, TOP_LEVEL)
-    _child_topology.pop(key, None)
 
 
 def mark_trusted_child(session_id: object, role: object) -> bool:
@@ -482,14 +445,12 @@ def mark_trusted_child(session_id: object, role: object) -> bool:
     # and never grant child trust.
     if isinstance(role, str) and role in NATIVE_CHILD_ROLES:
         if _set_trust_state(key, TRUSTED_CHILD):
-            _child_topology[key] = role
             return True
         # Admission refused: the registry is at hard capacity with active
         # trust only, so nothing is recorded and the child stays UNKNOWN
         # (denies all tools).
         return False
     _set_trust_state(key, INVALID_CHILD)
-    _child_topology.pop(key, None)
     return False
 
 
@@ -507,7 +468,6 @@ def mark_invalid_child(session_id: object) -> None:
     if not key:
         return
     _set_trust_state(key, INVALID_CHILD)
-    _child_topology.pop(key, None)
 
 
 def end_trust(session_id: object) -> None:
@@ -528,7 +488,6 @@ def end_trust(session_id: object) -> None:
     if not key:
         return
     _set_trust_state(key, ENDED)
-    _child_topology.pop(key, None)
 
 
 def revoke_all_trust() -> None:
@@ -538,8 +497,8 @@ def revoke_all_trust() -> None:
     session id - the explicit id is missing, malformed, or otherwise
     unusable.  Rather than leave any session trusted after an unscoped
     terminal event, every session with registry state is marked ENDED
-    (denies all tools) and its topology role is cleared; each must be
-    re-established by a fresh trusted lifecycle event.
+    (denies all tools); each must be re-established by a fresh trusted
+    lifecycle event.
 
     Every revoked key gets a REFRESHED tombstone position: keys that were
     already ended/invalid are moved to the back of the FIFO like the
@@ -556,7 +515,6 @@ def revoke_all_trust() -> None:
     for key in list(_session_trust):
         _session_trust[key] = ENDED
         _refresh_tombstone_position(key)
-    _child_topology.clear()
     _prune_tombstones()
 
 
@@ -570,7 +528,6 @@ def clear_trust(session_id: object) -> None:
     if not key:
         return
     _session_trust.pop(key, None)
-    _child_topology.pop(key, None)
     try:
         _tombstones.remove(key)
     except ValueError:

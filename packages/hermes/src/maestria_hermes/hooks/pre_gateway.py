@@ -132,9 +132,6 @@ def create_pre_gateway_hook(mode_manager: ModeManager):
                 f"Pipeline: {_PIPELINE_DESC['fein']}"
             )
 
-        else:
-            return None  # Shouldn't reach here
-
         logger.info("pre_gateway: handled /%s (mode=%s)", cmd, mode_manager.get_mode())
 
         # Fire response asynchronously

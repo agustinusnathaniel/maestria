@@ -1,7 +1,7 @@
 """@maestria/hermes - Maestria methodology adapter for Hermes Agent.
 
 Registers mode system (fein/sonar/blitz), 9 specialist skill files,
-permission roles, pipeline lifecycle hooks, and OpenCode CLI routing tool.
+role-neutral tool policy, pipeline lifecycle hooks, and OpenCode CLI routing tool.
 Entry point: register(ctx) - loaded via plugin.yaml discovery.
 
 Design docs at docs/hermes-maestria-plugin.md.
@@ -17,7 +17,6 @@ from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
 from maestria_hermes.hooks.transform import create_transform_tool_result_hook
 from maestria_hermes.middleware.llm_output import create_llm_output_middleware
 from maestria_hermes.modes import ModeManager
-from maestria_hermes.permissions import init_roles
 from maestria_hermes.session import (
     SessionManager,
     create_session_hooks,
@@ -65,7 +64,6 @@ def register(ctx):
     # Initialize singletons
     mode_manager = ModeManager()
     session_manager = SessionManager()
-    init_roles()  # Load role permissions (from file or defaults)
 
     # -- Phase 0: Pre-gateway command dispatch (runs before agent-busy check) --
     ctx.register_hook(

@@ -7,7 +7,6 @@ import unittest
 from unittest.mock import patch
 
 from maestria_hermes import register
-from maestria_hermes.permissions import resolve_roles
 
 SPECIALISTS_DIR = (
     pathlib.Path(__file__).resolve().parents[2]
@@ -48,14 +47,6 @@ class RecordingContext:
 
 
 class RosterGuardTests(unittest.TestCase):
-    def test_permission_roles_cover_exactly_the_canonical_roster(self):
-        _, delegable = canonical_roster()
-        with tempfile.TemporaryDirectory() as home, patch.dict(
-            os.environ, {"HERMES_HOME": home}
-        ):
-            roles = set(resolve_roles())
-        self.assertEqual(roles, {"orchestrator", *delegable})
-
     def test_skill_registrations_cover_the_canonical_roster(self):
         _, delegable = canonical_roster()
         ctx = RecordingContext()

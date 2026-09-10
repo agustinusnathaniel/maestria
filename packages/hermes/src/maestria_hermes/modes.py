@@ -44,15 +44,12 @@ class ModeManager:
 
     def __init__(self):
         self._mode: Optional[str] = None
-        self._loaded = False
         self._load()
 
     # -- public API -----------------------------------------------------------
 
     def get_mode(self) -> Optional[str]:
         """Return the current mode, or None after an explicit neutral reset."""
-        if not self._loaded:
-            self._load()
         return self._mode
 
     def set_mode(self, mode: str) -> None:
@@ -63,13 +60,11 @@ class ModeManager:
                 f"Invalid mode '{mode}'. Choose from: {', '.join(sorted(VALID_MODES))}"
             )
         self._mode = normalized
-        self._loaded = True
         self._save()
 
     def clear_mode(self) -> None:
         """Clear the explicit mode and persist neutral routing."""
         self._mode = None
-        self._loaded = True
         self._save()
 
     def is_read_only(self) -> bool:
@@ -87,16 +82,13 @@ class ModeManager:
                 mode = data.get("mode", DEFAULT_MODE)
                 if mode is None:
                     self._mode = None
-                    self._loaded = True
                     return
                 if mode in VALID_MODES:
                     self._mode = mode
-                    self._loaded = True
                     return
             except (json.JSONDecodeError, OSError):
                 pass
         self._mode = DEFAULT_MODE
-        self._loaded = True
 
     def _save(self) -> None:
         """Persist current mode to the state file (atomic write)."""
