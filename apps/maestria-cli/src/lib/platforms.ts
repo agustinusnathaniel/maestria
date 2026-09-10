@@ -194,44 +194,64 @@ const hasMarketplace = (output: string): boolean =>
     (marketplace) => marketplace.name === MAESTRIA_MARKETPLACE,
   );
 
-const hasMaestriaPlugin = (output: string): boolean =>
-  jsonRecords(output, 'installed').some((plugin) => {
-    const pluginId = recordString(plugin, 'pluginId') || recordString(plugin, 'id');
-    const name = recordString(plugin, 'name');
-    const marketplaceName = recordString(plugin, 'marketplaceName');
-    return (
-      pluginId === `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}` ||
-      (name === MAESTRIA_PLUGIN && marketplaceName === MAESTRIA_MARKETPLACE)
-    );
-  });
-
-const installedMaestriaVersion = (output: string): string => {
-  const plugin = jsonRecords(output, 'installed').find((entry) => {
-    const pluginId = recordString(entry, 'pluginId') || recordString(entry, 'id');
-    const name = recordString(entry, 'name');
-    const marketplaceName = recordString(entry, 'marketplaceName');
-    return (
-      pluginId === `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}` ||
-      (name === MAESTRIA_PLUGIN && marketplaceName === MAESTRIA_MARKETPLACE)
-    );
-  });
-  return manifestVersion(plugin);
+const isMaestriaPlugin = (plugin: JsonRecord): boolean => {
+  const pluginId = recordString(plugin, 'pluginId') || recordString(plugin, 'id');
+  return (
+    pluginId === `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}` ||
+    (recordString(plugin, 'name') === MAESTRIA_PLUGIN &&
+      recordString(plugin, 'marketplaceName') === MAESTRIA_MARKETPLACE)
+  );
 };
+
+const hasMaestriaPlugin = (output: string): boolean =>
+  jsonRecords(output, 'installed').some(isMaestriaPlugin);
+
+const installedMaestriaVersion = (output: string): string =>
+  manifestVersion(jsonRecords(output, 'installed').find(isMaestriaPlugin));
 
 const hostPluginList = (command: 'claude' | 'codex'): Effect.Effect<string, CommandError> =>
   Effect.suspend(() => run(command, ['plugin', 'list', '--json']));
 
-const prepareNpmMarketplace = (
-  pkg: string,
-  marketplaceDir: string,
-  marketplaceFile: string,
-  manifest: JsonRecord,
-): Effect.Effect<void, CommandError> => {
-  const pluginDir = `${marketplaceDir}/plugins/${MAESTRIA_PLUGIN}`;
-  const marketplacePath = `${marketplaceDir}/${marketplaceFile}`;
+const hostPluginVersion = (command: 'claude' | 'codex'): Effect.Effect<string, CommandError> =>
+  hostPluginList(command).pipe(
+    Effect.map(installedMaestriaVersion),
+    Effect.catchCause(() => Effect.succeed('unknown')),
+  );
+
+const hostPluginInstalled = (command: 'claude' | 'codex'): Effect.Effect<boolean> =>
+  hostPluginList(command).pipe(
+    Effect.map(hasMaestriaPlugin),
+    Effect.catchCause(() => Effect.succeed(false)),
+  );
+
+/** Marketplace data a host CLI needs to prepare its local plugin marketplace. */
+interface NpmMarketplace {
+  readonly command: 'claude' | 'codex';
+  readonly dir: string;
+  readonly file: string;
+  readonly manifest: JsonRecord;
+  readonly packageName: string;
+}
+
+/** Register the marketplace directory with the host CLI when it is absent. */
+const ensureMarketplace = (
+  command: 'claude' | 'codex',
+  dir: string,
+): Effect.Effect<void, CommandError> =>
+  run(command, ['plugin', 'marketplace', 'list', '--json']).pipe(
+    Effect.flatMap((output) =>
+      hasMarketplace(output)
+        ? Effect.void
+        : run(command, ['plugin', 'marketplace', 'add', dir]).pipe(Effect.asVoid),
+    ),
+  );
+
+const prepareNpmMarketplace = (marketplace: NpmMarketplace): Effect.Effect<void, CommandError> => {
+  const pluginDir = `${marketplace.dir}/plugins/${MAESTRIA_PLUGIN}`;
+  const marketplacePath = `${marketplace.dir}/${marketplace.file}`;
 
   return Effect.gen(function* prepareNpmMarketplaceEffect() {
-    yield* installNpmTarball(pkg, pluginDir);
+    yield* installNpmTarball(marketplace.packageName, pluginDir);
     yield* Effect.tryPromise({
       catch: (error) =>
         new CommandError({
@@ -241,63 +261,56 @@ const prepareNpmMarketplace = (
       try: async () => {
         const { mkdir, writeFile } = await import('node:fs/promises');
         await mkdir(nodePath.dirname(marketplacePath), { recursive: true });
-        await writeFile(marketplacePath, `${JSON.stringify(manifest, null, 2)}\n`);
+        await writeFile(marketplacePath, `${JSON.stringify(marketplace.manifest, null, 2)}\n`);
       },
     });
+    yield* ensureMarketplace(marketplace.command, marketplace.dir);
   });
 };
 
-const claudeMarketplaceManifest: JsonRecord = {
-  $schema: 'https://anthropic.com/claude-code/marketplace.schema.json',
-  name: MAESTRIA_MARKETPLACE,
-  owner: {
-    name: 'Agustinus Nathaniel',
-    url: 'https://github.com/agustinusnathaniel',
+const claudeMarketplace: NpmMarketplace = {
+  command: 'claude',
+  dir: CLAUDE_MARKETPLACE_DIR,
+  file: '.claude-plugin/marketplace.json',
+  manifest: {
+    $schema: 'https://anthropic.com/claude-code/marketplace.schema.json',
+    name: MAESTRIA_MARKETPLACE,
+    owner: {
+      name: 'Agustinus Nathaniel',
+      url: 'https://github.com/agustinusnathaniel',
+    },
+    plugins: [
+      {
+        displayName: 'Maestria',
+        name: MAESTRIA_PLUGIN,
+        source: './plugins/maestria',
+      },
+    ],
   },
-  plugins: [
-    {
-      displayName: 'Maestria',
-      name: MAESTRIA_PLUGIN,
-      source: './plugins/maestria',
-    },
-  ],
+  packageName: '@maestria/claude-code',
 };
 
-const codexMarketplaceManifest: JsonRecord = {
-  interface: { displayName: 'Maestria' },
-  name: MAESTRIA_MARKETPLACE,
-  plugins: [
-    {
-      category: 'Developer Tools',
-      name: MAESTRIA_PLUGIN,
-      policy: { authentication: 'ON_USE', installation: 'AVAILABLE' },
-      source: { path: './plugins/maestria', source: 'local' },
-    },
-  ],
+const codexMarketplace: NpmMarketplace = {
+  command: 'codex',
+  dir: CODEX_MARKETPLACE_DIR,
+  file: '.agents/plugins/marketplace.json',
+  manifest: {
+    interface: { displayName: 'Maestria' },
+    name: MAESTRIA_MARKETPLACE,
+    plugins: [
+      {
+        category: 'Developer Tools',
+        name: MAESTRIA_PLUGIN,
+        policy: { authentication: 'ON_USE', installation: 'AVAILABLE' },
+        source: { path: './plugins/maestria', source: 'local' },
+      },
+    ],
+  },
+  packageName: '@maestria/codex',
 };
-
-const ensureClaudeMarketplace = (): Effect.Effect<void, CommandError> =>
-  run('claude', ['plugin', 'marketplace', 'list', '--json']).pipe(
-    Effect.flatMap((output) =>
-      hasMarketplace(output)
-        ? Effect.void
-        : run('claude', ['plugin', 'marketplace', 'add', CLAUDE_MARKETPLACE_DIR]).pipe(
-            Effect.asVoid,
-          ),
-    ),
-  );
 
 const refreshClaudeMarketplace = (): Effect.Effect<void, CommandError> =>
   run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE]).pipe(Effect.asVoid);
-
-const ensureCodexMarketplace = (): Effect.Effect<void, CommandError> =>
-  run('codex', ['plugin', 'marketplace', 'list', '--json']).pipe(
-    Effect.flatMap((output) =>
-      hasMarketplace(output)
-        ? Effect.void
-        : run('codex', ['plugin', 'marketplace', 'add', CODEX_MARKETPLACE_DIR]).pipe(Effect.asVoid),
-    ),
-  );
 
 // ── Platform ID literal registry ─────────────────────
 
@@ -491,19 +504,10 @@ const opencode: PlatformDefinition = {
 
 const claudeCode: PlatformDefinition = {
   detect: commandExists('claude'),
-  getInstalledVersion: hostPluginList('claude').pipe(
-    Effect.map(installedMaestriaVersion),
-    Effect.catchCause(() => Effect.succeed('unknown')),
-  ),
+  getInstalledVersion: hostPluginVersion('claude'),
   id: 'claude-code',
   install: Effect.gen(function* install() {
-    yield* prepareNpmMarketplace(
-      '@maestria/claude-code',
-      CLAUDE_MARKETPLACE_DIR,
-      '.claude-plugin/marketplace.json',
-      claudeMarketplaceManifest,
-    );
-    yield* ensureClaudeMarketplace();
+    yield* prepareNpmMarketplace(claudeMarketplace);
     yield* refreshClaudeMarketplace();
     yield* run('claude', [
       'plugin',
@@ -513,10 +517,7 @@ const claudeCode: PlatformDefinition = {
       'user',
     ]);
   }).pipe(Effect.asVoid),
-  isInstalled: hostPluginList('claude').pipe(
-    Effect.map(hasMaestriaPlugin),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
+  isInstalled: hostPluginInstalled('claude'),
   label: 'Claude Code',
   npmPackage: '@maestria/claude-code',
   supportsVersionPinning: false,
@@ -532,13 +533,7 @@ const claudeCode: PlatformDefinition = {
   ).pipe(Effect.asVoid),
   update: (_version?: string) =>
     Effect.gen(function* update() {
-      yield* prepareNpmMarketplace(
-        '@maestria/claude-code',
-        CLAUDE_MARKETPLACE_DIR,
-        '.claude-plugin/marketplace.json',
-        claudeMarketplaceManifest,
-      );
-      yield* ensureClaudeMarketplace();
+      yield* prepareNpmMarketplace(claudeMarketplace);
       yield* refreshClaudeMarketplace();
       yield* run('claude', [
         'plugin',
@@ -552,26 +547,14 @@ const claudeCode: PlatformDefinition = {
 
 const codex: PlatformDefinition = {
   detect: commandExists('codex'),
-  getInstalledVersion: hostPluginList('codex').pipe(
-    Effect.map(installedMaestriaVersion),
-    Effect.catchCause(() => Effect.succeed('unknown')),
-  ),
+  getInstalledVersion: hostPluginVersion('codex'),
   id: 'codex',
   install: Effect.gen(function* install() {
-    yield* prepareNpmMarketplace(
-      '@maestria/codex',
-      CODEX_MARKETPLACE_DIR,
-      '.agents/plugins/marketplace.json',
-      codexMarketplaceManifest,
-    );
-    yield* ensureCodexMarketplace();
+    yield* prepareNpmMarketplace(codexMarketplace);
     yield* run('codex', ['plugin', 'add', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json']);
     yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
   }).pipe(Effect.asVoid),
-  isInstalled: hostPluginList('codex').pipe(
-    Effect.map(hasMaestriaPlugin),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
+  isInstalled: hostPluginInstalled('codex'),
   label: 'Codex CLI',
   npmPackage: '@maestria/codex',
   supportsVersionPinning: false,
@@ -586,13 +569,7 @@ const codex: PlatformDefinition = {
   }).pipe(Effect.asVoid),
   update: (_version?: string) =>
     Effect.gen(function* update() {
-      yield* prepareNpmMarketplace(
-        '@maestria/codex',
-        CODEX_MARKETPLACE_DIR,
-        '.agents/plugins/marketplace.json',
-        codexMarketplaceManifest,
-      );
-      yield* ensureCodexMarketplace();
+      yield* prepareNpmMarketplace(codexMarketplace);
       // Codex CLI has no plugin update command. Reinstalling after refreshing
       // the marketplace is its supported update path.
       yield* run('codex', [

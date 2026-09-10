@@ -293,6 +293,29 @@ const writeFile = (filePath: string, content: string): Effect.Effect<void, Comma
     },
   });
 
+/**
+ * Read every specialist agent's file content and collect the model it declares.
+ * A missing or unreadable file counts as "inherit", so the agent is absent from
+ * the result. Codex TOML and markdown-frontmatter handlers differ only in how
+ * one file's content is read and parsed.
+ */
+const readAgentModels = (
+  readContent: (agent: AgentName) => Effect.Effect<string>,
+  parseModel: (content: string) => string | undefined,
+): Effect.Effect<AgentModels, CommandError> =>
+  Effect.all(MAESTRIA_AGENTS.map(readContent)).pipe(
+    Effect.map((contents) => {
+      const result: AgentModels = {};
+      for (let i = 0; i < MAESTRIA_AGENTS.length; i += 1) {
+        const model = parseModel(contents[i] ?? '');
+        if (model !== undefined && model !== null && model !== '') {
+          result[MAESTRIA_AGENTS[i]] = model;
+        }
+      }
+      return result;
+    }),
+  );
+
 // ── OpenCode handler ──────────────────────────────────
 
 const OPENCODE_GLOBAL_CANDIDATES = [
@@ -349,13 +372,9 @@ const opencode: ModelConfigHandler = {
 
 const codexHome = (): string => process.env.CODEX_HOME?.trim() ?? `${homedir()}/.codex`;
 
-const codexAgentCandidates = (level: ModelConfigLevel, agent: string): string[] => {
-  const directory = level === 'global' ? `${codexHome()}/agents` : '.codex/agents';
-  return [`${directory}/${codexManagedAgentFileName(agent)}`, `${directory}/${agent}.toml`];
-};
-
 const resolveCodexAgentPath = (level: ModelConfigLevel, agent: string): Effect.Effect<string> => {
-  const candidates = codexAgentCandidates(level, agent);
+  const dir = level === 'global' ? `${codexHome()}/agents` : '.codex/agents';
+  const candidates = [`${dir}/${codexManagedAgentFileName(agent)}`, `${dir}/${agent}.toml`];
   return Effect.all(candidates.map((candidatePath) => fileExists(candidatePath))).pipe(
     Effect.map((exists) => candidates[exists.indexOf(true)] ?? candidates[0]),
   );
@@ -369,24 +388,13 @@ const codex: ModelConfigHandler = {
   label: 'Codex CLI',
   listModels: run('codex', ['debug', 'models'], 30_000).pipe(Effect.map(parseCodexModels)),
   readCurrent: (level) =>
-    Effect.all(
-      MAESTRIA_AGENTS.map((agent) =>
+    readAgentModels(
+      (agent) =>
         resolveCodexAgentPath(level, agent).pipe(
           Effect.flatMap((agentPath) => readTextFile(agentPath)),
           Effect.catchCause(() => Effect.succeed('')),
         ),
-      ),
-    ).pipe(
-      Effect.map((contents) => {
-        const result: AgentModels = {};
-        for (let i = 0; i < MAESTRIA_AGENTS.length; i += 1) {
-          const model = parseCodexAgentModel(contents[i] ?? '');
-          if (model !== undefined && model !== null && model !== '') {
-            result[MAESTRIA_AGENTS[i]] = model;
-          }
-        }
-        return result;
-      }),
+      parseCodexAgentModel,
     ),
   restartHint: 'Start a new Codex session for the custom-agent configuration to take effect.',
   write: (models, level) =>
@@ -414,29 +422,23 @@ const codex: ModelConfigHandler = {
 
 // ── Cursor agent-file handler ─────────────────────────
 
-const cursorConfigCliOrFail = (): Effect.Effect<string, CommandError> =>
-  cursorCliName().pipe(
-    Effect.flatMap((cli) =>
-      cli !== undefined && cli !== null && cli !== ''
-        ? Effect.succeed(cli)
-        : Effect.fail(
-            new CommandError({
-              command: 'cursor agent',
-              message: "Cursor's 'agent' or 'cursor-agent' CLI was not found on PATH.",
-            }),
-          ),
-    ),
-  );
-
 const listCursorModels = (): Effect.Effect<string[], CommandError> =>
-  cursorConfigCliOrFail().pipe(
-    Effect.flatMap((cli) =>
+  cursorCliName().pipe(
+    Effect.flatMap((cli) => {
+      if (cli === undefined || cli === null || cli === '') {
+        return Effect.fail(
+          new CommandError({
+            command: 'cursor agent',
+            message: "Cursor's 'agent' or 'cursor-agent' CLI was not found on PATH.",
+          }),
+        );
+      }
       // `agent models` is the current command; retain the older flag as a
       // compatibility fallback for cursor-agent releases that still expose it.
-      run(cli, ['models'], 30_000).pipe(
+      return run(cli, ['models'], 30_000).pipe(
         Effect.catchCause(() => run(cli, ['--list-models'], 30_000)),
-      ),
-    ),
+      );
+    }),
     Effect.map(parseCursorModels),
   );
 
@@ -446,7 +448,6 @@ interface AgentFilePlatform {
   readonly id: string;
   readonly label: string;
   readonly cli: string;
-  readonly agents: readonly string[];
   readonly globalDir: string;
   readonly projectDir: string;
   readonly listModels: Effect.Effect<string[], CommandError>;
@@ -454,14 +455,8 @@ interface AgentFilePlatform {
   readonly isAvailable?: Effect.Effect<boolean>;
 }
 
-const agentFilePath = (cfg: AgentFilePlatform, level: ModelConfigLevel, agent: string): string =>
-  `${level === 'global' ? cfg.globalDir : cfg.projectDir}/${agent}.md`;
-
-// oxlint-disable-next-line max-lines-per-function -- createAgentFileHandler is a cohesive factory for per-agent file handlers (pi/omp/cursor) sharing agentPath/resolveAgent and readCurrent/write for 7 agents. Splitting would fragment the single platform file-handling responsibility and create single-use helpers with one call site, hurting discoverability.
+// oxlint-disable-next-line max-lines-per-function -- createAgentFileHandler is a cohesive factory for per-agent file handlers (pi/omp/cursor) sharing resolveAgent and readCurrent/write for 7 agents. Splitting would fragment the single platform file-handling responsibility and create single-use helpers with one call site, hurting discoverability.
 const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
-  const getAgentPath = (level: ModelConfigLevel, agent: string): string =>
-    agentFilePath(cfg, level, agent);
-
   /**
    * Resolve the target file and its starting content for an agent.
    * At project level, falls back to the global agent file as the source
@@ -472,8 +467,8 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
     level: ModelConfigLevel,
     agent: string,
   ): Effect.Effect<{ path: string; content: string }, CommandError> => {
-    const target = getAgentPath(level, agent);
-    const global = getAgentPath('global', agent);
+    const target = `${level === 'global' ? cfg.globalDir : cfg.projectDir}/${agent}.md`;
+    const global = `${cfg.globalDir}/${agent}.md`;
     return readTextFile(target)
       .pipe(
         Effect.catchCause(() =>
@@ -508,28 +503,13 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
     label: cfg.label,
     listModels: cfg.listModels,
     readCurrent: (level) =>
-      Effect.all(
-        cfg.agents.map((a) =>
-          resolveAgent(level, a).pipe(
+      readAgentModels(
+        (agent) =>
+          resolveAgent(level, agent).pipe(
             Effect.map(({ content }) => content),
             Effect.catchCause(() => Effect.succeed('')),
           ),
-        ),
-      ).pipe(
-        Effect.map((contents) => {
-          const result: AgentModels = {};
-          for (let i = 0; i < cfg.agents.length; i += 1) {
-            const agent = cfg.agents[i];
-            if (agent === undefined || !isAgentName(agent)) {
-              continue;
-            }
-            const model = parseFrontmatterModel(contents[i]);
-            if (model !== undefined && model !== null && model !== '') {
-              result[agent] = model;
-            }
-          }
-          return result;
-        }),
+        parseFrontmatterModel,
       ),
     restartHint: cfg.restartHint,
     write: (models, level) =>
@@ -543,7 +523,6 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
 };
 
 const pi = createAgentFileHandler({
-  agents: MAESTRIA_AGENTS,
   cli: 'pi',
   globalDir: `${homedir()}/.pi/agent/agents`,
   id: 'pi',
@@ -554,7 +533,6 @@ const pi = createAgentFileHandler({
 });
 
 const cursor = createAgentFileHandler({
-  agents: MAESTRIA_AGENTS,
   cli: 'agent',
   // The plugin's generated agents are the global source. Project-level
   // configuration is written to Cursor's native `.cursor/agents` overlay.
@@ -568,7 +546,6 @@ const cursor = createAgentFileHandler({
 });
 
 const omp = createAgentFileHandler({
-  agents: MAESTRIA_AGENTS,
   cli: 'omp',
   globalDir: `${homedir()}/.omp/agent/agents`,
   id: 'omp',
