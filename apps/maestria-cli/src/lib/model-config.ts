@@ -18,7 +18,9 @@ import {
   parseCodexTopLevelString,
   setCodexTopLevelString,
 } from '@/lib/codex-agent-files.js';
-import { CommandError, commandExists, run } from '@/lib/shell.js';
+import { cursorCliName } from '@/lib/cursor-cli.js';
+import { isRecord, parseJsonValue } from '@/lib/primitives.js';
+import { CommandError, fileExists, readTextFile, run } from '@/lib/shell.js';
 
 // ── Types ─────────────────────────────────────────────
 
@@ -42,20 +44,7 @@ export type AgentName = (typeof MAESTRIA_AGENTS)[number];
  */
 export type AgentModels = Partial<Record<AgentName, string>>;
 
-type JsonRecord = Record<string, unknown>;
-
-const isJsonRecord = (value: unknown): value is JsonRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const parseJsonValue = (text: string): unknown => {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return undefined;
-  }
-};
-
-const isAgentName = (name: string): name is AgentName =>
+export const isAgentName = (name: string): name is AgentName =>
   MAESTRIA_AGENTS.some((agent) => agent === name);
 
 /**
@@ -103,11 +92,11 @@ export const parsePiModels = (out: string): string[] =>
 /** `omp models --json` -> { models: [{ provider, id, selector, ... }] } */
 export const parseOmpModels = (out: string): string[] => {
   const parsed = parseJsonValue(out);
-  if (!isJsonRecord(parsed) || !Array.isArray(parsed.models)) {
+  if (!isRecord(parsed) || !Array.isArray(parsed.models)) {
     return [];
   }
   return parsed.models.flatMap((model) => {
-    if (!isJsonRecord(model) || typeof model.selector !== 'string' || model.selector.length === 0) {
+    if (!isRecord(model) || typeof model.selector !== 'string' || model.selector.length === 0) {
       return [];
     }
     return [model.selector];
@@ -120,7 +109,7 @@ export const parseCursorModels = (out: string): string[] => {
   let entries: unknown[] | undefined;
   if (Array.isArray(parsed)) {
     entries = parsed;
-  } else if (isJsonRecord(parsed) && Array.isArray(parsed.models)) {
+  } else if (isRecord(parsed) && Array.isArray(parsed.models)) {
     entries = parsed.models;
   }
   if (entries !== undefined) {
@@ -128,7 +117,7 @@ export const parseCursorModels = (out: string): string[] => {
       if (typeof entry === 'string') {
         return [entry];
       }
-      if (isJsonRecord(entry)) {
+      if (isRecord(entry)) {
         const value = entry.id ?? entry.slug ?? entry.name;
         return typeof value === 'string' ? [value] : [];
       }
@@ -160,13 +149,13 @@ export const parseCursorModels = (out: string): string[] => {
 /** `codex debug models` -> model slugs from the native JSON catalog. */
 export const parseCodexModels = (out: string): string[] => {
   const parsed = parseJsonValue(out);
-  if (!isJsonRecord(parsed) || !Array.isArray(parsed.models)) {
+  if (!isRecord(parsed) || !Array.isArray(parsed.models)) {
     return [];
   }
   return [
     ...new Set(
       parsed.models.flatMap((model) => {
-        if (!isJsonRecord(model)) {
+        if (!isRecord(model)) {
           return [];
         }
         const value = typeof model.slug === 'string' ? model.slug : model.id;
@@ -246,17 +235,12 @@ export const setConfigModelJsonc = (text: string, agent: string, model: string):
 /** Read `agent.<name>.model` values from an opencode config file */
 export const parseConfigModels = (text: string): AgentModels => {
   const parsed: unknown = parse(text);
-  if (!isJsonRecord(parsed) || !isJsonRecord(parsed.agent)) {
+  if (!isRecord(parsed) || !isRecord(parsed.agent)) {
     return {};
   }
   const result: AgentModels = {};
   for (const [name, value] of Object.entries(parsed.agent)) {
-    if (
-      isAgentName(name) &&
-      isJsonRecord(value) &&
-      typeof value.model === 'string' &&
-      value.model
-    ) {
+    if (isAgentName(name) && isRecord(value) && typeof value.model === 'string' && value.model) {
       result[name] = value.model;
     }
   }
@@ -299,15 +283,6 @@ export const createCodexAgentConfig = (
 
 // ── FS helpers ────────────────────────────────────────
 
-const readFile = (filePath: string): Effect.Effect<string, CommandError> =>
-  Effect.tryPromise({
-    catch: (error) => new CommandError({ command: `read ${filePath}`, message: String(error) }),
-    try: async () => {
-      const { readFile: readFileAsync } = await import('node:fs/promises');
-      return await readFileAsync(filePath, 'utf-8');
-    },
-  });
-
 const writeFile = (filePath: string, content: string): Effect.Effect<void, CommandError> =>
   Effect.tryPromise({
     catch: (error) => new CommandError({ command: `write ${filePath}`, message: String(error) }),
@@ -316,17 +291,6 @@ const writeFile = (filePath: string, content: string): Effect.Effect<void, Comma
       await mkdir(path.dirname(filePath), { recursive: true });
       await writeFileAsync(filePath, content, 'utf-8');
     },
-  });
-
-const fileExists = (filePath: string): Effect.Effect<boolean> =>
-  Effect.promise(async () => {
-    const { stat } = await import('node:fs/promises');
-    try {
-      await stat(filePath);
-      return true;
-    } catch {
-      return false;
-    }
   });
 
 // ── OpenCode handler ──────────────────────────────────
@@ -362,7 +326,7 @@ const opencode: ModelConfigHandler = {
   readCurrent: (level) =>
     findOpenCodeConfigPath(level).pipe(
       Effect.flatMap((configPath) =>
-        readFile(configPath).pipe(Effect.catchCause(() => Effect.succeed(''))),
+        readTextFile(configPath).pipe(Effect.catchCause(() => Effect.succeed(''))),
       ),
       Effect.map(parseConfigModels),
     ),
@@ -370,7 +334,9 @@ const opencode: ModelConfigHandler = {
   write: (models, level) =>
     Effect.gen(function* write() {
       const configPath = yield* findOpenCodeConfigPath(level);
-      const text = yield* readFile(configPath).pipe(Effect.catchCause(() => Effect.succeed('{}')));
+      const text = yield* readTextFile(configPath).pipe(
+        Effect.catchCause(() => Effect.succeed('{}')),
+      );
       let next = text;
       for (const [agent, model] of Object.entries(models)) {
         next = setConfigModelJsonc(next, agent, model ?? '');
@@ -406,7 +372,7 @@ const codex: ModelConfigHandler = {
     Effect.all(
       MAESTRIA_AGENTS.map((agent) =>
         resolveCodexAgentPath(level, agent).pipe(
-          Effect.flatMap((agentPath) => readFile(agentPath)),
+          Effect.flatMap((agentPath) => readTextFile(agentPath)),
           Effect.catchCause(() => Effect.succeed('')),
         ),
       ),
@@ -440,7 +406,7 @@ const codex: ModelConfigHandler = {
           }
           continue;
         }
-        const content = yield* readFile(agentPath);
+        const content = yield* readTextFile(agentPath);
         yield* writeFile(agentPath, setCodexAgentModel(content, model ?? ''));
       }
     }),
@@ -448,22 +414,8 @@ const codex: ModelConfigHandler = {
 
 // ── Cursor agent-file handler ─────────────────────────
 
-const cursorConfigCli = (): Effect.Effect<string | undefined> =>
-  Effect.gen(function* cursorConfigCliEffect() {
-    if (yield* commandExists('cursor-agent')) {
-      return 'cursor-agent';
-    }
-    if (!(yield* commandExists('agent'))) {
-      return '';
-    }
-    const version = yield* run('agent', ['--version'], 3000).pipe(
-      Effect.catchCause(() => Effect.succeed('')),
-    );
-    return /cursor/iu.test(version) ? 'agent' : undefined;
-  });
-
 const cursorConfigCliOrFail = (): Effect.Effect<string, CommandError> =>
-  cursorConfigCli().pipe(
+  cursorCliName().pipe(
     Effect.flatMap((cli) =>
       cli !== undefined && cli !== null && cli !== ''
         ? Effect.succeed(cli)
@@ -522,7 +474,7 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
   ): Effect.Effect<{ path: string; content: string }, CommandError> => {
     const target = getAgentPath(level, agent);
     const global = getAgentPath('global', agent);
-    return readFile(target)
+    return readTextFile(target)
       .pipe(
         Effect.catchCause(() =>
           level === 'global'
@@ -532,7 +484,7 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
                   message: `Agent file not found at ${target}. Run 'maestria install ${cfg.id}' first.`,
                 }),
               )
-            : readFile(global).pipe(
+            : readTextFile(global).pipe(
                 Effect.catchCause(() =>
                   Effect.fail(
                     new CommandError({
@@ -608,7 +560,7 @@ const cursor = createAgentFileHandler({
   // configuration is written to Cursor's native `.cursor/agents` overlay.
   globalDir: `${homedir()}/.cursor/plugins/local/maestria/agents`,
   id: 'cursor',
-  isAvailable: cursorConfigCli().pipe(Effect.map((cli) => cli !== undefined && cli !== '')),
+  isAvailable: cursorCliName().pipe(Effect.map((cli) => cli !== undefined && cli !== '')),
   label: 'Cursor',
   listModels: listCursorModels(),
   projectDir: '.cursor/agents',

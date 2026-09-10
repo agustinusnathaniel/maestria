@@ -3,16 +3,21 @@ import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 import picocolors from 'picocolors';
 
+import {
+  assertInteractiveTerminal,
+  batchCommandResult,
+  resolveBatchQuiet,
+  runBatchSelected,
+} from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
-import { getPlatform, getPlatformOrResult } from '@/lib/platforms.js';
+import { createSpinner } from '@/lib/output.js';
+import { getPlatform } from '@/lib/platforms.js';
 import { updateOne } from '@/lib/platform-transaction.js';
-import { exitCodeForResults } from '@/lib/result-exit.js';
 import {
   VALID_PLATFORMS,
   validateOrThrow,
@@ -38,34 +43,6 @@ interface UpdateStatus {
   needsUpdate: boolean;
 }
 
-const renderUpdateOutput = (
-  results: PlatformResult[],
-  args: { compact?: boolean; json?: boolean },
-): string => {
-  if (args.json === true) {
-    return JSON.stringify(results, null, 2);
-  }
-  if (args.compact === true) {
-    return renderCompactResults(results);
-  }
-  return renderResults(results);
-};
-
-const updateSelected = async (
-  selections: { id: string; label?: string }[],
-  isQuiet: boolean,
-  version?: string,
-): Promise<PlatformResult[]> =>
-  await Effect.runPromise(
-    Effect.all(
-      selections.map(({ id, label }) => {
-        const platform = getPlatformOrResult(id, label);
-        return 'ok' in platform ? Effect.succeed(platform) : updateOne(platform, isQuiet, version);
-      }),
-      { concurrency: 1 },
-    ),
-  );
-
 const runAllUpdate = async (
   isQuiet: boolean,
   version?: string,
@@ -80,10 +57,10 @@ const runAllUpdate = async (
       output: 'No maestria installations found to update.',
     };
   }
-  return await updateSelected(
+  return await runBatchSelected(
     installed.map((p) => ({ id: p.id, label: p.label })),
     isQuiet,
-    version,
+    (platform, quiet) => updateOne(platform, quiet, version),
   );
 };
 
@@ -92,16 +69,7 @@ const runInteractiveUpdate = async (
   isQuiet: boolean,
   version?: string,
 ): Promise<PlatformResult[] | CommandResult> => {
-  if (!process.stdout.isTTY || !process.stdin.isTTY) {
-    throw new CliError(
-      [
-        'No platform specified and not in an interactive terminal.',
-        'Usage: maestria update <platform> or maestria update --all',
-        "Run 'maestria update --help' for details.",
-      ].join('\n'),
-      1,
-    );
-  }
+  assertInteractiveTerminal('update');
   const installed = await Effect.runPromise(detectInstalled());
   if (installed.length === 0) {
     return {
@@ -168,11 +136,13 @@ const runInteractiveUpdate = async (
   const selections = toUpdate.flatMap((p) =>
     getPlatform(p.id) === undefined ? [] : [{ id: p.id, label: p.label }],
   );
-  return await updateSelected(selections, isQuiet, version);
+  return await runBatchSelected(selections, isQuiet, (platform, quiet) =>
+    updateOne(platform, quiet, version),
+  );
 };
 
 export const handleUpdate = async (args: UpdateArgs): Promise<CommandResult> => {
-  const isQuiet = args.quiet === true || args.compact === true;
+  const isQuiet = resolveBatchQuiet(args);
   let platformIds: string[] | undefined;
   if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
     platformIds = await validateOrThrow(validatePlatforms(args.platform));
@@ -182,10 +152,10 @@ export const handleUpdate = async (args: UpdateArgs): Promise<CommandResult> => 
   }
   let results: PlatformResult[];
   if (platformIds && platformIds.length > 0) {
-    results = await updateSelected(
+    results = await runBatchSelected(
       platformIds.map((id) => ({ id })),
       isQuiet,
-      args.version,
+      (platform, quiet) => updateOne(platform, quiet, args.version),
     );
   } else if (args.all === true) {
     const outcome = await runAllUpdate(isQuiet, args.version);
@@ -200,7 +170,7 @@ export const handleUpdate = async (args: UpdateArgs): Promise<CommandResult> => 
     }
     results = outcome;
   }
-  return { exitCode: exitCodeForResults(results), output: renderUpdateOutput(results, args) };
+  return batchCommandResult(results, args);
 };
 
 export const updateCommand = defineCommand({

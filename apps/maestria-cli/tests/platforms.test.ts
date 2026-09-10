@@ -129,6 +129,42 @@ describe('pi platform uninstall', () => {
   });
 });
 
+describe('pi and omp package commands', () => {
+  it('drives install, update, and uninstall with exact command arrays', async () => {
+    // Uninstall effects are built at module load, so the recorded call is the
+    // one the handler holds; assert it before clearing the shared mock.
+    const ompUninstall = vi
+      .mocked(shell.run)
+      .mock.calls.find(
+        (call) => call[0] === 'omp' && call[1]?.[0] === 'plugin' && call[1]?.[1] === 'uninstall',
+      );
+    expect(ompUninstall?.[1]).toEqual(['plugin', 'uninstall', '@maestria/omp']);
+
+    vi.clearAllMocks();
+    const pi = requirePlatform('pi');
+    const omp = requirePlatform('omp');
+
+    await Effect.runPromise(pi.install);
+    await Effect.runPromise(pi.update());
+    await Effect.runPromise(pi.update('1.2.3'));
+    await Effect.runPromise(omp.install);
+    await Effect.runPromise(omp.update());
+    await Effect.runPromise(omp.update('1.2.3'));
+
+    const calls = vi
+      .mocked(shell.run)
+      .mock.calls.filter((call) => call[0] === 'pi' || call[0] === 'omp')
+      .map(([cmd, args, timeoutMs]) => [cmd, args, timeoutMs]);
+
+    expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi'], 120_000]);
+    expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi@latest'], 120_000]);
+    expect(calls).toContainEqual(['pi', ['install', 'npm:@maestria/pi@1.2.3'], 120_000]);
+    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp'], 120_000]);
+    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp@latest'], 120_000]);
+    expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp@1.2.3'], 120_000]);
+  });
+});
+
 describe('marketplace-backed platform handlers', () => {
   it('registers Claude Code and Codex CLI with their published packages', () => {
     const claudeCode = getPlatform('claude-code');

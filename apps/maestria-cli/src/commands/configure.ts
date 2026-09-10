@@ -7,7 +7,12 @@ import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { getModelConfigHandler, MAESTRIA_AGENTS, modelConfigHandlers } from '@/lib/model-config.js';
+import {
+  getModelConfigHandler,
+  isAgentName,
+  MAESTRIA_AGENTS,
+  modelConfigHandlers,
+} from '@/lib/model-config.js';
 import type {
   AgentModels,
   AgentName,
@@ -36,9 +41,6 @@ const cancelAndExit = (): never => {
   cancel('Cancelled.');
   throw new CliError('', 130);
 };
-
-const isAgentName = (agent: string): agent is AgentName =>
-  MAESTRIA_AGENTS.some((knownAgent) => knownAgent === agent);
 
 /** Parse `--set adventurer=model,builder=` pairs. Empty model = inherit/unset. */
 const parseSetPairs = (input: string): AgentModels => {

@@ -2,6 +2,8 @@ import { Data, Effect } from 'effect';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
+import { isRecord } from '@/lib/primitives.js';
+
 /** Resolve the OS cache directory, respecting XDG_CACHE_HOME on Linux/macOS. */
 export const getCacheDir = (): string => {
   const xdg = process.env.XDG_CACHE_HOME?.trim();
@@ -99,20 +101,16 @@ export const commandExists = (cmd: string): Effect.Effect<boolean> =>
   );
 
 type VersionCache = Record<string, { version: string }>;
-type JsonRecord = Record<string, unknown>;
-
-const isJsonRecord = (value: unknown): value is JsonRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const parseVersionCache = (text: string): VersionCache => {
   try {
     const parsed: unknown = JSON.parse(text);
-    if (!isJsonRecord(parsed)) {
+    if (!isRecord(parsed)) {
       return {};
     }
     const cache: VersionCache = {};
     for (const [key, value] of Object.entries(parsed)) {
-      if (isJsonRecord(value) && typeof value.version === 'string') {
+      if (isRecord(value) && typeof value.version === 'string') {
         cache[key] = { version: value.version };
       }
     }
@@ -178,7 +176,7 @@ export const invalidateVersionCache = (pkg: string): Effect.Effect<void> =>
       Effect.flatMap((out) => {
         try {
           const parsed: unknown = JSON.parse(out);
-          if (!isJsonRecord(parsed)) {
+          if (!isRecord(parsed)) {
             return Effect.void;
           }
           const cache = Object.fromEntries(Object.entries(parsed).filter(([key]) => key !== pkg));

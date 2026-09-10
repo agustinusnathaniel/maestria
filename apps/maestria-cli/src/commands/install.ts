@@ -2,15 +2,19 @@ import { cancel, isCancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 
+import {
+  assertInteractiveTerminal,
+  batchCommandResult,
+  resolveBatchQuiet,
+  runBatchSelected,
+} from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
-import { getPlatformOrResult } from '@/lib/platforms.js';
+import { createSpinner } from '@/lib/output.js';
 import { installOne } from '@/lib/platform-transaction.js';
-import { exitCodeForResults } from '@/lib/result-exit.js';
 import { VALID_PLATFORMS, validateOrThrow, validatePlatforms } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
@@ -21,33 +25,6 @@ export interface InstallArgs {
   platform?: string;
   quiet?: boolean;
 }
-
-const renderInstallOutput = (
-  results: PlatformResult[],
-  args: { compact?: boolean; json?: boolean },
-): string => {
-  if (args.json === true) {
-    return JSON.stringify(results, null, 2);
-  }
-  if (args.compact === true) {
-    return renderCompactResults(results);
-  }
-  return renderResults(results);
-};
-
-const installSelected = async (
-  selections: { id: string; label?: string }[],
-  isQuiet: boolean,
-): Promise<PlatformResult[]> =>
-  await Effect.runPromise(
-    Effect.all(
-      selections.map(({ id, label }) => {
-        const platform = getPlatformOrResult(id, label);
-        return 'ok' in platform ? Effect.succeed(platform) : installOne(platform, isQuiet);
-      }),
-      { concurrency: 1 },
-    ),
-  );
 
 const runInstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | CommandResult> => {
   const spinner = createSpinner(isQuiet);
@@ -61,25 +38,17 @@ const runInstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | Comma
       output: 'All detected platforms already have maestria installed.',
     };
   }
-  return await installSelected(
+  return await runBatchSelected(
     toInstall.map((p) => ({ id: p.id, label: p.label })),
     isQuiet,
+    installOne,
   );
 };
 
 const runInstallInteractive = async (
   isQuiet: boolean,
 ): Promise<PlatformResult[] | CommandResult> => {
-  if (!process.stdout.isTTY || !process.stdin.isTTY) {
-    throw new CliError(
-      [
-        'No platform specified and not in an interactive terminal.',
-        'Usage: maestria install <platform> or maestria install --all',
-        "Run 'maestria install --help' for details.",
-      ].join('\n'),
-      1,
-    );
-  }
+  assertInteractiveTerminal('install');
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const allPlatforms = await Effect.runPromise(detectAll());
@@ -105,23 +74,25 @@ const runInstallInteractive = async (
     cancel('Install cancelled.');
     throw new CliError('', 130);
   }
-  return await installSelected(
+  return await runBatchSelected(
     selected.map((id) => ({ id })),
     isQuiet,
+    installOne,
   );
 };
 
 export const handleInstall = async (args: InstallArgs): Promise<CommandResult> => {
-  const isQuiet = args.quiet === true || args.compact === true;
+  const isQuiet = resolveBatchQuiet(args);
   let platformIds: string[] | undefined;
   if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
     platformIds = await validateOrThrow(validatePlatforms(args.platform));
   }
   let results: PlatformResult[];
   if (platformIds && platformIds.length > 0) {
-    results = await installSelected(
+    results = await runBatchSelected(
       platformIds.map((id) => ({ id })),
       isQuiet,
+      installOne,
     );
   } else if (args.all === true) {
     const outcome = await runInstallAll(isQuiet);
@@ -136,7 +107,7 @@ export const handleInstall = async (args: InstallArgs): Promise<CommandResult> =
     }
     results = outcome;
   }
-  return { exitCode: exitCodeForResults(results), output: renderInstallOutput(results, args) };
+  return batchCommandResult(results, args);
 };
 
 export const installCommand = defineCommand({
