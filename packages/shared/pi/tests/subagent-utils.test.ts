@@ -6,11 +6,6 @@ import {
   assertValidAgent,
   MAESTRIA_EVENTS,
 } from '../src/subagent-utils.js';
-import type { AllowedAgent } from '../src/subagent-utils.js';
-
-const assertAgent: (agent: string) => asserts agent is AllowedAgent = assertValidAgent;
-const assertTask: (task: string | undefined, label: string) => asserts task is string =
-  assertNonEmptyTask;
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -56,37 +51,37 @@ describe('assertValidAgent', () => {
   it('passes for every allowed agent', () => {
     for (const agent of ALLOWED_AGENTS) {
       expect(() => {
-        assertAgent(agent);
+        assertValidAgent(agent);
       }).not.toThrow();
     }
   });
 
   it('throws for an unknown agent name', () => {
     expect(() => {
-      assertAgent('unknown');
+      assertValidAgent('unknown');
     }).toThrow('Unknown agent');
   });
 
   it('includes the unknown agent name in the error message', () => {
     expect(() => {
-      assertAgent('bad-agent');
+      assertValidAgent('bad-agent');
     }).toThrow('bad-agent');
   });
 
   it('includes the list of allowed agents in the error message', () => {
     expect(() => {
-      assertAgent('bad-agent');
+      assertValidAgent('bad-agent');
     }).toThrow(`Allowed: ${ALLOWED_AGENTS.join(', ')}`);
   });
 
   it('throws for empty string', () => {
     expect(() => {
-      assertAgent('');
+      assertValidAgent('');
     }).toThrow('Unknown agent');
   });
 
   it('returns undefined on success', () => {
-    assertAgent('builder');
+    assertValidAgent('builder');
   });
 });
 
@@ -95,37 +90,37 @@ describe('assertValidAgent', () => {
 describe('assertNonEmptyTask', () => {
   it('passes for a non-empty task string', () => {
     expect(() => {
-      assertTask('do something', 'Task is required');
+      assertNonEmptyTask('do something', 'Task is required');
     }).not.toThrow();
   });
 
   it('passes for a task with leading/trailing whitespace but content', () => {
     expect(() => {
-      assertTask('  valid task  ', 'Task is required');
+      assertNonEmptyTask('  valid task  ', 'Task is required');
     }).not.toThrow();
   });
 
   it('throws for undefined task', () => {
     expect(() => {
-      assertTask(undefined, 'Task is required');
+      assertNonEmptyTask(undefined, 'Task is required');
     }).toThrow('Task is required');
   });
 
   it('throws for empty string', () => {
     expect(() => {
-      assertTask('', 'Task is required');
+      assertNonEmptyTask('', 'Task is required');
     }).toThrow('Task is required');
   });
 
   it('throws for whitespace-only string', () => {
     expect(() => {
-      assertTask('   ', 'Task description must not be blank');
+      assertNonEmptyTask('   ', 'Task description must not be blank');
     }).toThrow('Task description must not be blank');
   });
 
   it('uses the provided label in the error message', () => {
     expect(() => {
-      assertTask('', 'Custom error label');
+      assertNonEmptyTask('', 'Custom error label');
     }).toThrow('Custom error label');
   });
 });

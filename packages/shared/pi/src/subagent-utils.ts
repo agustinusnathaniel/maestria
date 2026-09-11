@@ -34,7 +34,7 @@ export type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
  * Asserts that `agent` is a known maestria specialist.
  * @throws {Error} if the agent name is not in ALLOWED_AGENTS.
  */
-export const assertValidAgent = (agent: string): asserts agent is AllowedAgent => {
+export const assertValidAgent: (agent: string) => asserts agent is AllowedAgent = (agent) => {
   if (!ALLOWED_AGENTS.some((allowedAgent) => allowedAgent === agent)) {
     throw new Error(`Unknown agent: "${agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
   }
@@ -44,10 +44,10 @@ export const assertValidAgent = (agent: string): asserts agent is AllowedAgent =
  * Asserts that `task` is a non-empty, non-whitespace string.
  * @throws {Error} with the given label if task is falsy or all-whitespace.
  */
-export const assertNonEmptyTask = (
+export const assertNonEmptyTask: (
   task: string | undefined,
   label: string,
-): asserts task is string => {
+) => asserts task is string = (task, label) => {
   if (task === undefined || task === null || task === '' || !task.trim()) {
     throw new Error(label);
   }

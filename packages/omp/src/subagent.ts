@@ -8,9 +8,6 @@ import {
   recordSpecialistDelegated,
 } from '@maestria/shared-pi/state-core';
 
-const validateAgent: typeof assertValidAgent = assertValidAgent;
-const validateTask: typeof assertNonEmptyTask = assertNonEmptyTask;
-
 export interface SubagentToolParams {
   agent?: string;
   mode?: 'parallel' | 'chain' | 'single';
@@ -52,15 +49,15 @@ const validateOmpParams = (params: {
     if (typeof params.agent !== 'string') {
       throw new TypeError('Unknown agent: undefined');
     }
-    validateAgent(params.agent);
-    validateTask(params.task, 'Task description is required');
+    assertValidAgent(params.agent);
+    assertNonEmptyTask(params.task, 'Task description is required');
   } else {
     if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For parallel/chain mode, tasks array is required with at least 2 items');
     }
     for (const t of params.tasks) {
-      validateAgent(t.agent);
-      validateTask(t.task, 'Task description is required for all tasks');
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
     }
   }
 };

@@ -74,9 +74,6 @@ export interface SubagentToolApi extends SubagentEventHost {
   registerTool: (tool: SubagentToolDefinition) => void;
 }
 
-const assertTask: typeof assertNonEmptyTask = assertNonEmptyTask;
-const assertAgent: (agent: string) => void = assertValidAgent;
-
 const abortSubagents = (service: SubagentPollingService, ids: readonly string[]): void => {
   for (const id of ids) {
     try {
@@ -118,7 +115,7 @@ const validatePiParams = (params: SubagentParams): string => {
     ) {
       return `Invalid maestria_subagent call: 'agent' is required and must be one of ${ALLOWED_AGENT_NAMES.join(', ')}.`;
     }
-    assertTask(params.task, 'Task description is required');
+    assertNonEmptyTask(params.task, 'Task description is required');
   } else if (mode === 'parallel') {
     if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For parallel mode, tasks array is required with at least 2 items');
@@ -129,16 +126,16 @@ const validatePiParams = (params: SubagentParams): string => {
       );
     }
     for (const t of params.tasks) {
-      assertAgent(t.agent);
-      assertTask(t.task, 'Task description is required for all tasks');
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
     }
   } else if (mode === 'chain') {
     if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For chain mode, tasks array is required with at least 2 items');
     }
     for (const t of params.tasks) {
-      assertAgent(t.agent);
-      assertTask(t.task, 'Task description is required for all tasks');
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
     }
   }
   return mode;

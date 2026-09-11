@@ -1,14 +1,10 @@
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
-import type { ToolCallHandler } from '@maestria/shared-pi/tools-core';
 
 import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import { persistState } from '@maestria/shared-pi/state-core';
 
-export interface ToolApi {
-  appendEntry: (type: string, data: unknown) => void;
-  getActiveTools: () => string[];
-  on: (event: 'tool_call', handler: ToolCallHandler) => void;
-}
+export type ToolApi = Pick<ExtensionAPI, 'appendEntry' | 'getActiveTools' | 'on'>;
 
 export const installToolInterceptors = (pi: ToolApi, state: MaestriaState): void => {
   const handler = createToolCallHandler({

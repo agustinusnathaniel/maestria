@@ -1,9 +1,9 @@
 import type { ExtensionAPI, SessionStartEvent } from '@oh-my-pi/pi-coding-agent';
+import { installCompactionHandlers } from '@maestria/shared-pi/compaction-core';
 import { createInitialState } from '@maestria/shared-pi/state-core';
 
 import { deploySpecialistAgents } from '@/agents.js';
 import { installCommands } from '@/commands.js';
-import { installCompactionHandlers } from '@/compaction.js';
 import {
   createGoalApi,
   installGoalEventHandlers,

@@ -3,6 +3,7 @@ import type {
   SessionStartEvent,
   SessionTreeEvent,
 } from '@earendil-works/pi-coding-agent';
+import { installCompactionHandlers } from '@maestria/shared-pi/compaction-core';
 import { installCommands as installCommandsCore } from '@maestria/shared-pi/commands-core';
 import {
   createInitialState,
@@ -13,7 +14,6 @@ import {
 
 import { deploySpecialistAgents } from '@/agents.js';
 import { createCommandsApi } from '@/commands.js';
-import { installCompactionHandlers } from '@/compaction.js';
 import { installModeAutoDetect, installModeCommands } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
 import { installSubagentTool } from '@/subagent.js';
