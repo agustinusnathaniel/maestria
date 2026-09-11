@@ -3,11 +3,8 @@ import { defineCommand } from 'citty';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
-import {
-  formatAgentPluginValidation,
-  stageAgentPlugin,
-  validateAgentPlugin,
-} from '@/lib/agent-plugin.js';
+import { stageAgentPlugin } from '@/lib/agent-plugin-staging.js';
+import { formatAgentPluginValidation, validateAgentPlugin } from '@/lib/agent-plugin-validation.js';
 
 export interface PluginValidateArgs {
   json?: boolean;

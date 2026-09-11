@@ -12,6 +12,7 @@ import path from 'node:path';
 
 // Import the ESM build directly - the UMD entry does runtime `require('./impl/*')`
 // calls that the bundler does not inline.
+import { parseAgentFrontmatterModel, setAgentFrontmatterModel } from '@/lib/agent-frontmatter.js';
 import {
   codexManagedAgentFileName,
   codexManagedAgentName,
@@ -163,48 +164,6 @@ export const parseCodexModels = (out: string): string[] => {
       }),
     ),
   ];
-};
-
-// ── Frontmatter helpers (pure) ────────────────────────
-
-/** Extract the `model:` value from a markdown agent file's frontmatter */
-export const parseFrontmatterModel = (content: string): string | undefined => {
-  const fm = /^---\r?\n(?<body>[\s\S]*?)\r?\n---/u.exec(content);
-  const block = fm?.groups?.body ?? content;
-  const m = /^model:\s*(?<model>.+?)\s*$/mu.exec(block);
-  return m?.groups?.model;
-};
-
-/**
- * Set (or remove, when model is '') the `model:` key in a markdown
- * agent file's frontmatter. Preserves all other content byte-for-byte.
- */
-export const setFrontmatterModel = (content: string, model: string): string => {
-  const fm = /^---\r?\n(?<body>[\s\S]*?)\r?\n---(?<afterClosing>\r?\n?)/u.exec(content);
-  if (!fm) {
-    if (!model) {
-      return content;
-    }
-    return `---\nmodel: ${model}\n---\n\n${content}`;
-  }
-  const fmBody = fm.groups?.body;
-  const afterClosing = fm.groups?.afterClosing;
-  if (fmBody === undefined || afterClosing === undefined) {
-    return content;
-  }
-  const rest = content.slice(fm[0].length);
-  const lines = fmBody.split(/\r?\n/u);
-  const idx = lines.findIndex((l) => l.startsWith('model:'));
-  if (model) {
-    if (idx === -1) {
-      lines.push(`model: ${model}`);
-    } else {
-      lines[idx] = `model: ${model}`;
-    }
-  } else if (idx !== -1) {
-    lines.splice(idx, 1);
-  }
-  return `---\n${lines.join('\n')}\n---${afterClosing}${rest}`;
 };
 
 // ── JSONC helpers (pure) ──────────────────────────────
@@ -370,7 +329,7 @@ const opencode: ModelConfigHandler = {
 
 // ── Codex custom-agent handler ─────────────────────────
 
-const codexHome = (): string => process.env.CODEX_HOME?.trim() ?? `${homedir()}/.codex`;
+export const codexHome = (): string => process.env.CODEX_HOME?.trim() ?? `${homedir()}/.codex`;
 
 const resolveCodexAgentPath = (level: ModelConfigLevel, agent: string): Effect.Effect<string> => {
   const dir = level === 'global' ? `${codexHome()}/agents` : '.codex/agents';
@@ -509,14 +468,15 @@ const createAgentFileHandler = (cfg: AgentFilePlatform): ModelConfigHandler => {
             Effect.map(({ content }) => content),
             Effect.catchCause(() => Effect.succeed('')),
           ),
-        parseFrontmatterModel,
+        (content) => parseAgentFrontmatterModel(content, { fallbackToContent: true }),
       ),
     restartHint: cfg.restartHint,
     write: (models, level) =>
       Effect.gen(function* write() {
         for (const [agent, model] of Object.entries(models)) {
           const { path: targetPath, content } = yield* resolveAgent(level, agent);
-          yield* writeFile(targetPath, setFrontmatterModel(content, model ?? ''));
+          const next = setAgentFrontmatterModel(content, model ?? '', { createFrontmatter: true });
+          yield* writeFile(targetPath, next);
         }
       }),
   };

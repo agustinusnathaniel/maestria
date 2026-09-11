@@ -1,6 +1,6 @@
 import { cancel, isCancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
-import { Cause, Effect, Exit } from 'effect';
+import { Effect, Exit } from 'effect';
 import picocolors from 'picocolors';
 
 import { toCommandRun } from '@/lib/command-runner.js';
@@ -21,7 +21,7 @@ import type {
 } from '@/lib/model-config.js';
 import { createSpinner } from '@/lib/output.js';
 import { commandExists } from '@/lib/shell.js';
-import { validateOrThrow, validatePlatform } from '@/lib/validation.js';
+import { failureMessage, validateOrThrow, validatePlatform } from '@/lib/validation.js';
 
 export interface ConfigureArgs {
   compact?: boolean;
@@ -69,16 +69,7 @@ const runOrThrow = async <T>(effect: Effect.Effect<T, unknown>, fallback: string
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
-  const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  const failure = firstFailure?.error;
-  const message =
-    typeof failure === 'object' &&
-    failure !== null &&
-    'message' in failure &&
-    typeof failure.message === 'string'
-      ? failure.message
-      : undefined;
-  return fail(message ?? fallback);
+  return fail(failureMessage(exit.cause) ?? fallback);
 };
 
 const renderConfigureSummary = (

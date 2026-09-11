@@ -1,6 +1,5 @@
 /** Codex native-agent files and managed-instruction install transaction. */
 import { Effect } from 'effect';
-import { homedir } from 'node:os';
 
 import { codexManagedAgentFileName, mergeCodexAgentSettings } from '@/lib/codex-agent-files.js';
 import {
@@ -10,7 +9,7 @@ import {
   upsertCodexManagedInstructions,
 } from '@/lib/codex-instructions.js';
 import type { CodexGlobalInstructionFilename } from '@/lib/codex-instructions.js';
-import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
+import { codexHome, MAESTRIA_AGENTS } from '@/lib/model-config.js';
 import { isFileNotFound, parseJsonRecord } from '@/lib/primitives.js';
 import type { JsonRecord } from '@/lib/primitives.js';
 import { CommandError } from '@/lib/shell.js';
@@ -28,15 +27,13 @@ interface CodexManagedAgentManifest {
   readonly instructionsCreated?: boolean;
 }
 
-const codexHomePath = (): string => process.env.CODEX_HOME?.trim() ?? `${homedir()}/.codex`;
-
-const codexManagedAgentDirectory = (): string => `${codexHomePath()}/agents`;
+const codexManagedAgentDirectory = (): string => `${codexHome()}/agents`;
 
 const codexManagedAgentManifestPath = (): string =>
-  `${codexHomePath()}/${CODEX_MANAGED_AGENT_MANIFEST}`;
+  `${codexHome()}/${CODEX_MANAGED_AGENT_MANIFEST}`;
 
 const codexGlobalInstructionsPath = (file: CodexGlobalInstructionFilename): string =>
-  `${codexHomePath()}/${file}`;
+  `${codexHome()}/${file}`;
 
 const validateCodexManifestContent = (
   parsed: JsonRecord,
@@ -118,7 +115,7 @@ const writeCodexManagedAgentManifest = (
       }),
     try: async () => {
       const { mkdir, rename, writeFile } = await import('node:fs/promises');
-      await mkdir(codexHomePath(), { recursive: true });
+      await mkdir(codexHome(), { recursive: true });
       const manifestPath = codexManagedAgentManifestPath();
       const tempPath = `${manifestPath}.tmp`;
       await writeFile(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf-8');
@@ -184,7 +181,7 @@ const writeCodexGlobalInstructions = async (
 ): Promise<void> => {
   const { mkdir, rename, rm, writeFile } = await import('node:fs/promises');
   const writeAtomic = async (filePath: string, content: string): Promise<void> => {
-    await mkdir(codexHomePath(), { recursive: true });
+    await mkdir(codexHome(), { recursive: true });
     const tempPath = `${filePath}.tmp`;
     await writeFile(tempPath, content, 'utf-8');
     await rename(tempPath, filePath);
@@ -330,7 +327,7 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
     const instructionState = yield* Effect.tryPromise({
       catch: (error) =>
         new CommandError({
-          command: `sync Codex global instructions in ${codexHomePath()}`,
+          command: `sync Codex global instructions in ${codexHome()}`,
           message: String(error),
         }),
       try: async () => await syncCodexGlobalInstructions(sourceInstructions, manifest),

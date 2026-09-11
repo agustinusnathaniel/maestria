@@ -4,6 +4,7 @@ import { homedir, tmpdir } from 'node:os';
 import nodePath from 'node:path';
 import picocolors from 'picocolors';
 
+import { parseAgentFrontmatterModel, setAgentFrontmatterModel } from '@/lib/agent-frontmatter.js';
 import { installCodexManagedAgents, removeCodexManagedAgents } from '@/lib/codex-managed-agents.js';
 import { cursorCliName } from '@/lib/cursor-cli.js';
 import {
@@ -29,10 +30,6 @@ import {
   run,
 } from '@/lib/shell.js';
 import type { PlatformResult } from '@/types.js';
-
-// Preserve the historical platforms.ts import surface after the Codex native
-// agent subsystem moved to its own module.
-export { installCodexManagedAgents, removeCodexManagedAgents } from '@/lib/codex-managed-agents.js';
 
 const { isAbsolute, join, win32 } = nodePath;
 
@@ -1090,47 +1087,6 @@ const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
 export const CURSOR_AGENT_NAMES = MAESTRIA_AGENTS;
 
-const parseCursorAgentModel = (content: string): string | undefined => {
-  const frontmatter = /^---\r?\n(?<frontmatter>[\s\S]*?)\r?\n---/u.exec(content)?.groups
-    ?.frontmatter;
-  if (frontmatter === undefined) {
-    return undefined;
-  }
-  const match = /^model:\s*(?:"(?<double>[^"]*)"|'(?<single>[^']*)'|(?<plain>.+?))\s*$/mu.exec(
-    frontmatter,
-  );
-  return match?.groups?.double ?? match?.groups?.single ?? match?.groups?.plain;
-};
-
-const setCursorAgentModel = (content: string, model: string): string => {
-  const match = /^(?<opening>---\r?\n)(?<body>[\s\S]*?)(?<closing>\r?\n---(?:\r?\n)?)/u.exec(
-    content,
-  );
-  if (!match) {
-    return content;
-  }
-  const opening = match.groups?.opening;
-  const body = match.groups?.body;
-  const closing = match.groups?.closing;
-  if (opening === undefined || body === undefined || closing === undefined) {
-    return content;
-  }
-
-  const lines = body.split(/\r?\n/u);
-  const modelIndex = lines.findIndex((line) => /^model:\s*/u.test(line));
-  if (model) {
-    const rendered = `model: ${model}`;
-    if (modelIndex === -1) {
-      lines.push(rendered);
-    } else {
-      lines[modelIndex] = rendered;
-    }
-  } else if (modelIndex !== -1) {
-    lines.splice(modelIndex, 1);
-  }
-  return `${opening}${lines.join('\n')}${closing}${content.slice(match[0].length)}`;
-};
-
 /** Capture configured Cursor plugin-agent models before a package update replaces the plugin. */
 const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandError> =>
   Effect.tryPromise({
@@ -1145,7 +1101,7 @@ const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandE
         CURSOR_AGENT_NAMES.map(async (agent) => {
           try {
             const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf-8');
-            const model = parseCursorAgentModel(content);
+            const model = parseAgentFrontmatterModel(content, { unquote: true });
             return model === undefined || model === '' ? null : ([agent, model] as const);
           } catch (error) {
             if (isFileNotFound(error)) {
@@ -1177,7 +1133,11 @@ const restoreCursorAgentModels = (
         Object.entries(models).map(async ([agent, model]) => {
           const filePath = `${agentDir}/${agent}.md`;
           const content = await readFile(filePath, 'utf-8');
-          await writeFile(filePath, setCursorAgentModel(content, model), 'utf-8');
+          await writeFile(
+            filePath,
+            setAgentFrontmatterModel(content, model, { preserveDelimiters: true }),
+            'utf-8',
+          );
         }),
       );
     },

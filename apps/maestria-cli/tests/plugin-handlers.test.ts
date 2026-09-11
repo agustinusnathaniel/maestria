@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { handlePluginInstall, handlePluginValidate } from '@/commands/plugin.js';
-import type { AgentPluginValidation } from '@/lib/agent-plugin.js';
+import type { AgentPluginValidation } from '@/lib/agent-plugin-validation.js';
 import { CliError } from '@/lib/command-result.js';
 
 const pluginMocks = vi.hoisted(() => ({
@@ -10,9 +10,12 @@ const pluginMocks = vi.hoisted(() => ({
   validate: vi.fn(),
 }));
 
-vi.mock('@/lib/agent-plugin.js', () => ({
-  formatAgentPluginValidation: pluginMocks.format,
+vi.mock('@/lib/agent-plugin-staging.js', () => ({
   stageAgentPlugin: pluginMocks.stage,
+}));
+
+vi.mock('@/lib/agent-plugin-validation.js', () => ({
+  formatAgentPluginValidation: pluginMocks.format,
   validateAgentPlugin: pluginMocks.validate,
 }));
 

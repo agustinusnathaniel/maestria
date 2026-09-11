@@ -103,6 +103,15 @@ export const validateVersion = (input: string): Effect.Effect<string, Validation
   );
 };
 
+/** First typed failure's string `message`, or undefined when none is present. */
+export const failureMessage = (cause: Cause.Cause<unknown>): string | undefined => {
+  const failure: unknown = cause.reasons.find(Cause.isFailReason)?.error;
+  if (typeof failure !== 'object' || failure === null || !('message' in failure)) {
+    return undefined;
+  }
+  return typeof failure.message === 'string' ? failure.message : undefined;
+};
+
 /**
  * Run a validation effect at the CLI boundary.
  * Throws CliError with exit code 1 on failure, returns the value on success.
@@ -112,6 +121,5 @@ export const validateOrThrow = async <A>(effect: Effect.Effect<A, ValidationErro
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
-  const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  throw new CliError(firstFailure?.error?.message ?? 'Validation failed', 1);
+  throw new CliError(failureMessage(exit.cause) ?? 'Validation failed', 1);
 };

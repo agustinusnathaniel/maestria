@@ -85,13 +85,10 @@ export const readTextFile = (filePath: string): Effect.Effect<string, CommandErr
   });
 
 export const fileExists = (filePath: string): Effect.Effect<boolean> =>
-  Effect.tryPromise({
-    catch: () => false,
-    try: async () => {
-      const { access } = await import('node:fs/promises');
-      await access(filePath);
-      return true;
-    },
+  Effect.tryPromise(async () => {
+    const { access } = await import('node:fs/promises');
+    await access(filePath);
+    return true;
   }).pipe(Effect.catchCause(() => Effect.succeed(false)));
 
 export const commandExists = (cmd: string): Effect.Effect<boolean> =>

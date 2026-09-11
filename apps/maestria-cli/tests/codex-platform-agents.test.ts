@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
-import { installCodexManagedAgents, removeCodexManagedAgents } from '@/lib/platforms.js';
+import { installCodexManagedAgents, removeCodexManagedAgents } from '@/lib/codex-managed-agents.js';
 
 const AGENTS = [
   'adventurer',

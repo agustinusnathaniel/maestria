@@ -2,7 +2,8 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
 
-import { stageAgentPlugin, validateAgentPlugin } from '@/lib/agent-plugin.js';
+import { stageAgentPlugin } from '@/lib/agent-plugin-staging.js';
+import { validateAgentPlugin } from '@/lib/agent-plugin-validation.js';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
 const PORTABLE_PACKAGE = path.join(REPO_ROOT, 'packages/agent-plugin');
