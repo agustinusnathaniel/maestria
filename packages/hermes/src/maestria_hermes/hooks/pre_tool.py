@@ -11,7 +11,8 @@ any mode allowlist runs:
   write, shell, code-execution, delegation, or OpenCode access.  Mode
   allowlists bound only trusted TOP-LEVEL sessions.
 - A trusted top-level session keeps direct policy: unrestricted in fein,
-  the literal allowlists in sonar/blitz.
+  the literal allowlists in sonar/blitz.  An unknown mode value fails
+  closed before any allowlist is consulted.
 - INVALID_CHILD, UNKNOWN, and ENDED sessions deny ALL tools (fail closed).
 - Child state always outranks any task_id == session_id binding.
 
@@ -39,7 +40,7 @@ from __future__ import annotations
 
 import logging
 
-from maestria_hermes.modes import ModeManager
+from maestria_hermes.modes import VALID_MODES, ModeManager
 from maestria_hermes.permissions import (
     BLITZ_DIRECT_ALLOWED_TOOLS,
     CHILD_SAFE_ALLOWED_TOOLS,
@@ -87,6 +88,42 @@ def _is_malformed_tool_name(tool_name: object) -> bool:
     return False
 
 
+def _block(message: str) -> dict:
+    return {"action": "block", "message": message}
+
+
+def _top_level_policy(mode: str, tool_name: str) -> None | dict:
+    """Direct policy for a trusted top-level session.
+
+    Defense in depth: ModeManager validates stored values, but an unknown
+    mode string must never fall through to the unrestricted fein branch of
+    this policy.  Valid modes keep their existing behavior.
+    """
+    if mode not in VALID_MODES:
+        logger.warning("invalid maestria mode denied tool=%s mode=%r", tool_name, mode)
+        return _block("Tool access denied: invalid maestria mode.")
+    if mode == "sonar":
+        if tool_name not in SONAR_ALLOWED_TOOLS:
+            logger.info("sonar mode blocked tool=%s", tool_name)
+            return _block(
+                f"Tool '{tool_name}' is blocked in sonar mode. "
+                "Switch to fein or blitz mode to make changes "
+                "(/fein or /blitz)."
+            )
+        return None
+    if mode == "blitz":
+        if tool_name not in BLITZ_DIRECT_ALLOWED_TOOLS:
+            logger.info("blitz direct session blocked tool=%s", tool_name)
+            return _block(
+                f"Tool '{tool_name}' is blocked for direct blitz work. "
+                "Route code changes through a permitted top-level fein session; "
+                "direct blitz work is limited to explanation, discovery, and "
+                "non-code work."
+            )
+        return None
+    return None  # Direct fein session: normal access preserved
+
+
 def create_pre_tool_hook(mode_manager: ModeManager):
     """Create a pre_tool_call hook closure bound to the given mode manager.
 
@@ -110,32 +147,6 @@ def create_pre_tool_hook(mode_manager: ModeManager):
             and is_valid_lifecycle_id(task_id)
             and task_id == session_id
         )
-
-    def _block(message: str) -> dict:
-        return {"action": "block", "message": message}
-
-    def _top_level_policy(mode: str, tool_name: str) -> None | dict:
-        """Direct policy for a trusted top-level session."""
-        if mode == "sonar":
-            if tool_name not in SONAR_ALLOWED_TOOLS:
-                logger.info("sonar mode blocked tool=%s", tool_name)
-                return _block(
-                    f"Tool '{tool_name}' is blocked in sonar mode. "
-                    "Switch to fein or blitz mode to make changes "
-                    "(/fein or /blitz)."
-                )
-            return None
-        if mode == "blitz":
-            if tool_name not in BLITZ_DIRECT_ALLOWED_TOOLS:
-                logger.info("blitz direct session blocked tool=%s", tool_name)
-                return _block(
-                    f"Tool '{tool_name}' is blocked for direct blitz work. "
-                    "Route code changes through a permitted top-level fein session; "
-                    "direct blitz work is limited to explanation, discovery, and "
-                    "non-code work."
-                )
-            return None
-        return None  # Direct fein session: normal access preserved
 
     def _child_policy(tool_name: str) -> None | dict:
         """Fixed role-neutral policy for a trusted delegated child.

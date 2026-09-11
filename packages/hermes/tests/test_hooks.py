@@ -80,7 +80,7 @@ import unittest
 from unittest.mock import patch
 
 from maestria_hermes import _on_subagent_start, _on_subagent_stop
-from maestria_hermes.hooks.pre_tool import create_pre_tool_hook
+from maestria_hermes.hooks.pre_tool import _top_level_policy, create_pre_tool_hook
 from maestria_hermes.modes import VALID_MODES, ModeManager
 from maestria_hermes.permissions import (
     BLITZ_DIRECT_ALLOWED_TOOLS,
@@ -1911,6 +1911,38 @@ class FailClosedTests(HookTestBase):
         self.start_child("end-child-reuse", "leaf")
         self.assertIsNone(hook(tool_name="read", session_id="end-child-reuse"))
 
+    def test_unknown_mode_blocks_through_top_level_policy(self):
+        """Defense in depth: an unknown mode string never falls through to
+        the unrestricted fein branch of the trusted top-level policy.
+
+        ModeManager only returns validated values, so the policy function is
+        called directly with the unknown string rather than fabricating mode
+        state through get_mode.  Valid modes keep their exact behavior.
+        """
+        for mode in ("neutral", "FEIN", "fein "):
+            with self.subTest(mode=repr(mode)):
+                self.assertEqual(
+                    _top_level_policy(mode, "write"),
+                    {
+                        "action": "block",
+                        "message": "Tool access denied: invalid maestria mode.",
+                    },
+                )
+                self.assertEqual(_top_level_policy(mode, "read")["action"], "block")
+
+        # Valid modes keep their exact block messages.
+        self.assertEqual(
+            _top_level_policy("sonar", "write")["message"],
+            "Tool 'write' is blocked in sonar mode. Switch to fein or blitz "
+            "mode to make changes (/fein or /blitz).",
+        )
+        self.assertEqual(
+            _top_level_policy("blitz", "write")["message"],
+            "Tool 'write' is blocked for direct blitz work. Route code changes "
+            "through a permitted top-level fein session; direct blitz work is "
+            "limited to explanation, discovery, and non-code work.",
+        )
+
 
 class AllowlistTests(HookTestBase):
     def test_child_safe_allowlist_is_exact_and_literal(self):
@@ -2158,9 +2190,23 @@ class PluginRegistrationTests(unittest.TestCase):
                 self.assertIn(hook, ctx.hooks)
         self.assertIn("opencode_route", ctx.tools)
         self.assertIn("llm_execution", ctx.middleware)
-        for cmd in ("fein", "sonar", "blitz", "mode", "review", "plan"):
-            with self.subTest(cmd=cmd):
-                self.assertIn(cmd, ctx.commands)
+
+    def test_registered_commands_match_shared_command_set(self):
+        """register() and pre-gateway dispatch share one command set.
+
+        pre_gateway gates on modes.MAESTRIA_COMMANDS; registration must
+        expose exactly the same names, so the two paths cannot drift.
+        """
+        from maestria_hermes import register
+        from maestria_hermes.modes import MAESTRIA_COMMANDS
+
+        home = tempfile.TemporaryDirectory()
+        self.addCleanup(home.cleanup)
+        with patch.dict(os.environ, {"HERMES_HOME": home.name}, clear=False):
+            ctx = _FakeCtx()
+            register(ctx)
+
+        self.assertEqual(set(ctx.commands), set(MAESTRIA_COMMANDS))
 
     def test_register_binds_session_lifecycle_methods_directly(self):
         """The session lifecycle hooks are the SessionManager bound
@@ -2216,6 +2262,30 @@ class PluginRegistrationTests(unittest.TestCase):
         runtime_hooks = set(ctx.hooks)
 
         self.assertEqual(manifest_hooks, runtime_hooks)
+
+    def test_plugin_yaml_provides_commands_match_shared_command_set(self):
+        """plugin.yaml's provides_commands list must EQUAL the shared
+        MAESTRIA_COMMANDS set (order-insensitive): parsing both sets and
+        asserting equality rejects extra or missing manifest commands, so
+        the manifest cannot drift from register() and pre-gateway dispatch."""
+        pkg_root = pathlib.Path(__file__).resolve().parent.parent
+        yaml_text = (pkg_root / "plugin.yaml").read_text(encoding="utf-8")
+        manifest_commands = set()
+        in_commands = False
+        for raw_line in yaml_text.splitlines():
+            line = raw_line.strip()
+            if line.startswith("provides_commands:"):
+                in_commands = True
+                continue
+            if in_commands and line.startswith("- "):
+                manifest_commands.add(line[2:].strip())
+            elif in_commands and line:
+                in_commands = False
+        self.assertTrue(manifest_commands, "provides_commands list not parsed")
+
+        from maestria_hermes.modes import MAESTRIA_COMMANDS
+
+        self.assertEqual(manifest_commands, set(MAESTRIA_COMMANDS))
 
 
 if __name__ == "__main__":
