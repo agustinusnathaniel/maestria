@@ -44,13 +44,13 @@
     "test": "vp test"
   },
   "dependencies": {
-    "es-toolkit": "^1.51.0",
+    "es-toolkit": "^1.52.0",
     "yaml": "^2.9.0",
-    "zod": "^4.4.3"
+    "zod": "^4.6.1"
   },
   "devDependencies": {
     "@maestria/shared-mode": "workspace:*",
-    "@opencode-ai/plugin": "^1.18.19",
+    "@opencode-ai/plugin": "^1.18.30",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

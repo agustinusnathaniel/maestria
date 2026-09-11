@@ -62,7 +62,7 @@ const runUninstallInteractive = async (
     message: 'Which platform do you want to uninstall maestria for?',
     options: installed.map((p) => ({ label: p.label, value: p.id })),
   });
-  if (isCancel(selected) || !selected) {
+  if (isCancel(selected) || typeof selected !== 'string' || selected === '') {
     cancel('Uninstall cancelled.');
     throw new CliError('', 130);
   }
