@@ -377,7 +377,7 @@ Unlike every other command, `check` has no `--compact` flag. The default output 
 | Installed and current | `0` | `available: true`, `pluginInstalled: true`, `installedVersion`, `latestVersion` |
 | Installed and outdated | `3` | Same fields plus `outdated: true` when `--json` is set; text output prints the available update |
 
-With `--all`, the exit code is `1` when any detected platform is unavailable or not installed, `3` when all detected platforms are installed and at least one is outdated, and `0` otherwise. Every JSON result includes the `platform` field with the checked platform id, and `latestVersion` is included only when it could be determined. JSON is written to stdout only when `--json` is passed; otherwise the default text output is written.
+With `--all`, the exit code is `1` when no detected platform is available, or when any available platform is not installed, `3` when all available detected platforms are installed and at least one is outdated, and `0` otherwise. Every JSON result includes the `platform` field with the checked platform id, and `latestVersion` is included only when it could be determined. JSON is written to stdout only when `--json` is passed; otherwise the default text output is written.
 
 ### Example
 
