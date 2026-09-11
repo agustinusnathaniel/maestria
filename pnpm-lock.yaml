@@ -168,16 +168,10 @@ overrides:
   oxlint: 1.82.0
   '@vitest/browser-preview': 4.1.11
   minimatch: 10.2.6
-  js-yaml: 4.3.2
-  read-yaml-file>js-yaml: 3.15.2
-  protobufjs: 7.6.6
-  svgo: 4.1.0
-  fast-uri: 3.1.7
   yaml-language-server>yaml: 2.9.0
   tmp: 0.2.7
   adm-zip: 0.6.0
   sharp: 0.35.4
-  nanoid: 3.3.18
   undici: 8.10.2
 
 importers:
