@@ -3,7 +3,8 @@
 // Resolves the single ordered list of files a run will process: primary source
 // files in walk order, then secondary config entries in declaration order.
 // Anchor validation and the processing loop both consume this plan, so their
-// resolution cannot drift.
+// resolution cannot drift. Verbose diagnostics are resolved here too, so the
+// reporting loop never re-derives source filtering or origin labels.
 
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -18,36 +19,49 @@ export interface SyncPlanEntry {
   fileCfg: ResolvedFileConfig;
   /** Source-relative path for primary files, config key for secondary sources. */
   label: string;
+  /** Diagnostic label for verbose output; secondary entries name their origin. */
+  logLabel: string;
   origin: 'primary' | 'secondary';
 }
 
 // ── Plan Resolution ──
 
-const resolvePrimaryEntries = (
+/**
+ * Resolve the ordered plan for one run. `report` labels the verbose notes.
+ * Throws a single ConfigError naming every config entry missing from the source
+ * dir and its parent before any file is processed. Verbose notes are returned
+ * in source walk order for the caller to emit before processing.
+ */
+export const resolveSyncPlan = (
   config: ResolvedSyncConfig,
   sourceFiles: string[],
-): SyncPlanEntry[] => {
+  report: string,
+): { entries: SyncPlanEntry[]; notes: string[] } => {
   const entries: SyncPlanEntry[] = [];
+  const notes: string[] = [];
+  const matchedFilenames = new Set<string>();
+
   for (const relPath of sourceFiles) {
     if (!relPath.endsWith('.md')) {
+      notes.push(`[${report}] Skipping non-.md file: ${relPath}`);
       continue;
     }
+    const filename = path.basename(relPath);
+    matchedFilenames.add(filename);
+    const explicit = config.files[filename];
+    if (explicit === undefined) {
+      notes.push(`[${report}] No config for ${relPath}, using defaults`);
+    }
     entries.push({
-      fileCfg: resolveSourceFile(config, path.basename(relPath)),
+      fileCfg: explicit ?? resolveSourceFile(config, filename),
       label: relPath,
+      logLabel: relPath,
       origin: 'primary',
       sourcePath: path.resolve(config.source, relPath),
     });
   }
-  return entries;
-};
 
-const resolveSecondaryEntries = (
-  config: ResolvedSyncConfig,
-  matchedFilenames: Set<string>,
-): SyncPlanEntry[] => {
   const secondarySourceDir = path.dirname(config.source);
-  const entries: SyncPlanEntry[] = [];
   const missing: string[] = [];
   for (const [filename, fileCfg] of Object.entries(config.files)) {
     if (matchedFilenames.has(filename)) {
@@ -58,26 +72,19 @@ const resolveSecondaryEntries = (
       missing.push(filename);
       continue;
     }
-    entries.push({ fileCfg, label: filename, origin: 'secondary', sourcePath });
+    entries.push({
+      fileCfg,
+      label: filename,
+      logLabel: `secondary source ${filename}`,
+      origin: 'secondary',
+      sourcePath,
+    });
   }
   if (missing.length > 0) {
     throw new ConfigError(
       `Config entries not found in source or secondary dir: ${missing.join(', ')}`,
     );
   }
-  return entries;
-};
 
-/**
- * Resolve the ordered plan for one run. Throws a single ConfigError naming every
- * config entry missing from the source dir and its parent before any file is
- * processed.
- */
-export const resolveSyncPlan = (
-  config: ResolvedSyncConfig,
-  sourceFiles: string[],
-): SyncPlanEntry[] => {
-  const primary = resolvePrimaryEntries(config, sourceFiles);
-  const matchedFilenames = new Set(primary.map((entry) => path.basename(entry.sourcePath)));
-  return [...primary, ...resolveSecondaryEntries(config, matchedFilenames)];
+  return { entries, notes };
 };

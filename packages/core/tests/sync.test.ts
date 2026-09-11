@@ -48,8 +48,8 @@ const validateAnchorsFor = async (
   config: ResolvedSyncConfig,
   sourceFiles: string[],
 ): Promise<AnchorReport> => {
-  const plan = resolveSyncPlan(config, sourceFiles);
-  return await validateAnchors(config, plan);
+  const { entries } = resolveSyncPlan(config, sourceFiles, 'sync');
+  return await validateAnchors(config, entries);
 };
 
 // ═══════════════════════════════════════════════
@@ -894,20 +894,43 @@ describe('resolveSyncPlan', () => {
       'skills/handoff.md': configForOutput(join(tmpDir, 'out', 'handoff.md')),
     });
 
-    const plan = resolveSyncPlan(config, ['alpha.md', 'beta.md', 'notes.txt']);
+    const { entries } = resolveSyncPlan(config, ['alpha.md', 'beta.md', 'notes.txt'], 'sync');
 
-    expect(plan.map((entry) => [entry.origin, entry.label])).toEqual([
+    expect(entries.map((entry) => [entry.origin, entry.label])).toEqual([
       ['primary', 'alpha.md'],
       ['primary', 'beta.md'],
       ['secondary', 'skills/handoff.md'],
     ]);
-    expect(plan.map((entry) => entry.sourcePath)).toEqual([
+    expect(entries.map((entry) => entry.sourcePath)).toEqual([
       join(sourceDir, 'alpha.md'),
       join(sourceDir, 'beta.md'),
       join(tmpDir, 'skills', 'handoff.md'),
     ]);
-    expect(plan[0].fileCfg).toBe(config.files['alpha.md']);
-    expect(plan[1].fileCfg.output).toBe(join(tmpDir, 'out', 'beta.md'));
+    expect(entries[0].fileCfg).toBe(config.files['alpha.md']);
+    expect(entries[1].fileCfg.output).toBe(join(tmpDir, 'out', 'beta.md'));
+  });
+
+  it('resolves verbose diagnostics in source walk order', () => {
+    const config = makePlanConfig({
+      'alpha.md': configForOutput(join(tmpDir, 'out', 'alpha.md')),
+      'skills/handoff.md': configForOutput(join(tmpDir, 'out', 'handoff.md')),
+    });
+
+    const { entries, notes } = resolveSyncPlan(
+      config,
+      ['alpha.md', 'beta.md', 'notes.txt'],
+      'check',
+    );
+
+    expect(notes).toEqual([
+      '[check] No config for beta.md, using defaults',
+      '[check] Skipping non-.md file: notes.txt',
+    ]);
+    expect(entries.map((entry) => entry.logLabel)).toEqual([
+      'alpha.md',
+      'beta.md',
+      'secondary source skills/handoff.md',
+    ]);
   });
 
   it('throws one ConfigError naming every missing secondary entry in declaration order', () => {
@@ -917,8 +940,8 @@ describe('resolveSyncPlan', () => {
       'zzz-missing.md': configForOutput(join(tmpDir, 'out', 'zzz-missing.md')),
     });
 
-    expect(() => resolveSyncPlan(config, [])).toThrow(ConfigError);
-    expect(() => resolveSyncPlan(config, [])).toThrow(
+    expect(() => resolveSyncPlan(config, [], 'sync')).toThrow(ConfigError);
+    expect(() => resolveSyncPlan(config, [], 'sync')).toThrow(
       'Config entries not found in source or secondary dir: aaa-missing.md, zzz-missing.md',
     );
   });
