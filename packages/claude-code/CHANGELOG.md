@@ -1,5 +1,11 @@
 # @maestria/claude-code
 
+## 0.3.6
+
+### Patch Changes
+
+- [#293](https://github.com/agustinusnathaniel/maestria/pull/293) [`5e3046e`](https://github.com/agustinusnathaniel/maestria/commit/5e3046ee97c9223c8a184aa6ad63a33b52286c94) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove duplicated specialist guidance from generated orchestrator skills. The canonical Specialist Ownership table shipped in the same file already covers the removed tables and rosters, so the guidance is unchanged in substance.
+
 ## 0.3.5
 
 ### Patch Changes

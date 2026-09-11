@@ -1,5 +1,11 @@
 # @maestria/prime-agent
 
+## 0.3.7
+
+### Patch Changes
+
+- [#293](https://github.com/agustinusnathaniel/maestria/pull/293) [`5e3046e`](https://github.com/agustinusnathaniel/maestria/commit/5e3046ee97c9223c8a184aa6ad63a33b52286c94) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Internal consolidation: share more host seams with the private shared packages and remove dead adapters, barrels, and exports. No user-facing behavior change; generated agent and skill output is unchanged.
+
 ## 0.3.6
 
 ### Patch Changes

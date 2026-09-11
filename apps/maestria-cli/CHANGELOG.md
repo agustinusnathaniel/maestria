@@ -1,5 +1,11 @@
 # maestria
 
+## 0.12.3
+
+### Patch Changes
+
+- [#293](https://github.com/agustinusnathaniel/maestria/pull/293) [`5e3046e`](https://github.com/agustinusnathaniel/maestria/commit/5e3046ee97c9223c8a184aa6ad63a33b52286c94) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Internal deduplication across platform handlers, model configuration, and plugin validation. No CLI behavior, output, or exit-code changes.
+
 ## 0.12.2
 
 ### Patch Changes

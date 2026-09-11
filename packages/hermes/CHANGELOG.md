@@ -1,5 +1,11 @@
 # @maestria/hermes
 
+## 0.1.17
+
+### Patch Changes
+
+- [#293](https://github.com/agustinusnathaniel/maestria/pull/293) [`5e3046e`](https://github.com/agustinusnathaniel/maestria/commit/5e3046ee97c9223c8a184aa6ad63a33b52286c94) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove dead role and permission scaffolding that ADR-HM-002 already recorded as removed, unify slash-command mode text, and restore the fail-closed denial for unknown mode values. Generated skill guidance no longer describes the removed role model.
+
 ## 0.1.16
 
 ### Patch Changes
