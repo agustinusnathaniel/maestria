@@ -24,5 +24,6 @@ provides_commands:
   - sonar
   - blitz
   - mode
+  - mode-clear
   - review
   - plan

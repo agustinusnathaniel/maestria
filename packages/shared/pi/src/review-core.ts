@@ -23,6 +23,28 @@ interface ReviewCtx {
   ui: { notify: (msg: string) => void };
 }
 
+/**
+ * Bind a platform host to the review-mode model/tool API.
+ *
+ * `isModel` is the platform's model guard; a model is passed to the host
+ * only when the guard accepts it, keeping host-specific validation at the
+ * platform seam.
+ */
+export const createReviewApi = <Model>(
+  pi: {
+    setActiveTools: (tools: string[]) => void | Promise<void>;
+    setModel: (model: Model) => Promise<unknown>;
+  },
+  isModel: (value: unknown) => value is Model,
+): ReviewPi => ({
+  setActiveTools: (tools): void | Promise<void> => pi.setActiveTools(tools),
+  setModel: async (model) => {
+    if (isModel(model)) {
+      await pi.setModel(model);
+    }
+  },
+});
+
 export const restoreOriginalState = async (
   pi: ReviewPi,
   ctx: ReviewCtx,

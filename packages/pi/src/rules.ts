@@ -5,7 +5,7 @@ import type {
 import { getModePrompt } from '@maestria/shared-pi/modes-core';
 import path from 'node:path';
 
-import type { MaestriaState } from '@/state.js';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
 const __dirname = import.meta.dirname;
 const COMMANDS_DIR = path.resolve(__dirname, '../agents/commands');

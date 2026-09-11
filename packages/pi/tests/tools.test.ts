@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
+import type { Mock } from 'vite-plus/test';
 
-import { createInitialState } from '@/state.js';
+import { createInitialState } from '@maestria/shared-pi/state-core';
 import { installToolInterceptors } from '@/tools.js';
 import type { ToolApi } from '@/tools.js';
 import type { ToolCallHandler, ToolCallResult } from '@maestria/shared-pi/tools-core';
@@ -9,7 +10,7 @@ interface MockPi {
   appendEntry: ReturnType<typeof vi.fn<ToolApi['appendEntry']>>;
   getActiveTools: ReturnType<typeof vi.fn<ToolApi['getActiveTools']>>;
   handlers: ToolCallHandler[];
-  on: ReturnType<typeof vi.fn<ToolApi['on']>>;
+  on: Mock;
 }
 
 const createMockPi = (activeTools: string[] = []): MockPi => {
@@ -18,7 +19,7 @@ const createMockPi = (activeTools: string[] = []): MockPi => {
     appendEntry: vi.fn(),
     getActiveTools: vi.fn(() => activeTools),
     handlers,
-    on: vi.fn((_event, handler) => {
+    on: vi.fn((_event: string, handler: ToolCallHandler) => {
       handlers.push(handler);
     }),
   };

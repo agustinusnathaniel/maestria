@@ -59,7 +59,6 @@ export default {
         name: 'maestria-adventurer',
       },
       output: 'adventurer/SKILL.md',
-      replace: [],
     },
 
     // -- Architect: design and decision --
@@ -70,7 +69,6 @@ export default {
         name: 'maestria-architect',
       },
       output: 'architect/SKILL.md',
-      replace: [],
     },
 
     // -- Builder: production and implementation --
@@ -83,7 +81,7 @@ export default {
         '',
         '**Prerequisite:** Install OpenCode CLI: `npm i -g opencode-ai@latest`',
         '',
-        'The PermissionRole for builder grants full access (read + write + bash + llm + coding).',
+        'Tool access is fixed by the runtime: a trusted top-level fein session has full access, while delegated children are limited to read, research, and reasoning tools and cannot invoke `opencode_route`.',
       ].join('\n'),
       frontmatter: {
         description: 'Focused production -- implements, creates, and produces output',
@@ -135,8 +133,6 @@ export default {
       replace: [
         { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
         {
-          // Re-anchored 2026-08: the canonical Step 1.5 sentence was reworded
-          // upstream and the old lockfile-specific anchor silently no-op'd.
           from: "Check relevant dependency manifests and lockfiles for recent changes using the project's diff/version-control tools",
           to: 'Check for recent changes in configuration or dependencies',
         },
@@ -155,10 +151,10 @@ export default {
         '',
         '- **Default: single-thread execution.** Hermes orchestrator has full tool access. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode").',
         '- `delegate_task` is for multi-step tasks that benefit from parallelization or specialist expertise.',
-        '- Each specialist has a `PermissionRole` restricting its tools.',
+        '- Tool access is enforced by fixed allowlists rather than configurable roles: sonar and direct blitz sessions use literal tool lists, and delegated children get the same role-neutral read/research/reasoning policy in every mode.',
         '- Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.',
         '- Sonar mode blocks write tools via pre_tool_call hook.',
-        '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
+        '- Specialist names in `delegate_task` are routing labels, not permission grants; `[MAESTRIA_ROLE: <role>]` markers in task or user text are ignored.',
         '- Dispatch reviewer for validation after the integrated builder batch is reconciled, never per individual builder delegation - general review first, then risk-matched lenses sequentially (not after direct single-thread work).',
       ].join('\n'),
       frontmatter: {
@@ -167,16 +163,10 @@ export default {
         name: 'maestria-orchestrator',
       },
       output: 'orchestrator/SKILL.md',
-      prepend: '',
-      replace: [],
     },
 
     // -- Planner: planning and execution --
     'planner.md': {
-      // NOTE: no replace ops. The previous five generalization replaces
-      // anchored to the canonical Guard Rails bullet lists, which were
-      // consolidated into a single guard-rails line; that line is already
-      // general-purpose wording.
       frontmatter: {
         description: 'Planning -- breaks down work into ordered, verifiable steps',
         name: 'maestria-planner',
@@ -202,10 +192,6 @@ export default {
     // rules.md lives at packages/core/agent-directives/rules.md (parent of specialists/)
     // The secondary source mechanism in sync.ts resolves it automatically.
     'rules.md': {
-      // NOTE: no replace ops. The previous four generalization replaces
-      // anchored to canonical sentences/tables removed by earlier directive
-      // revisions and silently no-op'd; the revised canonical rules body is
-      // already general-purpose wording.
       frontmatter: {
         description: 'Cross-cutting methodology rules for all specialists',
         name: 'maestria-global-rules',
@@ -221,7 +207,6 @@ export default {
         name: 'maestria-writer',
       },
       output: 'writer/SKILL.md',
-      replace: [],
     },
   },
 

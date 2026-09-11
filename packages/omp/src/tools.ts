@@ -1,40 +1,10 @@
-import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
-import type { ToolCallEventLike } from '@maestria/shared-pi/tools-core';
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
+import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
 
-import type { MaestriaState } from '@/state.js';
-import { persistState } from '@/state.js';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import { persistState } from '@maestria/shared-pi/state-core';
 
-export interface ToolContext {
-  hasUI?: boolean;
-  ui?: { confirm: (title: string, message: string) => Promise<boolean> };
-}
-
-export interface ToolResult {
-  block: boolean;
-  reason: string;
-}
-
-export type ToolHandler = (
-  event: ToolCallEventLike,
-  ctx: ToolContext,
-) => Promise<ToolResult | undefined>;
-
-export interface ToolApi {
-  appendEntry: (type: string, data: unknown) => void;
-  getActiveTools: () => string[];
-  on: (event: 'tool_call', handler: ToolHandler) => void;
-}
-
-export const createToolApi = (pi: ExtensionAPI): ToolApi => ({
-  appendEntry: (type, data) => {
-    pi.appendEntry(type, data);
-  },
-  getActiveTools: () => pi.getActiveTools(),
-  on: (_event, handler) => {
-    pi.on('tool_call', async (event, ctx) => await handler(event, ctx));
-  },
-});
+export type ToolApi = Pick<ExtensionAPI, 'appendEntry' | 'getActiveTools' | 'on'>;
 
 export const installToolInterceptors = (pi: ToolApi, state: MaestriaState): void => {
   const handler = createToolCallHandler({

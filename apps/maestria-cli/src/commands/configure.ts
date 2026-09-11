@@ -1,13 +1,18 @@
 import { cancel, isCancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
-import { Cause, Effect, Exit } from 'effect';
+import { Effect, Exit } from 'effect';
 import picocolors from 'picocolors';
 
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { getModelConfigHandler, MAESTRIA_AGENTS, modelConfigHandlers } from '@/lib/model-config.js';
+import {
+  getModelConfigHandler,
+  isAgentName,
+  MAESTRIA_AGENTS,
+  modelConfigHandlers,
+} from '@/lib/model-config.js';
 import type {
   AgentModels,
   AgentName,
@@ -16,7 +21,7 @@ import type {
 } from '@/lib/model-config.js';
 import { createSpinner } from '@/lib/output.js';
 import { commandExists } from '@/lib/shell.js';
-import { validateOrThrow, validatePlatform } from '@/lib/validation.js';
+import { failureMessage, validateOrThrow, validatePlatform } from '@/lib/validation.js';
 
 export interface ConfigureArgs {
   compact?: boolean;
@@ -36,9 +41,6 @@ const cancelAndExit = (): never => {
   cancel('Cancelled.');
   throw new CliError('', 130);
 };
-
-const isAgentName = (agent: string): agent is AgentName =>
-  MAESTRIA_AGENTS.some((knownAgent) => knownAgent === agent);
 
 /** Parse `--set adventurer=model,builder=` pairs. Empty model = inherit/unset. */
 const parseSetPairs = (input: string): AgentModels => {
@@ -67,16 +69,7 @@ const runOrThrow = async <T>(effect: Effect.Effect<T, unknown>, fallback: string
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
-  const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  const failure = firstFailure?.error;
-  const message =
-    typeof failure === 'object' &&
-    failure !== null &&
-    'message' in failure &&
-    typeof failure.message === 'string'
-      ? failure.message
-      : undefined;
-  return fail(message ?? fallback);
+  return fail(failureMessage(exit.cause) ?? fallback);
 };
 
 const renderConfigureSummary = (

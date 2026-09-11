@@ -1,7 +1,6 @@
+import { installCompactionHandlers } from '@maestria/shared-pi/compaction-core';
+import { createInitialState } from '@maestria/shared-pi/state-core';
 import { describe, expect, it, vi } from 'vite-plus/test';
-
-import { installCompactionHandlers } from '@/compaction.js';
-import { createInitialState } from '@/state.js';
 
 interface CompactEvent {
   preparation?: {

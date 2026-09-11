@@ -2,14 +2,19 @@ import { cancel, isCancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 
+import {
+  assertInteractiveTerminal,
+  batchCommandResult,
+  resolveBatchQuiet,
+  runBatchSelected,
+} from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectInstalled } from '@/lib/detect.js';
-import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
-import { getPlatform, getPlatformOrResult, platforms } from '@/lib/platforms.js';
+import { createSpinner } from '@/lib/output.js';
+import { getPlatform, platforms } from '@/lib/platforms.js';
 import { uninstallOne } from '@/lib/platform-transaction.js';
-import { exitCodeForResults } from '@/lib/result-exit.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
@@ -20,33 +25,6 @@ export interface UninstallArgs {
   platform?: string;
   quiet?: boolean;
 }
-
-const renderUninstallOutput = (
-  results: PlatformResult[],
-  args: { compact?: boolean; json?: boolean },
-): string => {
-  if (args.json === true) {
-    return JSON.stringify(results, null, 2);
-  }
-  if (args.compact === true) {
-    return renderCompactResults(results);
-  }
-  return renderResults(results);
-};
-
-const uninstallSelected = async (
-  selections: { id: string; label?: string }[],
-  isQuiet: boolean,
-): Promise<PlatformResult[]> =>
-  await Effect.runPromise(
-    Effect.all(
-      selections.map(({ id, label }) => {
-        const platform = getPlatformOrResult(id, label);
-        return 'ok' in platform ? Effect.succeed(platform) : uninstallOne(platform, isQuiet);
-      }),
-      { concurrency: 1 },
-    ),
-  );
 
 const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | CommandResult> => {
   const spinner = createSpinner(isQuiet);
@@ -59,25 +37,17 @@ const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | Com
       output: 'No maestria installations found to uninstall.',
     };
   }
-  return await uninstallSelected(
+  return await runBatchSelected(
     installed.map((p) => ({ id: p.id, label: p.label })),
     isQuiet,
+    uninstallOne,
   );
 };
 
 const runUninstallInteractive = async (
   isQuiet: boolean,
 ): Promise<PlatformResult[] | CommandResult> => {
-  if (!process.stdout.isTTY || !process.stdin.isTTY) {
-    throw new CliError(
-      [
-        'No platform specified and not in an interactive terminal.',
-        'Usage: maestria uninstall <platform> or maestria uninstall --all',
-        "Run 'maestria uninstall --help' for details.",
-      ].join('\n'),
-      1,
-    );
-  }
+  assertInteractiveTerminal('uninstall');
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const installed = await Effect.runPromise(detectInstalled());
@@ -96,11 +66,11 @@ const runUninstallInteractive = async (
     cancel('Uninstall cancelled.');
     throw new CliError('', 130);
   }
-  return await uninstallSelected([{ id: selected }], isQuiet);
+  return await runBatchSelected([{ id: selected }], isQuiet, uninstallOne);
 };
 
 export const handleUninstall = async (args: UninstallArgs): Promise<CommandResult> => {
-  const isQuiet = args.quiet === true || args.compact === true;
+  const isQuiet = resolveBatchQuiet(args);
   let results: PlatformResult[];
   if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
     const platform = getPlatform(args.platform);
@@ -110,7 +80,7 @@ export const handleUninstall = async (args: UninstallArgs): Promise<CommandResul
         1,
       );
     }
-    results = [await Effect.runPromise(uninstallOne(platform, isQuiet))];
+    results = await runBatchSelected([{ id: platform.id }], isQuiet, uninstallOne);
   } else if (args.all === true) {
     const outcome = await runUninstallAll(isQuiet);
     if (!Array.isArray(outcome)) {
@@ -124,7 +94,7 @@ export const handleUninstall = async (args: UninstallArgs): Promise<CommandResul
     }
     results = outcome;
   }
-  return { exitCode: exitCodeForResults(results), output: renderUninstallOutput(results, args) };
+  return batchCommandResult(results, args);
 };
 
 export const uninstallCommand = defineCommand({

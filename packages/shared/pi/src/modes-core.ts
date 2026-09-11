@@ -21,10 +21,10 @@ import path from 'node:path';
 
 import type { MaestriaState } from './state-core.js';
 
-// ── Constants (re-exported from shared-mode to preserve public API) ──
+// ── Constants (delegated to shared-mode) ──
 
-export const MODE_KEYWORDS = SHARED_KEYWORDS;
-export const MODE_CLEAR_COMMAND = 'mode-clear';
+const MODE_KEYWORDS = SHARED_KEYWORDS;
+const MODE_CLEAR_COMMAND = 'mode-clear';
 export type ModeKeyword = SharedModeKeyword;
 
 export const MODE_MARKERS: Record<ModeKeyword, string> = SHARED_MARKERS;
@@ -156,7 +156,7 @@ export const installModeAutoDetect = <Context, Result>(
  * and show a notification. Task description injection is handled by the
  * auto-detect handler instead.
  */
-interface ModeCommandContext {
+export interface ModeCommandContext {
   ui: { notify: (msg: string) => void };
 }
 

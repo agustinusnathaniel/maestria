@@ -2,11 +2,12 @@ import {
   installModeAutoDetect as installAutoDetect,
   installModeCommands as installCommands,
 } from '@maestria/shared-pi/modes-core';
+import type { ModeCommandContext } from '@maestria/shared-pi/modes-core';
+import { persistState } from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import type { ExtensionAPI, ExtensionContext } from '@oh-my-pi/pi-coding-agent';
 
-import type { OmpModel } from '@/model.js';
-import type { MaestriaState } from '@/state.js';
-import { persistState, restoreOriginalState } from '@/state.js';
+import { restoreOriginalState } from '@/state/review.js';
 
 const __dirname = import.meta.dirname;
 const COMMANDS_DIR = `${__dirname}/../agents/commands`;
@@ -17,45 +18,6 @@ const isExtensionContext = (value: unknown): value is ExtensionContext => {
   }
   return 'modelRegistry' in value && 'ui' in value;
 };
-
-export interface ModeCommandContext {
-  ui: { notify: (message: string) => void };
-}
-
-export interface ModeCommandsApi {
-  appendEntry: (type: string, data?: unknown) => void;
-  registerCommand: (
-    name: string,
-    options: {
-      description: string;
-      handler: (args: string, ctx: ModeCommandContext) => Promise<void> | void;
-    },
-  ) => void;
-  sendUserMessage: (text: string, options: { deliverAs: 'steer' | 'followUp' }) => void;
-  setActiveTools: (tools: string[]) => Promise<void>;
-  setModel: (model: OmpModel) => Promise<boolean>;
-}
-
-export const createModeCommandsApi = (pi: ExtensionAPI): ModeCommandsApi => ({
-  appendEntry: (type, data) => {
-    pi.appendEntry(type, data);
-  },
-  registerCommand: (name, options) => {
-    pi.registerCommand(name, {
-      description: options.description,
-      handler: async (args, ctx) => {
-        await options.handler(args, ctx);
-      },
-    });
-  },
-  sendUserMessage: (text, options) => {
-    pi.sendUserMessage(text, { deliverAs: options.deliverAs });
-  },
-  setActiveTools: async (tools) => {
-    await pi.setActiveTools(tools);
-  },
-  setModel: async (model) => await pi.setModel(model),
-});
 
 export const installModeAutoDetect = (pi: ExtensionAPI, state: MaestriaState): void => {
   installAutoDetect(
@@ -79,7 +41,17 @@ export const installModeAutoDetect = (pi: ExtensionAPI, state: MaestriaState): v
   );
 };
 
-export const installModeCommands = (pi: ModeCommandsApi, state: MaestriaState): void => {
+type ModeCommandsHost = Pick<ExtensionAPI, 'appendEntry' | 'setActiveTools' | 'setModel'> & {
+  registerCommand: (
+    name: string,
+    options: {
+      description: string;
+      handler: (args: string, ctx: ModeCommandContext) => Promise<void>;
+    },
+  ) => void;
+};
+
+export const installModeCommands = (pi: ModeCommandsHost, state: MaestriaState): void => {
   installCommands<ModeCommandContext>(
     (name, opts) => {
       pi.registerCommand(name, {

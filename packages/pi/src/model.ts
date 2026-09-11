@@ -1,6 +1,6 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
-export type PiModel = Parameters<ExtensionAPI['setModel']>[0];
+type PiModel = Parameters<ExtensionAPI['setModel']>[0];
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;

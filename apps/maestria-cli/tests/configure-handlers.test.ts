@@ -22,6 +22,7 @@ const promptMocks = vi.hoisted(() => ({
 vi.mock('@/lib/model-config.js', () => ({
   MAESTRIA_AGENTS: modelConfigMocks.agents,
   getModelConfigHandler: modelConfigMocks.getHandler,
+  isAgentName: (name: string) => modelConfigMocks.agents.includes(name),
   modelConfigHandlers: [],
 }));
 

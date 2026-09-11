@@ -4,6 +4,7 @@
  * @see ADR-OC-003 for full design context.
  */
 
+import { MODE_KEYWORDS } from '@maestria/shared-mode';
 import { z } from 'zod';
 
 /**
@@ -13,7 +14,7 @@ import { z } from 'zod';
  * - `"sonar"` -- Research only (recon + design, stop before build)
  * - `"blitz"` -- Fast implementation (builder direct, skip optional recon/design; required review remains)
  */
-export const modeKeywordSchema = z.enum(['fein', 'sonar', 'blitz']);
+const modeKeywordSchema = z.enum(MODE_KEYWORDS);
 export type ModeKeyword = z.infer<typeof modeKeywordSchema>;
 
 /**

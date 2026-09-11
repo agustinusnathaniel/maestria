@@ -1,8 +1,7 @@
-import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { createInitialState } from '@/state.js';
-import type { MaestriaState } from '@/state.js';
+import { createInitialState } from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import { installNativeSubagentTool } from '@/subagent.js';
 import type { SubagentToolParams, SubagentToolResult } from '@/subagent.js';
 
@@ -68,9 +67,9 @@ const getToolDef = (pi: MockPi): RegisteredTool => {
 
 const install = (pi: MockPi, state: MaestriaState): void => {
   // The fake supplies only the ExtensionAPI members installNativeSubagentTool
-  // consumes; the host SDK type cannot be satisfied structurally by a test stub.
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  installNativeSubagentTool(pi as unknown as ExtensionAPI, state);
+  // consumes; the host SDK type cannot be satisfied structurally by a test stub,
+  // so invoke through Reflect.apply instead of a narrowing type assertion.
+  Reflect.apply(installNativeSubagentTool, undefined, [pi, state]);
 };
 
 describe('installNativeSubagentTool - tool registration', () => {

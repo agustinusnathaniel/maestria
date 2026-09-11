@@ -109,17 +109,6 @@ export const recordSpecialistDelegated = (state: MaestriaState, name: string): M
   return { ...state, specialistsDelegated: [...state.specialistsDelegated, name] };
 };
 
-export const recordSubagentStatus = (
-  state: MaestriaState,
-  id: string,
-  info: SubagentStatusInfo,
-): MaestriaState => ({ ...state, subagentStatus: { ...state.subagentStatus, [id]: info } });
-
-export const setReviewMode = (state: MaestriaState, active: boolean): MaestriaState => ({
-  ...state,
-  reviewMode: active,
-});
-
 export const exitReviewMode = (
   state: MaestriaState,
 ): {

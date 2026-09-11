@@ -8,6 +8,8 @@ The original 2026-08-11 decision did not promote any runtime to `Native`. Packag
 
 The package projections and Maestria CLI marketplace adapters described by this policy have since been implemented. The Codex CLI rows were reverified against Codex CLI `0.145.0`, current official documentation, and current upstream source on 2026-08-26; that re-verification promotes Codex CLI to `Native` in the support table below. Other runtime rows retain their independently documented gates.
 
+JCode and Crush were evaluated and are not shipped: as of 2026-09-10 no JCode or Crush package exists under `packages/`, and both remain `Deferred` (projection/experiment only) with no confirmed first-class package/extension API. The title names them because they were in the original review scope, not because adapters exist; their rationale is preserved in the decision table below and in [runtime-support-matrix.md](../../runtime-support-matrix.md).
+
 ## Context
 
 Maestria is a behavior layer for AI coding agents. The canonical methodology lives in `packages/core/agent-directives/` and is projected to platform-specific plugins by the core sync pipeline (ADR-CORE-005). The project already ships adapters for OpenCode, Kimi Code, Cursor, Oh My Pi, Pi, and Hermes.

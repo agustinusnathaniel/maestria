@@ -6,11 +6,11 @@ import {
   extractModeSection,
   findCodeBlockRanges,
   getModeMarker,
+  isModeKeyword,
   MODE_KEYWORDS,
   MODE_MARKERS,
   MODE_PRIORITY,
   stripKeyword,
-  VALID_KEYWORDS,
 } from '../src/index.js';
 
 const requireDetection = (
@@ -26,8 +26,17 @@ describe('MODE_KEYWORDS', () => {
   it('contains fein, sonar, blitz', () => {
     expect(MODE_KEYWORDS).toEqual(['fein', 'sonar', 'blitz']);
   });
-  it('VALID_KEYWORDS aliases MODE_KEYWORDS', () => {
-    expect(VALID_KEYWORDS).toEqual(MODE_KEYWORDS);
+});
+
+describe('isModeKeyword', () => {
+  it('accepts known keywords', () => {
+    expect(isModeKeyword('fein')).toBe(true);
+    expect(isModeKeyword('sonar')).toBe(true);
+    expect(isModeKeyword('blitz')).toBe(true);
+  });
+  it('rejects unknown values', () => {
+    expect(isModeKeyword('unknown')).toBe(false);
+    expect(isModeKeyword('')).toBe(false);
   });
 });
 

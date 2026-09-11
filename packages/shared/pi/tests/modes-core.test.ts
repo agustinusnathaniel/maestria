@@ -1,3 +1,4 @@
+import { MODE_KEYWORDS } from '@maestria/shared-mode';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -8,7 +9,6 @@ import {
   detectModeInText,
   getModePrompt,
   loadModePrompt,
-  MODE_KEYWORDS,
   MODE_MARKERS,
 } from '../src/modes-core.js';
 import type { ModeDetectResult } from '../src/modes-core.js';

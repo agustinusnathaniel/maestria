@@ -15,7 +15,7 @@ These flags work across the CLI:
 | `--json`  | Output results as JSON instead of formatted text on every command |
 | `--quiet` | Suppress spinner animations on runtime platform commands          |
 
-`--compact` (machine-friendly text output) is supported on runtime platform commands except `check`, which outputs JSON by default instead. `--help` is available on every command and shows in-terminal examples, exit codes, and AI-agent usage tips.
+`--compact` (machine-friendly text output) is supported on runtime platform commands except `check`. `--help` is available on every command and shows in-terminal examples, exit codes, and AI-agent usage tips.
 
 Running `maestria` with no arguments is equivalent to `maestria status`.
 
@@ -261,15 +261,15 @@ Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`
 
 ### Version caching
 
-The CLI caches `npm view <package> version` results for 1 hour in `~/.cache/maestria/versions.json`:
+The CLI queries npm for the live latest version first. When npm is unreachable, it falls back to the last known version recorded in `~/.cache/maestria/versions.json`:
 
 ```json
 {
-  "@maestria/opencode": { "version": "0.6.2", "cachedAt": 1719600000000 }
+  "@maestria/opencode": { "version": "0.6.2" }
 }
 ```
 
-To force a fresh version check before running a command:
+The cache stores only the last resolved version per package, with no time-to-live, so it is an offline fallback rather than a freshness window. To clear the fallback data:
 
 ```bash
 rm ~/.cache/maestria/versions.json
@@ -277,7 +277,7 @@ rm ~/.cache/maestria/versions.json
 
 <PackageManagers type="dlx" pkg="maestria" args="status" />
 
-The cache is automatically invalidated after a successful update, so `maestria status` always shows the correct latest version after an upgrade.
+A successful update removes that package's cached entry, and the next version check fetches live from npm.
 
 ### Example
 
@@ -295,11 +295,12 @@ The cache is automatically invalidated after a successful update, so `maestria s
 
 ### Exit Codes
 
-| Code  | Meaning                                |
-| ----- | -------------------------------------- |
-| `0`   | Success                                |
-| `1`   | Validation or command error            |
-| `130` | User cancelled (interactive mode only) |
+| Code  | Meaning                                                              |
+| ----- | -------------------------------------------------------------------- |
+| `0`   | Success                                                              |
+| `1`   | Validation or command error                                          |
+| `3`   | Outdated (`check`: an installed plugin is behind the latest version) |
+| `130` | User cancelled (interactive mode only)                               |
 
 The `install` and `update` commands detect non-interactive terminals and exit with code `1` showing a clear error message instead of attempting an interactive prompt.
 
@@ -344,36 +345,39 @@ Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place
 
 ## `check`
 
-Check the installation status of a maestria plugin on a specific platform.
+Check the installation status of a maestria plugin on a specific platform, or on every detected platform with `--all`.
 
 ```bash
-maestria check <platform> [--json] [--no-json] [--quiet]
+maestria check <platform> [--json] [--quiet]
+maestria check --all [--json] [--quiet]
 ```
 
-`<platform>` is required - one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`.
+`<platform>` is one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given.
 
 ### Flags
 
-| Flag        | Description                                                               |
-| ----------- | ------------------------------------------------------------------------- |
-| `--json`    | Output as JSON. **Default: `true`** - JSON is the default output format.  |
-| `--no-json` | Disable JSON output; the exit code alone signals the result               |
-| `--quiet`   | Suppress non-essential stderr output. Does **not** disable JSON on stdout |
+| Flag          | Description                                                               |
+| ------------- | ------------------------------------------------------------------------- |
+| `platform`    | Positional arg - platform to check. Required unless `--all` is set.       |
+| `--all`, `-a` | Check every detected platform                                             |
+| `--json`      | Output as JSON. Default: `false` - human-readable text is the default.    |
+| `--quiet`     | Suppress error messages on stderr. Does not suppress the result on stdout |
 
-Unlike every other command, `check` has no `--compact` flag. For exit-code-only scripting, pass `--no-json`: JSON is not written to stdout and the exit code alone signals the result. `--quiet` suppresses only stderr output (spinners, error messages) - the JSON result is still printed to stdout unless `--no-json` is also passed.
+Unlike every other command, `check` has no `--compact` flag. The default output is human-readable text; pass `--json` for machine-readable output. `--quiet` suppresses error messages, not the result, so `--json --quiet` gives structured output without stderr noise.
 
 ### Behavior
 
-`check` validates the platform, checks whether its CLI is available on `$PATH`, then checks whether the `@maestria/<platform>` plugin is installed:
+`check` validates the platform, checks whether its CLI is available on `$PATH`, then checks whether the `@maestria/<platform>` plugin is installed. With `--all`, it runs the same check for every detected platform.
 
-| State | Exit code | JSON output |
+| State | Exit code | Output |
 | --- | --- | --- |
 | Unknown platform | `1` | Error message on stderr (suppressed with `--quiet`) |
 | CLI tool not available | `1` | `available: false`, `pluginInstalled: false`, `message: "CLI tool for <label> is not available on this machine"` |
 | CLI available, plugin not installed | `1` | `available: true`, `pluginInstalled: false`, `message: "@maestria/<platform> is not installed for <label>"`, `installedVersion` |
-| Installed | `0` | `available: true`, `pluginInstalled: true`, `installedVersion`, `latestVersion` |
+| Installed and current | `0` | `available: true`, `pluginInstalled: true`, `installedVersion`, `latestVersion` |
+| Installed and outdated | `3` | Same fields plus `outdated: true` when `--json` is set; text output prints the available update |
 
-Every result includes the `platform` field with the checked platform id. `latestVersion` is included only when it could be determined. JSON is written to stdout only when `--json` is enabled (the default); with `--no-json` the exit code alone signals the result.
+With `--all`, the exit code is `1` when no detected platform is available, or when any available platform is not installed, `3` when all available detected platforms are installed and at least one is outdated, and `0` otherwise. Every JSON result includes the `platform` field with the checked platform id, and `latestVersion` is included only when it could be determined. JSON is written to stdout only when `--json` is passed; otherwise the default text output is written.
 
 ### Example
 

@@ -70,4 +70,4 @@ For complex multi-file coding tasks that benefit from OpenCode's dedicated sandb
 
 **Prerequisite:** Install OpenCode CLI: `npm i -g opencode-ai@latest`
 
-The PermissionRole for builder grants full access (read + write + bash + llm + coding).
+Tool access is fixed by the runtime: a trusted top-level fein session has full access, while delegated children are limited to read, research, and reasoning tools and cannot invoke `opencode_route`.

@@ -37,7 +37,7 @@ const isModeState = (value: unknown): value is MaestriaModeState => {
  * Read the mode state from the current session branch: the most recent
  * `maestria_mode` custom entry wins. Returns null when no entry exists.
  */
-export const readModeStateFromEntries = (
+const readModeStateFromEntries = (
   entries: SessionEntry[] | null | undefined,
 ): MaestriaModeState | null => {
   if (!Array.isArray(entries)) {

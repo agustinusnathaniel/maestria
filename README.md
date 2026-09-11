@@ -33,6 +33,8 @@ Plugins that bring disciplined AI engineering workflows to your coding agent.
 | [@maestria/pi](packages/pi/) | Maestria methodology plugin for Pi | [README](packages/pi/README.md) |
 | [@maestria/prime-agent](packages/prime-agent/) | Maestria methodology for Prime Agent (skills + verified extension subset) | [README](packages/prime-agent/README.md) |
 
+Canonical agent directives and the sync pipeline live in the private `@maestria/core` package (`packages/core/agent-directives/`); `packages/shared/*` holds private host-neutral utilities. Neither is published to npm.
+
 ## Project Structure
 
 ```

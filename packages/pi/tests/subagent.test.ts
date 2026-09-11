@@ -1,9 +1,9 @@
 import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
-import { MAESTRIA_EVENTS, validateHandoff } from '@maestria/shared-pi/subagent-utils';
+import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
+import { createInitialState } from '@maestria/shared-pi/state-core';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { createInitialState } from '@/state.js';
-import { installSubagentTool, MAX_PARALLEL_TASKS } from '@/subagent.js';
+import { installSubagentTool } from '@/subagent.js';
 import type { SubagentToolApi, SubagentToolDefinition, ToolResult } from '@/subagent.js';
 import type { SubagentRecord } from '@/subagent-polling.js';
 
@@ -131,57 +131,6 @@ const getResultText = (result: ToolResult): string => {
   }
   return content.text;
 };
-
-describe('MAX_PARALLEL_TASKS', () => {
-  it('is exported as 8', () => {
-    expect(MAX_PARALLEL_TASKS).toBe(8);
-  });
-});
-
-describe('validateHandoff', () => {
-  it('returns valid for a handoff with all 7 fields', () => {
-    const handoff = [
-      '**Goal:** build feature',
-      '**Context:** in repo root',
-      '**Requirements:** must be fast',
-      '**Known problems:** none',
-      '**Assumptions documented:** pipeline must be installed',
-      '**Success criteria:** tests pass',
-      '**Next step:** merge PR',
-    ].join('\n');
-    expect(validateHandoff(handoff).valid).toBe(true);
-  });
-
-  it('returns errors when a field is missing', () => {
-    const handoff = '**Goal:** build feature\n**Context:** missing some fields';
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(false);
-    expect(result.errors.length).toBeGreaterThan(0);
-  });
-
-  it('accepts multi-line field values across line breaks', () => {
-    const handoff = [
-      '**Goal:** Build something',
-      '  that spans multiple',
-      '  lines of text',
-      '**Context:** in repo root',
-      '**Requirements:** must be fast',
-      '**Known problems:** none',
-      '**Assumptions documented:** agent knows the project',
-      '**Success criteria:** tests pass',
-      '**Next step:** merge PR',
-    ].join('\n');
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(true);
-  });
-
-  it('returns errors when a field has no content (only whitespace, nothing follows)', () => {
-    const handoff = '**Goal:** \n\n';
-    const result = validateHandoff(handoff);
-    expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes('Goal'))).toBe(true);
-  });
-});
 
 describe('installSubagentTool - single mode (backward compat)', () => {
   it('registers a tool named "maestria_subagent"', () => {

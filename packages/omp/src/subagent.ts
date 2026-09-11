@@ -1,11 +1,12 @@
 import { assertNonEmptyTask, assertValidAgent } from '@maestria/shared-pi/subagent-utils';
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 
-import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
-
-const validateAgent: typeof assertValidAgent = assertValidAgent;
-const validateTask: typeof assertNonEmptyTask = assertNonEmptyTask;
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import {
+  persistState,
+  recordHandoff,
+  recordSpecialistDelegated,
+} from '@maestria/shared-pi/state-core';
 
 export interface SubagentToolParams {
   agent?: string;
@@ -48,15 +49,15 @@ const validateOmpParams = (params: {
     if (typeof params.agent !== 'string') {
       throw new TypeError('Unknown agent: undefined');
     }
-    validateAgent(params.agent);
-    validateTask(params.task, 'Task description is required');
+    assertValidAgent(params.agent);
+    assertNonEmptyTask(params.task, 'Task description is required');
   } else {
     if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For parallel/chain mode, tasks array is required with at least 2 items');
     }
     for (const t of params.tasks) {
-      validateAgent(t.agent);
-      validateTask(t.task, 'Task description is required for all tasks');
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
     }
   }
 };
@@ -143,11 +144,7 @@ const isSubagentToolParams = (value: unknown): value is SubagentToolParams => {
   );
 };
 
-export const installNativeSubagentTool = (
-  pi: ExtensionAPI,
-  state: MaestriaState,
-  _cleanups?: (() => void)[],
-): void => {
+export const installNativeSubagentTool = (pi: ExtensionAPI, state: MaestriaState): void => {
   pi.registerTool({
     description:
       'Dispatch a task to a maestria specialist subagent (adventurer, architect, builder, diagnose, planner, reviewer, writer). Uses omp native task tool.',

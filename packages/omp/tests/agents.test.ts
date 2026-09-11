@@ -21,14 +21,6 @@ describe('deploySpecialistAgents', () => {
       deploySpecialistAgents();
     }).not.toThrow();
   });
-
-  it('does not throw when called with context', () => {
-    const ctx: unknown = {};
-    // The function accepts optional ExtensionContext but is resilient
-    expect(() => {
-      deploySpecialistAgents(ctx);
-    }).not.toThrow();
-  });
 });
 
 describe('agents source directory', () => {

@@ -1,29 +1,31 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
+import type { Mock } from 'vite-plus/test';
 
-import { createInitialState } from '@/state.js';
+import { createInitialState } from '@maestria/shared-pi/state-core';
+import type { ToolCallHandler, ToolCallResult } from '@maestria/shared-pi/tools-core';
 import { installToolInterceptors } from '@/tools.js';
-import type { ToolApi, ToolHandler, ToolResult } from '@/tools.js';
+import type { ToolApi } from '@/tools.js';
 
 interface MockPi {
   appendEntry: ReturnType<typeof vi.fn<ToolApi['appendEntry']>>;
   getActiveTools: ReturnType<typeof vi.fn<ToolApi['getActiveTools']>>;
-  handlers: ToolHandler[];
-  on: ReturnType<typeof vi.fn<ToolApi['on']>>;
+  handlers: ToolCallHandler[];
+  on: Mock;
 }
 
 const createMockPi = (activeTools: string[] = []): MockPi => {
-  const handlers: ToolHandler[] = [];
+  const handlers: ToolCallHandler[] = [];
   return {
     appendEntry: vi.fn(),
     getActiveTools: vi.fn(() => activeTools),
     handlers,
-    on: vi.fn((_event: string, handler: ToolHandler) => {
+    on: vi.fn((_event: string, handler: ToolCallHandler) => {
       handlers.push(handler);
     }),
   };
 };
 
-const getHandler = (pi: MockPi): ToolHandler => {
+const getHandler = (pi: MockPi): ToolCallHandler => {
   const [handler] = pi.handlers;
   if (handler === undefined) {
     throw new Error('tool_call handler was not registered');
@@ -31,7 +33,7 @@ const getHandler = (pi: MockPi): ToolHandler => {
   return handler;
 };
 
-const requireBlocked = (result: ToolResult | undefined): ToolResult => {
+const requireBlocked = (result: ToolCallResult | undefined): ToolCallResult => {
   if (result?.block !== true) {
     throw new Error('Expected the tool call to be blocked');
   }

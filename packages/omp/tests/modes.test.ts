@@ -1,35 +1,41 @@
+import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
+import { createInitialState } from '@maestria/shared-pi/state-core';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { installModeCommands } from '@/modes.js';
-import type { ModeCommandsApi } from '@/modes.js';
-import { createInitialState } from '@/state.js';
 
 // ---------------------------------------------------------------------------
 // installModeCommands
 // ---------------------------------------------------------------------------
+
+interface TestCommandContext {
+  ui: { notify: (message: string) => void };
+}
+
+interface ModeCommand {
+  description?: string;
+  handler: (args: string, ctx: TestCommandContext) => Promise<void> | void;
+}
+
+interface MockPi {
+  _commands: Record<string, ModeCommand>;
+  appendEntry: ReturnType<typeof vi.fn<(type: string, data?: unknown) => void>>;
+  registerCommand: (name: string, config: ModeCommand) => void;
+  setActiveTools: ReturnType<typeof vi.fn<ExtensionAPI['setActiveTools']>>;
+  setModel: ReturnType<typeof vi.fn<ExtensionAPI['setModel']>>;
+}
+
 describe('installModeCommands', () => {
-  type ModeCommand = Parameters<ModeCommandsApi['registerCommand']>[1];
-
-  interface MockPi extends ModeCommandsApi {
-    _commands: Record<string, ModeCommand>;
-    appendEntry: ReturnType<typeof vi.fn<ModeCommandsApi['appendEntry']>>;
-    registerCommand: ReturnType<typeof vi.fn<ModeCommandsApi['registerCommand']>>;
-    sendUserMessage: ReturnType<typeof vi.fn<ModeCommandsApi['sendUserMessage']>>;
-    setActiveTools: ReturnType<typeof vi.fn<ModeCommandsApi['setActiveTools']>>;
-    setModel: ReturnType<typeof vi.fn<ModeCommandsApi['setModel']>>;
-  }
-
   const createMockPi = (): MockPi => {
     const commands: Record<string, ModeCommand> = {};
     return {
       _commands: commands,
-      appendEntry: vi.fn(),
-      registerCommand: vi.fn<ModeCommandsApi['registerCommand']>((name, config) => {
+      appendEntry: vi.fn<(type: string, data?: unknown) => void>(),
+      registerCommand: (name, config) => {
         commands[name] = config;
-      }),
-      sendUserMessage: vi.fn(),
-      setActiveTools: vi.fn(async (): Promise<void> => {}),
-      setModel: vi.fn().mockResolvedValue(true),
+      },
+      setActiveTools: vi.fn<ExtensionAPI['setActiveTools']>(),
+      setModel: vi.fn<ExtensionAPI['setModel']>(),
     };
   };
 

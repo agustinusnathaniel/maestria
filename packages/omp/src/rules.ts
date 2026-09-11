@@ -1,7 +1,7 @@
 import { getModePrompt } from '@maestria/shared-pi/modes-core';
 import type { BeforeAgentStartEvent, BeforeAgentStartEventResult } from '@oh-my-pi/pi-coding-agent';
 
-import type { MaestriaState } from '@/state.js';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
 const __dirname = import.meta.dirname;
 const COMMANDS_DIR = `${__dirname}/../agents/commands`;

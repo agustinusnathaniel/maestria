@@ -6,7 +6,7 @@ import type { ReplaceOp } from './config.js';
 
 // ── Constants ──
 
-export const FRONTMATTER_RE = /^---[\s\S]*?\n---\n*/u;
+const FRONTMATTER_RE = /^---[\s\S]*?\n---\n*/u;
 
 // ── Transforms ──
 

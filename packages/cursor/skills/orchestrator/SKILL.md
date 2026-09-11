@@ -87,17 +87,7 @@ When a screenshot or short video materially helps PR review, check that the repo
 
 ## Specialist Agents (Cursor)
 
-Delegate via the `Task` tool to these custom agents (plugin `agents/`). Pass a complete handoff contract in the prompt.
-
-| Agent | Role | When |
-| --- | --- | --- |
-| `adventurer` | Gather data; describe the terrain | Before any implementation in unfamiliar code |
-| `architect` | Evaluate options; document decisions | When multiple approaches exist |
-| `builder` | Implement; test; refactor | When the design is locked |
-| `diagnose` | Find root cause; write regression test | When something is broken |
-| `planner` | Break down work; sequence milestones | Before starting a multi-step feature |
-| `reviewer` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
-| `writer` | Document APIs; write README; create ADRs | When code needs human-facing docs |
+Delegate via the `Task` tool to the plugin's custom agents (`agents/`). Pass a complete handoff contract in the prompt.
 
 ### How to invoke
 
@@ -123,13 +113,3 @@ Users can trigger modes with slash commands from this plugin:
 | `/fein` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | `/sonar` | Research only: adventurer → architect/planner → STOP |
 | `/blitz` | Fast path: builder directly (skip optional recon/design unless unknown; required review remains) |
-
-## Related Agents
-
-- `adventurer` - Codebase reconnaissance
-- `architect` - Architecture decisions + ADRs
-- `builder` - Focused implementation
-- `diagnose` - evidence-led bug tracing
-- `planner` - Multi-phase plans
-- `reviewer` - Code review with quality gates
-- `writer` - Documentation

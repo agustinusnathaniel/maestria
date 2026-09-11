@@ -65,33 +65,39 @@ Content rules:
 
 ### 2. Sync Tool: `packages/core/scripts/sync.ts`
 
-A single TypeScript script (not a separate package) run via a root-pinned `tsx` runner (see [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md)). It lives at `packages/core/scripts/sync.ts` (142 lines) backed by 6 library modules:
+A single TypeScript script (not a separate package) run via a root-pinned `tsx` runner (see [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md)). It lives at `packages/core/scripts/sync.ts` (159 lines) backed by 10 library modules (line counts as of 2026-09-11):
 
 | Module | Lines | Purpose |
 | --- | --- | --- |
-| `scripts/sync.ts` | 142 | CLI entry - arg parsing, help, main loop |
-| `scripts/lib/config.ts` | 120 | Config types (`SyncConfig`, `FileConfig`), loading, merging default + per-file config |
-| `scripts/lib/transforms.ts` | 39 | Content transform functions (strip frontmatter, find/replace, YAML serialization, line endings) |
-| `scripts/lib/file.ts` | 100 | File I/O (directory walk, atomic write, auto-clean stale outputs) |
+| `scripts/sync.ts` | 159 | CLI entry - arg parsing, help, main loop |
+| `scripts/lib/agent-directive-sync.ts` | 206 | Shared Pi/OMP directive mapping - one 14-file table parameterized by command prefix and agent family; consumed by thin `packages/pi/sync.config.ts` and `packages/omp/sync.config.ts` wrappers (ADR-CORE-025) |
+| `scripts/lib/anchors.ts` | 156 | Anchor liveness validation - replays the resolved plan's replace ops to fail a run on a dead anchor (ADR-CORE-024) |
+| `scripts/lib/config.ts` | 175 | Config types (`SyncConfig`, `FileConfig`), loading, merging default + per-file config |
 | `scripts/lib/diff.ts` | 16 | Unified diff wrapper (via `diff` package) |
-| `scripts/lib/process-file.ts` | 161 | Transform pipeline - reads a source file, applies transforms in order, dispatches to write/check/diff mode |
-| `scripts/lib/sync.ts` | 141 | Orchestration - walks source dirs, matches config entries, dispatches to `processFile`, auto-cleans |
+| `scripts/lib/file.ts` | 115 | File I/O (directory walk, atomic write, auto-clean stale outputs) |
+| `scripts/lib/plan.ts` | 83 | Resolution plan - one ordered primary-then-secondary file list shared by anchor validation and processing, with missing-entry validation (ADR-CORE-025) |
+| `scripts/lib/process-file.ts` | 254 | Transform pipeline - reads a source file, applies transforms in order, dispatches to write/check/diff mode |
+| `scripts/lib/skill-validator.ts` | 90 | Shared skill frontmatter and layout validation for Pi and OMP |
+| `scripts/lib/sync.ts` | 115 | Orchestration - walks source dirs, resolves the plan, validates anchors, dispatches to `processFile`, auto-cleans |
+| `scripts/lib/transforms.ts` | 57 | Content transform functions (strip frontmatter, find/replace, YAML serialization, line endings) |
 
 It is not published to npm. It runs inside the monorepo via the root-pinned `tsx` runner (ADR-CORE-016). This avoided adding a separate publish-and-consume cycle for a tool that only ever runs inside this repo.
 
 **CLI flags** (not subcommands):
 
-| Flag         | Behavior                                                                       |
-| ------------ | ------------------------------------------------------------------------------ |
-| _(no flags)_ | Sync (write output)                                                            |
-| `--check`    | CI mode: exit 1 if any output would differ                                     |
-| `--diff`     | Show unified diff of changes during write or check                             |
-| `--dry-run`  | Print what would happen without writing                                        |
-| `--verbose`  | Print every file operation                                                     |
-| `--config`   | Specify config path (default: `./sync.config.ts`, fallback `./sync.config.js`) |
-| `--help`     | Print CLI help                                                                 |
+| Flag | Behavior |
+| --- | --- |
+| _(no flags)_ | Sync (write output) |
+| `--check` | CI mode: exit 1 if any output would differ |
+| `--diff` | Show unified diff of changes during write, check, or dry-run; the canonical source is the old path, the output is the new path |
+| `--dry-run` | Print what would happen without writing |
+| `--verbose` | Print every file operation |
+| `--config` | Specify config path (default: `./sync.config.ts`, fallback `./sync.config.js`) |
+| `--help` | Print CLI help |
 
 Exit codes: 0 (ok), 1 (check failed), 2 (configuration error).
+
+> Corrected 2026-09-11: `--diff` now also prints under `--dry-run` (it was silently skipped there) and labels the canonical source as the old path and the generated output as the new path. Configuration handling is fail closed: a missing `source` directory throws `ConfigError` before any file work, and `resolveSyncPlan` throws one `ConfigError` listing every configured file entry absent from both source locations, before anchor validation or processing. Both exit 2. See [ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
 
 **Transform pipeline** (per file):
 
@@ -150,9 +156,13 @@ export default {
   default: {
     replace: [
       { from: '@adventurer', to: 'adventurer' },
-      { from: 'task(', to: 'Agent(' },
-      { from: 'webfetch', to: 'FetchURL' },
-      // ... 10+ platform-specific substitutions
+      { from: '@architect', to: 'architect' },
+      { from: '@builder', to: 'builder' },
+      { from: '@diagnose', to: 'diagnose' },
+      { from: '@planner', to: 'planner' },
+      { from: '@reviewer', to: 'reviewer' },
+      { from: '@writer', to: 'writer' },
+      { from: 'run in parallel', to: 'run in parallel via `AgentSwarm`' },
     ],
   },
 
@@ -163,13 +173,15 @@ export default {
       frontmatter: { name: 'adventurer', type: 'prompt', ... },
     },
     'rules.md': {
-      output: '../rules/AGENTS.md',
-      // Custom content: kimi-code replaces the entire delegation table
+      output: '../SYSTEM.md',
+      // Custom content: kimi-code adds its built-in-agent delegation guard
       replace: [ ... ],
     },
   },
 } satisfies SyncConfig;
 ```
+
+> Corrected 2026-09-10: the original example listed `task(` -> `Agent(`, `webfetch` -> `FetchURL`, and a `rules/AGENTS.md` output. Those replace ops no longer exist in the config: canonical content carries no host tool names, and Kimi's profile text and routing appendix supply `Agent`/`AgentSwarm` and `FetchURL` directly. The rules projection now outputs to `SYSTEM.md`.
 
 Config shape (key differences from the design phase):
 
@@ -202,7 +214,7 @@ A companion `scripts/check-sync` runs `--check` instead of write, used in CI:
 tasks: {
   'check-sync': {
     command: 'bash scripts/check-sync',
-    cache: false,
+    cache: true,
   },
 }
 ```
@@ -214,9 +226,11 @@ Generated directories are excluded from `vp fmt` via `fmt.ignorePatterns`:
 fmt: {
   ignorePatterns: [
     'packages/*/agents/**',
+    'packages/*/commands/**',
     'packages/*/prompts/**',
     'packages/*/rules/**',
-    'packages/*/skills/**',
+    'packages/**/skills/**',
+    'packages/*/SYSTEM.md',
   ],
 },
 ```
@@ -313,6 +327,8 @@ Several details diverged from the original design during implementation. This se
 ### Auto-Generated Notice Added
 
 **Not in design.** Every generated file starts with `<!-- Auto-generated from @maestria/core. Do not edit directly. ... -->`. This was added to make the provenance of generated files unambiguous - developers landing on a generated file know immediately where to make edits.
+
+> Updated 2026-09-11: a later `autoGenComment` config override let a config replace this notice. It was removed after an audit found zero sync configs used it (it had no consumers), and the notice is now unconditional. See [ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
 
 ### YAML Serialization Uses Library Defaults
 

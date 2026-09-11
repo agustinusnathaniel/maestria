@@ -147,6 +147,7 @@ export default defineConfig({
         input: [
           { auto: false },
           'scripts/check-sync',
+          'scripts/sync-packages',
           'packages/core/scripts/**/*.ts',
           'packages/core/agent-directives/**/*.md',
           'packages/*/sync.config.ts',

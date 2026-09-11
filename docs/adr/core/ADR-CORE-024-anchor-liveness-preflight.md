@@ -38,7 +38,13 @@ An audit found 63 replace ops across 8 sync configs that were dead (anchor absen
    - A `file` op must match at least once in the file entry it belongs to.
    - `from` equal to `to`, and empty `from`, are violations on every resolved op regardless of liveness.
    - Every violation records config path, file (or `all files` for defaults), scope, `from`, and match count, in deterministic sweep order.
+
+   > Corrected 2026-09-11: the validator no longer resolves its own target set and no longer skips absent secondary entries. `resolveSyncPlan` (`packages/core/scripts/lib/plan.ts`) produces one ordered primary-then-secondary plan consumed by both `validateAnchors` and processing, and a secondary entry absent from `path.dirname(config.source)` throws `ConfigError` before validation runs ([ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md)).
+
 4. **Preflight in the engine.** `runSync` walks source files once, calls `validateAnchors` before any processing, and throws `ConfigError` listing every offender. No writes, cleanups, or removals occur when it throws. The early return when `config.source` does not exist is preserved.
+
+   > Corrected 2026-09-11: the early return was replaced by fail-closed handling in the consumer-driven simplification pass. A missing `source` directory now throws `ConfigError` before any file work ([ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md)).
+
 5. **Exit code 2.** The CLI wraps the `runSync` call; a thrown `ConfigError` prints `Configuration error: <message>` and returns 2, matching the existing `loadConfig` handling. This applies in write, dry-run, and check modes. Exit codes 0 and 1 are unchanged.
 6. **Cleanup.** 63 replace ops across 8 sync configs (agent-plugin, claude-code, codex, cursor, hermes, omp, pi, prime-agent) that were dead, shadowed, or identity are removed. Surviving ops are enforced by the new preflight.
 

@@ -1,6 +1,4 @@
-import { describe, expect, it, vi } from 'vite-plus/test';
-
-import { installCompactionHandlers } from '@/compaction.js';
+import { installCompactionHandlers } from '@maestria/shared-pi/compaction-core';
 import type {
   CompactionEvent,
   CompactionOn,
@@ -8,7 +6,8 @@ import type {
   TreeEvent,
   TreeResult,
 } from '@maestria/shared-pi/compaction-core';
-import { createInitialState } from '@/state.js';
+import { createInitialState } from '@maestria/shared-pi/state-core';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 type CompactHandler = (event: CompactionEvent) => CompactionResult;
 type TreeHandler = (event: TreeEvent) => TreeResult | undefined;

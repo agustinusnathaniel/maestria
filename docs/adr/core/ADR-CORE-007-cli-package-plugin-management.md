@@ -300,6 +300,10 @@ The CLI now recognizes three recently added plugin packages:
 
 These adapters use the host runtime as the source of installed state and version reporting. They do not write host configuration directly. Exact version pinning is rejected for these adapters: Claude Code and Codex CLI updates select the latest staged package, and Prime skips `package update` for version-pinned registrations - the CLI detects a pinned user registration up front (even before the update command's "Already up to date" short-circuit, via a single per-update registration snapshot) and reports an accurate error instead of claiming a successful update or silently skipping it.
 
+### 2026-09-11
+
+The round-1 architecture audit re-measured a plain-async replacement for Effect and retained Effect: a conversion would save roughly 220-275 production lines, but that is about 5% of the CLI, it requires rewriting 10 test files whose surface is the Effect interface, and the typed error channel is already largely flattened (41 `catchCause` calls against 3 `catchTag` calls). Boundary: adding new Effect-only capabilities to the CLI (retry, schedule, interruption, resource scopes) requires its own decision, and a wholesale conversion belongs in a dedicated ADR-backed PR.
+
 ## Date
 
 2026-06-28
