@@ -25,7 +25,7 @@ An audit found 63 replace ops across 8 sync configs that were dead (anchor absen
 
 ## Non-Goals
 
-- No re-anchoring or rewriting of ops that survive; the hermes/cursor/claude prose and tool-anchor opportunities are deliberate follow-ups.
+- No re-anchoring or rewriting of ops that survive; the hermes/cursor/claude prose and tool-anchor opportunities are planned follow-ups.
 - No changes to `processFile` writes, auto-clean, preserve, or CLI flag behavior.
 - No changes to exit codes 0 and 1.
 

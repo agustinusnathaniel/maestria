@@ -11,7 +11,7 @@ Accepted (Revised 2026-06-17)
 
 ## Context
 
-We built `@maestria/opencode` as a pure plugin with 3 hooks (config, system.transform, session.compacting) that registers 7 custom subagents and injects global rules programmatically. OpenCode's plugin SDK supports TypeScript entry points with lifecycle hooks - a powerful but platform-specific API.
+We built `@maestria/opencode` as a pure plugin with 3 hooks (config, system.transform, session.compacting) that registers 7 custom subagents and injects global rules programmatically. OpenCode's plugin SDK supports TypeScript entry points with lifecycle hooks - a platform-specific API.
 
 Kimi Code exposes a different plugin model with fundamentally different capabilities:
 

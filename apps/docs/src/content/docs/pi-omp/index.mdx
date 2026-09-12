@@ -22,7 +22,7 @@ import { marks } from '@/data/marks.js';
     <PlatformHero
       eyebrow={'@MAESTRIA/PI & @MAESTRIA/OMP'}
       title="Spec-driven, portable workflows."
-      lead="Extend Pi or Oh My Pi with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration - configured in seconds."
+      lead="Extend Pi or Oh My Pi with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration."
       mark={marks.piOmp}
       primaryCta={{ href: '/pi-omp/getting-started/installation/', label: 'Get started' }}
       secondaryCta={{ href: '/pi-omp/reference/', label: 'Reference' }}
@@ -100,7 +100,7 @@ import { marks } from '@/data/marks.js';
     <PluginSection
       index="04"
       kicker="PLATFORM DIFFERENCES"
-      title="Same method, different plumbing."
+      title="Same method, different dispatch."
       class="mb-[clamp(4rem,9vw,7rem)]"
     >
       <div class="[overflow-wrap:anywhere]">
@@ -142,13 +142,12 @@ import { marks } from '@/data/marks.js';
       </div>
 
       <p class="!mt-8 mb-0 max-w-46rem text-[0.9375rem] leading-[1.65] text-home-text-soft">
-        OMP native goal state is observed in Maestria's session mirror. Active,
-        paused, and budget-limited goals are shown; complete and dropped terminal
-        events clear the current-goal mirror. Session transitions rehydrate
-        target-session Maestria state and use OMP's public native goal entry when
-        available; otherwise the mirror remains unknown until a public goal event.
-        User-issued <code>/goal</code> commands remain OMP-owned, while model goal
-        calls are blocked when their provenance is unavailable.
+        Maestria mirrors OMP native goal state: active, paused, and budget-limited goals appear
+        in the session mirror, while complete and dropped terminal events clear the current-goal
+        mirror. Session transitions rehydrate target-session Maestria state and use OMP's public
+        native goal entry when available; otherwise the mirror remains unknown until a public
+        goal event. User-issued <code>/goal</code> commands remain OMP-owned, and model goal calls
+        are blocked when their provenance is unavailable.
       </p>
     </PluginSection>
 

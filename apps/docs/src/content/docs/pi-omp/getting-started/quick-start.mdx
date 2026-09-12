@@ -47,7 +47,12 @@ Mode set to fein. Describe what you'd like to work on.
 
 > **Auto-detect mode keywords:** Slash commands (`/fein`, `/sonar`, `/blitz`) set the workflow mode and show a notification. Bare keywords (`fein`, `sonar`, `blitz`) typed at the start of a message set the mode and inject the mode prompt inline with your task description.
 
-> **Note:** Without a mode keyword, the agent operates with the orchestrator prompt as guidance but without tool-level enforcement. On Pi/OMP, mode state persists for the process after `/fein`, `/sonar`, or `/blitz`; use `/mode-clear` to return to neutral routing. The dispatcher restriction activates only when a mode is active.
+<Aside type="note">
+  Without a mode keyword, the agent operates with the orchestrator prompt as guidance but without
+  tool-level enforcement. On Pi/OMP, mode state persists for the process after `/fein`, `/sonar`, or
+  `/blitz`; use `/mode-clear` to return to neutral routing. The dispatcher restriction activates
+  only when a mode is active.
+</Aside>
 
 ## How Dispatch Works
 
@@ -55,7 +60,7 @@ Pi dispatches specialists through `maestria_subagent(agent, task)` from the `@go
 
 Their limits, context inheritance, and enforcement differ. See the [Pi and OMP reference](/pi-omp/reference/) before relying on parallel or chained dispatch.
 
-When a workflow mode activates enforcement, the current platform can restrict the main session to delegation tools. This is not a universal property of every session: mode-free sessions and specialist sessions have different tool access.
+When a workflow mode activates enforcement, the current platform can restrict the main session to delegation tools. Mode-free and specialist sessions keep different tool access.
 
 ## Your First Task
 
@@ -73,7 +78,7 @@ For a task that warrants the full pipeline:
 
 In Pi and OMP, the main session applies the orchestrator guidance and dispatches specialists. There is no separate agent to switch to: activate a workflow mode to select the route and its enforcement.
 
-## What's Next?
+## Next Steps
 
 - Read the [Installation Guide](/pi-omp/getting-started/installation/) for setup options.
 - Learn about the [specialist subagents](/core/agents/) and their roles.

@@ -8,7 +8,7 @@ Accepted
 
 Each agent's YAML frontmatter defines tool permissions (`read`, `glob`, `grep`, `edit`, `bash`, `webfetch`, `skill`, `lsp`, etc.). The initial permissions were set per-agent during the Phase 2-4 rollout, but there was no systematic audit of which permissions each agent actually needed.
 
-During the session spanning commits `259a72a` through `d2e0671`, we performed a comprehensive permission audit across all 7 agents. Three categories of issues emerged:
+During the session spanning commits `259a72a` through `d2e0671`, we audited the permissions of all 7 agents. Three categories of issues emerged:
 
 1. **Stale permissions** - `list` was referenced but does not exist as a tool in opencode v1.17.3
 2. **Underspecified permissions** - `lsp` was not granted to agents that benefit from code intelligence (goToDefinition, findReferences)

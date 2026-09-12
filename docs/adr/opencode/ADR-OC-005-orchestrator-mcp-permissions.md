@@ -8,7 +8,7 @@ Accepted (2026-07-03)
 
 ### The Question
 
-Should the orchestrator agent's MCP tool access be blocked? The orchestrator is a pure dispatcher - its job is to decompose tasks and delegate to the seven specialists via `task()` and `question()`. By design, it should not read files, grep contents, fetch web pages, or run arbitrary bash commands. But MCP tools like `codegraph_explore` offer powerful code intelligence that cuts across those boundaries: they read source code, trace call paths, and surface blast radius information. For a dispatcher that should never do its own reconnaissance, MCP access is a potential workaround.
+Should the orchestrator agent's MCP tool access be blocked? The orchestrator is a pure dispatcher - its job is to decompose tasks and delegate to the seven specialists via `task()` and `question()`. By design, it should not read files, grep contents, fetch web pages, or run arbitrary bash commands. But MCP tools like `codegraph_explore` offer code intelligence that cuts across those boundaries: they read source code, trace call paths, and surface blast radius information. For a dispatcher that should never do its own reconnaissance, MCP access is a potential workaround.
 
 ### Current State
 

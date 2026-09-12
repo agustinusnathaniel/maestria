@@ -2,7 +2,7 @@
 
 ## Test from contracts, not implementation
 
-Design tests from observable behavior, not internal structure. Prefer the highest practical interface: user-facing behavior for public APIs, explicit consumer-facing behavior for stable internal boundaries. Testing private helpers directly through their public consumer is preferred over isolated unit tests.
+Design tests from observable behavior, not internal structure. Prefer the highest practical interface: user-facing behavior for public APIs, explicit consumer-facing behavior for stable internal boundaries. Test private helpers through their public consumer rather than in isolated unit tests.
 
 Treat the tested unit or stack as a black box. Pass inputs through its public boundary and assert the resulting behavior. A test may inspect an interaction with a genuinely external seam, such as a network, clock, or randomness source, but broad mocks of the project's own logic are a design smell. Prefer real lightweight boundaries or small explicit fakes for injected host APIs.
 
