@@ -14,7 +14,7 @@ export const SITE_URL = 'https://maestria.sznm.dev';
 
 /** Verbatim Starlight `description` from astro.config.mjs. */
 export const SITE_DESCRIPTION =
-  'Portable AI engineering praxis plugins for OpenCode, Claude Code, Codex CLI, and beyond.';
+  'Portable AI engineering workflows for OpenCode, Claude Code, Codex CLI, and beyond.';
 
 export const GITHUB_REPO_URL = 'https://github.com/agustinusnathaniel/maestria';
 export const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`;
