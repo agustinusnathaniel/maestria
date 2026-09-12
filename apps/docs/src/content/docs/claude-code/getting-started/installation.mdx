@@ -110,7 +110,7 @@ Every agent is configured to preload the `maestria:global-rules` skill at startu
 
 ## Tool Restrictions
 
-**The only runtime enforcement in this package is `disallowedTools: Write, Edit` on `adventurer`, `planner`, and `reviewer`** - the three read-only research and review roles. This is user-authorized. Everything else (skills, preloaded rules, role prompts) is advisory prompt guidance, not a security boundary.
+The only runtime enforcement in this package is `disallowedTools: Write, Edit` on `adventurer`, `planner`, and `reviewer`, the three read-only research and review roles. This is user-authorized. Everything else (skills, preloaded rules, role prompts) is advisory prompt guidance, not a security boundary.
 
 Claude Code ignores the `permissionMode`, `hooks`, and `mcpServers` agent frontmatter fields for plugin-loaded agents for security reasons, so this plugin ships none of them. To enforce those fields you would need to copy an agent file into `.claude/agents/` or `~/.claude/agents/`.
 

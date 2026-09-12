@@ -11,7 +11,7 @@ Start with the [snapshot](#snapshot) for support decisions, then follow each Evi
 - **`[inferred]`:** a reasonable assumption not directly confirmed by a cited source. Each is tagged with its evidence.
 - **Support level** uses the controlled vocabulary from ADR-CORE-014 (`Native`, `Native candidate`, `Provisional`, `Deferred`, `Withdrawn`) and contains no delivery terms.
 - **Capability** (`Supported`, `Available`, `Unverified`, `Unavailable`) records what a runtime can do.
-- **Control** (`Enforced`, `Trust-gated`, `Ignored`, `Advisory`, `Not a sandbox`, `Unsupported`) records what a runtime actually enforces. Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled security `Enforced`.
+- **Control** (`Enforced`, `Trust-gated`, `Ignored`, `Advisory`, `Not a sandbox`, `Unsupported`) records what a runtime actually enforces. Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled `Enforced` as security controls.
 - **Test status** is `tested` or `not tested`. Qualified labels describe the verification boundary; none implies a live runtime end-to-end test. Almost all upstream evidence is untested and unpinned, so it is research-only, not production support proof.
   - `tested: source inspection`: pinned upstream source read; no runtime execution.
   - `tested: package/unit tests`: skills, manifest, dependency-boundary, or behavior tests against a fake host API.
@@ -100,7 +100,7 @@ The CLI adapters are management wrappers around host-native capabilities. They s
 | E-PRIME-10 | Prime Agent | `rlm` dispatch bridge | `rlm(...)` subagent dispatch is an IPython-side (Python) tool of the RLM runtime; the public extension API of the pinned fork exposes no JS subagent-spawn bridge (no such method on `ExtensionAPI`/`ExtensionCommandContext`; `ExtensionCommandContext` session methods are `newSession`/`fork`/`navigateTree`/`switchSession`/`reload`, not subagents). A Prime extension therefore cannot dispatch native `rlm` subagents | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/src/core/extensions/types.ts; .../docs/rlm.md | 2026-08-13 | tested: source inspection |
 | E-PRIME-11 | Prime Agent | Runtime dependency boundary | The Prime-compatible `@earendil-works/pi-coding-agent` fork (`0.7.2` in the pinned workspace) is NOT published to npm (registry carries only the original Pi line, latest `0.84.1`); Prime bundles the pi packages into its runtime (jiti virtual modules in the compiled binary, workspace aliases in dev) and its `docs/packages.md` says core pi packages must be listed in `peerDependencies` with `"*"` if imported at runtime and not bundled. `@maestria/prime-agent` imports only types (erased at build), so `dist/extension.mjs` has zero pi imports and the package declares no runtime/peer dependency on pi packages | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit); npm registry | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/packages.md; https://registry.npmjs.org/@earendil-works/pi-coding-agent (dist-tags latest 0.84.1) | 2026-08-13 | tested: source inspection |
 
-**Test coverage (local package evidence):** the `tested` labels above are level-specific, never a live runtime E2E. E-PRIME-09/10/11 are **source inspection** of the pinned commit (no runtime execution). E-PRIME-08 is verified by **package/unit tests** (skills layout and frontmatter, manifest/dependency-boundary, extension behavior against a fake `pi` API - `tests/skills.test.ts`, `tests/package.test.ts`, `tests/extension.test.ts`) and by **built-artifact smoke tests** that build `dist/extension.mjs` and exercise command registration, command behavior, and mode prompt injection against a fake `pi` API (`tests/package.test.ts`; the package `test` script builds the artifact first). **Live Prime Agent E2E is not tested** - the automated suite never requires a Prime binary; the immutable source pin and `Native candidate` status are unaffected.
+**Test coverage (local package evidence):** the `tested` labels above are level-specific, never a live runtime E2E. E-PRIME-09/10/11 are **source inspection** of the pinned commit (no runtime execution). E-PRIME-08 is verified by **package/unit tests**: skills layout and frontmatter, manifest/dependency-boundary, and extension behavior against a fake `pi` API (`tests/skills.test.ts`, `tests/package.test.ts`, `tests/extension.test.ts`). It is also verified by **built-artifact smoke tests**, which build `dist/extension.mjs` and exercise command registration, command behavior, and mode prompt injection against a fake `pi` API (`tests/package.test.ts`; the package `test` script builds the artifact first). **Live Prime Agent E2E is not tested** - the automated suite never requires a Prime binary; the immutable source pin and `Native candidate` status are unaffected.
 
 ### Capability vs control
 
@@ -135,7 +135,7 @@ The CLI adapters are management wrappers around host-native capabilities. They s
 | E-CODEX-CLI-02 | Codex CLI | Surface scope | Codex supports AGENTS.md, subagents, config files, skills, plugins, and hooks | unpinned - reverify before implementation | https://developers.openai.com/codex | 2026-08-11 | not tested |
 | E-CODEX-CLI-03 | Codex CLI | Hook trust | Non-managed command hooks must be reviewed and trusted before they run; Codex records trust against the hook's current hash; new or changed hooks are skipped until trusted | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
 | E-CODEX-CLI-04 | Codex CLI | Hook types | Only `type: "command"` hook handlers run today; `prompt` and `agent` handlers are parsed but skipped | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
-| E-CODEX-CLI-05 | Codex CLI | Managed hook policy | Managed hooks are trusted by managed policy: they run under the runtime's managed-hook policy rather than the per-hash trust review that non-managed command hooks require. Managed hooks are trusted by managed policy and are not `Trust-gated` like non-managed hooks | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
+| E-CODEX-CLI-05 | Codex CLI | Managed hook policy | Managed hooks are trusted by managed policy: they run under the runtime's managed-hook policy rather than the per-hash trust review that non-managed command hooks require, so they are not `Trust-gated` like non-managed hooks | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
 | E-CODEX-CLI-06 | Codex CLI | Trust-bypass | A documented trust-bypass configuration exists that lets hooks run without the normal trust review. This trust-bypass configuration exists and is an explicit security exception, not an enforcement path | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
 
 ### Pinned re-verification (2026-08-13)
@@ -276,17 +276,17 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 
 ### Capability vs control summary
 
-- Control is runtime-specific and frequently narrower than the marketing language. The two most important caveats:
+- Control is runtime-specific and frequently narrower than vendor descriptions suggest. The two most important caveats:
   - Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` on plugin subagents (`Ignored`).
   - Codex runs only `type: "command"` hooks, and non-managed hooks are `Trust-gated`; `prompt`/`agent` handlers are `Unsupported`.
 - Prime Agent execution is `Not a sandbox`; Crush treats its config as `Not a sandbox` trusted code. Both restrict to trusted inputs.
-- Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled security `Enforced`; `Enforced` is reserved for actual controls.
+- Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled `Enforced` as security controls; `Enforced` is reserved for actual controls.
 
 ### Package and sync boundaries
 
 - Canonical methodology lives in `packages/core/agent-directives/`. Per-platform output is generated by the core sync pipeline (ADR-CORE-005).
 - CLI installation/version handlers (ADR-CORE-007) and model-config handlers are separate and are not part of this first batch.
-- Prime Agent must not reuse `@maestria/pi`, because Prime Agent is a Pi-based harness.
+- Prime Agent must not reuse `@maestria/pi`: Prime Agent is a Pi-based harness, so shipping the Pi extension under a Prime Agent package would create a false or conflicting dependency claim and blur the package boundary.
 
 ### Promotion gates
 

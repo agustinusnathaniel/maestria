@@ -4,7 +4,7 @@
 
 Bring the maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes AI agent platform. Unlike @maestria/opencode which is domain-locked to software engineering, this plugin generalizes specialists to work across any domain - research, content, analysis, strategy, and coding.
 
-Coding-specific work routes to the OpenCode CLI as an optional power-up, not a hard dependency.
+Coding-specific work routes to the OpenCode CLI when it is installed; the plugin does not require it.
 
 ## Current implementation (2026-09-01)
 
@@ -32,7 +32,7 @@ Only fall back to custom implementations (JSON file for mode persistence) when t
 
 ### 3. General agent, not a coding tool
 
-Hermes is a general-purpose AI agent platform, not a coding CLI like OpenCode. The plugin's specialists must work across domains - research, content, analysis, strategy, operations - not just software engineering. The coding path routes to OpenCode CLI as an optional power-up, never a hard dependency.
+Hermes is a general-purpose AI agent platform, not a coding CLI like OpenCode. The plugin's specialists must work across domains - research, content, analysis, strategy, operations, and software engineering. The coding path routes to the OpenCode CLI when it is installed; the plugin does not require it.
 
 ### 4. Minimal detection - only for external tooling
 
@@ -42,7 +42,7 @@ The probe never blocks, installs, or modifies config. It just logs guidance.
 
 ### 5. Feel native to Hermes users
 
-Commands, hooks, tools, and skills follow Hermes Plugin API conventions. Config lives in `config.yaml`. Users interact with `/fein`, `/sonar`, `/blitz` the same way they interact with `/goal`. The plugin should feel like it belongs, not like a foreign methodology bolted on.
+Commands, hooks, tools, and skills follow Hermes Plugin API conventions. Config lives in `config.yaml`. Users interact with `/fein`, `/sonar`, `/blitz` the same way they interact with `/goal`. The methodology is delivered through Hermes commands, hooks, tools, and skills rather than a separate interface.
 
 ## Role-Neutral Child Trust Policy (Approved 2026-08-10)
 
@@ -56,7 +56,7 @@ The specialist tables and pipeline diagrams in this document describe **directiv
 - **Sonar and direct blitz have literal positive allowlists that fail closed.** Unknown, renamed, and new tools are denied by default.
 - **Review/landing enforcement is advisory.** Hermes has no native review-state or landing gate.
 - **Lifecycle: session end is per-turn and resumable; finalize/reset/subagent stop are terminal trust boundaries.** A stopped or ended child has its role and trust cleared.
-- **Role-specific delegated builder writes are deferred** until Hermes provides an authenticated capability channel that provably binds a delegated child to an authorized capability. Until then, delegated children do not receive write/execute/shell/delegate/OpenCode capability. Code changes on Hermes are performed by a trusted top-level fein session under its direct-access boundary, not by a delegated `builder` child.
+- **Role-specific delegated builder writes are deferred** until Hermes provides an authenticated capability channel that proves a delegated child is authorized to use a given capability. Until then, delegated children do not receive write/execute/shell/delegate/OpenCode capability. Code changes on Hermes are performed by a trusted top-level fein session under its direct-access boundary, not by a delegated `builder` child.
 
 > Where a table below shows a specialist with write/bash/OpenCode access (for example the builder), read that as the specialist's **routing role and intended activity** under directive guidance. It is **not** a grant that a delegated child may write. The role-neutral child boundary is mechanically enforced by the runtime: `subagent_start` records only topology trust state, and `pre_tool_call` holds every delegated child to the fixed read/research/LLM-only policy. See [ADR-HM-002](adr/hermes/ADR-HM-002-orchestration-policy.md) for the enforcement status.
 

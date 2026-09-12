@@ -38,7 +38,7 @@ import { marks } from '@/data/marks.js';
         items={[
           { title: '8 specialized agents', desc: 'The orchestrator plus seven specialists - adventurer, architect, builder, diagnose, planner, reviewer, writer - registered programmatically when the plugin loads.' },
           { title: 'Global rules every session', desc: 'Workflow directives are appended to every OpenCode session automatically. No prompt engineering, no forgotten context.' },
-          { title: 'Delegate with @ mentions', desc: 'All 8 agents work as subagents. Call any specialist directly - @adventurer for recon, @builder for implementation, @reviewer for a fresh pair of eyes.' },
+          { title: 'Delegate with @ mentions', desc: 'All 8 agents work as subagents. Call any specialist directly - @adventurer for recon, @builder for implementation, @reviewer for an independent check.' },
           { title: 'Session state preserved', desc: 'A compaction hook remembers task status, so long-running work survives context resets.' },
           { title: 'Per-agent model control', desc: "Agents register without model overrides. Assign models per agent from your own config whenever you have a reason to." },
           { title: 'Native tool permissions', desc: "Each agent ships its own permission fields, honored by OpenCode's V2 runtime - read-only reviewers stay read-only." },
@@ -79,7 +79,7 @@ import { marks } from '@/data/marks.js';
     <PluginSection
       index="03"
       kicker="INSTALL PATHS"
-      title="Three ways in, one result."
+      title="Three installation paths."
       class="mb-[clamp(4rem,9vw,7rem)]"
     >
       <div class="flex flex-col gap-6 max-w-46rem">

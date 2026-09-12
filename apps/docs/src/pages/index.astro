@@ -25,7 +25,7 @@ const docsMap: { group: string; items: DocLink[] }[] = [
     group: 'CLI',
     items: [
       {
-        desc: 'Run maestria via npx anywhere Node 22+ is available - no install step.',
+        desc: 'Run maestria with npx wherever Node 22+ is available; no install step needed.',
         href: '/cli/getting-started/',
         title: 'Getting Started',
       },
@@ -40,7 +40,7 @@ const docsMap: { group: string; items: DocLink[] }[] = [
         title: 'How It Works',
       },
       {
-        desc: 'Thinker, worker, and verifier roles and the maker/checker split.',
+        desc: 'Thinker, worker, and verifier roles, plus the maker/checker split.',
         href: '/core/pipeline/',
         title: 'Pipeline & Roles',
       },
@@ -103,9 +103,9 @@ const INSTALL_CMD = 'npx maestria install opencode';
         class="flex flex-col items-center text-center pt-[clamp(4.5rem,9vw,6.5rem)] max-md:pt-12 min-w-0 home-hero-anim"
         aria-labelledby="home-title"
       >
-        <p class="font-mono text-xs uppercase tracking-[0.14em] text-home-text-muted mb-5 max-md:mb-2">OPEN-SOURCE METHODOLOGY LAYER</p>
+        <p class="font-mono text-xs uppercase tracking-[0.14em] text-home-text-muted mb-5 max-md:mb-2">OPEN-SOURCE AGENT METHODOLOGY</p>
         <h1 id="home-title" class="text-[clamp(2.75rem,7vw,4.75rem)] max-md:text-[clamp(1.875rem,9vw,2.5rem)] font-[540] leading-[1.04] tracking-[-0.04em] text-balance text-home-text max-w-[20ch] mb-6 max-md:mb-3">
-          Make the work <span class="text-home-accent">deliberate.</span>
+          Make every step <span class="text-home-accent">intentional.</span>
         </h1>
         <p class="text-[clamp(1.05rem,1.6vw,1.25rem)] max-md:text-[0.875rem] leading-[1.6] max-md:leading-[1.55] text-home-text-soft max-w-[40ch] mb-9 max-md:mb-4 mx-auto text-pretty">
           A portable harness for AI coding agents. Route complex work through
@@ -190,8 +190,8 @@ const INSTALL_CMD = 'npx maestria install opencode';
             </div>
             <h3 class="mt-5 mb-2 text-[19px] leading-[1.3] font-[590] tracking-[-0.01em] text-home-text">Pipeline composition</h3>
             <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft m-0">
-              Route work through focused stages instead of asking one context
-              to do everything.
+              Route work through focused stages so no single context does
+              everything.
             </p>
           </article>
           <article class="group border-t border-home-border pt-[1.5rem] min-w-0">
@@ -209,8 +209,8 @@ const INSTALL_CMD = 'npx maestria install opencode';
             </div>
             <h3 class="mt-5 mb-2 text-[19px] leading-[1.3] font-[590] tracking-[-0.01em] text-home-text">Platform independence</h3>
             <p class="text-[0.9375rem] leading-[1.65] text-home-text-soft m-0">
-              Methodology stays consistent while each platform uses native
-              primitives.
+              The methodology stays consistent while each platform uses its
+              native primitives.
             </p>
           </article>
         </div>
@@ -219,7 +219,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       <!-- =========================== 4. SPECIALISTS =========================== -->
       <section class="home-section mb-[var(--home-section-gap)] scroll-mt-[calc(var(--sl-nav-height)+2rem)]" id="pipeline" aria-labelledby="agents-title">
         <p class="section-eyebrow">02 / SPECIALISTS</p>
-        <h2 id="agents-title">The conductor is not the crew.</h2>
+        <h2 id="agents-title">One dispatcher, seven specialists.</h2>
         <div class="grid grid-cols-[minmax(0,20rem)_minmax(0,1fr)] gap-[clamp(1.5rem,3vw,2.5rem)] items-start max-lg:grid-cols-1">
           <div class="flex flex-col" role="tablist" aria-label="Specialists">
             {agents.map((agent: Agent, index: number) => (
@@ -283,7 +283,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       <!-- ============================ 5. ADAPTERS ============================ -->
       <section class="home-section mb-[clamp(4rem,9vw,6rem)]" id="adapters" aria-labelledby="platforms-title">
         <p class="section-eyebrow">03 / ADAPTERS</p>
-        <h2 id="platforms-title">One methodology. Native primitives.</h2>
+        <h2 id="platforms-title">One methodology, built on native primitives.</h2>
         <div class="grid grid-cols-3 border-t border-l border-home-border max-lg:grid-cols-1">
           {platforms.map((platform) => (
             <a
@@ -315,7 +315,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
         </div>
         <div>
           <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">3</span>
-          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">COGNITIVE ROLES</span>
+          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">THINKER / WORKER / VERIFIER</span>
         </div>
         <div>
           <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">9</span>
@@ -332,7 +332,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
       <!-- ============================= 7. DOCS MAP ============================= -->
       <section class="home-section" aria-labelledby="docs-title">
         <p class="section-eyebrow">04 / FIND YOUR WAY</p>
-        <h2 id="docs-title">Start with the system.</h2>
+        <h2 id="docs-title">Start with the docs.</h2>
         <div>
           {docsMap.map((group, gi) => (
             <div>

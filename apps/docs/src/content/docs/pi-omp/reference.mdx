@@ -148,7 +148,7 @@ inherit_context: true # pass parent session context
 ---
 ```
 
-The `prompt_mode: append` field is critical - it ensures the specialist prompt merges on top of the inherited orchestrator prompt, so every subagent has both the dispatcher methodology and its role-specific guidance.
+The `prompt_mode: append` field merges the specialist prompt on top of the inherited orchestrator prompt, so every subagent has both the dispatcher methodology and its role-specific guidance.
 
 ### Tool isolation
 

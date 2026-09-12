@@ -44,7 +44,7 @@ The sync tool and shared packages are private to this repository, so internal co
 4. **CLI shared primitives and batch harness.** `apps/maestria-cli/src/lib/primitives.ts` owns shared JSON/record guards, parsers, and path checks. `batch-command.ts` owns the install/update/uninstall skeleton: quiet resolution, result rendering, the concurrency-1 selection runner, and the non-interactive usage guard. Each command keeps its own prompts, filters, and messages.
 5. **Shared review adapter.** `createReviewApi` in `@maestria/shared-pi/review-core` binds a host and its model type guard. Pi and OMP pass `isPiModel`/`isOmpModel` and keep thin state wrappers, so host validation stays at the platform seam.
 6. **OpenCode mode reuse.** OpenCode imports mode constants, detection, stripping, and section extraction from `@maestria/shared-mode`; its `modeKeywordSchema` is built from `MODE_KEYWORDS`, and the duplicated marker and keyword tables are gone.
-7. **Complexity deliberately retained.**
+7. **Retained complexity.**
    - **Prime Agent self-contained modes.** `packages/prime-agent/src/modes.ts` stays independent: [ADR-CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md) isolates its pinned Prime fork types and fail-closed prompt behavior as a verified extension subset.
    - **Hermes Python implementation.** The plugin, hooks, and permission gating are host-native Python and not portable TypeScript; rewriting them would trade working enforcement for uniformity.
    - **Per-host adapter seams.** Pi and OMP model guards, host types, lazy prompt loading, and session state differ; merging their adapters would couple packages to save a few lines.
@@ -97,7 +97,7 @@ A second reduction pass applied the consumer-driven rule to the Pi/OMP adapter l
 - **Hermes duplication.** `_refresh_tombstone_position` was deleted; `revoke_all_trust` now refreshes the FIFO position through `_set_trust_state`. `create_session_hooks` was removed in favor of registering the `SessionManager` bound methods directly in `register()`.
 - **Orphaned exports.** Pi's `POLL_TIMEOUT_MS`, `POLL_INTERVAL_MS`, and `MAX_PARALLEL_TASKS` constants and the `PiModel` type became module-private.
 
-### Complexity deliberately retained (current)
+### Retained complexity (current)
 
 - **CLI Effect model.** The `maestria` CLI stays on Effect v4 per [ADR-CORE-007](ADR-CORE-007-cli-package-plugin-management.md) and [ADR-CORE-017](ADR-CORE-017-selective-effect-v4-adoption.md).
 - **Prime Agent self-contained modes.** `packages/prime-agent/src/modes.ts` stays independent per [ADR-CORE-014](ADR-CORE-014-runtime-support-and-adapter-policy.md); its pinned Prime fork types and fail-closed prompt behavior are a verified extension subset.

@@ -41,7 +41,6 @@ ADRs record why a design was chosen, including alternatives and trade-offs. Read
 ## Dated Evidence
 
 - [verified] 2026-09-05: paths checked against the repository documentation inventory. The public site source is `apps/docs/`; this checkout has no `apps/website/`.
-- [inferred] Organizing these links by reader task should reduce the need to browse directories or infer document purpose from filenames.
 
 ## Next Step
 

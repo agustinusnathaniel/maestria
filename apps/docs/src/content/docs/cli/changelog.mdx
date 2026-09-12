@@ -61,7 +61,7 @@ _August 13, 2026_
 
 - Added `prime-agent` platform detection to `status` and `check`.
 - Added `install`, `update`, and `uninstall` adapters that delegate to Prime's native package manager (`prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`).
-- Prime support is deliberately global (user scope only): every Prime command runs from a freshly created empty temporary directory, so project registrations are never scanned or modified, and the temporary directory is removed afterwards.
+- Prime support is global (user scope only): every Prime command runs from a freshly created empty temporary directory, so project registrations are never scanned or modified, and the temporary directory is removed afterwards.
 - Registration state is read from `prime-agent package list`, and the installed version is read from the installed package's manifest.
 - Updates use Prime's latest-only package semantics, so exact version pinning is unavailable. A version-pinned user registration is reported as an error rather than silently skipped.
 
@@ -118,7 +118,7 @@ _July 14, 2026_
 
 ### Enhanced interactive prompts
 
-`update` and `install` commands now use a grouped multiselect prompt with an "All platforms" toggle and `a` keyboard shortcut to select/deselect all. `maestria install kimi-code` now works with the latest Kimi Code versions -- the installer writes plugin files directly instead of relying on a removed CLI command.
+`update` and `install` commands now use a grouped multiselect prompt with an "All platforms" toggle and `a` keyboard shortcut to select/deselect all. `maestria install kimi-code` now works with the latest Kimi Code versions - the installer writes plugin files directly instead of relying on a removed CLI command.
 
 ## v0.4.1
 

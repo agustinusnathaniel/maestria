@@ -58,6 +58,6 @@ When a skill is Hermes-only, place its namespaced SKILL.md under src/maestria_he
 
 ## Keep the Inventory Accurate
 
-The authoritative runtime inventory is split across plugin.yaml and src/maestria_hermes/**init**.py. The tests compare the manifest to register(). Update both when adding or removing a resource, then run the focused tests and the docs build if the public contract changes.
+The authoritative runtime inventory is split across plugin.yaml and `src/maestria_hermes/__init__.py`. The tests compare the manifest to register(). Update both when adding or removing a resource, then run the focused tests and the docs build if the public contract changes.
 
 Use the [Hermes commands](/hermes/commands/) and [installation guide](/hermes/getting-started/installation/) for user-facing behavior.

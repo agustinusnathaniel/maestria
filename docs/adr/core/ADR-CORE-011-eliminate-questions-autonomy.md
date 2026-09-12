@@ -138,7 +138,7 @@ Rationale:
 
 The original proposal was a blanket "eliminate all questions" approach - remove every `question()` call from every agent.
 
-Rejected because the response data analysis (1,133 questions) revealed a more nuanced pattern. Commit and push questions have high approval rates (88.4% and 81.7%), but they serve a different purpose: they act as phase-boundary quality gates, not decision prompts. Eliminating them would remove valuable user checkpoints. The refined "mid-phase vs boundary" distinction emerged from this analysis.
+Rejected because the response data analysis (1,133 questions) revealed a more nuanced pattern. Commit and push questions have high approval rates (88.4% and 81.7%), but they are phase-boundary quality gates, not decision prompts. Eliminating them would remove valuable user checkpoints. The refined "mid-phase vs boundary" distinction emerged from this analysis.
 
 ### Option B: Permission Modes in Core
 

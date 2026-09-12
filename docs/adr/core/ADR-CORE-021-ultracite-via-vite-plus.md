@@ -162,7 +162,7 @@ Revert the root catalog and dependency changes, restore the previous lockfile, r
 
 ## Appendix A: Contributor-local AI rules, skills, and hooks
 
-This appendix records the deliberate non-integration for AI rules, skills, and hooks. Section 4 defines the policy, this appendix gives contributor-local opt-in instructions without committing generated files.
+This appendix records why AI rules, skills, and hooks were left out. Section 4 defines the policy, this appendix gives contributor-local opt-in instructions without committing generated files.
 
 ### Rules
 

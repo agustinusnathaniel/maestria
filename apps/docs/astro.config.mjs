@@ -14,13 +14,13 @@ export default defineConfig({
       },
       customCss: ['./src/styles/global.css'],
       description:
-        'Portable AI engineering praxis plugins for OpenCode, Claude Code, Codex CLI, and beyond.',
+        'Portable AI engineering workflows for OpenCode, Claude Code, Codex CLI, and beyond.',
       disable404Route: true,
       head: [
         {
           attrs: {
             content:
-              'Maestria, Maestria AI engineering praxis, Maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
+              'Maestria, Maestria AI engineering workflows, Maestria plugins, OpenCode, Claude Code, Codex CLI, Kimi Code, Cursor, Pi, Hermes',
             name: 'keywords',
           },
           tag: 'meta',
@@ -28,7 +28,7 @@ export default defineConfig({
         {
           attrs: {
             content:
-              'https://og.sznm.dev/api/generate?heading=maestria&text=Portable%20AI%20Engineering%20Praxis%20Plugins&template=color',
+              'https://og.sznm.dev/api/generate?heading=maestria&text=Portable%20AI%20Engineering%20Workflows&template=color',
             property: 'og:image',
           },
           tag: 'meta',
@@ -44,7 +44,7 @@ export default defineConfig({
         }),
         starlightLlmsTxt({
           description:
-            'Portable AI engineering praxis plugins for OpenCode, Claude Code, Kimi Code, Cursor, Pi, and Hermes. ' +
+            'Portable AI engineering workflows for OpenCode, Claude Code, Kimi Code, Cursor, Pi, and Hermes. ' +
             'Includes @maestria/opencode (8 agents, global rules injection), ' +
             '@maestria/claude-code (declarative Claude Code plugin with specialist agents, ' +
             'orchestrator and global-rules skills, and fein/sonar/blitz workflow commands), ' +
