@@ -15,9 +15,11 @@ When a task needs more than direct execution, Maestria can separate it into thre
 | Worker | Can we produce the requested result? | builder, writer | The implementation or documentation change |
 | Verifier | Does the result meet the evidence and quality requirements? | reviewer | An independent review with actionable findings |
 
-Thinkers primarily analyze and plan. Workers produce the requested artifact; the diagnose route may apply a confirmed fix when its route allows it. Verifiers inspect without editing. The separation keeps one agent from carrying every assumption and approving its own work.
+Thinkers analyze and plan; workers produce the artifact (diagnose may apply a confirmed fix); verifiers inspect without editing. The separation keeps one agent from approving its own work.
 
 ## Flow
+
+The common route, with each stage optional:
 
 ```text
 orchestrator
@@ -26,50 +28,37 @@ orchestrator
     -> verifier (when independent validation is required)
 ```
 
-The handoff between stages carries the outcome, relevant context and constraints, acceptance evidence, and next step. Link to existing artifacts instead of copying the whole conversation.
+Each handoff carries the outcome, context and constraints, acceptance evidence, and next step; link to existing artifacts instead of copying the conversation.
 
-## Sequence the Work
+Adapt the route to the task:
 
-The common route is:
-
-```text
-thinker -> worker -> verifier
-```
-
-Adapt it to the task:
-
-- Use adventurer before implementation when the code or dependency path is unfamiliar.
+- Use adventurer when the code or dependency path is unfamiliar.
 - Use architect when the approach has meaningful trade-offs.
-- Use planner when the approach is known but delivery needs milestones, verification criteria, or rollback points.
+- Use planner when delivery needs milestones, verification criteria, or rollback points.
 - Use diagnose when a failure's cause is not established.
-- Skip the thinker when the task is familiar and already scoped.
-- Stop after the thinker when the request is research or design only.
+- Skip the thinker when the task is familiar and already scoped, or stop after it for research-only requests.
 
-If a verifier rejects the result, route an implementation defect back to the worker. Route a design or scope defect back to a thinker. Do not ask the worker to guess at a rejected design.
+If a verifier rejects the result, route an implementation defect back to the worker and a design or scope defect back to a thinker. Do not ask the worker to guess at a rejected design.
 
 ## Maker/Checker Split
 
 The specialist that produces an artifact must not be the specialist that validates it. This is the pipeline's core quality boundary.
 
 <Aside type="caution" title="Review independently">
-  A reviewer may need context from a thinker, but it must still inspect the maker's result
-  independently. The reviewer reports findings and does not edit the artifact.
+  A reviewer may need context from a thinker, but it must inspect the maker's result independently
+  and report findings without editing it.
 </Aside>
 
-For ordinary work, use one independent reviewer. Add a security, architecture, performance, or UX lens only when the requirements or diff expose that risk. See [Workflow Patterns](/core/workflow-patterns/) for practical review routes.
+Use one independent reviewer for ordinary work; add a security, architecture, performance, or UX lens only when the requirements or diff expose that risk. See [Workflow Patterns](/core/workflow-patterns/) for practical review routes.
 
 ## Bound the Repair Loop
 
-Define a verifiable stopping condition before delegating. A repair loop normally gets about three attempts. Extend it only when the latest attempt provides new evidence of progress.
-
-If the same cause recurs or progress stops, escalate with:
+Define a verifiable stopping condition before delegating. A repair loop normally gets about three attempts, extended only when the latest attempt shows new progress; if the same cause recurs, escalate with:
 
 ```text
 Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.
 ```
 
-This keeps the pipeline from repeating an unproductive repair.
-
 ## Choose a Route
 
-The pipeline is optional. Use [When to Use Maestria](/core/when-to-use/) to compare direct execution, one specialist, and full orchestration. Use [Specialist Reference](/core/agents/) for each role's detailed contract.
+The pipeline is optional: [When to Use Maestria](/core/when-to-use/) compares direct execution, one specialist, and full orchestration, and [Specialist Reference](/core/agents/) details each role.

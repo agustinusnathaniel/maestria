@@ -42,7 +42,7 @@ import { marks } from '@/data/marks.js';
           { title: 'Workflow modes', desc: 'fein, sonar, and blitz skills mirror the core pipeline stages.' },
           { title: 'Extension: mode commands', desc: 'dist/extension.mjs registers /fein, /sonar, /blitz, /mode-clear, and /maestria-status.' },
           { title: 'Extension: mode injection', desc: 'Injects the active mode prompt on every agent turn.' },
-          { title: 'Spec-shaped skills', desc: 'Every skill ships as a standard Agent Skill at skills/<name>/SKILL.md with the required name/description frontmatter.' },
+          { title: 'Spec-shaped skills', desc: 'Every skill is a standard Agent Skill at skills/<name>/SKILL.md with the required name/description frontmatter.' },
         ]}
       />
     </PluginSection>
@@ -63,29 +63,6 @@ import { marks } from '@/data/marks.js';
 
     <PluginSection
       index="03"
-      kicker="INSTALL PATHS"
-      title="Register the package with Prime."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div class="flex flex-col gap-6 max-w-46rem">
-        <p class="m-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
-          The preferred path is to register the published npm package with Prime:
-        </p>
-      </div>
-
-      ```bash
-      prime-agent package install npm:@maestria/prime-agent
-      ```
-
-      <p class="!mt-6 mb-0 max-w-46rem text-[0.9375rem] leading-[1.65] text-home-text-soft">
-        For skills-only installs, point Prime at the package's <code>skills/</code> directory in settings,
-        or copy or symlink the skill directories into a project/global skill location. See the
-        installation guide for the full options, including how to enable the extension for non-package installs.
-      </p>
-    </PluginSection>
-
-    <PluginSection
-      index="04"
       kicker="PLATFORM LIMITS"
       title="Advisory guidance, not enforcement."
       class="mb-[clamp(4rem,9vw,7rem)]"
@@ -93,16 +70,15 @@ import { marks } from '@/data/marks.js';
       <FeatureGrid
         columns={2}
         items={[
-          { title: 'Verified subset only', desc: "The extension covers mode commands and mode prompt injection. Prime's recursive-subagent call (rlm(...)) is an IPython-side tool with no public JS extension bridge, so this package cannot spawn child agents from the extension." },
+          { title: 'Verified subset only', desc: "The extension covers only mode commands and mode prompt injection. Prime's rlm(...) subagent dispatch is an IPython-side tool with no public JS extension bridge, so this package cannot spawn child agents." },
           { title: 'Advisory, not enforced', desc: 'Skills, rules, and the extension are advisory guidance, not security enforcement. Prime Agent has no skill-level tool-denial mechanism, so read-only roles describe their intent without claiming enforcement.' },
           { title: 'Not a sandbox', desc: 'Prime Agent executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.' },
-          { title: 'Extension has no filesystem writes', desc: "The compiled extension writes nothing to ~/.pi or .prime/agent; Prime's package manager still manages its own registration files, and mode state rides on host session entries." },
         ]}
       />
     </PluginSection>
 
     <PluginSection
-      index="05"
+      index="04"
       kicker="FIND YOUR WAY"
       title="Start with the plugin."
       class="mb-[clamp(4rem,9vw,7rem)]"

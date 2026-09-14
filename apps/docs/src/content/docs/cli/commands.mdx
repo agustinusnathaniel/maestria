@@ -8,14 +8,14 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Global Flags
 
-These flags work across the CLI:
+These flags apply across the CLI:
 
 | Flag      | Description                                                       |
 | --------- | ----------------------------------------------------------------- |
 | `--json`  | Output results as JSON instead of formatted text on every command |
 | `--quiet` | Suppress spinner animations on runtime platform commands          |
 
-`--compact` (machine-friendly text output) is supported on runtime platform commands except `check`. `--help` is available on every command and shows in-terminal examples, exit codes, and AI-agent usage tips.
+`--compact` (machine-friendly text) is supported on runtime platform commands except `check`. Every command's `--help` shows in-terminal examples, exit codes, and AI-agent usage tips.
 
 Running `maestria` with no arguments is equivalent to `maestria status`.
 
@@ -23,13 +23,13 @@ Running `maestria` with no arguments is equivalent to `maestria status`.
 
 ## `status`
 
-Show what's installed and version information for all platforms.
+Show what is installed and version information for all platforms.
 
 ```bash
 maestria status [--json] [--quiet] [--compact]
 ```
 
-Detects which coding agent CLIs are available on `$PATH`, checks whether maestria is installed for each, and reports the installed and latest versions. Platform detection runs in parallel.
+Detects coding agent CLIs on `$PATH`, reports whether maestria is installed for each, and lists installed and latest versions. Detection runs in parallel.
 
 ### Flags
 
@@ -56,7 +56,7 @@ Detects which coding agent CLIs are available on `$PATH`, checks whether maestri
 }
 ```
 
-The version values in this example are illustrative. The command reports the versions found on your machine and the versions currently available from each registry.
+Version values are illustrative; the command reports the versions found locally and available from each registry.
 
 Each platform object:
 
@@ -71,7 +71,7 @@ Each platform object:
 
 ### Compact output
 
-With `--compact`, status outputs one line per platform with no colors or decorative formatting:
+With `--compact`, status outputs one line per platform without colors or decoration:
 
 ```
 opencode: available installed=0.2.1 latest=0.2.1
@@ -81,7 +81,7 @@ claude-code: available installed=0.2.1 latest=0.2.1
 codex: available installed=0.2.0 latest=0.2.0
 ```
 
-Intended for AI agents and token-sensitive environments. Implies `--quiet` (no spinner animations).
+Implies `--quiet` (no spinner animations).
 
 ### Example
 
@@ -91,7 +91,7 @@ Intended for AI agents and token-sensitive environments. Implies `--quiet` (no s
 
 ## `install`
 
-Install maestria plugins for one or more coding agent platforms.
+Install maestria for one or more coding agent platforms.
 
 ```bash
 maestria install [platform] [--all] [--json] [--quiet] [--compact]
@@ -133,7 +133,7 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 
 ### Platform-specific installation behavior
 
-Claude Code and Codex CLI use their host-native marketplace managers. The Maestria CLI stages the published npm package under `~/.cache/maestria/` before invoking those managers. Claude Code configuration remains host-owned; Codex also receives Maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
+Claude Code and Codex CLI use host-native marketplace managers; the CLI stages the published npm package under `~/.cache/maestria/` first. Claude Code configuration remains host-owned; Codex also receives Maestria-managed native agent TOMLs under `$CODEX_HOME/agents/`.
 
 **Prime Agent** uses its native package manager. Maestria delegates installation, updates, and removal to `prime-agent package install`/`update`/`remove npm:@maestria/prime-agent`, reads registration state with `prime-agent package list`, and does not edit Prime configuration files directly.
 
@@ -152,7 +152,7 @@ Prime has two additional constraints:
 | Invalid version format | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.` |
 | `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.` |
 
-**Runtime errors** - if a platform command fails (e.g., network error, missing binary), the CLI catches it and reports the failure per-platform rather than aborting the entire batch:
+**Runtime errors** - a failing platform command (network error, missing binary) is reported per-platform rather than aborting the batch:
 
 ```
 ✔ OpenCode: Installed
@@ -167,7 +167,7 @@ Prime has two additional constraints:
 
 ## `plugin`
 
-Validate and stage portable Agent Plugins v1 directory packages. This workflow is separate from the runtime platform registry: it prepares a package for a compatible client's own installer or directory loader.
+Validate and stage portable Agent Plugins v1 directory packages, separate from the runtime platform registry: the result is a package for a compatible client's own installer or directory loader.
 
 ```bash
 maestria plugin validate <path> [--json]
@@ -184,7 +184,7 @@ maestria plugin install [source] [--destination <path>] [--json]
 | `maestria plugin install ./my-plugin` | Validates and stages a local package |
 | `maestria plugin install ./my-plugin --destination ./staged-plugin` | Stages a validated package at an explicit directory |
 
-The staged directory contains the root `plugin.json` and fixed `skills/` layout. The command does not activate the package in every client: installation scope, permissions, trust, and session behavior remain client-owned.
+The staged directory contains the root `plugin.json` and fixed `skills/` layout. The command does not activate the package: installation scope, permissions, trust, and session behavior remain client-owned.
 
 ### Sources and destinations
 
@@ -204,7 +204,7 @@ Without `--destination`, the package is staged under:
 
 On systems that set `XDG_CACHE_HOME`, the path starts at `$XDG_CACHE_HOME/maestria/` instead.
 
-Use `--destination` to choose another directory. The CLI refuses to overwrite an existing destination, so choose a new directory when staging a second copy.
+Use `--destination` to choose another directory; the CLI refuses to overwrite an existing destination.
 
 ### Validation report
 
@@ -235,7 +235,7 @@ maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--co
 
 ### Behavior
 
-Same logic as `install` but targets platforms where maestria is already installed. Before-and-after version numbers are shown when available:
+Same logic as `install`, but targeting platforms where maestria is already installed. Before-and-after version numbers are shown when available:
 
 ```
 ✔ OpenCode: Updated: v0.5.0 → v0.6.0
@@ -269,29 +269,17 @@ The CLI queries npm for the live latest version first. When npm is unreachable, 
 }
 ```
 
-The cache stores only the last resolved version per package, with no time-to-live, so it is an offline fallback rather than a freshness window. To clear the fallback data:
+The cache stores one version per package with no time-to-live; it is an offline fallback, not a freshness window. To clear it:
 
 ```bash
 rm ~/.cache/maestria/versions.json
 ```
-
-<PackageManagers type="dlx" pkg="maestria" args="status" />
 
 A successful update removes that package's cached entry, and the next version check fetches live from npm.
 
 ### Example
 
 <PackageManagers type="dlx" pkg="maestria" args="update --all" />
-
-<Aside type="tip">
-  Use `maestria status` before `maestria update --all` to see which platforms have updates
-  available.
-</Aside>
-
-<Aside type="tip">
-  Run `maestria <command> --help` for in-terminal examples and exit code documentation,
-  including a TIP FOR AI AGENTS section with usage guidance for automated environments.
-</Aside>
 
 ### Exit Codes
 
@@ -333,7 +321,7 @@ maestria uninstall [platform] [--all] [--json] [--quiet] [--compact]
 | `maestria uninstall --all`     | Uninstalls every platform where maestria is installed    |
 | `maestria uninstall pi --json` | Uninstalls Pi, outputs JSON result                       |
 
-Like `install` and `update`, `uninstall` detects non-interactive terminals and exits with code `1` showing a clear error message instead of attempting an interactive prompt when no platform is passed and `--all` is not set. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
+Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals when no platform is passed and `--all` is not set, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
@@ -363,11 +351,11 @@ maestria check --all [--json] [--quiet]
 | `--json`      | Output as JSON. Default: `false` - human-readable text is the default.    |
 | `--quiet`     | Suppress error messages on stderr. Does not suppress the result on stdout |
 
-Unlike every other command, `check` has no `--compact` flag. The default output is human-readable text; pass `--json` for machine-readable output. `--quiet` suppresses error messages, not the result, so `--json --quiet` gives structured output without stderr noise.
+Unlike every other command, `check` has no `--compact` flag; `--quiet` suppresses stderr error messages, not the stdout result.
 
 ### Behavior
 
-`check` validates the platform, checks whether its CLI is available on `$PATH`, then checks whether the `@maestria/<platform>` plugin is installed. With `--all`, it runs the same check for every detected platform.
+`check` validates the platform, checks whether its CLI is available on `$PATH`, then checks whether the `@maestria/<platform>` plugin is installed.
 
 | State | Exit code | Output |
 | --- | --- | --- |
@@ -377,7 +365,7 @@ Unlike every other command, `check` has no `--compact` flag. The default output 
 | Installed and current | `0` | `available: true`, `pluginInstalled: true`, `installedVersion`, `latestVersion` |
 | Installed and outdated | `3` | Same fields plus `outdated: true` when `--json` is set; text output prints the available update |
 
-With `--all`, the exit code is `1` when no detected platform is available, or when any available platform is not installed, `3` when all available detected platforms are installed and at least one is outdated, and `0` otherwise. Every JSON result includes the `platform` field with the checked platform id, and `latestVersion` is included only when it could be determined. JSON is written to stdout only when `--json` is passed; otherwise the default text output is written.
+With `--all`, the exit code is `1` when no detected platform is available, or when any available platform is not installed, `3` when all available detected platforms are installed and at least one is outdated, and `0` otherwise. Every JSON result includes the `platform` field with the checked platform id, and `latestVersion` is included only when it could be determined. JSON is written to stdout only with `--json`; otherwise the default text output is used.
 
 ### Example
 
@@ -393,9 +381,9 @@ Choose which model each maestria specialist agent uses, per platform.
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
 ```
 
-`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model. Agents without a configured model inherit the session model.
+`platform` is optional - one of `opencode`, `codex`, `cursor`, `pi`, `omp`. Omit it for an interactive platform picker. The 7 specialists (`adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`) can each use a different model.
 
-For Codex, the command writes native custom-agent TOML files under `~/.codex/agents/` for global configuration or `.codex/agents/` for project configuration. Existing agent files are edited surgically, and new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
+For Codex, the command writes native custom-agent TOML files under `~/.codex/agents/` (global) or `.codex/agents/` (project). Existing files are edited surgically; new files use Codex's `name`, `description`, `developer_instructions`, `model`, and read-only `sandbox_mode` fields where appropriate. For Cursor, global configuration edits the installed plugin's native agent files and project configuration creates `.cursor/agents/` overlays.
 
 ### Interactive (TTY)
 
@@ -413,7 +401,7 @@ Shows a group-multiselect of the 7 specialists, then a per-agent model picker wi
 
 - `--set <agent>=<model>[,...]` - comma-separated pairs; an empty value (`reviewer=`) resets the agent to inherit the session model
 - `--global` / `--project` - config level, mutually exclusive; `--set` and other non-interactive usage require exactly one of these flags
-- Choose each explicit model ID from the platform's normal, live model list. Models are validated against that list before writing.
+- Explicit model IDs come from the platform's live model list and are validated before writing.
 - `--set` changes only the agents you name. Unmentioned agents keep their existing assignments.
 
 For a partial assignment, set a model for any role you want to change:
@@ -421,8 +409,6 @@ For a partial assignment, set a model for any role you want to change:
 ```bash
 maestria configure <platform> --global --set planner=<model-id>
 ```
-
-Unmentioned agents remain unchanged. Configuration currently supports OpenCode, Codex CLI, Cursor, Pi, and OMP.
 
 ### Flags
 

@@ -3,15 +3,11 @@ title: Contributing
 description: Where to edit Maestria methodology, how to regenerate platform projections, and where to find platform-specific contribution guides.
 ---
 
-This page explains the shared workflow. The repository root [CONTRIBUTING.md](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md) covers development setup, testing, changesets, and pull requests.
+Shared agent prompts, workflow modes, and global rules have one source: packages/core/agent-directives/. Development setup, testing, changesets, and pull requests live in the repository root [CONTRIBUTING.md](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md).
 
 ## Canonical Source Workflow
 
-Shared agent prompts, workflow modes, and global rules have one source: packages/core/agent-directives/. Platform packages contain generated projections plus any host-specific adapter code.
-
-Never edit generated agents, skills, commands, rules, or other projection files directly. Your edits will be overwritten by the next sync.
-
-To change shared methodology:
+Never edit generated agents, skills, commands, rules, or other projection files directly; the next sync overwrites them. To change shared methodology:
 
 1. Edit the matching Markdown file in packages/core/agent-directives/.
 2. Run the sync from the repository root.
@@ -22,11 +18,11 @@ scripts/sync-all
 scripts/check-sync
 ```
 
-The sync configuration for each package adapts names, frontmatter, tool syntax, and host-specific boundaries. Keep those transforms in the platform package. Keep reusable methodology in core.
+Sync configuration adapts names, frontmatter, tool syntax, and host-specific boundaries per package; keep transforms in the platform package and reusable methodology in core.
 
 ## Platform Guides
 
-Use the platform guide for the package's authored files, generated outputs, runtime boundary, and focused validation:
+Each platform guide covers the package's authored files, generated outputs, runtime boundary, and focused validation:
 
 | Package          | Guide                                            |
 | ---------------- | ------------------------------------------------ |
@@ -39,20 +35,6 @@ Use the platform guide for the package's authored files, generated outputs, runt
 | Hermes Agent     | [Contributing](/hermes/contributing/)            |
 | Prime Agent      | [Contributing](/prime-agent/contributing/)       |
 | Agent Plugins v1 | [Installation and compatibility](/agent-plugin/) |
-
-## Documentation Site
-
-Run the site locally from the repository root:
-
-```bash
-pnpm dev
-```
-
-After editing docs, build the site to validate MDX and internal links:
-
-```bash
-pnpm --filter @maestria/docs build
-```
 
 ## See Also
 

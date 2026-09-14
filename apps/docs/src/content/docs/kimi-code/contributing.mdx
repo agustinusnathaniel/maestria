@@ -3,31 +3,24 @@ title: Contributing
 description: Kimi Code-specific package structure, sync behavior, and validation for @maestria/kimi-code.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For the shared source workflow, see [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
 
 ## Package Boundary
 
-Kimi Code is a declarative package. Its source is the manifest, generated skills and commands, system-prompt file, tests, and sync configuration:
+Kimi Code is a declarative package with no runtime SDK or build step. The manifest (`kimi.plugin.json`), `sync.config.ts`, and tests are hand-authored; skills, commands, and `SYSTEM.md` are generated from `packages/core/agent-directives/`. The sync configuration adapts canonical prompts to Kimi's skill, command, and system-prompt formats.
 
-```text
-packages/kimi-code/
-├── kimi.plugin.json   manifest and native entry points
-├── skills/            generated orchestrator and specialist skills
-├── commands/          generated workflow commands
-├── SYSTEM.md          generated system-prompt contribution
-├── sync.config.ts     Kimi-specific transforms
-├── tests/
-├── INSTALL.md
-└── README.md
-```
+## Manifest Contract
 
-There is no runtime SDK or build step. Platform behavior comes from Kimi Code; the sync configuration adapts the canonical prompts to Kimi's skill, command, and system-prompt formats.
+The manifest owns the Kimi-native entry points:
+
+- `skills` and `commands` - generated skill and command directories
+- `systemPromptPath` - the generated `SYSTEM.md` system-prompt contribution
+- `sessionStart.skill` - the skill loaded at session start (orchestrator)
+- `skillInstructions` - plugin-wide dispatch instruction text
 
 ## Change Shared Methodology
 
-Edit packages/core/agent-directives/, never packages/kimi-code/skills/, commands/, or SYSTEM.md. Regenerate and verify from the repository root:
+Edit `packages/core/agent-directives/`, never `packages/kimi-code/skills/`, `commands/`, or `SYSTEM.md`. Regenerate and verify from the repository root:
 
 ```bash
 scripts/sync-all
@@ -35,38 +28,13 @@ scripts/check-sync
 pnpm --filter @maestria/kimi-code test
 ```
 
-Kimi-specific changes belong in sync.config.ts or the manifest. Keep platform transforms small and do not copy canonical prompt text into the package.
-
-## Manifest Contract
-
-The manifest owns the Kimi-native entry points:
-
-| Field                      | Purpose                                               |
-| -------------------------- | ----------------------------------------------------- |
-| name, version, description | Plugin identity and release metadata                  |
-| skills                     | Generated skills directory                            |
-| commands                   | Namespaced workflow commands                          |
-| systemPromptPath           | Native system-prompt contribution                     |
-| sessionStart.skill         | Skill loaded at session start, currently orchestrator |
-| skillInstructions          | Plugin-wide instruction text                          |
-
-The generated frontmatter maps each skill to a Kimi subagent profile: explore for read-only work, coder for implementation, or plan for planning and research. Kimi permission rules apply to the session, not to an individual persona.
-
-<Aside type="caution">
-  The reviewer and adventurer prompts describe read-only behavior, but prompt text is advisory. If a
-  review-only session needs tool enforcement, configure Kimi's session-wide permission rules and
-  verify that they do not block builder or writer work in the same session.
-</Aside>
+Kimi-specific changes belong in `sync.config.ts` or the manifest. Do not copy canonical prompt text into the package.
 
 ## Add a Skill
 
-1. Add the canonical prompt under packages/core/agent-directives/ or make a platform-only addition only when Kimi requires behavior that does not belong in core.
-2. Add the Kimi transform and subagent profile in sync.config.ts.
-3. Add the skill to the orchestrator routing table when it is a specialist.
-4. Add manifest and safety assertions in packages/kimi-code/tests/.
-5. Run the sync and test commands above.
+Add the canonical prompt under `packages/core/agent-directives/` (or a Kimi-only addition when the behavior does not belong in core), its transform and subagent profile in `sync.config.ts`, its entry in the orchestrator routing table when it is a specialist, and manifest and safety assertions in `packages/kimi-code/tests/`. Then run the commands above.
 
-The seven-specialist roster is part of the current routing contract. If that count or a persona's access model changes, update the routing table and tests together.
+Read-only roles are advisory: Kimi permission rules apply to the session, not to an individual persona. The seven-specialist roster is part of the current routing contract; update the routing table and tests together when it changes.
 
 ## See Also
 

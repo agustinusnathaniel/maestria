@@ -5,11 +5,11 @@ description: Your first session with @maestria/cursor - specialists, orchestrati
 
 import { Aside } from '@astrojs/starlight/components';
 
-Once the plugin is installed, global rules apply to every Agent session. Use the orchestrator skill and specialist agents for structured work.
+Once the plugin is installed, global rules apply to every Agent session.
 
 <Aside type="caution" title="Full orchestration is not always the best path">
-  Use [the usage decision guide](/core/when-to-use/) before starting `/fein`. Direct execution or
-  one specialist is often better for small changes, interactive work, and expensive or slow models.
+  Direct execution or one specialist is often better for small changes and expensive models. Read
+  [When to Use Maestria](/core/when-to-use/) before starting `/fein`.
 </Aside>
 
 ## Try a workflow command
@@ -24,16 +24,16 @@ That runs the full pipeline: adventurer → architect/planner → builder → re
 
 Other modes:
 
-| Command         | Behavior                                   |
-| --------------- | ------------------------------------------ |
-| `/sonar <goal>` | Research only - stop before implementation |
-| `/blitz <goal>` | Builder-first fast path                    |
+| Command         | Behavior                                    |
+| --------------- | ------------------------------------------- |
+| `/sonar <goal>` | Research only - stops before implementation |
+| `/blitz <goal>` | Builder-first fast path                     |
 
 ## Try a single specialist
 
 > "Use the builder agent to add a JSDoc comment to the `add` function in `src/math.ts`."
 
-The main agent should spawn `builder` via `Task` with a complete handoff.
+The main agent spawns `builder` via `Task` with a complete handoff.
 
 ## Try maker/checker
 
@@ -45,11 +45,7 @@ Expected sequence:
 2. `builder` - minimal fix
 3. `reviewer` - validation (read-only; must not edit)
 
-<Aside type="caution" title="Two-layer maker/checker enforcement">
-  Reviewer/adventurer/planner agents use `readonly: true` runtime flag to block write tools (Write,
-  StrReplace, Delete) at the Cursor runtime level, with prompt-level instructions as a backup layer.
-  Still, never ask the same agent that implemented to review its own work.
-</Aside>
+Never ask the same agent that implemented to review its own work.
 
 ## Next
 

@@ -7,11 +7,9 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-This page records how `@maestria/agent-plugin` has been verified in Agent Plugins v1 clients. The package contains standard skills only, so a successful check confirms that the client can discover and load those skills. It does not imply support for Maestria's native agents, commands, hooks, permissions, or session behavior.
+This page records how `@maestria/agent-plugin` has been verified in Agent Plugins v1 clients. The package contains standard skills only, so a successful check confirms that the client can discover and load those skills; it does not imply support for native agents, commands, hooks, permissions, or session behavior. The [official compatible clients list](https://agent-plugins.org/compatible-clients) is the source for the current ecosystem list and each client's supported component types.
 
-The [official compatible clients list](https://agent-plugins.org/compatible-clients) is the source for the current ecosystem list and each client's supported component types.
-
-The package is published on npm as `@maestria/agent-plugin`. The entries below are dated client checks, not verification of every released artifact. Re-run the check against the exact package version or commit you plan to install, especially after content changes.
+The package is published on npm as `@maestria/agent-plugin`. These are dated client checks, not verification of every released artifact; re-run against the exact version or commit you plan to install, especially after content changes.
 
 ## Verification matrix
 
@@ -31,18 +29,11 @@ Last checked: 2026-09-01.
 
 ## What the live smoke covers
 
-The verified Hermes and Grok runs exercised the client-owned lifecycle against the packaged directory:
-
-1. Install or copy the package through the client's plugin mechanism.
-2. Enable or trust the package.
-3. List the installed plugin and inspect its component inventory.
-4. Run the client's own manifest and skill validation.
-
-Both clients discovered the `maestria` manifest and the portable skills directory. No client-specific runtime files were added to the package.
+The Hermes and Grok runs exercised the client-owned lifecycle against the packaged directory: install or copy the package, enable or trust it, list the plugin and inspect its components, then run the client's own manifest and skill validation. Both clients discovered the `maestria` manifest and the portable skills directory; no client-specific runtime files were added.
 
 ## Why some checks are manual
 
-Agent Plugins standardizes the package shape and component discovery. It does not standardize each client's UI, account state, marketplace setup, enablement controls, or session test interface. VS Code, Cursor, ChatGPT, and GitHub Copilot require a desktop or signed-in client flow; Kiro, OpenClaw, and NanoClaw are not installed in the verification environment.
+Agent Plugins standardizes the package shape and component discovery, not each client's UI, account state, marketplace setup, enablement controls, or session test interface. VS Code, Cursor, ChatGPT, and GitHub Copilot require a desktop or signed-in flow; Kiro, OpenClaw, and NanoClaw are not installed in the verification environment.
 
 <Aside type="caution" title="Activation remains client-owned">
   A client can pass package validation and still require a separate enable, trust, reload, or
