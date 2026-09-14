@@ -289,14 +289,18 @@ const OPENCODE_PROJECT_CANDIDATES = [
 ];
 const OPENCODE_PROJECT_CREATE = '.opencode/opencode.jsonc';
 
-/** Resolve the config path for a level (first existing candidate, or the default to create) */
-const findOpenCodeConfigPath = (level: ModelConfigLevel): Effect.Effect<string> => {
-  const candidates = level === 'global' ? OPENCODE_GLOBAL_CANDIDATES : OPENCODE_PROJECT_CANDIDATES;
-  const fallback = level === 'global' ? OPENCODE_GLOBAL_CANDIDATES[0] : OPENCODE_PROJECT_CREATE;
-  return Effect.all(candidates.map((p) => fileExists(p))).pipe(
+// First existing candidate, or the fallback path to create.
+const firstExisting = (candidates: readonly string[], fallback: string): Effect.Effect<string> =>
+  Effect.all(candidates.map((p) => fileExists(p))).pipe(
     Effect.map((exists) => candidates[exists.indexOf(true)] ?? fallback),
   );
-};
+
+/** Resolve the config path for a level (first existing candidate, or the default to create) */
+const findOpenCodeConfigPath = (level: ModelConfigLevel): Effect.Effect<string> =>
+  firstExisting(
+    level === 'global' ? OPENCODE_GLOBAL_CANDIDATES : OPENCODE_PROJECT_CANDIDATES,
+    level === 'global' ? OPENCODE_GLOBAL_CANDIDATES[0] : OPENCODE_PROJECT_CREATE,
+  );
 
 const opencode: ModelConfigHandler = {
   agents: MAESTRIA_AGENTS,
@@ -334,9 +338,7 @@ export const codexHome = (): string => process.env.CODEX_HOME?.trim() ?? `${home
 const resolveCodexAgentPath = (level: ModelConfigLevel, agent: string): Effect.Effect<string> => {
   const dir = level === 'global' ? `${codexHome()}/agents` : '.codex/agents';
   const candidates = [`${dir}/${codexManagedAgentFileName(agent)}`, `${dir}/${agent}.toml`];
-  return Effect.all(candidates.map((candidatePath) => fileExists(candidatePath))).pipe(
-    Effect.map((exists) => candidates[exists.indexOf(true)] ?? candidates[0]),
-  );
+  return firstExisting(candidates, candidates[0]);
 };
 
 const codex: ModelConfigHandler = {
