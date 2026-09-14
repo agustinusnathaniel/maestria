@@ -1,69 +1,39 @@
 // ── Enhanced group multiselect with toggle-all (a key) ──
-//
-// Extends @clack/core's GroupMultiSelectPrompt to add an `a` key handler
-// that toggles all items across all groups. The render logic mirrors
-// @clack/prompts's internal groupMultiselect rendering (opt(), symbols,
-// layout), which is not publicly exported, so it's re-implemented here.
-//
-// Drop-in replacement for @clack/prompts's groupMultiselect.
+// Parity probe vs native (@clack/prompts@1.8.0): cancel MATCH, validation
+// MATCH, exit-code MATCH; toggle-all LOSS (native lacks `a` handler) and
+// instructions LOSS (native 3-item single line vs custom 4-item multi-line).
+// Fallback retains renderer/toggle, reuses native constants/types.
 
 import { GroupMultiSelectPrompt } from '@clack/core';
-import type { Option } from '@clack/prompts';
-import type { Readable, Writable } from 'node:stream';
+import {
+  S_BAR,
+  S_BAR_END,
+  S_CHECKBOX_ACTIVE,
+  S_CHECKBOX_INACTIVE,
+  S_CHECKBOX_SELECTED,
+} from '@clack/prompts';
+import type {
+  GroupMultiSelectOptions as NativeGroupMultiSelectOptions,
+  Option,
+} from '@clack/prompts';
 import { styleText } from 'node:util';
 
-// ── Visual symbols ────────────────────────────────────
+// ── Public API (alias to native shape, preserved contract) ──
 
-const S_BAR = '\u2502';
-const S_BAR_END = '\u2514';
-const S_CHECKBOX_ACTIVE = '\u25FB';
-const S_CHECKBOX_SELECTED = '\u25FC';
-const S_CHECKBOX_INACTIVE = '\u25FB';
+export type GroupMultiSelectOptions<Value> = NativeGroupMultiSelectOptions<Value>;
 
-const S_SYMBOL_ACTIVE = '\u25C6';
-const S_SYMBOL_CANCEL = '\u25A0';
-const S_SYMBOL_ERROR = '\u25B2';
-const S_SYMBOL_SUBMIT = '\u25C6';
-
-// ── Public API ────────────────────────────────────────
-
-export interface GroupMultiSelectOptions<Value> {
-  message: string;
-  options: Record<string, Option<Value>[]>;
-  initialValues?: Value[];
-  maxItems?: number;
-  required?: boolean;
-  cursorAt?: Value;
-  selectableGroups?: boolean;
-  groupSpacing?: number;
-  showInstructions?: boolean;
-  signal?: AbortSignal;
-  input?: Readable;
-  output?: Writable;
-  withGuide?: boolean;
-}
-
-// ── Color utility ─────────────────────────────────────
+// Submit diamond kept as U+25C6 (native uses U+25C7) to avoid visual change.
+const SYMBOL_STYLE: Record<string, [Parameters<typeof styleText>[0], string]> = {
+  active: ['cyan', '◆'],
+  cancel: ['red', '■'],
+  error: ['yellow', '▲'],
+  initial: ['cyan', '◆'],
+  submit: ['green', '◆'],
+};
 
 const symbol = (state: string): string => {
-  switch (state) {
-    case 'initial':
-    case 'active': {
-      return styleText('cyan', S_SYMBOL_ACTIVE);
-    }
-    case 'cancel': {
-      return styleText('red', S_SYMBOL_CANCEL);
-    }
-    case 'error': {
-      return styleText('yellow', S_SYMBOL_ERROR);
-    }
-    case 'submit': {
-      return styleText('green', S_SYMBOL_SUBMIT);
-    }
-    default: {
-      return '';
-    }
-  }
+  const styled = SYMBOL_STYLE[state];
+  return styled === undefined ? '' : styleText(styled[0], styled[1]);
 };
 
 // ── Instructions with toggle-all hint ──────────────────
@@ -77,19 +47,17 @@ const ENHANCED_INSTRUCTIONS = [
 
 const formatInstructions = (hasGuide: boolean): string[] => {
   const prefix = hasGuide ? `${styleText('cyan', S_BAR)}  ` : '';
-  const lastPrefix = hasGuide ? styleText('cyan', S_BAR_END) : '';
-  return ENHANCED_INSTRUCTIONS.map((text, i) => {
-    const p = i === ENHANCED_INSTRUCTIONS.length - 1 ? lastPrefix : prefix;
-    return `${p}${styleText('dim', styleText('gray', text))}`;
-  });
+  const last = hasGuide ? styleText('cyan', S_BAR_END) : '';
+  return ENHANCED_INSTRUCTIONS.map(
+    (text, i) =>
+      `${i === ENHANCED_INSTRUCTIONS.length - 1 ? last : prefix}${styleText('dim', styleText('gray', text))}`,
+  );
 };
 
-// ── Extended prompt class with a key toggle-all ────────
-
+// Toggle-all across groups (native lacks this; 8-line logic preserved).
 class TogglableGroupMultiSelectPrompt<Value> extends GroupMultiSelectPrompt<Option<Value>> {
   constructor(opts: ConstructorParameters<typeof GroupMultiSelectPrompt<Option<Value>>>[0]) {
     super(opts);
-    // Register after construction so super's constructor has already set up the event system
     this.on('key', (char: string | undefined) => {
       if (char === 'a') {
         this._toggleAll();
@@ -98,25 +66,38 @@ class TogglableGroupMultiSelectPrompt<Value> extends GroupMultiSelectPrompt<Opti
   }
 
   private _toggleAll() {
-    const allItems = this.options.filter(
+    const items = this.options.filter(
       (o): o is Option<Value> & { group: string } =>
         typeof o.group === 'string' && o.disabled !== true,
     );
-    const allSelected = this.value !== undefined && this.value.length === allItems.length;
-    this.value = allSelected ? [] : allItems.map((o) => o.value);
+    this.value =
+      this.value !== undefined && this.value.length === items.length
+        ? []
+        : items.map((o) => o.value);
   }
 }
 
-// ── Option renderer ──────────────────────────────────
+// ── Option renderer (mirrors native, preserves trailing elbow) ──
 
-const optionHint = (option: { hint?: string | null }, dimmed: boolean): string => {
-  if (option.hint === undefined || option.hint === null || option.hint === '') {
+type RenderState =
+  | 'inactive'
+  | 'active'
+  | 'selected'
+  | 'active-selected'
+  | 'group-active'
+  | 'group-active-selected'
+  | 'submitted'
+  | 'cancelled';
+type GroupedOption<Value> = Option<Value> & { group: string | boolean };
+
+const hintText = (hint: string | null | undefined, dimmed: boolean): string => {
+  if (hint === undefined || hint === null || hint === '') {
     return '';
   }
-  return dimmed ? ` ${styleText('dim', `(${option.hint})`)}` : ` (${option.hint})`;
+  return dimmed ? ` ${styleText('dim', `(${hint})`)}` : ` (${hint})`;
 };
 
-const optionPrefix = (isItem: boolean, selectableGroups: boolean, isLast: boolean): string => {
+const itemPrefix = (isItem: boolean, selectableGroups: boolean, isLast: boolean): string => {
   if (!isItem) {
     return '';
   }
@@ -129,28 +110,18 @@ const optionPrefix = (isItem: boolean, selectableGroups: boolean, isLast: boolea
 const createOptionRenderer =
   <Value>(selectableGroups: boolean) =>
   (
-    option: Option<Value> & { group: string | boolean },
-    state:
-      | 'inactive'
-      | 'active'
-      | 'selected'
-      | 'active-selected'
-      | 'group-active'
-      | 'group-active-selected'
-      | 'submitted'
-      | 'cancelled',
-    options: (Option<Value> & { group: string | boolean })[] = [],
+    option: GroupedOption<Value>,
+    state: RenderState,
+    options: GroupedOption<Value>[] = [],
   ): string => {
     const label = option.label ?? String(option.value);
     const isItem = typeof option.group === 'string';
     const next = options[options.indexOf(option) + 1] ?? { group: true };
-    const isLast = isItem && next?.group === true;
-    const prefix = optionPrefix(isItem, selectableGroups, isLast);
+    const prefix = itemPrefix(isItem, selectableGroups, isItem && next?.group === true);
     const spacer = styleText('dim', prefix);
-
     switch (state) {
       case 'active': {
-        return `${spacer}${styleText('cyan', S_CHECKBOX_ACTIVE)} ${label}${optionHint(option, true)}`;
+        return `${spacer}${styleText('cyan', S_CHECKBOX_ACTIVE)} ${label}${hintText(option.hint, true)}`;
       }
       case 'group-active': {
         return `${prefix}${styleText('cyan', S_CHECKBOX_ACTIVE)} ${styleText('dim', label)}`;
@@ -159,21 +130,21 @@ const createOptionRenderer =
         return `${prefix}${styleText('green', S_CHECKBOX_SELECTED)} ${styleText('dim', label)}`;
       }
       case 'selected': {
-        const checkbox = isItem || selectableGroups ? styleText('green', S_CHECKBOX_SELECTED) : '';
-        return `${spacer}${checkbox} ${styleText('dim', label)}${optionHint(option, false)}`;
+        const box = isItem || selectableGroups ? styleText('green', S_CHECKBOX_SELECTED) : '';
+        return `${spacer}${box} ${styleText('dim', label)}${hintText(option.hint, false)}`;
       }
       case 'cancelled': {
         return styleText('strikethrough', styleText('dim', label));
       }
       case 'active-selected': {
-        return `${spacer}${styleText('green', S_CHECKBOX_SELECTED)} ${label}${optionHint(option, true)}`;
+        return `${spacer}${styleText('green', S_CHECKBOX_SELECTED)} ${label}${hintText(option.hint, true)}`;
       }
       case 'submitted': {
         return styleText('dim', label);
       }
       case 'inactive': {
-        const checkbox = isItem || selectableGroups ? styleText('dim', S_CHECKBOX_INACTIVE) : '';
-        return `${spacer}${checkbox} ${styleText('dim', label)}`;
+        const box = isItem || selectableGroups ? styleText('dim', S_CHECKBOX_INACTIVE) : '';
+        return `${spacer}${box} ${styleText('dim', label)}`;
       }
       default: {
         return '';
@@ -189,21 +160,19 @@ const buildValidate = (required: boolean) => (selected: unknown[] | undefined) =
   return noValidationError;
 };
 
-// oxlint-disable-next-line max-lines-per-function -- createGroupRender builds the GroupMultiSelect render closure that shares opt/showInstructions/guide state and implements 5 render states (submit/cancel/error/default) with shared styleOption helper; splitting would duplicate the closure and fragment the render logic.
+// oxlint-disable-next-line max-lines-per-function -- Group render shares title/guide/styleOption closure across 5 visual states; splitting would duplicate the closure.
 const createGroupRender = <Value>(
   opts: GroupMultiSelectOptions<Value>,
   opt: ReturnType<typeof createOptionRenderer<Value>>,
-  guideDefault: boolean,
-  showInstructions: boolean,
 ): ConstructorParameters<typeof GroupMultiSelectPrompt<Option<Value>>>[0]['render'] =>
-  // oxlint-disable-next-line max-lines-per-function -- render implements 5 visual states for the group multiselect (submit/cancel/error/default) sharing title/guide/styleOption closure; splitting would duplicate the closure and fragment the render states.
+  // oxlint-disable-next-line max-lines-per-function -- Render covers submit/cancel/error/default states with shared helpers; splitting fragments the states.
   function render(this: GroupMultiSelectPrompt<Option<Value>>) {
-    const guide = opts.withGuide ?? guideDefault;
+    const guide = opts.withGuide ?? true;
+    const showInstructions = opts.showInstructions ?? true;
     const title = `${guide ? `${styleText('gray', S_BAR)}\n` : ''}${symbol(this.state)}  ${opts.message}\n`;
     const value: Value[] = this.value ?? [];
-    type RenderOption = Option<Value> & { group: string | boolean };
-    const rawOptions: RenderOption[] = this.options;
-    const styleOption = (option: RenderOption, active: boolean) => {
+    const rawOptions: GroupedOption<Value>[] = this.options;
+    const styleOption = (option: GroupedOption<Value>, active: boolean) => {
       const groupActive =
         !active &&
         typeof option.group === 'string' &&
@@ -222,13 +191,15 @@ const createGroupRender = <Value>(
       }
       return opt(option, active ? 'active' : 'inactive', rawOptions);
     };
+    const listText = (guidePrefix: string) =>
+      rawOptions
+        .map((option, idx) => styleOption(option, idx === this.cursor))
+        .join(`\n${guidePrefix}`);
     if (this.state === 'submit') {
-      const selectedOptions = rawOptions
+      const selected = rawOptions
         .filter(({ value: v }) => value.includes(v))
         .map((o) => opt(o, 'submitted'));
-      const optionsText =
-        selectedOptions.length === 0 ? '' : `  ${selectedOptions.join(styleText('dim', ', '))}`;
-      return `${title}${guide ? styleText('gray', S_BAR) : ''}${optionsText}`;
+      return `${title}${guide ? styleText('gray', S_BAR) : ''}${selected.length === 0 ? '' : `  ${selected.join(styleText('dim', ', '))}`}`;
     }
     if (this.state === 'cancel') {
       const label = rawOptions
@@ -247,23 +218,16 @@ const createGroupRender = <Value>(
         )
         .join('\n');
       const guidePrefix = guide ? `${styleText('yellow', S_BAR)}  ` : '';
-      const optionsText = rawOptions
-        .map((option, idx) => styleOption(option, idx === this.cursor))
-        .join(`\n${guidePrefix}`);
-      return `${title}${guidePrefix}${optionsText}\n${footer}\n`;
+      return `${title}${guidePrefix}${listText(guidePrefix)}\n${footer}\n`;
     }
     const guidePrefix = guide ? `${styleText('cyan', S_BAR)}  ` : '';
-    let footerLines: string[] = [];
+    let footerText = '';
     if (showInstructions) {
-      footerLines = formatInstructions(guide);
+      footerText = formatInstructions(guide).join('\n');
     } else if (guide) {
-      footerLines = [styleText('cyan', S_BAR_END)];
+      footerText = styleText('cyan', S_BAR_END);
     }
-    const footerText = footerLines.join('\n');
-    const optionsText = rawOptions
-      .map((option, idx) => styleOption(option, idx === this.cursor))
-      .join(`\n${guidePrefix}`);
-    return `${title}${guidePrefix}${optionsText}\n${footerText}\n`;
+    return `${title}${guidePrefix}${listText(guidePrefix)}\n${footerText}\n`;
   };
 
 export const groupMultiselect = async <Value>(
@@ -271,21 +235,17 @@ export const groupMultiselect = async <Value>(
 ): Promise<Value[] | symbol | undefined> => {
   const { selectableGroups = true } = opts;
   const required = opts.required ?? true;
-  const showInstructions = opts.showInstructions ?? true;
-  const opt = createOptionRenderer<Value>(selectableGroups);
-  const render = createGroupRender(opts, opt, true, showInstructions);
-  const renderOptions: ConstructorParameters<typeof GroupMultiSelectPrompt<Option<Value>>>[0] = {
+  const prompt = new TogglableGroupMultiSelectPrompt<Value>({
     cursorAt: opts.cursorAt,
     initialValues: opts.initialValues,
     input: opts.input,
     options: opts.options,
     output: opts.output,
-    render,
+    render: createGroupRender(opts, createOptionRenderer<Value>(selectableGroups)),
     required,
     selectableGroups,
     signal: opts.signal,
     validate: buildValidate(required),
-  };
-  const prompt = new TogglableGroupMultiSelectPrompt<Value>(renderOptions);
+  });
   return await prompt.prompt();
 };

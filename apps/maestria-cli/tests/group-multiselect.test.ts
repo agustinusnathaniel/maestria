@@ -1,4 +1,5 @@
 import { PassThrough } from 'node:stream';
+import { setTimeout } from 'node:timers/promises';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { groupMultiselect } from '@/lib/group-multiselect.js';
@@ -32,5 +33,32 @@ describe('groupMultiselect renderer', () => {
     output.end();
     const rendered = await renderedPromise;
     expect(rendered).toContain('└ ');
+  });
+
+  it('toggles all items across groups on `a` (native lacks this; guards fallback)', async () => {
+    const input = new PassThrough();
+    const output = new PassThrough();
+    output.resume();
+    const resultPromise = groupMultiselect({
+      input,
+      message: 'Pick items',
+      options: {
+        GroupA: [
+          { label: 'One', value: 'one' },
+          { label: 'Two', value: 'two' },
+        ],
+        GroupB: [{ label: 'Three', value: 'three' }],
+      },
+      output,
+      required: true,
+      selectableGroups: true,
+      showInstructions: false,
+    });
+    await setTimeout(50);
+    input.write('a');
+    await setTimeout(50);
+    input.write('\r');
+    expect(await resultPromise).toEqual(['one', 'two', 'three']);
+    output.end();
   });
 });
