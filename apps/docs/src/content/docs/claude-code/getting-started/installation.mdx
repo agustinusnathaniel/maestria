@@ -5,6 +5,8 @@ description: How to validate, install, and load @maestria/claude-code through Cl
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
 `@maestria/claude-code` is a declarative, self-contained Claude Code plugin: a `.claude-plugin/plugin.json` manifest plus agent, skill, and command files. No npm install, no build step, no runtime code.
 
 <Aside type="caution" title="Verified as a native candidate">
@@ -21,19 +23,15 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 
 ## Persistent installation through the Maestria CLI
 
-```bash
-npx maestria install claude-code
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install claude-code" />
 
 The CLI downloads `@maestria/claude-code` from npm, stages it in a local marketplace under `~/.cache/maestria/`, and delegates installation to Claude Code. Plugin state and scope stay in the host runtime.
 
 Check, update, or remove the installation with:
 
-```bash
-npx maestria status
-npx maestria update claude-code
-npx maestria uninstall claude-code
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="status" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update claude-code" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall claude-code" />
 
 Claude Code's marketplace update path selects the latest package. Exact version pinning is not available through `maestria update claude-code --version`.
 
@@ -89,9 +87,7 @@ Claude Code ignores the `permissionMode`, `hooks`, and `mcpServers` agent frontm
 
 Persistent install:
 
-```bash
-npx maestria uninstall claude-code
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall claude-code" />
 
 Session-only load: stop passing `--plugin-dir`. The staging directory is safe to remove afterwards:
 

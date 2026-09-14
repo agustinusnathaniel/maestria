@@ -5,6 +5,8 @@ description: Use Maestria's workflow methodology in agent clients that support A
 
 import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
 
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
 @maestria/agent-plugin packages Maestria's workflow methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the [Agent Plugins v1 format](https://agent-plugins.org/).
 
 <Aside type="tip" title="When to choose the portable package">
@@ -33,15 +35,11 @@ All 14 skills live at `skills/<name>/SKILL.md`. Load global-rules for the full c
 
 To stage and validate a published package:
 
-```bash
-npx maestria plugin install
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
 The command prints the staged directory for the client's plugin installer or local-plugin setting. To validate a local package without changing it:
 
-```bash
-npx maestria plugin validate /path/to/plugin
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
 
 Use --json for a machine-readable report; the CLI never activates the package or modifies client configuration.
 

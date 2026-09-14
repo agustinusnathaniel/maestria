@@ -4,7 +4,7 @@ description: Complete reference for all maestria commands - status, install, plu
 ---
 
 import { Aside } from '@astrojs/starlight/components';
-import { PackageManagers } from 'starlight-package-managers';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
 ## Global Flags
 
@@ -85,7 +85,7 @@ Implies `--quiet` (no spinner animations).
 
 ### Example
 
-<PackageManagers type="dlx" pkg="maestria" args="status" />
+<AllPackageManagers type="dlx" pkg="maestria" args="status" />
 
 ---
 
@@ -159,7 +159,7 @@ Prime has two additional constraints:
 
 ### Example
 
-<PackageManagers type="dlx" pkg="maestria" args="install --all" />
+<AllPackageManagers type="dlx" pkg="maestria" args="install --all" />
 
 ---
 
@@ -188,11 +188,9 @@ The staged directory contains the root `plugin.json` and fixed `skills/` layout.
 
 `source` accepts either a local Agent Plugin directory or an npm package specifier. It defaults to `@maestria/agent-plugin`:
 
-```bash
-maestria plugin install
-maestria plugin install @maestria/agent-plugin@0.1.2
-maestria plugin install ./my-plugin
-```
+<AllPackageManagers type="dlx" pkg="maestria" args="plugin install" />
+<AllPackageManagers type="dlx" pkg="maestria" args="plugin install @maestria/agent-plugin@0.1.2" />
+<AllPackageManagers type="dlx" pkg="maestria" args="plugin install ./my-plugin" />
 
 Without `--destination`, the package is staged under:
 
@@ -244,9 +242,7 @@ Same logic as `install`, but for already installed platforms. Before-and-after v
 
 Use `--version` to pin a specific version instead of the latest:
 
-```bash
-maestria update opencode --version 0.5.0
-```
+<AllPackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
 
 Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`, or `hermes`. The first three update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
 
@@ -279,7 +275,7 @@ A successful update removes that package's cached entry; the next check fetches 
 
 ### Example
 
-<PackageManagers type="dlx" pkg="maestria" args="update --all" />
+<AllPackageManagers type="dlx" pkg="maestria" args="update --all" />
 
 ### Exit Codes
 
@@ -327,7 +323,7 @@ Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place
 
 ### Example
 
-<PackageManagers type="dlx" pkg="maestria" args="uninstall pi" />
+<AllPackageManagers type="dlx" pkg="maestria" args="uninstall pi" />
 
 ---
 
@@ -369,7 +365,7 @@ With `--all`, the exit code is `1` when no detected platform is available, or wh
 
 ### Example
 
-<PackageManagers type="dlx" pkg="maestria" args="check opencode" />
+<AllPackageManagers type="dlx" pkg="maestria" args="check opencode" />
 
 ---
 
@@ -387,13 +383,13 @@ For Codex, the command writes native custom-agent TOML files under `~/.codex/age
 
 ### Interactive (TTY)
 
-<PackageManagers type="dlx" pkg="maestria" args="configure opencode" />
+<AllPackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
 Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, `pi --list-models`, or `omp models --json`).
 
 ### Non-interactive (CI)
 
-<PackageManagers
+<AllPackageManagers
   type="dlx"
   pkg="maestria"
   args="configure opencode --global --quiet --set adventurer=<model-id>,writer=<model-id>"
@@ -406,9 +402,11 @@ Shows a group-multiselect of the 7 specialists, then a per-agent model picker pr
 
 For a partial assignment, set a model for any role you want to change:
 
-```bash
-maestria configure <platform> --global --set planner=<model-id>
-```
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria"
+  args="configure <platform> --global --set planner=<model-id>"
+/>
 
 ### Flags
 

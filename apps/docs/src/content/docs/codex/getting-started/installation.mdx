@@ -5,6 +5,8 @@ description: Install and verify @maestria/codex through the Maestria CLI.
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
 `@maestria/codex` is a Codex skills plugin with a companion native custom-agent pack. The Maestria CLI installs the skills through Codex's plugin manager, the `maestria-*.toml` agent roles under `$CODEX_HOME/agents/`, and a marked orchestration block in `$CODEX_HOME/AGENTS.md` or `$CODEX_HOME/AGENTS.override.md`. It preserves unrelated instructions and does not write `config.toml`, register models, add MCP servers, or install hooks.
 
 <Aside type="tip" title="Verified support boundary">
@@ -19,9 +21,7 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 
 ## Install through Maestria
 
-```bash
-npx maestria install codex
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install codex" />
 
 The CLI stages a local marketplace at `~/.cache/maestria/codex-marketplace`, then delegates installation to Codex (`codex plugin marketplace add`, `codex plugin add maestria@maestria`). It also installs the bundled agent roles under `$CODEX_HOME/agents/` and updates the managed global orchestration instructions. The plugin cache and enabled state belong to Codex.
 
@@ -31,9 +31,7 @@ The CLI stages a local marketplace at `~/.cache/maestria/codex-marketplace`, the
 
 1. **Check the host status**
 
-   ```bash
-   npx maestria check codex
-   ```
+   <AllPackageManagers type="dlx" pkg="maestria@latest" args="check codex" />
 
 2. **List the installed plugin**
 
@@ -59,10 +57,8 @@ The CLI stages a local marketplace at `~/.cache/maestria/codex-marketplace`, the
 
 ## Update and remove
 
-```bash
-npx maestria update codex
-npx maestria uninstall codex
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update codex" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall codex" />
 
 Codex CLI does not expose a separate plugin update command in the supported surface. The Maestria CLI refreshes the staged npm package, removes and re-adds `maestria@maestria`, then refreshes the native agent TOMLs while preserving user model settings. Exact version pinning is not supported through `npx maestria update codex --version ...`. Uninstall removes only the Maestria-managed agent files and marked orchestration block; existing Codex instructions and unrelated agent files remain untouched.
 
