@@ -2,15 +2,13 @@ import {
   createReviewApi,
   restoreOriginalState as restoreCore,
 } from '@maestria/shared-pi/review-core';
+import type { ReviewModelContext } from '@maestria/shared-pi/review-core';
 import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 
 import { isOmpModel } from '@/model.js';
 
-export interface ReviewModelContext {
-  modelRegistry: { getAll: () => { id: string }[] };
-  ui: { notify: (message: string) => void };
-}
+export type { ReviewModelContext } from '@maestria/shared-pi/review-core';
 
 export interface ReviewModelApi {
   setActiveTools: ExtensionAPI['setActiveTools'];

@@ -477,6 +477,9 @@ importers:
 
   packages/prime-agent:
     devDependencies:
+      '@maestria/shared-mode':
+        specifier: workspace:*
+        version: link:../shared/mode
       '@types/node':
         specifier: 'catalog:'
         version: 26.5.1
