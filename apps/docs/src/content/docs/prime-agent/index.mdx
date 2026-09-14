@@ -6,6 +6,7 @@ editUrl: false
 lastUpdated: false
 ---
 
+import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
@@ -84,31 +85,15 @@ import { marks } from '@/data/marks.js';
       class="mb-[clamp(4rem,9vw,7rem)]"
     >
       <div>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/prime-agent/getting-started/installation/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Register the package with Prime, enable the extension, and verify skill discovery.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/prime-agent/getting-started/quick-start/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Load the orchestrator and specialist skills on a real Prime Agent task.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Core Methodology</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Roles, permissions, and when to use each specialist.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/prime-agent/changelog/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Release history for @maestria/prime-agent.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/prime-agent/contributing/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Understand the generated Agent Skills projection and the sync pipeline.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
+        <DocsLinkList
+          items={[
+            { title: 'Getting Started', description: 'Register the package with Prime, enable the extension, and verify skill discovery.', href: '/prime-agent/getting-started/installation/' },
+            { title: 'Quick Start', description: 'Load the orchestrator and specialist skills on a real Prime Agent task.', href: '/prime-agent/getting-started/quick-start/' },
+            { title: 'Core Methodology', description: 'Roles, permissions, and when to use each specialist.', href: '/core/agents/' },
+            { title: 'Changelog', description: 'Release history for @maestria/prime-agent.', href: '/prime-agent/changelog/' },
+            { title: 'Contributing', description: 'Understand the generated Agent Skills projection and the sync pipeline.', href: '/prime-agent/contributing/' },
+          ]}
+        />
       </div>
     </PluginSection>
 

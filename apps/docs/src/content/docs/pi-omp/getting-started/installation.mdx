@@ -3,10 +3,10 @@ title: Installation & Setup
 description: How to install @maestria/pi or @maestria/omp and what you get - 7 specialist subagents, 3 workflow modes, and spec-driven orchestration.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { PackageManagers } from 'starlight-package-managers';
 
-`@maestria/pi` and `@maestria/omp` are extensions that turn the [Pi](https://pi.software) or [Oh My Pi](https://omp.sh) coding agents into disciplined engineering workstations. Each registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration with a single extension entry.
+`@maestria/pi` and `@maestria/omp` add the Maestria methodology to the [Pi](https://pi.software) and [Oh My Pi](https://omp.sh) coding agents. Each installs as one extension and registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration.
 
 ## Prerequisites
 
@@ -16,50 +16,86 @@ import { PackageManagers } from 'starlight-package-managers';
 <Aside type="note">
   **Pi only:** `@maestria/pi` requires the `@gotgenes/pi-subagents` Pi extension for subagent
   dispatch. Install with `pi install npm:@gotgenes/pi-subagents`. OMP has a built-in `task()` tool -
-  no additional peer dependency needed.
+  no peer dependency needed.
 </Aside>
 
 ## Installation
 
-### Pi
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
 
 The [maestria CLI](/cli/) installs the extension and its peer dependency:
 
 <PackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
 
-### Oh My Pi
+  </TabItem>
+  <TabItem label="OMP">
 
 ```bash
 omp install @maestria/omp
 ```
 
+  </TabItem>
+</Tabs>
+
 ## Verify Installation
 
-1. Start your platform:
+<Steps>
 
-   ```bash
-   # Pi
-   pi
+1.  Start your platform:
 
-   # OMP
-   omp
-   ```
+        <Tabs syncKey="runtime">
 
-   Expected: the extension loads automatically, and the agent acts as a Maestria dispatcher from the first turn, decomposing tasks and delegating to specialists.
+      <TabItem label="Pi">
 
-2. List installed extensions:
+            ```bash
+            pi
+            ```
 
-   ```bash
-   # Pi
-   pi extensions list
+          </TabItem>
 
-   # OMP
-   omp extensions list
-   ```
+      <TabItem label="OMP">
 
-   Expected: `@maestria/pi` or `@maestria/omp` appears in the output.
+            ```bash
+            omp
+            ```
+
+          </TabItem>
+
+    </Tabs>
+
+        Expected: the extension loads automatically, and the agent dispatches from the first turn, decomposing tasks and delegating to specialists.
+
+2.  List what's installed:
+
+        <Tabs syncKey="runtime">
+
+      <TabItem label="Pi">
+
+            ```bash
+            pi list
+            ```
+
+          </TabItem>
+
+      <TabItem label="OMP">
+
+            ```bash
+            omp plugin list
+            ```
+
+          </TabItem>
+
+    </Tabs>
+
+        Expected: `@maestria/pi` or `@maestria/omp` appears in the output.
+
+</Steps>
 
 ## Updating
+
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
 
 <PackageManagers
   type="dlx"
@@ -69,22 +105,31 @@ omp install @maestria/omp
 />
 
 ```bash
-# Pi, manual
 pi install npm:@maestria/pi@latest
 
 # Or pin a version
-pi install npm:@maestria/pi@0.7.5
+pi install npm:@maestria/pi@<version>
+```
 
-# OMP
+  </TabItem>
+  <TabItem label="OMP">
+
+```bash
 omp install @maestria/omp@latest
 
 # Or pin a version
-omp install @maestria/omp@0.5.5
+omp install @maestria/omp@<version>
 ```
+
+  </TabItem>
+</Tabs>
 
 Version history is in the [changelog](/pi-omp/changelog/).
 
 ## Uninstalling
+
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
 
 <PackageManagers
   type="dlx"
@@ -94,15 +139,22 @@ Version history is in the [changelog](/pi-omp/changelog/).
 />
 
 ```bash
-# Pi, manual: the @gotgenes/pi-subagents peer dependency stays for other extensions
-pi uninstall @maestria/pi
+# The @gotgenes/pi-subagents peer dependency stays for other extensions
+pi uninstall npm:@maestria/pi
 
 # Optional: remove the peer dependency if no other extension needs it
-pi uninstall @gotgenes/pi-subagents
-
-# OMP
-omp uninstall @maestria/omp
+pi uninstall npm:@gotgenes/pi-subagents
 ```
+
+  </TabItem>
+  <TabItem label="OMP">
+
+```bash
+omp plugin uninstall @maestria/omp
+```
+
+  </TabItem>
+</Tabs>
 
 Restart your platform after updating or uninstalling.
 

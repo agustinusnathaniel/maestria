@@ -3,15 +3,21 @@ title: Contributing
 description: Where to edit Maestria methodology, how to regenerate platform projections, and where to find platform-specific contribution guides.
 ---
 
+import { Steps } from '@astrojs/starlight/components';
+
 Shared agent prompts, workflow modes, and global rules have one source: packages/core/agent-directives/. Development setup, testing, changesets, and pull requests live in the repository root [CONTRIBUTING.md](https://github.com/agustinusnathaniel/maestria/blob/main/CONTRIBUTING.md).
 
 ## Canonical Source Workflow
 
 Never edit generated agents, skills, commands, rules, or other projection files directly; the next sync overwrites them. To change shared methodology:
 
+<Steps>
+
 1. Edit the matching Markdown file in packages/core/agent-directives/.
 2. Run the sync from the repository root.
 3. Check every projection before committing.
+
+</Steps>
 
 ```bash
 scripts/sync-all

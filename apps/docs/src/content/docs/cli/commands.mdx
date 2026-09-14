@@ -15,15 +15,15 @@ These flags apply across the CLI:
 | `--json`  | Output results as JSON instead of formatted text on every command |
 | `--quiet` | Suppress spinner animations on runtime platform commands          |
 
-`--compact` (machine-friendly text) is supported on runtime platform commands except `check`. Every command's `--help` shows in-terminal examples, exit codes, and AI-agent usage tips.
+`--compact` (machine-friendly text) is supported on runtime platform commands except `check`. Every command's `--help` shows exit codes. Examples appear on every command except `uninstall`; AI-agent tips appear only on `maestria`, `configure`, `plugin`, `plugin install`, and `plugin validate`.
 
-Running `maestria` with no arguments is equivalent to `maestria status`.
+`maestria` with no arguments runs `maestria status`.
 
 ---
 
 ## `status`
 
-Show what is installed and version information for all platforms.
+Show installed and available versions for all platforms.
 
 ```bash
 maestria status [--json] [--quiet] [--compact]
@@ -56,7 +56,7 @@ Detects coding agent CLIs on `$PATH`, reports whether maestria is installed for 
 }
 ```
 
-Version values are illustrative; the command reports the versions found locally and available from each registry.
+Version values are illustrative; the command reports locally found and registry versions.
 
 Each platform object:
 
@@ -71,7 +71,7 @@ Each platform object:
 
 ### Compact output
 
-With `--compact`, status outputs one line per platform without colors or decoration:
+With `--compact`, status outputs one undecorated line per platform:
 
 ```
 opencode: available installed=0.2.1 latest=0.2.1
@@ -111,9 +111,9 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 
 | Invocation | What happens |
 | --- | --- |
-| `maestria install` | Detects platforms, shows an interactive multiselect picker (checkboxes) |
+| `maestria install` | Detects platforms, shows an interactive multiselect picker |
 | `maestria install opencode` | Installs for OpenCode only |
-| `maestria install opencode,pi` | Installs for OpenCode and Pi simultaneously |
+| `maestria install opencode,pi` | Installs for OpenCode and Pi in one run, one platform at a time |
 | `maestria install --all` | Installs for every detected platform that lacks maestria |
 | `maestria install opencode --json` | Installs OpenCode, outputs JSON result |
 
@@ -139,20 +139,18 @@ Claude Code and Codex CLI use host-native marketplace managers; the CLI stages t
 
 Prime has two additional constraints:
 
-- **Global scope only.** Maestria never scans, counts, or modifies project registrations. Each Prime command runs in a fresh, empty temporary directory so only user settings are visible; the directory is removed afterward.
-- **Latest version only.** Prime's package manager accepts no version specifier and skips pinned registrations during updates. Maestria detects a pinned user-scope registration and reports an error before updating, rather than silently skipping it.
+- **Global scope only.** Maestria never scans, counts, or modifies project registrations. Each Prime command runs in a fresh temporary directory that exposes only user settings; the directory is removed afterward.
+- **Latest version only.** Prime's package manager accepts no version specifier and skips pinned registrations during updates. Maestria detects a pinned user-scope registration and reports an error instead of silently skipping it.
 
 ### Error handling
 
-**Input validation** - the CLI catches invalid arguments before any platform work begins:
+**Input validation** - unknown platform IDs fail before any platform work:
 
 | Scenario | Error message |
 | --- | --- |
 | Unknown platform ID | `Unknown platform 'foo'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex` |
-| Invalid version format | `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.` |
-| `--all` with a platform arg | `Cannot use --all with a specific platform. Choose one.` |
 
-**Runtime errors** - a failing platform command (network error, missing binary) is reported per-platform rather than aborting the batch:
+**Runtime errors** - a failing platform command (network error, missing binary) is reported per-platform instead of aborting the batch:
 
 ```
 ✔ OpenCode: Installed
@@ -204,13 +202,13 @@ Without `--destination`, the package is staged under:
 
 On systems that set `XDG_CACHE_HOME`, the path starts at `$XDG_CACHE_HOME/maestria/` instead.
 
-Use `--destination` to choose another directory; the CLI refuses to overwrite an existing destination.
+Use `--destination` to choose another directory; the CLI refuses to overwrite an existing one.
 
 ### Validation report
 
 `plugin validate --json` returns `valid`, `name`, `version` when present, `root`, `skillNames`, `errors`, and `warnings`. `plugin install --json` returns the same validation fields plus `destination` and the original `source`.
 
-The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter and layout, optional `mcp.json` configuration, and filesystem containment. It does not execute package code or grant the client any permissions.
+The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter and layout, optional `mcp.json`, and filesystem containment. It does not execute package code or grant permissions.
 
 ---
 
@@ -233,9 +231,11 @@ maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--co
 | `--quiet` | Suppress spinner animations |
 | `--compact` | Machine-friendly text output - one line per result |
 
+`--version` accepts semver (e.g., `0.5.0`) or `latest`. An invalid value fails with `Invalid version '2.0'. Use semver format (e.g., 0.5.0) or 'latest'.`
+
 ### Behavior
 
-Same logic as `install`, but targeting platforms where maestria is already installed. Before-and-after version numbers are shown when available:
+Same logic as `install`, but for already installed platforms. Before-and-after version numbers are shown when available:
 
 ```
 ✔ OpenCode: Updated: v0.5.0 → v0.6.0
@@ -248,13 +248,13 @@ Use `--version` to pin a specific version instead of the latest:
 maestria update opencode --version 0.5.0
 ```
 
-Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`, or `hermes`. The first three update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the requested version, warns, and updates from its git-based plugin installation.
+Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`, or `hermes`. The first three update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
 
 | Invocation | What happens |
 | --- | --- |
 | `maestria update` | Detects installed platforms, shows interactive grouped multiselect picker with "All platforms" toggle header and `a` key to toggle all |
 | `maestria update opencode` | Updates OpenCode to the latest version |
-| `maestria update opencode,pi` | Updates OpenCode and Pi simultaneously |
+| `maestria update opencode,pi` | Updates OpenCode and Pi in one run, one platform at a time |
 | `maestria update opencode --version 0.5.0` | Updates OpenCode to v0.5.0 specifically |
 | `maestria update --all` | Updates all installed platforms to latest |
 | `maestria update --all --version 0.5.0` | Updates pin-capable platforms to v0.5.0; Claude Code, Codex CLI, and Prime Agent return a version-pinning validation result |
@@ -275,7 +275,7 @@ The cache stores one version per package with no time-to-live; it is an offline 
 rm ~/.cache/maestria/versions.json
 ```
 
-A successful update removes that package's cached entry, and the next version check fetches live from npm.
+A successful update removes that package's cached entry; the next check fetches live from npm.
 
 ### Example
 
@@ -290,7 +290,7 @@ A successful update removes that package's cached entry, and the next version ch
 | `3`   | Outdated (`check`: an installed plugin is behind the latest version) |
 | `130` | User cancelled (interactive mode only)                               |
 
-The `install` and `update` commands detect non-interactive terminals and exit with code `1` showing a clear error message instead of attempting an interactive prompt.
+The `install` and `update` commands detect non-interactive terminals and exit with code `1` with a clear error instead of prompting.
 
 ---
 
@@ -321,7 +321,7 @@ maestria uninstall [platform] [--all] [--json] [--quiet] [--compact]
 | `maestria uninstall --all`     | Uninstalls every platform where maestria is installed    |
 | `maestria uninstall pi --json` | Uninstalls Pi, outputs JSON result                       |
 
-Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals when no platform is passed and `--all` is not set, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
+Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals with no platform and no `--all`, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
@@ -333,14 +333,14 @@ Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place
 
 ## `check`
 
-Check the installation status of a maestria plugin on a specific platform, or on every detected platform with `--all`.
+Check a maestria plugin's installation status on one platform, or on every detected platform with `--all`.
 
 ```bash
 maestria check <platform> [--json] [--quiet]
 maestria check --all [--json] [--quiet]
 ```
 
-`<platform>` is one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given.
+`<platform>` is one of `opencode`, `omp`, `pi`, `prime-agent`, `kimi-code`, `hermes`, `cursor`, `claude-code`, `codex`. Pass a platform or `--all`; the command errors when neither is given or when both are combined: `Cannot use --all with a specific platform. Choose one.`
 
 ### Flags
 
@@ -355,7 +355,7 @@ Unlike every other command, `check` has no `--compact` flag; `--quiet` suppresse
 
 ### Behavior
 
-`check` validates the platform, checks whether its CLI is available on `$PATH`, then checks whether the `@maestria/<platform>` plugin is installed.
+`check` validates the platform, checks whether its CLI is on `$PATH`, then checks whether the `@maestria/<platform>` plugin is installed.
 
 | State | Exit code | Output |
 | --- | --- | --- |
@@ -365,7 +365,7 @@ Unlike every other command, `check` has no `--compact` flag; `--quiet` suppresse
 | Installed and current | `0` | `available: true`, `pluginInstalled: true`, `installedVersion`, `latestVersion` |
 | Installed and outdated | `3` | Same fields plus `outdated: true` when `--json` is set; text output prints the available update |
 
-With `--all`, the exit code is `1` when no detected platform is available, or when any available platform is not installed, `3` when all available detected platforms are installed and at least one is outdated, and `0` otherwise. Every JSON result includes the `platform` field with the checked platform id, and `latestVersion` is included only when it could be determined. JSON is written to stdout only with `--json`; otherwise the default text output is used.
+With `--all`, the exit code is `1` when no detected platform is available, or when any available platform is not installed, `3` when all available detected platforms are installed and at least one is outdated, and `0` otherwise. A single-platform JSON result includes the `platform` field, and `latestVersion` only when it could be determined. With `--all --json`, each result is a status object with an `id` field instead of `platform`; `latestVersion` is always present and may be empty. JSON is written to stdout only with `--json`; otherwise the default text output is used.
 
 ### Example
 
@@ -375,7 +375,7 @@ With `--all`, the exit code is `1` when no detected platform is available, or wh
 
 ## `configure`
 
-Choose which model each maestria specialist agent uses, per platform.
+Choose the model each maestria specialist uses, per platform.
 
 ```bash
 maestria configure [platform] [--global|--project] [--set <agent>=<model>[,...]] [--json] [--quiet] [--compact]
@@ -389,7 +389,7 @@ For Codex, the command writes native custom-agent TOML files under `~/.codex/age
 
 <PackageManagers type="dlx" pkg="maestria" args="configure opencode" />
 
-Shows a group-multiselect of the 7 specialists, then a per-agent model picker with the current model pre-selected and an _Inherit (session model)_ option. The model list is fetched live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, `pi --list-models`, or `omp models --json`).
+Shows a group-multiselect of the 7 specialists, then a per-agent model picker pre-selected to the current model, with an _Inherit (session model)_ option. The model list comes live from the platform (`opencode models`, Codex's `codex debug models`, Cursor's `agent models`/`--list-models`, `pi --list-models`, or `omp models --json`).
 
 ### Non-interactive (CI)
 
@@ -401,7 +401,7 @@ Shows a group-multiselect of the 7 specialists, then a per-agent model picker wi
 
 - `--set <agent>=<model>[,...]` - comma-separated pairs; an empty value (`reviewer=`) resets the agent to inherit the session model
 - `--global` / `--project` - config level, mutually exclusive; `--set` and other non-interactive usage require exactly one of these flags
-- Explicit model IDs come from the platform's live model list and are validated before writing.
+- Explicit model IDs come from the platform's live list and are validated before writing.
 - `--set` changes only the agents you name. Unmentioned agents keep their existing assignments.
 
 For a partial assignment, set a model for any role you want to change:

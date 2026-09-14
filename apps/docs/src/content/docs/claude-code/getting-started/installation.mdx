@@ -3,11 +3,15 @@ title: Installation & Setup
 description: How to validate, install, and load @maestria/claude-code through Claude Code or the Maestria CLI.
 ---
 
-import { Steps } from '@astrojs/starlight/components';
+import { Aside, Steps } from '@astrojs/starlight/components';
 
 `@maestria/claude-code` is a declarative, self-contained Claude Code plugin: a `.claude-plugin/plugin.json` manifest plus agent, skill, and command files. No npm install, no build step, no runtime code.
 
-> **Status: Native candidate.** The package validates with the official Claude Code CLI, but runtime behavior is not yet tested end to end; see the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
+<Aside type="caution">
+  **Status: Native candidate.** The package validates with the official Claude Code CLI, but runtime
+  behavior is not yet tested end to end; see the [runtime support
+  matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
+</Aside>
 
 ## Prerequisites
 
@@ -21,7 +25,7 @@ import { Steps } from '@astrojs/starlight/components';
 npx maestria install claude-code
 ```
 
-The CLI downloads `@maestria/claude-code` from npm, stages it in a local marketplace under `~/.cache/maestria/`, and delegates the actual install to Claude Code. Plugin state and scope stay in the host runtime.
+The CLI downloads `@maestria/claude-code` from npm, stages it in a local marketplace under `~/.cache/maestria/`, and delegates installation to Claude Code. Plugin state and scope stay in the host runtime.
 
 Check, update, or remove the installation with:
 

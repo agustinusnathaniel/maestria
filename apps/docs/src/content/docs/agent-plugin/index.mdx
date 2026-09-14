@@ -3,7 +3,7 @@ title: '@maestria/agent-plugin'
 description: Use Maestria's workflow methodology in agent clients that support Agent Plugins v1.
 ---
 
-import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
 
 @maestria/agent-plugin packages Maestria's workflow methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the [Agent Plugins v1 format](https://agent-plugins.org/).
 
@@ -25,7 +25,7 @@ You need a client that supports Agent Plugins v1 and its skills component; check
 | Specialists | adventurer, architect, builder, diagnose, planner, reviewer, writer | Understand, design, build, debug, plan, review, document |
 | Modes | fein, sonar, blitz | Choose full, research-only, or fast work |
 
-Each of the 14 skills lives at `skills/<name>/SKILL.md`. Load global-rules for the full contract, then orchestrator or the specialist that matches the work; see the [Specialist Reference](/core/agents/) for roles. The package assumes no single invocation syntax.
+All 14 skills live at `skills/<name>/SKILL.md`. Load global-rules for the full contract, then orchestrator or the specialist that matches the work; see the [Specialist Reference](/core/agents/) for roles. The package assumes no single invocation syntax.
 
 ## Install It
 
@@ -47,9 +47,13 @@ Use --json for a machine-readable report; the CLI never activates the package or
 
 ### In a Compatible Client
 
+<Steps>
+
 1. Open the client's plugin or extension installer.
 2. Install `@maestria/agent-plugin`, or select the directory printed by maestria plugin install.
 3. Reload installed skills or start a new session.
+
+</Steps>
 
 The exact activation command depends on the client: Agent Plugins standardizes the package shape, while each client decides how packages are discovered, installed, trusted, updated, and enabled.
 
@@ -57,7 +61,7 @@ The command is intentionally namespaced as `maestria plugin ...`: `maestria inst
 
 ### From a Local Checkout
 
-Point a client that accepts local plugins at the directory containing plugin.json, not only its nested skills directory:
+Point a client that accepts local plugins at the directory containing plugin.json rather than its nested skills directory:
 
 ```text
 /path/to/maestria/packages/agent-plugin/

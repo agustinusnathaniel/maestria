@@ -3,7 +3,7 @@ title: Quick Start
 description: Your first session with @maestria/cursor - specialists, orchestration, and workflow modes.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, Steps } from '@astrojs/starlight/components';
 
 Once the plugin is installed, global rules apply to every Agent session.
 
@@ -41,9 +41,13 @@ The main agent spawns `builder` via `Task` with a complete handoff.
 
 Expected sequence:
 
+<Steps>
+
 1. `diagnose` - root cause
 2. `builder` - minimal fix
 3. `reviewer` - validation (read-only; must not edit)
+
+</Steps>
 
 Never ask the same agent that implemented to review its own work.
 

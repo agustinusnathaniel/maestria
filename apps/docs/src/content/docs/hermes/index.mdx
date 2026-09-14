@@ -6,6 +6,7 @@ editUrl: false
 lastUpdated: false
 ---
 
+import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
@@ -40,7 +41,7 @@ import { marks } from '@/data/marks.js';
           { title: 'Role-neutral child trust', desc: 'Delegated children are read/research/LLM-only; they cannot write, execute code, shell, delegate, or invoke OpenCode.' },
           { title: 'Trusted coding path', desc: 'Code changes and opencode_route (when the OpenCode CLI is installed) run in a trusted top-level fein session.' },
           { title: 'Self-contained plugin', desc: 'No startup probes for external tools. Hermes discovers its hooks, commands, and skills from plugin.yaml.' },
-          { title: 'Advisory review', desc: 'Hermes has no native review gate, so the reviewer pass validates output as guidance rather than a mechanically enforced gate.' },
+          { title: 'Advisory review', desc: 'Hermes has no native review gate; the reviewer pass validates output as guidance, not an enforced gate.' },
         ]}
       />
     </PluginSection>
@@ -52,26 +53,14 @@ import { marks } from '@/data/marks.js';
       class="mb-[clamp(4rem,9vw,7rem)]"
     >
       <div>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/hermes/getting-started/installation/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Installation, setup, and your first session with the Hermes plugin.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/hermes/commands/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Commands</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Reference for all slash commands: modes, review, plan, session management.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/hermes/changelog/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/hermes/contributing/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Project structure and how to extend the plugin.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
+        <DocsLinkList
+          items={[
+            { title: 'Getting Started', description: 'Installation, setup, and your first session with the Hermes plugin.', href: '/hermes/getting-started/installation/' },
+            { title: 'Commands', description: 'Reference for all slash commands: modes, review, plan, session management.', href: '/hermes/commands/' },
+            { title: 'Changelog', description: 'Version history and release notes.', href: '/hermes/changelog/' },
+            { title: 'Contributing', description: 'Project structure and how to extend the plugin.', href: '/hermes/contributing/' },
+          ]}
+        />
       </div>
     </PluginSection>
 

@@ -3,6 +3,7 @@ title: Installation & Setup
 description: Install @maestria/kimi-code in Kimi Code. The package is a declarative plugin with generated skills, native commands, and a system-prompt contribution.
 ---
 
+import { Steps } from '@astrojs/starlight/components';
 import { PackageManagers as PackageManagerCommands } from 'starlight-package-managers';
 
 `@maestria/kimi-code` is a declarative plugin with no build step.
@@ -14,23 +15,29 @@ import { PackageManagers as PackageManagerCommands } from 'starlight-package-man
 
 ## Install
 
-<PackageManagerCommands
-  type="dlx"
-  pkg="maestria"
-  args="install kimi-code"
-  comment="Install for Kimi Code"
-/>
+<Steps>
 
-Check the native plugin record:
+1. Install:
 
-<PackageManagerCommands type="dlx" pkg="maestria" args="status" comment="Check installation" />
+   <PackageManagerCommands
+     type="dlx"
+     pkg="maestria"
+     args="install kimi-code"
+     comment="Install for Kimi Code"
+   />
 
-Start a new session so the session-start skill and system prompt load:
+2. Check the native plugin record:
 
-```text
-/reload
-/new
-```
+   <PackageManagerCommands type="dlx" pkg="maestria" args="status" comment="Check installation" />
+
+3. Start a new session so the session-start skill and system prompt load:
+
+   ```text
+   /reload
+   /new
+   ```
+
+</Steps>
 
 ## Manual Install
 
@@ -49,7 +56,7 @@ In Kimi Code, run:
 /plugins info maestria
 ```
 
-Confirm that the plugin is enabled and that its session-start skill is orchestrator. In a new session, ask the orchestrator to list its available specialists. Kimi limits each plugin system-prompt file to 32 KB; the packaged `SYSTEM.md` is tested against that budget.
+Confirm that the plugin is enabled and its session-start skill is orchestrator. In a new session, ask the orchestrator to list its available specialists. Kimi limits each plugin system-prompt file to 32 KB; the packaged `SYSTEM.md` is tested against that budget.
 
 ## Troubleshooting
 

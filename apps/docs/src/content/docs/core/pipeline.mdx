@@ -53,7 +53,7 @@ Use one independent reviewer for ordinary work; add a security, architecture, pe
 
 ## Bound the Repair Loop
 
-Define a verifiable stopping condition before delegating. A repair loop normally gets about three attempts, extended only when the latest attempt shows new progress; if the same cause recurs, escalate with:
+Define a verifiable stopping condition before delegating. One repair/re-review pass is the default; another only when a named blocker remains unresolved or the repair introduces a new material regression, capped at three per outcome. If the same cause recurs, escalate with:
 
 ```text
 Tried X, Y, Z. Blocked by [cause]. Need [input] to proceed.

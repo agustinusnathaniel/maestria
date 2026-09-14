@@ -3,9 +3,10 @@ title: Installation & Setup
 description: Install @maestria/hermes in Hermes Agent and verify its skills, commands, hooks, and trust boundary.
 ---
 
+import { Steps } from '@astrojs/starlight/components';
 import { PackageManagers } from 'starlight-package-managers';
 
-@maestria/hermes is a git-based Hermes plugin. It adds 12 skills (9 methodology plus 3 command skills), 7 slash commands, and 10 lifecycle hooks. It also provides an optional `llm_execution` mode footer (enable with `MAESTRIA_MODE_FOOTER=1`) and the optional `opencode_route` tool, which invokes the OpenCode CLI only when you use it.
+@maestria/hermes is a git-based Hermes plugin. It adds 12 skills (9 methodology plus 3 command skills), 7 slash commands, and 10 lifecycle hooks. Optional extras: an `llm_execution` mode footer (enable with `MAESTRIA_MODE_FOOTER=1`) and the `opencode_route` tool, which invokes the OpenCode CLI only when you use it.
 
 ## Prerequisites
 
@@ -14,23 +15,27 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Install
 
-Install through the Maestria CLI:
+<Steps>
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
+1. Install through the Maestria CLI:
 
-Or install directly with Hermes, which clones the repository and enables the plugin:
+   <PackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
 
-```bash
-hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
-```
+   Or install directly with Hermes, which clones the repository and enables the plugin:
 
-Verify the native plugin record:
+   ```bash
+   hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
+   ```
 
-```bash
-hermes plugins list
-```
+2. Verify the native plugin record:
 
-`maestria-hermes` should appear as enabled.
+   ```bash
+   hermes plugins list
+   ```
+
+   `maestria-hermes` should appear as enabled.
+
+</Steps>
 
 ## Verify a New Session
 
@@ -40,7 +45,7 @@ Start Hermes and run:
 /mode
 ```
 
-The response should show the active mode. Ask the agent to list the Maestria specialists, then try one focused task. If the mode marker or skills do not appear, restart Hermes and run `hermes plugins list` again.
+The response should show the active mode. Ask the agent to list the Maestria specialists, then try one focused task. If the mode marker or skills are missing, restart Hermes and run `hermes plugins list` again.
 
 ## Update
 

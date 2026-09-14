@@ -4,9 +4,9 @@ description: Get started with @maestria/pi or @maestria/omp in minutes
 template: splash
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
-Now that `@maestria/pi` or `@maestria/omp` is installed, here is your first session.
+With `@maestria/pi` or `@maestria/omp` installed, here is your first session.
 
 <Aside type="caution" title="Full mode has a real coordination cost">
   Use [the usage decision guide](/core/when-to-use/) before activating `fein`. Direct execution or a
@@ -18,17 +18,28 @@ Now that `@maestria/pi` or `@maestria/omp` is installed, here is your first sess
 
 Open a session in any project directory:
 
-```bash
-# Pi
-pi
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
 
-# OMP
+```bash
+pi
+```
+
+  </TabItem>
+  <TabItem label="OMP">
+
+```bash
 omp
 ```
+
+  </TabItem>
+</Tabs>
 
 The extension activates automatically, and the agent applies the orchestrator guidance from the first turn.
 
 ## Run a Task
+
+<Steps>
 
 1. Activate a mode with your task:
 
@@ -49,6 +60,8 @@ The extension activates automatically, and the agent applies the orchestrator gu
 2. Watch the pipeline. The orchestrator decomposes the request, dispatches specialists in sequence, and validates each phase before the next begins.
 
 3. Check the session tree with `/maestria-status` to see the current mode, handoff history, and each specialist's contribution.
+
+</Steps>
 
 Slash commands set the mode with a notification. Bare keywords (`fein`, `sonar`, `blitz`) set the mode and attach your task in one message. Exact mode, dispatch, and enforcement behavior is in the [reference](/pi-omp/reference/).
 

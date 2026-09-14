@@ -6,6 +6,7 @@ editUrl: false
 lastUpdated: false
 ---
 
+import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
@@ -41,7 +42,7 @@ import { marks } from '@/data/marks.js';
           { title: 'Delegate with @ mentions', desc: 'Call any specialist directly: @adventurer for recon, @builder for implementation, @reviewer for a check.' },
           { title: 'Session state preserved', desc: 'A compaction hook retains task status across context resets.' },
           { title: 'Per-agent model control', desc: 'Agents register without model overrides; assign models per agent from your own config.' },
-          { title: 'Native tool permissions', desc: 'Each agent ships permission fields honored by the V2 runtime, so read-only reviewers stay read-only.' },
+          { title: 'Native tool permissions', desc: 'Each agent has permission fields the V2 runtime honors, so read-only reviewers stay read-only.' },
         ]}
       />
     </PluginSection>
@@ -53,41 +54,17 @@ import { marks } from '@/data/marks.js';
       class="mb-[clamp(4rem,9vw,7rem)]"
     >
       <div>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/getting-started/installation/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Install, verify, and run your first session.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/configuration/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Configuration</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Per-agent models and OpenCode-level settings.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Agent Reference</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Roles, permissions, and when to use each of the 8 agents.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/workflow-patterns/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Workflow Patterns</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Practical agent usage patterns - from recon to full build pipelines.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/reference/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Reference</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Tool permissions, t3code compatibility, and known limitations.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/changelog/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/opencode/contributing/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Development setup, project structure, and how to extend the plugin.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
+        <DocsLinkList
+          items={[
+            { title: 'Getting Started', description: 'Install, verify, and run your first session.', href: '/opencode/getting-started/installation/' },
+            { title: 'Configuration', description: 'Per-agent models and OpenCode-level settings.', href: '/opencode/configuration/' },
+            { title: 'Agent Reference', description: 'Roles, permissions, and when to use each of the 8 agents.', href: '/core/agents/' },
+            { title: 'Workflow Patterns', description: 'Agent usage patterns for recon, implementation, and review.', href: '/core/workflow-patterns/' },
+            { title: 'Reference', description: 'Tool permissions, t3code compatibility, and known limitations.', href: '/opencode/reference/' },
+            { title: 'Changelog', description: 'Version history and release notes.', href: '/opencode/changelog/' },
+            { title: 'Contributing', description: 'Development setup, project structure, and how to extend the plugin.', href: '/opencode/contributing/' },
+          ]}
+        />
       </div>
     </PluginSection>
 

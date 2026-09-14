@@ -32,7 +32,7 @@ Kimi-specific changes belong in `sync.config.ts` or the manifest. Do not copy ca
 
 ## Add a Skill
 
-Add the canonical prompt under `packages/core/agent-directives/` (or a Kimi-only addition when the behavior does not belong in core), its transform and subagent profile in `sync.config.ts`, its entry in the orchestrator routing table when it is a specialist, and manifest and safety assertions in `packages/kimi-code/tests/`. Then run the commands above.
+Add the canonical prompt under `packages/core/agent-directives/` (or a Kimi-only addition when the behavior does not belong in core). Add its transform and subagent profile in `sync.config.ts`, its entry in the orchestrator routing table when it is a specialist, and manifest and safety assertions in `packages/kimi-code/tests/`. Then run the commands above.
 
 Read-only roles are advisory: Kimi permission rules apply to the session, not to an individual persona. The seven-specialist roster is part of the current routing contract; update the routing table and tests together when it changes.
 

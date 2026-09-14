@@ -5,9 +5,9 @@ sidebar:
   order: 2
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, Badge } from '@astrojs/starlight/components';
 
-This page records how `@maestria/agent-plugin` has been verified in Agent Plugins v1 clients. The package contains standard skills only, so a successful check confirms that the client can discover and load those skills; it does not imply support for native agents, commands, hooks, permissions, or session behavior. The [official compatible clients list](https://agent-plugins.org/compatible-clients) is the source for the current ecosystem list and each client's supported component types.
+This page records how `@maestria/agent-plugin` has been verified in Agent Plugins v1 clients. The package contains standard skills only, so a successful check confirms that the client can discover and load those skills; it does not imply support for native agents, commands, hooks, permissions, or session behavior. The [official compatible clients list](https://agent-plugins.org/compatible-clients) is the source for the current client list and supported component types.
 
 The package is published on npm as `@maestria/agent-plugin`. These are dated client checks, not verification of every released artifact; re-run against the exact version or commit you plan to install, especially after content changes.
 
@@ -17,15 +17,15 @@ Last checked: 2026-09-01.
 
 | Client | Status | Evidence or next check |
 | --- | --- | --- |
-| Hermes Agent 0.20.3 | Live smoke passed | Installed and enabled the npm-packed artifact in an isolated Hermes home; `hermes plugins list --user --json` reported `maestria` as enabled and `hermes plugins doctor maestria --ci` passed. |
-| Grok Bot CLI 1.0.0 | Live smoke passed | Installed the local package with `agent plugin install <path> --trust`; `agent plugin list --json`, `agent plugin details maestria`, and `agent plugin validate <path>` all passed in an isolated Grok home. |
-| Cursor 3.15.19 | Manual client check | Put the package under `~/.cursor/plugins/local/maestria`, restart or reload Cursor, then open Customize and confirm the 14 skills appear. See [Cursor plugin documentation](https://cursor.com/docs/plugins). |
-| Visual Studio Code 1.108.2 | Manual client check | Enable Agent Plugins in the Agent Customizations UI, install the package from a marketplace or local source, reload, and confirm the skills appear. See [VS Code Agent Plugins documentation](https://code.visualstudio.com/docs/agent-customization/agent-plugins). |
-| GitHub Copilot | Account and client check | Install through Copilot CLI, the Copilot app, or the configured marketplace, then confirm the skills appear in the client's customization surface. See [GitHub Copilot plugin documentation](https://docs.github.com/en/copilot/concepts/agents/about-plugins). |
-| ChatGPT and Codex | Desktop check | Add the package to a local marketplace, restart the ChatGPT desktop app, install it, and verify the plugin and skills in a new chat. See [OpenAI plugin documentation](https://developers.openai.com/plugins). |
-| Kiro | Manual client check | Follow the setup flow in the [official compatible clients list](https://agent-plugins.org/compatible-clients), then verify skill discovery in Kiro. |
-| OpenClaw | Manual client check | Install the directory bundle, run `openclaw plugins inspect <id>`, and confirm the Agent Plugins bundle exposes its skills. See [OpenClaw bundle documentation](https://docs.openclaw.ai/plugins/bundles). |
-| NanoClaw | Manual client check | Install the package in the containerized NanoClaw setup and verify the skill is available to a new agent session. See the [NanoClaw templates](https://github.com/nanocoai/nanoclaw/blob/main/docs/templates.md). |
+| Hermes Agent 0.20.3 | <Badge text="Live smoke passed" variant="success" /> | Installed and enabled the npm-packed artifact in an isolated Hermes home; `hermes plugins list --user --json` reported `maestria` as enabled and `hermes plugins doctor maestria --ci` passed. |
+| Grok Bot CLI 1.0.0 | <Badge text="Live smoke passed" variant="success" /> | Installed the local package with `agent plugin install <path> --trust`; `agent plugin list --json`, `agent plugin details maestria`, and `agent plugin validate <path>` all passed in an isolated Grok home. |
+| Cursor 3.15.19 | <Badge text="Manual client check" variant="note" /> | Put the package under `~/.cursor/plugins/local/maestria`, restart or reload Cursor, then open Customize and confirm the 14 skills appear. See [Cursor plugin documentation](https://cursor.com/docs/plugins). |
+| Visual Studio Code 1.108.2 | <Badge text="Manual client check" variant="note" /> | Enable Agent Plugins in the Agent Customizations UI, install the package from a marketplace or local source, reload, and confirm the skills appear. See [VS Code Agent Plugins documentation](https://code.visualstudio.com/docs/agent-customization/agent-plugins). |
+| GitHub Copilot | <Badge text="Account and client check" variant="caution" /> | Install through Copilot CLI, the Copilot app, or the configured marketplace, then confirm the skills appear in the client's customization surface. See [GitHub Copilot plugin documentation](https://docs.github.com/en/copilot/concepts/agents/about-plugins). |
+| ChatGPT and Codex | <Badge text="Desktop check" variant="default" /> | Add the package to a local marketplace, restart the ChatGPT desktop app, install it, and verify the plugin and skills in a new chat. See [OpenAI plugin documentation](https://developers.openai.com/plugins). |
+| Kiro | <Badge text="Manual client check" variant="note" /> | Follow the setup flow in the [official compatible clients list](https://agent-plugins.org/compatible-clients), then verify skill discovery in Kiro. |
+| OpenClaw | <Badge text="Manual client check" variant="note" /> | Install the directory bundle, run `openclaw plugins inspect <id>`, and confirm the Agent Plugins bundle exposes its skills. See [OpenClaw bundle documentation](https://docs.openclaw.ai/plugins/bundles). |
+| NanoClaw | <Badge text="Manual client check" variant="note" /> | Install the package in the containerized NanoClaw setup and verify the skill is available to a new agent session. See the [NanoClaw templates](https://github.com/nanocoai/nanoclaw/blob/main/docs/templates.md). |
 
 ## What the live smoke covers
 

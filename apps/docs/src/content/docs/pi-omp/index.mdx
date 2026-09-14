@@ -6,6 +6,7 @@ editUrl: false
 lastUpdated: false
 ---
 
+import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
@@ -37,8 +38,8 @@ import { marks } from '@/data/marks.js';
       <FeatureGrid
         items={[
           { title: 'Same method, adapted', desc: 'The Maestria methodology from OpenCode, adapted for Pi and Oh My Pi (OMP). Role names and workflow ideas carry over; runtime behavior does not.' },
-          { title: '7 specialist subagents', desc: 'Activation deploys 7 specialist agent files and auto-discovers the methodology skills alongside them.' },
-          { title: 'Modes drive the pipeline', desc: '/fein runs the full pipeline, /sonar stays research-only, /blitz is fast implementation. Each mode activates the right subagents in sequence.' },
+          { title: '7 specialist subagents', desc: 'Activation deploys 7 specialist agent files and auto-discovers the methodology skills.' },
+          { title: 'Modes drive the pipeline', desc: '/fein runs the full pipeline, /sonar stays research-only, /blitz is fast implementation. Each mode activates its subagents in sequence.' },
           { title: 'Dispatch per runtime', desc: 'Pi dispatches through the @gotgenes/pi-subagents extension; OMP uses its built-in task() tool with no external dependency.' },
           { title: 'Session tree tracking', desc: 'Every subagent dispatch records its parent task ID, preserving the session tree across turns.' },
           { title: 'Honest about differences', desc: 'Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read When to Use before assuming a workflow transfers unchanged.' },
@@ -53,36 +54,16 @@ import { marks } from '@/data/marks.js';
       class="mb-[clamp(4rem,9vw,7rem)]"
     >
       <div>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/getting-started/installation/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Installation, setup, and your first session.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/getting-started/quick-start/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Your first session with @maestria/pi or @maestria/omp.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/reference/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Reference</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Commands, subagent dispatch, review mode, and session management.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/when-to-use/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">When to Use</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Which workflows transfer unchanged - read before you port.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/changelog/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/pi-omp/contributing/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Project structure and how to extend.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
+        <DocsLinkList
+          items={[
+            { title: 'Getting Started', description: 'Installation, setup, and your first session.', href: '/pi-omp/getting-started/installation/' },
+            { title: 'Quick Start', description: 'Your first session with @maestria/pi or @maestria/omp.', href: '/pi-omp/getting-started/quick-start/' },
+            { title: 'Reference', description: 'Commands, subagent dispatch, review mode, and session management.', href: '/pi-omp/reference/' },
+            { title: 'When to Use', description: 'Which workflows transfer unchanged - read before you port.', href: '/core/when-to-use/' },
+            { title: 'Changelog', description: 'Version history and release notes.', href: '/pi-omp/changelog/' },
+            { title: 'Contributing', description: 'Project structure and how to extend.', href: '/pi-omp/contributing/' },
+          ]}
+        />
       </div>
     </PluginSection>
 

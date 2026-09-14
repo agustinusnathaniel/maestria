@@ -6,6 +6,7 @@ editUrl: false
 lastUpdated: false
 ---
 
+import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
@@ -47,7 +48,7 @@ import { marks } from '@/data/marks.js';
     >
       <FeatureGrid
         items={[
-          { title: '7 specialist agents', desc: 'adventurer through writer, available as namespaced @maestria:<agent> mentions in every session.' },
+          { title: '7 specialist agents', desc: 'All seven specialists, available as namespaced @maestria:<agent> mentions in every session.' },
           { title: 'Orchestrator skill', desc: '/maestria:orchestrator routes work to the right specialist.' },
           { title: 'Workflow mode commands', desc: '/maestria:fein, /maestria:sonar, and /maestria:blitz select the pipeline depth for each task.' },
           { title: 'Global rules preloaded', desc: 'Every specialist preloads the maestria:global-rules skill via its frontmatter.' },
@@ -64,36 +65,16 @@ import { marks } from '@/data/marks.js';
       class="mb-[clamp(4rem,9vw,7rem)]"
     >
       <div>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/claude-code/getting-started/installation/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Getting Started</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Local validation, loading the plugin, and your first session.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/claude-code/getting-started/quick-start/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Quick Start</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Delegate to specialists and run your first workflow command.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/agents/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Agent Reference</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Roles, permissions, and when to use each of the 7 specialists.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/core/workflow-patterns/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Workflow Patterns</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Practical agent usage patterns - from recon to full build pipelines.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/claude-code/changelog/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Changelog</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Version history and release notes.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
-        <a class="group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-b border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]" href="/claude-code/contributing/">
-          <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">Contributing</span>
-          <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">Project structure, the sync pipeline, and how to extend the plugin.</span>
-          <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-        </a>
+        <DocsLinkList
+          items={[
+            { title: 'Getting Started', description: 'Local validation, loading the plugin, and your first session.', href: '/claude-code/getting-started/installation/' },
+            { title: 'Quick Start', description: 'Delegate to specialists and run your first workflow command.', href: '/claude-code/getting-started/quick-start/' },
+            { title: 'Agent Reference', description: 'Roles, permissions, and when to use each of the 7 specialists.', href: '/core/agents/' },
+            { title: 'Workflow Patterns', description: 'Agent usage patterns for recon, implementation, and review.', href: '/core/workflow-patterns/' },
+            { title: 'Changelog', description: 'Version history and release notes.', href: '/claude-code/changelog/' },
+            { title: 'Contributing', description: 'Project structure, the sync pipeline, and how to extend the plugin.', href: '/claude-code/contributing/' },
+          ]}
+        />
       </div>
     </PluginSection>
 
