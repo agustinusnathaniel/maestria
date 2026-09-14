@@ -115,7 +115,7 @@ If the orchestrator is observed using `codegraph_explore` to bypass `@adventurer
 
 ## Lessons Learned
 
-1. **MCP tools are a permission blind spot.** The OC-001 audit covered built-ins comprehensively but not MCP tools, which sit outside that system and default to `"allow"`; future permission audits should include them.
+1. **MCP tools are a permission blind spot.** The OC-001 audit covered built-ins but not MCP tools, which sit outside that system and default to `"allow"`; future permission audits should include them.
 2. **`serverName_toolName` is the permission key for MCP tools.** Glob patterns like `codegraph_*: deny` work against this convention; `my-server_*` blocks a whole server.
 3. **No generic `"mcp": "deny"` key exists.** Each server must be denied explicitly, so blocking a new MCP server always requires a config change.
 4. **Plugin hooks are an option but not warranted yet.** Option B is premature for a single MCP server; revisit if the server count grows or MCP workaround behavior becomes systematic.

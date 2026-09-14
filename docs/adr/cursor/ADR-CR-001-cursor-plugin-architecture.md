@@ -19,6 +19,9 @@ ADR-KC-001 named Cursor as a next platform (`.cursor/rules/` with `.mdc`); Curso
 1. **`.cursor-plugin/plugin.json`** - manifest; components auto-discovered from default folders.
 2. **Synced components** - global rules (`rules/maestria-global.mdc`, `alwaysApply: true`), seven specialist agents (`agents/*.md`), and the orchestrator skill (`skills/orchestrator/SKILL.md`, agent-decides / `/orchestrator`).
 3. **`commands/*.md`** - workflow modes: `fein`, `sonar`, `blitz`, `orchestrate` (hand-authored).
+
+> **Amendment (2026-09-14):** `commands/*.md` are generated from the canonical directives by `packages/cursor/sync.config.ts`; the hand-authored inputs are the manifest, sync config, and assets.
+
 4. **Install** - `maestria install cursor` copies the package into `~/.cursor/plugins/local/maestria`.
 
 ### Component map

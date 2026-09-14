@@ -70,7 +70,7 @@ Validation uses a regex covering the npm semver subset the CLI encounters: `MAJO
 
 ### Option A: `semver` npm package
 
-The official npm semver implementation: comprehensive, supporting ranges, coercion, prerelease comparisons, and sorting out of the box.
+The official npm semver implementation, supporting ranges, coercion, prerelease comparisons, and sorting out of the box.
 
 Rejected because:
 

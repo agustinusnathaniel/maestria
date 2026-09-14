@@ -14,7 +14,7 @@ Analysis of 5,675 real OpenCode sessions (June 10 - July 10, 2026) found a struc
 
 Of the sampled calls, 86.4% were approvals, 8.2% clarifications bounced back to the agent, 3.8% meaningful corrections, and 0.5% frustration about context already covered. Commit proposals drew 88.4% approval and 11.6% correction (wrong prefix or scope); push proposals drew 81.7% approval and 17.1% deferral ("not yet"). Questions clustered at session start and end, with the work phase relatively quiet, and some sessions ran 15+ consecutive rejections without the agent re-evaluating.
 
-The 86.4% approval rate is the key signal: the vast majority of questions were unnecessary. The agent had enough data to decide but deferred to the user by habit.
+The 86.4% approval rate is the signal: the vast majority of questions were unnecessary. The agent had enough data to decide but deferred to the user by habit.
 
 ### Industry Research
 

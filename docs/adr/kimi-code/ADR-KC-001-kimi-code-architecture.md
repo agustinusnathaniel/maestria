@@ -132,9 +132,9 @@ The orchestrator skill embeds this routing table, which the model uses to pick t
 - **No custom subagent identity** - subagent types are hardcoded to `coder`/`explore`/`plan`; the 7 specialists are persona content, without distinct names, colors, or modes.
 - **No plugin-injected global rules** - `rules/AGENTS.md` ships in the plugin but must be placed at `~/.kimi-code/AGENTS.md` (`$KIMI_CODE_HOME/AGENTS.md`); the platform auto-loads scan directories, the plugin cannot place the file.
 - **No programmatic per-subagent permissions** - users add `[[permission.rules]]` to `config.toml`; `scope` gives temporal granularity but not per-subagent granularity.
-- **No `system.transform` equivalent** - the surfaces are `sessionStart.skill` (one text injection at startup), `skillInstructions` (a static string), and a user-managed `UserPromptSubmit` hook documented in INSTALL.md as an approximation.
+- **No `system.transform` equivalent** - the surfaces are `sessionStart.skill` (one text injection at startup), `skillInstructions` (a static string), and a user-managed `UserPromptSubmit` hook documented in the installation guide as an approximation.
 - **No compaction injection** - compaction runs automatically and `/compact` triggers a manual run, but the observation-only `PreCompact`/`PostCompact` hooks cannot inject content into summaries.
-- **Hooks are user-managed, not plugin-bundled** - `[[hooks]]` blocks live in the user's `config.toml`, not the manifest; the plugin documents them in INSTALL.md, but the user must copy them in.
+- **Hooks are user-managed, not plugin-bundled** - `[[hooks]]` blocks live in the user's `config.toml`, not the manifest; the plugin documents them in the installation guide, but the user must copy them in.
 
 ## Proposed Package Structure
 
@@ -154,7 +154,7 @@ Sub-skill nesting caps at **3 levels**: the orchestrator (level 1) can dispatch 
 
 `[[hooks]]` and `[[permission.rules]]` blocks live in the user's `config.toml`, not the plugin manifest; the [installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/) documents the optional session controls you can add there:
 
-- `PreToolUse` on `Bash` - block destructive commands (the documented example exits 2 to block)
+- `PreToolUse` on `Bash` - block destructive commands (Kimi's upstream hooks documentation gives an example that exits 2 to block)
 - `UserPromptSubmit` - append a session reminder to every user message; the closest approximation of system-prompt injection
 - `PreCompact` / `PostCompact` - observation-only logging of compaction cycles
 
@@ -186,7 +186,7 @@ The user places the file at `~/.kimi-code/AGENTS.md` (`$KIMI_CODE_HOME/AGENTS.md
 
 - **User forgets the AGENTS.md copy** - rules are missing silently. Mitigation: INSTALL.md checklist and skills referencing AGENTS.md.
 - **User modifications are overwritten** - `/plugins install` overwrites edits to bundled skills. Mitigation: fork the plugin for customizations.
-- **User skips the recommended hooks** - destructive-command blocking and per-turn reminders are unavailable. Mitigation: INSTALL.md checklist and the orchestrator's `whenToUse` reminder.
+- **User skips the recommended hooks** - destructive-command blocking and per-turn reminders are unavailable. Mitigation: the installation guide's checklist and the orchestrator's `whenToUse` reminder.
 - **Reviewer → `coder` needs the no-edit constraint** - `coder` has Write and Edit, so without the persona's no-edit line a reviewer could "fix" what it finds and violate the maker/checker split. Mitigation: the persona and routing table flag it; no per-subagent tool-disable API exists.
 - **Architect was remapped from `plan` to `coder`** - `plan` has no Bash, blocking validation (`which`, `npm view`); `coder` restores it while making write tools technically available. Mitigation: the persona restricts Bash to read-only validation.
 - **Subagents cannot use the Skill tool** - the profiles exclude `Skill`, so a dispatched subagent cannot load further skills; specialist identity must be inlined in the prompt or `prompt_template`.
