@@ -18,7 +18,11 @@ interface ReviewPi {
   setModel: (model: unknown) => void | Promise<void>;
 }
 
-interface ReviewCtx {
+/**
+ * Host-neutral review-model context shared by the pi/omp thin shims
+ * (both hosts expose the same registry-read and notify surface).
+ */
+export interface ReviewModelContext {
   modelRegistry: { getAll: () => { id: string }[] };
   ui: { notify: (msg: string) => void };
 }
@@ -47,7 +51,7 @@ export const createReviewApi = <Model>(
 
 export const restoreOriginalState = async (
   pi: ReviewPi,
-  ctx: ReviewCtx,
+  ctx: ReviewModelContext,
   state: MaestriaState,
 ): Promise<void> => {
   const { state: clearedState, originalModel, originalTools } = exitReviewMode(state);
@@ -73,7 +77,7 @@ export const restoreOriginalState = async (
 
 export const cycleToReviewModel = async (
   pi: ReviewPi,
-  ctx: ReviewCtx,
+  ctx: ReviewModelContext,
   state: MaestriaState,
 ): Promise<string | null> => {
   const { reviewModel } = state;
