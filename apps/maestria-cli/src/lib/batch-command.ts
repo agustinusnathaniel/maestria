@@ -1,11 +1,10 @@
 import { Effect } from 'effect';
 
-import { CliError } from '@/lib/command-result.js';
+import { CliError, exitCodeForResults } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { renderCompactResults, renderResults } from '@/lib/output.js';
 import { getPlatformOrResult } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
-import { exitCodeForResults } from '@/lib/result-exit.js';
 import type { PlatformResult } from '@/types.js';
 
 /**

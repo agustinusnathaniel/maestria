@@ -172,6 +172,30 @@ const selectCodexInstructionTarget = (
   return hasOverride ? 'AGENTS.override.md' : 'AGENTS.md';
 };
 
+const isOwnedEmpty = (
+  next: string,
+  file: CodexGlobalInstructionFilename,
+  manifest: CodexManagedAgentManifest,
+): boolean =>
+  next.length === 0 && manifest.instructionsCreated === true && manifest.instructionsFile === file;
+
+const writeAtomicCodexFile = async (filePath: string, content: string): Promise<void> => {
+  const { mkdir, rename, writeFile } = await import('node:fs/promises');
+  await mkdir(codexHome(), { recursive: true });
+  const tempPath = `${filePath}.tmp`;
+  await writeFile(tempPath, content, 'utf-8');
+  await rename(tempPath, filePath);
+};
+
+const removeCodexFiles = async (files: readonly string[], directory: string): Promise<void> => {
+  const { rm } = await import('node:fs/promises');
+  await Promise.all(
+    files.map(async (file) => {
+      await rm(`${directory}/${file}`, { force: true });
+    }),
+  );
+};
+
 const writeCodexGlobalInstructions = async (
   existing: ReadonlyMap<CodexGlobalInstructionFilename, string | undefined>,
   cleaned: ReadonlyMap<CodexGlobalInstructionFilename, string | undefined>,
@@ -179,17 +203,11 @@ const writeCodexGlobalInstructions = async (
   targetContent: string,
   manifest: CodexManagedAgentManifest,
 ): Promise<void> => {
-  const { mkdir, rename, rm, writeFile } = await import('node:fs/promises');
-  const writeAtomic = async (filePath: string, content: string): Promise<void> => {
-    await mkdir(codexHome(), { recursive: true });
-    const tempPath = `${filePath}.tmp`;
-    await writeFile(tempPath, content, 'utf-8');
-    await rename(tempPath, filePath);
-  };
+  const { rm } = await import('node:fs/promises');
   const operations: Promise<void>[] = [];
   for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
     if (file === target) {
-      operations.push(writeAtomic(codexGlobalInstructionsPath(file), targetContent));
+      operations.push(writeAtomicCodexFile(codexGlobalInstructionsPath(file), targetContent));
       continue;
     }
     const original = existing.get(file);
@@ -197,15 +215,11 @@ const writeCodexGlobalInstructions = async (
     if (original === undefined || next === undefined || next === original) {
       continue;
     }
-    if (
-      next.length === 0 &&
-      manifest.instructionsCreated === true &&
-      manifest.instructionsFile === file
-    ) {
+    if (isOwnedEmpty(next, file, manifest)) {
       operations.push(rm(codexGlobalInstructionsPath(file), { force: true }));
       continue;
     }
-    operations.push(writeAtomic(codexGlobalInstructionsPath(file), next));
+    operations.push(writeAtomicCodexFile(codexGlobalInstructionsPath(file), next));
   }
   await Promise.all(operations);
 };
@@ -313,13 +327,9 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
           message: String(error),
         }),
       try: async () => {
-        const { rm } = await import('node:fs/promises');
-        await Promise.all(
-          manifest.files
-            .filter((file) => !currentFiles.has(file))
-            .map(async (file) => {
-              await rm(`${targetDir}/${file}`, { force: true });
-            }),
+        await removeCodexFiles(
+          manifest.files.filter((file) => !currentFiles.has(file)),
+          targetDir,
         );
       },
     });
@@ -341,17 +351,8 @@ export const installCodexManagedAgents = (packageRoot: string): Effect.Effect<vo
     });
   });
 
-const removeCodexFiles = async (files: readonly string[], directory: string): Promise<void> => {
-  const { rm } = await import('node:fs/promises');
-  await Promise.all(
-    files.map(async (file) => {
-      await rm(`${directory}/${file}`, { force: true });
-    }),
-  );
-};
-
 const removeCodexInstructionFiles = async (manifest: CodexManagedAgentManifest): Promise<void> => {
-  const { readFile, rename, rm, writeFile } = await import('node:fs/promises');
+  const { readFile, rm } = await import('node:fs/promises');
   const operations = CODEX_GLOBAL_INSTRUCTION_FILENAMES.map(async (file) => {
     const filePath = codexGlobalInstructionsPath(file);
     let content: string;
@@ -367,17 +368,11 @@ const removeCodexInstructionFiles = async (manifest: CodexManagedAgentManifest):
     if (next === content) {
       return;
     }
-    if (
-      next.length === 0 &&
-      manifest.instructionsCreated === true &&
-      manifest.instructionsFile === file
-    ) {
+    if (isOwnedEmpty(next, file, manifest)) {
       await rm(filePath, { force: true });
       return;
     }
-    const tempPath = `${filePath}.tmp`;
-    await writeFile(tempPath, next, 'utf-8');
-    await rename(tempPath, filePath);
+    await writeAtomicCodexFile(filePath, next);
   });
   await Promise.all(operations);
 };
