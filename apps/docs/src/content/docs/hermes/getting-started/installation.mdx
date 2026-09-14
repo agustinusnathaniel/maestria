@@ -4,7 +4,7 @@ description: Install @maestria/hermes in Hermes Agent and verify its skills, com
 ---
 
 import { Steps } from '@astrojs/starlight/components';
-import { PackageManagers } from 'starlight-package-managers';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
 @maestria/hermes is a git-based Hermes plugin. It adds 12 skills (9 methodology plus 3 command skills), 7 slash commands, and 10 lifecycle hooks. Optional extras: an `llm_execution` mode footer (enable with `MAESTRIA_MODE_FOOTER=1`) and the `opencode_route` tool, which invokes the OpenCode CLI only when you use it.
 
@@ -19,7 +19,7 @@ import { PackageManagers } from 'starlight-package-managers';
 
 1. Install through the Maestria CLI:
 
-   <PackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
+   <AllPackageManagers type="dlx" pkg="maestria@latest" args="install hermes" />
 
    Or install directly with Hermes, which clones the repository and enables the plugin:
 
@@ -49,7 +49,7 @@ The response should show the active mode. Ask the agent to list the Maestria spe
 
 ## Update
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="update hermes" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update hermes" />
 
 Or update the native plugin: `hermes plugins update maestria-hermes`.
 

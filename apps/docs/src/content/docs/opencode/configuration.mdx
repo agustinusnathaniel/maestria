@@ -7,6 +7,8 @@ lastUpdated: false
 
 import { Aside, Code } from '@astrojs/starlight/components';
 
+import AllPackageManagers from '@/components/all-package-managers.astro';
+
 The `@maestria/opencode` plugin registers 8 agents with no model overrides, so each runs on the model OpenCode assigns by default. Overrides use the standard `agent.<name>.model` path, which works for any agent.
 
 ## Per-Agent Models
@@ -42,9 +44,11 @@ The 7 specialists are subagents of the orchestrator, so they inherit the orchest
 
 The CLI validates a model ID against OpenCode's live model list and changes only the named agents:
 
-```bash
-maestria configure opencode --global --set adventurer=<model-id>,writer=<model-id>
-```
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="configure opencode --global --set adventurer=<model-id>,writer=<model-id>"
+/>
 
 See the [configure reference](/cli/commands/#configure) for supported platforms and options.
 

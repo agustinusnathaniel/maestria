@@ -37,10 +37,12 @@ The CLI validates the package, stages it, and prints its directory for the clien
 
 For a local package:
 
-```bash
-npx maestria plugin validate /path/to/plugin
-npx maestria plugin install /path/to/plugin --destination ./staged-plugin
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="plugin install /path/to/plugin --destination ./staged-plugin"
+/>
 
 ### Update an Integration
 
@@ -50,10 +52,8 @@ Update all installed integrations:
 
 To update one platform or pin a version:
 
-```bash
-npx maestria update opencode
-npx maestria update opencode --version <version>
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode --version <version>" />
 
 ### Configure Specialist Models
 

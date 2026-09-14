@@ -34,10 +34,8 @@ Or select one with `maestria install <platform>`. Supported platforms: OpenCode,
 
 Portable packages are artifacts, not runtime platforms: they do not appear in `maestria status`, and `maestria install` does not activate them.
 
-```bash
-npx maestria plugin validate ./my-plugin
-npx maestria plugin install @maestria/agent-plugin
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate ./my-plugin" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install @maestria/agent-plugin" />
 
 The CLI validates the package, stages it in the Maestria cache, and prints the directory for the compatible client's own installer or local-plugin setting. See the [portable Agent Plugin guide](/agent-plugin/) for the handoff and package boundary.
 

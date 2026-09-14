@@ -4,7 +4,7 @@ description: Install @maestria/kimi-code in Kimi Code. The package is a declarat
 ---
 
 import { Steps } from '@astrojs/starlight/components';
-import { PackageManagers as PackageManagerCommands } from 'starlight-package-managers';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
 `@maestria/kimi-code` is a declarative plugin with no build step.
 
@@ -19,7 +19,7 @@ import { PackageManagers as PackageManagerCommands } from 'starlight-package-man
 
 1. Install:
 
-   <PackageManagerCommands
+   <AllPackageManagers
      type="dlx"
      pkg="maestria"
      args="install kimi-code"
@@ -28,7 +28,7 @@ import { PackageManagers as PackageManagerCommands } from 'starlight-package-man
 
 2. Check the native plugin record:
 
-   <PackageManagerCommands type="dlx" pkg="maestria" args="status" comment="Check installation" />
+   <AllPackageManagers type="dlx" pkg="maestria" args="status" comment="Check installation" />
 
 3. Start a new session so the session-start skill and system prompt load:
 
@@ -70,13 +70,13 @@ Confirm that the plugin is enabled and its session-start skill is orchestrator. 
 
 ## Update
 
-<PackageManagerCommands type="dlx" pkg="maestria" args="update kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria" args="update kimi-code" />
 
 Updates replace the managed package: back up local edits before updating.
 
 ## Uninstall
 
-<PackageManagerCommands type="dlx" pkg="maestria" args="uninstall kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria" args="uninstall kimi-code" />
 
 Or from a Kimi Code session, run `/plugins remove maestria`. Remove any custom `[[hooks]]` or `[[permission.rules]]` blocks from `~/.kimi-code/config.toml` separately.
 

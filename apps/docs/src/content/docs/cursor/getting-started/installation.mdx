@@ -4,7 +4,7 @@ description: Install @maestria/cursor for Cursor IDE and Cursor CLI. Declarative
 ---
 
 import { Aside } from '@astrojs/starlight/components';
-import { PackageManagers } from 'starlight-package-managers';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
 `@maestria/cursor` is a declarative plugin: no build step.
 
@@ -15,9 +15,9 @@ import { PackageManagers } from 'starlight-package-managers';
 
 ## Install
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="install cursor" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install cursor" />
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="status" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="status" />
 
 The plugin installs to `~/.cursor/plugins/local/maestria`.
 
@@ -28,7 +28,7 @@ The plugin installs to `~/.cursor/plugins/local/maestria`.
 
 ### Updating
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="update cursor" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update cursor" />
 
 ## Use with Cursor CLI
 
@@ -48,7 +48,7 @@ agent --plugin-dir ~/.cursor/plugins/local/maestria
 
 ## Uninstall
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="uninstall cursor" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall cursor" />
 
 ## Next steps
 
