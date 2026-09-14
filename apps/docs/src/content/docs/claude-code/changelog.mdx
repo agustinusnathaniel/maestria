@@ -3,16 +3,50 @@ title: Changelog
 description: Release history for @maestria/claude-code.
 ---
 
+## v0.3.6
+
+_September 11, 2026_
+
+- Internal consolidation; duplicated specialist guidance was removed from generated orchestrator skills, with the guidance unchanged in substance.
+
+## v0.3.5
+
+_September 6, 2026_
+
+- Clarified installation paths, prerequisites, and support boundaries in the package documentation.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.4
+
+_September 4, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.3
+
+_September 3, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.2
+
+_August 25, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.3.1
+
+_August 24, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
 ## v0.3.0
 
 _August 22, 2026_
 
 ### Leaner directives, explicit delivery autonomy
 
-- Canonical agent directives are ~24% leaner at the source (~21% as shipped in generated plugins): the bounded-repair contract lives once in the global rules and specialist skill catalogs list only verified skills.
-- Delegated implementation outcomes now complete at a pushed feature branch with an open PR; routine commit, push, and PR creation require no approval asks, while merge, release, and production actions remain separate authorization boundaries.
-- Failed or cancelled delegations get one adjusted-brief retry before structured blocker reporting.
-- Decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.2.1
 
@@ -22,7 +56,7 @@ _August 22, 2026_
 - The Maestria CLI stages the npm package in a local marketplace and delegates installation state to Claude Code's native plugin manager.
 - Exact version pinning is not supported for `maestria update claude-code --version`; the host marketplace selects the latest package.
 - Plugin metadata now stays aligned with package versions: release-time version sync is generalized across plugins and a `--check` mode fails the build on drift, so the published plugin artifact can no longer diverge from npm metadata.
-- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.2.0
 
@@ -40,7 +74,4 @@ _Initial release_
 
 ### Shared directive updates
 
-The plugin tracks the shared agent directives as they evolve. This release reflects the latest canonical contracts:
-
-- Clarified agent workflow contracts while preserving detailed specialist guidance: routine validated commits on recognized feature branches remain autonomous after required review; push and later lifecycle actions stay separately gated. Added bounded repair and platform-enforcement notes, refreshed generated projections, and retained explicit mode reset behavior and read-only sonar profiles where supported.
-- Simplified and re-aligned the shared agent directives around outcome, evidence, runtime authority, blind review, bounded repair, and autonomous routine work. Directives now avoid unnecessary orchestration ceremony, allow the host runtime to determine whether work is performed directly or delegated, prevent nested supervisors from duplicating scheduling and lifecycle work, and keep all generated platform projections synchronized.
+The plugin tracks the shared agent directives as they evolve. Cross-cutting changes reflected in this release are tracked in the [methodology changelog](/core/changelog/).
