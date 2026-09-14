@@ -15,7 +15,7 @@ t3code spawns `opencode serve` and communicates through the `@opencode-ai/sdk/v2
 
 OpenCode's V2 protocol uses an agent-native permission model: tool access is controlled by each agent's `permission` frontmatter field and resolved at tool-use time ([source: session create protocol](https://github.com/anomalyco/opencode/blob/dev/packages/protocol/src/groups/session.ts), [permission.ts](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/permission.ts)). There is no session-level permission override in V2. t3code sends a `permission` parameter in its `session.create()` call, but it is a legacy V1 artifact that the V2 server ignores; agent-level permissions still apply for tool authorization.
 
-### What works
+### What works under t3code
 
 - The plugin loads and registers all 8 agents (orchestrator + 7 specialists)
 - The orchestrator is selectable in t3code's agent dropdown
@@ -23,7 +23,7 @@ OpenCode's V2 protocol uses an agent-native permission model: tool access is con
 - Task delegation between agents works
 - Agent-level tool permissions from frontmatter are honored by native OpenCode sessions; the full-access mode can bypass them (see Known limitations)
 
-### What behaves differently
+### What changes under t3code
 
 | Aspect | Native OpenCode | Under t3code |
 | --- | --- | --- |

@@ -7,10 +7,10 @@ import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components'
 
 @maestria/agent-plugin packages Maestria's workflow methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the [Agent Plugins v1 format](https://agent-plugins.org/).
 
-<Aside type="tip" title="Choose portable when">
-  You want the same skills across compatible clients with client-owned discovery, permissions,
-  activation, and sessions. Choose a native integration for host features such as native subagents,
-  hooks, commands, or tool controls.
+<Aside type="tip" title="When to choose the portable package">
+  Choose it when you want the same skills across compatible clients with client-owned discovery,
+  permissions, activation, and sessions. Choose a native integration for host features such as
+  native subagents, hooks, commands, or tool controls.
 </Aside>
 
 ## Before You Install
@@ -27,7 +27,7 @@ You need a client that supports Agent Plugins v1 and its skills component; check
 
 All 14 skills live at `skills/<name>/SKILL.md`. Load global-rules for the full contract, then orchestrator or the specialist that matches the work; see the [Specialist Reference](/core/agents/) for roles. The package assumes no single invocation syntax.
 
-## Install It
+## Install the package
 
 ### With the Maestria CLI
 

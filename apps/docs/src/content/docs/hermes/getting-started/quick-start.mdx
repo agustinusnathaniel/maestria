@@ -7,8 +7,8 @@ import { Aside } from '@astrojs/starlight/components';
 
 After installation, Hermes loads the plugin's skills, commands, and hooks at startup. The default mode is fein.
 
-<Aside type="caution" title="Reserve full mode for staged work">
-  Use /blitz for a small read-only task. Use the default full mode when specialist handoffs and
+<Aside type="caution" title="Reserve fein mode for staged work">
+  Use /blitz for a small read-only task. Use the default `fein` mode when specialist handoffs and
   independent review justify the extra model work. See [When to Use Maestria](/core/when-to-use/).
 </Aside>
 
@@ -45,7 +45,7 @@ The orchestrator selects the needed specialists and passes evidence between stag
 Explain what the add function in src/math.ts does.
 ```
 
-## Understand the Boundary
+## Understand the permission boundary
 
 Maestria specialist names are routing roles, not permission identities. A trusted top-level session performs direct code changes; delegated children receive a fixed read, research, and LLM-only policy (no writes, code execution, shell, delegation, or OpenCode). Review and landing remain advisory because Hermes has no native review-state gate.
 

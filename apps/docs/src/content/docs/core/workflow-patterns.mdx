@@ -44,7 +44,7 @@ Prefer links to existing artifacts, omit empty fields, and keep the brief propor
 - **Diagnose, then fix** - `diagnose -> builder or direct implementation -> reviewer`. Hand over the confirmed cause, affected paths, smallest safe fix, and prevention evidence.
 - **Research only** - `adventurer -> architect or planner -> stop`. sonar packages this boundary where the platform supports it; a research result states what was learned, what remains uncertain, and what would justify implementation.
 
-## Review Proportionally
+## Match review depth to risk
 
 Use one independent reviewer for ordinary pre-merge validation, adding a security, architecture, performance, or UX lens only when the requirements or diff expose that risk. The maker must not review the same artifact; [Pipeline & Roles](/core/pipeline/) covers repair-loop limits.
 
