@@ -2,9 +2,9 @@
 
 ## Test from contracts, not implementation
 
-Design tests from observable behavior, not internal structure. Prefer the highest practical interface: user-facing behavior for public APIs, explicit consumer-facing behavior for stable internal boundaries. Test private helpers through their public consumer rather than in isolated unit tests.
+Design tests from observable behavior, not internal structure. Prefer the highest practical interface: user-facing behavior for public APIs, explicit consumer-facing behavior for stable internal boundaries. Test private helpers through their public consumer, not isolated unit tests.
 
-Treat the tested unit or stack as a black box. Pass inputs through its public boundary and assert the resulting behavior. A test may inspect an interaction with a genuinely external seam, such as a network, clock, or randomness source, but broad mocks of the project's own logic are a design smell. Prefer real lightweight boundaries or small explicit fakes for injected host APIs.
+Treat the tested unit or stack as a black box: pass inputs through its public boundary and assert resulting behavior. A test may inspect an interaction with a genuinely external seam, such as a network, clock, or randomness source, but broad mocks of the project's own logic are a design smell. Prefer real lightweight boundaries or small explicit fakes for injected host APIs.
 
 ## Keep regression tests intentional
 
@@ -17,7 +17,7 @@ Skip tests for incidental implementation details, rare edge cases, and fixes who
 
 ## Avoid mocks
 
-Prefer testing through real lightweight boundaries, small explicit fakes for injected interfaces, or narrow transport fixtures. If existing design forces broad mocking, treat that as a design smell - record the cleanup opportunity and document the temporary mock in the test.
+Prefer testing through real lightweight boundaries, small explicit fakes for injected interfaces, or narrow transport fixtures. If existing design forces broad mocking, record the cleanup opportunity and document the temporary mock in the test.
 
 ## Match verification to risk
 

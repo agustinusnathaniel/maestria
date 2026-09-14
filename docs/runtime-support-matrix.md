@@ -1,27 +1,23 @@
 # Runtime Support Matrix
 
-Maintainer evidence ledger supporting [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). Use it to assess runtime capabilities, enforcement, and promotion gates. Dated findings and inferred assumptions are research evidence, not a public support promise.
+Maintainer evidence ledger supporting [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md): runtime capabilities, enforcement, and promotion gates. It records dated research evidence, not a public support promise.
 
-Start with the [snapshot](#snapshot) for support decisions, then follow each Evidence ID to its runtime section for sources and verification limits.
+Every row is a dated snapshot as of its review date, not a maintenance obligation; reverification timing is governed by [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md). Start with the [snapshot](#snapshot) for support decisions, then follow each Evidence ID to its runtime section for sources and verification limits.
 
 ## How to read this document
 
-- **Reviewed:** the date on which the cited source was last verified. Reverify before implementation.
-- **Verified:** a fact read directly from an official source on the review date.
-- **`[inferred]`:** a reasonable assumption not directly confirmed by a cited source. Each is tagged with its evidence.
+- **Reviewed:** the date the cited source was last verified; older claims are stale against the runtime's current documented state.
+- **Verified:** a fact read directly from an official source on the review date. `[inferred]` marks a reasonable but unconfirmed assumption, tagged with its evidence.
 - **Support level** uses the controlled vocabulary from ADR-CORE-014 (`Native`, `Native candidate`, `Provisional`, `Deferred`, `Withdrawn`) and contains no delivery terms.
 - **Capability** (`Supported`, `Available`, `Unverified`, `Unavailable`) records what a runtime can do.
 - **Control** (`Enforced`, `Trust-gated`, `Ignored`, `Advisory`, `Not a sandbox`, `Unsupported`) records what a runtime actually enforces. Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled `Enforced` as security controls.
-- **Test status** is `tested` or `not tested`. Qualified labels describe the verification boundary; none implies a live runtime end-to-end test. Almost all upstream evidence is untested and unpinned, so it is research-only, not production support proof.
-  - `tested: source inspection`: pinned upstream source read; no runtime execution.
-  - `tested: package/unit tests`: skills, manifest, dependency-boundary, or behavior tests against a fake host API.
-  - `tested: built-artifact smoke`: compiled artifact built and its behavior exercised.
-- **Pinned state:** each evidence record states the exact release/version/immutable commit/docs revision, or the exact text `unpinned - reverify before implementation`.
-- **Evidence ID:** every snapshot, evidence, capability/control, and source row links to a complete per-runtime Evidence record through one or more IDs (for example `E-CLAUDE-01`). Read each row with that record, which specifies the runtime/surface, claim, pinned state, source URL/path, review date, and test status. Each row is self-contained: do not infer runtime, date, or source from its section heading.
+- **Test status** is `tested` or `not tested`, qualified by the verification boundary; none implies a live runtime end-to-end test. `tested: source inspection` = pinned upstream source read, no runtime execution; `tested: package/unit tests` = tests against a fake host API; `tested: built-artifact smoke` = compiled artifact built and its behavior exercised.
+- **Pinned state:** the exact release/version/immutable commit/docs revision per record, or the exact text `unpinned - reverify before implementation`.
+- **Evidence ID:** links each row to a complete per-runtime Evidence record through one or more IDs (for example `E-CLAUDE-01`); the record carries runtime/surface, claim, pinned state, source URL/path, review date, and test status. Records are self-contained: do not infer runtime, date, or source from the section heading.
 
 ## Maestria CLI adapter evidence (reviewed 2026-08-13)
 
-The CLI adapters are management wrappers around host-native capabilities. They stage the published npm package under `~/.cache/maestria/`, register a local marketplace with the host CLI, and use the host's native install/remove/list commands. The Codex adapter additionally installs native custom-agent TOMLs and a marked global `AGENTS.md` orchestration block because those surfaces are outside the plugin manifest.
+CLI adapters wrap host-native capabilities: they stage the published npm package under `~/.cache/maestria/`, register a local marketplace with the host CLI, and use the host's native install/remove/list commands. The Codex adapter also installs native custom-agent TOMLs and a marked global `AGENTS.md` orchestration block, because those surfaces are outside the plugin manifest.
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -40,11 +36,11 @@ The CLI adapters are management wrappers around host-native capabilities. They s
 | JCode | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-JCODE-01 | 2026-08-11 |
 | Crush | Deferred | Projection | Deferred - projection/experiment only | No confirmed first-class package/extension API | E-CRUSH-01 | 2026-08-11 |
 
+The per-runtime sections below are dated evidence snapshots as of their review dates, not maintenance obligations; each runtime's disposition is set by this table.
+
 ---
 
 ## Claude Code
-
-**Support level:** Native candidate. **Delivery:** Plugin. **Disposition:** candidate native plugin. **Rationale:** promotion gated on approved docs and a blind review.
 
 ### Evidence (historical baseline reviewed 2026-08-11)
 
@@ -63,26 +59,22 @@ The CLI adapters are management wrappers around host-native capabilities. They s
 
 | Evidence ID | Mechanism | Capability | Control | Note |
 | --- | --- | --- | --- | --- |
-| E-CLAUDE-06 | Plugin subagent loading | Supported | Advisory | Agents load from plugin `agents/`; scoped identifier. Loading is not itself a security control |
-| E-CLAUDE-07 | `permissionMode`, `hooks`, `mcpServers` on plugin subagents | Unavailable | Ignored | Fields ignored; must move to project/user agent files |
-| E-CLAUDE-04 | Matching `PreToolUse` handler returning `hookSpecificOutput.permissionDecision: "deny"` | Supported | Enforced | Can block the matched call conditionally on event, matcher, handler, decision format, and active installation scope; best-effort `if` filters can fail open |
-| E-CLAUDE-05 | Plugin `hooks/hooks.json` resource | Supported | Advisory | Supported shareable resource, but presence alone is not enforcement; matching blocking handler required |
-| E-CLAUDE-08 | `@maestria/claude-code` first package hook resources and handlers | Unavailable | Advisory | Package ships no `hooks/` directory and no package-level hook enforcement; this does not downgrade runtime/plugin capability |
+| E-CLAUDE-06 | Plugin subagent loading | Supported | Advisory | Loading is not itself a security control |
+| E-CLAUDE-07 | `permissionMode`, `hooks`, `mcpServers` on plugin subagents | Unavailable | Ignored | Must move to project/user agent files if needed |
+| E-CLAUDE-04 | Matching `PreToolUse` handler returning `hookSpecificOutput.permissionDecision: "deny"` | Supported | Enforced | Blocking is conditional; best-effort `if` filters can fail open |
+| E-CLAUDE-05 | Plugin `hooks/hooks.json` resource | Supported | Advisory | Presence alone is not enforcement; a matching blocking handler is required |
+| E-CLAUDE-08 | `@maestria/claude-code` first package hook resources and handlers | Unavailable | Advisory | No package-level hooks; does not downgrade runtime/plugin capability |
 
 ### Statuses and gates
 
-- **Promotion to `Native`:** gated on these repaired docs passing blind review, a Claude Code plugin package via the core sync pipeline (ADR-CORE-005) with `scripts/check-sync` passing, and the promotion gates in ADR-CORE-014. Review/promotion gates precede promotion or landing; the native-candidate implementation may already exist before promotion review.
-- **Rollback:** revert the generated projection/package; canonical content stays in `packages/core/agent-directives/`.
-- **Withdrawal:** if the plugin-subagent field limitation cannot be worked around without dropping the plugin distribution shape, downgrade or remove the plugin delivery, capability, and control claims.
-- **Re-promotion:** no automatic re-promotion; only after the promotion gates are re-verified.
+- **Promotion:** the repaired docs pass blind review; a plugin package ships via the core sync pipeline (ADR-CORE-005) with `scripts/check-sync` passing; the ADR-CORE-014 gates are verified. The native-candidate implementation may already exist; gates precede promotion or landing.
+- **Withdrawal:** if the plugin-subagent field limitation cannot be worked around without dropping the plugin distribution shape, downgrade or remove the plugin delivery, capability, and control claims. The project/user agent file workaround is a promotion-gate item, not an open question; rollback and re-promotion follow ADR-CORE-014.
 
 ---
 
 ## Prime Agent
 
-**Support level:** Native candidate. **Delivery:** Skills-first + verified extension subset. **Disposition:** skills + mode-command extension; native rlm dispatch deferred. **Rationale:** skills-first package plus a small verified executable extension subset (mode commands, mode prompt injection); native `rlm` dispatch and JSON/RPC headless mode stay deferred until a public JS bridge is verified.
-
-> Prime Agent evidence was re-verified on 2026-08-13 against the immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5` (PrimeIntellect-ai/prime-agent, `main`). All prior `unpinned` claims (E-PRIME-01..07) were confirmed and are now pinned to that commit. On the same date the executable-extension subset (E-PRIME-09..11) was verified against the same pinned commit; the decision stays `Native candidate` - the extension covers only the verified subset and native `rlm` dispatch remains deferred.
+> Evidence was re-verified on 2026-08-13 against the immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5` (PrimeIntellect-ai/prime-agent, `main`): E-PRIME-01..07 were confirmed and pinned to that commit, and the executable-extension subset (E-PRIME-09..11) was verified against it. The decision stays `Native candidate`; native `rlm` dispatch remains deferred.
 
 ### Evidence (reverified 2026-08-13)
 
@@ -98,34 +90,29 @@ The CLI adapters are management wrappers around host-native capabilities. They s
 | E-PRIME-08 | Prime Agent | `@maestria/prime-agent` first package | The package ships 14 Agent Skills (`skills/<name>/SKILL.md`), each with the required `name` (matching its directory) and `description` frontmatter, generated from canonical directives via the core sync pipeline, plus a compiled extension (`dist/extension.mjs`, declared under `pi.extensions`) covering the verified mode subset; it claims no native `rlm` dispatch or JSON/RPC headless mode and makes no sandbox claim | Working-tree package snapshot; verify at landing | `packages/prime-agent/` (sync.config.ts, skills/, src/, tests/, README.md, package.json) | 2026-08-13 | tested: package/unit tests + built-artifact smoke (live Prime E2E not tested) |
 | E-PRIME-09 | Prime Agent | Extension API subset | The pinned fork's public extension API (exported by `@earendil-works/pi-coding-agent`, `src/core/extensions/types.ts` re-exported from `src/index.ts`) supports: default-export factory `(pi: ExtensionAPI) => void \| Promise<void>`; `pi.registerCommand(name, { description, handler(args, ctx) })`; `pi.on("before_agent_start", ...)` returning `{ systemPrompt }` (chained per turn); `pi.on("session_start" / "session_tree" / "session_shutdown")`; `pi.appendEntry(customType, data)` with `CustomEntry { type: "custom", customType, data }` persisted in the session; `ctx.sessionManager.getBranch()/getEntries()` (ReadonlySessionManager); `pi.sendUserMessage(content, { deliverAs })`; `ctx.ui.notify/setEditorText`; extension paths declared under `pi.extensions` in package.json are resolved relative to the package root and must exist | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/src/core/extensions/types.ts; .../docs/extensions.md; .../src/core/extensions/loader.ts | 2026-08-13 | tested: source inspection |
 | E-PRIME-10 | Prime Agent | `rlm` dispatch bridge | `rlm(...)` subagent dispatch is an IPython-side (Python) tool of the RLM runtime; the public extension API of the pinned fork exposes no JS subagent-spawn bridge (no such method on `ExtensionAPI`/`ExtensionCommandContext`; `ExtensionCommandContext` session methods are `newSession`/`fork`/`navigateTree`/`switchSession`/`reload`, not subagents). A Prime extension therefore cannot dispatch native `rlm` subagents | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit) | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/src/core/extensions/types.ts; .../docs/rlm.md | 2026-08-13 | tested: source inspection |
-| E-PRIME-11 | Prime Agent | Runtime dependency boundary | The Prime-compatible `@earendil-works/pi-coding-agent` fork (`0.7.2` in the pinned workspace) is NOT published to npm (registry carries only the original Pi line, latest `0.84.1`); Prime bundles the pi packages into its runtime (jiti virtual modules in the compiled binary, workspace aliases in dev) and its `docs/packages.md` says core pi packages must be listed in `peerDependencies` with `"*"` if imported at runtime and not bundled. `@maestria/prime-agent` imports only types (erased at build), so `dist/extension.mjs` has zero pi imports and the package declares no runtime/peer dependency on pi packages | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit); npm registry | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/packages.md; https://registry.npmjs.org/@earendil-works/pi-coding-agent (dist-tags latest 0.84.1) | 2026-08-13 | tested: source inspection |
+| E-PRIME-11 | Prime Agent | Runtime dependency boundary | The Prime-compatible `@earendil-works/pi-coding-agent` fork (`0.7.2` in the pinned workspace) is NOT published to npm (registry carries only the original Pi line, latest `0.84.1`). Prime bundles pi packages into its runtime (jiti virtual modules in the compiled binary, workspace aliases in dev), and its `docs/packages.md` requires core pi packages imported at runtime and not bundled to be listed in `peerDependencies` as `"*"`. `@maestria/prime-agent` imports only types (erased at build), so `dist/extension.mjs` has zero pi imports and the package declares no runtime/peer dependency on pi packages | 7787f07415d843b9a800f6a4720e0c739bd608e5 (immutable commit); npm registry | https://github.com/PrimeIntellect-ai/prime-agent/blob/7787f07415d843b9a800f6a4720e0c739bd608e5/packages/coding-agent/docs/packages.md; https://registry.npmjs.org/@earendil-works/pi-coding-agent (dist-tags latest 0.84.1) | 2026-08-13 | tested: source inspection |
 
-**Test coverage (local package evidence):** the `tested` labels above are level-specific, never a live runtime E2E. E-PRIME-09/10/11 are **source inspection** of the pinned commit (no runtime execution). E-PRIME-08 is verified by **package/unit tests**: skills layout and frontmatter, manifest/dependency-boundary, and extension behavior against a fake `pi` API (`tests/skills.test.ts`, `tests/package.test.ts`, `tests/extension.test.ts`). It is also verified by **built-artifact smoke tests**, which build `dist/extension.mjs` and exercise command registration, command behavior, and mode prompt injection against a fake `pi` API (`tests/package.test.ts`; the package `test` script builds the artifact first). **Live Prime Agent E2E is not tested** - the automated suite never requires a Prime binary; the immutable source pin and `Native candidate` status are unaffected.
+**Test coverage (local package evidence):** `tested` labels are level-specific, never a live runtime E2E. E-PRIME-09/10/11 are **source inspection** of the pinned commit; E-PRIME-08 is verified by **package/unit tests** (skills layout and frontmatter, manifest/dependency boundary, and extension behavior against a fake `pi` API in `tests/skills.test.ts`, `tests/package.test.ts`, `tests/extension.test.ts`) and by **built-artifact smoke** (the package `test` script builds `dist/extension.mjs` first, then `tests/package.test.ts` exercises command registration, command behavior, and mode prompt injection against a fake `pi` API). Live Prime Agent E2E is not tested; the immutable source pin and `Native candidate` status are unaffected.
 
 ### Capability vs control
 
 | Evidence ID | Mechanism | Capability | Control | Note |
 | --- | --- | --- | --- | --- |
-| E-PRIME-03 | Skills (Agent Skills standard, Python-backed) | Supported | Advisory | Loaded on demand; `name`/`description` required (missing description means not loaded); validation otherwise lenient; Python-backed skills install into kernel; loading is not a security control |
-| E-PRIME-02 | Subagent dispatch (`rlm`) | Supported | Advisory | Programmatic subagents; dispatch is not a security control. Not part of the package (deferred; no JS extension bridge - E-PRIME-10) |
-| E-PRIME-06 | JSON/RPC headless modes | Available | Advisory | For automation and integrations; not a security control. Not part of the package (deferred) |
+| E-PRIME-03 | Skills (Agent Skills standard, Python-backed) | Supported | Advisory | Loading is not a security control |
+| E-PRIME-02 | Subagent dispatch (`rlm`) | Supported | Advisory | Dispatch is not a security control; not in the package (deferred; no JS extension bridge, E-PRIME-10) |
+| E-PRIME-06 | JSON/RPC headless modes | Available | Advisory | Not a security control; not in the package (deferred) |
 | E-PRIME-07 | Execution sandbox | Unavailable | Not a sandbox | Model-generated Python/commands run with user permissions |
-| E-PRIME-08, E-PRIME-09 | `@maestria/prime-agent` extension subset (mode commands, mode prompt injection, session-scoped mode state) | Supported | Advisory | Registered via `pi.registerCommand` / `pi.on("before_agent_start")` / session custom entries; advisory prompt/state behavior, no tool interception, no security control. Verified by source inspection of the pinned fork and built-artifact smoke tests; live Prime E2E not tested |
-| E-PRIME-08 | `@maestria/prime-agent` skills package | Supported | Advisory | 14 generated Agent Skills with required frontmatter; methodology is advisory, no native `rlm`/JSON-RPC claim, no sandbox claim. Verified by package/unit tests; live Prime E2E not tested |
+| E-PRIME-08, E-PRIME-09 | `@maestria/prime-agent` extension subset (mode commands, mode prompt injection, session-scoped mode state) | Supported | Advisory | Registered via `pi.registerCommand` / `pi.on("before_agent_start")` / session custom entries; advisory prompt/state behavior, no tool interception or security control |
+| E-PRIME-08 | `@maestria/prime-agent` skills package | Supported | Advisory | 14 generated Agent Skills with required frontmatter; advisory only, no native `rlm`/JSON-RPC or sandbox claim |
 
 ### Statuses and gates
 
-- **Reverified 2026-08-13** against upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; all E-PRIME-01..07 claims confirmed. On the same date the extension subset (E-PRIME-09..11) was verified against the same pinned commit: the public API supports the shipped subset (mode commands, `before_agent_start` systemPrompt chaining, session custom entries), the fork exposes no JS bridge for native `rlm` dispatch, and no runtime dependency on pi packages is needed or declared. Decision updated to `Native candidate` / Skills-first + verified extension subset; native `rlm` dispatch and JSON/RPC headless mode remain deferred. **Testing:** source inspection (E-PRIME-09..11), package/unit tests, and built-artifact smoke tests (mode commands, command behavior, mode prompt injection) pass; live Prime Agent E2E is not tested.
-- **Promotion to `Native`:** verify a stable, supported package API for an executable extension beyond the verified subset (native `rlm` dispatch / JSON-RPC would require a public JS bridge that does not exist in the pinned fork); verify the security model (not a sandbox, so restrict to trusted repositories and skills); the skills-first package plus the verified subset ships via the sync pipeline and `scripts/check-sync` passes. The package exists now; promotion still requires the gates above.
-- **Rollback:** revert the generated package and/or the extension subset; canonical content stays in core.
-- **Withdrawal:** if no stable executable-extension API exists beyond the verified subset, keep native dispatch deferred and downgrade or remove package-level claims.
-- **Re-promotion:** no automatic re-promotion; only after re-verification.
+- **Promotion to `Native`:** a stable supported API for an executable extension beyond the verified subset (native `rlm` dispatch / JSON-RPC needs a public JS bridge the pinned fork does not expose); a verified security model (not a sandbox, so trusted repositories and skills only); package plus subset ships via the sync pipeline with `scripts/check-sync` passing. The package exists; these gates are not yet met.
+- **Withdrawal:** if no stable executable-extension API exists beyond the verified subset, keep native dispatch deferred and downgrade or remove package-level claims; rollback and re-promotion follow ADR-CORE-014.
 
 ---
 
 ## Codex CLI
-
-**Support level:** Native. **Delivery:** Plugin + CLI-managed native agents/instructions. **Disposition:** shipped native CLI adapter. **Rationale:** the integration uses Codex's documented plugin, skills, custom-agent, `agent_type`, and global `AGENTS.md` surfaces, with CLI-managed installation and preservation of user-owned settings.
 
 ### Evidence (reviewed 2026-08-11)
 
@@ -135,12 +122,12 @@ The CLI adapters are management wrappers around host-native capabilities. They s
 | E-CODEX-CLI-02 | Codex CLI | Surface scope | Codex supports AGENTS.md, subagents, config files, skills, plugins, and hooks | unpinned - reverify before implementation | https://developers.openai.com/codex | 2026-08-11 | not tested |
 | E-CODEX-CLI-03 | Codex CLI | Hook trust | Non-managed command hooks must be reviewed and trusted before they run; Codex records trust against the hook's current hash; new or changed hooks are skipped until trusted | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
 | E-CODEX-CLI-04 | Codex CLI | Hook types | Only `type: "command"` hook handlers run today; `prompt` and `agent` handlers are parsed but skipped | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
-| E-CODEX-CLI-05 | Codex CLI | Managed hook policy | Managed hooks are trusted by managed policy: they run under the runtime's managed-hook policy rather than the per-hash trust review that non-managed command hooks require, so they are not `Trust-gated` like non-managed hooks | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
-| E-CODEX-CLI-06 | Codex CLI | Trust-bypass | A documented trust-bypass configuration exists that lets hooks run without the normal trust review. This trust-bypass configuration exists and is an explicit security exception, not an enforcement path | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
+| E-CODEX-CLI-05 | Codex CLI | Managed hook policy | Managed hooks are trusted by managed policy: they run under it rather than the per-hash trust review non-managed command hooks require, so they are not `Trust-gated` like non-managed hooks | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
+| E-CODEX-CLI-06 | Codex CLI | Trust-bypass | A documented trust-bypass configuration lets hooks run without the normal trust review; it is an explicit security exception, not an enforcement path | unpinned - reverify before implementation | https://developers.openai.com/codex/hooks | 2026-08-11 | not tested |
 
 ### Pinned re-verification (2026-08-13)
 
-The projection spike pins its implementation baseline to local `codex 0.145.0`. The corresponding upstream release tag is `rust-v0.145.0`, which resolves to commit `25af12f`.
+The projection baseline is local `codex 0.145.0` (`rust-v0.145.0`, commit `25af12f`).
 
 | Evidence ID | Runtime | Surface | Claim | Pinned | Source | Review date | Test status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -164,8 +151,8 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 
 | Evidence ID | Mechanism | Capability | Control | Note |
 | --- | --- | --- | --- | --- |
-| E-CODEX-CLI-10 | Non-managed plugin command hooks | Supported | Trust-gated | Plugin command hooks require managed status, a matching trusted hash, or an explicit bypass |
-| E-CODEX-CLI-10 | Managed hook policy and trust bypass | Available | Advisory | These are host controls and explicit exceptions, not Maestria enforcement paths |
+| E-CODEX-CLI-10 | Non-managed plugin command hooks | Supported | Trust-gated | Require managed status, a matching trusted hash, or an explicit bypass |
+| E-CODEX-CLI-10 | Managed hook policy and trust bypass | Available | Advisory | Host controls and explicit exceptions, not Maestria enforcement paths |
 | E-CODEX-CLI-09 | Hooks (prompt/agent types) | Unavailable | Unsupported | Parsed but skipped by the pinned source |
 | E-CODEX-CLI-08 | Plugin manifest and skills | Supported | Advisory | Skills are the bounded projection surface; they do not enforce delegation, role permissions, or review |
 | E-CODEX-CLI-12 | Native custom-agent TOMLs | Supported | Host-enforced where configured | Codex owns discovery, role selection, sandbox settings, and per-agent runtime configuration |
@@ -173,18 +160,13 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 
 ### Statuses and gates
 
-- **Version sensitivity gate:** the spike baseline is pinned to `codex 0.145.0` / `rust-v0.145.0` (`25af12f`). Reverify after CLI upgrades or material plugin/hook changes.
-- **Integration boundary:** keep the plugin manifest focused on skills. Native custom agents, model configuration, and the marked global `AGENTS.md` block belong to the companion CLI; do not add hooks or MCP without a separate decision and security review.
-- **Promotion to `Native`:** resolved for Codex CLI on 2026-08-26 after current docs/source re-verification, package tests, and full workspace checks. Reverify after material host changes.
-- **Rollback:** remove the companion native-agent and instruction management while leaving unrelated Codex configuration untouched.
-- **Withdrawal:** downgrade or remove claims; keep `Provisional`, `Deferred`, or `Withdrawn`.
-- **Re-promotion:** no automatic re-promotion; only after the version and evidence are re-verified.
+- **Version sensitivity gate:** baseline pinned to `codex 0.145.0` / `rust-v0.145.0` (`25af12f`). Reverify after CLI upgrades or material plugin/hook changes.
+- **Integration boundary:** keep the plugin manifest skills-focused. Native custom agents, model configuration, and the marked global `AGENTS.md` block belong to the companion CLI; do not add hooks or MCP without a separate decision and security review.
+- **Promotion to `Native`:** resolved 2026-08-26 after docs/source re-verification, package tests, and full workspace checks. Reverify after material host changes; rollback and re-promotion follow ADR-CORE-014.
 
 ---
 
 ## Codex desktop
-
-**Support level:** Deferred. **Delivery:** Common-subset projection. **Disposition:** no CLI parity. **Rationale:** common-subset projection only; no CLI parity claim.
 
 ### Evidence (reviewed 2026-08-11)
 
@@ -202,16 +184,11 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 ### Statuses and gates
 
 - **Deferred:** no implementation in the current batch.
-- **Promotion to `Native`:** separate from Codex CLI; first verify that a desktop extension surface exists. Only a common-subset projection is in scope, with no CLI parity claim.
-- **Rollback:** remove the common-subset projection.
-- **Withdrawal:** downgrade or remove parity-adjacent claims.
-- **Re-promotion:** no automatic re-promotion; only after the desktop surface is re-verified.
+- **Promotion to `Native`:** separate from Codex CLI; first verify that a desktop extension surface exists. Only a common-subset projection is in scope, with no CLI parity claim; rollback and re-promotion follow ADR-CORE-014.
 
 ---
 
 ## JCode
-
-**Support level:** Deferred. **Delivery:** Projection. **Disposition:** Deferred - projection/experiment only.
 
 ### Evidence (reviewed 2026-08-11)
 
@@ -233,15 +210,11 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 
 - **Deferred:** projection/experiment only; no native plugin claim.
 - **Promotion to `Native`:** requires a confirmed first-class package/extension distribution API.
-- **Rollback:** remove the projection.
-- **Withdrawal:** remove claims; keep `Deferred`.
-- **Re-promotion:** no automatic re-promotion; only after the API is confirmed.
+- **Rollback / withdrawal:** remove the projection and its claims; keep `Deferred`; re-promotion follows ADR-CORE-014.
 
 ---
 
 ## Crush
-
-**Support level:** Deferred. **Delivery:** Projection. **Disposition:** Deferred - projection/experiment only.
 
 ### Evidence (reviewed 2026-08-11)
 
@@ -266,9 +239,7 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 
 - **Deferred:** projection/experiment only; no native plugin claim.
 - **Promotion to `Native`:** requires a confirmed first-class distribution API and verified hooks.
-- **Rollback:** remove the projection.
-- **Withdrawal:** remove claims; keep `Deferred`.
-- **Re-promotion:** no automatic re-promotion; only after the API is confirmed.
+- **Rollback / withdrawal:** remove the projection and its claims; keep `Deferred`; re-promotion follows ADR-CORE-014.
 
 ---
 
@@ -276,17 +247,15 @@ The projection spike pins its implementation baseline to local `codex 0.145.0`. 
 
 ### Capability vs control summary
 
-- Control is runtime-specific and frequently narrower than vendor descriptions suggest. The two most important caveats:
-  - Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` on plugin subagents (`Ignored`).
-  - Codex runs only `type: "command"` hooks, and non-managed hooks are `Trust-gated`; `prompt`/`agent` handlers are `Unsupported`.
-- Prime Agent execution is `Not a sandbox`; Crush treats its config as `Not a sandbox` trusted code. Both restrict to trusted inputs.
+- Control is runtime-specific and frequently narrower than vendor descriptions suggest: Claude Code ignores `permissionMode`, `hooks`, and `mcpServers` on plugin subagents (`Ignored`); Codex runs only `type: "command"` hooks, with non-managed hooks `Trust-gated` and `prompt`/`agent` handlers `Unsupported`.
+- Prime Agent execution and Crush config are `Not a sandbox`; restrict both to trusted inputs.
 - Skills, MCP, plugin loading, subagents, and JSON/RPC are never labeled `Enforced` as security controls; `Enforced` is reserved for actual controls.
 
 ### Package and sync boundaries
 
-- Canonical methodology lives in `packages/core/agent-directives/`. Per-platform output is generated by the core sync pipeline (ADR-CORE-005).
-- CLI installation/version handlers (ADR-CORE-007) and model-config handlers are separate and are not part of this first batch.
-- Prime Agent must not reuse `@maestria/pi`: Prime Agent is a Pi-based harness, so shipping the Pi extension under a Prime Agent package would create a false or conflicting dependency claim and blur the package boundary.
+- Canonical methodology lives in `packages/core/agent-directives/`; per-platform output is generated by the core sync pipeline (ADR-CORE-005).
+- CLI installation/version handlers (ADR-CORE-007) and model-config handlers are separate and outside this batch.
+- Prime Agent must not reuse `@maestria/pi`: it is Pi-based, so shipping the Pi extension under a Prime Agent package would create a false or conflicting dependency claim and blur the package boundary.
 
 ### Promotion gates
 
@@ -299,37 +268,23 @@ A runtime moves from `Provisional`/`Deferred`/`Native candidate` to a shipped `N
 5. Desktop/local parity, where claimed, is verified; otherwise no parity claim is made.
 6. The runtime-specific `sync.config.ts` and package boundaries are defined and reviewed.
 
-### Per-runtime lifecycle rules
-
-See the per-runtime sections above. In all cases, withdrawal downgrades or removes a runtime's claims (support level, delivery, capability, and control), and there is no automatic re-promotion.
+Withdrawal downgrades or removes a runtime's claims (support level, delivery, capability, and control); there is no automatic re-promotion. Per-runtime rollback and re-promotion rules are in the lifecycle table in [ADR-CORE-014](adr/core/ADR-CORE-014-runtime-support-and-adapter-policy.md).
 
 ### Deprecation and reverification triggers
 
 - Any runtime whose official API changes such that the recorded shape or trust model is stale triggers reverification before further work.
-- Any finding that a mechanism marked enforced is actually advisory (or vice versa) triggers an update to this ledger and ADR-CORE-014.
+- A mechanism marked `Enforced` that is actually advisory (or vice versa) triggers an update to this ledger and ADR-CORE-014.
 - Version-sensitive claims are re-dated on each review; a claim older than the runtime's current documented state is not treated as current.
-- Upstream docs on `main`/`latest` are research-only. Reverify any material claim before implementation, promotion, or re-promotion, after upstream API or security changes, or within 30 days of the review date.
+- Upstream docs on `main`/`latest` are research-only. Reverify any material claim before implementation, promotion, or re-promotion, after upstream API or security changes, and within 30 days of the review date.
 
 ---
 
 ## Assumptions documented
 
-- `[inferred]` These docs define an internal decision boundary, not a production support guarantee.
-- `[inferred]` The user means Claude Code, Prime Agent, and Codex CLI as first implementation candidates; JCode and Crush remain bounded experiments.
-- `[inferred]` Codex desktop means the hosted ChatGPT/Codex desktop surface, not an IDE integration.
-- `[inferred]` Claude Code's promotion/landing is gated on the repaired docs passing blind review; the native-candidate implementation may already exist before promotion review.
-- `[verified]` Canonical content remains in `packages/core/agent-directives/` and projections follow ADR-CORE-005.
-- `[inferred]` Runtime behavior reflects source/docs reviewed on 2026-08-11 and must be reverified before implementation.
-- `[verified]` Prime Agent evidence (E-PRIME-01..07) was re-verified on 2026-08-13 against immutable upstream commit `7787f07415d843b9a800f6a4720e0c739bd608e5`; the extension subset (E-PRIME-09..11) was verified against the same commit. Decision: `Native candidate` / Skills-first + verified extension subset; native `rlm` dispatch and JSON/RPC headless mode remain deferred.
-
-## Statuses and gates (resolved open questions)
-
-Each previously unresolved question now has an explicit status or gate:
-
-- Claude Code: can the plugin-subagent field limitation be worked around while keeping the plugin distribution shape? **Gate:** keep plugin-subagent fields `Ignored` and do not rely on them; the workaround (project/user agent files) is a promotion-gate item, not an open question.
-- Prime Agent: is there a stable supported API for an executable extension beyond skills-first delivery? **Status:** a verified subset ships (mode commands, mode prompt injection, session-scoped mode state - E-PRIME-09). **Gate:** native `rlm` dispatch stays deferred - the pinned fork exposes no public JS extension bridge (E-PRIME-10); promotion to `Native` requires it.
-- Codex CLI: which exact CLI version introduced the trust-gated hook flow and plugin support? **Resolved:** Codex CLI `0.145.0` and current upstream source were reverified on 2026-08-26; reverify after material host upgrades.
-- JCode and Crush: is there a first-class package/extension distribution API, or is projection the only supported path? **Status:** `Deferred` - projection/experiment only, until a first-class API is confirmed.
+- `[inferred]` This ledger defines an internal decision boundary, not a production support guarantee.
+- `[inferred]` Claude Code, Prime Agent, and Codex CLI are the first implementation candidates; JCode and Crush remain bounded experiments.
+- `[verified]` Canonical content remains in `packages/core/agent-directives/`, and projections follow ADR-CORE-005.
+- `[inferred]` Runtime behavior reflects the per-record review dates (mostly 2026-08-11) and must be reverified before implementation.
 
 ## Sources
 
@@ -353,7 +308,7 @@ Each previously unresolved question now has an explicit status or gate:
 | E-JCODE-02 | JCode | https://jcode.sh/sdk | 2026-08-11 | not tested |
 | E-CRUSH-01, E-CRUSH-02, E-CRUSH-03, E-CRUSH-04, E-CRUSH-05 | Crush | https://github.com/charmbracelet/crush | 2026-08-11 | not tested |
 
-Upstream sources above are research-only (`unpinned - reverify before implementation`) and must be reverified before implementation, promotion, or re-promotion. E-CLAUDE-08 and E-PRIME-08 are local working-tree package snapshots (`Working-tree package snapshot; verify at landing`), not upstream research sources.
+Upstream sources above are research-only (`unpinned - reverify before implementation`); E-CLAUDE-08 and E-PRIME-08 are local working-tree package snapshots (`Working-tree package snapshot; verify at landing`), not upstream research sources. Reverify material claims before implementation, promotion, or re-promotion.
 
 ## Related
 
