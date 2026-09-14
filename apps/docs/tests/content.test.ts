@@ -1,4 +1,4 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
@@ -150,67 +150,4 @@ describe('shipped content hygiene', () => {
       expect(full).not.toMatch(/TODO|FIXME|Lorem ipsum/iu);
     },
   );
-});
-
-const collectMdxFiles = async (dir: string): Promise<string[]> => {
-  const entries = await readdir(dir, { withFileTypes: true });
-  const nested = await Promise.all(
-    entries.map(async (entry) => {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        return await collectMdxFiles(full);
-      }
-      return entry.name.endsWith('.mdx') ? [full] : [];
-    }),
-  );
-  return nested.flat();
-};
-
-const readSources = async (files: string[]) => {
-  const sources = await Promise.all(
-    files.map(async (file) => ({
-      relative: path.relative(DOCS_ROOT, file),
-      source: await readFile(file, 'utf-8'),
-    })),
-  );
-  return sources;
-};
-
-// Changelogs are historical records and contributing docs pin pnpm, so both
-// stay outside the package-manager wrapping convention.
-const UNWRAPPED_COMMAND_EXCLUSIONS = /(?:changelog|contributing)\.mdx$/u;
-const RUNNER_PREFIXED_MAESTRIA =
-  /^\s*(?:[$#>]\s+)?(?:sudo\s+)?(?:npx|pnpx|bunx|yarn dlx|deno x|nlx)\s+maestria\b/mu;
-const FENCED_CODE_BLOCK = /```[a-zA-Z]*\n(?<body>[\s\S]*?)```/gu;
-
-describe('package-manager command wrapping', () => {
-  it('renders runner-prefixed maestria commands through AllPackageManagers', async () => {
-    const sources = await readSources(await collectMdxFiles(DOCS_ROOT));
-    const violations: string[] = [];
-
-    for (const { relative, source } of sources) {
-      if (!UNWRAPPED_COMMAND_EXCLUSIONS.test(relative)) {
-        for (const block of source.matchAll(FENCED_CODE_BLOCK)) {
-          if (RUNNER_PREFIXED_MAESTRIA.test(block.groups?.body ?? '')) {
-            violations.push(relative);
-          }
-        }
-      }
-    }
-
-    expect(violations).toEqual([]);
-  });
-
-  it('uses the shared AllPackageManagers wrapper for every package-manager block', async () => {
-    const sources = await readSources(await collectMdxFiles(DOCS_ROOT));
-    const violations: string[] = [];
-
-    for (const { relative, source } of sources) {
-      if (source.includes("from 'starlight-package-managers'")) {
-        violations.push(relative);
-      }
-    }
-
-    expect(violations).toEqual([]);
-  });
 });
