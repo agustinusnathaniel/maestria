@@ -7,57 +7,17 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 ## Package Boundary
 
-Pi and Oh My Pi share the same architecture. Each package has a runtime extension and generated agent and skill resources:
-
-```text
-packages/pi/ or packages/omp/
-├── agents/        generated specialist agent files
-├── skills/        generated shared skills
-├── src/           runtime extension, modes, state, tools, and dispatch
-├── scripts/       package validation helpers
-├── tests/
-├── sync.config.ts
-├── INSTALL.md
-└── README.md
-```
-
-The extensions own lifecycle hooks, mode state, compaction handling, command registration, platform deployment, and subagent dispatch. The prompts and global rules remain in packages/core/agent-directives/.
+Pi and Oh My Pi share the same architecture: each package pairs a runtime extension with generated agent and skill resources. The extensions own lifecycle hooks, mode state, compaction, commands, deployment, and subagent dispatch; prompts and global rules remain in `packages/core/agent-directives/`. Keep runtime changes in each package's `src/`; do not assume the two runtimes behave interchangeably.
 
 ## Change Shared Methodology
 
-Edit the canonical source, never generated files under agents/ or skills/. Regenerate and verify both packages:
+Edit the canonical source, never generated files under `agents/` or `skills/`, then regenerate:
 
 ```bash
 scripts/sync-all
-pnpm --filter @maestria/pi validate
-pnpm --filter @maestria/omp validate
-pnpm --filter @maestria/pi test
-pnpm --filter @maestria/omp test
 ```
 
-The platform transforms are intentionally small:
-
-| Concern          | Pi                                 | Oh My Pi                     |
-| ---------------- | ---------------------------------- | ---------------------------- |
-| Agent references | @agent becomes /agent              | @agent becomes the bare name |
-| Dispatch         | task() becomes maestria_subagent() | Native task() remains        |
-
-Platform-only skills may stay in the package's skills directory. Give every new skill valid name and description frontmatter, then run the package skill validator.
-
-## Change Extension Code
-
-Keep runtime changes in the relevant package's src/ directory. The main boundaries are:
-
-| Area                 | Responsibility                                     |
-| -------------------- | -------------------------------------------------- |
-| extension            | Register the extension and lifecycle hooks         |
-| agents               | Deploy generated specialists                       |
-| modes and rules      | Activate modes and inject mode guidance            |
-| state and compaction | Preserve session state across turns and compaction |
-| subagent and tools   | Dispatch work and apply tool interception          |
-| commands             | Register slash commands                            |
-
-Pi dispatches through maestria_subagent. Oh My Pi uses its native task() tool. Do not assume their runtime behavior is interchangeable.
+Platform transforms stay small: Pi rewrites `@agent` to `/agent`; OMP keeps the bare agent name and native `task()`. Platform-only skills need valid frontmatter and must pass the package skill validator.
 
 ## Validate
 

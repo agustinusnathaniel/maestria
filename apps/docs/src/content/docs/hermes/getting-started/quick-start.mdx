@@ -5,7 +5,7 @@ description: Use @maestria/hermes for a full pipeline, a research route, or a bo
 
 import { Aside } from '@astrojs/starlight/components';
 
-After installation, Hermes loads the Maestria skills, commands, and hooks at startup. The default mode is fein, which describes the full pipeline.
+After installation, Hermes loads the plugin's skills, commands, and hooks at startup. The default mode is fein.
 
 <Aside type="caution" title="Reserve full mode for staged work">
   Use /blitz for a small read-only task. Use the default full mode when specialist handoffs and
@@ -14,7 +14,7 @@ After installation, Hermes loads the Maestria skills, commands, and hooks at sta
 
 ## Start a Session
 
-Launch Hermes in the project you want to work on. The plugin does not probe for external tools at startup.
+Launch Hermes in the project you want to work on.
 
 ## Choose a Route
 
@@ -27,7 +27,7 @@ Launch Hermes in the project you want to work on. The plugin does not probe for 
 | /plan | Activate fein | Full pipeline; dedicated planning behavior is not yet implemented |
 | /mode or /mode-clear | Show or clear the mode | Inspecting state or returning to neutral routing |
 
-The mode directive is added to each message. A mode command changes the mode for all sessions that share the same HERMES_HOME; use /mode-clear when that persistence is not wanted.
+A mode command applies to all sessions that share the same `HERMES_HOME`; use /mode-clear to stop that persistence.
 
 ## Try a Task
 
@@ -47,18 +47,11 @@ Explain what the add function in src/math.ts does.
 
 ## Understand the Boundary
 
-Maestria specialist names are routing roles, not permission identities on Hermes.
-
-- A trusted top-level session performs direct code changes.
-- Delegated children receive a fixed read, research, and LLM-only policy.
-- The policy does not allow children to write files, execute code, run a shell, delegate, or invoke OpenCode.
-- Review and landing remain advisory because Hermes has no native review-state gate.
-
-The [Hermes installation guide](/hermes/getting-started/installation/) lists the hooks, commands, and trust surfaces added by the plugin. The [commands reference](/hermes/commands/) documents each command's behavior.
+Maestria specialist names are routing roles, not permission identities. A trusted top-level session performs direct code changes; delegated children receive a fixed read, research, and LLM-only policy (no writes, code execution, shell, delegation, or OpenCode). Review and landing remain advisory because Hermes has no native review-state gate.
 
 ## Long-Running Work
 
-Use Hermes's /goal feature when the objective must survive session boundaries. Mnemosyne and Uteke are optional Hermes features; Maestria does not require a memory provider.
+Use Hermes's /goal feature when the objective must survive session boundaries. Maestria does not require a memory provider.
 
 ## Next Steps
 

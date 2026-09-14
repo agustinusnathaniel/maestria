@@ -6,29 +6,23 @@ Accepted - Updated (2026-06-24)
 
 ## Context
 
-The monorepo has 3 plugin packages, each maintaining independent copies of agent directive files (7 specialist prompts, orchestrator instructions, and global rules):
+The monorepo had 3 plugin packages, each maintaining independent copies of agent directive files (specialist prompts, orchestrator instructions, and global rules): `@maestria/opencode` kept agents as manual copies, `@maestria/pi` used a fragile one-way shell script, and `@maestria/kimi-code` had no sync mechanism.
 
-| Package               | Agent files location                   | Sync mechanism               |
-| --------------------- | -------------------------------------- | ---------------------------- |
-| `@maestria/opencode`  | `packages/opencode/agents/*.md`        | Manual (no tooling)          |
-| `@maestria/pi`        | `packages/pi/agents/*.md`              | Fragile one-way shell script |
-| `@maestria/kimi-code` | `packages/kimi-code/skills/*/SKILL.md` | None                         |
-
-~80%+ of the content is identical across all three (specialist methodologies, cross-cutting rules, skill prescriptions). The remaining differences are mechanical and formulaic:
+~80%+ of the content was identical across all three (specialist methodologies, cross-cutting rules, skill prescriptions). The remaining differences were mechanical and formulaic:
 
 - **Tool name capitalization** - `task()` (opencode) vs `maestria_subagent()` (pi) vs `Agent()` (kimi-code)
 - **Role prefixes** - `@` (opencode) vs `/` (pi) vs bare name (kimi-code)
-- **Delegation API** - `task()` (opencode) vs `maestria_subagent()` (pi) vs inline `AgentSwarm` (kimi-code)
+- **Delegation API** - `task()` vs `maestria_subagent()` vs inline `AgentSwarm`
 - **Frontmatter format** - YAML frontmatter (opencode, pi) vs SKILL.md frontmatter (kimi-code)
-- **File structure** - directory flat files (opencode, pi) vs subdirectory `SKILL.md` (kimi-code)
+- **File structure** - flat files (opencode, pi) vs subdirectory `SKILL.md` (kimi-code)
 
-Each plugin independently drifts when content changes. A methodology update to one specialist must be ported to 3 files across 3 packages - and because the differences are subtle, the porting is error-prone. Pi has a fragile one-way shell script (`tools/sync-opencode-agents.sh`) that was a first attempt but duplicates pipeline logic. Kimi-code has no sync mechanism at all.
+Each plugin drifted independently when content changed: a methodology update to one specialist had to be ported to 3 files across 3 packages, and the subtle differences made porting error-prone.
 
 ADR-KC-001's "Future Considerations" section deferred core extraction until 3+ platforms existed:
 
 > When we support 3+ platforms (OpenCode, Kimi Code, and one more such as Cursor or Copilot), we should consider extracting a `packages/core/` that defines a canonical agent schema and platform adapters.
 
-That milestone is reached. The third platform (pi) is in production, and the team now has enough cross-platform experience to design a shared abstraction.
+That milestone is reached: pi is in production, and the team has enough cross-platform experience to design a shared abstraction.
 
 ## Decision
 
@@ -36,22 +30,7 @@ Create a canonical content source at `packages/core/agent-directives/` and a con
 
 ### 1. Core Content: `packages/core/agent-directives/`
 
-Pure Markdown content, no platform-specific syntax, no frontmatter, no tool names:
-
-```
-packages/core/agent-directives/
-├── README.md              # Content ownership and editing guide
-├── rules.md               # Cross-cutting rules (orchestration, delegation, commit policy, pipeline patterns)
-└── specialists/
-    ├── adventurer.md       # Read-only codebase reconnaissance
-    ├── architect.md        # Architecture decisions, trade-off analysis
-    ├── builder.md          # Focused implementation
-    ├── diagnose.md         # Systematic bug tracing
-    ├── orchestrator.md     # Manager agent (dispatcher, router)
-    ├── planner.md          # Multi-phase planning
-    ├── reviewer.md         # Code review with quality gates
-    └── writer.md           # Documentation following structured patterns
-```
+Pure Markdown content, no platform-specific syntax, no frontmatter, no tool names: a single `rules.md` plus one flat file per specialist and `orchestrator.md`, with a README as the content ownership and editing guide.
 
 Content rules:
 
@@ -61,27 +40,11 @@ Content rules:
 - **Section structure preserved** - Updated 2026-08-22: `!!!` markers, iteration limits, handoff contracts, and rules bullets remain unchanged; skill buckets were replaced by compact per-specialist Skills sections listing only verified skills (see ADR-CORE-019)
 - **File naming** - snake-case `.md`, one file per specialist (flat, no subdirectories)
 - **Rules as a single file** - rules were consolidated into one `rules.md` instead of separate files per topic, since the rules are short and rarely edited independently
-- **Orchestrator lives here** - the orchestrator prompt is in `specialists/orchestrator.md`, alongside the 7 specialist prompts, sharing the same sync pipeline. It was originally excluded (see Post-Implementation Evolution).
+- **Orchestrator lives here** - the orchestrator prompt shares the same sync pipeline as the specialist prompts; it was originally excluded (see Post-Implementation Evolution)
 
 ### 2. Sync Tool: `packages/core/scripts/sync.ts`
 
-A single TypeScript script (not a separate package) run via a root-pinned `tsx` runner (see [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md)). It lives at `packages/core/scripts/sync.ts` (159 lines) backed by 10 library modules (line counts as of 2026-09-11):
-
-| Module | Lines | Purpose |
-| --- | --- | --- |
-| `scripts/sync.ts` | 159 | CLI entry - arg parsing, help, main loop |
-| `scripts/lib/agent-directive-sync.ts` | 206 | Shared Pi/OMP directive mapping - one 14-file table parameterized by command prefix and agent family; consumed by thin `packages/pi/sync.config.ts` and `packages/omp/sync.config.ts` wrappers (ADR-CORE-025) |
-| `scripts/lib/anchors.ts` | 156 | Anchor liveness validation - replays the resolved plan's replace ops to fail a run on a dead anchor (ADR-CORE-024) |
-| `scripts/lib/config.ts` | 175 | Config types (`SyncConfig`, `FileConfig`), loading, merging default + per-file config |
-| `scripts/lib/diff.ts` | 16 | Unified diff wrapper (via `diff` package) |
-| `scripts/lib/file.ts` | 115 | File I/O (directory walk, atomic write, auto-clean stale outputs) |
-| `scripts/lib/plan.ts` | 83 | Resolution plan - one ordered primary-then-secondary file list shared by anchor validation and processing, with missing-entry validation (ADR-CORE-025) |
-| `scripts/lib/process-file.ts` | 254 | Transform pipeline - reads a source file, applies transforms in order, dispatches to write/check/diff mode |
-| `scripts/lib/skill-validator.ts` | 90 | Shared skill frontmatter and layout validation for Pi and OMP |
-| `scripts/lib/sync.ts` | 115 | Orchestration - walks source dirs, resolves the plan, validates anchors, dispatches to `processFile`, auto-cleans |
-| `scripts/lib/transforms.ts` | 57 | Content transform functions (strip frontmatter, find/replace, YAML serialization, line endings) |
-
-It is not published to npm. It runs inside the monorepo via the root-pinned `tsx` runner (ADR-CORE-016). This avoided adding a separate publish-and-consume cycle for a tool that only ever runs inside this repo.
+A single TypeScript script (not a separate package) run via a root-pinned `tsx` runner (see [ADR-CORE-016](ADR-CORE-016-root-resolved-sync-tooling.md)), backed by library modules for config loading and merging, resolution planning, the transform pipeline, anchor liveness validation (ADR-CORE-024), skill validation, diffing, and file I/O (atomic writes, stale-output cleanup). It is not published to npm; it only runs inside this monorepo, avoiding a publish-and-consume cycle.
 
 **CLI flags** (not subcommands):
 
@@ -97,279 +60,120 @@ It is not published to npm. It runs inside the monorepo via the root-pinned `tsx
 
 Exit codes: 0 (ok), 1 (check failed), 2 (configuration error).
 
-> Corrected 2026-09-11: `--diff` now also prints under `--dry-run` (it was silently skipped there) and labels the canonical source as the old path and the generated output as the new path. Configuration handling is fail closed: a missing `source` directory throws `ConfigError` before any file work, and `resolveSyncPlan` throws one `ConfigError` listing every configured file entry absent from both source locations, before anchor validation or processing. Both exit 2. See [ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
+> Corrected 2026-09-11: `--diff` now also prints under `--dry-run` (it was silently skipped there) and labels the canonical source as the old path and the generated output as the new path. Configuration handling is fail closed: a missing `source` directory and configured file entries absent from both source locations throw `ConfigError` (exit 2) before any file work or anchor validation. See [ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
 
-**Transform pipeline** (per file):
+**Transform pipeline** (per file): strip frontmatter (if configured) → string-based find/replace → strip existing source comment (idempotency) → prepend content → append content → serialize frontmatter + auto-generated header → normalize line endings → write/check/diff/dry-run.
 
-```
-source file
-  → strip frontmatter (if configured)
-  → find/replace (string-based from/to pairs)
-  → strip existing source comment (idempotency)
-  → prepend content
-  → append content
-  → serialize frontmatter + auto-generated header
-  → normalize line endings
-  → write / check / diff / dry-run
-```
-
-Every generated file starts with an auto-generated comment:
-
-```html
-<!-- Auto-generated from @maestria/core. Do not edit directly.
-     Edit the canonical file at packages/core/agent-directives/ instead. -->
-```
+Every generated file starts with an auto-generated comment noting it is generated from `@maestria/core` and that the canonical file should be edited instead.
 
 ### 3. Plugin Config: `sync.config.ts`
 
-Each plugin declares a TypeScript config file at its package root, typed via `satisfies SyncConfig` for compile-time validation:
+Each plugin declares a TypeScript config file at its package root, typed via `satisfies SyncConfig` for compile-time validation. Config shape (key differences from the design phase):
 
-```typescript
-// packages/opencode/sync.config.ts
-import type { SyncConfig } from '../core/scripts/lib/config.js';
-
-export default {
-  source: '../core/agent-directives/specialists',
-  output: 'agents',
-
-  files: {
-    'adventurer.md': {
-      frontmatter: { description: '...', mode: 'subagent', permission: { ... } },
-    },
-    'architect.md': { frontmatter: { ... } },
-    // ... one entry per specialist (including orchestrator.md)
-    'rules.md': {
-      output: '../rules/AGENTS.md',
-    },
-  },
-} satisfies SyncConfig;
-```
-
-```typescript
-// packages/kimi-code/sync.config.ts
-import type { SyncConfig } from '../core/scripts/lib/config.js';
-
-export default {
-  source: '../core/agent-directives/specialists',
-  output: 'skills',
-
-  default: {
-    replace: [
-      { from: '@adventurer', to: 'adventurer' },
-      { from: '@architect', to: 'architect' },
-      { from: '@builder', to: 'builder' },
-      { from: '@diagnose', to: 'diagnose' },
-      { from: '@planner', to: 'planner' },
-      { from: '@reviewer', to: 'reviewer' },
-      { from: '@writer', to: 'writer' },
-      { from: 'run in parallel', to: 'run in parallel via `AgentSwarm`' },
-    ],
-  },
-
-  files: {
-    'adventurer.md': {
-      output: 'adventurer/SKILL.md',
-      prepend: '**Subagent profile:** `explore` - ...\n\n',
-      frontmatter: { name: 'adventurer', type: 'prompt', ... },
-    },
-    'rules.md': {
-      output: '../SYSTEM.md',
-      // Custom content: kimi-code adds its built-in-agent delegation guard
-      replace: [ ... ],
-    },
-  },
-} satisfies SyncConfig;
-```
-
-> Corrected 2026-09-10: the original example listed `task(` -> `Agent(`, `webfetch` -> `FetchURL`, and a `rules/AGENTS.md` output. Those replace ops no longer exist in the config: canonical content carries no host tool names, and Kimi's profile text and routing appendix supply `Agent`/`AgentSwarm` and `FetchURL` directly. The rules projection now outputs to `SYSTEM.md`.
-
-Config shape (key differences from the design phase):
-
-- **`replace` is string-based, not regex** - uses `content.split(from).join(to)` instead of regex. Simpler to write and review. Regex wasn't needed in practice.
-- **Per-file config** - each source file gets its own config block for `output`, `frontmatter`, `prepend`, `append`, `replace`, and `stripFrontmatter`. A `default` block provides shared values.
+- **`replace` is string-based, not regex** - uses `content.split(from).join(to)` instead of regex. Simpler to write and review; regex wasn't needed in practice.
+- **Per-file config** - each source file gets its own block for `output`, `frontmatter`, `prepend`, `append`, `replace`, and `stripFrontmatter`; a `default` block provides shared values.
 - **`output` overrides** - can redirect output to a different path or filename (e.g. `rules.md` → `rules/AGENTS.md`, `adventurer.md` → `adventurer/SKILL.md`).
 - **YAML quoting** - uses the `yaml` library's default (quotes only when structurally necessary), not explicit double-quoting.
-- **`frontmatter` is a static object or string** - no function-based dynamic frontmatter generation. Each plugin defines frontmatter inline per file.
+- **`frontmatter` is a static object or string** - no function-based dynamic frontmatter generation; each plugin defines frontmatter inline per file.
 
-The sync tool has zero knowledge of plugins. It reads the config, applies transforms, and writes output. Plugins own their derivation.
+The sync tool has zero knowledge of plugins: it reads the config, applies transforms, and writes output; plugins own their derivation.
+
+> Corrected 2026-09-10: the original config example's replace ops (`task(` → `Agent(`, `webfetch` → `FetchURL`, and a `rules/AGENTS.md` output) no longer exist: canonical content carries no host tool names, and Kimi's profile text and routing appendix supply `Agent`/`AgentSwarm` and `FetchURL` directly. The rules projection now outputs to `SYSTEM.md`.
 
 ### 4. Root Orchestration Scripts
 
-Plugin discovery uses a bash glob over `packages/*/sync.config.ts`, running the tool once per package:
-
-```bash
-#!/usr/bin/env bash
-# scripts/sync-all
-for config in "$ROOT"/packages/*/sync.config.ts; do
-  [ -f "$config" ] || continue
-  PKG_DIR="$(dirname "$config")"
-  (cd "$PKG_DIR" && pnpm exec tsx "$ROOT/packages/core/scripts/sync.ts" --verbose)
-done
-```
-
-A companion `scripts/check-sync` runs `--check` instead of write, used in CI:
-
-```json
-// vite.config.ts (check-sync runs as part of "vp check")
-tasks: {
-  'check-sync': {
-    command: 'bash scripts/check-sync',
-    cache: true,
-  },
-}
-```
-
-Generated directories are excluded from `vp fmt` via `fmt.ignorePatterns`:
-
-```typescript
-// vite.config.ts
-fmt: {
-  ignorePatterns: [
-    'packages/*/agents/**',
-    'packages/*/commands/**',
-    'packages/*/prompts/**',
-    'packages/*/rules/**',
-    'packages/**/skills/**',
-    'packages/*/SYSTEM.md',
-  ],
-},
-```
+`scripts/sync-all` iterates over each `packages/*/sync.config.ts` via a bash glob and runs the tool once per package; `scripts/check-sync` runs the same tool in `--check` mode and is used in CI as part of `vp check`. Generated directories (`agents/`, `commands/`, `prompts/`, `rules/`, `skills/`, `SYSTEM.md`) are excluded from `vp fmt` via `fmt.ignorePatterns`, so formatting the canonical source cannot collide with generated output.
 
 ## Consequences
 
 ### Positive
 
-- **Drift eliminated** - content is authored once in `core/agent-directives/`, derived per plugin. No manual porting.
+- **Drift eliminated** - content is authored once in `core/agent-directives/` and derived per plugin; no manual porting.
 - **4th plugin = one config file** - adding a Cursor or Copilot variant requires only a new `sync.config.ts` and zero pipeline code changes.
-- **Declarative transforms** - `replace` rules (string `from`/`to` pairs) are explicit, diff-friendly, and reviewable. A PR to add a transform is self-documenting.
-- **Core stays pure content** - no platform logic, no TypeScript, no frontmatter. Plugin owners own their derivation.
-- **CI guard is trivial** - `scripts/check-sync` exits non-zero if output drifts. Runs as part of `vp check`.
-- **Type-safe config** - `satisfies SyncConfig` catches typos and missing fields without needing runtime validation.
-- **Run dependency-free** - the tool is a TypeScript script inside `@maestria/core`, not a published package. No publish cycle needed to update the pipeline.
-- **Format/sync cycle resolved** - `fmt.ignorePatterns` excludes generated directories from `vp fmt`, so formatting the canonical source does not collide with generated output.
-- **Better DX than the original design** - the CLI uses flags (`--check`, `--diff`, `--dry-run`) instead of positional subcommands, which maps directly to how the tool is used.
-- **Migration is additive** - existing plugin agent files remain until `sync.config.ts` is ready. Rollout can be per-plugin.
+- **Declarative transforms** - explicit string `from`/`to` pairs are diff-friendly and reviewable.
+- **Core stays pure content** - no platform logic, no TypeScript, no frontmatter; plugin owners own their derivation.
+- **CI guard is trivial** - `scripts/check-sync` exits non-zero if output drifts and runs as part of `vp check`.
+- **Type-safe config** - `satisfies SyncConfig` catches typos and missing fields without runtime validation.
+- **Run dependency-free** - the tool is a TypeScript script inside `@maestria/core`, not a published package; no publish cycle is needed to update the pipeline.
+- **Format/sync cycle resolved** - `fmt.ignorePatterns` excludes generated directories, breaking the circular dependency between formatting and sync.
+- **Better DX than the original design** - the CLI uses flags (`--check`, `--diff`, `--dry-run`) instead of positional subcommands, matching how the tool is used.
+- **Migration is additive** - existing plugin agent files remain until `sync.config.ts` is ready; rollout can be per-plugin.
 
 ### Negative
 
-- **Generated artifacts** - existing plugin agent files become generated files. Developers must learn to edit `core/agent-directives/`, not the generated copies. Mitigation: auto-generated comment on every file, README in core dir, and CI check that fails writes.
-- **Sync tax** - changes to core content must be followed by `scripts/sync-all` before they appear in any plugin. Mitigation: `check-sync` in CI (runs via `vp check`), and developers run `vp check` before pushing.
-- **Migration effort** - extracting content from 3 plugins into the canonical core format required careful diffing to preserve platform-specific patches that aren't captured by transforms.
-- **Reconfiguring a plugin requires finding its config** - transforms live in each plugin's `sync.config.ts`, not in core. This is intentional (plugin owns its derivation) but adds a hop. Mitigation: per-plugin configs are short and tooling (grep, glob) makes finding them fast.
+- **Generated artifacts** - existing plugin agent files become generated. Developers must edit `core/agent-directives/`, not the generated copies. Mitigation: an auto-generated comment on every file, a core README, and a CI check that fails writes.
+- **Sync tax** - changes to core content must be followed by `scripts/sync-all` before they appear in any plugin. Mitigation: `check-sync` in CI (via `vp check`) and developers running `vp check` before pushing.
+- **Migration effort** - extracting content from 3 plugins required careful diffing to preserve platform-specific patches that transforms do not capture.
+- **Reconfiguring a plugin requires finding its config** - transforms live in each plugin's `sync.config.ts`, not in core. Intentional (the plugin owns its derivation), but adds a hop; per-plugin configs are short and easy to find.
 
 ## Alternatives Considered
 
 ### Option A: Markdown Source + Per-Plugin Bash Scripts
 
-Each plugin has a `sync.sh` that uses `sed`/`awk` to transform content. No shared tool.
-
-Rejected because: pipeline logic is duplicated N times, error handling is inconsistent, `sed` portability issues between macOS and Linux, no `--check` or `--diff` mode without reimplementing it in every script. Pi's existing shell script is the evidence - it works but is fragile and not extensible.
+Each plugin has a `sync.sh` using `sed`/`awk`. Rejected because: pipeline logic is duplicated N times, error handling is inconsistent, `sed` portability differs between macOS and Linux, and `--check`/`--diff` would have to be reimplemented per script. Pi's existing shell script was the evidence.
 
 ### Option B: Typed NPM Package Exporting Agent Content
 
-`packages/core/` exports agent content as TypeScript objects with typed transforms. Each plugin imports the content and runs it through platform-specific renderers.
-
-Rejected because: content owners must edit TypeScript instead of Markdown. PRs to change a specialist's methodology would be TypeScript diffs - harder to review, harder for non-TypeScript contributors. The content is prose, not code; Markdown is the right format for prose.
+`packages/core/` exports agent content as TypeScript objects with typed transforms. Rejected because: content owners must edit TypeScript instead of Markdown, making methodology PRs harder to review for non-TypeScript contributors. The content is prose; Markdown is the right format.
 
 ### Option C: Template Engine with Placeholders
 
-Core content uses Handlebars/EJS-style `{{toolName}}` placeholders. Each plugin provides a context object that fills them in.
-
-Rejected because: templates with conditionals (`{{#if kimi_code}}`) handle structural differences poorly - you end up with templates that are harder to read than the raw content. The chosen hybrid approach (pure Markdown + declarative string replace) keeps the source readable while handling 90%+ of differences through simple transforms.
+Core content uses Handlebars/EJS-style `{{toolName}}` placeholders filled by a per-plugin context object. Rejected because: conditional templates (`{{#if kimi_code}}`) handle structural differences poorly and end up harder to read than the raw content. The chosen hybrid (pure Markdown + declarative string replace) keeps the source readable while handling 90%+ of differences through simple transforms.
 
 ### Option D: Monorepo Symlinks
 
-Each plugin `agents/` directory contains symlinks to `core/agent-directives/`. No sync tool needed.
-
-Rejected because: symlinks don't apply transforms. The files would still need platform-specific frontmatter, renaming, and tool names. Symlinks also break on Windows and confuse editor tooling.
+Each plugin's `agents/` directory symlinks to core. Rejected because: symlinks don't apply transforms, and the files would still need platform-specific frontmatter, renaming, and tool names. Symlinks also break on Windows and confuse editor tooling.
 
 ## Post-Implementation Evolution
 
-Several details diverged from the original design during implementation. This section documents what changed and why.
+Several details diverged from the original design during implementation.
 
 ### Package Structure: Script, Not Package
 
-**Designed:** `packages/core-sync/` as a separate npm-publishable CLI tool (`core-sync`).
-
-**Built:** `packages/core/scripts/sync.ts` - a single TypeScript script inside the existing `@maestria/core` package, run via the root-pinned `tsx` runner (ADR-CORE-016).
-
-**Why:** The tool only ever runs inside this monorepo. Publishing it as a standalone package added a publish-consume cycle (version bumps, changesets, CI) for zero benefit. Running it via `tsx` inside `@maestria/core` keeps the pipeline co-located with the content it processes. If a future consumer outside this repo needs it, extracting it into a package is straightforward - the library modules (`lib/config.ts`, `lib/sync.ts`, etc.) already have clean interfaces.
+**Designed:** a separate npm-publishable CLI tool (`core-sync`). **Built:** a TypeScript script inside `@maestria/core` run via the root-pinned `tsx` runner (ADR-CORE-016). **Why:** the tool only runs in this monorepo; publishing it standalone added a publish-consume cycle for zero benefit, and extraction later stays easy because the library modules have clean interfaces.
 
 ### Orchestrator Moved to Core
 
-**Designed:** Orchestrator files remain in each plugin (excluded from sync). The ADR said: "They are platform integration points - sharing them would introduce platform coupling."
-
-**Built:** `specialists/orchestrator.md` lives in `packages/core/agent-directives/` alongside the 7 specialists, synced via the same pipeline.
-
-**Why:** The orchestrator prompt turned out to be ~90% shared methodology (commit protocol, delegation patterns, role-based pipeline, human-in-the-loop rules) and only ~10% platform-specific (tool names, delegation API syntax). The shared methodology was already duplicated across 3 plugins. Moving it to core eliminated that duplication and let the sync pipeline handle the platform-specific parts (same `replace` rules as specialists). The `preserve` config option still exists for any truly plugin-local content that should never be synced.
+**Designed:** orchestrator files remain per-plugin (excluded from sync) as platform integration points. **Built:** `orchestrator.md` syncs from core alongside the specialists. **Why:** the prompt was ~90% shared methodology (commit protocol, delegation patterns, role-based pipeline, human-in-the-loop rules) and only ~10% platform-specific, and the shared part was already duplicated across 3 plugins. The `preserve` config option still exists for truly plugin-local content.
 
 ### Rules Consolidated to a Single File
 
-**Designed:** `rules/` subdirectory with `context-management.md`, `commit-policy.md`, `pipeline-patterns.md`.
-
-**Built:** A single `rules.md` file at the root of `agent-directives/`.
-
-**Why:** The rules are short (72 lines total) and rarely edited independently. Splitting them into 3 files added file-management overhead with no practical benefit. A single file is easier to read, edit, and sync. Earlier drafts referenced a `rules/` directory; the current agent-directives README documents the single `rules.md` file.
+**Designed:** a `rules/` subdirectory with separate topic files. **Built:** one `rules.md` at the root of `agent-directives/`. **Why:** the rules are short and rarely edited independently; splitting them added file-management overhead with no practical benefit.
 
 ### Config Format: Static, per-File, String-Based
 
-**Designed:** Config with `transforms` arrays using regex `find`/`replace` objects and a function-based `extension` parameter.
-
-**Built:** Per-file config with static `frontmatter` objects, string-based `replace` (from/to), `prepend`, `append`, and `output` path overrides.
-
-**Why:** Several design-phase assumptions didn't hold:
-
-- **Regex wasn't needed** - all real substitutions were exact string replacements (e.g., `@adventurer` → `/adventurer`, `task(` → `Agent(`). The `split/join` approach is simpler and avoids escaping issues.
-- **Dynamic frontmatter generation wasn't needed** - each plugin's frontmatter is fully known at config-write time. No file-dependent logic required.
-- **`prepend`/`append` were cleaner than regex** - injecting content at the beginning or end of a file is better expressed as explicit fields than as edge-case regex.
-- **`output` override was simpler than `extension` functions** - redirecting a file to a different path (e.g., `rules.md` → `rules/AGENTS.md`, `adventurer.md` → `adventurer/SKILL.md`) is clearer as a per-file string than as a function that computes paths from filenames.
+**Designed:** `transforms` arrays using regex `find`/`replace` objects and a function-based `extension` parameter. **Built:** per-file config with static `frontmatter`, string-based `replace` (from/to), `prepend`, `append`, and `output` overrides. **Why:** all real substitutions were exact strings (`split/join` avoids escaping issues); plugin frontmatter is known at config-write time; `prepend`/`append` express edge injections more clearly than regex; and a per-file `output` string is clearer than a function computing paths.
 
 ### Auto-Generated Notice Added
 
-**Not in design.** Every generated file starts with `<!-- Auto-generated from @maestria/core. Do not edit directly. ... -->`. This was added to make the provenance of generated files unambiguous - developers landing on a generated file know immediately where to make edits.
+**Not in design.** Every generated file starts with an auto-generated provenance comment so developers landing on one know where to make edits.
 
-> Updated 2026-09-11: a later `autoGenComment` config override let a config replace this notice. It was removed after an audit found zero sync configs used it (it had no consumers), and the notice is now unconditional. See [ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
+> Updated 2026-09-11: a later `autoGenComment` config override let a config replace this notice. It was removed after an audit found zero sync configs used it, and the notice is now unconditional. See [ADR-CORE-025](ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
 
 ### YAML Serialization Uses Library Defaults
 
-**Designed:** `QUOTE_DOUBLE` for YAML output.
-
-**Built:** Uses the `yaml` library's default (quotes only when structurally necessary).
-
-**Why:** `QUOTE_DOUBLE` produced unnecessarily noisy YAML (e.g., `"*": ask` instead of `'*': ask`). The library's default quotes only when needed, which is more readable. The `serializeFrontmatter` function in `lib/transforms.ts` is a 4-line wrapper, so changing this back is trivial if a platform requires double-quoted YAML.
+**Designed:** `QUOTE_DOUBLE` output. **Built:** the `yaml` library's default (quotes only when structurally necessary). **Why:** `QUOTE_DOUBLE` produced unnecessarily noisy YAML; changing back is trivial if a platform requires double-quoted YAML.
 
 ### CLI Uses Flags, Not Subcommands
 
-**Designed:** `core-sync write`, `core-sync check`, `core-sync diff` as positional subcommands.
-
-**Built:** `tsx sync.ts` (write by default), `--check`, `--diff`, `--dry-run`, `--verbose` as boolean flags.
-
-**Why:** There are only 3 modes and they are mutually exclusive - they behaved like flags, not subcommands. Boolean flags are simpler to parse (Node's `parseArgs`), simpler to combine (e.g., `--check --diff` to see what CI would catch), and simpler to document. The bash scripts could also pass through flags easily for ad-hoc use.
+**Designed:** positional `write`/`check`/`diff` subcommands. **Built:** write by default, with `--check`, `--diff`, `--dry-run`, and `--verbose` flags. **Why:** there are only 3 mutually exclusive modes; flags are simpler to parse, combine (e.g., `--check --diff`), and document, and the bash scripts can pass them through.
 
 ### Plugin Discovery: Bash Glob, Not Tool-Based
 
-**Designed:** `core-sync write packages/*/sync.config.js` - the tool discovers plugins by glob.
-
-**Built:** A bash script (`scripts/sync-all`) iterates over glob results, changing into each package directory and running `pnpm exec tsx sync.ts` there (the runner is pinned at the workspace root; `pnpm exec` resolves it from any subdirectory, see ADR-CORE-016).
-
-**Why:** The tool is not a published binary - it's a `.ts` file. Running it from outside `packages/core/` means the module resolution for relative imports (e.g., `'../core/scripts/lib/config.js'`) breaks. The bash approach lets each plugin's `tsx` invocation resolve modules from its own package root. The overhead is negligible (one `cd` per plugin).
+**Designed:** the tool discovers plugins by glob. **Built:** a bash script iterates over glob results and runs `pnpm exec tsx sync.ts` from each package root (the runner is pinned at the workspace root and resolves from any subdirectory; ADR-CORE-016). **Why:** the tool is a `.ts` file, not a published binary, so invoking it from outside `packages/core/` breaks relative module resolution.
 
 ### Config Files Use .ts with satisfies
 
-**Designed:** `sync.config.js` with no type information.
-
-**Built:** `sync.config.ts` with `import type { SyncConfig }` and `satisfies SyncConfig`.
-
-**Why:** TypeScript catches config errors (wrong field names, wrong types) during development rather than at runtime. Since the project is already TypeScript, `.ts` configs require no extra tooling. The `satisfies` keyword (TS 5.3+) preserves type inference on the config object literal while ensuring it conforms to `SyncConfig`. This was not available when the ADR was written (TS 5.3 shipped November 2023).
+**Designed:** `sync.config.js` with no type information. **Built:** `sync.config.ts` with `import type { SyncConfig }` and `satisfies SyncConfig`. **Why:** TypeScript catches config errors during development, and the project already uses TypeScript; `satisfies` preserves inference on the literal while enforcing conformance.
 
 ### Format/Sync Cycle Resolution
 
-**Not in design.** Generated directories (`agents/`, `prompts/`, `rules/`, `skills/`) are excluded from `vp fmt` via `fmt.ignorePatterns` in `vite.config.ts`. Without this, formatting the canonical source and then running `scripts/sync-all` would produce a different result than running sync-all first - a circular dependency between fmt and sync. The ignore patterns break the cycle.
+**Not in design.** Generated directories are excluded from `vp fmt` via `fmt.ignorePatterns`, breaking the circular dependency where formatting the canonical source then syncing could differ from syncing first.
 
 ## Related Decisions
 
 - ADR-CORE-000 (ADR structure) - established the prefix-scoped subdirectory layout; this ADR extends core scope with a shared content package
-- ADR-CORE-001 (global rules scope) - the `rules/` subdirectory in core content is scoped per the three-way filter defined there
+- ADR-CORE-001 (global rules scope) - the `rules/` content is scoped per the three-way filter defined there
 - ADR-CORE-002 (plugin architecture) - established Markdown as source of truth; this ADR extends that principle to multi-plugin content sharing
 - ADR-CORE-003 (agent conventions) - the `!!!` markers, cross-references, skill pattern, and rules bullets are preserved in core content
 - ADR-CORE-004 (agent prompt template) - Updated 2026-08-22: core content carries compact verified-skill sections, compact material handoffs, and progress-based repair bounds rather than the 4-bucket skills and fixed five-section handoff described there (see ADR-CORE-019)

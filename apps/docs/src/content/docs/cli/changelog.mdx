@@ -3,10 +3,29 @@ title: Changelog
 description: Release history for the maestria CLI.
 ---
 
-## Unreleased
+## v0.12.3
+
+### Internal maintenance
+
+- Internal deduplication across platform handlers, model configuration, and plugin validation; no CLI behavior, output, or exit-code changes.
+
+## v0.12.2
+
+### Smaller published package
+
+- Stopped publishing generated JavaScript sourcemaps from the CLI and platform packages, reducing published package sizes.
+
+## v0.12.1
+
+### Documentation clarity
+
+- Clarified installation paths, prerequisites, and support boundaries in package documentation, and removed stale pre-release wording.
+
+## v0.12.0
 
 ### Portable Agent Plugin workflow
 
+- Added the first-class Agent Plugins v1 package, which exposes Maestria's methodology as a portable, skills-only plugin.
 - Added `maestria plugin validate` for read-only validation of Agent Plugins v1 directory packages.
 - Added `maestria plugin install` to fetch or stage a validated portable package for a compatible client's own installer or directory loader.
 - Portable packages remain separate from runtime platform detection, status, and native activation.

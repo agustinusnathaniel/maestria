@@ -3,34 +3,18 @@ title: Contributing
 description: Hermes-specific package structure, runtime boundaries, and validation for @maestria/hermes.
 ---
 
-For repository setup, changesets, and pull requests, see the [Contributing Guide](/core/contributing/). For shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
+For repository setup and PRs, see the [Contributing Guide](/core/contributing/); for shared methodology changes, follow the [Canonical Source Workflow](/core/contributing/#canonical-source-workflow).
 
 ## Package Boundary
 
-The Hermes package is a Python plugin. Its adapter code is hand-authored; its methodology skills are generated from packages/core/agent-directives/:
-
-```text
-packages/hermes/
-├── plugin.yaml             manifest and resource inventory
-├── pyproject.toml          Python package metadata
-├── sync.config.ts          directive transforms
-├── src/maestria_hermes/
-│   ├── hooks/              lifecycle handlers
-│   ├── middleware/         optional LLM output wrapper
-│   ├── tools/              OpenCode routing tool
-│   ├── skills/             generated skills
-│   └── runtime modules     permissions, modes, state, and registration
-└── tests/                  manifest and hook behavior tests
-```
-
-The plugin has no startup probes for external tools or packages. The opencode_route tool delegates to OpenCode only when invoked.
+`@maestria/hermes` is a Python plugin with hand-authored adapter code and methodology skills generated from `packages/core/agent-directives/`.
 
 ## Design Rules
 
-- Keep reusable methodology in packages/core/agent-directives/, not in Hermes-only prompts.
-- Use Hermes-native APIs for commands, delegation, LLM calls, goals, and memory integration.
-- Keep trust decisions in the native topology and permission boundary. Specialist names do not grant child capabilities.
-- Keep optional integrations such as memory providers and mode-footer output outside the core plugin path.
+- Keep reusable methodology in `packages/core/agent-directives/`, not in Hermes-only prompts.
+- Use Hermes-native APIs for commands, delegation, LLM calls, goals, and memory.
+- Keep trust decisions in the native topology and permission boundary; specialist names do not grant child capabilities.
+- Keep optional integrations (memory providers, mode-footer output) outside the core plugin path.
 
 See [ADR-HM-001](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/hermes/ADR-HM-001-long-lived-goals-scope.md) for the long-lived goal boundary.
 
@@ -42,22 +26,8 @@ pytest packages/hermes/
 ruff check packages/hermes/src/
 ```
 
-For the full workspace, run the commands in the [Contributing Guide](/core/contributing/).
-
 ## Extend the Plugin
 
-| Change | Edit | Also update |
-| --- | --- | --- |
-| Command | A handler and register_command() | plugin.yaml provides_commands |
-| Hook | A module under src/maestria_hermes/hooks/ and register_hook() | plugin.yaml provides_hooks |
-| Skill | The canonical source, unless Hermes-only | sync output and tests |
-| Middleware | A module and register_middleware() | plugin.yaml provides_middleware |
-| Tool | A module and register_tool() | plugin.yaml provides_tools |
-
-When a skill is Hermes-only, place its namespaced SKILL.md under src/maestria_hermes/skills/ and register it with the bare skill name. The namespace is derived from the plugin name.
-
-## Keep the Inventory Accurate
-
-The authoritative runtime inventory is split across plugin.yaml and `src/maestria_hermes/__init__.py`. The tests compare the manifest to register(). Update both when adding or removing a resource, then run the focused tests and the docs build if the public contract changes.
+Register commands, hooks, middleware, and tools through their registration functions (`register_command`, `register_hook`, `register_middleware`, `register_tool`) and keep the matching `provides_*` entries in `plugin.yaml`. Hermes-only skills go under `src/maestria_hermes/skills/` and register under the bare skill name; everything else comes from the canonical source. The tests compare `plugin.yaml` and `register()` in `src/maestria_hermes/__init__.py`; update both when adding or removing a resource.
 
 Use the [Hermes commands](/hermes/commands/) and [installation guide](/hermes/getting-started/installation/) for user-facing behavior.

@@ -9,19 +9,16 @@ Maestria is a set of free, open-source plugins that give AI coding agents a shar
 
 An orchestrator coordinates seven specialists: adventurer (reconnaissance), architect (approach and trade-offs), builder (atomic implementation), diagnose (root-cause analysis), planner (phased plans), reviewer (independent review), and writer (documentation).
 
-Two patterns guide their work:
+Two patterns guide their work: **pipeline composition** (select the thinker, worker, and verifier stages needed and pass context and evidence between them) and the **maker/checker split** (a separate reviewer checks the maker's result; no agent approves its own output).
 
-- **Pipeline composition:** select the needed stages - thinker, worker, verifier - and pass context and evidence between them.
-- **Maker/checker split:** the maker produces the result and a separate reviewer checks it. An agent does not approve its own output.
-
-Start with [When to Use Maestria](/core/when-to-use/) to choose direct execution, one specialist, or the full pipeline. [How It Works](/core/how-it-works/) explains the benefits and limits; [Pipeline & Roles](/core/pipeline/) covers sequencing, and [Specialist Reference](/core/agents/) describes each role.
+Choose a route with [When to Use Maestria](/core/when-to-use/); [How It Works](/core/how-it-works/) covers benefits and limits, [Pipeline & Roles](/core/pipeline/) sequencing, and [Specialist Reference](/core/agents/) each role.
 
 ## Install for Your Platform
 
-Native integrations support OpenCode, Kimi Code, Pi, Hermes, Claude Code, Codex CLI, Cursor, Prime Agent, and Oh My Pi. Install one with `npx maestria install <platform>`; use the [CLI guide](/cli/getting-started/) to find the platform ID and prerequisites.
+Native integrations support OpenCode, Kimi Code, Pi, Hermes, Claude Code, Codex CLI, Cursor, Prime Agent, and Oh My Pi. Install one with `npx maestria install <platform>`; the [CLI guide](/cli/getting-started/) lists platform IDs and prerequisites.
 
-For clients that support Agent Plugins v1, [`@maestria/agent-plugin`](/agent-plugin/) provides portable skills. Run `npx maestria plugin install` to stage the package, then activate it through the client's own installer. Runtime permissions and delegation behavior depend on the host.
+For clients that support Agent Plugins v1, [`@maestria/agent-plugin`](/agent-plugin/) provides portable skills: run `npx maestria plugin install` to stage the package, then activate it through the client's installer. Runtime permissions and delegation behavior depend on the host.
 
 ## Maintainer and License
 
-Maestria is open source under the [MIT license](https://github.com/agustinusnathaniel/maestria/blob/main/LICENSE) and is developed and maintained by Agustinus Nathaniel ([agustinusnathaniel](https://github.com/agustinusnathaniel)), with contributions welcome through the [GitHub repository](https://github.com/agustinusnathaniel/maestria). To reach the maintainer, use the channels on the [Contact](/contact/) page; for details on how this site handles data, see [Privacy](/privacy/).
+Maestria is open source under the [MIT license](https://github.com/agustinusnathaniel/maestria/blob/main/LICENSE), maintained by Agustinus Nathaniel ([agustinusnathaniel](https://github.com/agustinusnathaniel)), with contributions welcome through the [GitHub repository](https://github.com/agustinusnathaniel/maestria). To reach the maintainer, use the channels on the [Contact](/contact/) page; for how this site handles data, see [Privacy](/privacy/).

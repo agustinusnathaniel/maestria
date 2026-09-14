@@ -1,6 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 
+import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import InstallCommand from '@/components/plugin/install-command.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import { agents } from '@/data/agents.js';
@@ -11,7 +12,7 @@ import { platforms } from '@/data/platforms.js';
 interface DocLink {
   href: string;
   title: string;
-  desc: string;
+  description: string;
   external?: boolean;
 }
 
@@ -25,7 +26,7 @@ const docsMap: { group: string; items: DocLink[] }[] = [
     group: 'CLI',
     items: [
       {
-        desc: 'Run maestria with npx wherever Node 22+ is available; no install step needed.',
+        description: 'Run maestria with npx wherever Node 22+ is available; no install step needed.',
         href: '/cli/getting-started/',
         title: 'Getting Started',
       },
@@ -35,22 +36,22 @@ const docsMap: { group: string; items: DocLink[] }[] = [
     group: 'Core',
     items: [
       {
-        desc: 'The dispatcher, seven specialists, and the staged pipeline.',
+        description: 'The dispatcher, seven specialists, and the staged pipeline.',
         href: '/core/how-it-works/',
         title: 'How It Works',
       },
       {
-        desc: 'Thinker, worker, and verifier roles, plus the maker/checker split.',
+        description: 'Thinker, worker, and verifier roles, plus the maker/checker split.',
         href: '/core/pipeline/',
         title: 'Pipeline & Roles',
       },
       {
-        desc: 'All eight agents: scope, artifact, and constraint for each.',
+        description: 'All eight agents: scope, artifact, and constraint for each.',
         href: '/core/agents/',
         title: 'Specialist Reference',
       },
       {
-        desc: 'Decide between direct execution, a specialist, or the full pipeline.',
+        description: 'Decide between direct execution, a specialist, or the full pipeline.',
         href: '/core/when-to-use/',
         title: 'When to Use',
       },
@@ -60,18 +61,18 @@ const docsMap: { group: string; items: DocLink[] }[] = [
     group: 'Community',
     items: [
       {
-        desc: 'Source, issues, and releases for every package.',
+        description: 'Source, issues, and releases for every package.',
         external: true,
         href: 'https://github.com/agustinusnathaniel/maestria',
         title: 'GitHub repository',
       },
       {
-        desc: 'Add an adapter or improve the core methodology.',
+        description: 'Add an adapter or improve the core methodology.',
         href: '/core/contributing/',
         title: 'Contributing',
       },
       {
-        desc: 'What changed across the ecosystem.',
+        description: 'What changed across the ecosystem.',
         href: '/core/changelog/',
         title: 'Changelog',
       },
@@ -160,7 +161,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
               <span class="term-done term-ok" aria-hidden="true">✓</span>
             </div>
             <div class="term-row term-task-row" style="--i: 8">
-              <span class="term-role">planner</span><span class="term-agent"></span>
+              <span class="term-role">thinker</span><span class="term-agent">planner</span>
               <span class="term-artifact"><span aria-hidden="true">→ </span>phased plan</span>
               <span class="term-done term-ok" aria-hidden="true">✓</span>
             </div>
@@ -340,21 +341,7 @@ const INSTALL_CMD = 'npx maestria install opencode';
                 'pt-2 pb-2 font-mono text-xs font-medium tracking-[0.1em] uppercase text-home-text-muted',
                 gi === 0 ? 'mt-0' : 'mt-9'
               ]}>{group.group}</p>
-              {group.items.map((item, ii) => (
-                <a
-                  class:list={[
-                    'group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]',
-                    ii === group.items.length - 1 && 'border-b'
-                  ]}
-                  href={item.href}
-                  target={item.external ? '_blank' : undefined}
-                  rel={item.external ? 'noopener noreferrer' : undefined}
-                >
-                  <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">{item.title}</span>
-                  <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">{item.desc}</span>
-                  <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
-                </a>
-              ))}
+              <DocsLinkList items={group.items} />
             </div>
           ))}
         </div>

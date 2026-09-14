@@ -6,101 +6,74 @@ Accepted
 
 ## Context
 
-Pi's compaction summarization is lossy by default. When the context window fills up, the older messages are summarized and recent messages are kept. The maestria methodology has state that must survive compaction:
-
-- The active task (user's current goal)
-- The completion promise ("This task is complete when...")
-- Blockers
-- File references (read / modified)
-- Recent handoffs (who handed off to whom, with what)
-- Review state (is review mode active? what model?)
-
-Without preservation, the post-compaction turn has no memory of these. The methodology breaks.
+Pi's compaction summarization is lossy by default: older messages are summarized and recent messages kept. Maestria state must survive compaction: active task, completion promise, blockers, file references (read / modified), recent handoffs, and review state. Without preservation, the post-compaction turn has no memory and the methodology breaks.
 
 The choices:
 
-1. **Append to Pi's default summary** - Pi's `session_before_compact` returns a `compaction` object that **replaces** the default summary. We can't append; we must include the maestria state in our returned summary.
-2. **Use the `details` field** - Pi's compaction has a `details` field for custom data. The LLM may or may not see this.
-3. **Module-scope state plus pre-compaction render** - the extension maintains `MaestriaState` in module scope, renders it to markdown on `session_before_compact`, and includes the render in the returned summary.
+1. **Append to Pi's default summary** - not possible: `session_before_compact` returns a `compaction` object that **replaces** the default summary, so the maestria state must be included in the returned summary.
+2. **Use the `details` field** - Pi's compaction has a `details` field for custom data, but the LLM may or may not see it.
+3. **Module-scope state plus pre-compaction render** - maintain `MaestriaState` in module scope, render it to markdown on `session_before_compact`, and include the render in the returned summary.
 
 ## Decision
 
 **Choose: Option 3 - module-scope state, render at compaction time, include in the returned summary.**
 
-The `MaestriaState` is maintained by event handlers (`before_agent_start` for `activeTask`, `tool_call` for file tracking, `subagent` tool invocations for `handoffHistory`, `/review` command for `reviewMode`).
+`MaestriaState` is maintained by event handlers: `before_agent_start` for `activeTask`, `tool_call` for file tracking, `subagent` tool invocations for `handoffHistory`, and `/review` for `reviewMode`.
 
-On `session_before_compact`, the extension renders `MaestriaState` to a markdown summary and returns it as the `compaction.summary` field. The render includes:
+On `session_before_compact`, the extension renders `MaestriaState` to a markdown summary returned as `compaction.summary`. The render includes ## Goal (activeTask), ## Completion Promise, ## Blockers, ## Files Modified, ## Files Read, ## Recent Handoffs, and ## Review State.
 
-- ## Goal (activeTask)
-- ## Completion Promise
-- ## Blockers
-- ## Files Modified
-- ## Files Read
-- ## Recent Handoffs
-- ## Review State
+The orchestrator prompt template has a "Post-Compaction Recovery" section instructing the LLM to read this block and resume. The `details` field is also populated with the structured `MaestriaState` object for future-proofing.
 
-The orchestrator prompt template has a "Post-Compaction Recovery" section that tells the LLM to read this block and resume from the saved state.
-
-The `details` field is also populated with the structured `MaestriaState` object, for future-proofing.
-
-**State Recovery:** Recovery is advisory, not automatic. The LLM reads the state block from the compaction summary and resumes. Explicit instructions in the orchestrator prompt mitigate misreads.
-
-For full session persistence (survives `/reload` and `/new`), `pi.appendEntry` would be needed. This is deferred to v1.1.
+**State Recovery:** advisory, not automatic; explicit orchestrator instructions mitigate misreads. Full persistence (surviving `/reload` and `/new`) requires `pi.appendEntry` and is deferred to v1.1.
 
 ## Consequences
 
-- Positive: All methodology-relevant state survives compaction.
-- Positive: State rendered as plain markdown, readable by LLM.
-- Positive: `details` field populated for future-proofing.
-- Negative: State is advisory, not enforced. LLM may misread.
-- Negative: State doesn't survive `/reload` or `/new`.
-- Negative: Blockers and handoffs are textual, not structured.
+- Positive: all methodology-relevant state survives compaction.
+- Positive: state renders as plain markdown, readable by the LLM.
+- Positive: the `details` field is populated for future-proofing.
+- Negative: state is advisory, not enforced; the LLM may misread it.
+- Negative: state doesn't survive `/reload` or `/new`.
+- Negative: blockers and handoffs are textual, not structured.
 
 ## Alternatives Considered
 
-- **Pi's default compaction** - generic, doesn't preserve maestria state.
+- **Pi's default compaction** - generic; doesn't preserve maestria state.
 - **Append-only state** - not possible since `compaction.summary` is wholesale replacement.
 - **State persistence via `pi.appendEntry`** - would survive `/reload` but requires more code. Deferred to v1.1.
 
 ## References
 
-- Pi `session_before_compact` event - `session_before_compact` event docs
-- Pi `CompactionEntry` structure - Pi compaction API docs
-- OpenCode equivalent - `packages/opencode/src/index.ts` (compaction hook for session state management)
+- Pi `session_before_compact` event documentation
+- Pi `CompactionEntry` structure documentation
+- OpenCode equivalent - its compaction hook for session state management
 
 ## Implementation Notes (Post-Implementation)
 
 > Moved 2026-09-11: the module-scope state and its renderer now live in `@maestria/shared-pi/state-core` (shared by Pi and OMP), and the `packages/pi/src/state.ts` re-export barrel was deleted. Consumers import `state-core` directly and the renderer is `renderMaestriaSummary`. The behavior described below is unchanged; see [ADR-CORE-025](../core/ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md).
 
-### ✅ `MaestriaState` Module-Scope Object Implemented
+### `MaestriaState` Module-Scope Object Implemented
 
-Module-scope `MaestriaState` object implemented in `packages/pi/src/state.ts`. The object tracks all 7 fields (activeTask, completionPromise, blockers, filesRead, filesModified, handoffHistory, reviewMode) and is importable across the extension.
+Tracks all 7 fields (activeTask, completionPromise, blockers, filesRead, filesModified, handoffHistory, reviewMode); importable across the extension.
 
-### ✅ State Renderer Produces Markdown Summary
+### State Renderer Produces Markdown Summary
 
-The `renderState()` function in `packages/pi/src/state.ts` produces a markdown summary with all 7 fields. Each field renders as a level-2 heading followed by its content, with lists for blockers, file references, and handoffs.
+`renderMaestriaSummary` produces a markdown summary with all 7 fields; each renders as a level-2 heading with lists for blockers, file references, and handoffs.
 
-### ✅ Rendered Summary Returned as `compaction.summary`
+### Rendered Summary Returned as `compaction.summary`
 
-On `session_before_compact`, the rendered markdown is returned as the `compaction.summary` field. This replaces the default Pi compaction summary entirely with maestria-aware state.
+On `session_before_compact`, the rendered markdown replaces the default Pi summary entirely.
 
-### ✅ `details` Field Populated with Structured State
+### `details` Field Populated with Structured State
 
-The raw `MaestriaState` object is also serialized into the `compaction.details` field for future-proofing - enabling structured access if Pi's compaction API evolves to support `details`-based recovery.
+The raw `MaestriaState` object is serialized into `compaction.details` for future-proofing, enabling structured recovery if Pi's compaction API evolves.
 
-### ✅ Orchestrator Prompt Includes "Post-Compaction Recovery" Section
+### Orchestrator Prompt Includes "Post-Compaction Recovery" Section
 
-The orchestrator prompt template (`packages/pi/skills/orchestrator/SKILL.md`) includes a "Post-Compaction Recovery" section that instructs the LLM to:
+The orchestrator prompt template instructs the LLM to read the summary block, restore the active task, acknowledge the completion promise, re-establish blockers and file references, and resume the last handoff context.
 
-1. Read the state block from the compaction summary
-2. Restore the active task
-3. Acknowledge the completion promise
-4. Re-establish blockers and file references
-5. Resume the last handoff context
+### `pi.appendEntry`-Based Persistence Deferred to v1.1
 
-### ⏳ `pi.appendEntry`-Based Persistence Deferred to v1.1
-
-Full session persistence that survives `/reload` and `/new` requires `pi.appendEntry` to write state to the session log. This is deferred to v1.1 (see ADR-PI-000 for v1.1 scope and timeline).
+Full session persistence surviving `/reload` and `/new` requires `pi.appendEntry`; deferred to v1.1 (see ADR-PI-000 for v1.1 scope).
 
 ## Date
 

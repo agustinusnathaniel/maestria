@@ -6,68 +6,68 @@ Accepted (2026-09-01)
 
 ## Context
 
-Maestria already has a private canonical directive source and explicit native projections for each supported runtime. The Agent Plugins specification provides a vendor-neutral directory format with a root `plugin.json`, fixed `skills/` and `mcp.json` locations, and client-owned installation, permissions, lifecycle, and extension behavior.
+Maestria already has a private canonical directive source and explicit native projections per runtime. Agent Plugins v1 offers a vendor-neutral directory format with a root `plugin.json`, fixed `skills/` and `mcp.json` locations, and client-owned installation, permissions, lifecycle, and extension behavior.
 
-Agent Plugins v1 standardizes skills and MCP configuration, but it does not standardize executable agents, commands, hooks, delegation, permissions, sandboxing, trust, provenance, or session state. It is therefore a useful distribution boundary, but not a sufficiently expressive runtime model or internal representation for Maestria.
+The standard covers skills and MCP configuration only: it does not standardize executable agents, commands, hooks, delegation, permissions, sandboxing, trust, provenance, or session state. It is a useful distribution boundary, not a sufficiently expressive runtime model or internal representation for Maestria.
 
 ## Decision
 
-Add `@maestria/agent-plugin` as a first-class public package with these properties:
+Add `@maestria/agent-plugin` as a first-class public package:
 
-- The package root contains a strict Agent Plugins v1 `plugin.json` whose `$schema` is `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`.
-- The package contains 14 generated Agent Skills under the fixed `skills/<name>/SKILL.md` layout: the seven specialists, `orchestrator`, `global-rules`, `handoff`, `iteration-limits`, and the `fein`, `sonar`, and `blitz` workflow modes.
-- The projection replaces Maestria's internal `@role` references with plain sibling skill names and states that role boundaries are advisory.
-- The package contains no `mcp.json`, executable agent registration, commands, hooks, or client-specific extension data.
-- `packages/core/agent-directives/` remains the content source. `packages/agent-plugin/sync.config.ts` is the projection adapter, and `scripts/sync-all` remains the generation entrypoint.
-- The package version and portable manifest version are synchronized by `scripts/sync-plugin-versions.ts` and released through Changesets.
-- The Maestria CLI exposes `plugin validate` and `plugin install` as artifact operations. It validates local or npm sources and stages a package in the Maestria cache or an explicit directory without registering the artifact as a runtime platform.
+- The package root contains a strict Agent Plugins v1 `plugin.json` (schema `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`).
+- It contains generated Agent Skills under the fixed `skills/<name>/SKILL.md` layout: the specialists, `orchestrator`, `global-rules`, `handoff`, `iteration-limits`, and the `fein`, `sonar`, and `blitz` workflow modes.
+- Internal `@role` references become plain sibling skill names, and role boundaries are stated as advisory.
+- It contains no `mcp.json`, executable agent registration, commands, hooks, or client-specific extension data.
+- `packages/core/agent-directives/` stays the content source; the package's `sync.config.ts` is the projection adapter and `scripts/sync-all` the generation entrypoint.
+- Package and portable manifest versions are synchronized by `scripts/sync-plugin-versions.ts` and released through Changesets.
+- The Maestria CLI exposes `plugin validate` and `plugin install`: it validates local or npm sources and stages a package in the Maestria cache or an explicit directory without registering it as a runtime platform.
 
-Native packages remain independently published and continue to provide runtime-specific capabilities. The Agent Plugins package is additive and does not replace `@maestria/opencode`, `@maestria/codex`, `@maestria/cursor`, `@maestria/claude-code`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/omp`, `@maestria/prime-agent`, or the Hermes distribution.
+Native packages remain independently published; the portable package is additive and does not replace them or the Hermes distribution.
 
 ## Goals
 
 - Give compatible clients one portable package for Maestria's shared methodology.
-- Keep the portable projection generated from the canonical directives instead of maintaining a second hand-authored skill tree.
-- State the boundary between portable skills and runtime-owned capabilities clearly enough for clients and users to choose the right package.
+- Generate that projection from canonical directives, not a second hand-authored skill tree.
+- State the portable-versus-runtime boundary clearly enough to choose the right package.
 
 ## Mapping
 
 | Maestria source | Portable projection | Notes |
 | --- | --- | --- |
-| `specialists/*.md` | `skills/<role>/SKILL.md` | Role methodology, with plain skill references |
-| `commands/{fein,sonar,blitz}.md` | `skills/{fein,sonar,blitz}/SKILL.md` | Workflow modes become skills because v1 has no command component |
+| `specialists/*.md` | `skills/<role>/SKILL.md` | Role methodology with plain skill references |
+| `commands/{fein,sonar,blitz}.md` | `skills/{fein,sonar,blitz}/SKILL.md` | No command component in v1, so modes become skills |
 | `rules.md` | `skills/global-rules/SKILL.md` | Universal rules plus portable host boundary note |
 | `skills/{handoff,iteration-limits}.md` | `skills/{handoff,iteration-limits}/SKILL.md` | Shared supporting skills |
 
 ## Non-Goals
 
-- Do not use Agent Plugins v1 as Maestria's canonical internal representation. Native runtime adapters need richer fields and behavior.
-- Do not build a universal runtime or merge Node, Python, and host SDK dependencies into one package.
-- Do not make the Maestria CLI activate portable packages in every client or own client permissions, trust, sandboxing, or lifecycle. The CLI may validate and stage an artifact, but client activation remains client-owned.
+- Do not use Agent Plugins v1 as Maestria's canonical internal representation; native adapters need richer fields.
+- Do not build a universal runtime or merge Node, Python, and host SDK dependencies.
+- Do not make the CLI activate packages or own client permissions, trust, sandboxing, or lifecycle; it validates and stages only.
 - Do not add portable MCP configuration without a concrete, host-neutral capability and credential story.
 
 ## Assumptions
 
 - `[verified]` Agent Plugins v1 clients own skill discovery, activation, permissions, trust, and session behavior; the package exposes only `plugin.json` and `skills/`.
-- `[verified]` `packages/agent-plugin/sync.config.ts` generates the 14 skills from `packages/core/agent-directives/`, and `scripts/check-sync` verifies the projection.
-- `[inferred]` A client that supports the Agent Plugins v1 manifest and Agent Skills layout can consume the package's shared methodology, but feature parity with native packages still depends on the client's supported components.
+- `[verified]` The projection is generated from `packages/core/agent-directives/` and verified by `scripts/check-sync`.
+- `[inferred]` A client supporting the v1 manifest and Agent Skills layout can consume the methodology, but native feature parity depends on its supported components.
 
 ## Consequences
 
 ### Positive
 
-- Compatible clients can consume Maestria's core methodology directly from one standard package.
-- The portable artifact is generated from the existing canonical source, so methodology changes do not require hand-editing a second content tree.
-- Native runtime behavior remains isolated, preserving permissions, hooks, subagent registration, and host-specific UX.
-- Users have a first-party way to validate and stage a portable artifact before handing it to a compatible client's installer or directory loader.
-- Package tests verify the closed manifest surface, fixed skill layout, portable references, and package boundary.
+- Compatible clients can consume Maestria's core methodology from one standard package.
+- Methodology changes flow from the canonical source with no second maintained tree.
+- Native runtime behavior stays isolated, preserving permissions, hooks, subagent registration, and host UX.
+- Users can validate and stage an artifact before handing it to a client's installer or directory loader.
+- Package tests verify the closed manifest surface, fixed layout, portable references, and package boundary.
 
 ### Negative
 
 - A new public package and manifest-version target must be maintained.
 - Portable skills cannot promise runtime enforcement or native delegation semantics.
-- CLI staging does not activate a package in a client, so users still need the target client's installation or directory-loading step.
-- Some native wording and capabilities intentionally do not fit the portable surface and must continue to be expressed in host adapters.
+- CLI staging does not activate the package; users still need the client's installation or directory-loading step.
+- Some native wording and capabilities intentionally remain in host adapters.
 
 ## Verification
 
@@ -85,15 +85,15 @@ The package must also pass the repository formatting, lint, type, manifest-versi
 
 ### Keep native packages as the only distribution surface
 
-Rejected. Clients that support the Agent Plugins v1 format would have no vendor-neutral way to consume the shared methodology without a platform-specific adapter.
+Rejected: clients supporting the v1 format would have no vendor-neutral way to consume the methodology without a platform-specific adapter.
 
 ### Use Agent Plugins v1 as the canonical representation
 
-Rejected. The standard does not express Maestria's native agents, commands, hooks, delegation, permissions, or session behavior, so it cannot replace the richer canonical source and per-platform projections.
+Rejected: the standard cannot express native agents, commands, hooks, delegation, permissions, or session behavior.
 
 ### Add runtime code to the portable package
 
-Rejected. Runtime code would make the package client-specific and blur the boundary that lets compatible clients own activation and permissions.
+Rejected: runtime code would make the package client-specific and blur the boundary letting clients own activation and permissions.
 
 ## References
 
