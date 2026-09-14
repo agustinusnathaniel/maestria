@@ -10,12 +10,12 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 - **Skills** (`pi.skills: ["./skills"]`): the 14 Agent Skills (`skills/<name>/SKILL.md`).
 - **Extension** (`pi.extensions: ["./dist/extension.mjs"]`): a compiled Prime/Pi extension with the workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and mode prompt injection.
 
-<Aside type="caution" title="Pinned support boundary">
-  This package is a `Native candidate`. The generated skills match the documented Prime Agent Agent
-  Skills contract and the extension is verified against the pinned Prime fork (commit
-  `7787f07415d843b9a800f6a4720e0c739bd608e5`, verified 2026-08-13), but runtime behavior is **not
-  yet tested end to end** in a live Prime session. Native `rlm` dispatch and JSON/RPC headless mode
-  are deferred.
+<Aside type="caution" title="Verified against a pinned Prime fork">
+  This package is a `Native candidate`: runtime behavior is **not yet tested end to end** in a live
+  Prime session, though the generated skills match the documented Prime Agent Agent Skills contract
+  and the extension is verified against the pinned Prime fork (commit
+  `7787f07415d843b9a800f6a4720e0c739bd608e5`, verified 2026-08-13). Native `rlm` dispatch and
+  JSON/RPC headless mode are deferred.
 </Aside>
 
 ## Prerequisites
@@ -70,7 +70,7 @@ You can also copy or symlink the skill directories into a project or global skil
 
 Runtime checks in steps 3-4 are **not yet verified** end to end; see the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
 
-## Uninstall / removal
+## Uninstall
 
 ```bash
 prime-agent package remove npm:@maestria/prime-agent
