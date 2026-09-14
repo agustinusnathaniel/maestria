@@ -1,5 +1,13 @@
 # maestria
 
+## 0.12.4
+
+### Patch Changes
+
+- [#303](https://github.com/agustinusnathaniel/maestria/pull/303) [`50c940f`](https://github.com/agustinusnathaniel/maestria/commit/50c940fbcf3a0c60ec0728fc8ad97e455faead0d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Respect terminal unicode support in CLI group-multiselect fallback prompt (ASCII glyphs on non-unicode terminals).
+  
+  Custom toggle-all renderer and instructions are retained, unicode terminals are unchanged, and the fallback now matches native @clack/prompts ASCII glyphs.
+
 ## 0.12.3
 
 ### Patch Changes
