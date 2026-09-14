@@ -1,5 +1,11 @@
 # @maestria/omp
 
+## 0.5.9
+
+### Patch Changes
+
+- [#300](https://github.com/agustinusnathaniel/maestria/pull/300) [`7b1c09e`](https://github.com/agustinusnathaniel/maestria/commit/7b1c09e4a7c0d41ed1f418377988e37042773f94) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Internal consolidation: share the review-model context type through the private shared-pi review core, drop the redundant omp agent-source guard (the shared core already handles it), and delegate prime-agent mode keywords, markers, and skill-section extraction to the private shared-mode package. No user-facing behavior change; generated agent and skill output is unchanged.
+
 ## 0.5.8
 
 ### Patch Changes
