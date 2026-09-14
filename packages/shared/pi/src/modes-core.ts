@@ -16,6 +16,7 @@ import {
   stripKeyword as sharedStripKeyword,
 } from '@maestria/shared-mode';
 import type { ModeKeyword as SharedModeKeyword } from '@maestria/shared-mode';
+import { memoize } from 'es-toolkit';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -31,9 +32,6 @@ export const MODE_MARKERS: Record<ModeKeyword, string> = SHARED_MARKERS;
 
 // ── Prompt loading ──
 
-/** Lazily cached mode prompts, scoped by commands directory and keyword. */
-const _promptCache = new Map<string, string>();
-
 /**
  * Load and cache a mode prompt from a commands directory.
  * Delegates `## MODE:` extraction to the neutral shared-mode helper.
@@ -43,21 +41,25 @@ export const loadModePrompt = (name: string, commandsDir: string): string => {
   return extractModeSection(content);
 };
 
+const loadCached = memoize((cacheKey: string): string => {
+  const sep = cacheKey.indexOf('\0');
+  const commandsDir = cacheKey.slice(0, sep);
+  const name = cacheKey.slice(sep + 1);
+  try {
+    return loadModePrompt(name, commandsDir);
+  } catch (error) {
+    console.warn(`[maestria] Failed to load mode prompt "${name}":`, error);
+    return '';
+  }
+});
+
 /**
  * Get the full mode prompt (marker + body) for a keyword, loading from
  * the given commands directory on first access.
  */
 export const getModePrompt = (keyword: ModeKeyword, commandsDir: string): string => {
   const cacheKey = `${path.resolve(commandsDir)}\0${keyword}`;
-  if (!_promptCache.has(cacheKey)) {
-    try {
-      _promptCache.set(cacheKey, loadModePrompt(keyword, commandsDir));
-    } catch (error) {
-      console.warn(`[maestria] Failed to load mode prompt "${keyword}":`, error);
-      _promptCache.set(cacheKey, '');
-    }
-  }
-  return `${MODE_MARKERS[keyword]}\n\n${_promptCache.get(cacheKey) ?? ''}`;
+  return `${MODE_MARKERS[keyword]}\n\n${loadCached(cacheKey)}`;
 };
 
 // ── Keyword detection ──

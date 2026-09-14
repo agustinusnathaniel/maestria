@@ -507,6 +507,9 @@ importers:
       '@maestria/shared-mode':
         specifier: workspace:*
         version: link:../mode
+      es-toolkit:
+        specifier: ^1.52.0
+        version: 1.52.0
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -6730,11 +6733,9 @@ snapshots:
       '@earendil-works/pi-tui': 0.84.2
       '@sinclair/typebox': 0.34.52
 
-  '@huggingface/jinja@0.5.9':
-    optional: true
+  '@huggingface/jinja@0.5.9': {}
 
-  '@huggingface/tokenizers@0.1.3':
-    optional: true
+  '@huggingface/tokenizers@0.1.3': {}
 
   '@huggingface/transformers@4.2.0(@types/node@26.5.1)':
     dependencies:
@@ -6745,7 +6746,6 @@ snapshots:
       sharp: 0.35.4(@types/node@26.5.1)
     transitivePeerDependencies:
       - '@types/node'
-    optional: true
 
   '@img/colour@1.1.0': {}
 
@@ -6891,35 +6891,25 @@ snapshots:
       tinyglobby: 0.2.17
       yaml: 2.9.0
 
-  '@mariozechner/clipboard-darwin-arm64@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-darwin-arm64@0.3.9': {}
 
-  '@mariozechner/clipboard-darwin-universal@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-darwin-universal@0.3.9': {}
 
-  '@mariozechner/clipboard-darwin-x64@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-darwin-x64@0.3.9': {}
 
-  '@mariozechner/clipboard-linux-arm64-gnu@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-linux-arm64-gnu@0.3.9': {}
 
-  '@mariozechner/clipboard-linux-arm64-musl@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-linux-arm64-musl@0.3.9': {}
 
-  '@mariozechner/clipboard-linux-riscv64-gnu@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-linux-riscv64-gnu@0.3.9': {}
 
-  '@mariozechner/clipboard-linux-x64-gnu@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-linux-x64-gnu@0.3.9': {}
 
-  '@mariozechner/clipboard-linux-x64-musl@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-linux-x64-musl@0.3.9': {}
 
-  '@mariozechner/clipboard-win32-arm64-msvc@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-win32-arm64-msvc@0.3.9': {}
 
-  '@mariozechner/clipboard-win32-x64-msvc@0.3.9':
-    optional: true
+  '@mariozechner/clipboard-win32-x64-msvc@0.3.9': {}
 
   '@mariozechner/clipboard@0.3.9':
     optionalDependencies:
@@ -6933,7 +6923,6 @@ snapshots:
       '@mariozechner/clipboard-linux-x64-musl': 0.3.9
       '@mariozechner/clipboard-win32-arm64-msvc': 0.3.9
       '@mariozechner/clipboard-win32-x64-msvc': 0.3.9
-    optional: true
 
   '@mdx-js/mdx@3.1.1(supports-color@10.2.2)':
     dependencies:
@@ -7097,20 +7086,15 @@ snapshots:
       '@oh-my-pi/pi-natives': 17.4.0
       '@oh-my-pi/pi-utils': 17.4.0
 
-  '@oh-my-pi/pi-natives-darwin-arm64@17.4.0':
-    optional: true
+  '@oh-my-pi/pi-natives-darwin-arm64@17.4.0': {}
 
-  '@oh-my-pi/pi-natives-darwin-x64@17.4.0':
-    optional: true
+  '@oh-my-pi/pi-natives-darwin-x64@17.4.0': {}
 
-  '@oh-my-pi/pi-natives-linux-arm64@17.4.0':
-    optional: true
+  '@oh-my-pi/pi-natives-linux-arm64@17.4.0': {}
 
-  '@oh-my-pi/pi-natives-linux-x64@17.4.0':
-    optional: true
+  '@oh-my-pi/pi-natives-linux-x64@17.4.0': {}
 
-  '@oh-my-pi/pi-natives-win32-x64@17.4.0':
-    optional: true
+  '@oh-my-pi/pi-natives-win32-x64@17.4.0': {}
 
   '@oh-my-pi/pi-natives@17.4.0':
     optionalDependencies:
@@ -7511,34 +7495,25 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@protobufjs/aspromise@1.1.2':
-    optional: true
+  '@protobufjs/aspromise@1.1.2': {}
 
-  '@protobufjs/base64@1.1.2':
-    optional: true
+  '@protobufjs/base64@1.1.2': {}
 
-  '@protobufjs/codegen@2.0.5':
-    optional: true
+  '@protobufjs/codegen@2.0.5': {}
 
-  '@protobufjs/eventemitter@1.1.1':
-    optional: true
+  '@protobufjs/eventemitter@1.1.1': {}
 
   '@protobufjs/fetch@1.1.1':
     dependencies:
       '@protobufjs/aspromise': 1.1.2
-    optional: true
 
-  '@protobufjs/float@1.0.2':
-    optional: true
+  '@protobufjs/float@1.0.2': {}
 
-  '@protobufjs/path@1.1.2':
-    optional: true
+  '@protobufjs/path@1.1.2': {}
 
-  '@protobufjs/pool@1.1.0':
-    optional: true
+  '@protobufjs/pool@1.1.0': {}
 
-  '@protobufjs/utf8@1.1.2':
-    optional: true
+  '@protobufjs/utf8@1.1.2': {}
 
   '@puppeteer/browsers@3.0.6':
     dependencies:
@@ -8122,8 +8097,7 @@ snapshots:
 
   acorn@8.18.0: {}
 
-  adm-zip@0.6.0:
-    optional: true
+  adm-zip@0.6.0: {}
 
   agent-base@7.1.4: {}
 
@@ -8334,8 +8308,7 @@ snapshots:
 
   boolbase@1.0.0: {}
 
-  boolean@3.2.0:
-    optional: true
+  boolean@3.2.0: {}
 
   bowser@2.14.1: {}
 
@@ -8524,14 +8497,12 @@ snapshots:
       es-define-property: 1.0.1
       es-errors: 1.3.0
       gopd: 1.2.0
-    optional: true
 
   define-properties@1.2.1:
     dependencies:
       define-data-property: 1.1.4
       has-property-descriptors: 1.0.2
       object-keys: 1.1.1
-    optional: true
 
   defu@6.1.7: {}
 
@@ -8541,8 +8512,7 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  detect-node@2.1.0:
-    optional: true
+  detect-node@2.1.0: {}
 
   devalue@5.9.0: {}
 
@@ -8623,18 +8593,15 @@ snapshots:
 
   environment@1.1.0: {}
 
-  es-define-property@1.0.1:
-    optional: true
+  es-define-property@1.0.1: {}
 
-  es-errors@1.3.0:
-    optional: true
+  es-errors@1.3.0: {}
 
   es-module-lexer@2.3.2: {}
 
   es-toolkit@1.52.0: {}
 
-  es6-error@4.1.1:
-    optional: true
+  es6-error@4.1.1: {}
 
   esast-util-from-estree@2.0.0:
     dependencies:
@@ -8683,8 +8650,7 @@ snapshots:
 
   escape-string-regexp@1.0.5: {}
 
-  escape-string-regexp@4.0.0:
-    optional: true
+  escape-string-regexp@4.0.0: {}
 
   escape-string-regexp@5.0.0: {}
 
@@ -8821,8 +8787,7 @@ snapshots:
       pkg-types: 1.3.1
       yaml: 2.9.0
 
-  flatbuffers@25.9.23:
-    optional: true
+  flatbuffers@25.9.23: {}
 
   flattie@1.1.1: {}
 
@@ -8890,13 +8855,11 @@ snapshots:
       roarr: 2.15.4
       semver: 7.8.5
       serialize-error: 7.0.1
-    optional: true
 
   globalthis@1.0.4:
     dependencies:
       define-properties: 1.2.1
       gopd: 1.2.0
-    optional: true
 
   google-auth-library@10.9.1(supports-color@10.2.2):
     dependencies:
@@ -8911,15 +8874,13 @@ snapshots:
 
   google-logging-utils@1.1.3: {}
 
-  gopd@1.2.0:
-    optional: true
+  gopd@1.2.0: {}
 
   graceful-fs@4.2.11: {}
 
   grok-mermaid@0.2.2: {}
 
-  guid-typescript@1.0.9:
-    optional: true
+  guid-typescript@1.0.9: {}
 
   h3@1.15.11:
     dependencies:
@@ -8940,7 +8901,6 @@ snapshots:
   has-property-descriptors@1.0.2:
     dependencies:
       es-define-property: 1.0.1
-    optional: true
 
   hast-util-embedded@3.0.0:
     dependencies:
@@ -9284,8 +9244,7 @@ snapshots:
 
   json-schema@0.4.0: {}
 
-  json-stringify-safe@5.0.1:
-    optional: true
+  json-stringify-safe@5.0.1: {}
 
   jsonc-parser@2.3.1: {}
 
@@ -9426,8 +9385,7 @@ snapshots:
       strip-ansi: 7.2.0
       wrap-ansi: 10.0.1
 
-  long@5.3.2:
-    optional: true
+  long@5.3.2: {}
 
   longest-streak@3.1.0: {}
 
@@ -9466,7 +9424,6 @@ snapshots:
   matcher@3.0.0:
     dependencies:
       escape-string-regexp: 4.0.0
-    optional: true
 
   mdast-util-definitions@6.0.0:
     dependencies:
@@ -10035,8 +9992,7 @@ snapshots:
       pathe: 2.0.3
       tinyexec: 1.3.0
 
-  object-keys@1.1.1:
-    optional: true
+  object-keys@1.1.1: {}
 
   obug@2.1.4: {}
 
@@ -10064,18 +10020,15 @@ snapshots:
       regex: 6.1.0
       regex-recursion: 6.0.2
 
-  onnxruntime-common@1.24.0-dev.20251116-b39e144322:
-    optional: true
+  onnxruntime-common@1.24.0-dev.20251116-b39e144322: {}
 
-  onnxruntime-common@1.24.3:
-    optional: true
+  onnxruntime-common@1.24.3: {}
 
   onnxruntime-node@1.24.3:
     dependencies:
       adm-zip: 0.6.0
       global-agent: 3.0.0
       onnxruntime-common: 1.24.3
-    optional: true
 
   onnxruntime-web@1.26.0-dev.20260416-b7804b056c:
     dependencies:
@@ -10085,7 +10038,6 @@ snapshots:
       onnxruntime-common: 1.24.0-dev.20251116-b39e144322
       platform: 1.3.6
       protobufjs: 7.6.6
-    optional: true
 
   openai@6.40.0(ws@8.21.3)(zod@4.4.3):
     optionalDependencies:
@@ -10276,8 +10228,7 @@ snapshots:
       mlly: 1.8.2
       pathe: 2.0.3
 
-  platform@1.3.6:
-    optional: true
+  platform@1.3.6: {}
 
   pngjs@7.0.0: {}
 
@@ -10582,7 +10533,6 @@ snapshots:
       json-stringify-safe: 5.0.1
       semver-compare: 1.0.0
       sprintf-js: 1.1.3
-    optional: true
 
   run-async@2.4.1: {}
 
@@ -10619,8 +10569,7 @@ snapshots:
 
   scheduler@0.27.0: {}
 
-  semver-compare@1.0.0:
-    optional: true
+  semver-compare@1.0.0: {}
 
   semver@7.8.0: {}
 
@@ -10629,7 +10578,6 @@ snapshots:
   serialize-error@7.0.1:
     dependencies:
       type-fest: 0.13.1
-    optional: true
 
   set-blocking@2.0.0: {}
 
@@ -10674,17 +10622,13 @@ snapshots:
 
   shell-quote@1.10.0: {}
 
-  sherpa-onnx-darwin-arm64@1.13.6:
-    optional: true
+  sherpa-onnx-darwin-arm64@1.13.6: {}
 
-  sherpa-onnx-darwin-x64@1.13.6:
-    optional: true
+  sherpa-onnx-darwin-x64@1.13.6: {}
 
-  sherpa-onnx-linux-arm64@1.13.6:
-    optional: true
+  sherpa-onnx-linux-arm64@1.13.6: {}
 
-  sherpa-onnx-linux-x64@1.13.6:
-    optional: true
+  sherpa-onnx-linux-x64@1.13.6: {}
 
   sherpa-onnx-node@1.13.2:
     optionalDependencies:
@@ -10694,13 +10638,10 @@ snapshots:
       sherpa-onnx-linux-x64: 1.13.6
       sherpa-onnx-win-ia32: 1.13.6
       sherpa-onnx-win-x64: 1.13.6
-    optional: true
 
-  sherpa-onnx-win-ia32@1.13.6:
-    optional: true
+  sherpa-onnx-win-ia32@1.13.6: {}
 
-  sherpa-onnx-win-x64@1.13.6:
-    optional: true
+  sherpa-onnx-win-x64@1.13.6: {}
 
   shiki@4.4.3:
     dependencies:
@@ -10747,8 +10688,7 @@ snapshots:
 
   space-separated-tokens@2.0.2: {}
 
-  sprintf-js@1.1.3:
-    optional: true
+  sprintf-js@1.1.3: {}
 
   stackback@0.0.2: {}
 
@@ -10933,8 +10873,7 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  type-fest@0.13.1:
-    optional: true
+  type-fest@0.13.1: {}
 
   type-fest@0.21.3: {}
 
