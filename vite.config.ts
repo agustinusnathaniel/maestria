@@ -96,9 +96,11 @@ export default defineConfig({
       },
       'check-ci': {
         cache: false,
+        // CI main job runs without Python (setup python:false). Python lint
+        // runs in the hermes-filtered check-python workflow. Local `vp run
+        // check-full` still includes check-python.
         command: [
           'vp run check-lint',
-          'vp run check-python',
           'vp run test-sync-plugin-versions',
           'vp run test',
           'vp run check-manifest-versions',

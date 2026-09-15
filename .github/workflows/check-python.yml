@@ -1,0 +1,38 @@
+name: Check Python
+
+# Hermes-only lint (ruff + compileall). Runs only when hermes sources change,
+# so the main CI job can skip Python setup entirely.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/hermes/**'
+      - '.github/workflows/check-python.yml'
+      - '.github/actions/setup/action.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/hermes/**'
+      - '.github/workflows/check-python.yml'
+      - '.github/actions/setup/action.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-python:
+    name: Check Python
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VITE_GIT_HOOKS: '0'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup
+      - name: Check Python (ruff + compileall)
+        run: pnpm exec vp run check-python

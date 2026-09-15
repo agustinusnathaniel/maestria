@@ -31,6 +31,10 @@ jobs:
         with:
           fetch-depth: 1
       - uses: ./.github/actions/setup
+        with:
+          # Main check skips Python: check-python runs in its own
+          # hermes-filtered workflow, system python3 covers hermes unit tests.
+          python: 'false'
       - uses: oven-sh/setup-bun@v2
         with:
           # Pinned to the version previously resolved from latest.
