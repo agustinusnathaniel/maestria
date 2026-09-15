@@ -101,6 +101,14 @@ const requirePlatform = (id: string): PlatformHandler => {
   return platform;
 };
 
+// Canned stdout for one host command; anything else resolves empty so each
+// test observes exactly the interaction under test.
+const mockHostCommand = (binary: string, argsJoined: string, output: string): void => {
+  vi.mocked(shell.run).mockImplementation((cmd, args) =>
+    cmd === binary && args.join(' ') === argsJoined ? Effect.succeed(output) : Effect.succeed(''),
+  );
+};
+
 const piUninstallCalls = (): string[][] =>
   vi
     .mocked(shell.run)
@@ -231,20 +239,17 @@ describe('marketplace-backed platform handlers', () => {
   });
 
   it('recognizes the installed Claude Code plugin from host JSON', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'claude' && args.join(' ') === 'plugin list --json') {
-        return Effect.succeed(
-          JSON.stringify([
-            {
-              id: 'maestria@maestria',
-              name: 'maestria',
-              version: '0.2.1',
-            },
-          ]),
-        );
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand(
+      'claude',
+      'plugin list --json',
+      JSON.stringify([
+        {
+          id: 'maestria@maestria',
+          name: 'maestria',
+          version: '0.2.1',
+        },
+      ]),
+    );
 
     const claudeCode = requirePlatform('claude-code');
     expect(await Effect.runPromise(claudeCode.isInstalled)).toBe(true);
@@ -252,23 +257,20 @@ describe('marketplace-backed platform handlers', () => {
   });
 
   it('recognizes the installed Codex CLI plugin from host JSON', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'codex' && args.join(' ') === 'plugin list --json') {
-        return Effect.succeed(
-          JSON.stringify({
-            installed: [
-              {
-                marketplaceName: 'maestria',
-                name: 'maestria',
-                pluginId: 'maestria@maestria',
-                version: '0.2.0',
-              },
-            ],
-          }),
-        );
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand(
+      'codex',
+      'plugin list --json',
+      JSON.stringify({
+        installed: [
+          {
+            marketplaceName: 'maestria',
+            name: 'maestria',
+            pluginId: 'maestria@maestria',
+            version: '0.2.0',
+          },
+        ],
+      }),
+    );
 
     const codex = requirePlatform('codex');
     expect(await Effect.runPromise(codex.isInstalled)).toBe(true);
@@ -387,18 +389,15 @@ describe('prime-agent platform handler', () => {
   });
 
   it('recognizes the installed package from `package list` and reads its version from the reported path', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed(
-          [
-            'User packages:',
-            '  npm:@maestria/prime-agent',
-            '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-          ].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand(
+      'prime-agent',
+      'package list',
+      [
+        'User packages:',
+        '  npm:@maestria/prime-agent',
+        '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
+      ].join('\n'),
+    );
     fsMocks.readFile.mockResolvedValue(
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
     );
@@ -415,25 +414,17 @@ describe('prime-agent platform handler', () => {
   });
 
   it('still recognizes the package when its entry is filtered', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed(
-          ['User packages:', '  npm:@maestria/prime-agent (filtered)'].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand(
+      'prime-agent',
+      'package list',
+      ['User packages:', '  npm:@maestria/prime-agent (filtered)'].join('\n'),
+    );
 
     expect(await Effect.runPromise(requirePlatform('prime-agent').isInstalled)).toBe(true);
   });
 
   it('reports not installed when the package is absent from `package list`', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed('No packages installed.');
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand('prime-agent', 'package list', 'No packages installed.');
 
     const prime = requirePlatform('prime-agent');
     expect(await Effect.runPromise(prime.isInstalled)).toBe(false);
@@ -441,18 +432,15 @@ describe('prime-agent platform handler', () => {
   });
 
   it('does not count a project-only registration as installed (global scope is managed)', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed(
-          [
-            'Project packages:',
-            '  npm:@maestria/prime-agent',
-            '    /project/.prime/agent/npm/node_modules/@maestria/prime-agent',
-          ].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand(
+      'prime-agent',
+      'package list',
+      [
+        'Project packages:',
+        '  npm:@maestria/prime-agent',
+        '    /project/.prime/agent/npm/node_modules/@maestria/prime-agent',
+      ].join('\n'),
+    );
 
     const prime = requirePlatform('prime-agent');
     expect(await Effect.runPromise(prime.isInstalled)).toBe(false);
@@ -460,18 +448,15 @@ describe('prime-agent platform handler', () => {
   });
 
   it('recognizes a versioned npm source and reads the version from its own path', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed(
-          [
-            'User packages:',
-            '  npm:@maestria/prime-agent@0.2.0',
-            '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-          ].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand(
+      'prime-agent',
+      'package list',
+      [
+        'User packages:',
+        '  npm:@maestria/prime-agent@0.2.0',
+        '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
+      ].join('\n'),
+    );
     fsMocks.readFile.mockResolvedValue(
       JSON.stringify({ name: '@maestria/prime-agent', version: '0.2.0' }),
     );
@@ -482,21 +467,18 @@ describe('prime-agent platform handler', () => {
   });
 
   it('binds the version lookup to the current entry, not the next absolute path', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        // The maestria entry has no installed path; the following entry does.
-        // Its absolute path must not be attributed to maestria.
-        return Effect.succeed(
-          [
-            'User packages:',
-            '  npm:@maestria/prime-agent',
-            '  npm:@other/plugin',
-            '    /home/user/.npm-global/lib/node_modules/@other/plugin',
-          ].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
+    // The maestria entry has no installed path; the following entry does.
+    // Its absolute path must not be attributed to maestria.
+    mockHostCommand(
+      'prime-agent',
+      'package list',
+      [
+        'User packages:',
+        '  npm:@maestria/prime-agent',
+        '  npm:@other/plugin',
+        '    /home/user/.npm-global/lib/node_modules/@other/plugin',
+      ].join('\n'),
+    );
 
     const prime = requirePlatform('prime-agent');
     expect(await Effect.runPromise(prime.isInstalled)).toBe(true);
@@ -508,20 +490,17 @@ describe('prime-agent platform handler', () => {
   });
 
   it('reads the version from the maestria entry even when a sibling entry precedes it', async () => {
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed(
-          [
-            'User packages:',
-            '  npm:@other/plugin',
-            '    /home/user/.npm-global/lib/node_modules/@other/plugin',
-            '  npm:@maestria/prime-agent',
-            '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-          ].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand(
+      'prime-agent',
+      'package list',
+      [
+        'User packages:',
+        '  npm:@other/plugin',
+        '    /home/user/.npm-global/lib/node_modules/@other/plugin',
+        '  npm:@maestria/prime-agent',
+        '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
+      ].join('\n'),
+    );
     fsMocks.readFile.mockImplementation((filePath: string) =>
       JSON.stringify(
         filePath.includes('@other/plugin')
@@ -537,18 +516,15 @@ describe('prime-agent platform handler', () => {
 
   it('does not run `package update` for a version-pinned registration and reports why', async () => {
     vi.clearAllMocks();
-    vi.mocked(shell.run).mockImplementation((cmd, args) => {
-      if (cmd === 'prime-agent' && args.join(' ') === 'package list') {
-        return Effect.succeed(
-          [
-            'User packages:',
-            '  npm:@maestria/prime-agent@0.2.0',
-            '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
-          ].join('\n'),
-        );
-      }
-      return Effect.succeed('');
-    });
+    mockHostCommand(
+      'prime-agent',
+      'package list',
+      [
+        'User packages:',
+        '  npm:@maestria/prime-agent@0.2.0',
+        '    /home/user/.npm-global/lib/node_modules/@maestria/prime-agent',
+      ].join('\n'),
+    );
 
     const message = await Effect.runPromise(
       requirePlatform('prime-agent')

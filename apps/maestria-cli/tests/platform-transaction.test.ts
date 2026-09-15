@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import { installOne, uninstallOne, updateOne } from '@/lib/platform-transaction.js';
 import { CommandError } from '@/lib/shell.js';
+import type { PlatformResult } from '@/types.js';
 
 // Capture the spinner copy without rendering: the update flow must name the
 // `@maestria/*` plugin package, not the host runtime, in its output.
@@ -62,6 +63,22 @@ const withTempCacheHome = async <A>(task: (cacheRoot: string) => Promise<A>): Pr
     }
     await rm(cacheRoot, { force: true, recursive: true });
   }
+};
+
+// Runs an update that moves 0.1.0 to 0.2.0 inside a throwaway cache home,
+// returning the result for the caller to assert on.
+const runUpdatingPlatform = async (
+  overrides: Partial<PlatformHandler> = {},
+): Promise<PlatformResult> => {
+  let installedVersionReads = 0;
+  const platform = makePlatform({
+    getInstalledVersion: Effect.sync(() => {
+      installedVersionReads += 1;
+      return installedVersionReads === 1 ? '0.1.0' : '0.2.0';
+    }),
+    ...overrides,
+  });
+  return await withTempCacheHome(async () => await Effect.runPromise(updateOne(platform, false)));
 };
 
 describe('installOne', () => {
@@ -131,40 +148,19 @@ describe('updateOne', () => {
   });
 
   it('names the plugin package instead of the runtime in update output', async () => {
-    await withTempCacheHome(async () => {
-      let installedVersionReads = 0;
-      const platform = makePlatform({
-        getInstalledVersion: Effect.sync(() => {
-          installedVersionReads += 1;
-          return installedVersionReads === 1 ? '0.1.0' : '0.2.0';
-        }),
-        npmPackage: '@maestria/opencode',
-      });
+    const result = await runUpdatingPlatform({ npmPackage: '@maestria/opencode' });
 
-      const result = await Effect.runPromise(updateOne(platform, false));
-
-      expect(result.ok).toBe(true);
-      expect(spinnerCalls.start).toEqual(['Updating @maestria/opencode: 0.1.0 → 0.2.0...']);
-      expect(spinnerCalls.stop).toEqual(['Updated @maestria/opencode: v0.1.0 → v0.2.0']);
-    });
+    expect(result.ok).toBe(true);
+    expect(spinnerCalls.start).toEqual(['Updating @maestria/opencode: 0.1.0 → 0.2.0...']);
+    expect(spinnerCalls.stop).toEqual(['Updated @maestria/opencode: v0.1.0 → v0.2.0']);
   });
 
   it('falls back to the platform label when there is no npm package', async () => {
-    await withTempCacheHome(async () => {
-      let installedVersionReads = 0;
-      const platform = makePlatform({
-        getInstalledVersion: Effect.sync(() => {
-          installedVersionReads += 1;
-          return installedVersionReads === 1 ? '0.1.0' : '0.2.0';
-        }),
-      });
+    const result = await runUpdatingPlatform();
 
-      const result = await Effect.runPromise(updateOne(platform, false));
-
-      expect(result.ok).toBe(true);
-      expect(spinnerCalls.start).toEqual(['Updating OpenCode: 0.1.0 → 0.2.0...']);
-      expect(spinnerCalls.stop).toEqual(['Updated OpenCode: v0.1.0 → v0.2.0']);
-    });
+    expect(result.ok).toBe(true);
+    expect(spinnerCalls.start).toEqual(['Updating OpenCode: 0.1.0 → 0.2.0...']);
+    expect(spinnerCalls.stop).toEqual(['Updated OpenCode: v0.1.0 → v0.2.0']);
   });
 
   it('refuses a pinned update when the platform does not support version pinning', async () => {

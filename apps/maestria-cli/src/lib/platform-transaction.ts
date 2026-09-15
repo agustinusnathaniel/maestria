@@ -152,9 +152,7 @@ export const updateOne = (
       } satisfies PlatformResult;
     }
     const spinner = createSpinner(quiet);
-    // Name the plugin package, not the runtime: the update replaces
-    // `@maestria/*` payload files while the host agent itself is untouched.
-    // Hosts without an npm package (git-based Hermes) keep their label.
+    // Name the updated plugin package, not the host runtime (Hermes has none: keep its label).
     const packageRef = platform.npmPackage ?? platform.label;
     spinner.start(`Updating ${packageRef}: ${prevVersion} → ${targetVersion}...`);
     const errorMessage: string | null = yield* platform.update(version, snapshot ?? undefined).pipe(
