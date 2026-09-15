@@ -1,5 +1,11 @@
 # maestria
 
+## 0.12.5
+
+### Patch Changes
+
+- [#308](https://github.com/agustinusnathaniel/maestria/pull/308) [`eab744f`](https://github.com/agustinusnathaniel/maestria/commit/eab744fa8567ac3aa7e63c87117a9f9b4fb018bd) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix `maestria update` falsely reporting failure for host plugin upgrades. The OpenCode update ran under the shared 30s command timeout while cold plugin fetches take tens of seconds, so the host was killed mid-install after the new payload was already written (a retry then reported "up to date"). All host plugin install/update commands (OpenCode, Claude Code, Codex CLI, Hermes) now share the generous 120s deadline, and failed commands report the exit code or timeout plus the captured stderr/stdout instead of a bare "Command failed" message.
+
 ## 0.12.4
 
 ### Patch Changes
