@@ -31,8 +31,6 @@ jobs:
         with:
           fetch-depth: 1
       - uses: ./.github/actions/setup
-        with:
-          python: 'false'
       - uses: oven-sh/setup-bun@v2
         with:
           # Pinned to the version previously resolved from latest.

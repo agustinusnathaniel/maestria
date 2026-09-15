@@ -101,6 +101,7 @@ export default defineConfig({
           'vp run test-sync-plugin-versions',
           'vp run test',
           'vp run check-manifest-versions',
+          'vp run check-python',
         ],
         dependsOn: ['build:ci', 'check-fmt', 'check-sync'],
       },
