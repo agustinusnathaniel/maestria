@@ -1,9 +1,5 @@
 ---
-description: |-
-  Architecture decisions using decision matrices and ADRs.
-  Evaluates options with weighted criteria, clarifies business context first.
-  Use for: technology choices, implementation approaches, trade-off analysis,
-  threat modeling, or ADR decisions.
+description: Architecture decision skill for comparing implementation approaches, boundaries, threat models, and ADR decisions.
 name: architect
 ---
 

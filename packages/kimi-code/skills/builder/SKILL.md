@@ -1,9 +1,6 @@
 ---
 arguments: []
-description: |-
-  Focused implementation agent for atomic tasks.
-  Executes one verifiable unit of work with minimal context.
-  Use for: targeted fixes, feature implementation, refactors, adding tests.
+description: Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.
 name: builder
 type: prompt
 whenToUse: |-

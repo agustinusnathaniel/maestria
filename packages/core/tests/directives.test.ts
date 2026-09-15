@@ -262,6 +262,18 @@ describe('canonical directive behavioral contracts', () => {
     );
   });
 
+  it('states precedence, pause naming, and output economy', () => {
+    const rules = readDirective('rules.md');
+
+    expect(rules).toMatch(/safety and authorization floors first/iu);
+    expect(rules).toMatch(/explicit user instructions/iu);
+    expect(rules).toMatch(/project rules and skill methodology/iu);
+    expect(rules).toMatch(/name the blocking skill or instruction/iu);
+    expect(rules).toMatch(/evidence or input needed to continue/iu);
+    expect(rules).toMatch(/concise plain-text findings with file and line references/iu);
+    expect(rules).toMatch(/verification limits, delivery state, and blocker or next step/iu);
+  });
+
   it('separates route choice from host execution authority', () => {
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 

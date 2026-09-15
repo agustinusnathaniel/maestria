@@ -1,8 +1,5 @@
 ---
-description: |-
-  Focused implementation skill for atomic tasks. Executes
-  one verifiable unit of work with minimal context and a clean diff.
-  Use for: targeted fixes, feature implementation, refactors, adding tests.
+description: Focused implementation skill for one atomic, verifiable feature, fix, test, or refactor.
 name: builder
 ---
 

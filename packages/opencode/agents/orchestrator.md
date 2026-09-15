@@ -1,8 +1,5 @@
 ---
-description: |-
-  Manager agent for complex multi-step tasks.
-  Breaks down work, delegates to specialists, integrates results.
-  Use for: multi-file features, cross-domain tasks, 3+ step workflows.
+description: Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.
 mode: all
 permission:
   bash:

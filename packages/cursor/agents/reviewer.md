@@ -1,5 +1,5 @@
 ---
-description: Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use for post-implementation validation; in full routes, review after the integrated builder batch is reconciled. Read-only - never edit.
+description: Independent review agent covering correctness, security, performance, maintainability, and quality gates.
 name: reviewer
 readonly: true
 ---
