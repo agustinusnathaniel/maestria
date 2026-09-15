@@ -14,25 +14,25 @@ import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 
 // ── Imports ──
 
-import { ConfigError, loadConfig, resolveSourceFile } from '../scripts/lib/config.js';
+import { ConfigError, loadConfig, resolveSourceFile } from '@/lib/config.js';
 import type {
   ReplaceOp,
   ResolvedFileConfig,
   ResolvedReplaceOp,
   ResolvedSyncConfig,
-} from '../scripts/lib/config.js';
-import { validateAnchors } from '../scripts/lib/anchors.js';
-import type { AnchorReport } from '../scripts/lib/anchors.js';
-import { resolveSyncPlan } from '../scripts/lib/plan.js';
-import { processFile } from '../scripts/lib/process-file.js';
-import { runSync } from '../scripts/lib/sync.js';
+} from '@/lib/config.js';
+import { validateAnchors } from '@/lib/anchors.js';
+import type { AnchorReport } from '@/lib/anchors.js';
+import { resolveSyncPlan } from '@/lib/plan.js';
+import { processFile } from '@/lib/process-file.js';
+import { runSync } from '@/lib/sync.js';
 import {
   applyReplaceOps,
   normalizeLineEndings,
   serializeFrontmatter,
   stripFrontmatter,
   stripSourceComment,
-} from '../scripts/lib/transforms.js';
+} from '@/lib/transforms.js';
 
 const { join } = path;
 

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { cycleToReviewModel, restoreOriginalState } from '../src/review-core.js';
-import { createInitialState } from '../src/state-core.js';
-import type { MaestriaState } from '../src/state-core.js';
+import { cycleToReviewModel, restoreOriginalState } from '@/review-core.js';
+import { createInitialState } from '@/state-core.js';
+import type { MaestriaState } from '@/state-core.js';
 
 interface MockCtx {
   modelRegistry: { getAll: () => { id: string }[] };

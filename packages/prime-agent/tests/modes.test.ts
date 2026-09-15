@@ -3,9 +3,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { createModePromptHandler, getModePrompt, MODE_MARKERS } from '../src/modes.ts';
-import type { ExtensionContext } from '../src/pi-api.ts';
-import type { MaestriaModeState } from '../src/state.ts';
+import { createModePromptHandler, getModePrompt, MODE_MARKERS } from '@/modes.ts';
+import type { ExtensionContext } from '@/pi-api.ts';
+import type { MaestriaModeState } from '@/state.ts';
 
 // Note: modes.ts keeps a module-level prompt cache keyed by mode keyword, so
 // each test below exercises a distinct keyword exactly once. Files are written

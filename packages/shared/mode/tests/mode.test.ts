@@ -11,7 +11,7 @@ import {
   MODE_MARKERS,
   MODE_PRIORITY,
   stripKeyword,
-} from '../src/index.js';
+} from '@/index.js';
 
 const requireDetection = (
   result: ReturnType<typeof detectMode>,

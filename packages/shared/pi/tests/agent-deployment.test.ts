@@ -3,8 +3,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { deploySpecialistAgents } from '../src/agent-deployment.js';
-import { ALLOWED_AGENTS } from '../src/subagent-utils.js';
+import { deploySpecialistAgents } from '@/agent-deployment.js';
+import { ALLOWED_AGENTS } from '@/subagent-utils.js';
 
 describe('deploySpecialistAgents', () => {
   let root: string;

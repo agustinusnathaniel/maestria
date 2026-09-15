@@ -10,8 +10,8 @@ import {
   getModePrompt,
   loadModePrompt,
   MODE_MARKERS,
-} from '../src/modes-core.js';
-import type { ModeDetectResult } from '../src/modes-core.js';
+} from '@/modes-core.js';
+import type { ModeDetectResult } from '@/modes-core.js';
 
 const requireModeResult = (result: ModeDetectResult | null): ModeDetectResult => {
   if (result === null) {

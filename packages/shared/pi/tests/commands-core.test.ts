@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { installCommands } from '../src/commands-core.js';
-import type { CommandsCtx, CommandsPi } from '../src/commands-core.js';
-import { createInitialState } from '../src/state-core.js';
-import type { MaestriaState } from '../src/state-core.js';
-import { MAESTRIA_EVENTS } from '../src/subagent-utils.js';
+import { installCommands } from '@/commands-core.js';
+import type { CommandsCtx, CommandsPi } from '@/commands-core.js';
+import { createInitialState } from '@/state-core.js';
+import type { MaestriaState } from '@/state-core.js';
+import { MAESTRIA_EVENTS } from '@/subagent-utils.js';
 
 type CommandHandler = (args: string, ctx: CommandsCtx) => Promise<void> | void;
 

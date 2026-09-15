@@ -9,6 +9,9 @@
   ],
   "compilerOptions": {
     "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*", "./scripts/*"]
+    },
     "types": ["node"]
   }
 }

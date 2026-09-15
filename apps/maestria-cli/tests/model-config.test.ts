@@ -2,10 +2,7 @@ import { Effect } from 'effect';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
 import type * as shell from '@/lib/shell.js';
-import {
-  parseAgentFrontmatterModel,
-  setAgentFrontmatterModel,
-} from '../src/lib/agent-frontmatter.js';
+import { parseAgentFrontmatterModel, setAgentFrontmatterModel } from '@/lib/agent-frontmatter.js';
 import {
   createCodexAgentConfig,
   getModelConfigHandler,
@@ -17,7 +14,7 @@ import {
   parsePiModels,
   setCodexAgentModel,
   setConfigModelJsonc,
-} from '../src/lib/model-config.js';
+} from '@/lib/model-config.js';
 
 const shellMocks = vi.hoisted(() => ({
   commandExists: vi.fn(),
