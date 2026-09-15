@@ -307,8 +307,7 @@ const codexMarketplace: NpmMarketplace = {
 };
 
 const refreshClaudeMarketplace = (): Effect.Effect<void, CommandError> =>
-  // Network refresh inside both install and update; same fetch class as the
-  // plugin commands below, so it shares their generous deadline.
+  // Network refresh shared by install and update; same 120s fetch deadline.
   run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE], 120_000).pipe(
     Effect.asVoid,
   );
@@ -499,9 +498,7 @@ const opencode: PlatformDefinition = {
         Effect.catchCause(() => Effect.succeed(false)),
       );
       const flag = globalConfig ? ['-g', '--force'] : ['--force'];
-      // Cold plugin downloads take tens of seconds; the shared 30s default
-      // kills the host mid-install and reports a failure even when the new
-      // package was already written. Match install's generous deadline.
+      // Cold fetches outlast the 30s default; match install's 120s deadline.
       yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag], 120_000);
     }),
 };
@@ -513,9 +510,7 @@ const claudeCode: PlatformDefinition = {
   install: Effect.gen(function* install() {
     yield* prepareNpmMarketplace(claudeMarketplace);
     yield* refreshClaudeMarketplace();
-    // Materializes the plugin payload through the host CLI; cold fetches take
-    // tens of seconds (see opencode update), so this keeps the 120s deadline
-    // instead of the shared 30s default.
+    // Host payload materialization can fetch; keep the 120s deadline.
     yield* run(
       'claude',
       ['plugin', 'install', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--scope', 'user'],
@@ -554,8 +549,6 @@ const codex: PlatformDefinition = {
   id: 'codex',
   install: Effect.gen(function* install() {
     yield* prepareNpmMarketplace(codexMarketplace);
-    // Same payload-fetch class as the other host plugin commands: 120s, not
-    // the shared 30s default.
     yield* run(
       'codex',
       ['plugin', 'add', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json'],
@@ -1089,9 +1082,7 @@ const hermes: PlatformDefinition = {
             `Updating to latest from git.`,
         );
       }
-      // Pulls latest changes from git: same network-fetch class as install,
-      // so it shares install's 120s deadline instead of risking a timeout
-      // kill that reports failure after the new payload was already written.
+      // Git pull of latest; shares install's 120s deadline.
       yield* run('hermes', ['plugins', 'update', 'maestria-hermes'], 120_000);
     }),
 };

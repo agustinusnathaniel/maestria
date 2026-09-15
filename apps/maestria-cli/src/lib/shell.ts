@@ -37,11 +37,10 @@ const readFailureField = (error: unknown, field: string): string => {
 };
 
 /**
- * Build an actionable failure message from an execFile rejection. Node
- * delivers the child output as separate callback arguments (not on the error
- * object), so the caller attaches them to the rejection; without them every
- * failure degrades to a bare "Command failed: <cmd>" with no diagnostics
- * (notably timeout kills, which carry no stderr at all).
+ * Actionable message from an execFile rejection. Child output arrives as
+ * separate callback arguments, so the caller attaches it to the rejection;
+ * without that, failures (notably timeout kills, which carry no stderr)
+ * degrade to a bare "Command failed: <cmd>".
  */
 const describeRunFailure = (timeoutMs: number, error: unknown): string => {
   const stderr = readFailureField(error, 'stderr');
@@ -69,10 +68,7 @@ const describeRunFailure = (timeoutMs: number, error: unknown): string => {
  * temporary directory. Existing callers that pass no `cwd` keep spawning in the
  * invoking process's directory.
  *
- * Network-bound host installers (opencode/pi/omp plugin fetches) need a
- * generous timeout: a cold plugin download can take tens of seconds, and a
- * kill past the deadline reports a failure even when the host already wrote
- * the new package. Callers driving such commands pass an explicit timeout.
+ * Callers driving network-bound host installers pass an explicit timeout.
  */
 export const run = (
   cmd: string,
