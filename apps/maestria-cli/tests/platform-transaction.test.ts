@@ -45,6 +45,25 @@ const makePlatform = (overrides: Partial<PlatformHandler> = {}): PlatformHandler
   ...overrides,
 });
 
+// Version-cache side effects (read/invalidate under XDG_CACHE_HOME) must
+// never touch the developer machine, so cache-touching tests run inside a
+// throwaway cache home that is removed afterwards.
+const withTempCacheHome = async <A>(task: (cacheRoot: string) => Promise<A>): Promise<A> => {
+  const cacheRoot = await mkdtemp(path.join(tmpdir(), 'maestria-transaction-'));
+  const previousCacheHome = process.env.XDG_CACHE_HOME;
+  process.env.XDG_CACHE_HOME = cacheRoot;
+  try {
+    return await task(cacheRoot);
+  } finally {
+    if (previousCacheHome === undefined) {
+      delete process.env.XDG_CACHE_HOME;
+    } else {
+      process.env.XDG_CACHE_HOME = previousCacheHome;
+    }
+    await rm(cacheRoot, { force: true, recursive: true });
+  }
+};
+
 describe('installOne', () => {
   it('reports a successful install with the platform identity', async () => {
     const result = await Effect.runPromise(installOne(makePlatform(), true));
@@ -112,10 +131,7 @@ describe('updateOne', () => {
   });
 
   it('names the plugin package instead of the runtime in update output', async () => {
-    const cacheRoot = await mkdtemp(path.join(tmpdir(), 'maestria-transaction-copy-'));
-    const previousCacheHome = process.env.XDG_CACHE_HOME;
-    process.env.XDG_CACHE_HOME = cacheRoot;
-    try {
+    await withTempCacheHome(async () => {
       let installedVersionReads = 0;
       const platform = makePlatform({
         getInstalledVersion: Effect.sync(() => {
@@ -130,21 +146,11 @@ describe('updateOne', () => {
       expect(result.ok).toBe(true);
       expect(spinnerCalls.start).toEqual(['Updating @maestria/opencode: 0.1.0 → 0.2.0...']);
       expect(spinnerCalls.stop).toEqual(['Updated @maestria/opencode: v0.1.0 → v0.2.0']);
-    } finally {
-      if (previousCacheHome === undefined) {
-        delete process.env.XDG_CACHE_HOME;
-      } else {
-        process.env.XDG_CACHE_HOME = previousCacheHome;
-      }
-      await rm(cacheRoot, { force: true, recursive: true });
-    }
+    });
   });
 
   it('falls back to the platform label when there is no npm package', async () => {
-    const cacheRoot = await mkdtemp(path.join(tmpdir(), 'maestria-transaction-copy-'));
-    const previousCacheHome = process.env.XDG_CACHE_HOME;
-    process.env.XDG_CACHE_HOME = cacheRoot;
-    try {
+    await withTempCacheHome(async () => {
       let installedVersionReads = 0;
       const platform = makePlatform({
         getInstalledVersion: Effect.sync(() => {
@@ -158,14 +164,7 @@ describe('updateOne', () => {
       expect(result.ok).toBe(true);
       expect(spinnerCalls.start).toEqual(['Updating OpenCode: 0.1.0 → 0.2.0...']);
       expect(spinnerCalls.stop).toEqual(['Updated OpenCode: v0.1.0 → v0.2.0']);
-    } finally {
-      if (previousCacheHome === undefined) {
-        delete process.env.XDG_CACHE_HOME;
-      } else {
-        process.env.XDG_CACHE_HOME = previousCacheHome;
-      }
-      await rm(cacheRoot, { force: true, recursive: true });
-    }
+    });
   });
 
   it('refuses a pinned update when the platform does not support version pinning', async () => {
@@ -296,10 +295,7 @@ describe('updateOne', () => {
   });
 
   it('updates and invalidates the cached version for a package-backed platform', async () => {
-    const cacheRoot = await mkdtemp(path.join(tmpdir(), 'maestria-transaction-'));
-    const previousCacheHome = process.env.XDG_CACHE_HOME;
-    process.env.XDG_CACHE_HOME = cacheRoot;
-    try {
+    await withTempCacheHome(async (cacheRoot) => {
       const cacheFile = path.join(cacheRoot, 'maestria', 'versions.json');
       await mkdir(path.dirname(cacheFile), { recursive: true });
       await writeFile(
@@ -331,13 +327,6 @@ describe('updateOne', () => {
       const cacheText = await readFile(cacheFile, 'utf-8');
       expect(cacheText).not.toContain('@maestria/opencode');
       expect(cacheText).toContain('@maestria/untouched');
-    } finally {
-      if (previousCacheHome === undefined) {
-        delete process.env.XDG_CACHE_HOME;
-      } else {
-        process.env.XDG_CACHE_HOME = previousCacheHome;
-      }
-      await rm(cacheRoot, { force: true, recursive: true });
-    }
+    });
   });
 });

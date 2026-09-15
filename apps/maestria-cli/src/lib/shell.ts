@@ -150,39 +150,33 @@ const parseVersionCache = (text: string): VersionCache => {
   }
 };
 
-export const npmViewVersion = (pkg: string): Effect.Effect<string> => {
-  const readCache = (): Effect.Effect<string> =>
-    readTextFile(getVersionCacheFile()).pipe(
-      Effect.map((out) => {
-        try {
-          const cache = parseVersionCache(out);
-          return cache[pkg]?.version ?? '';
-        } catch {
-          return '';
-        }
-      }),
-      Effect.catchCause(() => Effect.succeed('')),
-    );
+/** Read the cached package versions, tolerating a missing or invalid file. */
+const cachedVersions = (): Effect.Effect<VersionCache> =>
+  readTextFile(getVersionCacheFile()).pipe(
+    Effect.map(parseVersionCache),
+    Effect.catchCause(() => Effect.succeed({})),
+  );
 
+export const npmViewVersion = (pkg: string): Effect.Effect<string> => {
   const updateCache = (version: string): Effect.Effect<void> =>
-    Effect.tryPromise({
-      catch: () => {
-        /* empty */
-      },
-      try: async () => {
-        const { mkdir, readFile, writeFile } = await import('node:fs/promises');
-        await mkdir(getMaestriaCacheDir(), { recursive: true });
-        let cache: Record<string, { version: string }> = {};
-        try {
-          const existing = await readFile(getVersionCacheFile(), 'utf-8');
-          cache = parseVersionCache(existing);
-        } catch {
-          /* file doesn't exist or is invalid */
-        }
-        cache[pkg] = { version };
-        await writeFile(getVersionCacheFile(), JSON.stringify(cache));
-      },
-    }).pipe(Effect.catchCause(() => Effect.void));
+    cachedVersions().pipe(
+      Effect.flatMap((cache) =>
+        Effect.tryPromise({
+          catch: () => {
+            /* empty */
+          },
+          try: async () => {
+            const { mkdir, writeFile } = await import('node:fs/promises');
+            await mkdir(getMaestriaCacheDir(), { recursive: true });
+            await writeFile(
+              getVersionCacheFile(),
+              JSON.stringify({ ...cache, [pkg]: { version } }),
+            );
+          },
+        }),
+      ),
+      Effect.catchCause(() => Effect.void),
+    );
 
   return Effect.gen(function* npmViewVersionEffect() {
     const version = yield* run('npm', ['view', pkg, 'version'], 5000).pipe(
@@ -195,34 +189,28 @@ export const npmViewVersion = (pkg: string): Effect.Effect<string> => {
     }
 
     // Network failed - fall back to cached version (any age)
-    return yield* readCache().pipe(Effect.catchCause(() => Effect.succeed('')));
+    return yield* cachedVersions().pipe(Effect.map((cache) => cache[pkg]?.version ?? ''));
   });
 };
 
 /** Invalidate the version cache for a package (called after successful update) */
 export const invalidateVersionCache = (pkg: string): Effect.Effect<void> =>
-  Effect.gen(function* invalidateVersionCacheEffect() {
-    yield* readTextFile(getVersionCacheFile()).pipe(
-      Effect.flatMap((out) => {
-        try {
+  readTextFile(getVersionCacheFile()).pipe(
+    Effect.flatMap((out) =>
+      Effect.tryPromise({
+        catch: () => {
+          /* empty */
+        },
+        try: async () => {
           const parsed: unknown = JSON.parse(out);
           if (!isRecord(parsed)) {
-            return Effect.void;
+            return;
           }
-          const cache = Object.fromEntries(Object.entries(parsed).filter(([key]) => key !== pkg));
-          return Effect.tryPromise({
-            catch: () => {
-              /* empty */
-            },
-            try: async () => {
-              const { writeFile } = await import('node:fs/promises');
-              await writeFile(getVersionCacheFile(), JSON.stringify(cache));
-            },
-          });
-        } catch {
-          return Effect.void;
-        }
+          const { [pkg]: _removed, ...rest } = parsed;
+          const { writeFile } = await import('node:fs/promises');
+          await writeFile(getVersionCacheFile(), JSON.stringify(rest));
+        },
       }),
-      Effect.catchCause(() => Effect.void),
-    );
-  });
+    ),
+    Effect.catchCause(() => Effect.void),
+  );
