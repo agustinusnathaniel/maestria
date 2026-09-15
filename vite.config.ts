@@ -117,6 +117,22 @@ export default defineConfig({
         input: [{ auto: true }, '!dist/**', '!**/.astro/**', '!.astro/**'],
         output: [],
       },
+      'check-full': {
+        // vp-owned local orchestration: same shape as `check-ci` except
+        // full `build` (with docs) instead of `build:ci`.
+        // Hyphen name avoids collision with package.json `check` delegator
+        // (a name cannot exist in both vite.config and package.json).
+        // dependsOn fans out in parallel; command array runs serially after.
+        cache: false,
+        command: [
+          'vp run check-lint',
+          'vp run check-python',
+          'vp run test-sync-plugin-versions',
+          'vp run test',
+          'vp run check-manifest-versions',
+        ],
+        dependsOn: ['build', 'check-fmt', 'check-sync'],
+      },
       'check-lint': {
         cache: true,
         command: 'vp lint',

@@ -15,7 +15,7 @@
     "changeset": "changeset",
     "version-packages": "changeset version && pnpm exec tsx scripts/sync-plugin-versions.ts",
     "release": "changeset publish",
-    "check": "vp run build & P1=$!; vp run check-fmt & P2=$!; wait $P1 || FAIL=1; wait $P2 || FAIL=1; if [ -n \"$FAIL\" ]; then exit 1; fi && vp run check-lint && vp run test && vp run test-sync-plugin-versions && vp run check-manifest-versions",
+    "check": "vp run check-full",
     "check:ci": "vp run check-ci",
     "clean": "vp cache clean",
     "fmt": "vp fmt",
