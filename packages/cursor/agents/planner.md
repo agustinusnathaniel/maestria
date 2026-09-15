@@ -1,5 +1,5 @@
 ---
-description: Create detailed implementation plans with phased dependencies, timelines, and success criteria. Use for complex multi-phase features before building.
+description: Phased planning agent with dependencies, verification criteria, timelines, and rollback points.
 name: planner
 readonly: true
 ---

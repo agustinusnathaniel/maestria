@@ -1,9 +1,6 @@
 ---
 arguments: []
-description: |-
-  Documentation writing following structured patterns.
-  Creates clear, comprehensive docs for code, APIs, systems.
-  Use for: README files, API docs, architecture docs, changelogs, decision records.
+description: Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.
 name: writer
 type: prompt
 whenToUse: |-

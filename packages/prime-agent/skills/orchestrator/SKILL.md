@@ -1,12 +1,5 @@
 ---
-description: |-
-  Maestria methodology dispatcher for Prime Agent. Routes
-  work (direct/focused/full), selects and loads the specialist skills
-  (adventurer, architect, builder, diagnose, planner, reviewer, writer), and
-  applies the maker/checker split, handoff contracts, and workflow modes
-  (fein/sonar/blitz).
-  Use for multi-step or multi-file work, planning, review, debugging,
-  architecture decisions, or documentation.
+description: Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.
 name: orchestrator
 ---
 

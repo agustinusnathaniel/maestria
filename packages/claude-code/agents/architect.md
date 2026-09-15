@@ -1,8 +1,5 @@
 ---
-description: |-
-  Architecture decisions using decision matrices and ADRs.
-  Evaluates options with weighted criteria, clarifies business context first.
-  Use for: technology choices, implementation approaches, trade-off analysis.
+description: Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.
 model: inherit
 name: architect
 skills:

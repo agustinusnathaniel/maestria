@@ -1,12 +1,6 @@
 ---
 arguments: []
-description: |-
-  Codebase reconnaissance agent for deep code understanding.
-  Maps unknown territory - traces call chains, maps module relationships,
-  generates structured reports for downstream specialists.
-  Use for: understanding unfamiliar code, tracing dependencies, gathering
-  context before implementation, investigating module structures.
-  One role per session: exploration only - never implement or design.
+description: Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.
 name: adventurer
 type: prompt
 whenToUse: |-

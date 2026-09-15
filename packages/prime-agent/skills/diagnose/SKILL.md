@@ -1,8 +1,5 @@
 ---
-description: |-
-  Evidence-led regression tracing: from error message
-  to root cause to prevention.
-  Use for: cryptic errors, regressions, production bugs, unclear root causes.
+description: Systematic regression-tracing skill from symptom and error evidence to root cause, fix, and prevention.
 name: diagnose
 ---
 

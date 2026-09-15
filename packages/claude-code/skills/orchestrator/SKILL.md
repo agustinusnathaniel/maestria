@@ -1,12 +1,5 @@
 ---
-description: |-
-  Maestria methodology dispatcher for Claude Code.
-  Routes work (direct/focused/full), delegates to specialist agents
-  (maestria:adventurer, maestria:architect, maestria:builder, maestria:diagnose,
-  maestria:planner, maestria:reviewer, maestria:writer), and enforces the
-  maker/checker split, handoff contracts, and workflow modes (fein/sonar/blitz).
-  Use for multi-step or multi-file work, planning, review, debugging,
-  architecture decisions, or documentation.
+description: Maestria workflow dispatcher for Claude Code routing, handoffs, and independent review.
 name: orchestrator
 ---
 

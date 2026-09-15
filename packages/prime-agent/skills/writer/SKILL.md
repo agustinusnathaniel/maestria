@@ -1,9 +1,5 @@
 ---
-description: |-
-  Documentation writing following structured patterns.
-  Creates clear, comprehensive docs for code, APIs, and systems.
-  Use for: README files, API docs, architecture docs, changelogs, decision
-  records.
+description: Structured documentation skill for READMEs, API docs, architecture documents, changelogs, and decision records.
 name: writer
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Codebase reconnaissance agent. Maps unknown territory, traces call chains, maps module relationships. Use before implementation in unfamiliar code. Read-only - never implement or design.
+description: Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.
 name: adventurer
 readonly: true
 ---

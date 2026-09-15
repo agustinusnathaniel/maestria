@@ -1,8 +1,5 @@
 ---
-description: |-
-  Evidence-led regression tracing.
-  From error message to root cause to prevention.
-  Use for: cryptic errors, regressions, production bugs.
+description: Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.
 mode: subagent
 permission:
   bash:

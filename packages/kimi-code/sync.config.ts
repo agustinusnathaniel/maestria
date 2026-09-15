@@ -25,12 +25,7 @@ export default {
     'adventurer.md': {
       frontmatter: {
         arguments: [],
-        description: `Codebase reconnaissance agent for deep code understanding.
-Maps unknown territory - traces call chains, maps module relationships,
-generates structured reports for downstream specialists.
-Use for: understanding unfamiliar code, tracing dependencies, gathering
-context before implementation, investigating module structures.
-One role per session: exploration only - never implement or design.`,
+        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.`,
         name: 'adventurer',
         type: 'prompt',
         whenToUse: `Understanding unfamiliar code, tracing dependencies, mapping a module
@@ -44,9 +39,7 @@ Read-only - never implement, design, or edit.`,
     'architect.md': {
       frontmatter: {
         arguments: [],
-        description: `Architecture decisions using decision matrices and ADRs.
-Evaluates options with weighted criteria, clarifies business context first.
-Use for: technology choices, implementation approaches, trade-off analysis.`,
+        description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
         name: 'architect',
         type: 'prompt',
         whenToUse: `Technology choices, comparing approaches, "should we use X or Y",
@@ -59,9 +52,7 @@ one approach is viable and the choice has downstream impact.`,
     'builder.md': {
       frontmatter: {
         arguments: [],
-        description: `Focused implementation agent for atomic tasks.
-Executes one verifiable unit of work with minimal context.
-Use for: targeted fixes, feature implementation, refactors, adding tests.`,
+        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.`,
         name: 'builder',
         type: 'prompt',
         whenToUse: `Feature implementation, bug fixing, test writing, refactoring within a
@@ -99,9 +90,7 @@ work is a concrete atomic unit.`,
     'diagnose.md': {
       frontmatter: {
         arguments: [],
-        description: `Evidence-led regression tracing.
-From error message to root cause to prevention.
-Use for: cryptic errors, regressions, production bugs.`,
+        description: `Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.`,
         name: 'diagnose',
         type: 'prompt',
         whenToUse: `Regressions, cryptic errors, performance issues, "why is X happening",
@@ -246,9 +235,7 @@ decisions, and documentation generation under the maestria workflow.`,
     'planner.md': {
       frontmatter: {
         arguments: [],
-        description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
-Breaks down complex features into verifiable milestones.
-Use for: complex features requiring multi-phase execution, when the plan needs review before building.`,
+        description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
         name: 'planner',
         type: 'prompt',
         whenToUse: `Multi-phase features requiring ordered work, migrations, rollouts, or
@@ -260,10 +247,7 @@ any complex feature that needs review before building.`,
     'reviewer.md': {
       frontmatter: {
         arguments: [],
-        description: `Code review with quality gates.
-Reviews code for correctness, edge cases, security, performance, maintainability,
-and adherence to conventions. Provides specific, actionable feedback.
-Use for: PR review, pre-commit review, architecture document review.`,
+        description: `Independent review agent covering correctness, security, performance, maintainability, and quality gates.`,
         name: 'reviewer',
         type: 'prompt',
         whenToUse: `Pre-merge review, post-implementation validation, security audits,
@@ -289,9 +273,7 @@ reconciled; run the general review first, then risk-matched lenses sequentially.
     'writer.md': {
       frontmatter: {
         arguments: [],
-        description: `Documentation writing following structured patterns.
-Creates clear, comprehensive docs for code, APIs, systems.
-Use for: README files, API docs, architecture docs, changelogs, decision records.`,
+        description: `Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.`,
         name: 'writer',
         type: 'prompt',
         whenToUse: `"Document this", "write README", "ADR", "changelog", "API docs",
