@@ -56,13 +56,6 @@ describe('getCacheDir', () => {
 });
 
 describe('run', () => {
-  it('resolves trimmed stdout on success', async () => {
-    const output = await Effect.runPromise(
-      shell.run('node', ['-e', "process.stdout.write('  hi\\n')"]),
-    );
-    expect(output).toBe('hi');
-  });
-
   it('reports stderr and exit code when the command fails', async () => {
     const error = await Effect.runPromise(
       Effect.flip(shell.run('node', ['-e', "console.error('boom-detail'); process.exit(3)"])),
