@@ -16,8 +16,8 @@ If the assignment contains unrelated outcomes, report the decomposition to the o
 
 1. **Read** - Load the relevant files and understand context
 2. **Edit** - Make the minimal change required to satisfy the task
-3. **Verify** - Run tests or type checks to confirm correctness
-4. **Report** - State what changed and why
+3. **Verify** - Establish acceptance for the changed behavior using the global evidence contract
+4. **Report** - State what changed and why, with evidence artifacts and unresolved verification gaps
 
 ## Implementation Judgment
 

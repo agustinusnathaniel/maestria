@@ -151,7 +151,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(/for implementation work, own the delivery path/iu);
     expect(orchestrator).toMatch(/without ceremonial approval/iu);
     expect(orchestrator).toMatch(
-      /do not stop at a local diff, commit, pushed branch, or `PR pending`/iu,
+      /terminal artifact is reviewed changes on a pushed feature branch with an open PR/iu,
     );
   });
 
@@ -193,6 +193,39 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toContain('authorization');
     expect(reviewer).toMatch(/label `\[fix\]` only for a concrete blocker/iu);
     expect(reviewer).toMatch(/after a repair, re-review only the repaired scope/iu);
+  });
+
+  it('keeps rendered evidence distinct from builds and attachment support', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const builder = readDirective('specialists', 'builder.md');
+
+    expect(rules).toMatch(/rendered appearance and interactions need rendered checks/iu);
+    expect(rules).toMatch(/do not waive an explicit user or project evidence requirement/iu);
+    expect(orchestrator).toMatch(/documentation sites and visible CLI output/iu);
+    expect(orchestrator).toMatch(
+      /include the evidence requirement in implementation and review briefs/iu,
+    );
+    expect(orchestrator).toMatch(/headless capture/iu);
+    expect(orchestrator).toMatch(/terminal transcript/iu);
+    expect(orchestrator).toMatch(/upload is unavailable.*preserve the local artifact/iu);
+    expect(orchestrator).toMatch(/unnecessary with a concrete reason/iu);
+    expect(orchestrator).toMatch(/explicit user or project requirement.*remains acceptance work/iu);
+    expect(builder).toMatch(/evidence artifacts and unresolved verification gaps/iu);
+    expect(builder).not.toMatch(/tests or type checks to confirm correctness/iu);
+  });
+
+  it('reconciles delivery with accepted requirements on every implementation route', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(orchestrator).toMatch(/independent reviewer.*every route, including direct/iu);
+    expect(orchestrator).toMatch(/original request and accepted follow-ups/iu);
+    expect(orchestrator).toMatch(
+      /required artifacts, repository checks, review, documentation, and changesets/iu,
+    );
+    expect(orchestrator).toMatch(/complete in-scope omissions within existing authorization/iu);
+    expect(orchestrator).toMatch(/unmet requirements as incomplete or blocked/iu);
+    expect(orchestrator).toMatch(/PR or reviewer approval alone does not establish completion/iu);
   });
 
   it('keeps bounded repair, progress detection, and fail-loud stopping', () => {
