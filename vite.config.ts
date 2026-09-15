@@ -94,12 +94,34 @@ export default defineConfig({
         input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
         output: ['dist/**'],
       },
+      'check-ci': {
+        cache: false,
+        command: [
+          'vp run check-lint',
+          'vp run test-sync-plugin-versions',
+          'vp run test',
+          'vp run check-manifest-versions',
+          'vp run check-python',
+        ],
+        dependsOn: ['build:ci', 'check-fmt', 'check-sync'],
+      },
       'check-fmt': {
         cache: true,
         command: 'vp fmt --check',
         // fmt is input-heavy but doesn't need build outputs; exclude dist to stabilize cache
         input: [{ auto: true }, '!dist/**', '!**/.astro/**', '!.astro/**'],
         output: [],
+      },
+      'check-full': {
+        cache: false,
+        command: [
+          'vp run check-lint',
+          'vp run check-python',
+          'vp run test-sync-plugin-versions',
+          'vp run test',
+          'vp run check-manifest-versions',
+        ],
+        dependsOn: ['build', 'check-fmt', 'check-sync'],
       },
       'check-lint': {
         cache: true,
