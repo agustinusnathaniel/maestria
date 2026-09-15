@@ -1,12 +1,8 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { createInitialState } from '../src/state-core.js';
-import {
-  createToolCallHandler,
-  DANGEROUS_PATTERNS,
-  isReadOnlyBashCommand,
-} from '../src/tools-core.js';
-import type { ToolCallHandlerOptions } from '../src/tools-core.js';
+import { createInitialState } from '@/state-core.js';
+import { createToolCallHandler, DANGEROUS_PATTERNS, isReadOnlyBashCommand } from '@/tools-core.js';
+import type { ToolCallHandlerOptions } from '@/tools-core.js';
 
 // ── isReadOnlyBashCommand ────────────────────────────────────────────
 

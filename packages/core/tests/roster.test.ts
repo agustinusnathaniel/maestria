@@ -13,7 +13,7 @@ import opencodeConfig from '../../opencode/sync.config.js';
 import piConfig from '../../pi/sync.config.js';
 import primeAgentConfig from '../../prime-agent/sync.config.js';
 import { ALLOWED_AGENTS } from '../../shared/pi/src/subagent-utils.js';
-import type { ReplaceOp, SyncConfig } from '../scripts/lib/config.js';
+import type { ReplaceOp, SyncConfig } from '@/lib/config.js';
 
 const SPECIALISTS_DIR = path.join(import.meta.dirname, '..', 'agent-directives', 'specialists');
 const ORCHESTRATOR = 'orchestrator';

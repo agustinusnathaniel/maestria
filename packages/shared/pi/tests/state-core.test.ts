@@ -14,8 +14,8 @@ import {
   renderMaestriaSummary,
   replaceState,
   stateFromSessionEntries,
-} from '../src/state-core.js';
-import type { MaestriaState, SessionEntry } from '../src/state-core.js';
+} from '@/state-core.js';
+import type { MaestriaState, SessionEntry } from '@/state-core.js';
 
 // ── readSessionBranch ────────────────────────────────────────────────
 

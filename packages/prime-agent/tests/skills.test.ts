@@ -7,7 +7,7 @@ import {
   frontmatterValue,
   isValidSkillName,
   NAME_MAX,
-} from '../scripts/skill-validation.ts';
+} from '@/skill-validation.ts';
 import syncConfig from '../sync.config.js';
 
 const __dirname = import.meta.dirname;

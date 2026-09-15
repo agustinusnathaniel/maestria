@@ -10,8 +10,8 @@ import type {
   ExtensionEventRegistration,
   ExtensionFactory,
   RegisteredCommandOptions,
-} from '../src/pi-api.ts';
-import { MODE_STATE_CUSTOM_TYPE } from '../src/state.ts';
+} from '@/pi-api.ts';
+import { MODE_STATE_CUSTOM_TYPE } from '@/state.ts';
 
 const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');

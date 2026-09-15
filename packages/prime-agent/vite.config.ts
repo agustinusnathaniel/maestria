@@ -6,6 +6,9 @@ export default defineConfig({
     minify: true,
     target: 'node22',
   },
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     include: ['tests/**/*.test.ts'],
   },

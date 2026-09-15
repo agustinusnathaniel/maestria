@@ -5,7 +5,7 @@ import {
   assertNonEmptyTask,
   assertValidAgent,
   MAESTRIA_EVENTS,
-} from '../src/subagent-utils.js';
+} from '@/subagent-utils.js';
 
 // ── Constants ──────────────────────────────────────────────────────
 
