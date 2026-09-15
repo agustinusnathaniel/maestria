@@ -54,14 +54,14 @@ export const uninstallOne = (
 ): Effect.Effect<PlatformResult> =>
   runLifecycleTransaction(platform, quiet, 'Uninstalling', 'Uninstalled', platform.uninstall);
 
-const previewVersionDiff = (before: string, after: string): string => {
+const previewVersionDiff = (ref: string, before: string, after: string): string => {
   if (before === 'unknown' && after !== 'unknown') {
-    return `Installed v${after}`;
+    return `Installed ${ref} v${after}`;
   }
   if (before === after) {
-    return `Already up to date (v${before})`;
+    return `Already up to date (${ref} v${before})`;
   }
-  return `Updated: v${before} → v${after}`;
+  return `Updated ${ref}: v${before} → v${after}`;
 };
 
 const isSpecified = (value: string | null | undefined): value is string =>
@@ -152,7 +152,11 @@ export const updateOne = (
       } satisfies PlatformResult;
     }
     const spinner = createSpinner(quiet);
-    spinner.start(`Updating ${platform.label}: ${prevVersion} → ${targetVersion}...`);
+    // Name the plugin package, not the runtime: the update replaces
+    // `@maestria/*` payload files while the host agent itself is untouched.
+    // Hosts without an npm package (git-based Hermes) keep their label.
+    const packageRef = platform.npmPackage ?? platform.label;
+    spinner.start(`Updating ${packageRef}: ${prevVersion} → ${targetVersion}...`);
     const errorMessage: string | null = yield* platform.update(version, snapshot ?? undefined).pipe(
       Effect.as(null),
       Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
@@ -169,7 +173,7 @@ export const updateOne = (
     const nextVersion = yield* platform.getInstalledVersion.pipe(
       Effect.catchCause(() => Effect.succeed('unknown')),
     );
-    spinner.stop(previewVersionDiff(prevVersion, nextVersion));
+    spinner.stop(previewVersionDiff(packageRef, prevVersion, nextVersion));
     if (isSpecified(platform.npmPackage)) {
       yield* invalidateVersionCache(platform.npmPackage).pipe(Effect.catchCause(() => Effect.void));
     }

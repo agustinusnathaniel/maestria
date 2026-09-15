@@ -2,11 +2,32 @@ import { Effect } from 'effect';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vite-plus/test';
+import type * as ClackPrompts from '@clack/prompts';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import type { PlatformHandler } from '@/lib/platforms.js';
 import { installOne, uninstallOne, updateOne } from '@/lib/platform-transaction.js';
 import { CommandError } from '@/lib/shell.js';
+
+// Capture the spinner copy without rendering: the update flow must name the
+// `@maestria/*` plugin package, not the host runtime, in its output.
+const spinnerCalls = vi.hoisted(() => ({ start: [] as string[], stop: [] as string[] }));
+
+vi.mock('@clack/prompts', async (importOriginal) => {
+  const actual = await importOriginal<typeof ClackPrompts>();
+  return {
+    ...actual,
+    spinner: () => ({
+      message: () => {},
+      start: (message: string) => {
+        spinnerCalls.start.push(message);
+      },
+      stop: (message: string) => {
+        spinnerCalls.stop.push(message);
+      },
+    }),
+  };
+});
 
 const commandError = (command: string, message: string): CommandError =>
   new CommandError({ command, message });
@@ -85,6 +106,68 @@ describe('uninstallOne', () => {
 });
 
 describe('updateOne', () => {
+  beforeEach(() => {
+    spinnerCalls.start.length = 0;
+    spinnerCalls.stop.length = 0;
+  });
+
+  it('names the plugin package instead of the runtime in update output', async () => {
+    const cacheRoot = await mkdtemp(path.join(tmpdir(), 'maestria-transaction-copy-'));
+    const previousCacheHome = process.env.XDG_CACHE_HOME;
+    process.env.XDG_CACHE_HOME = cacheRoot;
+    try {
+      let installedVersionReads = 0;
+      const platform = makePlatform({
+        getInstalledVersion: Effect.sync(() => {
+          installedVersionReads += 1;
+          return installedVersionReads === 1 ? '0.1.0' : '0.2.0';
+        }),
+        npmPackage: '@maestria/opencode',
+      });
+
+      const result = await Effect.runPromise(updateOne(platform, false));
+
+      expect(result.ok).toBe(true);
+      expect(spinnerCalls.start).toEqual(['Updating @maestria/opencode: 0.1.0 → 0.2.0...']);
+      expect(spinnerCalls.stop).toEqual(['Updated @maestria/opencode: v0.1.0 → v0.2.0']);
+    } finally {
+      if (previousCacheHome === undefined) {
+        delete process.env.XDG_CACHE_HOME;
+      } else {
+        process.env.XDG_CACHE_HOME = previousCacheHome;
+      }
+      await rm(cacheRoot, { force: true, recursive: true });
+    }
+  });
+
+  it('falls back to the platform label when there is no npm package', async () => {
+    const cacheRoot = await mkdtemp(path.join(tmpdir(), 'maestria-transaction-copy-'));
+    const previousCacheHome = process.env.XDG_CACHE_HOME;
+    process.env.XDG_CACHE_HOME = cacheRoot;
+    try {
+      let installedVersionReads = 0;
+      const platform = makePlatform({
+        getInstalledVersion: Effect.sync(() => {
+          installedVersionReads += 1;
+          return installedVersionReads === 1 ? '0.1.0' : '0.2.0';
+        }),
+      });
+
+      const result = await Effect.runPromise(updateOne(platform, false));
+
+      expect(result.ok).toBe(true);
+      expect(spinnerCalls.start).toEqual(['Updating OpenCode: 0.1.0 → 0.2.0...']);
+      expect(spinnerCalls.stop).toEqual(['Updated OpenCode: v0.1.0 → v0.2.0']);
+    } finally {
+      if (previousCacheHome === undefined) {
+        delete process.env.XDG_CACHE_HOME;
+      } else {
+        process.env.XDG_CACHE_HOME = previousCacheHome;
+      }
+      await rm(cacheRoot, { force: true, recursive: true });
+    }
+  });
+
   it('refuses a pinned update when the platform does not support version pinning', async () => {
     const updates: (string | undefined)[] = [];
     const platform = makePlatform({
