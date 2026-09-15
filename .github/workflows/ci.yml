@@ -39,10 +39,13 @@ jobs:
         run: pnpm sync:docs
       - name: Check (format + lint + typecheck + test) and Build
         run: pnpm check:ci
-      # Full build (including the docs site) preserves the Astro build
-      # coverage previously provided by the merged bun-smoke job.
-      - name: Build all packages and docs site
-        run: pnpm build
+      # Docs-only trailing build: check:ci already built packages once via
+      # build:ci, so only the Astro docs site remains. Uses the vp-native
+      # filter to avoid the pnpm prebuild (check-sync) hook and keep the
+      # package build exactly once. Preserves the Astro build coverage
+      # previously provided by the merged bun-smoke job.
+      - name: Build docs site
+        run: pnpm exec vp run --filter @maestria/docs build
       - name: Verify opencode plugin loads in Bun
         run: |
           bun -e "
