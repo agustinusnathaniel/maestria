@@ -94,6 +94,22 @@ export default defineConfig({
         input: [{ auto: true }, '!**/.astro/**', '!.astro/**', '!dist/**'],
         output: ['dist/**'],
       },
+      'check-ci': {
+        // vp-owned CI orchestration: no shell &, no wait, no Node wrapper.
+        // Hyphen name avoids collision with package.json `check:ci` delegator
+        // (a name cannot exist in both vite.config and package.json).
+        // dependsOn fans out in parallel (default concurrency 4); command
+        // array runs serially after dependencies succeed.
+        cache: false,
+        command: [
+          'vp run check-lint',
+          'vp run check-python',
+          'vp run test-sync-plugin-versions',
+          'vp run test',
+          'vp run check-manifest-versions',
+        ],
+        dependsOn: ['build:ci', 'check-fmt', 'check-sync'],
+      },
       'check-fmt': {
         cache: true,
         command: 'vp fmt --check',
