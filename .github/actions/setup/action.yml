@@ -1,17 +1,32 @@
 name: 'Maestria Setup'
-description: 'Install dependencies with pnpm, setup Python + ruff, restore vp task cache'
+description: 'Install dependencies with pnpm, optionally setup Python + ruff, restore vp task cache'
+inputs:
+  python:
+    description: 'Set up Python and install ruff (required for check-python)'
+    required: false
+    default: 'true'
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version-file: '.node-version'
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
+      if: inputs.python == 'true'
       with:
         python-version-file: 'packages/hermes/pyproject.toml'
+    - name: Cache pip downloads (ruff wheel)
+      if: inputs.python == 'true'
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/pip
+        key: pip-ruff-0.16.7-${{ runner.os }}
     - name: Install Python checks
-      run: pip install ruff
+      if: inputs.python == 'true'
+      run: pip install ruff==0.16.7
       shell: bash
+    # pnpm/setup has no v3/v4 major (v2 is latest), so it stays. It reads
+    # pnpm 12.4.1 from packageManager and runs pnpm install automatically.
     - uses: pnpm/setup@v2
       with:
         cache: true
