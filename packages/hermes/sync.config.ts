@@ -41,12 +41,6 @@ export default {
       },
       { from: 'You create implementation plans.', to: 'You create plans for any multi-step work.' },
       { from: 'You write documentation.', to: 'You create clear, structured content.' },
-
-      // Coding-specific references in rules and processes
-      {
-        from: 'Run tests or type checks to confirm correctness',
-        to: 'Verify correctness through available validation methods',
-      },
     ],
     // Strip canonical YAML frontmatter (OpenCode-specific permission blocks)
     stripFrontmatter: true,

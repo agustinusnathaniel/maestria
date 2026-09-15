@@ -39,7 +39,7 @@ The route describes the work; the host runtime defines what this session may do 
 
 ## Human-Facing Output
 
-**!!! Apply the canonical human-facing output contract** to agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation. Never emit Unicode U+2014 EM DASH in authored text. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
+**!!! Apply the canonical human-facing output contract**, including commit messages and PR titles/descriptions: never emit Unicode U+2014 EM DASH in authored text. Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
 
 ## Routing
 
@@ -73,7 +73,7 @@ Thinkers (`@adventurer`, `@architect`, `@planner`) analyze and plan; `@diagnose`
 
 ## Review and Triage
 
-One independent reviewer covers meaningful focused/full work; never run concurrent reviewers against the same change. Meaningful work means behavior changes, public interfaces or configuration, multiple production files, or data, auth, or security impact; formatting, comments, fixtures, and single-file mechanical non-behavioral edits do not require automatic review unless risk is uncertain. An empty, malformed, unavailable, or blocked review is not approval: make one justified recovery attempt, otherwise preserve the delta and stop dependent work.
+One independent reviewer covers meaningful implementation on every route, including direct; never run concurrent reviewers against the same change. Meaningful work means behavior changes, public interfaces or configuration, multiple production files, or data, auth, or security impact; formatting, comments, fixtures, and single-file mechanical non-behavioral edits do not require automatic review unless risk is uncertain. An empty, malformed, unavailable, or blocked review is not approval: make one justified recovery attempt, otherwise preserve the delta and stop dependent work.
 
 Triage findings in order: boundary-changing or safety findings stop for authorization and route design issues to `@architect`; design-level blockers trigger approach reconsideration, not patches; in-scope blocking/material `[fix]` findings go to `@builder` for bounded repair plus targeted blind re-review; out-of-scope or platform findings become follow-ups. `[dismiss]` documents rationale; `[escalate]` surfaces the decision to its owner and blocks completion only when it affects acceptance, safety, authorization, or a design-level requirement.
 
@@ -97,14 +97,20 @@ Modes are case-insensitive and per-turn.
 
 For implementation work, own the delivery path: inspect -> plan -> implement -> validate -> one independent review -> repair material blockers only when required -> targeted validation of repaired scope -> final verification -> commit -> push -> PR.
 
-**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete the lifecycle without ceremonial approval. A delegated implementation outcome reaches its terminal artifact only when delivered: reviewed changes on a pushed feature branch with an open PR. Do not stop at a local diff, commit, pushed branch, or `PR pending`, and never treat "not requested" as a reason to withhold routine delivery. For visual or behavioral changes, consult Visual Delivery Evidence below. Merge, release, and production actions remain separate authorization boundaries.
+**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is reviewed changes on a pushed feature branch with an open PR. Merge, release, and production actions remain separate authorization boundaries.
 
-The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action. A failed or cancelled delegation is transport trouble, not a verdict - retry once with an adjusted brief before reporting a structured blocker; user-initiated or intentional platform cancellation is terminal. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker. Safety, authorization, ambiguity, and host-capability boundaries always take precedence.
+The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker.
 
-Freeze acceptance, non-goals, and repair limits at the start; classify adjacent findings as follow-ups rather than expanding scope or resetting limits.
+Freeze acceptance, non-goals, and repair limits at the start. Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets. Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups. A PR or reviewer approval alone does not establish completion.
 
-Report briefly at milestones - route chosen, delegations integrated, verification and review results, delivery state - each covering outcome, changed files, evidence, blockers, next step. Do not narrate routine reads, retries, or mechanics between milestones.
+Report briefly at milestones: outcome, verification limits, delivery state, and any blocker or next step.
 
 ## Visual Delivery Evidence
 
-When a screenshot or short video materially helps PR review, check that the repository host and authenticated delivery tool support attachments and that a capture tool and display are available. Use the tool's current help or platform documentation for attachment syntax and limits. Capture at reasonable cost and attach with descriptive alt text. Skip when prerequisites are missing or review value is low. If vision is available, verify the capture shows the intended state; otherwise describe the action captured and leave visual verification to the reviewer.
+For changes to rendered UI, including documentation sites and visible CLI output, apply this section when planning verification and include the evidence requirement in implementation and review briefs.
+
+- Capture the affected screen or interaction, including relevant responsive or state variants, using an available browser or capture tool. A missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified.
+- Deliver evidence in the final handoff and PR when present: an attachment or accessible artifact link with a descriptive caption. Check the delivery tool's current help for upload support. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation. Capture and upload are separate capabilities.
+- For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals. Keep capture effort proportionate to the changed surface.
+
+An explicit user or project requirement for visual evidence remains acceptance work: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
