@@ -307,7 +307,11 @@ const codexMarketplace: NpmMarketplace = {
 };
 
 const refreshClaudeMarketplace = (): Effect.Effect<void, CommandError> =>
-  run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE]).pipe(Effect.asVoid);
+  // Network refresh inside both install and update; same fetch class as the
+  // plugin commands below, so it shares their generous deadline.
+  run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE], 120_000).pipe(
+    Effect.asVoid,
+  );
 
 // ── Platform ID literal registry ─────────────────────
 
@@ -495,7 +499,10 @@ const opencode: PlatformDefinition = {
         Effect.catchCause(() => Effect.succeed(false)),
       );
       const flag = globalConfig ? ['-g', '--force'] : ['--force'];
-      yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag]);
+      // Cold plugin downloads take tens of seconds; the shared 30s default
+      // kills the host mid-install and reports a failure even when the new
+      // package was already written. Match install's generous deadline.
+      yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag], 120_000);
     }),
 };
 
@@ -506,13 +513,14 @@ const claudeCode: PlatformDefinition = {
   install: Effect.gen(function* install() {
     yield* prepareNpmMarketplace(claudeMarketplace);
     yield* refreshClaudeMarketplace();
-    yield* run('claude', [
-      'plugin',
-      'install',
-      `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-      '--scope',
-      'user',
-    ]);
+    // Materializes the plugin payload through the host CLI; cold fetches take
+    // tens of seconds (see opencode update), so this keeps the 120s deadline
+    // instead of the shared 30s default.
+    yield* run(
+      'claude',
+      ['plugin', 'install', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--scope', 'user'],
+      120_000,
+    );
   }).pipe(Effect.asVoid),
   isInstalled: hostPluginInstalled('claude'),
   label: 'Claude Code',
@@ -532,13 +540,11 @@ const claudeCode: PlatformDefinition = {
     Effect.gen(function* update() {
       yield* prepareNpmMarketplace(claudeMarketplace);
       yield* refreshClaudeMarketplace();
-      yield* run('claude', [
-        'plugin',
-        'update',
-        `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-        '--scope',
-        'user',
-      ]);
+      yield* run(
+        'claude',
+        ['plugin', 'update', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--scope', 'user'],
+        120_000,
+      );
     }),
 };
 
@@ -548,7 +554,13 @@ const codex: PlatformDefinition = {
   id: 'codex',
   install: Effect.gen(function* install() {
     yield* prepareNpmMarketplace(codexMarketplace);
-    yield* run('codex', ['plugin', 'add', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json']);
+    // Same payload-fetch class as the other host plugin commands: 120s, not
+    // the shared 30s default.
+    yield* run(
+      'codex',
+      ['plugin', 'add', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json'],
+      120_000,
+    );
     yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
   }).pipe(Effect.asVoid),
   isInstalled: hostPluginInstalled('codex'),
@@ -569,18 +581,16 @@ const codex: PlatformDefinition = {
       yield* prepareNpmMarketplace(codexMarketplace);
       // Codex CLI has no plugin update command. Reinstalling after refreshing
       // the marketplace is its supported update path.
-      yield* run('codex', [
-        'plugin',
-        'remove',
-        `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-        '--json',
-      ]);
-      yield* run('codex', [
-        'plugin',
-        'add',
-        `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-        '--json',
-      ]);
+      yield* run(
+        'codex',
+        ['plugin', 'remove', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json'],
+        120_000,
+      );
+      yield* run(
+        'codex',
+        ['plugin', 'add', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json'],
+        120_000,
+      );
       yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
     }),
 };
@@ -1079,7 +1089,10 @@ const hermes: PlatformDefinition = {
             `Updating to latest from git.`,
         );
       }
-      yield* run('hermes', ['plugins', 'update', 'maestria-hermes'], 60_000);
+      // Pulls latest changes from git: same network-fetch class as install,
+      // so it shares install's 120s deadline instead of risking a timeout
+      // kill that reports failure after the new payload was already written.
+      yield* run('hermes', ['plugins', 'update', 'maestria-hermes'], 120_000);
     }),
 };
 

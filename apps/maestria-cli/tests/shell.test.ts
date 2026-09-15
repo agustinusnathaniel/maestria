@@ -1,5 +1,6 @@
 import { homedir } from 'node:os';
 import path from 'node:path';
+import { Effect } from 'effect';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import * as shell from '@/lib/shell.js';
@@ -51,6 +52,32 @@ describe('getCacheDir', () => {
   it('falls back to ~/.cache when XDG_CACHE_HOME is whitespace only', () => {
     vi.stubEnv('XDG_CACHE_HOME', '   ');
     expect(shell.getCacheDir()).toBe(join(homedir(), '.cache'));
+  });
+});
+
+describe('run', () => {
+  it('resolves trimmed stdout on success', async () => {
+    const output = await Effect.runPromise(
+      shell.run('node', ['-e', "process.stdout.write('  hi\\n')"]),
+    );
+    expect(output).toBe('hi');
+  });
+
+  it('reports stderr and exit code when the command fails', async () => {
+    const error = await Effect.runPromise(
+      Effect.flip(shell.run('node', ['-e', "console.error('boom-detail'); process.exit(3)"])),
+    );
+    expect(error).toBeInstanceOf(shell.CommandError);
+    expect(error.message).toContain('exit code 3');
+    expect(error.message).toContain('boom-detail');
+  });
+
+  it('reports a timeout instead of a bare failure when the deadline kills the command', async () => {
+    const error = await Effect.runPromise(
+      Effect.flip(shell.run('node', ['-e', 'setTimeout(() => {}, 5000)'], 200)),
+    );
+    expect(error).toBeInstanceOf(shell.CommandError);
+    expect(error.message).toContain('timed out after 200ms');
   });
 });
 

@@ -26,12 +26,53 @@ export class CommandError extends Data.TaggedError('CommandError')<{
 
 // ── Shell helpers ────────────────────────────────────
 
+const MAX_FAILURE_DETAIL = 1000;
+
+const readFailureField = (error: unknown, field: string): string => {
+  if (typeof error !== 'object' || error === null) {
+    return '';
+  }
+  const value: unknown = Reflect.get(error, field);
+  return typeof value === 'string' ? value.trim() : '';
+};
+
+/**
+ * Build an actionable failure message from an execFile rejection. Node
+ * delivers the child output as separate callback arguments (not on the error
+ * object), so the caller attaches them to the rejection; without them every
+ * failure degrades to a bare "Command failed: <cmd>" with no diagnostics
+ * (notably timeout kills, which carry no stderr at all).
+ */
+const describeRunFailure = (timeoutMs: number, error: unknown): string => {
+  const stderr = readFailureField(error, 'stderr');
+  const stdout = readFailureField(error, 'stdout');
+  const detail = (stderr === '' ? stdout : stderr).slice(0, MAX_FAILURE_DETAIL);
+  const suffix = detail === '' ? '' : `: ${detail}`;
+  if (typeof error === 'object' && error !== null) {
+    const record = error as { code?: unknown; killed?: unknown; signal?: unknown };
+    if (record.killed === true) {
+      const signal = typeof record.signal === 'string' ? record.signal : 'SIGTERM';
+      return `Command timed out after ${timeoutMs}ms (${signal})${suffix}`;
+    }
+    if (typeof record.code === 'number') {
+      return `Command failed with exit code ${record.code}${suffix}`;
+    }
+  }
+  const fallback = error instanceof Error ? error.message : String(error);
+  return suffix === '' ? fallback : `${fallback}${suffix}`;
+};
+
 /**
  * Run a command with an optional working directory. `cwd` is the directory the
  * child process is launched in; callers that must isolate a command from the
  * invoking directory (e.g. Prime's cwd-scoped package commands) pass an empty
  * temporary directory. Existing callers that pass no `cwd` keep spawning in the
  * invoking process's directory.
+ *
+ * Network-bound host installers (opencode/pi/omp plugin fetches) need a
+ * generous timeout: a cold plugin download can take tens of seconds, and a
+ * kill past the deadline reports a failure even when the host already wrote
+ * the new package. Callers driving such commands pass an explicit timeout.
  */
 export const run = (
   cmd: string,
@@ -40,31 +81,27 @@ export const run = (
   cwd?: string,
 ): Effect.Effect<string, CommandError> =>
   Effect.tryPromise({
-    catch: (error) => {
-      const stderr =
-        typeof error === 'object' &&
-        error !== null &&
-        'stderr' in error &&
-        typeof error.stderr === 'string'
-          ? error.stderr.trim()
-          : '';
-      const message = stderr || (error instanceof Error ? error.message : String(error));
-      return new CommandError({
+    catch: (error) =>
+      new CommandError({
         command: `${cmd} ${args.join(' ')}`,
-        message,
-      });
-    },
+        message: describeRunFailure(timeoutMs, error),
+      }),
     try: async () => {
       const { execFile } = await import('node:child_process');
       const stdout = await Effect.runPromise(
         Effect.callback<string, Error>((resume) => {
-          execFile(cmd, args, { cwd, encoding: 'utf-8', timeout: timeoutMs }, (error, output) => {
-            if (error) {
-              resume(Effect.fail(error));
-              return;
-            }
-            resume(Effect.succeed(output));
-          });
+          execFile(
+            cmd,
+            args,
+            { cwd, encoding: 'utf-8', timeout: timeoutMs },
+            (error, output, stderr) => {
+              if (error) {
+                resume(Effect.fail(Object.assign(error, { stderr, stdout: output })));
+                return;
+              }
+              resume(Effect.succeed(output));
+            },
+          );
         }),
       );
       return stdout.trim();

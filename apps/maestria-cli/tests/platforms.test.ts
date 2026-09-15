@@ -1,6 +1,7 @@
 import { Effect } from 'effect';
+import { tmpdir as osTmpdir } from 'node:os';
 import path from 'node:path';
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { getPlatform, readPackageJsonVersion } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
@@ -162,6 +163,59 @@ describe('pi and omp package commands', () => {
     expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp'], 120_000]);
     expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp@latest'], 120_000]);
     expect(calls).toContainEqual(['omp', ['plugin', 'install', '@maestria/omp@1.2.3'], 120_000]);
+  });
+});
+
+describe('hermes plugin command deadlines', () => {
+  it('gives the git-based install and update the same generous deadline', async () => {
+    vi.clearAllMocks();
+    const hermes = requirePlatform('hermes');
+
+    await Effect.runPromise(hermes.install);
+    await Effect.runPromise(hermes.update());
+
+    const calls = vi
+      .mocked(shell.run)
+      .mock.calls.filter((call) => call[0] === 'hermes')
+      .map(([, args, timeoutMs]) => [...args, timeoutMs]);
+
+    expect(calls).toContainEqual([
+      'plugins',
+      'install',
+      'agustinusnathaniel/maestria/packages/hermes',
+      '--enable',
+      120_000,
+    ]);
+    expect(calls).toContainEqual(['plugins', 'update', 'maestria-hermes', 120_000]);
+  });
+});
+
+describe('opencode platform update', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('gives the host plugin fetch the same generous deadline as install', async () => {
+    // Isolate from the real home/cache dirs: update() clears the opencode
+    // package cache and reads the global config, which must never touch the
+    // developer machine running the suite. Point both at a nonexistent
+    // sandbox (missing cache dir is a graceful no-op; missing config reads
+    // as not-globally-installed).
+    const sandbox = path.join(osTmpdir(), `maestria-opencode-test-${process.pid}`);
+    vi.stubEnv('XDG_CACHE_HOME', path.join(sandbox, 'cache'));
+    vi.stubEnv('HOME', sandbox);
+
+    vi.clearAllMocks();
+    const opencode = requirePlatform('opencode');
+
+    await Effect.runPromise(opencode.update());
+
+    const updates = vi
+      .mocked(shell.run)
+      .mock.calls.filter((call) => call[0] === 'opencode' && call[1]?.[0] === 'plugin');
+    expect(updates).toHaveLength(1);
+    expect(updates[0]?.[1]).toContain('--force');
+    expect(updates[0]?.[2]).toBe(120_000);
   });
 });
 
