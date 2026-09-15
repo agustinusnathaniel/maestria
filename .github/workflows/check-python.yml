@@ -1,7 +1,5 @@
 name: Check Python
 
-# Hermes-only lint (ruff + compileall). Runs only when hermes sources change,
-# so the main CI job can skip Python setup entirely.
 on:
   push:
     branches:
