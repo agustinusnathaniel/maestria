@@ -6,7 +6,35 @@
 
 - **Claude Code** with the `claude` CLI on `PATH` (required for validation and local loading).
 - Node.js and npm (required by the Maestria CLI's npm-backed marketplace staging).
-- Node.js and pnpm (to regenerate files from the canonical core directives).
+- Node.js and pnpm only for contributors regenerating canonical directives.
+
+## Persistent installation through Maestria
+
+From any project, install the published package at Claude Code's user scope:
+
+```bash
+npx maestria install claude-code
+```
+
+The CLI downloads `@maestria/claude-code` from npm, writes a small local marketplace under `~/.cache/maestria/`, and invokes Claude Code's native `plugin marketplace add` and `plugin install` commands. The host, not Maestria, owns the installed plugin state.
+
+Update or remove it with:
+
+```bash
+npx maestria update claude-code
+npx maestria uninstall claude-code
+```
+
+The Maestria CLI uses the marketplace's latest package for Claude Code; exact version pinning is not available through `maestria update claude-code --version`.
+
+## Direct installation through Claude Code
+
+To use Claude Code directly, add the repository marketplace and install the plugin with the host CLI:
+
+```bash
+claude plugin marketplace add agustinusnathaniel/maestria
+claude plugin install maestria@maestria --scope user
+```
 
 ## Local validation (no install)
 
@@ -28,25 +56,6 @@ claude --plugin-dir ./packages/claude-code
 
 `--plugin-dir` loads the plugin for that session only. You can pass it multiple times to load several plugins.
 
-## Persistent installation through Maestria
-
-From any project, install the published package at Claude Code's user scope:
-
-```bash
-npx maestria install claude-code
-```
-
-The CLI downloads `@maestria/claude-code` from npm, writes a small local marketplace under `~/.cache/maestria/`, and invokes Claude Code's native `plugin marketplace add` and `plugin install` commands. The host, not Maestria, owns the installed plugin state.
-
-Update or remove it with:
-
-```bash
-npx maestria update claude-code
-npx maestria uninstall claude-code
-```
-
-The Maestria CLI uses the marketplace's latest package for Claude Code; exact version pinning is not available through `maestria update claude-code --version`.
-
 ## Using the plugin
 
 Once loaded, components are namespaced under the plugin name `maestria`:
@@ -64,7 +73,7 @@ Check the `/plugin` manager and the `/context` Custom Agents tab to confirm the 
 3. `@maestria:adventurer`, `@maestria:planner`, and `@maestria:reviewer` cannot call the `Write` or `Edit` tools (denied via `disallowedTools`).
 4. `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` run their documented pipelines.
 
-Steps 2-4 are runtime checks that are **not yet verified** in this batch; the CLI validation in step 1 is the current automated gate.
+Steps 2-4 are runtime checks that are **not yet verified** in a live session; the CLI validation in step 1 is the current automated gate.
 
 ## Updating generated content
 
@@ -87,11 +96,4 @@ For a session-only `--plugin-dir` load, stop passing that flag. Removing the loc
 
 ```bash
 rm -rf ~/.cache/maestria/claude-code-marketplace
-```
-
-To use Claude Code directly, add the repository marketplace and install the plugin with the host CLI:
-
-```bash
-claude plugin marketplace add agustinusnathaniel/maestria
-claude plugin install maestria@maestria --scope user
 ```

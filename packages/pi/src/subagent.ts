@@ -1,476 +1,529 @@
-import { Type } from 'typebox';
-import { Effect } from 'effect';
-import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
-import { SUBAGENT_EVENTS } from '@gotgenes/pi-subagents';
-import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
+import type { AgentToolUpdateCallback } from '@earendil-works/pi-coding-agent';
 import {
   ALLOWED_AGENTS,
-  assertValidAgent,
   assertNonEmptyTask,
-  MAESTRIA_EVENTS,
+  assertValidAgent,
 } from '@maestria/shared-pi/subagent-utils';
-import { pollSubagentEffect, type SubagentPollingService } from '@/subagent-polling.js';
+import { Effect } from 'effect';
+import { Type } from 'typebox';
+import type { Static } from 'typebox';
 
-const ALLOWED_AGENT_NAMES: ReadonlyArray<string> = ALLOWED_AGENTS;
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import {
+  persistState,
+  recordHandoff,
+  recordSpecialistDelegated,
+} from '@maestria/shared-pi/state-core';
+import { pollSubagentEffect } from '@/subagent-polling.js';
+import type { SubagentPollingService, SubagentRecord } from '@/subagent-polling.js';
+import { subscribeSubagentEvents } from '@/subagent-events.js';
+import type { SubagentEventHost } from '@/subagent-events.js';
 
-/** Maximum time to wait for a subagent to complete, in milliseconds. */
-export const POLL_TIMEOUT_MS = 180_000;
+const ALLOWED_AGENT_NAMES: readonly string[] = ALLOWED_AGENTS;
 
-/** Interval between subagent status checks, in milliseconds. */
-export const POLL_INTERVAL_MS = 500;
+const POLL_TIMEOUT_MS = 180_000;
+const POLL_INTERVAL_MS = 500;
+const MAX_PARALLEL_TASKS = 8;
 
-/** Maximum number of tasks allowed in parallel dispatch. */
-export const MAX_PARALLEL_TASKS = 8;
+type SubagentSpawnService = SubagentPollingService & {
+  spawn: (
+    agent: string,
+    task: string,
+    opts: { description: string; foreground: boolean; inheritContext: boolean },
+  ) => string;
+};
 
-function abortSubagents(service: SubagentPollingService, ids: readonly string[]): void {
-  if (typeof service.abort !== 'function') return;
+interface SubagentTask {
+  agent: string;
+  task: string;
+}
+export interface SubagentParams {
+  agent?: string;
+  task?: string;
+  tasks?: SubagentTask[];
+  mode?: string;
+}
+interface ToolUpdate {
+  content: { type: string; text: string }[];
+  details?: Record<string, unknown>;
+}
+type ToolUpdateHandler = ((result: ToolUpdate) => void) | undefined;
+export type PiToolUpdateHandler = AgentToolUpdateCallback<Record<string, unknown>> | undefined;
+export interface ToolResult {
+  content: { text: string; type: 'text' }[];
+  details: Record<string, unknown>;
+}
 
+export interface SubagentToolDefinition {
+  description: string;
+  execute: (
+    toolCallId: string,
+    params: SubagentParams,
+    signal: AbortSignal | undefined,
+    onUpdate: PiToolUpdateHandler,
+    ctx: unknown,
+  ) => Promise<ToolResult>;
+  label: string;
+  name: string;
+  parameters: typeof SUBAGENT_PARAMETERS;
+  promptGuidelines?: string[];
+  promptSnippet?: string;
+}
+
+export interface SubagentToolApi extends SubagentEventHost {
+  registerTool: (tool: SubagentToolDefinition) => void;
+}
+
+const abortSubagents = (service: SubagentPollingService, ids: readonly string[]): void => {
   for (const id of ids) {
     try {
-      service.abort(id);
+      service.abort?.(id);
     } catch {
-      // Best-effort cleanup: the original polling failure remains authoritative.
+      // Best-effort cleanup
     }
   }
-}
+};
 
-function pollSubagentOrAbortEffect(options: Parameters<typeof pollSubagentEffect>[0]) {
-  return Effect.tapError(pollSubagentEffect(options), () =>
-    Effect.sync(() => abortSubagents(options.service, [options.id])),
+const pollSubagentOrAbortEffect = (options: Parameters<typeof pollSubagentEffect>[0]) =>
+  Effect.tapError(pollSubagentEffect(options), () =>
+    Effect.sync(() => {
+      abortSubagents(options.service, [options.id]);
+    }),
   );
-}
 
-// ── Handoff recording helper ────────────────────────────────────
-
-function recordAndPersist(
-  pi: ExtensionAPI,
+const recordAndPersist = (
+  pi: SubagentEventHost,
   state: MaestriaState,
   agentName: string,
   taskText: string,
-): void {
+): void => {
   const updatedState = recordSpecialistDelegated(
     recordHandoff(state, 'orchestrator', agentName, taskText),
     agentName,
   );
   Object.assign(state, updatedState);
   persistState(pi, state);
-}
+};
 
-export function installSubagentTool(
-  pi: ExtensionAPI,
-  state: MaestriaState,
-  cleanups?: Array<() => void>,
-): void {
-  pi.registerTool({
-    name: 'maestria_subagent',
-    label: 'Maestria Subagent',
-    description: 'Dispatch a task to a @maestria specialist subagent',
-    promptSnippet:
-      'Delegate tasks to @maestria specialist subagents (adventurer, architect, builder, planner, diagnose, reviewer, writer)',
-    promptGuidelines: [
-      'Use maestria_subagent when a task MUST be delegated to a specialist subagent rather than handled directly. Each specialist has focused capabilities: adventurer (recon), architect (design), builder (impl), planner (planning), diagnose (bugs), reviewer (QA), writer (docs).',
-    ],
-    prepareArguments(args: unknown) {
-      return args;
-    },
-    parameters: Type.Object({
-      agent: Type.String({
-        description:
-          'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
-      }),
-      task: Type.String({ description: 'Task description for the subagent (required)' }),
-      tasks: Type.Optional(
-        Type.Array(
-          Type.Object({
-            agent: Type.String(),
-            task: Type.String(),
-          }),
-          { description: 'Array of task objects for parallel or chain dispatch' },
-        ),
-      ),
-      mode: Type.Optional(
-        Type.Union([Type.Literal('parallel'), Type.Literal('chain'), Type.Literal('single')]),
-      ),
-    }),
-    async execute(
-      _toolCallId: string,
-      params: {
-        agent?: string;
-        task?: string;
-        tasks?: Array<{ agent: string; task: string }>;
-        mode?: 'parallel' | 'chain' | 'single';
-      },
-      signal: AbortSignal | undefined,
-      onUpdate: ((result: { content: Array<{ type: string; text: string }> }) => void) | undefined,
-      _ctx: ExtensionContext,
+const validatePiParams = (params: SubagentParams): string => {
+  const mode = params.mode ?? 'single';
+  if (mode === 'single') {
+    if (
+      params.agent === undefined ||
+      params.agent === '' ||
+      !ALLOWED_AGENT_NAMES.includes(params.agent)
     ) {
-      // Block subagent dispatch when in review mode
-      if (state.reviewMode) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: 'Subagent dispatch is not available during review mode. Use /restore-model to exit review mode first.',
-            },
-          ],
-        };
-      }
-
-      // Determine dispatch mode (default to 'single' for backward compat)
-      const mode = params.mode ?? 'single';
-
-      // Validate parameters based on mode
-      if (mode === 'single') {
-        if (!params.agent || !ALLOWED_AGENT_NAMES.includes(params.agent)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text:
-                  `Invalid maestria_subagent call: 'agent' is required and must be one of ` +
-                  `${ALLOWED_AGENT_NAMES.join(', ')}. ` +
-                  `Re-dispatch with a valid agent name; the orchestrator may continue read-only exploration while the brief is corrected.`,
-              },
-            ],
-          };
-        }
-        assertNonEmptyTask(params.task, 'Task description is required');
-      } else if (mode === 'parallel') {
-        if (!params.tasks || params.tasks.length < 2) {
-          throw new Error(`For parallel mode, tasks array is required with at least 2 items`);
-        }
-        if (params.tasks.length > MAX_PARALLEL_TASKS) {
-          throw new Error(
-            `For parallel mode, tasks array may have at most ${MAX_PARALLEL_TASKS} items (got ${params.tasks.length})`,
-          );
-        }
-        for (const t of params.tasks) {
-          assertValidAgent(t.agent);
-          assertNonEmptyTask(t.task, 'Task description is required for all tasks');
-        }
-      } else if (mode === 'chain') {
-        if (!params.tasks || params.tasks.length < 2) {
-          throw new Error('For chain mode, tasks array is required with at least 2 items');
-        }
-        for (const t of params.tasks) {
-          assertValidAgent(t.agent);
-          assertNonEmptyTask(t.task, 'Task description is required for all tasks');
-        }
-      }
-
-      // Attempt to dispatch via @gotgenes/pi-subagents; handle missing service
-      const { getSubagentsService } = await import('@gotgenes/pi-subagents');
-      const service = getSubagentsService();
-      if (!service || typeof service.spawn !== 'function') {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                '## Subagent Dispatch Unavailable',
-                '',
-                'The `@gotgenes/pi-subagents` extension is required for subagent dispatch but has not been loaded.',
-                '',
-                'Install it as a Pi extension:',
-                '',
-                '```',
-                'pi install npm:@gotgenes/pi-subagents',
-                '```',
-                '',
-                'Then restart your Pi session.',
-              ].join('\n'),
-            },
-          ],
-        };
-      }
-
-      try {
-        // --- SINGLE MODE ---
-        if (mode === 'single') {
-          const agent = params.agent!;
-          const task = params.task!;
-
-          // Spawn in foreground - returns subagent ID synchronously
-          const id = service.spawn(agent, task, {
-            description: task.slice(0, 80),
-            foreground: true,
-            inheritContext: true,
-          });
-
-          // Record handoff in state and persist (only after spawn succeeds)
-          recordAndPersist(pi, state, agent, task);
-
-          // Poll for completion (abort on poll failure so nothing is orphaned)
-          const record = await Effect.runPromise(
-            pollSubagentOrAbortEffect({
-              id,
-              label: `Subagent ${agent}`,
-              sendUpdates: true,
-              service,
-              signal,
-              onUpdate,
-              intervalMs: POLL_INTERVAL_MS,
-              timeoutMs: POLL_TIMEOUT_MS,
-            }),
-          );
-
-          const resultText = record.result ?? record.error ?? 'No output.';
-
-          return {
-            content: [{ type: 'text' as const, text: resultText }],
-            details: { subagentId: id },
-          };
-        }
-
-        // --- PARALLEL MODE ---
-        if (mode === 'parallel') {
-          const taskList = params.tasks!;
-
-          onUpdate?.({
-            content: [
-              { type: 'text' as const, text: `Spawning ${taskList.length} parallel subagents...` },
-            ],
-          });
-
-          // Spawn all tasks. If a later spawn throws, abort the subagents already
-          // spawned so they are not orphaned; the outer catch returns the handoff
-          // fallback.
-          const spawnedIds: string[] = [];
-          try {
-            for (const t of taskList) {
-              const id = service.spawn(t.agent, t.task, {
-                description: t.task.slice(0, 80),
-                foreground: true,
-                inheritContext: true,
-              });
-              spawnedIds.push(id);
-
-              // Record each handoff
-              recordAndPersist(pi, state, t.agent, t.task);
-            }
-          } catch (err) {
-            abortSubagents(service, spawnedIds);
-            throw err;
-          }
-
-          // Poll all concurrently, preserving completed results when one poll fails.
-          // A failed poll aborts every sibling so no subagent is orphaned.
-          const outcomes = await Effect.runPromise(
-            Effect.all(
-              spawnedIds.map((id, i) =>
-                Effect.match(
-                  pollSubagentEffect({
-                    id,
-                    label: `${taskList[i].agent} (${i + 1}/${taskList.length})`,
-                    sendUpdates: false,
-                    service,
-                    signal,
-                    onUpdate,
-                    intervalMs: POLL_INTERVAL_MS,
-                    timeoutMs: POLL_TIMEOUT_MS,
-                  }),
-                  {
-                    onSuccess: (record) => ({ record }),
-                    onFailure: (error) => {
-                      abortSubagents(service, spawnedIds);
-                      return { error };
-                    },
-                  },
-                ),
-              ),
-              { concurrency: 'unbounded' },
-            ),
-          );
-
-          onUpdate?.({
-            content: [
-              {
-                type: 'text' as const,
-                text: `All ${taskList.length} parallel subagents settled.`,
-              },
-            ],
-          });
-
-          // Aggregate results
-          const parts = [`## Parallel Results (${taskList.length} tasks)\n`];
-          for (let i = 0; i < taskList.length; i++) {
-            const t = taskList[i];
-            const outcome = outcomes[i];
-            const header = `### ${i + 1}: ${t.agent}`;
-            if ('error' in outcome) {
-              const message =
-                outcome.error instanceof Error ? outcome.error.message : String(outcome.error);
-              parts.push(header);
-              parts.push(`⚠️ ${message}`);
-            } else {
-              const resultText = outcome.record.result ?? outcome.record.error ?? 'No output.';
-              parts.push(header);
-              parts.push(resultText);
-            }
-          }
-
-          return {
-            content: [{ type: 'text' as const, text: parts.join('\n\n') }],
-            details: { subagentIds: spawnedIds },
-          };
-        }
-
-        // --- CHAIN MODE ---
-        if (mode === 'chain') {
-          const taskList = params.tasks!;
-          let previousResult = '';
-
-          for (let i = 0; i < taskList.length; i++) {
-            const t = taskList[i];
-            let taskText = t.task;
-
-            // Substitute {previous} placeholder with previous result.
-            // A replacer function (not a string) is required: string replacements interpret
-            // $&, $', $`, and $1..$99 in the replacement text, so a previous result
-            // containing those sequences would silently corrupt the next task brief.
-            if (i > 0 && taskText.includes('{previous}')) {
-              taskText = taskText.replace(/\{previous\}/g, () => previousResult);
-            }
-
-            const id = service.spawn(t.agent, taskText, {
-              description: taskText.slice(0, 80),
-              foreground: true,
-              inheritContext: true,
-            });
-
-            // Record handoff
-            recordAndPersist(pi, state, t.agent, taskText);
-
-            onUpdate?.({
-              content: [
-                {
-                  type: 'text' as const,
-                  text: `Chain step ${i + 1}/${taskList.length}: ${t.agent} running...`,
-                },
-              ],
-            });
-
-            // Poll for completion (abort on poll failure so nothing is orphaned)
-            try {
-              const record = await Effect.runPromise(
-                pollSubagentOrAbortEffect({
-                  id,
-                  label: `Chain step ${i + 1}: ${t.agent}`,
-                  sendUpdates: true,
-                  service,
-                  signal,
-                  onUpdate,
-                  intervalMs: POLL_INTERVAL_MS,
-                  timeoutMs: POLL_TIMEOUT_MS,
-                }),
-              );
-              previousResult = record.result ?? record.error ?? 'No output.';
-            } catch (error) {
-              previousResult = `[error] ${error instanceof Error ? error.message : String(error)}`;
-              break;
-            }
-
-            if (i < taskList.length - 1) {
-              onUpdate?.({
-                content: [
-                  {
-                    type: 'text' as const,
-                    text: `Chain step ${i + 1}/${taskList.length}: ${t.agent} completed. Moving to next step.`,
-                  },
-                ],
-              });
-            }
-          }
-
-          return {
-            content: [{ type: 'text' as const, text: previousResult }],
-            details: { subagentId: 'chain-completed' },
-          };
-        }
-
-        // Should not reach here - all modes are handled above
-        throw new Error('Unknown dispatch mode');
-      } catch (err) {
-        console.warn('[maestria] Subagent dispatch failed:', err);
-        // Return handoff payload as structured text when dispatch fails
-        const agentName = params.agent ?? params.tasks?.[0]?.agent ?? 'unknown';
-        const taskDesc = params.task ?? params.tasks?.map((t) => t.task).join('; ') ?? 'unknown';
-        const handoffInfo = [
-          `## Subagent Handoff Required`,
-          ``,
-          `**From:** orchestrator`,
-          `**To:** ${agentName}`,
-          `**Task:** ${taskDesc}`,
-          ``,
-          `Subagent dispatch failed. Please delegate this work manually.`,
-        ].join('\n');
-
-        return {
-          content: [{ type: 'text' as const, text: handoffInfo }],
-        };
-      }
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any); // TypeBox inferred types don't match ToolDefinition exactly
-
-  // Subscribe to subagent lifecycle events for accurate state tracking.
-  // These subscriptions are set up once at extension init, not on every tool call.
-  // pi.events is the shared EventBus - distinct from pi.on() lifecycle hooks.
-  if (pi.events) {
-    const unsubStarted = pi.events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
-      const { id, type } = data as { id: string; type: string };
-      state.subagentStatus[id] = { type, status: 'running', startedAt: Date.now() };
-      persistState(pi, state);
-      pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_STARTED, {
-        id,
-        type,
-        timestamp: Date.now(),
-      });
-    });
-
-    const unsubCompleted = pi.events.on(SUBAGENT_EVENTS.COMPLETED, (data: unknown) => {
-      const { id } = data as { id: string };
-      const existing = state.subagentStatus[id];
-      if (existing) {
-        existing.status = 'completed';
-        existing.completedAt = Date.now();
-      }
-      persistState(pi, state);
-      pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_COMPLETED, {
-        id,
-        type: existing?.type,
-        timestamp: Date.now(),
-      });
-    });
-
-    const unsubFailed = pi.events.on(SUBAGENT_EVENTS.FAILED, (data: unknown) => {
-      const { id, status } = data as { id: string; status: string };
-      const existing = state.subagentStatus[id];
-      if (existing) {
-        existing.status = status ?? 'error';
-        existing.completedAt = Date.now();
-      }
-      persistState(pi, state);
-      pi.events?.emit(MAESTRIA_EVENTS.SUBAGENT_FAILED, {
-        id,
-        type: existing?.type,
-        timestamp: Date.now(),
-      });
-    });
-
-    const unsubSteered = pi.events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
-      // Steering is informational - no status transition, but ensure
-      // the agent is tracked as running if it wasn't already observed.
-      const { id } = data as { id: string };
-      if (!state.subagentStatus[id]) {
-        state.subagentStatus[id] = { type: 'unknown', status: 'running', startedAt: Date.now() };
-      }
-      persistState(pi, state);
-    });
-
-    if (cleanups) {
-      cleanups.push(unsubStarted, unsubCompleted, unsubFailed, unsubSteered);
+      return `Invalid maestria_subagent call: 'agent' is required and must be one of ${ALLOWED_AGENT_NAMES.join(', ')}.`;
+    }
+    assertNonEmptyTask(params.task, 'Task description is required');
+  } else if (mode === 'parallel') {
+    if (!params.tasks || params.tasks.length < 2) {
+      throw new Error('For parallel mode, tasks array is required with at least 2 items');
+    }
+    if (params.tasks.length > MAX_PARALLEL_TASKS) {
+      throw new Error(
+        `For parallel mode, tasks array may have at most ${MAX_PARALLEL_TASKS} items (got ${params.tasks.length})`,
+      );
+    }
+    for (const t of params.tasks) {
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
+    }
+  } else if (mode === 'chain') {
+    if (!params.tasks || params.tasks.length < 2) {
+      throw new Error('For chain mode, tasks array is required with at least 2 items');
+    }
+    for (const t of params.tasks) {
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
     }
   }
-}
+  return mode;
+};
+
+const handleSingleMode = async (
+  pi: SubagentEventHost,
+  state: MaestriaState,
+  service: SubagentSpawnService,
+  agent: string,
+  task: string,
+  signal: AbortSignal | undefined,
+  onUpdate: ToolUpdateHandler,
+): Promise<ToolResult> => {
+  const id = service.spawn(agent, task, {
+    description: task.slice(0, 80),
+    foreground: true,
+    inheritContext: true,
+  });
+  recordAndPersist(pi, state, agent, task);
+  const record = await Effect.runPromise(
+    pollSubagentOrAbortEffect({
+      id,
+      intervalMs: POLL_INTERVAL_MS,
+      label: `Subagent ${agent}`,
+      onUpdate,
+      sendUpdates: true,
+      service,
+      signal,
+      timeoutMs: POLL_TIMEOUT_MS,
+    }),
+  );
+  return {
+    content: [{ text: record.result ?? record.error ?? 'No output.', type: 'text' as const }],
+    details: { subagentId: id },
+  };
+};
+
+type ParallelOutcome = { error: unknown } | { record: SubagentRecord };
+
+const spawnParallelSubagents = (
+  pi: SubagentEventHost,
+  state: MaestriaState,
+  service: SubagentSpawnService,
+  taskList: SubagentTask[],
+): string[] => {
+  const spawnedIds: string[] = [];
+  try {
+    for (const task of taskList) {
+      const id = service.spawn(task.agent, task.task, {
+        description: task.task.slice(0, 80),
+        foreground: true,
+        inheritContext: true,
+      });
+      spawnedIds.push(id);
+      recordAndPersist(pi, state, task.agent, task.task);
+    }
+  } catch (error) {
+    abortSubagents(service, spawnedIds);
+    throw error;
+  }
+  return spawnedIds;
+};
+
+const pollParallelSubagents = async (
+  spawnedIds: string[],
+  taskList: SubagentTask[],
+  service: SubagentSpawnService,
+  signal: AbortSignal | undefined,
+  onUpdate: ToolUpdateHandler,
+): Promise<ParallelOutcome[]> =>
+  await Effect.runPromise(
+    Effect.all(
+      spawnedIds.map((id, index) => {
+        const task = taskList[index];
+        return Effect.match(
+          pollSubagentEffect({
+            id,
+            intervalMs: POLL_INTERVAL_MS,
+            label: `${task.agent} (${index + 1}/${taskList.length})`,
+            onUpdate,
+            sendUpdates: false,
+            service,
+            signal,
+            timeoutMs: POLL_TIMEOUT_MS,
+          }),
+          {
+            onFailure: (error) => {
+              abortSubagents(service, spawnedIds);
+              return { error };
+            },
+            onSuccess: (record) => ({ record }),
+          },
+        );
+      }),
+      { concurrency: 'unbounded' },
+    ),
+  );
+
+const renderParallelResults = (
+  taskList: SubagentTask[],
+  spawnedIds: string[],
+  outcomes: ParallelOutcome[],
+): ToolResult => {
+  const parts = [`## Parallel Results (${taskList.length} tasks)\n`];
+  for (const [index, task] of taskList.entries()) {
+    const outcome = outcomes[index];
+    parts.push(`### ${index + 1}: ${task.agent}`);
+    if ('error' in outcome) {
+      parts.push(
+        `⚠️ ${outcome.error instanceof Error ? outcome.error.message : String(outcome.error)}`,
+      );
+    } else {
+      parts.push(outcome.record.result ?? outcome.record.error ?? 'No output.');
+    }
+  }
+  return {
+    content: [{ text: parts.join('\n\n'), type: 'text' as const }],
+    details: { subagentIds: spawnedIds },
+  };
+};
+
+const handleParallelMode = async (
+  pi: SubagentEventHost,
+  state: MaestriaState,
+  service: SubagentSpawnService,
+  taskList: SubagentTask[],
+  signal: AbortSignal | undefined,
+  onUpdate: ToolUpdateHandler,
+): Promise<ToolResult> => {
+  onUpdate?.({
+    content: [{ text: `Spawning ${taskList.length} parallel subagents...`, type: 'text' }],
+  });
+  const spawnedIds = spawnParallelSubagents(pi, state, service, taskList);
+  const outcomes = await pollParallelSubagents(spawnedIds, taskList, service, signal, onUpdate);
+  onUpdate?.({
+    content: [{ text: `All ${taskList.length} parallel subagents settled.`, type: 'text' }],
+  });
+  return renderParallelResults(taskList, spawnedIds, outcomes);
+};
+
+const substitutePreviousResult = (taskText: string, previousResult: string): string =>
+  taskText.replaceAll('{previous}', () => previousResult);
+
+const runChainSteps = async (
+  pi: SubagentEventHost,
+  state: MaestriaState,
+  service: SubagentSpawnService,
+  taskList: SubagentTask[],
+  signal: AbortSignal | undefined,
+  onUpdate: ToolUpdateHandler,
+  index: number,
+  previousResult: string,
+): Promise<string> => {
+  if (index >= taskList.length) {
+    return previousResult;
+  }
+
+  const task = taskList[index];
+  const taskText = index > 0 ? substitutePreviousResult(task.task, previousResult) : task.task;
+  const id = service.spawn(task.agent, taskText, {
+    description: taskText.slice(0, 80),
+    foreground: true,
+    inheritContext: true,
+  });
+  recordAndPersist(pi, state, task.agent, taskText);
+  onUpdate?.({
+    content: [
+      {
+        text: `Chain step ${index + 1}/${taskList.length}: ${task.agent} running...`,
+        type: 'text',
+      },
+    ],
+  });
+
+  let nextResult: string;
+  try {
+    const record = await Effect.runPromise(
+      pollSubagentOrAbortEffect({
+        id,
+        intervalMs: POLL_INTERVAL_MS,
+        label: `Chain step ${index + 1}: ${task.agent}`,
+        onUpdate,
+        sendUpdates: true,
+        service,
+        signal,
+        timeoutMs: POLL_TIMEOUT_MS,
+      }),
+    );
+    nextResult = record.result ?? record.error ?? 'No output.';
+  } catch (error) {
+    return `[error] ${error instanceof Error ? error.message : String(error)}`;
+  }
+
+  if (index < taskList.length - 1) {
+    onUpdate?.({
+      content: [
+        {
+          text: `Chain step ${index + 1}/${taskList.length}: ${task.agent} completed. Moving to next step.`,
+          type: 'text',
+        },
+      ],
+    });
+  }
+
+  return await runChainSteps(pi, state, service, taskList, signal, onUpdate, index + 1, nextResult);
+};
+
+const handleChainMode = async (
+  pi: SubagentEventHost,
+  state: MaestriaState,
+  service: SubagentSpawnService,
+  taskList: SubagentTask[],
+  signal: AbortSignal | undefined,
+  onUpdate: ToolUpdateHandler,
+): Promise<ToolResult> => ({
+  content: [
+    {
+      text: await runChainSteps(pi, state, service, taskList, signal, onUpdate, 0, ''),
+      type: 'text',
+    },
+  ],
+  details: { subagentId: 'chain-completed' },
+});
+
+const dispatchByMode = async (
+  pi: SubagentEventHost,
+  state: MaestriaState,
+  service: SubagentSpawnService,
+  params: SubagentParams,
+  signal: AbortSignal | undefined,
+  onUpdate: ToolUpdateHandler,
+): Promise<ToolResult> => {
+  const mode = params.mode ?? 'single';
+  if (mode === 'single') {
+    if (typeof params.agent !== 'string' || typeof params.task !== 'string') {
+      throw new TypeError('Single mode requires an agent and task');
+    }
+    return await handleSingleMode(pi, state, service, params.agent, params.task, signal, onUpdate);
+  }
+  if ((mode === 'parallel' || mode === 'chain') && Array.isArray(params.tasks)) {
+    return await (mode === 'parallel'
+      ? handleParallelMode(pi, state, service, params.tasks, signal, onUpdate)
+      : handleChainMode(pi, state, service, params.tasks, signal, onUpdate));
+  }
+  throw new Error('Unknown dispatch mode');
+};
+
+export const SUBAGENT_PARAMETERS = Type.Object({
+  agent: Type.String({
+    description:
+      'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
+  }),
+  mode: Type.Optional(
+    Type.Union([Type.Literal('parallel'), Type.Literal('chain'), Type.Literal('single')]),
+  ),
+  task: Type.String({ description: 'Task description for the subagent (required)' }),
+  tasks: Type.Optional(
+    Type.Array(Type.Object({ agent: Type.String(), task: Type.String() }), {
+      description: 'Array of task objects for parallel or chain dispatch',
+    }),
+  ),
+});
+
+export type SubagentToolParams = Static<typeof SUBAGENT_PARAMETERS>;
+
+const unavailableResult = (): ToolResult => ({
+  content: [
+    {
+      text: [
+        '## Subagent Dispatch Unavailable',
+        '',
+        'The `@gotgenes/pi-subagents` extension is required for subagent dispatch but has not been loaded.',
+        '',
+        'Install it as a Pi extension:',
+        '',
+        '```',
+        'pi install npm:@gotgenes/pi-subagents',
+        '```',
+        '',
+        'Then restart your Pi session.',
+      ].join('\n'),
+      type: 'text',
+    },
+  ],
+  details: {},
+});
+
+const handoffResult = (agentName: string, taskDesc: string): ToolResult => ({
+  content: [
+    {
+      text: [
+        '## Subagent Handoff Required',
+        '',
+        '**From:** orchestrator',
+        `**To:** ${agentName}`,
+        `**Task:** ${taskDesc}`,
+        '',
+        'Subagent dispatch failed. Please delegate this work manually.',
+      ].join('\n'),
+      type: 'text',
+    },
+  ],
+  details: {},
+});
+
+const executeSubagent = async (
+  pi: SubagentEventHost,
+  state: MaestriaState,
+  params: SubagentParams,
+  signal: AbortSignal | undefined,
+  onUpdate: ToolUpdateHandler,
+): Promise<ToolResult> => {
+  const { getSubagentsService } = await import('@gotgenes/pi-subagents');
+  const service = getSubagentsService();
+  if (!service || typeof service.spawn !== 'function') {
+    return unavailableResult();
+  }
+  try {
+    return await dispatchByMode(pi, state, service, params, signal, onUpdate);
+  } catch (error) {
+    console.warn('[maestria] Subagent dispatch failed:', error);
+    const agentName = params.agent ?? params.tasks?.[0]?.agent ?? 'unknown';
+    const taskDesc = params.task ?? params.tasks?.map((task) => task.task).join('; ') ?? 'unknown';
+    return handoffResult(agentName, taskDesc);
+  }
+};
+
+const createSubagentTool = (
+  pi: SubagentEventHost,
+  state: MaestriaState,
+): SubagentToolDefinition => ({
+  description: 'Dispatch a task to a @gotgenes/pi-subagents specialist subagent',
+  async execute(
+    _toolCallId: string,
+    params: SubagentParams,
+    signal: AbortSignal | undefined,
+    onUpdate: PiToolUpdateHandler,
+    _ctx: unknown,
+  ): Promise<ToolResult> {
+    if (state.reviewMode) {
+      return {
+        content: [
+          {
+            text: 'Subagent dispatch is not available during review mode. Use /restore-model to exit review mode first.',
+            type: 'text',
+          },
+        ],
+        details: {},
+      };
+    }
+    const mode = validatePiParams(params);
+    if (mode.startsWith('Invalid')) {
+      return {
+        content: [
+          {
+            text: `${mode} Re-dispatch with a valid agent name; the orchestrator may continue read-only exploration while the brief is corrected.`,
+            type: 'text',
+          },
+        ],
+        details: {},
+      };
+    }
+    const updateHandler: ToolUpdateHandler = onUpdate
+      ? (result) => {
+          onUpdate({
+            content: result.content.map(({ text }) => ({ text, type: 'text' as const })),
+            details: result.details ?? {},
+          });
+        }
+      : undefined;
+    return await executeSubagent(pi, state, params, signal, updateHandler);
+  },
+  label: 'Maestria Subagent',
+  name: 'maestria_subagent',
+  parameters: SUBAGENT_PARAMETERS,
+  promptGuidelines: [
+    'Use maestria_subagent when a task MUST be delegated to a specialist subagent rather than handled directly. Each specialist has focused capabilities: adventurer (recon), architect (design), builder (impl), planner (planning), diagnose (bugs), reviewer (QA), writer (docs).',
+  ],
+  promptSnippet:
+    'Delegate tasks to @maestria specialist subagents (adventurer, architect, builder, planner, diagnose, reviewer, writer)',
+});
+
+export const installSubagentTool = (
+  pi: SubagentToolApi,
+  state: MaestriaState,
+  cleanups?: (() => void)[],
+): void => {
+  pi.registerTool(createSubagentTool(pi, state));
+  subscribeSubagentEvents(pi, state, cleanups);
+};

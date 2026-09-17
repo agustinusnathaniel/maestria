@@ -1,10 +1,10 @@
 # Completion Checklist
 
-Before marking any task as complete in this repo:
+Before committing or delivering implementation, the delivery owner checks the integrated result. Read-only audits, research, and planning end at their requested artifact and need only artifact-relevant checks:
 
-- [ ] Quality pipeline passes (`vp test`, `pnpm typecheck`, `pnpm build`, `pnpm lint`, `pnpm check`)
-- [ ] If editing canonical agent directives: `scripts/sync-all` run && `scripts/check-sync` passes
-- [ ] If adding/removing files: `package.json` files array and export map are up to date
+- [ ] `pnpm check` passes (build, formatting, lint/type analysis, workspace tests, sync and manifest checks); `vp check` passes before commit. Reuse those results rather than rerunning constituent commands unchanged.
+- [ ] If editing canonical agent directives: run `scripts/sync-all`, then confirm `scripts/check-sync` passes
+- [ ] If changing packaged or exported files: `package.json` files array and export map are up to date
 - [ ] If changing agent prompts: README in `core/agent-directives/` is still accurate
 - [ ] If introducing a new design decision: has a corresponding ADR been written?
 - [ ] Documentation audit completed - checked READMEs, ADRs, changelogs, guides for needed updates

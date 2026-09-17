@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SYNC_SCRIPT="$ROOT/packages/core/scripts/sync.ts"
+HAD_ERROR=0
+
+if [ "${1:---write}" = "--check" ]; then
+  VERB="Checking"; FLAG="--check"
+  RESULT_OK="=== All plugins are in sync ==="
+  RESULT_FAIL="=== Some plugins are out of sync (run scripts/sync-all) ==="
+elif [ "${1:-}" = "--write" ] || [ "$#" -eq 0 ]; then
+  VERB="Syncing"; FLAG="--verbose"
+  RESULT_OK="=== All syncs complete ==="
+  RESULT_FAIL="=== Some syncs failed ==="
+else
+  echo "Usage: scripts/sync-packages [--check|--write]" >&2
+  exit 2
+fi
+
+for config in "$ROOT"/packages/*/sync.config.ts; do
+  [ -f "$config" ] || continue
+  PKG_DIR="$(dirname "$config")"
+  PKG_NAME="$(basename "$PKG_DIR")"
+
+  echo ""
+  echo "=== $VERB $PKG_NAME ==="
+  if (cd "$PKG_DIR" && pnpm exec tsx "$SYNC_SCRIPT" "$FLAG"); then
+    if [ "$FLAG" = "--check" ]; then
+      echo "  ✅ $PKG_NAME is in sync"
+    fi
+  else
+    HAD_ERROR=1
+    if [ "$FLAG" = "--check" ]; then
+      echo "  ❌ $PKG_NAME is out of sync"
+    fi
+  fi
+done
+
+echo ""
+if [ "$HAD_ERROR" -eq 0 ]; then
+  echo "$RESULT_OK"
+else
+  echo "$RESULT_FAIL"
+fi
+exit $HAD_ERROR

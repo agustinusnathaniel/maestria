@@ -1,17 +1,41 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { Effect } from 'effect';
+import { describe, expect, it, vi } from 'vite-plus/test';
+
+import type * as shell from '@/lib/shell.js';
+import { parseAgentFrontmatterModel, setAgentFrontmatterModel } from '@/lib/agent-frontmatter.js';
 import {
-  parseOpenCodeModels,
-  parsePiModels,
-  parseOmpModels,
-  parseFrontmatterModel,
-  setFrontmatterModel,
-  setConfigModelJsonc,
+  createCodexAgentConfig,
+  getModelConfigHandler,
+  parseCodexAgentModel,
   parseConfigModels,
   parseCursorModels,
-  parseCodexAgentModel,
+  parseOmpModels,
+  parseOpenCodeModels,
+  parsePiModels,
   setCodexAgentModel,
-  createCodexAgentConfig,
-} from '../src/lib/model-config.js';
+  setConfigModelJsonc,
+} from '@/lib/model-config.js';
+
+const shellMocks = vi.hoisted(() => ({
+  commandExists: vi.fn(),
+}));
+
+vi.mock('@/lib/shell.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof shell>();
+  return {
+    ...actual,
+    commandExists: shellMocks.commandExists,
+  };
+});
+
+const parseMarkdownModel = (content: string): string | undefined =>
+  parseAgentFrontmatterModel(content, { fallbackToContent: true });
+const setMarkdownModel = (content: string, model: string): string =>
+  setAgentFrontmatterModel(content, model, { createFrontmatter: true });
+const parseCursorFileModel = (content: string): string | undefined =>
+  parseAgentFrontmatterModel(content, { unquote: true });
+const setCursorFileModel = (content: string, model: string): string =>
+  setAgentFrontmatterModel(content, model, { preserveDelimiters: true });
 
 describe('parseOpenCodeModels', () => {
   it('parses provider/model lines', () => {
@@ -52,12 +76,12 @@ describe('parseOmpModels', () => {
     const out = JSON.stringify({
       models: [
         {
-          provider: 'opencode-go',
           id: 'deepseek-v4-flash',
+          provider: 'opencode-go',
           selector: 'opencode-go/deepseek-v4-flash',
         },
-        { provider: 'opencode-zen', id: 'gpt-5.2', selector: 'opencode-zen/gpt-5.2' },
-        { provider: 'x', id: 'y' },
+        { id: 'gpt-5.2', provider: 'opencode-zen', selector: 'opencode-zen/gpt-5.2' },
+        { id: 'y', provider: 'x' },
       ],
     });
     expect(parseOmpModels(out)).toEqual(['opencode-go/deepseek-v4-flash', 'opencode-zen/gpt-5.2']);
@@ -85,6 +109,18 @@ describe('parseCursorModels', () => {
       'gpt-5.4',
       'auto',
     ]);
+  });
+});
+
+describe('Cursor model configuration availability', () => {
+  it('reports Cursor unavailable when neither supported CLI is present', async () => {
+    shellMocks.commandExists.mockReturnValue(Effect.succeed(false));
+    const handler = getModelConfigHandler('cursor');
+    if (handler?.isAvailable === undefined) {
+      throw new Error('Cursor model configuration handler has no availability check');
+    }
+
+    expect(await Effect.runPromise(handler.isAvailable)).toBe(false);
   });
 });
 
@@ -133,21 +169,21 @@ You are a codebase reconnaissance agent.
 
   it('parses an existing model', () => {
     const content = '---\ndescription: x\nmodel: opencode-go/deepseek-v4-flash\n---\nbody\n';
-    expect(parseFrontmatterModel(content)).toBe('opencode-go/deepseek-v4-flash');
+    expect(parseMarkdownModel(content)).toBe('opencode-go/deepseek-v4-flash');
   });
 
   it('returns undefined when no model is set', () => {
-    expect(parseFrontmatterModel(sample)).toBeUndefined();
+    expect(parseMarkdownModel(sample)).toBeUndefined();
   });
 
   it('ignores model-like lines in the body', () => {
     const content = '---\ndescription: x\n---\n\nmodel: not-a-frontmatter\n';
-    expect(parseFrontmatterModel(content)).toBeUndefined();
+    expect(parseMarkdownModel(content)).toBeUndefined();
   });
 
   it('adds a model line, preserving everything else', () => {
-    const next = setFrontmatterModel(sample, 'opencode-go/deepseek-v4-flash');
-    expect(parseFrontmatterModel(next)).toBe('opencode-go/deepseek-v4-flash');
+    const next = setMarkdownModel(sample, 'opencode-go/deepseek-v4-flash');
+    expect(parseMarkdownModel(next)).toBe('opencode-go/deepseek-v4-flash');
     expect(next).toContain('tools: read, bash, grep, find, ls, glob');
     expect(next).toContain('You are a codebase reconnaissance agent.');
     expect(next.endsWith(sample.slice(-50))).toBe(true);
@@ -155,8 +191,8 @@ You are a codebase reconnaissance agent.
 
   it('replaces an existing model line', () => {
     const content = '---\ndescription: x\nmodel: old/model\n---\nbody\n';
-    const next = setFrontmatterModel(content, 'new/model');
-    expect(parseFrontmatterModel(next)).toBe('new/model');
+    const next = setMarkdownModel(content, 'new/model');
+    expect(parseMarkdownModel(next)).toBe('new/model');
     expect(next).not.toContain('old/model');
     expect(next).toContain('description: x');
     expect(next).toContain('body');
@@ -164,17 +200,51 @@ You are a codebase reconnaissance agent.
 
   it('removes the model line when given an empty string', () => {
     const content = '---\ndescription: x\nmodel: old/model\n---\nbody\n';
-    const next = setFrontmatterModel(content, '');
-    expect(parseFrontmatterModel(next)).toBeUndefined();
+    const next = setMarkdownModel(content, '');
+    expect(parseMarkdownModel(next)).toBeUndefined();
     expect(next).toContain('description: x');
     expect(next).toContain('body');
   });
 
   it('prepends frontmatter when the file has none', () => {
     const content = 'no frontmatter here';
-    const next = setFrontmatterModel(content, 'opencode-go/deepseek-v4-flash');
-    expect(parseFrontmatterModel(next)).toBe('opencode-go/deepseek-v4-flash');
+    const next = setMarkdownModel(content, 'opencode-go/deepseek-v4-flash');
+    expect(parseMarkdownModel(next)).toBe('opencode-go/deepseek-v4-flash');
     expect(next).toContain('no frontmatter here');
+  });
+});
+
+describe('cursor frontmatter semantics', () => {
+  it('unwraps double- and single-quoted model values', () => {
+    expect(parseCursorFileModel('---\nmodel: "double/quoted"\n---\nbody\n')).toBe('double/quoted');
+    expect(parseCursorFileModel("---\nmodel: 'single/quoted'\n---\nbody\n")).toBe('single/quoted');
+    expect(parseCursorFileModel('---\nmodel: plain/value\n---\nbody\n')).toBe('plain/value');
+  });
+
+  it('requires frontmatter and never scans the body for a model', () => {
+    expect(parseCursorFileModel('model: body-only\n')).toBeUndefined();
+    expect(parseCursorFileModel('---\ndescription: x\n---\nmodel: body-only\n')).toBeUndefined();
+  });
+
+  it('preserves fence bytes, trailing content, and the no-newline closing fence', () => {
+    const content = '---\r\nname: x\r\nmodel: old/model\r\n---\r\nbody line 1\r\nbody line 2\r\n';
+    expect(setCursorFileModel(content, 'new/model')).toBe(
+      '---\r\nname: x\nmodel: new/model\r\n---\r\nbody line 1\r\nbody line 2\r\n',
+    );
+    expect(setCursorFileModel('---\nname: x\n---\nbody', 'new/model')).toBe(
+      '---\nname: x\nmodel: new/model\n---\nbody',
+    );
+  });
+
+  it('leaves content without frontmatter unchanged', () => {
+    const content = 'no frontmatter here\n';
+    expect(setCursorFileModel(content, 'new/model')).toBe(content);
+    expect(setCursorFileModel(content, '')).toBe(content);
+  });
+
+  it('removes the model line and preserves the remaining bytes', () => {
+    const content = '---\nname: x\nmodel: old/model\n---\nbody\n';
+    expect(setCursorFileModel(content, '')).toBe('---\nname: x\n---\nbody\n');
   });
 });
 

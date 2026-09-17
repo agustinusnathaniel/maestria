@@ -28,7 +28,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     env:
       VITE_GIT_HOOKS: '0'
     steps:
@@ -36,6 +36,11 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
+        with:
+          # Release only builds and publishes: no Python linting needed.
+          python: 'false'
+      - name: Verify generated plugins are in sync
+        run: pnpm exec vp run check-sync
       - name: Build
         run: pnpm build:ci
       - name: Create Release PR or Publish

@@ -3,17 +3,52 @@ title: Changelog
 description: Release history for @maestria/codex.
 ---
 
-# Changelog
+## 0.4.4
 
-## Unreleased
+_September 11, 2026_
+
+- Internal consolidation; duplicated specialist guidance was removed from generated orchestrator skills, with the guidance unchanged in substance.
+
+## 0.4.3
+
+_September 6, 2026_
+
+- Clarified installation paths, prerequisites, and support boundaries in the package documentation.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.4.2
+
+_September 4, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.4.1
+
+_September 3, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.4.0
+
+_August 27, 2026_
 
 ### Native Codex orchestration
 
 - The Maestria CLI now installs seven native `maestria-*` Codex custom-agent roles.
-- The CLI adds a marked global instruction block so Codex's host-owned primary session activates
-  Maestria orchestration and delegates with native `agent_type` role names.
-- Updates preserve user model, reasoning, and service-tier settings, and uninstall removes only
-  Maestria-managed agent files and instruction content.
+- The CLI adds a marked global instruction block so Codex's host-owned primary session activates Maestria orchestration and delegates with native `agent_type` role names.
+- Updates preserve user model, reasoning, and service-tier settings, and uninstall removes only Maestria-managed agent files and instruction content.
+
+## 0.3.2
+
+_August 25, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.3.1
+
+_August 24, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## 0.3.0
 
@@ -21,10 +56,7 @@ _August 22, 2026_
 
 ### Leaner directives, explicit delivery autonomy
 
-- Canonical agent directives are ~24% leaner at the source (~21% as shipped in generated plugins): the bounded-repair contract lives once in the global rules and specialist skill catalogs list only verified skills.
-- Delegated implementation outcomes now complete at a pushed feature branch with an open PR; routine commit, push, and PR creation require no approval asks, while merge, release, and production actions remain separate authorization boundaries.
-- Failed or cancelled delegations get one adjusted-brief retry before structured blocker reporting.
-- Decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## 0.2.1
 
@@ -32,24 +64,17 @@ _August 13, 2026_
 
 ### Maestria CLI support
 
-- Added Maestria CLI compatibility: the CLI detects the Codex CLI host, stages the published npm
-  package in a local marketplace, and delegates install, update, status, check, and uninstall
-  operations to Codex's native plugin manager.
+- Added Maestria CLI compatibility: the CLI detects the Codex CLI host, stages the published npm package in a local marketplace, and delegates install, update, status, check, and uninstall operations to Codex's native plugin manager.
 
 ## 0.2.0
 
 ### Codex CLI projection
 
-- Added the generated skills projection for the 7 specialists, orchestrator, global rules, handoff,
-  iteration limits, and `fein`/`sonar`/`blitz` workflow modes.
-- Added Maestria CLI compatibility: `install`, `status`, `check`, `update`, and `uninstall` now
-  recognize the `codex` platform.
+- Added the generated skills projection for the 7 specialists, orchestrator, global rules, handoff, iteration limits, and `fein`/`sonar`/`blitz` workflow modes.
+- Added Maestria CLI compatibility: `install`, `status`, `check`, `update`, and `uninstall` now recognize the `codex` platform.
 - The CLI stages the npm package in a local Codex marketplace and delegates plugin state to Codex.
-- Codex desktop parity, hooks, MCP, model configuration, and hard read-only enforcement remain out
-  of scope.
+- Codex desktop parity, hooks, MCP, model configuration, and hard read-only enforcement remain out of scope.
 
 ## 0.1.0
 
-Initial Codex CLI projection. It packages the canonical Maestria specialist,
-orchestration, rules, handoff, iteration-limit, and workflow-mode directives as Codex skills through
-`.codex-plugin/plugin.json`.
+Initial Codex CLI projection. It packages the canonical Maestria specialist, orchestration, rules, handoff, iteration-limit, and workflow-mode directives as Codex skills through `.codex-plugin/plugin.json`.

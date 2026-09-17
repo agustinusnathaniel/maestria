@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vite-plus/test';
 import { Effect } from 'effect';
-import * as validation from '@/lib/validation.js';
+import { describe, expect, it } from 'vite-plus/test';
+
 import { platforms } from '@/lib/platforms.js';
+import * as validation from '@/lib/validation.js';
 
 describe('validation', () => {
   it('exports ValidationError class', () => {
@@ -10,8 +11,22 @@ describe('validation', () => {
   it('exports validatePlatform function', () => {
     expect(typeof validation.validatePlatform).toBe('function');
   });
-  it('exports validateOrExit function', () => {
-    expect(typeof validation.validateOrExit).toBe('function');
+  it('exports validateOrThrow function', () => {
+    expect(typeof validation.validateOrThrow).toBe('function');
+  });
+
+  it('validateOrThrow returns the validated value on success', async () => {
+    expect(await validation.validateOrThrow(validation.validatePlatform('pi'))).toBe('pi');
+  });
+
+  it('validateOrThrow throws CliError with exit code 1 and the validation message', async () => {
+    await expect(
+      validation.validateOrThrow(validation.validatePlatform('unknown')),
+    ).rejects.toMatchObject({
+      exitCode: 1,
+      message:
+        "Unknown platform 'unknown'. Valid platforms: opencode, omp, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex",
+    });
   });
   it('accepts prime-agent as a valid platform', async () => {
     expect(await Effect.runPromise(validation.validatePlatform('prime-agent'))).toBe('prime-agent');
@@ -21,15 +36,15 @@ describe('validation', () => {
     ]);
   });
 
-  it('VALID_PLATFORMS derives from handler registry (no drift) but preserves legacy ordering', async () => {
+  it('VALID_PLATFORMS derives from handler registry (no drift) but preserves legacy ordering', () => {
     const handlerIds = platforms.map((p) => p.id);
     // Set membership must match registry
-    expect([...validation.VALID_PLATFORMS].sort()).toEqual([...handlerIds].sort());
+    expect([...validation.VALID_PLATFORMS].toSorted()).toEqual([...handlerIds].toSorted());
     expect(validation.VALID_PLATFORMS.length).toBe(handlerIds.length);
     expect(new Set(validation.VALID_PLATFORMS)).toEqual(new Set(handlerIds));
   });
 
-  it('VALID_PLATFORMS preserves legacy exact order (opencode, omp, pi, prime-agent, ...)', async () => {
+  it('VALID_PLATFORMS preserves legacy exact order (opencode, omp, pi, prime-agent, ...)', () => {
     expect(validation.VALID_PLATFORMS).toEqual([
       'opencode',
       'omp',

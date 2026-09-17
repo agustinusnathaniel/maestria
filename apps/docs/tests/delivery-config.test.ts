@@ -1,14 +1,43 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vite-plus/test';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const APP_ROOT = path.resolve(__dirname, '..');
 
-async function readAppFile(relativePath: string): Promise<string> {
-  return readFile(path.join(APP_ROOT, relativePath), 'utf8');
+const readAppFile = async (relativePath: string): Promise<string> =>
+  await readFile(path.join(APP_ROOT, relativePath), 'utf-8');
+
+interface RoutesConfig {
+  version?: number;
+  include?: string[];
+  exclude?: string[];
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+const isRoutesConfig = (value: unknown): value is RoutesConfig => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    (value.version === undefined || typeof value.version === 'number') &&
+    (value.include === undefined || isStringArray(value.include)) &&
+    (value.exclude === undefined || isStringArray(value.exclude))
+  );
+};
+
+const readRoutesConfig = async (): Promise<RoutesConfig> => {
+  const parsed: unknown = JSON.parse(await readAppFile('public/_routes.json'));
+  if (!isRoutesConfig(parsed)) {
+    throw new TypeError('public/_routes.json has an invalid shape');
+  }
+  return parsed;
+};
 
 describe('Cloudflare Pages _headers', () => {
   it('keeps the security headers intact', async () => {
@@ -25,11 +54,7 @@ describe('Cloudflare Pages _headers', () => {
 
 describe('Cloudflare Pages _routes.json', () => {
   it('invokes the function only where needed: include all, exclude verified static paths', async () => {
-    const routes = JSON.parse(await readAppFile('public/_routes.json')) as {
-      version?: number;
-      include?: string[];
-      exclude?: string[];
-    };
+    const routes = await readRoutesConfig();
 
     expect(routes.version).toBe(1);
     expect(routes.include).toEqual(['/*']);
@@ -43,7 +68,7 @@ describe('Cloudflare Pages _routes.json', () => {
   });
 
   it('excludes the prerendered agent artifacts so they are served purely statically', async () => {
-    const routes = JSON.parse(await readAppFile('public/_routes.json')) as { exclude?: string[] };
+    const routes = await readRoutesConfig();
     for (const artifact of [
       '/llms.txt',
       '/llms-full.txt',
@@ -79,7 +104,7 @@ describe('public/robots.txt', () => {
       const [directive] = line.split(':');
       expect(['User-agent', 'Allow', 'Sitemap']).toContain(directive?.trim());
       if (directive?.trim() === 'Sitemap') {
-        expect(line).toMatch(/Sitemap: https:\/\//);
+        expect(line).toMatch(/Sitemap: https:\/\//u);
       }
     }
   });

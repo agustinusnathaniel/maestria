@@ -1,8 +1,9 @@
 {
   "name": "maestria",
-  "version": "0.11.0",
-  "description": "Maestria CLI - manage maestria plugins across coding agent platforms",
+  "version": "0.12.5",
+  "description": "Maestria CLI - manage runtime integrations and portable Agent Plugins",
   "keywords": [
+    "agent-plugins",
     "ai-agent",
     "cli",
     "kimi-code",
@@ -38,10 +39,11 @@
     "test": "vp test"
   },
   "dependencies": {
-    "@clack/core": "^1.4.3"
+    "@clack/core": "^1.5.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@clack/prompts": "^1.7.0",
+    "@clack/prompts": "^1.8.0",
     "@types/node": "catalog:",
     "citty": "^0.2.2",
     "effect": "catalog:",

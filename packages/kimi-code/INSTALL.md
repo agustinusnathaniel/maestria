@@ -17,7 +17,7 @@ The CLI pulls `@maestria/kimi-code` from npm (`npm pack @maestria/kimi-code@late
 ${KIMI_CODE_HOME:-~/.kimi-code}/plugins/managed/maestria
 ```
 
-The installer preserves existing plugin records and does not overwrite global instructions. After install, start a new session so the plugin's `sessionStart.skill` loads the orchestrator and Kimi contributes `SYSTEM.md` through its native `systemPromptPath`. Add any desired `[[hooks]]` and `[[permission.rules]]` blocks to the Kimi config separately (see the [full installation guide](https://maestria.dev/kimi-code/getting-started/installation/)).
+The installer preserves existing plugin records and does not overwrite global instructions. After install, start a new session so the plugin's `sessionStart.skill` loads the orchestrator and Kimi contributes `SYSTEM.md` through its native `systemPromptPath`. Add any desired `[[hooks]]` and `[[permission.rules]]` blocks to the Kimi config separately (see the [full installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/)).
 
 ### Updating
 

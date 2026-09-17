@@ -59,102 +59,163 @@ export interface MaestriaState {
 
 // ── Transforms ──
 
-export function createInitialState(): MaestriaState {
-  return {
-    mode: null,
-    activeTask: '',
-    completionPromise: '',
-    specialistsDelegated: [],
-    blockers: [],
-    filesModified: [],
-    filesRead: [],
-    handoffHistory: [],
-    reviewMode: false,
-    originalModel: null,
-    originalTools: null,
-    subagentStatus: {},
-    reviewModel: null,
-    nativeGoal: null,
-  };
-}
+export const createInitialState = (): MaestriaState => ({
+  activeTask: '',
+  blockers: [],
+  completionPromise: '',
+  filesModified: [],
+  filesRead: [],
+  handoffHistory: [],
+  mode: null,
+  nativeGoal: null,
+  originalModel: null,
+  originalTools: null,
+  reviewMode: false,
+  reviewModel: null,
+  specialistsDelegated: [],
+  subagentStatus: {},
+});
 
-function prependDeduped(files: string[], path: string, cap: number): string[] {
+const prependDeduped = (files: string[], path: string, cap: number): string[] => {
   const filtered = files.filter((f) => f !== path);
   return [path, ...filtered].slice(0, cap);
-}
+};
 
-export function recordHandoff(
+export const recordHandoff = (
   state: MaestriaState,
   from: string,
   to: string,
   task: string,
-): MaestriaState {
-  const entry: HandoffEntry = { from, to, task, timestamp: Date.now() };
+): MaestriaState => {
+  const entry: HandoffEntry = { from, task, timestamp: Date.now(), to };
   const history = [entry, ...state.handoffHistory].slice(0, HANDOFF_HISTORY_CAP);
   return { ...state, handoffHistory: history };
-}
+};
 
-export function recordFileModified(state: MaestriaState, path: string): MaestriaState {
-  return { ...state, filesModified: prependDeduped(state.filesModified, path, FILE_HISTORY_CAP) };
-}
+export const recordFileModified = (state: MaestriaState, path: string): MaestriaState => ({
+  ...state,
+  filesModified: prependDeduped(state.filesModified, path, FILE_HISTORY_CAP),
+});
 
-export function recordFileRead(state: MaestriaState, path: string): MaestriaState {
-  return { ...state, filesRead: prependDeduped(state.filesRead, path, FILE_HISTORY_CAP) };
-}
+export const recordFileRead = (state: MaestriaState, path: string): MaestriaState => ({
+  ...state,
+  filesRead: prependDeduped(state.filesRead, path, FILE_HISTORY_CAP),
+});
 
-export function recordSpecialistDelegated(state: MaestriaState, name: string): MaestriaState {
-  if (state.specialistsDelegated.includes(name)) return state;
+export const recordSpecialistDelegated = (state: MaestriaState, name: string): MaestriaState => {
+  if (state.specialistsDelegated.includes(name)) {
+    return state;
+  }
   return { ...state, specialistsDelegated: [...state.specialistsDelegated, name] };
-}
+};
 
-export function recordSubagentStatus(
+export const exitReviewMode = (
   state: MaestriaState,
-  id: string,
-  info: SubagentStatusInfo,
-): MaestriaState {
-  return { ...state, subagentStatus: { ...state.subagentStatus, [id]: info } };
-}
-
-export function setReviewMode(state: MaestriaState, active: boolean): MaestriaState {
-  return { ...state, reviewMode: active };
-}
-
-export function exitReviewMode(state: MaestriaState): {
+): {
   state: MaestriaState;
   originalModel: string | null;
   originalTools: string[] | null;
-} {
-  return {
-    state: {
-      ...state,
-      reviewMode: false,
-      originalModel: null,
-      originalTools: null,
-    },
-    originalModel: state.originalModel,
-    originalTools: state.originalTools,
-  };
-}
+} => ({
+  originalModel: state.originalModel,
+  originalTools: state.originalTools,
+  state: {
+    ...state,
+    originalModel: null,
+    originalTools: null,
+    reviewMode: false,
+  },
+});
 
 // ── Persistence ──
 
-export function persistState(
+export const persistState = (
   pi: { appendEntry: (type: string, data: unknown) => void },
   state: MaestriaState,
-): void {
+): void => {
   pi.appendEntry('maestria_state', { ...state });
+};
+
+// ── Session restore ──
+
+/** Minimal shape of a persisted session entry that restore logic inspects. */
+export interface SessionEntry {
+  type: string;
+  customType?: string;
+  data?: unknown;
 }
+
+export interface SessionBranchContext {
+  sessionManager?: { getBranch?: () => unknown };
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+/**
+ * Read the current branch of the host session, or null when unavailable.
+ *
+ * getBranch() is the public current-session view and avoids restoring state
+ * from a sibling branch in the same session tree. Never fall back to
+ * getEntries(), which spans the entire session tree.
+ */
+export const readSessionBranch = (ctx?: SessionBranchContext | null): SessionEntry[] | null => {
+  const sessionManager = ctx?.sessionManager;
+  if (typeof sessionManager?.getBranch !== 'function') {
+    return null;
+  }
+
+  const branch = sessionManager.getBranch();
+  return Array.isArray(branch) ? branch : null;
+};
+
+/**
+ * Build a fresh state from the last persisted `maestria_state` entry.
+ *
+ * The last matching entry wins, reflecting the latest persisted snapshot on
+ * the branch. Null entries produce the initial state.
+ */
+export const stateFromSessionEntries = (entries?: SessionEntry[] | null): MaestriaState => {
+  const next = createInitialState();
+  if (!entries) {
+    return next;
+  }
+
+  for (let i = entries.length - 1; i >= 0; i -= 1) {
+    const entry = entries[i];
+    if (entry.type === 'custom' && entry.customType === 'maestria_state') {
+      if (isRecord(entry.data)) {
+        Object.assign(next, entry.data);
+      }
+      break;
+    }
+  }
+
+  return next;
+};
+
+/**
+ * Replace every own key on `state` with the values from `next`.
+ *
+ * Deleting stale keys first keeps the mutable extension state in sync with
+ * the restored snapshot instead of leaking fields absent from it.
+ */
+export const replaceState = (state: MaestriaState, next: MaestriaState): void => {
+  for (const key of Object.keys(state)) {
+    Reflect.deleteProperty(state, key);
+  }
+  Object.assign(state, next);
+};
 
 // ── Render ──
 
-export function renderMaestriaSummary(state: MaestriaState): string {
+export const renderMaestriaSummary = (state: MaestriaState): string => {
   const parts: string[] = [];
 
   if (state.mode) {
     parts.push(`**Mode:** ${state.mode.toUpperCase()}`);
   }
 
-  if (state.reviewModel) {
+  if (state.reviewModel !== null && state.reviewModel !== undefined && state.reviewModel !== '') {
     parts.push(`**Review Model:** ${state.reviewModel}`);
   }
 
@@ -200,4 +261,4 @@ export function renderMaestriaSummary(state: MaestriaState): string {
   }
 
   return parts.join('\n\n');
-}
+};

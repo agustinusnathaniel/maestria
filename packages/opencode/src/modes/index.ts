@@ -1,10 +1,12 @@
 import {
+  isModeKeyword,
   detectMode as sharedDetectMode,
-  stripKeyword as sharedStripKeyword,
   getModeMarker as sharedGetMarker,
+  stripKeyword as sharedStripKeyword,
 } from '@maestria/shared-mode';
-import { MODE_PROMPTS, MODE_MARKERS, VALID_KEYWORDS } from '@/modes/prompts.js';
-import type { ModeKeyword, ModeResult } from '@/modes/types.js';
+
+import { MODE_PROMPTS } from '@/modes/prompts.js';
+import type { ModeResult } from '@/modes/types.js';
 
 /**
  * Detect a workflow mode keyword in the given text.
@@ -18,46 +20,38 @@ import type { ModeKeyword, ModeResult } from '@/modes/types.js';
  * (fein > sonar > blitz), code spans are excluded, unclosed fences
  * are not excluded (accepted false-positive).
  */
-export function detectMode(text: string, disabled?: Set<string>): ModeResult | null {
+export const detectMode = (text: string, disabled?: Set<string>): ModeResult | null => {
   const pure = sharedDetectMode(text, disabled);
-  if (pure === null) return null;
+  if (pure === null) {
+    return null;
+  }
   return {
-    mode: pure.mode,
-    keyword: pure.keyword,
     index: pure.index,
+    keyword: pure.keyword,
+    marker: sharedGetMarker(pure.mode),
+    mode: pure.mode,
     prompt: MODE_PROMPTS[pure.mode],
-    marker: MODE_MARKERS[pure.mode],
   };
-}
+};
 
 /**
  * Remove the matched keyword from the text, cleaning up any trailing colon
  * or whitespace that may follow it.
  */
-export function stripKeyword(text: string, result: ModeResult): string {
-  return sharedStripKeyword(text, result);
-}
+export const stripKeyword = (text: string, result: ModeResult): string =>
+  sharedStripKeyword(text, result);
 
 /**
  * Get the mode prompt text for a given mode name.
  */
-export function getModePrompt(mode: string): string {
+export const getModePrompt = (mode: string): string => {
   if (isModeKeyword(mode)) {
     return MODE_PROMPTS[mode];
   }
   return '';
-}
+};
 
 /**
  * Get the mode marker string for a given mode name.
  */
-export function getModeMarker(mode: string): string {
-  if (isModeKeyword(mode)) {
-    return sharedGetMarker(mode);
-  }
-  return '';
-}
-
-function isModeKeyword(value: string): value is ModeKeyword {
-  return (VALID_KEYWORDS as readonly string[]).includes(value);
-}
+export const getModeMarker = (mode: string): string => sharedGetMarker(mode);

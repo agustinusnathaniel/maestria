@@ -2,25 +2,25 @@
 
 ## Motivation
 
-AI coding agents - OpenCode, Claude Code, Codex, Kimi Code - provide excellent infrastructure: tools, sandboxes, permissions, model access. But they can't prescribe how an agent _behaves_ - how it makes decisions, orchestrates work, delegates tasks, structures reasoning. That level of opinionation is too specific to ship as a platform default. The result: every team re-invents the same patterns, badly.
+AI coding agents provide tools, sandboxes, permissions, and model access. Teams still need to decide how agents plan work, delegate tasks, and review results.
 
-Maestria is a **behavior layer** for AI coding agents. It packages proven methodology - design patterns, agent prompts, workflow rules - as reusable, installable, versioned packages. One per platform. Same patterns, adapted to each platform's native primitives. The principle is straightforward: **Agent = Model + Harness.** The model provides capability. The harness provides reliability. Most agent failures are harness failures, not model failures.
+Maestria is a **behavior layer** for these agents. It packages design patterns, agent prompts, and workflow rules as reusable, versioned plugins adapted to each platform. The guiding principle is **Agent = Model + Harness**: the model provides capability; the harness shapes how reliably it is used.
 
-The patterns in Maestria were extracted from months of daily AI-assisted engineering work. They're scar tissue from real failures, not theoretical best practices. The maker/checker split, delegation chains, handoff contracts, iteration limits - all of these came from specific mistakes that happened more than once. These are the patterns _we stopped making_. Published under MIT so others don't have to make them either.
+The patterns come from months of daily AI-assisted engineering. Independent review, delegation chains, handoff contracts, and iteration limits address recurring failures from that work. They are published under MIT so other teams can reuse them.
 
-Maestria packages are pure plugins - no postinstall scripts, no file system side effects. Agents and rules are served directly from the npm package, not copied to your config directory. Installation is a single line in your plugin configuration. Nothing more.
+Maestria packages do not use automatic postinstall scripts. Direct plugin installers read the package's agents, skills, and rules, while the `maestria` CLI may stage packages or update host-owned files when you explicitly ask it to. The portable Agent Plugin package contains only its manifest and skills. Check each platform guide for the host-specific installation and update behavior.
 
 ## Goals
 
-- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code and Codex get hooks and extensions. The pattern is the same; the implementation adapts.
+- **Multi-platform methodology.** Same design patterns, adapted to each platform's native primitives. OpenCode gets task subagents. Kimi Code gets AgentSwarm. Claude Code gets declarative agents, skills, and commands. Codex gets skills plus CLI-managed native agents and instructions.
 
-- **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context. These are first-class concepts, not afterthoughts.
+- **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context.
 
 - **Transparency.** Every agent is a markdown file with YAML frontmatter. No TypeScript abstraction layer between you and the prompts. What you see is what the agent runs.
 
 - **Curation-driven evolution.** Patterns are promoted only after proving useful across multiple projects and sessions. Manual curation from experience and knowledge base. No automated extraction. No session mining.
 
-- **No vendor lock-in.** Works with any provider, any platform. MIT-licensed. Open source.
+- **No model-provider lock-in.** Maestria does not provide inference or require one model provider. Each coding-agent platform still needs a compatible native integration or Agent Plugins v1 support. MIT-licensed. Open source.
 
 ## Non-Goals
 
@@ -34,23 +34,27 @@ Maestria packages are pure plugins - no postinstall scripts, no file system side
 
 - **Not enforcing.** Rules are guidance, not gates. The `!!!` convention signals non-negotiable rules, but enforcement happens through permissions and review, not runtime checks.
 
-- **Not collecting data.** No telemetry, no usage tracking, no analytics, no crash reporting. Zero network calls from Maestria packages.
+- **Not collecting data.** Runtime plugins make no background telemetry, analytics, or crash-reporting calls. The CLI may contact package registries or host CLIs only when you request status, installation, updates, or version checks.
 
 - **Not a single-platform tool.** Maestria is designed for multiple platforms. If it only works on one platform, it's incomplete.
 
 ## Packages
 
-| Package                 | Platform         |
-| ----------------------- | ---------------- |
-| `@maestria/opencode`    | OpenCode         |
-| `@maestria/kimi-code`   | Kimi Code        |
-| `@maestria/cursor`      | Cursor IDE & CLI |
-| `@maestria/omp`         | Oh My Pi         |
-| `@maestria/claude-code` | Claude Code      |
-| `@maestria/codex`       | Codex CLI        |
-| `@maestria/hermes`      | Hermes           |
-| `@maestria/pi`          | Pi               |
+| Package                  | Platform         |
+| ------------------------ | ---------------- |
+| `@maestria/opencode`     | OpenCode         |
+| `@maestria/kimi-code`    | Kimi Code        |
+| `@maestria/cursor`       | Cursor IDE & CLI |
+| `@maestria/omp`          | Oh My Pi         |
+| `@maestria/claude-code`  | Claude Code      |
+| `@maestria/codex`        | Codex CLI        |
+| `@maestria/hermes`       | Hermes           |
+| `@maestria/pi`           | Pi               |
+| `@maestria/prime-agent`  | Prime Agent      |
+| `@maestria/agent-plugin` | Agent Plugins v1 |
+
+Canonical agent directives live in the private `@maestria/core` package (`packages/core/agent-directives/`) and are projected into the platform packages above by the sync pipeline. `packages/shared/*` holds private host-neutral utilities. Neither is published.
 
 ## How This Project Evolves
 
-Patterns are curated from experience, documented in the knowledge base, then promoted into Maestria packages when proven. All changes flow through human review. No autonomous code changes. See **PATTERNS.md** for the catalog of design patterns that each platform package implements.
+Patterns are curated from experience, documented in the knowledge base, then promoted into Maestria packages when proven. All changes flow through human review. No autonomous code changes. See [PATTERNS.md](PATTERNS.md) for the catalog of design patterns that each platform package implements.

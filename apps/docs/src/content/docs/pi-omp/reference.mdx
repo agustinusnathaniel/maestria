@@ -3,36 +3,45 @@ title: Pi & OMP Reference
 description: Combined reference for @maestria/pi and @maestria/omp - mode commands, subagent dispatch, review mode, and session management.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
 ## Spec-Driven Delegation
 
-The orchestrator gives each specialist a **compact, material handoff** containing only what is needed to act: the outcome, relevant context and constraints, acceptance or expected evidence, material assumptions or known problems, and the next step or blocker. There is no fixed field count.
+The orchestrator gives each specialist a **compact, material handoff**: outcome, relevant context and constraints, acceptance or expected evidence, material assumptions or known problems, and the next step or blocker. There is no fixed field count; the orchestrator validates handoffs before dispatch and rejects incomplete ones.
 
-The orchestrator enforces **phase gates** - each specialist must verify completion before the next phase begins. If a specialist blocks, the orchestrator escalates or re-plans.
+The orchestrator enforces **phase gates** - each specialist must verify completion before the next phase. If a specialist blocks, the orchestrator escalates or re-plans.
+
+**Pipeline discipline.** For non-trivial work, the flow is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate); each step verifies before handoff. Skipping recon or review trades speed for risk.
 
 ## Session Tree Integration
 
-Every subagent dispatch records the parent task ID and specialist name in the session tree. Compaction preserves this state so resumed or forked sessions retain full context. The session tree is surfaced via `/maestria-status` and compaction summaries.
+Every subagent dispatch records the parent task ID and specialist name in the session tree. Compaction preserves this state, so resumed or forked sessions retain full context. `/maestria-status` and compaction summaries surface the tree, and mode and delegation state also survive compaction, resume, and fork.
 
-<Aside type="note">
-  **Pi** records session tree state via the `@gotgenes/pi-subagents` extension's cross-extension
-  events. **OMP** manages the session tree through its runtime's native subagent lifecycle - no
-  third-party extension needed.
-</Aside>
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
+
+**Pi** records session tree state via the `@gotgenes/pi-subagents` extension's cross-extension events.
+
+  </TabItem>
+  <TabItem label="OMP">
+
+**OMP** manages the session tree through its runtime's native subagent lifecycle - no third-party extension needed.
+
+  </TabItem>
+</Tabs>
 
 ## Commands
 
-| Command              | Description                                                                   |
-| -------------------- | ----------------------------------------------------------------------------- |
-| `/fein`              | Set workflow mode to full pipeline                                            |
-| `/sonar`             | Set workflow mode to research only                                            |
-| `/blitz`             | Set workflow mode to fast implementation                                      |
-| `/review <target>`   | Enter review mode - restricts toolset to read-only, optionally switches model |
-| `/restore-model`     | Exit review mode and restore original model and tools                         |
-| `/review-model <id>` | Configure which model to use when entering review mode                        |
-| `/handoff <goal>`    | Generate a structured handoff document for task context transfer              |
-| `/maestria-status`   | Show current session state including handoff history                          |
+| Command | Description |
+| --- | --- |
+| `/fein` | Set workflow mode to full pipeline |
+| `/sonar` | Set workflow mode to research only |
+| `/blitz` | Set workflow mode to fast implementation |
+| `/review <target>` | Enter review mode - restricts toolset to read-only, optionally switches model |
+| `/restore-model` | Exit review mode and restore original model and tools |
+| `/review-model <id>` | Configure which model to use when entering review mode |
+| `/handoff <goal>` | Generate a structured handoff document for task context transfer |
+| `/maestria-status` | Show current session state including handoff history |
 
 > **Mode keywords work two ways:**
 >
@@ -41,44 +50,39 @@ Every subagent dispatch records the parent task ID and specialist name in the se
 
 ## Pure Dispatcher Enforcement
 
-When a workflow mode is active (fein/sonar/blitz), the platform may restrict the main session to delegation tools. This can enforce the maker/checker split at the tool level, but the exact restriction differs between Pi and OMP.
+When a workflow mode is active (fein/sonar/blitz), the platform may block mutation tools in the main session. This enforces the maker/checker split at the tool level. The behavior differs between Pi and OMP:
 
-<Aside type="note">
-  **Pi** restricts the orchestrator to only `maestria_subagent` during enforcement. **OMP** allows
-  both `task()` (native) and `maestria_subagent` (structured handoff wrapper) during enforcement.
-  The `maestria_subagent` tool validates parameters and constructs a structured handoff, then
-  returns a plan for the native `task()` call. Subagent sessions (without the `task` tool) are not
-  restricted and retain their full specialist toolset.
-</Aside>
+- **Pi** blocks `edit`, `write`, `patch`, and mutating `bash` calls while the `subagent` delegation tool is available. Read-only tools and read-only bash commands keep working.
+- **OMP** blocks the same mutations while the native `task()` tool is available, and leaves `maestria_subagent` (the structured handoff wrapper) callable.
 
-OMP's public extension API exposes tool names but not the provenance of a tool call. Maestria
-therefore does not make a name-only exception for `goal`, because another extension could register
-a colliding tool. Native goal state remains observable, including paused goals, but OMP's native
-resume, complete, and drop operations remain OMP-owned and available through user-issued `/goal`
-slash commands. Maestria does not invoke those commands. Model `goal` tool calls remain blocked
-while pure-dispatcher enforcement is active because their provenance cannot be established.
+The `maestria_subagent` tool validates parameters, builds a structured handoff, and returns a plan for the native `task()` call. Subagent sessions (without the `task` tool) keep their full specialist toolset.
 
 ### Enforcement lifecycle
 
-When you start a session, the orchestrator prompt and global rules are always active, guiding the AI to delegate work rather than implement directly. However, the tool-level restriction (blocking `bash`/`edit`/`write` etc.) is **not active by default** - it activates only when you set a workflow mode.
+The orchestrator prompt and global rules are always active. The tool-level restriction (blocking `bash` mutations, `edit`, and `write`) is **not active by default**; it activates only when you set a mode.
 
-Unlike OpenCode, Pi and OMP do not have a separate `@orchestrator` agent. The orchestrator skill is present in the main session. A mode keyword adds the mode prompt and, where supported, tool enforcement; it does not switch the session into a different agent.
+Unlike OpenCode, Pi and OMP have no separate `@orchestrator` agent: the orchestrator skill lives in the main session, and a mode keyword adds the mode prompt and, where supported, tool enforcement without switching agents.
 
-| Interaction                    | Enforcement | What happens                                                                   |
-| ------------------------------ | ----------- | ------------------------------------------------------------------------------ |
-| `implement login` (no keyword) | Inactive    | Orchestrator guidance is present and the main session retains its normal tools |
-| `fein implement login`         | Active      | AI restricted to delegation tools only                                         |
-| `/fein` (command)              | Active      | Mode set, enforcement active from next turn                                    |
+| Interaction | Enforcement | What happens |
+| --- | --- | --- |
+| `implement login` (no keyword) | Inactive | Orchestrator guidance is present and the main session retains its normal tools |
+| `fein implement login` | Active | Mutation tools blocked; read-only tools remain |
+| `/fein` (command) | Active | Mode set, enforcement active from next turn |
 
 The mode persists across turns in the same process. Use `/mode-clear` to return to neutral routing without restarting.
 
+### OMP goal state
+
+Maestria observes OMP's public `goal_updated` event and mirrors active, paused, and budget-limited goals into session state. Non-null complete and dropped terminal events clear the current-goal mirror after the transition is persisted. Session start, switch, fork, branch, handoff, and tree-navigation transitions restore the target-session state using a valid public native goal mode entry when available; without readable target goal state, the mirror resets to unknown (`null`) until the next public goal event.
+
+OMP's public extension API exposes tool names but not call provenance, so Maestria makes no name-only exception for `goal`: another extension could register a colliding tool. Native goal state remains observable, including paused goals, but resume, complete, and drop remain OMP-owned and available through user-issued `/goal` commands, which Maestria never invokes. Model `goal` calls stay blocked during enforcement because their provenance cannot be established.
+
 ## Subagent dispatch
 
-Specialist dispatch is not identical between Pi and OMP.
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
 
-### Pi
-
-Pi's `maestria_subagent` tool executes single, parallel, and chain dispatch through `@gotgenes/pi-subagents`. Parallel dispatch accepts between 2 and 8 tasks. Subagents inherit the parent context, so the handoff prompt does not guarantee a clean context boundary.
+Pi's `maestria_subagent` tool executes single, parallel, and chain dispatch through `@gotgenes/pi-subagents`. Parallel dispatch accepts between 2 and 8 tasks. Subagents inherit the parent context, so handoffs do not guarantee a clean context boundary.
 
 ```json
 {
@@ -87,48 +91,34 @@ Pi's `maestria_subagent` tool executes single, parallel, and chain dispatch thro
 }
 ```
 
-### OMP
+  </TabItem>
+  <TabItem label="OMP">
 
-OMP's `maestria_subagent` tool validates the request, records the handoff, and returns a plan for OMP's native `task()` tool. The native tool performs the actual dispatch. The wrapper is a structured planning layer, not an equivalent implementation of Pi's dispatch lifecycle.
+OMP's `maestria_subagent` tool validates the request, records the handoff, and returns a plan for OMP's native `task()` tool, which performs the dispatch. The wrapper is a planning layer, not a copy of Pi's dispatch lifecycle.
 
 ```text
 task(agent: "builder", task: "Implement the login form")
 ```
 
-Use the platform's native documentation for task limits and lifecycle behavior. Do not assume that Pi's parallel or chain behavior transfers directly to OMP.
+  </TabItem>
+</Tabs>
+
+Use the platform's native documentation for task limits and lifecycle behavior. Pi's parallel or chain behavior does not transfer directly to OMP.
 
 ## Review Mode
 
 The `/review` command switches the session into review-only mode:
+
+<Steps>
 
 1. Saves the current model and toolset
 2. Optionally switches to a different model (configured via `/review-model`)
 3. Restricts tools to read-only (`read`, `grep`, `find`, `ls`, `glob`)
 4. Blocks `edit`, `write`, and `bash` calls
 
-Dangerous bash patterns (e.g., `rm -rf /`, `sudo`, `git push --force`) are blocked or require confirmation in all modes.
+</Steps>
 
-## Usage Notes
-
-**Pipeline discipline.** When full orchestration is selected, the flow for non-trivial work is adventurer (recon) → architect or planner (design/plan) → builder (implement) → reviewer (validate). Each step verifies before handing off. Skipping recon or review trades speed for risk - fine for simple changes, not recommended for cross-module work.
-
-**Handoff validation.** Before dispatching to a specialist, the orchestrator validates that the handoff contains the material needed to act. Incomplete handoffs are rejected.
-
-**Session persistence.** Mode and delegation state survive session compaction, resume, and fork operations. Run `/maestria-status` to view the current state at any time.
-
-**Native goal state (OMP).** Maestria observes OMP's public `goal_updated` event and mirrors active,
-paused, and budget-limited goals into session state. Non-null complete and dropped terminal events
-clear the current-goal mirror after persisting the transition. Session start, switch, fork, branch,
-handoff, and tree-navigation transitions restore the target-session Maestria state and use a valid
-public native goal mode entry when available. If OMP provides no readable target goal state, the
-mirror resets to unknown (`null`) until a future public goal event. Maestria never activates goal
-mode or invokes native goal commands.
-
-<Aside type="note">
-  **Pi** depends on `@gotgenes/pi-subagents` for subagent lifecycle and state management. **OMP**
-  manages all subagent lifecycle through its built-in `task()` tool - no external dependencies
-  needed, making the extension lighter.
-</Aside>
+Dangerous bash patterns (for example `rm -rf /`, `dd if=`, `mkfs`, the fork bomb `:(){ :|:& };:`, `curl | bash`, `crontab -r`) are blocked or require confirmation in all modes.
 
 ## Specialist Agent Registration
 
@@ -136,15 +126,27 @@ The 7 specialist agents (adventurer, architect, builder, diagnose, planner, revi
 
 ### How it works
 
+<Steps>
+
 1. **Sync pipeline** generates `agents/*.md` files from canonical Maestria directives with platform-specific YAML frontmatter, including role-specific tool allowlists and `prompt_mode: append` / `inherit_context: true`
 2. **Extension startup** (`session_start` handler) deploys the agent files to the platform's agent discovery directory
 3. **Subagent dispatch** discovers the files and registers each as an agent type
-4. **Pi's `maestria_subagent(...)` and OMP's native `task(agent: "adventurer", ...)`** look up the registered type, merge the role-specific prompt on top of the inherited parent context via `prompt_mode: append`, and spawn the subagent with the platform's tools and instructions. OMP's `maestria_subagent(...)` validates and records a handoff, then returns a plan for the native call.
+4. **Pi's `maestria_subagent(...)` and OMP's native `task(agent: "adventurer", ...)`** look up the registered type, merge the role prompt over the inherited parent context, and spawn the subagent with the platform's tools and instructions.
 
-<Aside type="note">
-  **Pi** deploys agent files to `~/.pi/agent/agents/` (pi-subagents discovery directory). **OMP**
-  deploys agent files to `~/.omp/agent/agents/` (OMP's native discovery directory).
-</Aside>
+</Steps>
+
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
+
+**Pi** deploys agent files to `~/.pi/agent/agents/` (pi-subagents discovery directory).
+
+  </TabItem>
+  <TabItem label="OMP">
+
+**OMP** deploys agent files to `~/.omp/agent/agents/` (OMP's native discovery directory).
+
+  </TabItem>
+</Tabs>
 
 ### Agent file format
 
@@ -159,27 +161,27 @@ inherit_context: true # pass parent session context
 ---
 ```
 
-The `prompt_mode: append` field is critical - it ensures the specialist prompt merges on top of the inherited orchestrator prompt, so every subagent has both the dispatcher methodology and its role-specific guidance.
+The `prompt_mode: append` field merges the specialist prompt on top of the inherited orchestrator prompt, so every subagent has both the dispatcher methodology and its role-specific guidance.
 
 ### Tool isolation
 
-Each specialist has an appropriate tool allowlist matching its role:
+Tool allowlists by role:
 
-| Agent      | Tools                                   | Purpose                             |
-| ---------- | --------------------------------------- | ----------------------------------- |
-| adventurer | read, bash, grep, find, ls, glob        | Codebase reconnaissance (read-only) |
-| architect  | read, bash, grep, find, ls              | Architecture analysis (read-only)   |
-| builder    | read, bash, grep, find, ls, write, edit | Implementation (full access)        |
-| diagnose   | read, bash, grep, find, ls              | Bug tracing (read-only)             |
-| planner    | read, bash, grep, find, ls              | Planning (read-only)                |
-| reviewer   | read, bash, grep, find, ls, glob        | Code review (read-only)             |
-| writer     | read, bash, grep, find, ls, write, edit | Documentation (full access)         |
+| Agent | Tools | Purpose |
+| --- | --- | --- |
+| adventurer | read, grep, find, ls, glob | Codebase reconnaissance; no write/edit tools |
+| architect | read, bash, grep, find, ls | Architecture analysis; Bash is available for evidence gathering |
+| builder | read, bash, grep, find, ls, write, edit | Implementation (full access) |
+| diagnose | read, bash, grep, find, ls | Bug tracing; Bash is available for evidence gathering |
+| planner | read, grep, find, ls | Planning; no write/edit tools |
+| reviewer | read, grep, find, ls, glob | Code review; no write/edit tools |
+| writer | read, bash, grep, find, ls, write, edit | Documentation (full access) |
 
-This enforces the maker/checker split at the subagent tool level - builder and writer have write access, everyone else is read-only.
+This enforces the maker/checker split at the subagent tool level: builder and writer have write access, while the other roles have no write/edit tools. Architect and diagnose retain Bash for evidence gathering, so their role boundaries are not a universal no-execution sandbox.
 
 ### Persistence
 
-Agent files are deployed once per session and never overwrite existing files in the agent discovery directory (`~/.pi/agent/agents/` for Pi, `~/.omp/agent/agents/` for OMP). This respects any user-customized agents with the same name. To reset to Maestria defaults, remove the files from the discovery directory and restart your session.
+Agent files are deployed once per session and never overwrite existing files in the agent discovery directory (`~/.pi/agent/agents/` for Pi, `~/.omp/agent/agents/` for OMP), so user-customized agents with the same name stay put. To reset to Maestria defaults, remove the files from the discovery directory and restart your session.
 
 ## See Also
 

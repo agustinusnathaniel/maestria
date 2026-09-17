@@ -19,14 +19,6 @@ const AGENT_REF_REPLACES = [
   { from: '@writer', to: 'maestria:writer' },
 ] as const;
 
-// Claude Code tool names are PascalCase; canonical content uses lowercase or
-// backticked generic names.
-const CLAUDE_TOOL_REPLACES = [
-  { from: '`read`', to: '`Read`' },
-  { from: '`glob`', to: '`Glob`' },
-  { from: '`grep`', to: '`Grep`' },
-] as const;
-
 // Global rules skill preloaded into every specialist agent. The namespaced
 // identifier matches the plugin manifest name (`maestria`).
 const GLOBAL_RULES_PRELOAD = ['maestria:global-rules'];
@@ -53,17 +45,7 @@ The universal contracts live in the \`maestria:global-rules\` skill, which every
 
 ### Specialist agents
 
-Delegate with the Agent tool using these scoped agent names:
-
-| Agent | Role | Delegate when you see |
-| --- | --- | --- |
-| \`maestria:adventurer\` | Codebase reconnaissance | unfamiliar code, tracing, mapping, or locating behavior |
-| \`maestria:architect\` | Architecture decisions | trade-offs, technology, boundaries, threat model, or ADR decisions |
-| \`maestria:builder\` | Atomic implementation | a concrete feature, bug fix, test, or refactor with no identified uncertainty |
-| \`maestria:diagnose\` | Root-cause analysis | a bug, regression, failure, crash, or unclear cause |
-| \`maestria:planner\` | Phased planning | a multi-phase feature, rollout, or migration plan |
-| \`maestria:reviewer\` | Independent quality review | post-implementation validation or explicit review |
-| \`maestria:writer\` | Documentation | README, changelog, API docs, or structured prose |
+Delegate with the Agent tool using the scoped agent names in Specialist Ownership above.
 
 \`maestria:adventurer\`, \`maestria:planner\`, and \`maestria:reviewer\` deny the \`Write\` and \`Edit\` tools at the runtime level (read-only research and review roles).
 
@@ -82,172 +64,142 @@ Delegate with the Agent tool using these scoped agent names:
 `;
 
 const COMMAND_APPENDS: Record<string, string> = {
+  blitz: `
+Fast implementation mode. Load the \`maestria:orchestrator\` skill if coordination is needed. If the user provided a goal after \`/maestria:blitz\`, implement that goal now.
+`,
   fein: `
 Run the complete maestria pipeline. Load the \`maestria:orchestrator\` skill for routing and delegation methodology. If the user provided a goal after \`/maestria:fein\`, run the pipeline on that goal now.
 `,
   sonar: `
 Research-only mode. Load the \`maestria:orchestrator\` skill for routing and delegation methodology. If the user provided a goal after \`/maestria:sonar\`, research that goal now and stop; do not implement.
 `,
-  blitz: `
-Fast implementation mode. Load the \`maestria:orchestrator\` skill if coordination is needed. If the user provided a goal after \`/maestria:blitz\`, implement that goal now.
-`,
 };
 
 export default {
-  source: '../core/agent-directives/specialists',
-  output: 'agents',
-
   default: {
-    replace: [...AGENT_REF_REPLACES, ...CLAUDE_TOOL_REPLACES],
+    replace: [...AGENT_REF_REPLACES],
   },
-
   files: {
     'adventurer.md': {
-      prepend: READ_ONLY_PREPENDS.adventurer,
       frontmatter: {
-        name: 'adventurer',
-        description: `Codebase reconnaissance agent for deep code understanding.
-Maps unknown territory - traces call chains, maps module relationships,
-generates structured reports for downstream specialists.
-Use for: understanding unfamiliar code, tracing dependencies, gathering
-context before implementation, investigating module structures.
-One role per session: exploration only - never implement or design.`,
-        model: 'inherit',
-        skills: GLOBAL_RULES_PRELOAD,
+        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.`,
         disallowedTools: 'Write, Edit',
+        model: 'inherit',
+        name: 'adventurer',
+        skills: GLOBAL_RULES_PRELOAD,
       },
+      prepend: READ_ONLY_PREPENDS.adventurer,
     },
     'architect.md': {
       frontmatter: {
-        name: 'architect',
-        description: `Architecture decisions using decision matrices and ADRs.
-Evaluates options with weighted criteria, clarifies business context first.
-Use for: technology choices, implementation approaches, trade-off analysis.`,
+        description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
         model: 'inherit',
+        name: 'architect',
         skills: GLOBAL_RULES_PRELOAD,
       },
     },
     'builder.md': {
       frontmatter: {
-        name: 'builder',
-        description: `Focused implementation agent for atomic tasks.
-Executes one verifiable unit of work with minimal context.
-Use for: targeted fixes, feature implementation, refactors, adding tests.`,
+        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.`,
         model: 'inherit',
+        name: 'builder',
         skills: GLOBAL_RULES_PRELOAD,
       },
+    },
+    'commands/blitz.md': {
+      append: COMMAND_APPENDS.blitz,
+      frontmatter: {
+        description: 'Fast low-risk route - skip optional recon and design ceremony',
+        name: 'blitz',
+      },
+      output: '../commands/blitz.md',
+      stripFrontmatter: true,
+    },
+    'commands/fein.md': {
+      append: COMMAND_APPENDS.fein,
+      frontmatter: {
+        description: 'Full pipeline - recon, design, implement, review',
+        name: 'fein',
+      },
+      output: '../commands/fein.md',
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      append: COMMAND_APPENDS.sonar,
+      frontmatter: {
+        description:
+          'Research only - owning specialist, optional distinct specialist, STOP before implementation',
+        name: 'sonar',
+      },
+      output: '../commands/sonar.md',
+      stripFrontmatter: true,
     },
     'diagnose.md': {
       frontmatter: {
+        description: `Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.`,
+        model: 'inherit',
         name: 'diagnose',
-        description: `Systematic 6-step regression tracing.
-From error message to root cause to prevention.
-Use for: cryptic errors, regressions, production bugs.`,
-        model: 'inherit',
-        skills: GLOBAL_RULES_PRELOAD,
-      },
-    },
-    'planner.md': {
-      prepend: READ_ONLY_PREPENDS.planner,
-      frontmatter: {
-        name: 'planner',
-        description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
-Breaks down complex features into verifiable milestones.
-Use for: complex features requiring multi-phase execution, when the plan needs review before building.`,
-        model: 'inherit',
-        skills: GLOBAL_RULES_PRELOAD,
-        disallowedTools: 'Write, Edit',
-      },
-    },
-    'reviewer.md': {
-      prepend: READ_ONLY_PREPENDS.reviewer,
-      frontmatter: {
-        name: 'reviewer',
-        description: `Code review with quality gates.
-Reviews code for correctness, edge cases, security, performance, maintainability,
-and adherence to conventions. Provides specific, actionable feedback.
-Use for: PR review, pre-commit review, architecture document review.`,
-        model: 'inherit',
-        skills: GLOBAL_RULES_PRELOAD,
-        disallowedTools: 'Write, Edit',
-      },
-    },
-    'writer.md': {
-      frontmatter: {
-        name: 'writer',
-        description: `Documentation writing following structured patterns.
-Creates clear, comprehensive docs for code, APIs, systems.
-Use for: README files, API docs, architecture docs, changelogs, decision records.`,
-        model: 'inherit',
         skills: GLOBAL_RULES_PRELOAD,
       },
     },
     'orchestrator.md': {
-      output: '../skills/orchestrator/SKILL.md',
+      append: ORCHESTRATOR_APPEND,
       frontmatter: {
+        description: `Maestria workflow dispatcher for Claude Code routing, handoffs, and independent review.`,
         name: 'orchestrator',
-        description: `Maestria methodology dispatcher for Claude Code.
-Routes work (direct/focused/full), delegates to specialist agents
-(maestria:adventurer, maestria:architect, maestria:builder, maestria:diagnose,
-maestria:planner, maestria:reviewer, maestria:writer), and enforces the
-maker/checker split, handoff contracts, and workflow modes (fein/sonar/blitz).
-Use for multi-step or multi-file work, planning, review, debugging,
-architecture decisions, or documentation.`,
       },
+      output: '../skills/orchestrator/SKILL.md',
       replace: [
         {
           from: '`.maestria/workflow.md` and `.maestria/rules.md`',
           to: 'the `maestria:global-rules` skill',
         },
-        {
-          from: 'the universal rules contract',
-          to: 'the `maestria:global-rules` skill',
-        },
       ],
-      append: ORCHESTRATOR_APPEND,
     },
-    'commands/fein.md': {
-      output: '../commands/fein.md',
-      stripFrontmatter: true,
+    'planner.md': {
       frontmatter: {
-        name: 'fein',
-        description: 'Full pipeline - recon, design, implement, review',
+        description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
+        disallowedTools: 'Write, Edit',
+        model: 'inherit',
+        name: 'planner',
+        skills: GLOBAL_RULES_PRELOAD,
       },
-      append: COMMAND_APPENDS.fein,
+      prepend: READ_ONLY_PREPENDS.planner,
     },
-    'commands/sonar.md': {
-      output: '../commands/sonar.md',
-      stripFrontmatter: true,
+    'reviewer.md': {
       frontmatter: {
-        name: 'sonar',
-        description:
-          'Research only - owning specialist, optional distinct specialist, STOP before implementation',
+        description: `Independent review agent covering correctness, security, performance, maintainability, and quality gates.`,
+        disallowedTools: 'Write, Edit',
+        model: 'inherit',
+        name: 'reviewer',
+        skills: GLOBAL_RULES_PRELOAD,
       },
-      append: COMMAND_APPENDS.sonar,
-    },
-    'commands/blitz.md': {
-      output: '../commands/blitz.md',
-      stripFrontmatter: true,
-      frontmatter: {
-        name: 'blitz',
-        description: 'Fast low-risk route - skip optional recon and design ceremony',
-      },
-      append: COMMAND_APPENDS.blitz,
+      prepend: READ_ONLY_PREPENDS.reviewer,
     },
     'rules.md': {
-      output: '../skills/global-rules/SKILL.md',
       frontmatter: {
-        name: 'global-rules',
         description: `Universal agent rules contract: universal floors, orchestration, delegation,
 context management, handoff, blind review, bounded autonomy, authorization
 checkpoints, process lifecycle, iteration, and commit and branch safety.
 Load once per session and apply to routing, delegation, review, and commit
 decisions.`,
+        name: 'global-rules',
         'user-invocable': false,
       },
+      output: '../skills/global-rules/SKILL.md',
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/claude-code' },
       ],
     },
+    'writer.md': {
+      frontmatter: {
+        description: `Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.`,
+        model: 'inherit',
+        name: 'writer',
+        skills: GLOBAL_RULES_PRELOAD,
+      },
+    },
   },
+  output: 'agents',
+  source: '../core/agent-directives/specialists',
 } satisfies SyncConfig;

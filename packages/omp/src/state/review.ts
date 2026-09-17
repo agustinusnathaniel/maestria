@@ -1,26 +1,26 @@
-import type {
-  ExtensionAPI,
-  ExtensionCommandContext,
-  ExtensionContext,
-} from '@oh-my-pi/pi-coding-agent';
-import type { MaestriaState } from '@maestria/shared-pi/state-core';
 import {
-  cycleToReviewModel as cycleCore,
+  createReviewApi,
   restoreOriginalState as restoreCore,
 } from '@maestria/shared-pi/review-core';
+import type { ReviewModelContext } from '@maestria/shared-pi/review-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
 
-export async function restoreOriginalState(
-  pi: ExtensionAPI,
-  ctx: ExtensionContext,
-  state: MaestriaState,
-): Promise<void> {
-  await restoreCore(pi as never, ctx as never, state);
+import { isOmpModel } from '@/model.js';
+
+export type { ReviewModelContext } from '@maestria/shared-pi/review-core';
+
+export interface ReviewModelApi {
+  setActiveTools: ExtensionAPI['setActiveTools'];
+  setModel: ExtensionAPI['setModel'];
 }
 
-export async function cycleToReviewModel(
-  pi: ExtensionAPI,
-  ctx: ExtensionCommandContext,
+export type ReviewApi = ReviewModelApi;
+
+export const restoreOriginalState = async (
+  pi: ReviewApi,
+  ctx: ReviewModelContext,
   state: MaestriaState,
-): Promise<string | null> {
-  return cycleCore(pi as never, ctx as never, state);
-}
+): Promise<void> => {
+  await restoreCore(createReviewApi(pi, isOmpModel), ctx, state);
+};

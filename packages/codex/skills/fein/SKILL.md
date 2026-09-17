@@ -1,6 +1,6 @@
 ---
-name: fein
 description: "Full Maestria pipeline: reconnaissance, design, implementation, and independent review."
+name: fein
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

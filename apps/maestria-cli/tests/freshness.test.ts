@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
+
 import { checkExitCode, freshnessOf, needsUpdateOf } from '@/lib/freshness.js';
 
 describe('freshnessOf', () => {

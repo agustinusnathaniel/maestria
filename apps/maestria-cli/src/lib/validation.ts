@@ -1,6 +1,9 @@
-import { Data, Effect, Exit, Cause } from 'effect';
+import { Cause, Data, Effect, Exit } from 'effect';
+
+import { CliError } from './command-result.js';
+import { PLATFORM_IDS, platforms } from './platforms.js';
+import type { PlatformId } from './platforms.js';
 import { isValidVersion } from './version.js';
-import { platforms, PLATFORM_IDS, type PlatformId } from './platforms.js';
 
 // ── Errors ───────────────────────────────────────────
 export class ValidationError extends Data.TaggedError('ValidationError')<{
@@ -26,17 +29,16 @@ const LEGACY_INDEX = new Map<ValidPlatform, number>(
 // Sorted by LEGACY_ORDER to preserve prior help/error message ordering.
 export const VALID_PLATFORMS: readonly ValidPlatform[] = platforms
   .map((p) => p.id)
-  .sort((a, b) => (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999));
+  .toSorted((a, b) => (LEGACY_INDEX.get(a) ?? 999) - (LEGACY_INDEX.get(b) ?? 999));
 
-function isValidPlatform(id: string): id is ValidPlatform {
-  return (VALID_PLATFORMS as readonly string[]).includes(id);
-}
+const isValidPlatform = (id: string): id is ValidPlatform =>
+  (VALID_PLATFORMS as readonly string[]).includes(id);
 
 /**
  * Validate a platform ID string.
  * Returns the validated platform ID or fails with ValidationError.
  */
-export function validatePlatform(input: string): Effect.Effect<ValidPlatform, ValidationError> {
+export const validatePlatform = (input: string): Effect.Effect<ValidPlatform, ValidationError> => {
   const normalized = input.trim().toLowerCase();
   if (!isValidPlatform(normalized)) {
     return Effect.fail(
@@ -46,14 +48,16 @@ export function validatePlatform(input: string): Effect.Effect<ValidPlatform, Va
     );
   }
   return Effect.succeed(normalized);
-}
+};
 
 /**
  * Validate a comma-separated list of platform IDs.
  * Splits on comma, trims whitespace, validates each.
  * Returns an array of validated platform IDs or fails on the first invalid one.
  */
-export function validatePlatforms(input: string): Effect.Effect<ValidPlatform[], ValidationError> {
+export const validatePlatforms = (
+  input: string,
+): Effect.Effect<ValidPlatform[], ValidationError> => {
   const parts = [
     ...new Set(
       input
@@ -81,32 +85,41 @@ export function validatePlatforms(input: string): Effect.Effect<ValidPlatform[],
     results.push(part);
   }
   return Effect.succeed(results);
-}
+};
 
 /**
  * Validate a version string.
  * Accepts semver (0.5.0) or 'latest'.
  */
-export function validateVersion(input: string): Effect.Effect<string, ValidationError> {
+export const validateVersion = (input: string): Effect.Effect<string, ValidationError> => {
   const trimmed = input.trim();
-  if (isValidVersion(trimmed)) return Effect.succeed(trimmed);
+  if (isValidVersion(trimmed)) {
+    return Effect.succeed(trimmed);
+  }
   return Effect.fail(
     new ValidationError({
       message: `Invalid version '${input}'. Use semver format (e.g., 0.5.0) or 'latest'.`,
     }),
   );
-}
+};
+
+/** First typed failure's string `message`, or undefined when none is present. */
+export const failureMessage = (cause: Cause.Cause<unknown>): string | undefined => {
+  const failure: unknown = cause.reasons.find(Cause.isFailReason)?.error;
+  if (typeof failure !== 'object' || failure === null || !('message' in failure)) {
+    return undefined;
+  }
+  return typeof failure.message === 'string' ? failure.message : undefined;
+};
 
 /**
  * Run a validation effect at the CLI boundary.
- * Prints the error and exits with code 1 on failure, returns the value on success.
+ * Throws CliError with exit code 1 on failure, returns the value on success.
  */
-export async function validateOrExit<A>(effect: Effect.Effect<A, ValidationError>): Promise<A> {
+export const validateOrThrow = async <A>(effect: Effect.Effect<A, ValidationError>): Promise<A> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
-  const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  console.error(firstFailure?.error?.message ?? 'Validation failed');
-  process.exit(1);
-}
+  throw new CliError(failureMessage(exit.cause) ?? 'Validation failed', 1);
+};

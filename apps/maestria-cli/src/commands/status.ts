@@ -1,58 +1,70 @@
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
+
+import { toCommandRun } from '@/lib/command-runner.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import {
   createSpinner,
-  renderStatusTable,
-  renderCompactStatus,
   formatStatusJson,
+  renderCompactStatus,
+  renderStatusTable,
 } from '@/lib/output.js';
 import type { StatusOutput } from '@/types.js';
 
+export interface StatusArgs {
+  compact?: boolean;
+  json?: boolean;
+  quiet?: boolean;
+}
+
+export const handleStatus = async (args: StatusArgs): Promise<CommandResult> => {
+  const isQuiet = args.quiet === true || args.compact === true;
+  const isCompact = args.compact === true;
+
+  const spinner = createSpinner(isQuiet);
+  spinner.start('Detecting platforms...');
+
+  const output = await Effect.runPromise(detectAll());
+
+  let rendered: string;
+  if (args.json === true) {
+    spinner.stop('');
+    const jsonOutput: StatusOutput = { platforms: output };
+    rendered = formatStatusJson(jsonOutput);
+  } else if (isCompact) {
+    spinner.stop('');
+    rendered = renderCompactStatus(output);
+  } else {
+    spinner.stop('Done');
+    rendered = renderStatusTable(output);
+  }
+
+  return { exitCode: 0, output: rendered };
+};
+
 export const statusCommand = defineCommand({
-  meta: {
-    name: 'status',
-    description: 'Show installed maestria plugins and version info',
-  },
   args: {
-    json: {
+    compact: {
+      default: false,
+      description: 'Minimal machine-friendly text output. One line per platform.',
       type: 'boolean',
+    },
+    json: {
+      default: false,
       description:
         'Output status as JSON - structured machine-readable format optimized for AI agents and CI pipelines',
-      default: false,
+      type: 'boolean',
     },
     quiet: {
-      type: 'boolean',
+      default: false,
       description: 'Suppress spinner. Recommended for CI and non-interactive usage.',
-      default: false,
-    },
-    compact: {
       type: 'boolean',
-      description: 'Minimal machine-friendly text output. One line per platform.',
-      default: false,
     },
   },
-  run: async ({ args }) => {
-    const isQuiet = (args.quiet || args.compact) as boolean;
-    const isCompact = args.compact as boolean;
-
-    const spinner = createSpinner(isQuiet);
-    spinner.start('Detecting platforms...');
-
-    const output = await Effect.runPromise(detectAll());
-
-    if (args.json) {
-      spinner.stop('');
-      const jsonOutput: StatusOutput = { platforms: output };
-      console.log(formatStatusJson(jsonOutput));
-    } else if (isCompact) {
-      spinner.stop('');
-      console.log(renderCompactStatus(output));
-    } else {
-      spinner.stop('Done');
-      console.log(renderStatusTable(output));
-    }
-
-    process.exit(0);
+  meta: {
+    description: 'Show installed maestria plugins and version info',
+    name: 'status',
   },
+  run: toCommandRun(handleStatus),
 });

@@ -37,7 +37,7 @@
  * session-manager.ts`): all fields are required on read - `id`, `parentId`
  * (null for the root entry), and an ISO-string `timestamp`.
  */
-export interface SessionEntryBase {
+interface SessionEntryBase {
   type: string;
   /** Session-tree node id (entry id in the session tree). */
   id: string;
@@ -74,9 +74,9 @@ export type SessionEntry = CustomEntry | SessionEntryBase;
  * (a `Pick` of `SessionManager`); this package uses `getBranch()` (the current
  * branch, never a sibling branch of the session tree) and `getEntries()`.
  */
-export interface ReadonlySessionManager {
-  getBranch(fromId?: string): SessionEntry[];
-  getEntries(): SessionEntry[];
+interface ReadonlySessionManager {
+  getBranch: (fromId?: string) => SessionEntry[];
+  getEntries: () => SessionEntry[];
 }
 
 // ---------------------------------------------------------------------------
@@ -84,10 +84,10 @@ export interface ReadonlySessionManager {
 // ---------------------------------------------------------------------------
 
 /** UI methods usable from extension handlers. */
-export interface ExtensionUIContext {
-  notify(message: string, type?: 'info' | 'warning' | 'error'): void;
+interface ExtensionUIContext {
+  notify: (message: string, type?: 'info' | 'warning' | 'error') => void;
   /** Replace the core input editor text (used by the status command). */
-  setEditorText(text: string): void;
+  setEditorText: (text: string) => void;
 }
 
 /** Context passed to extension event handlers. */
@@ -99,7 +99,7 @@ export interface ExtensionContext {
 }
 
 /** Extended context for command handlers (session-control methods not used). */
-export interface ExtensionCommandContext extends ExtensionContext {}
+export type ExtensionCommandContext = ExtensionContext;
 
 // ---------------------------------------------------------------------------
 // Events and event results
@@ -147,32 +147,50 @@ export interface RegisteredCommandOptions {
 // ---------------------------------------------------------------------------
 
 export interface ExtensionAPI {
-  on(
-    event: 'session_start',
-    handler: (event: SessionStartEvent, ctx: ExtensionContext) => unknown,
-  ): void;
-  on(
-    event: 'session_tree',
-    handler: (event: SessionTreeEvent, ctx: ExtensionContext) => unknown,
-  ): void;
-  on(
-    event: 'before_agent_start',
-    handler: (
-      event: BeforeAgentStartEvent,
-      ctx: ExtensionContext,
-    ) => Promise<BeforeAgentStartEventResult | void> | BeforeAgentStartEventResult | void,
-  ): void;
+  on: ExtensionEventRegistrationHandler;
 
-  registerCommand(name: string, options: RegisteredCommandOptions): void;
+  registerCommand: (name: string, options: RegisteredCommandOptions) => void;
 
   /**
    * Send a user message to the agent. Always triggers a turn; when the agent is
    * streaming, `deliverAs` controls how the message is queued.
    */
-  sendUserMessage(content: string, options?: { deliverAs?: 'steer' | 'followUp' }): void;
+  sendUserMessage: (content: string, options?: { deliverAs?: 'steer' | 'followUp' }) => void;
 
   /** Append a custom entry to the session (persists, not sent to the LLM). */
-  appendEntry<T = unknown>(customType: string, data?: T): void;
+  appendEntry: (customType: string, data?: unknown) => void;
+}
+
+export type ExtensionEventRegistration =
+  | [event: 'session_start', handler: (event: SessionStartEvent, ctx: ExtensionContext) => unknown]
+  | [event: 'session_tree', handler: (event: SessionTreeEvent, ctx: ExtensionContext) => unknown]
+  | [
+      event: 'before_agent_start',
+      handler: (
+        event: BeforeAgentStartEvent,
+        ctx: ExtensionContext,
+      ) =>
+        | Promise<BeforeAgentStartEventResult | undefined>
+        | BeforeAgentStartEventResult
+        | undefined,
+    ];
+
+interface ExtensionEventRegistrationHandler {
+  (
+    event: 'session_start',
+    handler: (event: SessionStartEvent, ctx: ExtensionContext) => unknown,
+  ): void;
+  (
+    event: 'session_tree',
+    handler: (event: SessionTreeEvent, ctx: ExtensionContext) => unknown,
+  ): void;
+  (
+    event: 'before_agent_start',
+    handler: (
+      event: BeforeAgentStartEvent,
+      ctx: ExtensionContext,
+    ) => Promise<BeforeAgentStartEventResult | undefined> | BeforeAgentStartEventResult | undefined,
+  ): void;
 }
 
 /** Default-export factory loaded by Prime's extension loader. */

@@ -6,11 +6,9 @@ Accepted (2026-07-21)
 
 ## Context
 
-Maestria ships methodology as platform packages (`@maestria/opencode`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/hermes`). Cursor IDE and Cursor CLI (`agent`) share a declarative plugin system: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP.
+Maestria ships methodology as platform packages (`@maestria/opencode`, `@maestria/kimi-code`, `@maestria/pi`, `@maestria/hermes`). Cursor IDE and Cursor CLI (`agent`) share a declarative plugin format: a directory with `.cursor-plugin/plugin.json` plus rules, skills, agents, commands, and optional hooks/MCP.
 
-ADR-KC-001 already flagged Cursor as a next platform (`.cursor/rules/` with `.mdc`). Since then Cursor added first-class plugins that package those primitives into one installable bundle, usable from Customize in the IDE and from `agent --plugin-dir` / local plugins in the CLI.
-
-OpenCode-style TypeScript hooks do not apply. Cursor plugins are declarative files (same class as Kimi Code), with richer component types: custom agents (Task subagents), skills, rules, and slash commands.
+ADR-KC-001 named Cursor as a next platform (`.cursor/rules/` with `.mdc`); Cursor has since added first-class plugins that bundle those primitives into one installable package, used from Customize in the IDE and `agent --plugin-dir` / local plugins in the CLI. Unlike OpenCode, no TypeScript hooks apply: Cursor plugins are declarative (same class as Kimi Code) with custom agents (Task subagents), skills, rules, and slash commands.
 
 ## Decision
 
@@ -18,12 +16,13 @@ OpenCode-style TypeScript hooks do not apply. Cursor plugins are declarative fil
 
 **`@maestria/cursor` is a Cursor plugin - no build step, no SDK runtime.** It consists of:
 
-1. **`.cursor-plugin/plugin.json`** - manifest (name, version, metadata). Components auto-discovered from default folders.
-2. **`rules/maestria-global.mdc`** - synced from `rules.md`, `alwaysApply: true`.
-3. **`agents/*.md`** - seven specialists as custom Cursor agents (Task targets).
-4. **`skills/orchestrator/SKILL.md`** - orchestrator methodology (agent-decides / `/orchestrator`).
-5. **`commands/*.md`** - workflow modes: `fein`, `sonar`, `blitz`, `orchestrate` (hand-authored).
-6. **Install** - `maestria install cursor` copies the package into `~/.cursor/plugins/local/maestria`.
+1. **`.cursor-plugin/plugin.json`** - manifest; components auto-discovered from default folders.
+2. **Synced components** - global rules (`rules/maestria-global.mdc`, `alwaysApply: true`), seven specialist agents (`agents/*.md`), and the orchestrator skill (`skills/orchestrator/SKILL.md`, agent-decides / `/orchestrator`).
+3. **`commands/*.md`** - workflow modes: `fein`, `sonar`, `blitz`, `orchestrate` (hand-authored).
+
+> **Amendment (2026-09-14):** `commands/*.md` are generated from the canonical directives by `packages/cursor/sync.config.ts`; the hand-authored inputs are the manifest, sync config, and assets.
+
+4. **Install** - `maestria install cursor` copies the package into `~/.cursor/plugins/local/maestria`.
 
 ### Component map
 
@@ -36,21 +35,18 @@ OpenCode-style TypeScript hooks do not apply. Cursor plugins are declarative fil
 
 ### Maker/checker (v1)
 
-Cursor native plugin agent schema supports `readonly: true` in agent frontmatter. v1 enforces maker/checker with **two layers**:
+Cursor's native plugin agent schema supports `readonly: true` in agent frontmatter; v1 enforces maker/checker with two layers:
 
-1. **Runtime enforcement** - `readonly: true` flag on `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
-2. **Prompt-level guidance** - Agent prepends and descriptions also include explicit read-only instructions as a backup.
+1. **Runtime enforcement** - `readonly: true` on the `adventurer`, `planner`, and `reviewer` agents blocks write tools (Write, StrReplace, Delete) at the Cursor runtime level.
+2. **Prompt-level guidance** - agent prepends and descriptions also state the read-only instruction as a backup.
 
 ### IDE and CLI parity
 
-One plugin bundle serves both:
-
-- **IDE** - install under `~/.cursor/plugins/local/maestria` (or Marketplace later)
-- **CLI** - same path, or `agent --plugin-dir ./packages/cursor` for local development
+One bundle serves both: install under `~/.cursor/plugins/local/maestria` (IDE or later Marketplace); in the CLI use the same path or `agent --plugin-dir ./packages/cursor` for local development.
 
 ### Sync
 
-`packages/cursor/sync.config.ts` derives agents, orchestrator skill, and global rule from `packages/core/agent-directives/`. Canonical sources stay platform-agnostic; Cursor tool names and Task language are sync transforms only. See ADR-CORE-005.
+The Cursor sync config derives agents, the orchestrator skill, and the global rule from the canonical agent directives. Canonical sources stay platform-agnostic; Cursor tool names and Task language are sync transforms only. See ADR-CORE-005.
 
 ### What we are not doing (v1)
 
@@ -61,11 +57,11 @@ One plugin bundle serves both:
 
 ## Consequences
 
-- Positive: Same declarative pattern as Kimi Code; sync pipeline already supports it.
-- Positive: Custom agents give specialist isolation via Task (closer to OpenCode than Kimi's 3 built-in profiles).
-- Positive: One install path for IDE and CLI.
-- Mixed: Maker/checker is two-layer (runtime `readonly: true` flag + prompt instructions) - stronger than prompt-only, but not yet matching OpenCode's hard `edit: deny` at the agent definition level.
-- Negative: Until Marketplace listing, distribution is local-plugin copy from GitHub `main` / monorepo path.
+- Positive: same declarative pattern as Kimi Code; the sync pipeline already supports it.
+- Positive: custom agents give specialist isolation via Task (closer to OpenCode than Kimi's 3 built-in profiles).
+- Positive: one install path for IDE and CLI.
+- Mixed: two-layer maker/checker (runtime `readonly: true` + prompt instructions) is stronger than prompt-only but short of OpenCode's hard `edit: deny`.
+- Negative: until Marketplace listing, distribution is a local-plugin copy from GitHub `main` / monorepo path.
 
 ## Related Decisions
 

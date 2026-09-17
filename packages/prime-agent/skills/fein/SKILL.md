@@ -1,6 +1,6 @@
 ---
-name: fein
 description: Full pipeline mode - reconnaissance or design, implementation, and independent review. Load when the user invokes fein or asks for the complete maestria pipeline.
+name: fein
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

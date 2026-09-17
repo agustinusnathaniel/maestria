@@ -9,12 +9,12 @@ Accepted (2026-07-16)
 The `@maestria/hermes` plugin brings the Maestria methodology (7-specialist pipeline, maker/checker split, mode system) to the Hermes Agent platform. Hermes has a built-in `/goal` feature ([documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/goals)) that provides:
 
 - A standing objective that survives across turns
-- Automatic continuation after each turn (judge checks if goal is achieved)
-- Persistence via `SessionDB.state_meta` (survives `/resume`)
-- User messages preempt the loop; `/goal pause`, `/goal resume`, `/goal clear` control lifecycle
-- Configurable turn budget (default 20)
+- Automatic continuation after each turn (a judge checks whether the goal is achieved)
+- Persistence across `/resume`
+- Lifecycle control (`/goal pause`, `/goal resume`, `/goal clear`); user messages preempt the loop
+- A configurable turn budget
 
-The question: should the plugin integrate with `/goal`, provide its own `/goal`-like functionality, or leave it as a core Hermes primitive that users invoke independently?
+Should the plugin integrate with `/goal`, provide its own `/goal`-like functionality, or leave it as a core primitive users invoke independently?
 
 ## Decision
 
@@ -31,67 +31,40 @@ The plugin does not:
 
 ### 1. `/goal` is universally available
 
-Every Hermes session - with or without any plugin - has `/goal`, `/goal status`, `/goal pause`, `/goal resume`, `/goal clear`. There is nothing the plugin needs to "enable" or "add" for goals to work. A user who wants multi-turn autonomous iteration types `/goal Fix every lint error in src/` directly - the plugin has no role in that flow.
+Every Hermes session, with or without any plugin, has `/goal`, `/goal status`, `/goal pause`, `/goal resume`, and `/goal clear`. Nothing needs to be enabled: a user who wants multi-turn iteration types `/goal Fix every lint error in src/` directly, with no plugin role in the flow.
 
 ### 2. Plugin commands are single-turn by design
 
-The plugin's current and planned slash commands all produce output in one turn:
-
-| Command   | Shape                                      |
-| --------- | ------------------------------------------ |
-| `/fein`   | Set mode, respond                          |
-| `/sonar`  | Set mode, respond                          |
-| `/blitz`  | Set mode, respond                          |
-| `/mode`   | Show current mode                          |
-| `/review` | Activate full pipeline with review gate    |
-| `/plan`   | Activate full pipeline with planning phase |
-
-None of these need a multi-turn "keep going" loop. If a user wants autonomous iteration toward a plan, they type `/goal Execute the plan from your last message` - a core Hermes command, not a plugin concern. (`/review` and `/plan` are currently mode switches to fein; dedicated review/plan dispatch is planned for a future release.)
+The plugin's slash commands (`/fein`, `/sonar`, `/blitz`, `/mode`, `/review`, `/plan`) all produce output in one turn; none needs a multi-turn loop. A user who wants autonomous iteration toward a plan types `/goal Execute the plan from your last message` - a core Hermes command, not a plugin concern.
 
 ### 3. Wrapping `/goal` would create feature overlap
 
-Attempting plugin-specific goal functionality would:
-
-- **Duplicate lifecycle management** - Hermes already has persistence, judge loop, pause/resume/clear. A plugin implementation would either reimplement all of it (wasteful) or wrap the native API (adds surface area for zero marginal value).
-- **Risk race conditions** - Two goal loops (plugin + core) could conflict. A plugin that sets its own continuation loop while `/goal` is active could produce interleaved judge evaluations or ambiguous state.
-- **Confuse users** - `/goal` is well-documented core behavior. A plugin-level `/maestria-goal` that behaves similarly but differently erodes the "feels native" design goal.
+- **Duplicate lifecycle management** - Hermes already has persistence, the judge loop, and pause/resume/clear. A plugin would either reimplement all of it (wasteful) or wrap the native API (surface area for no marginal value).
+- **Risk race conditions** - two goal loops (plugin plus core) could conflict: a plugin continuation loop running while `/goal` is active could produce interleaved judge evaluations or ambiguous state.
+- **Confuse users** - `/goal` is documented core behavior; a plugin-level `/maestria-goal` that behaves differently erodes the "feels native" design goal.
 
 ### 4. Aligns with existing Design Philosophy
 
-This decision is a direct application of **Design Principle #2: Hermes-native first + memory-agnostic** (from `docs/hermes-maestria-plugin.md`):
+This applies **Design Principle #2: Hermes-native first + memory-agnostic** (from `docs/hermes-maestria-plugin.md`): use Hermes' built-in features (`delegate_task`, task orchestration tools, `/goal`, memory providers) instead of reimplementing them. The plugin is memory-engine agnostic: it never reads, writes, or cares which memory provider is configured, because memory is a platform concern and the plugin adds no memory layer.
 
-> Hermes has built-in features that solve the problems the plugin would otherwise need to reimplement - `delegate_task` for subagent dispatch, `kanban_*` tools for task orchestration, `/goal` for persistent objectives, and 8 memory providers (Mnemosyne, holographic, mem0, supermemory, etc.). Use them. Don't reinvent them. The plugin's job is to wire the methodology into these existing subsystems, not duplicate them.
->
-> **The plugin is memory-engine agnostic.** It never reads, writes, or cares which memory provider Hermes has configured. Memory is a platform concern - the user chooses their provider independently. The plugin does not add a memory layer on top.
-
-`/goal` and memory follow the same logic: both are core Hermes features. The plugin doesn't wrap `/goal` and doesn't touch memory. Users invoke both at the Hermes level - `/goal` for multi-turn tasks, Mnemosyne/mem0/etc. for cross-session recall.
-
-`/goal` is a core primitive. The plugin surfaces methodology concepts (modes, roles, specialists). These are orthogonal concerns:
-
-```
-User types:          /goal Port our blog to Astro, tests passing
-Hermes runs:         [iterates autonomously, 1..N turns]
-User types:          /fein  ← plugin command sets methodology mode
-Hermes runs:         [continues within goal loop, now in fein mode]
-Goal judge fires:    [checks if blog port is complete - entirely core]
-```
+`/goal` and memory follow the same logic: both are core Hermes features the plugin does not wrap. `/goal` is a core primitive that iterates autonomously; the plugin surfaces methodology concepts (modes, roles, specialists). They are orthogonal: the goal loop and its judge stay core, while plugin commands set methodology context inside the loop.
 
 ### 5. When it _would_ make sense (future signal)
 
-If the plugin ever ships a feature that genuinely requires multi-turn autonomous iteration - something like "scan all files in a directory and categorize every function" where you want Hermes to keep going file-by-file - the right answer is still: **type `/goal` at the Hermes level**, not "add goal integration to the plugin". The plugin's role would be to provide the specialist prompt or routing logic that the goal loop invokes on each turn, not to replace the loop itself.
+If the plugin ever ships a feature that genuinely requires multi-turn autonomous iteration (for example, "scan all files in a directory and categorize every function" and keep going file-by-file), the right answer is still to **type `/goal` at the Hermes level**, not to add goal integration to the plugin. The plugin's role would be to provide the specialist prompt or routing logic that the loop invokes each turn, not to replace the loop.
 
 ## Consequences
 
 ### Positive
 
 - **No scope creep** - the plugin stays focused on what it uniquely provides: role gating, slash commands, methodology mode injection, and OpenCode routing
-- **No race conditions** - no risk of plugin loops conflicting with core goal loop
-- **Lower maintenance** - no code to test, debug, or keep compatible with Hermes' internal goal implementation
-- **Clear user mental model** - `/goal` is core, `/fein`/`/sonar`/`/blitz` are plugin. Users combine them naturally
+- **No race conditions** - plugin loops cannot conflict with the core goal loop
+- **Lower maintenance** - no code to test, debug, or keep compatible with Hermes' goal implementation
+- **Clear user mental model** - `/goal` is core, `/fein`/`/sonar`/`/blitz` are plugin; users combine them naturally
 
 ### Negative
 
-- **Slightly longer user command** - a combined goal + methodology setup requires two messages (`/goal Do X`, then `/fein`) instead of one hypothetical `/maestria-goal fein Do X`. This is acceptable: the two concerns are genuinely separate, and compounding them into one command would be premature abstraction.
+- **Slightly longer user command** - goal plus methodology setup takes two messages (`/goal Do X`, then `/fein`) instead of one hypothetical `/maestria-goal fein Do X`. The concerns are genuinely separate, and compounding them would be premature abstraction.
 
 ## Related Decisions
 

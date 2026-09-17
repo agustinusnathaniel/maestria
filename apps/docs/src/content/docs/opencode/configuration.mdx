@@ -7,31 +7,11 @@ lastUpdated: false
 
 import { Aside, Code } from '@astrojs/starlight/components';
 
-The `@maestria/opencode` plugin registers 8 agents with no model overrides. Each agent runs on whatever model OpenCode assigns by default. You can change this by setting per-agent models in your OpenCode config.
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
-This page covers how the model hierarchy works and how to make selective assignments without choosing a provider-specific preset.
+The `@maestria/opencode` plugin registers 8 agents with no model overrides, so each runs on the model OpenCode assigns by default. Overrides use the standard `agent.<name>.model` path, which works for any agent.
 
-<Aside type="caution" title="Model choice affects every delegated stage">
-  The orchestrator's model is inherited by specialists unless you override them. A different model
-  on the orchestrator can therefore be used for reconnaissance, implementation, review, and retries.
-  Read [When to use Maestria](/core/when-to-use/) before assigning the same model to every agent.
-</Aside>
-
-## Why Set Per-Agent Models
-
-Model IDs, availability, pricing, aliases, and platform support vary. Avoid generic cost or quality presets. Instead, choose an explicit model ID from OpenCode's normal, live model list and assign it only where you have a clear reason.
-
-You can assign a model to any specialist. Unmentioned specialists keep their existing assignments.
-
-## How It Works
-
-The plugin registers agents without a `model` field in their frontmatter. OpenCode's config merge applies your overrides from `opencode.jsonc` on top of the defaults. No conflict, no plugin changes needed.
-
-The model property follows OpenCode's standard agent config path: `agent.<name>.model`. The same path works for any agent, not just the ones from this plugin.
-
-## Syntax
-
-Add agent model overrides to your OpenCode config:
+## Per-Agent Models
 
 ```jsonc
 {
@@ -42,48 +22,39 @@ Add agent model overrides to your OpenCode config:
 }
 ```
 
-You can edit either `~/.config/opencode/opencode.jsonc` (global) or `.opencode/opencode.jsonc` (project-level).
+Edit either `~/.config/opencode/opencode.jsonc` (global) or `.opencode/opencode.jsonc` (project-level). Unmentioned agents keep their existing assignments.
 
-### Model ID format
+Use `<provider>/<model-id>` with an explicit model ID copied from OpenCode's live model list: model IDs, availability, pricing, and aliases vary.
 
-Use `<provider>/<model-id>`.
-
-| Value        | Description                                     |
-| ------------ | ----------------------------------------------- |
-| `<model-id>` | An explicit ID copied from OpenCode's live list |
-
-## Subagent Model Inheritance
+## Model Inheritance
 
 Model assignment follows a chain. From the OpenCode documentation:
 
 > If you don't specify a model, primary agents use the globally configured model while subagents will use the model of the primary agent that invoked the subagent.
 
-Maestria's 7 specialists are subagents of the orchestrator. This means they inherit the orchestrator's model unless you override a specialist individually. So setting a model on the orchestrator affects all specialists by default.
-
-This matters for your config strategy:
-
-- Set one model on the orchestrator when you want all specialists to inherit it.
-- Override selectively when a specialist needs a different model. Unmentioned specialists keep their existing assignments.
+The 7 specialists are subagents of the orchestrator, so they inherit the orchestrator's model unless overridden individually. Read [When to use Maestria](/core/when-to-use/) before assigning the same model to every agent.
 
 <Aside type="tip">
-  If you want every specialist on the same model, just set{' '}
-  <Code code="agent.orchestrator.model" lang="jsonc" />. No need to repeat it for all 8 agents. Only
-  add entries for the agents you want to diverge.
+  To put every specialist on the same model, set{' '}
+  <Code code="agent.orchestrator.model" lang="jsonc" />. Add entries only for the agents you want to
+  diverge.
 </Aside>
 
-## Selective assignment
+## Selective Assignment
 
-Use the CLI to validate the model ID against OpenCode's live model list before writing it:
+The CLI validates a model ID against OpenCode's live model list and changes only the named agents:
 
-```bash
-maestria configure opencode --global --set adventurer=<model-id>,writer=<model-id>
-```
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="configure opencode --global --set adventurer=<model-id>,writer=<model-id>"
+/>
 
-The CLI changes only the named agents. Configuration through `maestria configure` currently supports OpenCode, Pi, and OMP.
+See the [configure reference](/cli/commands/#configure) for supported platforms and options.
 
 ## Model Field in Markdown Frontmatter
 
-For custom agents you define locally, you can also set the model directly in the agent's Markdown frontmatter:
+Custom agents defined locally can set the model in the agent's Markdown frontmatter:
 
 ```markdown
 ---
@@ -92,10 +63,20 @@ model: <model-id>
 ---
 ```
 
-This works the same as the `agent.<name>.model` config entry. Frontmatter is useful when the agent file is self-contained, like a project-specific agent checked into your repo.
+This works the same as the `agent.<name>.model` config entry.
 
-## Managing Config Across Projects
+## Project-Level Config
 
-You can keep different model configs for different projects. Project-level config (`.opencode/opencode.jsonc`) merges with global config (`~/.config/opencode/opencode.jsonc`). Project settings take precedence.
+Project config (`.opencode/opencode.jsonc`) merges with global config (`~/.config/opencode/opencode.jsonc`); project settings take precedence.
 
-This lets you use different explicit model IDs for different projects from the same global install.
+## Disabling Workflow Modes
+
+`modes.disabledKeywords` accepts a denylist of mode keywords in the plugin options:
+
+```jsonc
+{
+  "plugin": ["@maestria/opencode", { "modes": { "disabledKeywords": ["blitz"] } }],
+}
+```
+
+Mode detection and precedence are documented under [Modes](/core/agents/#modes).

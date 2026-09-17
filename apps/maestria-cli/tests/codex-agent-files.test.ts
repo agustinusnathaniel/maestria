@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vite-plus/test';
+
 import {
   codexManagedAgentFileName,
   codexManagedAgentName,
   mergeCodexAgentSettings,
   parseCodexTopLevelString,
   setCodexTopLevelString,
-} from '../src/lib/codex-agent-files.js';
+} from '@/lib/codex-agent-files.js';
 
 describe('Codex native agent files', () => {
   it('uses a collision-resistant native role name', () => {

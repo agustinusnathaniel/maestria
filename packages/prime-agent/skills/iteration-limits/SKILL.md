@@ -1,10 +1,10 @@
 ---
-name: iteration-limits
 description: |-
   The iteration-limit pattern with verifiable termination
   and escalation format.
   Load when defining termination conditions for a loop, or when a loop is at risk
   of running too long.
+name: iteration-limits
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.

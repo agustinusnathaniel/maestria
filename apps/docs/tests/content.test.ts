@@ -1,26 +1,29 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { RECOVERY_LINKS } from '@/lib/agent-delivery.ts';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 const DOCS_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
 
 /** Strip a leading YAML frontmatter block, returning only the markdown body. */
-function stripFrontmatter(text: string): string {
-  const lines = text.split(/\r?\n/);
-  if (lines[0]?.trim() !== '---') return text;
+const stripFrontmatter = (text: string): string => {
+  const lines = text.split(/\r?\n/u);
+  if (lines[0]?.trim() !== '---') {
+    return text;
+  }
   const close = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
-  if (close === -1) return text;
+  if (close === -1) {
+    return text;
+  }
   return lines.slice(close + 1).join('\n');
-}
+};
 
-async function readDoc(name: string): Promise<{ full: string; body: string }> {
-  const full = await readFile(path.join(DOCS_ROOT, name), 'utf8');
-  return { full, body: stripFrontmatter(full) };
-}
+const readDoc = async (name: string): Promise<{ full: string; body: string }> => {
+  const full = await readFile(path.join(DOCS_ROOT, name), 'utf-8');
+  return { body: stripFrontmatter(full), full };
+};
 
 describe('trust anchor pages', () => {
   it.each([['about.mdx'], ['contact.mdx'], ['privacy.mdx']])(
@@ -32,9 +35,12 @@ describe('trust anchor pages', () => {
   );
 
   it('cross-link each other with relative links', async () => {
-    const about = (await readDoc('about.mdx')).body;
-    const contact = (await readDoc('contact.mdx')).body;
-    const privacy = (await readDoc('privacy.mdx')).body;
+    const aboutDoc = await readDoc('about.mdx');
+    const contactDoc = await readDoc('contact.mdx');
+    const privacyDoc = await readDoc('privacy.mdx');
+    const about = aboutDoc.body;
+    const contact = contactDoc.body;
+    const privacy = privacyDoc.body;
 
     expect(about).toContain('/contact/');
     expect(about).toContain('/privacy/');
@@ -45,7 +51,8 @@ describe('trust anchor pages', () => {
   });
 
   it('state verifiable repo facts without invented identity data', async () => {
-    const about = (await readDoc('about.mdx')).body;
+    const aboutDoc = await readDoc('about.mdx');
+    const about = aboutDoc.body;
     expect(about).toContain('MIT');
     expect(about).toContain('https://github.com/agustinusnathaniel/maestria');
     for (const specialist of [
@@ -65,7 +72,8 @@ describe('trust anchor pages', () => {
 describe('404 page', () => {
   it('points agents at llms.txt and the sitemap via absolute links', async () => {
     const { body } = await readDoc('404.mdx');
-    expect(body).toContain('RECOVERY_LINKS.map');
+    expect(body).toContain('## Recovery paths for agents and humans');
+    expect(body).toContain('Every link below is absolute');
     expect(RECOVERY_LINKS).toContainEqual([
       'Markdown summary for agents',
       'https://maestria.sznm.dev/llms.txt',
@@ -88,12 +96,58 @@ describe('404 page', () => {
   });
 });
 
+describe('portable Agent Plugin documentation', () => {
+  it('documents the artifact boundary and installation path', async () => {
+    const { full } = await readDoc('agent-plugin/index.mdx');
+
+    expect(full).toContain('@maestria/agent-plugin');
+    expect(full).toContain('compatible clients');
+    expect(full).toContain('Install `@maestria/agent-plugin`');
+    expect(full).toContain('plugin.json');
+    expect(full).toContain('skills/<name>/SKILL.md');
+    expect(full).toContain('The command is intentionally namespaced as `maestria plugin ...`');
+    expect(full).toContain('`maestria install` manages runtime integrations');
+    expect(full).toContain('The exact activation command depends on the client');
+    expect(full).toContain('native subagent registration');
+    expect(full).not.toContain('packages/core/agent-directives');
+    expect(full).not.toContain('sync.config.ts');
+  });
+
+  it('documents the portable CLI path across user entry points', async () => {
+    const agentPlugin = await readDoc('agent-plugin/index.mdx');
+    const compatibility = await readDoc('agent-plugin/compatibility.mdx');
+    const cli = await readDoc('cli/index.mdx');
+    const gettingStarted = await readDoc('cli/getting-started.mdx');
+    const commands = await readDoc('cli/commands.mdx');
+    const about = await readDoc('about.mdx');
+    const decisionGuide = await readDoc('core/when-to-use.mdx');
+    const howItWorks = await readDoc('core/how-it-works.mdx');
+    const changelog = await readDoc('cli/changelog.mdx');
+
+    expect(agentPlugin.full).toContain('args="plugin install"');
+    expect(agentPlugin.full).toContain('https://agent-plugins.org/compatible-clients');
+    expect(agentPlugin.full).toContain('[compatibility matrix](/agent-plugin/compatibility/)');
+    expect(compatibility.full).toContain('Hermes Agent 0.20.3');
+    expect(compatibility.full).toContain('Grok Bot CLI 1.0.0');
+    expect(compatibility.full).toContain('Activation remains client-owned');
+    expect(cli.full).toContain('Stage a portable Agent Plugin');
+    expect(cli.full).toContain('href="/agent-plugin/"');
+    expect(gettingStarted.full).toContain('--destination ./staged-plugin');
+    expect(commands.full).toContain('~/.cache/maestria/agent-plugins/<name>/<version>/');
+    expect(about.full).toContain('npx maestria plugin install');
+    expect(decisionGuide.full).toContain('[Portable Agent Plugin](/agent-plugin/)');
+    expect(howItWorks.full).toContain('[Agent Plugin package](/agent-plugin/)');
+    expect(changelog.full).toContain('maestria plugin validate');
+    expect(changelog.full).toContain('## v0.11.1');
+  });
+});
+
 describe('shipped content hygiene', () => {
   it.each([['404.mdx'], ['about.mdx'], ['contact.mdx'], ['privacy.mdx']])(
     '%s has no placeholder or debug markers',
     async (name) => {
       const { full } = await readDoc(name);
-      expect(full).not.toMatch(/TODO|FIXME|Lorem ipsum/i);
+      expect(full).not.toMatch(/TODO|FIXME|Lorem ipsum/iu);
     },
   );
 });

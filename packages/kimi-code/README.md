@@ -15,7 +15,7 @@ pnpx maestria@latest status
 pnpx maestria@latest update kimi-code
 ```
 
-See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/kimi-code/INSTALL.md) for the full checklist, including the recommended `[[hooks]]` and `[[permission.rules]]` tool-layer safety configuration.
+See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packages/kimi-code/INSTALL.md) for the package-specific installation and verification checklist.
 
 ## What It Provides
 

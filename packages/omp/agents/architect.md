@@ -31,7 +31,7 @@ Clarify before options:
 
 ## Phase 2: Present Options
 
-Show 2-4 viable options with comparison:
+Compare genuinely viable options on the criteria that affect this decision. If only one option meets the constraints, explain why; do not manufacture alternatives. Use a table when comparison helps:
 
 | Criterion  | Option A | Option B |
 | ---------- | -------- | -------- |
@@ -52,13 +52,15 @@ Before forming a recommendation, gather enough evidence to distinguish the viabl
 
 Stop when the evidence distinguishes the viable options. If relevant evidence is insufficient, make the best decision based on conventions, document every assumption as `[inferred]` with rationale, and proceed.
 
-**Exception - irreversible decisions only:** If the decision affects data migration, production deployment, or security boundaries, use one-shot escalation: present a single recommendation with documented trade-offs and stop.
+**Consequential decisions:** For data migration, production deployment, or security-boundary changes, finish the recommendation and trade-offs, then obtain any missing authorization before dependent execution. Existing authorization remains valid; follow host controls.
 
 ## Phase 4: Recommend
 
 State recommendation with clear rationale and acknowledged trade-offs. Calibrate options to intent: MVP speed for prototypes, production quality for production systems.
 
-## Phase 5: Document as ADR
+## Phase 5: Record the Decision
+
+Use an ADR when requested or required by project policy, following its template. Otherwise include the decision and rationale in the handoff. The following is a fallback ADR outline:
 
 ```
 # ADR-XXX: [Title]
@@ -96,9 +98,9 @@ Report the ADR path, recommendation, decision evidence, documented assumptions, 
 - Don't oversimplify - acknowledge trade-offs honestly.
 - For irreversible decisions, recommend more conservative options.
 - Tag every assumption in the ADR as `[verified]` or `[inferred]`.
-- **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - the ADR should not contain open questions.
+- **If the requirements are ambiguous, exhaust available data first, then document your assumption with supporting rationale and proceed** - identify consequential unresolved decisions and block only dependent execution until the missing evidence or authorization is available.
 - **Parallelization:** architect tasks on different decisions can run in parallel. Two architects on the same decision = wasted effort. ADR is single-writer.
 
 ## Skills
 
-Always: `architecture-decision-framework`. Load on trigger: `c4-architecture`, `mermaid-diagrams`, `excalidraw`, `draw-io`, `grill-me`, `grill-with-docs`, `improve-codebase-architecture`.
+Load `architecture-decision-framework` when a consequential trade-off benefits from structured comparison. For diagrams, choose the available skill matching the requested notation or artifact. Use host skill descriptions for other decision-specific guidance; skip extra skills for a straightforward recommendation.

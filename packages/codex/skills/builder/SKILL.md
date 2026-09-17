@@ -1,6 +1,6 @@
 ---
-name: builder
 description: Focused implementation workflow for one atomic, verifiable feature, fix, test, or refactor.
+name: builder
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
@@ -18,18 +18,30 @@ Handle exactly one atomic task per invocation. An atomic task is:
 - A single test or test suite
 - A single configuration change
 
-If the task is not atomic - if it spans multiple unrelated concerns - document the decomposition decision and proceed with the most important slice.
+If the assignment contains unrelated outcomes, report the decomposition to the orchestrator and identify ownership for the remaining work. Complete the assigned outcome; never present one selected slice as completion of the whole assignment.
 
 ## Process
 
 1. **Read** - Load the relevant files and understand context
 2. **Edit** - Make the minimal change required to satisfy the task
-3. **Verify** - Run tests or type checks to confirm correctness
-4. **Report** - State what changed and why
+3. **Verify** - Establish acceptance for the changed behavior using the global evidence contract
+4. **Report** - State what changed and why, with evidence artifacts and unresolved verification gaps
 
 ## Implementation Judgment
 
 Start with the smallest change that satisfies acceptance. Reuse existing code and dependencies first; before custom infrastructure, check framework capabilities and mature ecosystem solutions. Add a dependency only when its fit, maintenance, compatibility, security, and total burden beat a small local implementation. Add layers only when the product requires them.
+
+At trust boundaries, validate and normalize inputs once into a stable internal shape; client or convenience checks never replace authoritative security enforcement. Keep seams local to the feature by default; broaden them only when visible repetition, shared change pressure, or coupled data/contracts justify it, and only when callers become simpler.
+
+When changing a shared interface, trace every caller and supported usage mode; preserve or deliberately migrate them, then verify through the highest practical consumer. When several consumers must agree on one contract or convention, keep one executable source of truth or automated drift check, and record intentional exceptions instead of duplicating policy.
+
+Keep mechanical chores separate from behavior changes, and prefer many small reviewable increments over one large change.
+
+Prefer deny by default, keep secrets in the trusted runtime, and fail closed on missing or invalid configuration.
+
+When superseding code, mark the old path as do-not-extend, keep it until migration completes, then remove it in an isolated change.
+
+Never hand-edit generated outputs; change the single source and regenerate.
 
 ## Skills
 
@@ -39,8 +51,8 @@ Load on trigger: `agent-browser` (UI verification), `tdd` (explicit TDD requests
 
 - **!!! Read the docs first** - consult official documentation before writing code that touches unfamiliar APIs or migration paths. Don't guess at API changes.
 - **!!! Touch only files relevant to the task** - no collateral changes; if existing code seems unnecessary, flag it in your handoff with your reasoning rather than deleting it
-- **!!! Run validation before claiming done** - run the project's documented test, type-check, and lint commands using the platform's available execution tools; confirm the diff is focused
-- **!!! Never implement without reading the target files first**
+- **!!! Run validation before claiming done** - choose checks that establish acceptance for the changed behavior and report their results; confirm the diff is focused. The delivery owner runs required repository gates once on the integrated result. Reuse still-valid evidence; rerun affected checks after changes or failures
+- **!!! Understand the target before editing** - use current source context already available; read missing or changed context rather than reloading unchanged files
 - If a change grows beyond the original task scope, flag it in your handoff
 - **Parallelization:** builder tasks on different files can run in parallel. Two builders on the same file = merge conflict. **Never parallelize builder tasks that touch overlapping files.**
 - **!!! Report at the signature level, not the body level** - when listing changes, mention function signatures and interface fields, not internal implementation. The orchestrator uses this to build a user-facing summary.

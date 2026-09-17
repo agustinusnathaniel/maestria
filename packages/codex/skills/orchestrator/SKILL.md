@@ -1,6 +1,6 @@
 ---
-name: orchestrator
 description: "Maestria workflow dispatcher for Codex CLI: route work, use specialist skills, preserve handoffs, and keep independent review explicit."
+name: orchestrator
 ---
 
 <!-- Auto-generated from @maestria/core. Do not edit directly.
@@ -14,7 +14,7 @@ The route describes the work; the host runtime defines what this session may do 
 
 ## Human-Facing Output
 
-**!!! Apply the canonical human-facing output contract** to agent responses, status updates, delegation briefs, code comments/docstrings, commit messages, PR titles/bodies/descriptions, and documentation. Never emit Unicode U+2014 EM DASH in authored text. Prefer commas, colons, parentheses, or ASCII hyphen-minus (`-`). Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
+**!!! Apply the canonical human-facing output contract**, including commit messages and PR titles/descriptions: never emit Unicode U+2014 EM DASH in authored text. Preserve code syntax, intentional literals, quoted source text, and user-provided text. Scan authored output before handoff or delivery.
 
 ## Routing
 
@@ -44,11 +44,11 @@ Delegate to `$maestria:builder` directly when the task is concrete and atomic. A
 
 ## Role-Based Pipeline
 
-Thinkers (`$maestria:adventurer`, `$maestria:architect`, `$maestria:planner`, `$maestria:diagnose`) analyze and plan; Workers (`$maestria:builder`, `$maestria:writer`) produce artifacts; the Verifier (`$maestria:reviewer`) independently validates. The sequence is dynamic: route implementation findings to `$maestria:builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
+Thinkers (`$maestria:adventurer`, `$maestria:architect`, `$maestria:planner`) analyze and plan; `$maestria:diagnose` analyzes the bug, applies the minimal fix, and verifies the repair; Workers (`$maestria:builder`, `$maestria:writer`) produce artifacts; the Verifier (`$maestria:reviewer`) independently validates. The sequence is dynamic: route implementation findings to `$maestria:builder` and design findings to a thinker. Never claim a dependent result before its input artifact exists and is verified.
 
 ## Review and Triage
 
-One independent reviewer covers meaningful focused/full work; never run concurrent reviewers against the same change. Meaningful work means behavior changes, public interfaces or configuration, multiple production files, or data, auth, or security impact; formatting, comments, fixtures, and single-file mechanical non-behavioral edits do not require automatic review unless risk is uncertain. An empty, malformed, unavailable, or blocked review is not approval: make one justified recovery attempt, otherwise preserve the delta and stop dependent work.
+One independent reviewer covers meaningful implementation on every route, including direct; never run concurrent reviewers against the same change. Meaningful work means behavior changes, public interfaces or configuration, multiple production files, or data, auth, or security impact; formatting, comments, fixtures, and single-file mechanical non-behavioral edits do not require automatic review unless risk is uncertain. An empty, malformed, unavailable, or blocked review is not approval: make one justified recovery attempt, otherwise preserve the delta and stop dependent work.
 
 Triage findings in order: boundary-changing or safety findings stop for authorization and route design issues to `$maestria:architect`; design-level blockers trigger approach reconsideration, not patches; in-scope blocking/material `[fix]` findings go to `$maestria:builder` for bounded repair plus targeted blind re-review; out-of-scope or platform findings become follow-ups. `[dismiss]` documents rationale; `[escalate]` surfaces the decision to its owner and blocks completion only when it affects acceptance, safety, authorization, or a design-level requirement.
 
@@ -72,13 +72,26 @@ Modes are case-insensitive and per-turn.
 
 For implementation work, own the delivery path: inspect -> plan -> implement -> validate -> one independent review -> repair material blockers only when required -> targeted validation of repaired scope -> final verification -> commit -> push -> PR.
 
-**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete the lifecycle without ceremonial approval. A delegated implementation outcome reaches its terminal artifact only when delivered: reviewed changes on a pushed feature branch with an open PR. Do not stop at a local diff, commit, pushed branch, or `PR pending`, and never treat "not requested" as a reason to withhold routine delivery. Merge, release, and production actions remain separate authorization boundaries.
+**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is reviewed changes on a pushed feature branch with an open PR. Merge, release, and production actions remain separate authorization boundaries.
 
-The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action. A failed or cancelled delegation is transport trouble, not a verdict - retry once with an adjusted brief before reporting a structured blocker; user-initiated or intentional platform cancellation is terminal. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker. Safety, authorization, ambiguity, and host-capability boundaries always take precedence.
+The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker.
 
-Freeze acceptance, non-goals, and repair limits at the start; classify adjacent findings as follow-ups rather than expanding scope or resetting limits.
+Freeze acceptance, non-goals, and repair limits at the start. Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets, plus PR-body evidence with readback when visual evidence applies. Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups. A PR or reviewer approval alone does not establish completion.
 
-Report briefly at milestones - route chosen, delegations integrated, verification and review results, delivery state - each covering outcome, changed files, evidence, blockers, next step. Do not narrate routine reads, retries, or mechanics between milestones.
+Report briefly at milestones: outcome, verification limits, delivery state, and any blocker or next step.
+
+## Visual Delivery Evidence
+
+For changes to rendered UI, including documentation sites and visible CLI output, apply this section when planning verification and include the evidence requirement in implementation and review briefs.
+
+- Capture the affected screen or interaction, including relevant responsive or state variants, using an available browser or capture tool. A missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified. Preserve the local artifact at any workable path, including /tmp; do not auto-commit screenshots unless project policy requires it.
+- Hand off implementer evidence as paths plus captions plus coverage gaps: each artifact states what it shows and which variants remain unchecked. The reviewer checks that coverage against the changed surface before delivery.
+- Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the delivery tool's current help for upload support instead of relying on cached syntax. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation. Capture and upload are separate capabilities.
+- Present evidence concisely by changed screen or behavior: label each artifact with its state and relevant viewport or theme. Use a before/after table when comparison helps and a short captioned list for a single state or when tables would shrink images. Pair comparable captures with matching viewports and states, name the intended difference, disclose missing baselines or unchecked variants without fabricating them, and keep representative captures in the main section with supplemental captures in a collapsible section when supported.
+- Read back the actual PR body as delivery owner before claiming delivery or re-delivery; confirm attachments render or links resolve and evidence matches the current relevant diff. When a later change affects captured appearance or behavior, replace affected captures, update captions and comparisons, and remove obsolete or redundant PR body references; keep intentional clearly labeled before baselines and never present a historical before as current. Refresh only affected evidence, not every commit or unrelated file. Readback is a delivery-owner check, not a second full review.
+- For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals. Keep capture effort proportionate to the changed surface.
+
+**!!! For changes requiring visual evidence,** do not claim delivery complete until the evidence is published in the PR body and the delivery owner has read back that body to verify its inclusion. Local paths, session-log references, and comments alone do not satisfy this requirement. If publication is blocked, report visual acceptance as incomplete with the exact checked limitation. An explicit user or project requirement for visual evidence remains acceptance work: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
 
 
 ## Codex CLI Integration
@@ -89,19 +102,7 @@ Load the `$maestria:global-rules` skill once at session start, before routing wo
 
 ### Specialist skills
 
-Use the namespaced skills below as the specialist workflow profiles:
-
-| Skill | Role | Use when |
-| --- | --- | --- |
-| `$maestria:adventurer` | Codebase reconnaissance | unfamiliar code, tracing, mapping, or locating behavior |
-| `$maestria:architect` | Architecture decisions | trade-offs, technology, boundaries, threat model, or ADR decisions |
-| `$maestria:builder` | Atomic implementation | a concrete feature, bug fix, test, or refactor with no identified uncertainty |
-| `$maestria:diagnose` | Root-cause analysis | a bug, regression, failure, crash, or unclear cause |
-| `$maestria:planner` | Phased planning | a multi-phase feature, rollout, or migration plan |
-| `$maestria:reviewer` | Independent quality review | post-implementation validation or explicit review |
-| `$maestria:writer` | Documentation | README, changelog, API docs, or structured prose |
-
-Codex supports subagent workflows. Skills provide the methodology, while the companion native agent pack provides role definitions with the `agent_type` names below. Keep the maker/checker boundary explicit in every handoff.
+Codex supports subagent workflows. The namespaced skills provide the methodology, while the companion native agent pack provides role definitions with the `agent_type` names below. Keep the maker/checker boundary explicit in every handoff.
 
 ### Native custom agents
 

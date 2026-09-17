@@ -1,13 +1,18 @@
 // packages/core/scripts/lib/sync.ts - Core sync orchestration
 //
-// Orchestrates the sync pipeline: walks source directories, applies
-// transforms via processFile(), resolves secondary sources for files
-// not in the primary source dir, and auto-cleans stale output files.
+// Orchestrates the sync pipeline: resolves one ordered file plan, validates
+// replace anchors against it, applies transforms via processFile(), and
+// auto-cleans stale output files.
 
 import { existsSync } from 'node:fs';
-import { resolve, dirname, basename } from 'node:path';
-import type { ResolvedSyncConfig, ResolvedFileConfig } from './config.js';
-import { walkDir, autoClean } from './file.js';
+
+import { formatAnchorViolations, validateAnchors } from './anchors.js';
+import type { ResolvedSyncConfig } from './config.js';
+import { ConfigError } from './config.js';
+import { autoClean, walkDir } from './file.js';
+import type { SyncPlanEntry } from './plan.js';
+import { resolveSyncPlan } from './plan.js';
+import type { ProcessFileOpts } from './process-file.js';
 import { processFile } from './process-file.js';
 
 // ── Public Types ──
@@ -17,7 +22,6 @@ export interface SyncFileResult {
   output: string;
   status: 'written' | 'unchanged' | 'removed' | 'dry-run' | 'error';
   error?: string;
-  content?: string;
 }
 
 export interface SyncOptions {
@@ -26,127 +30,69 @@ export interface SyncOptions {
   check?: boolean;
   diff?: boolean;
   verbose?: boolean;
-  log?: (msg: string) => void;
 }
 
 // ── Orchestration ──
 
-export async function runSync(options: SyncOptions): Promise<SyncFileResult[]> {
-  const { config, dryRun, check, diff, verbose, log } = options;
-  const logger = log ?? console.log;
+const processPlanEntry = async (
+  entry: SyncPlanEntry,
+  opts: ProcessFileOpts,
+  generatedOutputs: Set<string>,
+  results: SyncFileResult[],
+): Promise<void> => {
+  generatedOutputs.add(entry.fileCfg.output);
+  const result = await processFile(entry.sourcePath, entry.fileCfg, opts);
+  results.push(result);
+  if (result.status === 'error' && opts.verbose === true) {
+    opts.logger(`[${opts.report}] Error processing ${entry.logLabel}: ${result.error}`);
+  }
+};
+
+export const runSync = async (options: SyncOptions): Promise<SyncFileResult[]> => {
+  const { config, dryRun, check, diff, verbose } = options;
+  const logger = console.log;
   const results: SyncFileResult[] = [];
   const generatedOutputs = new Set<string>();
-  const report = dryRun ? (check ? 'check' : 'dry-run') : 'sync';
-
+  let report = 'sync';
+  if (check === true) {
+    report = 'check';
+  } else if (dryRun === true) {
+    report = 'dry-run';
+  }
   if (!existsSync(config.source)) {
-    logger(`[${report}] Source directory not found: ${config.source}`);
-    return results;
+    throw new ConfigError(`Source directory not found: ${config.source}`);
   }
-
   const sourceFiles = await walkDir(config.source);
-  const matchedFiles = new Set<string>();
-
-  // ── Primary source loop ──
-
-  for (const relPath of sourceFiles) {
-    if (!relPath.endsWith('.md')) {
-      if (verbose) {
-        logger(`[${report}] Skipping non-.md file: ${relPath}`);
-      }
-      continue;
-    }
-
-    const sourceAbs = resolve(config.source, relPath);
-    const filename = basename(relPath);
-    matchedFiles.add(filename);
-
-    const fileCfg = config.files[filename];
-    const isExplicit = filename in config.files;
-
-    let resolved: ResolvedFileConfig;
-    if (isExplicit) {
-      // File was in config.files - resolveFileConfig already merged defaults
-      resolved = fileCfg;
-    } else {
-      // File wasn't in config.files - apply default merging here
-      if (verbose) {
-        logger(`[${report}] No config for ${relPath}, using defaults`);
-      }
-      resolved = {
-        output: config.output
-          ? resolve(config.output, filename)
-          : resolve(config.configDir, filename),
-        stripFrontmatter: config.default?.stripFrontmatter ?? false,
-        replace: [...(config.default?.replace ?? [])],
-        prepend: config.default?.prepend ?? '',
-        append: config.default?.append ?? '',
-        frontmatter: config.default?.frontmatter,
-      };
-    }
-
-    generatedOutputs.add(resolved.output);
-
-    const result = await processFile(sourceAbs, resolved, {
-      configPath: config.configPath,
-      dryRun,
-      check,
-      diff,
-      verbose,
-      report,
-      logger,
-    });
-
-    results.push(result);
-
-    if (result.status === 'error' && verbose) {
-      logger(`[${report}] Error processing ${relPath}: ${result.error}`);
+  const { entries, notes } = resolveSyncPlan(config, sourceFiles, report);
+  const anchorReport = await validateAnchors(config, entries);
+  if (anchorReport.violations.length > 0) {
+    throw new ConfigError(formatAnchorViolations(config.configPath, anchorReport));
+  }
+  if (verbose === true) {
+    for (const note of notes) {
+      logger(note);
     }
   }
-
-  // ── Secondary source loop ──
-  // Process config.files entries not found in source dir (e.g. rules.md from parent of source)
-
-  const secondarySourceDir = dirname(config.source);
-  for (const [filename, fileCfg] of Object.entries(config.files)) {
-    if (matchedFiles.has(filename)) continue;
-
-    const secondaryAbs = resolve(secondarySourceDir, filename);
-    if (!existsSync(secondaryAbs)) {
-      if (verbose) {
-        logger(`[${report}] Config entry "${filename}" not found in source or secondary dir`);
-      }
-      continue;
-    }
-
-    generatedOutputs.add(fileCfg.output);
-
-    const result = await processFile(secondaryAbs, fileCfg, {
-      configPath: config.configPath,
-      dryRun,
-      check,
-      diff,
-      verbose,
-      report,
-      logger,
-    });
-
-    results.push(result);
-
-    if (result.status === 'error' && verbose) {
-      logger(`[${report}] Error processing secondary source ${filename}: ${result.error}`);
-    }
-  }
-
-  // ── Auto-clean: remove stale output files ──
-
-  const cleanResults = await autoClean(config, generatedOutputs, {
-    dryRun,
+  const processOpts: ProcessFileOpts = {
     check,
-    verbose,
-    report,
+    configPath: config.configPath,
+    diff,
+    dryRun,
     logger,
+    report,
+    verbose,
+  };
+  for (const entry of entries) {
+    // oxlint-disable-next-line no-await-in-loop -- sequential processing keeps result order deterministic.
+    await processPlanEntry(entry, processOpts, generatedOutputs, results);
+  }
+  const cleanResults = await autoClean(config, generatedOutputs, {
+    check,
+    dryRun,
+    logger,
+    report,
+    verbose,
   });
   results.push(...cleanResults);
-
   return results;
-}
+};

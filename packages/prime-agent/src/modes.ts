@@ -1,12 +1,15 @@
 // packages/prime-agent/src/modes.ts
 // Prime-local implementation of the Maestria workflow modes (fein/sonar/blitz).
 //
-// Behavioral model: the @maestria/pi extension's mode implementation
-// (packages/pi/src/modes.ts + packages/shared/pi/src/modes-core.ts), adapted to
-// the Prime fork's public extension API and to this package's skills-first
-// projection. This module is deliberately self-contained (Prime-local thin
-// extension): it does not import @maestria/pi or @maestria/shared-pi, and it
-// uses only the public ExtensionAPI surface mirrored in ./pi-api.ts.
+// Pure mode mechanics (keywords, markers, `## MODE:` section extraction)
+// delegate to `@maestria/shared-mode`, mirroring
+// packages/opencode/src/modes/index.ts. Host-specific concerns stay
+// Prime-local: the `skills/<mode>/SKILL.md` layout, the module prompt cache,
+// `before_agent_start` string-shape injection, and slash-command registration.
+// This module still imports no `@maestria/pi`, `@maestria/shared-pi`, or
+// pi-coding-agent runtime (only the type-only `./pi-api.js` plus the pure,
+// host-SDK-free `@maestria/shared-mode`); `shared-mode` has no filesystem or
+// host APIs.
 //
 // Mode content is NOT duplicated here: it is loaded from the package's
 // generated skills (`skills/<mode>/SKILL.md`, the `## MODE:` section onward),
@@ -14,7 +17,11 @@
 // (canonical content lives in packages/core/agent-directives/, ADR-CORE-005).
 
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import path from 'node:path';
+
+import { extractModeSection, MODE_KEYWORDS, MODE_MARKERS } from '@maestria/shared-mode';
+import type { ModeKeyword } from '@maestria/shared-mode';
+
 import type {
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult,
@@ -25,20 +32,13 @@ import type {
 import type { MaestriaModeState } from './state.js';
 import { persistModeState } from './state.js';
 
-export const MODE_KEYWORDS = ['fein', 'sonar', 'blitz'] as const;
-export type ModeKeyword = (typeof MODE_KEYWORDS)[number];
-
-/** Marker line prepended to injected mode content (shared with other Maestria platforms). */
-export const MODE_MARKERS: Record<ModeKeyword, string> = {
-  fein: '[MODE: fein]',
-  sonar: '[MODE: sonar]',
-  blitz: '[MODE: blitz]',
-};
+export { MODE_KEYWORDS, MODE_MARKERS } from '@maestria/shared-mode';
+export type { ModeKeyword } from '@maestria/shared-mode';
 
 const MODE_COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
+  blitz: 'Set workflow mode to blitz (fast path)',
   fein: 'Set workflow mode to fein (full pipeline)',
   sonar: 'Set workflow mode to sonar (research only)',
-  blitz: 'Set workflow mode to blitz (fast path)',
 };
 
 // ---------------------------------------------------------------------------
@@ -54,23 +54,26 @@ const _promptCache: Partial<Record<ModeKeyword, string>> = {};
  * (and warns) when the skill file is missing or has no mode section, so a
  * packaging mistake degrades to "no injection" rather than an extension crash.
  */
-export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
-  if (keyword in _promptCache) return _promptCache[keyword]!;
+export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string => {
+  const cachedPrompt = _promptCache[keyword];
+  if (cachedPrompt !== undefined) {
+    return cachedPrompt;
+  }
 
   let prompt = '';
   try {
-    const content = readFileSync(join(skillsDir, keyword, 'SKILL.md'), 'utf8');
-    const modeIdx = content.indexOf('## MODE:');
-    if (modeIdx === -1) {
+    const content = readFileSync(path.join(skillsDir, keyword, 'SKILL.md'), 'utf-8');
+    if (content.includes('## MODE:')) {
+      prompt = `${MODE_MARKERS[keyword]}\n\n${extractModeSection(content)}`;
+    } else {
       // A generated skill without the mode section must not leak the whole
       // SKILL.md into the system prompt: degrade to "no injection" instead.
+      // (extractModeSection would normalize the whole file; that fail-open
+      // shape is for command files, not skill prompts.)
       console.warn(
         `[maestria] prime-agent: mode skill "${keyword}" has no "## MODE:" heading; ` +
           `mode prompt injection disabled for this mode.`,
       );
-    } else {
-      const body = content.slice(modeIdx);
-      prompt = `${MODE_MARKERS[keyword]}\n\n${body.replace(/\s+$/, '')}\n`;
     }
   } catch (error) {
     console.warn(
@@ -81,7 +84,7 @@ export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
   }
   _promptCache[keyword] = prompt;
   return prompt;
-}
+};
 
 // ---------------------------------------------------------------------------
 // before_agent_start mode prompt injection
@@ -92,15 +95,23 @@ export function getModePrompt(keyword: ModeKeyword, skillsDir: string): string {
  * to the chained system prompt. Returns void when no mode is active (no
  * modification), so Prime's normal prompt assembly stands as-is.
  */
-export function createModePromptHandler(
-  state: MaestriaModeState,
-  skillsDir: string,
-): (event: BeforeAgentStartEvent, _ctx: ExtensionContext) => BeforeAgentStartEventResult | void {
-  return (event: BeforeAgentStartEvent): BeforeAgentStartEventResult | void => {
-    if (!state.mode) return;
+export const createModePromptHandler =
+  (
+    state: MaestriaModeState,
+    skillsDir: string,
+  ): ((
+    event: BeforeAgentStartEvent,
+    _ctx: ExtensionContext,
+  ) => BeforeAgentStartEventResult | undefined) =>
+  (event: BeforeAgentStartEvent): BeforeAgentStartEventResult | undefined => {
+    if (!state.mode) {
+      return undefined;
+    }
 
     const modePrompt = getModePrompt(state.mode, skillsDir);
-    if (!modePrompt) return;
+    if (!modePrompt) {
+      return undefined;
+    }
 
     return {
       systemPrompt: [
@@ -112,13 +123,12 @@ export function createModePromptHandler(
       ].join('\n'),
     };
   };
-}
 
 // ---------------------------------------------------------------------------
 // Commands
 // ---------------------------------------------------------------------------
 
-export const MODE_CLEAR_COMMAND = 'mode-clear';
+const MODE_CLEAR_COMMAND = 'mode-clear';
 export const STATUS_COMMAND = 'maestria-status';
 
 /**
@@ -127,7 +137,7 @@ export const STATUS_COMMAND = 'maestria-status';
  * as a session custom entry; the prompt is injected on the next agent turn by
  * the `before_agent_start` handler.
  */
-export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): void {
+export const installCommands = (pi: ExtensionAPI, state: MaestriaModeState): void => {
   for (const keyword of MODE_KEYWORDS) {
     pi.registerCommand(keyword, {
       description: MODE_COMMAND_DESCRIPTIONS[keyword],
@@ -142,6 +152,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
         } else {
           ctx.ui.notify(`Mode set to ${keyword}. Describe what you'd like to work on.`);
         }
+        await Promise.resolve();
       },
     });
   }
@@ -152,6 +163,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
       state.mode = null;
       persistModeState(pi, state);
       ctx.ui.notify('Workflow mode cleared. Neutral routing is active.');
+      await Promise.resolve();
     },
   });
 
@@ -170,6 +182,7 @@ export function installCommands(pi: ExtensionAPI, state: MaestriaModeState): voi
         'Recursive-subagent (rlm) dispatch and JSON/RPC headless mode are NOT provided by this package.',
       ].join('\n');
       ctx.ui.setEditorText(summary);
+      await Promise.resolve();
     },
   });
-}
+};

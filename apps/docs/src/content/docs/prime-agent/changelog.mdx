@@ -3,7 +3,66 @@ title: Changelog
 description: Release history for @maestria/prime-agent.
 ---
 
-# Changelog
+## 0.3.7
+
+_September 11, 2026_
+
+- Internal consolidation; shared more host seams with the private shared packages and removed dead adapters. No user-facing behavior change; generated agent and skill output is unchanged.
+
+## 0.3.6
+
+_September 8, 2026_
+
+- Stopped publishing generated JavaScript sourcemaps to reduce published package sizes; compiled runtime artifacts are unchanged.
+
+## 0.3.5
+
+_September 6, 2026_
+
+- Clarified installation paths, prerequisites, and support boundaries in the package documentation.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.3.4
+
+_September 4, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.3.3
+
+_September 3, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.3.2
+
+_August 25, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.3.1
+
+_August 24, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.3.0
+
+_August 22, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.2.2
+
+_August 14, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## 0.2.1
+
+_August 13, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## 0.2.0
 
@@ -11,25 +70,14 @@ _Initial release_
 
 ### Maestria methodology for Prime Agent
 
-`@maestria/prime-agent` delivers the Maestria engineering methodology for Prime Agent as standard
-Agent Skills - 7 specialist roles, orchestrator, global-rules, handoff and iteration-limits aids, and
-`fein`/`sonar`/`blitz` workflow modes - generated from the canonical directives by the root sync
-pipeline (`skills/<name>/SKILL.md` with required `name`/`description` frontmatter) - plus a small,
-verified Prime/Pi extension (`dist/extension.mjs`, `pi.extensions`) covering workflow-mode slash
-commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and `before_agent_start`
-mode prompt injection with session-scoped mode state (custom session entries, no filesystem writes).
+`@maestria/prime-agent` delivers the Maestria engineering methodology for Prime Agent as standard Agent Skills - 7 specialist roles, orchestrator, global-rules, handoff and iteration-limits aids, and `fein`/`sonar`/`blitz` workflow modes - generated from the canonical directives by the root sync pipeline (`skills/<name>/SKILL.md` with required `name`/`description` frontmatter) - plus a small, verified Prime/Pi extension (`dist/extension.mjs`, `pi.extensions`) covering workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and `before_agent_start` mode prompt injection with session-scoped mode state (custom session entries, no filesystem writes).
 
 ### Support boundary
 
-- **Native candidate, verified subset only.** The extension uses only the public extension API of the
-  pinned Prime fork (commit `7787f074...`), performs no tool interception, and has no runtime
-  dependency on pi packages. Evidence re-verified on 2026-08-13 (see ADR-CORE-014 and the runtime
-  support matrix).
-- Native recursive-subagent (`rlm`) dispatch and JSON/RPC headless mode remain **deferred** - the
-  pinned fork exposes no public JS extension bridge for `rlm`.
+- **Native candidate, verified subset only.** The extension uses only the public extension API of the pinned Prime fork (commit `7787f074...`), performs no tool interception, and has no runtime dependency on pi packages. Evidence re-verified on 2026-08-13 (see ADR-CORE-014 and the runtime support matrix).
+- Native recursive-subagent (`rlm`) dispatch and JSON/RPC headless mode remain **deferred** - the pinned fork exposes no public JS extension bridge for `rlm`.
 - No sandbox or runtime-enforcement claim is made.
 
 ### Packaging fixes
 
-- Reuse the npm pack dry-run result across package assertions so the packaging tests do not exceed
-  Vitest's per-test timeout.
+- Reuse the npm pack dry-run result across package assertions so the packaging tests do not exceed Vitest's per-test timeout.

@@ -1,5 +1,9 @@
 // packages/opencode-v2/sync.config.ts
 // Sync config: derives opencode-v2 agent files from canonical core directives
+//
+// oxlint-disable sort-keys -- Key order here is declarative (source/output/default/files);
+// `check-sync` enforces byte identity of the generated agent frontmatter, so keys stay
+// in logical order instead of sorted order.
 
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
@@ -9,8 +13,6 @@ export default {
 
   default: {
     stripFrontmatter: true,
-    autoGenComment:
-      '<!-- Auto-generated from @maestria/core. Do not edit directly.\n     Edit the canonical file at packages/core/agent-directives/specialists/ instead. -->',
     replace: [],
   },
 
@@ -72,20 +74,14 @@ export default {
     'commands/fein.md': {
       output: 'commands/fein.md',
       stripFrontmatter: true,
-      autoGenComment:
-        '<!-- Auto-generated from @maestria/core. Do not edit directly.\n     Edit the canonical file at packages/core/agent-directives/commands/ instead. -->',
     },
     'commands/sonar.md': {
       output: 'commands/sonar.md',
       stripFrontmatter: true,
-      autoGenComment:
-        '<!-- Auto-generated from @maestria/core. Do not edit directly.\n     Edit the canonical file at packages/core/agent-directives/commands/ instead. -->',
     },
     'commands/blitz.md': {
       output: 'commands/blitz.md',
       stripFrontmatter: true,
-      autoGenComment:
-        '<!-- Auto-generated from @maestria/core. Do not edit directly.\n     Edit the canonical file at packages/core/agent-directives/commands/ instead. -->',
     },
 
     // Global rules from ../core/agent-directives/rules.md
@@ -93,8 +89,6 @@ export default {
     'rules.md': {
       output: '../rules/AGENTS.md',
       stripFrontmatter: true,
-      autoGenComment:
-        '<!-- Auto-generated from @maestria/core. Do not edit directly.\n     Edit the canonical file at packages/core/agent-directives/ instead. -->',
     },
   },
 

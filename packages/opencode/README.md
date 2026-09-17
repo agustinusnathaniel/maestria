@@ -1,6 +1,6 @@
 # @maestria/opencode
 
-An OpenCode plugin that encodes Maestria's AI-engineering methodology as agents, rules, and workflows - a harness that makes model output consistent and reliable (`Agent = Model + Harness`).
+An OpenCode plugin that provides Maestria's specialist agents, shared engineering rules, and review workflows.
 
 > This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -19,8 +19,8 @@ OpenCode does not auto-update plugins; re-run the install command with `--force`
 ## What It Provides
 
 - **8 agents** - `@orchestrator` (delegates to the 7 specialists) plus `@adventurer`, `@architect`, `@builder`, `@diagnose`, `@planner`, `@reviewer`, and `@writer`.
-- **Global rules** - rules injected into every session encoding the universal floors: evidence, safety, delegation, review, and bounded repair.
-- **Zero telemetry** - no data leaves your machine; the plugin makes no network calls of its own.
+- **Global rules** - shared requirements injected into every session for evidence, safety, delegation, review, and bounded repair.
+- **Zero plugin telemetry** - the plugin makes no network calls of its own.
 
 ## Support / Platform Notes
 

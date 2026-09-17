@@ -29,6 +29,7 @@
  *   previous release helper did.
  *
  * Targets:
+ * - @maestria/agent-plugin packages/agent-plugin/package.json -> plugin.json
  * - @maestria/hermes       packages/hermes/package.json -> src/maestria_hermes/_version.py, plugin.yaml
  * - @maestria/claude-code  packages/claude-code/package.json -> .claude-plugin/plugin.json
  * - @maestria/codex        packages/codex/package.json -> .codex-plugin/plugin.json
@@ -36,9 +37,6 @@
  * - @maestria/kimi-code    packages/kimi-code/package.json -> kimi.plugin.json
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   applyEdits,
   findNodeAtLocation,
@@ -46,16 +44,18 @@ import {
   modify,
   parseTree,
   printParseErrorCode,
-  type Node,
-  type ParseError,
 } from 'jsonc-parser';
+import type { Node, ParseError } from 'jsonc-parser';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { parseDocument } from 'yaml';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = path.resolve(import.meta.dirname, '..');
 
 // Versions are published semver (https://semver.org); anything else is a pipeline bug.
 const SEMVER_RE =
-  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+  /^(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<build>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/u;
 
 // Canonical two-line _version.py content, matching the previous release helper.
 const VERSION_PY_HEADER = '"""Package version -- single source of truth."""';
@@ -64,6 +64,7 @@ const VERSION_PY_HEADER = '"""Package version -- single source of truth."""';
 export type Target = [packageDir: string, manifests: string[]];
 
 export const TARGETS: Target[] = [
+  [path.join(ROOT, 'packages', 'agent-plugin'), [path.join('plugin.json')]],
   [
     path.join(ROOT, 'packages', 'hermes'),
     [path.join('src', 'maestria_hermes', '_version.py'), path.join('plugin.yaml')],
@@ -74,15 +75,13 @@ export const TARGETS: Target[] = [
   [path.join(ROOT, 'packages', 'kimi-code'), [path.join('kimi.plugin.json')]],
 ];
 
-export function display(p: string): string {
+export const display = (p: string): string => {
   /** Return the repo-relative path when possible, else the path itself. */
   const rel = path.relative(ROOT, p);
   return rel === '' || rel.startsWith('..') ? p : rel;
-}
+};
 
-function message(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
-}
+const message = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
 // JSON: strict - package.json and plugin manifests are JSON, not JSONC
 // ---------------------------------------------------------------------------
@@ -92,7 +91,7 @@ function message(err: unknown): string {
  * `disallowComments` rejects comments, trailing commas, and any other syntax
  * error - fails closed.
  */
-function parseJsonTree(text: string): Node {
+const parseJsonTree = (text: string): Node => {
   const errors: ParseError[] = [];
   const tree = parseTree(text, errors, { disallowComments: true });
   if (errors.length > 0) {
@@ -102,45 +101,60 @@ function parseJsonTree(text: string): Node {
     throw new Error('invalid JSON: empty document');
   }
   return tree;
-}
+};
 
 /**
  * Top-level `version` value, or null when absent. `findNodeAtLocation` only
  * matches the top-level property, so a nested `version` is never mistaken.
  */
-function readJsonVersion(text: string): unknown {
+const readJsonVersion = (text: string): unknown => {
   const tree = parseJsonTree(text);
   if (tree.type !== 'object') {
     throw new Error('top-level value is not a JSON object');
   }
   const node = findNodeAtLocation(tree, ['version']);
-  return node === undefined ? null : getNodeValue(node);
-}
+  if (node === undefined) {
+    return null;
+  }
+  const value: unknown = getNodeValue(node);
+  return value;
+};
 
 /** Rewrite the top-level `version`, preserving the rest of the document byte-for-byte. */
-function rewriteJsonVersion(text: string, version: string): string {
-  parseJsonTree(text); // malformed JSON fails closed here
+const rewriteJsonVersion = (text: string, version: string): string => {
+  // Malformed JSON fails closed here.
+  parseJsonTree(text);
   if (readJsonVersion(text) === null) {
     throw new Error('no "version" field found');
   }
   return applyEdits(text, modify(text, ['version'], version, {}));
-}
+};
 
 // YAML (plugin.yaml)
 // ---------------------------------------------------------------------------
 
 /** Semantic value of the top-level `version` key, or null when absent. */
-function readYamlVersion(text: string): string | null {
+const readYamlVersion = (text: string): string | null => {
   const doc = parseDocument(text);
   if (doc.errors.length > 0) {
     throw new Error(`invalid YAML: ${doc.errors[0].message.split('\n')[0]}`);
   }
-  const value = doc.get('version') as string | number | bigint | boolean | null | undefined;
-  return value === undefined || value === null ? null : String(value);
-}
+  const value = doc.get('version');
+  if (
+    value === undefined ||
+    value === null ||
+    (typeof value !== 'string' &&
+      typeof value !== 'number' &&
+      typeof value !== 'bigint' &&
+      typeof value !== 'boolean')
+  ) {
+    return null;
+  }
+  return String(value);
+};
 
 /** Rewrite the top-level `version`, preserving comments, quote style, and key order. */
-function rewriteYamlVersion(text: string, version: string): string {
+const rewriteYamlVersion = (text: string, version: string): string => {
   const doc = parseDocument(text);
   if (doc.errors.length > 0) {
     throw new Error(`invalid YAML: ${doc.errors[0].message.split('\n')[0]}`);
@@ -150,54 +164,69 @@ function rewriteYamlVersion(text: string, version: string): string {
   }
   doc.set('version', version);
   return doc.toString();
-}
+};
 
 // Python (_version.py)
 // ---------------------------------------------------------------------------
 
 /** Return the version from the canonical `__version__ = "..."` line, or null. */
-function readPythonVersion(text: string): string | null {
-  return text.match(/__version__\s*=\s*"([^"]+)"/)?.[1] ?? null;
-}
+const readPythonVersion = (text: string): string | null =>
+  /__version__\s*=\s*"(?<version>[^"]+)"/u.exec(text)?.groups?.version ?? null;
 
 /** The canonical two-line _version.py content for a version. */
-function pythonVersionText(version: string): string {
-  return `${VERSION_PY_HEADER}\n__version__ = "${version}"\n`;
-}
+const pythonVersionText = (version: string): string =>
+  `${VERSION_PY_HEADER}\n__version__ = "${version}"\n`;
 
 // Manifest read/rewrite dispatch
 // ---------------------------------------------------------------------------
 
 /** Version declared by a manifest, or null if undeclared (dispatches on extension). */
-export function readManifestVersion(p: string): unknown {
+export const readManifestVersion = (p: string): unknown => {
   const suffix = path.extname(p);
   const text = fs.readFileSync(p, 'utf-8');
-  if (suffix === '.py') return readPythonVersion(text);
-  if (suffix === '.yaml' || suffix === '.yml') return readYamlVersion(text);
-  if (suffix === '.json') return readJsonVersion(text);
+  if (suffix === '.py') {
+    return readPythonVersion(text);
+  }
+  if (suffix === '.yaml' || suffix === '.yml') {
+    return readYamlVersion(text);
+  }
+  if (suffix === '.json') {
+    return readJsonVersion(text);
+  }
   throw new Error(`unsupported manifest format: ${suffix}`);
-}
+};
 
 /** Compute the rewritten manifest text with its version set (format-preserving, see header). */
-export function computeManifestVersion(p: string, version: string): string {
+export const computeManifestVersion = (p: string, version: string): string => {
   const suffix = path.extname(p);
-  if (suffix === '.py') return pythonVersionText(version);
-  if (suffix === '.yaml' || suffix === '.yml')
+  if (suffix === '.py') {
+    return pythonVersionText(version);
+  }
+  if (suffix === '.yaml' || suffix === '.yml') {
     return rewriteYamlVersion(fs.readFileSync(p, 'utf-8'), version);
-  if (suffix === '.json') return rewriteJsonVersion(fs.readFileSync(p, 'utf-8'), version);
+  }
+  if (suffix === '.json') {
+    return rewriteJsonVersion(fs.readFileSync(p, 'utf-8'), version);
+  }
   throw new Error(`unsupported manifest format: ${suffix}`);
-}
+};
 
 /** Format a manifest's current version for DRIFT reporting, mirroring Python's str(). */
-function formatCurrent(current: unknown): string {
-  if (current === null) return 'None';
-  if (current === true) return 'True';
-  if (current === false) return 'False';
+const formatCurrent = (current: unknown): string => {
+  if (current === null) {
+    return 'None';
+  }
+  if (current === true) {
+    return 'True';
+  }
+  if (current === false) {
+    return 'False';
+  }
   if (typeof current === 'string' || typeof current === 'number' || typeof current === 'bigint') {
     return String(current);
   }
-  return JSON.stringify(current);
-}
+  return JSON.stringify(current) ?? 'undefined';
+};
 
 /**
  * Sync one package's manifests to its package.json version.
@@ -208,88 +237,96 @@ function formatCurrent(current: unknown): string {
  * manifest in write mode). Write mode preflights every manifest first - any
  * failure aborts the whole target with no writes (see header).
  */
-export function syncTarget(packageDir: string, manifests: string[], check: boolean): string[] {
+type PackageVersionResult = { error: string; kind: 'error' } | { kind: 'success'; version: string };
+
+const resolvePackageVersion = (packageDir: string): PackageVersionResult => {
   const pkgJson = path.join(packageDir, 'package.json');
   if (!fs.existsSync(pkgJson)) {
-    return [`ERROR: required target ${display(pkgJson)} not found`];
+    return { error: `ERROR: required target ${display(pkgJson)} not found`, kind: 'error' };
   }
-
   let version: unknown;
   try {
     version = readJsonVersion(fs.readFileSync(pkgJson, 'utf-8'));
-  } catch (err) {
-    return [`ERROR: cannot read ${display(pkgJson)}: ${message(err)}`];
+  } catch (error) {
+    return { error: `ERROR: cannot read ${display(pkgJson)}: ${message(error)}`, kind: 'error' };
   }
   if (version === null) {
-    return [`ERROR: no version field in ${display(pkgJson)}`];
+    return { error: `ERROR: no version field in ${display(pkgJson)}`, kind: 'error' };
   }
   if (typeof version !== 'string' || !version.trim()) {
-    return [
-      `ERROR: invalid version ${JSON.stringify(version)} in ${display(pkgJson)}: ` +
-        'expected a non-empty string',
-    ];
+    return {
+      error: `ERROR: invalid version ${JSON.stringify(version)} in ${display(pkgJson)}: expected a non-empty string`,
+      kind: 'error',
+    };
   }
   if (!SEMVER_RE.test(version)) {
-    return [`ERROR: invalid semver version ${JSON.stringify(version)} in ${display(pkgJson)}`];
+    return {
+      error: `ERROR: invalid semver version ${JSON.stringify(version)} in ${display(pkgJson)}`,
+      kind: 'error',
+    };
   }
+  return { kind: 'success', version };
+};
 
-  // Preflight: stage every manifest rewrite in memory first, so any failure
-  // aborts the whole target with no writes (no partial updates).
-  interface Preflight {
-    rel: string;
-    path: string;
-    current: unknown;
-    /** Set when the manifest could not be read or is not writable. */
-    readError?: string;
-    /** Set when the write-mode rewrite could not be computed. */
-    syncError?: string;
-    /** Staged rewritten content; present when write mode would update. */
-    updated?: string;
-    missing?: boolean;
-  }
+interface Preflight {
+  rel: string;
+  path: string;
+  current: unknown;
+  readError?: string;
+  syncError?: string;
+  updated?: string;
+  missing?: boolean;
+}
+
+const buildPreflight = (
+  packageDir: string,
+  manifests: string[],
+  version: string,
+  check: boolean,
+): Preflight[] => {
   const preflight: Preflight[] = [];
   for (const manifest of manifests) {
     const manifestPath = path.join(packageDir, manifest);
     const rel = display(manifestPath);
     if (!fs.existsSync(manifestPath)) {
-      preflight.push({ rel, path: manifestPath, current: null, missing: true });
+      preflight.push({ current: null, missing: true, path: manifestPath, rel });
       continue;
     }
     if (!check) {
       try {
         fs.accessSync(manifestPath, fs.constants.W_OK);
-      } catch (err) {
+      } catch (error) {
         preflight.push({
-          rel,
-          path: manifestPath,
           current: null,
-          syncError: `not writable: ${message(err)}`,
+          path: manifestPath,
+          rel,
+          syncError: `not writable: ${message(error)}`,
         });
         continue;
       }
     }
     try {
       const current = readManifestVersion(manifestPath);
-      const entry: Preflight = { rel, path: manifestPath, current };
+      const entry: Preflight = { current, path: manifestPath, rel };
       if (!check && current !== version) {
-        // Stage the rewrite now so a failure (e.g. missing "version" field)
-        // is caught before any file in the target is written.
         try {
           entry.updated = computeManifestVersion(manifestPath, version);
-        } catch (err) {
-          entry.syncError = message(err);
+        } catch (error) {
+          entry.syncError = message(error);
         }
       }
       preflight.push(entry);
-    } catch (err) {
-      preflight.push({ rel, path: manifestPath, current: null, readError: message(err) });
+    } catch (error) {
+      preflight.push({ current: null, path: manifestPath, readError: message(error), rel });
     }
   }
+  return preflight;
+};
 
+const collectSyncResults = (preflight: Preflight[], version: string, check: boolean): string[] => {
   const blocked = preflight.some(
     (m) => m.missing === true || m.readError !== undefined || m.syncError !== undefined,
   );
-
   const results: string[] = [];
   for (const m of preflight) {
     if (m.missing === true) {
@@ -313,32 +350,44 @@ export function syncTarget(packageDir: string, manifests: string[], check: boole
       continue;
     }
     if (blocked) {
-      // A sibling failed preflight; leave this one untouched too so the
-      // target is never partially updated. A refused repair is an ERROR,
-      // never a DRIFT line.
       results.push(
         `ERROR: skipped ${m.rel}: a sibling manifest failed preflight; no files were changed`,
       );
       continue;
     }
     try {
-      // Staged during preflight: every manifest here is drifted and
-      // unblocked, so `updated` is present.
-      fs.writeFileSync(m.path, m.updated!, 'utf-8');
+      if (m.updated === undefined) {
+        results.push(`ERROR: cannot sync ${m.rel}: rewrite was not staged`);
+        continue;
+      }
+      fs.writeFileSync(m.path, m.updated, 'utf-8');
       results.push(`OK: synced ${m.rel} to ${version}`);
-    } catch (err) {
-      results.push(`ERROR: cannot sync ${m.rel}: ${message(err)}`);
+    } catch (error) {
+      results.push(`ERROR: cannot sync ${m.rel}: ${message(error)}`);
     }
   }
   return results;
-}
+};
+
+export const syncTarget = (packageDir: string, manifests: string[], check: boolean): string[] => {
+  const pkgResult = resolvePackageVersion(packageDir);
+  if (pkgResult.kind === 'error') {
+    return [pkgResult.error];
+  }
+
+  const preflight = buildPreflight(packageDir, manifests, pkgResult.version, check);
+  return collectSyncResults(preflight, pkgResult.version, check);
+};
 
 /**
  * Run the synchronizer. Returns the process exit code: 0 success, 1 any
  * DRIFT/ERROR, 2 unknown arguments. `targets` defaults to TARGETS and is
  * overridable by tests.
  */
-export function main(args: string[] = process.argv.slice(2), targets: Target[] = TARGETS): number {
+export const main = (
+  args: string[] = process.argv.slice(2),
+  targets: Target[] = TARGETS,
+): number => {
   let check = false;
   for (const arg of args) {
     if (arg === '--check') {
@@ -372,7 +421,7 @@ export function main(args: string[] = process.argv.slice(2), targets: Target[] =
     console.log('\nAll plugin manifest versions are in sync');
   }
   return 0;
-}
+};
 
 const isMain =
   process.argv[1] !== undefined &&

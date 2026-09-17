@@ -1,35 +1,22 @@
 // packages/opencode/sync.config.ts
 // Sync config: derives opencode agent files from canonical core directives
+//
+// oxlint-disable sort-keys -- Permission maps keep their declared glob order because the sync
+// engine projects object keys verbatim into generated agent frontmatter, and `check-sync`
+// enforces byte identity of that committed output. Sorting keys here would churn every
+// generated permission block without changing behavior.
 
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 export default {
-  source: '../core/agent-directives/specialists',
-  output: 'agents',
-
   files: {
     'adventurer.md': {
       frontmatter: {
-        description: `Codebase reconnaissance agent for deep code understanding.
-Maps unknown territory - traces call chains, maps module relationships,
-generates structured reports for downstream specialists.
-Use for: understanding unfamiliar code, tracing dependencies, gathering
-context before implementation, investigating module structures.
-One role per session: exploration only - never implement or design.`,
+        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
-          skill: 'allow',
-          todowrite: 'allow',
-          edit: 'deny',
           bash: {
             '*': 'ask',
-            // Read-only file operations
             'ls*': 'allow',
             'cat*': 'allow',
             'echo*': 'allow',
@@ -45,7 +32,6 @@ One role per session: exploration only - never implement or design.`,
             'cd*': 'allow',
             'find*': 'allow',
             'printf*': 'allow',
-            // Git investigation
             'git log*': 'allow',
             'git diff*': 'allow',
             'git status*': 'allow',
@@ -55,35 +41,31 @@ One role per session: exploration only - never implement or design.`,
             'git remote*': 'allow',
             'git stash*': 'allow',
             'git config*': 'allow',
-            // Package managers
             'pnpm*': 'allow',
             'npm*': 'allow',
-            // Exploration tools
             'opensrc*': 'allow',
             'agent-browser*': 'allow',
             'rtk*': 'allow',
           },
+          edit: 'deny',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
+          todowrite: 'allow',
+          webfetch: 'allow',
+          websearch: 'ask',
         },
       },
     },
     'architect.md': {
       frontmatter: {
-        description: `Architecture decisions using decision matrices and ADRs.
-Evaluates options with weighted criteria, clarifies business context first.
-Use for: technology choices, implementation approaches, trade-off analysis.`,
+        description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
-          skill: 'allow',
-          edit: 'deny',
           bash: {
             '*': 'ask',
-            // Read-only file operations
             'ls*': 'allow',
             'cat*': 'allow',
             'echo*': 'allow',
@@ -99,36 +81,32 @@ Use for: technology choices, implementation approaches, trade-off analysis.`,
             'cd*': 'allow',
             'find*': 'allow',
             'printf*': 'allow',
-            // Git operations
             'git diff*': 'allow',
             'git log*': 'allow',
             'git status*': 'allow',
             'git show*': 'allow',
             'git branch*': 'allow',
-            // Package managers
             'opensrc*': 'allow',
             'pnpm*': 'allow',
             'npm*': 'allow',
             'npm view *': 'allow',
           },
+          edit: 'deny',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
+          webfetch: 'allow',
+          websearch: 'ask',
         },
       },
     },
     'builder.md': {
       frontmatter: {
-        description: `Focused implementation agent for atomic tasks.
-Executes one verifiable unit of work with minimal context.
-Use for: targeted fixes, feature implementation, refactors, adding tests.`,
+        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          edit: 'allow',
-          webfetch: 'allow',
-          todowrite: 'allow',
-          skill: 'allow',
           bash: {
             // Read-only file operations (Claude Code baseline)
             'ls*': 'allow',
@@ -149,42 +127,46 @@ Use for: targeted fixes, feature implementation, refactors, adding tests.`,
             'printf*': 'allow',
             'test*': 'allow',
             'sort*': 'allow',
-            // Git operations (autonomous commit protocol)
             'git*': 'allow',
-            // Package manager (project uses pnpm; npm covered too)
             'pnpm*': 'allow',
             'npm*': 'allow',
-            // pnpx/npx-like commands can execute arbitrary code; always ask
             'pnpx*': 'ask',
-            // Build, test, lint tools
             'tsc*': 'allow',
             'vitest*': 'allow',
             'vp*': 'allow',
             'rtk*': 'allow',
             'eslint*': 'allow',
             'prettier*': 'allow',
-            // Catch-all - unusual/dangerous commands still ask
             '*': 'ask',
           },
-        },
-      },
-    },
-    'diagnose.md': {
-      frontmatter: {
-        description: `Systematic 6-step regression tracing.
-From error message to root cause to prevention.
-Use for: cryptic errors, regressions, production bugs.`,
-        mode: 'subagent',
-        permission: {
-          read: 'allow',
+          edit: 'allow',
           glob: 'allow',
           grep: 'allow',
           lsp: 'allow',
-          webfetch: 'allow',
-          websearch: 'ask',
+          read: 'allow',
           skill: 'allow',
           todowrite: 'allow',
-          edit: 'allow',
+          webfetch: 'allow',
+        },
+      },
+    },
+    'commands/blitz.md': {
+      output: 'commands/blitz.md',
+      stripFrontmatter: true,
+    },
+    'commands/fein.md': {
+      output: 'commands/fein.md',
+      stripFrontmatter: true,
+    },
+    'commands/sonar.md': {
+      output: 'commands/sonar.md',
+      stripFrontmatter: true,
+    },
+    'diagnose.md': {
+      frontmatter: {
+        description: `Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.`,
+        mode: 'subagent',
+        permission: {
           bash: {
             // Read-only file operations
             'ls*': 'allow',
@@ -202,33 +184,64 @@ Use for: cryptic errors, regressions, production bugs.`,
             'cd*': 'allow',
             'find*': 'allow',
             'printf*': 'allow',
-            // Git investigation (read-only and historical)
             'git status*': 'allow',
             'git diff*': 'allow',
             'git log*': 'allow',
             'git blame*': 'allow',
             'git show*': 'allow',
-            // Environment inspection
             env: 'allow',
             pwd: 'allow',
             // Catch-all - unusual/dangerous commands still ask
             '*': 'ask',
           },
+          edit: 'allow',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
+          todowrite: 'allow',
+          webfetch: 'allow',
+          websearch: 'ask',
+        },
+      },
+    },
+    'orchestrator.md': {
+      frontmatter: {
+        description: `Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
+        mode: 'all',
+        permission: {
+          bash: {
+            '*': 'deny',
+            '* npx --yes skills@latest *': 'allow',
+          },
+          edit: 'deny',
+          glob: 'deny',
+          grep: 'deny',
+          lsp: 'deny',
+          question: 'allow',
+          read: 'deny',
+          skill: 'allow',
+          task: {
+            '*': 'deny',
+            adventurer: 'allow',
+            architect: 'allow',
+            builder: 'allow',
+            diagnose: 'allow',
+            planner: 'allow',
+            reviewer: 'allow',
+            writer: 'allow',
+          },
+          todowrite: 'allow',
+          webfetch: 'deny',
         },
       },
     },
     'planner.md': {
       frontmatter: {
-        description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
-Breaks down complex features into verifiable milestones.
-Use for: complex features requiring multi-phase execution, when the plan needs review before building.`,
+        description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          edit: 'ask',
           bash: {
             '*': 'ask',
             // Read-only file operations
@@ -259,26 +272,22 @@ Use for: complex features requiring multi-phase execution, when the plan needs r
             'pnpm*': 'allow',
             'npm*': 'allow',
           },
-          webfetch: 'allow',
-          todowrite: 'allow',
+          edit: 'ask',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
           skill: 'allow',
+          todowrite: 'allow',
+          webfetch: 'allow',
         },
       },
     },
     'reviewer.md': {
       frontmatter: {
-        description: `Code review with quality gates.
-Reviews code for correctness, edge cases, security, performance, maintainability,
-and adherence to conventions. Provides specific, actionable feedback.
-Use for: PR review, pre-commit review, architecture document review.`,
+        description: `Independent review agent covering correctness, security, performance, maintainability, and quality gates.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          skill: 'allow',
-          edit: 'deny',
           bash: {
             '*': 'ask',
             // Read-only file operations
@@ -312,25 +321,24 @@ Use for: PR review, pre-commit review, architecture document review.`,
             'rtk*': 'allow',
             'node*': 'allow',
           },
+          edit: 'deny',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
+          skill: 'allow',
           webfetch: 'allow',
         },
       },
     },
+    'rules.md': {
+      output: '../rules/AGENTS.md',
+    },
     'writer.md': {
       frontmatter: {
-        description: `Documentation writing following structured patterns.
-Creates clear, comprehensive docs for code, APIs, systems.
-Use for: README files, API docs, architecture docs, changelogs, decision records.`,
+        description: `Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.`,
         mode: 'subagent',
         permission: {
-          read: 'allow',
-          glob: 'allow',
-          grep: 'allow',
-          lsp: 'allow',
-          edit: 'allow',
-          webfetch: 'allow',
-          skill: 'allow',
-          todowrite: 'allow',
           bash: {
             '*': 'ask',
             // Read-only file operations
@@ -364,64 +372,18 @@ Use for: README files, API docs, architecture docs, changelogs, decision records
             'vp*': 'allow',
             'mkdir*': 'allow',
           },
-        },
-      },
-    },
-    'orchestrator.md': {
-      frontmatter: {
-        description: `Manager agent for complex multi-step tasks.
-Breaks down work, delegates to specialists, integrates results.
-Use for: multi-file features, cross-domain tasks, 3+ step workflows.`,
-        mode: 'all',
-        permission: {
-          read: 'deny',
-          glob: 'deny',
-          grep: 'deny',
-          lsp: 'deny',
-          webfetch: 'deny',
-          edit: 'deny',
-          bash: {
-            '*': 'deny',
-            '* npx --yes skills@latest *': 'allow',
-          },
-          question: 'allow',
-          todowrite: 'allow',
-          task: {
-            '*': 'deny',
-            adventurer: 'allow',
-            architect: 'allow',
-            builder: 'allow',
-            diagnose: 'allow',
-            planner: 'allow',
-            reviewer: 'allow',
-            writer: 'allow',
-          },
+          edit: 'allow',
+          glob: 'allow',
+          grep: 'allow',
+          lsp: 'allow',
+          read: 'allow',
           skill: 'allow',
+          todowrite: 'allow',
+          webfetch: 'allow',
         },
       },
-    },
-    // NOTE: no body `replace` ops for orchestrator.md. The previous seven
-    // body replaces anchored to canonical sentences removed in earlier
-    // directive revisions and silently no-op'd (split/join never matches);
-    // the canonical orchestrator body is already platform-neutral.
-    'commands/fein.md': {
-      output: 'commands/fein.md',
-      stripFrontmatter: true,
-    },
-    'commands/sonar.md': {
-      output: 'commands/sonar.md',
-      stripFrontmatter: true,
-    },
-    'commands/blitz.md': {
-      output: 'commands/blitz.md',
-      stripFrontmatter: true,
-    },
-    'rules.md': {
-      output: '../rules/AGENTS.md',
-      // NOTE: no replace ops. The previous generic-vocabulary renames
-      // ("repo cloning tool", "URL fetch", "web search", ...) anchored to
-      // canonical sentences that no longer exist; the canonical rules body
-      // is already tool-neutral.
     },
   },
+  output: 'agents',
+  source: '../core/agent-directives/specialists',
 } satisfies SyncConfig;

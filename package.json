@@ -10,14 +10,13 @@
     "sync:docs": "vp run --filter @maestria/docs sync",
     "prebuild": "vp run check-sync",
     "build": "vp run -r build",
-    "prebuild:ci": "vp run check-sync",
     "build:ci": "vp run --filter './packages/*' --filter ./apps/maestria-cli build",
     "test": "vp run -r test",
     "changeset": "changeset",
     "version-packages": "changeset version && pnpm exec tsx scripts/sync-plugin-versions.ts",
     "release": "changeset publish",
-    "check": "vp check && vp run build && vp run test && vp run test-sync-plugin-versions && vp run check-manifest-versions",
-    "check:ci": "vp check && pnpm build:ci && vp run check-python && vp run test-sync-plugin-versions && vp run test && vp run check-manifest-versions",
+    "check": "vp run check-full",
+    "check:ci": "vp run check-ci",
     "clean": "vp cache clean",
     "fmt": "vp fmt",
     "fmt:check": "vp fmt --check",
@@ -34,7 +33,8 @@
     "@types/node": "catalog:",
     "all-contributors-cli": "catalog:",
     "jsonc-parser": "catalog:",
-    "tsx": "4.23.12",
+    "tsx": "4.23.13",
+    "ultracite": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "catalog:",
     "yaml": "^2.9.0"
@@ -49,5 +49,5 @@
   "engines": {
     "node": ">=24.16.x"
   },
-  "packageManager": "pnpm@11.8.0"
+  "packageManager": "pnpm@12.4.1"
 }

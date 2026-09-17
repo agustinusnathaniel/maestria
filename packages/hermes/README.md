@@ -6,7 +6,7 @@ Maestria's agent methodology - structured specialist delegation, maker/checker r
 
 ## Installation
 
-Install as a Hermes plugin directly from this repository (the package is not published to PyPI):
+Install the Hermes plugin directly from this repository:
 
 ```bash
 hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable
@@ -26,7 +26,7 @@ This clones the maestria repository and enables the plugin. See the [user-facing
 
 ## Support / Platform Notes
 
-- Distributed as a git-based Hermes plugin from this repository; not published to PyPI or npm.
+- The plugin installation path is git-based and uses Hermes's plugin manager. The repository also defines a `maestria-hermes` Python distribution, but this package README documents the Hermes plugin path rather than a separate Python installation flow.
 - Mode gating and role restrictions are applied at the tool layer; the methodology is otherwise advisory prompt guidance, not a sandbox.
 
 ## Documentation and Changelog

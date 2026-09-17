@@ -1,22 +1,17 @@
-import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { deploySpecialistAgents as deployAgents } from '@maestria/shared-pi/agent-deployment';
+import { homedir } from 'node:os';
+import path from 'node:path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = import.meta.dirname;
 
-const AGENTS_SRC = join(__dirname, '..', 'agents');
+const AGENTS_SRC = path.join(__dirname, '..', 'agents');
 
 /**
  * Deploy bundled specialist agent .md files to the omp agents directory.
+ *
+ * Missing-source handling lives in the shared core (warn, deploy zero);
+ * this shim only pins the omp deploy path.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function deploySpecialistAgents(_ctx?: unknown): void {
-  if (!existsSync(AGENTS_SRC)) {
-    console.warn('[maestria] Agents source directory not found:', AGENTS_SRC);
-    return;
-  }
-  deployAgents(AGENTS_SRC, join(homedir(), '.omp', 'agent', 'agents'));
-}
+export const deploySpecialistAgents = (): void => {
+  deployAgents(AGENTS_SRC, path.join(homedir(), '.omp', 'agent', 'agents'));
+};

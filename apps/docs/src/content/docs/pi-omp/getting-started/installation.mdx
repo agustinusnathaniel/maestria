@@ -3,10 +3,10 @@ title: Installation & Setup
 description: How to install @maestria/pi or @maestria/omp and what you get - 7 specialist subagents, 3 workflow modes, and spec-driven orchestration.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-import { PackageManagers } from 'starlight-package-managers';
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
-`@maestria/pi` and `@maestria/omp` are extensions that turn the [Pi](https://pi.ai) or [Oh My Pi](https://ohmy.ai) coding agents into disciplined engineering workstations. Each registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration - all with a single extension entry.
+`@maestria/pi` and `@maestria/omp` add the Maestria methodology to the [Pi](https://pi.software) and [Oh My Pi](https://omp.sh) coding agents. Each installs as one extension and registers 7 specialist subagents, 3 workflow mode commands, and spec-driven orchestration.
 
 ## Prerequisites
 
@@ -16,130 +16,149 @@ import { PackageManagers } from 'starlight-package-managers';
 <Aside type="note">
   **Pi only:** `@maestria/pi` requires the `@gotgenes/pi-subagents` Pi extension for subagent
   dispatch. Install with `pi install npm:@gotgenes/pi-subagents`. OMP has a built-in `task()` tool -
-  no additional peer dependency needed.
+  no peer dependency needed.
 </Aside>
 
 ## Installation
 
-### Pi
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
 
-The recommended approach uses the [maestria CLI](/cli/), which automatically handles peer dependencies:
+The [maestria CLI](/cli/) installs the extension and its peer dependency:
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install pi" />
 
-<details>
-<summary>Alternative: manual Pi CLI setup</summary>
-
-```bash
-# 1. Install the peer dependency for subagent dispatch
-pi install npm:@gotgenes/pi-subagents
-
-# 2. Install the extension
-pi install npm:@maestria/pi
-
-# 3. Restart Pi for both extensions to load
-```
-
-</details>
-
-### Oh My Pi
+  </TabItem>
+  <TabItem label="OMP">
 
 ```bash
 omp install @maestria/omp
 ```
 
-OMP loads the extension from the package manifest on startup. It auto-discovers the 4 methodology skills and deploys the 7 specialist agent files to `~/.omp/agent/agents/`. Restart OMP for the extension to activate.
+  </TabItem>
+</Tabs>
 
 ## Verify Installation
 
-Start a new session with your platform:
+<Steps>
 
-```bash
-# Pi
-pi
+1.  Start your platform:
 
-# OMP
-omp
-```
+        <Tabs syncKey="runtime">
 
-The `@maestria/pi` or `@maestria/omp` extension loads automatically from the package manifest. The platform's resource loader discovers its four methodology skills (orchestrator dispatcher, global agent rules, handoff contract, iteration limits) and injects them into the system prompt.
+      <TabItem label="Pi">
 
-You should notice the agent behaving as a Maestria dispatcher from the first turn: it responds to requests by decomposing tasks, delegating to specialist subagents, and following the spec-driven orchestration protocol.
+            ```bash
+            pi
+            ```
 
-You can also list installed extensions to verify:
+          </TabItem>
 
-```bash
-# Pi
-pi extensions list
+      <TabItem label="OMP">
 
-# OMP
-omp extensions list
-```
+            ```bash
+            omp
+            ```
 
-You should see `@maestria/pi` or `@maestria/omp` in the output.
+          </TabItem>
+
+    </Tabs>
+
+        Expected: the extension loads automatically, and the agent dispatches from the first turn, decomposing tasks and delegating to specialists.
+
+2.  List what's installed:
+
+        <Tabs syncKey="runtime">
+
+      <TabItem label="Pi">
+
+            ```bash
+            pi list
+            ```
+
+          </TabItem>
+
+      <TabItem label="OMP">
+
+            ```bash
+            omp plugin list
+            ```
+
+          </TabItem>
+
+    </Tabs>
+
+        Expected: `@maestria/pi` or `@maestria/omp` appears in the output.
+
+</Steps>
 
 ## Updating
 
-### Pi
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
 
-<PackageManagers
+<AllPackageManagers
   type="dlx"
   pkg="maestria@latest"
   args="update pi"
-  comment="Via maestria CLI (recommended)"
+  comment="Pi (via maestria CLI)"
 />
 
 ```bash
-# Or manually
 pi install npm:@maestria/pi@latest
+
+# Or pin a version
+pi install npm:@maestria/pi@<version>
 ```
 
-<Aside type="tip">
-  To pin a specific version for Pi, use `pi install npm:@maestria/pi@0.1.0`. Check the
-  [changelog](/pi-omp/changelog/) for version history.
-</Aside>
-
-### OMP
+  </TabItem>
+  <TabItem label="OMP">
 
 ```bash
 omp install @maestria/omp@latest
+
+# Or pin a version
+omp install @maestria/omp@<version>
 ```
 
-<Aside type="tip">
-  To pin a specific version for OMP, use `omp install @maestria/omp@0.1.0`. Check the
-  [changelog](/pi-omp/changelog/) for version history.
-</Aside>
+  </TabItem>
+</Tabs>
+
+Version history is in the [changelog](/pi-omp/changelog/).
 
 ## Uninstalling
 
-### Pi
+<Tabs syncKey="runtime">
+  <TabItem label="Pi">
 
-<PackageManagers type="dlx" pkg="maestria@latest" args="uninstall pi" comment="Via maestria CLI" />
-
-This removes `@maestria/pi`. The `@gotgenes/pi-subagents` peer dependency is left in place because other Pi extensions may depend on it.
-
-To remove manually:
-
-```bash
-# Remove from config and uninstall
-pi uninstall @maestria/pi
-
-# Optionally remove peer dependency if not needed by other extensions
-pi uninstall @gotgenes/pi-subagents
-
-# Restart Pi
-```
-
-### OMP
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="uninstall pi"
+  comment="Pi (via maestria CLI)"
+/>
 
 ```bash
-omp uninstall @maestria/omp
+# The @gotgenes/pi-subagents peer dependency stays for other extensions
+pi uninstall npm:@maestria/pi
+
+# Optional: remove the peer dependency if no other extension needs it
+pi uninstall npm:@gotgenes/pi-subagents
 ```
 
-Restart OMP for the changes to take effect.
+  </TabItem>
+  <TabItem label="OMP">
+
+```bash
+omp plugin uninstall @maestria/omp
+```
+
+  </TabItem>
+</Tabs>
+
+Restart your platform after updating or uninstalling.
 
 ## Next Steps
 
 - [Quick Start](/pi-omp/getting-started/quick-start/) - Your first session with the extension
-- [Reference](/pi-omp/reference/) - Commands, dispatch modes, and review mode
-- Explore the [workflow modes](/pi-omp/getting-started/quick-start/) - `/fein`, `/sonar`, `/blitz`
+- [Reference](/pi-omp/reference/) - Commands, dispatch, and review mode

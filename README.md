@@ -1,6 +1,6 @@
 # maestria
 
-> AI engineering praxis, encoded as plugins.
+> Structured AI engineering workflows for your coding agent.
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
@@ -10,6 +10,30 @@
 Plugins that bring disciplined AI engineering workflows to your coding agent.
 
 📖 **Full documentation:** [maestria.sznm.dev](https://maestria.sznm.dev)
+
+## Start Here
+
+- **Use Maestria:** choose your coding agent in the package table below, then follow its installation guide.
+- **Choose a workflow:** read [when to use Maestria](https://maestria.sznm.dev/core/when-to-use/).
+- **Contribute:** start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [engineering documentation index](docs/README.md).
+- **Understand the design:** read the [vision](VISION.md) and [workflow patterns](PATTERNS.md).
+
+## Packages
+
+| Package | Description | README |
+| --- | --- | --- |
+| [@maestria/opencode](packages/opencode/) | Maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
+| [@maestria/claude-code](packages/claude-code/) | Maestria methodology plugin for Claude Code | [README](packages/claude-code/README.md) |
+| [@maestria/codex](packages/codex/) | Maestria skills projection for Codex CLI | [README](packages/codex/README.md) |
+| [@maestria/agent-plugin](packages/agent-plugin/) | Portable Agent Plugins v1 skills-only package | [README](packages/agent-plugin/README.md) |
+| [@maestria/omp](packages/omp/) | Maestria methodology plugin for Oh My Pi | [README](packages/omp/README.md) |
+| [@maestria/kimi-code](packages/kimi-code/) | Maestria methodology plugin for Kimi Code | [README](packages/kimi-code/README.md) |
+| [@maestria/cursor](packages/cursor/) | Maestria methodology plugin for Cursor IDE/CLI | [README](packages/cursor/README.md) |
+| [@maestria/hermes](packages/hermes/) | Maestria methodology plugin for Hermes | [README](packages/hermes/README.md) |
+| [@maestria/pi](packages/pi/) | Maestria methodology plugin for Pi | [README](packages/pi/README.md) |
+| [@maestria/prime-agent](packages/prime-agent/) | Maestria methodology for Prime Agent (skills + verified extension subset) | [README](packages/prime-agent/README.md) |
+
+Canonical agent directives and the sync pipeline live in the private `@maestria/core` package (`packages/core/agent-directives/`); `packages/shared/*` holds private host-neutral utilities. Neither is published to npm.
 
 ## Project Structure
 
@@ -26,9 +50,11 @@ maestria/
 │   │   ├── cursor/      - @maestria/cursor decisions (ADR-CR-*)
 │   │   ├── hermes/      - @maestria/hermes decisions (ADR-HM-*)
 │   │   └── pi/          - @maestria/pi + @maestria/omp decisions (ADR-PI-*)
-│   └── guides/          - Development guides and conventions
+│   ├── guides/          - Development guides and conventions
+│   └── plans/           - Historical implementation plans
 ├── packages/
 │   ├── core/            - Canonical agent directives + sync pipeline (private)
+│   ├── agent-plugin/    - @maestria/agent-plugin portable Agent Plugins v1 package
 │   ├── opencode/        - @maestria/opencode plugin
 │   ├── claude-code/     - @maestria/claude-code plugin
 │   ├── codex/           - @maestria/codex plugin projection
@@ -38,30 +64,14 @@ maestria/
 │   ├── hermes/          - @maestria/hermes plugin (Python)
 │   ├── pi/              - @maestria/pi plugin
 │   ├── prime-agent/     - @maestria/prime-agent plugin (Prime Agent skills + extension)
-│   └── shared/pi/       - Shared pure-TS utilities for omp/pi
+│   └── shared/
+│       ├── mode/        - Shared neutral mode mechanics (private, pure-TS, no host SDK)
+│       └── pi/          - Shared pure-TS utilities for omp/pi (private)
 ├── scripts/             - Sync and CI verification scripts
 ├── VISION.md            - Project vision and principles
 ├── PATTERNS.md          - Reusable workflow patterns
 └── README.md            - This file
 ```
-
-## Vision
-
-See [VISION.md](VISION.md) for the project's guiding philosophy and long-term goals.
-
-## Packages
-
-| Package | Description | README |
-| --- | --- | --- |
-| [@maestria/opencode](packages/opencode/) | Maestria methodology plugin for OpenCode | [README](packages/opencode/README.md) |
-| [@maestria/claude-code](packages/claude-code/) | Maestria methodology plugin for Claude Code | [README](packages/claude-code/README.md) |
-| [@maestria/codex](packages/codex/) | Maestria skills projection for Codex CLI | [README](packages/codex/README.md) |
-| [@maestria/omp](packages/omp/) | Maestria methodology plugin for Oh My Pi | [README](packages/omp/README.md) |
-| [@maestria/kimi-code](packages/kimi-code/) | Maestria methodology plugin for Kimi Code | [README](packages/kimi-code/README.md) |
-| [@maestria/cursor](packages/cursor/) | Maestria methodology plugin for Cursor IDE/CLI | [README](packages/cursor/README.md) |
-| [@maestria/hermes](packages/hermes/) | Maestria methodology plugin for Hermes | [README](packages/hermes/README.md) |
-| [@maestria/pi](packages/pi/) | Maestria methodology plugin for Pi | [README](packages/pi/README.md) |
-| [@maestria/prime-agent](packages/prime-agent/) | Maestria methodology for Prime Agent (skills + verified extension subset) | [README](packages/prime-agent/README.md) |
 
 ## Development
 

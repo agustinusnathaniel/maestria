@@ -1,133 +1,176 @@
+import { assertNonEmptyTask, assertValidAgent } from '@maestria/shared-pi/subagent-utils';
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
-import { assertValidAgent, assertNonEmptyTask } from '@maestria/shared-pi/subagent-utils';
 
-function recordAndPersist(
-  pi: ExtensionAPI,
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import {
+  persistState,
+  recordHandoff,
+  recordSpecialistDelegated,
+} from '@maestria/shared-pi/state-core';
+
+export interface SubagentToolParams {
+  agent?: string;
+  mode?: 'parallel' | 'chain' | 'single';
+  task?: string;
+  tasks?: { agent: string; task: string }[];
+}
+
+export interface SubagentToolResult {
+  content: [{ text: string; type: 'text' }];
+}
+
+interface SubagentDispatchApi {
+  appendEntry: (type: string, data: unknown) => void;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const recordAndPersist = (
+  pi: SubagentDispatchApi,
   state: MaestriaState,
   from: string,
   to: string,
   taskText: string,
-): void {
+): void => {
   const updatedState = recordSpecialistDelegated(recordHandoff(state, from, to, taskText), to);
   Object.assign(state, updatedState);
   persistState(pi, state);
-}
+};
 
-export function installSubagentTool(
-  pi: ExtensionAPI,
+const validateOmpParams = (params: {
+  agent?: string;
+  task?: string;
+  tasks?: { agent: string; task: string }[];
+  mode?: string;
+}): void => {
+  const mode = params.mode ?? 'single';
+  if (mode === 'single') {
+    if (typeof params.agent !== 'string') {
+      throw new TypeError('Unknown agent: undefined');
+    }
+    assertValidAgent(params.agent);
+    assertNonEmptyTask(params.task, 'Task description is required');
+  } else {
+    if (!params.tasks || params.tasks.length < 2) {
+      throw new Error('For parallel/chain mode, tasks array is required with at least 2 items');
+    }
+    for (const t of params.tasks) {
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
+    }
+  }
+};
+
+const handleSingleDispatch = (
+  pi: SubagentDispatchApi,
   state: MaestriaState,
-  _cleanups?: Array<() => void>,
-): void {
-  (pi.registerTool as any)({
-    name: 'maestria_subagent',
-    label: 'Maestria Subagent',
+  params: { agent: string; task: string },
+): { content: [{ text: string; type: 'text' }] } => {
+  recordAndPersist(pi, state, 'orchestrator', params.agent, params.task);
+  return {
+    content: [
+      {
+        text: `## Delegation: ${params.agent}\n\nUse the native \`task\` tool to dispatch:\n\`\`\`\ntask(agent: "${params.agent}", task: """${params.task}""")\n\`\`\``,
+        type: 'text' as const,
+      },
+    ],
+  };
+};
+
+const handleMultiDispatch = (
+  pi: SubagentDispatchApi,
+  state: MaestriaState,
+  params: { tasks: { agent: string; task: string }[]; mode: 'parallel' | 'chain' },
+): { content: [{ text: string; type: 'text' }] } => {
+  for (const t of params.tasks) {
+    recordAndPersist(pi, state, 'orchestrator', t.agent, t.task);
+  }
+  const parts = [
+    `## ${params.mode === 'parallel' ? 'Parallel' : 'Chain'} Dispatch Plan (${params.tasks.length} tasks)\n`,
+  ];
+  for (let i = 0; i < params.tasks.length; i += 1) {
+    parts.push(
+      `### ${i + 1}: ${params.tasks[i].agent}`,
+      `\`task(agent: "${params.tasks[i].agent}", task: """${params.tasks[i].task}""")\``,
+    );
+    if (params.mode === 'chain' && i > 0) {
+      parts.push('Previous result available via {previous} placeholder.');
+    }
+  }
+  return { content: [{ text: parts.join('\n\n'), type: 'text' as const }] };
+};
+
+const executeSubagent = async (
+  pi: SubagentDispatchApi,
+  state: MaestriaState,
+  params: SubagentToolParams,
+): Promise<SubagentToolResult> => {
+  await Promise.resolve();
+  if (state.reviewMode) {
+    return {
+      content: [
+        {
+          text: 'Subagent dispatch is not available during review mode. Use /restore-model to exit review mode first.',
+          type: 'text',
+        },
+      ],
+    };
+  }
+  validateOmpParams(params);
+  const mode = params.mode ?? 'single';
+  if (mode === 'single') {
+    if (typeof params.agent !== 'string' || typeof params.task !== 'string') {
+      throw new TypeError('Single mode requires an agent and task');
+    }
+    return handleSingleDispatch(pi, state, { agent: params.agent, task: params.task });
+  }
+  return handleMultiDispatch(pi, state, {
+    mode,
+    tasks: params.tasks ?? [],
+  });
+};
+
+const isSubagentToolParams = (value: unknown): value is SubagentToolParams => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const { agent, mode, task, tasks } = value;
+  return (
+    (agent === undefined || typeof agent === 'string') &&
+    (task === undefined || typeof task === 'string') &&
+    (mode === undefined || mode === 'parallel' || mode === 'chain' || mode === 'single') &&
+    (tasks === undefined || Array.isArray(tasks))
+  );
+};
+
+export const installNativeSubagentTool = (pi: ExtensionAPI, state: MaestriaState): void => {
+  pi.registerTool({
     description:
       'Dispatch a task to a maestria specialist subagent (adventurer, architect, builder, diagnose, planner, reviewer, writer). Uses omp native task tool.',
+    execute: async (_toolCallId, params, _signal, _onUpdate, _ctx) => {
+      if (!isSubagentToolParams(params)) {
+        throw new TypeError('Invalid maestria_subagent parameters');
+      }
+      return await executeSubagent(pi, state, params);
+    },
+    label: 'Maestria Subagent',
+    name: 'maestria_subagent',
     parameters: pi.zod.object({
       agent: pi.zod
         .string()
         .describe(
           'Specialist agent name (required): adventurer, architect, builder, diagnose, planner, reviewer, writer',
         ),
-      task: pi.zod.string().describe('Task description for the subagent (required)'),
-      tasks: pi.zod
-        .array(
-          pi.zod.object({
-            agent: pi.zod.string(),
-            task: pi.zod.string(),
-          }),
-        )
-        .describe('Array of task objects for parallel or chain dispatch')
-        .optional(),
       mode: pi.zod
         .enum(['parallel', 'chain', 'single'])
         .describe('Dispatch mode: single (default), parallel, or chain')
         .optional(),
+      task: pi.zod.string().describe('Task description for the subagent (required)'),
+      tasks: pi.zod
+        .array(pi.zod.object({ agent: pi.zod.string(), task: pi.zod.string() }))
+        .describe('Array of task objects for parallel or chain dispatch')
+        .optional(),
     }),
-    async execute(
-      _toolCallId: string,
-      params: {
-        agent?: string;
-        task?: string;
-        tasks?: Array<{ agent: string; task: string }>;
-        mode?: 'parallel' | 'chain' | 'single';
-      },
-      _signal: AbortSignal | undefined,
-      _onUpdate: unknown,
-      _ctx: unknown,
-    ) {
-      // Block subagent dispatch when in review mode
-      if (state.reviewMode) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: 'Subagent dispatch is not available during review mode. Use /restore-model to exit review mode first.',
-            },
-          ],
-        };
-      }
-
-      const mode = params.mode ?? 'single';
-
-      // Validate parameters
-      if (mode === 'single') {
-        assertValidAgent(params.agent!);
-        assertNonEmptyTask(params.task, 'Task description is required');
-      } else {
-        if (!params.tasks || params.tasks.length < 2) {
-          throw new Error('For parallel/chain mode, tasks array is required with at least 2 items');
-        }
-        for (const t of params.tasks) {
-          assertValidAgent(t.agent);
-          assertNonEmptyTask(t.task, 'Task description is required for all tasks');
-        }
-      }
-
-      // Build structured handoff for omp's built-in task tool.
-      // omp's task tool discovers our agents from ~/.omp/agent/agents/*.md,
-      // so we construct the delegation prompt that the LLM will process.
-      if (mode === 'single') {
-        const { agent, task } = params as { agent: string; task: string };
-        recordAndPersist(pi, state, 'orchestrator', agent, task);
-
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `## Delegation: ${agent}\n\nUse the native \`task\` tool to dispatch:\n\`\`\`\ntask(agent: "${agent}", task: """${task}""")\n\`\`\``,
-            },
-          ],
-        };
-      }
-
-      // For parallel/chain modes, generate a structured plan
-      const taskList = params.tasks!;
-      for (const t of taskList) {
-        recordAndPersist(pi, state, 'orchestrator', t.agent, t.task);
-      }
-
-      const parts = [
-        `## ${mode === 'parallel' ? 'Parallel' : 'Chain'} Dispatch Plan (${taskList.length} tasks)\n`,
-      ];
-      for (let i = 0; i < taskList.length; i++) {
-        parts.push(`### ${i + 1}: ${taskList[i].agent}`);
-        if (mode === 'chain' && i > 0) {
-          parts.push(`\`task(agent: "${taskList[i].agent}", task: """${taskList[i].task}""")\``);
-          parts.push('Previous result available via {previous} placeholder.');
-        } else {
-          parts.push(`\`task(agent: "${taskList[i].agent}", task: """${taskList[i].task}""")\``);
-        }
-      }
-
-      return {
-        content: [{ type: 'text' as const, text: parts.join('\n\n') }],
-      };
-    },
   });
-
-  // No subagent lifecycle event subscriptions needed - omp's built-in task tool
-  // handles all dispatch lifecycle natively.
-}
+};

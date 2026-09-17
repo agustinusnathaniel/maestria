@@ -32,8 +32,10 @@ export const RECOVERY_LINKS = [
  * Markdown for Agents feature. The protocol parsing is delegated to the
  * mature `negotiator` package rather than maintained locally.
  */
-export function wantsMarkdown(accept: string | null | undefined): boolean {
-  if (typeof accept !== 'string') return false;
+export const wantsMarkdown = (accept: string | null | undefined): boolean => {
+  if (typeof accept !== 'string') {
+    return false;
+  }
 
   // Ignore media-type parameters other than `q`: `negotiator` correctly
   // parses them, but treats parameters such as `charset` as part of the
@@ -44,7 +46,9 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
     .map((range) => {
       const [mediaType, ...parameters] = range.split(';');
       const quality = parameters.find((parameter) => parameter.trim().startsWith('q='));
-      return quality ? `${mediaType?.trim()};${quality.trim()}` : mediaType?.trim();
+      return quality !== undefined && quality !== null && quality !== ''
+        ? `${mediaType?.trim()};${quality.trim()}`
+        : mediaType?.trim();
     })
     .filter((range): range is string => Boolean(range))
     .join(',');
@@ -55,7 +59,7 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
   );
 
   return acceptsText && negotiator.mediaType(SUPPORTED_MEDIA_TYPES) === 'text/markdown';
-}
+};
 
 /**
  * Map a site path to its markdown twin.
@@ -70,17 +74,21 @@ export function wantsMarkdown(accept: string | null | undefined): boolean {
  * - Query and hash are stripped defensively, and a trailing `.html` is
  *   dropped before appending `.md`.
  */
-export function markdownTwinPath(pathname: string): string {
+export const markdownTwinPath = (pathname: string): string => {
   // Callers pass url.pathname; strip query/hash defensively anyway.
   let path = pathname.split('?')[0] ?? '';
   path = path.split('#')[0] ?? '';
-  if (!path.startsWith('/')) path = `/${path}`;
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
   if (path.length > 1 && path.endsWith('/')) {
-    path = path.replace(/\/+$/, '');
+    path = path.replace(/\/+$/u, '');
   }
   if (path.length > 1 && path.toLowerCase().endsWith('.html')) {
     path = path.slice(0, -'.html'.length);
   }
-  if (path === '/' || path === '') return '/llms.txt';
+  if (path === '/' || path === '') {
+    return '/llms.txt';
+  }
   return `${path}.md`;
-}
+};

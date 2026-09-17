@@ -29,7 +29,7 @@ For skills-only installs, point Prime at the package's `skills/` directory in se
 - **Verified subset only:** the extension covers mode commands and mode prompt injection. There is no recursive-subagent dispatch - "delegate to a specialist" loads the relevant skill and applies its methodology. JSON/RPC headless-mode integration is deferred.
 - **Advisory, not enforced:** skills, rules, and role prompts are guidance, not security enforcement. Prime has no skill-level tool-denial mechanism, so read-only roles state their role intent without claiming a runtime boundary.
 - **Not a sandbox:** Prime executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.
-- **No filesystem writes:** nothing is written to `~/.pi` or `.prime/agent`.
+- **Extension has no filesystem writes:** the compiled extension does not write to `~/.pi` or `.prime/agent`; Prime's package manager still manages its own registration files.
 - **No extra dependencies:** the extension uses only the Prime-bundled API; no pi package dependency is required.
 
 ## Documentation and Changelog

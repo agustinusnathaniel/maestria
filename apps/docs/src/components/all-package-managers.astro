@@ -1,0 +1,22 @@
+---
+import { PackageManagers } from 'starlight-package-managers';
+import type { PackageManagersProps } from 'starlight-package-managers';
+
+const SUPPORTED_TYPES = new Set(['add', 'create', 'dlx', 'exec', 'install', 'remove', 'run']);
+
+type Props = PackageManagersProps
+
+const { type = 'add', ...packageManagerProps } = Astro.props;
+
+if (!SUPPORTED_TYPES.has(type)) {
+  throw new Error(
+    `Unsupported AllPackageManagers type "${type}". Use one of: ${[...SUPPORTED_TYPES].join(', ')}.`,
+  );
+}
+---
+
+<PackageManagers
+  pkgManagers={['npm', 'yarn', 'pnpm', 'bun', 'deno', 'ni']}
+  type={type}
+  {...packageManagerProps}
+/>

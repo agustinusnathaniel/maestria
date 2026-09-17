@@ -14,27 +14,53 @@ import { exitReviewMode } from './state-core.js';
 // ── Duck-typed platform interfaces ──
 
 interface ReviewPi {
-  setActiveTools(tools: string[]): void | Promise<void>;
-  setModel(model: unknown): void | Promise<void>;
+  setActiveTools: (tools: string[]) => void | Promise<void>;
+  setModel: (model: unknown) => void | Promise<void>;
 }
 
-interface ReviewCtx {
-  modelRegistry: { getAll(): Array<{ id: string }> };
-  ui: { notify(msg: string): void };
+/**
+ * Host-neutral review-model context shared by the pi/omp thin shims
+ * (both hosts expose the same registry-read and notify surface).
+ */
+export interface ReviewModelContext {
+  modelRegistry: { getAll: () => { id: string }[] };
+  ui: { notify: (msg: string) => void };
 }
 
-export async function restoreOriginalState(
+/**
+ * Bind a platform host to the review-mode model/tool API.
+ *
+ * `isModel` is the platform's model guard; a model is passed to the host
+ * only when the guard accepts it, keeping host-specific validation at the
+ * platform seam.
+ */
+export const createReviewApi = <Model>(
+  pi: {
+    setActiveTools: (tools: string[]) => void | Promise<void>;
+    setModel: (model: Model) => Promise<unknown>;
+  },
+  isModel: (value: unknown) => value is Model,
+): ReviewPi => ({
+  setActiveTools: (tools): void | Promise<void> => pi.setActiveTools(tools),
+  setModel: async (model) => {
+    if (isModel(model)) {
+      await pi.setModel(model);
+    }
+  },
+});
+
+export const restoreOriginalState = async (
   pi: ReviewPi,
-  ctx: ReviewCtx,
+  ctx: ReviewModelContext,
   state: MaestriaState,
-): Promise<void> {
+): Promise<void> => {
   const { state: clearedState, originalModel, originalTools } = exitReviewMode(state);
 
   if (originalTools && originalTools.length > 0) {
     await pi.setActiveTools(originalTools);
   }
 
-  if (originalModel) {
+  if (originalModel !== undefined && originalModel !== null && originalModel !== '') {
     try {
       const models = ctx.modelRegistry.getAll();
       const model = models.find((m: { id: string }) => m.id === originalModel);
@@ -47,15 +73,15 @@ export async function restoreOriginalState(
   }
 
   Object.assign(state, clearedState);
-}
+};
 
-export async function cycleToReviewModel(
+export const cycleToReviewModel = async (
   pi: ReviewPi,
-  ctx: ReviewCtx,
+  ctx: ReviewModelContext,
   state: MaestriaState,
-): Promise<string | null> {
-  const reviewModel = state.reviewModel;
-  if (!reviewModel) {
+): Promise<string | null> => {
+  const { reviewModel } = state;
+  if (reviewModel === undefined || reviewModel === null || reviewModel === '') {
     return null;
   }
   try {
@@ -64,12 +90,11 @@ export async function cycleToReviewModel(
     if (model) {
       await pi.setModel(model);
       return reviewModel;
-    } else {
-      ctx.ui.notify(`Review model "${reviewModel}" not found in registry, staying on current.`);
-      return null;
     }
+    ctx.ui.notify(`Review model "${reviewModel}" not found in registry, staying on current.`);
+    return null;
   } catch {
     ctx.ui.notify(`Could not switch to review model "${reviewModel}", staying on current.`);
     return null;
   }
-}
+};

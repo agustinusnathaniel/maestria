@@ -1,24 +1,27 @@
-import { isToolCallEventType, type ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import type { MaestriaState } from '@/state.js';
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { createToolCallHandler } from '@maestria/shared-pi/tools-core';
-import { persistState } from '@/state.js';
 
-export function installToolInterceptors(pi: ExtensionAPI, state: MaestriaState): void {
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import { persistState } from '@maestria/shared-pi/state-core';
+
+export type ToolApi = Pick<ExtensionAPI, 'appendEntry' | 'getActiveTools' | 'on'>;
+
+export const installToolInterceptors = (pi: ToolApi, state: MaestriaState): void => {
   const handler = createToolCallHandler({
-    getState: () => state,
-    getActiveTools: () => pi.getActiveTools(),
     delegationTool: 'subagent',
+    getActiveTools: () => pi.getActiveTools(),
+    getState: () => state,
+    isBashTool: (e) => e.toolName === 'bash',
     isMutationTool: (e) =>
-      isToolCallEventType('edit', e as never) ||
-      isToolCallEventType('write', e as never) ||
-      isToolCallEventType('patch', e as never) ||
-      (e as { toolName?: string }).toolName === 'bash',
-    isReadTool: (e) => isToolCallEventType('read', e as never),
-    isWriteTool: (e) =>
-      isToolCallEventType('edit', e as never) || isToolCallEventType('write', e as never),
-    isBashTool: (e) => isToolCallEventType('bash', e as never),
-    persist: () =>
-      persistState(pi as unknown as { appendEntry: (t: string, d: unknown) => void }, state),
+      e.toolName === 'edit' ||
+      e.toolName === 'write' ||
+      e.toolName === 'patch' ||
+      e.toolName === 'bash',
+    isReadTool: (e) => e.toolName === 'read',
+    isWriteTool: (e) => e.toolName === 'edit' || e.toolName === 'write',
+    persist: () => {
+      persistState(pi, state);
+    },
   });
-  pi.on('tool_call', handler as never);
-}
+  pi.on('tool_call', handler);
+};

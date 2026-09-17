@@ -1,41 +1,52 @@
+// oxlint-disable max-lines -- platforms.ts is a cohesive registry aggregating 9 platform handlers (opencode, pi, prime-agent, kimi-code, hermes, cursor, claude-code, codex, omp) with shared helpers. Splitting the registry would fragment the single source for PLATFORM_IDS and platform lookup, harming discoverability and increasing cross-file churn for handler registration. The file's handlers share helpers (installNpmTarball, marketplace, the pi/omp factory) and are rarely edited together; file length is justified by cohesion.
 import { Effect } from 'effect';
-import { homedir, tmpdir } from 'os';
-import { isAbsolute, win32 } from 'node:path';
+import { homedir, tmpdir } from 'node:os';
+import nodePath from 'node:path';
 import picocolors from 'picocolors';
 
+import { parseAgentFrontmatterModel, setAgentFrontmatterModel } from '@/lib/agent-frontmatter.js';
+import { installCodexManagedAgents, removeCodexManagedAgents } from '@/lib/codex-managed-agents.js';
+import { cursorCliName } from '@/lib/cursor-cli.js';
+import {
+  kimiCodeHome,
+  kimiInstalledPath,
+  kimiManagedPluginDir,
+  readKimiInstalled,
+  registerKimiPlugin,
+  removeKimiPlugin,
+} from '@/lib/kimi.js';
 import { MAESTRIA_AGENTS } from '@/lib/model-config.js';
-import { codexManagedAgentFileName, mergeCodexAgentSettings } from '@/lib/codex-agent-files.js';
+import { isFileNotFound, isRecord, parseJsonRecord, parseJsonValue } from '@/lib/primitives.js';
+import type { JsonRecord } from '@/lib/primitives.js';
 import {
-  CODEX_GLOBAL_INSTRUCTION_FILENAMES,
-  type CodexGlobalInstructionFilename,
-  hasCodexManagedInstructions,
-  removeCodexManagedInstructions,
-  upsertCodexManagedInstructions,
-} from '@/lib/codex-instructions.js';
-import {
-  run,
-  readTextFile,
-  fileExists,
-  commandExists,
-  npmViewVersion,
-  invalidateVersionCache,
   CommandError,
+  commandExists,
+  fileExists,
+  getCacheDir,
+  getMaestriaCacheDir,
+  invalidateVersionCache,
+  npmViewVersion,
+  readTextFile,
+  run,
 } from '@/lib/shell.js';
+import type { PlatformResult } from '@/types.js';
+
+const { isAbsolute, join, win32 } = nodePath;
 
 // ── Shared helpers ───────────────────────────────────
 
-/** Read OpenCode config file, trying .jsonc first then .json */
-function readOpenCodeConfig(): Effect.Effect<string, CommandError> {
+/** Read OpenCode config file, trying .jsonc first then .json. */
+const readOpenCodeConfig = (): Effect.Effect<string, CommandError> => {
   const jsoncPath = `${homedir()}/.config/opencode/opencode.jsonc`;
   const jsonPath = `${homedir()}/.config/opencode/opencode.json`;
   return readTextFile(jsoncPath).pipe(Effect.catchCause(() => readTextFile(jsonPath)));
-}
+};
 
 /**
  * Install a package from an npm tarball into a destination directory.
  *
  * Shared by the kimi-code and cursor platform handlers, which both pack
- * @maestria/* packages to /tmp and extract them into their platform's
+ * Maestria-scoped packages to /tmp and extract them into their platform's
  * plugin directory. The tarball name derives from the package name with
  * the @maestria/ scope stripped (e.g. @maestria/kimi-code ->
  * maestria-kimi-code-*.tgz).
@@ -44,673 +55,276 @@ function readOpenCodeConfig(): Effect.Effect<string, CommandError> {
  * @param dest   Destination directory to extract into
  * @param opts   Optional npm dist-tag (default 'latest')
  */
-function installNpmTarball(
+const cleanupStaleTarball = (
+  tmpDir: string,
+  prefix: string,
+  dest: string,
+): Effect.Effect<void, CommandError> =>
+  Effect.tryPromise({
+    catch: (error) =>
+      new CommandError({
+        command: `cleanup ${tmpDir}/${prefix}*.tgz and ${dest}`,
+        message: String(error),
+      }),
+    try: async () => {
+      const { readdir, unlink, rm } = await import('node:fs/promises');
+      const entries = await readdir(tmpDir);
+      const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
+      await Promise.all(
+        stale.map(async (e) => {
+          await unlink(join(tmpDir, e));
+        }),
+      );
+      await rm(dest, { force: true, recursive: true });
+    },
+  });
+
+const findPackedTarball = (
+  tmpDir: string,
+  prefix: string,
+  pkgAtTag: string,
+): Effect.Effect<string, CommandError> =>
+  Effect.tryPromise({
+    catch: (error) =>
+      new CommandError({
+        command: `find tarball ${tmpDir}/${prefix}*.tgz`,
+        message: String(error),
+      }),
+    try: async () => {
+      const { readdir } = await import('node:fs/promises');
+      const entries = await readdir(tmpDir);
+      const matches = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
+      if (matches.length === 0) {
+        throw new Error(`no tarball found for ${pkgAtTag} in ${tmpDir}`);
+      }
+      if (matches.length > 1) {
+        throw new Error(`ambiguous tarballs for ${pkgAtTag} in ${tmpDir}: ${matches.join(', ')}`);
+      }
+      return join(tmpDir, matches[0]);
+    },
+  });
+
+const installNpmTarball = (
   pkg: string,
   dest: string,
   opts: { tag?: string } = {},
-): Effect.Effect<void, CommandError> {
+): Effect.Effect<void, CommandError> => {
   const tag = opts.tag ?? 'latest';
   const shortName = pkg.replace('@maestria/', '');
   const prefix = `maestria-${shortName}-`;
   const pkgAtTag = `${pkg}@${tag}`;
-
-  return Effect.gen(function* () {
-    // Remove stale tarballs and the destination dir before installing
+  const tmpDir = tmpdir();
+  return Effect.gen(function* installNpmTarballEffect() {
+    yield* cleanupStaleTarball(tmpDir, prefix, dest);
+    yield* run('npm', ['pack', pkgAtTag, '--pack-destination', tmpDir], 120_000);
+    const tarballPath = yield* findPackedTarball(tmpDir, prefix, pkgAtTag);
     yield* Effect.tryPromise({
-      try: async () => {
-        const { readdir, unlink, rm } = await import('node:fs/promises');
-        const entries = await readdir('/tmp');
-        const stale = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-        await Promise.all(stale.map((e) => unlink(`/tmp/${e}`)));
-        await rm(dest, { recursive: true, force: true });
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `cleanup /tmp/${prefix}*.tgz and ${dest}`,
-          message: String(error),
-        }),
-    });
-
-    yield* run('npm', ['pack', pkgAtTag, '--pack-destination', '/tmp'], 120_000);
-
-    const tarballPath = yield* Effect.tryPromise({
-      try: async () => {
-        const { readdir } = await import('node:fs/promises');
-        const entries = await readdir('/tmp');
-        const matches = entries.filter((e) => e.startsWith(prefix) && e.endsWith('.tgz'));
-        if (matches.length === 0) throw new Error(`no tarball found for ${pkgAtTag} in /tmp`);
-        if (matches.length > 1)
-          throw new Error(`ambiguous tarballs for ${pkgAtTag} in /tmp: ${matches.join(', ')}`);
-        return `/tmp/${matches[0]}`;
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `find tarball /tmp/${prefix}*.tgz`,
-          message: String(error),
-        }),
-    });
-
-    yield* Effect.tryPromise({
+      catch: (error) => new CommandError({ command: `mkdir -p ${dest}`, message: String(error) }),
       try: async () => {
         const { mkdir } = await import('node:fs/promises');
         await mkdir(dest, { recursive: true });
       },
-      catch: (error) =>
-        new CommandError({
-          command: `mkdir -p ${dest}`,
-          message: String(error),
-        }),
     });
-
     yield* run('tar', ['-xzf', tarballPath, '-C', dest, '--strip-components=1'], 120_000);
-
     yield* Effect.tryPromise({
+      catch: (error) =>
+        new CommandError({ command: `rm -f ${tarballPath}`, message: String(error) }),
       try: async () => {
         const { unlink } = await import('node:fs/promises');
         await unlink(tarballPath);
       },
-      catch: (error) =>
-        new CommandError({
-          command: `rm -f ${tarballPath}`,
-          message: String(error),
-        }),
     });
   });
-}
+};
 
-const CLAUDE_MARKETPLACE_DIR = `${homedir()}/.cache/maestria/claude-code-marketplace`;
-const CODEX_MARKETPLACE_DIR = `${homedir()}/.cache/maestria/codex-marketplace`;
+/**
+ * Version string from a parsed JSON manifest. Missing, malformed, and
+ * non-string versions all resolve to 'unknown', so handlers cannot drift into
+ * different fallbacks for the same manifest.
+ */
+const manifestVersion = (manifest: JsonRecord | undefined): string =>
+  typeof manifest?.version === 'string' ? manifest.version : 'unknown';
+
+/**
+ * Read a JSON manifest (typically package.json) and return its `version` field
+ * via Node's cross-platform fs/promises API rather than a POSIX `cat`, so
+ * installed paths in either host-native or Windows format work on the matching
+ * host. Fails with a CommandError; callers decide whether a failed read means
+ * 'unknown' (all current callers catch into 'unknown').
+ */
+export const readPackageJsonVersion = (
+  packageJsonPath: string,
+): Effect.Effect<string, CommandError> =>
+  Effect.tryPromise({
+    catch: (error) =>
+      new CommandError({
+        command: `read ${packageJsonPath}`,
+        message: String(error),
+      }),
+    try: async () => {
+      const { readFile } = await import('node:fs/promises');
+      return manifestVersion(parseJsonRecord(await readFile(packageJsonPath, 'utf-8')));
+    },
+  });
+
+const CLAUDE_MARKETPLACE_DIR = join(getMaestriaCacheDir(), 'claude-code-marketplace');
+const CODEX_MARKETPLACE_DIR = join(getMaestriaCacheDir(), 'codex-marketplace');
 const MAESTRIA_MARKETPLACE = 'maestria';
 const MAESTRIA_PLUGIN = 'maestria';
 
-type JsonRecord = Record<string, unknown>;
+const recordString = (record: JsonRecord, key: string): string => {
+  const value = record[key];
+  return typeof value === 'string' ? value : '';
+};
 
-function jsonRecords(output: string, key?: string): JsonRecord[] {
-  try {
-    const parsed: unknown = JSON.parse(output);
-    const value =
-      key && typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-        ? (parsed as JsonRecord)[key]
-        : parsed;
-
-    return Array.isArray(value)
-      ? value.filter((entry): entry is JsonRecord => typeof entry === 'object' && entry !== null)
-      : [];
-  } catch {
-    return [];
+const jsonRecords = (output: string, key?: string): JsonRecord[] => {
+  const parsed = parseJsonValue(output);
+  let value: unknown = parsed;
+  if (key !== undefined && key !== '' && isRecord(parsed)) {
+    value = parsed[key];
   }
-}
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+};
 
-function hasMarketplace(output: string): boolean {
-  return jsonRecords(output, 'marketplaces').some(
+const hasMarketplace = (output: string): boolean =>
+  jsonRecords(output, 'marketplaces').some(
     (marketplace) => marketplace.name === MAESTRIA_MARKETPLACE,
   );
+
+const isMaestriaPlugin = (plugin: JsonRecord): boolean => {
+  const pluginId = recordString(plugin, 'pluginId') || recordString(plugin, 'id');
+  return (
+    pluginId === `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}` ||
+    (recordString(plugin, 'name') === MAESTRIA_PLUGIN &&
+      recordString(plugin, 'marketplaceName') === MAESTRIA_MARKETPLACE)
+  );
+};
+
+const hasMaestriaPlugin = (output: string): boolean =>
+  jsonRecords(output, 'installed').some(isMaestriaPlugin);
+
+const installedMaestriaVersion = (output: string): string =>
+  manifestVersion(jsonRecords(output, 'installed').find(isMaestriaPlugin));
+
+const hostPluginList = (command: 'claude' | 'codex'): Effect.Effect<string, CommandError> =>
+  Effect.suspend(() => run(command, ['plugin', 'list', '--json']));
+
+const hostPluginVersion = (command: 'claude' | 'codex'): Effect.Effect<string, CommandError> =>
+  hostPluginList(command).pipe(
+    Effect.map(installedMaestriaVersion),
+    Effect.catchCause(() => Effect.succeed('unknown')),
+  );
+
+const hostPluginInstalled = (command: 'claude' | 'codex'): Effect.Effect<boolean> =>
+  hostPluginList(command).pipe(
+    Effect.map(hasMaestriaPlugin),
+    Effect.catchCause(() => Effect.succeed(false)),
+  );
+
+/** Marketplace data a host CLI needs to prepare its local plugin marketplace. */
+interface NpmMarketplace {
+  readonly command: 'claude' | 'codex';
+  readonly dir: string;
+  readonly file: string;
+  readonly manifest: JsonRecord;
+  readonly packageName: string;
 }
 
-function hasMaestriaPlugin(output: string): boolean {
-  return jsonRecords(output, 'installed').some((plugin) => {
-    const pluginId =
-      typeof plugin.pluginId === 'string'
-        ? plugin.pluginId
-        : typeof plugin.id === 'string'
-          ? plugin.id
-          : '';
-    const name = typeof plugin.name === 'string' ? plugin.name : '';
-    const marketplaceName =
-      typeof plugin.marketplaceName === 'string' ? plugin.marketplaceName : '';
-    return (
-      pluginId === `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}` ||
-      (name === MAESTRIA_PLUGIN && marketplaceName === MAESTRIA_MARKETPLACE)
-    );
-  });
-}
+/** Register the marketplace directory with the host CLI when it is absent. */
+const ensureMarketplace = (
+  command: 'claude' | 'codex',
+  dir: string,
+): Effect.Effect<void, CommandError> =>
+  run(command, ['plugin', 'marketplace', 'list', '--json']).pipe(
+    Effect.flatMap((output) =>
+      hasMarketplace(output)
+        ? Effect.void
+        : run(command, ['plugin', 'marketplace', 'add', dir]).pipe(Effect.asVoid),
+    ),
+  );
 
-function installedMaestriaVersion(output: string): string {
-  const plugin = jsonRecords(output, 'installed').find((entry) => {
-    const pluginId =
-      typeof entry.pluginId === 'string'
-        ? entry.pluginId
-        : typeof entry.id === 'string'
-          ? entry.id
-          : '';
-    const name = typeof entry.name === 'string' ? entry.name : '';
-    const marketplaceName = typeof entry.marketplaceName === 'string' ? entry.marketplaceName : '';
-    return (
-      pluginId === `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}` ||
-      (name === MAESTRIA_PLUGIN && marketplaceName === MAESTRIA_MARKETPLACE)
-    );
-  });
-  return typeof plugin?.version === 'string' ? plugin.version : 'unknown';
-}
+const prepareNpmMarketplace = (marketplace: NpmMarketplace): Effect.Effect<void, CommandError> => {
+  const pluginDir = `${marketplace.dir}/plugins/${MAESTRIA_PLUGIN}`;
+  const marketplacePath = `${marketplace.dir}/${marketplace.file}`;
 
-function hostPluginList(command: 'claude' | 'codex'): Effect.Effect<string, CommandError> {
-  return Effect.suspend(() => run(command, ['plugin', 'list', '--json']));
-}
-
-function prepareNpmMarketplace(
-  pkg: string,
-  marketplaceDir: string,
-  marketplaceFile: string,
-  manifest: JsonRecord,
-): Effect.Effect<void, CommandError> {
-  const pluginDir = `${marketplaceDir}/plugins/${MAESTRIA_PLUGIN}`;
-  const marketplacePath = `${marketplaceDir}/${marketplaceFile}`;
-
-  return Effect.gen(function* () {
-    yield* installNpmTarball(pkg, pluginDir);
+  return Effect.gen(function* prepareNpmMarketplaceEffect() {
+    yield* installNpmTarball(marketplace.packageName, pluginDir);
     yield* Effect.tryPromise({
-      try: async () => {
-        const { mkdir, writeFile } = await import('node:fs/promises');
-        const { dirname } = await import('node:path');
-        await mkdir(dirname(marketplacePath), { recursive: true });
-        await writeFile(marketplacePath, `${JSON.stringify(manifest, null, 2)}\n`);
-      },
       catch: (error) =>
         new CommandError({
           command: `write ${marketplacePath}`,
           message: String(error),
         }),
-    });
-  });
-}
-
-interface KimiInstalledRecord {
-  readonly id: string;
-  readonly root: string;
-  readonly source: 'local-path' | 'zip-url' | 'github';
-  readonly enabled: boolean;
-  readonly installedAt: string;
-  readonly updatedAt?: string;
-  readonly originalSource?: string;
-  readonly capabilities?: JsonRecord;
-  readonly github?: JsonRecord;
-}
-
-interface KimiInstalledFile {
-  readonly version: 1;
-  readonly plugins: KimiInstalledRecord[];
-}
-
-function kimiCodeHome(): string {
-  return process.env.KIMI_CODE_HOME?.trim() || `${homedir()}/.kimi-code`;
-}
-
-function kimiManagedPluginDir(): string {
-  return `${kimiCodeHome()}/plugins/managed/${MAESTRIA_PLUGIN}`;
-}
-
-function kimiInstalledPath(): string {
-  return `${kimiCodeHome()}/plugins/installed.json`;
-}
-
-function readKimiInstalled(): Effect.Effect<KimiInstalledFile, CommandError> {
-  return Effect.tryPromise({
-    try: async () => {
-      const { readFile } = await import('node:fs/promises');
-      const filePath = kimiInstalledPath();
-      let text: string;
-      try {
-        text = await readFile(filePath, 'utf8');
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-          return { version: 1, plugins: [] } satisfies KimiInstalledFile;
-        }
-        throw error;
-      }
-      const parsed = JSON.parse(text) as Partial<KimiInstalledFile>;
-      if (parsed.version !== undefined && parsed.version !== 1) {
-        throw new Error(`unsupported Kimi plugin registry version: ${String(parsed.version)}`);
-      }
-      if (!Array.isArray(parsed.plugins)) {
-        throw new Error('Kimi plugin registry must contain a plugins array');
-      }
-      return {
-        version: 1,
-        plugins: parsed.plugins as KimiInstalledRecord[],
-      } satisfies KimiInstalledFile;
-    },
-    catch: (error) =>
-      new CommandError({
-        command: `read ${kimiInstalledPath()}`,
-        message: String(error),
-      }),
-  });
-}
-
-function writeKimiInstalled(file: KimiInstalledFile): Effect.Effect<void, CommandError> {
-  return Effect.tryPromise({
-    try: async () => {
-      const { mkdir, rename, writeFile } = await import('node:fs/promises');
-      const filePath = kimiInstalledPath();
-      await mkdir(`${kimiCodeHome()}/plugins`, { recursive: true });
-      const tempPath = `${filePath}.tmp`;
-      await writeFile(tempPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8');
-      await rename(tempPath, filePath);
-    },
-    catch: (error) =>
-      new CommandError({
-        command: `write ${kimiInstalledPath()}`,
-        message: String(error),
-      }),
-  });
-}
-
-function registerKimiPlugin(): Effect.Effect<void, CommandError> {
-  return Effect.gen(function* () {
-    const file = yield* readKimiInstalled();
-    const now = new Date().toISOString();
-    const current = file.plugins.find((plugin) => plugin.id === MAESTRIA_PLUGIN);
-    const record: KimiInstalledRecord = {
-      ...current,
-      id: MAESTRIA_PLUGIN,
-      root: kimiManagedPluginDir(),
-      source: 'local-path',
-      enabled: current?.enabled ?? true,
-      installedAt: current?.installedAt ?? now,
-      updatedAt: now,
-      originalSource: '@maestria/kimi-code',
-    };
-    const plugins = file.plugins.filter((plugin) => plugin.id !== MAESTRIA_PLUGIN);
-    plugins.push(record);
-    yield* writeKimiInstalled({ version: 1, plugins });
-  });
-}
-
-function removeKimiPlugin(): Effect.Effect<void, CommandError> {
-  return Effect.gen(function* () {
-    const file = yield* readKimiInstalled();
-    const plugins = file.plugins.filter((plugin) => plugin.id !== MAESTRIA_PLUGIN);
-    if (plugins.length !== file.plugins.length) {
-      yield* writeKimiInstalled({ version: 1, plugins });
-    }
-    yield* Effect.tryPromise({
       try: async () => {
-        const { rm } = await import('node:fs/promises');
-        await rm(kimiManagedPluginDir(), { recursive: true, force: true });
+        const { mkdir, writeFile } = await import('node:fs/promises');
+        await mkdir(nodePath.dirname(marketplacePath), { recursive: true });
+        await writeFile(marketplacePath, `${JSON.stringify(marketplace.manifest, null, 2)}\n`);
       },
-      catch: (error) =>
-        new CommandError({
-          command: `remove ${kimiManagedPluginDir()}`,
-          message: String(error),
-        }),
     });
+    yield* ensureMarketplace(marketplace.command, marketplace.dir);
   });
-}
+};
 
-const claudeMarketplaceManifest: JsonRecord = {
-  $schema: 'https://anthropic.com/claude-code/marketplace.schema.json',
-  name: MAESTRIA_MARKETPLACE,
-  owner: {
-    name: 'Agustinus Nathaniel',
-    url: 'https://github.com/agustinusnathaniel',
+const claudeMarketplace: NpmMarketplace = {
+  command: 'claude',
+  dir: CLAUDE_MARKETPLACE_DIR,
+  file: '.claude-plugin/marketplace.json',
+  manifest: {
+    $schema: 'https://anthropic.com/claude-code/marketplace.schema.json',
+    name: MAESTRIA_MARKETPLACE,
+    owner: {
+      name: 'Agustinus Nathaniel',
+      url: 'https://github.com/agustinusnathaniel',
+    },
+    plugins: [
+      {
+        displayName: 'Maestria',
+        name: MAESTRIA_PLUGIN,
+        source: './plugins/maestria',
+      },
+    ],
   },
-  plugins: [
-    {
-      name: MAESTRIA_PLUGIN,
-      displayName: 'Maestria',
-      source: './plugins/maestria',
-    },
-  ],
+  packageName: '@maestria/claude-code',
 };
 
-const codexMarketplaceManifest: JsonRecord = {
-  name: MAESTRIA_MARKETPLACE,
-  interface: { displayName: 'Maestria' },
-  plugins: [
-    {
-      name: MAESTRIA_PLUGIN,
-      source: { source: 'local', path: './plugins/maestria' },
-      policy: { installation: 'AVAILABLE', authentication: 'ON_USE' },
-      category: 'Developer Tools',
-    },
-  ],
+const codexMarketplace: NpmMarketplace = {
+  command: 'codex',
+  dir: CODEX_MARKETPLACE_DIR,
+  file: '.agents/plugins/marketplace.json',
+  manifest: {
+    interface: { displayName: 'Maestria' },
+    name: MAESTRIA_MARKETPLACE,
+    plugins: [
+      {
+        category: 'Developer Tools',
+        name: MAESTRIA_PLUGIN,
+        policy: { authentication: 'ON_USE', installation: 'AVAILABLE' },
+        source: { path: './plugins/maestria', source: 'local' },
+      },
+    ],
+  },
+  packageName: '@maestria/codex',
 };
 
-function ensureClaudeMarketplace(): Effect.Effect<void, CommandError> {
-  return run('claude', ['plugin', 'marketplace', 'list', '--json']).pipe(
-    Effect.flatMap((output) =>
-      hasMarketplace(output)
-        ? Effect.void
-        : run('claude', ['plugin', 'marketplace', 'add', CLAUDE_MARKETPLACE_DIR]).pipe(
-            Effect.as(void 0),
-          ),
-    ),
+const refreshClaudeMarketplace = (): Effect.Effect<void, CommandError> =>
+  // Network refresh shared by install and update; same 120s fetch deadline.
+  run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE], 120_000).pipe(
+    Effect.asVoid,
   );
-}
 
-function refreshClaudeMarketplace(): Effect.Effect<void, CommandError> {
-  return run('claude', ['plugin', 'marketplace', 'update', MAESTRIA_MARKETPLACE]).pipe(
-    Effect.as(void 0),
-  );
-}
-
-function ensureCodexMarketplace(): Effect.Effect<void, CommandError> {
-  return run('codex', ['plugin', 'marketplace', 'list', '--json']).pipe(
-    Effect.flatMap((output) =>
-      hasMarketplace(output)
-        ? Effect.void
-        : run('codex', ['plugin', 'marketplace', 'add', CODEX_MARKETPLACE_DIR]).pipe(
-            Effect.as(void 0),
-          ),
-    ),
-  );
-}
-
-// Codex plugin manifests do not declare custom agents or primary-session
-// instructions. The published Maestria package carries native agent TOMLs and
-// a managed AGENTS.md block as companion payloads, and the CLI owns copying
-// them into Codex's documented locations.
-const CODEX_MANAGED_AGENT_MANIFEST = '.maestria-agents.json';
-
-interface CodexManagedAgentManifest {
-  readonly version: 1;
-  readonly files: readonly string[];
-  readonly instructionsFile?: CodexGlobalInstructionFilename;
-  readonly instructionsCreated?: boolean;
-}
-
-function codexHomePath(): string {
-  return process.env.CODEX_HOME?.trim() || `${homedir()}/.codex`;
-}
-
-function codexManagedAgentDirectory(): string {
-  return `${codexHomePath()}/agents`;
-}
-
-function codexManagedAgentManifestPath(): string {
-  return `${codexHomePath()}/${CODEX_MANAGED_AGENT_MANIFEST}`;
-}
-
-function codexGlobalInstructionsPath(file: CodexGlobalInstructionFilename): string {
-  return `${codexHomePath()}/${file}`;
-}
-
-function readCodexManagedAgentManifest(): Effect.Effect<CodexManagedAgentManifest, CommandError> {
-  return Effect.tryPromise({
-    try: async () => {
-      const { readFile } = await import('node:fs/promises');
-      let raw: string;
-      try {
-        raw = await readFile(codexManagedAgentManifestPath(), 'utf8');
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-          return { version: 1, files: [] } satisfies CodexManagedAgentManifest;
-        }
-        throw error;
-      }
-      const parsed = JSON.parse(raw) as Partial<CodexManagedAgentManifest>;
-      if (parsed.version !== 1 || !Array.isArray(parsed.files)) {
-        throw new Error(
-          `invalid Maestria Codex agent manifest at ${codexManagedAgentManifestPath()}`,
-        );
-      }
-      if (
-        !parsed.files.every(
-          (file) => typeof file === 'string' && /^[A-Za-z0-9_-]+\.toml$/.test(file),
-        )
-      ) {
-        throw new Error(`invalid managed agent filename in ${codexManagedAgentManifestPath()}`);
-      }
-      if (
-        parsed.instructionsFile !== undefined &&
-        !CODEX_GLOBAL_INSTRUCTION_FILENAMES.includes(
-          parsed.instructionsFile as CodexGlobalInstructionFilename,
-        )
-      ) {
-        throw new Error(
-          `invalid managed Codex instruction filename in ${codexManagedAgentManifestPath()}`,
-        );
-      }
-      if (
-        parsed.instructionsCreated !== undefined &&
-        typeof parsed.instructionsCreated !== 'boolean'
-      ) {
-        throw new Error(
-          `invalid managed Codex instruction ownership in ${codexManagedAgentManifestPath()}`,
-        );
-      }
-      return {
-        version: 1,
-        files: parsed.files,
-        ...(parsed.instructionsFile !== undefined
-          ? { instructionsFile: parsed.instructionsFile as CodexGlobalInstructionFilename }
-          : {}),
-        ...(parsed.instructionsCreated !== undefined
-          ? { instructionsCreated: parsed.instructionsCreated }
-          : {}),
-      } satisfies CodexManagedAgentManifest;
-    },
-    catch: (error) =>
-      new CommandError({
-        command: `read ${codexManagedAgentManifestPath()}`,
-        message: String(error),
-      }),
+// Install and update share one flow: stage the marketplace payload, refresh
+// it, then materialize through the host CLI. Host fetches keep the 120s
+// deadline instead of the shared 30s default.
+const runClaudePlugin = (action: 'install' | 'update'): Effect.Effect<void, CommandError> =>
+  Effect.gen(function* runClaudePluginEffect() {
+    yield* prepareNpmMarketplace(claudeMarketplace);
+    yield* refreshClaudeMarketplace();
+    yield* run(
+      'claude',
+      ['plugin', action, `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--scope', 'user'],
+      120_000,
+    );
   });
-}
-
-function writeCodexManagedAgentManifest(
-  manifest: CodexManagedAgentManifest,
-): Effect.Effect<void, CommandError> {
-  return Effect.tryPromise({
-    try: async () => {
-      const { mkdir, rename, writeFile } = await import('node:fs/promises');
-      await mkdir(codexHomePath(), { recursive: true });
-      const path = codexManagedAgentManifestPath();
-      const tempPath = `${path}.tmp`;
-      await writeFile(tempPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
-      await rename(tempPath, path);
-    },
-    catch: (error) =>
-      new CommandError({
-        command: `write ${codexManagedAgentManifestPath()}`,
-        message: String(error),
-      }),
-  });
-}
-
-export function installCodexManagedAgents(packageRoot: string): Effect.Effect<void, CommandError> {
-  return Effect.gen(function* () {
-    const manifest = yield* readCodexManagedAgentManifest();
-    const sourceDir = `${packageRoot}/agents`;
-    const targetDir = codexManagedAgentDirectory();
-    const sourceFiles = MAESTRIA_AGENTS.map(codexManagedAgentFileName);
-    const sourceInstructionsPath = `${packageRoot}/instructions/AGENTS.md`;
-
-    const sourceInstructions = yield* Effect.tryPromise({
-      try: async () => {
-        const { readFile } = await import('node:fs/promises');
-        return await readFile(sourceInstructionsPath, 'utf8');
-      },
-      catch: (error) => new Error(String(error)),
-    });
-    yield* Effect.tryPromise({
-      try: async () => {
-        if (!hasCodexManagedInstructions(sourceInstructions)) {
-          throw new Error(`missing Maestria instruction markers in ${sourceInstructionsPath}`);
-        }
-      },
-      catch: (error) => new Error(String(error)),
-    });
-
-    yield* Effect.tryPromise({
-      try: async () => {
-        const { mkdir, readFile, rename, writeFile } = await import('node:fs/promises');
-        await mkdir(targetDir, { recursive: true });
-        for (let index = 0; index < sourceFiles.length; index++) {
-          const file = sourceFiles[index]!;
-          const agent = MAESTRIA_AGENTS[index]!;
-          const sourcePath = `${sourceDir}/${file}`;
-          const targetPath = `${targetDir}/${file}`;
-          const bundled = await readFile(sourcePath, 'utf8');
-          let next = bundled;
-          for (const existingPath of [targetPath, `${targetDir}/${agent}.toml`]) {
-            try {
-              const existing = await readFile(existingPath, 'utf8');
-              next = mergeCodexAgentSettings(bundled, existing);
-              break;
-            } catch (error) {
-              if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-            }
-          }
-          const tempPath = `${targetPath}.tmp`;
-          await writeFile(tempPath, next, 'utf8');
-          await rename(tempPath, targetPath);
-        }
-      },
-      catch: (error) => new Error(String(error)),
-    });
-
-    const currentFiles = new Set(sourceFiles);
-    yield* Effect.tryPromise({
-      try: async () => {
-        const { rm } = await import('node:fs/promises');
-        for (const file of manifest.files) {
-          if (!currentFiles.has(file)) await rm(`${targetDir}/${file}`, { force: true });
-        }
-      },
-      catch: (error) => new Error(String(error)),
-    });
-
-    const instructionState = yield* Effect.tryPromise({
-      try: async () => {
-        const { mkdir, readFile, rename, rm, writeFile } = await import('node:fs/promises');
-        const existing = new Map<CodexGlobalInstructionFilename, string | undefined>();
-        for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
-          try {
-            existing.set(file, await readFile(codexGlobalInstructionsPath(file), 'utf8'));
-          } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') existing.set(file, undefined);
-            else throw error;
-          }
-        }
-
-        const sourceBlock = sourceInstructions;
-        const managedFiles = CODEX_GLOBAL_INSTRUCTION_FILENAMES.filter((file) => {
-          const content = existing.get(file);
-          return content !== undefined && hasCodexManagedInstructions(content);
-        });
-        const override = existing.get('AGENTS.override.md');
-        const previousFile = manifest.instructionsFile;
-        const target =
-          override?.trim() && !managedFiles.includes('AGENTS.override.md')
-            ? 'AGENTS.override.md'
-            : previousFile && managedFiles.includes(previousFile)
-              ? previousFile
-              : (managedFiles[0] ?? (override?.trim() ? 'AGENTS.override.md' : 'AGENTS.md'));
-
-        const cleaned = new Map<CodexGlobalInstructionFilename, string | undefined>();
-        for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
-          const content = existing.get(file);
-          cleaned.set(
-            file,
-            content === undefined ? undefined : removeCodexManagedInstructions(content),
-          );
-        }
-
-        const targetContent = upsertCodexManagedInstructions(
-          cleaned.get(target) ?? '',
-          sourceBlock,
-        );
-        const writeAtomic = async (path: string, content: string): Promise<void> => {
-          await mkdir(codexHomePath(), { recursive: true });
-          const tempPath = `${path}.tmp`;
-          await writeFile(tempPath, content, 'utf8');
-          await rename(tempPath, path);
-        };
-
-        for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
-          if (file === target) {
-            await writeAtomic(codexGlobalInstructionsPath(file), targetContent);
-            continue;
-          }
-          const original = existing.get(file);
-          const next = cleaned.get(file);
-          if (original === undefined || next === undefined || next === original) continue;
-          if (
-            next.length === 0 &&
-            manifest.instructionsCreated &&
-            manifest.instructionsFile === file
-          ) {
-            await rm(codexGlobalInstructionsPath(file), { force: true });
-          } else {
-            await writeAtomic(codexGlobalInstructionsPath(file), next);
-          }
-        }
-
-        return {
-          file: target,
-          created:
-            existing.get(target) === undefined ||
-            (manifest.instructionsCreated === true && manifest.instructionsFile === target),
-        } satisfies {
-          file: CodexGlobalInstructionFilename;
-          created: boolean;
-        };
-      },
-      catch: (error) => new Error(String(error)),
-    });
-
-    yield* writeCodexManagedAgentManifest({
-      version: 1,
-      files: sourceFiles,
-      instructionsFile: instructionState.file,
-      instructionsCreated: instructionState.created,
-    });
-  }).pipe(
-    Effect.mapError(
-      (error) =>
-        new CommandError({
-          command: `install Codex native agents from ${packageRoot}`,
-          message: error instanceof CommandError ? error.message : String(error),
-        }),
-    ),
-  );
-}
-
-export function removeCodexManagedAgents(): Effect.Effect<void, CommandError> {
-  return Effect.gen(function* () {
-    const manifest = yield* readCodexManagedAgentManifest();
-    yield* Effect.tryPromise({
-      try: async () => {
-        const { readFile, rm } = await import('node:fs/promises');
-        for (const file of manifest.files) {
-          await rm(`${codexManagedAgentDirectory()}/${file}`, { force: true });
-        }
-
-        for (const file of CODEX_GLOBAL_INSTRUCTION_FILENAMES) {
-          const path = codexGlobalInstructionsPath(file);
-          let content: string;
-          try {
-            content = await readFile(path, 'utf8');
-          } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue;
-            throw error;
-          }
-          const next = removeCodexManagedInstructions(content);
-          if (next === content) continue;
-          if (
-            next.length === 0 &&
-            manifest.instructionsCreated &&
-            manifest.instructionsFile === file
-          ) {
-            await rm(path, { force: true });
-          } else {
-            const { rename, writeFile } = await import('node:fs/promises');
-            const tempPath = `${path}.tmp`;
-            await writeFile(tempPath, next, 'utf8');
-            await rename(tempPath, path);
-          }
-        }
-        await rm(codexManagedAgentManifestPath(), { force: true });
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `remove Codex native agents from ${codexManagedAgentDirectory()}`,
-          message: String(error),
-        }),
-    });
-  });
-}
 
 // ── Platform ID literal registry ─────────────────────
 
@@ -758,10 +372,10 @@ export interface PlatformHandler {
   readonly id: PlatformId;
   readonly label: string;
   readonly npmPackage?: string;
-  readonly detect: Effect.Effect<boolean, never>;
-  readonly isInstalled: Effect.Effect<boolean, never>;
+  readonly detect: Effect.Effect<boolean>;
+  readonly isInstalled: Effect.Effect<boolean>;
   readonly getInstalledVersion: Effect.Effect<string, CommandError>;
-  readonly getLatestVersion: Effect.Effect<string, never>;
+  readonly getLatestVersion: Effect.Effect<string>;
   /** Whether `update --version` can select an exact package version. */
   readonly supportsVersionPinning?: boolean;
   /**
@@ -792,94 +406,105 @@ export interface PlatformHandler {
   readonly uninstall: Effect.Effect<void, CommandError>;
 }
 
-const opencode: PlatformHandler = {
-  id: 'opencode',
-  label: 'OpenCode',
-  npmPackage: '@maestria/opencode',
+/**
+ * Handler definition accepted by the registry. A handler that declares an
+ * `npmPackage` derives `getLatestVersion` from it, so the npm package and the
+ * latest-version lookup cannot drift apart. Platforms distributed outside npm
+ * (Hermes is git-based) keep an explicit `getLatestVersion` override.
+ */
+type PlatformDefinition = Omit<PlatformHandler, 'getLatestVersion'> & {
+  readonly getLatestVersion?: Effect.Effect<string>;
+};
 
+const resolveLatestVersion = (definition: PlatformDefinition): PlatformHandler => {
+  if (definition.getLatestVersion !== undefined) {
+    return { ...definition, getLatestVersion: definition.getLatestVersion };
+  }
+  if (definition.npmPackage === undefined || definition.npmPackage === '') {
+    throw new Error(`Platform '${definition.id}' must declare npmPackage or getLatestVersion`);
+  }
+  return { ...definition, getLatestVersion: npmViewVersion(definition.npmPackage) };
+};
+
+const clearOpencodeCache = (): Effect.Effect<void, CommandError> =>
+  Effect.tryPromise({
+    catch: (error) =>
+      new CommandError({
+        command: `clear opencode cache ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}`,
+        message: String(error),
+      }),
+    try: async () => {
+      const { readdir, rm } = await import('node:fs/promises');
+      const base = join(getCacheDir(), 'opencode', 'packages', '@maestria');
+      let entries: string[];
+      try {
+        entries = await readdir(base);
+      } catch (error) {
+        if (isFileNotFound(error)) {
+          return;
+        }
+        throw error;
+      }
+      const stale = entries.filter((e) => e.startsWith('opencode'));
+      await Promise.all(
+        stale.map(async (e) => {
+          await rm(`${base}/${e}`, { force: true, recursive: true });
+        }),
+      );
+    },
+  });
+
+const opencode: PlatformDefinition = {
   detect: commandExists('opencode'),
-
-  isInstalled: readOpenCodeConfig().pipe(
-    Effect.map((out) => out.includes('@maestria/opencode')),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
-
   getInstalledVersion: readOpenCodeConfig().pipe(
     Effect.map((config) => {
-      const match = config.match(/@maestria\/opencode@(.+?)"/);
-      return match?.[1] ?? null;
+      const match = /@maestria\/opencode@(?<version>.+?)"/u.exec(config);
+      return match?.groups?.version ?? null;
     }),
     Effect.flatMap((specifier) => {
-      if (!specifier) return Effect.succeed('unknown');
-      return readTextFile(
-        `${homedir()}/.cache/opencode/packages/@maestria/opencode@${specifier}/node_modules/@maestria/opencode/package.json`,
-      ).pipe(
-        Effect.map((out) => {
-          try {
-            const pkg: { version?: string } = JSON.parse(out);
-            return pkg.version ?? 'unknown';
-          } catch {
-            return 'unknown';
-          }
-        }),
+      if (specifier === null || specifier === undefined || specifier === '') {
+        return Effect.succeed('unknown');
+      }
+      return readPackageJsonVersion(
+        join(
+          getCacheDir(),
+          'opencode',
+          'packages',
+          `@maestria/opencode@${specifier}`,
+          'node_modules',
+          '@maestria',
+          'opencode',
+          'package.json',
+        ),
       );
     }),
     Effect.catchCause(() => Effect.succeed('unknown')),
   ),
-
-  getLatestVersion: npmViewVersion('@maestria/opencode'),
-
-  install: Effect.gen(function* () {
-    // Clear cache to ensure fresh install from npm
-    yield* Effect.tryPromise({
-      try: async () => {
-        const { readdir, rm } = await import('node:fs/promises');
-        const base = `${homedir()}/.cache/opencode/packages/@maestria`;
-        let entries: string[];
-        try {
-          entries = await readdir(base);
-        } catch (error) {
-          if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-          throw error;
-        }
-        const stale = entries.filter((e) => e.startsWith('opencode'));
-        await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `clear opencode cache ${homedir()}/.cache/opencode/packages/@maestria/opencode*`,
-          message: String(error),
-        }),
-    });
+  id: 'opencode',
+  install: Effect.gen(function* install() {
+    yield* clearOpencodeCache();
     // Install globally by default - install is a setup command, not per-project
     yield* run('opencode', ['plugin', '@maestria/opencode@latest', '-g'], 120_000);
-  }).pipe(Effect.as(void 0)),
-
+  }).pipe(Effect.asVoid),
+  isInstalled: readOpenCodeConfig().pipe(
+    Effect.map((out) => out.includes('@maestria/opencode')),
+    Effect.catchCause(() => Effect.succeed(false)),
+  ),
+  label: 'OpenCode',
+  npmPackage: '@maestria/opencode',
+  uninstall: Effect.sync(() => {
+    console.log(
+      `\n  To uninstall OpenCode:\n` +
+        `  1. Edit ~/.config/opencode/opencode.jsonc (or .opencode/opencode.jsonc in your project)\n` +
+        `  2. Remove "@maestria/opencode@latest" from the "plugin" array\n` +
+        `  3. Optionally clear cache: rm -rf ${join(getCacheDir(), 'opencode', 'packages', '@maestria', 'opencode*')}\n`,
+    );
+  }),
   update: (version?: string) =>
-    Effect.gen(function* () {
+    Effect.gen(function* update() {
       const tag = version ?? 'latest';
 
-      // Clear cache to ensure fresh install from npm
-      yield* Effect.tryPromise({
-        try: async () => {
-          const { readdir, rm } = await import('node:fs/promises');
-          const base = `${homedir()}/.cache/opencode/packages/@maestria`;
-          let entries: string[];
-          try {
-            entries = await readdir(base);
-          } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-            throw error;
-          }
-          const stale = entries.filter((e) => e.startsWith('opencode'));
-          await Promise.all(stale.map((e) => rm(`${base}/${e}`, { recursive: true, force: true })));
-        },
-        catch: (error) =>
-          new CommandError({
-            command: `clear opencode cache ${homedir()}/.cache/opencode/packages/@maestria/opencode*`,
-            message: String(error),
-          }),
-      });
+      yield* clearOpencodeCache();
 
       // Check if installed globally or at project level
       const globalConfig = yield* readOpenCodeConfig().pipe(
@@ -887,76 +512,20 @@ const opencode: PlatformHandler = {
         Effect.catchCause(() => Effect.succeed(false)),
       );
       const flag = globalConfig ? ['-g', '--force'] : ['--force'];
-      yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag]);
+      // Cold fetches outlast the 30s default; match install's 120s deadline.
+      yield* run('opencode', ['plugin', `@maestria/opencode@${tag}`, ...flag], 120_000);
     }),
-
-  uninstall: Effect.sync(() => {
-    console.log(
-      `\n  To uninstall OpenCode:\n` +
-        `  1. Edit ~/.config/opencode/opencode.jsonc (or .opencode/opencode.jsonc in your project)\n` +
-        `  2. Remove "@maestria/opencode@latest" from the "plugin" array\n` +
-        `  3. Optionally clear cache: rm -rf ~/.cache/opencode/packages/@maestria/opencode*\n`,
-    );
-  }),
 };
 
-const claudeCode: PlatformHandler = {
+const claudeCode: PlatformDefinition = {
+  detect: commandExists('claude'),
+  getInstalledVersion: hostPluginVersion('claude'),
   id: 'claude-code',
+  install: runClaudePlugin('install'),
+  isInstalled: hostPluginInstalled('claude'),
   label: 'Claude Code',
   npmPackage: '@maestria/claude-code',
   supportsVersionPinning: false,
-
-  detect: commandExists('claude'),
-
-  isInstalled: hostPluginList('claude').pipe(
-    Effect.map(hasMaestriaPlugin),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
-
-  getInstalledVersion: hostPluginList('claude').pipe(
-    Effect.map(installedMaestriaVersion),
-    Effect.catchCause(() => Effect.succeed('unknown')),
-  ),
-
-  getLatestVersion: npmViewVersion('@maestria/claude-code'),
-
-  install: Effect.gen(function* () {
-    yield* prepareNpmMarketplace(
-      '@maestria/claude-code',
-      CLAUDE_MARKETPLACE_DIR,
-      '.claude-plugin/marketplace.json',
-      claudeMarketplaceManifest,
-    );
-    yield* ensureClaudeMarketplace();
-    yield* refreshClaudeMarketplace();
-    yield* run('claude', [
-      'plugin',
-      'install',
-      `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-      '--scope',
-      'user',
-    ]);
-  }).pipe(Effect.as(void 0)),
-
-  update: (_version?: string) =>
-    Effect.gen(function* () {
-      yield* prepareNpmMarketplace(
-        '@maestria/claude-code',
-        CLAUDE_MARKETPLACE_DIR,
-        '.claude-plugin/marketplace.json',
-        claudeMarketplaceManifest,
-      );
-      yield* ensureClaudeMarketplace();
-      yield* refreshClaudeMarketplace();
-      yield* run('claude', [
-        'plugin',
-        'update',
-        `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-        '--scope',
-        'user',
-      ]);
-    }),
-
   uninstall: Effect.suspend(() =>
     run('claude', [
       'plugin',
@@ -966,68 +535,33 @@ const claudeCode: PlatformHandler = {
       'user',
       '--yes',
     ]),
-  ).pipe(Effect.as(void 0)),
+  ).pipe(Effect.asVoid),
+  update: () => runClaudePlugin('update'),
 };
 
-const codex: PlatformHandler = {
+// Codex plugin add/remove share one shape: host call with the marketplace
+// reference. Host fetches keep the 120s deadline instead of the 30s default.
+const runCodexPlugin = (action: 'add' | 'remove'): Effect.Effect<void, CommandError> =>
+  run(
+    'codex',
+    ['plugin', action, `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json'],
+    120_000,
+  ).pipe(Effect.asVoid);
+
+const codex: PlatformDefinition = {
+  detect: commandExists('codex'),
+  getInstalledVersion: hostPluginVersion('codex'),
   id: 'codex',
+  install: Effect.gen(function* install() {
+    yield* prepareNpmMarketplace(codexMarketplace);
+    yield* runCodexPlugin('add');
+    yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
+  }).pipe(Effect.asVoid),
+  isInstalled: hostPluginInstalled('codex'),
   label: 'Codex CLI',
   npmPackage: '@maestria/codex',
   supportsVersionPinning: false,
-
-  detect: commandExists('codex'),
-
-  isInstalled: hostPluginList('codex').pipe(
-    Effect.map(hasMaestriaPlugin),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
-
-  getInstalledVersion: hostPluginList('codex').pipe(
-    Effect.map(installedMaestriaVersion),
-    Effect.catchCause(() => Effect.succeed('unknown')),
-  ),
-
-  getLatestVersion: npmViewVersion('@maestria/codex'),
-
-  install: Effect.gen(function* () {
-    yield* prepareNpmMarketplace(
-      '@maestria/codex',
-      CODEX_MARKETPLACE_DIR,
-      '.agents/plugins/marketplace.json',
-      codexMarketplaceManifest,
-    );
-    yield* ensureCodexMarketplace();
-    yield* run('codex', ['plugin', 'add', `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`, '--json']);
-    yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
-  }).pipe(Effect.as(void 0)),
-
-  update: (_version?: string) =>
-    Effect.gen(function* () {
-      yield* prepareNpmMarketplace(
-        '@maestria/codex',
-        CODEX_MARKETPLACE_DIR,
-        '.agents/plugins/marketplace.json',
-        codexMarketplaceManifest,
-      );
-      yield* ensureCodexMarketplace();
-      // Codex CLI has no plugin update command. Reinstalling after refreshing
-      // the marketplace is its supported update path.
-      yield* run('codex', [
-        'plugin',
-        'remove',
-        `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-        '--json',
-      ]);
-      yield* run('codex', [
-        'plugin',
-        'add',
-        `${MAESTRIA_PLUGIN}@${MAESTRIA_MARKETPLACE}`,
-        '--json',
-      ]);
-      yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
-    }),
-
-  uninstall: Effect.gen(function* () {
+  uninstall: Effect.gen(function* uninstall() {
     yield* run('codex', [
       'plugin',
       'remove',
@@ -1035,55 +569,103 @@ const codex: PlatformHandler = {
       '--json',
     ]);
     yield* removeCodexManagedAgents();
-  }).pipe(Effect.as(void 0)),
+  }).pipe(Effect.asVoid),
+  update: (_version?: string) =>
+    Effect.gen(function* update() {
+      yield* prepareNpmMarketplace(codexMarketplace);
+      // Codex CLI has no plugin update command. Reinstalling after refreshing
+      // the marketplace is its supported update path.
+      yield* runCodexPlugin('remove');
+      yield* runCodexPlugin('add');
+      yield* installCodexManagedAgents(`${CODEX_MARKETPLACE_DIR}/plugins/${MAESTRIA_PLUGIN}`);
+    }),
 };
 
-const pi: PlatformHandler = {
+/**
+ * Pi and its fork omp share one handler shape: detect the binary, read the
+ * installed version from the host's package.json, check installation by that
+ * same file, and drive install/update/uninstall through the host's package
+ * installer. Only command spelling, reference prefix, install path, label, and
+ * Pi's subagent prerequisite differ, so they are parameters here.
+ */
+interface PiStylePlatformDefinition {
+  readonly id: 'pi' | 'omp';
+  readonly label: string;
+  /** Host CLI binary and package command name. */
+  readonly binary: string;
+  readonly npmPackage: string;
+  /** Package reference prefix the host installer requires (`npm:` for Pi). */
+  readonly referencePrefix: string;
+  /** Plugin command group (`['plugin']` for omp; empty for Pi). */
+  readonly commandPrefix: readonly string[];
+  /** package.json whose `version` reports the installed Maestria package. */
+  readonly installedPackageJsonPath: string;
+  /** Peer dependency installed before every install/update; failures are ignored. */
+  readonly prerequisite?: Effect.Effect<void>;
+}
+
+const piStylePlatform = (definition: PiStylePlatformDefinition): PlatformDefinition => {
+  const packageReference = `${definition.referencePrefix}${definition.npmPackage}`;
+  const taggedReference = (version: string): string => `${packageReference}@${version}`;
+  const pluginArgs = (action: 'install' | 'uninstall', reference: string): string[] => [
+    ...definition.commandPrefix,
+    action,
+    reference,
+  ];
+
+  return {
+    detect: commandExists(definition.binary),
+    getInstalledVersion: readPackageJsonVersion(definition.installedPackageJsonPath).pipe(
+      Effect.catchCause(() => Effect.succeed('unknown')),
+    ),
+    id: definition.id,
+    install: Effect.gen(function* install() {
+      if (definition.prerequisite !== undefined) {
+        yield* definition.prerequisite;
+      }
+      yield* run(definition.binary, pluginArgs('install', packageReference), 120_000);
+    }).pipe(Effect.asVoid),
+    isInstalled: fileExists(definition.installedPackageJsonPath),
+    label: definition.label,
+    npmPackage: definition.npmPackage,
+    uninstall: run(definition.binary, pluginArgs('uninstall', packageReference)).pipe(
+      Effect.asVoid,
+    ),
+    update: (version?: string) =>
+      Effect.gen(function* update() {
+        if (definition.prerequisite !== undefined) {
+          yield* definition.prerequisite;
+        }
+        const tagged =
+          version !== null && version !== undefined && version !== ''
+            ? taggedReference(version)
+            : taggedReference('latest');
+        yield* run(definition.binary, pluginArgs('install', tagged), 120_000);
+      }),
+  };
+};
+
+/**
+ * Pi's subagent dispatch needs @gotgenes/pi-subagents. It is installed before
+ * every install/update; a failure is ignored so a missing peer dependency
+ * cannot block the main package install.
+ */
+const piSubagentsPrerequisite: Effect.Effect<void> = run(
+  'pi',
+  ['install', 'npm:@gotgenes/pi-subagents'],
+  60_000,
+).pipe(Effect.catchCause(() => Effect.void));
+
+const pi: PlatformDefinition = piStylePlatform({
+  binary: 'pi',
+  commandPrefix: [],
   id: 'pi',
+  installedPackageJsonPath: `${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`,
   label: 'Pi',
   npmPackage: '@maestria/pi',
-
-  detect: commandExists('pi'),
-
-  isInstalled: fileExists(`${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`),
-
-  getInstalledVersion: readTextFile(
-    `${homedir()}/.pi/agent/npm/node_modules/@maestria/pi/package.json`,
-  ).pipe(
-    Effect.map((out: string) => {
-      try {
-        const pkg: { version?: string } = JSON.parse(out);
-        return pkg.version ?? 'unknown';
-      } catch {
-        return 'unknown';
-      }
-    }),
-    Effect.catchCause(() => Effect.succeed('unknown')),
-  ),
-
-  getLatestVersion: npmViewVersion('@maestria/pi'),
-
-  install: Effect.gen(function* () {
-    // Install prerequisite: @gotgenes/pi-subagents for subagent dispatch
-    yield* run('pi', ['install', 'npm:@gotgenes/pi-subagents'], 60_000).pipe(
-      Effect.catchCause(() => Effect.void),
-    );
-    // Install main package
-    yield* run('pi', ['install', 'npm:@maestria/pi'], 120_000);
-  }).pipe(Effect.as(void 0)),
-
-  update: (version?: string) =>
-    Effect.gen(function* () {
-      const tagged = version ? `npm:@maestria/pi@${version}` : 'npm:@maestria/pi@latest';
-      // Ensure pi-subagents is installed (may not be for users who installed before v0.4.1)
-      yield* run('pi', ['install', 'npm:@gotgenes/pi-subagents'], 60_000).pipe(
-        Effect.catchCause(() => Effect.void),
-      );
-      yield* run('pi', ['install', tagged], 120_000);
-    }),
-
-  uninstall: run('pi', ['uninstall', 'npm:@maestria/pi']).pipe(Effect.as(void 0)),
-};
+  prerequisite: piSubagentsPrerequisite,
+  referencePrefix: 'npm:',
+});
 
 // Prime Agent is Pi rebranded: the Prime fork of @earendil-works/pi-coding-agent
 // (config dir `.prime/agent`, binary `prime-agent`). Packages are registered via
@@ -1140,15 +722,15 @@ const PRIME_MAESTRIA_SOURCE = 'npm:@maestria/prime-agent';
  * marker. Prime installs npm packages by name, so a versioned source resolves
  * to the same installed path as the unversioned one.
  */
-const PRIME_MAESTRIA_SOURCE_RE = /^\s*npm:@maestria\/prime-agent(?:@\S+)?(?:\s+\(filtered\))?\s*$/;
+const PRIME_MAESTRIA_SOURCE_RE = /^\s*npm:@maestria\/prime-agent(?:@\S+)?(?:\s+\(filtered\))?\s*$/u;
 
 /**
  * Match a version-pinned npm source registration, i.e. one with an explicit
- * @version/ref suffix (e.g. `npm:@maestria/prime-agent@0.2.0`). Prime skips
+ * version/ref suffix (e.g. `npm:@maestria/prime-agent@0.2.0`). Prime skips
  * `package update` for pinned registrations, so the CLI must not report a
  * successful update for them.
  */
-const PRIME_MAESTRIA_PINNED_RE = /^npm:@maestria\/prime-agent@\S+(?:\s+\(filtered\))?$/;
+const PRIME_MAESTRIA_PINNED_RE = /^npm:@maestria\/prime-agent@\S+(?:\s+\(filtered\))?$/u;
 
 /**
  * ANSI SGR escape sequence matcher, used to strip bold/dim styling from
@@ -1156,7 +738,7 @@ const PRIME_MAESTRIA_PINNED_RE = /^npm:@maestria\/prime-agent@\S+(?:\s+\(filtere
  * ESC byte is produced via String.fromCharCode so no control character is
  * embedded in the source (eslint no-control-regex).
  */
-const ANSI_SGR_RE = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
+const ANSI_SGR_RE = new RegExp(`${String.fromCodePoint(27)}\\[[0-9;]*m`, 'gu');
 
 /**
  * Extract the user (global) scope section of `prime-agent package list`
@@ -1165,20 +747,21 @@ const ANSI_SGR_RE = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g');
  * headers are styled bold when printed to a TTY, so ANSI codes are stripped
  * before matching. Returns [] when no user section is present.
  */
-function primeUserScopeLines(output: string): string[] {
+const primeUserScopeLines = (output: string): string[] => {
   const lines = output.replace(ANSI_SGR_RE, '').split('\n');
-  const start = lines.findIndex((line) => /^\s*user\s+packages:\s*$/i.test(line));
-  if (start === -1) return [];
+  const start = lines.findIndex((line) => /^\s*user\s+packages:\s*$/iu.test(line));
+  if (start === -1) {
+    return [];
+  }
   const end = lines.findIndex(
-    (line, index) => index > start && /^\s*project\s+packages:\s*$/i.test(line),
+    (line, index) => index > start && /^\s*project\s+packages:\s*$/iu.test(line),
   );
   return lines.slice(start + 1, end === -1 ? undefined : end);
-}
+};
 
 /** True when the user-scope section of `package list` contains our source. */
-function hasPrimeMaestriaPackage(output: string): boolean {
-  return primeUserScopeLines(output).some((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
-}
+const hasPrimeMaestriaPackage = (output: string): boolean =>
+  primeUserScopeLines(output).some((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
 
 /**
  * Return the user-scope maestria source line when it is version-pinned (e.g.
@@ -1187,36 +770,14 @@ function hasPrimeMaestriaPackage(output: string): boolean {
  * so the update flow must fail with an accurate message instead of claiming an
  * update happened.
  */
-function primeMaestriaPinnedSource(output: string): string | undefined {
+const primeMaestriaPinnedSource = (output: string): string | undefined => {
   const source = primeUserScopeLines(output).find((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
   const trimmed = source?.trim();
-  return trimmed && PRIME_MAESTRIA_PINNED_RE.test(trimmed) ? trimmed : undefined;
-}
-
-/**
- * Read a package.json file and return its `version` field using Node's
- * cross-platform fs/promises API rather than a POSIX `cat`, so installed paths
- * in either host-native or Windows format work on the matching host. A
- * Windows-style path on a POSIX host (or a missing file) fails to read and
- * falls back to 'unknown' in the caller. Fails with a CommandError to keep the
- * Effect error conventions used by the platform handlers.
- */
-export function readPackageJsonVersion(
-  packageJsonPath: string,
-): Effect.Effect<string, CommandError> {
-  return Effect.tryPromise({
-    try: async () => {
-      const { readFile } = await import('node:fs/promises');
-      const pkg: { version?: string } = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
-      return pkg.version ?? 'unknown';
-    },
-    catch: (error) =>
-      new CommandError({
-        command: `read ${packageJsonPath}`,
-        message: String(error),
-      }),
-  });
-}
+  if (trimmed === undefined || trimmed === '' || !PRIME_MAESTRIA_PINNED_RE.test(trimmed)) {
+    return undefined;
+  }
+  return trimmed;
+};
 
 /**
  * True when a path is absolute per either the host platform or Windows
@@ -1226,9 +787,7 @@ export function readPackageJsonVersion(
  * Windows-style path fails the subsequent fs read and falls back to 'unknown',
  * preserving prior behavior; on a Windows host the same read succeeds.
  */
-function isPrimeAbsolutePath(p: string): boolean {
-  return isAbsolute(p) || win32.isAbsolute(p);
-}
+const isPrimeAbsolutePath = (p: string): boolean => isAbsolute(p) || win32.isAbsolute(p);
 
 /**
  * Read the installed version from `prime-agent package list` output. Only the
@@ -1238,18 +797,22 @@ function isPrimeAbsolutePath(p: string): boolean {
  * to 'unknown' when the package is not listed, its entry has no installed
  * path, or the installed package.json cannot be read.
  */
-function primeMaestriaInstalledVersion(output: string): Effect.Effect<string, CommandError> {
+const primeMaestriaInstalledVersion = (output: string): Effect.Effect<string, CommandError> => {
   const lines = primeUserScopeLines(output);
   const sourceIndex = lines.findIndex((line) => PRIME_MAESTRIA_SOURCE_RE.test(line));
-  if (sourceIndex === -1) return Effect.succeed('unknown');
+  if (sourceIndex === -1) {
+    return Effect.succeed('unknown');
+  }
 
   const installedPath = lines[sourceIndex + 1]?.trim();
-  if (!installedPath || !isPrimeAbsolutePath(installedPath)) return Effect.succeed('unknown');
+  if (!installedPath || !isPrimeAbsolutePath(installedPath)) {
+    return Effect.succeed('unknown');
+  }
 
   return readPackageJsonVersion(`${installedPath}/package.json`).pipe(
     Effect.catchCause(() => Effect.succeed('unknown')),
   );
-}
+};
 
 /**
  * Create a fresh empty temporary working directory for Prime Agent package
@@ -1260,32 +823,30 @@ function primeMaestriaInstalledVersion(output: string): Effect.Effect<string, Co
  * CommandError when the directory cannot be created, blocking the operation
  * before any Prime command runs.
  */
-function primeTempCwd(): Effect.Effect<string, CommandError> {
-  return Effect.tryPromise({
-    try: async () => {
-      const { mkdtemp } = await import('node:fs/promises');
-      const { tmpdir } = await import('node:os');
-      const { join } = await import('node:path');
-      return await mkdtemp(join(tmpdir(), 'maestria-prime-'));
-    },
+const primeTempCwd = (): Effect.Effect<string, CommandError> =>
+  Effect.tryPromise({
     catch: (error) =>
       new CommandError({
         command: `create isolated temp cwd (${tmpdir()}/maestria-prime-*)`,
         message: `Failed to create an isolated working directory for Prime Agent: ${String(error)}`,
       }),
+    try: async () => {
+      const { mkdtemp } = await import('node:fs/promises');
+      return await mkdtemp(join(tmpdir(), 'maestria-prime-'));
+    },
   });
-}
 
 /** Remove a Prime Agent temp cwd. Best-effort: cleanup failures are ignored. */
-function removePrimeTempCwd(dir: string): Effect.Effect<void, never> {
-  return Effect.tryPromise({
+const removePrimeTempCwd = (dir: string): Effect.Effect<void> =>
+  Effect.tryPromise({
+    catch: () => {
+      /* empty */
+    },
     try: async () => {
       const { rm } = await import('node:fs/promises');
-      await rm(dir, { recursive: true, force: true });
+      await rm(dir, { force: true, recursive: true });
     },
-    catch: () => {},
   }).pipe(Effect.catchCause(() => Effect.void));
-}
 
 /**
  * Run a Prime Agent package command from a freshly created empty temporary
@@ -1293,14 +854,13 @@ function removePrimeTempCwd(dir: string): Effect.Effect<void, never> {
  * both success and failure (Effect.ensuring), and temp-cwd creation failures
  * fail closed with a CommandError before the command runs.
  */
-function withPrimeTempCwd<T>(
+const withPrimeTempCwd = <T>(
   effect: (cwd: string) => Effect.Effect<T, CommandError>,
-): Effect.Effect<T, CommandError> {
-  return Effect.gen(function* () {
+): Effect.Effect<T, CommandError> =>
+  Effect.gen(function* withPrimeTempCwdEffect() {
     const cwd = yield* primeTempCwd();
     return yield* effect(cwd).pipe(Effect.ensuring(removePrimeTempCwd(cwd)));
   });
-}
 
 /**
  * `prime-agent package list` output, read from an isolated empty temp cwd so
@@ -1316,15 +876,14 @@ const primePackageList: Effect.Effect<string, CommandError> = withPrimeTempCwd((
  * read whose parsed installed version and pinned-source state are reused by
  * the update command's version check, preflight, and update step.
  */
-function primeUpdateSnapshot(): Effect.Effect<PlatformUpdateSnapshot, CommandError> {
-  return Effect.gen(function* () {
+const primeUpdateSnapshot = (): Effect.Effect<PlatformUpdateSnapshot, CommandError> =>
+  Effect.gen(function* primeUpdateSnapshotEffect() {
     const list = yield* primePackageList;
     return {
       installedVersion: yield* primeMaestriaInstalledVersion(list),
       pinnedSource: primeMaestriaPinnedSource(list),
     };
   });
-}
 
 /**
  * Update preflight for Prime Agent. Fails with a CommandError when the
@@ -1336,18 +895,18 @@ function primeUpdateSnapshot(): Effect.Effect<PlatformUpdateSnapshot, CommandErr
  * date" short-circuit, so a pinned registration can never be reported as a
  * successful no-op update.
  */
-function primeUpdatePreflight(
+const primeUpdatePreflight = (
   snapshot?: PlatformUpdateSnapshot,
-): Effect.Effect<void, CommandError> {
-  return Effect.gen(function* () {
+): Effect.Effect<void, CommandError> =>
+  Effect.gen(function* primeUpdatePreflightEffect() {
     // A captured snapshot already knows the pinned state (pinned or not); only
     // a direct call without a snapshot (e.g. invoking the handler's update in
     // isolation) needs to read the registration state now.
     const pinnedSource =
-      snapshot !== undefined
-        ? snapshot.pinnedSource
-        : yield* primePackageList.pipe(Effect.map(primeMaestriaPinnedSource));
-    if (pinnedSource) {
+      snapshot === undefined
+        ? yield* primePackageList.pipe(Effect.map(primeMaestriaPinnedSource))
+        : snapshot.pinnedSource;
+    if (pinnedSource !== null && pinnedSource !== undefined && pinnedSource !== '') {
       yield* Effect.fail(
         new CommandError({
           command: `prime-agent package update ${PRIME_MAESTRIA_SOURCE}`,
@@ -1358,45 +917,38 @@ function primeUpdatePreflight(
         }),
       );
     }
-  }).pipe(Effect.as(void 0));
-}
+  }).pipe(Effect.asVoid);
 
-const primeAgent: PlatformHandler = {
-  id: 'prime-agent',
-  label: 'Prime Agent',
-  npmPackage: '@maestria/prime-agent',
-  supportsVersionPinning: false,
-
+const primeAgent: PlatformDefinition = {
+  captureUpdateSnapshot: primeUpdateSnapshot(),
   detect: commandExists('prime-agent'),
-
-  isInstalled: primePackageList.pipe(
-    Effect.map(hasPrimeMaestriaPackage),
-    Effect.catchCause(() => Effect.succeed(false)),
-  ),
-
   getInstalledVersion: primePackageList.pipe(
     Effect.flatMap(primeMaestriaInstalledVersion),
     Effect.catchCause(() => Effect.succeed('unknown')),
   ),
-
-  getLatestVersion: npmViewVersion('@maestria/prime-agent'),
-
-  // One per-update inspection shared by the version check, the preflight, and
-  // the update step, so a normal update lists registrations once before and
-  // once after the update command instead of once per step.
-  captureUpdateSnapshot: primeUpdateSnapshot(),
-
+  id: 'prime-agent',
+  install: withPrimeTempCwd((cwd) =>
+    run('prime-agent', ['package', 'install', PRIME_MAESTRIA_SOURCE], 120_000, cwd),
+  ).pipe(Effect.asVoid),
+  isInstalled: primePackageList.pipe(
+    Effect.map(hasPrimeMaestriaPackage),
+    Effect.catchCause(() => Effect.succeed(false)),
+  ),
+  label: 'Prime Agent',
+  npmPackage: '@maestria/prime-agent',
   // Runs before the update command's "Already up to date" short-circuit so a
   // version-pinned registration is reported as an error even when the
   // installed version already equals the latest.
   preflightUpdate: (snapshot?: PlatformUpdateSnapshot) => primeUpdatePreflight(snapshot),
-
-  install: withPrimeTempCwd((cwd) =>
-    run('prime-agent', ['package', 'install', PRIME_MAESTRIA_SOURCE], 120_000, cwd),
-  ).pipe(Effect.as(void 0)),
-
+  supportsVersionPinning: false,
+  uninstall: withPrimeTempCwd((cwd) =>
+    run('prime-agent', ['package', 'remove', PRIME_MAESTRIA_SOURCE], 60_000, cwd),
+  ).pipe(Effect.asVoid),
+  // One per-update inspection shared by the version check, the preflight, and
+  // the update step, so a normal update lists registrations once before and
+  // once after the update command instead of once per step.
   update: (_version?: string, snapshot?: PlatformUpdateSnapshot) =>
-    Effect.gen(function* () {
+    Effect.gen(function* update() {
       // Prime skips `package update` for version-pinned registrations. Detect
       // that state up front (from the per-update snapshot when available) and
       // fail with an accurate message rather than reporting a fake success
@@ -1406,25 +958,66 @@ const primeAgent: PlatformHandler = {
       yield* withPrimeTempCwd((cwd) =>
         run('prime-agent', ['package', 'update', PRIME_MAESTRIA_SOURCE], 120_000, cwd),
       );
-    }).pipe(Effect.as(void 0)),
-
-  uninstall: withPrimeTempCwd((cwd) =>
-    run('prime-agent', ['package', 'remove', PRIME_MAESTRIA_SOURCE], 60_000, cwd),
-  ).pipe(Effect.as(void 0)),
+    }).pipe(Effect.asVoid),
 };
 
-const kimiCode: PlatformHandler = {
-  id: 'kimi-code',
-  label: 'Kimi Code',
-  npmPackage: '@maestria/kimi-code',
+/**
+ * Replace a platform's installed plugin payload while preserving the host
+ * state around it. `capture` reads the pre-replacement state (a failure aborts
+ * before anything is destroyed), `replace` installs the new payload, and
+ * `restore` reapplies the captured state to the fresh payload.
+ * `invalidatePackage` clears the npm version cache after a successful update,
+ * which only the update paths need.
+ *
+ * Capture and replace are thunks so call sites resolve environment-dependent
+ * paths when the operation runs, not when the handler is defined.
+ */
+interface ReplacePlatformPayloadOptions<State> {
+  readonly capture: () => Effect.Effect<State, CommandError>;
+  readonly replace: () => Effect.Effect<void, CommandError>;
+  readonly restore: (state: State) => Effect.Effect<void, CommandError>;
+  readonly invalidatePackage?: string;
+}
 
-  detect: Effect.gen(function* () {
-    if (yield* commandExists('kimi')) return true;
+const replacePlatformPayload = <State>(
+  options: ReplacePlatformPayloadOptions<State>,
+): Effect.Effect<void, CommandError> =>
+  Effect.gen(function* replacePlatformPayloadEffect() {
+    const state = yield* options.capture();
+    yield* options.replace();
+    yield* options.restore(state);
+    if (options.invalidatePackage !== undefined && options.invalidatePackage !== '') {
+      yield* invalidateVersionCache(options.invalidatePackage).pipe(
+        Effect.catchCause(() => Effect.void),
+      );
+    }
+  });
+
+const kimiCode: PlatformDefinition = {
+  detect: Effect.gen(function* detect() {
+    if (yield* commandExists('kimi')) {
+      return true;
+    }
     const hasRegistry = yield* fileExists(kimiInstalledPath());
-    if (hasRegistry) return true;
+    if (hasRegistry) {
+      return true;
+    }
     return yield* fileExists(`${kimiCodeHome()}/config.toml`);
   }),
-
+  getInstalledVersion: Effect.suspend(() =>
+    readPackageJsonVersion(`${kimiManagedPluginDir()}/kimi.plugin.json`).pipe(
+      Effect.catchCause(() => Effect.succeed('unknown')),
+    ),
+  ),
+  id: 'kimi-code',
+  install: replacePlatformPayload({
+    // Validate the host registry before the tarball helper replaces the managed
+    // directory. Kimi's plugin manager treats malformed installed.json as a
+    // load failure, so do not destroy the current copy before surfacing it.
+    capture: readKimiInstalled,
+    replace: () => installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir()),
+    restore: registerKimiPlugin,
+  }),
   isInstalled: readKimiInstalled().pipe(
     Effect.map((file) => file.plugins.some((plugin) => plugin.id === MAESTRIA_PLUGIN)),
     Effect.flatMap((installed) =>
@@ -1432,293 +1025,197 @@ const kimiCode: PlatformHandler = {
     ),
     Effect.catchCause(() => Effect.succeed(false)),
   ),
-
-  getInstalledVersion: Effect.suspend(() =>
-    readTextFile(`${kimiManagedPluginDir()}/kimi.plugin.json`).pipe(
-      Effect.map((out: string) => {
-        try {
-          return JSON.parse(out).version ?? 'unknown';
-        } catch {
-          return 'unknown';
-        }
-      }),
-      Effect.catchCause(() => Effect.succeed('unknown')),
-    ),
-  ),
-
-  getLatestVersion: npmViewVersion('@maestria/kimi-code'),
-
-  install: Effect.gen(function* () {
-    // Validate the host registry before the tarball helper replaces the managed
-    // directory. Kimi's plugin manager treats malformed installed.json as a
-    // load failure, so do not destroy the current copy before surfacing it.
-    yield* readKimiInstalled();
-    yield* installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir());
-    yield* registerKimiPlugin();
-  }).pipe(Effect.as(void 0)),
-
+  label: 'Kimi Code',
+  npmPackage: '@maestria/kimi-code',
+  uninstall: removeKimiPlugin().pipe(Effect.asVoid),
   update: (version?: string) =>
-    Effect.gen(function* () {
-      const tag = version ?? 'latest';
-      yield* readKimiInstalled();
-      yield* installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir(), { tag });
-      yield* registerKimiPlugin();
-      yield* invalidateVersionCache('@maestria/kimi-code').pipe(
-        Effect.catchCause(() => Effect.void),
-      );
-    }).pipe(Effect.as(void 0)),
-
-  uninstall: removeKimiPlugin().pipe(Effect.as(void 0)),
+    replacePlatformPayload({
+      capture: readKimiInstalled,
+      invalidatePackage: '@maestria/kimi-code',
+      replace: () =>
+        installNpmTarball('@maestria/kimi-code', kimiManagedPluginDir(), {
+          tag: version ?? 'latest',
+        }),
+      restore: registerKimiPlugin,
+    }),
 };
 
-const hermes: PlatformHandler = {
-  id: 'hermes',
-  label: 'Hermes',
-  // No npmPackage - distributed via hermes plugins install (git-based)
-
+const hermes: PlatformDefinition = {
   detect: commandExists('hermes'),
-
-  isInstalled: fileExists(`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`),
-
   getInstalledVersion: readTextFile(
     `${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`,
   ).pipe(
     Effect.map((out: string) => {
-      const match = out.match(/^version:\s*["']?(.+?)["']?\s*$/m);
-      return match?.[1] ?? 'unknown';
+      const match = /^version:\s*["']?(?<version>.+?)["']?\s*$/mu.exec(out);
+      return match?.groups?.version ?? 'unknown';
     }),
     Effect.catchCause(() => Effect.succeed('unknown')),
   ),
-
   getLatestVersion: Effect.succeed('see GitHub releases'),
-
-  install: Effect.gen(function* () {
+  id: 'hermes',
+  // No npmPackage - distributed via hermes plugins install (git-based)
+  install: Effect.gen(function* install() {
     yield* run(
       'hermes',
       ['plugins', 'install', 'agustinusnathaniel/maestria/packages/hermes', '--enable'],
       120_000,
     );
-  }).pipe(Effect.as(void 0)),
+  }).pipe(Effect.asVoid),
 
+  isInstalled: fileExists(`${homedir()}/.hermes/plugins/maestria-hermes/plugin.yaml`),
+  label: 'Hermes',
+  uninstall: Effect.gen(function* uninstall() {
+    yield* run('hermes', ['plugins', 'remove', 'maestria-hermes'], 15_000);
+  }).pipe(Effect.asVoid),
   update: (_version?: string) =>
-    Effect.gen(function* () {
-      if (_version) {
+    Effect.gen(function* update() {
+      if (_version !== null && _version !== undefined && _version !== '') {
         console.log(
           `  ${picocolors.yellow('⚠')} Version pinning is not supported for git-based Hermes plugins. ` +
             `Updating to latest from git.`,
         );
       }
-      yield* run('hermes', ['plugins', 'update', 'maestria-hermes'], 60_000);
+      // Git pull of latest; shares install's 120s deadline.
+      yield* run('hermes', ['plugins', 'update', 'maestria-hermes'], 120_000);
     }),
-
-  uninstall: Effect.gen(function* () {
-    yield* run('hermes', ['plugins', 'remove', 'maestria-hermes'], 15_000);
-  }).pipe(Effect.as(void 0)),
 };
 
 const CURSOR_PLUGIN_DIR = `${homedir()}/.cursor/plugins/local/maestria`;
 const CURSOR_PLUGIN_JSON = `${CURSOR_PLUGIN_DIR}/.cursor-plugin/plugin.json`;
-const CURSOR_AGENT_NAMES = [
-  'adventurer',
-  'architect',
-  'builder',
-  'diagnose',
-  'planner',
-  'reviewer',
-  'writer',
-] as const;
-
-function cursorCliName(): Effect.Effect<string | undefined, never> {
-  return Effect.gen(function* () {
-    if (yield* commandExists('cursor-agent')) return 'cursor-agent';
-    if (!(yield* commandExists('agent'))) return undefined;
-
-    const version = yield* run('agent', ['--version'], 3_000).pipe(
-      Effect.catchCause(() => Effect.succeed('')),
-    );
-    return /cursor/i.test(version) ? 'agent' : undefined;
-  });
-}
-
-function parseCursorAgentModel(content: string): string | undefined {
-  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content)?.[1];
-  if (frontmatter === undefined) return undefined;
-  const match = /^model:\s*(?:"([^"]*)"|'([^']*)'|(.+?))\s*$/m.exec(frontmatter);
-  return match?.[1] ?? match?.[2] ?? match?.[3];
-}
-
-function setCursorAgentModel(content: string, model: string): string {
-  const match = /^(---\r?\n)([\s\S]*?)(\r?\n---(?:\r?\n)?)/.exec(content);
-  if (!match) return content;
-  const [, opening, body, closing] = match;
-  if (opening === undefined || body === undefined || closing === undefined) return content;
-
-  const lines = body.split(/\r?\n/);
-  const modelIndex = lines.findIndex((line) => /^model:\s*/.test(line));
-  if (model) {
-    const rendered = `model: ${model}`;
-    if (modelIndex >= 0) lines[modelIndex] = rendered;
-    else lines.push(rendered);
-  } else if (modelIndex >= 0) {
-    lines.splice(modelIndex, 1);
-  }
-  return `${opening}${lines.join('\n')}${closing}${content.slice(match[0].length)}`;
-}
+export const CURSOR_AGENT_NAMES = MAESTRIA_AGENTS;
 
 /** Capture configured Cursor plugin-agent models before a package update replaces the plugin. */
-function readCursorAgentModels(): Effect.Effect<Record<string, string>, CommandError> {
-  return Effect.tryPromise({
-    try: async () => {
-      const { readFile } = await import('node:fs/promises');
-      const result: Record<string, string> = {};
-      for (const agent of CURSOR_AGENT_NAMES) {
-        try {
-          const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf8');
-          const model = parseCursorAgentModel(content);
-          if (model) result[agent] = model;
-        } catch (error) {
-          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-        }
-      }
-      return result;
-    },
+const readCursorAgentModels = (): Effect.Effect<Record<string, string>, CommandError> =>
+  Effect.tryPromise({
     catch: (error) =>
       new CommandError({
         command: `read Cursor agent models from ${CURSOR_PLUGIN_DIR}/agents`,
         message: String(error),
       }),
+    try: async () => {
+      const { readFile } = await import('node:fs/promises');
+      const entries = await Promise.all(
+        CURSOR_AGENT_NAMES.map(async (agent) => {
+          try {
+            const content = await readFile(`${CURSOR_PLUGIN_DIR}/agents/${agent}.md`, 'utf-8');
+            const model = parseAgentFrontmatterModel(content, { unquote: true });
+            return model === undefined || model === '' ? null : ([agent, model] as const);
+          } catch (error) {
+            if (isFileNotFound(error)) {
+              return null;
+            }
+            throw error;
+          }
+        }),
+      );
+      return Object.fromEntries(entries.filter((entry) => entry !== null));
+    },
   });
-}
 
 /** Reapply configured Cursor plugin-agent models after replacing the generated package files. */
-function restoreCursorAgentModels(
+const restoreCursorAgentModels = (
   models: Record<string, string>,
-): Effect.Effect<void, CommandError> {
-  return Effect.tryPromise({
-    try: async () => {
-      const { mkdir, readFile, writeFile } = await import('node:fs/promises');
-      const agentDir = `${CURSOR_PLUGIN_DIR}/agents`;
-      await mkdir(agentDir, { recursive: true });
-      for (const [agent, model] of Object.entries(models)) {
-        const path = `${agentDir}/${agent}.md`;
-        const content = await readFile(path, 'utf8');
-        await writeFile(path, setCursorAgentModel(content, model), 'utf8');
-      }
-    },
+): Effect.Effect<void, CommandError> =>
+  Effect.tryPromise({
     catch: (error) =>
       new CommandError({
         command: `restore Cursor agent models in ${CURSOR_PLUGIN_DIR}/agents`,
         message: String(error),
       }),
+    try: async () => {
+      const { mkdir, readFile, writeFile } = await import('node:fs/promises');
+      const agentDir = `${CURSOR_PLUGIN_DIR}/agents`;
+      await mkdir(agentDir, { recursive: true });
+      await Promise.all(
+        Object.entries(models).map(async ([agent, model]) => {
+          const filePath = `${agentDir}/${agent}.md`;
+          const content = await readFile(filePath, 'utf-8');
+          await writeFile(
+            filePath,
+            setAgentFrontmatterModel(content, model, { preserveDelimiters: true }),
+            'utf-8',
+          );
+        }),
+      );
+    },
   });
-}
 
-const cursor: PlatformHandler = {
-  id: 'cursor',
-  label: 'Cursor',
-  npmPackage: '@maestria/cursor',
+/**
+ * Cursor's local plugin directory lives under `~/.cursor/plugins/local`; make
+ * sure the parent exists before the tarball is extracted into it.
+ */
+const ensureCursorPluginParentDirectory = (): Effect.Effect<void, CommandError> =>
+  Effect.tryPromise({
+    catch: (error) =>
+      new CommandError({
+        command: `mkdir -p ${homedir()}/.cursor/plugins/local`,
+        message: String(error),
+      }),
+    try: async () => {
+      const { mkdir } = await import('node:fs/promises');
+      await mkdir(`${homedir()}/.cursor/plugins/local`, { recursive: true });
+    },
+  });
 
-  detect: Effect.gen(function* () {
-    if (yield* cursorCliName()) return true;
+const cursor: PlatformDefinition = {
+  detect: Effect.gen(function* detect() {
+    const cliName = yield* cursorCliName();
+    if (cliName !== null && cliName !== undefined && cliName !== '') {
+      return true;
+    }
     // An unrelated `agent` binary (for example another vendor's CLI) must not
     // be rescued by the broad ~/.cursor directory fallback.
-    if (yield* commandExists('agent')) return false;
+    if (yield* commandExists('agent')) {
+      return false;
+    }
     return yield* fileExists(`${homedir()}/.cursor`);
   }),
-
-  isInstalled: fileExists(CURSOR_PLUGIN_JSON),
-
-  getInstalledVersion: readTextFile(`${CURSOR_PLUGIN_DIR}/package.json`).pipe(
-    Effect.map((out: string) => {
-      try {
-        const pkg: { version?: string } = JSON.parse(out);
-        return pkg.version ?? 'unknown';
-      } catch {
-        return 'unknown';
-      }
-    }),
+  getInstalledVersion: readPackageJsonVersion(`${CURSOR_PLUGIN_DIR}/package.json`).pipe(
     Effect.catchCause(() => Effect.succeed('unknown')),
   ),
-
-  getLatestVersion: npmViewVersion('@maestria/cursor'),
-
-  install: Effect.gen(function* () {
-    const models = yield* readCursorAgentModels();
+  id: 'cursor',
+  install: replacePlatformPayload({
+    capture: readCursorAgentModels,
+    replace: () =>
+      ensureCursorPluginParentDirectory().pipe(
+        Effect.flatMap(() => installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR)),
+      ),
+    restore: restoreCursorAgentModels,
+  }),
+  isInstalled: fileExists(CURSOR_PLUGIN_JSON),
+  label: 'Cursor',
+  npmPackage: '@maestria/cursor',
+  uninstall: Effect.gen(function* uninstall() {
     yield* Effect.tryPromise({
-      try: async () => {
-        const { mkdir } = await import('node:fs/promises');
-        await mkdir(`${homedir()}/.cursor/plugins/local`, { recursive: true });
-      },
-      catch: (error) =>
-        new CommandError({
-          command: `mkdir -p ${homedir()}/.cursor/plugins/local`,
-          message: String(error),
-        }),
-    });
-    yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR);
-    yield* restoreCursorAgentModels(models);
-  }).pipe(Effect.as(void 0)),
-
-  update: (version?: string) =>
-    Effect.gen(function* () {
-      const tag = version ?? 'latest';
-      const models = yield* readCursorAgentModels();
-      yield* installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR, { tag });
-      yield* restoreCursorAgentModels(models);
-      // Invalidate version cache so npmViewVersion doesn't return stale data
-      yield* invalidateVersionCache('@maestria/cursor').pipe(Effect.catchCause(() => Effect.void));
-    }).pipe(Effect.as(void 0)),
-
-  uninstall: Effect.gen(function* () {
-    yield* Effect.tryPromise({
-      try: () =>
-        import('node:fs/promises').then((m) =>
-          m.rm(CURSOR_PLUGIN_DIR, { recursive: true, force: true }),
-        ),
       catch: (e) =>
         new CommandError({ command: `rm -rf ${CURSOR_PLUGIN_DIR}`, message: String(e) }),
+      try: async () => {
+        await import('node:fs/promises').then(async (m) => {
+          await m.rm(CURSOR_PLUGIN_DIR, { force: true, recursive: true });
+        });
+      },
     });
-  }).pipe(Effect.as(void 0)),
+  }).pipe(Effect.asVoid),
+  update: (version?: string) =>
+    replacePlatformPayload({
+      capture: readCursorAgentModels,
+      invalidatePackage: '@maestria/cursor',
+      replace: () =>
+        installNpmTarball('@maestria/cursor', CURSOR_PLUGIN_DIR, { tag: version ?? 'latest' }),
+      restore: restoreCursorAgentModels,
+    }),
 };
 
-const omp: PlatformHandler = {
+// omp has built-in task dispatch, so it has no subagent prerequisite.
+const omp: PlatformDefinition = piStylePlatform({
+  binary: 'omp',
+  commandPrefix: ['plugin'],
   id: 'omp',
+  installedPackageJsonPath: `${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`,
   label: 'Oh My Pi',
   npmPackage: '@maestria/omp',
-
-  detect: commandExists('omp'),
-
-  isInstalled: fileExists(`${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`),
-
-  getInstalledVersion: readTextFile(
-    `${homedir()}/.omp/plugins/node_modules/@maestria/omp/package.json`,
-  ).pipe(
-    Effect.map((out: string) => {
-      try {
-        const pkg: { version?: string } = JSON.parse(out);
-        return pkg.version ?? 'unknown';
-      } catch {
-        return 'unknown';
-      }
-    }),
-    Effect.catchCause(() => Effect.succeed('unknown')),
-  ),
-
-  getLatestVersion: npmViewVersion('@maestria/omp'),
-
-  install: Effect.gen(function* () {
-    // omp has built-in task dispatch - no subagent prerequisite needed
-    yield* run('omp', ['plugin', 'install', '@maestria/omp'], 120_000);
-  }).pipe(Effect.as(void 0)),
-
-  update: (version?: string) =>
-    Effect.gen(function* () {
-      const tagged = version ? `@maestria/omp@${version}` : '@maestria/omp@latest';
-      yield* run('omp', ['plugin', 'install', tagged], 120_000);
-    }),
-
-  uninstall: run('omp', ['plugin', 'uninstall', '@maestria/omp']).pipe(Effect.as(void 0)),
-};
+  referencePrefix: '',
+});
 
 // ── Registry ─────────────────────────────────────────
 export const platforms: readonly PlatformHandler[] = [
@@ -1731,8 +1228,18 @@ export const platforms: readonly PlatformHandler[] = [
   omp,
   claudeCode,
   codex,
-];
+].map(resolveLatestVersion);
 
-export function getPlatform(id: string): PlatformHandler | undefined {
-  return platforms.find((p) => p.id === id);
-}
+export const getPlatform = (id: string): PlatformHandler | undefined =>
+  platforms.find((p) => p.id === id);
+
+export const getPlatformOrResult = (
+  id: string,
+  fallbackLabel?: string,
+): PlatformHandler | PlatformResult =>
+  getPlatform(id) ?? {
+    id,
+    label: fallbackLabel ?? id,
+    message: 'Platform definition not found. This is a bug.',
+    ok: false,
+  };

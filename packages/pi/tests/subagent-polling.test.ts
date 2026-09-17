@@ -1,14 +1,16 @@
 import { Effect } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
-import { pollSubagentEffect, type SubagentRecord } from '@/subagent-polling.js';
 
-function service(getRecord: (id: string) => SubagentRecord | undefined) {
-  return { getRecord };
-}
+import { pollSubagentEffect } from '@/subagent-polling.js';
+import type { SubagentRecord } from '@/subagent-polling.js';
+
+const service = (getRecord: (id: string) => SubagentRecord | undefined) => ({
+  getRecord,
+});
 
 describe('pollSubagentEffect', () => {
   it('returns a terminal record without waiting', async () => {
-    const record = { status: 'completed', result: 'done' };
+    const record = { result: 'done', status: 'completed' };
 
     await expect(
       Effect.runPromise(
@@ -29,7 +31,7 @@ describe('pollSubagentEffect', () => {
           id: 'subagent-missing',
           label: 'builder',
           sendUpdates: false,
-          service: service(() => undefined),
+          service: service(() => {}),
         }),
       ),
     ).rejects.toMatchObject({
@@ -44,11 +46,11 @@ describe('pollSubagentEffect', () => {
     const pending = Effect.runPromise(
       pollSubagentEffect({
         id: 'subagent-aborted',
+        intervalMs: 5,
         label: 'builder',
         sendUpdates: false,
         service: service(() => ({ status: 'running' })),
         signal: controller.signal,
-        intervalMs: 5,
       }),
     );
 
@@ -66,10 +68,10 @@ describe('pollSubagentEffect', () => {
       Effect.runPromise(
         pollSubagentEffect({
           id: 'subagent-timeout',
+          intervalMs: 1,
           label: 'builder',
           sendUpdates: false,
           service: service(() => ({ status: 'running' })),
-          intervalMs: 1,
           timeoutMs: 2,
         }),
       ),
