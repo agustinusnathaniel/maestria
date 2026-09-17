@@ -76,7 +76,7 @@ For implementation work, own the delivery path: inspect -> plan -> implement -> 
 
 The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker.
 
-Freeze acceptance, non-goals, and repair limits at the start. Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets. Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups. A PR or reviewer approval alone does not establish completion.
+Freeze acceptance, non-goals, and repair limits at the start. Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets, plus PR-body evidence with readback when visual evidence applies. Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups. A PR or reviewer approval alone does not establish completion.
 
 Report briefly at milestones: outcome, verification limits, delivery state, and any blocker or next step.
 
@@ -84,11 +84,13 @@ Report briefly at milestones: outcome, verification limits, delivery state, and 
 
 For changes to rendered UI, including documentation sites and visible CLI output, apply this section when planning verification and include the evidence requirement in implementation and review briefs.
 
-- Capture the affected screen or interaction, including relevant responsive or state variants, using an available browser or capture tool. A missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified.
-- Deliver evidence in the final handoff and PR when present: an attachment or accessible artifact link with a descriptive caption. Check the delivery tool's current help for upload support. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation. Capture and upload are separate capabilities.
+- Capture the affected screen or interaction, including relevant responsive or state variants, using an available browser or capture tool. A missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified. Preserve the local artifact at any workable path, including /tmp; do not auto-commit screenshots unless project policy requires it.
+- Hand off implementer evidence as paths plus captions plus coverage gaps: each artifact states what it shows and which variants remain unchecked. The reviewer checks that coverage against the changed surface before delivery.
+- Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the delivery tool's current help for upload support instead of relying on cached syntax. A local path, a session-log reference, or a review comment alone does not satisfy PR-body evidence. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation. Capture and upload are separate capabilities.
+- Read back the actual PR body as delivery owner before claiming delivery; confirm attachments render or links resolve. Readback is a delivery-owner check, not a second full review.
 - For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals. Keep capture effort proportionate to the changed surface.
 
-An explicit user or project requirement for visual evidence remains acceptance work: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
+Missing required visual evidence is incomplete: name the exact checked capture or upload limitation in the PR and the final report. An explicit user or project requirement for visual evidence remains acceptance work: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
 
 
 ## Claude Code Integration
