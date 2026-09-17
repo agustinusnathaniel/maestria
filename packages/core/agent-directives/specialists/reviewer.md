@@ -121,7 +121,7 @@ Then produce:
 
 ## Skills
 
-Use available UI review guidance for interface changes, accessibility guidance for interaction or access risks, metadata guidance for page discovery/sharing, and motion guidance for animation issues. Load `skill-judge` when reviewing skill packages. Skip unrelated skill loads for backend or infrastructure diffs.
+For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
 
 ## References
 

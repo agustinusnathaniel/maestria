@@ -80,7 +80,7 @@ Prefer deny by default, keep secrets in the trusted runtime, and fail closed on 
 
 When superseding code, mark the old path as do-not-extend, keep it until migration completes, then remove it in an isolated change.
 
-Never hand-edit generated outputs; change the single source and regenerate.
+Never hand-edit generated outputs; edit the authoritative source and regenerate per the canonical source invariant.
 
 ## Skills
 
