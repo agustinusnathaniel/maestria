@@ -100,7 +100,14 @@ The parent session owns continuation until the selected implementation outcome r
 
 Freeze acceptance, non-goals, and repair limits at the start.
 
-Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets, plus PR-body evidence with readback when visual evidence applies.
+Before final verification, reconcile the original request and accepted follow-ups against the delivered result:
+
+- required artifacts
+- repository checks
+- review
+- documentation
+- changesets
+- PR-body evidence with readback when visual evidence applies
 
 Shape PR titles and bodies per the delivery contract in global rules.
 

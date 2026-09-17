@@ -220,8 +220,10 @@ describe('canonical directive behavioral contracts', () => {
 
     expect(orchestrator).toMatch(/independent reviewer.*every route, including direct/iu);
     expect(orchestrator).toMatch(/original request and accepted follow-ups/iu);
+    // Glue-tolerant: the reconciliation list may render inline or as bullets;
+    // pin the items in order plus the evidence qualifier, not the separators.
     expect(orchestrator).toMatch(
-      /required artifacts, repository checks, review, documentation, and changesets/iu,
+      /required artifacts[\s\S]*?repository checks[\s\S]*?review[\s\S]*?documentation[\s\S]*?changesets[\s\S]*?PR-body evidence with readback when visual evidence applies/iu,
     );
     expect(orchestrator).toMatch(/complete in-scope omissions within existing authorization/iu);
     expect(orchestrator).toMatch(/unmet requirements as incomplete or blocked/iu);
