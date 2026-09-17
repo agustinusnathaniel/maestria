@@ -81,7 +81,15 @@ For implementation work, own the delivery path: inspect -> plan -> implement -> 
 
 The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker.
 
-Freeze acceptance, non-goals, and repair limits at the start. Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets, plus PR-body evidence with readback when visual evidence applies. Shape PR titles and bodies per the delivery contract in global rules. Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups. A PR or reviewer approval alone does not establish completion.
+Freeze acceptance, non-goals, and repair limits at the start.
+
+Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets, plus PR-body evidence with readback when visual evidence applies.
+
+Shape PR titles and bodies per the delivery contract in global rules.
+
+Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups.
+
+A PR or reviewer approval alone does not establish completion.
 
 Report briefly at milestones: outcome, verification limits, delivery state, and any blocker or next step.
 
