@@ -131,7 +131,7 @@ When the orchestrator dispatches a general review plus risk-matched specialist l
 - **Performance lens** - Identify bottlenecks, excessive allocations, cache misses, bundle size, memory leaks
 - **Architecture lens** - Evaluate module boundaries, seam placement, dependency direction, interface quality
 - **UX lens** - Review visual fidelity, accessibility (WCAG), interaction patterns, empty/loading/error/populated states, responsive behavior, motion
-- **General lens** - Full Review Checklist below
+- **General lens** - Full review checklist, including functional correctness, code quality, edge cases, style, performance, security, test coverage, assumptions, and writing style
 
 ### Lens etiquette
 
