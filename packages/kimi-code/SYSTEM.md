@@ -80,8 +80,12 @@ Merge, release, and production operations remain separate authorization boundari
 
 Shape every reviewable PR with a title written as an explicit Conventional Commits title (not inferred from commit format) and a body using literal `##` headings in this order:
 
-1. `## Summary` (what changed and why)
-2. `## Changes` (Work Results table with File, What changed, and Why columns)
+1. `## Summary` (what changed and why):
+   - Lead with the user-visible outcome, or the maintainer benefit for internal changes, in plain language.
+   - Keep it a short paragraph or a few concise bullets; leave file details, history, and verification to their sections.
+2. `## Changes` (Work Results table with File, What changed, and Why columns):
+   - Describe the actual change and its practical purpose, not the editing action.
+   - Group related files that share one change and rationale; skip repeating the Summary and list only symbols that help review.
 3. `## Verification` (checks run, results, and unresolved acceptance gaps)
 4. `## Visual evidence` when applicable (per the visual-delivery contract)
 5. `## Breaking changes` when applicable (migration guidance)
