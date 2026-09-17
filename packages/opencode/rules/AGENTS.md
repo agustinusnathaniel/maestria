@@ -97,4 +97,4 @@ After any push that changes the cumulative diff or verification evidence, update
 
 ## Canonical Source Invariant
 
-Edit the project's authoritative source and regenerate derived outputs with its documented workflow; never hand-edit generated copies. Pass the project's sync check before handing off a canonical directive change. Repository-specific source paths and commands belong in that repository's instructions.
+Edit the project's authoritative source and regenerate derived outputs with its documented workflow; never hand-edit generated outputs. Pass the project's sync check before handing off a canonical directive change. Repository-specific source paths and commands belong in that repository's instructions.
