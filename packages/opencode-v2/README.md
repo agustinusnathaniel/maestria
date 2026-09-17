@@ -28,9 +28,9 @@ Checked against the installed package types (zero `any` casts) and https://openc
 | `ctx.reference.transform` | `add`, `remove`, `list`, `get` | `add(name, source)` with `{ type: "local", path, description?, hidden? }` local sources, plus `remove`, `list`; no `get` | ✅ compatible (this plugin only uses `add`) |
 | `ctx.session.hook("context")` | mutable `system`, `messages`, `tools` before model dispatch | `SessionContext` with mutable `system: SystemPart[]`, `messages: Message[]`, `tools` record | ✅ match |
 | `ctx.session.hook` other hooks | `prompt`, `compaction`, `generate`, `title`, `model.request`, `http.request` / `http.response`, `retry`, experimental `ws.*` | only `context`, `http.request`, `http.response` | ❌ pin behind docs (see Known limitations) |
-| `ctx.tool.transform` | one-arg `add(tool)` plus `list`, `get`, `namespace`, `update`, `remove` | `ToolDraft.add({ name, ... })` one-arg only; `name` is required inside the tool object | ✅ compatible (this plugin only uses `add`) |
+| `ctx.tool.transform` | one-arg `add(tool)` plus `list`, `get`, `namespace`, `update`, `remove` | `ToolDraft.add({ name, ... })` one-arg only; `name` is required inside the tool object | ✅ compatible (verified; currently unused, no tool registration) |
 | `ctx.catalog.model.default` | `set(providerID, modelID)` | `set(providerID, modelID)` | ✅ match |
-| `ctx.command.transform` | add-only `add({ name, description, execute })` | template model `list`, `get`, `update(name, cb)`, `remove`; no `add` | ❌ pin behind docs (code handles both shapes defensively) |
+| `ctx.command.transform` | add-only `add({ name, description, execute })` | template model `list`, `get`, `update(name, cb)`, `remove`; no `add` | ❌ pin behind docs (code uses get/update only; missing entries warn since the pin has no `add`) |
 | Agent fields | `system` / `permissions[]` / `steps`; warns against legacy `prompt` / `maxSteps` | same V2 field names on `Agent.Info` | ✅ match (docs no longer use V1 names) |
 | `ctx.skill.transform` | `list`, `get`, `add`, `update`, `remove` over `Skill.Info` | CRUD shape: `add(skill)`, `update(id, cb)`, `remove(id)`, `list()`; no `get` | ✅ compatible (code uses `list().find()` instead of `get`) |
 
@@ -38,7 +38,7 @@ Notes:
 
 - The tool registration mismatch from August (docs two-arg `tools.add(name, tool)` vs package one-arg) is resolved on both sides: current docs and the pin both use one-arg `add(tool)`. The remaining gap is the reverse: docs list extra editors (`list`, `get`, `namespace`, `update`, `remove`) the pin lacks.
 - The skill `get(id)` helper exists in current docs but not in the pin; the loader uses `list().find()` so no code change is needed.
-- The command gap is structural: docs describe code-style commands with an `execute` callback, the pin describes template-style commands discovered from `agents/commands/`. `src/transforms/commands.ts` feature-detects `add()` at runtime and updates in place otherwise.
+- The command gap is structural: docs describe code-style commands with an `execute` callback, the pin describes template-style commands discovered from `agents/commands/`. `src/transforms/commands.ts` uses `get()` plus `update()` in place, and warns when a synced template has no draft entry (the pin has no `add()`).
 - Session hook coverage beyond `"context"` (notably `"compaction"`, the documented V2 destination for V1 `experimental.session.compacting` per `/migrate-v1`) is not available in the pin; see Known limitations.
 
 ## Known limitations
