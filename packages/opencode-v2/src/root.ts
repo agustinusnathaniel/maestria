@@ -1,19 +1,18 @@
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = import.meta.filename;
+const __dirname = import.meta.dirname;
 
-export const PACKAGE_ROOT = join(__dirname, '..');
-export const AGENTS_DIR = join(PACKAGE_ROOT, 'agents');
-export const COMMANDS_DIR = join(AGENTS_DIR, 'commands');
-export const RULES_DIR = join(PACKAGE_ROOT, 'rules');
-export const RULES_PATH = join(RULES_DIR, 'AGENTS.md');
+export const PACKAGE_ROOT = path.join(__dirname, '..');
+export const AGENTS_DIR = path.join(PACKAGE_ROOT, 'agents');
+export const COMMANDS_DIR = path.join(AGENTS_DIR, 'commands');
+export const RULES_DIR = path.join(PACKAGE_ROOT, 'rules');
+export const RULES_PATH = path.join(RULES_DIR, 'AGENTS.md');
 
 // Bundled skills dir (future sync target; currently empty - see CORE_SKILLS_DIR fallback)
-export const SKILLS_DIR = join(PACKAGE_ROOT, 'skills');
+export const SKILLS_DIR = path.join(PACKAGE_ROOT, 'skills');
 // Canonical skills source - used as fallback when SKILLS_DIR is empty/not synced
-export const CORE_SKILLS_DIR = join(PACKAGE_ROOT, '../core/agent-directives/skills');
+export const CORE_SKILLS_DIR = path.join(PACKAGE_ROOT, '../core/agent-directives/skills');
 
 // NOTE: Location-aware override - PACKAGE_ROOT is correct for the bundled plugin (agents/skills live
 // inside the package). `ctx.location` (workspace/project directory) is available for future project-level

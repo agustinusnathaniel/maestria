@@ -1,29 +1,42 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { AGENTS_DIR } from '@/root.js';
 
 export interface AgentInfo {
   description: string;
   mode: string;
-  prompt: string; // the markdown body - this maps to Agent.Info.system
+  // the markdown body - this maps to Agent.Info.system
+  prompt: string;
   steps?: number;
   color?: string;
 }
 
-function parseFrontmatter(yamlStr: string): Omit<AgentInfo, 'prompt'> {
-  const result = parseYaml(yamlStr) as Record<string, unknown>;
-  return {
-    description: (result.description as string) || '',
-    mode: (result.mode as string) || 'subagent',
-    steps: result.steps ? Number(result.steps) : undefined,
-    color: result.color as string | undefined,
-  };
-}
+export type AgentMode = 'all' | 'primary' | 'subagent';
 
-function parseAgentFile(filePath: string): { name: string; config: AgentInfo } {
+export const isAgentMode = (value: unknown): value is AgentMode =>
+  value === 'all' || value === 'primary' || value === 'subagent';
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const parseFrontmatter = (yamlStr: string): Omit<AgentInfo, 'prompt'> => {
+  const parsed = parseYaml(yamlStr) as unknown;
+  const result = isRecord(parsed) ? parsed : {};
+  return {
+    color: typeof result.color === 'string' ? result.color : undefined,
+    description: typeof result.description === 'string' ? result.description : '',
+    mode: typeof result.mode === 'string' && result.mode !== '' ? result.mode : 'subagent',
+    steps:
+      result.steps !== undefined && result.steps !== null && result.steps !== ''
+        ? Number(result.steps)
+        : undefined,
+  };
+};
+
+const parseAgentFile = (filePath: string): { name: string; config: AgentInfo } => {
   const content = readFileSync(filePath, 'utf-8');
-  const name = basename(filePath, '.md');
+  const name = path.basename(filePath, '.md');
 
   const parts = content.split('---');
   if (parts.length < 3) {
@@ -34,12 +47,12 @@ function parseAgentFile(filePath: string): { name: string; config: AgentInfo } {
   const prompt = parts.slice(2).join('---').trim();
 
   return {
-    name,
     config: { ...frontmatter, prompt },
+    name,
   };
-}
+};
 
-export function loadAgents(): Record<string, AgentInfo> {
+export const loadAgents = (): Record<string, AgentInfo> => {
   try {
     const files = readdirSync(AGENTS_DIR).filter(
       (f) => f.endsWith('.md') && f !== 'orchestrator.md',
@@ -48,26 +61,26 @@ export function loadAgents(): Record<string, AgentInfo> {
 
     for (const file of files) {
       try {
-        const { name, config } = parseAgentFile(join(AGENTS_DIR, file));
+        const { name, config } = parseAgentFile(path.join(AGENTS_DIR, file));
         agents[name] = config;
-      } catch (err) {
-        console.warn(`[maestria-v2] Failed to parse agent file "${file}":`, err);
+      } catch (error) {
+        console.warn(`[maestria-v2] Failed to parse agent file "${file}":`, error);
       }
     }
 
     return agents;
-  } catch (err) {
-    console.error('[maestria-v2] Failed to read agents directory:', err);
+  } catch (error) {
+    console.error('[maestria-v2] Failed to read agents directory:', error);
     return {};
   }
-}
+};
 
-export function loadOrchestrator(): (AgentInfo & { name: string }) | null {
+export const loadOrchestrator = (): (AgentInfo & { name: string }) | null => {
   try {
-    const { name, config } = parseAgentFile(join(AGENTS_DIR, 'orchestrator.md'));
+    const { name, config } = parseAgentFile(path.join(AGENTS_DIR, 'orchestrator.md'));
     return { ...config, name };
-  } catch (err) {
-    console.warn('[maestria-v2] Failed to load orchestrator agent:', err);
+  } catch (error) {
+    console.warn('[maestria-v2] Failed to load orchestrator agent:', error);
     return null;
   }
-}
+};

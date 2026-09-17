@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 import { detectMode } from '../src/modes/index.js';
 
 describe('detectMode', () => {

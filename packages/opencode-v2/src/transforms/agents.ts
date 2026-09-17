@@ -1,11 +1,12 @@
 import { Effect } from 'effect';
+import type { Scope } from 'effect';
 import type { AgentDraft, Transform } from '@/types.js';
-import { loadAgents, loadOrchestrator } from '@/agents.js';
+import { isAgentMode, loadAgents, loadOrchestrator } from '@/agents.js';
 
-export function registerAgentTransforms(ctx: {
+export const registerAgentTransforms = (ctx: {
   agent: { transform: Transform<AgentDraft> };
-}): Effect.Effect<void, never, import('effect').Scope.Scope> {
-  return Effect.gen(function* () {
+}): Effect.Effect<void, never, Scope.Scope> =>
+  Effect.gen(function* registerAgentTransformsEffect() {
     const agents = loadAgents();
     const orchestrator = loadOrchestrator();
 
@@ -15,12 +16,14 @@ export function registerAgentTransforms(ctx: {
           registry.update(orchestrator.name, (draft) => {
             draft.description = orchestrator.description;
             draft.system = orchestrator.prompt;
-            draft.mode = (orchestrator.mode as 'all' | 'subagent' | 'primary') || 'all';
+            draft.mode = isAgentMode(orchestrator.mode) ? orchestrator.mode : 'all';
             draft.steps = orchestrator.steps;
-            if (orchestrator.color) draft.color = orchestrator.color;
+            if (orchestrator.color !== undefined && orchestrator.color !== '') {
+              draft.color = orchestrator.color;
+            }
           });
-        } catch (err) {
-          console.warn('[maestria-v2] Failed to update orchestrator agent:', err);
+        } catch (error) {
+          console.warn('[maestria-v2] Failed to update orchestrator agent:', error);
         }
       }
 
@@ -29,14 +32,15 @@ export function registerAgentTransforms(ctx: {
           registry.update(name, (draft) => {
             draft.description = config.description;
             draft.system = config.prompt;
-            draft.mode = (config.mode as 'all' | 'subagent' | 'primary') || 'subagent';
+            draft.mode = isAgentMode(config.mode) ? config.mode : 'subagent';
             draft.steps = config.steps;
-            if (config.color) draft.color = config.color;
+            if (config.color !== undefined && config.color !== '') {
+              draft.color = config.color;
+            }
           });
-        } catch (err) {
-          console.warn(`[maestria-v2] Failed to update agent "${name}":`, err);
+        } catch (error) {
+          console.warn(`[maestria-v2] Failed to update agent "${name}":`, error);
         }
       }
     });
   });
-}

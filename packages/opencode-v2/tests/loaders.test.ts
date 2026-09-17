@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 import { loadAgents, loadOrchestrator } from '../src/agents.js';
 
 const SPECIALISTS = [
@@ -14,8 +14,8 @@ const SPECIALISTS = [
 describe('agent loaders (real generated agents/ dir)', () => {
   it('loadAgents excludes the orchestrator', () => {
     const agents = loadAgents();
-    expect(Object.keys(agents).sort()).toEqual(SPECIALISTS);
-    expect(agents['orchestrator']).toBeUndefined();
+    expect(Object.keys(agents).toSorted()).toEqual(SPECIALISTS);
+    expect(agents.orchestrator).toBeUndefined();
   });
 
   it('every specialist has mode subagent', () => {

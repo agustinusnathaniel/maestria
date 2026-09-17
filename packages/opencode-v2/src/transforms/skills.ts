@@ -1,25 +1,31 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join, basename } from 'node:path';
-import { Effect } from 'effect';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+import { Effect, Schema } from 'effect';
+import type { Scope } from 'effect';
+import { Skill } from '@opencode-ai/plugin/effect';
 import type { SkillDraft, Transform } from '@/types.js';
-import { PACKAGE_ROOT, SKILLS_DIR, CORE_SKILLS_DIR } from '@/root.js';
+import { CORE_SKILLS_DIR, PACKAGE_ROOT, SKILLS_DIR } from '@/root.js';
 
-function stripAutoGenComment(content: string): string {
+const stripAutoGenComment = (content: string): string => {
   const trimmed = content.trimStart();
   if (trimmed.startsWith('<!--')) {
     const end = trimmed.indexOf('-->');
-    if (end !== -1) return trimmed.slice(end + 3).trimStart();
+    if (end !== -1) {
+      return trimmed.slice(end + 3).trimStart();
+    }
   }
   return content;
-}
+};
 
-function deriveDescription(fileName: string, content: string): string | undefined {
+const deriveDescription = (fileName: string, content: string): string | undefined => {
   // Try first ATX heading as description, e.g. "# Handoff Aid" -> "Handoff Aid"
   const stripped = stripAutoGenComment(content).trim();
-  const headingMatch = stripped.match(/^#\s+(.+)$/m);
+  const headingMatch = /^#\s+(?<heading>.+)$/mu.exec(stripped);
   if (headingMatch) {
-    const heading = headingMatch[1].trim();
-    if (heading.length > 0 && heading.length < 120) return heading;
+    const heading = headingMatch.groups?.heading?.trim() ?? '';
+    if (heading.length > 0 && heading.length < 120) {
+      return heading;
+    }
   }
   // Fallback: first non-empty non-heading line
   const lines = stripped
@@ -27,13 +33,15 @@ function deriveDescription(fileName: string, content: string): string | undefine
     .map((l) => l.trim())
     .filter(Boolean);
   const first = lines.find((l) => !l.startsWith('#') && !l.startsWith('<!--'));
-  if (first && first.length < 120) return first.slice(0, 100);
+  if (first !== undefined && first.length > 0 && first.length < 120) {
+    return first.slice(0, 100);
+  }
   // No useful derivation; leave undefined so Skill.Info description stays optional.
   void fileName;
   return undefined;
-}
+};
 
-function resolveSkillsSourceDir(): string | null {
+const resolveSkillsSourceDir = (): string | null => {
   // Prefer bundled dir (future sync target: PACKAGE_ROOT/skills) if it exists and has files,
   // otherwise fall back to canonical core location. This keeps the plugin working both
   // when built from source checkout and when installed as a packed artifact.
@@ -41,37 +49,45 @@ function resolveSkillsSourceDir(): string | null {
   if (existsSync(SKILLS_DIR)) {
     try {
       const files = readdirSync(SKILLS_DIR).filter((f) => f.endsWith('.md'));
-      if (files.length > 0) return SKILLS_DIR;
-    } catch {}
+      if (files.length > 0) {
+        return SKILLS_DIR;
+      }
+    } catch (error) {
+      console.warn(`[maestria-v2] Failed to list bundled skills dir "${SKILLS_DIR}":`, error);
+    }
   }
-  if (existsSync(CORE_SKILLS_DIR)) return CORE_SKILLS_DIR;
+  if (existsSync(CORE_SKILLS_DIR)) {
+    return CORE_SKILLS_DIR;
+  }
   // Also probe PACKAGE_ROOT relative fallback for packed builds that vendor core skills
-  const fallback = join(PACKAGE_ROOT, '../core/agent-directives/skills');
-  if (existsSync(fallback)) return fallback;
+  const fallback = path.join(PACKAGE_ROOT, '../core/agent-directives/skills');
+  if (existsSync(fallback)) {
+    return fallback;
+  }
   return null;
-}
+};
 
-function loadSkillFiles(dir: string): Array<{ name: string; path: string; content: string }> {
+const loadSkillFiles = (dir: string): { name: string; path: string; content: string }[] => {
   try {
     const files = readdirSync(dir).filter((f) => f.endsWith('.md'));
-    const out: Array<{ name: string; path: string; content: string }> = [];
+    const out: { name: string; path: string; content: string }[] = [];
     for (const file of files) {
-      const fullPath = join(dir, file);
+      const fullPath = path.join(dir, file);
       try {
         const raw = readFileSync(fullPath, 'utf-8');
-        const name = basename(file, '.md');
-        const content = stripAutoGenComment(raw).replace(/\s+$/, '') + '\n';
-        out.push({ name, path: fullPath, content });
-      } catch (err) {
-        console.warn(`[maestria-v2] Failed to read skill file "${file}":`, err);
+        const name = path.basename(file, '.md');
+        const content = `${stripAutoGenComment(raw).replace(/\s+$/u, '')}\n`;
+        out.push({ content, name, path: fullPath });
+      } catch (error) {
+        console.warn(`[maestria-v2] Failed to read skill file "${file}":`, error);
       }
     }
     return out;
-  } catch (err) {
-    console.warn(`[maestria-v2] Failed to list skills directory "${dir}":`, err);
+  } catch (error) {
+    console.warn(`[maestria-v2] Failed to list skills directory "${dir}":`, error);
     return [];
   }
-}
+};
 
 /**
  * Register skills via `skill.transform`.
@@ -88,12 +104,12 @@ function loadSkillFiles(dir: string): Array<{ name: string; path: string; conten
  * Loader probes both the canonical core path and a future bundled `SKILLS_DIR` so adding a sync
  * entry later requires no code change.
  */
-export function registerSkillTransforms(ctx: {
+export const registerSkillTransforms = (ctx: {
   skill: { transform: Transform<SkillDraft> };
-}): Effect.Effect<void, never, import('effect').Scope.Scope> {
-  return Effect.gen(function* () {
+}): Effect.Effect<void, never, Scope.Scope> =>
+  Effect.gen(function* registerSkillTransformsEffect() {
     const sourceDir = resolveSkillsSourceDir();
-    if (!sourceDir) {
+    if (sourceDir === null) {
       console.warn(
         '[maestria-v2] No skills source directory found; checked SKILLS_DIR and CORE_SKILLS_DIR. Skipping skill registration.',
       );
@@ -111,41 +127,32 @@ export function registerSkillTransforms(ctx: {
       for (const file of skillFiles) {
         const description = deriveDescription(file.name, file.content);
         // Skill.Info requires: id, name, location (AbsolutePath), content. Optional: description, slash, autoinvoke.
-        const info = {
-          id: file.name,
-          name: file.name,
-          description,
-          location: file.path,
-          content: file.content,
-          // slash/autoinvoke default to undefined (false-y) - keeps skills as reference docs unless explicitly invoked.
-        } as unknown as Parameters<SkillDraft['add']>[0];
-
+        // Decoded through the SDK schema so branded id/name/location are validated, not cast.
+        // slash/autoinvoke default to undefined (false-y) - keeps skills as reference docs unless explicitly invoked.
         try {
-          const existing = draft
-            .list()
-            .find(
-              (s) =>
-                (s as unknown as { id: string; name: string }).id === file.name ||
-                (s as unknown as { name: string }).name === file.name,
-            );
+          const info = Schema.decodeSync(Skill.Info)({
+            content: file.content,
+            description,
+            id: file.name,
+            location: file.path,
+            name: file.name,
+          });
+
+          const existing = draft.list().find((s) => s.id === file.name || s.name === file.name);
           if (existing) {
             draft.update(file.name, (skill) => {
-              const s = skill as unknown as {
-                description?: string;
-                content: string;
-                location: string;
-              };
-              if (description) s.description = description;
-              s.content = file.content;
-              s.location = file.path;
+              if (info.description !== undefined && info.description !== '') {
+                skill.description = info.description;
+              }
+              skill.content = info.content;
+              skill.location = info.location;
             });
           } else {
             draft.add(info);
           }
-        } catch (err) {
-          console.warn(`[maestria-v2] Failed to register skill "${file.name}":`, err);
+        } catch (error) {
+          console.warn(`[maestria-v2] Failed to register skill "${file.name}":`, error);
         }
       }
     });
   });
-}

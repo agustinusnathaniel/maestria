@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test';
+import { describe, expect, it } from 'vite-plus/test';
 import plugin from '../src/index.js';
 
 describe('maestria-v2 plugin', () => {

@@ -4,13 +4,13 @@ export default Plugin.define({
   id: 'maestria.v2.tui',
   setup(context) {
     context.ui.toast.show({
-      message: 'maestria v2 TUI loaded — fein/sonar/blitz ready',
+      message: 'maestria v2 TUI loaded - fein/sonar/blitz ready',
       variant: 'success',
     });
 
     const disposeFooter = context.ui.slot({
       append: 'prompt.footer',
-      render: () => <text fg={context.theme.text.default}>maestria v2 — fein / sonar / blitz</text>,
+      render: () => <text fg={context.theme.text.default}>maestria v2 - fein / sonar / blitz</text>,
     });
 
     const disposeStatus = context.ui.slot({
@@ -19,32 +19,32 @@ export default Plugin.define({
     });
 
     context.keymap.layer(() => ({
-      mode: 'global',
-      priority: 10,
+      bindings: ['maestria.status'],
       commands: [
         {
-          id: 'maestria.status',
-          title: 'Maestria status',
-          group: 'Maestria',
           bind: 'ctrl+shift+m',
+          group: 'Maestria',
+          id: 'maestria.status',
           palette: true,
           run: async () => {
             context.ui.toast.show({
-              message: 'maestria v2 — fein/sonar/blitz ready',
+              message: 'maestria v2 - fein/sonar/blitz ready',
               variant: 'info',
             });
             await context.ui.dialog.alert({
+              message: 'maestria v2 TUI - fein / sonar / blitz modes active',
               title: 'Maestria',
-              message: 'maestria v2 TUI — fein / sonar / blitz modes active',
             });
           },
+          title: 'Maestria status',
         },
       ],
-      bindings: ['maestria.status'],
+      mode: 'global',
+      priority: 10,
     }));
 
     const [tuiSettings, updateTuiSettings] = context.storage.store('maestria.tui', {
-      initial: { compact: false } as { compact: boolean },
+      initial: { compact: false },
     });
     void tuiSettings;
     void updateTuiSettings;
