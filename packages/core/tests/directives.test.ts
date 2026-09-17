@@ -409,4 +409,89 @@ describe('canonical directive behavioral contracts', () => {
     expect(composition).toContain('tools');
     expect(composition).not.toMatch(/finite.*budget|circuit breaker|recovery dispatch/iu);
   });
+
+  it('shapes reviewable PRs with explicit titles and ordered literal body headings', () => {
+    const rules = readDirective('rules.md');
+
+    // Exact pins for the true literal contract: the title form plus the
+    // literal `##` headings in contract order with the Changes table columns.
+    expect(rules).toMatch(/explicit Conventional Commits title/iu);
+    expect(rules).toMatch(/not inferred from commit format/iu);
+    assertOrdered(rules, [
+      '## Summary',
+      '## Changes',
+      '## Verification',
+      '## Visual evidence',
+      '## Breaking changes',
+    ]);
+    expect(rules).toMatch(/Work Results table with File, What changed, and Why/iu);
+    // Conditional sections stay conditional, and an explicit project template
+    // is an exception that preserves the required information.
+    expect(rules).toMatch(/`## Visual evidence` when applicable/iu);
+    expect(rules).toMatch(/`## Breaking changes` when applicable/iu);
+    expect(rules).toMatch(
+      /when the project defines an explicit template, follow it while preserving that required information/iu,
+    );
+    // Modal floor guard: the explicit-title qualifier must not weaken into inference.
+    expect(rules).not.toMatch(/title may be inferred/iu);
+  });
+
+  it('carries visual classification through briefs and keeps capture, handoff, publication, and readback distinct', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    // Classification at acceptance, carried into implementation and review briefs.
+    expect(rules).toMatch(
+      /classify visual evidence as required.*or not applicable with a concrete reason/iu,
+    );
+    expect(orchestrator).toMatch(
+      /include the evidence requirement in implementation and review briefs, with the acceptance classification/iu,
+    );
+    // Handoff carries paths plus captions plus coverage gaps; the reviewer
+    // checks that coverage against the changed surface.
+    expect(orchestrator).toMatch(/paths plus captions plus coverage gaps/iu);
+    expect(orchestrator).toMatch(/reviewer checks that coverage against the changed surface/iu);
+    // Role split: the reviewer covers rendered coverage while the delivery
+    // owner reads back the actual published body.
+    expect(rules).toMatch(/delivery owner reads back the published body/iu);
+    expect(orchestrator).toMatch(/read back the actual PR body as delivery owner/iu);
+    // Distinct stages: a local path alone never satisfies PR-body publication.
+    expect(rules).toMatch(
+      /capture, handoff, publication in the PR body, and readback are distinct stages/iu,
+    );
+    expect(rules).toMatch(/a local path alone does not satisfy PR-body publication/iu);
+    // Missing required evidence reports incomplete with the checked
+    // limitation; the relation pin (not mere wording presence) is what must hold.
+    expect(rules).toMatch(/missing required evidence blocks acceptance/iu);
+    expect(rules).toMatch(/means incomplete, not completed-with-limits/iu);
+    expect(orchestrator).toMatch(
+      /do not claim delivery complete until the evidence is published in the PR body/iu,
+    );
+    // Modal floor guard: the publication requirement must not weaken into optionality.
+    expect(orchestrator).not.toMatch(/may claim delivery complete/iu);
+  });
+
+  it('refreshes PR evidence after pushes and later visual changes', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    // Post-push cumulative update plus readback before reporting delivery complete.
+    expect(rules).toMatch(
+      /after any push that changes the cumulative diff or verification evidence/iu,
+    );
+    expect(rules).toMatch(
+      /update the PR title and body to match, then read back the published body/iu,
+    );
+    // Freshness: replace affected captures, drop obsolete references, and
+    // refresh only affected evidence without rewriting history as current.
+    expect(orchestrator).toMatch(
+      /when a later change affects captured appearance or behavior, replace affected captures/iu,
+    );
+    expect(orchestrator).toMatch(/remove obsolete or redundant PR body references/iu);
+    expect(orchestrator).toMatch(
+      /refresh only affected evidence, not every commit or unrelated file/iu,
+    );
+    expect(orchestrator).toMatch(/keep intentional clearly labeled before baselines/iu);
+    expect(orchestrator).toMatch(/never present a historical before as current/iu);
+  });
 });
