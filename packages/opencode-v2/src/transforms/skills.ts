@@ -1,23 +1,13 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { Effect, Schema } from 'effect';
 import type { Scope } from 'effect';
 import { Skill } from '@opencode-ai/plugin/effect';
 import type { SkillDraft, Transform } from '@/types.js';
-import { CORE_SKILLS_DIR, PACKAGE_ROOT, SKILLS_DIR } from '@/root.js';
+import { readSyncedMarkdown, stripAutoGenComment } from '@/markdown.js';
+import { CORE_SKILLS_DIR, SKILLS_DIR } from '@/root.js';
 
-const stripAutoGenComment = (content: string): string => {
-  const trimmed = content.trimStart();
-  if (trimmed.startsWith('<!--')) {
-    const end = trimmed.indexOf('-->');
-    if (end !== -1) {
-      return trimmed.slice(end + 3).trimStart();
-    }
-  }
-  return content;
-};
-
-const deriveDescription = (fileName: string, content: string): string | undefined => {
+const deriveDescription = (content: string): string | undefined => {
   // Try first ATX heading as description, e.g. "# Handoff Aid" -> "Handoff Aid"
   const stripped = stripAutoGenComment(content).trim();
   const headingMatch = /^#\s+(?<heading>.+)$/mu.exec(stripped);
@@ -37,7 +27,6 @@ const deriveDescription = (fileName: string, content: string): string | undefine
     return first.slice(0, 100);
   }
   // No useful derivation; leave undefined so Skill.Info description stays optional.
-  void fileName;
   return undefined;
 };
 
@@ -59,11 +48,6 @@ const resolveSkillsSourceDir = (): string | null => {
   if (existsSync(CORE_SKILLS_DIR)) {
     return CORE_SKILLS_DIR;
   }
-  // Also probe PACKAGE_ROOT relative fallback for packed builds that vendor core skills
-  const fallback = path.join(PACKAGE_ROOT, '../core/agent-directives/skills');
-  if (existsSync(fallback)) {
-    return fallback;
-  }
   return null;
 };
 
@@ -73,14 +57,11 @@ const loadSkillFiles = (dir: string): { name: string; path: string; content: str
     const out: { name: string; path: string; content: string }[] = [];
     for (const file of files) {
       const fullPath = path.join(dir, file);
-      try {
-        const raw = readFileSync(fullPath, 'utf-8');
-        const name = path.basename(file, '.md');
-        const content = `${stripAutoGenComment(raw).replace(/\s+$/u, '')}\n`;
-        out.push({ content, name, path: fullPath });
-      } catch (error) {
-        console.warn(`[maestria-v2] Failed to read skill file "${file}":`, error);
+      const content = readSyncedMarkdown(fullPath, 'skill file');
+      if (content === null) {
+        continue;
       }
+      out.push({ content, name: path.basename(file, '.md'), path: fullPath });
     }
     return out;
   } catch (error) {
@@ -125,7 +106,7 @@ export const registerSkillTransforms = (ctx: {
 
     yield* ctx.skill.transform((draft: SkillDraft) => {
       for (const file of skillFiles) {
-        const description = deriveDescription(file.name, file.content);
+        const description = deriveDescription(file.content);
         // Skill.Info requires: id, name, location (AbsolutePath), content. Optional: description, slash, autoinvoke.
         // Decoded through the SDK schema so branded id/name/location are validated, not cast.
         // slash/autoinvoke default to undefined (false-y) - keeps skills as reference docs unless explicitly invoked.

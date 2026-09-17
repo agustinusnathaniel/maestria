@@ -1,8 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { Effect } from 'effect';
 import type { Scope } from 'effect';
 import type { CommandDraft, Transform } from '@/types.js';
+import { readSyncedMarkdown } from '@/markdown.js';
 import { COMMANDS_DIR } from '@/root.js';
 
 const VALID_COMMANDS = ['fein', 'sonar', 'blitz'] as const;
@@ -19,48 +20,14 @@ const COMMAND_DESCRIPTIONS: Record<ValidCommand, string> = {
   sonar: 'Research only - read-only recon and planning, stop before implementation',
 };
 
-const stripAutoGenComment = (content: string): string => {
-  const trimmed = content.trimStart();
-  if (trimmed.startsWith('<!--')) {
-    const end = trimmed.indexOf('-->');
-    if (end !== -1) {
-      return trimmed.slice(end + 3).trimStart();
-    }
-  }
-  return content;
-};
-
 const loadCommandTemplate = (name: ValidCommand): string | null => {
   const filePath = path.join(COMMANDS_DIR, `${name}.md`);
   if (!existsSync(filePath)) {
     return null;
   }
-  try {
-    const raw = readFileSync(filePath, 'utf-8');
-    const stripped = stripAutoGenComment(raw).trim();
-    // The synced file is already just the mode prompt (e.g. "[MODE: fein]\n\n## MODE: fein ...").
-    // Return as-is; CommandInfo.template is rendered as prompt content when the user runs /<name>.
-    // Ensure trailing newline for consistency with MODE_PROMPTS extraction.
-    return `${stripped.replace(/\s+$/u, '')}\n`;
-  } catch (error) {
-    console.warn(`[maestria-v2] Failed to read command "${name}":`, error);
-    return null;
-  }
-};
-
-const deriveDescription = (template: string, fallback: string): string => {
-  // Prefer the first heading line after the [MODE: ...] marker as a concise description, e.g.
-  // "## MODE: fein (Full Pipeline)" -> "Full pipeline - recon, design, implement, review"
-  // If no heading is found, fall back to the canonical frontmatter description.
-  const headingMatch = /^##\s+MODE:\s+[^\n]*$/mu.exec(template);
-  if (headingMatch) {
-    const line = headingMatch[0].replace(/^##\s+MODE:\s+/u, '').trim();
-    // Strip parenthetical suffix, e.g. "fein (Full Pipeline)" -> keep full line as-is but prefer fallback if too long
-    if (line.length > 0 && line.length < 80) {
-      return line;
-    }
-  }
-  return fallback;
+  // The synced file is already just the mode prompt (e.g. "[MODE: fein]\n\n## MODE: fein ...").
+  // Return as-is; CommandInfo.template is rendered as prompt content when the user runs /<name>.
+  return readSyncedMarkdown(filePath, 'command');
 };
 
 /**
@@ -103,8 +70,6 @@ export const registerCommandTransforms = (ctx: {
           continue;
         }
         const description = COMMAND_DESCRIPTIONS[name];
-        // Derive could use heading, but canonical frontmatter description is preferred for slash-command palette brevity.
-        const _derived = deriveDescription(template, description);
 
         try {
           const existing = draft.get(name);

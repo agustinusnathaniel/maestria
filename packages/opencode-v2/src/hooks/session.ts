@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 import type { Scope } from 'effect';
 import type { PluginContext, SessionContext } from '@/types.js';
-import type { MaestriaPluginOptions, ModeKeyword } from '@/modes/types.js';
+import type { MaestriaPluginOptions } from '@/modes/types.js';
 import { detectMode } from '@/modes/index.js';
 import { getModeMarker, getModePrompt } from '@/modes/prompts.js';
 
@@ -25,8 +25,8 @@ export const registerSessionHooks = (
   options: MaestriaPluginOptions,
 ): Effect.Effect<void, never, Scope.Scope> =>
   Effect.gen(function* registerSessionHook() {
-    const rawDisabled = (options.modes?.disabledKeywords ?? []) as ModeKeyword[] | undefined;
-    const disabledKeywords = new Set<string>((rawDisabled ?? []).map((k) => k.toLowerCase()));
+    const disabled = options.modes?.disabledKeywords ?? [];
+    const disabledKeywords = new Set(disabled.map((k) => k.toLowerCase()));
 
     yield* ctx.session.hook('context', (sessionCtx: SessionContext) =>
       Effect.sync(() => {

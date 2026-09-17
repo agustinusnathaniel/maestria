@@ -1,9 +1,5 @@
-import {
-  detectMode as sharedDetect,
-  getModeMarker as sharedGetMarker,
-  stripKeyword as sharedStrip,
-} from '@maestria/shared-mode';
-import { getModePrompt } from '@/modes/prompts.js';
+import { detectMode as sharedDetect } from '@maestria/shared-mode';
+import { getModeMarker, getModePrompt } from '@/modes/prompts.js';
 import type { ModeResult } from '@/modes/types.js';
 
 /**
@@ -26,19 +22,8 @@ export const detectMode = (text: string, disabled?: Set<string>): ModeResult | n
   return {
     index: pure.index,
     keyword: pure.keyword,
-    marker: sharedGetMarker(pure.mode),
+    marker: getModeMarker(pure.mode),
     mode: pure.mode,
     prompt: getModePrompt(pure.mode),
   };
 };
-
-/**
- * Remove the matched keyword from the text, cleaning up any trailing colon
- * or whitespace that may follow it.
- */
-export const stripKeyword = (text: string, result: ModeResult): string => sharedStrip(text, result);
-
-/**
- * Get the mode marker string for a given mode name.
- */
-export const getModeMarker = (mode: string): string => sharedGetMarker(mode);

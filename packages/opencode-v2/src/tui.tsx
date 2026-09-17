@@ -43,12 +43,6 @@ export default Plugin.define({
       priority: 10,
     }));
 
-    const [tuiSettings, updateTuiSettings] = context.storage.store('maestria.tui', {
-      initial: { compact: false },
-    });
-    void tuiSettings;
-    void updateTuiSettings;
-
     return () => {
       disposeFooter();
       disposeStatus();
