@@ -494,4 +494,43 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(/keep intentional clearly labeled before baselines/iu);
     expect(orchestrator).toMatch(/never present a historical before as current/iu);
   });
+
+  it('assesses documentation categories separately and proportionately', () => {
+    const rules = readDirective('rules.md');
+
+    expect(rules).toMatch(
+      /internal docs, user-facing docs, changelog\/release notes, and required changesets/iu,
+    );
+    expect(rules).toMatch(/update only affected categories/iu);
+    expect(rules).toMatch(/concise reason when a plausible category needs no update/iu);
+    expect(rules).toMatch(/proportionate to the change/iu);
+  });
+
+  it('carries required documentation through briefs to reconciliation and blocks acceptance when missing', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(rules).toMatch(
+      /carry required documentation through implementation and review briefs to final reconciliation/iu,
+    );
+    expect(rules).toMatch(/missing affected docs leaves acceptance incomplete/iu);
+    expect(orchestrator).toMatch(
+      /carry required documentation per the global documentation and changesets contract/iu,
+    );
+    expect(orchestrator).toMatch(/documentation[\s\S]*?changesets/iu);
+  });
+
+  it('keeps the documentation contract portable without unconditional mandates', () => {
+    const rules = readDirective('rules.md');
+    const section = rules.slice(rules.indexOf('### Documentation and changesets'));
+
+    expect(section).not.toMatch(/apps\/docs|CHANGELOG\.mdx?|\.changeset\/|docs\//u);
+    expect(rules).not.toMatch(
+      /every change.*changeset|changeset.*every change|all packages.*changeset|changeset.*all packages/iu,
+    );
+    expect(rules).not.toMatch(/every change.*ADR|ADR.*every change|mandatory ADR/iu);
+    expect(rules).not.toMatch(
+      /update.*every category|every category.*update|all four.*must.*update/iu,
+    );
+  });
 });

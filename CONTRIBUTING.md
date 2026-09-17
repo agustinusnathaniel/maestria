@@ -129,6 +129,13 @@ If agent directives changed, `scripts/check-sync` is required. If a package has 
 
 Create a changeset for a user-facing change to a published package or a package awaiting its first release. Private packages such as `@maestria/core` and `@maestria/docs` do not require one.
 
+Assess four categories separately and update only those the change affects, with a concise reason when a plausible category needs no update; keep the assessment proportionate to the change:
+
+- Internal docs in `docs/` (guides, ADRs, plans, notes): update when the change alters contributor process, architecture, or conventions.
+- User-facing docs: `apps/docs/` site pages plus the affected package README for a new platform or user-visible feature where the README and changeset alone are insufficient.
+- Changelog and release notes: curated public `changelog.mdx` summaries for meaningful methodology or platform behavior changes; do not hand-edit generated package `CHANGELOG.md` files.
+- Required changesets in `.changeset/`: one entry covering all changed published packages for a user-facing change; none for private packages or source-only internal edits with no published effect.
+
 For a pull request:
 
 1. Branch from `main` with a descriptive name.

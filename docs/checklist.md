@@ -8,5 +8,5 @@ Before committing or delivering implementation, the delivery owner checks the in
 - [ ] If changing packaged or exported files: `package.json` files array and export map are up to date
 - [ ] If changing agent prompts: README in `core/agent-directives/` is still accurate
 - [ ] If introducing a new design decision: has a corresponding ADR been written?
-- [ ] Documentation audit completed - checked READMEs, ADRs, changelogs, guides for needed updates
+- [ ] Documentation assessment completed for internal docs, user-facing docs (`apps/docs/`, package README), changelog/release notes (curated `changelog.mdx`, not generated `CHANGELOG.md`), and required changesets (`.changeset/`, published packages only): affected categories updated, plausible unaffected categories noted with reason; proportionate to the change
 - [ ] Changeset created if change is user-facing

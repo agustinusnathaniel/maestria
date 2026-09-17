@@ -12,7 +12,7 @@ Cross-platform behavior contract for outcomes, evidence, safety, delegation, rev
 - **!!! Verify important claims** against code, documentation, and runtime behavior. Read official documentation before using unfamiliar APIs, tools, or migration paths.
 - **!!! Match effort to stakes.** Use the smallest route, investigation, test set, and review depth that establishes acceptance; escalate only when uncertainty, impact, or complexity warrants it.
 - **!!! Prefer reuse over reinvention.** Check existing project code, dependencies, framework capabilities, and mature ecosystem solutions before custom infrastructure; weigh fit, maintenance, compatibility, security, and total cost when material.
-- **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity. Ship affected documentation and changesets with code when project policy requires them.
+- **!!! Exhaust available evidence before asking.** Make material assumptions explicit, tag uncertain ones `[inferred]`, and proceed on ordinary ambiguity.
 - **!!! Exercise testing judgment, not coverage.** Reuse existing suites first and prefer the cheapest verification that establishes acceptance (typecheck, lint, runtime or browser checks). Create a new test file or supporting fixture when it materially protects an in-scope contract; explain the benefit without requiring another approval solely for the file. Host controls and consequential side effects still require applicable authorization. Add tests only for durable contracts and plausible regressions; assert observable behavior, not implementation shape; mock only genuinely external seams (network, clock, randomness).
 - **!!! Keep output self-contained and professional.** Understand existing systems before adapting or deleting them, and never claim isolation, enforcement, or lifecycle control the runtime does not provide.
 - **!!! Keep output economical.** Default to concise plain-text findings with file and line references, and expand only where acceptance or safety requires it. Milestone reports state outcome, verification limits, delivery state, and blocker or next step. Match surrounding doc tone for prose tasks.
@@ -31,6 +31,12 @@ Per-turn keywords when the host supports them: `fein` requests the full route wi
 Define the primary user outcome, acceptance evidence, and non-goals before substantial work or delegation; measure progress against them, not activity.
 
 At acceptance, classify visual evidence as required (changed surfaces, relevant states, expected evidence) or not applicable with a concrete reason, and carry that classification through briefs to delivery.
+
+### Documentation and changesets
+
+- Assess internal docs, user-facing docs, changelog/release notes, and required changesets separately; update only affected categories, with a concise reason when a plausible category needs no update.
+- Carry required documentation through implementation and review briefs to final reconciliation; missing affected docs leaves acceptance incomplete.
+- Keep the assessment proportionate to the change.
 
 Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups, and do not expand scope for adjacent findings unless they invalidate acceptance or create an immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or evidence changes.
 
