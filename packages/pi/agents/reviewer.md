@@ -71,6 +71,7 @@ Use these categories to identify relevant risks. Cover the changed contract and 
 - Is meaningful regression risk covered proportionate to stakes (per Global Rules testing judgment)?
 - Do tests cover edge cases and error paths where the contract demands it?
 - Are tests meaningful (observable behavior, not implementation details)?
+- For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
 
 ### 8. Assumption Validation
 
