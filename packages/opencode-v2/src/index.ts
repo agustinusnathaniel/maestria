@@ -10,10 +10,18 @@ import { registerSkillTransforms } from '@/transforms/skills.js';
 import { registerToolTransforms } from '@/transforms/tools.js';
 import { registerSessionHooks } from '@/hooks/session.js';
 
+/**
+ * maestria.v2 entrypoint (Effect plugin API).
+ *
+ * Packaging decision: this POC stays a separate `@maestria/opencode-v2` package
+ * coexisting with the stable V1 `maestria` plugin. Live docs (/migrate-v1) allow
+ * converging both in one default export (Plugin.define spread plus legacy
+ * server(), supported since OpenCode 1.18.29); convergence is deferred until
+ * V2 leaves beta. See README Known limitations.
+ */
 export default Plugin.define({
-  id: 'maestria.v2',
   effect: (ctx: PluginContext) =>
-    Effect.gen(function* () {
+    Effect.gen(function* initMaestriaV2() {
       const parseResult = maestriaOptionsSchema.safeParse(ctx.options ?? {});
       const options: MaestriaPluginOptions = parseResult.success ? parseResult.data : {};
       yield* registerAgentTransforms(ctx);
@@ -22,8 +30,9 @@ export default Plugin.define({
       yield* registerCommandTransforms(ctx);
       yield* registerSkillTransforms(ctx);
       yield* registerToolTransforms(ctx);
-      yield* Effect.sync(() =>
-        console.log('[maestria-v2] Plugin initialized with ID: maestria.v2'),
-      );
+      yield* Effect.sync(() => {
+        console.log('[maestria-v2] Plugin initialized with ID: maestria.v2');
+      });
     }),
+  id: 'maestria.v2',
 });
