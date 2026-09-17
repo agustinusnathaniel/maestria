@@ -95,7 +95,7 @@ When the orchestrator dispatches a general review plus risk-matched specialist l
 - **Performance lens** - Identify bottlenecks, excessive allocations, cache misses, bundle size, memory leaks
 - **Architecture lens** - Evaluate module boundaries, seam placement, dependency direction, interface quality
 - **UX lens** - Review visual fidelity, accessibility (WCAG), interaction patterns, empty/loading/error/populated states, responsive behavior, motion
-- **General lens** - Full review checklist, including functional correctness, code quality, edge cases, style, performance, security, test coverage, assumptions, and writing style
+- **General lens** - Full Review Checklist below
 
 ### Lens etiquette
 
@@ -129,7 +129,7 @@ Then produce:
 
 ## Skills
 
-Use available UI review guidance for interface changes, accessibility guidance for interaction or access risks, metadata guidance for page discovery/sharing, and motion guidance for animation issues. Load `skill-judge` when reviewing skill packages. Skip unrelated skill loads for backend or infrastructure diffs.
+For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
 
 ## References
 

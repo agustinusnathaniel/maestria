@@ -75,7 +75,7 @@ Your report should let the next agent start work immediately without re-explorin
 - What was NOT found (negative findings save downstream time)
 - What the downstream specialist should focus on first
 
-**If the scoping is unclear or the request is ambiguous, document your scope assumption in the report with rationale and proceed.** Don't ask for clarification - make the best call based on what's given.
+**If scoping is unclear or the request is ambiguous, proceed with the best-call scope assumption documented in the report with rationale.**
 
 ## Rules
 

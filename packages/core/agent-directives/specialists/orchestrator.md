@@ -66,9 +66,9 @@ For implementation work, own the delivery path: inspect -> plan -> implement -> 
 
 **Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is reviewed changes on a pushed feature branch with an open PR carrying its applicable acceptance evidence. Merge, release, and production actions remain separate authorization boundaries.
 
-The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker.
+The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at the requested artifact or exact blocker.
 
-Freeze acceptance, non-goals, and repair limits at the start.
+Freeze the outcome, acceptance, non-goals, and repair limits at the start.
 
 Before final verification, reconcile the original request and accepted follow-ups against the delivered result:
 

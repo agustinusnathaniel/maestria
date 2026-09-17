@@ -134,7 +134,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/freeze the outcome, acceptance criteria, non-goals/iu);
     expect(rules).toMatch(/do not reset a review or repair budget/iu);
     expect(orchestrator).toMatch(/parent session owns continuation until.*terminal artifact/iu);
-    expect(orchestrator).toMatch(/freeze acceptance, non-goals, and repair limits/iu);
+    expect(orchestrator).toMatch(/freeze the outcome, acceptance, non-goals, and repair limits/iu);
     expect(iteration).toMatch(/same user outcome/iu);
     expect(iteration).toMatch(/adjacent findings as follow-ups/iu);
   });
