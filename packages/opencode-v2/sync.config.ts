@@ -17,7 +17,7 @@ export default {
   },
 
   files: {
-    // Orchestrator — mode: all (the router)
+    // Orchestrator - mode: all (the router)
     'orchestrator.md': {
       frontmatter: {
         description:
@@ -25,7 +25,7 @@ export default {
         mode: 'all',
       },
     },
-    // 7 specialists — mode: subagent
+    // 7 specialists - mode: subagent
     'adventurer.md': {
       frontmatter: {
         description: 'Codebase reconnaissance, deep code understanding',
