@@ -9,15 +9,13 @@ RTK is an independent project under the Apache 2.0 license, created and maintain
 
 ## What It Is
 
-RTK (Rust Token Killer) is a CLI proxy that sits between your AI coding agent and the shell. It intercepts commands, executes them, and filters or compresses the output before it reaches the LLM context window.
+RTK (Rust Token Killer) is a CLI proxy between your AI coding agent and the shell. It intercepts commands, executes them, and filters or compresses the output before it reaches the LLM context window.
 
-Typical token savings range from 60-90% on command output. RTK ships with support for 100+ commands across git, test runners, build tools, package managers, and cloud CLIs. It also includes a dedicated OpenCode plugin.
+Typical token savings range from 60-90% on command output. RTK supports 100+ commands across git, test runners, build tools, package managers, and cloud CLIs, and includes a dedicated OpenCode plugin.
 
 ## Why Use It With Maestria
 
-Maestria-powered agents use shell commands for builds, tests, git operations, and deployment tasks. Each command's output consumes tokens in the context window. RTK reduces the token cost of these operations, keeping context windows from filling with verbose output.
-
-Less token burn on tool output means more room for reasoning, instruction following, and code generation. For long agent sessions running many commands, the savings add up.
+Maestria-powered agents run builds, tests, git, and deployment commands through the shell. RTK cuts the token cost of that output, leaving more of the context window for the agent's own work.
 
 ## Installation
 

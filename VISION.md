@@ -53,6 +53,8 @@ Maestria packages do not use automatic postinstall scripts. Direct plugin instal
 | `@maestria/prime-agent`  | Prime Agent      |
 | `@maestria/agent-plugin` | Agent Plugins v1 |
 
+Canonical agent directives live in the private `@maestria/core` package (`packages/core/agent-directives/`) and are projected into the platform packages above by the sync pipeline. `packages/shared/*` holds private host-neutral utilities. Neither is published.
+
 ## How This Project Evolves
 
 Patterns are curated from experience, documented in the knowledge base, then promoted into Maestria packages when proven. All changes flow through human review. No autonomous code changes. See [PATTERNS.md](PATTERNS.md) for the catalog of design patterns that each platform package implements.

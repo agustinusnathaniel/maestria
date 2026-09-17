@@ -13,36 +13,24 @@ Use the orchestrator skill when a task is unfamiliar, cross-file, or risky:
 /skill:orchestrator I need to add rate limiting to the API. Plan and implement it.
 ```
 
-The orchestrator chooses between direct work and specialist skills based on task risk and available runtime capabilities. It is methodology guidance, not a replacement for Prime's own execution boundary. "Delegate to a specialist" means load the relevant skill and apply its methodology - this package does not spawn child agents from the extension (see Platform notes).
+It is methodology guidance, not a replacement for Prime's execution boundary. "Delegate to a specialist" means loading the relevant skill and applying its methodology; the extension does not spawn child agents.
 
 ## Call a specialist
 
-Use one specialist when you need one kind of help:
+Any specialist skill can be invoked the same way; see [Browse the Agents](/core/agents/) for the seven specialist roles.
 
 ```text
 /skill:adventurer Trace the authentication flow and report the relevant files.
 ```
 
-The specialist roles are:
-
-| Skill        | Use it for                                      |
-| ------------ | ----------------------------------------------- |
-| `adventurer` | Reconnaissance and codebase mapping             |
-| `architect`  | Architecture trade-offs and ADR decisions       |
-| `builder`    | Focused implementation and verification         |
-| `diagnose`   | Root-cause analysis and regression tracing      |
-| `planner`    | Phased plans, dependencies, and rollback points |
-| `reviewer`   | Independent review after implementation         |
-| `writer`     | Documentation and structured prose              |
-
 ## Choose a workflow mode
 
-The workflow modes are loaded by description matching, or invoked explicitly as `/skill:fein`, `/skill:sonar`, `/skill:blitz`. If the extension is loaded, the same modes are available as slash commands (`/fein`, `/sonar`, `/blitz`) and are persisted for the session:
+Load a mode by description matching or explicitly as `/skill:fein`, `/skill:sonar`, or `/skill:blitz`. With the extension loaded, `/fein`, `/sonar`, and `/blitz` also work as slash commands and persist for the session:
 
 | Mode    | Route                                                             |
 | ------- | ----------------------------------------------------------------- |
 | `fein`  | Full pipeline: reconnaissance, design, implementation, and review |
-| `sonar` | Research-only route that stops before implementation              |
+| `sonar` | Research only; stops before implementation                        |
 | `blitz` | Fast route for small or well-understood work                      |
 
 For example:
@@ -53,7 +41,7 @@ For example:
 
 While a mode is active, the extension appends the mode's prompt to the system prompt on every agent turn. `/maestria-status` shows the current mode and the verified/deferred subset; `/mode-clear` returns to neutral routing.
 
-## Review independently
+## Review the result independently
 
 After the builder completes, invoke the reviewer in a separate turn:
 

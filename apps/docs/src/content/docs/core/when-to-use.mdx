@@ -5,15 +5,13 @@ description: Choose between direct execution, a specialist, and the full pipelin
 
 import { Aside } from '@astrojs/starlight/components';
 
-Maestria adds structure through delegation, handoffs, and review. That structure costs model work, context transfer, and waiting time.
-
-Default to direct execution. Use the orchestrator only for complex, huge, or long-running tasks where context management and parallel delegation pay for that cost. For straightforward, clear-scoped work, skip the orchestrator: extra directives add coordination without new information.
+Maestria adds structure through delegation, handoffs, and review. That structure costs model work, context transfer, and waiting time, so it is not the default.
 
 ## Default Rule
 
-1. **Direct execution first.** Familiar code, a clear scope, and easy verification mean the platform's normal agent is the fastest and cheapest path.
+1. **Direct execution first.** Familiar code, a clear scope, and easy verification make the platform's normal agent the fastest and cheapest path.
 2. **One specialist when one capability is missing.** Unfamiliar code (adventurer), unknown cause (diagnose), a consequential choice (architect), or a second pair of eyes (reviewer). Then implement directly.
-3. **Orchestrator only when the task needs staged handoffs, parallel work, or independent review.** That means cross-module features, migrations, high-risk changes, unfamiliar systems, or durable handoffs across sessions.
+3. **Orchestrator only when the task needs staged handoffs, parallel work, or independent review:** cross-module features, migrations, high-risk changes, unfamiliar systems, or durable handoffs across sessions.
 
 ## Quick Decision
 
@@ -24,29 +22,18 @@ Default to direct execution. Use the orchestrator only for complex, huge, or lon
 | UI, copy, or interactive iteration | Direct execution or blitz |
 | Research or feasibility question | sonar (stop, no implementation) |
 | Cross-module feature, migration, high-risk or long-running work | Orchestrator or fein |
+| Sharing a workflow across clients | [Portable Agent Plugin](/agent-plugin/) (the client owns activation and permissions) |
+
+Mode keywords are defined in the [mode table](/core/agents/#modes).
 
 <Aside type="caution" title="Overhead without payoff">
-  Do not choose the orchestrator only because a task has several steps, or because the repository is
-  large. If delegation adds round-trips but no new information, no parallel speedup, and no
-  independent check, it only slows the task down.
+  Several steps or a large repository do not justify the orchestrator. Delegation that adds
+  round-trips but no new information, speedup, or independent check only slows the task down.
 </Aside>
-
-## Do Not Use the Orchestrator For
-
-- A single atomic edit in known files.
-- An obvious change that is easy to verify (comment, copy, config, small fix).
-- A quick fix in familiar territory with short feedback loops.
-- Sharing a workflow across clients (use the [Portable Agent Plugin](/agent-plugin/) instead; the client owns activation and permissions).
-
-## Modes
-
-The mode names vary by platform, but the trade-off is the same: fein selects the full pipeline, sonar stops after research or design, blitz keeps only required safeguards around a fast implementation path.
 
 ## Costs
 
-Each delegated stage adds another model turn and its prompt tokens, context transfer, waiting before the next dependent stage, and repair work if review finds a problem. Strong or expensive models favor direct execution or one specialist; fast, inexpensive models can make narrow delegation a reasonable trade. Start with the smallest route and escalate when uncertainty or risk appears.
-
-Platform behavior also changes the trade-off, so read the platform guide before assuming that a route, permission, or lifecycle behavior transfers unchanged.
+Each delegated stage adds a model turn, context transfer, waiting, and possible repair work. Strong or expensive models favor direct execution or one specialist; fast, inexpensive models can make narrow delegation a reasonable trade. Read the platform guide before assuming a route, permission, or lifecycle behavior transfers unchanged.
 
 <Aside type="tip" title="A practical rule">
   If the task is one atomic edit, start directly. If a wrong assumption is expensive, add a

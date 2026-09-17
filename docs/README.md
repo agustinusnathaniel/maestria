@@ -19,7 +19,7 @@ Contributors, maintainers, and platform adapter authors. To install or use Maest
 | Check a platform's support boundary | [Runtime support matrix](runtime-support-matrix.md) |
 | Choose verification for a change | [Testing philosophy](testing.md) and [completion checklist](checklist.md) |
 | Write or revise documentation | [Documentation conventions](guides/doc-format.md) |
-| Review documentation quality and follow-up work | [Documentation audit](documentation-audit.md) |
+| Review the completed documentation audit and its open follow-ups | [Documentation audit (2026-09-05)](documentation-audit.md) |
 
 ## Find a Design Decision
 
@@ -36,12 +36,12 @@ ADRs record why a design was chosen, including alternatives and trade-offs. Read
 
 ## Plans and Research
 
-[Plans](plans/) and [notes](notes/) preserve implementation and investigation context. Check each document's status and evidence date before treating it as current guidance. The [Hermes design document](hermes-maestria-plugin.md) combines design history, research, and proposed work; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
+[Plans](plans/) and [notes](notes/) are archival records of completed implementation work and investigations. They preserve decisions, evidence dates, and lessons rather than current instructions; confirm present behavior in ADRs, guides, and source. The [Hermes design document](hermes-maestria-plugin.md) describes the current plugin design and architecture; use the [Hermes package README](../packages/hermes/README.md) for installation and current user guidance.
 
 ## Dated Evidence
 
 - [verified] 2026-09-05: paths checked against the repository documentation inventory. The public site source is `apps/docs/`; this checkout has no `apps/website/`.
-- [inferred] Organizing these links by reader task should reduce the need to browse directories or infer document purpose from filenames.
+- [verified] 2026-09-14: historical plans, notes, and the audit were condensed to archival records.
 
 ## Next Step
 

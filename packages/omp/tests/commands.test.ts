@@ -1,15 +1,17 @@
 import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { installCommands } from '@/commands.js';
-import type { CommandsApi, CommandsContext } from '@/commands.js';
-import { createInitialState } from '@/state.js';
-import type { MaestriaState } from '@/state.js';
+import { installCommands } from '@maestria/shared-pi/commands-core';
+import type { CommandsCtx, CommandsPi } from '@maestria/shared-pi/commands-core';
+import { createInitialState } from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
-type CommandHandler = (args: string, ctx: CommandsContext) => Promise<void> | void;
+import { installCommands as installOmpCommands } from '@/commands.js';
 
-type MockCommandsApi = Omit<
-  CommandsApi,
+type CommandHandler = (args: string, ctx: CommandsCtx) => Promise<void> | void;
+
+type MockCommandsPi = Omit<
+  CommandsPi,
   | 'appendEntry'
   | 'getActiveTools'
   | 'registerCommand'
@@ -17,25 +19,25 @@ type MockCommandsApi = Omit<
   | 'setActiveTools'
   | 'setModel'
 > & {
-  appendEntry: ReturnType<typeof vi.fn<CommandsApi['appendEntry']>>;
-  getActiveTools: ReturnType<typeof vi.fn<CommandsApi['getActiveTools']>>;
-  registerCommand: ReturnType<typeof vi.fn<CommandsApi['registerCommand']>>;
-  sendUserMessage: ReturnType<typeof vi.fn<CommandsApi['sendUserMessage']>>;
-  setActiveTools: ReturnType<typeof vi.fn<CommandsApi['setActiveTools']>>;
-  setModel: ReturnType<typeof vi.fn<CommandsApi['setModel']>>;
+  appendEntry: ReturnType<typeof vi.fn<CommandsPi['appendEntry']>>;
+  getActiveTools: ReturnType<typeof vi.fn<CommandsPi['getActiveTools']>>;
+  registerCommand: ReturnType<typeof vi.fn<CommandsPi['registerCommand']>>;
+  sendUserMessage: ReturnType<typeof vi.fn<CommandsPi['sendUserMessage']>>;
+  setActiveTools: ReturnType<typeof vi.fn<CommandsPi['setActiveTools']>>;
+  setModel: ReturnType<typeof vi.fn<CommandsPi['setModel']>>;
 };
 
-const createMockPi = (): MockCommandsApi => ({
+const createMockPi = (): MockCommandsPi => ({
   appendEntry: vi.fn(),
   events: undefined,
   getActiveTools: vi.fn(() => ['read', 'grep', 'bash', 'edit', 'write', 'find', 'ls']),
   registerCommand: vi.fn(),
   sendUserMessage: vi.fn(),
   setActiveTools: vi.fn(),
-  setModel: vi.fn().mockResolvedValue(true),
+  setModel: vi.fn(),
 });
 
-const createMockCtx = (overrides: Partial<CommandsContext> = {}): CommandsContext => {
+const createMockCtx = (overrides: Partial<CommandsCtx> = {}): CommandsCtx => {
   const mockModel = {
     id: 'claude-sonnet-4-20250514',
     name: 'Claude 4 Sonnet',
@@ -52,7 +54,7 @@ const createMockCtx = (overrides: Partial<CommandsContext> = {}): CommandsContex
 };
 
 /** Find a command handler registered with pi.registerCommand. */
-const getHandler = (pi: MockCommandsApi, name: string): CommandHandler => {
+const getHandler = (pi: MockCommandsPi, name: string): CommandHandler => {
   const { calls } = pi.registerCommand.mock;
   const match = calls.find(([registeredName]) => registeredName === name);
   if (!match) {
@@ -471,5 +473,55 @@ describe('/handoff command', () => {
       expect.stringContaining('performance concerns'),
       expect.objectContaining({ deliverAs: 'steer' }),
     );
+  });
+});
+
+describe('installCommands host delegation', () => {
+  it('calls host methods that live on the prototype', async () => {
+    const emit = vi.fn<(event: string, data: unknown) => void>();
+    const prototype: MockCommandsPi = {
+      appendEntry: vi.fn(),
+      events: { emit },
+      getActiveTools: vi.fn(() => ['read', 'grep', 'bash', 'edit']),
+      registerCommand: vi.fn(),
+      sendUserMessage: vi.fn(),
+      setActiveTools: vi.fn(),
+      setModel: vi.fn(),
+    };
+
+    const state: MaestriaState = {
+      ...createInitialState(),
+      reviewModel: 'gpt-4o',
+    };
+    const ctx = createMockCtx({
+      modelRegistry: {
+        getAll: vi.fn().mockReturnValue([{ id: 'claude-sonnet-4-20250514' }, { id: 'gpt-4o' }]),
+      },
+    });
+
+    // OMP's ConcreteExtensionAPI keeps these methods on the prototype, so a host
+    // built by spread silently drops them; Reflect.apply bypasses the SDK host
+    // type, which a test stub cannot satisfy structurally.
+    Reflect.apply(installOmpCommands, undefined, [Object.create(prototype), state]);
+
+    const getHostHandler = (name: string): CommandHandler => {
+      const match = prototype.registerCommand.mock.calls.find(
+        ([registeredName]) => registeredName === name,
+      );
+      if (match?.[1] === undefined) {
+        throw new Error(`Command not registered: ${name}`);
+      }
+      return match[1].handler;
+    };
+
+    await getHostHandler('handoff')('document the fix', ctx);
+    await getHostHandler('review')('audit command wiring', ctx);
+    await getHostHandler('restore-model')('', ctx);
+    await getHostHandler('review-model')('gpt-4o', ctx);
+
+    expect(prototype.appendEntry).toHaveBeenCalled();
+    expect(prototype.getActiveTools).toHaveBeenCalled();
+    expect(prototype.setActiveTools).toHaveBeenCalled();
+    expect(emit).toHaveBeenCalled();
   });
 });

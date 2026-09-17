@@ -20,7 +20,7 @@ hero:
 import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-Maestria ships the same AI engineering methodology to multiple coding agent platforms. Each has its own install commands, update paths, and version management. `maestria` wraps the native integrations behind a single interface, including Claude Code, Codex CLI, and Prime Agent. It also validates and stages the portable Agent Plugins package for clients that support the standard format.
+`maestria` ships Maestria's AI engineering methodology to multiple coding agent platforms, wrapping their native integrations behind one CLI. It also validates and stages portable Agent Plugins for compatible clients.
 
 ## Install Native Integrations
 
@@ -28,16 +28,14 @@ Install Maestria for all detected platforms:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install --all" />
 
-Or select one with `maestria install <platform>`. The CLI supports OpenCode, Kimi Code, Pi, Oh My Pi, Cursor, Hermes, Prime Agent, Claude Code, and Codex CLI. Each integration uses its host's native installation path; see the [command reference](/cli/commands/#install) for platform IDs and package details.
+Or select one with `maestria install <platform>`. Supported platforms: OpenCode, Kimi Code, Pi, Oh My Pi, Cursor, Hermes, Prime Agent, Claude Code, and Codex CLI. See the [command reference](/cli/commands/#install) for platform IDs and package details.
 
 ### Stage a portable Agent Plugin
 
-Portable packages use a separate command namespace because they are artifacts, not runtime platforms. They do not appear in `maestria status` and are not activated by `maestria install`.
+Portable packages are artifacts, not runtime platforms: they do not appear in `maestria status`, and `maestria install` does not activate them.
 
-```bash
-npx maestria plugin validate ./my-plugin
-npx maestria plugin install @maestria/agent-plugin
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate ./my-plugin" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install @maestria/agent-plugin" />
 
 The CLI validates the package, stages it in the Maestria cache, and prints the directory for the compatible client's own installer or local-plugin setting. See the [portable Agent Plugin guide](/agent-plugin/) for the handoff and package boundary.
 
@@ -45,9 +43,7 @@ The CLI validates the package, stages it in the Maestria cache, and prints the d
 
 Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> to see which supported platforms are on your `PATH`, whether Maestria is installed, and which versions are available.
 
-Then use `install`, `update`, or `configure` to manage an integration. Portable packages use `plugin validate` and `plugin install` instead; staging does not activate them in a client.
-
-All commands support `--json` for script consumption. Runtime platform commands also support `--quiet` to suppress spinner animations for CI environments.
+Then use `install`, `update`, or `configure` to manage an integration; portable packages use `plugin validate` and `plugin install`. All commands support `--json`; runtime platform commands also support `--quiet` to suppress spinner animations for CI.
 
 ## Explore the Docs
 

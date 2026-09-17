@@ -5,7 +5,7 @@ import type {
 import { describe, expect, it } from 'vite-plus/test';
 
 import { createModePromptHandler } from '@/rules.js';
-import { createInitialState } from '@/state.js';
+import { createInitialState } from '@maestria/shared-pi/state-core';
 
 const getSystemPrompt = (result: BeforeAgentStartEventResult): string => {
   if (result.systemPrompt === undefined) {

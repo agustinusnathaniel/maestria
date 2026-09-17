@@ -44,8 +44,16 @@ export type CompactionOn = (
     | ['session_before_tree', (event: TreeEvent) => TreeResult | undefined]
 ) => void;
 
+/**
+ * Event registration surface shared by the pi-family hosts. Declared as
+ * overloaded call signatures (matching the host `ExtensionAPI.on` shape) so
+ * both hosts satisfy it structurally without casts.
+ */
 export interface CompactionPi {
-  on: CompactionOn;
+  on: {
+    (event: 'session_before_compact', handler: (event: CompactionEvent) => CompactionResult): void;
+    (event: 'session_before_tree', handler: (event: TreeEvent) => TreeResult | undefined): void;
+  };
 }
 
 /**

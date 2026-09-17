@@ -97,7 +97,6 @@ describe('extension entry point', () => {
     invokeExtension(pi);
     const onEvents = pi.on.mock.calls.map((call) => call[0]);
     expect(onEvents).toContain('session_start');
-    expect(onEvents).toContain('session_shutdown');
     expect(onEvents).toContain('before_agent_start');
     expect(onEvents).toContain('tool_call');
     expect(onEvents).toContain('goal_updated');

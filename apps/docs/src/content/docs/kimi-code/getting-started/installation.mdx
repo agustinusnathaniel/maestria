@@ -3,66 +3,49 @@ title: Installation & Setup
 description: Install @maestria/kimi-code in Kimi Code. The package is a declarative plugin with generated skills, native commands, and a system-prompt contribution.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-import { PackageManagers as PackageManagerCommands } from 'starlight-package-managers';
+import { Steps } from '@astrojs/starlight/components';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
-@maestria/kimi-code is a declarative Kimi Code plugin. It contributes skills, namespaced workflow commands, and a system prompt. There is no build step.
+`@maestria/kimi-code` is a declarative plugin with no build step.
 
 ## Prerequisites
 
 - Kimi Code v0.38.0 or later for the verified plugin registry, systemPromptPath, and AgentSwarm behavior.
 - Node.js 22.12 or later and npm when using the Maestria CLI.
-- Kimi's own prerequisites when installing directly.
 
-## Install via the Maestria CLI
+## Install
 
-This is the recommended path:
+<Steps>
 
-<PackageManagerCommands
-  type="dlx"
-  pkg="maestria"
-  args="install kimi-code"
-  comment="Install for Kimi Code"
-/>
+1. Install:
 
-Check the native plugin record:
+   <AllPackageManagers
+     type="dlx"
+     pkg="maestria"
+     args="install kimi-code"
+     comment="Install for Kimi Code"
+   />
 
-<PackageManagerCommands type="dlx" pkg="maestria" args="status" comment="Check installation" />
+2. Check the native plugin record:
 
-The CLI downloads the npm package, installs it through Kimi's plugin manager, and preserves existing plugin records and global instructions. Start a new Kimi Code session after installation so the session-start skill and system-prompt contribution load.
+   <AllPackageManagers type="dlx" pkg="maestria" args="status" comment="Check installation" />
 
-```text
-/reload
-/new
-```
+3. Start a new session so the session-start skill and system prompt load:
 
-## Install manually
+   ```text
+   /reload
+   /new
+   ```
 
-Use this only when you need to control the package extraction or invoke Kimi's native installer yourself:
+</Steps>
 
-```bash
-npm pack @maestria/kimi-code@latest --pack-destination /tmp
-mkdir -p /tmp/maestria-kimi-code
-tar -xzf /tmp/maestria-kimi-code-*.tgz -C /tmp/maestria-kimi-code --strip-components=1
-```
+## Manual Install
 
-Then install the extracted directory from a Kimi Code session:
-
-```text
-/plugins install /tmp/maestria-kimi-code
-```
-
-The CLI path and the manual path both produce the same Kimi-managed plugin. Delete the temporary tarball and directory when you no longer need them.
+To control extraction yourself, run `npm pack @maestria/kimi-code@latest`, extract the tarball, then run `/plugins install <extracted-directory>` from a Kimi Code session. Delete the temporary files afterward.
 
 ## Optional Session Controls
 
-Maestria does not add hooks or permission rules to Kimi Code. Add them only if your workflow needs them.
-
-- Hooks can block selected commands, add a per-turn reminder, or observe compaction.
-- Permission rules apply to the whole Kimi session, not to one persona. A deny rule intended for review also blocks builder and writer work in that session.
-- Persona text alone is advisory. It does not make reviewer or adventurer read-only.
-
-Treat custom hooks as executable code and review them before enabling them. Keep the default installation path free of optional controls.
+`[[hooks]]` and `[[permission.rules]]` blocks in `~/.kimi-code/config.toml` are the only tool-layer enforcement; persona text alone is advisory. The default installation adds neither. Hooks are executable code: review them before enabling. Permission rules apply session-wide, so a deny rule for review also blocks builder and writer work.
 
 ## Verify the Installation
 
@@ -73,9 +56,7 @@ In Kimi Code, run:
 /plugins info maestria
 ```
 
-Confirm that the plugin is enabled and that its session-start skill is orchestrator. In a new session, ask the orchestrator to list its available specialists.
-
-Kimi limits each plugin system-prompt file to 32 KB. The packaged SYSTEM.md is tested against that limit. If AgentSwarm is unavailable, verify that Kimi Code is v0.38.0 or later.
+Confirm that the plugin is enabled and its session-start skill is orchestrator. In a new session, ask the orchestrator to list its available specialists. Kimi limits each plugin system-prompt file to 32 KB; the packaged `SYSTEM.md` is tested against that budget.
 
 ## Troubleshooting
 
@@ -83,30 +64,21 @@ Kimi limits each plugin system-prompt file to 32 KB. The packaged SYSTEM.md is t
 | --- | --- |
 | Plugin is missing | Run /plugins list and /plugins info maestria, then restart Kimi Code |
 | Orchestrator does not load | Confirm sessionStart.skill is orchestrator and start a new session |
-| System prompt is truncated | Keep long detail in specialist SKILL.md files; Kimi enforces the 32 KB file limit |
+| Plugin changes do not appear | Run /reload, then /new |
 | Reviewer can edit | Configure session-wide permission rules; the persona prompt is not enforcement |
+| AgentSwarm is unavailable | Verify Kimi Code v0.38.0 or later |
 
 ## Update
 
-<PackageManagerCommands type="dlx" pkg="maestria" args="update kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria" args="update kimi-code" />
 
-To pin a version:
-
-<PackageManagerCommands type="dlx" pkg="maestria" args="update kimi-code --version 0.5.2" />
-
-Updates replace the managed package. Back up local edits before updating.
+Updates replace the managed package: back up local edits before updating.
 
 ## Uninstall
 
-<PackageManagerCommands type="dlx" pkg="maestria" args="uninstall kimi-code" />
+<AllPackageManagers type="dlx" pkg="maestria" args="uninstall kimi-code" />
 
-Or from a Kimi Code session:
-
-```text
-/plugins remove maestria
-```
-
-If you added custom hooks or permission rules, remove those blocks from ~/.kimi-code/config.toml separately.
+Or from a Kimi Code session, run `/plugins remove maestria`. Remove any custom `[[hooks]]` or `[[permission.rules]]` blocks from `~/.kimi-code/config.toml` separately.
 
 ## Next Steps
 

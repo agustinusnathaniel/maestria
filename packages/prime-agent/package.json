@@ -1,6 +1,6 @@
 {
   "name": "@maestria/prime-agent",
-  "version": "0.3.4",
+  "version": "0.3.10",
   "private": false,
   "description": "Maestria methodology for Prime Agent - specialist roles, orchestrator, global rules, and workflow modes as Agent Skills, plus a small Prime/Pi extension for mode commands and mode prompt injection",
   "keywords": [
@@ -43,6 +43,7 @@
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts"
   },
   "devDependencies": {
+    "@maestria/shared-mode": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:",

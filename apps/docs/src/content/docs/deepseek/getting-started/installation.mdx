@@ -4,6 +4,7 @@ description: Stage the Maestria agent preset for DeepSeek Harness through the Ma
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
 `@maestria/deepseek` ships three layers: 14 generated Agent Skills, a Cordis plugin (prompt sections, specialist persona variables, and a skills provider), and a full agent preset with seven per-specialist delegation tools. The Maestria CLI stages the preset and plugin into the harness home as one self-contained directory; it does not touch your project files or register models, MCP servers, or hooks.
 
@@ -20,9 +21,7 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 
 ## Stage the preset through Maestria
 
-```bash
-npx maestria install deepseek
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="install deepseek" />
 
 The CLI downloads the published `@maestria/deepseek` package and stages a self-contained preset at `$DSH_HOME/.agent-presets/maestria` (default `~/.dsh/.agent-presets/maestria`):
 
@@ -71,9 +70,8 @@ This route is purely advisory: the model loads skills through the `skill` tool, 
 
 ## Update and remove
 
-```bash
-npx maestria update deepseek
-npx maestria uninstall deepseek
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update deepseek" />
+
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall deepseek" />
 
 `uninstall` removes only the staged preset directory. Sessions already running on the preset keep running on it.

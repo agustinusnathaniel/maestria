@@ -11,13 +11,15 @@ export interface ReplaceOp {
   to: string;
 }
 
+/** A replace op tagged with where it was declared: `default` or a specific file entry. */
+export type ResolvedReplaceOp = ReplaceOp & { scope: 'default' | 'file' };
+
 export interface FileConfig {
   output?: string;
   stripFrontmatter?: boolean;
   replace?: ReplaceOp[];
   prepend?: string;
   append?: string;
-  autoGenComment?: string;
   frontmatter?: Record<string, unknown> | string | null;
 }
 
@@ -35,7 +37,7 @@ export interface ResolvedSyncConfig {
   configDir: string;
   source: string;
   output: string;
-  default?: FileConfig;
+  fallback?: ResolvedFileConfigValues;
   files: Record<string, ResolvedFileConfig>;
   preserve: string[];
 }
@@ -43,18 +45,17 @@ export interface ResolvedSyncConfig {
 export interface ResolvedFileConfig {
   output: string;
   stripFrontmatter: boolean;
-  replace: ReplaceOp[];
+  replace: ResolvedReplaceOp[];
   prepend: string;
   append: string;
   frontmatter?: Record<string, unknown> | string | null;
-  autoGenComment?: string;
 }
 
 export class ConfigError extends Error {
   override name = 'ConfigError';
 }
 
-type ResolvedFileConfigValues = Omit<ResolvedFileConfig, 'output'>;
+export type ResolvedFileConfigValues = Omit<ResolvedFileConfig, 'output'>;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -64,13 +65,15 @@ const isSyncConfig = (value: unknown): value is SyncConfig =>
 
 const mergeFileConfig = (
   fileCfg: FileConfig,
-  defaultCfg: FileConfig | undefined,
+  defaultCfg?: FileConfig,
 ): ResolvedFileConfigValues => ({
   append: fileCfg.append ?? defaultCfg?.append ?? '',
-  autoGenComment: fileCfg.autoGenComment ?? defaultCfg?.autoGenComment ?? undefined,
   frontmatter: fileCfg.frontmatter === undefined ? defaultCfg?.frontmatter : fileCfg.frontmatter,
   prepend: fileCfg.prepend ?? defaultCfg?.prepend ?? '',
-  replace: [...(defaultCfg?.replace ?? []), ...(fileCfg.replace ?? [])],
+  replace: [
+    ...(defaultCfg?.replace ?? []).map((op): ResolvedReplaceOp => ({ ...op, scope: 'default' })),
+    ...(fileCfg.replace ?? []).map((op): ResolvedReplaceOp => ({ ...op, scope: 'file' })),
+  ],
   stripFrontmatter: fileCfg.stripFrontmatter ?? defaultCfg?.stripFrontmatter ?? false,
 });
 
@@ -106,6 +109,7 @@ const resolveConfig = (
       ? path.resolve(configDir, raw.output)
       : '';
 
+  const fallback = mergeFileConfig({}, raw.default);
   const resolvedFiles: Record<string, ResolvedFileConfig> = {};
 
   if (raw.files) {
@@ -123,11 +127,26 @@ const resolveConfig = (
   return {
     configDir,
     configPath,
-    default: raw.default,
+    fallback,
     files: resolvedFiles,
     output,
     preserve: raw.preserve ?? [],
     source,
+  };
+};
+
+export const resolveSourceFile = (
+  config: ResolvedSyncConfig,
+  filename: string,
+): ResolvedFileConfig => {
+  const explicit = config.files[filename];
+  if (explicit !== undefined) {
+    return explicit;
+  }
+  const baseDir = config.output || config.configDir;
+  return {
+    ...(config.fallback ?? mergeFileConfig({})),
+    output: resolveFileOutput({}, baseDir, filename),
   };
 };
 

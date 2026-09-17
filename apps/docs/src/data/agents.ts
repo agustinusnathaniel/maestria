@@ -20,12 +20,12 @@ export const agents: Agent[] = [
     artifact: 'Route assignments, commit protocol',
     constraint: 'Maker/checker split enforced',
     description:
-      'The dispatcher that never implements. Routes every task to the right specialist, enforces maker/checker split, and manages the commit protocol.',
+      'The dispatcher selects the smallest safe route for each turn: it executes known low-risk work directly, delegates specialist work with concise briefs, integrates results, enforces the maker/checker split, and manages the commit protocol.',
     icon: '🎯',
     id: 'orchestrator',
     name: 'Orchestrator',
     role: 'Routes tasks to specialists, manages commit protocol',
-    scope: 'Dispatch only - never implements',
+    scope: 'Routes work; executes direct-route tasks itself',
   },
   {
     artifact: 'Reconnaissance report',
@@ -97,7 +97,7 @@ export const agents: Agent[] = [
     artifact: 'Structured docs',
     constraint: 'Follows the source of truth',
     description:
-      'Writes documentation following structured patterns. Covers purpose, usage, and details with progressive disclosure and clear, human-readable prose.',
+      'Writes documentation following structured patterns. Covers purpose, usage, and details with progressive disclosure and plain language.',
     icon: '✍️',
     id: 'writer',
     name: 'Writer',

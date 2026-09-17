@@ -5,15 +5,28 @@ description: Changes to agent directives, global rules, and pipeline methodology
 
 This changelog tracks meaningful changes to how Maestria-powered agents behave - what they do differently, what they're stricter about, and what you can expect from them.
 
+## 2026-09-06
+
+- **Effort and process scale with the task.** Investigation, verification, skill loading, and output structure track the size of the work; agents keep full assignment ownership and may add necessary in-scope regression coverage.
+- **Skill references resolve at load time.** Planner guidance no longer names the removed `to-issues` and `to-prd` skills, the duplicated Kimi orchestrator skill prescription is gone, and the pipeline states that Diagnose analyzes the bug, applies the minimal fix, and verifies the repair.
+
 ## 2026-09-04
 
 - **Implementation follows established engineering pressure.** Builders validate and normalize inputs at trust boundaries, keep seams feature-local until repetition or shared change pressure justifies broader scope, trace every consumer of shared interfaces, and use executable sources or checks when several consumers must agree.
 - **Refactors and migrations stay reviewable.** Planners isolate enabling refactors with acceptance evidence and rollback points, prove migrations spanning many call sites or modules on a representative slice, migrate in verifiable batches, and give compatibility shims a removal condition or an explicit reason to remain.
-- **Knowledge stays useful rather than ceremonial.** Diagnose preserves only findings with durable future value, while Writer verifies claims against current code/config and gives operator-critical instructions runnable checks with expected signals.
+- **Knowledge stays useful.** Diagnose preserves only findings with durable future value, while Writer verifies claims against current code/config and gives operator-critical instructions runnable checks with expected signals.
 
 ## 2026-09-03
 
 - **Visual evidence on PRs where supported.** For visual or behavioral changes, agents now attach a screenshot or short video after confirming the project targets GitHub (authenticated `gh` with `--attach` support) and a capture tool is available. Vision is optional verification, not a precondition.
+
+## 2026-08-25
+
+- **Self-explanatory code over comments.** Agent projections favor clear naming, small functions, and simple control flow; comments are reserved for concise context the code cannot express.
+
+## 2026-08-24
+
+- **Shared human-facing output contract.** Responses, status updates, briefs, comments, commits, PR metadata, and documentation never emit a Unicode em dash, while preserving code syntax, intentional literals, and quoted text.
 
 ## 2026-08-22
 
@@ -21,6 +34,10 @@ This changelog tracks meaningful changes to how Maestria-powered agents behave -
 - **Delivery is terminal-artifact driven.** Delegated implementation outcomes complete at a pushed feature branch with an open PR; routine delivery requires no approval asks, while merge, release, and production actions remain separate authorization boundaries.
 - **Transport failures are not verdicts.** Failed or cancelled delegations get one adjusted-brief retry before structured blocker reporting; user-initiated or intentional platform cancellation stays terminal.
 - Full decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+
+## 2026-08-14
+
+- **Sessions continue through bounded repair.** Normal engineering stays autonomous through continuation, scope-frozen repair, and reviewable PR delivery. Review and repair are bounded to material blockers, and incomplete specialist work becomes a structured blocker instead of an implicit user checkpoint.
 
 ## 2026-08-13
 
@@ -31,10 +48,35 @@ This changelog tracks meaningful changes to how Maestria-powered agents behave -
 - **Bounded progress and independent review.** Repair loops use a practical normal bound of about three rounds and extend only with observable progress. Repeated causes require a strategy change or escalation; maker/checker review is used where the selected route supports it.
 - **Clear lifecycle boundaries.** Completion includes cleanup of delegated work, and nested agents do not duplicate an outer supervisor's repository selection, scheduling, retry, or lifecycle responsibilities. Platform adapters may impose stricter execution limits.
 
+## 2026-08-12
+
+- **Workflow contracts clarified.** Routine validated commits on recognized feature branches remain autonomous after required review; push and later lifecycle actions stay separately gated. Bounded-repair and platform-enforcement notes were added, generated projections refreshed, and explicit mode reset behavior and read-only Sonar profiles retained where supported.
+- **Directives re-aligned around evidence.** Outcome, evidence, runtime authority, blind review, bounded repair, and autonomous routine work now share one contract. The host runtime decides whether work is performed directly or delegated, and nested supervisors do not duplicate scheduling or lifecycle work.
+
+## 2026-08-11
+
+- **Directives streamlined.** Universal contracts are centralized, and the directives add bounded autonomy, work-unit budgets, scope control, process lifecycle evidence, and checkpoint action boundaries.
+
+## 2026-08-06
+
+- **Delegation is more selective.** Handoffs stay concise, and Sonar research starts with the owning specialist, adding another specialist only when a distinct required output remains.
+
 ## 2026-08-03
 
 - **Selective routing by task class.** Maestria now guides turns through direct, focused, or full routes: explanations and discovery use direct execution, tiny edits use direct execution or a native builder, ordinary code changes use focused delegation, and complex or high-risk work uses the full pipeline with independent review where supported. The full route is selected for that work or for explicit `fein` requests, not forced for every turn.
 - **Explicit modes and route-scaled safeguards.** `fein` selects the full route, `sonar` is research-only, and `blitz` is a low-risk/direct bypass that does not waive safety floors. Delegation and review scale with the route. Maker/checker enforcement varies by platform; where separate sessions or tool controls are unavailable, the split is advisory.
+
+## 2026-07-29
+
+- **Rule-override conditions and communication conventions.** The orchestrator gained six explicit override conditions (user skip request, safety, mode override, frustration escalation, rule conflicts, explanation requests) and two shared rules: report errors matter-of-factly and lead with the action. Review triage chains directly into the commit flow after approval.
+
+## 2026-07-28
+
+- **Blind review and fail-loud iteration exit.** The reviewer no longer receives the builder's handoff notes or self-assessment; it evaluates only the diff, requirements, and acceptance criteria. When a review loop runs three cycles with unresolved issues, the pipeline stops and escalates with a structured report that requires an explicit override to continue.
+
+## 2026-07-22
+
+- **Directive recomposition.** Core prompts were restructured with clearer sections and emphasis on critical rules, specialists gained structured handoff verification checklists, completion checks were standardized, a parallelization table and multi-lens review swarm were added, and prompt instructions became platform-agnostic.
 
 ## 2026-07-21
 
@@ -49,6 +91,8 @@ This changelog tracks meaningful changes to how Maestria-powered agents behave -
 - **Work results format simplified.** The old 3-part narrative format (Overview, File-by-file, Cohesion) is replaced by a table-first format. Context paragraphs are now optional.
 - **Change-type prefixes for easier scanning.** Every entry now uses `+` (added), `~` (modified), or `-` (deleted). Breaking changes are marked with `!` (e.g. `!~`). Test files are annotated with `(test)`.
 - **Work results appear in PR descriptions.** The `## Changes` section of every PR now includes the structured work results table, so human reviewers see the same summary without anyone having to write it twice.
+- **PR descriptions follow a fixed structure.** Every PR body uses Summary, Changes, Testing, and Breaking Changes sections.
+- **Landing on main starts a feature branch.** The agent no longer asks before checking out a feature branch when it lands on main; it creates one and continues.
 
 ## 2026-07-14
 
@@ -76,7 +120,7 @@ This changelog tracks meaningful changes to how Maestria-powered agents behave -
 
 - **Eliminate questions - autonomous philosophy.** Agents now exhaust data, document assumptions, and proceed instead of asking for permission on every decision. Mid-phase questions (design choices, permissions, preferences) are eliminated across all specialists. Boundary checkpoints kept: commit autonomous, push conditional (auto on feature branches, ask on main), PR creation automatic on feature branches after push (user can edit after creation).
 - **Autonomous commit protocol.** Commit is fully autonomous - agent reads git log for past corrections, composes correct conventional commit message, commits without asking. Per-turn authorization requirement removed. Push is automatic on feature branches, asks only on main/master.
-- **OpenCode permission alignment.** Builder shell permissions expanded from 5 narrow patterns to comprehensive allow-list covering read-only file operations, git, package managers, and build/test tools. Diagnose edit permission changed from ask to allow. Both keep catch-all ask for unusual commands.
+- **OpenCode permission alignment.** Builder shell permissions expanded from 5 narrow patterns to a broad allow-list covering read-only file operations, git, package managers, and build/test tools. Diagnose edit permission changed from ask to allow. Both keep catch-all ask for unusual commands.
 - **Structured work result summaries.** Orchestrator now presents completed work as a file-by-file table focusing on signatures and interfaces (not function bodies). Builder reports at the signature level. Users can spot issues in 1-2 prompts instead of reading the full diff.
 - **`!!!` Convention formalized.** Non-negotiable rules are scar tissue from past failures, not preferences. New "Never delete what you didn't create" rule. Recognizing User Frustration escalation ladder (5 levels with prescribed responses). Anti-Patterns enriched with named patterns and concrete fixes. Complexity-Based Routing (SIMPLE/COMPLEX classification). Session Flow section added - orchestrator proactively proposes next steps instead of going silent. Proven directive combos documented in COMPOSITION.md.
 - **Writing style improvements.** The "Write for humans" rule hardened to non-negotiable (`!!!`). humanizer skill added as always-load for orchestrator. Reviewer gained Writing Style checklist item 9 to catch violations.

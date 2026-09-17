@@ -1,5 +1,6 @@
 import { Cause, Data, Effect, Exit } from 'effect';
 
+import { CliError } from './command-result.js';
 import { PLATFORM_IDS, platforms } from './platforms.js';
 import type { PlatformId } from './platforms.js';
 import { isValidVersion } from './version.js';
@@ -102,16 +103,23 @@ export const validateVersion = (input: string): Effect.Effect<string, Validation
   );
 };
 
+/** First typed failure's string `message`, or undefined when none is present. */
+export const failureMessage = (cause: Cause.Cause<unknown>): string | undefined => {
+  const failure: unknown = cause.reasons.find(Cause.isFailReason)?.error;
+  if (typeof failure !== 'object' || failure === null || !('message' in failure)) {
+    return undefined;
+  }
+  return typeof failure.message === 'string' ? failure.message : undefined;
+};
+
 /**
  * Run a validation effect at the CLI boundary.
- * Prints the error and exits with code 1 on failure, returns the value on success.
+ * Throws CliError with exit code 1 on failure, returns the value on success.
  */
-export const validateOrExit = async <A>(effect: Effect.Effect<A, ValidationError>): Promise<A> => {
+export const validateOrThrow = async <A>(effect: Effect.Effect<A, ValidationError>): Promise<A> => {
   const exit = await Effect.runPromiseExit(effect);
   if (Exit.isSuccess(exit)) {
     return exit.value;
   }
-  const firstFailure = exit.cause.reasons.find(Cause.isFailReason);
-  console.error(firstFailure?.error?.message ?? 'Validation failed');
-  return process.exit(1);
+  throw new CliError(failureMessage(exit.cause) ?? 'Validation failed', 1);
 };

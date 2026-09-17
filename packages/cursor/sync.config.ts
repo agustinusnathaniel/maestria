@@ -11,23 +11,6 @@ const CURSOR_TOOL_REPLACES = [
   { from: '@planner', to: 'planner' },
   { from: '@reviewer', to: 'reviewer' },
   { from: '@writer', to: 'writer' },
-  { from: '@orchestrator', to: 'orchestrator' },
-  { from: 'task(', to: 'Task(' },
-  { from: 'question()', to: 'ask the user' },
-  { from: 'question(', to: 'ask the user(' },
-  { from: 'webfetch', to: 'WebFetch' },
-  { from: 'websearch', to: 'WebSearch' },
-  { from: '`webfetch`', to: '`WebFetch`' },
-  { from: '`read`', to: '`Read`' },
-  { from: '`glob`', to: '`Glob`' },
-  { from: '`grep`', to: '`Grep`' },
-  { from: '`edit`', to: '`StrReplace`' },
-  { from: '`write`', to: '`Write`' },
-  { from: '`bash`', to: '`Shell`' },
-  { from: 'grep(', to: 'Grep(' },
-  { from: 'glob(', to: 'Glob(' },
-  { from: '`lsp`', to: 'a language server protocol' },
-  { from: 'Related Agents', to: 'Related Agents' },
   { from: 'run in parallel', to: 'run in parallel via multiple `Task` calls' },
 ] as const;
 
@@ -35,17 +18,7 @@ const ORCHESTRATOR_APPEND = `
 
 ## Specialist Agents (Cursor)
 
-Delegate via the \`Task\` tool to these custom agents (plugin \`agents/\`). Pass a complete handoff contract in the prompt.
-
-| Agent | Role | When |
-| --- | --- | --- |
-| \`adventurer\` | Gather data; describe the terrain | Before any implementation in unfamiliar code |
-| \`architect\` | Evaluate options; document decisions | When multiple approaches exist |
-| \`builder\` | Implement; test; refactor | When the design is locked |
-| \`diagnose\` | Find root cause; write regression test | When something is broken |
-| \`planner\` | Break down work; sequence milestones | Before starting a multi-step feature |
-| \`reviewer\` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
-| \`writer\` | Document APIs; write README; create ADRs | When code needs human-facing docs |
+Delegate via the \`Task\` tool to the plugin's custom agents (\`agents/\`). Pass a complete handoff contract in the prompt.
 
 ### How to invoke
 
@@ -71,16 +44,6 @@ Users can trigger modes with slash commands from this plugin:
 | \`/fein\` | Full pipeline: adventurer → architect/planner → builder → reviewer |
 | \`/sonar\` | Research only: adventurer → architect/planner → STOP |
 | \`/blitz\` | Fast path: builder directly (skip optional recon/design unless unknown; required review remains) |
-
-## Related Agents
-
-- \`adventurer\` - Codebase reconnaissance
-- \`architect\` - Architecture decisions + ADRs
-- \`builder\` - Focused implementation
-- \`diagnose\` - 6-step bug tracing
-- \`planner\` - Multi-phase plans
-- \`reviewer\` - Code review with quality gates
-- \`writer\` - Documentation
 `;
 
 export default {
@@ -91,7 +54,7 @@ export default {
     'adventurer.md': {
       frontmatter: {
         description:
-          'Codebase reconnaissance agent. Maps unknown territory, traces call chains, maps module relationships. Use before implementation in unfamiliar code. Read-only - never implement or design.',
+          'Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.',
         name: 'adventurer',
         readonly: true,
       },
@@ -102,7 +65,7 @@ export default {
     'architect.md': {
       frontmatter: {
         description:
-          'Architecture decisions using decision matrices and ADRs. Evaluates options with weighted criteria. Use for technology choices, implementation approaches, trade-off analysis.',
+          'Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.',
         name: 'architect',
       },
       output: 'architect.md',
@@ -110,7 +73,7 @@ export default {
     'builder.md': {
       frontmatter: {
         description:
-          'Focused implementation agent for atomic tasks. Executes one verifiable unit of work. Use for targeted fixes, feature implementation, refactors, adding tests.',
+          'Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.',
         name: 'builder',
       },
       output: 'builder.md',
@@ -130,11 +93,6 @@ export default {
         '---',
         '',
       ].join('\n'),
-      replace: [
-        { from: '@builder', to: 'builder' },
-        { from: '@reviewer', to: 'reviewer' },
-        { from: '@adventurer', to: 'adventurer' },
-      ],
       stripFrontmatter: true,
     },
     'commands/fein.md': {
@@ -152,13 +110,6 @@ export default {
         '---',
         '',
       ].join('\n'),
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@builder', to: 'builder' },
-        { from: '@reviewer', to: 'reviewer' },
-        { from: '@planner', to: 'planner' },
-      ],
       stripFrontmatter: true,
     },
     'commands/sonar.md': {
@@ -176,17 +127,12 @@ export default {
         '---',
         '',
       ].join('\n'),
-      replace: [
-        { from: '@adventurer', to: 'adventurer' },
-        { from: '@architect', to: 'architect' },
-        { from: '@planner', to: 'planner' },
-      ],
       stripFrontmatter: true,
     },
     'diagnose.md': {
       frontmatter: {
         description:
-          'Systematic 6-step regression tracing from error message to root cause to prevention. Use for cryptic errors, regressions, production bugs.',
+          'Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.',
         name: 'diagnose',
       },
       output: 'diagnose.md',
@@ -195,7 +141,7 @@ export default {
       append: ORCHESTRATOR_APPEND,
       frontmatter: {
         description:
-          'Maestria dispatcher for Cursor. Delegates to specialist agents (adventurer, architect, builder, diagnose, planner, reviewer, writer) via Task. Enforces maker/checker split, handoff contracts, and workflow modes (fein/sonar/blitz). Use for multi-step or multi-file work.',
+          'Maestria workflow dispatcher for Cursor routing, handoffs, and independent review.',
         name: 'orchestrator',
       },
       output: '../skills/orchestrator/SKILL.md',
@@ -203,7 +149,7 @@ export default {
     'planner.md': {
       frontmatter: {
         description:
-          'Create detailed implementation plans with phased dependencies, timelines, and success criteria. Use for complex multi-phase features before building.',
+          'Phased planning agent with dependencies, verification criteria, timelines, and rollback points.',
         name: 'planner',
         readonly: true,
       },
@@ -214,7 +160,7 @@ export default {
     'reviewer.md': {
       frontmatter: {
         description:
-          'Code review with quality gates. Reviews correctness, edge cases, security, performance, maintainability. Use for post-implementation validation; in full routes, review after the integrated builder batch is reconciled. Read-only - never edit.',
+          'Independent review agent covering correctness, security, performance, maintainability, and quality gates.',
         name: 'reviewer',
         readonly: true,
       },
@@ -231,7 +177,6 @@ export default {
       output: '../rules/maestria-global.mdc',
       replace: [
         { from: '# Global Agent Rules', to: '# Global Agent Rules - @maestria/cursor' },
-        { from: '<cmd> --help', to: '`Shell` help / skill docs' },
         // The revised canonical rules body no longer carries the specialist
         // roster; keep the delegation section self-contained for Cursor rules.
         {
@@ -243,7 +188,7 @@ export default {
     'writer.md': {
       frontmatter: {
         description:
-          'Documentation writing following structured patterns. Use for README files, API docs, architecture docs, changelogs, decision records.',
+          'Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.',
         name: 'writer',
       },
       output: 'writer.md',

@@ -7,44 +7,17 @@ For repository setup, changesets, and pull requests, see the [Contributing Guide
 
 ## Package Boundary
 
-Claude Code is a declarative plugin. It has no runtime adapter:
-
-```text
-packages/claude-code/
-├── .claude-plugin/plugin.json   hand-authored manifest
-├── agents/                      generated specialist agents
-├── skills/                      generated orchestrator and global-rules skills
-├── commands/                    generated workflow commands
-├── sync.config.ts               Claude-specific transforms
-├── tests/
-├── INSTALL.md
-└── README.md
-```
-
-The repository marketplace entry points the host CLI to the published package. The package manifest describes the plugin; the sync output supplies its agents, skills, and commands.
+Claude Code is a declarative plugin with no runtime adapter. The sync pipeline generates its agents, skills, and commands from `packages/core/agent-directives/`; only the plugin manifest (`.claude-plugin/plugin.json`) and `sync.config.ts` are hand-authored. Do not duplicate canonical prompt text in the package.
 
 ## Change Methodology
 
-Edit packages/core/agent-directives/, never generated files under agents/, skills/, or commands/. Then regenerate and verify:
+Edit `packages/core/agent-directives/`, never generated files under `agents/`, `skills/`, or `commands/`. Then regenerate and verify:
 
 ```bash
 scripts/sync-all
 scripts/check-sync
 pnpm --filter @maestria/claude-code test
 ```
-
-Keep Claude-specific namespacing, tool names, frontmatter, and restrictions in sync.config.ts. Do not duplicate canonical prompt text in the package.
-
-## Host Contract
-
-| Output              | Purpose                                            |
-| ------------------- | -------------------------------------------------- |
-| agents/             | Seven specialist agents with generated frontmatter |
-| skills/orchestrator | User-invocable routing skill                       |
-| skills/global-rules | Preloaded global rules contract                    |
-| commands/           | fein, sonar, and blitz workflow commands           |
-
-The sync config namespaces references as `maestria:<agent>`. It sets model inheritance and preloads global-rules. The adventurer, planner, and reviewer agents receive `disallowedTools: Write, Edit`; the restriction is the package's runtime read-only boundary.
 
 ## Validate the Package
 
@@ -56,7 +29,7 @@ pnpm test
 pnpm validate
 ```
 
-The validator checks package structure and frontmatter. Runtime behavior such as skill preload resolution and command execution still needs end-to-end verification; see the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
+The validator checks package structure and frontmatter. Runtime behavior still needs end-to-end verification; see the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md).
 
 ## See Also
 

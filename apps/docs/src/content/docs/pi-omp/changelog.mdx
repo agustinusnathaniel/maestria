@@ -5,13 +5,59 @@ description: Release history for @maestria/pi and @maestria/omp.
 
 Entries apply to both `@maestria/pi` and `@maestria/omp` unless otherwise noted.
 
+## v0.7.8 (Pi) / v0.5.8 (OMP)
+
+_September 11, 2026_
+
+- Internal consolidation; no user-facing behavior change and generated agent and skill output is unchanged.
+
+## v0.7.7 (Pi) / v0.5.7 (OMP)
+
+_September 8, 2026_
+
+- Stopped publishing generated JavaScript sourcemaps to reduce published package sizes; compiled runtime artifacts are unchanged.
+
+## v0.7.6 (Pi) / v0.5.6 (OMP)
+
+_September 6, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.5 (Pi) / v0.5.5 (OMP)
+
+_September 4, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.4 (Pi) / v0.5.4 (OMP)
+
+_September 3, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.3 (Pi) / v0.5.3 (OMP)
+
+_August 27, 2026_
+
+- Shared neutral mode and skill validation logic through the hybrid package topology.
+
+## v0.7.2 (Pi) / v0.5.2 (OMP)
+
+_August 25, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
+## v0.7.1 (Pi) / v0.5.1 (OMP)
+
+_August 24, 2026_
+
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
+
 ## v0.7.0 (Pi) / v0.5.0 (OMP)
 
 _August 22, 2026_
 
-- Canonical agent directives are ~24% leaner at the source (~21% as shipped in generated plugins): the bounded-repair contract lives once in the global rules, specialist skill catalogs list only verified skills, and dead sync-config replacement anchors were removed.
-- Delegated implementation outcomes now complete at a pushed feature branch with an open PR; failed or cancelled delegations get one adjusted-brief retry before structured blocker reporting.
-- Decision record: ADR-CORE-019 (`docs/adr/core/ADR-CORE-019-directive-simplification.md`).
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.6.8 (Pi)
 
@@ -31,14 +77,14 @@ _August 13, 2026_
 
 _August 13, 2026_
 
-- Agent directives now calibrate effort to task risk, prefer mature ecosystem solutions, converge reviews on material blockers, deliver routine engineering work through feature branches and PRs, and clean up task-owned background processes before completion.
 - **Pi:** parallel subagent dispatch preserves successful results and aborts orphaned subagents on a partial failure.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.5.6 (Pi) / v0.2.0 (OMP)
 
 _July 21-22, 2026_
 
-- **Pi:** Sync workflow mode commands (fein/sonar/blitz) through canonical source pipeline.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.5.5 (Pi)
 
@@ -46,31 +92,13 @@ _July 21, 2026_
 
 ### Compact agent directives
 
-Agent directives compressed to cut context usage by ~38% on the orchestrator prompt without removing rules or intent. Shared specialist rules now live once in global rules instead of being repeated per specialist.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.5.4 (Pi)
 
 _July 14, 2026_
 
-### Structured assumption tagging
-
-Adventurer and architect outputs now require `[verified]` or `[inferred]` tags on every assumption.
-
-### Deterministic agents preferred
-
-New CRITICAL RULE mandates defined output contracts before delegating. Open-ended exploration must be scoped with time and resource limits.
-
-### Cognitive hygiene for delegation
-
-The orchestrator now has a 5-trap pre-flight checklist to catch weak delegation prompts.
-
-### Outcome specs over activity specs
-
-Delegation now prefers specifying what to achieve over how to achieve it.
-
-### Experiment framing, parallel speculation, incidental findings, first-principles decomposition
-
-Additional methodology improvements across all specialist agents.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.5.3 (Pi)
 
@@ -78,31 +106,19 @@ _July 14, 2026_
 
 ### Mandatory PR description structure
 
-COMMIT PROTOCOL step 7 now requires a numbered list of PR description sections: Summary, ## Changes, ## Testing, and ## Breaking Changes.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.5.2 (Pi)
 
 _July 14, 2026_
 
-### Aligned orchestrator push rules with Branch Discipline
-
-The `question()` call when landing on main/master is removed. The commit protocol now auto-checkouts a feature branch instead of asking.
-
-### Improved Work Results output format
-
-Restructured from a 3-part narrative to a lean table-first format with change-type prefixes (+/~/-), breaking change markers (!), and test file annotations ((test)).
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.5.1 (Pi)
 
 _July 14, 2026_
 
-### Structured work results are now mandatory
-
-After every task, the agent must produce a `## Changes` summary table instead of a free-form description.
-
-### Documentation audit before every commit
-
-The agent now checks internal docs, the user-facing docs site, the user-facing changelog, and changesets before committing.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.4.1 (Pi)
 
@@ -120,22 +136,7 @@ All 7 specialist agent types (adventurer, architect, builder, diagnose, planner,
 
 _July 10, 2026_
 
-### Multi-lens review swarm
-
-The orchestrator can now dispatch parallel reviewers with different focus areas (Security, Architecture, Performance, UX, General). Issues are categorized [fix]/[dismiss]/[escalate].
-
-### Autonomous commit protocol
-
-Commit is fully autonomous - agent reads git log, composes correct conventional commit message, commits without asking. Push is automatic on feature branches, asks only on main/master.
-
-### Eliminate questions - autonomous philosophy
-
-Agents now exhaust data, document assumptions, and proceed instead of asking for permission. Mid-phase questions eliminated across all specialists.
-
-### Review methodology improvements
-
-- **Observation over reasoning** - reviewer now prioritizes running code over logical argument.
-- **Review triage pipeline** - issues categorized and validated with conservative conflict resolution.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.3.7 (Pi)
 
@@ -143,7 +144,7 @@ _July 1, 2026_
 
 ### Code intelligence tool preference
 
-Agents now prefer code intelligence tools (MCP, CLI, or other) before falling back to grep and read when exploring the codebase.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.3.1 (Pi)
 
@@ -151,21 +152,13 @@ _June 27, 2026_
 
 ### Two new design principles
 
-Agents now check from first principles before adopting existing patterns, and check for existing solutions before building from scratch.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.3.0 (Pi)
 
 _June 24, 2026_
 
-### Project workflow configuration (.maestria/)
-
-Ships the `.maestria/` project workflow protocol. Projects using Maestria's agent directives can now define `.maestria/workflow.md` for custom delegation sequencing and `.maestria/rules.md` for project-specific rules. The orchestrator loads these via `@adventurer` delegation.
-
-### Effort anthropomorphism guard and writing style guidance
-
-The orchestrator and all specialists now include explicit guardrails against two common failure modes:
-
-- **Don't anthropomorphize effort** - A new Critical Rule tells the dispatcher that thinking "that analysis would be too much work" is a category error for a machine that only routes. The same principle is instilled in all specialists via the global agent rules.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.2.1 (Pi)
 
@@ -173,7 +166,7 @@ _June 24, 2026_
 
 ### Single source of truth for agent directives
 
-Agent prompts and global rules now live in one canonical location (`packages/core/agent-directives/`) and sync automatically to all platform plugins. The `scripts/sync-all` and `scripts/check-sync` tools handle the pipeline.
+- Cross-cutting agent methodology update; see the [methodology changelog](/core/changelog/).
 
 ## v0.2.0 - Initial release
 

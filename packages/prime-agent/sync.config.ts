@@ -29,7 +29,6 @@ const AGENT_REF_REPLACES = [
   { from: '@planner', to: 'planner' },
   { from: '@reviewer', to: 'reviewer' },
   { from: '@writer', to: 'writer' },
-  { from: '@orchestrator', to: 'orchestrator' },
 ] as const;
 
 // Read-only role notes. Prime Agent has no skill-level tool enforcement (the
@@ -82,12 +81,7 @@ export default {
   files: {
     'adventurer.md': {
       frontmatter: {
-        description: `Codebase reconnaissance skill. Maps unknown territory -
-traces call chains, maps module relationships, generates structured recon
-reports for downstream work. Read-only role intent: exploration and reporting
-only, never implementation or design.
-Use for: understanding unfamiliar code, tracing dependencies, gathering context
-before implementation, investigating module structures.`,
+        description: `Codebase reconnaissance skill for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.`,
         name: 'adventurer',
       },
       output: 'adventurer/SKILL.md',
@@ -95,19 +89,14 @@ before implementation, investigating module structures.`,
     },
     'architect.md': {
       frontmatter: {
-        description: `Architecture decisions using decision matrices and ADRs.
-Evaluates options with weighted criteria, clarifies business context first.
-Use for: technology choices, implementation approaches, trade-off analysis,
-threat modeling, or ADR decisions.`,
+        description: `Architecture decision skill for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
         name: 'architect',
       },
       output: 'architect/SKILL.md',
     },
     'builder.md': {
       frontmatter: {
-        description: `Focused implementation skill for atomic tasks. Executes
-one verifiable unit of work with minimal context and a clean diff.
-Use for: targeted fixes, feature implementation, refactors, adding tests.`,
+        description: `Focused implementation skill for one atomic, verifiable feature, fix, test, or refactor.`,
         name: 'builder',
       },
       output: 'builder/SKILL.md',
@@ -144,9 +133,7 @@ Use for: targeted fixes, feature implementation, refactors, adding tests.`,
     },
     'diagnose.md': {
       frontmatter: {
-        description: `Systematic 6-step regression tracing: from error message
-to root cause to prevention.
-Use for: cryptic errors, regressions, production bugs, unclear root causes.`,
+        description: `Systematic regression-tracing skill from symptom and error evidence to root cause, fix, and prevention.`,
         name: 'diagnose',
       },
       output: 'diagnose/SKILL.md',
@@ -154,13 +141,7 @@ Use for: cryptic errors, regressions, production bugs, unclear root causes.`,
     'orchestrator.md': {
       append: ORCHESTRATOR_APPEND,
       frontmatter: {
-        description: `Maestria methodology dispatcher for Prime Agent. Routes
-work (direct/focused/full), selects and loads the specialist skills
-(adventurer, architect, builder, diagnose, planner, reviewer, writer), and
-applies the maker/checker split, handoff contracts, and workflow modes
-(fein/sonar/blitz).
-Use for multi-step or multi-file work, planning, review, debugging,
-architecture decisions, or documentation.`,
+        description: `Maestria workflow dispatcher for routing work, preserving handoffs, and keeping independent review explicit.`,
         name: 'orchestrator',
       },
       output: 'orchestrator/SKILL.md',
@@ -173,11 +154,7 @@ architecture decisions, or documentation.`,
     },
     'planner.md': {
       frontmatter: {
-        description: `Create detailed implementation plans with phased
-dependencies, timelines, verifiable success criteria, and rollback points.
-Breaks complex features into verifiable milestones.
-Use for: complex features requiring multi-phase execution, when the plan needs
-review before building.`,
+        description: `Phased planning skill with dependencies, verification criteria, timelines, and rollback points.`,
         name: 'planner',
       },
       output: 'planner/SKILL.md',
@@ -185,11 +162,7 @@ review before building.`,
     },
     'reviewer.md': {
       frontmatter: {
-        description: `Code review with quality gates. Reviews for correctness,
-edge cases, security, performance, maintainability, and adherence to
-conventions; provides specific, actionable feedback and preserves blind review.
-Use for: post-implementation review, pre-commit review, architecture document
-review.`,
+        description: `Independent review skill covering correctness, security, performance, maintainability, and quality gates.`,
         name: 'reviewer',
       },
       output: 'reviewer/SKILL.md',
@@ -232,10 +205,7 @@ of running too long.`,
     },
     'writer.md': {
       frontmatter: {
-        description: `Documentation writing following structured patterns.
-Creates clear, comprehensive docs for code, APIs, and systems.
-Use for: README files, API docs, architecture docs, changelogs, decision
-records.`,
+        description: `Structured documentation skill for READMEs, API docs, architecture documents, changelogs, and decision records.`,
         name: 'writer',
       },
       output: 'writer/SKILL.md',

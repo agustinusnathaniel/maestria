@@ -6,9 +6,8 @@ import {
   createInitialState,
   recordFileModified,
   recordHandoff,
-  recordSubagentStatus,
-} from '@/state.js';
-import type { MaestriaState } from '@/state.js';
+} from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
 interface MockPi {
   on: ReturnType<typeof vi.fn<GoalApi['on']>>;
@@ -60,11 +59,10 @@ const maestriaOnlyState = (): MaestriaState => {
   state = { ...state, activeTask: 'maestria task', mode: 'fein' as const, reviewMode: true };
   state = recordHandoff(state, 'orchestrator', 'builder', 'implement');
   state = recordFileModified(state, 'src/foo.ts');
-  state = recordSubagentStatus(state, 'builder', {
-    startedAt: 1,
-    status: 'running',
-    type: 'builder',
-  });
+  state = {
+    ...state,
+    subagentStatus: { builder: { startedAt: 1, status: 'running', type: 'builder' } },
+  };
   state = { ...state, blockers: ['missing api key'], specialistsDelegated: ['builder'] };
   return state;
 };

@@ -3,48 +3,46 @@ title: Specialist Reference
 description: 'The 8 Maestria agents: one orchestrator and 7 domain specialists. Roles, responsibilities, and when to call each one.'
 ---
 
-import { LinkCard, CardGrid } from '@astrojs/starlight/components';
-
-The Maestria methodology defines 8 agents: one **orchestrator**, which routes focused and full work, and 7 domain specialists. Direct-route turns execute on the host. Each specialist has a focused scope, clear permissions, and a specific place in the pipeline.
-
-This page describes each specialist, their role, and when to delegate to them. It is platform-agnostic - the mapping to your platform's invocation syntax lives in the plugin documentation.
+Maestria defines 8 agents: one **orchestrator** and 7 domain specialists, each with a focused scope, clear permissions, and a specific place in the pipeline. Direct-route turns execute on the host; platform invocation syntax lives in the plugin documentation.
 
 ## Orchestration Model
 
-The orchestrator is the router and manager. It decomposes complex tasks into atomic units, delegates each unit to the appropriate specialist, integrates the results, and verifies completion. It does not implement work it has delegated - its job is coordination. Direct-route turns execute on the host; focused and full work is delegated, and platform enforcement varies.
+The orchestrator routes and manages: it decomposes complex tasks into atomic units, delegates each to a specialist, integrates the results, and verifies completion. It does not implement work it has delegated.
 
-When full orchestration is selected, the default pipeline for non-trivial work groups the remaining 7 specialists into three roles:
+Full orchestration groups the 7 specialists into three roles:
 
 - **Thinker** - reconnaissance, design, planning, analysis
 - **Worker** - implementation, documentation
 - **Verifier** - validation, quality gates
 
-The orchestrator routes work dynamically based on task needs. When a selected route includes a verifier, that pipeline terminates when the verifier accepts the result.
+The orchestrator routes dynamically; a pipeline that includes a verifier terminates when the verifier accepts the result.
 
-Three workflow modes are available to control pipeline depth. Their activation and enforcement depend on the platform:
+See [When to Use Maestria](/core/when-to-use/) for when orchestration is worth its coordination cost.
+
+## Modes
+
+Three workflow modes control pipeline depth; activation and enforcement depend on the platform:
 
 | Mode | Full Form | Pipeline | Use Case |
 | --- | --- | --- | --- |
 | **fein** | Full pipeline | Thinker → Worker → Verifier (adaptive sequencing) | Production-grade work, mandatory validation |
 | **sonar** | Research only | Read-only `@adventurer`/`@planner` specialists - STOP before implementation | Understanding before committing |
-| **blitz** | Fast implementation | Direct execution when the host permits it; otherwise the permitted specialist. Skip optional recon/design and keep required safeguards/review. | Quick fixes, known territory |
+| **blitz** | Fast implementation | Direct execution when permitted; otherwise the permitted specialist, skipping optional recon/design but keeping required safeguards/review. | Quick fixes, known territory |
 
-## When to Use the Orchestrator
-
-The orchestrator is the exception, not the default. Use it only for complex, huge, or long-running tasks where staged handoffs and parallel delegation pay for their coordination cost; for clear-scoped work, execute directly or delegate to one specialist. See the [usage decision guide](/core/when-to-use/).
+Where keyword detection is supported, mode keywords are recognized anywhere in a message and case-insensitively; matches inside code fences or inline code are ignored, and the most restrictive mode wins when several keywords appear (fein > sonar > blitz).
 
 ## Specialist Reference
 
 | Specialist | Role | When to Use | Key Constraints |
 | --- | --- | --- | --- |
-| **Orchestrator** | Router and manager - decomposes complex tasks, delegates routed work to specialists, integrates results | Multi-step tasks, cross-specialist workflows, anything requiring structured coordination | Cannot implement work it has delegated; focused and full work goes to the 7 specialists. Direct-route turns execute on the host. Platform enforcement varies. |
-| **Adventurer** | Codebase reconnaissance - maps unfamiliar code, traces dependencies, finds key files | Before implementing in unfamiliar code, understanding how something works, finding where logic lives | Read/search only - no editing |
-| **Architect** | Architecture decisions - evaluates options through trade-off analysis, documents decisions | Choosing between technologies, making design decisions, evaluating implementation approaches | No state-mutating work; may research external sources |
-| **Builder** | Focused implementation - one atomic task per invocation | Bug fixes, feature work, tests, refactors - after reconnaissance and design are complete | Full edit access. One atomic task per invocation. Reports at signature level. |
+| **Orchestrator** | Router and manager - decomposes complex tasks, delegates routed work, integrates results | Multi-step tasks, cross-specialist workflows, anything requiring structured coordination | Cannot implement delegated work; direct-route turns execute on the host. |
+| **Adventurer** | Codebase reconnaissance - maps unfamiliar code, traces dependencies, finds key files | Unfamiliar code, tracing how something works, finding where logic lives | Read/search only - no editing |
+| **Architect** | Architecture decisions - trade-off analysis and decision records | Technology or design choices, comparing implementation approaches | No state-mutating work; may research external sources |
+| **Builder** | Focused implementation - one atomic task per invocation | Bug fixes, features, tests, refactors after reconnaissance and design | Full edit access. One atomic task per invocation. Reports at signature level. |
 | **Diagnose** | Systematic debugging - traces errors from symptom to root cause | Bugs, regressions, crashes, mysterious errors, failing tests | Edit access only for confirmed fixes |
-| **Planner** | Implementation plans - phased milestones with verification criteria | Complex features needing structured rollout, migration plans, multi-phase work | No shell access; pure planning output |
-| **Reviewer** | Code review - correctness, edge cases, security, performance, maintainability | Pre-merge review, security audit, post-implementation validation | Read-only - cannot edit; performs one general review and adds only risk-matched specialist lenses, with blind review, observation-first verification, lens exclusivity, and [fix]/[dismiss]/[escalate] triage |
-| **Writer** | Documentation - structured patterns for READMEs, API docs, changelogs, decision records | Documenting code, writing READMEs, API docs, changelogs, architecture decisions | Full edit access for documentation files only |
+| **Planner** | Implementation plans - phased milestones with verification criteria | Complex features needing structured rollout, migration plans, multi-phase work | Plan-only output; investigates with read-only tools |
+| **Reviewer** | Code review - correctness, edge cases, security, performance, maintainability | Pre-merge review, security audit, post-implementation validation | Read-only - cannot edit; one general review plus only risk-matched lenses, with blind review, observation-first verification, and [fix]/[dismiss]/[escalate] triage |
+| **Writer** | Documentation - structured patterns for READMEs, API docs, changelogs, ADRs | READMEs, API docs, changelogs, architecture decisions | Documentation scope; not a code-editing role |
 
 ## See Also
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import { exitCodeForResults } from '@/lib/result-exit.js';
+import { exitCodeForResults } from '@/lib/command-result.js';
 import type { PlatformResult } from '@/types.js';
 
 const result = (ok: boolean): PlatformResult => ({

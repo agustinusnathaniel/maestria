@@ -6,31 +6,24 @@ Accepted
 
 ## Context
 
-The maestria methodology has global rules that apply to every agent (orchestration rules, delegation table, context management). These rules must be present in the system prompt on every turn.
-
-The choices for injection:
-
-1. **`before_agent_start` event handler** - append rules to `event.systemPrompt` on every agent start.
-2. **Ship a separate `AGENTS.md` and rely on Pi's auto-discovery** - Pi auto-discovers `AGENTS.md` in the project root and ancestor directories.
-3. **Bundle the rules as a skill (`/skill:maestria-rules`)** - load on demand.
-4. **Modify the parent system prompt via the agent's `SYSTEM.md`** - Pi supports `--system-prompt` for custom system prompts.
+The maestria methodology has global rules that apply to every agent (orchestration rules, delegation table, context management) and must be present in the system prompt on every turn. Injection options: append them via `before_agent_start` (`event.systemPrompt`); ship a separate `AGENTS.md` relying on Pi auto-discovery; bundle them as an on-demand skill (`/skill:maestria-rules`); or use a per-project `SYSTEM.md` system prompt.
 
 | Choice | Pros | Cons |
 | --- | --- | --- |
-| `before_agent_start` | Always present, versioned with package | Adds 3KB+ to every system prompt |
+| `before_agent_start` | Always present, versioned with package | Adds to every system prompt |
 | AGENTS.md auto-discovery | Project-controlled, no extension | May drift from package version |
 | Skill on demand | Smaller system prompt | LLM may forget to load |
 | SYSTEM.md | Project-controlled | Requires per-project setup |
 
 ## Decision
 
-We will use Pi's native skill system for static behavioral content and pi-subagents agent registration for specialist prompts:
+We use Pi's native skill system for static behavioral content and pi-subagents registration for specialist prompts:
 
-1. **Skill-based injection:** The orchestrator dispatcher prompt and global agent rules ship as `SKILL.md` files in `skills/`, registered via the `pi.skills` manifest field. Pi's resource loader auto-discovers them and injects them into every session's system prompt as `<skill>` blocks. This is the standard pattern used by all major Pi extensions (pi-web-access, pi-messenger, pi-intercom, pi-powerline-footer).
+1. **Skill-based injection:** the orchestrator dispatcher prompt and global agent rules ship as `SKILL.md` files in `skills/`, registered via the `pi.skills` manifest field. Pi auto-discovers and injects them into every session's system prompt as `<skill>` blocks, the standard pattern in major Pi extensions.
 
-2. **Pi-subagents agent registration:** The 7 specialist prompts (adventurer, architect, builder, diagnose, planner, reviewer, writer) ship as `.md` files with YAML frontmatter in `agents/`, deployed to `~/.pi/agent/agents/` at extension startup. pi-subagents discovers them via `registry.reload()` on every tool invocation, making them available as registered agent types for `service.spawn()`.
+2. **Agent registration:** the 7 specialist prompts (adventurer, architect, builder, diagnose, planner, reviewer, writer) ship as `.md` files with YAML frontmatter in `agents/`, deployed to `~/.pi/agent/agents/` at extension startup. pi-subagents discovers them via `registry.reload()` on every tool invocation, exposing them as registered agent types for `service.spawn()`.
 
-3. **Dynamic mode prompts:** The `before_agent_start` event is still used, but only for workflow mode prompt injection (`/fein`, `/sonar`, `/blitz`). When no mode is active, the handler returns void (no modification).
+3. **Dynamic mode prompts:** `before_agent_start` is still used, but only for workflow mode prompts (`/fein`, `/sonar`, `/blitz`); with no mode active, the handler returns void.
 
 ## Consequences
 
@@ -38,45 +31,45 @@ Positive:
 
 - Standard mechanism matching Pi extension ecosystem conventions
 - Auto-discovery via manifest fields (no manual file loading in code)
-- Tool isolation per specialist via `tools` frontmatter field (builder/writer = write access, all others read-only), enforcing maker/checker split at the subagent tool level
-- Clean separation of static content (skills + agents) from dynamic content (mode prompts in before_agent_start)
+- Per-specialist tool isolation via the `tools` frontmatter field (builder/writer = write, all others read-only), enforcing the maker/checker split at the subagent tool level
+- Clean separation of static content (skills + agents) from dynamic mode prompts
 - Sync pipeline from canonical sources maintains SSOT
 
 Negative:
 
-- Skills and agent files must be published in the npm package (increases unpacked size by ~80KB)
-- Agent files write to user's `~/.pi/agent/agents/` directory at startup (but never overwrite user customizations)
+- Skills and agent files ship in the npm package, increasing unpacked size
+- Agent files write to `~/.pi/agent/agents/` at startup but never overwrite user customizations
 - Requires pi-subagents 18.x for agent type file discovery
 
 ## Alternatives Considered
 
-- **AGENTS.md auto-discovery** - tempting but rules are package methodology, not project context.
+- **AGENTS.md auto-discovery** - tempting, but rules are package methodology, not project context.
 - **Skills on demand** - unreliable for universal methodology.
-- **SYSTEM.md** - per-project config, rules should be consistent across projects.
+- **SYSTEM.md** - per-project config, while rules should be consistent across projects.
 
 ## References
 
 - `docs/adr/core/ADR-CORE-001-global-rules-scope.md` - what belongs in global rules
 - `docs/adr/core/ADR-CORE-002-plugin-architecture.md` - opencode's rules injection pattern
-- Pi `before_agent_start` event - extensions.md:494-528
+- Pi extensions documentation - the `before_agent_start` event
 
 ## Implementation Notes (Post-Implementation)
 
-### ✅ Skill files
+### Skill files
 
-Generated by `sync.config.ts` from canonical sources (unified with agent file generation), output to `skills/orchestrator/SKILL.md` and `skills/global-rules/SKILL.md`. Auto-injected by Pi's resource loader via `pi.skills` manifest field.
+Generated by the sync config from canonical sources as the orchestrator and global-rules skills; auto-injected via Pi's resource loader.
 
-### ✅ Agent files
+### Agent files
 
-Generated by `sync.config.ts` from canonical sources, output to `agents/*.md` with pi-subagents YAML frontmatter. Deployed to `~/.pi/agent/agents/` by `src/agents.ts:deploySpecialistAgents()` at extension startup.
+Generated by the sync config as `agents/*.md` with pi-subagents YAML frontmatter, deployed by `deploySpecialistAgents()` at extension startup.
 
-### ✅ Mode prompts
+### Mode prompts
 
-`src/rules.ts:createModePromptHandler()` injects dynamic mode prompts via `before_agent_start` only when a workflow mode is active (no static content injection).
+`createModePromptHandler()` injects dynamic mode prompts via `before_agent_start` only when a workflow mode is active.
 
-### ⚠️ Cross-extension dependency
+### Cross-extension dependency
 
-`@gotgenes/pi-subagents` is a peer dependency - its extension init must run separately to publish the subagent service.
+`@gotgenes/pi-subagents` is a peer dependency; its extension init must run separately to publish the subagent service.
 
 ## Date
 

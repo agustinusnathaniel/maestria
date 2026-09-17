@@ -3,9 +3,7 @@ title: Workflow Patterns
 description: Practical patterns for choosing and combining Maestria routes without adding unnecessary delegation.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
-Use this page to choose a useful starting point for a task. Read [Specialist Reference](/core/agents/) for role details, [Pipeline & Roles](/core/pipeline/) for the execution model, and [When to use Maestria](/core/when-to-use/) for the cost and risk trade-off.
+Use this page to choose a starting point for a task. [Specialist Reference](/core/agents/) has role details, [Pipeline & Roles](/core/pipeline/) the execution model, and [When to use Maestria](/core/when-to-use/) the cost and risk trade-off.
 
 ## Match the Task to a Route
 
@@ -20,11 +18,11 @@ Use this page to choose a useful starting point for a task. Read [Specialist Ref
 | Pre-merge validation | reviewer | Fix findings, then rerun the relevant checks |
 | Complex or high-risk change | Full pipeline | Stop when the verifier accepts the result |
 
-The full pipeline is a trade-off, not a default. Add a stage when it supplies missing information, reduces a material risk, or creates a useful independent check.
+Add a stage only when it supplies missing information, reduces a material risk, or creates a useful independent check.
 
 ## Keep Handoffs Small
 
-A handoff should give the next specialist enough information to act without copying the entire conversation:
+Give the next specialist enough to act without copying the whole conversation:
 
 ```text
 Outcome: what the recipient must produce
@@ -33,78 +31,28 @@ Acceptance/evidence: how to tell the result is complete
 Next step: who consumes the result
 ```
 
-Prefer links to existing artifacts. Omit empty fields and keep the brief proportional to the task.
+Prefer links to existing artifacts, omit empty fields, and keep the brief proportional to the task. For example:
 
-Useful handoffs look like this:
+> Adventurer: Map the authentication entry points and session writes in src/auth/; return file paths, call paths, and the smallest relevant risks. Do not edit. Architect receives the map.
 
-> Adventurer: Map the authentication entry points and session writes in src/auth/. Return file paths, call paths, and the smallest relevant risks. Do not edit files. Architect receives the map.
-
-> Architect: Compare the two proposed session-refresh approaches. Recommend one against the repository's constraints and record rejected alternatives. Builder receives the decision.
-
-> Builder: Implement the accepted session-refresh design as one atomic change. Run the focused tests and report changed files, evidence, and any unresolved assumptions. Reviewer receives the result.
-
-> Reviewer: Check the changed session code against the acceptance criteria and run the focused tests. Report only actionable findings with evidence and severity. Do not edit files.
+> Builder: Implement the accepted session-refresh design as one atomic change; run the focused tests and report changed files, evidence, and unresolved assumptions. Reviewer receives the result.
 
 ## Common Sequences
 
-### Understand, Then Implement
+- **Understand, then implement** - `adventurer -> direct implementation or builder -> reviewer when needed`. Stop reconnaissance once the entry points, dependencies, and constraints are known.
+- **Decide, then implement** - `architect -> builder -> reviewer`. Use planner instead when delivery needs ordered milestones, verification criteria, or rollback points.
+- **Diagnose, then fix** - `diagnose -> builder or direct implementation -> reviewer`. Hand over the confirmed cause, affected paths, smallest safe fix, and prevention evidence.
+- **Research only** - `adventurer -> architect or planner -> stop`. sonar packages this boundary where the platform supports it; a research result states what was learned, what remains uncertain, and what would justify implementation.
 
-Use this sequence when the code is unfamiliar but the change itself is clear:
+## Match review depth to risk
 
-```text
-adventurer -> direct implementation or builder -> reviewer when needed
-```
-
-Stop reconnaissance when the entry points, dependencies, and relevant constraints are known. Do not turn a small edit into a full pipeline because the repository is large.
-
-### Decide, Then Implement
-
-Use architect when multiple approaches have meaningful consequences:
-
-```text
-architect -> builder -> reviewer
-```
-
-Use planner instead when the approach is already chosen but delivery needs ordered milestones, verification criteria, or rollback points.
-
-### Diagnose, Then Fix
-
-Use diagnose when the symptom does not identify the cause:
-
-```text
-diagnose -> builder or direct implementation -> reviewer
-```
-
-The implementation stage should receive the confirmed cause, affected paths, smallest safe fix, and prevention evidence. Do not ask the builder to repeat an unresolved investigation.
-
-### Research Only
-
-Use the research route when the output is understanding or a decision, not a code change:
-
-```text
-adventurer -> architect or planner -> stop
-```
-
-sonar packages this boundary where the platform supports it. A research result should state what was learned, what remains uncertain, and what would justify implementation.
-
-## Review Proportionally
-
-Use one independent reviewer for ordinary pre-merge validation. Add a security, architecture, performance, or UX lens only when the requirements or diff expose that risk. The maker must not review the same artifact.
-
-<Aside type="caution" title="Bound the loop">
-  Define the acceptance evidence before delegating. If a repair attempt produces no new evidence or
-  the same cause recurs, change strategy or escalate instead of repeating the same handoff.
-</Aside>
+Use one independent reviewer for ordinary pre-merge validation, adding a security, architecture, performance, or UX lens only when the requirements or diff expose that risk. The maker must not review the same artifact; [Pipeline & Roles](/core/pipeline/) covers repair-loop limits.
 
 ## Project-Specific Workflows
 
-Projects may add .maestria/workflow.md for sequencing and .maestria/rules.md for local non-negotiable constraints. The orchestrator reads them when it starts work.
+Projects may add .maestria/workflow.md for project context, required reading, and quality gates, and .maestria/rules.md for local non-negotiable constraints; the orchestrator reads both when it starts work. Runtime safeguards, selected-route protections, review independence, bounded retries, and commit authorization still take precedence.
 
-- workflow.md describes project context, required reading, and quality gates.
-- rules.md adds constraints that apply to delegated work.
-- Runtime safeguards, selected-route protections, review independence, bounded retries, and commit authorization still take precedence.
-
-Keep these files short. Put reusable methodology in the canonical Maestria directives, project decisions in ADRs, and one-off task details in the handoff.
+Keep these files short: reusable methodology belongs in the canonical Maestria directives, project decisions in ADRs, and one-off task details in the handoff.
 
 ## See Also
 

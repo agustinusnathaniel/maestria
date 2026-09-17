@@ -1,35 +1,41 @@
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { createInitialState } from '@maestria/shared-pi/state-core';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import type { ModeCommandContext, ModeCommandsApi } from '@/modes.js';
 import { installModeCommands } from '@/modes.js';
-import { createInitialState } from '@/state.js';
 
 // ---------------------------------------------------------------------------
 // installModeCommands
 // ---------------------------------------------------------------------------
-describe('installModeCommands', () => {
-  interface ModeCommand {
-    description: string;
-    handler: (args: string, ctx: ModeCommandContext) => Promise<void> | void;
-  }
-  interface MockPi extends ModeCommandsApi {
-    _commands: Record<string, ModeCommand>;
-    appendEntry: ReturnType<typeof vi.fn<(type: string, data?: unknown) => void>>;
-    registerCommand: (name: string, config: ModeCommand) => void;
-    setActiveTools: ReturnType<typeof vi.fn<ModeCommandsApi['setActiveTools']>>;
-    setModel: ReturnType<typeof vi.fn<ModeCommandsApi['setModel']>>;
-  }
 
+interface TestCommandContext {
+  ui: { notify: (message: string) => void };
+}
+
+interface ModeCommand {
+  description?: string;
+  handler: (args: string, ctx: TestCommandContext) => Promise<void> | void;
+}
+
+interface MockPi {
+  _commands: Record<string, ModeCommand>;
+  appendEntry: ReturnType<typeof vi.fn<(type: string, data?: unknown) => void>>;
+  registerCommand: (name: string, config: ModeCommand) => void;
+  setActiveTools: ReturnType<typeof vi.fn<ExtensionAPI['setActiveTools']>>;
+  setModel: ReturnType<typeof vi.fn<ExtensionAPI['setModel']>>;
+}
+
+describe('installModeCommands', () => {
   const createMockPi = (): MockPi => {
     const commands: Record<string, ModeCommand> = {};
     return {
       _commands: commands,
       appendEntry: vi.fn<(type: string, data?: unknown) => void>(),
-      registerCommand: (name: string, config: ModeCommand) => {
+      registerCommand: (name, config) => {
         commands[name] = config;
       },
-      setActiveTools: vi.fn<ModeCommandsApi['setActiveTools']>(),
-      setModel: vi.fn<ModeCommandsApi['setModel']>(),
+      setActiveTools: vi.fn<ExtensionAPI['setActiveTools']>(),
+      setModel: vi.fn<ExtensionAPI['setModel']>(),
     };
   };
 
@@ -47,7 +53,7 @@ describe('installModeCommands', () => {
     const state = createInitialState();
     state.mode = 'sonar';
     installModeCommands(pi, state);
-    const ctx: ModeCommandContext = {
+    const ctx: TestCommandContext = {
       ui: { notify: vi.fn<(message: string) => void>() },
     };
     await pi._commands['mode-clear'].handler('', ctx);

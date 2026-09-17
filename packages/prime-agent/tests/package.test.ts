@@ -10,8 +10,8 @@ import type {
   ExtensionEventRegistration,
   ExtensionFactory,
   RegisteredCommandOptions,
-} from '../src/pi-api.ts';
-import { MODE_STATE_CUSTOM_TYPE } from '../src/state.ts';
+} from '@/pi-api.ts';
+import { MODE_STATE_CUSTOM_TYPE } from '@/state.ts';
 
 const __dirname = import.meta.dirname;
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
@@ -325,17 +325,20 @@ describe('prime-agent package tarball (npm pack --dry-run)', () => {
     packFiles = npmPackFileList();
   }, 30_000);
 
-  it('packs the compiled extension, its sourcemap, and the manifest', () => {
+  it('packs the compiled extension and the manifest', () => {
     for (const required of [
       'package.json',
       'INSTALL.md',
       'README.md',
       'LICENSE',
       'dist/extension.mjs',
-      'dist/extension.mjs.map',
     ]) {
       expect(packFiles, `tarball must include ${required}`).toContain(required);
     }
+  });
+
+  it('does not pack generated sourcemaps', () => {
+    expect(packFiles.filter((file) => file.endsWith('.map'))).toEqual([]);
   });
 
   it('packs every generated skill directory', async () => {

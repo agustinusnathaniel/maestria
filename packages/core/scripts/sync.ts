@@ -7,6 +7,7 @@ import { parseArgs } from 'node:util';
 
 import { ConfigError, loadConfig } from './lib/config.js';
 import { runSync } from './lib/sync.js';
+import type { SyncFileResult } from './lib/sync.js';
 
 // ── CLI Types ──
 
@@ -107,13 +108,22 @@ const main = async (): Promise<number> => {
     return 2;
   }
 
-  const results = await runSync({
-    check: opts.check,
-    config,
-    diff: opts.diff,
-    dryRun: opts.dryRun,
-    verbose: opts.verbose,
-  });
+  let results: SyncFileResult[];
+  try {
+    results = await runSync({
+      check: opts.check,
+      config,
+      diff: opts.diff,
+      dryRun: opts.dryRun,
+      verbose: opts.verbose,
+    });
+  } catch (error) {
+    if (error instanceof ConfigError) {
+      console.error(`Configuration error: ${error.message}`);
+      return 2;
+    }
+    throw error;
+  }
 
   // Summarize
   const written = results.filter((r) => r.status === 'written').length;

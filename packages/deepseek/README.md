@@ -4,7 +4,7 @@ Maestria methodology for [DeepSeek Harness](https://github.com/deepseek-ai/deeps
 
 ## Status / Support Boundary
 
-DeepSeek Harness is a developer-preview runtime, so this package is **provisional**: it typechecks against the published `@deepseek-ai/*` RC type packages and is unit-tested, but it has not been verified against a live `dsh` deployment. See the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) and [ADR-CORE-023](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/core/ADR-CORE-023-deepseek-harness-projection.md).
+DeepSeek Harness is a developer-preview runtime, so this package is **provisional**: it typechecks against the published `@deepseek-ai/*` RC type packages and is unit-tested, but it has not been verified against a live `dsh` deployment. See the [runtime support matrix](https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md) and [ADR-CORE-026](https://github.com/agustinusnathaniel/maestria/blob/main/docs/adr/core/ADR-CORE-026-deepseek-harness-projection.md).
 
 The package has three layers, usable independently:
 

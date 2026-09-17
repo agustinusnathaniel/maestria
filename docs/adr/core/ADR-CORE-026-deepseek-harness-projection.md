@@ -1,4 +1,4 @@
-# ADR-CORE-023: DeepSeek Harness Projection and Native Plugin
+# ADR-CORE-026: DeepSeek Harness Projection and Native Plugin
 
 ## Status
 

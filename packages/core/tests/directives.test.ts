@@ -31,7 +31,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/stop and verify them before completion/iu);
     expect(rules).toMatch(/maker\/checker/iu);
     expect(rules).toMatch(/canonical source invariant/iu);
-    expect(rules).toMatch(/scripts\/sync-all/u);
+    expect(rules).toMatch(/project's authoritative source/iu);
+    expect(rules).not.toContain('packages/core/agent-directives/');
     expect(rules).toMatch(/sync check/iu);
   });
 
@@ -150,7 +151,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(/for implementation work, own the delivery path/iu);
     expect(orchestrator).toMatch(/without ceremonial approval/iu);
     expect(orchestrator).toMatch(
-      /do not stop at a local diff, commit, pushed branch, or `PR pending`/iu,
+      /terminal artifact is reviewed changes on a pushed feature branch with an open PR/iu,
     );
   });
 
@@ -194,6 +195,39 @@ describe('canonical directive behavioral contracts', () => {
     expect(reviewer).toMatch(/after a repair, re-review only the repaired scope/iu);
   });
 
+  it('keeps rendered evidence distinct from builds and attachment support', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const builder = readDirective('specialists', 'builder.md');
+
+    expect(rules).toMatch(/rendered appearance and interactions need rendered checks/iu);
+    expect(rules).toMatch(/do not waive an explicit user or project evidence requirement/iu);
+    expect(orchestrator).toMatch(/documentation sites and visible CLI output/iu);
+    expect(orchestrator).toMatch(
+      /include the evidence requirement in implementation and review briefs/iu,
+    );
+    expect(orchestrator).toMatch(/headless capture/iu);
+    expect(orchestrator).toMatch(/terminal transcript/iu);
+    expect(orchestrator).toMatch(/upload is unavailable.*preserve the local artifact/iu);
+    expect(orchestrator).toMatch(/unnecessary with a concrete reason/iu);
+    expect(orchestrator).toMatch(/explicit user or project requirement.*remains acceptance work/iu);
+    expect(builder).toMatch(/evidence artifacts and unresolved verification gaps/iu);
+    expect(builder).not.toMatch(/tests or type checks to confirm correctness/iu);
+  });
+
+  it('reconciles delivery with accepted requirements on every implementation route', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(orchestrator).toMatch(/independent reviewer.*every route, including direct/iu);
+    expect(orchestrator).toMatch(/original request and accepted follow-ups/iu);
+    expect(orchestrator).toMatch(
+      /required artifacts, repository checks, review, documentation, and changesets/iu,
+    );
+    expect(orchestrator).toMatch(/complete in-scope omissions within existing authorization/iu);
+    expect(orchestrator).toMatch(/unmet requirements as incomplete or blocked/iu);
+    expect(orchestrator).toMatch(/PR or reviewer approval alone does not establish completion/iu);
+  });
+
   it('keeps bounded repair, progress detection, and fail-loud stopping', () => {
     const rules = readDirective('rules.md');
     const iteration = readDirective('skills', 'iteration-limits.md');
@@ -226,6 +260,18 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(
       /do not ask whether to create or use a feature branch, commit, push, or create a PR/iu,
     );
+  });
+
+  it('states precedence, pause naming, and output economy', () => {
+    const rules = readDirective('rules.md');
+
+    expect(rules).toMatch(/safety and authorization floors first/iu);
+    expect(rules).toMatch(/explicit user instructions/iu);
+    expect(rules).toMatch(/project rules and skill methodology/iu);
+    expect(rules).toMatch(/name the blocking skill or instruction/iu);
+    expect(rules).toMatch(/evidence or input needed to continue/iu);
+    expect(rules).toMatch(/concise plain-text findings with file and line references/iu);
+    expect(rules).toMatch(/verification limits, delivery state, and blocker or next step/iu);
   });
 
   it('separates route choice from host execution authority', () => {
@@ -316,6 +362,29 @@ describe('canonical directive behavioral contracts', () => {
     expect(diagnose).toMatch(/preserve durable diagnostic lessons/iu);
     expect(diagnose).toMatch(/create one only when.*durable future value/iu);
     expect(diagnose.match(/preserve durable diagnostic lessons/giu)).toHaveLength(1);
+  });
+
+  it('keeps assigned outcomes complete and diagnosis evidence-led', () => {
+    const builder = readDirective('specialists', 'builder.md');
+    const diagnose = readDirective('specialists', 'diagnose.md');
+
+    expect(builder).toMatch(/identify ownership for the remaining work/iu);
+    expect(builder).toMatch(/never present one selected slice as completion/iu);
+    expect(diagnose).toMatch(/old line alone does not establish/iu);
+    expect(diagnose).not.toMatch(/bug was always there|find ALL similar problems/iu);
+    expect(diagnose).toMatch(/assignment and host permit repair/iu);
+  });
+
+  it('permits necessary coverage without automatic extra approval or skill loads', () => {
+    const rules = readDirective('rules.md');
+    const writer = readDirective('specialists', 'writer.md');
+    const architect = readDirective('specialists', 'architect.md');
+
+    expect(rules).toMatch(/without requiring another approval solely for the file/iu);
+    expect(rules).toMatch(/consequential side effects.*applicable authorization/iu);
+    expect(writer).not.toMatch(/Always:/u);
+    expect(architect).not.toMatch(/Always:/u);
+    expect(writer).toMatch(/retain useful examples, rationale, and caveats/iu);
   });
 
   it('keeps documentation current and operationally verifiable', () => {

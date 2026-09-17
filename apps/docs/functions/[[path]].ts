@@ -54,21 +54,16 @@ const addNegotiatedVary = (headers: Headers): void => {
   headers.set('Vary', existing.join(', '));
 };
 
-/** Preserve the asset response while making the negotiated cache key explicit. */
-const withMarkdownVary = (response: Response, isHead: boolean): Response => {
+/** Rebuild an asset response with the negotiated cache key, optionally retyped. */
+const negotiatedResponse = (
+  response: Response,
+  isHead: boolean,
+  contentType?: string,
+): Response => {
   const headers = new Headers(response.headers);
-  addNegotiatedVary(headers);
-  return new Response(isHead ? null : response.body, {
-    headers,
-    status: response.status,
-    statusText: response.statusText,
-  });
-};
-
-/** Serve a verified twin with its original cache and validator headers intact. */
-const markdownResponse = (response: Response, isHead: boolean): Response => {
-  const headers = new Headers(response.headers);
-  headers.set('Content-Type', MARKDOWN_MIME);
+  if (contentType !== undefined) {
+    headers.set('Content-Type', contentType);
+  }
   addNegotiatedVary(headers);
   return new Response(isHead ? null : response.body, {
     headers,
@@ -127,14 +122,14 @@ export const handleAgentDelivery = async (context: EventContextLike): Promise<Re
   const twinPath = markdownTwinPath(url.pathname);
   const twin = await context.env.ASSETS.fetch(new URL(twinPath, url.origin));
   if (twin.status === 200) {
-    return markdownResponse(twin, isHead);
+    return negotiatedResponse(twin, isHead, MARKDOWN_MIME);
   }
 
   // No twin: re-fetch the original asset so known pages without a twin still
   // serve normally instead of turning into a 404.
   const original = await context.env.ASSETS.fetch(new URL(url.pathname, url.origin));
   if (original.status === 200) {
-    return withMarkdownVary(original, isHead);
+    return negotiatedResponse(original, isHead);
   }
 
   return markdownNotFoundResponse(isHead);

@@ -2,17 +2,14 @@
 import { Effect } from 'effect';
 import { homedir } from 'node:os';
 
+import { isFileNotFound, isRecord } from '@/lib/primitives.js';
+import type { JsonRecord } from '@/lib/primitives.js';
 import { CommandError } from '@/lib/shell.js';
-
-type JsonRecord = Record<string, unknown>;
 
 const MAESTRIA_PLUGIN = 'maestria';
 
-const isJsonRecord = (value: unknown): value is JsonRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
 const isKimiInstalledRecord = (value: unknown): value is KimiInstalledRecord => {
-  if (!isJsonRecord(value)) {
+  if (!isRecord(value)) {
     return false;
   }
   return (
@@ -23,8 +20,8 @@ const isKimiInstalledRecord = (value: unknown): value is KimiInstalledRecord => 
     typeof value.installedAt === 'string' &&
     (value.updatedAt === undefined || typeof value.updatedAt === 'string') &&
     (value.originalSource === undefined || typeof value.originalSource === 'string') &&
-    (value.capabilities === undefined || isJsonRecord(value.capabilities)) &&
-    (value.github === undefined || isJsonRecord(value.github))
+    (value.capabilities === undefined || isRecord(value.capabilities)) &&
+    (value.github === undefined || isRecord(value.github))
   );
 };
 
@@ -70,18 +67,13 @@ export const readKimiInstalled = (): Effect.Effect<KimiInstalledFile, CommandErr
       try {
         text = await readFile(filePath, 'utf-8');
       } catch (error) {
-        if (
-          typeof error === 'object' &&
-          error !== null &&
-          'code' in error &&
-          error.code === 'ENOENT'
-        ) {
+        if (isFileNotFound(error)) {
           return { plugins: [], version: 1 } satisfies KimiInstalledFile;
         }
         throw error;
       }
       const parsed: unknown = JSON.parse(text);
-      if (!isJsonRecord(parsed)) {
+      if (!isRecord(parsed)) {
         throw new TypeError('Kimi plugin registry must contain an object');
       }
       if (parsed.version !== undefined && parsed.version !== 1) {

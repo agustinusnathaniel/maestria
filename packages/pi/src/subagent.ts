@@ -1,15 +1,19 @@
 import type { AgentToolUpdateCallback } from '@earendil-works/pi-coding-agent';
 import {
   ALLOWED_AGENTS,
-  assertNonEmptyTask as assertTaskContract,
+  assertNonEmptyTask,
   assertValidAgent,
 } from '@maestria/shared-pi/subagent-utils';
 import { Effect } from 'effect';
 import { Type } from 'typebox';
 import type { Static } from 'typebox';
 
-import type { MaestriaState } from '@/state.js';
-import { persistState, recordHandoff, recordSpecialistDelegated } from '@/state.js';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import {
+  persistState,
+  recordHandoff,
+  recordSpecialistDelegated,
+} from '@maestria/shared-pi/state-core';
 import { pollSubagentEffect } from '@/subagent-polling.js';
 import type { SubagentPollingService, SubagentRecord } from '@/subagent-polling.js';
 import { subscribeSubagentEvents } from '@/subagent-events.js';
@@ -17,9 +21,9 @@ import type { SubagentEventHost } from '@/subagent-events.js';
 
 const ALLOWED_AGENT_NAMES: readonly string[] = ALLOWED_AGENTS;
 
-export const POLL_TIMEOUT_MS = 180_000;
-export const POLL_INTERVAL_MS = 500;
-export const MAX_PARALLEL_TASKS = 8;
+const POLL_TIMEOUT_MS = 180_000;
+const POLL_INTERVAL_MS = 500;
+const MAX_PARALLEL_TASKS = 8;
 
 type SubagentSpawnService = SubagentPollingService & {
   spawn: (
@@ -70,17 +74,10 @@ export interface SubagentToolApi extends SubagentEventHost {
   registerTool: (tool: SubagentToolDefinition) => void;
 }
 
-const assertTask: (task: string | undefined, label: string) => asserts task is string =
-  assertTaskContract;
-const assertAgent: (agent: string) => void = assertValidAgent;
-
 const abortSubagents = (service: SubagentPollingService, ids: readonly string[]): void => {
-  if (typeof service.abort !== 'function') {
-    return;
-  }
   for (const id of ids) {
     try {
-      service.abort(id);
+      service.abort?.(id);
     } catch {
       // Best-effort cleanup
     }
@@ -113,13 +110,12 @@ const validatePiParams = (params: SubagentParams): string => {
   if (mode === 'single') {
     if (
       params.agent === undefined ||
-      params.agent === null ||
       params.agent === '' ||
       !ALLOWED_AGENT_NAMES.includes(params.agent)
     ) {
       return `Invalid maestria_subagent call: 'agent' is required and must be one of ${ALLOWED_AGENT_NAMES.join(', ')}.`;
     }
-    assertTask(params.task, 'Task description is required');
+    assertNonEmptyTask(params.task, 'Task description is required');
   } else if (mode === 'parallel') {
     if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For parallel mode, tasks array is required with at least 2 items');
@@ -130,16 +126,16 @@ const validatePiParams = (params: SubagentParams): string => {
       );
     }
     for (const t of params.tasks) {
-      assertAgent(t.agent);
-      assertTask(t.task, 'Task description is required for all tasks');
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
     }
   } else if (mode === 'chain') {
     if (!params.tasks || params.tasks.length < 2) {
       throw new Error('For chain mode, tasks array is required with at least 2 items');
     }
     for (const t of params.tasks) {
-      assertAgent(t.agent);
-      assertTask(t.task, 'Task description is required for all tasks');
+      assertValidAgent(t.agent);
+      assertNonEmptyTask(t.task, 'Task description is required for all tasks');
     }
   }
   return mode;

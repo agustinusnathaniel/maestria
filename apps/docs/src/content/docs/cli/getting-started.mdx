@@ -1,11 +1,11 @@
 ---
 title: Getting Started
-description: Install and use maestria to manage runtime integrations and portable Agent Plugins across OpenCode, Kimi Code, Pi, Prime Agent, Hermes, Claude Code, and Codex CLI.
+description: Install and use maestria to manage runtime integrations and portable Agent Plugins across supported coding agent platforms.
 ---
 
 import AllPackageManagers from '@/components/all-package-managers.astro';
 
-The maestria CLI runs on Node.js 22.12 or later. You do not need to install it: use npx or another package runner to invoke it from npm.
+The maestria CLI runs on Node.js 22.12 or later. You do not need to install it: invoke it with npx or another package runner.
 
 ## Quick Start
 
@@ -13,7 +13,7 @@ The maestria CLI runs on Node.js 22.12 or later. You do not need to install it: 
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="status" />
 
-This checks which supported coding-agent CLIs are on your PATH and reports whether Maestria is installed for each one. With no command, maestria defaults to status.
+This checks which supported coding-agent CLIs are on your PATH and whether Maestria is installed for each one. With no command, maestria defaults to status.
 
 ### Install a Runtime Integration
 
@@ -25,7 +25,7 @@ Or select one platform:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="install opencode" />
 
-Replace opencode with the platform ID you want. The [command reference](/cli/commands/#install) lists every supported ID and the native installation path behind it.
+Replace opencode with the platform ID you want. The [command reference](/cli/commands/#install) lists every supported ID.
 
 ### Stage a Portable Agent Plugin
 
@@ -33,14 +33,16 @@ Use the plugin namespace when the client supports Agent Plugins v1:
 
 <AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-The CLI validates the package, stages it, and prints its directory. Give that directory to the client's own plugin installer or local-plugin setting. The client controls activation, permissions, trust, and session behavior.
+The CLI validates the package, stages it, and prints its directory for the client's own plugin installer or local-plugin setting. The client controls activation, permissions, trust, and session behavior.
 
 For a local package:
 
-```bash
-npx maestria plugin validate /path/to/plugin
-npx maestria plugin install /path/to/plugin --destination ./staged-plugin
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
+<AllPackageManagers
+  type="dlx"
+  pkg="maestria@latest"
+  args="plugin install /path/to/plugin --destination ./staged-plugin"
+/>
 
 ### Update an Integration
 
@@ -50,10 +52,8 @@ Update all installed integrations:
 
 To update one platform or pin a version:
 
-```bash
-npx maestria update opencode
-npx maestria update opencode --version 0.5.0
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode" />
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="update opencode --version <version>" />
 
 ### Configure Specialist Models
 
@@ -65,7 +65,7 @@ Assign a model to a specialist when the platform supports per-agent configuratio
   args="configure pi --global --quiet --set builder=opencode-go/deepseek-v4-flash"
 />
 
-Per-agent models are supported on OpenCode, Codex CLI, Cursor, Pi, and Oh My Pi. See the [configure reference](/cli/commands/#configure) for supported platforms and reset syntax.
+See the [configure reference](/cli/commands/#configure) for supported platforms and reset syntax.
 
 ## Prerequisites
 

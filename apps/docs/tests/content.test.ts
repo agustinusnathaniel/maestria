@@ -124,7 +124,7 @@ describe('portable Agent Plugin documentation', () => {
     const howItWorks = await readDoc('core/how-it-works.mdx');
     const changelog = await readDoc('cli/changelog.mdx');
 
-    expect(agentPlugin.full).toContain('npx maestria plugin install');
+    expect(agentPlugin.full).toContain('args="plugin install"');
     expect(agentPlugin.full).toContain('https://agent-plugins.org/compatible-clients');
     expect(agentPlugin.full).toContain('[compatibility matrix](/agent-plugin/compatibility/)');
     expect(compatibility.full).toContain('Hermes Agent 0.20.3');

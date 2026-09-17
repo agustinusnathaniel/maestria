@@ -19,14 +19,6 @@ const AGENT_REF_REPLACES = [
   { from: '@writer', to: 'maestria:writer' },
 ] as const;
 
-// Claude Code tool names are PascalCase; canonical content uses lowercase or
-// backticked generic names.
-const CLAUDE_TOOL_REPLACES = [
-  { from: '`read`', to: '`Read`' },
-  { from: '`glob`', to: '`Glob`' },
-  { from: '`grep`', to: '`Grep`' },
-] as const;
-
 // Global rules skill preloaded into every specialist agent. The namespaced
 // identifier matches the plugin manifest name (`maestria`).
 const GLOBAL_RULES_PRELOAD = ['maestria:global-rules'];
@@ -53,17 +45,7 @@ The universal contracts live in the \`maestria:global-rules\` skill, which every
 
 ### Specialist agents
 
-Delegate with the Agent tool using these scoped agent names:
-
-| Agent | Role | Delegate when you see |
-| --- | --- | --- |
-| \`maestria:adventurer\` | Codebase reconnaissance | unfamiliar code, tracing, mapping, or locating behavior |
-| \`maestria:architect\` | Architecture decisions | trade-offs, technology, boundaries, threat model, or ADR decisions |
-| \`maestria:builder\` | Atomic implementation | a concrete feature, bug fix, test, or refactor with no identified uncertainty |
-| \`maestria:diagnose\` | Root-cause analysis | a bug, regression, failure, crash, or unclear cause |
-| \`maestria:planner\` | Phased planning | a multi-phase feature, rollout, or migration plan |
-| \`maestria:reviewer\` | Independent quality review | post-implementation validation or explicit review |
-| \`maestria:writer\` | Documentation | README, changelog, API docs, or structured prose |
+Delegate with the Agent tool using the scoped agent names in Specialist Ownership above.
 
 \`maestria:adventurer\`, \`maestria:planner\`, and \`maestria:reviewer\` deny the \`Write\` and \`Edit\` tools at the runtime level (read-only research and review roles).
 
@@ -95,17 +77,12 @@ Research-only mode. Load the \`maestria:orchestrator\` skill for routing and del
 
 export default {
   default: {
-    replace: [...AGENT_REF_REPLACES, ...CLAUDE_TOOL_REPLACES],
+    replace: [...AGENT_REF_REPLACES],
   },
   files: {
     'adventurer.md': {
       frontmatter: {
-        description: `Codebase reconnaissance agent for deep code understanding.
-Maps unknown territory - traces call chains, maps module relationships,
-generates structured reports for downstream specialists.
-Use for: understanding unfamiliar code, tracing dependencies, gathering
-context before implementation, investigating module structures.
-One role per session: exploration only - never implement or design.`,
+        description: `Codebase reconnaissance agent for mapping unfamiliar code, tracing call chains, and reporting verified context without implementing changes.`,
         disallowedTools: 'Write, Edit',
         model: 'inherit',
         name: 'adventurer',
@@ -115,9 +92,7 @@ One role per session: exploration only - never implement or design.`,
     },
     'architect.md': {
       frontmatter: {
-        description: `Architecture decisions using decision matrices and ADRs.
-Evaluates options with weighted criteria, clarifies business context first.
-Use for: technology choices, implementation approaches, trade-off analysis.`,
+        description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
         model: 'inherit',
         name: 'architect',
         skills: GLOBAL_RULES_PRELOAD,
@@ -125,9 +100,7 @@ Use for: technology choices, implementation approaches, trade-off analysis.`,
     },
     'builder.md': {
       frontmatter: {
-        description: `Focused implementation agent for atomic tasks.
-Executes one verifiable unit of work with minimal context.
-Use for: targeted fixes, feature implementation, refactors, adding tests.`,
+        description: `Focused implementation agent for one atomic, verifiable feature, fix, test, or refactor.`,
         model: 'inherit',
         name: 'builder',
         skills: GLOBAL_RULES_PRELOAD,
@@ -163,9 +136,7 @@ Use for: targeted fixes, feature implementation, refactors, adding tests.`,
     },
     'diagnose.md': {
       frontmatter: {
-        description: `Systematic 6-step regression tracing.
-From error message to root cause to prevention.
-Use for: cryptic errors, regressions, production bugs.`,
+        description: `Systematic regression-tracing agent from symptom and error evidence to root cause, fix, and prevention.`,
         model: 'inherit',
         name: 'diagnose',
         skills: GLOBAL_RULES_PRELOAD,
@@ -174,13 +145,7 @@ Use for: cryptic errors, regressions, production bugs.`,
     'orchestrator.md': {
       append: ORCHESTRATOR_APPEND,
       frontmatter: {
-        description: `Maestria methodology dispatcher for Claude Code.
-Routes work (direct/focused/full), delegates to specialist agents
-(maestria:adventurer, maestria:architect, maestria:builder, maestria:diagnose,
-maestria:planner, maestria:reviewer, maestria:writer), and enforces the
-maker/checker split, handoff contracts, and workflow modes (fein/sonar/blitz).
-Use for multi-step or multi-file work, planning, review, debugging,
-architecture decisions, or documentation.`,
+        description: `Maestria workflow dispatcher for Claude Code routing, handoffs, and independent review.`,
         name: 'orchestrator',
       },
       output: '../skills/orchestrator/SKILL.md',
@@ -189,17 +154,11 @@ architecture decisions, or documentation.`,
           from: '`.maestria/workflow.md` and `.maestria/rules.md`',
           to: 'the `maestria:global-rules` skill',
         },
-        {
-          from: 'the universal rules contract',
-          to: 'the `maestria:global-rules` skill',
-        },
       ],
     },
     'planner.md': {
       frontmatter: {
-        description: `Create detailed implementation plans with phased dependencies, timelines, and success criteria.
-Breaks down complex features into verifiable milestones.
-Use for: complex features requiring multi-phase execution, when the plan needs review before building.`,
+        description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
         disallowedTools: 'Write, Edit',
         model: 'inherit',
         name: 'planner',
@@ -209,10 +168,7 @@ Use for: complex features requiring multi-phase execution, when the plan needs r
     },
     'reviewer.md': {
       frontmatter: {
-        description: `Code review with quality gates.
-Reviews code for correctness, edge cases, security, performance, maintainability,
-and adherence to conventions. Provides specific, actionable feedback.
-Use for: PR review, pre-commit review, architecture document review.`,
+        description: `Independent review agent covering correctness, security, performance, maintainability, and quality gates.`,
         disallowedTools: 'Write, Edit',
         model: 'inherit',
         name: 'reviewer',
@@ -237,9 +193,7 @@ decisions.`,
     },
     'writer.md': {
       frontmatter: {
-        description: `Documentation writing following structured patterns.
-Creates clear, comprehensive docs for code, APIs, systems.
-Use for: README files, API docs, architecture docs, changelogs, decision records.`,
+        description: `Structured documentation agent for READMEs, API docs, architecture documents, changelogs, and decision records.`,
         model: 'inherit',
         name: 'writer',
         skills: GLOBAL_RULES_PRELOAD,

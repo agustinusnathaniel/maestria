@@ -3,91 +3,73 @@ title: '@maestria/agent-plugin'
 description: Use Maestria's workflow methodology in agent clients that support Agent Plugins v1.
 ---
 
-import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
+import AllPackageManagers from '@/components/all-package-managers.astro';
 
 @maestria/agent-plugin packages Maestria's workflow methodology as standard [Agent Skills](https://agentskills.io/specification) for clients that support the [Agent Plugins v1 format](https://agent-plugins.org/).
 
-<Aside type="tip" title="Choose portable when">
-  You want the same skills across compatible clients and want the client to own discovery,
-  permissions, activation, and session behavior. Choose a native integration when you need host
-  features such as native subagents, hooks, commands, or tool controls.
+<Aside type="tip" title="When to choose the portable package">
+  Choose it when you want the same skills across compatible clients with client-owned discovery,
+  permissions, activation, and sessions. Choose a native integration for host features such as
+  native subagents, hooks, commands, or tool controls.
 </Aside>
 
 ## Before You Install
 
-You need a client that supports Agent Plugins v1 and its skills component. Check the [compatible clients](https://agent-plugins.org/compatible-clients) list before choosing an installation path.
-
-The [compatibility matrix](/agent-plugin/compatibility/) records dated client checks. A check confirms package discovery and skill loading; it does not promise native agents, commands, hooks, permissions, or session behavior.
+You need a client that supports Agent Plugins v1 and its skills component; check the [compatible clients](https://agent-plugins.org/compatible-clients) list. The [compatibility matrix](/agent-plugin/compatibility/) records dated client checks: a pass confirms package discovery and skill loading, not native agents, commands, hooks, permissions, or session behavior.
 
 ## What You Get
 
 | Group | Skills | Use |
 | --- | --- | --- |
-| Coordination | global-rules, orchestrator, handoff, iteration-limits | Set expectations, route work, transfer context, and bound long tasks |
-| Specialists | adventurer, architect, builder, diagnose, planner, reviewer, writer | Understand, design, build, debug, plan, review, and document |
+| Coordination | global-rules, orchestrator, handoff, iteration-limits | Set expectations, route, transfer context, bound long tasks |
+| Specialists | adventurer, architect, builder, diagnose, planner, reviewer, writer | Understand, design, build, debug, plan, review, document |
 | Modes | fein, sonar, blitz | Choose full, research-only, or fast work |
 
-The package contains 14 skills. Each one lives at `skills/<name>/SKILL.md` and uses the standard Agent Skills layout.
+All 14 skills live at `skills/<name>/SKILL.md`. Load global-rules for the full contract, then orchestrator or the specialist that matches the work; see the [Specialist Reference](/core/agents/) for roles. The package assumes no single invocation syntax.
 
-## Install It
+## Install the package
 
 ### With the Maestria CLI
 
 To stage and validate a published package:
 
-```bash
-npx maestria plugin install
-```
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin install" />
 
-The command prints the staged directory. Give that directory to the compatible client's plugin installer or local-plugin setting.
+The command prints the staged directory for the client's plugin installer or local-plugin setting. To validate a local package without changing it:
 
-To validate a local package without changing it:
+<AllPackageManagers type="dlx" pkg="maestria@latest" args="plugin validate /path/to/plugin" />
 
-```bash
-npx maestria plugin validate /path/to/plugin
-```
-
-Use --json when another tool needs a machine-readable report. The CLI does not activate the package or modify client configuration.
+Use --json for a machine-readable report; the CLI never activates the package or modifies client configuration.
 
 ### In a Compatible Client
+
+<Steps>
 
 1. Open the client's plugin or extension installer.
 2. Install `@maestria/agent-plugin`, or select the directory printed by maestria plugin install.
 3. Reload installed skills or start a new session.
 
-The exact activation command depends on the client. Agent Plugins standardizes the package shape, while each client decides how packages are discovered, installed, trusted, updated, and enabled.
+</Steps>
+
+The exact activation command depends on the client: Agent Plugins standardizes the package shape, while each client decides how packages are discovered, installed, trusted, updated, and enabled.
 
 The command is intentionally namespaced as `maestria plugin ...`: `maestria install` manages runtime integrations, while `maestria plugin` manages portable artifacts.
 
 ### From a Local Checkout
 
-Point a client that accepts local plugins at:
+Point a client that accepts local plugins at the directory containing plugin.json rather than its nested skills directory:
 
 ```text
 /path/to/maestria/packages/agent-plugin/
 ```
 
-Choose the directory containing plugin.json, not only its nested skills directory. If the package is not yet released, this is the supported local path.
-
-## Use the Skills
-
-Load global-rules for the full evidence, authorization, and review contract. Then load orchestrator to choose a route, or load the specialist that matches the work:
-
-| Need                       | Skill      |
-| -------------------------- | ---------- |
-| Understand unfamiliar code | adventurer |
-| Compare approaches         | architect  |
-| Make a focused change      | builder    |
-| Find a failure's cause     | diagnose   |
-| Plan multiple phases       | planner    |
-| Check work independently   | reviewer   |
-| Write documentation        | writer     |
-
-Use the client's normal skill-loading mechanism. The package does not assume one invocation syntax.
+A local checkout is useful when testing unreleased changes.
 
 ## Portable and Native Boundaries
 
-Use portable skills when client-neutral guidance is enough. Use a native integration when you need platform-specific runtime features. The portable package and a native integration can coexist.
+Use portable skills for client-neutral guidance, and a native integration for platform-specific runtime features. The two can coexist.
 
 | Need                                                | Native guide                 |
 | --------------------------------------------------- | ---------------------------- |
@@ -108,36 +90,35 @@ The package provides instructions and workflow resources. It does not provide:
 - permissions, sandboxing, or trust decisions
 - session state or scheduled automation
 
-Read-only roles are guidance, not a security boundary. The consuming client remains responsible for tool access and execution safety.
+Read-only roles are guidance, not a security boundary; the consuming client remains responsible for tool access and execution safety.
 
 ## If Skills Do Not Appear
 
 - Confirm the selected directory contains plugin.json and skills/.
 - Reload the client's plugins or start a new session.
 - Check the client's supported Agent Plugins components and trust settings.
-- If the staging destination exists, choose another destination.
 
 ## Resources
 
 <CardGrid>
   <LinkCard
     title="Compatible clients"
-    description="See which clients support Agent Plugins and which components they implement."
+    description="Supported clients and their implemented components."
     href="https://agent-plugins.org/compatible-clients"
   />
   <LinkCard
     title="Compatibility matrix"
-    description="See dated smoke results and client-specific verification steps."
+    description="Dated smoke results and client-specific verification steps."
     href="/agent-plugin/compatibility/"
   />
   <LinkCard
     title="Agent Plugins v1 specification"
-    description="Read the manifest, skills layout, and client-conformance rules."
+    description="Manifest, skills layout, and client-conformance rules."
     href="https://agent-plugins.org/specification"
   />
   <LinkCard
     title="Package source"
-    description="View the manifest, installation guide, and generated skills."
+    description="Manifest, installation guide, and generated skills."
     href="https://github.com/agustinusnathaniel/maestria/tree/main/packages/agent-plugin"
   />
 </CardGrid>

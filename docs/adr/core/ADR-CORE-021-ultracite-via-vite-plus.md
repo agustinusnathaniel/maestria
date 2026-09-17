@@ -6,37 +6,30 @@ Accepted (2026-08-31) - Strict preset enforced via the vite.config.ts hybrid.
 
 ## Context
 
-Maestria is a pnpm monorepo whose root `vite.config.ts` is the authority for formatting, linting, type-aware checks, staged-file checks, and task execution. The repository already uses Vite+ as its unified command runner and currently uses the Vite+ bundled Oxlint and Oxfmt versions:
+Maestria is a pnpm monorepo whose root `vite.config.ts` is the authority for formatting, linting, type-aware checks, staged-file checks, and task execution. It uses Vite+ as its unified command runner and its bundled Oxlint and Oxfmt versions. Ultracite offers maintained Oxlint and Oxfmt presets plus optional agent rules, skills, and hooks: its Oxlint setup uses `ultracite/oxlint/core` in an `extends` array and its Oxfmt setup spreads `ultracite/oxfmt`. The preset's Oxlint peer range exceeded the bundled Oxlint version, so adoption required aligning the toolchain first.
 
-| Component   | Current version | Relevant constraint                                    |
-| ----------- | --------------- | ------------------------------------------------------ |
-| `vite-plus` | `0.2.9`         | Bundles Oxlint `1.77.0` and Oxfmt `0.62.0`             |
-| Ultracite   | Not installed   | `7.10.7` peers on Oxlint `^1.79.0` and Oxfmt `>=0.1.0` |
+Vite+ documents the root `vite.config.ts` as the configuration location for `vp lint`, `vp fmt`, and `vp check`, and does not recommend standalone `oxlint.config.ts` or `.oxfmtrc.json` files. It also supports configuration composition through normal JavaScript imports.
 
-Ultracite provides useful Oxlint and Oxfmt presets, plus optional agent rules, skills, and hooks. Its documented Oxlint setup uses `ultracite/oxlint/core` in an `extends` array, and its Oxfmt setup spreads `ultracite/oxfmt`.
+Boundaries that must remain intact:
 
-Vite+ documents the root `vite.config.ts` as the configuration location for `vp lint`, `vp fmt`, and `vp check`, and explicitly does not recommend standalone `oxlint.config.ts` or `.oxfmtrc.json` files. Vite+ also supports composing configuration through normal JavaScript imports.
-
-The repository has additional boundaries that must remain intact:
-
-- `.vite-hooks/pre-commit` runs `vp staged`, which already uses the root `staged` configuration.
-- The root `vite.config.ts` contains the `vite-plus` Oxlint JS plugin, custom rules, type-aware linting, generated-file format exclusions, and the `check-sync` task.
+- The pre-commit hook runs `vp staged` with the root `staged` configuration.
+- The root `vite.config.ts` holds the `vite-plus` Oxlint JS plugin, custom rules, type-aware linting, generated-file format exclusions, and the `check-sync` task.
 - Agent directives are authored only in `packages/core/agent-directives/` and projected through `scripts/sync-all` and `scripts/check-sync`.
 - Generated agent projections must not be overwritten by an external init command.
 
 ## Goals
 
 - Adopt Ultracite's maintained Oxlint/Oxfmt presets without creating a second command or configuration authority.
-- Preserve Vite+ scripts, task caching, type-aware checks, staged checks, custom rules, generated-file exclusions, and editor integration.
+- Preserve Vite+ scripts, task caching, type-aware and staged checks, custom rules, generated-file exclusions, and editor integration.
 - Keep the agent-directive source and projection boundaries defined by [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md).
-- Make adoption incremental and reversible, with no wholesale formatting or unrelated cleanup in the integration change.
+- Make adoption incremental and reversible, with no wholesale formatting or unrelated cleanup.
 
 ## Non-Goals
 
 - Replacing Vite+ with the `ultracite` CLI.
 - Migrating to Biome or ESLint.
-- Adding a second Git hook manager or a second staged-file runner.
-- Enabling optional Ultracite JS plugins or anti-slop rules without a separate compatibility and noise review.
+- Adding a second Git hook manager or staged-file runner.
+- Enabling optional Ultracite JS plugins or anti-slop rules without a compatibility and noise review.
 - Overwriting `AGENTS.md`, generated host projections, or canonical directives with output from `ultracite init`.
 
 ## Decision
@@ -45,41 +38,32 @@ Adopt a controlled hybrid integration: Vite+ remains the command and lifecycle a
 
 ### 1. Align the toolchain before installing the preset
 
-Upgrade the root catalog and dependency from `vite-plus@0.2.9` to `vite-plus@0.3.0`, or to a later release only after checking its bundled versions and release notes. Vite+ `0.3.0` bundles Oxlint `1.79.0` and Oxfmt `0.64.0`, which satisfies Ultracite `7.10.7`'s peer requirements.
-
-Add `ultracite@7.10.7` as a root development dependency through the workspace catalog. Keep any explicit `oxlint` or `oxfmt` peer entries, if pnpm requires them for the installed preset, exactly aligned with Vite+'s bundled versions. Do not use an override that creates a second or divergent toolchain.
+Upgrade the root catalog and dependency to a Vite+ release whose bundled Oxlint and Oxfmt satisfy Ultracite's peer ranges (check later releases against their bundled versions and notes). Add Ultracite as a root development dependency through the workspace catalog. Keep any explicit `oxlint`/`oxfmt` peer entries pnpm requires aligned with Vite+'s bundled versions; do not use an override that creates a second toolchain.
 
 ### 2. Compose presets in `vite.config.ts`
 
-Import `ultracite/oxlint/core` and `ultracite/oxfmt` from the root config. Extend the existing `lint` block with the Ultracite core preset and compose the existing `fmt` block from the Ultracite formatter preset. Preserve the repository-specific settings after composition:
+Import `ultracite/oxlint/core` and `ultracite/oxfmt`, extend the `lint` block with the Ultracite core preset, and compose the `fmt` block from the Ultracite formatter preset. Preserve repository-specific settings after composition: `vite-plus` Oxlint JS plugin rules, `max-lines`/`max-lines-per-function`/`curly`, test-file overrides, type-aware and type-check settings, formatter options (semi, single quotes, package.json sorting, Markdown prose wrap), and existing generated-directory and changelog ignores merged with required Ultracite ignores.
 
-- `vite-plus/oxlint-plugin` and `vite-plus/prefer-vite-plus-imports`.
-- `max-lines`, `max-lines-per-function`, and `curly`.
-- Test-file rule overrides.
-- `typeAware: true` and `typeCheck: true`.
-- `semi: true`, `singleQuote: true`, `sortPackageJson: true`, and the existing Markdown `proseWrap: 'never'` overrides.
-- Existing generated-directory and changelog ignore patterns, merged with any required Ultracite ignore patterns rather than replaced.
+Project-specific rules and overrides stay later, explicit layers so they keep winning. Strict preset is enforced: intentional style overrides remain, test-file exceptions come from a shared override module, and other preset rules have no deferred suppression layers; new lint failures are reviewed as individual compatibility findings.
 
-Project-specific rules and overrides remain later, explicit layers so they continue to win over the shared preset. Strict preset is now enforced: intentional style overrides (singleQuote, trailingComma, printWidth 100, sortImports false) remain, and test-file exceptions are composed from `tooling/lint/test-overrides.ts`. Other preset rules are enforced without deferred suppression layers; new lint failures are reviewed as individual compatibility findings.
-
-For monorepo sharing alternatives, see https://oxc.rs/docs/guide/usage/linter/nested-config.html#monorepo-pattern-share-a-base-config-with-extends - the repository uses `overrides` composition rather than `extends` with a shared base file because `overrides` keeps all behavior centralized in the single root `vite.config.ts` authority (single file to audit, no extra `extends` resolution, and VitePlus's `vp` commands read only the root config). Using `extends` would introduce a second config file and divergent resolution; `overrides` preserves the single-authority model documented in VitePlus.
+The repository uses `overrides` rather than `extends` with a shared base because `overrides` keeps behavior centralized in the single root `vite.config.ts` authority (one file to audit, no extra resolution, and `vp` reads only the root config); `extends` would add a second config file and divergent resolution. See the Vite nested-config monorepo guidance at https://oxc.rs/docs/guide/usage/linter/nested-config.html#monorepo-pattern-share-a-base-config-with-extends.
 
 ### 3. Keep Vite+ as the only executable interface
 
-Retain the existing `package.json` scripts and call `vp check`, `vp lint`, `vp fmt`, and `vp staged` as before. Do not add `ultracite check` or `ultracite fix` scripts. The Ultracite package is used for presets and guidance, not as a competing runner.
+Retain existing `package.json` scripts and call `vp check`, `vp lint`, `vp fmt`, and `vp staged` as before; do not add `ultracite check` or `ultracite fix` scripts. Ultracite supplies presets and guidance, not a competing runner.
 
-Do not create committed standalone `oxlint.config.ts` or `oxfmt.config.ts` files. This follows Vite+'s documented configuration model and prevents the commands, editor, and hooks from reading different configurations.
+Do not commit standalone `oxlint.config.ts` or `oxfmt.config.ts`; this follows Vite+'s configuration model and keeps the commands, editor, and hooks on one configuration.
 
 ### 4. Treat AI integration as layered guidance
 
-- Keep the hand-authored root `AGENTS.md` as the maestria-specific instruction file. Add only concise, repo-specific tooling guidance if needed; do not replace it with generated Ultracite text.
-- Do not copy generic Ultracite rules into `packages/core/agent-directives/rules.md`. That file is a cross-platform product directive and its changes generate host projections. Ultracite's repo-local rules and Maestria's shipped agent methodology have different ownership and scope.
-- The reusable Ultracite skill may be installed by individual contributors as an external skill. It is not a checked-in generated projection unless a separate decision establishes its provenance, update policy, and sync behavior.
-- Do not enable Ultracite's Git or post-edit hooks during this integration. Existing Vite+ staged hooks already run the authoritative root config, and Ultracite's generated agent hook files can collide with existing host configuration. A future host-specific hook can invoke `vp check --fix` only after its lifecycle and ownership have been reviewed.
+- Keep the hand-authored root `AGENTS.md`; add only concise repo-specific tooling guidance, never generated Ultracite text.
+- Do not copy generic Ultracite rules into `packages/core/agent-directives/rules.md`: that cross-platform directive generates host projections, and Ultracite's repo-local rules have different ownership and scope.
+- The reusable Ultracite skill may be installed by contributors as an external skill; it is not a checked-in projection unless a separate decision establishes provenance, update policy, and sync behavior.
+- Do not enable Ultracite Git or post-edit hooks now: Vite+ staged hooks already run the authoritative config, and generated hook files can collide with host configuration. A future host hook may invoke `vp check --fix` after lifecycle and ownership review.
 
 ### 5. Validate the upgrade as a single toolchain change
 
-The dependency upgrade, preset composition, and lockfile update should land as one reviewed change. Run the full repository gates before accepting the ADR:
+Land the dependency upgrade, preset composition, and lockfile update as one reviewed change, running the full gates first:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -92,24 +76,24 @@ pnpm check:ci
 bash scripts/check-sync
 ```
 
-The validation must confirm that `vp` loads the imported presets, generated agent projections have no unintended drift, and the existing CI and staged commands retain their behavior.
+Validation must confirm `vp` loads the imported presets, projections have no unintended drift, and CI and staged commands keep their behavior.
 
 ## Consequences
 
 ### Positive
 
-- Ultracite's maintained Oxlint/Oxfmt rule set is adopted without abandoning Vite+'s unified workflow.
+- Ultracite's maintained rule set is adopted without abandoning Vite+'s unified workflow.
 - The root config remains the single source for commands, editor formatting, staged checks, and task execution.
-- The Vite+ version upgrade resolves the verified Ultracite Oxlint peer mismatch instead of relying on an unsafe package override.
-- Existing custom rules, type checking, sync tasks, and generated-file protections remain explicit and reviewable.
-- The integration is reversible because Ultracite is a root dev dependency and preset composition, not a runtime or package-boundary change.
+- The Vite+ upgrade resolves the verified Oxlint peer mismatch without an unsafe package override.
+- Custom rules, type checking, sync tasks, and generated-file protections remain explicit and reviewable.
+- The integration is reversible: a root dev dependency and preset composition, not a runtime or package-boundary change.
 
 ### Negative
 
-- Upgrading Vite+ from `0.2.9` to `0.3.0` changes the bundled Vite+ toolchain and requires a full repository validation. The release also changes the default global Vite+ install layout, so hard-coded global paths must remain absent or be updated separately.
-- Ultracite's opt-out rules may expose new findings and create an initial remediation queue.
-- Ultracite's default Oxfmt style uses double quotes, while this repository intentionally uses single quotes. The local override must remain explicit.
-- The repository does not get automatic Ultracite post-edit fixing; contributors rely on the existing Vite+ hook and check commands.
+- The Vite+ upgrade changes the bundled toolchain and needs full validation; it also changes the default global install layout, so hard-coded global paths must stay absent or be updated separately.
+- Ultracite's opt-out rules may surface new findings and an initial remediation queue.
+- Ultracite's default Oxfmt style is double-quoted while this repository uses single quotes; the local override must remain explicit.
+- No automatic Ultracite post-edit fixing; contributors rely on the Vite+ hook and check commands.
 
 ## Alternatives Considered
 
@@ -117,41 +101,41 @@ The validation must confirm that `vp` loads the imported presets, generated agen
 
 Run `ultracite init --linter oxlint` and commit `oxlint.config.ts`, `oxfmt.config.ts`, and Ultracite scripts alongside Vite+.
 
-Rejected because Vite+ explicitly recommends its root config instead of standalone Oxlint/Oxfmt configs. It would create competing command paths, duplicate staged behavior, and make editor or hook behavior dependent on which tool was invoked.
+Rejected: Vite+ recommends its root config over standalone files, which would create competing command paths, duplicate staged behavior, and tool-dependent editor and hook behavior.
 
 ### Option B: Import Ultracite presets into the existing Vite+ config
 
-Use the documented preset modules directly in `vite.config.ts`, while keeping Vite+ commands and the existing repository-specific rules.
+Use the documented preset modules directly in `vite.config.ts` while keeping Vite+ commands and repository rules.
 
-Viable and forms the mechanical basis of the chosen approach. On its own, however, it does not define the required version gate or the ownership policy for AI rules, skills, and hooks.
+Viable and the mechanical basis of the chosen approach, but alone it defines neither the version gate nor AI content ownership.
 
 ### Option C: Migrate completely to the Ultracite CLI
 
-Replace Vite+ lint/format scripts, staged configuration, and editor authority with Ultracite's generated configuration and scripts.
+Replace Vite+ lint/format scripts, staged configuration, and editor authority with Ultracite's generated setup.
 
-Rejected because it discards the repository's existing Vite+ task graph, type-checking contract, `vite-plus` JS plugin, and hook setup. It would be a larger, less reversible change with no demonstrated benefit for this monorepo.
+Rejected: it discards the Vite+ task graph, type-checking contract, JS plugin, and hooks in a larger, less reversible change with no demonstrated benefit.
 
 ### Option D: Controlled hybrid integration (chosen)
 
-Use Option B after aligning Vite+ with Ultracite's peer requirements, retain Vite+ as the only executable interface, and handle AI rules, skills, and hooks according to the existing Maestria ownership boundaries.
+Use Option B after aligning Vite+ with Ultracite's peers, keep Vite+ as the only executable interface, and handle AI content within existing ownership boundaries.
 
-Chosen because it achieves the requested preset adoption with the smallest blast radius, preserves the current workflow, and avoids configuration and directive drift.
+Chosen for the smallest blast radius and to avoid configuration and directive drift.
 
 ## Assumptions
 
-- `[verified]` The root workspace currently pins `vite-plus` to `0.2.9`, whose local package bundles Oxlint `1.77.0` and Oxfmt `0.62.0`, confirmed with `vp toolchain` and the installed package metadata.
-- `[verified]` Ultracite `7.10.7` declares Oxlint `^1.79.0` and Oxfmt `>=0.1.0` as peer dependencies, confirmed with npm registry metadata.
-- `[verified]` Vite+ `0.3.0` bundles Oxlint `1.79.0` and Oxfmt `0.64.0`, confirmed by its published package metadata and release notes.
-- `[verified]` Vite+ documents `vite.config.ts` as the configuration source for `vp lint`, `vp fmt`, and `vp check`, and recommends against standalone Oxlint/Oxfmt config files.
-- `[verified]` The existing pre-commit path is `.vite-hooks/pre-commit` running `vp staged`, and the staged command is configured in the root `vite.config.ts`.
-- `[verified]` Agent directive content is canonical under `packages/core/agent-directives/` and generated projections are checked by `scripts/check-sync`.
-- `[inferred]` The repository should preserve Vite+ as its developer-facing workflow because all root scripts, CI checks, editor settings, and hooks currently use it; replacing that workflow is outside the stated integration need.
-- `[inferred]` Ultracite's generic agent content should remain repo-local or contributor-local because copying it into the canonical cross-platform directives would distribute maestria-specific tooling guidance to hosts that may not use this repository's toolchain.
-- `[inferred]` A Vite+ `0.3.0` local upgrade is acceptable if the listed full validation passes; the release's global install-layout change is not itself a repository migration requirement.
+- `[verified]` The prior root Vite+ release bundled Oxlint/Oxfmt versions predating Ultracite's peer ranges (`vp toolchain`, installed metadata).
+- `[verified]` Ultracite declares Oxlint and Oxfmt peer ranges (npm registry metadata).
+- `[verified]` The aligned Vite+ release's bundles satisfy those peers (published metadata and release notes).
+- `[verified]` Vite+ documents `vite.config.ts` as the source for `vp lint`, `vp fmt`, and `vp check` and recommends against standalone config files.
+- `[verified]` The pre-commit path runs `vp staged` with the root `staged` configuration.
+- `[verified]` Directives are canonical under `packages/core/agent-directives/`; projections are checked by `scripts/check-sync`.
+- `[inferred]` Keep Vite+ as the developer workflow: root scripts, CI, editor, and hooks all use it, and replacing it is outside the integration need.
+- `[inferred]` Keep Ultracite's generic agent content repo-local or contributor-local; copying it into canonical directives would send repository-specific guidance to hosts on other toolchains.
+- `[inferred]` A Vite+ upgrade is acceptable if the listed validation passes; the global install-layout change is not a repository migration requirement.
 
 ## Rollback
 
-Revert the root catalog and dependency changes, restore the previous lockfile, remove the Ultracite imports from `vite.config.ts`, and remove any optional repo-local AI guidance added by the implementation. Do not restore standalone Ultracite configs or generated agent projections.
+Revert the root catalog and dependency changes, restore the previous lockfile, remove the Ultracite imports from `vite.config.ts`, and remove any optional repo-local AI guidance. Do not restore standalone Ultracite configs or generated agent projections.
 
 ## Related Decisions
 
@@ -162,32 +146,32 @@ Revert the root catalog and dependency changes, restore the previous lockfile, r
 
 ## Appendix A: Contributor-local AI rules, skills, and hooks
 
-This appendix records the deliberate non-integration for AI rules, skills, and hooks. Section 4 defines the policy, this appendix gives contributor-local opt-in instructions without committing generated files.
+This appendix records why AI rules, skills, and hooks were left out; Section 4 defines the policy, and this appendix adds contributor-local opt-in instructions without committing generated files.
 
 ### Rules
 
-Do not run `ultracite init --agents` (including `--agents universal`) in this repository. That command would overwrite the hand-authored root `AGENTS.md` or create `.cursor/rules/`, `.claude/settings.json`, `.agents/` content, and other generated agent files. Those files would collide with the canonical directives in `packages/core/agent-directives/` and the `scripts/sync-all` pipeline defined in ADR-CORE-005. The root `AGENTS.md` Tooling section is the only repo-specific AI guidance that is committed; generic Ultracite rules remain uncommitted. Contributors who want repo-local rules for a specific tool should generate them locally and add the path to `.git/info/exclude` rather than committing.
+Do not run `ultracite init --agents` (including `--agents universal`) here: it would overwrite the hand-authored root `AGENTS.md` or create generated agent files (`.cursor/rules/`, `.claude/settings.json`, `.agents/`) that collide with the canonical directives and the `scripts/sync-all` pipeline (ADR-CORE-005). The root `AGENTS.md` Tooling section is the only committed repo-specific AI guidance; generic Ultracite rules stay uncommitted. Generate tool-specific rules locally and exclude them via `.git/info/exclude` instead of committing.
 
 ### Skills
 
-Ultracite ships a reusable skill at `node_modules/ultracite/skills/ultracite/SKILL.md`. The skill is contributor-local by design - do not copy it into `.agents/skills/`, `packages/*/skills/`, or any checked-in skill directory unless a separate ADR defines provenance, update policy, and sync behavior. Do not run `ultracite init` inside this repository - that command performs full setup including creating `oxlint.config.ts` and other files that conflict with the Vite+ single-authority model (see Decision section 3). To install only the skill without touching repo config, use the standalone skill installer:
+Ultracite's reusable skill is contributor-local by design; do not copy it into a checked-in skill directory (`.agents/skills/`, `packages/*/skills/`, or similar) unless a separate ADR defines provenance, update policy, and sync behavior. Do not run `ultracite init` here: full setup creates `oxlint.config.ts` and other files conflicting with the Vite+ single-authority model (see Decision section 3). Install only the skill with:
 
 ```bash
 npx skills add haydenbleasel/ultracite
 ```
 
-The skill is portable across repos and leaves formatting decisions to the repository's own `vite.config.ts` (Ultracite Oxlint/Oxfmt presets). No code or config change is required in maestria to use the skill.
+The skill is portable and defers formatting to this repository's `vite.config.ts` presets; no code or config change is required here.
 
 ### Hooks
 
-Do not enable Ultracite Git hooks (`--integrations husky,lefthook,lint-staged,pre-commit`) or agent post-edit hooks (`--hooks claude,codex,cursor,copilot,windsurf,codebuddy`) in the committed repository. Maestria already runs `vp staged` via `.vite-hooks/pre-commit` and editor `formatOnSave` via `oxc.oxc-vscode` reading `vite.config.ts`. Adding a second staged runner or a post-edit `ultracite fix` hook would be redundant and could create divergent formatting. Do not run `ultracite init --hooks` inside this repository - that command also performs full setup and can overwrite config. Contributors who want a local post-edit hook should configure their host manually or run setup outside the repository and copy only the hook file. For example, add a host post-edit hook that invokes the authoritative repository formatter:
+Do not enable Ultracite Git hooks (`--integrations husky,lefthook,lint-staged,pre-commit`) or agent post-edit hooks (`--hooks claude,codex,cursor,copilot,windsurf,codebuddy`) in the committed repository: Maestria already runs `vp staged` in its pre-commit hook and editor `formatOnSave` via `oxc.oxc-vscode` reading `vite.config.ts`, so a second staged runner or post-edit `ultracite fix` hook would be redundant and could diverge. Do not run `ultracite init --hooks` here; full setup can overwrite config. For a local post-edit hook, configure the host manually, or run setup outside the repository and copy only the hook file, for example:
 
 ```bash
 # Example Claude Code host hook (manual config) - runs repo formatter, not ultracite fix
 vp check --fix
 ```
 
-Alternatively, run `ultracite init --hooks <host>` in an empty temporary directory outside the repo and copy only the generated hook file (for example, `.claude/settings.json` or `.cursor/hooks.json`) into your local checkout. Verify the hook file is not staged before committing and that it invokes `vp check --fix` rather than `ultracite fix`. Prefer the existing workflow `vp check --fix` and pre-commit `vp staged` for authoritative formatting.
+Run `ultracite init --hooks <host>` in an empty temporary directory outside the repo, copy the generated hook file into the local checkout, verify it is not staged before committing, and confirm it invokes `vp check --fix`, not `ultracite fix`. Prefer `vp check --fix` and pre-commit `vp staged` for authoritative formatting.
 
 ## References
 
@@ -204,7 +188,7 @@ Alternatively, run `ultracite init --hooks <host>` in an empty temporary directo
 - [Vite+ check guide](https://viteplus.dev/guide/check)
 - [Vite+ commit hooks guide](https://viteplus.dev/guide/commit-hooks)
 - [Vite+ monorepo guide](https://viteplus.dev/guide/monorepo)
-- [Vite+ `0.3.0` release notes](https://github.com/voidzero-dev/vite-plus/releases/tag/v0.3.0)
+- [Vite+ release notes](https://github.com/voidzero-dev/vite-plus/releases/tag/v0.3.0)
 
 ## Date
 

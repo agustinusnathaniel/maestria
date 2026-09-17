@@ -2,6 +2,15 @@ import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { parseDocument } from 'yaml';
 
+import {
+  isFileNotFound,
+  isRecord,
+  isStringArray,
+  isWithin,
+  readJsonRecord,
+} from '@/lib/primitives.js';
+import type { JsonRecord } from '@/lib/primitives.js';
+
 import { validateMcp } from './agent-plugin-mcp.js';
 
 export const AGENT_PLUGIN_SCHEMA = 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json';
@@ -24,8 +33,6 @@ const PLUGIN_MANIFEST_FIELDS = new Set([
   'version',
 ]);
 const AUTHOR_FIELDS = new Set(['email', 'name', 'url']);
-
-type JsonRecord = Record<string, unknown>;
 
 export interface AgentPluginValidation {
   readonly errors: string[];
@@ -52,20 +59,6 @@ interface SkillValidationResult {
   warnings: string[];
 }
 
-const isRecord = (value: unknown): value is JsonRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((entry) => typeof entry === 'string');
-
-const isFileNotFound = (error: unknown): boolean =>
-  typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT';
-
-const isWithin = (root: string, target: string): boolean => {
-  const relative = path.relative(root, target);
-  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
-};
-
 const addError = (report: ValidationDraft, message: string): void => {
   report.errors.push(message);
 };
@@ -79,14 +72,6 @@ const finalize = (draft: ValidationDraft): AgentPluginValidation => ({
   ...(draft.version === undefined ? {} : { version: draft.version }),
   warnings: draft.warnings,
 });
-
-const readJsonRecord = async (filePath: string): Promise<JsonRecord> => {
-  const parsed: unknown = JSON.parse(await readFile(filePath, 'utf-8')) as unknown;
-  if (!isRecord(parsed)) {
-    throw new Error(`${filePath} must contain a JSON object`);
-  }
-  return parsed;
-};
 
 const validateStringFields = (
   manifest: JsonRecord,

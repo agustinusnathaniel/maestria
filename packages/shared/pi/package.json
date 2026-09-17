@@ -41,7 +41,8 @@
     "test": "vp test"
   },
   "dependencies": {
-    "@maestria/shared-mode": "workspace:*"
+    "@maestria/shared-mode": "workspace:*",
+    "es-toolkit": "^1.52.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

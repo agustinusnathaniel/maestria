@@ -1,9 +1,9 @@
-import { MAESTRIA_EVENTS } from '@maestria/shared-pi/subagent-utils';
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import { createInitialState } from '@/state.js';
-import { installSubagentTool } from '@/subagent.js';
-import type { SubagentToolApi } from '@/subagent.js';
+import { createInitialState } from '@maestria/shared-pi/state-core';
+import type { MaestriaState } from '@maestria/shared-pi/state-core';
+import { installNativeSubagentTool } from '@/subagent.js';
+import type { SubagentToolParams, SubagentToolResult } from '@/subagent.js';
 
 interface ZodChainable {
   describe: (description: string) => ZodChainable;
@@ -15,20 +15,36 @@ const zodChainable = (): ZodChainable => ({
   optional: zodChainable,
 });
 
-interface MockPi extends SubagentToolApi {
-  appendEntry: ReturnType<typeof vi.fn<SubagentToolApi['appendEntry']>>;
-  registerTool: ReturnType<typeof vi.fn<SubagentToolApi['registerTool']>>;
+interface RegisteredTool {
+  description: string;
+  execute: (
+    toolCallId: string,
+    params: SubagentToolParams,
+    signal: AbortSignal | undefined,
+    onUpdate: unknown,
+    ctx: unknown,
+  ) => Promise<SubagentToolResult>;
+  label: string;
+  name: string;
+  parameters: unknown;
+}
+
+interface MockPi {
+  appendEntry: ReturnType<typeof vi.fn<(type: string, data: unknown) => void>>;
+  on: ReturnType<typeof vi.fn<(event: string, handler: unknown) => void>>;
+  registerTool: ReturnType<typeof vi.fn<(tool: RegisteredTool) => void>>;
   zod: {
-    array: ReturnType<typeof vi.fn<SubagentToolApi['zod']['array']>>;
-    enum: ReturnType<typeof vi.fn<SubagentToolApi['zod']['enum']>>;
-    object: ReturnType<typeof vi.fn<SubagentToolApi['zod']['object']>>;
-    string: ReturnType<typeof vi.fn<SubagentToolApi['zod']['string']>>;
+    array: ReturnType<typeof vi.fn<(schema: ZodChainable) => ZodChainable>>;
+    enum: ReturnType<typeof vi.fn<(values: readonly string[]) => ZodChainable>>;
+    object: ReturnType<typeof vi.fn<(shape: Record<string, ZodChainable>) => ZodChainable>>;
+    string: ReturnType<typeof vi.fn<() => ZodChainable>>;
   };
 }
 
 const createMockPi = (): MockPi => ({
-  appendEntry: vi.fn(),
-  registerTool: vi.fn(),
+  appendEntry: vi.fn<(type: string, data: unknown) => void>(),
+  on: vi.fn<(event: string, handler: unknown) => void>(),
+  registerTool: vi.fn<(tool: RegisteredTool) => void>(),
   zod: {
     array: vi.fn(zodChainable),
     enum: vi.fn(zodChainable),
@@ -37,7 +53,7 @@ const createMockPi = (): MockPi => ({
   },
 });
 
-const getToolDef = (pi: MockPi): Parameters<SubagentToolApi['registerTool']>[0] => {
+const getToolDef = (pi: MockPi): RegisteredTool => {
   const call = pi.registerTool.mock.calls.at(0);
   if (call === undefined) {
     throw new Error('maestria_subagent tool was not registered');
@@ -49,11 +65,14 @@ const getToolDef = (pi: MockPi): Parameters<SubagentToolApi['registerTool']>[0] 
   return tool;
 };
 
-const install = (pi: MockPi, state: ReturnType<typeof createInitialState>): void => {
-  installSubagentTool(pi, state);
+const install = (pi: MockPi, state: MaestriaState): void => {
+  // The fake supplies only the ExtensionAPI members installNativeSubagentTool
+  // consumes; the host SDK type cannot be satisfied structurally by a test stub,
+  // so invoke through Reflect.apply instead of a narrowing type assertion.
+  Reflect.apply(installNativeSubagentTool, undefined, [pi, state]);
 };
 
-describe('installSubagentTool - tool registration', () => {
+describe('installNativeSubagentTool - tool registration', () => {
   it('registers a tool named "maestria_subagent"', () => {
     const pi = createMockPi();
     const state = createInitialState();
@@ -81,7 +100,27 @@ describe('installSubagentTool - tool registration', () => {
   });
 });
 
-describe('installSubagentTool - single mode', () => {
+describe('installNativeSubagentTool - ExtensionAPI integration', () => {
+  it('registers exactly one tool and no lifecycle event subscriptions', () => {
+    const pi = createMockPi();
+    install(pi, createInitialState());
+    expect(pi.registerTool).toHaveBeenCalledTimes(1);
+    expect(pi.on).not.toHaveBeenCalled();
+  });
+
+  it('builds the parameter schema through the native pi.zod member', () => {
+    const pi = createMockPi();
+    install(pi, createInitialState());
+    const shapes = pi.zod.object.mock.calls.map(([shape]) => shape);
+    const outerShape = shapes.find((shape) => 'tasks' in shape);
+    expect(outerShape).toBeDefined();
+    expect(Object.keys(outerShape ?? {}).toSorted()).toEqual(['agent', 'mode', 'task', 'tasks']);
+    expect(pi.zod.enum).toHaveBeenCalledWith(['parallel', 'chain', 'single']);
+    expect(pi.zod.array).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('installNativeSubagentTool - single mode', () => {
   it('rejects unknown agent names', async () => {
     const pi = createMockPi();
     const state = createInitialState();
@@ -129,7 +168,7 @@ describe('installSubagentTool - single mode', () => {
   });
 });
 
-describe('installSubagentTool - parallel mode', () => {
+describe('installNativeSubagentTool - parallel mode', () => {
   it('throws for 1 task (below minimum of 2)', async () => {
     const pi = createMockPi();
     const state = createInitialState();
@@ -223,7 +262,7 @@ describe('installSubagentTool - parallel mode', () => {
   });
 });
 
-describe('installSubagentTool - chain mode', () => {
+describe('installNativeSubagentTool - chain mode', () => {
   it('throws for 1 task (below minimum of 2)', async () => {
     const pi = createMockPi();
     const state = createInitialState();
@@ -293,7 +332,7 @@ describe('installSubagentTool - chain mode', () => {
   });
 });
 
-describe('installSubagentTool - review mode blocks', () => {
+describe('installNativeSubagentTool - review mode blocks', () => {
   it('blocks dispatch during review mode', async () => {
     const pi = createMockPi();
     const state = { ...createInitialState(), reviewMode: true };
@@ -312,7 +351,7 @@ describe('installSubagentTool - review mode blocks', () => {
   });
 });
 
-describe('installSubagentTool - validation errors', () => {
+describe('installNativeSubagentTool - validation errors', () => {
   it('throws for mode=parallel without tasks', async () => {
     const pi = createMockPi();
     const state = createInitialState();
@@ -336,7 +375,7 @@ describe('installSubagentTool - validation errors', () => {
   });
 });
 
-describe('installSubagentTool - handoff recording', () => {
+describe('installNativeSubagentTool - handoff recording', () => {
   it('records handoff in state for single mode', async () => {
     const pi = createMockPi();
     const state = createInitialState();
@@ -415,15 +454,5 @@ describe('installSubagentTool - handoff recording', () => {
     await toolDef.execute('call-1', { agent: 'builder', task: 'build' }, undefined, undefined, {});
 
     expect(pi.appendEntry).toHaveBeenCalledWith('maestria_state', state);
-  });
-});
-
-describe('MAESTRIA_EVENTS', () => {
-  it('exports expected event names', () => {
-    expect(MAESTRIA_EVENTS.REVIEW_ACTIVATED).toBe('maestria:review:activated');
-    expect(MAESTRIA_EVENTS.REVIEW_DEACTIVATED).toBe('maestria:review:deactivated');
-    expect(MAESTRIA_EVENTS.SUBAGENT_STARTED).toBe('maestria:subagent:started');
-    expect(MAESTRIA_EVENTS.SUBAGENT_COMPLETED).toBe('maestria:subagent:completed');
-    expect(MAESTRIA_EVENTS.SUBAGENT_FAILED).toBe('maestria:subagent:failed');
   });
 });

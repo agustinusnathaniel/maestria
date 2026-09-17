@@ -1,6 +1,16 @@
-import { readFile, realpath, stat } from 'node:fs/promises';
+import { realpath, stat } from 'node:fs/promises';
 import { isIP } from 'node:net';
 import path from 'node:path';
+
+import {
+  isFileNotFound,
+  isRecord,
+  isStringArray,
+  isStringRecord,
+  isWithin,
+  readJsonRecord,
+} from '@/lib/primitives.js';
+import type { JsonRecord } from '@/lib/primitives.js';
 
 export const AGENT_PLUGIN_MCP_SCHEMA = 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json';
 
@@ -8,21 +18,10 @@ const PLUGIN_ROOT_PLACEHOLDER = ['$', '{PLUGIN_ROOT}'].join('');
 const PLUGIN_DATA_PLACEHOLDER = ['$', '{PLUGIN_DATA}'].join('');
 const HTTP_TOKEN_RE = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/u;
 
-type JsonRecord = Record<string, unknown>;
-
 export interface McpValidationReport {
   errors: string[];
   warnings: string[];
 }
-
-const isRecord = (value: unknown): value is JsonRecord =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((entry) => typeof entry === 'string');
-
-const isStringRecord = (value: unknown): value is Record<string, string> =>
-  isRecord(value) && Object.values(value).every((entry) => typeof entry === 'string');
 
 const hasInvalidHttpControl = (value: string): boolean => {
   for (let index = 0; index < value.length; index += 1) {
@@ -34,28 +33,12 @@ const hasInvalidHttpControl = (value: string): boolean => {
   return false;
 };
 
-const isFileNotFound = (error: unknown): boolean =>
-  typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT';
-
-const isWithin = (root: string, target: string): boolean => {
-  const relative = path.relative(root, target);
-  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
-};
-
 const addError = (report: McpValidationReport, message: string): void => {
   report.errors.push(message);
 };
 
 const addWarning = (report: McpValidationReport, message: string): void => {
   report.warnings.push(message);
-};
-
-const readJsonRecord = async (filePath: string): Promise<JsonRecord> => {
-  const parsed: unknown = JSON.parse(await readFile(filePath, 'utf-8')) as unknown;
-  if (!isRecord(parsed)) {
-    throw new Error(`${filePath} must contain a JSON object`);
-  }
-  return parsed;
 };
 
 const validatePluginRelativePath = (

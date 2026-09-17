@@ -1,5 +1,37 @@
 # maestria
 
+## 0.12.5
+
+### Patch Changes
+
+- [#308](https://github.com/agustinusnathaniel/maestria/pull/308) [`eab744f`](https://github.com/agustinusnathaniel/maestria/commit/eab744fa8567ac3aa7e63c87117a9f9b4fb018bd) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fix `maestria update` falsely reporting failure for host plugin upgrades. The OpenCode update ran under the shared 30s command timeout while cold plugin fetches take tens of seconds, so the host was killed mid-install after the new payload was already written (a retry then reported "up to date"). All host plugin install/update commands (OpenCode, Claude Code, Codex CLI, Hermes) now share the generous 120s deadline, and failed commands report the exit code or timeout plus the captured stderr/stdout instead of a bare "Command failed" message.
+
+## 0.12.4
+
+### Patch Changes
+
+- [#303](https://github.com/agustinusnathaniel/maestria/pull/303) [`50c940f`](https://github.com/agustinusnathaniel/maestria/commit/50c940fbcf3a0c60ec0728fc8ad97e455faead0d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Respect terminal unicode support in CLI group-multiselect fallback prompt (ASCII glyphs on non-unicode terminals).
+  
+  Custom toggle-all renderer and instructions are retained, unicode terminals are unchanged, and the fallback now matches native @clack/prompts ASCII glyphs.
+
+## 0.12.3
+
+### Patch Changes
+
+- [#293](https://github.com/agustinusnathaniel/maestria/pull/293) [`5e3046e`](https://github.com/agustinusnathaniel/maestria/commit/5e3046ee97c9223c8a184aa6ad63a33b52286c94) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Internal deduplication across platform handlers, model configuration, and plugin validation. No CLI behavior, output, or exit-code changes.
+
+## 0.12.2
+
+### Patch Changes
+
+- [#282](https://github.com/agustinusnathaniel/maestria/pull/282) [`2394993`](https://github.com/agustinusnathaniel/maestria/commit/239499367ab8abc3094be5800c0ad61f86e388b6) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Stop publishing generated JavaScript sourcemaps from the CLI and platform packages to reduce published package sizes while keeping the compiled runtime artifacts unchanged.
+
+## 0.12.1
+
+### Patch Changes
+
+- [#278](https://github.com/agustinusnathaniel/maestria/pull/278) [`c770954`](https://github.com/agustinusnathaniel/maestria/commit/c7709544f12393c98fa44b966cafc452a0aa5f84) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify installation paths, prerequisites, and support boundaries in package documentation. Separate contributor validation from user setup and remove stale pre-release wording.
+
 ## 0.12.0
 
 ### Minor Changes

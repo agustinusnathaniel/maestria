@@ -1,32 +1,7 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import { installCommands as installCommandsCore } from '@maestria/shared-pi/commands-core';
 import type { CommandsPi } from '@maestria/shared-pi/commands-core';
 
-import type { MaestriaState } from '@/state.js';
-
-type PiModel = Parameters<ExtensionAPI['setModel']>[0];
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
-
-const isPiModel = (value: unknown): value is PiModel => {
-  if (!isRecord(value)) {
-    return false;
-  }
-  return (
-    typeof value.api === 'string' &&
-    typeof value.baseUrl === 'string' &&
-    typeof value.contextWindow === 'number' &&
-    typeof value.cost === 'object' &&
-    value.cost !== null &&
-    typeof value.id === 'string' &&
-    Array.isArray(value.input) &&
-    typeof value.maxTokens === 'number' &&
-    typeof value.name === 'string' &&
-    typeof value.provider === 'string' &&
-    typeof value.reasoning === 'boolean'
-  );
-};
+import { isPiModel } from '@/model.js';
 
 export const createCommandsApi = (pi: ExtensionAPI): CommandsPi => ({
   appendEntry: (type, data) => {
@@ -56,7 +31,3 @@ export const createCommandsApi = (pi: ExtensionAPI): CommandsPi => ({
     }
   },
 });
-
-export const installCommands = (pi: CommandsPi, state: MaestriaState): void => {
-  installCommandsCore(pi, state);
-};

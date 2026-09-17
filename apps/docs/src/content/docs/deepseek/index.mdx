@@ -11,6 +11,7 @@ import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
 import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
+import AllPackageManagers from '@/components/all-package-managers.astro';
 import { marks } from '@/data/marks.js';
 
 <div class="plugin-root">
@@ -83,19 +84,15 @@ import { marks } from '@/data/marks.js';
         </p>
       </div>
 
-      ```bash
-      npx maestria install deepseek
-      ```
+      <AllPackageManagers type="dlx" pkg="maestria@latest" args="install deepseek" />
 
       <p class="!mt-6 mb-0 text-[0.9375rem] leading-[1.65] text-home-text-soft">
         Check, update, and remove it with the same CLI:
       </p>
 
-      ```bash
-      npx maestria status
-      npx maestria update deepseek
-      npx maestria uninstall deepseek
-      ```
+      <AllPackageManagers type="dlx" pkg="maestria@latest" args="status" />
+      <AllPackageManagers type="dlx" pkg="maestria@latest" args="update deepseek" />
+      <AllPackageManagers type="dlx" pkg="maestria@latest" args="uninstall deepseek" />
 
       <div class="pt-8">
         <aside class="max-w-46rem border border-home-border bg-home-surface px-[clamp(1.1rem,2vw,1.5rem)] py-4">

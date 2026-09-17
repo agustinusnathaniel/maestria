@@ -2,106 +2,99 @@ import { cancel, isCancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
 import { Effect } from 'effect';
 
+import {
+  assertInteractiveTerminal,
+  batchCommandResult,
+  resolveBatchQuiet,
+  runBatchSelected,
+} from '@/lib/batch-command.js';
+import { toCommandRun } from '@/lib/command-runner.js';
+import { CliError } from '@/lib/command-result.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import { detectInstalled } from '@/lib/detect.js';
-import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
+import { createSpinner } from '@/lib/output.js';
 import { getPlatform, platforms } from '@/lib/platforms.js';
-import type { PlatformHandler } from '@/lib/platforms.js';
-import { exitCodeForResults } from '@/lib/result-exit.js';
+import { uninstallOne } from '@/lib/platform-transaction.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
-const uninstallOne = (platform: PlatformHandler, quiet: boolean): Effect.Effect<PlatformResult> =>
-  Effect.gen(function* uninstallOneEffect() {
-    const spinner = createSpinner(quiet);
-    spinner.start(`Uninstalling ${platform.label}...`);
+export interface UninstallArgs {
+  all?: boolean;
+  compact?: boolean;
+  json?: boolean;
+  platform?: string;
+  quiet?: boolean;
+}
 
-    const errorMessage: string | null = yield* platform.uninstall.pipe(
-      Effect.as(null),
-      Effect.catchTag('CommandError', (error) => Effect.succeed(error.message)),
-    );
-
-    if (errorMessage === null) {
-      spinner.stop('Uninstalled');
-      return {
-        id: platform.id,
-        label: platform.label,
-        message: 'Uninstalled',
-        ok: true,
-      } satisfies PlatformResult;
-    }
-
-    spinner.stop(`Failed: ${errorMessage}`);
-    return {
-      id: platform.id,
-      label: platform.label,
-      message: errorMessage,
-      ok: false,
-    } satisfies PlatformResult;
-  });
-
-const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[]> => {
+const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | CommandResult> => {
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const installed = await Effect.runPromise(detectInstalled());
   spinner.stop('Done');
   if (installed.length === 0) {
-    console.log('No maestria installations found to uninstall.');
-    process.exit(0);
+    return {
+      exitCode: 0,
+      output: 'No maestria installations found to uninstall.',
+    };
   }
-  return await Effect.runPromise(
-    Effect.all(
-      installed.map((p) => {
-        const platform = getPlatform(p.id);
-        if (!platform) {
-          return Effect.succeed({
-            id: p.id,
-            label: p.label,
-            message: 'Platform definition not found. This is a bug.',
-            ok: false,
-          } satisfies PlatformResult);
-        }
-        return uninstallOne(platform, isQuiet);
-      }),
-      { concurrency: 1 },
-    ),
+  return await runBatchSelected(
+    installed.map((p) => ({ id: p.id, label: p.label })),
+    isQuiet,
+    uninstallOne,
   );
 };
 
-const runUninstallInteractive = async (isQuiet: boolean): Promise<PlatformResult[]> => {
-  if (!process.stdout.isTTY || !process.stdin.isTTY) {
-    console.error('No platform specified and not in an interactive terminal.');
-    console.error('Usage: maestria uninstall <platform> or maestria uninstall --all');
-    console.error("Run 'maestria uninstall --help' for details.");
-    process.exit(1);
-  }
+const runUninstallInteractive = async (
+  isQuiet: boolean,
+): Promise<PlatformResult[] | CommandResult> => {
+  assertInteractiveTerminal('uninstall');
   const spinner = createSpinner(isQuiet);
   spinner.start('Detecting platforms...');
   const installed = await Effect.runPromise(detectInstalled());
   spinner.stop('Done');
   if (installed.length === 0) {
-    console.log('No maestria installations found to uninstall.');
-    process.exit(0);
+    return {
+      exitCode: 0,
+      output: 'No maestria installations found to uninstall.',
+    };
   }
   const selected = await select({
     message: 'Which platform do you want to uninstall maestria for?',
     options: installed.map((p) => ({ label: p.label, value: p.id })),
   });
-  if (isCancel(selected) || !selected) {
+  if (isCancel(selected) || typeof selected !== 'string' || selected === '') {
     cancel('Uninstall cancelled.');
-    process.exit(130);
+    throw new CliError('', 130);
   }
-  const platform = getPlatform(selected);
-  if (!platform) {
-    return [
-      {
-        id: selected,
-        label: selected,
-        message: 'Platform definition not found. This is a bug.',
-        ok: false,
-      } satisfies PlatformResult,
-    ];
+  return await runBatchSelected([{ id: selected }], isQuiet, uninstallOne);
+};
+
+export const handleUninstall = async (args: UninstallArgs): Promise<CommandResult> => {
+  const isQuiet = resolveBatchQuiet(args);
+  let results: PlatformResult[];
+  if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
+    const platform = getPlatform(args.platform);
+    if (!platform) {
+      throw new CliError(
+        `Unknown platform: ${args.platform}\nAvailable: ${platforms.map((p) => p.id).join(', ')}`,
+        1,
+      );
+    }
+    results = await runBatchSelected([{ id: platform.id }], isQuiet, uninstallOne);
+  } else if (args.all === true) {
+    const outcome = await runUninstallAll(isQuiet);
+    if (!Array.isArray(outcome)) {
+      return outcome;
+    }
+    results = outcome;
+  } else {
+    const outcome = await runUninstallInteractive(isQuiet);
+    if (!Array.isArray(outcome)) {
+      return outcome;
+    }
+    results = outcome;
   }
-  return [await Effect.runPromise(uninstallOne(platform, isQuiet))];
+  return batchCommandResult(results, args);
 };
 
 export const uninstallCommand = defineCommand({
@@ -139,30 +132,5 @@ export const uninstallCommand = defineCommand({
     description: 'Uninstall maestria plugins for coding agent platforms',
     name: 'uninstall',
   },
-  run: async ({ args }) => {
-    const isQuiet = args.quiet || args.compact;
-    const isCompact = args.compact;
-    const results: PlatformResult[] = [];
-    if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
-      const platform = getPlatform(args.platform);
-      if (!platform) {
-        console.error(`Unknown platform: ${args.platform}`);
-        console.error(`Available: ${platforms.map((p) => p.id).join(', ')}`);
-        process.exit(1);
-      }
-      results.push(await Effect.runPromise(uninstallOne(platform, isQuiet)));
-    } else if (args.all) {
-      results.push(...(await runUninstallAll(isQuiet)));
-    } else {
-      results.push(...(await runUninstallInteractive(isQuiet)));
-    }
-    if (args.json) {
-      console.log(JSON.stringify(results, null, 2));
-    } else if (isCompact) {
-      console.log(renderCompactResults(results));
-    } else {
-      console.log(renderResults(results));
-    }
-    process.exit(exitCodeForResults(results));
-  },
+  run: toCommandRun(handleUninstall),
 });

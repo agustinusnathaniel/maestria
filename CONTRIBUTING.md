@@ -90,7 +90,7 @@ Use the package README for detailed setup. This table shows where changes normal
 | Package | Hand-authored integration | Generated output | Focused verification |
 | --- | --- | --- | --- |
 | `opencode` | `src/` runtime adapter | `agents/` | `pnpm --filter @maestria/opencode test` |
-| `kimi-code` | `kimi.plugin.json` and transforms | `skills/` | `vp test` |
+| `kimi-code` | `kimi.plugin.json` and transforms | `skills/` | `pnpm --filter @maestria/kimi-code test` |
 | `pi` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/pi test` and `validate` |
 | `omp` | `src/extension.ts` and runtime modules | `agents/`, `skills/` | `pnpm --filter @maestria/omp test` and `validate` |
 | `cursor` | `.cursor-plugin/` manifest and declarative files | `agents/`, `skills/`, `rules/`, `commands/` | `pnpm --filter @maestria/cursor test` |
@@ -106,16 +106,16 @@ When a platform's behavior differs from the core contract, document the boundary
 
 Test observable contracts at the highest practical boundary. Prefer real lightweight boundaries or explicit fakes over mocks, and add regression tests only for durable contracts or meaningful failure modes.
 
-Before a commit, run:
+Before a commit, the delivery owner runs:
 
 ```bash
 pnpm check
-pnpm test
-pnpm typecheck
-pnpm build
+vp check
 ```
 
-For docs-only changes, also run:
+`pnpm check` includes the builds, workspace tests, formatting, lint/type analysis, and sync/version checks. Reuse these results rather than rerunning their constituent commands without a relevant change or failure.
+
+For focused docs verification, use the commands below. The repository pipeline already includes the docs tests and build:
 
 ```bash
 pnpm --filter @maestria/docs test

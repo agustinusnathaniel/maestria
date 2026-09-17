@@ -9,6 +9,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "types": ["node"],
+    "paths": {
+      "@/*": ["./src/*", "./scripts/*"]
+    },
     "noEmit": true,
     "lib": ["es2023"]
   },

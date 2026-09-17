@@ -3,6 +3,7 @@ import { cp, mkdir, mkdtemp, readdir, rm, stat } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 
+import { isRecord } from '@/lib/primitives.js';
 import { getMaestriaCacheDir, run } from '@/lib/shell.js';
 
 import { formatAgentPluginValidation, validateAgentPlugin } from './agent-plugin-validation.js';
@@ -23,9 +24,6 @@ export interface StagedAgentPlugin extends AgentPluginValidation {
 export class AgentPluginError extends Error {
   override name = 'AgentPluginError';
 }
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const isAlreadyExists = (error: unknown): boolean =>
   typeof error === 'object' && error !== null && 'code' in error && error.code === 'EEXIST';

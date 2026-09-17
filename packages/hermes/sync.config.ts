@@ -17,18 +17,9 @@ export default {
       { from: '@planner', to: 'planner' },
       { from: '@reviewer', to: 'reviewer' },
       { from: '@writer', to: 'writer' },
-      { from: '@orchestrator', to: 'orchestrator' },
-
-      // Dispatch mechanism: task() -> delegate_task() (Hermes native subagent tool)
-      { from: 'task(', to: 'delegate_task(' },
 
       // Domain generalization: broaden coding-specific language for general-purpose agent
-      { from: 'Codebase exploration', to: 'Research and exploration' },
-      { from: 'code review', to: 'quality review and validation' },
-      { from: 'review PR', to: 'review work' },
       { from: 'code for quality', to: 'output for quality' },
-      { from: 'code changes', to: 'changes' },
-      { from: 'code review guidelines', to: 'review guidelines' },
       { from: 'Critique code, not developers', to: 'Critique work, not the person' },
 
       // Generalize role identities
@@ -49,32 +40,7 @@ export default {
         to: 'You are a root cause analysis specialist.',
       },
       { from: 'You create implementation plans.', to: 'You create plans for any multi-step work.' },
-      { from: 'You review code for quality.', to: 'You review output for quality.' },
       { from: 'You write documentation.', to: 'You create clear, structured content.' },
-
-      // Tool references: adapt to Hermes tool names
-      { from: '`opensrc`', to: '`webfetch`/`browser`' },
-      { from: 'opensrc', to: 'webfetch' },
-      { from: '`lsp`', to: '`grep`/`codegraph`' },
-      { from: 'lsp', to: 'grep' },
-      { from: '`websearch`', to: '`web_search`' },
-      { from: 'websearch', to: 'web_search' },
-
-      // Git-specific: generalize since git operations happen via OpenCode or direct tools
-      { from: 'git diff', to: 'diff' },
-      { from: 'git status', to: 'status' },
-      { from: 'git log', to: 'log' },
-      { from: 'git add', to: 'stage' },
-
-      // Coding-specific references in rules and processes
-      {
-        from: 'Run tests or type checks to confirm correctness',
-        to: 'Verify correctness through available validation methods',
-      },
-      { from: 'tests, type check, lint', to: 'verification results' },
-      { from: 'TypeScript errors', to: 'issues or errors' },
-      { from: 'tsconfig.json or build output', to: 'configuration or build output' },
-      { from: 'Related Agents', to: 'Related Specialists' },
     ],
     // Strip canonical YAML frontmatter (OpenCode-specific permission blocks)
     stripFrontmatter: true,
@@ -87,7 +53,6 @@ export default {
         name: 'maestria-adventurer',
       },
       output: 'adventurer/SKILL.md',
-      replace: [],
     },
 
     // -- Architect: design and decision --
@@ -98,12 +63,6 @@ export default {
         name: 'maestria-architect',
       },
       output: 'architect/SKILL.md',
-      replace: [
-        {
-          from: 'You make architecture decisions systematically.',
-          to: 'You make design and architecture decisions systematically, across any domain.',
-        },
-      ],
     },
 
     // -- Builder: production and implementation --
@@ -116,7 +75,7 @@ export default {
         '',
         '**Prerequisite:** Install OpenCode CLI: `npm i -g opencode-ai@latest`',
         '',
-        'The PermissionRole for builder grants full access (read + write + bash + llm + coding).',
+        'Tool access is fixed by the runtime: a trusted top-level fein session has full access, while delegated children are limited to read, research, and reasoning tools and cannot invoke `opencode_route`.',
       ].join('\n'),
       frontmatter: {
         description: 'Focused production -- implements, creates, and produces output',
@@ -168,8 +127,6 @@ export default {
       replace: [
         { from: 'Error -> Source Location', to: 'Problem -> Source Location' },
         {
-          // Re-anchored 2026-08: the canonical Step 1.5 sentence was reworded
-          // upstream and the old lockfile-specific anchor silently no-op'd.
           from: "Check relevant dependency manifests and lockfiles for recent changes using the project's diff/version-control tools",
           to: 'Check for recent changes in configuration or dependencies',
         },
@@ -188,10 +145,10 @@ export default {
         '',
         '- **Default: single-thread execution.** Hermes orchestrator has full tool access. Delegate to specialists only for complex tasks (4+ files, multi-domain, risky changes, or explicit "Maestria mode").',
         '- `delegate_task` is for multi-step tasks that benefit from parallelization or specialist expertise.',
-        '- Each specialist has a `PermissionRole` restricting its tools.',
+        '- Tool access is enforced by fixed allowlists rather than configurable roles: sonar and direct blitz sessions use literal tool lists, and delegated children get the same role-neutral read/research/reasoning policy in every mode.',
         '- Mode context (fein/sonar/blitz) is injected via pre_llm_call hook automatically.',
         '- Sonar mode blocks write tools via pre_tool_call hook.',
-        '- Set `[MAESTRIA_ROLE: <role>]` in delegate_task context for permission enforcement.',
+        '- Specialist names in `delegate_task` are routing labels, not permission grants; `[MAESTRIA_ROLE: <role>]` markers in task or user text are ignored.',
         '- Dispatch reviewer for validation after the integrated builder batch is reconciled, never per individual builder delegation - general review first, then risk-matched lenses sequentially (not after direct single-thread work).',
       ].join('\n'),
       frontmatter: {
@@ -200,16 +157,10 @@ export default {
         name: 'maestria-orchestrator',
       },
       output: 'orchestrator/SKILL.md',
-      prepend: '',
-      replace: [],
     },
 
     // -- Planner: planning and execution --
     'planner.md': {
-      // NOTE: no replace ops. The previous five generalization replaces
-      // anchored to the canonical Guard Rails bullet lists, which were
-      // consolidated into a single guard-rails line; that line is already
-      // general-purpose wording.
       frontmatter: {
         description: 'Planning -- breaks down work into ordered, verifiable steps',
         name: 'maestria-planner',
@@ -225,7 +176,6 @@ export default {
       },
       output: 'reviewer/SKILL.md',
       replace: [
-        { from: 'review code', to: 'review output' },
         { from: "Google's Code Review Guidelines", to: 'Peer review best practices' },
         { from: 'The Standard of Code Review', to: 'Standard review practices' },
         { from: 'What to Look For in a Code Review', to: 'What to look for in a review' },
@@ -236,10 +186,6 @@ export default {
     // rules.md lives at packages/core/agent-directives/rules.md (parent of specialists/)
     // The secondary source mechanism in sync.ts resolves it automatically.
     'rules.md': {
-      // NOTE: no replace ops. The previous four generalization replaces
-      // anchored to canonical sentences/tables removed by earlier directive
-      // revisions and silently no-op'd; the revised canonical rules body is
-      // already general-purpose wording.
       frontmatter: {
         description: 'Cross-cutting methodology rules for all specialists',
         name: 'maestria-global-rules',
@@ -255,7 +201,6 @@ export default {
         name: 'maestria-writer',
       },
       output: 'writer/SKILL.md',
-      replace: [],
     },
   },
 

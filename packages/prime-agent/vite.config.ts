@@ -4,8 +4,10 @@ export default defineConfig({
   pack: {
     entry: ['src/extension.ts'],
     minify: true,
-    sourcemap: true,
     target: 'node22',
+  },
+  resolve: {
+    tsconfigPaths: true,
   },
   test: {
     include: ['tests/**/*.test.ts'],
