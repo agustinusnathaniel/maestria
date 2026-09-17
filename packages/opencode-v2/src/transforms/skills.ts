@@ -4,49 +4,35 @@ import { Effect, Schema } from 'effect';
 import type { Scope } from 'effect';
 import { Skill } from '@opencode-ai/plugin/effect';
 import type { SkillDraft, Transform } from '@/types.js';
-import { readSyncedMarkdown, stripAutoGenComment } from '@/markdown.js';
+import { readSyncedMarkdown } from '@/markdown.js';
 import { CORE_SKILLS_DIR, SKILLS_DIR } from '@/root.js';
 
 const deriveDescription = (content: string): string | undefined => {
-  // Try first ATX heading as description, e.g. "# Handoff Aid" -> "Handoff Aid"
-  const stripped = stripAutoGenComment(content).trim();
-  const headingMatch = /^#\s+(?<heading>.+)$/mu.exec(stripped);
-  if (headingMatch) {
-    const heading = headingMatch.groups?.heading?.trim() ?? '';
-    if (heading.length > 0 && heading.length < 120) {
-      return heading;
-    }
-  }
-  // Fallback: first non-empty non-heading line
-  const lines = stripped
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
-  const first = lines.find((l) => !l.startsWith('#') && !l.startsWith('<!--'));
-  if (first !== undefined && first.length > 0 && first.length < 120) {
-    return first.slice(0, 100);
-  }
-  // No useful derivation; leave undefined so Skill.Info description stays optional.
-  return undefined;
+  // Skill files open with an ATX heading (e.g. "# Handoff Aid"); use it as
+  // the Skill.Info description. Content arrives already stripped by
+  // readSyncedMarkdown. Returns undefined when no heading is present, which
+  // keeps the optional SDK field unset.
+  const headingMatch = /^#\s+(?<heading>.+)$/mu.exec(content.trim());
+  const heading = headingMatch?.groups?.heading?.trim() ?? '';
+  return heading.length > 0 && heading.length < 120 ? heading : undefined;
 };
 
 const resolveSkillsSourceDir = (): string | null => {
-  // Prefer bundled dir (future sync target: PACKAGE_ROOT/skills) if it exists and has files,
-  // otherwise fall back to canonical core location. This keeps the plugin working both
-  // when built from source checkout and when installed as a packed artifact.
-  // See sync.config.ts - skills are not yet synced; CORE_SKILLS_DIR is the canonical source.
-  if (existsSync(SKILLS_DIR)) {
+  // Prefer the bundled dir (future sync target) when it holds markdown,
+  // otherwise fall back to the canonical core location. This keeps the plugin
+  // working both from a source checkout and as a packed artifact.
+  // See sync.config.ts - skills are not yet synced; CORE_SKILLS_DIR is canonical.
+  for (const dir of [SKILLS_DIR, CORE_SKILLS_DIR]) {
+    if (!existsSync(dir)) {
+      continue;
+    }
     try {
-      const files = readdirSync(SKILLS_DIR).filter((f) => f.endsWith('.md'));
-      if (files.length > 0) {
-        return SKILLS_DIR;
+      if (readdirSync(dir).some((f) => f.endsWith('.md'))) {
+        return dir;
       }
     } catch (error) {
-      console.warn(`[maestria-v2] Failed to list bundled skills dir "${SKILLS_DIR}":`, error);
+      console.warn(`[maestria-v2] Failed to list skills dir "${dir}":`, error);
     }
-  }
-  if (existsSync(CORE_SKILLS_DIR)) {
-    return CORE_SKILLS_DIR;
   }
   return null;
 };
@@ -73,17 +59,11 @@ const loadSkillFiles = (dir: string): { name: string; path: string; content: str
 /**
  * Register skills via `skill.transform`.
  *
- * Ground truth - SkillInfo shape (from @opencode-ai/schema/skill and @opencode-ai/client):
- *   { id: Skill.ID, name: Skill.Name, description?: string, slash?: boolean, autoinvoke?: boolean,
- *     location: AbsolutePath, content: string }
- *
- * Draft shape (from @opencode-ai/plugin/effect/skill):
- *   SkillDraft { list(), add(skill: Skill.Info), update(id, fn), remove(id) }
- *
- * Source: `packages/core/agent-directives/skills/*.md` (handoff.md, iteration-limits.md).
- * Currently NOT synced to `opencode-v2/skills/` by sync.config (only agents + rules are synced).
- * Loader probes both the canonical core path and a future bundled `SKILLS_DIR` so adding a sync
- * entry later requires no code change.
+ * Skill.Info requires id, name, location, content (decoded through the SDK
+ * schema so branded fields are validated, not cast); description stays
+ * optional. The pin has no skill `get()`, so existing entries are found via
+ * `list().find()`. Source files are canonical core skills until sync covers
+ * them (see resolveSkillsSourceDir).
  */
 export const registerSkillTransforms = (ctx: {
   skill: { transform: Transform<SkillDraft> };
@@ -107,9 +87,6 @@ export const registerSkillTransforms = (ctx: {
     yield* ctx.skill.transform((draft: SkillDraft) => {
       for (const file of skillFiles) {
         const description = deriveDescription(file.content);
-        // Skill.Info requires: id, name, location (AbsolutePath), content. Optional: description, slash, autoinvoke.
-        // Decoded through the SDK schema so branded id/name/location are validated, not cast.
-        // slash/autoinvoke default to undefined (false-y) - keeps skills as reference docs unless explicitly invoked.
         try {
           const info = Schema.decodeSync(Skill.Info)({
             content: file.content,

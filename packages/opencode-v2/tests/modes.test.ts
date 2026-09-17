@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { detectMode } from '../src/modes/index.js';
+import { detectMode } from '../src/modes.js';
 
 describe('detectMode', () => {
   it('matches whole-word keywords case-insensitively', () => {

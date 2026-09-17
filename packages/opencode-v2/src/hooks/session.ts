@@ -1,9 +1,8 @@
 import { Effect } from 'effect';
 import type { Scope } from 'effect';
 import type { PluginContext, SessionContext } from '@/types.js';
-import type { MaestriaPluginOptions } from '@/modes/types.js';
-import { detectMode } from '@/modes/index.js';
-import { getModeMarker, getModePrompt } from '@/modes/prompts.js';
+import type { MaestriaPluginOptions } from '@/modes.js';
+import { detectMode } from '@/modes.js';
 
 /**
  * Session hook registration.
@@ -14,19 +13,15 @@ import { getModeMarker, getModePrompt } from '@/modes/prompts.js';
  * `SessionContext` exposes `messages: Message[]` and mutable `system: SystemPart[]`.
  * If a future SDK adds `prompt` or `message` hooks, re-evaluate splitting detection to that
  * earlier hook - but keep the `context` hook as the canonical injection point.
- *
- * Compaction note: live docs (/migrate-v1) name `ctx.session.hook("compaction", ...)` as the
- * V2 destination for V1 `experimental.session.compacting`, but the pinned package does not
- * expose it, so mode markers intentionally do not cover compaction/generate/title requests.
- * Re-evaluate when the pin moves to a track that ships those hooks.
+ * Compaction/generate/title hooks are absent from the pin by design (see README
+ * Known limitations); markers intentionally cover `context` only.
  */
 export const registerSessionHooks = (
   ctx: PluginContext,
   options: MaestriaPluginOptions,
 ): Effect.Effect<void, never, Scope.Scope> =>
   Effect.gen(function* registerSessionHook() {
-    const disabled = options.modes?.disabledKeywords ?? [];
-    const disabledKeywords = new Set(disabled.map((k) => k.toLowerCase()));
+    const disabledKeywords = new Set(options.modes?.disabledKeywords);
 
     yield* ctx.session.hook('context', (sessionCtx: SessionContext) =>
       Effect.sync(() => {
@@ -49,7 +44,7 @@ export const registerSessionHooks = (
           return;
         }
 
-        const modeBlock = [getModeMarker(result.mode), '', getModePrompt(result.mode)].join('\n');
+        const modeBlock = [result.marker, '', result.prompt].join('\n');
         sessionCtx.system.push({ text: modeBlock, type: 'text' });
 
         let offset = 0;

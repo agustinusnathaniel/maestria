@@ -1,8 +1,8 @@
 import { Effect } from 'effect';
 import { Plugin } from '@opencode-ai/plugin/effect';
 import type { PluginContext } from '@/types.js';
-import type { MaestriaPluginOptions } from '@/modes/types.js';
-import { maestriaOptionsSchema } from '@/modes/types.js';
+import type { MaestriaPluginOptions } from '@/modes.js';
+import { maestriaOptionsSchema } from '@/modes.js';
 import { registerAgentTransforms } from '@/transforms/agents.js';
 import { registerReferenceTransforms } from '@/transforms/references.js';
 import { registerCommandTransforms } from '@/transforms/commands.js';
@@ -13,11 +13,9 @@ import { registerSessionHooks } from '@/hooks/session.js';
 /**
  * maestria.v2 entrypoint (Effect plugin API).
  *
- * Packaging decision: this POC stays a separate `@maestria/opencode-v2` package
- * coexisting with the stable V1 `maestria` plugin. Live docs (/migrate-v1) allow
- * converging both in one default export (Plugin.define spread plus legacy
- * server(), supported since OpenCode 1.18.29); convergence is deferred until
- * V2 leaves beta. See README Known limitations.
+ * Packaging: this POC stays a separate `@maestria/opencode-v2` package
+ * coexisting with stable V1; convergence is deferred until V2 leaves beta
+ * (see README Known limitations).
  */
 export default Plugin.define({
   effect: (ctx: PluginContext) =>

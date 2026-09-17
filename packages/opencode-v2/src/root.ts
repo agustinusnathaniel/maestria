@@ -6,16 +6,13 @@ const __dirname = import.meta.dirname;
 export const PACKAGE_ROOT = path.join(__dirname, '..');
 export const AGENTS_DIR = path.join(PACKAGE_ROOT, 'agents');
 export const COMMANDS_DIR = path.join(AGENTS_DIR, 'commands');
-export const RULES_DIR = path.join(PACKAGE_ROOT, 'rules');
-export const RULES_PATH = path.join(RULES_DIR, 'AGENTS.md');
+export const RULES_PATH = path.join(PACKAGE_ROOT, 'rules', 'AGENTS.md');
 
 // Bundled skills dir (future sync target; currently empty - see CORE_SKILLS_DIR fallback)
 export const SKILLS_DIR = path.join(PACKAGE_ROOT, 'skills');
 // Canonical skills source - used as fallback when SKILLS_DIR is empty/not synced
 export const CORE_SKILLS_DIR = path.join(PACKAGE_ROOT, '../core/agent-directives/skills');
 
-// NOTE: Location-aware override - PACKAGE_ROOT is correct for the bundled plugin (agents/skills live
-// inside the package). `ctx.location` (workspace/project directory) is available for future project-level
-// overrides where a user shadows an agent/skill in their repo, but host-specific resolution should be
-// layered on top of the bundled defaults, not replace them. Keep AGENTS_DIR/COMMANDS_DIR rooted at
-// PACKAGE_ROOT; add a future `resolveAgentDir(ctx)` helper if project shadowing is desired.
+// NOTE: AGENTS_DIR/COMMANDS_DIR stay rooted at PACKAGE_ROOT (bundled plugin
+// defaults). Project-level shadowing via `ctx.location` would layer on top,
+// not replace them.

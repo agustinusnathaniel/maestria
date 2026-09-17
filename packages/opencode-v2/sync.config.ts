@@ -26,6 +26,15 @@ const specialistEntries = Object.fromEntries(
   ]),
 );
 
+// 3 workflow commands from ../core/agent-directives/commands/.
+// Resolved via secondary source loop (dirname(source) = ../core/agent-directives/)
+const commandEntries = Object.fromEntries(
+  (['fein', 'sonar', 'blitz'] as const).map((name) => [
+    `commands/${name}.md`,
+    { output: `commands/${name}.md`, stripFrontmatter: true },
+  ]),
+);
+
 export default {
   source: '../core/agent-directives/specialists',
   output: 'agents',
@@ -45,21 +54,7 @@ export default {
       },
     },
     ...specialistEntries,
-
-    // 3 workflow commands from ../core/agent-directives/commands/
-    // Resolved via secondary source loop (dirname(source) = ../core/agent-directives/)
-    'commands/fein.md': {
-      output: 'commands/fein.md',
-      stripFrontmatter: true,
-    },
-    'commands/sonar.md': {
-      output: 'commands/sonar.md',
-      stripFrontmatter: true,
-    },
-    'commands/blitz.md': {
-      output: 'commands/blitz.md',
-      stripFrontmatter: true,
-    },
+    ...commandEntries,
 
     // Global rules from ../core/agent-directives/rules.md
     // Resolved via secondary source loop
