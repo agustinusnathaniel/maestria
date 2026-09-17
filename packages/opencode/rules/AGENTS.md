@@ -79,10 +79,13 @@ Shape every reviewable PR with a title written as an explicit Conventional Commi
 1. `## Summary` (what changed and why):
    - Lead with the user-visible outcome, or the maintainer benefit for internal changes, in plain language.
    - Keep it a short paragraph or a few concise bullets; put file-level details in Changes and check results in Verification.
+   - Omit internal execution metadata such as session IDs; write for a human reviewer.
 2. `## Changes` (Work Results table with File, What changed, and Why columns):
    - Describe the actual change and its practical purpose, not the editing action.
    - Group related files that share one change and rationale; skip repeating the Summary and list only symbols that help review.
+   - Omit internal execution metadata such as session IDs; write for a human reviewer.
 3. `## Verification` (checks run, results, and unresolved acceptance gaps)
+   - Note review outcome briefly without pasting identifiers.
 4. `## Visual evidence` when applicable (per the visual-delivery contract)
 5. `## Breaking changes` when applicable (migration guidance)
 
