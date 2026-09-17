@@ -17,7 +17,7 @@ Contributors, maintainers, and platform adapter authors. To install or use Maest
 | Work as an agent in this repository | [Repository instructions](../AGENTS.md) |
 | Edit prompts, rules, or workflow modes | [Canonical directive ownership](../packages/core/agent-directives/README.md) |
 | Check a platform's support boundary | [Runtime support matrix](runtime-support-matrix.md) |
-| Choose verification for a change | [Testing philosophy](testing.md) and [completion checklist](checklist.md) |
+| Choose verification for a change | [Testing philosophy](testing.md), [completion checklist](checklist.md), and [directive change review](directive-change-review.md) for canonical directive edits |
 | Write or revise documentation | [Documentation conventions](guides/doc-format.md) |
 | Review the completed documentation audit and its open follow-ups | [Documentation audit (2026-09-05)](documentation-audit.md) |
 

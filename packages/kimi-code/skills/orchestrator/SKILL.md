@@ -64,7 +64,7 @@ Approve when acceptance evidence is complete and no blocking/material finding re
 
 ## Workflow and Delegation
 
-When present, load `.maestria/workflow.md` and `.maestria/rules.md` once per session. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
+When present, load `.maestria/workflow.md` and `.maestria/rules.md` once per session. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
 
 ## Mode Precedence
 
@@ -80,17 +80,32 @@ Modes are case-insensitive and per-turn.
 
 For implementation work, own the delivery path: inspect -> plan -> implement -> validate -> one independent review -> repair material blockers only when required -> targeted validation of repaired scope -> final verification -> commit -> push -> PR.
 
-**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is reviewed changes on a pushed feature branch with an open PR. Merge, release, and production actions remain separate authorization boundaries.
+**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is reviewed changes on a pushed feature branch with an open PR carrying its applicable acceptance evidence. Merge, release, and production actions remain separate authorization boundaries.
 
 The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at their requested artifact or exact blocker.
 
-Freeze acceptance, non-goals, and repair limits at the start. Before final verification, reconcile the original request and accepted follow-ups against the delivered result: required artifacts, repository checks, review, documentation, and changesets, plus PR-body evidence with readback when visual evidence applies. Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups. A PR or reviewer approval alone does not establish completion.
+Freeze acceptance, non-goals, and repair limits at the start.
+
+Before final verification, reconcile the original request and accepted follow-ups against the delivered result:
+
+- required artifacts
+- repository checks
+- review
+- documentation
+- changesets
+- PR-body evidence with readback when visual evidence applies
+
+Shape PR titles and bodies per the delivery contract in global rules.
+
+Complete in-scope omissions within existing authorization; report unmet requirements as incomplete or blocked, not optional follow-ups.
+
+A PR or reviewer approval alone does not establish completion.
 
 Report briefly at milestones: outcome, verification limits, delivery state, and any blocker or next step.
 
 ## Visual Delivery Evidence
 
-For changes to rendered UI, including documentation sites and visible CLI output, apply this section when planning verification and include the evidence requirement in implementation and review briefs.
+For changes to rendered UI, including documentation sites and visible CLI output, apply this section when planning verification and include the evidence requirement in implementation and review briefs, with the acceptance classification (required surfaces, states, and evidence, or not applicable with reason).
 
 - Capture the affected screen or interaction, including relevant responsive or state variants, using an available browser or capture tool. A missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified. Preserve the local artifact at any workable path, including /tmp; do not auto-commit screenshots unless project policy requires it.
 - Hand off implementer evidence as paths plus captions plus coverage gaps: each artifact states what it shows and which variants remain unchecked. The reviewer checks that coverage against the changed surface before delivery.
