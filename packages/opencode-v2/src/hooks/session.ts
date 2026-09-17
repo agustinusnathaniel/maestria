@@ -47,11 +47,13 @@ export const registerSessionHooks = (
         const modeBlock = [result.marker, '', result.prompt].join('\n');
         sessionCtx.system.push({ text: modeBlock, type: 'text' });
 
+        // Parts were joined with '\n' for detection, so each part starts at
+        // the running offset (plus one separator). Single-part messages hit
+        // on the first iteration with localIndex === result.index.
         let offset = 0;
         for (const part of textParts) {
-          const partEnd = offset + part.text.length + 1;
-          if (result.index >= offset && result.index < partEnd) {
-            const localIndex = result.index - offset;
+          const localIndex = result.index - offset;
+          if (localIndex >= 0 && localIndex <= part.text.length) {
             part.text = (
               part.text.slice(0, localIndex) + part.text.slice(localIndex + result.keyword.length)
             )
@@ -59,7 +61,7 @@ export const registerSessionHooks = (
               .trim();
             break;
           }
-          offset = partEnd;
+          offset += part.text.length + 1;
         }
       }),
     );

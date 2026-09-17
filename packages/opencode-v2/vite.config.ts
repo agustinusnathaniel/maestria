@@ -2,7 +2,7 @@ import { defineConfig } from 'vite-plus';
 
 export default defineConfig({
   pack: {
-    entry: ['src/index.ts', 'src/tui.tsx'],
+    entry: ['src/index.ts'],
     fixedExtension: false,
     minify: true,
     sourcemap: true,

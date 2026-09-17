@@ -24,16 +24,8 @@ const COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
  * Template model (pinned SDK has no `add()`, only list/get/update/remove;
  * live docs describe a newer execute-callback shape - see the README API
  * table). Missing commands are filesystem-discovered from `agents/commands/`
- * after sync, so absent entries warn instead of throwing. The runtime
- * `add()` check below is forward-compat for a newer pin; the update-only
- * path stays the supported behavior.
+ * after sync, so absent entries warn instead of throwing.
  */
-type CommandAdd = (info: { description?: string; name: string; template: string }) => void;
-
-// Runtime feature detection for `add` if a future SDK adds it (the `in`
-// predicate keeps the narrow branch type-safe without a cast).
-const isAddCapable = (value: CommandDraft): value is CommandDraft & { add?: CommandAdd } =>
-  'add' in value;
 
 export const registerCommandTransforms = (ctx: {
   command: { transform: Transform<CommandDraft> };
@@ -56,13 +48,11 @@ export const registerCommandTransforms = (ctx: {
               cmd.template = template;
               cmd.description = description;
             });
-          } else if (isAddCapable(draft) && typeof draft.add === 'function') {
-            draft.add({ description, name, template });
           } else {
             // No add() on this pin - warn so the operator re-runs sync or
             // checks the `sync.config.ts` command entries.
             console.warn(
-              `[maestria-v2] Command "${name}" not found in draft (no add() available) - ensure sync copied it to ${COMMANDS_DIR}. Template would have been registered if add() existed.`,
+              `[maestria-v2] Command "${name}" not found in draft (no add() available) - ensure sync copied it to ${COMMANDS_DIR}.`,
             );
           }
         } catch (error) {

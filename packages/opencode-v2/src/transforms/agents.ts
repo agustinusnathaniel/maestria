@@ -8,24 +8,20 @@ export const registerAgentTransforms = (ctx: {
   agent: { transform: Transform<AgentDraft> };
 }): Effect.Effect<void, never, Scope.Scope> =>
   Effect.gen(function* registerAgentTransformsEffect() {
-    const agents = loadAgents();
     const orchestrator = loadOrchestrator();
 
     // Orchestrator first (it is the router other agents delegate to), then
-    // specialists. The orchestrator defaults to mode 'all', specialists to
-    // 'subagent'. registry.update() is an upsert, so missing agents are created.
-    const updates: { config: AgentInfo; fallback: 'all' | 'subagent'; name: string }[] =
-      Object.entries(agents).map(([name, config]) => ({
-        config,
-        fallback: 'subagent' as const,
-        name,
-      }));
-    if (orchestrator) {
-      updates.unshift({ config: orchestrator, fallback: 'all', name: orchestrator.name });
-    }
+    // specialists. registry.update() is an upsert, so missing agents are created.
+    // Mode defaults inline: orchestrator routes everywhere ('all'), specialists
+    // stay scoped to subagent work unless their frontmatter says otherwise.
+    const agents: Record<string, AgentInfo> = {
+      ...(orchestrator ? { [orchestrator.name]: orchestrator } : {}),
+      ...loadAgents(),
+    };
 
     yield* ctx.agent.transform((registry: AgentDraft) => {
-      for (const { name, config, fallback } of updates) {
+      for (const [name, config] of Object.entries(agents)) {
+        const fallback = name === 'orchestrator' ? 'all' : 'subagent';
         try {
           registry.update(name, (draft) => {
             draft.description = config.description;

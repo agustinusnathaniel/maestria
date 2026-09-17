@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 import {
@@ -10,6 +9,7 @@ import {
 } from '@maestria/shared-mode';
 import type { ModeDetectPure } from '@maestria/shared-mode';
 import { COMMANDS_DIR } from '@/root.js';
+import { readSyncedMarkdown } from '@/markdown.js';
 
 // Single source for allowed keywords: @maestria/shared-mode owns the list,
 // this zod schema enforces it at the host-options trust boundary.
@@ -47,16 +47,14 @@ export const getModePrompt = (keyword: string): string => {
   if (cached !== undefined) {
     return cached;
   }
-  try {
-    const content = readFileSync(path.resolve(COMMANDS_DIR, `${keyword}.md`), 'utf-8');
-    const prompt = extractModeSection(content);
-    promptCache[keyword] = prompt;
-    return prompt;
-  } catch (error) {
-    console.warn(`[maestria] Failed to load mode prompt "${keyword}":`, error);
-    promptCache[keyword] = '';
-    return '';
-  }
+  // readSyncedMarkdown warns and returns null when the file is missing, so a
+  // missing prompt caches to '' without throwing (same contract as before).
+  // extractModeSection slices from `## MODE:`, which also drops the sync
+  // header, so reuse stays equivalent to the previous raw read.
+  const content = readSyncedMarkdown(path.join(COMMANDS_DIR, `${keyword}.md`), 'mode prompt');
+  const prompt = content === null ? '' : extractModeSection(content);
+  promptCache[keyword] = prompt;
+  return prompt;
 };
 
 /**

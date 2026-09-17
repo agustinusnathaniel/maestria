@@ -5,7 +5,7 @@ import type { Scope } from 'effect';
 import { Skill } from '@opencode-ai/plugin/effect';
 import type { SkillDraft, Transform } from '@/types.js';
 import { readSyncedMarkdown } from '@/markdown.js';
-import { CORE_SKILLS_DIR, SKILLS_DIR } from '@/root.js';
+import { CORE_SKILLS_DIR } from '@/root.js';
 
 const deriveDescription = (content: string): string | undefined => {
   // Skill files open with an ATX heading (e.g. "# Handoff Aid"); use it as
@@ -18,23 +18,17 @@ const deriveDescription = (content: string): string | undefined => {
 };
 
 const resolveSkillsSourceDir = (): string | null => {
-  // Prefer the bundled dir (future sync target) when it holds markdown,
-  // otherwise fall back to the canonical core location. This keeps the plugin
-  // working both from a source checkout and as a packed artifact.
-  // See sync.config.ts - skills are not yet synced; CORE_SKILLS_DIR is canonical.
-  for (const dir of [SKILLS_DIR, CORE_SKILLS_DIR]) {
-    if (!existsSync(dir)) {
-      continue;
-    }
-    try {
-      if (readdirSync(dir).some((f) => f.endsWith('.md'))) {
-        return dir;
-      }
-    } catch (error) {
-      console.warn(`[maestria-v2] Failed to list skills dir "${dir}":`, error);
-    }
+  // Canonical core location (sync does not emit skills and the package ships
+  // no bundled skills dir - see sync.config.ts and package.json "files").
+  if (!existsSync(CORE_SKILLS_DIR)) {
+    return null;
   }
-  return null;
+  try {
+    return readdirSync(CORE_SKILLS_DIR).some((f) => f.endsWith('.md')) ? CORE_SKILLS_DIR : null;
+  } catch (error) {
+    console.warn(`[maestria-v2] Failed to list skills dir "${CORE_SKILLS_DIR}":`, error);
+    return null;
+  }
 };
 
 const loadSkillFiles = (dir: string): { name: string; path: string; content: string }[] => {
@@ -72,7 +66,7 @@ export const registerSkillTransforms = (ctx: {
     const sourceDir = resolveSkillsSourceDir();
     if (sourceDir === null) {
       console.warn(
-        '[maestria-v2] No skills source directory found; checked SKILLS_DIR and CORE_SKILLS_DIR. Skipping skill registration.',
+        '[maestria-v2] No skills source directory found; checked CORE_SKILLS_DIR. Skipping skill registration.',
       );
       return;
     }
