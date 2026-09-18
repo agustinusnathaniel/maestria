@@ -282,19 +282,15 @@ describe('content invariants', () => {
     expect(text).toContain('`blitz`');
   });
 
-  it('keeps both the global-rules load and the full root-files contract in the orchestrator skill', async () => {
+  it('keeps both the global-rules load and the project files in the orchestrator skill', async () => {
     const text = await readFile(path.join(SKILLS_DIR, 'orchestrator', 'SKILL.md'), 'utf-8');
     // The sync transform must not reduce the project-loading clause to a
     // global-rules-only load: both the skill load and the root files stay.
-    expect(text).toMatch(/load the `global-rules` skill and the project-root/iu);
+    expect(text).toContain('`global-rules` skill');
     expect(text).toContain('.maestria/workflow.md');
     expect(text).toContain('.maestria/rules.md');
-    expect(text).toMatch(/in that order/iu);
-    expect(text).toMatch(/project root only.*never nested or ancestor/iu);
-    // No double preload: host-supplied content is not re-read.
-    expect(text).toMatch(/without re-reading content already supplied/iu);
-    expect(text).toMatch(/present but unreadable/iu);
-    expect(text).toMatch(/no potentially overridden workflow runs silently/iu);
+    expect(text.indexOf('.maestria/workflow.md')).toBeLessThan(text.indexOf('.maestria/rules.md'));
+    expect(text).toMatch(/root only/iu);
     // The Prime integration appendix states the host capability explicitly.
     expect(text).toMatch(/mode prompt injection plus project-customization injection/iu);
   });

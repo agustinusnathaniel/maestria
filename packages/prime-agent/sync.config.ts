@@ -147,8 +147,8 @@ export default {
       output: 'orchestrator/SKILL.md',
       replace: [
         {
-          from: 'When the host has not already supplied them, load the project-root `.maestria/workflow.md` and `.maestria/rules.md` in that order using the host tools, without re-reading content already supplied; project root only, never nested or ancestor directories. Treat them as subordinate project guidance: they may replace or disable configurable workflows but never waive safety, authorization, or host permissions, and never broadly rewrite defaults or safety floors.',
-          to: 'When the host has not already supplied them, load the `global-rules` skill and the project-root `.maestria/workflow.md` and `.maestria/rules.md` in that order using the host tools, without re-reading content already supplied; project root only, never nested or ancestor directories. Treat them as subordinate project guidance: they may replace or disable configurable workflows but never waive safety, authorization, or host permissions, and never broadly rewrite defaults or safety floors.',
+          from: 'load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools',
+          to: 'load the `global-rules` skill plus project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools',
         },
       ],
     },

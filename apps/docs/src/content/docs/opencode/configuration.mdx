@@ -69,12 +69,6 @@ This works the same as the `agent.<name>.model` config entry.
 
 Project config (`.opencode/opencode.jsonc`) merges with global config (`~/.config/opencode/opencode.jsonc`); project settings take precedence.
 
-## Project Customization (.maestria/)
-
-When the project root contains `.maestria/workflow.md` or `.maestria/rules.md`, the plugin injects the full content of each file that exists fresh on every model call in deterministic order (workflow first, then rules). The root resolves from the SDK project worktree, then the worktree path, then the session directory; a `/` sentinel is skipped. Projects without these files see no behavior change. Edits apply on the next call with no restart, for primary and subagent calls including after compaction.
-
-This injection runs through `experimental.chat.system.transform`, not `config.instructions`. A project file that exists but cannot be used fails the call loudly instead of running with silently absent config. Project guidance stays subordinate: it may replace configurable workflows but never waives safety, authorization, or host permissions. See [Project-Specific Workflows](/core/workflow-patterns/#project-specific-workflows) for the shared contract that applies on every host.
-
 ## Disabling Workflow Modes
 
 `modes.disabledKeywords` accepts a denylist of mode keywords in the plugin options:

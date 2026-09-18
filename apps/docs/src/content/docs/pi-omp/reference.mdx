@@ -183,10 +183,6 @@ This enforces the maker/checker split at the subagent tool level: builder and wr
 
 Agent files are deployed once per session and never overwrite existing files in the agent discovery directory (`~/.pi/agent/agents/` for Pi, `~/.omp/agent/agents/` for OMP), so user-customized agents with the same name stay put. To reset to Maestria defaults, remove the files from the discovery directory and restart your session.
 
-## Project Customization
-
-Optional `.maestria/workflow.md` then `.maestria/rules.md` at the session root are re-read in full on every `before_agent_start` turn with no restart. A broken file shows a notification plus a STOP banner instead of running silently. See [Project-Specific Workflows](/core/workflow-patterns/#project-specific-workflows) for the shared contract and limits.
-
 ## See Also
 
 - [Specialist Reference](/core/agents/)

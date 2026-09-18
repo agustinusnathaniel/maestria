@@ -54,16 +54,7 @@ Projects may add .maestria/workflow.md for project context, required reading, an
 
 Keep these files short: reusable methodology belongs in the canonical Maestria directives, project decisions in ADRs, and one-off task details in the handoff.
 
-### How hosts load these files
-
-The shared contract is root only (no ancestor scan, no nested inheritance), workflow first then rules, and subordinate guidance (project files may replace configurable workflows but never waive safety, authorization, or host permissions). Absent or empty files leave defaults unchanged. A present-but-unusable file never runs silently: each host surfaces a failure naming only the relative file and the failure kind. Loading details differ per host:
-
-- **OpenCode** reads full content fresh on every model call through `experimental.chat.system.transform`, for primary and subagent calls including after compaction. No restart is needed.
-- **Pi, OMP, and Prime** re-read both files on every `before_agent_start` turn from the host-selected session cwd, with no restart and no persisted copies. A broken file produces a UI notification plus a STOP banner that tells the model to report the error and wait; the host swallows handler exceptions, so the banner cannot cancel the model call itself. Whether subagent turns automatically receive the same injection is unverified, so delegation briefs still carry the active constraints.
-- **Hermes** re-reads both files on every `pre_llm_call` turn from the process working directory at call time and appends them after the mode context. The hook runs fail-open and inject-only, so a broken file produces a visible error banner plus a host log warning, and the banner advises stopping without enforcing cancellation.
-- **Declarative hosts (Claude Code, Codex, Cursor, Kimi, agent-plugin)** have no runtime loader. The orchestrator skill reads the project-root files with host tools when they were not already supplied, asks for needed content when the host cannot read a file, discloses the gap instead of inventing overrides, carries constraints in delegation briefs, and re-establishes them after compaction.
-
-Checks observe the filesystem at call time and are not an atomic snapshot. There is no new setup, doctor, skill-extraction, or installation state in this scope.
+Supported hosts load these project-root files fresh at call time, falling back to orchestrator briefing when unavailable.
 
 ## See Also
 

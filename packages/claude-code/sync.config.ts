@@ -151,8 +151,8 @@ export default {
       output: '../skills/orchestrator/SKILL.md',
       replace: [
         {
-          from: 'load the project-root `.maestria/workflow.md` and `.maestria/rules.md` in that order using the host tools',
-          to: 'load the `maestria:global-rules` skill via the Skill tool, plus the project-root `.maestria/workflow.md` and `.maestria/rules.md` in that order using the host tools',
+          from: 'load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools',
+          to: 'load the `maestria:global-rules` skill via the Skill tool, plus project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools',
         },
       ],
     },
