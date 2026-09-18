@@ -23,3 +23,19 @@ export const pluginInput = {
   serverUrl: new URL('http://localhost:4096'),
   worktree: '/tmp/opencode-plugin-test',
 } satisfies PluginInput;
+
+// Input rooted at a given directory without touching the throwing
+// $/client getters (the plugin under test never reads those).
+export const pluginInputForRoot = (root: string): PluginInput => ({
+  get $(): PluginInput['$'] {
+    return unusedInputDependency('shell');
+  },
+  get client(): PluginInput['client'] {
+    return unusedInputDependency('client');
+  },
+  directory: root,
+  experimental_workspace: pluginInput.experimental_workspace,
+  project: { ...pluginInput.project, worktree: root },
+  serverUrl: pluginInput.serverUrl,
+  worktree: root,
+});

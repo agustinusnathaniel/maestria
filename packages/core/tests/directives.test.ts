@@ -307,6 +307,34 @@ describe('canonical directive behavioral contracts', () => {
     );
   });
 
+  it('keeps project workflow loading root-only, explicit, and subordinate', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    // Project-root-only fixed order, no nested or ancestor merging.
+    expect(orchestrator).toMatch(
+      /project-root `\.maestria\/workflow\.md` and `\.maestria\/rules\.md` in that order/iu,
+    );
+    expect(orchestrator).toMatch(/project root only.*never nested or ancestor/iu);
+    // No double read of host-supplied content and no stale per-session promise.
+    expect(orchestrator).toMatch(/without re-reading content already supplied/iu);
+    expect(orchestrator).not.toMatch(/once per session/iu);
+    // Read-error fallback: disclose, ask rather than invent, absence is normal.
+    expect(orchestrator).toMatch(/present but unreadable/iu);
+    expect(orchestrator).toMatch(/is disclosed/iu);
+    expect(orchestrator).toMatch(/requested rather than invented/iu);
+    expect(orchestrator).toMatch(/no potentially overridden workflow runs silently/iu);
+    expect(orchestrator).toMatch(/missing file is normal/iu);
+    expect(orchestrator).toMatch(/leaves defaults unchanged/iu);
+    // Safety floor: subordinate configurable-only guidance, never a waiver.
+    expect(orchestrator).toMatch(/subordinate project guidance/iu);
+    expect(orchestrator).toMatch(/replace or disable configurable workflows/iu);
+    expect(orchestrator).toMatch(/never waive safety, authorization, or host permissions/iu);
+    expect(orchestrator).toMatch(/never broadly rewrite defaults or safety/iu);
+    // Constraints survive hops and compaction.
+    expect(orchestrator).toMatch(/carry the active project constraints in delegation briefs/iu);
+    expect(orchestrator).toMatch(/re-establish them when missing after compaction/iu);
+  });
+
   it('does not reintroduce the removed runtime ledger or checkpoint protocol', () => {
     const canonical = [
       readDirective('rules.md'),

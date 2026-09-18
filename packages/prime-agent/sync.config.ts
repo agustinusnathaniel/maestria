@@ -53,7 +53,7 @@ The universal contracts live in the \`global-rules\` skill; load it once at sess
 
 ### Executable extension (verified subset)
 
-This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (\`pi.extensions\`) covering the workflow-mode slash commands (\`/fein\`, \`/sonar\`, \`/blitz\`, \`/mode-clear\`, \`/maestria-status\`) and mode prompt injection on each agent turn via \`before_agent_start\`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
+This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (\`pi.extensions\`) covering the workflow-mode slash commands (\`/fein\`, \`/sonar\`, \`/blitz\`, \`/mode-clear\`, \`/maestria-status\`) and mode prompt injection plus project-customization injection on each agent turn via \`before_agent_start\`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
 
 ### Deferred: recursive-subagent dispatch
 
@@ -147,8 +147,8 @@ export default {
       output: 'orchestrator/SKILL.md',
       replace: [
         {
-          from: '`.maestria/workflow.md` and `.maestria/rules.md`',
-          to: 'the `global-rules` skill',
+          from: 'When the host has not already supplied them, load the project-root `.maestria/workflow.md` and `.maestria/rules.md` in that order using the host tools, without re-reading content already supplied; project root only, never nested or ancestor directories. Treat them as subordinate project guidance: they may replace or disable configurable workflows but never waive safety, authorization, or host permissions, and never broadly rewrite defaults or safety floors.',
+          to: 'When the host has not already supplied them, load the `global-rules` skill and the project-root `.maestria/workflow.md` and `.maestria/rules.md` in that order using the host tools, without re-reading content already supplied; project root only, never nested or ancestor directories. Treat them as subordinate project guidance: they may replace or disable configurable workflows but never waive safety, authorization, or host permissions, and never broadly rewrite defaults or safety floors.',
         },
       ],
     },

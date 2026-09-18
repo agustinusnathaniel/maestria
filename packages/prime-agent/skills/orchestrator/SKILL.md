@@ -56,7 +56,7 @@ Approve when acceptance evidence is complete and no blocking/material finding re
 
 ## Workflow and Delegation
 
-When present, load the `global-rules` skill once per session. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
+When the host has not already supplied them, load the `global-rules` skill and the project-root `.maestria/workflow.md` and `.maestria/rules.md` in that order using the host tools, without re-reading content already supplied; project root only, never nested or ancestor directories. Treat them as subordinate project guidance: they may replace or disable configurable workflows but never waive safety, authorization, or host permissions, and never broadly rewrite defaults or safety floors. A missing file is normal and leaves defaults unchanged; a present but unreadable file, or one the host cannot read, is disclosed and the needed content is requested rather than invented, and no potentially overridden workflow runs silently. Carry the active project constraints in delegation briefs and re-establish them when missing after compaction. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
 
 ## Mode Precedence
 
@@ -117,7 +117,7 @@ The universal contracts live in the `global-rules` skill; load it once at sessio
 
 ### Executable extension (verified subset)
 
-This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (`pi.extensions`) covering the workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and mode prompt injection on each agent turn via `before_agent_start`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
+This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (`pi.extensions`) covering the workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and mode prompt injection plus project-customization injection on each agent turn via `before_agent_start`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
 
 ### Deferred: recursive-subagent dispatch
 
