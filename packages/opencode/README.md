@@ -20,7 +20,12 @@ OpenCode does not auto-update plugins; re-run the install command with `--force`
 
 - **8 agents** - `@orchestrator` (delegates to the 7 specialists) plus `@adventurer`, `@architect`, `@builder`, `@diagnose`, `@planner`, `@reviewer`, and `@writer`.
 - **Global rules** - shared requirements injected into every session for evidence, safety, delegation, review, and bounded repair.
+- **Project customization** - when the project root contains `.maestria/workflow.md` or `.maestria/rules.md`, the full content of each file that exists is injected fresh on every model call in deterministic order (workflow first, then rules). Projects without these files see no behavior change.
 - **Zero plugin telemetry** - the plugin makes no network calls of its own.
+
+## Project Customization Details
+
+The project root resolves from the SDK project worktree, then the worktree path, then the session directory; a `/` sentinel is skipped so a non-git open directory still resolves. Only the project root is read; no nested or ancestor lookup applies. Files are read fresh on every model call through `experimental.chat.system.transform`, so edits apply on the next call with no restart and no stale snapshot. The same pipeline covers primary and subagent calls, including calls after compaction; a compaction note also asks the summary to preserve active project constraints. This path is separate from `config.instructions`: the pinned host file loader swallows read failures to empty and plugin init/config errors are swallowed, while a transform error here propagates as a failed model call instead of running with silently absent config (verified against pinned host v1.18.31 by source inspection plus package tests, no live model run). A project file that exists but cannot be used (directory, special file, unreadable, unresolvable, or a link resolving outside the root) fails the call loudly instead of being skipped. Diagnostics name only the relative file and the failure kind; symlink targets are canonicalized against the root and the resolved target must be a regular file. Checks observe the filesystem at call time and are not an atomic snapshot. Loaded project guidance stays subordinate: it may replace configurable workflows but never waives safety, authorization, or host permissions.
 
 ## Support / Platform Notes
 

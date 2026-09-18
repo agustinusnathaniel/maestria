@@ -14,6 +14,7 @@ describe('dist bundle', () => {
     const plugin = await MaestriaPlugin(pluginInput, {});
     expect(plugin).toHaveProperty('config');
     expect(plugin).toHaveProperty('chat.message');
+    expect(plugin).toHaveProperty('experimental.chat.system.transform');
     expect(plugin).toHaveProperty('experimental.session.compacting');
   }, 60_000);
 });

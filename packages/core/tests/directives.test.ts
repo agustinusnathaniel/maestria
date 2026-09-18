@@ -307,6 +307,24 @@ describe('canonical directive behavioral contracts', () => {
     );
   });
 
+  it('keeps project workflow loading concise, root-only, and subordinate', () => {
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    // Durable concepts, not prose inventory: both files, root-only order,
+    // host-supplied reuse, normal absence, surfaced read errors, subordination.
+    expect(orchestrator).toContain('.maestria/workflow.md');
+    expect(orchestrator).toContain('.maestria/rules.md');
+    expect(orchestrator.indexOf('.maestria/workflow.md')).toBeLessThan(
+      orchestrator.indexOf('.maestria/rules.md'),
+    );
+    expect(orchestrator).toMatch(/root only/iu);
+    expect(orchestrator).toMatch(/host has not already supplied/iu);
+    expect(orchestrator).toMatch(/absence is normal/iu);
+    expect(orchestrator).toMatch(/surfaced.*requested rather than silently overridden/iu);
+    expect(orchestrator).toMatch(/subordinate guidance/iu);
+    expect(orchestrator).toMatch(/global safety and host authorization/iu);
+  });
+
   it('does not reintroduce the removed runtime ledger or checkpoint protocol', () => {
     const canonical = [
       readDirective('rules.md'),

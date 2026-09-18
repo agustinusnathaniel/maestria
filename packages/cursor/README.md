@@ -19,6 +19,7 @@ Restart Cursor IDE (or use **Developer: Reload Window**). Cursor CLI uses `agent
 - **Orchestrator skill** - dispatcher methodology, handoff contracts, maker/checker guidance.
 - **Always-on global rules** - `rules/maestria-global.mdc` with `alwaysApply: true`.
 - **Workflow commands** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
+- **Project customization (advisory)** - the orchestrator reads project-root `.maestria/workflow.md` then `.maestria/rules.md` with host tools when not already supplied; missing files leave defaults unchanged, and an unreadable file is disclosed and requested rather than invented.
 
 ## Support / Platform Notes
 

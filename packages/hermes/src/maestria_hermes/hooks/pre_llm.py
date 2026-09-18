@@ -1,11 +1,21 @@
-"""pre_llm_call hook -- injects mode context.
+"""pre_llm_call hook -- injects mode context and project customization.
 
 Mode context is injected into every user message preserving the Hermes
-prompt cache (system prompt is not modified).
+prompt cache (system prompt is not modified). Project-root customization
+(.maestria/workflow.md, then .maestria/rules.md) is read fresh every turn
+from the session working directory and appended after the mode context.
 
 Trust and tool capability come from trusted native lifecycle state only
-(see session.py and permissions.py).  User message text is never a role or
-capability source.
+(see session.py and permissions.py). User message text, mode text, and
+project Markdown are never a role or capability source.
+
+Failure posture is host-shaped: Hermes runs pre_llm_call fail-open (a
+raising callback is logged and skipped, and only {"context": ...} or
+string returns reach the model), so this hook never raises. A broken
+project file is surfaced as a visible error banner in the injected
+context instead of running with silently absent config; the turn itself
+cannot be cancelled from this hook, which the package README states
+explicitly.
 """
 
 from __future__ import annotations
@@ -13,6 +23,7 @@ from __future__ import annotations
 import logging
 import pathlib
 
+from maestria_hermes import project_config
 from maestria_hermes.modes import ModeManager
 
 logger = logging.getLogger(__name__)
@@ -50,24 +61,47 @@ _MODE_CONTEXT = {
 def create_pre_llm_hook(mode_manager: ModeManager):
     """Create a pre_llm_call hook closure bound to the mode manager.
 
-    Injects the current maestria mode directive into every user message.
-    Trust is tracked exclusively by the trusted native lifecycle hooks;
-    user text never grants capability.
+    Injects the current maestria mode directive plus fresh project-root
+    customization into every user message. Trust is tracked exclusively
+    by the trusted native lifecycle hooks; user text never grants
+    capability. Never raises: project-load failures become a visible
+    error banner (the host would swallow a raise and drop the mode
+    context with it).
     """
 
     def pre_llm_hook(**kwargs) -> dict:
-        """Inject mode context into the user message."""
+        """Inject mode context and project customization into the user message."""
         mode = mode_manager.get_mode()
 
         # -- Inject mode context -------------------------------------------
 
         if mode is None:
-            return {"context": ""}
-        context = _MODE_CONTEXT.get(
-            mode,
-            f"[MAESTRIA MODE: {mode}]\nNo specific mode instructions defined.",
-        )
+            mode_context = ""
+        else:
+            mode_context = _MODE_CONTEXT.get(
+                mode,
+                f"[MAESTRIA MODE: {mode}]\nNo specific mode instructions defined.",
+            )
 
+        # -- Inject project customization (fresh per-turn read) ------------
+
+        try:
+            project_context = project_config.build_project_context()
+        except Exception as exc:
+            # Total safety net: the host swallows hook exceptions
+            # (fail-open skip), so contain everything here and stay visible.
+            # Log only the failure type; messages may carry private paths.
+            logger.warning(
+                "maestria project customization failed unexpectedly: %s",
+                type(exc).__name__,
+            )
+            project_context = project_config.format_project_error(
+                "[maestria] Project customization could not be loaded"
+            )
+
+        context = "\n\n".join(
+            part for part in (mode_context, project_context) if part
+        )
         return {"context": context}
 
     return pre_llm_hook

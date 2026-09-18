@@ -23,6 +23,7 @@ See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packag
 - **Native workflow commands** - `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` are registered through Kimi's plugin `commands` field.
 - **Swarm-aware orchestration** - routes 2 or more uniform items through Kimi Code's `AgentSwarm` for parallel fan-out.
 - **System-prompt rules** - `SYSTEM.md` is contributed through Kimi's native `systemPromptPath`; no global `AGENTS.md` file is written.
+- **Project customization (advisory)** - the orchestrator reads project-root `.maestria/workflow.md` then `.maestria/rules.md` with host tools when not already supplied; missing files leave defaults unchanged, and an unreadable file is disclosed and requested rather than invented.
 
 ## Support / Platform Notes
 

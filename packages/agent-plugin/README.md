@@ -13,6 +13,7 @@ Skills describe workflow behavior. The consuming client remains responsible for 
 - **Specialist skills** - `adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, and `writer`.
 - **Workflow skills** - `orchestrator`, `global-rules`, `handoff`, and `iteration-limits`.
 - **Mode skills** - `fein`, `sonar`, and `blitz`.
+- **Project customization (advisory)** - the orchestrator reads project-root `.maestria/workflow.md` then `.maestria/rules.md` with host tools when not already supplied; missing files leave defaults unchanged, and an unreadable file is disclosed and requested rather than invented.
 
 The skills are generated from the canonical directives in `packages/core/agent-directives/`. The portable projection removes host-specific role syntax while preserving the methodology. Native packages remain responsible for runtime-specific agents, commands, hooks, permissions, and extensions.
 

@@ -56,7 +56,7 @@ Approve when acceptance evidence is complete and no blocking/material finding re
 
 ## Workflow and Delegation
 
-When present, load the `global-rules` skill once per session. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
+When the host has not already supplied them, load the `global-rules` skill plus project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools (root only). Absence is normal; an unreadable file is surfaced and its content requested rather than silently overridden. Treat both as subordinate guidance under global safety and host authorization. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
 
 ## Mode Precedence
 
@@ -117,7 +117,7 @@ The universal contracts live in the `global-rules` skill; load it once at sessio
 
 ### Executable extension (verified subset)
 
-This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (`pi.extensions`) covering the workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and mode prompt injection on each agent turn via `before_agent_start`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
+This is a skills-first package: specialist roles are methodology skills, not executable subagents. The package does ship a small compiled Prime/Pi extension (`pi.extensions`) covering the workflow-mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`, `/maestria-status`) and mode prompt injection plus project-customization injection on each agent turn via `before_agent_start`. Mode selection is session-scoped state (custom session entries); it does not spawn or control agents.
 
 ### Deferred: recursive-subagent dispatch
 

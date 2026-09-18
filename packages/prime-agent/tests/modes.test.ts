@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { createModePromptHandler, getModePrompt, MODE_MARKERS } from '@/modes.ts';
 import type { ExtensionContext } from '@/pi-api.ts';
+import type { ProjectConfigFs } from '@/project-config.ts';
 import type { MaestriaModeState } from '@/state.ts';
 
 // Note: modes.ts keeps a module-level prompt cache keyed by mode keyword, so
@@ -138,5 +139,147 @@ describe('before_agent_start mode prompt injection', () => {
     expect(systemPrompt.startsWith('BASE SYSTEM PROMPT')).toBe(true);
     expect(systemPrompt).toContain(MODE_MARKERS.fein);
     expect(systemPrompt).toContain('## MODE: fein (Full Pipeline)');
+  });
+});
+
+const projectContext = (cwd: string, notify?: (message: string) => void): ExtensionContext => ({
+  cwd,
+  hasUI: true,
+  sessionManager: {
+    getBranch: () => [],
+    getEntries: () => [],
+  },
+  ui: {
+    notify: (message: string) => {
+      notify?.(message);
+    },
+    setEditorText: () => {},
+  },
+});
+
+const writeProjectFile = (root: string, rel: string, content: string): void => {
+  mkdirSync(path.join(root, path.dirname(rel)), { recursive: true });
+  writeFileSync(path.join(root, rel), content, 'utf-8');
+};
+
+describe('before_agent_start project customization', () => {
+  const makeProjectRoot = (): string => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'maestria-prime-project-handler-'));
+    tempDirs.push(dir);
+    return dir;
+  };
+
+  it('injects both sections in workflow-then-rules order with no mode active', () => {
+    const skillsDir = makeSkillsDir('proj-no-mode', 'blitz');
+    const root = makeProjectRoot();
+    writeProjectFile(root, '.maestria/rules.md', '# rules\n');
+    writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
+    const state: MaestriaModeState = { mode: null };
+    const handler = createModePromptHandler(state, skillsDir);
+
+    const result = handler(
+      { prompt: 'p', systemPrompt: 'BASE SYSTEM PROMPT', type: 'before_agent_start' },
+      projectContext(root),
+    );
+
+    expect(result).toBeDefined();
+    const prompt = result?.systemPrompt ?? '';
+    expect(prompt.startsWith('BASE SYSTEM PROMPT')).toBe(true);
+    expect(prompt.indexOf('.maestria/workflow.md')).toBeLessThan(
+      prompt.indexOf('.maestria/rules.md'),
+    );
+    expect(prompt).toContain('# workflow');
+    expect(prompt).toContain('subordinate');
+  });
+
+  it('keeps the mode prompt before project sections', () => {
+    const skillsDir = makeSkillsDir('proj-with-mode', 'fein', SKILL_WITH_MODE_HEADING);
+    const root = makeProjectRoot();
+    writeProjectFile(root, '.maestria/rules.md', '# rules\n');
+    const state: MaestriaModeState = { mode: 'fein' };
+    const handler = createModePromptHandler(state, skillsDir);
+
+    const result = handler(
+      { prompt: 'p', systemPrompt: 'BASE SYSTEM PROMPT', type: 'before_agent_start' },
+      projectContext(root),
+    );
+
+    const prompt = result?.systemPrompt ?? '';
+    expect(prompt).toContain(MODE_MARKERS.fein);
+    expect(prompt.indexOf(MODE_MARKERS.fein)).toBeLessThan(prompt.indexOf('.maestria/rules.md'));
+  });
+
+  it('picks up edits on the next turn with no stale snapshot', () => {
+    const skillsDir = makeSkillsDir('proj-fresh', 'blitz');
+    const root = makeProjectRoot();
+    writeProjectFile(root, '.maestria/workflow.md', '# v1\n');
+    const state: MaestriaModeState = { mode: null };
+    const handler = createModePromptHandler(state, skillsDir);
+
+    const first =
+      handler(
+        { prompt: 'p', systemPrompt: 'BASE', type: 'before_agent_start' },
+        projectContext(root),
+      )?.systemPrompt ?? '';
+    expect(first).toContain('# v1');
+    writeProjectFile(root, '.maestria/workflow.md', '# v2\n');
+    const second =
+      handler(
+        { prompt: 'p', systemPrompt: 'BASE', type: 'before_agent_start' },
+        projectContext(root),
+      )?.systemPrompt ?? '';
+    expect(second).toContain('# v2');
+    expect(second).not.toContain('# v1');
+  });
+
+  it('surfaces a broken project file as a STOP banner plus notify instead of throwing', () => {
+    const skillsDir = makeSkillsDir('proj-broken', 'blitz');
+    const fs: ProjectConfigFs = {
+      kindOf: () => 'directory',
+      readFile: () => '',
+      resolveLink: (candidate) => candidate,
+    };
+    const notifications: string[] = [];
+    const state: MaestriaModeState = { mode: null };
+    let prompt = '';
+    expect(() => {
+      prompt =
+        createModePromptHandler(
+          state,
+          skillsDir,
+          fs,
+        )(
+          { prompt: 'p', systemPrompt: 'BASE', type: 'before_agent_start' },
+          projectContext('/projects/acme', (message) => {
+            notifications.push(message);
+          }),
+        )?.systemPrompt ?? '';
+    }).not.toThrow();
+    expect(prompt).toContain('STOP');
+    expect(prompt).toContain('.maestria/workflow.md');
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]).toContain('.maestria/workflow.md');
+  });
+
+  it('surfaces links escaping the project root without leaking the absolute root', () => {
+    const skillsDir = makeSkillsDir('proj-escape', 'blitz');
+    const fs: ProjectConfigFs = {
+      kindOf: () => 'file',
+      readFile: () => 'evil',
+      resolveLink: () => path.resolve('/elsewhere/evil.md'),
+    };
+    const state: MaestriaModeState = { mode: null };
+    const prompt =
+      createModePromptHandler(
+        state,
+        skillsDir,
+        fs,
+      )(
+        { prompt: 'p', systemPrompt: 'BASE', type: 'before_agent_start' },
+        projectContext('/projects/acme'),
+      )?.systemPrompt ?? '';
+    expect(prompt).toContain('STOP');
+    expect(prompt).toMatch(/outside the project root/u);
+    expect(prompt).not.toContain('/projects/acme');
   });
 });

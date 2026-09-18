@@ -25,6 +25,7 @@ The CLI manages installation and updates through Claude Code's native plugin com
 - **2 skills** - `maestria:global-rules` (preloaded into every agent) and `maestria:orchestrator` (routing methodology).
 - **3 workflow commands** - `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz`.
 - **Read-only enforcement** - adventurer, planner, and reviewer deny `Write`/`Edit` via `disallowedTools` (user-authorized; the only runtime enforcement).
+- **Project customization (advisory)** - the orchestrator reads project-root `.maestria/workflow.md` then `.maestria/rules.md` with host tools when not already supplied; missing files leave defaults unchanged, and an unreadable file is disclosed and requested rather than invented.
 
 ## Support / Platform Notes
 
