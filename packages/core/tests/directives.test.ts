@@ -199,18 +199,25 @@ describe('canonical directive behavioral contracts', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
     const builder = readDirective('specialists', 'builder.md');
+    const rootSkill = readFileSync(
+      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
+      'utf-8',
+    );
 
     expect(rules).toMatch(/rendered appearance and interactions need rendered checks/iu);
     expect(rules).toMatch(/do not waive an explicit user or project evidence requirement/iu);
+    // Core keeps the compact router: scope, briefs trigger, and skill pointer.
     expect(orchestrator).toMatch(/documentation sites and visible CLI output/iu);
     expect(orchestrator).toMatch(
       /include the evidence requirement in implementation and review briefs/iu,
     );
-    expect(orchestrator).toMatch(/headless capture/iu);
-    expect(orchestrator).toMatch(/terminal transcript/iu);
-    expect(orchestrator).toMatch(/upload is unavailable.*preserve the local artifact/iu);
-    expect(orchestrator).toMatch(/unnecessary with a concrete reason/iu);
-    expect(orchestrator).toMatch(/explicit user or project requirement.*remains acceptance work/iu);
+    expect(orchestrator).toMatch(/load the available `create-pull-request` skill/iu);
+    // The capture/publication detail lives once in the root skill.
+    expect(rootSkill).toMatch(/headless capture/iu);
+    expect(rootSkill).toMatch(/terminal transcript/iu);
+    expect(rootSkill).toMatch(/upload is unavailable.*preserve the local artifact/iu);
+    expect(rootSkill).toMatch(/unnecessary with a concrete reason/iu);
+    expect(rootSkill).toMatch(/explicit user or project.*requirement/iu);
     expect(builder).toMatch(/evidence artifacts and unresolved verification gaps/iu);
     expect(builder).not.toMatch(/tests or type checks to confirm correctness/iu);
   });
@@ -476,17 +483,22 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(
       /classify visual evidence as required.*or not applicable with a concrete reason/iu,
     );
+    // Core keeps the compact router: classification, briefs trigger, skill
+    // pointer, and the missing-evidence floor.
+    expect(orchestrator).toMatch(/or not applicable with a concrete reason/iu);
     expect(orchestrator).toMatch(
-      /include the evidence requirement in implementation and review briefs, with the acceptance classification/iu,
+      /include the evidence requirement in implementation and review briefs/iu,
     );
+    expect(orchestrator).toMatch(/load the available `create-pull-request` skill/iu);
+    expect(orchestrator).toMatch(/missing required evidence blocks acceptance/iu);
     // Handoff carries paths plus captions plus coverage gaps; the reviewer
     // checks that coverage against the changed surface.
-    expect(orchestrator).toMatch(/paths plus captions plus coverage gaps/iu);
-    expect(orchestrator).toMatch(/reviewer checks that coverage against the changed surface/iu);
+    expect(rootSkill).toMatch(/paths plus captions plus coverage gaps/iu);
+    expect(rootSkill).toMatch(/reviewer checks that coverage against the changed surface/iu);
     // Role split: the reviewer covers rendered coverage while the delivery
     // owner reads back the actual published body (procedure lives in the skill).
     expect(rootSkill).toMatch(/read back the published body/iu);
-    expect(orchestrator).toMatch(/read back the actual PR body as delivery owner/iu);
+    expect(rootSkill).toMatch(/read back the actual PR body as delivery owner/iu);
     // Distinct stages: a local path alone never satisfies PR-body publication.
     expect(rootSkill).toMatch(
       /capture, handoff, publication in the PR body, and readback are distinct stages/iu,
@@ -496,16 +508,19 @@ describe('canonical directive behavioral contracts', () => {
     // limitation; the relation pin (not mere wording presence) is what must hold.
     expect(rules).toMatch(/missing required evidence blocks acceptance/iu);
     expect(rules).toMatch(/means incomplete, not completed-with-limits/iu);
-    expect(orchestrator).toMatch(
+    expect(rootSkill).toMatch(
       /do not claim delivery complete until the evidence is published in the PR body/iu,
     );
     // Modal floor guard: the publication requirement must not weaken into optionality.
+    expect(rootSkill).not.toMatch(/may claim delivery complete/iu);
     expect(orchestrator).not.toMatch(/may claim delivery complete/iu);
+    // Core no longer duplicates the detailed procedure.
+    expect(orchestrator).not.toMatch(/headless capture/iu);
+    expect(orchestrator).not.toMatch(/paths plus captions/iu);
   });
 
   it('refreshes PR evidence after pushes and later visual changes', () => {
     const rules = readDirective('rules.md');
-    const orchestrator = readDirective('specialists', 'orchestrator.md');
     const rootSkill = readFileSync(
       path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
       'utf-8',
@@ -522,15 +537,15 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/after any push that changes diff or verification/iu);
     // Freshness: replace affected captures, drop obsolete references, and
     // refresh only affected evidence without rewriting history as current.
-    expect(orchestrator).toMatch(
+    expect(rootSkill).toMatch(
       /when a later change affects captured appearance or behavior, replace affected captures/iu,
     );
-    expect(orchestrator).toMatch(/remove obsolete or redundant PR body references/iu);
-    expect(orchestrator).toMatch(
+    expect(rootSkill).toMatch(/remove obsolete or redundant PR body references/iu);
+    expect(rootSkill).toMatch(
       /refresh only affected evidence, not every commit or unrelated file/iu,
     );
-    expect(orchestrator).toMatch(/keep intentional clearly labeled before baselines/iu);
-    expect(orchestrator).toMatch(/never present a historical before as current/iu);
+    expect(rootSkill).toMatch(/keep intentional clearly labeled before baselines/iu);
+    expect(rootSkill).toMatch(/never present a historical before as current/iu);
   });
 
   it('assesses documentation categories separately and proportionately', () => {

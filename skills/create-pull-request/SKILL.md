@@ -63,13 +63,23 @@ Rules for `## Verification`: list checks and results honestly. Carry unresolved 
 
 ## Visual evidence where required
 
-For rendered surfaces: capture, handoff, publication in the PR body, and readback are distinct stages. A local path alone does not satisfy PR-body publication. After any push that changes diff or verification, refresh the title and body, then read back the published body to confirm accessible artifacts, captions, and current coverage before reporting delivery complete.
+For rendered surfaces, capture, handoff, publication in the PR body, and readback are distinct stages. A local path alone does not satisfy PR-body publication.
 
-If required visual evidence is missing, mark delivery incomplete and state the checked limitation. Do not waive an explicit user or project evidence requirement because tooling is missing.
+Capture the affected screen or interaction, including relevant responsive or state variants, with an available browser or capture tool; a missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified. Preserve the local artifact at any workable path, including /tmp; do not auto-commit screenshots unless project policy requires it.
+
+Hand off implementer evidence as paths plus captions plus coverage gaps: each artifact states what it shows and which variants remain unchecked. The reviewer checks that coverage against the changed surface before delivery.
+
+Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the delivery tool current help for upload support instead of relying on cached syntax. Capture and upload are separate capabilities. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation.
+
+Present evidence concisely by changed screen or behavior: label each artifact with its state and relevant viewport or theme. Use a before/after table when comparison helps and a short captioned list for a single state or when tables would shrink images. Pair comparable captures with matching viewports and states, name the intended difference, and disclose missing baselines or unchecked variants without fabricating them. Keep representative captures in the main section with supplemental captures in a collapsible section when supported.
+
+For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals. Keep capture effort proportionate to the changed surface.
+
+If required visual evidence is missing, mark delivery incomplete and state the checked limitation. Do not claim delivery complete until the evidence is published in the PR body and the delivery owner has read back that body to verify its inclusion; local paths, session-log references, and comments alone do not satisfy this requirement. Do not waive an explicit user or project evidence requirement because tooling is missing: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
 
 ## Freshness
 
-After any push that changes the cumulative diff or verification evidence, update the title and body to match, then read back the published body before reporting delivery complete.
+After any push that changes the cumulative diff or verification evidence, update the title and body to match, then read back the published body to confirm accessible artifacts, captions, and current coverage before reporting delivery complete. Read back the actual PR body as delivery owner; confirm attachments render or links resolve and evidence matches the current relevant diff. When a later change affects captured appearance or behavior, replace affected captures, update captions and comparisons, and remove obsolete or redundant PR body references; keep intentional clearly labeled before baselines and never present a historical before as current. Refresh only affected evidence, not every commit or unrelated file. Readback is a delivery-owner check, not a second full review.
 
 ## Minimal fallback
 
