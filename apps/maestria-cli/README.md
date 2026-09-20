@@ -21,6 +21,10 @@ npx maestria status
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
 | `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the Maestria cache or an explicit destination |
 
+### Methodology skills
+
+`install`, `update`, and `uninstall` manage the `create-pull-request` methodology skill through the official `skills` CLI (pinned `skills@1.7.0`); the skill source of truth is `skills/create-pull-request/SKILL.md` at the repository root and no skill bodies ship inside plugins. `install` and `update` accept `--skills` (CSV, or `none`) and `--exclude-skills` (CSV) plus `--yes` for non-interactive confirmation; without flags, recorded per-platform choices are preserved (fresh installs default to `create-pull-request`). Selections persist per platform under `$XDG_CONFIG_HOME/maestria/skills.json` only after actual success. The equivalent native commands are `npx -y skills@1.7.0 add <source> -a <agent> -s create-pull-request -g -y` for global installs and the same without `-g` for project installs (`<cwd>/.agents/skills/`).
+
 ### Output options
 
 - All commands accept `--json`.

@@ -1,4 +1,8 @@
 import { Effect } from 'effect';
+import { mkdtempSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { handleRoot } from '@/cli.js';
@@ -11,6 +15,7 @@ import { CliError } from '@/lib/command-result.js';
 import type * as detect from '@/lib/detect.js';
 import type * as platforms from '@/lib/platforms.js';
 import type { PlatformHandler, PlatformId } from '@/lib/platforms.js';
+import type * as skillCompanion from '@/lib/skill-companion.js';
 import type { PlatformResult, PlatformStatus } from '@/types.js';
 import { version } from '^/package.json';
 
@@ -63,6 +68,40 @@ vi.mock('@/lib/platform-transaction.js', () => ({
   uninstallOne: transactionMocks.uninstallOne,
   updateOne: transactionMocks.updateOne,
 }));
+
+/**
+ * Fake skills-CLI transport: confirms adds with machine JSON, reports empty
+ * inventory, and accepts removals. Exercises the real reconcile path without
+ * touching the network or the real home directory.
+ */
+const skillCliMocks = vi.hoisted(() => ({
+  // oxlint-disable-next-line require-await -- synchronous fake transport by design.
+  run: vi.fn(async (args: readonly string[]) => {
+    if (args[0] === 'add') {
+      return {
+        stderr: '',
+        stdout: JSON.stringify([
+          {
+            name: 'create-pull-request',
+            path: '/fake/skills/create-pull-request',
+            status: 'installed',
+          },
+        ]),
+      };
+    }
+    if (args[0] === 'list') {
+      return { stderr: '', stdout: '[]' };
+    }
+    return { stderr: '', stdout: 'Done!' };
+  }),
+}));
+
+vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof skillCompanion>();
+  return { ...actual, runSkillsCli: skillCliMocks.run };
+});
+
+const configDirs: string[] = [];
 
 vi.mock('@clack/prompts', () => ({
   cancel: promptMocks.cancel,
@@ -141,6 +180,10 @@ const restoreTty = (): void => {
 describe('command handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    const dir = mkdtempSync(path.join(tmpdir(), 'maestria-handler-record-'));
+    configDirs.push(dir);
+    vi.stubEnv('MAESTRIA_CONFIG_DIR', dir);
+    vi.stubEnv('MAESTRIA_SKILLS_SOURCE', 'test-source');
     platformMocks.getPlatform.mockImplementation((id: string) => handlers.get(id));
     detectMocks.detectAll.mockReturnValue(Effect.succeed([]));
     detectMocks.detectInstalled.mockReturnValue(Effect.succeed([]));
@@ -159,9 +202,15 @@ describe('command handlers', () => {
     promptMocks.isCancel.mockReturnValue(false);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     restoreTty();
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
+    await Promise.all(
+      configDirs.splice(0).map(async (dir) => {
+        await rm(dir, { force: true, recursive: true });
+      }),
+    );
   });
 
   describe('status', () => {

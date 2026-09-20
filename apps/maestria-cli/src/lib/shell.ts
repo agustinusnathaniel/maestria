@@ -16,6 +16,17 @@ export const getCacheDir = (): string => {
 /** Maestria's own cache directory (e.g. ~/.cache/maestria or $XDG_CACHE_HOME/maestria). */
 export const getMaestriaCacheDir = (): string => path.join(getCacheDir(), 'maestria');
 
+/**
+ * Durable Maestria user-preference directory (e.g. ~/.config/maestria or
+ * $XDG_CONFIG_HOME/maestria). User preferences such as skill selections live
+ * here rather than the cache directory, which the system may clear.
+ */
+export const getMaestriaConfigDir = (): string => {
+  const xdg = process.env.XDG_CONFIG_HOME?.trim();
+  const base = xdg !== undefined && xdg !== '' ? xdg : path.join(homedir(), '.config');
+  return path.join(base, 'maestria');
+};
+
 export const getVersionCacheFile = (): string => path.join(getMaestriaCacheDir(), 'versions.json');
 
 // ── Errors ───────────────────────────────────────────

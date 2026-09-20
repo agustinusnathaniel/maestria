@@ -428,35 +428,49 @@ describe('canonical directive behavioral contracts', () => {
     expect(composition).not.toMatch(/finite.*budget|circuit breaker|recovery dispatch/iu);
   });
 
-  it('shapes reviewable PRs with explicit titles and ordered literal body headings', () => {
+  it('routes PR title/body conventions to the methodology skill and keeps core floors', () => {
     const rules = readDirective('rules.md');
+    const rootSkill = readFileSync(
+      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
+      'utf-8',
+    );
 
+    // Core keeps the outcome/evidence/review/authorization floors plus the
+    // router: project template precedence, opt-out stop, load-available
+    // skill before drafting, absent fallback, and post-push refresh/readback.
+    expect(rules).toMatch(/core owns the outcome, evidence, review, and authorization/iu);
+    expect(rules).toMatch(/`create-pull-request` methodology skill/iu);
+    expect(rules).toMatch(/load the available skill before drafting/iu);
+    expect(rules).toMatch(/follow the project template when one applies/iu);
+    expect(rules).toMatch(/stop on explicit project opt-out/iu);
+    expect(rules).toMatch(/missing skill never blocks delivery/iu);
+    expect(rules).toMatch(/read back the published body before reporting delivery complete/iu);
+    // The literal procedure lives once in the root skill, not in core.
+    expect(rules).not.toContain('## Summary');
+    expect(rules).not.toMatch(/Work Results table/iu);
     // Exact pins for the true literal contract: the title form plus the
     // literal `##` headings in contract order with the Changes table columns.
-    expect(rules).toMatch(/explicit Conventional Commits title/iu);
-    expect(rules).toMatch(/not inferred from commit format/iu);
-    assertOrdered(rules, [
+    expect(rootSkill).toMatch(/explicit Conventional Commits title/iu);
+    expect(rootSkill).toMatch(/do not infer it from commit message format/iu);
+    assertOrdered(rootSkill, [
       '## Summary',
       '## Changes',
       '## Verification',
       '## Visual evidence',
       '## Breaking changes',
     ]);
-    expect(rules).toMatch(/Work Results table with File, What changed, and Why/iu);
-    // Conditional sections stay conditional, and an explicit project template
-    // is an exception that preserves the required information.
-    expect(rules).toMatch(/`## Visual evidence` when applicable/iu);
-    expect(rules).toMatch(/`## Breaking changes` when applicable/iu);
-    expect(rules).toMatch(
-      /when the project defines an explicit template, follow it while preserving that required information/iu,
-    );
+    expect(rootSkill).toMatch(/\|\s*`?File`?\s*\|\s*What changed\s*\|\s*Why\s*\|/u);
     // Modal floor guard: the explicit-title qualifier must not weaken into inference.
-    expect(rules).not.toMatch(/title may be inferred/iu);
+    expect(rootSkill).not.toMatch(/title may be inferred/iu);
   });
 
   it('carries visual classification through briefs and keeps capture, handoff, publication, and readback distinct', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const rootSkill = readFileSync(
+      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
+      'utf-8',
+    );
 
     // Classification at acceptance, carried into implementation and review briefs.
     expect(rules).toMatch(
@@ -470,14 +484,14 @@ describe('canonical directive behavioral contracts', () => {
     expect(orchestrator).toMatch(/paths plus captions plus coverage gaps/iu);
     expect(orchestrator).toMatch(/reviewer checks that coverage against the changed surface/iu);
     // Role split: the reviewer covers rendered coverage while the delivery
-    // owner reads back the actual published body.
-    expect(rules).toMatch(/delivery owner reads back the published body/iu);
+    // owner reads back the actual published body (procedure lives in the skill).
+    expect(rootSkill).toMatch(/read back the published body/iu);
     expect(orchestrator).toMatch(/read back the actual PR body as delivery owner/iu);
     // Distinct stages: a local path alone never satisfies PR-body publication.
-    expect(rules).toMatch(
+    expect(rootSkill).toMatch(
       /capture, handoff, publication in the PR body, and readback are distinct stages/iu,
     );
-    expect(rules).toMatch(/a local path alone does not satisfy PR-body publication/iu);
+    expect(rootSkill).toMatch(/a local path alone does not satisfy PR-body publication/iu);
     // Missing required evidence reports incomplete with the checked
     // limitation; the relation pin (not mere wording presence) is what must hold.
     expect(rules).toMatch(/missing required evidence blocks acceptance/iu);
@@ -492,14 +506,20 @@ describe('canonical directive behavioral contracts', () => {
   it('refreshes PR evidence after pushes and later visual changes', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const rootSkill = readFileSync(
+      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
+      'utf-8',
+    );
 
-    // Post-push cumulative update plus readback before reporting delivery complete.
-    expect(rules).toMatch(
+    // Post-push cumulative update plus readback: the procedure lives in the
+    // skill; core keeps the router refresh sentence.
+    expect(rootSkill).toMatch(
       /after any push that changes the cumulative diff or verification evidence/iu,
     );
-    expect(rules).toMatch(
-      /update the PR title and body to match, then read back the published body/iu,
+    expect(rootSkill).toMatch(
+      /update the title and body to match, then read back the published body/iu,
     );
+    expect(rules).toMatch(/after any push that changes diff or verification/iu);
     // Freshness: replace affected captures, drop obsolete references, and
     // refresh only affected evidence without rewriting history as current.
     expect(orchestrator).toMatch(

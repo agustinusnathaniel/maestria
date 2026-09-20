@@ -85,26 +85,7 @@ Merge, release, and production operations remain separate authorization boundari
 
 ### PR delivery contract
 
-Shape every reviewable PR with a title written as an explicit Conventional Commits title (not inferred from commit format) and a body using literal `##` headings in this order:
-
-1. `## Summary` (what changed and why):
-   - Lead with the user-visible outcome, or the maintainer benefit for internal changes, in plain language.
-   - Keep it a short paragraph or a few concise bullets; put file-level details in Changes and check results in Verification.
-   - Omit internal execution metadata such as session IDs; write for a human reviewer.
-2. `## Changes` (Work Results table with File, What changed, and Why columns):
-   - Describe the actual change and its practical purpose, not the editing action.
-   - Group related files that share one change and rationale; skip repeating the Summary and list only symbols that help review.
-   - Omit internal execution metadata such as session IDs; write for a human reviewer.
-3. `## Verification` (checks run, results, and unresolved acceptance gaps)
-   - Note review outcome briefly without pasting identifiers.
-4. `## Visual evidence` when applicable (per the visual-delivery contract)
-5. `## Breaking changes` when applicable (migration guidance)
-
-When the project defines an explicit template, follow it while preserving that required information.
-
-The reviewer checks rendered coverage against the changed surface; the delivery owner reads back the published body to confirm accessible artifacts, captions, and current coverage.
-
-After any push that changes the cumulative diff or verification evidence, update the PR title and body to match, then read back the published body before reporting delivery complete.
+Core owns the outcome, evidence, review, and authorization floors for every reviewable PR. Title, body, and visual-evidence conventions live in the `create-pull-request` methodology skill: load the available skill before drafting, and follow the project template when one applies while preserving the required information. Stop on explicit project opt-out. A missing skill never blocks delivery and never waives review or authorization; write a sensible body instead. The reviewer checks rendered coverage against the changed surface; after any push that changes diff or verification, refresh the draft and read back the published body before reporting delivery complete.
 
 ## Canonical Source Invariant
 

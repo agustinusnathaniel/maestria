@@ -1,4 +1,8 @@
 import { Effect } from 'effect';
+import { mkdtempSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { handleInstall } from '@/commands/install.js';
@@ -7,6 +11,7 @@ import { handleUpdate } from '@/commands/update.js';
 import type * as detect from '@/lib/detect.js';
 import type * as platforms from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
+import type * as skillCompanion from '@/lib/skill-companion.js';
 import type { PlatformStatus } from '@/types.js';
 
 const platformMocks = vi.hoisted(() => ({
@@ -35,6 +40,36 @@ vi.mock('@/lib/detect.js', async (importOriginal) => {
     detectInstalled: detectMocks.detectInstalled,
   };
 });
+
+/** Fake skills-CLI transport so ordering tests never touch the network or home. */
+const skillCliMocks = vi.hoisted(() => ({
+  // oxlint-disable-next-line require-await -- synchronous fake transport by design.
+  run: vi.fn(async (args: readonly string[]) => {
+    if (args[0] === 'add') {
+      return {
+        stderr: '',
+        stdout: JSON.stringify([
+          {
+            name: 'create-pull-request',
+            path: '/fake/skills/create-pull-request',
+            status: 'installed',
+          },
+        ]),
+      };
+    }
+    if (args[0] === 'list') {
+      return { stderr: '', stdout: '[]' };
+    }
+    return { stderr: '', stdout: 'Done!' };
+  }),
+}));
+
+vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof skillCompanion>();
+  return { ...actual, runSkillsCli: skillCliMocks.run };
+});
+
+const configDirs: string[] = [];
 
 const events: string[] = [];
 
@@ -77,13 +112,23 @@ describe('bulk CLI side-effect ordering', () => {
   beforeEach(() => {
     events.length = 0;
     vi.clearAllMocks();
+    const dir = mkdtempSync(path.join(tmpdir(), 'maestria-bulk-record-'));
+    configDirs.push(dir);
+    vi.stubEnv('MAESTRIA_CONFIG_DIR', dir);
+    vi.stubEnv('MAESTRIA_SKILLS_SOURCE', 'test-source');
     platformMocks.getPlatform.mockImplementation((id: string) =>
       testPlatforms.find((platform) => platform.id === id),
     );
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
+    await Promise.all(
+      configDirs.splice(0).map(async (dir) => {
+        await rm(dir, { force: true, recursive: true });
+      }),
+    );
   });
 
   it('updates direct platform selections sequentially', async () => {
