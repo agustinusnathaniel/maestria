@@ -40,10 +40,6 @@ export const promptSkillSelection = async (
   return selected.filter((entry): entry is string => typeof entry === 'string');
 };
 
-/**
- * Final confirmation gate. TTY prompts once; non-TTY requires an explicit
- * `--yes` when the selection changes so agents never hang on a prompt.
- */
 export const confirmOrThrow = async (message: string, yes: boolean | undefined): Promise<void> => {
   if (yes === true) {
     return;
@@ -91,17 +87,6 @@ const describeSelectionChange = (
     ? `${id}: unchanged [${defaultSkillSummary([...after])}]`
     : `${id}: [${defaultSkillSummary([...before])}] → [${defaultSkillSummary([...after])}]`;
 
-/**
- * Unified skill review for install/update.
- *
- * - Explicit flags: confirm only when something actually changes (non-TTY
- *   requires `--yes`); no-flag scripted runs preserve per-platform choices
- *   without prompting.
- * - Interactive without flags: review each distinct current selection once so
- *   differing per-platform intents are preserved, then a final confirmation
- *   listing the actual per-platform changes (the second confirmation for
- *   updates; the single confirmation for installs).
- */
 export const reviewSkillSelections = async <T extends ReviewableSelection>(
   selections: readonly T[],
   action: 'Install' | 'Update',

@@ -59,13 +59,7 @@ const recordedFor = (record: SkillsRecord | null, platformId: string): string[] 
 const isOwned = (record: SkillsRecord | null, platformId: string): boolean =>
   (recordedFor(record, platformId) ?? []).includes(COMPANION_SKILL);
 
-/**
- * Resolve per-platform selections, degrading honestly on hosts with no
- * companion target (unknown IDs only; all nine known platforms resolve):
- * an explicit skill request fails loud before effects, while a default run
- * records an empty selection and keeps the core sensible-body fallback
- * instead of faking a full feature.
- */
+/** Unknown hosts degrade to an empty selection with the core fallback. */
 export const resolveEffectiveSkills = (
   targets: readonly { id: string; label?: string }[],
   args: { excludeSkills?: string; skills?: string },
@@ -104,13 +98,7 @@ const observedSkillPath = async (
   return entries.find((entry) => entry.name === COMPANION_SKILL)?.path ?? null;
 };
 
-/**
- * Shared ownership rule: another platform claims the same skill, same source,
- * and same observed path (shared canonical targets such as
- * `~/.agents/skills`, reached via several agent IDs). A bare same-name
- * record, a different source, or explicit `--skills` never authorizes adopting
- * an independent copy.
- */
+/** Explicit `--skills` never authorizes adopting an independent copy. */
 export const isSharedRecordedAsset = (
   record: SkillsRecord | null,
   platformId: string,
@@ -125,17 +113,7 @@ export const isSharedRecordedAsset = (
       entry.path === observed,
   );
 
-/**
- * Ownership preflight, run BEFORE any external effect (after flag validation
- * and interactive confirmation). The native target is listed and compared
- * against our own record: a present copy with no record is unmanaged and
- * aborts with the exclude-or-remove guidance (an explicit `--skills`
- * selection is not authorization to adopt it), unless the observed path
- * matches a recorded Maestria asset for another platform from the same
- * source, in which case re-adding is a safe idempotent share. Exclusions
- * never delete. Throws before any host mutation; callers must not catch it
- * as a per-platform note.
- */
+/** Throws before any host mutation; callers must not catch it as a per-platform note. */
 export const preflightCompanionOwnership = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -220,12 +198,6 @@ const removalSharesObservedPath = async (
       return otherId;
     }
   }
-  // Records never exhaust users: another agent may reference the same
-  // canonical path with no Maestria entry (for example Codex after only
-  // OpenCode was recorded). Scoped removal deletes that shared directory,
-  // so any other observed consumer preserves, never deletes. Inventory
-  // failures also preserve (fail closed). Agents for platforms dropping in
-  // this same run do not block each other; they are removed together.
   const ownAgent = companionAgentFor(platformId);
   const droppingAgents = new Set(
     [...droppingIds(effective)]
@@ -254,11 +226,7 @@ const removalSharesObservedPath = async (
   return null;
 };
 
-/**
- * Remove the tool-observed copy unless another observed consumer shares the
- * path. Single removal guard for the deselect and uninstall paths; callers
- * own their notes. Returns the sharer name when preserved, null when removed.
- */
+/** Single removal guard for the deselect and uninstall paths. */
 const removeIfUnshared = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -277,11 +245,7 @@ const removeIfUnshared = async (
 const sharedPreservedNote = (ownPath: string, sharer: string): string =>
   `Skill '${COMPANION_SKILL}' left in place at ${ownPath}; still provided by '${sharer}'.`;
 
-/**
- * Reconcile one selected target: idempotent re-add of the known managed
- * triple (never a broad `skills update`). Errors propagate to the caller,
- * which records them per platform without failing siblings.
- */
+/** Never uses a broad `skills update`; errors propagate per platform. */
 const reconcileSelectedTarget = async (
   runner: SkillCommandRunner,
   target: EffectiveSkillTarget,
@@ -298,14 +262,6 @@ const reconcileSelectedTarget = async (
   outcome.ok.set(target.id, true);
 };
 
-/**
- * Reconcile one deselected target: removal runs only for recorded (owned)
- * selections and only when no other observed consumer shares the
- * tool-observed path (owned record or independent agent inventory);
- * otherwise the copy is preserved with a note naming the sharer.
- * Unmanaged copies are left alone, with a presence note when the caller
- * explicitly reports exclusions.
- */
 const reconcileDeselectedTarget = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -452,13 +408,6 @@ export const attachCompanionObserved = (
 const manualRemoveCommand = (agent: string): string =>
   `npx -y ${SKILLS_CLI_PACKAGE} remove ${COMPANION_SKILL} -a ${agent} -g -y`;
 
-/**
- * Reconcile one uninstalled platform. Returns the merged result plus whether
- * the platform's record entry may drop (only when both sides succeeded).
- * Shared canonical copies still observed for another consumer are preserved
- * with a naming note; missing records leave the companion in place with a
- * manual command.
- */
 const reconcileOneUninstall = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -517,12 +466,6 @@ const reconcileOneUninstall = async (
   }
 };
 
-/**
- * Remove managed companions after successful plugin uninstalls. Only
- * recorded (owned) selections are removed, and only when no other observed
- * consumer shares the tool-observed path. Record entries drop only when
- * both sides succeeded.
- */
 export const reconcileUninstallCompanions = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,

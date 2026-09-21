@@ -92,9 +92,6 @@ export const parseSkillsRecord = (text: string, source: string): SkillsRecord =>
     if (entrySource !== undefined && typeof entrySource !== 'string') {
       throw corrupt(`platform '${platformId}' source is not a string`);
     }
-    // Unknown IDs are preserved, never reset: a newer writer may have stored
-    // IDs this version does not know yet. Flag validation still rejects
-    // unknown names on the command line.
     platforms[platformId] = {
       ...(typeof entrySource === 'string' ? { source: entrySource } : {}),
       ...(typeof recordPath === 'string' ? { path: recordPath } : {}),
@@ -241,15 +238,7 @@ const applyExcludeIds = (
   return { changed: changedVs(recorded, skills), skills };
 };
 
-/**
- * Resolve the effective skill selection for a platform. Validates unknown
- * names and `--skills`/`--exclude-skills` conflicts BEFORE any external
- * effect; callers must invoke this before install/update/stage mutations.
- *
- * Precedence: explicit `--skills` > explicit `--exclude-skills` applied to
- * defaults > recorded choices (no-flag scripted updates preserve them) >
- * inferred default for legacy installs without a record.
- */
+/** Callers must invoke this before install/update/stage mutations. */
 export const resolveSkillSelection = (
   platformId: string,
   options: { excludeSkills?: string; skills?: string },
@@ -288,7 +277,6 @@ export const withRecordedSelection = (
   version: SKILLS_RECORD_VERSION,
 });
 
-/** Remove one platform's selection on uninstall, preserving other platforms. */
 export const withoutRecordedSelection = (
   record: SkillsRecord | null,
   platformId: string,
@@ -315,10 +303,6 @@ export interface EffectiveSkillSelection {
 export const hasSkillFlags = (args: SkillFlagArgs): boolean =>
   (args.skills?.trim() ?? '') !== '' || (args.excludeSkills?.trim() ?? '') !== '';
 
-/**
- * Validate skill flags BEFORE any external effect. Unknown or conflicting
- * names throw here so no host mutation happens first.
- */
 export const validateSkillFlags = (
   platformIds: readonly string[],
   args: SkillFlagArgs,

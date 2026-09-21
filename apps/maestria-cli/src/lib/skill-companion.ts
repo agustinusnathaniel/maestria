@@ -103,7 +103,6 @@ const stripAnsi = (value: string): string =>
 const sanitizeDetail = (value: string): string =>
   stripAnsi(value).replaceAll(/\s+/gu, ' ').trim().slice(0, MAX_ERROR_DETAIL);
 
-/** Extract the trailing JSON array from spinner-contaminated child output. */
 const extractTrailingJson = (stdout: string): unknown => {
   const clean = stripAnsi(stdout);
   const start = clean.indexOf('[');
@@ -138,7 +137,6 @@ interface CompanionEntry {
 const asEntry = (value: unknown): CompanionEntry | null =>
   isRecord(value) ? { name: value.name, path: value.path, status: value.status } : null;
 
-/** `add --json` confirms with `{name, status: "installed"}` (verified skills@1.7.0; re-add is idempotent). */
 const entryConfirmsInstall = (entry: CompanionEntry, skill: string): boolean =>
   entry.name === skill && entry.status === 'installed';
 
@@ -201,11 +199,7 @@ export interface InstalledCompanion {
   readonly path: string;
 }
 
-/**
- * Add (or idempotently reconcile) one managed skill from one managed source
- * to one native target. Never runs a bare broad `skills update`: updates
- * reconcile by re-adding the known managed triple.
- */
+/** Never runs a bare broad `skills update`. */
 export const addCompanion = async (
   runner: SkillCommandRunner,
   ref: CompanionRef,
