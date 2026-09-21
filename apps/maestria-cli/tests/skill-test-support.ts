@@ -62,7 +62,7 @@ const toPlatformEntry = (
 /**
  * Shorthand record builder: arrays expand to `{ skills }`, legacy shared
  * `path`/`source` folds into the `create-pull-request` asset (matching the
- * version 1 migration), explicit `skillAssets` pass through. Version pinned
+ * legacy shared shape), explicit `skillAssets` pass through. Version pinned
  * to v2; corrupt-record coverage uses the real parser directly.
  */
 export const buildRecord = (
