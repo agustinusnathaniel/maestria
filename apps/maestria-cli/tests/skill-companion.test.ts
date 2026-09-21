@@ -8,6 +8,7 @@ import { CliError } from '@/lib/command-result.js';
 import {
   addCompanion,
   COMPANION_SKILL,
+  DOCS_UPDATE_SKILL,
   listCompanions,
   removeCompanion,
 } from '@/lib/skill-companion.js';
@@ -23,16 +24,25 @@ import {
 import { buildRecord } from './skill-test-support.js';
 
 const SKILL = COMPANION_SKILL;
+const DOCS = DOCS_UPDATE_SKILL;
 const SOURCE = 'test-source';
 const AGENT = 'opencode';
 
-const addJson = (agent: string, skillPath: string, status = 'installed'): string =>
+const skillOf = (args: readonly string[]): string => {
+  const flag = args.indexOf('-s');
+  if (flag !== -1) {
+    return args[flag + 1] ?? '';
+  }
+  return args[1] ?? '';
+};
+
+const addJson = (agent: string, skill: string, skillPath: string, status = 'installed'): string =>
   [
     'Installation Summary',
     `  ${skillPath}`,
     '',
     JSON.stringify([
-      { agents: ['OpenCode'], mode: 'copy', name: SKILL, path: skillPath, scope: 'global', status },
+      { agents: ['OpenCode'], mode: 'copy', name: skill, path: skillPath, scope: 'global', status },
     ]),
   ].join('\n');
 
@@ -40,33 +50,38 @@ const listJson = (entries: { name: string; path: string }[]): string =>
   JSON.stringify(entries.map((entry) => ({ ...entry, scope: 'global' })));
 
 /**
- * Observable fake of the external skills CLI: keeps per-agent installed
- * inventory and renders the same machine shapes the real CLI produces
- * (trailing JSON for add/list, human text for remove). No filesystem
- * assertions about target paths: identity flows through tool output only.
+ * Observable fake of the external skills CLI: keeps per-agent, per-skill
+ * installed inventory and renders the same machine shapes the real CLI
+ * produces (trailing JSON for add/list, human text for remove). Paths resolve
+ * per `agent:skill` first, then per agent, then a synthetic default: identity
+ * flows through tool output only.
  */
 const fakeCli = (paths: Record<string, string>): SkillCommandRunner => {
   const installed = new Map<string, { name: string; path: string }[]>();
+  const pathFor = (agent: string, skill: string): string =>
+    paths[`${agent}:${skill}`] ?? paths[agent] ?? `/fake/${agent}/${skill}`;
   // oxlint-disable-next-line require-await -- synchronous fake runner by design.
   return async (args: readonly string[]) => {
     const agentFlag = args.indexOf('-a');
     const agent = agentFlag === -1 ? '' : (args[agentFlag + 1] ?? '');
     const [command] = args;
     if (command === 'add') {
+      const skill = skillOf(args);
       const list = installed.get(agent) ?? [];
-      if (!list.some((entry) => entry.name === SKILL)) {
-        list.push({ name: SKILL, path: paths[agent] ?? `/fake/${agent}/${SKILL}` });
+      if (!list.some((entry) => entry.name === skill)) {
+        list.push({ name: skill, path: pathFor(agent, skill) });
       }
       installed.set(agent, list);
-      const current = installed.get(agent) ?? [];
-      return { stderr: '', stdout: addJson(agent, current[0]?.path ?? '') };
+      const current = list.find((entry) => entry.name === skill);
+      return { stderr: '', stdout: addJson(agent, skill, current?.path ?? '') };
     }
     if (command === 'list') {
       return { stderr: '', stdout: listJson(installed.get(agent) ?? []) };
     }
     if (command === 'remove') {
+      const skill = skillOf(args);
       const list = installed.get(agent) ?? [];
-      const kept = list.filter((entry) => entry.name !== SKILL);
+      const kept = list.filter((entry) => entry.name !== skill);
       installed.set(agent, kept);
       return {
         stderr: '',
@@ -179,7 +194,7 @@ describe('ownership preflight', () => {
       seen.push([...args]);
       return { stderr: '', stdout: '[]' };
     };
-    const record = buildRecord({ [AGENT]: [SKILL] });
+    const record = buildRecord({ [AGENT]: [SKILL, DOCS] });
     const effective = resolveEffectiveSkills([{ id: 'opencode' }], {}, record);
     await preflightCompanionOwnership(runner, record, effective);
     expect(seen).toEqual([]);
@@ -207,7 +222,7 @@ describe('ownership preflight', () => {
       seen.push([...args]);
       return { stderr: '', stdout: '[]' };
     };
-    const record = buildRecord({ [AGENT]: [SKILL] });
+    const record = buildRecord({ [AGENT]: [SKILL, DOCS] });
     const effective = resolveEffectiveSkills(
       [{ id: 'opencode' }],
       { excludeSkills: SKILL },
@@ -277,17 +292,64 @@ describe('ownership preflight', () => {
       SOURCE,
     );
     expect(outcome.ok.get('omp')).toBe(true);
-    expect(await listCompanions(runner, 'universal', { global: true })).toEqual([
-      { name: SKILL, path: shared },
-    ]);
+    expect(await listCompanions(runner, 'universal', { global: true })).toContainEqual({
+      name: SKILL,
+      path: shared,
+    });
   });
 });
 
 describe('reconcile companions', () => {
   it('adds selected skills and records the observed source and path', async () => {
     await isolateRecord();
-    const runner = fakeCli({ [AGENT]: '/fake/shared/create-pull-request' });
+    const runner = fakeCli({
+      [AGENT]: '/fake/shared/create-pull-request',
+      [`${AGENT}:${DOCS}`]: '/fake/shared/docs-update',
+    });
     const { writeSkillsRecord } = await import('@/lib/skills.js');
+    const { persistSuccessfulSelections } = await import('@/lib/skills.js');
+    const { attachCompanionObserved } = await import('@/lib/skill-reconcile.js');
+    const effective = resolveEffectiveSkills([{ id: 'opencode' }], {}, null);
+    expect(effective[0]?.selection.skills).toEqual([SKILL, DOCS]);
+    const outcome = await reconcileCompanions(
+      runner,
+      null,
+      effective,
+      new Map([['opencode', true]]),
+      SOURCE,
+    );
+    expect(outcome.ok.get('opencode')).toBe(true);
+    expect(outcome.actual.get('opencode')).toEqual([SKILL, DOCS]);
+    await persistSuccessfulSelections(
+      null,
+      attachCompanionObserved(effective, outcome),
+      [{ id: 'opencode', ok: true }],
+      false,
+    );
+    const { readSkillsRecord } = await import('@/lib/skills.js');
+    const saved = await readSkillsRecord();
+    expect(saved?.platforms.opencode?.skills).toEqual([SKILL, DOCS]);
+    expect(saved?.platforms.opencode?.skillAssets?.[SKILL]).toMatchObject({ source: SOURCE });
+    expect(saved?.platforms.opencode?.skillAssets?.[DOCS]?.source).toBe(SOURCE);
+    // Each skill keeps its own observed path: one skill's history never
+    // overwrites the other's.
+    expect(saved?.platforms.opencode?.skillAssets?.[SKILL]?.path).toBe(
+      '/fake/shared/create-pull-request',
+    );
+    expect(saved?.platforms.opencode?.skillAssets?.[DOCS]?.path).toBe('/fake/shared/docs-update');
+    await writeSkillsRecord(saved ?? { platforms: {}, version: 2 });
+  });
+
+  it('records partial success recoverably and never marks the failed skill installed', async () => {
+    await isolateRecord();
+    const base = fakeCli({ [AGENT]: '/fake/p' });
+    // oxlint-disable-next-line require-await -- synchronous fake runner by design.
+    const runner: SkillCommandRunner = async (args: readonly string[]) => {
+      if (args[0] === 'add' && skillOf(args) === DOCS) {
+        throw new Error('docs backend unavailable');
+      }
+      return await base(args);
+    };
     const { persistSuccessfulSelections } = await import('@/lib/skills.js');
     const { attachCompanionObserved } = await import('@/lib/skill-reconcile.js');
     const effective = resolveEffectiveSkills([{ id: 'opencode' }], {}, null);
@@ -298,19 +360,92 @@ describe('reconcile companions', () => {
       new Map([['opencode', true]]),
       SOURCE,
     );
-    expect(outcome.ok.get('opencode')).toBe(true);
+    expect(outcome.ok.get('opencode')).toBe(false);
+    expect(outcome.actual.get('opencode')).toEqual([SKILL]);
+    const combined = applyCompanionOutcomes(
+      [{ id: 'opencode', label: 'OpenCode', message: 'Installed', ok: true }],
+      effective,
+      outcome,
+    );
+    // Exported JSON reports actuals, not intent: no false installed claim.
+    expect(combined[0]?.ok).toBe(false);
+    expect(combined[0]?.skills).toEqual([SKILL]);
+    expect(combined[0]?.message).toMatch(/only confirmed skills were recorded/u);
+    expect(combined[0]?.message).toMatch(/Retry with --skills/u);
     await persistSuccessfulSelections(
       null,
       attachCompanionObserved(effective, outcome),
-      [{ id: 'opencode', ok: true }],
+      combined.map((result) => ({ id: result.id, ok: result.ok })),
       false,
     );
     const { readSkillsRecord } = await import('@/lib/skills.js');
     const saved = await readSkillsRecord();
+    // The successful sibling stays recorded (a retry is not unmanaged);
+    // the failed skill is absent, never marked installed.
     expect(saved?.platforms.opencode?.skills).toEqual([SKILL]);
-    expect(saved?.platforms.opencode?.source).toBe(SOURCE);
-    expect(saved?.platforms.opencode?.path).toBe('/fake/shared/create-pull-request');
-    await writeSkillsRecord(saved ?? { platforms: {}, version: 1 });
+    expect(saved?.platforms.opencode?.skillAssets?.[SKILL]?.source).toBe(SOURCE);
+    expect(saved?.platforms.opencode?.skillAssets?.[DOCS]).toBeUndefined();
+  });
+
+  it('aborts on an unmanaged docs-update copy before any plugin effect', async () => {
+    const runner = fakeCli({ [AGENT]: '/fake/stray/docs-update' });
+    await addCompanion(runner, { agent: AGENT, skill: DOCS, source: SOURCE }, { global: true });
+    const effective = resolveEffectiveSkills([{ id: 'opencode' }], { skills: DOCS }, null);
+    await expect(preflightCompanionOwnership(runner, null, effective)).rejects.toThrow(
+      /Existing unmanaged skill 'docs-update'.*--exclude-skills docs-update/u,
+    );
+  });
+
+  it('preserves the shared docs-update copy while another owned platform stays active', async () => {
+    const shared = '/fake/shared/docs-update';
+    const runner = fakeCli({ [`codex:${DOCS}`]: shared, [`opencode:${DOCS}`]: shared });
+    await addCompanion(runner, { agent: 'codex', skill: DOCS, source: SOURCE }, { global: true });
+    await addCompanion(
+      runner,
+      { agent: 'opencode', skill: DOCS, source: SOURCE },
+      { global: true },
+    );
+    const staying = buildRecord({ codex: [DOCS], opencode: [DOCS] });
+    const onlyOpencode = [{ id: 'opencode', label: undefined as string | undefined }].map(
+      (target) => ({
+        ...target,
+        selection: { changed: true, skills: [] as string[] },
+      }),
+    );
+    const outcome = await reconcileCompanions(
+      runner,
+      staying,
+      onlyOpencode,
+      new Map([['opencode', true]]),
+      SOURCE,
+    );
+    expect(outcome.ok.get('opencode')).toBe(true);
+    expect(outcome.notes.get('opencode')).toMatch(/still provided by 'codex'/u);
+    expect(await listCompanions(runner, 'codex', { global: true })).toEqual([
+      { name: DOCS, path: shared },
+    ]);
+  });
+
+  it('preserves unknown skill IDs with a note and never runs them', async () => {
+    const seen: string[][] = [];
+    const inner = fakeCli({});
+    const runner: SkillCommandRunner = async (args: readonly string[]) => {
+      seen.push([...args]);
+      return await inner(args);
+    };
+    const record = buildRecord({ opencode: [SKILL, 'future-skill'] });
+    const effective = resolveEffectiveSkills([{ id: 'opencode' }], {}, record);
+    const outcome = await reconcileCompanions(
+      runner,
+      record,
+      effective,
+      new Map([['opencode', true]]),
+      SOURCE,
+    );
+    expect(outcome.ok.get('opencode')).toBe(true);
+    expect(outcome.notes.get('opencode')).toMatch(/not managed by this CLI version/u);
+    expect(outcome.actual.get('opencode')).toEqual([SKILL, 'future-skill']);
+    expect(seen.filter((args) => args.includes('future-skill'))).toEqual([]);
   });
 
   it('preserves shared copies while another owned platform stays active', async () => {
@@ -449,6 +584,8 @@ describe('reconcile companions', () => {
       { global: true },
     );
     const effective = resolveEffectiveSkills([{ id: 'opencode' }], { excludeSkills: SKILL }, null);
+    // Excluding one skill still selects the other; reconciliation is per skill.
+    expect(effective[0]?.selection.skills).toEqual([DOCS]);
     const outcome = await reconcileCompanions(
       runner,
       null,
@@ -459,9 +596,16 @@ describe('reconcile companions', () => {
     );
     expect(outcome.ok.get('opencode')).toBe(true);
     expect(outcome.notes.get('opencode')).toMatch(/left in place/u);
-    expect(await listCompanions(runner, 'opencode', { global: true })).toEqual([
-      { name: SKILL, path: present },
-    ]);
+    expect(await listCompanions(runner, 'opencode', { global: true })).toContainEqual({
+      name: SKILL,
+      path: present,
+    });
+    // Removing docs-update never removes create-pull-request and vice versa:
+    // the unmanaged PR copy is untouched while docs reconciles independently.
+    expect(await listCompanions(runner, 'opencode', { global: true })).toContainEqual({
+      name: DOCS,
+      path: present,
+    });
   });
 
   it('keeps the core fallback note for unknown hosts without faking a target', async () => {
@@ -493,7 +637,7 @@ describe('reconcile companions', () => {
     expect(isCompanionSupported('omp')).toBe(true);
     const runner = fakeCli({ universal: '/fake/shared/create-pull-request' });
     const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, null);
-    expect(effective[0]?.selection.skills).toEqual([SKILL]);
+    expect(effective[0]?.selection.skills).toEqual([SKILL, DOCS]);
     const outcome = await reconcileCompanions(
       runner,
       null,
@@ -503,9 +647,10 @@ describe('reconcile companions', () => {
     );
     expect(outcome.ok.get('omp')).toBe(true);
     expect(outcome.notes.get('omp')).toBeUndefined();
-    expect(await listCompanions(runner, 'universal', { global: true })).toEqual([
-      { name: SKILL, path: '/fake/shared/create-pull-request' },
-    ]);
+    expect(await listCompanions(runner, 'universal', { global: true })).toContainEqual({
+      name: SKILL,
+      path: '/fake/shared/create-pull-request',
+    });
   });
 });
 
@@ -615,7 +760,12 @@ describe('apply companion outcomes', () => {
     const combined = applyCompanionOutcomes(
       [{ id: 'opencode', label: 'OpenCode', message: 'Plugin failed', ok: false }],
       effective,
-      { notes: new Map(), observed: new Map(), ok: new Map([['opencode', false]]) },
+      {
+        actual: new Map(),
+        notes: new Map(),
+        observed: new Map(),
+        ok: new Map([['opencode', false]]),
+      },
     );
     expect(combined[0]?.ok).toBe(false);
     expect(combined[0]?.message).toMatch(/Plugin operation failed/u);
@@ -624,22 +774,36 @@ describe('apply companion outcomes', () => {
 });
 
 describe('record roundtrip', () => {
-  it('persists observed source and path and reads them back', async () => {
+  it('persists per-skill observed source and path and reads them back', async () => {
     await isolateRecord();
     const { readSkillsRecord, withRecordedSelection, writeSkillsRecord } =
       await import('@/lib/skills.js');
     const next = withRecordedSelection(null, 'pi', [SKILL], {
-      path: '/fake/pi/create-pull-request',
-      source: SOURCE,
+      [SKILL]: { path: '/fake/pi/create-pull-request', source: SOURCE },
     });
     await writeSkillsRecord(next);
     const text = await readFile(`${process.env.MAESTRIA_CONFIG_DIR}/skills.json`, 'utf-8');
     expect(text).toContain(SOURCE);
     const saved = await readSkillsRecord();
-    expect(saved?.platforms.pi).toMatchObject({
-      path: '/fake/pi/create-pull-request',
-      skills: [SKILL],
-      source: SOURCE,
+    expect(saved?.platforms.pi?.skills).toEqual([SKILL]);
+    expect(saved?.platforms.pi?.skillAssets).toMatchObject({
+      [SKILL]: { path: '/fake/pi/create-pull-request', source: SOURCE },
     });
+  });
+
+  it('keeps unknown skill history when uninstalling managed skills', async () => {
+    await isolateRecord();
+    const runner = fakeCli({ [AGENT]: '/fake/p' });
+    await addCompanion(runner, { agent: AGENT, skill: SKILL, source: SOURCE }, { global: true });
+    const record = buildRecord({ opencode: [SKILL, 'future-skill'] });
+    const combined = await reconcileUninstallCompanions(runner, record, [
+      { id: 'opencode', label: 'OpenCode', message: 'Uninstalled', ok: true },
+    ]);
+    expect(combined.results[0]?.ok).toBe(true);
+    expect(await listCompanions(runner, AGENT, { global: true })).toEqual([]);
+    const { readSkillsRecord } = await import('@/lib/skills.js');
+    const saved = await readSkillsRecord();
+    // The managed copy is gone, but the unknown ID and its history survive.
+    expect(saved?.platforms.opencode?.skills).toEqual(['future-skill']);
   });
 });

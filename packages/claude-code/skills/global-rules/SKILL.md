@@ -45,9 +45,8 @@ At acceptance, classify visual evidence as required (changed surfaces, relevant 
 
 ### Documentation and changesets
 
-- Assess internal docs, user-facing docs, changelog/release notes, and required changesets separately; update only affected categories, with a concise reason when a plausible category needs no update.
-- Carry required documentation through implementation and review briefs to final reconciliation; missing affected docs leaves acceptance incomplete.
-- Keep the assessment proportionate to the change.
+- Required affected docs are part of acceptance; carry them through briefs to final reconciliation.
+- When docs work applies, load the available `docs-update` methodology skill and follow it; a missing skill never blocks ordinary docs work.
 
 Keep file, package, and runtime scope explicit. Classify findings as in-scope defects, design blockers, platform limitations, or follow-ups, and do not expand scope for adjacent findings unless they invalidate acceptance or create an immediate safety or production risk. Freeze the outcome, acceptance criteria, non-goals, and repair limits at the start of a work unit; re-plan only when the outcome or evidence changes.
 

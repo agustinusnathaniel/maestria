@@ -7,12 +7,12 @@ import { isRecord, parseJsonValue } from '@/lib/primitives.js';
 /**
  * Companion skill installation through the external `skills` CLI.
  *
- * The Maestria-owned `create-pull-request` skill lives once at the repository
- * root (`skills/create-pull-request/SKILL.md`). The CLI never copies skill
- * bodies, never symlinks them, and never keeps its own path registry: it
- * installs or removes the companion through the official skills CLI (pinned
- * `1.7.0` from `https://github.com/vercel-labs/skills.git`), scoped to one
- * known managed skill, source, and native target. Path identity always comes
+ * Maestria-owned methodology skills live once at the repository root
+ * (`skills/<skill>/SKILL.md`). The CLI never copies skill bodies, never
+ * symlinks them, and never keeps its own path registry: it installs or
+ * removes companions through the official skills CLI (pinned `1.7.0` from
+ * `https://github.com/vercel-labs/skills.git`), scoped to one known managed
+ * skill, source, and native target per operation. Path identity always comes
  * from the tool's own machine output (`add --json`, `list --json`); this
  * module hardcodes no target directories.
  *
@@ -46,6 +46,10 @@ export const SKILLS_CLI_PACKAGE = `skills@${SKILLS_CLI_VERSION}`;
 /** Default remote source; unavailable until this feature merges to main. */
 export const SKILLS_SOURCE = 'agustinusnathaniel/maestria';
 export const COMPANION_SKILL = 'create-pull-request';
+/** Second managed methodology skill: documentation-impact assessment. */
+export const DOCS_UPDATE_SKILL = 'docs-update';
+/** Every skill this CLI version knows how to install, update, or remove. */
+export const MANAGED_SKILLS: readonly string[] = [COMPANION_SKILL, DOCS_UPDATE_SKILL];
 
 /**
  * Maestria platform ID to native skills-CLI agent ID. `null` means no

@@ -1,30 +1,39 @@
 import { CliError } from '@/lib/command-result.js';
 import { isFileNotFound, isRecord, isStringArray } from '@/lib/primitives.js';
 import { getMaestriaConfigDir } from '@/lib/shell.js';
+import { COMPANION_SKILL, DOCS_UPDATE_SKILL } from '@/lib/skill-companion.js';
 import path from 'node:path';
 
 /**
  * Methodology skill selection for Maestria-managed installations.
  *
- * Only `create-pull-request` is selectable today; `none` explicitly selects
- * no skills. Fresh installs default to all current default skills except an
- * explicit opt-out. Legacy installs lacking a record receive an inferred
- * migration: `create-pull-request` is an extracted existing capability (the
- * PR delivery contract previously lived in core), not a new optional
- * workflow, so the inferred selection includes it. There was no prior
+ * `create-pull-request` and `docs-update` are selectable; `none` explicitly
+ * selects no skills. Fresh installs default to all current default skills
+ * except an explicit opt-out. Legacy installs lacking a record keep the prior
+ * single-skill inference on the update path only: `create-pull-request` is an
+ * extracted existing capability (the PR delivery contract previously lived in
+ * core), not a new optional workflow, so the inferred update selection
+ * includes it while a fresh install defaults to both. There was no prior
  * exclusion mechanism, so inference cannot silently re-enable an explicit
- * exclusion.
+ * exclusion, and a legacy update never silently gains the new docs skill.
  *
  * Selections are stored per platform (not one global excluded list) so a
  * future default or per-host intent is preserved independently. The record is
  * a durable user preference at `$XDG_CONFIG_HOME/maestria/skills.json`
  * (fallback `~/.config/maestria/skills.json`), owned by the CLI. Runtime
  * plugins never read it; the CLI enforces selections by installing or
- * removing the companion skill through the external skills CLI.
+ * removing each companion skill through the external skills CLI. Observed
+ * tool output is kept per skill (`skillAssets`), never as one shared
+ * source/path: removing one skill must never disturb another.
  */
 
-export const SKILLS_RECORD_VERSION = 1;
-export const DEFAULT_SKILLS: readonly string[] = ['create-pull-request'];
+export const SKILLS_RECORD_VERSION = 2;
+export const DEFAULT_SKILLS: readonly string[] = [COMPANION_SKILL, DOCS_UPDATE_SKILL];
+/**
+ * No-record inference for the update path only: installs that predate skill
+ * selection had the PR contract but never the docs skill.
+ */
+export const LEGACY_UPDATE_SKILLS: readonly string[] = [COMPANION_SKILL];
 export const KNOWN_SKILLS: readonly string[] = [...DEFAULT_SKILLS];
 const NONE_TOKEN = 'none';
 
@@ -36,14 +45,27 @@ export const getSkillsRecordPath = (): string => {
   return path.join(base, 'skills.json');
 };
 
+export interface SkillAsset {
+  /** Source key the skill was installed from, as observed in tool output. */
+  readonly source?: string;
+  /** Native path the tool observed in its own machine output. */
+  readonly path?: string;
+}
+
 export interface PlatformSkillSelection {
   readonly skills: string[];
   readonly updatedAt?: string;
   /**
-   * Minimal history of our own successful operations: the source the skill
-   * was installed from plus the native path the tool observed in its own
-   * machine output. Paths are never trusted from disk; identity is always
-   * re-observed with `list --json` before mutation.
+   * Minimal history of our own successful operations, keyed by skill: the
+   * source each skill was installed from plus the native path the tool
+   * observed in its own machine output. Paths are never trusted from disk;
+   * identity is always re-observed with `list --json` before mutation.
+   * Unknown skill keys from newer writers are preserved untouched.
+   */
+  readonly skillAssets?: Record<string, SkillAsset>;
+  /**
+   * Version 1 shape (single shared source/path). Read-only migration input:
+   * parsed into `skillAssets` for `create-pull-request` only, never written.
    */
   readonly source?: string;
   readonly path?: string;
@@ -53,6 +75,129 @@ export interface SkillsRecord {
   readonly version: number;
   readonly platforms: Record<string, PlatformSkillSelection>;
 }
+
+const parseSkillAsset = (
+  value: unknown,
+  platformId: string,
+  skillId: string,
+  source: string,
+): SkillAsset | undefined => {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!isRecord(value)) {
+    throw new CliError(
+      `Skill selection record is corrupt (platform '${platformId}' skill '${skillId}' asset is not an object): ${source}`,
+      1,
+    );
+  }
+  const { path: assetPath, source: assetSource } = value;
+  if (assetPath !== undefined && typeof assetPath !== 'string') {
+    throw new CliError(
+      `Skill selection record is corrupt (platform '${platformId}' skill '${skillId}' path is not a string): ${source}`,
+      1,
+    );
+  }
+  if (assetSource !== undefined && typeof assetSource !== 'string') {
+    throw new CliError(
+      `Skill selection record is corrupt (platform '${platformId}' skill '${skillId}' source is not a string): ${source}`,
+      1,
+    );
+  }
+  return {
+    ...(typeof assetSource === 'string' ? { source: assetSource } : {}),
+    ...(typeof assetPath === 'string' ? { path: assetPath } : {}),
+  };
+};
+
+/** Version 1 migration: the single shared source/path described the `create-pull-request` install only. */
+const parseV1Assets = (
+  entry: Record<string, unknown>,
+  platformId: string,
+  source: string,
+): Record<string, SkillAsset> => {
+  const { path: recordPath, source: entrySource } = entry;
+  if (recordPath !== undefined && typeof recordPath !== 'string') {
+    throw new CliError(
+      `Skill selection record is corrupt (platform '${platformId}' path is not a string): ${source}`,
+      1,
+    );
+  }
+  if (entrySource !== undefined && typeof entrySource !== 'string') {
+    throw new CliError(
+      `Skill selection record is corrupt (platform '${platformId}' source is not a string): ${source}`,
+      1,
+    );
+  }
+  // Adopted for `create-pull-request` and never for `docs-update`, so legacy
+  // updates do not silently gain the newer skill.
+  if (typeof entrySource !== 'string' && typeof recordPath !== 'string') {
+    return {};
+  }
+  return {
+    [COMPANION_SKILL]: {
+      ...(typeof entrySource === 'string' ? { source: entrySource } : {}),
+      ...(typeof recordPath === 'string' ? { path: recordPath } : {}),
+    },
+  };
+};
+
+const parseV2Assets = (
+  entry: Record<string, unknown>,
+  platformId: string,
+  source: string,
+): Record<string, SkillAsset> => {
+  const { skillAssets } = entry;
+  if (skillAssets === undefined) {
+    return {};
+  }
+  if (!isRecord(skillAssets)) {
+    throw new CliError(
+      `Skill selection record is corrupt (platform '${platformId}' skillAssets is not an object): ${source}`,
+      1,
+    );
+  }
+  const assets: Record<string, SkillAsset> = {};
+  for (const [skillId, asset] of Object.entries(skillAssets)) {
+    const parsedAsset = parseSkillAsset(asset, platformId, skillId, source);
+    if (parsedAsset !== undefined) {
+      assets[skillId] = parsedAsset;
+    }
+  }
+  return assets;
+};
+
+const parsePlatformEntry = (
+  entry: unknown,
+  platformId: string,
+  version: number,
+  source: string,
+): PlatformSkillSelection => {
+  if (!isRecord(entry)) {
+    throw new CliError(
+      `Skill selection record is corrupt (platform '${platformId}' is not an object): ${source}`,
+      1,
+    );
+  }
+  const { skills } = entry;
+  if (!isStringArray(skills)) {
+    throw new CliError(
+      `Skill selection record is corrupt (platform '${platformId}' skills is not a string array): ${source}`,
+      1,
+    );
+  }
+  // Unknown IDs are preserved, never reset: a newer writer may have stored
+  // IDs this version does not know yet. Flag validation still rejects
+  // unknown names on the command line.
+  const assets =
+    version === SKILLS_RECORD_VERSION - 1
+      ? parseV1Assets(entry, platformId, source)
+      : parseV2Assets(entry, platformId, source);
+  return {
+    ...(Object.keys(assets).length > 0 ? { skillAssets: assets } : {}),
+    skills: [...skills],
+  };
+};
 
 export const parseSkillsRecord = (text: string, source: string): SkillsRecord => {
   const corrupt = (detail: string): CliError =>
@@ -67,7 +212,7 @@ export const parseSkillsRecord = (text: string, source: string): SkillsRecord =>
     throw corrupt('not an object');
   }
   const { platforms: platformsValue, version } = parsed;
-  if (version !== SKILLS_RECORD_VERSION) {
+  if (version !== SKILLS_RECORD_VERSION && version !== SKILLS_RECORD_VERSION - 1) {
     throw new CliError(
       `Skill selection record version ${String(version)} is unsupported (expected ${SKILLS_RECORD_VERSION}): ${source}`,
       1,
@@ -78,25 +223,7 @@ export const parseSkillsRecord = (text: string, source: string): SkillsRecord =>
   }
   const platforms: Record<string, PlatformSkillSelection> = {};
   for (const [platformId, entry] of Object.entries(platformsValue)) {
-    if (!isRecord(entry)) {
-      throw corrupt(`platform '${platformId}' is not an object`);
-    }
-    const { skills } = entry;
-    if (!isStringArray(skills)) {
-      throw corrupt(`platform '${platformId}' skills is not a string array`);
-    }
-    const { path: recordPath, source: entrySource } = entry;
-    if (recordPath !== undefined && typeof recordPath !== 'string') {
-      throw corrupt(`platform '${platformId}' path is not a string`);
-    }
-    if (entrySource !== undefined && typeof entrySource !== 'string') {
-      throw corrupt(`platform '${platformId}' source is not a string`);
-    }
-    platforms[platformId] = {
-      ...(typeof entrySource === 'string' ? { source: entrySource } : {}),
-      ...(typeof recordPath === 'string' ? { path: recordPath } : {}),
-      skills: [...skills],
-    };
+    platforms[platformId] = parsePlatformEntry(entry, platformId, version, source);
   }
   return { platforms, version: SKILLS_RECORD_VERSION };
 };
@@ -119,16 +246,15 @@ export const readSkillsRecord = async (): Promise<SkillsRecord | null> => {
 
 export const writeSkillsRecord = async (record: SkillsRecord): Promise<void> => {
   const recordPath = getSkillsRecordPath();
-  const { mkdir, writeFile } = await import('node:fs/promises');
-  await mkdir(path.dirname(recordPath), { recursive: true });
-  const payload = JSON.stringify(
+  // Serialize fully before touching the filesystem: a serialization failure
+  // must never truncate or replace the existing record.
+  const payload = `${JSON.stringify(
     {
       platforms: Object.fromEntries(
         Object.entries(record.platforms).map(([id, entry]) => [
           id,
           {
-            ...(entry.source === undefined ? {} : { source: entry.source }),
-            ...(entry.path === undefined ? {} : { path: entry.path }),
+            ...(entry.skillAssets === undefined ? {} : { skillAssets: entry.skillAssets }),
             skills: entry.skills,
             updatedAt: new Date().toISOString(),
           },
@@ -138,8 +264,22 @@ export const writeSkillsRecord = async (record: SkillsRecord): Promise<void> => 
     },
     null,
     2,
-  );
-  await writeFile(recordPath, `${payload}\n`, 'utf-8');
+  )}\n`;
+  const { mkdir, rename, rm, writeFile } = await import('node:fs/promises');
+  await mkdir(path.dirname(recordPath), { recursive: true });
+  // Same-directory uniquely named temp plus rename: readers never observe a
+  // half-written record, and a failed write or rename leaves the prior
+  // record in place while the owned temp is cleaned up. This is atomic
+  // replacement only, not concurrency control: concurrent writers can still
+  // last-writer-win.
+  const tempPath = `${recordPath}.${process.pid}.tmp`;
+  try {
+    await writeFile(tempPath, payload, 'utf-8');
+    await rename(tempPath, recordPath);
+  } catch (error) {
+    await rm(tempPath, { force: true });
+    throw error;
+  }
 };
 
 const normalizeCsv = (value: string): string[] => [
@@ -232,31 +372,54 @@ const applyIncludeIds = (
 const applyExcludeIds = (
   excludeIds: string[],
   recorded: string[] | null,
+  fallback: readonly string[],
 ): ResolvedSkillSelection => {
-  const base = recorded ?? [...DEFAULT_SKILLS];
+  const base = recorded ?? [...fallback];
   const skills = base.filter((s) => !excludeIds.includes(s));
   return { changed: changedVs(recorded, skills), skills };
 };
 
-/** Callers must invoke this before install/update/stage mutations. */
+/** Fresh installs default to every current skill; legacy updates infer less. */
+export interface SkillResolutionContext {
+  /**
+   * True on the update path when no record exists yet: the install predates
+   * skill selection, so inference covers only the extracted PR capability and
+   * never silently adds the newer docs skill.
+   */
+  readonly updateBootstrap?: boolean;
+}
+
+/**
+ * Resolve the effective skill selection for a platform. Validates unknown
+ * names and `--skills`/`--exclude-skills` conflicts BEFORE any external
+ * effect; callers must invoke this before install/update/stage mutations.
+ *
+ * Precedence: explicit `--skills` > explicit `--exclude-skills` applied to
+ * defaults > recorded choices (no-flag scripted updates preserve them
+ * exactly, including `[]`) > inferred default for legacy installs without a
+ * record (fresh installs default to all current skills, update bootstrap to
+ * the prior single skill).
+ */
 export const resolveSkillSelection = (
   platformId: string,
   options: { excludeSkills?: string; skills?: string },
   record: SkillsRecord | null,
+  context: SkillResolutionContext = {},
 ): ResolvedSkillSelection => {
   const { excludeIds, includeIds } = parseSkillFlags(options);
   const recorded = record?.platforms[platformId]?.skills ?? null;
+  const fallback = context.updateBootstrap === true ? LEGACY_UPDATE_SKILLS : DEFAULT_SKILLS;
 
   if (includeIds !== null) {
     return applyIncludeIds(includeIds, recorded);
   }
   if (excludeIds !== null) {
-    return applyExcludeIds(excludeIds, recorded);
+    return applyExcludeIds(excludeIds, recorded, fallback);
   }
   if (recorded !== null) {
     return { changed: false, skills: [...recorded] };
   }
-  return { changed: false, skills: [...DEFAULT_SKILLS] };
+  return { changed: false, skills: [...fallback] };
 };
 
 /** Record a successful per-platform selection (only after actual success). */
@@ -264,13 +427,14 @@ export const withRecordedSelection = (
   record: SkillsRecord | null,
   platformId: string,
   skills: string[],
-  observed?: { path?: string; source?: string },
+  skillAssets?: Record<string, SkillAsset>,
 ): SkillsRecord => ({
   platforms: {
     ...record?.platforms,
     [platformId]: {
-      ...(observed?.source === undefined ? {} : { source: observed.source }),
-      ...(observed?.path === undefined ? {} : { path: observed.path }),
+      ...(skillAssets === undefined || Object.keys(skillAssets).length === 0
+        ? {}
+        : { skillAssets: { ...skillAssets } }),
       skills: [...skills],
     },
   },
@@ -323,15 +487,20 @@ export const summarizeSelections = (
 
 /**
  * Persist selections only for platforms whose operation actually succeeded.
- * Failures keep their prior record; partial effects stay truthful. Observed
- * tool output (source key plus native path) is stored alongside selections
- * when the caller supplies it.
+ * Failures keep their prior record, except partial skill success: when at
+ * least one skill was confirmed this run, the confirmed actuals persist
+ * recoverably while a failed skill is never recorded as installed. Prior
+ * assets for skills still in the confirmed list (for example unknown IDs
+ * from a newer writer) merge through; assets for dropped skills do not.
+ * Observed tool output (per-skill source plus native path) is stored
+ * alongside selections when the caller supplies it.
  */
 export const persistSuccessfulSelections = async (
   record: SkillsRecord | null,
   effective: readonly {
     id: string;
-    observed?: { path?: string; source?: string };
+    actualSkills?: string[];
+    observed?: Record<string, SkillAsset>;
     selection: ResolvedSkillSelection;
   }[],
   results: readonly { id: string; ok: boolean }[],
@@ -340,9 +509,17 @@ export const persistSuccessfulSelections = async (
   const okIds = new Set(results.filter((result) => result.ok).map((result) => result.id));
   let next = record;
   for (const entry of effective) {
-    if (okIds.has(entry.id) && (!onlyChanged || entry.selection.changed)) {
-      next = withRecordedSelection(next, entry.id, entry.selection.skills, entry.observed);
+    const actual = entry.actualSkills ?? entry.selection.skills;
+    const partialSuccess =
+      entry.actualSkills !== undefined && Object.keys(entry.observed ?? {}).length > 0;
+    if ((!okIds.has(entry.id) && !partialSuccess) || (onlyChanged && !entry.selection.changed)) {
+      continue;
     }
+    const priorAssets = next?.platforms[entry.id]?.skillAssets ?? {};
+    const kept = Object.fromEntries(
+      Object.entries(priorAssets).filter(([skill]) => actual.includes(skill)),
+    );
+    next = withRecordedSelection(next, entry.id, actual, { ...kept, ...entry.observed });
   }
   if (next !== record && next !== null) {
     await writeSkillsRecord(next);

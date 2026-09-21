@@ -5,6 +5,7 @@ import picocolors from 'picocolors';
 
 import {
   assertInteractiveTerminal,
+  batchCommandResult,
   detectInstalledOr,
   resolveBatchQuiet,
 } from '@/lib/batch-command.js';
@@ -16,8 +17,26 @@ import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { updateOne } from '@/lib/platform-transaction.js';
-import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
-import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
+import {
+  applyCompanionOutcomes,
+  attachCompanionObserved,
+  defaultSkillRunner,
+  normalizeSkillArgs,
+  preflightCompanionOwnership,
+  reconcileCompanions,
+  resolveEffectiveSkills,
+  resolveSkillsSource,
+  reviewSupportedSkills,
+  runSkillBatch,
+} from '@/lib/skill-reconcile.js';
+import {
+  hasSkillFlags,
+  persistSuccessfulSelections,
+  readSkillsRecord,
+  validateSkillFlags,
+} from '@/lib/skills.js';
+import type { SkillsRecord } from '@/lib/skills.js';
+import type { PlatformResult } from '@/types.js';
 import {
   VALID_PLATFORMS,
   validateOrThrow,
@@ -118,6 +137,49 @@ const collectInteractiveUpdateTargets = async (): Promise<
   );
 };
 
+/**
+ * Skill-only review when every installed plugin is already current. The
+ * plugin step is a reported no-op per platform while companions reconcile
+ * normally, so newly available skills still get reviewed and confirmed.
+ */
+const reviewCurrentInstallSkills = async (
+  args: UpdateArgs,
+  record: SkillsRecord | null,
+  upToDate: CommandResult,
+): Promise<CommandResult> => {
+  const installed = await Effect.runPromise(detectInstalled());
+  if (installed.length === 0) {
+    return upToDate;
+  }
+  const targets = installed.map((p) => ({ id: p.id, label: p.label }));
+  const resolved = resolveEffectiveSkills(targets, args, record, { updateBootstrap: true });
+  const reviewed = await reviewSupportedSkills(resolved, 'Update', args);
+  await preflightCompanionOwnership(defaultSkillRunner, record, reviewed);
+  const pluginOk = new Map(targets.map((target) => [target.id, true]));
+  const outcome = await reconcileCompanions(
+    defaultSkillRunner,
+    record,
+    reviewed,
+    pluginOk,
+    resolveSkillsSource(),
+    hasSkillFlags(args),
+  );
+  const current: PlatformResult[] = targets.map((target) => ({
+    id: target.id,
+    label: target.label ?? target.id,
+    message: 'Already up to date',
+    ok: true,
+  }));
+  const combined = applyCompanionOutcomes(current, reviewed, outcome);
+  await persistSuccessfulSelections(
+    record,
+    attachCompanionObserved(reviewed, outcome),
+    combined.map((result) => ({ id: result.id, ok: result.ok })),
+    false,
+  );
+  return batchCommandResult(combined, args);
+};
+
 export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> => {
   const args = normalizeSkillArgs(rawArgs);
   const isQuiet = resolveBatchQuiet(args);
@@ -143,14 +205,24 @@ export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> 
   } else {
     const outcome = await collectInteractiveUpdateTargets();
     if (!Array.isArray(outcome)) {
-      return outcome;
+      // Plugins are current, but companions may still need review (a new
+      // skill can appear while the plugin version is unchanged).
+      return await reviewCurrentInstallSkills(args, record, outcome);
     }
     targets = outcome;
   }
   // Same-version updates skip the plugin reinstall (the host reports
   // up-to-date) but still reconcile the companion independently.
-  return await runSkillBatch(targets, record, 'Update', args, isQuiet, (platform, quiet) =>
-    updateOne(platform, quiet, args.version),
+  // The update path never invents record state: without a record it infers
+  // only the prior PR skill, never the newer docs skill.
+  return await runSkillBatch(
+    targets,
+    record,
+    'Update',
+    args,
+    isQuiet,
+    (platform, quiet) => updateOne(platform, quiet, args.version),
+    { updateBootstrap: true },
   );
 };
 
@@ -192,7 +264,7 @@ export const updateCommand = defineCommand({
     },
     skills: {
       description:
-        "Methodology skills to activate (CSV, or 'none' for no skills). Default: recorded selection, else create-pull-request. Validated before any change.",
+        "Methodology skills to activate (CSV, or 'none' for no skills). Default: recorded selection, else create-pull-request for legacy installs without a record. Known: create-pull-request, docs-update. Validated before any change.",
       required: false,
       type: 'string',
     },

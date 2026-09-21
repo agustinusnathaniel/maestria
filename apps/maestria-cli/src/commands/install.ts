@@ -132,7 +132,7 @@ export const installCommand = defineCommand({
     },
     skills: {
       description:
-        "Methodology skills to activate (CSV, or 'none' for no skills). Default: create-pull-request. Validated before any change.",
+        "Methodology skills to activate (CSV, or 'none' for no skills). Default: create-pull-request, docs-update. Known: create-pull-request, docs-update. Validated before any change.",
       required: false,
       type: 'string',
     },

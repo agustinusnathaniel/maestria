@@ -560,25 +560,44 @@ describe('canonical directive behavioral contracts', () => {
     expect(rootSkill).toMatch(/never present a historical before as current/iu);
   });
 
-  it('assesses documentation categories separately and proportionately', () => {
+  it('routes the doc-impact procedure to the standalone docs-update skill', () => {
     const rules = readDirective('rules.md');
-
-    expect(rules).toMatch(
-      /internal docs, user-facing docs, changelog\/release notes, and required changesets/iu,
+    const rootSkill = readFileSync(
+      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'docs-update', 'SKILL.md'),
+      'utf-8',
     );
-    expect(rules).toMatch(/update only affected categories/iu);
-    expect(rules).toMatch(/concise reason when a plausible category needs no update/iu);
-    expect(rules).toMatch(/proportionate to the change/iu);
+
+    // Core keeps the obligation plus the router: acceptance, briefs carry,
+    // load-available pointer, and the missing-skill fallback.
+    expect(rules).toMatch(/required affected docs are part of acceptance/iu);
+    expect(rules).toMatch(/carry them through briefs to final reconciliation/iu);
+    expect(rules).toMatch(/`docs-update` methodology skill/iu);
+    expect(rules).toMatch(/missing skill never blocks ordinary docs work/iu);
+    // The four-category procedure lives once in the root skill, not in core.
+    expect(rules).not.toMatch(/internal docs, user-facing docs/iu);
+    expect(rootSkill).toMatch(
+      /internal docs, user-facing docs, changelog or release notes, and required changesets/iu,
+    );
+    assertOrdered(rootSkill, [
+      'Scope the change',
+      'Assess each category separately',
+      'Edit only affected sources',
+      'Verify claims',
+      'Summarize',
+    ]);
+    // Standalone contract: no core roles, roster, adapters, or self-absence fallback.
+    expect(rootSkill).not.toMatch(
+      /delivery owner|orchestrator|roster|runtime adapter|agent-directives|writer agent/iu,
+    );
+    expect(rootSkill).not.toMatch(/if this skill is absent|missing skill never blocks/iu);
   });
 
   it('carries required documentation through briefs to reconciliation and blocks acceptance when missing', () => {
     const rules = readDirective('rules.md');
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
-    expect(rules).toMatch(
-      /carry required documentation through implementation and review briefs to final reconciliation/iu,
-    );
-    expect(rules).toMatch(/missing affected docs leaves acceptance incomplete/iu);
+    expect(rules).toMatch(/carry them through briefs to final reconciliation/iu);
+    expect(rules).toMatch(/part of acceptance/iu);
     expect(orchestrator).toMatch(
       /carry required documentation per the global documentation and changesets contract/iu,
     );
