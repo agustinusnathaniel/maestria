@@ -469,6 +469,13 @@ describe('canonical directive behavioral contracts', () => {
     expect(rootSkill).toMatch(/\|\s*`?File`?\s*\|\s*What changed\s*\|\s*Why\s*\|/u);
     // Modal floor guard: the explicit-title qualifier must not weaken into inference.
     expect(rootSkill).not.toMatch(/title may be inferred/iu);
+    // Standalone contract: the root skill works installed alone, so the
+    // whole body must not require Maestria core roles, roster, adapters,
+    // or generated paths, and availability stays with the caller.
+    expect(rootSkill).not.toMatch(
+      /core owns|core authorization|delivery owner|orchestrator|roster|runtime adapter|agent-directives|global-rules/iu,
+    );
+    expect(rootSkill).not.toMatch(/if this skill is absent|minimal fallback/iu);
   });
 
   it('carries visual classification through briefs and keeps capture, handoff, publication, and readback distinct', () => {
@@ -491,14 +498,18 @@ describe('canonical directive behavioral contracts', () => {
     );
     expect(orchestrator).toMatch(/load the available `create-pull-request` skill/iu);
     expect(orchestrator).toMatch(/missing required evidence blocks acceptance/iu);
+    // The skill classifies first, then carries the full conditional
+    // procedure inline in the same file.
+    expect(rootSkill).toMatch(/not applicable.*concrete reason/iu);
+    expect(rootSkill).not.toMatch(/references\/visual-evidence\.md/iu);
     // Handoff carries paths plus captions plus coverage gaps; the reviewer
     // checks that coverage against the changed surface.
     expect(rootSkill).toMatch(/paths plus captions plus coverage gaps/iu);
     expect(rootSkill).toMatch(/reviewer checks that coverage against the changed surface/iu);
-    // Role split: the reviewer covers rendered coverage while the delivery
-    // owner reads back the actual published body (procedure lives in the skill).
+    // Role split: a reviewer covers rendered coverage while the drafting
+    // agent reads back the actual published body (procedure lives in the skill).
     expect(rootSkill).toMatch(/read back the published body/iu);
-    expect(rootSkill).toMatch(/read back the actual PR body as delivery owner/iu);
+    expect(rootSkill).toMatch(/read back the actual PR body yourself/iu);
     // Distinct stages: a local path alone never satisfies PR-body publication.
     expect(rootSkill).toMatch(
       /capture, handoff, publication in the PR body, and readback are distinct stages/iu,
@@ -509,7 +520,7 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/missing required evidence blocks acceptance/iu);
     expect(rules).toMatch(/means incomplete, not completed-with-limits/iu);
     expect(rootSkill).toMatch(
-      /do not claim delivery complete until the evidence is published in the PR body/iu,
+      /do not report delivery as complete until the evidence is published in the PR body/iu,
     );
     // Modal floor guard: the publication requirement must not weaken into optionality.
     expect(rootSkill).not.toMatch(/may claim delivery complete/iu);
@@ -541,6 +552,7 @@ describe('canonical directive behavioral contracts', () => {
       /when a later change affects captured appearance or behavior, replace affected captures/iu,
     );
     expect(rootSkill).toMatch(/remove obsolete or redundant PR body references/iu);
+    expect(rootSkill).toMatch(/refresh only affected content, not every commit/iu);
     expect(rootSkill).toMatch(
       /refresh only affected evidence, not every commit or unrelated file/iu,
     );

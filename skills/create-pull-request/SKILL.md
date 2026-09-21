@@ -5,15 +5,15 @@ name: create-pull-request
 
 # Create Pull Request
 
-Shape a reviewable PR title and body. Core owns outcome, evidence, review, and authorization. This skill owns only title and body conventions.
+You are the agent preparing the PR draft. Work in order: gather inputs, check the project template, write the title and body, then complete the draft or publish it when requested.
 
 ## When to use
 
-Use when preparing, revising, or reviewing a PR title and body draft, updating a PR after a push that changed diff or verification, or checking PR text before delivery. Read-only drafting or revision counts as in scope even when no capture, upload, or publication tool is available; report the missing-evidence limitation instead of refusing.
+Use when preparing, revising, or reviewing a PR title and body draft, updating a PR after a push that changed diff or verification, or checking PR text when publication is requested. Read-only drafting or revision counts as in scope even when no capture, upload, or publication tool is available; a draft-only request completes with a usable title and body while outstanding publication or evidence is reported as the remaining step.
 
-Do not use for code or diff investigation where no PR preparation is requested, merge/release/production decisions, or protected-branch commits. Those stay under core authorization and review rules.
+Do not use for code or diff investigation where no PR preparation is requested, merge/release/production decisions, or protected-branch commits. Those stay under the host, user, and project authorization and review rules.
 
-Stop if explicit project opt-out forbids PR creation or PR tooling install. Do not force a PR, install tooling, or work around the opt-out. Report the opt-out as the blocker.
+If the project forbids PR creation, stop only that operation and report it as the blocker for the PR step; continue other requested work. A ban on installing tools forbids neither drafting nor using a tool that is already available; stop only the forbidden operation and report the blocker on the affected step.
 
 ## Title
 
@@ -61,26 +61,35 @@ Rules for `## Changes`: describe the actual change and practical purpose, not th
 
 Rules for `## Verification`: list checks and results honestly. Carry unresolved acceptance gaps. Never claim unverified results.
 
+## Completion
+
+Complete the request in one of two ways:
+
+1. Draft-only request: the draft is complete when the title and body are usable and every outstanding item (publication, missing evidence, unchecked variants) is reported with its checked limitation. A draft-only result never presents itself as published.
+2. Actual PR creation or update, when requested and the tooling is available: publish with the existing host tooling, checking the tool current help when needed instead of relying on cached syntax, then read back the published body yourself and confirm it matches the current diff before reporting delivery. When publication or a required publishing step is unavailable or forbidden, report the outcome incomplete with the exact blocker instead of claiming delivery.
+
 ## Visual evidence where required
+
+When the change has a rendered surface, visual evidence is required; otherwise write `Not applicable: <concrete reason>` in the body and skip this section, including draft-only requests.
 
 For rendered surfaces, capture, handoff, publication in the PR body, and readback are distinct stages. A local path alone does not satisfy PR-body publication.
 
-Capture the affected screen or interaction, including relevant responsive or state variants, with an available browser or capture tool; a missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified. Preserve the local artifact at any workable path, including /tmp; do not auto-commit screenshots unless project policy requires it.
+Capture the affected screen or interaction, including relevant responsive or state variants, with an available browser or capture tool; a missing desktop display alone does not rule out headless capture. For text-only CLI output, a representative terminal transcript can be sufficient. If vision is available, inspect the capture; otherwise label it visually unverified. Preserve the local artifact at any workable path, including /tmp; do not auto-commit screenshots unless project policy requires it. Keep capture effort proportionate to the changed surface.
 
-Hand off implementer evidence as paths plus captions plus coverage gaps: each artifact states what it shows and which variants remain unchecked. The reviewer checks that coverage against the changed surface before delivery.
-
-Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the delivery tool current help for upload support instead of relying on cached syntax. Capture and upload are separate capabilities. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation.
+Record evidence as paths plus captions plus coverage gaps: each artifact states what it shows and which variants remain unchecked. When project review rules require an independent check, a reviewer checks that coverage against the changed surface before delivery.
 
 Present evidence concisely by changed screen or behavior: label each artifact with its state and relevant viewport or theme. Use a before/after table when comparison helps and a short captioned list for a single state or when tables would shrink images. Pair comparable captures with matching viewports and states, name the intended difference, and disclose missing baselines or unchecked variants without fabricating them. Keep representative captures in the main section with supplemental captures in a collapsible section when supported.
 
-For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals. Keep capture effort proportionate to the changed surface.
+For applicable changes, report evidence captured, unavailable with the checked limitation, or unnecessary with a concrete reason. Source-only documentation edits and mechanical moves preserving rendering can use existing evidence; a refactor label or passing build alone does not establish unchanged visuals.
 
-If required visual evidence is missing, mark delivery incomplete and state the checked limitation. Do not claim delivery complete until the evidence is published in the PR body and the delivery owner has read back that body to verify its inclusion; local paths, session-log references, and comments alone do not satisfy this requirement. Do not waive an explicit user or project evidence requirement because tooling is missing: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
+Publish required evidence in the PR body as an attachment or accessible artifact link with a descriptive caption, using supported authorized tooling; check the tool current help for upload support instead of relying on cached syntax. Capture and upload are separate capabilities. If upload is unavailable, preserve the local artifact, give its path in the handoff, and state the PR attachment limitation.
+
+If required visual evidence is missing, the published result is incomplete: state the checked limitation. Do not report delivery as complete until the evidence is published in the PR body and you have read back the published body to verify its inclusion; local paths, session-log references, and comments alone do not satisfy this requirement. Do not waive an explicit user or project evidence requirement because tooling is missing: provide it or report the outcome incomplete with the exact blocker. Optional PR illustration may be omitted with a reason; required evidence cannot silently become a follow-up.
+
+Read back the actual PR body yourself; confirm attachments render or links resolve and evidence matches the current relevant diff.
+
+When a later change affects captured appearance or behavior, replace affected captures, update captions and comparisons, and remove obsolete or redundant PR body references; keep intentional clearly labeled before baselines and never present a historical before as current. Refresh only affected evidence, not every commit or unrelated file.
 
 ## Freshness
 
-After any push that changes the cumulative diff or verification evidence, update the title and body to match, then read back the published body to confirm accessible artifacts, captions, and current coverage before reporting delivery complete. Read back the actual PR body as delivery owner; confirm attachments render or links resolve and evidence matches the current relevant diff. When a later change affects captured appearance or behavior, replace affected captures, update captions and comparisons, and remove obsolete or redundant PR body references; keep intentional clearly labeled before baselines and never present a historical before as current. Refresh only affected evidence, not every commit or unrelated file. Readback is a delivery-owner check, not a second full review.
-
-## Minimal fallback
-
-If this skill is absent, disabled, or irrelevant to the project, write a sensible body with summary, file-level changes, checks, and breaking notes where applicable. A missing skill never blocks delivery and never authorizes bypassing core review or authorization.
+After any push that changes the cumulative diff or verification evidence, update the title and body to match, then read back the published body for a published PR to confirm it matches before reporting delivery. For a draft-only request, present the updated draft with outstanding items reported. Refresh only affected content, not every commit or unrelated file.

@@ -71,7 +71,7 @@ Merge, release, and production operations remain separate authorization boundari
 
 ### PR delivery contract
 
-Core owns the outcome, evidence, review, and authorization floors for every reviewable PR. Title, body, and visual-evidence conventions live in the `create-pull-request` methodology skill: load the available skill before drafting, and follow the project template when one applies while preserving the required information. Stop on explicit project opt-out. A missing skill never blocks delivery and never waives review or authorization; write a sensible body instead. The reviewer checks rendered coverage against the changed surface; after any push that changes diff or verification, refresh the draft and read back the published body before reporting delivery complete.
+Core owns the outcome, evidence, review, and authorization floors for every reviewable PR. Title, body, and visual-evidence conventions live in the `create-pull-request` methodology skill: for an active PR task, load the available skill before drafting, and follow the project template when one applies while preserving the required information. Stop on explicit project opt-out. A missing skill never blocks delivery and never waives review or authorization; write a sensible body instead. The reviewer checks rendered coverage against the changed surface; after any push that changes diff or verification, refresh the draft and read back the published body before reporting delivery complete.
 
 ## Canonical Source Invariant
 
