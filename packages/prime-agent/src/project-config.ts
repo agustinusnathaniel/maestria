@@ -1,28 +1,11 @@
 // packages/prime-agent/src/project-config.ts
-// Prime-local root project customization (no shared-pi import).
-//
-// Prime stays isolated by ADR-CORE-014: this module is a small local
-// equivalent of the Pi/OMP shared helper, covering only the verified needs:
-// deterministic file names and order, root scoping, and diagnostics. It
-// imports only Node filesystem APIs plus the vendored type-only `./pi-api.js`.
-//
-// Scope contract:
-// - Root-only: `<root>/.maestria/workflow.md` then `<root>/.maestria/rules.md`.
-//   No ancestor scan, no nested inheritance, no `process.cwd` fallback. The
-//   root is the host-selected session cwd (`ctx.cwd`), read live each turn.
-// - Absent files are normal and leave the prompt unchanged; empty files carry
-//   no instructions and are skipped. Additions, edits, and deletions apply on
-//   the next turn: contents are never cached, persisted to session entries, or
-//   duplicated into compaction state.
-// - Present-but-unusable entries (directory, special file, unreadable,
-//   unresolvable, resolving outside the root, or a link whose resolved
-//   target is not a regular file) are errors. Diagnostics name
-//   only the relative file and the failure kind; contents and absolute paths
-//   never appear, and raw errors are never attached as `cause`. The host is
-//   expected to swallow `before_agent_start` exceptions (Pi-lineage behavior;
-//   unverified against a pinned Prime fork),
-//   so callers must NOT throw to fail closed: surface via `ctx.ui.notify` plus
-//   {@link formatProjectErrorBanner} in the returned system prompt.
+// Prime-local root project customization (no shared-pi import per
+// ADR-CORE-014 isolation). Same contract as the Pi/OMP loader: root-only
+// workflow then rules, no ancestor scan; absent or empty files skipped;
+// present-but-unusable entries throw sanitized diagnostics (relative path
+// plus kind only). Callers surface failures via notify plus
+// {@link formatProjectErrorBanner}. Full contract: ADR-CORE-006 plus
+// docs/runtime-support-matrix.md.
 
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
@@ -100,12 +83,9 @@ const escapesRoot = (root: string, resolved: string): boolean => {
 };
 
 /**
- * Load one project file: missing and empty entries yield nothing, anything
- * present but unusable throws a sanitized diagnostic. The resolved target is
- * reclassified before reading (the resolved path contains no symlinks, so
- * the check observes the link target itself), so a symlink to a FIFO,
- * directory, or other special file fails here instead of blocking on open
- * or misreading.
+ * Load one project file: missing and empty entries yield nothing,
+ * present-but-unusable entries throw a sanitized diagnostic. The resolved
+ * link target is reclassified before reading, so special targets fail here.
  */
 const loadOneSection = (
   normalizedRoot: string,
@@ -168,12 +148,10 @@ const loadOneSection = (
 };
 
 /**
- * Read project customization contents at call time, in deterministic order.
- * Missing files are skipped; empty files carry no instructions and are
- * skipped. Anything present but unusable throws with a diagnostic naming only
- * the relative file and the failure kind. The root itself is resolved through
- * symlinks, so a symlinked root still matches inside-root targets. Checks
- * observe the filesystem at call time; they are not an atomic snapshot.
+ * Read project customization at call time, in deterministic order. Missing
+ * or empty files are skipped; present-but-unusable entries throw a
+ * sanitized diagnostic. The root is resolved through symlinks; checks
+ * observe the filesystem at call time, not an atomic snapshot.
  */
 export const loadProjectSections = (
   root: string,
@@ -207,10 +185,9 @@ export const loadProjectSections = (
 };
 
 /**
- * Format one project section for system-prompt injection. The header keeps the
- * subordinate status visible at the point of use: project guidance may replace
- * configurable workflows but never waives safety, authorization, or host
- * permissions. The body is project-authored content, never executed.
+ * Format one project section for system-prompt injection. The header keeps
+ * the subordinate status visible at the point of use; the body is
+ * project-authored content, never executed.
  */
 export const formatProjectSection = (section: ProjectSection): string =>
   [
@@ -219,10 +196,9 @@ export const formatProjectSection = (section: ProjectSection): string =>
   ].join('\n');
 
 /**
- * Build the fail-loud banner for a broken project customization. The host
- * swallows `before_agent_start` exceptions, so adapters surface this via
- * `ctx.ui.notify` and inject it into the system prompt with an explicit STOP
- * instruction instead of running with silently absent config.
+ * Build the fail-loud banner for broken project customization. Adapters
+ * surface it via notify plus the system prompt with an explicit STOP
+ * instead of running with silently absent config.
  */
 export const formatProjectErrorBanner = (message: string): string =>
   [

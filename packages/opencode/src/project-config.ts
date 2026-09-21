@@ -2,9 +2,14 @@ import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 
 /**
- * Project-root customization files, in deterministic load order.
- * Workflow sequencing first, then project rules, matching the canonical
- * orchestrator guidance.
+ * Project-root customization loader (OpenCode-local copy; this published
+ * package must not depend on private @maestria/shared-pi).
+ *
+ * Contract mirrors the Pi-family loader: root-only workflow then rules, no
+ * ancestor scan; absent or empty files skipped; present-but-unusable entries
+ * throw sanitized diagnostics (relative path plus kind only). Read-error
+ * signal differs by host: here the throw propagates as a failed model call.
+ * Full contract: ADR-CORE-006 plus docs/runtime-support-matrix.md.
  */
 export const PROJECT_WORKFLOW_REL = '.maestria/workflow.md';
 export const PROJECT_RULES_REL = '.maestria/rules.md';
@@ -65,20 +70,17 @@ const isRootSentinel = (value: string): boolean => value === '/';
 
 /**
  * Resolve the project root from the host plugin input.
- * Prefers the SDK project worktree (the version-control root for git
- * projects), then the instance worktree checkout, then the session
- * directory, which is always the genuine open directory. Worktree fields
- * holding the "/" sentinel are skipped; the session directory is accepted
- * as-is so a genuine "/" open directory still resolves instead of being
- * rejected.
+ * Prefers the SDK project worktree, then the instance worktree, then the
+ * session directory. Worktree fields holding the "/" sentinel (host-reported
+ * for projects without version control) are skipped; the session directory
+ * is accepted as-is so a genuine "/" open still resolves.
  */
 export const resolveProjectRoot = (input: ProjectRootInput): string | undefined => {
   const { project, worktree, directory } = input;
-  if (isNonEmpty(project?.worktree) && !isRootSentinel(project.worktree)) {
-    return project.worktree;
-  }
-  if (isNonEmpty(worktree) && !isRootSentinel(worktree)) {
-    return worktree;
+  for (const candidate of [project?.worktree, worktree]) {
+    if (isNonEmpty(candidate) && !isRootSentinel(candidate)) {
+      return candidate;
+    }
   }
   if (isNonEmpty(directory)) {
     return directory;
@@ -114,12 +116,9 @@ const escapesRoot = (root: string, resolved: string): boolean => {
 };
 
 /**
- * Load one project file: missing and empty entries yield nothing, anything
- * present but unusable throws a sanitized diagnostic. The resolved target is
- * reclassified before reading (the resolved path contains no symlinks, so
- * the check observes the link target itself), so a symlink to a FIFO,
- * directory, or other special file fails here instead of blocking on open
- * or misreading.
+ * Load one project file: missing and empty entries yield nothing,
+ * present-but-unusable entries throw a sanitized diagnostic. The resolved
+ * link target is reclassified before reading, so special targets fail here.
  */
 const loadOneSection = (
   normalizedRoot: string,
@@ -182,17 +181,10 @@ const loadOneSection = (
 };
 
 /**
- * Read project customization contents at call time, in deterministic order.
- * Missing files are normal and skipped; empty files carry no instructions
- * and are skipped. Anything present but unusable (directory, special file,
- * unreadable, unresolvable, resolving outside the root, or a link whose
- * resolved target is not a regular file) throws, so a broken customization
- * fails the model call instead of running with silently absent config.
- * Error messages name only the relative file and the failure kind; file
- * contents and absolute paths never appear, and raw errors are never
- * attached as `cause`. The root itself is resolved through symlinks, so a
- * symlinked root still matches inside-root targets. Checks observe the
- * filesystem at call time; they are not an atomic snapshot.
+ * Read project customization at call time, in deterministic order. Missing
+ * or empty files are skipped; present-but-unusable entries throw a
+ * sanitized diagnostic naming only the relative file and kind. The root is
+ * resolved through symlinks; checks are not an atomic snapshot.
  */
 export const loadProjectSections = (
   root: string,
@@ -227,9 +219,8 @@ export const loadProjectSections = (
 
 /**
  * Format one project section for system-prompt injection. The header keeps
- * the subordinate status visible at the point of use: project guidance may
- * replace configurable workflows but never waives safety, authorization, or
- * host permissions. The body is project-authored content, never executed.
+ * the subordinate status visible at the point of use; the body is
+ * project-authored content, never executed.
  */
 export const formatProjectSection = (section: ProjectSection): string =>
   [

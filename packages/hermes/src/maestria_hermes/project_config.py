@@ -1,42 +1,16 @@
 """Project-root customization loader for the maestria Hermes plugin.
 
-Reads the user-approved project files ``.maestria/workflow.md`` (delegation
-sequencing) and ``.maestria/rules.md`` (project rules) from the session
-project root, in that deterministic order, and formats them as subordinate
-model guidance for ``pre_llm_call`` injection.
+Reads ``.maestria/workflow.md`` then ``.maestria/rules.md`` from the session
+project root (process working directory at call time) and formats them as
+subordinate model guidance for ``pre_llm_call`` injection.
 
-Scope and trust notes:
-
-- Root only: exactly the two relative paths under the resolved root are
-  read. No ancestor search and no nested lookup apply.
-- The root is the host-selected session working directory at call time
-  (``os.getcwd()`` read fresh on every call, never cached). The pinned
-  ``pre_llm_call`` payload (session_id, task_id, turn_id, user_message,
-  conversation_history, is_first_turn, model, platform, parent_session_id,
-  sender_id) carries no working-directory field, and concurrent gateway
-  sessions share one process directory, so this is the closest supported
-  root signal; CLI session resume retargets the process directory to the
-  session's recorded dir before turns run.
-- Project Markdown is subordinate guidance only: it may replace
-  configurable workflows but never waives safety, authorization, or host
-  permissions, and it never grants capability or executes. The trust and
-  capability registry (session.py, permissions.py) is untouched.
-- Fresh read every turn: contents are never cached, so additions, edits,
-  and deletions take effect on the next call with no stale snapshot. Full
-  file contents are used; nothing is truncated or summarized.
-- Fail visible: a present-but-unusable file (directory, special file,
-  unreadable, unresolvable link, a link escaping the root, or a link
-  whose resolved target is not a regular file) raises
-  ``ProjectConfigError`` naming only the relative path and the failure
-  kind. File contents and absolute paths never appear in messages or logs.
-  The ``pre_llm`` hook converts that failure into an injected STOP banner
-  (report the error and wait for the file to be fixed) because the host
-  runs ``pre_llm_call`` fail-open (per-callback exceptions are logged and
-  skipped, and only ``{"context": ...}`` or string returns reach the
-  model), so raising cannot prevent the turn and would only drop the mode
-  context with it. The banner advises stopping, it does not enforce
-  cancellation. Checks observe the filesystem at call time; they are not
-  an atomic snapshot.
+Contract: root only with no ancestor or nested lookup; fresh read every
+turn; absent or empty files leave the context unchanged; a
+present-but-unusable file raises ``ProjectConfigError`` naming only the
+relative path and failure kind (no contents, absolute paths, or raw causes).
+The hook converts failures into a visible STOP banner because the host runs
+``pre_llm_call`` fail-open. Full contract: ADR-CORE-006 plus
+docs/runtime-support-matrix.md.
 """
 
 from __future__ import annotations
@@ -92,31 +66,21 @@ def _entry_kind(candidate: str) -> str:
 
     Returns "missing", "file", "directory", or "other". A dangling symlink
     classifies as "file" here (lstat does not follow it); the strict
-    resolution step then fails visibly. A stat failure other than a missing
-    path raises ProjectConfigError without leaking the absolute path.
+    resolution step then fails visibly. Non-missing stat failures propagate
+    so the caller maps them with the contract rel path (no path leak).
     """
     try:
         st = os.lstat(candidate)
     except FileNotFoundError:
         return "missing"
-    except OSError as exc:
-        raise ProjectConfigError(
-            f'[maestria] Project config "{_rel_for(candidate)}" cannot be accessed'
-        ) from exc
+    except OSError:
+        raise
     mode = st.st_mode
     if stat.S_ISDIR(mode):
         return "directory"
     if stat.S_ISREG(mode) or stat.S_ISLNK(mode):
         return "file"
     return "other"
-
-
-def _rel_for(candidate: str) -> str:
-    """Recover the contract rel path for a joined candidate (suffix match)."""
-    for rel in PROJECT_CONFIG_REL_PATHS:
-        if candidate.endswith(os.sep + rel) or candidate.endswith(rel):
-            return rel
-    return os.path.basename(candidate)
 
 
 def _resolve_link(candidate: str, rel: str) -> str:
@@ -252,13 +216,9 @@ def format_project_section(section: ProjectSection) -> str:
 def format_project_error(message: str) -> str:
     """Format a visible config-failure banner for user-message injection.
 
-    *message* must already be limited to the relative path and failure
-    kind (see ProjectConfigError); contents and absolute paths never appear.
-    The banner advises STOP/report/wait: an unreadable file may shadow
-    workflow guidance, so the turn must not proceed as if the guidance
-    were absent. The hook cannot cancel the turn itself (the host runs
-    ``pre_llm_call`` fail-open), so this advisory banner, not enforcement,
-    is the loudest supported signal.
+    *message* already names only the relative path and failure kind. The
+    banner advises STOP/report/wait; the hook runs fail-open, so this
+    advisory banner (not enforcement) is the loudest supported signal.
     """
     return (
         "[MAESTRIA PROJECT CONFIG ERROR] "

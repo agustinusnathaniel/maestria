@@ -1,21 +1,11 @@
 """pre_llm_call hook -- injects mode context and project customization.
 
-Mode context is injected into every user message preserving the Hermes
-prompt cache (system prompt is not modified). Project-root customization
-(.maestria/workflow.md, then .maestria/rules.md) is read fresh every turn
-from the session working directory and appended after the mode context.
-
-Trust and tool capability come from trusted native lifecycle state only
-(see session.py and permissions.py). User message text, mode text, and
-project Markdown are never a role or capability source.
-
-Failure posture is host-shaped: Hermes runs pre_llm_call fail-open (a
-raising callback is logged and skipped, and only {"context": ...} or
-string returns reach the model), so this hook never raises. A broken
-project file is surfaced as a visible error banner in the injected
-context instead of running with silently absent config; the turn itself
-cannot be cancelled from this hook, which the package README states
-explicitly.
+Mode context preserves the Hermes prompt cache (system prompt untouched).
+Project-root customization (workflow then rules) is read fresh every turn
+from the session working directory after the mode context. Trust comes from
+native lifecycle state only (see session.py and permissions.py). The host
+runs fail-open, so this hook never raises: broken files become a visible
+error banner instead of silently absent config.
 """
 
 from __future__ import annotations

@@ -1,25 +1,12 @@
 /**
- * Root project customization for Maestria Pi-family hosts.
+ * Root project customization for Pi-family hosts (no host SDK).
  *
- * Pure host-neutral mechanics (no host SDK): deterministic file names, order,
- * root scoping, and diagnostics. Pi and OMP adapters read fresh on every
- * `before_agent_start` turn from the host-selected session cwd (`ctx.cwd`).
- *
- * Scope contract:
- * - Root-only: `<root>/.maestria/workflow.md` then `<root>/.maestria/rules.md`.
- *   No ancestor scan, no nested inheritance, no `process.cwd` fallback.
- * - Absent files are normal and leave the prompt unchanged; empty files carry
- *   no instructions and are skipped.
- * - Present-but-unusable entries (directory, special file, unreadable,
- *   unresolvable, resolving outside the root, or a link whose resolved
- *   target is not a regular file) are errors. Diagnostics name
- *   only the relative file and the failure kind; contents and absolute paths
- *   never appear, and raw errors are never attached as `cause`.
- * - Hosts swallow `before_agent_start` exceptions (verified: Pi 0.84.2
- *   `emitBeforeAgentStart` try/catch to `emitError`; OMP 17.4.0
- *   `#runHandlerWithTimeout` to `emitError`), so callers must NOT throw to
- *   fail closed. Use {@link formatProjectErrorBanner} plus `ctx.ui.notify`
- *   for the supported fail-loud path.
+ * Contract: root-only `.maestria/workflow.md` then `.maestria/rules.md`, no
+ * ancestor scan; absent or empty files are skipped; present-but-unusable
+ * entries throw sanitized diagnostics (relative path plus kind only, no
+ * content, absolute paths, or causes). Hosts swallow `before_agent_start`
+ * exceptions, so callers use {@link formatProjectErrorBanner} plus notify.
+ * Full contract: ADR-CORE-006 plus docs/runtime-support-matrix.md.
  *
  * @module
  */
@@ -99,12 +86,9 @@ const escapesRoot = (root: string, resolved: string): boolean => {
 };
 
 /**
- * Load one project file: missing and empty entries yield nothing, anything
- * present but unusable throws a sanitized diagnostic. The resolved target is
- * reclassified before reading (the resolved path contains no symlinks, so
- * the check observes the link target itself), so a symlink to a FIFO,
- * directory, or other special file fails here instead of blocking on open
- * or misreading.
+ * Load one project file: missing and empty entries yield nothing,
+ * present-but-unusable entries throw a sanitized diagnostic. The resolved
+ * link target is reclassified before reading, so special targets fail here.
  */
 const loadOneSection = (
   normalizedRoot: string,
@@ -167,12 +151,10 @@ const loadOneSection = (
 };
 
 /**
- * Read project customization contents at call time, in deterministic order.
- * Missing files are skipped; empty files carry no instructions and are
- * skipped. Anything present but unusable throws with a diagnostic naming only
- * the relative file and the failure kind. The root itself is resolved through
- * symlinks, so a symlinked root still matches inside-root targets. Checks
- * observe the filesystem at call time; they are not an atomic snapshot.
+ * Read project customization at call time, in deterministic order. Missing
+ * or empty files are skipped; present-but-unusable entries throw a
+ * sanitized diagnostic. The root is resolved through symlinks; checks
+ * observe the filesystem at call time, not an atomic snapshot.
  */
 export const loadProjectSections = (
   root: string,
@@ -218,13 +200,9 @@ export const formatProjectSection = (section: ProjectSection): string =>
   ].join('\n');
 
 /**
- * Build the fail-loud banner for a broken project customization.
- *
- * Hosts swallow `before_agent_start` exceptions, so throwing cannot block the
- * turn. Adapters surface this message via `ctx.ui.notify` and inject it into
- * the system prompt with an explicit STOP instruction, so a broken
- * customization fails visibly instead of running with silently absent config.
- * Names only the relative file and the failure kind.
+ * Build the fail-loud banner for broken project customization. Adapters
+ * surface it via notify plus the system prompt with an explicit STOP, so a
+ * broken file fails visibly instead of running with silently absent config.
  */
 export const formatProjectErrorBanner = (message: string): string =>
   [
@@ -232,3 +210,44 @@ export const formatProjectErrorBanner = (message: string): string =>
     'Report this error to the user and wait for the project files to be fixed.',
     message,
   ].join('\n');
+
+/** Minimal host context surface project handlers read: session cwd plus notify. */
+export interface ProjectPromptContext {
+  cwd?: unknown;
+  ui?: { notify?: (message: string) => void };
+}
+
+export const readProjectRoot = (ctx: ProjectPromptContext | undefined): string | undefined =>
+  typeof ctx?.cwd === 'string' && ctx.cwd !== '' ? ctx.cwd : undefined;
+
+const notifyProjectError = (ctx: ProjectPromptContext | undefined, message: string): void => {
+  try {
+    ctx?.ui?.notify?.(message);
+  } catch {
+    // Notify is best-effort UI surfacing; the banner below is authoritative.
+  }
+};
+
+/**
+ * Load sections for a handler context without throwing: absent root or
+ * files yield no sections, present-but-unusable files yield an error
+ * message (already surfaced via notify). Callers render the banner in
+ * their host-specific systemPrompt shape.
+ */
+export const tryLoadProjectSections = (
+  ctx: ProjectPromptContext | undefined,
+  fs?: ProjectConfigFs,
+): { sections: ProjectSection[]; errorMessage: string | undefined } => {
+  const root = readProjectRoot(ctx);
+  if (root === undefined) {
+    return { errorMessage: undefined, sections: [] };
+  }
+  try {
+    const sections = fs === undefined ? loadProjectSections(root) : loadProjectSections(root, fs);
+    return { errorMessage: undefined, sections };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    notifyProjectError(ctx, message);
+    return { errorMessage: message, sections: [] };
+  }
+};

@@ -97,21 +97,12 @@ export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string =
 // ---------------------------------------------------------------------------
 
 /**
- * Create the `before_agent_start` handler that appends the active mode prompt
- * and root project customization to the chained system prompt.
- *
- * Project files (`.maestria/workflow.md` then `.maestria/rules.md`,
- * root-only, no ancestor scan) are read fresh from the host-selected session
- * cwd (`ctx.cwd`) on every turn, so edits apply on the next turn with no
- * restart and no persisted copies. Absent files leave the prompt unchanged.
- *
- * Returns void when no mode is active and no project file is present (no
- * modification), so Prime's normal prompt assembly stands as-is. The host is
- * expected to swallow `before_agent_start` exceptions (Pi-lineage behavior;
- * unverified against a pinned Prime fork), so this handler never throws: a
- * present-but-unusable project file surfaces via `ctx.ui.notify` plus a STOP
- * banner in the returned system prompt instead of running with silently
- * absent config.
+ * Create the `before_agent_start` handler appending the mode prompt plus
+ * root project customization (workflow then rules, read fresh from ctx.cwd
+ * each turn; absent files leave the prompt unchanged). Returns undefined
+ * when idle. Never throws: broken files surface via notify plus a STOP
+ * banner (host swallowing is [inferred] from Pi-lineage behavior).
+ * See ADR-CORE-006.
  */
 export const createModePromptHandler =
   (

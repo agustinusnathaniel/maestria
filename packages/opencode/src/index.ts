@@ -175,11 +175,9 @@ type SystemTransformOutput = Parameters<
 >[1];
 
 /**
- * Inject project customization contents into the system prompt in place.
- * Reads fresh on every model call: additions and deletions take effect on
- * the next call with no stale snapshot, and a present-but-unreadable file
- * throws here, which the host propagates as a failed model call instead of
- * running with silently absent config.
+ * Inject project customization contents into the system prompt in place,
+ * read fresh on every model call. A present-but-unreadable file throws
+ * here, which the host propagates as a failed model call.
  */
 const injectProjectSystem = (output: SystemTransformOutput, projectRoot: string): void => {
   const sections = loadProjectSections(projectRoot);
