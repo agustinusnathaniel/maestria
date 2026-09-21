@@ -28,7 +28,7 @@ npx maestria status
 
 ### Doctor
 
-`maestria doctor` reports per-platform skill setup without changing anything: plugin install state from detection, the recorded skill selection from `skills.json`, and the tool-observed inventory from `skills list --json`. It warns about unmanaged copies (observed but not recorded), notes shared canonical paths provided by another platform from the same source, and prints actionable next commands. Supports `--json`, `--compact`, and `--quiet`. A corrupt record fails with a clear error; unknown platforms or agents degrade honestly with a note.
+`maestria doctor` reports per-platform skill setup without changing anything: plugin install state from detection, the recorded skill selection from `skills.json`, and the tool-observed inventory from `skills list --json`. It warns about unmanaged copies (observed but not recorded), notes shared canonical paths provided by another platform from the same source, and prints actionable next commands. Supports `--json` and `--quiet`. A corrupt record fails with a clear error; unknown platforms or agents degrade honestly with a note.
 
 ### Output options
 

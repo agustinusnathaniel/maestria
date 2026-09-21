@@ -14,7 +14,6 @@ import { getSkillsRecordPath, readSkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 
 export interface DoctorArgs {
-  compact?: boolean;
   json?: boolean;
   quiet?: boolean;
 }
@@ -84,38 +83,11 @@ const renderDoctorTable = (output: DoctorOutput): string => {
   return `${lines.join('\n')}\n`;
 };
 
-const compactPlugin = (p: DoctorPlatformReport): string => {
-  if (!p.available) {
-    return 'unavailable';
-  }
-  if (p.installed) {
-    return 'installed';
-  }
-  return 'not-installed';
-};
-
-const renderCompactDoctor = (output: DoctorOutput): string =>
-  `${output.platforms
-    .map((p: DoctorPlatformReport) => {
-      const recorded = p.recorded === null ? 'recorded=none' : `recorded=${p.recorded.join(',')}`;
-      const observed =
-        p.observed.length === 0
-          ? 'observed=none'
-          : `observed=${p.observed.map((e) => e.name).join(',')}`;
-      const flags = [
-        ...(p.unmanaged.length > 0 ? [`unmanaged=${p.unmanaged.join(',')}`] : []),
-        ...(p.missing.length > 0 ? [`missing=${p.missing.join(',')}`] : []),
-      ].join(' ');
-      return `${p.id}: ${compactPlugin(p)} ${recorded} ${observed}${flags === '' ? '' : ` ${flags}`}`;
-    })
-    .join('\n')}\n`;
-
 export const handleDoctor = async (
   args: DoctorArgs,
   deps: DoctorDeps = {},
 ): Promise<CommandResult> => {
-  const isQuiet = args.quiet === true || args.compact === true;
-  const spinner = createSpinner(isQuiet);
+  const spinner = createSpinner(args.quiet === true);
   spinner.start('Checking skill setup...');
 
   // Corrupt records fail loud before any observation below.
@@ -134,9 +106,6 @@ export const handleDoctor = async (
   if (args.json === true) {
     spinner.stop('');
     rendered = JSON.stringify(output, null, 2);
-  } else if (args.compact === true) {
-    spinner.stop('');
-    rendered = renderCompactDoctor(output);
   } else {
     spinner.stop('Done');
     rendered = renderDoctorTable(output);
@@ -146,11 +115,6 @@ export const handleDoctor = async (
 
 export const doctorCommand = defineCommand({
   args: {
-    compact: {
-      default: false,
-      description: 'Minimal machine-friendly text output. One line per platform.',
-      type: 'boolean',
-    },
     json: {
       default: false,
       description:

@@ -47,7 +47,6 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
     examples: [
       'maestria doctor                   Diagnose skill setup without changing anything',
       'maestria doctor --json            Show skill diagnostics as JSON',
-      'maestria doctor --compact         Minimal machine-friendly output',
       'maestria doctor --quiet           Suppress spinner output',
     ],
   },
