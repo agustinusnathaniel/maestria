@@ -69,36 +69,10 @@ vi.mock('@/lib/platform-transaction.js', () => ({
   updateOne: transactionMocks.updateOne,
 }));
 
-/**
- * Fake skills-CLI transport: confirms adds with machine JSON, reports empty
- * inventory, and accepts removals. Exercises the real reconcile path without
- * touching the network or the real home directory.
- */
-const skillCliMocks = vi.hoisted(() => ({
-  // oxlint-disable-next-line require-await -- synchronous fake transport by design.
-  run: vi.fn(async (args: readonly string[]) => {
-    if (args[0] === 'add') {
-      return {
-        stderr: '',
-        stdout: JSON.stringify([
-          {
-            name: 'create-pull-request',
-            path: '/fake/skills/create-pull-request',
-            status: 'installed',
-          },
-        ]),
-      };
-    }
-    if (args[0] === 'list') {
-      return { stderr: '', stdout: '[]' };
-    }
-    return { stderr: '', stdout: 'Done!' };
-  }),
-}));
-
 vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
   const actual = await importOriginal<typeof skillCompanion>();
-  return { ...actual, runSkillsCli: skillCliMocks.run };
+  const { cannedSkillCli } = await import('./skill-test-support.js');
+  return { ...actual, runSkillsCli: cannedSkillCli() };
 });
 
 const configDirs: string[] = [];
@@ -214,32 +188,23 @@ describe('command handlers', () => {
   });
 
   describe('status', () => {
-    it('renders the plain status table with exit code 0', async () => {
+    it('renders plain, JSON, and compact status with exit code 0', async () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
 
-      const result = await handleStatus({ quiet: true });
+      const plain = await handleStatus({ quiet: true });
+      expect(plain.exitCode).toBe(0);
+      expect(plain.output).toContain('Maestria Status');
+      expect(plain.output).toContain('OpenCode');
 
-      expect(result.exitCode).toBe(0);
-      expect(result.output).toContain('Maestria Status');
-      expect(result.output).toContain('OpenCode');
-    });
-
-    it('renders JSON status with exit code 0', async () => {
       const platformsStatus = [status({})];
       detectMocks.detectAll.mockReturnValue(Effect.succeed(platformsStatus));
+      const json = await handleStatus({ json: true, quiet: true });
+      expect(json.exitCode).toBe(0);
+      expect(JSON.parse(json.output)).toEqual({ platforms: platformsStatus });
 
-      const result = await handleStatus({ json: true, quiet: true });
-
-      expect(result.exitCode).toBe(0);
-      expect(JSON.parse(result.output)).toEqual({ platforms: platformsStatus });
-    });
-
-    it('renders compact status with exit code 0', async () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
-
-      const result = await handleStatus({ compact: true });
-
-      expect(result).toEqual({
+      const compact = await handleStatus({ compact: true });
+      expect(compact).toEqual({
         exitCode: 0,
         output: 'opencode: available installed=1.0.0 latest=1.0.0\n',
       });

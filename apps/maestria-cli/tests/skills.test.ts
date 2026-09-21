@@ -10,115 +10,77 @@ import {
   withoutRecordedSelection,
   withRecordedSelection,
 } from '@/lib/skills.js';
+import { buildRecord } from './skill-test-support.js';
 
-const source = 'test-record';
+const SKILL = 'create-pull-request';
 
 describe('skill selection', () => {
   it('defaults fresh installs to all current default skills', () => {
-    expect(DEFAULT_SKILLS).toContain('create-pull-request');
+    expect(DEFAULT_SKILLS).toContain(SKILL);
     const resolved = resolveSkillSelection('opencode', {}, null);
-    expect(resolved).toEqual({ changed: false, skills: ['create-pull-request'] });
+    expect(resolved).toEqual({ changed: false, skills: [SKILL] });
   });
 
   it('preserves recorded choices when no flags are passed', () => {
-    const record = parseSkillsRecord(
-      JSON.stringify({ platforms: { pi: { skills: [] } }, version: 1 }),
-      source,
-    );
+    const record = buildRecord({ pi: [] });
     expect(resolveSkillSelection('pi', {}, record)).toEqual({ changed: false, skills: [] });
     expect(resolveSkillSelection('opencode', {}, record)).toEqual({
       changed: false,
-      skills: ['create-pull-request'],
+      skills: [SKILL],
     });
   });
 
-  it('applies explicit include and the none token', () => {
-    expect(resolveSkillSelection('opencode', { skills: 'create-pull-request' }, null)).toEqual({
+  it.each([
+    { expected: [SKILL], flags: { skills: SKILL }, name: 'explicit include' },
+    { expected: [], flags: { skills: 'none' }, name: 'none token' },
+    {
+      expected: [],
+      flags: { excludeSkills: SKILL },
+      name: 'exclusion onto recorded choices',
+      record: buildRecord({ opencode: [SKILL] }),
+    },
+  ])('applies flag selections: $name', ({ expected, flags, record }) => {
+    expect(resolveSkillSelection('opencode', flags, record ?? null)).toEqual({
       changed: true,
-      skills: ['create-pull-request'],
-    });
-    expect(resolveSkillSelection('opencode', { skills: 'none' }, null)).toEqual({
-      changed: true,
-      skills: [],
+      skills: expected,
     });
   });
 
-  it('applies exclusions onto recorded choices', () => {
-    const record = parseSkillsRecord(
-      JSON.stringify({ platforms: { opencode: { skills: ['create-pull-request'] } }, version: 1 }),
-      source,
-    );
-    expect(
-      resolveSkillSelection('opencode', { excludeSkills: 'create-pull-request' }, record),
-    ).toEqual({ changed: true, skills: [] });
-  });
-
-  it('rejects unknown names before any external effect', () => {
-    expect(() => resolveSkillSelection('opencode', { skills: 'nope' }, null)).toThrow(CliError);
-    expect(() => resolveSkillSelection('opencode', { excludeSkills: 'nope' }, null)).toThrow(
-      CliError,
-    );
-  });
-
-  it('rejects conflicting include/exclude and none combinations', () => {
-    expect(() =>
-      resolveSkillSelection(
-        'opencode',
-        { excludeSkills: 'create-pull-request', skills: 'create-pull-request' },
-        null,
-      ),
-    ).toThrow(CliError);
-    expect(() =>
-      resolveSkillSelection(
-        'opencode',
-        { excludeSkills: 'create-pull-request', skills: 'none' },
-        null,
-      ),
-    ).toThrow(CliError);
-    expect(() =>
-      resolveSkillSelection('opencode', { skills: 'none,create-pull-request' }, null),
-    ).toThrow(CliError);
+  it.each([
+    { flags: { skills: 'nope' }, name: 'unknown include' },
+    { flags: { excludeSkills: 'nope' }, name: 'unknown exclude' },
+    {
+      flags: { excludeSkills: SKILL, skills: SKILL },
+      name: 'conflicting include/exclude',
+    },
+    { flags: { excludeSkills: SKILL, skills: 'none' }, name: 'none with exclude' },
+    { flags: { skills: `none,${SKILL}` }, name: 'none with another skill' },
+  ])('rejects invalid flag selections before any external effect: $name', ({ flags }) => {
+    expect(() => resolveSkillSelection('opencode', flags, null)).toThrow(CliError);
   });
 
   it('fails loudly on corrupt records instead of resetting to defaults', () => {
-    expect(() => parseSkillsRecord('not json', source)).toThrow(CliError);
-    expect(() => parseSkillsRecord('[]', source)).toThrow(CliError);
-    expect(() =>
-      parseSkillsRecord(JSON.stringify({ platforms: {}, version: 999 }), source),
-    ).toThrow(CliError);
-    expect(() =>
-      parseSkillsRecord(
-        JSON.stringify({ platforms: { opencode: { skills: 'nope' } }, version: 1 }),
-        source,
-      ),
-    ).toThrow(CliError);
+    const corruptPayloads = [
+      'not json',
+      '[]',
+      JSON.stringify({ platforms: {}, version: 999 }),
+      JSON.stringify({ platforms: { opencode: { skills: 'nope' } }, version: 1 }),
+    ];
+    for (const payload of corruptPayloads) {
+      expect(() => parseSkillsRecord(payload, 'test-record')).toThrow(CliError);
+    }
   });
 
   it('preserves unknown skill IDs instead of resetting them', () => {
-    const record = parseSkillsRecord(
-      JSON.stringify({
-        platforms: { opencode: { skills: ['create-pull-request', 'future-skill'] } },
-        version: 1,
-      }),
-      source,
-    );
-    expect(record.platforms.opencode?.skills).toEqual(['create-pull-request', 'future-skill']);
-    expect(resolveSkillSelection('opencode', {}, record).skills).toEqual([
-      'create-pull-request',
-      'future-skill',
-    ]);
+    const record = buildRecord({ opencode: [SKILL, 'future-skill'] });
+    expect(record.platforms.opencode?.skills).toEqual([SKILL, 'future-skill']);
+    expect(resolveSkillSelection('opencode', {}, record).skills).toEqual([SKILL, 'future-skill']);
   });
 
   it('keeps selections per platform and cleans up only the uninstalled entry', () => {
-    const record = parseSkillsRecord(
-      JSON.stringify({
-        platforms: { hermes: { skills: [] }, opencode: { skills: ['create-pull-request'] } },
-        version: 1,
-      }),
-      source,
-    );
+    const record = buildRecord({ hermes: [], opencode: [SKILL] });
     const added = withRecordedSelection(record, 'pi', []);
-    expect(added.platforms.opencode?.skills).toEqual(['create-pull-request']);
+    expect(added.platforms.opencode?.skills).toEqual([SKILL]);
     expect(added.platforms.pi?.skills).toEqual([]);
     const removed = withoutRecordedSelection(added, 'opencode');
     expect(removed?.platforms.opencode).toBeUndefined();
@@ -129,19 +91,13 @@ describe('skill selection', () => {
 
 describe('reviewSkillSelections', () => {
   it('preserves distinct per-platform intents without flags outside a TTY', async () => {
-    const record = parseSkillsRecord(
-      JSON.stringify({
-        platforms: { opencode: { skills: ['create-pull-request'] }, pi: { skills: [] } },
-        version: 1,
-      }),
-      source,
-    );
+    const record = buildRecord({ opencode: [SKILL], pi: [] });
     const selections = resolveSelections([{ id: 'opencode' }, { id: 'pi' }], {}, record);
 
     const effective = await reviewSkillSelections(selections, 'Update', {});
 
     expect(effective.map((entry) => [entry.id, entry.selection.skills])).toEqual([
-      ['opencode', ['create-pull-request']],
+      ['opencode', [SKILL]],
       ['pi', []],
     ]);
     expect(effective.every((entry) => !entry.selection.changed)).toBe(true);
@@ -161,10 +117,7 @@ describe('reviewSkillSelections', () => {
   });
 
   it('passes through unchanged flag selections without confirmation', async () => {
-    const record = parseSkillsRecord(
-      JSON.stringify({ platforms: { opencode: { skills: [] } }, version: 1 }),
-      source,
-    );
+    const record = buildRecord({ opencode: [] });
     const selections = resolveSelections([{ id: 'opencode' }], { skills: 'none' }, record);
 
     const effective = await reviewSkillSelections(selections, 'Update', {});

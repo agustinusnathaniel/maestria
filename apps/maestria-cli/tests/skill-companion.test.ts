@@ -20,8 +20,7 @@ import {
   resolveEffectiveSkills,
   resolveSkillsSource,
 } from '@/lib/skill-reconcile.js';
-import { parseSkillsRecord } from '@/lib/skills.js';
-import type { SkillsRecord } from '@/lib/skills.js';
+import { buildRecord } from './skill-test-support.js';
 
 const SKILL = COMPANION_SKILL;
 const SOURCE = 'test-source';
@@ -83,21 +82,13 @@ const staticRunner =
   // oxlint-disable-next-line require-await -- synchronous fake runner by design.
   async () => ({ stderr: '', stdout });
 
-type RecordEntry = string[] | { path?: string; skills: string[]; source?: string };
-
-const recordWith = (platforms: Record<string, RecordEntry>): SkillsRecord =>
-  parseSkillsRecord(
-    JSON.stringify({
-      platforms: Object.fromEntries(
-        Object.entries(platforms).map(([id, entry]) => [
-          id,
-          Array.isArray(entry) ? { skills: entry } : entry,
-        ]),
-      ),
-      version: 1,
-    }),
-    'test',
-  );
+/** Install the skill for each agent in order; shared paths stay deterministic. */
+const seedPair = async (runner: SkillCommandRunner, agents: readonly string[]): Promise<void> => {
+  for (const agent of agents) {
+    // oxlint-disable-next-line no-await-in-loop -- sequential seeding keeps shared-path order deterministic.
+    await addCompanion(runner, { agent, skill: SKILL, source: SOURCE }, { global: true });
+  }
+};
 
 const configDirs: string[] = [];
 
@@ -188,7 +179,7 @@ describe('ownership preflight', () => {
       seen.push([...args]);
       return { stderr: '', stdout: '[]' };
     };
-    const record = recordWith({ [AGENT]: [SKILL] });
+    const record = buildRecord({ [AGENT]: [SKILL] });
     const effective = resolveEffectiveSkills([{ id: 'opencode' }], {}, record);
     await preflightCompanionOwnership(runner, record, effective);
     expect(seen).toEqual([]);
@@ -216,7 +207,7 @@ describe('ownership preflight', () => {
       seen.push([...args]);
       return { stderr: '', stdout: '[]' };
     };
-    const record = recordWith({ [AGENT]: [SKILL] });
+    const record = buildRecord({ [AGENT]: [SKILL] });
     const effective = resolveEffectiveSkills(
       [{ id: 'opencode' }],
       { excludeSkills: SKILL },
@@ -226,34 +217,27 @@ describe('ownership preflight', () => {
     expect(seen).toEqual([]);
   });
 
-  it('allows a new platform when the observed path matches a recorded asset from the same source', async () => {
+  it.each([
+    {
+      allows: true,
+      name: 'allows a new platform when the observed path matches a recorded asset from the same source',
+      recordSource: SOURCE,
+    },
+    {
+      allows: false,
+      name: 'rejects when the observed path matches a recorded asset from another source',
+      recordSource: 'other-source',
+    },
+  ])('$name', async ({ allows, recordSource }) => {
     const shared = '/fake/shared/create-pull-request';
     const runner = fakeCli({ opencode: shared, universal: shared });
-    for (const agent of ['opencode', 'universal']) {
-      // oxlint-disable-next-line no-await-in-loop -- shared canonical dir is visible under both agent IDs.
-      await addCompanion(runner, { agent, skill: SKILL, source: SOURCE }, { global: true });
-    }
-    const record = recordWith({
-      opencode: { path: shared, skills: [SKILL], source: SOURCE },
+    await seedPair(runner, ['opencode', 'universal']);
+    const record = buildRecord({
+      opencode: { path: shared, skills: [SKILL], source: recordSource },
     });
     const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, record);
-    await preflightCompanionOwnership(runner, record, effective, SOURCE);
-  });
-
-  it('rejects when the observed path matches a recorded asset from another source', async () => {
-    const shared = '/fake/shared/create-pull-request';
-    const runner = fakeCli({ opencode: shared, universal: shared });
-    for (const agent of ['opencode', 'universal']) {
-      // oxlint-disable-next-line no-await-in-loop -- shared canonical dir is visible under both agent IDs.
-      await addCompanion(runner, { agent, skill: SKILL, source: SOURCE }, { global: true });
-    }
-    const record = recordWith({
-      opencode: { path: shared, skills: [SKILL], source: 'other-source' },
-    });
-    const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, record);
-    await expect(preflightCompanionOwnership(runner, record, effective, SOURCE)).rejects.toThrow(
-      /Existing unmanaged skill/u,
-    );
+    const check = preflightCompanionOwnership(runner, record, effective, SOURCE);
+    await (allows ? check : expect(check).rejects.toThrow(/Existing unmanaged skill/u));
   });
 
   it('rejects an independent copy at a path no record claims', async () => {
@@ -263,7 +247,7 @@ describe('ownership preflight', () => {
       { agent: 'universal', skill: SKILL, source: SOURCE },
       { global: true },
     );
-    const record = recordWith({
+    const record = buildRecord({
       opencode: { path: '/fake/shared/create-pull-request', skills: [SKILL], source: SOURCE },
     });
     const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, record);
@@ -280,7 +264,7 @@ describe('ownership preflight', () => {
       { agent: 'opencode', skill: SKILL, source: SOURCE },
       { global: true },
     );
-    const record = recordWith({
+    const record = buildRecord({
       opencode: { path: shared, skills: [SKILL], source: SOURCE },
     });
     const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, record);
@@ -332,13 +316,8 @@ describe('reconcile companions', () => {
   it('preserves shared copies while another owned platform stays active', async () => {
     const shared = '/fake/shared/create-pull-request';
     const runner = fakeCli({ codex: shared, opencode: shared });
-    await addCompanion(runner, { agent: 'codex', skill: SKILL, source: SOURCE }, { global: true });
-    await addCompanion(
-      runner,
-      { agent: 'opencode', skill: SKILL, source: SOURCE },
-      { global: true },
-    );
-    const record = recordWith({ codex: [SKILL], opencode: [SKILL] });
+    await seedPair(runner, ['codex', 'opencode']);
+    const record = buildRecord({ codex: [SKILL], opencode: [SKILL] });
     const effective = resolveEffectiveSkills(
       [{ id: 'codex' }, { id: 'opencode' }],
       { excludeSkills: SKILL },
@@ -363,13 +342,8 @@ describe('reconcile companions', () => {
   it('skips removal for one platform when the other stays on the shared path', async () => {
     const shared = '/fake/shared/create-pull-request';
     const runner = fakeCli({ codex: shared, opencode: shared });
-    await addCompanion(runner, { agent: 'codex', skill: SKILL, source: SOURCE }, { global: true });
-    await addCompanion(
-      runner,
-      { agent: 'opencode', skill: SKILL, source: SOURCE },
-      { global: true },
-    );
-    const staying = recordWith({ codex: [SKILL], opencode: [SKILL] });
+    await seedPair(runner, ['codex', 'opencode']);
+    const staying = buildRecord({ codex: [SKILL], opencode: [SKILL] });
     const onlyOpencode = [{ id: 'opencode', label: undefined as string | undefined }].map(
       (target) => ({
         ...target,
@@ -393,14 +367,9 @@ describe('reconcile companions', () => {
   it('preserves the shared copy for an unrecorded external consumer at the same path', async () => {
     const shared = '/fake/shared/create-pull-request';
     const runner = fakeCli({ codex: shared, opencode: shared });
-    await addCompanion(runner, { agent: 'codex', skill: SKILL, source: SOURCE }, { global: true });
-    await addCompanion(
-      runner,
-      { agent: 'opencode', skill: SKILL, source: SOURCE },
-      { global: true },
-    );
+    await seedPair(runner, ['codex', 'opencode']);
     // Record owns opencode only; codex is independently installed with no entry.
-    const record = recordWith({ opencode: [SKILL] });
+    const record = buildRecord({ opencode: [SKILL] });
     const effective = resolveEffectiveSkills(
       [{ id: 'opencode' }],
       { excludeSkills: SKILL },
@@ -430,7 +399,7 @@ describe('reconcile companions', () => {
       { agent: 'opencode', skill: SKILL, source: SOURCE },
       { global: true },
     );
-    const record = recordWith({ opencode: [SKILL] });
+    const record = buildRecord({ opencode: [SKILL] });
     const effective = resolveEffectiveSkills(
       [{ id: 'opencode' }],
       { excludeSkills: SKILL },
@@ -451,17 +420,8 @@ describe('reconcile companions', () => {
   it('excluding omp leaves the opencode share of the universal asset intact', async () => {
     const shared = '/fake/shared/create-pull-request';
     const runner = fakeCli({ opencode: shared, universal: shared });
-    await addCompanion(
-      runner,
-      { agent: 'opencode', skill: SKILL, source: SOURCE },
-      { global: true },
-    );
-    await addCompanion(
-      runner,
-      { agent: 'universal', skill: SKILL, source: SOURCE },
-      { global: true },
-    );
-    const record = recordWith({
+    await seedPair(runner, ['opencode', 'universal']);
+    const record = buildRecord({
       omp: { path: shared, skills: [SKILL], source: SOURCE },
       opencode: { path: shared, skills: [SKILL], source: SOURCE },
     });
@@ -506,7 +466,7 @@ describe('reconcile companions', () => {
 
   it('keeps the core fallback note for unknown hosts without faking a target', async () => {
     const runner = fakeCli({});
-    const record = recordWith({ watson: [] });
+    const record = buildRecord({ watson: [] });
     const effective = resolveEffectiveSkills([{ id: 'watson' }], {}, record);
     expect(effective[0]?.selection.skills).toEqual([]);
     const outcome = await reconcileCompanions(
@@ -565,7 +525,7 @@ describe('reconcile uninstall companions', () => {
     await isolateRecord();
     const runner = fakeCli({ [AGENT]: '/fake/p' });
     await addCompanion(runner, { agent: AGENT, skill: SKILL, source: SOURCE }, { global: true });
-    const record = recordWith({ cursor: [SKILL], opencode: [SKILL] });
+    const record = buildRecord({ cursor: [SKILL], opencode: [SKILL] });
     const combined = await reconcileUninstallCompanions(runner, record, [
       { id: 'opencode', label: 'OpenCode', message: 'Uninstalled', ok: true },
     ]);
@@ -581,13 +541,8 @@ describe('reconcile uninstall companions', () => {
   it('preserves the shared copy when another owned platform stays installed', async () => {
     const shared = '/fake/shared/create-pull-request';
     const runner = fakeCli({ codex: shared, opencode: shared });
-    await addCompanion(runner, { agent: 'codex', skill: SKILL, source: SOURCE }, { global: true });
-    await addCompanion(
-      runner,
-      { agent: 'opencode', skill: SKILL, source: SOURCE },
-      { global: true },
-    );
-    const record = recordWith({ codex: [SKILL], opencode: [SKILL] });
+    await seedPair(runner, ['codex', 'opencode']);
+    const record = buildRecord({ codex: [SKILL], opencode: [SKILL] });
     const combined = await reconcileUninstallCompanions(runner, record, [
       { id: 'opencode', label: 'OpenCode', message: 'Uninstalled', ok: true },
     ]);
@@ -602,13 +557,8 @@ describe('reconcile uninstall companions', () => {
     await isolateRecord();
     const shared = '/fake/shared/create-pull-request';
     const runner = fakeCli({ codex: shared, opencode: shared });
-    await addCompanion(runner, { agent: 'codex', skill: SKILL, source: SOURCE }, { global: true });
-    await addCompanion(
-      runner,
-      { agent: 'opencode', skill: SKILL, source: SOURCE },
-      { global: true },
-    );
-    const record = recordWith({ opencode: [SKILL] });
+    await seedPair(runner, ['codex', 'opencode']);
+    const record = buildRecord({ opencode: [SKILL] });
     const combined = await reconcileUninstallCompanions(runner, record, [
       { id: 'opencode', label: 'OpenCode', message: 'Uninstalled', ok: true },
     ]);
@@ -638,7 +588,7 @@ describe('reconcile uninstall companions', () => {
       }
       return await base(args);
     };
-    const record = recordWith({ opencode: [SKILL] });
+    const record = buildRecord({ opencode: [SKILL] });
     const effective = resolveEffectiveSkills(
       [{ id: 'opencode' }],
       { excludeSkills: SKILL },

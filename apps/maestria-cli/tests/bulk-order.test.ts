@@ -41,32 +41,10 @@ vi.mock('@/lib/detect.js', async (importOriginal) => {
   };
 });
 
-/** Fake skills-CLI transport so ordering tests never touch the network or home. */
-const skillCliMocks = vi.hoisted(() => ({
-  // oxlint-disable-next-line require-await -- synchronous fake transport by design.
-  run: vi.fn(async (args: readonly string[]) => {
-    if (args[0] === 'add') {
-      return {
-        stderr: '',
-        stdout: JSON.stringify([
-          {
-            name: 'create-pull-request',
-            path: '/fake/skills/create-pull-request',
-            status: 'installed',
-          },
-        ]),
-      };
-    }
-    if (args[0] === 'list') {
-      return { stderr: '', stdout: '[]' };
-    }
-    return { stderr: '', stdout: 'Done!' };
-  }),
-}));
-
 vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
   const actual = await importOriginal<typeof skillCompanion>();
-  return { ...actual, runSkillsCli: skillCliMocks.run };
+  const { cannedSkillCli } = await import('./skill-test-support.js');
+  return { ...actual, runSkillsCli: cannedSkillCli() };
 });
 
 const configDirs: string[] = [];
@@ -131,70 +109,62 @@ describe('bulk CLI side-effect ordering', () => {
     );
   });
 
-  it('updates direct platform selections sequentially', async () => {
-    const result = await handleUpdate({
+  it('updates direct and detected platform selections sequentially', async () => {
+    const direct = await handleUpdate({
       compact: true,
       platform: 'opencode,pi',
       quiet: true,
       version: '1.0.0',
     });
-
     expect(events).toEqual([
       'update:start:opencode',
       'update:finish:opencode',
       'update:start:pi',
       'update:finish:pi',
     ]);
-    expect(result.exitCode).toBe(0);
-  });
+    expect(direct.exitCode).toBe(0);
 
-  it('updates all detected platforms sequentially', async () => {
+    events.length = 0;
     detectMocks.detectInstalled.mockReturnValue(Effect.succeed(installedStatuses));
-
-    const result = await handleUpdate({
+    const all = await handleUpdate({
       all: true,
       compact: true,
       quiet: true,
       version: '1.0.0',
     });
-
     expect(events).toEqual([
       'update:start:opencode',
       'update:finish:opencode',
       'update:start:pi',
       'update:finish:pi',
     ]);
-    expect(result.exitCode).toBe(0);
+    expect(all.exitCode).toBe(0);
   });
 
-  it('installs direct platform selections sequentially', async () => {
-    const result = await handleInstall({
+  it('installs direct and detected platform selections sequentially', async () => {
+    const direct = await handleInstall({
       compact: true,
       platform: 'opencode,pi',
       quiet: true,
     });
-
     expect(events).toEqual([
       'install:start:opencode',
       'install:finish:opencode',
       'install:start:pi',
       'install:finish:pi',
     ]);
-    expect(result.exitCode).toBe(0);
-  });
+    expect(direct.exitCode).toBe(0);
 
-  it('installs all detected platforms sequentially', async () => {
+    events.length = 0;
     detectMocks.detectAll.mockReturnValue(Effect.succeed(installableStatuses));
-
-    const result = await handleInstall({ all: true, compact: true, quiet: true });
-
+    const all = await handleInstall({ all: true, compact: true, quiet: true });
     expect(events).toEqual([
       'install:start:opencode',
       'install:finish:opencode',
       'install:start:pi',
       'install:finish:pi',
     ]);
-    expect(result.exitCode).toBe(0);
+    expect(all.exitCode).toBe(0);
   });
 
   it('uninstalls all detected platforms sequentially', async () => {
