@@ -156,10 +156,20 @@ maybe('live skills CLI sandbox', () => {
     const record = parseSkillsRecord(
       JSON.stringify({
         platforms: {
-          omp: { path: listed?.path, skills: [COMPANION_SKILL], source: REPO_SKILLS },
-          opencode: { path: listed?.path, skills: [COMPANION_SKILL], source: REPO_SKILLS },
+          omp: {
+            skillAssets: {
+              [COMPANION_SKILL]: { path: listed?.path, source: REPO_SKILLS },
+            },
+            skills: [COMPANION_SKILL],
+          },
+          opencode: {
+            skillAssets: {
+              [COMPANION_SKILL]: { path: listed?.path, source: REPO_SKILLS },
+            },
+            skills: [COMPANION_SKILL],
+          },
         },
-        version: 1,
+        version: 2,
       }),
       'live-test',
     );
@@ -231,7 +241,7 @@ maybe('live skills CLI sandbox', () => {
           codex: { skills: [COMPANION_SKILL] },
           opencode: { skills: [COMPANION_SKILL] },
         },
-        version: 1,
+        version: 2,
       }),
       'live-test',
     );

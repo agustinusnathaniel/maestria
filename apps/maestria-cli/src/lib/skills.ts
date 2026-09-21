@@ -63,12 +63,6 @@ export interface PlatformSkillSelection {
    * Unknown skill keys from newer writers are preserved untouched.
    */
   readonly skillAssets?: Record<string, SkillAsset>;
-  /**
-   * Version 1 shape (single shared source/path). Read-only migration input:
-   * parsed into `skillAssets` for `create-pull-request` only, never written.
-   */
-  readonly source?: string;
-  readonly path?: string;
 }
 
 export interface SkillsRecord {
@@ -110,39 +104,7 @@ const parseSkillAsset = (
   };
 };
 
-/** Version 1 migration: the single shared source/path described the `create-pull-request` install only. */
-const parseV1Assets = (
-  entry: Record<string, unknown>,
-  platformId: string,
-  source: string,
-): Record<string, SkillAsset> => {
-  const { path: recordPath, source: entrySource } = entry;
-  if (recordPath !== undefined && typeof recordPath !== 'string') {
-    throw new CliError(
-      `Skill selection record is corrupt (platform '${platformId}' path is not a string): ${source}`,
-      1,
-    );
-  }
-  if (entrySource !== undefined && typeof entrySource !== 'string') {
-    throw new CliError(
-      `Skill selection record is corrupt (platform '${platformId}' source is not a string): ${source}`,
-      1,
-    );
-  }
-  // Adopted for `create-pull-request` and never for `docs-update`, so legacy
-  // updates do not silently gain the newer skill.
-  if (typeof entrySource !== 'string' && typeof recordPath !== 'string') {
-    return {};
-  }
-  return {
-    [COMPANION_SKILL]: {
-      ...(typeof entrySource === 'string' ? { source: entrySource } : {}),
-      ...(typeof recordPath === 'string' ? { path: recordPath } : {}),
-    },
-  };
-};
-
-const parseV2Assets = (
+const parseAssets = (
   entry: Record<string, unknown>,
   platformId: string,
   source: string,
@@ -170,7 +132,6 @@ const parseV2Assets = (
 const parsePlatformEntry = (
   entry: unknown,
   platformId: string,
-  version: number,
   source: string,
 ): PlatformSkillSelection => {
   if (!isRecord(entry)) {
@@ -189,10 +150,7 @@ const parsePlatformEntry = (
   // Unknown IDs are preserved, never reset: a newer writer may have stored
   // IDs this version does not know yet. Flag validation still rejects
   // unknown names on the command line.
-  const assets =
-    version === SKILLS_RECORD_VERSION - 1
-      ? parseV1Assets(entry, platformId, source)
-      : parseV2Assets(entry, platformId, source);
+  const assets = parseAssets(entry, platformId, source);
   return {
     ...(Object.keys(assets).length > 0 ? { skillAssets: assets } : {}),
     skills: [...skills],
@@ -212,7 +170,7 @@ export const parseSkillsRecord = (text: string, source: string): SkillsRecord =>
     throw corrupt('not an object');
   }
   const { platforms: platformsValue, version } = parsed;
-  if (version !== SKILLS_RECORD_VERSION && version !== SKILLS_RECORD_VERSION - 1) {
+  if (version !== SKILLS_RECORD_VERSION) {
     throw new CliError(
       `Skill selection record version ${String(version)} is unsupported (expected ${SKILLS_RECORD_VERSION}): ${source}`,
       1,
@@ -223,7 +181,7 @@ export const parseSkillsRecord = (text: string, source: string): SkillsRecord =>
   }
   const platforms: Record<string, PlatformSkillSelection> = {};
   for (const [platformId, entry] of Object.entries(platformsValue)) {
-    platforms[platformId] = parsePlatformEntry(entry, platformId, version, source);
+    platforms[platformId] = parsePlatformEntry(entry, platformId, source);
   }
   return { platforms, version: SKILLS_RECORD_VERSION };
 };

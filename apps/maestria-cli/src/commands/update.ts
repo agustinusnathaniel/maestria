@@ -5,7 +5,6 @@ import picocolors from 'picocolors';
 
 import {
   assertInteractiveTerminal,
-  batchCommandResult,
   detectInstalledOr,
   resolveBatchQuiet,
 } from '@/lib/batch-command.js';
@@ -17,26 +16,9 @@ import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { updateOne } from '@/lib/platform-transaction.js';
-import {
-  applyCompanionOutcomes,
-  attachCompanionObserved,
-  defaultSkillRunner,
-  normalizeSkillArgs,
-  preflightCompanionOwnership,
-  reconcileCompanions,
-  resolveEffectiveSkills,
-  resolveSkillsSource,
-  reviewSupportedSkills,
-  runSkillBatch,
-} from '@/lib/skill-reconcile.js';
-import {
-  hasSkillFlags,
-  persistSuccessfulSelections,
-  readSkillsRecord,
-  validateSkillFlags,
-} from '@/lib/skills.js';
+import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
+import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
 import type { SkillsRecord } from '@/lib/skills.js';
-import type { PlatformResult } from '@/types.js';
 import {
   VALID_PLATFORMS,
   validateOrThrow,
@@ -141,43 +123,37 @@ const collectInteractiveUpdateTargets = async (): Promise<
  * Skill-only review when every installed plugin is already current. The
  * plugin step is a reported no-op per platform while companions reconcile
  * normally, so newly available skills still get reviewed and confirmed.
+ * Reuses the shared install/update tail so review, final confirm,
+ * preflight, reconcile, and persistence stay single-sourced: the update
+ * path never invents record state, without a record it infers only the
+ * prior PR skill, never the newer docs skill.
  */
 const reviewCurrentInstallSkills = async (
   args: UpdateArgs,
   record: SkillsRecord | null,
   upToDate: CommandResult,
+  isQuiet: boolean,
 ): Promise<CommandResult> => {
   const installed = await Effect.runPromise(detectInstalled());
   if (installed.length === 0) {
     return upToDate;
   }
   const targets = installed.map((p) => ({ id: p.id, label: p.label }));
-  const resolved = resolveEffectiveSkills(targets, args, record, { updateBootstrap: true });
-  const reviewed = await reviewSupportedSkills(resolved, 'Update', args);
-  await preflightCompanionOwnership(defaultSkillRunner, record, reviewed);
-  const pluginOk = new Map(targets.map((target) => [target.id, true]));
-  const outcome = await reconcileCompanions(
-    defaultSkillRunner,
+  return await runSkillBatch(
+    targets,
     record,
-    reviewed,
-    pluginOk,
-    resolveSkillsSource(),
-    hasSkillFlags(args),
+    'Update',
+    args,
+    isQuiet,
+    (platform) =>
+      Effect.succeed({
+        id: platform.id,
+        label: platform.label,
+        message: 'Already up to date',
+        ok: true,
+      }),
+    { updateBootstrap: true },
   );
-  const current: PlatformResult[] = targets.map((target) => ({
-    id: target.id,
-    label: target.label ?? target.id,
-    message: 'Already up to date',
-    ok: true,
-  }));
-  const combined = applyCompanionOutcomes(current, reviewed, outcome);
-  await persistSuccessfulSelections(
-    record,
-    attachCompanionObserved(reviewed, outcome),
-    combined.map((result) => ({ id: result.id, ok: result.ok })),
-    false,
-  );
-  return batchCommandResult(combined, args);
 };
 
 export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> => {
@@ -207,7 +183,7 @@ export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> 
     if (!Array.isArray(outcome)) {
       // Plugins are current, but companions may still need review (a new
       // skill can appear while the plugin version is unchanged).
-      return await reviewCurrentInstallSkills(args, record, outcome);
+      return await reviewCurrentInstallSkills(args, record, outcome, isQuiet);
     }
     targets = outcome;
   }

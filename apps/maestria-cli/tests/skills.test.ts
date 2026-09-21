@@ -76,7 +76,7 @@ describe('skill selection', () => {
       skills: [],
     });
     const legacy = parseSkillsRecord(
-      JSON.stringify({ platforms: { opencode: { skills: [PR] } }, version: 1 }),
+      JSON.stringify({ platforms: { opencode: { skills: [PR] } }, version: 2 }),
       source,
     );
     expect(resolveSkillSelection('opencode', {}, legacy)).toEqual({
@@ -119,20 +119,16 @@ describe('skill selection', () => {
     expect(() => resolveSkillSelection('opencode', flags, null)).toThrow(CliError);
   });
 
-  it('migrates v1 shared source/path onto create-pull-request only', () => {
-    const record = parseSkillsRecord(
-      JSON.stringify({
-        platforms: { opencode: { path: '/fake/p', skills: [PR], source } },
-        version: 1,
-      }),
-      source,
-    );
-    expect(record.version).toBe(2);
-    expect(record.platforms.opencode?.skills).toEqual([PR]);
-    expect(record.platforms.opencode?.skillAssets).toEqual({
-      [PR]: { path: '/fake/p', source },
-    });
-    expect(record.platforms.opencode?.skillAssets?.[DOCS_UPDATE_SKILL]).toBeUndefined();
+  it('fails loudly on version 1 records, which never shipped to main', () => {
+    expect(() =>
+      parseSkillsRecord(
+        JSON.stringify({
+          platforms: { opencode: { path: '/fake/p', skills: [PR], source } },
+          version: 1,
+        }),
+        source,
+      ),
+    ).toThrow(CliError);
   });
 
   it('keeps v2 per-skill assets separate and preserves unknown history', () => {
@@ -162,7 +158,7 @@ describe('skill selection', () => {
       'not json',
       '[]',
       JSON.stringify({ platforms: {}, version: 999 }),
-      JSON.stringify({ platforms: { opencode: { skills: 'nope' } }, version: 1 }),
+      JSON.stringify({ platforms: { opencode: { skills: 'nope' } }, version: 2 }),
       JSON.stringify({
         platforms: { opencode: { skillAssets: { [PR]: { path: 42 } }, skills: [PR] } },
         version: 2,
