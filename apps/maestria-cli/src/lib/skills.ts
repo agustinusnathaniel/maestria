@@ -329,30 +329,6 @@ export const validateSkillFlags = (
   }
 };
 
-/** Resolve per-platform selections from flags plus recorded/default fallbacks. */
-export const resolveSelections = <T extends { id: string }>(
-  targets: readonly T[],
-  args: SkillFlagArgs,
-  record: SkillsRecord | null,
-): (T & { selection: ResolvedSkillSelection })[] =>
-  targets.map((target) => ({
-    ...target,
-    selection: resolveSkillSelection(target.id, args, record),
-  }));
-
-/** Apply one interactively reviewed skill list to every target platform. */
-export const applyReviewedSkills = <T extends { id: string }>(
-  selections: readonly (T & { selection: ResolvedSkillSelection })[],
-  reviewed: readonly string[],
-): (T & { selection: ResolvedSkillSelection })[] =>
-  selections.map((entry) => ({
-    ...entry,
-    selection: {
-      changed: changedVs(entry.selection.skills, reviewed),
-      skills: [...reviewed],
-    },
-  }));
-
 /** Summarize selections for confirmation prompts. */
 export const summarizeSelections = (
   selections: readonly { id: string; selection: ResolvedSkillSelection }[],

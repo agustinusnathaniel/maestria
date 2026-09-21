@@ -125,9 +125,6 @@ export const isSharedRecordedAsset = (
       entry.path === observed,
   );
 
-/** Alias kept for existing internal callers. */
-const matchesRecordedAsset = isSharedRecordedAsset;
-
 /**
  * Ownership preflight, run BEFORE any external effect (after flag validation
  * and interactive confirmation). The native target is listed and compared
@@ -155,7 +152,7 @@ export const preflightCompanionOwnership = async (
     }
     // oxlint-disable-next-line no-await-in-loop -- sequential pre-effect checks keep failure order deterministic.
     const observed = await observedSkillPath(runner, agent);
-    if (observed === null || matchesRecordedAsset(record, target.id, observed, source)) {
+    if (observed === null || isSharedRecordedAsset(record, target.id, observed, source)) {
       continue;
     }
     throw new CliError(

@@ -103,11 +103,11 @@ const stripAnsi = (value: string): string =>
 const sanitizeDetail = (value: string): string =>
   stripAnsi(value).replaceAll(/\s+/gu, ' ').trim().slice(0, MAX_ERROR_DETAIL);
 
-/** Extract the trailing JSON value from spinner-contaminated child output. */
+/** Extract the trailing JSON array from spinner-contaminated child output. */
 const extractTrailingJson = (stdout: string): unknown => {
   const clean = stripAnsi(stdout);
-  const start = clean.search(/[[{]/u);
-  const end = Math.max(clean.lastIndexOf(']'), clean.lastIndexOf('}'));
+  const start = clean.indexOf('[');
+  const end = clean.lastIndexOf(']');
   if (start === -1 || end <= start) {
     return undefined;
   }
@@ -138,9 +138,9 @@ interface CompanionEntry {
 const asEntry = (value: unknown): CompanionEntry | null =>
   isRecord(value) ? { name: value.name, path: value.path, status: value.status } : null;
 
-/** `add --json` confirms with `{name, status: "installed"}` (observed; "updated" tolerated). */
+/** `add --json` confirms with `{name, status: "installed"}` (verified skills@1.7.0; re-add is idempotent). */
 const entryConfirmsInstall = (entry: CompanionEntry, skill: string): boolean =>
-  entry.name === skill && (entry.status === 'installed' || entry.status === 'updated');
+  entry.name === skill && entry.status === 'installed';
 
 /** Child failure fields, when the runtime attaches them to the rejection. */
 const failureOutput = (error: unknown): string => {
@@ -185,8 +185,6 @@ export const runSkillsCli = async (
 };
 
 export interface CompanionScope {
-  /** Project directory for project-scoped installs; omitted means global. */
-  readonly cwd?: string;
   readonly global?: boolean;
 }
 
@@ -216,7 +214,7 @@ export const addCompanion = async (
   const skill = ref.skill ?? COMPANION_SKILL;
   const source = ref.source ?? SKILLS_SOURCE;
   const args = ['add', source, '-a', ref.agent, '-s', skill, ...scopeArgs(scope), '--json', '-y'];
-  const output = await runner(args, scope?.cwd === undefined ? undefined : { cwd: scope.cwd });
+  const output = await runner(args);
   assertKnownAgent(output.stdout, args);
   const parsed = extractJsonArray(output.stdout);
   const match = Array.isArray(parsed)
@@ -248,7 +246,7 @@ export const listCompanions = async (
   scope?: CompanionScope,
 ): Promise<ObservedCompanion[]> => {
   const args = ['list', '-a', agent, ...scopeArgs(scope), '--json'];
-  const output = await runner(args, scope?.cwd === undefined ? undefined : { cwd: scope.cwd });
+  const output = await runner(args);
   assertKnownAgent(output.stdout, args);
   const parsed = extractJsonArray(output.stdout);
   if (!Array.isArray(parsed)) {
@@ -285,10 +283,7 @@ export const removeCompanion = async (
 ): Promise<{ removed: boolean }> => {
   const skill = ref.skill ?? COMPANION_SKILL;
   const removeArgs = ['remove', skill, '-a', ref.agent, ...scopeArgs(scope), '-y'];
-  const output = await runner(
-    removeArgs,
-    scope?.cwd === undefined ? undefined : { cwd: scope.cwd },
-  );
+  const output = await runner(removeArgs);
   assertKnownAgent(output.stdout, removeArgs);
   const otherwise = stripAnsi(output.stdout).includes('No skills found to remove');
   const remaining = await listCompanions(runner, ref.agent, scope);

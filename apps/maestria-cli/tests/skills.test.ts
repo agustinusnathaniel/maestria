@@ -5,7 +5,6 @@ import { reviewSkillSelections } from '@/lib/skill-prompts.js';
 import {
   DEFAULT_SKILLS,
   parseSkillsRecord,
-  resolveSelections,
   resolveSkillSelection,
   withoutRecordedSelection,
   withRecordedSelection,
@@ -92,7 +91,10 @@ describe('skill selection', () => {
 describe('reviewSkillSelections', () => {
   it('preserves distinct per-platform intents without flags outside a TTY', async () => {
     const record = buildRecord({ opencode: [SKILL], pi: [] });
-    const selections = resolveSelections([{ id: 'opencode' }, { id: 'pi' }], {}, record);
+    const selections = [{ id: 'opencode' }, { id: 'pi' }].map((target) => ({
+      ...target,
+      selection: resolveSkillSelection(target.id, {}, record),
+    }));
 
     const effective = await reviewSkillSelections(selections, 'Update', {});
 
@@ -104,7 +106,10 @@ describe('reviewSkillSelections', () => {
   });
 
   it('requires confirmation for flag-driven changes outside a TTY', async () => {
-    const selections = resolveSelections([{ id: 'opencode' }], { skills: 'none' }, null);
+    const selections = [{ id: 'opencode' }].map((target) => ({
+      ...target,
+      selection: resolveSkillSelection(target.id, { skills: 'none' }, null),
+    }));
 
     await expect(reviewSkillSelections(selections, 'Update', { skills: 'none' })).rejects.toThrow(
       CliError,
@@ -118,7 +123,10 @@ describe('reviewSkillSelections', () => {
 
   it('passes through unchanged flag selections without confirmation', async () => {
     const record = buildRecord({ opencode: [] });
-    const selections = resolveSelections([{ id: 'opencode' }], { skills: 'none' }, record);
+    const selections = [{ id: 'opencode' }].map((target) => ({
+      ...target,
+      selection: resolveSkillSelection(target.id, { skills: 'none' }, record),
+    }));
 
     const effective = await reviewSkillSelections(selections, 'Update', {});
 
