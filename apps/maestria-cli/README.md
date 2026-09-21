@@ -17,6 +17,7 @@ npx maestria status
 | `maestria update [--all\|platforms]` | Update installed platforms; `--version 0.5.0` pins a version where the host supports it |
 | `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
 | `maestria check <platform>` | Verify a platform installation |
+| `maestria doctor` | Diagnose skill setup without changing anything (read-only) |
 | `maestria configure [platform] [--set agent=model,...]` | Choose which model each Maestria specialist agent uses (opencode, codex, cursor, pi, omp); `--set` configures non-interactively |
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
 | `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the Maestria cache or an explicit destination |
@@ -24,6 +25,10 @@ npx maestria status
 ### Methodology skills
 
 `install`, `update`, and `uninstall` manage the `create-pull-request` and `docs-update` methodology skills through the official `skills` CLI (pinned `skills@1.7.0`); each skill source of truth is `skills/<skill>/SKILL.md` at the repository root and no skill bodies ship inside plugins. `install` and `update` accept `--skills` (CSV with `create-pull-request`, `docs-update`, or `none`) and `--exclude-skills` (CSV) plus `--yes` for non-interactive confirmation; without flags, recorded per-platform choices are preserved exactly (fresh installs default to both skills, while updates of legacy installs without a record infer only `create-pull-request`). Selections and per-skill observed source/path persist per platform under `$XDG_CONFIG_HOME/maestria/skills.json` (version 2 only) only for actually confirmed state. The equivalent native commands are `npx -y skills@1.7.0 add <source> -a <agent> -s <skill> -g -y` for global installs and the same without `-g` for project installs (`<cwd>/.agents/skills/`).
+
+### Doctor
+
+`maestria doctor` reports per-platform skill setup without changing anything: plugin install state from detection, the recorded skill selection from `skills.json`, and the tool-observed inventory from `skills list --json`. It warns about unmanaged copies (observed but not recorded), notes shared canonical paths provided by another platform from the same source, and prints actionable next commands. Supports `--json`, `--compact`, and `--quiet`. A corrupt record fails with a clear error; unknown platforms or agents degrade honestly with a note.
 
 ### Output options
 

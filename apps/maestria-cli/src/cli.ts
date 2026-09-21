@@ -3,6 +3,7 @@ import type { ArgsDef, CommandDef } from 'citty';
 
 import { checkCommand } from '@/commands/check.js';
 import { configureCommand } from '@/commands/configure.js';
+import { doctorCommand } from '@/commands/doctor.js';
 import { installCommand } from '@/commands/install.js';
 import { pluginCommand } from '@/commands/plugin.js';
 import { handleStatus, statusCommand } from '@/commands/status.js';
@@ -41,6 +42,14 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'Use --global (default) or --project to choose the config level.',
       'For CI pipelines, pass --set with --global or --project and add --quiet.',
     ].join('\n'),
+  },
+  doctor: {
+    examples: [
+      'maestria doctor                   Diagnose skill setup without changing anything',
+      'maestria doctor --json            Show skill diagnostics as JSON',
+      'maestria doctor --compact         Minimal machine-friendly output',
+      'maestria doctor --quiet           Suppress spinner output',
+    ],
   },
   install: {
     examples: [
@@ -246,6 +255,7 @@ export const main = defineCommand({
   subCommands: {
     check: checkCommand,
     configure: configureCommand,
+    doctor: doctorCommand,
     install: installCommand,
     plugin: pluginCommand,
     status: statusCommand,
