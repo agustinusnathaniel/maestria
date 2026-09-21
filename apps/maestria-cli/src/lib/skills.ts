@@ -55,14 +55,16 @@ export interface SkillsRecord {
 }
 
 export const parseSkillsRecord = (text: string, source: string): SkillsRecord => {
+  const corrupt = (detail: string): CliError =>
+    new CliError(`Skill selection record is corrupt (${detail}): ${source}`, 1);
   let parsed: unknown;
   try {
     parsed = JSON.parse(text) as unknown;
   } catch {
-    throw new CliError(`Skill selection record is corrupt (invalid JSON): ${source}`, 1);
+    throw corrupt('invalid JSON');
   }
   if (!isRecord(parsed)) {
-    throw new CliError(`Skill selection record is corrupt (not an object): ${source}`, 1);
+    throw corrupt('not an object');
   }
   const { platforms: platformsValue, version } = parsed;
   if (version !== SKILLS_RECORD_VERSION) {
@@ -72,38 +74,23 @@ export const parseSkillsRecord = (text: string, source: string): SkillsRecord =>
     );
   }
   if (!isRecord(platformsValue)) {
-    throw new CliError(
-      `Skill selection record is corrupt (platforms is not an object): ${source}`,
-      1,
-    );
+    throw corrupt('platforms is not an object');
   }
   const platforms: Record<string, PlatformSkillSelection> = {};
   for (const [platformId, entry] of Object.entries(platformsValue)) {
     if (!isRecord(entry)) {
-      throw new CliError(
-        `Skill selection record is corrupt (platform '${platformId}' is not an object): ${source}`,
-        1,
-      );
+      throw corrupt(`platform '${platformId}' is not an object`);
     }
     const { skills } = entry;
     if (!isStringArray(skills)) {
-      throw new CliError(
-        `Skill selection record is corrupt (platform '${platformId}' skills is not a string array): ${source}`,
-        1,
-      );
+      throw corrupt(`platform '${platformId}' skills is not a string array`);
     }
     const { path: recordPath, source: entrySource } = entry;
     if (recordPath !== undefined && typeof recordPath !== 'string') {
-      throw new CliError(
-        `Skill selection record is corrupt (platform '${platformId}' path is not a string): ${source}`,
-        1,
-      );
+      throw corrupt(`platform '${platformId}' path is not a string`);
     }
     if (entrySource !== undefined && typeof entrySource !== 'string') {
-      throw new CliError(
-        `Skill selection record is corrupt (platform '${platformId}' source is not a string): ${source}`,
-        1,
-      );
+      throw corrupt(`platform '${platformId}' source is not a string`);
     }
     // Unknown IDs are preserved, never reset: a newer writer may have stored
     // IDs this version does not know yet. Flag validation still rejects
@@ -225,6 +212,9 @@ export const parseSkillFlags = (options: {
   return { excludeIds, includeIds };
 };
 
+const changedVs = (recorded: string[] | null, skills: readonly string[]): boolean =>
+  recorded === null || recorded.join(',') !== skills.join(',');
+
 const applyIncludeIds = (
   includeIds: string[],
   recorded: string[] | null,
@@ -239,10 +229,7 @@ const applyIncludeIds = (
     return { changed: recorded === null || recorded.length > 0, skills: [] };
   }
   const skills = [...includeIds];
-  return {
-    changed: recorded === null || recorded.join(',') !== skills.join(','),
-    skills,
-  };
+  return { changed: changedVs(recorded, skills), skills };
 };
 
 const applyExcludeIds = (
@@ -251,10 +238,7 @@ const applyExcludeIds = (
 ): ResolvedSkillSelection => {
   const base = recorded ?? [...DEFAULT_SKILLS];
   const skills = base.filter((s) => !excludeIds.includes(s));
-  return {
-    changed: recorded === null || recorded.join(',') !== skills.join(','),
-    skills,
-  };
+  return { changed: changedVs(recorded, skills), skills };
 };
 
 /**
@@ -364,7 +348,7 @@ export const applyReviewedSkills = <T extends { id: string }>(
   selections.map((entry) => ({
     ...entry,
     selection: {
-      changed: entry.selection.skills.join(',') !== reviewed.join(','),
+      changed: changedVs(entry.selection.skills, reviewed),
       skills: [...reviewed],
     },
   }));

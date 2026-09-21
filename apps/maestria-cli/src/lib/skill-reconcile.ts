@@ -1,4 +1,8 @@
+import type { Effect } from 'effect';
+
+import { batchCommandResult, runBatchSelected } from '@/lib/batch-command.js';
 import { CliError } from '@/lib/command-result.js';
+import type { CommandResult } from '@/lib/command-result.js';
 import {
   addCompanion,
   COMPANION_SKILL,
@@ -14,12 +18,14 @@ import {
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
 import {
   hasSkillFlags,
+  persistSuccessfulSelections,
   resolveSkillSelection,
   withoutRecordedSelection,
   writeSkillsRecord,
 } from '@/lib/skills.js';
 import type { ResolvedSkillSelection, SkillsRecord } from '@/lib/skills.js';
 import { isRecord } from '@/lib/primitives.js';
+import type { PlatformHandler } from '@/lib/platforms.js';
 import { reviewSkillSelections } from '@/lib/skill-prompts.js';
 import type { PlatformResult } from '@/types.js';
 
@@ -171,16 +177,20 @@ export interface CompanionOutcome {
  * another agent still references it (verified), so a shared path means
  * preserve-and-report, never delete.
  */
+/** Platform IDs dropping the companion skill in this same run. */
+const droppingIds = (effective: readonly EffectiveSkillTarget[]): Set<string> =>
+  new Set(
+    effective
+      .filter((entry) => !entry.selection.skills.includes(COMPANION_SKILL))
+      .map((entry) => entry.id),
+  );
+
 const stayingSharers = (
   record: SkillsRecord | null,
   effective: readonly EffectiveSkillTarget[],
   platformId: string,
 ): string[] => {
-  const dropping = new Set(
-    effective
-      .filter((entry) => !entry.selection.skills.includes(COMPANION_SKILL))
-      .map((entry) => entry.id),
-  );
+  const dropping = droppingIds(effective);
   return Object.keys(record?.platforms ?? {}).filter(
     (otherId) =>
       otherId !== platformId &&
@@ -218,9 +228,8 @@ const removalSharesObservedPath = async (
   // this same run do not block each other; they are removed together.
   const ownAgent = companionAgentFor(platformId);
   const droppingAgents = new Set(
-    effective
-      .filter((entry) => !entry.selection.skills.includes(COMPANION_SKILL))
-      .map((entry) => companionAgentFor(entry.id))
+    [...droppingIds(effective)]
+      .map((id) => companionAgentFor(id))
       .filter((agent): agent is string => agent !== null),
   );
   for (const otherAgent of KNOWN_COMPANION_AGENTS) {
@@ -244,6 +253,29 @@ const removalSharesObservedPath = async (
   }
   return null;
 };
+
+/**
+ * Remove the tool-observed copy unless another observed consumer shares the
+ * path. Single removal guard for the deselect and uninstall paths; callers
+ * own their notes. Returns the sharer name when preserved, null when removed.
+ */
+const removeIfUnshared = async (
+  runner: SkillCommandRunner,
+  record: SkillsRecord | null,
+  settled: readonly EffectiveSkillTarget[],
+  platformId: string,
+  agent: string,
+  ownPath: string,
+): Promise<string | null> => {
+  const sharer = await removalSharesObservedPath(runner, record, settled, platformId, ownPath);
+  if (sharer === null) {
+    await removeCompanion(runner, { agent, skill: COMPANION_SKILL }, { global: true });
+  }
+  return sharer;
+};
+
+const sharedPreservedNote = (ownPath: string, sharer: string): string =>
+  `Skill '${COMPANION_SKILL}' left in place at ${ownPath}; still provided by '${sharer}'.`;
 
 /**
  * Reconcile one selected target: idempotent re-add of the known managed
@@ -305,14 +337,9 @@ const reconcileDeselectedTarget = async (
     outcome.ok.set(target.id, true);
     return;
   }
-  const sharer = await removalSharesObservedPath(runner, record, settled, target.id, ownPath);
-  if (sharer === null) {
-    await removeCompanion(runner, { agent, skill: COMPANION_SKILL }, { global: true });
-  } else {
-    outcome.notes.set(
-      target.id,
-      `Skill '${COMPANION_SKILL}' left in place at ${ownPath}; still provided by '${sharer}'.`,
-    );
+  const sharer = await removeIfUnshared(runner, record, settled, target.id, agent, ownPath);
+  if (sharer !== null) {
+    outcome.notes.set(target.id, sharedPreservedNote(ownPath, sharer));
   }
   outcome.ok.set(target.id, true);
 };
@@ -462,20 +489,17 @@ const reconcileOneUninstall = async (
     if (ownPath === null) {
       return { drop: true, result: { ...result, skills: [] } };
     }
-    const sharer = await removalSharesObservedPath(runner, record, settled, result.id, ownPath);
+    const sharer = await removeIfUnshared(runner, record, settled, result.id, agent, ownPath);
     if (sharer !== null) {
       return {
         drop: true,
         result: {
           ...result,
-          message:
-            `${result.message} Skill '${COMPANION_SKILL}' left in place at ${ownPath}; ` +
-            `still provided by '${sharer}'.`,
+          message: `${result.message} ${sharedPreservedNote(ownPath, sharer)}`,
           skills: [],
         },
       };
     }
-    await removeCompanion(runner, { agent, skill: COMPANION_SKILL }, { global: true });
     return { drop: true, result: { ...result, skills: [] } };
   } catch (error) {
     return {
@@ -563,4 +587,48 @@ export const reviewSupportedSkills = async (
   const reviewed = await reviewSkillSelections(supported, action, args);
   const byId = new Map(reviewed.map((entry) => [entry.id, entry]));
   return effective.map((entry) => byId.get(entry.id) ?? entry);
+};
+
+export interface SkillBatchArgs {
+  readonly compact?: boolean;
+  readonly excludeSkills?: string;
+  readonly json?: boolean;
+  readonly skills?: string;
+  readonly yes?: boolean;
+}
+
+/**
+ * Shared install/update tail: review selections, preflight ownership, run the
+ * plugin batch, reconcile companions, persist successful selections, render.
+ * Uninstall keeps its own tail (companion removal without re-add).
+ */
+export const runSkillBatch = async (
+  targets: readonly { id: string; label?: string }[],
+  record: SkillsRecord | null,
+  action: 'Install' | 'Update',
+  args: SkillBatchArgs,
+  isQuiet: boolean,
+  operation: (platform: PlatformHandler, quiet: boolean) => Effect.Effect<PlatformResult>,
+): Promise<CommandResult> => {
+  const resolved = resolveEffectiveSkills(targets, args, record);
+  const reviewed = await reviewSupportedSkills(resolved, action, args);
+  await preflightCompanionOwnership(defaultSkillRunner, record, reviewed);
+  const results = await runBatchSelected(targets, isQuiet, operation);
+  const pluginOk = new Map(results.map((result) => [result.id, result.ok]));
+  const outcome = await reconcileCompanions(
+    defaultSkillRunner,
+    record,
+    reviewed,
+    pluginOk,
+    resolveSkillsSource(),
+    hasSkillFlags(args),
+  );
+  const combined = applyCompanionOutcomes(results, reviewed, outcome);
+  await persistSuccessfulSelections(
+    record,
+    attachCompanionObserved(reviewed, outcome),
+    combined.map((result) => ({ id: result.id, ok: result.ok })),
+    false,
+  );
+  return batchCommandResult(combined, args);
 };

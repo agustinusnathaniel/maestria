@@ -2,7 +2,8 @@ import { Effect } from 'effect';
 
 import { CliError, exitCodeForResults } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
-import { renderCompactResults, renderResults } from '@/lib/output.js';
+import { detectAll, detectInstalled } from '@/lib/detect.js';
+import { createSpinner, renderCompactResults, renderResults } from '@/lib/output.js';
 import { getPlatformOrResult } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformResult } from '@/types.js';
@@ -63,6 +64,39 @@ export const runBatchSelected = async (
       { concurrency: 1 },
     ),
   );
+
+/** Run a detection effect behind the shared Detecting platforms spinner. */
+export const detectWithSpinner = async <A>(
+  isQuiet: boolean,
+  effect: Effect.Effect<A>,
+): Promise<A> => {
+  const spinner = createSpinner(isQuiet);
+  spinner.start('Detecting platforms...');
+  const result = await Effect.runPromise(effect);
+  spinner.stop('Done');
+  return result;
+};
+
+/** Installable platforms (available, not yet installed) behind the shared spinner. */
+export const detectInstallable = async (isQuiet: boolean): Promise<BatchSelection[]> => {
+  const all = await detectWithSpinner(isQuiet, detectAll());
+  return all.filter((s) => s.available && !s.installed).map((p) => ({ id: p.id, label: p.label }));
+};
+
+/**
+ * Installed platforms behind the shared spinner, or the per-command empty
+ * result. Callers pass their own empty message; prompts stay per command.
+ */
+export const detectInstalledOr = async (
+  isQuiet: boolean,
+  emptyOutput: string,
+): Promise<BatchSelection[] | CommandResult> => {
+  const installed = await detectWithSpinner(isQuiet, detectInstalled());
+  if (installed.length === 0) {
+    return { exitCode: 0, output: emptyOutput };
+  }
+  return installed.map((p) => ({ id: p.id, label: p.label }));
+};
 
 /** Throw the shared usage error when stdin/stdout is not an interactive terminal. */
 export const assertInteractiveTerminal = (command: string): void => {

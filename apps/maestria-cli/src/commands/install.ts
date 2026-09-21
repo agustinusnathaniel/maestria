@@ -1,37 +1,20 @@
 import { cancel, isCancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
-import { Effect } from 'effect';
 
 import {
   assertInteractiveTerminal,
-  batchCommandResult,
+  detectInstallable,
+  detectWithSpinner,
   resolveBatchQuiet,
-  runBatchSelected,
 } from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { createSpinner } from '@/lib/output.js';
 import { installOne } from '@/lib/platform-transaction.js';
-import {
-  applyCompanionOutcomes,
-  attachCompanionObserved,
-  defaultSkillRunner,
-  normalizeSkillArgs,
-  preflightCompanionOwnership,
-  reconcileCompanions,
-  resolveEffectiveSkills,
-  resolveSkillsSource,
-  reviewSupportedSkills,
-} from '@/lib/skill-reconcile.js';
-import {
-  hasSkillFlags,
-  persistSuccessfulSelections,
-  readSkillsRecord,
-  validateSkillFlags,
-} from '@/lib/skills.js';
+import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
+import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
 import { VALID_PLATFORMS, validateOrThrow, validatePlatforms } from '@/lib/validation.js';
 
 export interface InstallArgs {
@@ -54,25 +37,20 @@ const collectInstallTargets = async (
     return platformIds.map((id) => ({ id }));
   }
   if (all) {
-    const spinner = createSpinner(isQuiet);
-    spinner.start('Detecting platforms...');
-    const allPlatforms = await Effect.runPromise(detectAll());
-    spinner.stop('Done');
-    const toInstall = allPlatforms.filter((s) => s.available && !s.installed);
+    const toInstall = await detectInstallable(isQuiet);
     if (toInstall.length === 0) {
       return {
         exitCode: 0,
         output: 'All detected platforms already have maestria installed.',
       };
     }
-    return toInstall.map((p) => ({ id: p.id, label: p.label }));
+    return toInstall;
   }
   assertInteractiveTerminal('install');
-  const spinner = createSpinner(isQuiet);
-  spinner.start('Detecting platforms...');
-  const allPlatforms = await Effect.runPromise(detectAll());
-  spinner.stop('Done');
-  const installable = allPlatforms.filter((s) => s.available && !s.installed);
+  const allPlatforms = await detectWithSpinner(isQuiet, detectAll());
+  const installable = allPlatforms
+    .filter((s) => s.available && !s.installed)
+    .map((p) => ({ id: p.id, label: p.label }));
   if (installable.length === 0) {
     return {
       exitCode: 0,
@@ -110,27 +88,7 @@ export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult
   if (!Array.isArray(targets)) {
     return targets;
   }
-  const resolved = resolveEffectiveSkills(targets, args, record);
-  const reviewed = await reviewSupportedSkills(resolved, 'Install', args);
-  await preflightCompanionOwnership(defaultSkillRunner, record, reviewed);
-  const results = await runBatchSelected(targets, isQuiet, installOne);
-  const pluginOk = new Map(results.map((result) => [result.id, result.ok]));
-  const outcome = await reconcileCompanions(
-    defaultSkillRunner,
-    record,
-    reviewed,
-    pluginOk,
-    resolveSkillsSource(),
-    hasSkillFlags(args),
-  );
-  const combined = applyCompanionOutcomes(results, reviewed, outcome);
-  await persistSuccessfulSelections(
-    record,
-    attachCompanionObserved(reviewed, outcome),
-    combined.map((result) => ({ id: result.id, ok: result.ok })),
-    false,
-  );
-  return batchCommandResult(combined, args);
+  return await runSkillBatch(targets, record, 'Install', args, isQuiet, installOne);
 };
 
 export const installCommand = defineCommand({

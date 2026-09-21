@@ -5,9 +5,8 @@ import picocolors from 'picocolors';
 
 import {
   assertInteractiveTerminal,
-  batchCommandResult,
+  detectInstalledOr,
   resolveBatchQuiet,
-  runBatchSelected,
 } from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
@@ -15,26 +14,10 @@ import type { CommandResult } from '@/lib/command-result.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { createSpinner } from '@/lib/output.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { updateOne } from '@/lib/platform-transaction.js';
-import {
-  applyCompanionOutcomes,
-  attachCompanionObserved,
-  defaultSkillRunner,
-  normalizeSkillArgs,
-  preflightCompanionOwnership,
-  reconcileCompanions,
-  resolveEffectiveSkills,
-  resolveSkillsSource,
-  reviewSupportedSkills,
-} from '@/lib/skill-reconcile.js';
-import {
-  hasSkillFlags,
-  persistSuccessfulSelections,
-  readSkillsRecord,
-  validateSkillFlags,
-} from '@/lib/skills.js';
+import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
+import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
 import {
   VALID_PLATFORMS,
   validateOrThrow,
@@ -61,22 +44,6 @@ interface UpdateStatus {
   latestVersion: string;
   needsUpdate: boolean;
 }
-
-const collectAllUpdateTargets = async (
-  isQuiet: boolean,
-): Promise<{ id: string; label?: string }[] | CommandResult> => {
-  const spinner = createSpinner(isQuiet);
-  spinner.start('Detecting platforms...');
-  const installed = await Effect.runPromise(detectInstalled());
-  spinner.stop('Done');
-  if (installed.length === 0) {
-    return {
-      exitCode: 0,
-      output: 'No maestria installations found to update.',
-    };
-  }
-  return installed.map((p) => ({ id: p.id, label: p.label }));
-};
 
 // oxlint-disable-next-line max-lines-per-function -- collectInteractiveUpdateTargets orchestrates the interactive update picker (version checks, needsUpdate filtering, groupMultiselect) as a single cohesive flow; splitting would fragment the picker's state (statuses/needsUpdate) and duplicate version-check logic.
 const collectInteractiveUpdateTargets = async (): Promise<
@@ -168,7 +135,7 @@ export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> 
   if (platformIds && platformIds.length > 0) {
     targets = platformIds.map((id) => ({ id }));
   } else if (args.all === true) {
-    const outcome = await collectAllUpdateTargets(isQuiet);
+    const outcome = await detectInstalledOr(isQuiet, 'No maestria installations found to update.');
     if (!Array.isArray(outcome)) {
       return outcome;
     }
@@ -182,29 +149,9 @@ export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> 
   }
   // Same-version updates skip the plugin reinstall (the host reports
   // up-to-date) but still reconcile the companion independently.
-  const resolved = resolveEffectiveSkills(targets, args, record);
-  const reviewed = await reviewSupportedSkills(resolved, 'Update', args);
-  await preflightCompanionOwnership(defaultSkillRunner, record, reviewed);
-  const results = await runBatchSelected(targets, isQuiet, (platform, quiet) =>
+  return await runSkillBatch(targets, record, 'Update', args, isQuiet, (platform, quiet) =>
     updateOne(platform, quiet, args.version),
   );
-  const pluginOk = new Map(results.map((result) => [result.id, result.ok]));
-  const outcome = await reconcileCompanions(
-    defaultSkillRunner,
-    record,
-    reviewed,
-    pluginOk,
-    resolveSkillsSource(),
-    hasSkillFlags(args),
-  );
-  const combined = applyCompanionOutcomes(results, reviewed, outcome);
-  await persistSuccessfulSelections(
-    record,
-    attachCompanionObserved(reviewed, outcome),
-    combined.map((result) => ({ id: result.id, ok: result.ok })),
-    false,
-  );
-  return batchCommandResult(combined, args);
 };
 
 export const updateCommand = defineCommand({
