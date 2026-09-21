@@ -105,13 +105,13 @@ const observedSkillPath = async (
 };
 
 /**
- * A tool-observed copy counts as ours when another platform's record already
- * claims the same skill from the same source at the same path (shared
- * canonical targets such as `~/.agents/skills`, reached via several agent
- * IDs). A bare same-name record, a different source, or explicit `--skills`
- * never authorizes adopting an independent copy.
+ * Shared ownership rule: another platform claims the same skill, same source,
+ * and same observed path (shared canonical targets such as
+ * `~/.agents/skills`, reached via several agent IDs). A bare same-name
+ * record, a different source, or explicit `--skills` never authorizes adopting
+ * an independent copy.
  */
-const matchesRecordedAsset = (
+export const isSharedRecordedAsset = (
   record: SkillsRecord | null,
   platformId: string,
   observed: string,
@@ -124,6 +124,9 @@ const matchesRecordedAsset = (
       entry.source === source &&
       entry.path === observed,
   );
+
+/** Alias kept for existing internal callers. */
+const matchesRecordedAsset = isSharedRecordedAsset;
 
 /**
  * Ownership preflight, run BEFORE any external effect (after flag validation
