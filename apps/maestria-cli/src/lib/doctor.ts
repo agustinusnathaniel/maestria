@@ -2,7 +2,7 @@ import { homedir } from 'node:os';
 
 import { companionAgentFor, listCompanions, MANAGED_SKILLS } from '@/lib/skill-companion.js';
 import type { ObservedCompanion, SkillCommandRunner } from '@/lib/skill-companion.js';
-import { resolveSkillsSource } from '@/lib/skill-reconcile.js';
+import { isSharedRecordedAsset, resolveSkillsSource } from '@/lib/skill-reconcile.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 
@@ -60,7 +60,9 @@ const redactObserved = (entries: ObservedCompanion[]): ObservedCompanion[] =>
 /**
  * Platforms in another record entry that already claim this skill from the
  * same source at the same observed path (shared canonical targets such as
- * `~/.agents/skills`, reached via several agent IDs).
+ * `~/.agents/skills`, reached via several agent IDs). Match decision
+ * delegates to the shared ownership predicate; this wrapper only expands the
+ * boolean into the provider list doctor reports.
  */
 const sharedProviders = (
   record: SkillsRecord | null,
@@ -68,16 +70,27 @@ const sharedProviders = (
   skill: string,
   observed: string,
   source: string,
-): string[] =>
-  Object.entries(record?.platforms ?? {})
-    .filter(
-      ([otherId, entry]) =>
-        otherId !== platformId &&
-        entry.skills.includes(skill) &&
-        entry.skillAssets?.[skill]?.source === source &&
-        entry.skillAssets?.[skill]?.path === observed,
-    )
-    .map(([otherId]) => otherId);
+): string[] => {
+  if (record === null) {
+    return [];
+  }
+  return Object.keys(record.platforms).filter((otherId) => {
+    if (otherId === platformId) {
+      return false;
+    }
+    const entry = record.platforms[otherId];
+    if (entry === undefined) {
+      return false;
+    }
+    return isSharedRecordedAsset(
+      { platforms: { [otherId]: entry }, version: record.version },
+      platformId,
+      skill,
+      observed,
+      source,
+    );
+  });
+};
 
 type DoctorStatus = Pick<
   PlatformStatus,
@@ -173,8 +186,10 @@ const collectUnmanaged = (
 /**
  * Build one platform report from already collected inputs. Pure apart from
  * home redaction: list failures arrive as `listError` and degrade honestly.
+ * Internal: production entry is `collectDoctorReports` (see grep); tests
+ * exercise this through that collector.
  */
-export const buildDoctorReport = (
+const buildDoctorReport = (
   status: DoctorStatus,
   record: SkillsRecord | null,
   observed: ObservedCompanion[],
