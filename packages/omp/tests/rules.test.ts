@@ -24,14 +24,14 @@ const joined = (systemPrompt: string[] | undefined): string => {
   return systemPrompt.join('\n');
 };
 
-describe('createModePromptHandler', () => {
-  // In omp, systemPrompt is a string array (string[]), not a single string.
-  const baseEvent: BeforeAgentStartEvent = {
-    prompt: 'build the feature',
-    systemPrompt: ['You are an AI assistant.'],
-    type: 'before_agent_start',
-  };
+// In omp, systemPrompt is a string array (string[]), not a single string.
+const baseEvent: BeforeAgentStartEvent = {
+  prompt: 'build the feature',
+  systemPrompt: ['You are an AI assistant.'],
+  type: 'before_agent_start',
+};
 
+describe('createModePromptHandler', () => {
   it('when mode is null, returns void (no modification)', () => {
     const state = createInitialState();
     const handler = createModePromptHandler(state);
@@ -40,32 +40,22 @@ describe('createModePromptHandler', () => {
     expect(result).toBeUndefined();
   });
 
-  it('when mode is "fein", returns a result with systemPrompt containing the mode marker', () => {
-    const state = createInitialState();
-    state.mode = 'fein';
-    const handler = createModePromptHandler(state);
-
-    const result = handler(baseEvent, {});
-    if (!result?.systemPrompt) {
-      throw new Error('Expected a system prompt');
+  it('injects the mode marker per keyword', () => {
+    const table: { mode: 'fein' | 'sonar' | 'blitz'; marker: string }[] = [
+      { marker: '[MODE: fein]', mode: 'fein' },
+      { marker: 'Research Only', mode: 'sonar' },
+      { marker: '[MODE: blitz]', mode: 'blitz' },
+    ];
+    for (const { mode, marker } of table) {
+      const state = createInitialState();
+      state.mode = mode;
+      const result = createModePromptHandler(state)(baseEvent, {});
+      if (!result?.systemPrompt) {
+        throw new Error('Expected a system prompt');
+      }
+      expect(Array.isArray(result.systemPrompt)).toBe(true);
+      expect(result.systemPrompt.join('\n')).toContain(marker);
     }
-    expect(Array.isArray(result.systemPrompt)).toBe(true);
-    const text = result.systemPrompt.join('\n');
-    expect(text).toContain('[MODE: fein]');
-  });
-
-  it('when mode is "sonar", returns a result with systemPrompt containing "Research Only"', () => {
-    const state = createInitialState();
-    state.mode = 'sonar';
-    const handler = createModePromptHandler(state);
-
-    const result = handler(baseEvent, {});
-    if (!result?.systemPrompt) {
-      throw new Error('Expected a system prompt');
-    }
-    expect(Array.isArray(result.systemPrompt)).toBe(true);
-    const text = result.systemPrompt.join('\n');
-    expect(text).toContain('Research Only');
   });
 
   it('the returned systemPrompt array starts with original systemPrompt entries, followed by the mode prompt', () => {
@@ -86,13 +76,7 @@ describe('createModePromptHandler', () => {
   });
 });
 
-describe('createModePromptHandler project customization', () => {
-  const baseEvent: BeforeAgentStartEvent = {
-    prompt: 'build the feature',
-    systemPrompt: ['You are an AI assistant.'],
-    type: 'before_agent_start',
-  };
-
+describe('createModePromptHandler project customization (thin: order plus STOP never-throw)', () => {
   it('leaves the prompt unchanged when both project files are absent', () => {
     const root = makeTempRoot();
     try {
@@ -137,61 +121,8 @@ describe('createModePromptHandler project customization', () => {
     }
   });
 
-  it('scopes reads to ctx.cwd: different session directories give different content', () => {
-    const first = makeTempRoot();
-    const second = makeTempRoot();
-    try {
-      writeProjectFile(first, '.maestria/rules.md', '# first-root\n');
-      writeProjectFile(second, '.maestria/rules.md', '# second-root\n');
-      const state = createInitialState();
-      const handler = createModePromptHandler(state);
-      expect(joined(handler(baseEvent, { cwd: first })?.systemPrompt)).toContain('# first-root');
-      expect(joined(handler(baseEvent, { cwd: second })?.systemPrompt)).toContain('# second-root');
-    } finally {
-      rmSync(first, { force: true, recursive: true });
-      rmSync(second, { force: true, recursive: true });
-    }
-  });
-
-  it('picks up edits on the next turn with no stale snapshot', () => {
-    const root = makeTempRoot();
-    try {
-      writeProjectFile(root, '.maestria/workflow.md', '# v1\n');
-      const state = createInitialState();
-      const handler = createModePromptHandler(state);
-      expect(joined(handler(baseEvent, { cwd: root })?.systemPrompt)).toContain('# v1');
-      writeProjectFile(root, '.maestria/workflow.md', '# v2\n');
-      const text = joined(handler(baseEvent, { cwd: root })?.systemPrompt);
-      expect(text).toContain('# v2');
-      expect(text).not.toContain('# v1');
-    } finally {
-      rmSync(root, { force: true, recursive: true });
-    }
-  });
-
-  it('surfaces a directory entry as a STOP banner plus notify instead of throwing', () => {
-    const fs: ProjectConfigFs = {
-      kindOf: () => 'directory',
-      readFile: () => '',
-      resolveLink: (candidate) => candidate,
-    };
-    const notify = vi.fn<(message: string) => void>();
-    const state = createInitialState();
-    let text = '';
-    expect(() => {
-      text = joined(
-        createModePromptHandler(state, fs)(baseEvent, { cwd: '/projects/acme', ui: { notify } })
-          ?.systemPrompt,
-      );
-    }).not.toThrow();
-    expect(text).toContain('STOP');
-    expect(text).toContain('.maestria/workflow.md');
-    expect(text).toContain('is a directory');
-    expect(notify).toHaveBeenCalledOnce();
-  });
-
-  it('surfaces unreadable files via a deterministic seam, leaking neither content nor absolute root', () => {
-    const fs: ProjectConfigFs = {
+  it('surfaces unusable files as a STOP banner plus notify instead of throwing', () => {
+    const unreadable: ProjectConfigFs = {
       kindOf: () => 'file',
       readFile: () => {
         const error = new Error('EACCES: permission denied') as NodeJS.ErrnoException;
@@ -200,29 +131,36 @@ describe('createModePromptHandler project customization', () => {
       },
       resolveLink: (candidate) => candidate,
     };
-    const notify = vi.fn<(message: string) => void>();
-    const state = createInitialState();
-    const text = joined(
-      createModePromptHandler(state, fs)(baseEvent, { cwd: '/projects/acme', ui: { notify } })
-        ?.systemPrompt,
-    );
-    expect(text).toContain('STOP');
-    expect(text).toMatch(/cannot be read/u);
-    expect(text).not.toContain('/projects/acme');
-    expect(notify).toHaveBeenCalledOnce();
-  });
-
-  it('surfaces links escaping the project root as a STOP banner', () => {
-    const fs: ProjectConfigFs = {
-      kindOf: () => 'file',
-      readFile: () => 'evil',
-      resolveLink: () => path.resolve('/elsewhere/evil.md'),
-    };
-    const state = createInitialState();
-    const text = joined(
-      createModePromptHandler(state, fs)(baseEvent, { cwd: '/projects/acme' })?.systemPrompt,
-    );
-    expect(text).toContain('STOP');
-    expect(text).toMatch(/outside the project root/u);
+    const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
+      {
+        fs: { kindOf: () => 'directory', readFile: () => '', resolveLink: (c) => c },
+        pattern: /is a directory/u,
+      },
+      { fs: unreadable, pattern: /cannot be read/u },
+      {
+        fs: {
+          kindOf: () => 'file',
+          readFile: () => 'evil',
+          resolveLink: () => path.resolve('/elsewhere/evil.md'),
+        },
+        pattern: /outside the project root/u,
+      },
+    ];
+    for (const { fs, pattern } of table) {
+      const notify = vi.fn<(message: string) => void>();
+      const state = createInitialState();
+      let text = '';
+      expect(() => {
+        text = joined(
+          createModePromptHandler(state, fs)(baseEvent, { cwd: '/projects/acme', ui: { notify } })
+            ?.systemPrompt,
+        );
+      }).not.toThrow();
+      expect(text).toContain('STOP');
+      expect(text).toContain('.maestria/workflow.md');
+      expect(text).toMatch(pattern);
+      expect(text).not.toContain('/projects/acme');
+      expect(notify).toHaveBeenCalledOnce();
+    }
   });
 });

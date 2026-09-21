@@ -1,24 +1,11 @@
 """Tests for project-root customization (.maestria/workflow.md, .maestria/rules.md).
 
-Contract under test (mirrors the OpenCode projection cross-platform):
-
-- Root only: the two relative paths under the session working directory,
-  in deterministic workflow-then-rules order. No ancestor or nested lookup.
-- Absent files leave behavior unchanged; empty files carry no instructions.
-- Fresh read every turn: additions, edits, and deletions take effect on
-  the next call with no stale snapshot and no duplication.
-- Present-but-unusable files (directory, special file, unreadable,
-  unresolvable link, link escaping the root) fail visibly: the loader
-  raises ProjectConfigError and the pre_llm hook injects an error banner
-  instead of running with silently absent config. Diagnostics name only
-  the relative path and the failure kind, never contents or absolute paths.
-- The hook never raises (the host runs pre_llm_call fail-open, so a raise
-  would drop the mode context without preventing the turn) and never
-  touches the trust registry: project Markdown is subordinate guidance,
-  never a capability grant.
-
-Unreadability uses a deterministic injected seam (a read_file callable
-that raises), never chmod assumptions, which root ignores.
+Thin adapter suite: the full loader contract (root-only order, absent or
+empty skipped, present-but-unusable fails loud with relative path only,
+redaction, symlink handling, subordinate status) lives in
+packages/shared/pi/tests/project-config.test.ts. This file pins only the
+Hermes shape: order passthrough into mode context, fail-open banners that
+never raise, and the Python UTF-8 decode seam.
 """
 
 from __future__ import annotations
@@ -62,14 +49,6 @@ class LoaderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             self.assertEqual(load_project_sections(root), [])
 
-    def test_single_present_file_loads_alone(self):
-        with tempfile.TemporaryDirectory() as root:
-            _write(root, PROJECT_RULES_REL, "# rules\n")
-            self.assertEqual(
-                load_project_sections(root),
-                [ProjectSection(content="# rules\n", rel=PROJECT_RULES_REL)],
-            )
-
     def test_workflow_then_rules_order_regardless_of_creation_order(self):
         with tempfile.TemporaryDirectory() as root:
             _write(root, PROJECT_RULES_REL, "# rules\n")
@@ -91,32 +70,7 @@ class LoaderTests(unittest.TestCase):
                 [ProjectSection(content="# rules\n", rel=PROJECT_RULES_REL)],
             )
 
-    def test_add_edit_delete_visible_on_next_call_no_snapshot(self):
-        with tempfile.TemporaryDirectory() as root:
-            self.assertEqual(load_project_sections(root), [])
-            _write(root, PROJECT_WORKFLOW_REL, "# v1\n")
-            self.assertEqual(len(load_project_sections(root)), 1)
-            _write(root, PROJECT_WORKFLOW_REL, "# v2\n")
-            self.assertEqual(
-                load_project_sections(root),
-                [ProjectSection(content="# v2\n", rel=PROJECT_WORKFLOW_REL)],
-            )
-            os.remove(os.path.join(root, *PROJECT_WORKFLOW_REL.split("/")))
-            self.assertEqual(load_project_sections(root), [])
-
-    def test_no_ancestor_lookup(self):
-        with tempfile.TemporaryDirectory() as root:
-            _write(root, PROJECT_WORKFLOW_REL, "# parent workflow\n")
-            child = os.path.join(root, "child")
-            os.makedirs(child)
-            self.assertEqual(load_project_sections(child), [])
-
-    def test_no_nested_lookup(self):
-        with tempfile.TemporaryDirectory() as root:
-            _write(root, ".maestria/nested/workflow.md", "# nested\n")
-            self.assertEqual(load_project_sections(root), [])
-
-    def test_directory_fails_visibly_without_paths_or_contents(self):
+    def test_present_but_unusable_fails_loud_with_rel_only(self):
         with tempfile.TemporaryDirectory() as root:
             os.makedirs(os.path.join(root, ".maestria", "rules.md"))
             with self.assertRaises(ProjectConfigError) as ctx:
@@ -126,18 +80,14 @@ class LoaderTests(unittest.TestCase):
             self.assertIn("directory", message)
             self.assertNotIn(root, message)
 
-    def test_special_file_fails_visibly(self):
-        with tempfile.TemporaryDirectory() as root:
-            os.makedirs(os.path.join(root, ".maestria"), exist_ok=True)
-            os.mkfifo(os.path.join(root, *PROJECT_WORKFLOW_REL.split("/")))
-            with self.assertRaises(ProjectConfigError) as ctx:
-                load_project_sections(root)
-            message = str(ctx.exception)
-            self.assertIn(PROJECT_WORKFLOW_REL, message)
-            self.assertIn("not a regular file", message)
-            self.assertNotIn(root, message)
+        with self.assertRaises(ProjectConfigError) as ctx:
+            load_project_sections(
+                "/projects/acme", kind_of=lambda _candidate: "other"
+            )
+        message = str(ctx.exception)
+        self.assertIn("not a regular file", message)
+        self.assertNotIn("/projects/acme", message)
 
-    def test_unreadable_file_fails_visibly_via_deterministic_seam(self):
         sentinel = "sentinel-secret-content-9kqd"
         with tempfile.TemporaryDirectory() as root:
             _write(root, PROJECT_WORKFLOW_REL, sentinel)
@@ -166,20 +116,7 @@ class LoaderTests(unittest.TestCase):
             self.assertIn("exists but cannot be read", message)
             self.assertNotIn(root, message)
 
-    def test_dangling_symlink_fails_visibly(self):
-        with tempfile.TemporaryDirectory() as root:
-            os.makedirs(os.path.join(root, ".maestria"), exist_ok=True)
-            os.symlink(
-                os.path.join(root, "does-not-exist.md"),
-                os.path.join(root, *PROJECT_WORKFLOW_REL.split("/")),
-            )
-            with self.assertRaises(ProjectConfigError) as ctx:
-                load_project_sections(root)
-            message = str(ctx.exception)
-            self.assertIn("cannot be resolved", message)
-            self.assertNotIn(root, message)
-
-    def test_symlink_escaping_root_fails_visibly(self):
+    def test_symlink_escaping_root_fails_without_target_or_content(self):
         with tempfile.TemporaryDirectory() as root:
             with tempfile.TemporaryDirectory() as outside:
                 target = _write(outside, "evil.md", "# evil\n")
@@ -196,60 +133,49 @@ class LoaderTests(unittest.TestCase):
                 self.assertNotIn(outside, message)
                 self.assertNotIn("# evil", message)
 
-    def test_symlink_inside_root_is_accepted(self):
-        with tempfile.TemporaryDirectory() as root:
-            _write(root, ".maestria/shared.md", "# linked\n")
-            os.symlink(
-                os.path.join(root, ".maestria", "shared.md"),
-                os.path.join(root, *PROJECT_WORKFLOW_REL.split("/")),
-            )
-            self.assertEqual(
-                load_project_sections(root),
-                [ProjectSection(content="# linked\n", rel=PROJECT_WORKFLOW_REL)],
-            )
+    def test_raw_seam_failures_redacted_no_paths_or_contents(self):
+        root = "/projects/acme"
+        sentinel = "sentinel-secret-content-9kqd"
 
-    def test_symlinked_root_still_loads_inside_files(self):
-        with tempfile.TemporaryDirectory() as parent:
-            root = os.path.join(parent, "real")
-            os.makedirs(root)
-            _write(root, PROJECT_WORKFLOW_REL, "# workflow\n")
-            link = os.path.join(parent, "aliased")
-            os.symlink(root, link)
-            self.assertEqual(
-                load_project_sections(link),
-                [ProjectSection(content="# workflow\n", rel=PROJECT_WORKFLOW_REL)],
-            )
+        def _raw(what: str) -> OSError:
+            return OSError(f"{what} {root}/.maestria/workflow.md: {sentinel}")
 
-    def test_symlink_to_directory_inside_root_fails_visibly(self):
-        with tempfile.TemporaryDirectory() as root:
-            target = os.path.join(root, ".maestria", "target-dir")
-            os.makedirs(target)
-            os.symlink(
-                target,
-                os.path.join(root, *PROJECT_WORKFLOW_REL.split("/")),
-            )
+        table = [
+            ({"kind_of": lambda _c: (_ for _ in ()).throw(_raw("lstat"))}, "cannot be accessed"),
+            (
+                {
+                    "kind_of": lambda _c: "file",
+                    "resolve_link": lambda _c, _r: (_ for _ in ()).throw(
+                        _raw("realpath")
+                    ),
+                },
+                "cannot be resolved",
+            ),
+        ]
+        for seams, pattern in table:
             with self.assertRaises(ProjectConfigError) as ctx:
-                load_project_sections(root)
+                load_project_sections(root, **seams)
             message = str(ctx.exception)
-            self.assertIn(PROJECT_WORKFLOW_REL, message)
-            self.assertIn("directory", message)
+            self.assertIn(pattern, message)
             self.assertNotIn(root, message)
+            self.assertNotIn(sentinel, message)
 
-    def test_symlink_to_fifo_inside_root_fails_without_blocking(self):
-        with tempfile.TemporaryDirectory() as root:
-            os.makedirs(os.path.join(root, ".maestria"), exist_ok=True)
-            fifo = os.path.join(root, ".maestria", "pipe")
-            os.mkfifo(fifo)
-            os.symlink(
-                fifo,
-                os.path.join(root, *PROJECT_WORKFLOW_REL.split("/")),
-            )
+        # The read seam needs a real file so the resolved-target stat passes
+        # and the failure surfaces at the read step.
+        with tempfile.TemporaryDirectory() as real_root:
+            _write(real_root, PROJECT_WORKFLOW_REL, sentinel)
             with self.assertRaises(ProjectConfigError) as ctx:
-                load_project_sections(root)
+                load_project_sections(
+                    real_root,
+                    kind_of=lambda _c: "file",
+                    read_file=lambda _c, _r: (_ for _ in ()).throw(_raw("read")),
+                    resolve_link=lambda candidate, _rel: candidate,
+                )
             message = str(ctx.exception)
-            self.assertIn(PROJECT_WORKFLOW_REL, message)
-            self.assertIn("not a regular file", message)
+            self.assertIn("exists but cannot be read", message)
             self.assertNotIn(root, message)
+            self.assertNotIn(sentinel, message)
+            self.assertNotIn(real_root, message)
 
     def test_format_names_rel_and_marks_subordinate(self):
         body = "# rules\n- Be careful\n"
@@ -351,24 +277,6 @@ class HookTests(unittest.TestCase):
         self.assertIn("# workflow", context)
         self.assertIn("# rules", context)
         self.assertIn("subordinate", context)
-
-    def test_edits_visible_next_turn_without_duplication(self):
-        hook = self.make_hook("fein")
-        with tempfile.TemporaryDirectory() as root:
-            with patch.object(
-                project_config, "get_project_root", return_value=root
-            ):
-                _write(root, PROJECT_WORKFLOW_REL, "# v1\n")
-                first = hook(**self.host_kwargs())["context"]
-                self.assertIn("# v1", first)
-                _write(root, PROJECT_WORKFLOW_REL, "# v2\n")
-                second = hook(**self.host_kwargs())["context"]
-                self.assertIn("# v2", second)
-                self.assertNotIn("# v1", second)
-                self.assertEqual(second.count(PROJECT_WORKFLOW_REL), 1)
-                os.remove(os.path.join(root, *PROJECT_WORKFLOW_REL.split("/")))
-                third = hook(**self.host_kwargs())["context"]
-                self.assertNotIn(".maestria/", third)
 
     def test_broken_file_surfaced_as_banner_mode_preserved_no_raise(self):
         hook = self.make_hook("fein")

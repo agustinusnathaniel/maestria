@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
@@ -19,7 +19,7 @@ const writeProjectFile = (root: string, rel: string, content: string): void => {
   writeFileSync(full, content, 'utf-8');
 };
 
-describe('prime project-config scope contract', () => {
+describe('prime project-config scope contract (thin: order passthrough plus redaction)', () => {
   it('loads workflow then rules in deterministic order', () => {
     expect([...PROJECT_CONFIG_REL_PATHS]).toEqual(['.maestria/workflow.md', '.maestria/rules.md']);
   });
@@ -47,21 +47,6 @@ describe('prime project-config scope contract', () => {
     }
   });
 
-  it('skips empty files and sees edits on the next call', () => {
-    const root = makeTempRoot();
-    try {
-      writeProjectFile(root, '.maestria/workflow.md', '');
-      writeProjectFile(root, '.maestria/rules.md', '# rules\n');
-      expect(loadProjectSections(root)).toEqual([
-        { content: '# rules\n', rel: '.maestria/rules.md' },
-      ]);
-      writeProjectFile(root, '.maestria/workflow.md', '# v2\n');
-      expect(loadProjectSections(root)).toHaveLength(2);
-    } finally {
-      rmSync(root, { force: true, recursive: true });
-    }
-  });
-
   it('fails loudly on directories, special files, escapes, and unreadable files', () => {
     const root = makeTempRoot();
     try {
@@ -71,37 +56,44 @@ describe('prime project-config scope contract', () => {
       rmSync(root, { force: true, recursive: true });
     }
 
-    const special: ProjectConfigFs = {
-      kindOf: () => 'other',
-      readFile: () => '',
-      resolveLink: (candidate) => candidate,
-    };
-    expect(() => loadProjectSections('/projects/acme', special)).toThrow(/not a regular file/u);
-
-    const escaping: ProjectConfigFs = {
-      kindOf: () => 'file',
-      readFile: () => 'evil',
-      resolveLink: () => path.resolve('/elsewhere/evil.md'),
-    };
-    expect(() => loadProjectSections('/projects/acme', escaping)).toThrow(
-      /outside the project root/u,
-    );
-
-    const unreadable: ProjectConfigFs = {
-      kindOf: () => 'file',
-      readFile: () => {
-        throw new Error('EACCES: permission denied');
+    const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
+      {
+        fs: {
+          kindOf: () => 'other',
+          readFile: () => '',
+          resolveLink: (candidate) => candidate,
+        },
+        pattern: /not a regular file/u,
       },
-      resolveLink: (candidate) => candidate,
-    };
-    let message = '';
-    try {
-      loadProjectSections('/projects/acme', unreadable);
-    } catch (error) {
-      message = error instanceof Error ? error.message : String(error);
+      {
+        fs: {
+          kindOf: () => 'file',
+          readFile: () => 'evil',
+          resolveLink: () => path.resolve('/elsewhere/evil.md'),
+        },
+        pattern: /outside the project root/u,
+      },
+      {
+        fs: {
+          kindOf: () => 'file',
+          readFile: () => {
+            throw new Error('EACCES: permission denied');
+          },
+          resolveLink: (candidate) => candidate,
+        },
+        pattern: /cannot be read/u,
+      },
+    ];
+    for (const { fs, pattern } of table) {
+      let message = '';
+      try {
+        loadProjectSections('/projects/acme', fs);
+      } catch (error) {
+        message = error instanceof Error ? error.message : String(error);
+      }
+      expect(message).toMatch(pattern);
+      expect(message).not.toContain('/projects/acme');
     }
-    expect(message).toMatch(/cannot be read/u);
-    expect(message).not.toContain('/projects/acme');
   });
 
   it('sanitizes raw filesystem failures at every seam: no paths, contents, or causes leak', () => {
@@ -159,33 +151,6 @@ describe('prime project-config scope contract', () => {
       expect(message).not.toContain(sentinel);
       // Hosts serialize thrown errors: the raw failure must not ride along.
       expect(cause).toBeUndefined();
-    }
-  });
-
-  it('loads inside-root files through a symlinked root', () => {
-    const parent = mkdtempSync(path.join(tmpdir(), 'maestria-prime-root-alias-'));
-    try {
-      const real = path.join(parent, 'real');
-      writeProjectFile(real, '.maestria/workflow.md', '# workflow\n');
-      const aliased = path.join(parent, 'aliased');
-      symlinkSync(real, aliased);
-      expect(loadProjectSections(aliased)).toEqual([
-        { content: '# workflow\n', rel: '.maestria/workflow.md' },
-      ]);
-    } finally {
-      rmSync(parent, { force: true, recursive: true });
-    }
-  });
-
-  it('rejects a symlink to a directory inside the root before reading', () => {
-    const root = makeTempRoot();
-    try {
-      const target = path.join(root, '.maestria', 'target-dir');
-      mkdirSync(target, { recursive: true });
-      symlinkSync(target, path.join(root, '.maestria', 'workflow.md'));
-      expect(() => loadProjectSections(root)).toThrow(/is a directory/u);
-    } finally {
-      rmSync(root, { force: true, recursive: true });
     }
   });
 
