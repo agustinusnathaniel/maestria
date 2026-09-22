@@ -317,13 +317,6 @@ export const resolveSkillSelection = (
   return { changed: false, skills: [...(recorded ?? fallback)] };
 };
 
-export const recordedSkills = (record: SkillsRecord | null, platformId: string): string[] | null =>
-  record?.platforms[platformId]?.skills ?? null;
-
-/** Ownership comes from our own record only, never from filesystem observation. */
-export const isOwned = (record: SkillsRecord | null, platformId: string, skill: string): boolean =>
-  (recordedSkills(record, platformId) ?? []).includes(skill);
-
 /** Platforms (other than `platformId`) whose record claims `skill` from the same source at `observedPath`. */
 export const findSharedProviders = (
   record: SkillsRecord | null,

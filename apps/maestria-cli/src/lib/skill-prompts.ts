@@ -7,8 +7,6 @@ import type { ResolvedSkillSelection } from '@/lib/skills.js';
 
 const isInteractive = (): boolean => process.stdout.isTTY && process.stdin.isTTY;
 
-export const isInteractiveTerminal = (): boolean => isInteractive();
-
 /** Interactive skill review for install/update. Empty selection means `none`. */
 export const promptSkillSelection = async (
   initial: string[],
@@ -50,7 +48,7 @@ export const confirmOrThrow = async (message: string, yes: boolean | undefined):
   }
 };
 
-export const defaultSkillSummary = (skills: string[]): string =>
+const defaultSkillSummary = (skills: string[]): string =>
   skills.length === 0 ? 'none' : skills.join(', ');
 
 export interface ReviewableSelection {

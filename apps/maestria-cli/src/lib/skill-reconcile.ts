@@ -20,10 +20,8 @@ import {
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
 import {
   hasSkillFlags,
-  isOwned,
   isSharedRecordedAsset,
   persistSuccessfulSelections,
-  recordedSkills,
   resolveSkillSelection,
   withoutRecordedSelection,
   withRecordedSelection,
@@ -64,6 +62,10 @@ export interface EffectiveSkillTarget {
 /** Skills in a selection this CLI version does not manage. */
 const unknownSkills = (skills: readonly string[]): string[] =>
   skills.filter((skill) => !MANAGED_SKILLS.includes(skill));
+
+/** Record read; ownership never comes from filesystem observation. */
+const recordedSkills = (record: SkillsRecord | null, platformId: string): string[] | null =>
+  record?.platforms[platformId]?.skills ?? null;
 
 /**
  * Resolve per-platform selections. Unknown hosts degrade honestly: an
@@ -124,7 +126,7 @@ export const preflightCompanionOwnership = async (
     const selected = target.selection.skills.filter((skill) => MANAGED_SKILLS.includes(skill));
     for (const skill of selected) {
       const agent = companionAgentFor(target.id);
-      if (agent === null || isOwned(record, target.id, skill)) {
+      if (agent === null || (recordedSkills(record, target.id) ?? []).includes(skill)) {
         continue;
       }
       // oxlint-disable-next-line no-await-in-loop -- sequential pre-effect checks keep failure order deterministic.
@@ -286,7 +288,7 @@ const reconcileDeselectedTarget = async (
   reportExcludedPresence: boolean,
   outcome: CompanionOutcome,
 ): Promise<void> => {
-  if (!isOwned(record, target.id, skill)) {
+  if (!(recordedSkills(record, target.id) ?? []).includes(skill)) {
     if (reportExcludedPresence) {
       const present = await observedSkillPath(runner, agent, skill);
       if (present !== null) {
@@ -639,7 +641,7 @@ export const normalizeSkillArgs = <T extends RawSkillArgs>(args: T): T => {
 };
 
 /** Interactive skill review for supported targets only. */
-export const reviewSupportedSkills = async (
+const reviewSupportedSkills = async (
   effective: readonly EffectiveSkillTarget[],
   action: 'Install' | 'Update',
   args: { yes?: boolean } & { excludeSkills?: string; skills?: string },

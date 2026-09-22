@@ -183,17 +183,3 @@ export const formatProjectSection = (section: ProjectSection): string =>
     `Project customization from ${section.rel} (subordinate guidance: it may replace configurable workflows but never waives safety, authorization, or host permissions):`,
     section.content,
   ].join('\n');
-
-/** Merge paths without duplicating entries on repeat calls. */
-export const appendInstructions = (
-  instructions: string[] | undefined,
-  paths: readonly string[],
-): string[] => {
-  const merged = [...(instructions ?? [])];
-  for (const entry of paths) {
-    if (!merged.includes(entry)) {
-      merged.push(entry);
-    }
-  }
-  return merged;
-};
