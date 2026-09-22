@@ -12,12 +12,6 @@ import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 import type { SetupActionReport, SetupArgs, SetupSkillSource } from '@/lib/setup.js';
 
-/**
- * Setup planning: flag validation, interactive selection, the two-step
- * confirmation (skill review plus final confirm), and report rendering.
- * Nothing here performs an external effect beyond prompts.
- */
-
 export interface SetupSelection {
   readonly ecosystem: string[];
   readonly maestriaActive: boolean;
@@ -53,7 +47,6 @@ export const parseEcosystem = (input: string | undefined): string[] => {
   return ids;
 };
 
-/** Parse repeatable or CSV `--skill-source <owner/repo:scope>` entries. */
 export const parseSkillSources = (input: string | string[] | undefined): SetupSkillSource[] => {
   const raw: string[] =
     input === undefined
@@ -86,7 +79,6 @@ export const parseSkillSources = (input: string | string[] | undefined): SetupSk
   });
 };
 
-/** `--maestria-skills` is an alias for `--skills`; `--skills` wins when both are set. */
 export const effectiveMaestriaSkills = (args: SetupArgs): string | undefined => {
   const kebab = args['maestria-skills'];
   const kebabText = typeof kebab === 'string' ? kebab : '';
@@ -132,7 +124,6 @@ const assertFullArgs = (
 const collectInteractiveSetup = async (
   ecosystem: string[],
   ecosystemProvided: boolean,
-  xtarterizeSelected: boolean,
   xtarterizeFlag: boolean,
   xtarterizeOnPath: string | null,
   sources: SetupSkillSource[],
@@ -165,7 +156,7 @@ const collectInteractiveSetup = async (
     }));
   }
   if (Object.keys(groups).length === 0) {
-    return { ecosystem, sources, xtarterize: xtarterizeSelected };
+    return { ecosystem, sources, xtarterize: xtarterizeFlag };
   }
   const { cancel, isCancel } = await import('@clack/prompts');
   const selected = await groupMultiselect({
@@ -190,7 +181,6 @@ const collectInteractiveSetup = async (
   };
 };
 
-/** Interactive category multiselect; skipped unless prompts are needed. */
 const promptSetupSelections = async (
   args: SetupArgs,
   ecosystem: string[],
@@ -202,15 +192,14 @@ const promptSetupSelections = async (
 ): Promise<{ ecosystem: string[]; sources: SetupSkillSource[]; xtarterize: boolean }> => {
   const ecosystemProvided = args.ecosystem !== undefined;
   const sourcesProvided = flattenSkillSource(args) !== undefined;
-  const xtarterizeSelected = args.xtarterizeSkills === true;
+  const xtarterizeFlag = args.xtarterizeSkills === true;
   if (!interactive || (args.yes === true && ecosystemProvided && sourcesProvided)) {
-    return { ecosystem, sources: skillSources, xtarterize: xtarterizeSelected };
+    return { ecosystem, sources: skillSources, xtarterize: xtarterizeFlag };
   }
   return await collectInteractiveSetup(
     ecosystem,
     ecosystemProvided,
-    xtarterizeSelected,
-    args.xtarterizeSkills === true,
+    xtarterizeFlag,
     xtarterizeOnPath,
     skillSources,
     sourcesProvided,
@@ -218,7 +207,6 @@ const promptSetupSelections = async (
   );
 };
 
-/** Resolve and review Maestria methodology skills against the record. */
 const reviewMaestriaTargets = async (
   args: SetupArgs,
   maestriaSkills: string | undefined,
@@ -239,11 +227,6 @@ const reviewMaestriaTargets = async (
   return { reviewed, targets };
 };
 
-/**
- * Validate flags then resolve every selection. Interactive prompts and the
- * skill review run here, still before any external effect. Non-TTY runs
- * without full args plus confirmation fail loud naming the missing flags.
- */
 export const resolveSetupPlan = async (
   args: SetupArgs,
   installed: readonly PlatformStatus[],
@@ -302,7 +285,6 @@ export const resolveSetupPlan = async (
   };
 };
 
-/** Final confirmation after the review screen; nothing ran before this. */
 export const confirmSetupPlan = async (
   cwd: string,
   selection: SetupSelection,
@@ -318,7 +300,6 @@ export const confirmSetupPlan = async (
   await confirmOrThrow(`Run setup with ${reviewLines.join(', ')}?`, yes);
 };
 
-/** Manual goal-tracking note; no goal-plugin install command exists. */
 export const goalNotes = (installed: readonly PlatformStatus[]): string[] => {
   if (!installed.some((p) => p.id === 'opencode')) {
     return [];

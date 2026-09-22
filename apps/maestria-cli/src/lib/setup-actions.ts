@@ -12,21 +12,8 @@ import type { SkillsRecord } from '@/lib/skills.js';
 import { isRecord } from '@/lib/primitives.js';
 import type { PlatformStatus } from '@/types.js';
 
-/**
- * Mutating setup actions. Each runs only after the coordinator's final
- * confirmation; reports are per action so partial failure never reads as
- * success and reruns skip completed work via detection.
- */
-
 export const KNOWN_ECOSYSTEM_TOOLS: readonly string[] = ['codegraph', 'agent-browser', 'opensrc'];
 
-/**
- * Manual install entry points for ecosystem binaries. Setup never installs
- * these tools automatically; it reports detection plus the manual step.
- * Skill vs binary identity is explicit: the opensrc skill is unrelated to
- * the opensrc binary, and the agent-browser skill trigger differs from the
- * agent-browser binary.
- */
 export const ECOSYSTEM_GUIDANCE: Record<string, string> = {
   'agent-browser':
     'agent-browser binary not detected. The agent-browser skill trigger is not the binary. ' +
@@ -53,7 +40,6 @@ export interface SetupActionContext {
 
 export const XTARTERIZE_TASK = 'agent/skills-install';
 
-/** Ecosystem tools are detection plus manual steps; never auto-installed. */
 export const ecosystemReports = (
   selected: readonly string[],
   probes: ReadonlyMap<string, { present: boolean; version: string }>,
@@ -83,7 +69,6 @@ const stripAnsi = (value: string): string =>
 const sanitize = (value: string): string =>
   stripAnsi(value).replaceAll(/\s+/gu, ' ').trim().slice(0, 500);
 
-/** Gate xtarterize on the JSON status field, never on the exit code alone. */
 export const xtarterizeStatusOf = (stdout: string): string | null => {
   const clean = stripAnsi(stdout);
   const start = clean.lastIndexOf('{');
@@ -115,13 +100,11 @@ export const xtarterizeStatusOf = (stdout: string): string | null => {
 const XTARTERIZE_OK = new Set(['applied', 'success', 'ok', 'completed', 'installed']);
 const XTARTERIZE_SKIP = new Set(['not-applicable', 'not_applicable', 'skipped', 'noop', 'no-op']);
 
-type ActionStatus = SetupActionReport['status'];
-
 const classifyXtarterize = (
   status: string | null,
   exitCode: number,
   stdout: string,
-): { detail: string; status: ActionStatus } => {
+): { detail: string; status: SetupActionReport['status'] } => {
   if (status === null) {
     return {
       detail: `No JSON status field (exit ${exitCode}); refusing to claim success: ${sanitize(stdout)}`,
@@ -137,11 +120,6 @@ const classifyXtarterize = (
   }
   return { detail: `status ${status} (exit ${exitCode}): ${sanitize(stdout)}`, status: 'failed' };
 };
-
-const readGitignoreText = async (
-  readGitignore: (cwd: string) => Promise<string | null>,
-  cwd: string,
-): Promise<string | null> => await readGitignore(cwd);
 
 /**
  * Apply project skills via xtarterize. Every invocation is treated as
@@ -159,7 +137,7 @@ export const runXtarterizeAction = async (ctx: SetupActionContext): Promise<Setu
       status: 'failed',
     };
   }
-  const before = await readGitignoreText(ctx.readGitignore, ctx.cwd);
+  const before = await ctx.readGitignore(ctx.cwd);
   let versionNote = 'version unknown';
   try {
     const versioned = await ctx.xtarterize(['--version'], { cwd: ctx.cwd });
@@ -178,7 +156,7 @@ export const runXtarterizeAction = async (ctx: SetupActionContext): Promise<Setu
     result.exitCode,
     result.stdout,
   );
-  const after = await readGitignoreText(ctx.readGitignore, ctx.cwd);
+  const after = await ctx.readGitignore(ctx.cwd);
   const gitignoreNote =
     before === after
       ? 'gitignore unchanged'
@@ -192,7 +170,6 @@ export const runXtarterizeAction = async (ctx: SetupActionContext): Promise<Setu
   };
 };
 
-/** Install skill sources per-source scope, confirming each add via re-list. */
 export const runSkillSourceActions = async (
   ctx: SetupActionContext,
   sources: readonly SetupSkillSource[],
@@ -286,10 +263,6 @@ export const runMaestriaSkillsAction = async (
   });
 };
 
-/**
- * Execute every selected mutating action in deterministic order. Ecosystem
- * entries are detection-only reports; the rest run sequentially.
- */
 export const executeSetupActions = async (
   ctx: SetupActionContext,
   selection: {

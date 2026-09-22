@@ -25,12 +25,6 @@ import type { SkillsRecord } from '@/lib/skills.js';
 import { isRecord } from '@/lib/primitives.js';
 import type { PlatformStatus } from '@/types.js';
 
-/**
- * Optional setup coordinator. Detection is read-only; every mutating action
- * runs only after the final confirmation. Wrappers stay thin by reusing the
- * install/update/doctor selection and transport helpers.
- */
-
 export type SetupSkillScope = 'project' | 'global';
 
 export interface SetupSkillSource {
@@ -82,18 +76,6 @@ export type XtarterizeRunner = (
   args: readonly string[],
   options?: { cwd?: string },
 ) => Promise<XtarterizeResult>;
-
-export interface ResolvedSetup {
-  readonly cwd: string;
-  readonly doctor: DoctorPlatformReport[];
-  readonly ecosystem: string[];
-  readonly maestriaSkills: string | undefined;
-  readonly platforms: PlatformStatus[];
-  readonly record: SkillsRecord | null;
-  readonly skillSources: SetupSkillSource[];
-  readonly xtarterizeOnPath: string | null;
-  readonly xtarterizeSelected: boolean;
-}
 
 export { effectiveMaestriaSkills, parseEcosystem, parseSkillSources } from '@/lib/setup-plan.js';
 
@@ -195,7 +177,6 @@ interface SetupDetection {
   readonly xtarterizeOnPath: string | null;
 }
 
-/** Read-only detection phase: platforms, record, doctor snapshot, binaries. */
 const collectDetection = async (
   detect: () => Promise<PlatformStatus[]>,
   readRecord: () => Promise<SkillsRecord | null>,
@@ -219,10 +200,6 @@ const collectDetection = async (
   return { doctor, platforms, probes, record, xtarterizeOnPath };
 };
 
-/**
- * Execute the confirmed plan: per-action reports plus rendered output.
- * Runs only after the final confirmation.
- */
 const executeConfirmedPlan = async (
   args: SetupArgs,
   cwd: string,
@@ -266,11 +243,6 @@ const executeConfirmedPlan = async (
   return { exitCode: reports.some((r) => r.status === 'failed') ? 1 : 0, output };
 };
 
-/**
- * Run the setup coordinator. Read-only detection first; mutations only after
- * the final confirmation. Idempotent: reruns skip completed work via the
- * selection record, skills list inventory, and xtarterize status.
- */
 export const runSetup = async (
   rawArgs: SetupArgs,
   deps: SetupDeps = {},
@@ -308,7 +280,6 @@ export const runSetup = async (
     flattenSkillSource,
   );
 
-  // Ownership preflight before any external effect.
   if (selection.maestriaActive && selection.targets.length > 0) {
     await preflightCompanionOwnership(skillRunner, detection.record, selection.reviewed);
   }
