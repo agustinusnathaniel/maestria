@@ -17,11 +17,11 @@ Keep intent, requirements, constraints, decisions, acceptance, current task, ref
 
 ## 3. Borrowed patterns
 
-Mark ambiguity explicitly; analyze read-only at the owning source; converge with append-only notes, never rewrites; point reviewers at the owning checklist; split work into phased tasks; frame each step as current truth plus delta plus verified implementation equals updated truth.
+Mark ambiguity explicitly; analyze read-only at the owning source; converge with append-only notes, never rewrites; point the review step at the owning checklist; split work into phased tasks; frame each step as current truth plus delta plus verified implementation equals updated truth.
 
 ## 4. Workflow sketches
 
-Tiny: header stays in the task thread, no file. Ordinary: one header carried across two to three steps. Complex: header plus phased tasks with per-phase acceptance. Architectural: header plus a decision record reference before building. Bug fix: header records symptom, cause, and regression check. Refactor (no behavior change): header pins unchanged acceptance. Research-only sonar: header only, stops without implementing. Existing external spec: header is pointers to the owning spec, no copied content.
+Tiny: header stays in the task thread, no file. Ordinary: one header carried across two to three steps. Complex: header plus phased tasks with per-phase acceptance. Architectural: header plus a decision record reference before building. Bug fix: header records symptom, cause, and regression check. Refactor (no behavior change): header pins unchanged acceptance. Research-only: header only, stops without implementing. Existing external spec: header is pointers to the owning spec, no copied content.
 
 ## 5. Example
 
