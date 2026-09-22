@@ -1,4 +1,8 @@
 import { Effect } from 'effect';
+import { mkdtempSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { handleRoot } from '@/cli.js';
@@ -11,6 +15,7 @@ import { CliError } from '@/lib/command-result.js';
 import type * as detect from '@/lib/detect.js';
 import type * as platforms from '@/lib/platforms.js';
 import type { PlatformHandler, PlatformId } from '@/lib/platforms.js';
+import type * as skillCompanion from '@/lib/skill-companion.js';
 import type { PlatformResult, PlatformStatus } from '@/types.js';
 import { version } from '^/package.json';
 
@@ -63,6 +68,14 @@ vi.mock('@/lib/platform-transaction.js', () => ({
   uninstallOne: transactionMocks.uninstallOne,
   updateOne: transactionMocks.updateOne,
 }));
+
+vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof skillCompanion>();
+  const { cannedSkillCli } = await import('./skill-test-support.js');
+  return { ...actual, runSkillsCli: cannedSkillCli() };
+});
+
+const configDirs: string[] = [];
 
 vi.mock('@clack/prompts', () => ({
   cancel: promptMocks.cancel,
@@ -141,6 +154,10 @@ const restoreTty = (): void => {
 describe('command handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    const dir = mkdtempSync(path.join(tmpdir(), 'maestria-handler-record-'));
+    configDirs.push(dir);
+    vi.stubEnv('MAESTRIA_CONFIG_DIR', dir);
+    vi.stubEnv('MAESTRIA_SKILLS_SOURCE', 'test-source');
     platformMocks.getPlatform.mockImplementation((id: string) => handlers.get(id));
     detectMocks.detectAll.mockReturnValue(Effect.succeed([]));
     detectMocks.detectInstalled.mockReturnValue(Effect.succeed([]));
@@ -159,38 +176,35 @@ describe('command handlers', () => {
     promptMocks.isCancel.mockReturnValue(false);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     restoreTty();
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
+    await Promise.all(
+      configDirs.splice(0).map(async (dir) => {
+        await rm(dir, { force: true, recursive: true });
+      }),
+    );
   });
 
   describe('status', () => {
-    it('renders the plain status table with exit code 0', async () => {
+    it('renders plain, JSON, and compact status with exit code 0', async () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
 
-      const result = await handleStatus({ quiet: true });
+      const plain = await handleStatus({ quiet: true });
+      expect(plain.exitCode).toBe(0);
+      expect(plain.output).toContain('Maestria Status');
+      expect(plain.output).toContain('OpenCode');
 
-      expect(result.exitCode).toBe(0);
-      expect(result.output).toContain('Maestria Status');
-      expect(result.output).toContain('OpenCode');
-    });
-
-    it('renders JSON status with exit code 0', async () => {
       const platformsStatus = [status({})];
       detectMocks.detectAll.mockReturnValue(Effect.succeed(platformsStatus));
+      const json = await handleStatus({ json: true, quiet: true });
+      expect(json.exitCode).toBe(0);
+      expect(JSON.parse(json.output)).toEqual({ platforms: platformsStatus });
 
-      const result = await handleStatus({ json: true, quiet: true });
-
-      expect(result.exitCode).toBe(0);
-      expect(JSON.parse(result.output)).toEqual({ platforms: platformsStatus });
-    });
-
-    it('renders compact status with exit code 0', async () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
-
-      const result = await handleStatus({ compact: true });
-
-      expect(result).toEqual({
+      const compact = await handleStatus({ compact: true });
+      expect(compact).toEqual({
         exitCode: 0,
         output: 'opencode: available installed=1.0.0 latest=1.0.0\n',
       });

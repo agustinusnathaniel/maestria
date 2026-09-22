@@ -1,59 +1,56 @@
 import { cancel, isCancel } from '@clack/prompts';
 import { defineCommand } from 'citty';
-import { Effect } from 'effect';
 
 import {
   assertInteractiveTerminal,
-  batchCommandResult,
+  detectInstallable,
+  detectWithSpinner,
   resolveBatchQuiet,
-  runBatchSelected,
 } from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { createSpinner } from '@/lib/output.js';
 import { installOne } from '@/lib/platform-transaction.js';
+import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
+import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
 import { VALID_PLATFORMS, validateOrThrow, validatePlatforms } from '@/lib/validation.js';
-import type { PlatformResult } from '@/types.js';
 
 export interface InstallArgs {
   all?: boolean;
   compact?: boolean;
+  excludeSkills?: string;
   json?: boolean;
   platform?: string;
   quiet?: boolean;
+  skills?: string;
+  yes?: boolean;
 }
 
-const runInstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | CommandResult> => {
-  const spinner = createSpinner(isQuiet);
-  spinner.start('Detecting platforms...');
-  const allPlatforms = await Effect.runPromise(detectAll());
-  spinner.stop('Done');
-  const toInstall = allPlatforms.filter((s) => s.available && !s.installed);
-  if (toInstall.length === 0) {
-    return {
-      exitCode: 0,
-      output: 'All detected platforms already have maestria installed.',
-    };
-  }
-  return await runBatchSelected(
-    toInstall.map((p) => ({ id: p.id, label: p.label })),
-    isQuiet,
-    installOne,
-  );
-};
-
-const runInstallInteractive = async (
+const collectInstallTargets = async (
+  platformIds: string[] | undefined,
+  all: boolean,
   isQuiet: boolean,
-): Promise<PlatformResult[] | CommandResult> => {
+): Promise<{ id: string; label?: string }[] | CommandResult> => {
+  if (platformIds && platformIds.length > 0) {
+    return platformIds.map((id) => ({ id }));
+  }
+  if (all) {
+    const toInstall = await detectInstallable(isQuiet);
+    if (toInstall.length === 0) {
+      return {
+        exitCode: 0,
+        output: 'All detected platforms already have maestria installed.',
+      };
+    }
+    return toInstall;
+  }
   assertInteractiveTerminal('install');
-  const spinner = createSpinner(isQuiet);
-  spinner.start('Detecting platforms...');
-  const allPlatforms = await Effect.runPromise(detectAll());
-  spinner.stop('Done');
-  const installable = allPlatforms.filter((s) => s.available && !s.installed);
+  const allPlatforms = await detectWithSpinner(isQuiet, detectAll());
+  const installable = allPlatforms
+    .filter((s) => s.available && !s.installed)
+    .map((p) => ({ id: p.id, label: p.label }));
   if (installable.length === 0) {
     return {
       exitCode: 0,
@@ -74,40 +71,24 @@ const runInstallInteractive = async (
     cancel('Install cancelled.');
     throw new CliError('', 130);
   }
-  return await runBatchSelected(
-    selected.map((id) => ({ id })),
-    isQuiet,
-    installOne,
-  );
+  return selected.map((id) => ({ id }));
 };
 
-export const handleInstall = async (args: InstallArgs): Promise<CommandResult> => {
+export const handleInstall = async (rawArgs: InstallArgs): Promise<CommandResult> => {
+  const args = normalizeSkillArgs(rawArgs);
   const isQuiet = resolveBatchQuiet(args);
   let platformIds: string[] | undefined;
   if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
     platformIds = await validateOrThrow(validatePlatforms(args.platform));
   }
-  let results: PlatformResult[];
-  if (platformIds && platformIds.length > 0) {
-    results = await runBatchSelected(
-      platformIds.map((id) => ({ id })),
-      isQuiet,
-      installOne,
-    );
-  } else if (args.all === true) {
-    const outcome = await runInstallAll(isQuiet);
-    if (!Array.isArray(outcome)) {
-      return outcome;
-    }
-    results = outcome;
-  } else {
-    const outcome = await runInstallInteractive(isQuiet);
-    if (!Array.isArray(outcome)) {
-      return outcome;
-    }
-    results = outcome;
+  const record = await readSkillsRecord();
+  validateSkillFlags(platformIds ?? [], args, record);
+
+  const targets = await collectInstallTargets(platformIds, args.all === true, isQuiet);
+  if (!Array.isArray(targets)) {
+    return targets;
   }
-  return batchCommandResult(results, args);
+  return await runSkillBatch(targets, record, 'Install', args, isQuiet, installOne);
 };
 
 export const installCommand = defineCommand({
@@ -122,6 +103,12 @@ export const installCommand = defineCommand({
       default: false,
       description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       type: 'boolean',
+    },
+    'exclude-skills': {
+      description:
+        'Methodology skills to skip (CSV). Never touches independently installed copies.',
+      required: false,
+      type: 'string',
     },
     json: {
       default: false,
@@ -141,6 +128,19 @@ export const installCommand = defineCommand({
       default: false,
       description:
         'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
+      type: 'boolean',
+    },
+    skills: {
+      description:
+        "Methodology skills to activate (CSV, or 'none' for no skills). Default: create-pull-request. Validated before any change.",
+      required: false,
+      type: 'string',
+    },
+    yes: {
+      alias: 'y',
+      default: false,
+      description:
+        'Confirm skill selection non-interactively (required for non-TTY when it changes).',
       type: 'boolean',
     },
   },

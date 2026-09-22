@@ -1,20 +1,20 @@
 import { cancel, isCancel, select } from '@clack/prompts';
 import { defineCommand } from 'citty';
-import { Effect } from 'effect';
 
 import {
   assertInteractiveTerminal,
   batchCommandResult,
+  detectInstalledOr,
   resolveBatchQuiet,
   runBatchSelected,
 } from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
-import { detectInstalled } from '@/lib/detect.js';
-import { createSpinner } from '@/lib/output.js';
 import { getPlatform, platforms } from '@/lib/platforms.js';
 import { uninstallOne } from '@/lib/platform-transaction.js';
+import { defaultSkillRunner, reconcileUninstallCompanions } from '@/lib/skill-reconcile.js';
+import { readSkillsRecord } from '@/lib/skills.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
 import type { PlatformResult } from '@/types.js';
 
@@ -27,40 +27,25 @@ export interface UninstallArgs {
 }
 
 const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | CommandResult> => {
-  const spinner = createSpinner(isQuiet);
-  spinner.start('Detecting platforms...');
-  const installed = await Effect.runPromise(detectInstalled());
-  spinner.stop('Done');
-  if (installed.length === 0) {
-    return {
-      exitCode: 0,
-      output: 'No maestria installations found to uninstall.',
-    };
+  const targets = await detectInstalledOr(isQuiet, 'No maestria installations found to uninstall.');
+  if (!Array.isArray(targets)) {
+    return targets;
   }
-  return await runBatchSelected(
-    installed.map((p) => ({ id: p.id, label: p.label })),
-    isQuiet,
-    uninstallOne,
-  );
+  return await runBatchSelected(targets, isQuiet, uninstallOne);
 };
 
 const runUninstallInteractive = async (
   isQuiet: boolean,
 ): Promise<PlatformResult[] | CommandResult> => {
   assertInteractiveTerminal('uninstall');
-  const spinner = createSpinner(isQuiet);
-  spinner.start('Detecting platforms...');
-  const installed = await Effect.runPromise(detectInstalled());
-  spinner.stop('Done');
-  if (installed.length === 0) {
-    return {
-      exitCode: 0,
-      output: 'No maestria installations found to uninstall.',
-    };
+  const targets = await detectInstalledOr(isQuiet, 'No maestria installations found to uninstall.');
+  if (!Array.isArray(targets)) {
+    return targets;
   }
+  const installed = targets;
   const selected = await select({
     message: 'Which platform do you want to uninstall maestria for?',
-    options: installed.map((p) => ({ label: p.label, value: p.id })),
+    options: installed.map((p) => ({ label: p.label ?? p.id, value: p.id })),
   });
   if (isCancel(selected) || typeof selected !== 'string' || selected === '') {
     cancel('Uninstall cancelled.');
@@ -71,7 +56,10 @@ const runUninstallInteractive = async (
 
 export const handleUninstall = async (args: UninstallArgs): Promise<CommandResult> => {
   const isQuiet = resolveBatchQuiet(args);
-  let results: PlatformResult[];
+  // Corrupt records fail before ANY external effect; a missing record
+  // proceeds (plugin state is independent) with the companion left in place.
+  const record = await readSkillsRecord();
+  let targetIds: string[];
   if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
     const platform = getPlatform(args.platform);
     if (!platform) {
@@ -80,21 +68,30 @@ export const handleUninstall = async (args: UninstallArgs): Promise<CommandResul
         1,
       );
     }
-    results = await runBatchSelected([{ id: platform.id }], isQuiet, uninstallOne);
+    targetIds = [platform.id];
   } else if (args.all === true) {
     const outcome = await runUninstallAll(isQuiet);
     if (!Array.isArray(outcome)) {
       return outcome;
     }
-    results = outcome;
+    // runUninstallAll already ran the batch; reconcile companions per result.
+    const combined = await reconcileUninstallCompanions(defaultSkillRunner, record, outcome);
+    return batchCommandResult(combined.results, args);
   } else {
     const outcome = await runUninstallInteractive(isQuiet);
     if (!Array.isArray(outcome)) {
       return outcome;
     }
-    results = outcome;
+    const combined = await reconcileUninstallCompanions(defaultSkillRunner, record, outcome);
+    return batchCommandResult(combined.results, args);
   }
-  return batchCommandResult(results, args);
+  const results = await runBatchSelected(
+    targetIds.map((id) => ({ id })),
+    isQuiet,
+    uninstallOne,
+  );
+  const combined = await reconcileUninstallCompanions(defaultSkillRunner, record, results);
+  return batchCommandResult(combined.results, args);
 };
 
 export const uninstallCommand = defineCommand({

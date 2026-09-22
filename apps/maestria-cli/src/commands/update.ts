@@ -5,9 +5,8 @@ import picocolors from 'picocolors';
 
 import {
   assertInteractiveTerminal,
-  batchCommandResult,
+  detectInstalledOr,
   resolveBatchQuiet,
-  runBatchSelected,
 } from '@/lib/batch-command.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import { CliError } from '@/lib/command-result.js';
@@ -15,24 +14,27 @@ import type { CommandResult } from '@/lib/command-result.js';
 import { detectInstalled } from '@/lib/detect.js';
 import { needsUpdateOf } from '@/lib/freshness.js';
 import { groupMultiselect } from '@/lib/group-multiselect.js';
-import { createSpinner } from '@/lib/output.js';
 import { getPlatform } from '@/lib/platforms.js';
 import { updateOne } from '@/lib/platform-transaction.js';
+import { normalizeSkillArgs, runSkillBatch } from '@/lib/skill-reconcile.js';
+import { readSkillsRecord, validateSkillFlags } from '@/lib/skills.js';
 import {
   VALID_PLATFORMS,
   validateOrThrow,
   validatePlatforms,
   validateVersion,
 } from '@/lib/validation.js';
-import type { PlatformResult } from '@/types.js';
 
 export interface UpdateArgs {
   all?: boolean;
   compact?: boolean;
+  excludeSkills?: string;
   json?: boolean;
   platform?: string;
   quiet?: boolean;
+  skills?: string;
   version?: string;
+  yes?: boolean;
 }
 
 interface UpdateStatus {
@@ -43,32 +45,10 @@ interface UpdateStatus {
   needsUpdate: boolean;
 }
 
-const runAllUpdate = async (
-  isQuiet: boolean,
-  version?: string,
-): Promise<PlatformResult[] | CommandResult> => {
-  const spinner = createSpinner(isQuiet);
-  spinner.start('Detecting platforms...');
-  const installed = await Effect.runPromise(detectInstalled());
-  spinner.stop('Done');
-  if (installed.length === 0) {
-    return {
-      exitCode: 0,
-      output: 'No maestria installations found to update.',
-    };
-  }
-  return await runBatchSelected(
-    installed.map((p) => ({ id: p.id, label: p.label })),
-    isQuiet,
-    (platform, quiet) => updateOne(platform, quiet, version),
-  );
-};
-
-// oxlint-disable-next-line max-lines-per-function -- runInteractiveUpdate orchestrates the interactive update picker (version checks, needsUpdate filtering, groupMultiselect) as a single cohesive flow; splitting would fragment the picker's state (statuses/needsUpdate) and duplicate version-check logic.
-const runInteractiveUpdate = async (
-  isQuiet: boolean,
-  version?: string,
-): Promise<PlatformResult[] | CommandResult> => {
+// oxlint-disable-next-line max-lines-per-function -- collectInteractiveUpdateTargets orchestrates the interactive update picker (version checks, needsUpdate filtering, groupMultiselect) as a single cohesive flow; splitting would fragment the picker's state (statuses/needsUpdate) and duplicate version-check logic.
+const collectInteractiveUpdateTargets = async (): Promise<
+  { id: string; label?: string }[] | CommandResult
+> => {
   assertInteractiveTerminal('update');
   const installed = await Effect.runPromise(detectInstalled());
   if (installed.length === 0) {
@@ -133,15 +113,13 @@ const runInteractiveUpdate = async (
     throw new CliError('', 130);
   }
   const toUpdate = needsUpdate.filter((s) => selected.includes(s.id));
-  const selections = toUpdate.flatMap((p) =>
+  return toUpdate.flatMap((p) =>
     getPlatform(p.id) === undefined ? [] : [{ id: p.id, label: p.label }],
-  );
-  return await runBatchSelected(selections, isQuiet, (platform, quiet) =>
-    updateOne(platform, quiet, version),
   );
 };
 
-export const handleUpdate = async (args: UpdateArgs): Promise<CommandResult> => {
+export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> => {
+  const args = normalizeSkillArgs(rawArgs);
   const isQuiet = resolveBatchQuiet(args);
   let platformIds: string[] | undefined;
   if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
@@ -150,27 +128,30 @@ export const handleUpdate = async (args: UpdateArgs): Promise<CommandResult> => 
   if (args.version !== undefined && args.version !== null && args.version !== '') {
     await validateOrThrow(validateVersion(args.version));
   }
-  let results: PlatformResult[];
+  const record = await readSkillsRecord();
+  validateSkillFlags(platformIds ?? [], args, record);
+
+  let targets: { id: string; label?: string }[];
   if (platformIds && platformIds.length > 0) {
-    results = await runBatchSelected(
-      platformIds.map((id) => ({ id })),
-      isQuiet,
-      (platform, quiet) => updateOne(platform, quiet, args.version),
-    );
+    targets = platformIds.map((id) => ({ id }));
   } else if (args.all === true) {
-    const outcome = await runAllUpdate(isQuiet, args.version);
+    const outcome = await detectInstalledOr(isQuiet, 'No maestria installations found to update.');
     if (!Array.isArray(outcome)) {
       return outcome;
     }
-    results = outcome;
+    targets = outcome;
   } else {
-    const outcome = await runInteractiveUpdate(isQuiet, args.version);
+    const outcome = await collectInteractiveUpdateTargets();
     if (!Array.isArray(outcome)) {
       return outcome;
     }
-    results = outcome;
+    targets = outcome;
   }
-  return batchCommandResult(results, args);
+  // Same-version updates skip the plugin reinstall (the host reports
+  // up-to-date) but still reconcile the companion independently.
+  return await runSkillBatch(targets, record, 'Update', args, isQuiet, (platform, quiet) =>
+    updateOne(platform, quiet, args.version),
+  );
 };
 
 export const updateCommand = defineCommand({
@@ -185,6 +166,12 @@ export const updateCommand = defineCommand({
       default: false,
       description: 'Minimal machine-friendly text output. Strips colors and decorative formatting.',
       type: 'boolean',
+    },
+    'exclude-skills': {
+      description:
+        'Methodology skills to skip (CSV). Never touches independently installed copies.',
+      required: false,
+      type: 'string',
     },
     json: {
       default: false,
@@ -203,11 +190,24 @@ export const updateCommand = defineCommand({
         'Suppress spinner and non-essential output. Recommended for CI and non-interactive usage.',
       type: 'boolean',
     },
+    skills: {
+      description:
+        "Methodology skills to activate (CSV, or 'none' for no skills). Default: recorded selection, else create-pull-request. Validated before any change.",
+      required: false,
+      type: 'string',
+    },
     version: {
       alias: 'V',
       description: 'Target version to install (e.g., 0.5.0). Defaults to latest available version.',
       required: false,
       type: 'string',
+    },
+    yes: {
+      alias: 'y',
+      default: false,
+      description:
+        'Confirm skill selection non-interactively (required for non-TTY when it changes).',
+      type: 'boolean',
     },
   },
   meta: {

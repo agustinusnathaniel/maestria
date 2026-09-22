@@ -30,6 +30,8 @@ agent-directives/
 
 The portable Agent Plugins v1 package lives at `packages/agent-plugin/`. It maps the specialist, workflow-mode, rules, handoff, and iteration-limit sources to the fixed `skills/<name>/SKILL.md` layout and replaces host-specific role syntax with plain skill names. It intentionally has no runtime adapter, executable agent, command, hook, or MCP component.
 
+Methodology skills distributed as standalone skills (for example `create-pull-request`) live once at the repository root under `skills/` and are not generated from this directory: the CLI invokes the official `skills` CLI to install them, and core keeps only the routing pointer. Do not copy skill bodies into plugin packages.
+
 ## How to Add a New Specialist
 
 1. Create a new file in `specialists/<name>.md`
