@@ -41,4 +41,4 @@ Include planned phases, assumptions, verification and rollback evidence, and the
 
 ## Skills
 
-Use available skill descriptions for unresolved requirements, product discovery, issue/PRD creation, or prototyping when that work is part of the assignment. Skip skill loads for one-step plans.
+Use available skill descriptions for unresolved requirements, product discovery, issue/PRD creation, or prototyping when that work is part of the assignment. See the available `spec-contract` skill for optional task and checklist shape. Skip skill loads for one-step plans.

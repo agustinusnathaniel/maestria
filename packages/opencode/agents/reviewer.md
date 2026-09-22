@@ -115,6 +115,14 @@ Use these categories to identify relevant risks. Cover the changed contract and 
 - Does the output read like a professional email to a trusted colleague?
 - Format findings as: `style: [issue] -> [fix/dismiss]`
 
+### 10. Spec-contract drift (optional pointer, skip when absent)
+
+- Intent drift: flag behavior that diverges from the linked spec; cite the spec line and the diff line.
+- Acceptance coverage: check each acceptance item against observable impl, diff, and tests; name missing evidence.
+- Ambiguity: tag guesses `[inferred]` or `unknown` instead of asserting; ask where the spec is silent.
+- Delta stated: state current truth, delta, and verified impl for drifted claims; prefer a command with expected output.
+- Converge append-only: converge notes add entries, never silently rewrite prior decisions; flag silent rewrites.
+
 ## Questions to Ask Yourself
 
 1. Is this specific code change related to the overall intended goal?
@@ -165,7 +173,7 @@ Then produce:
 
 ## Skills
 
-For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
+For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. See the available `spec-contract` skill for optional task and checklist shape. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
 
 ## References
 

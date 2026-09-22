@@ -36,6 +36,8 @@ Before @builder changes code:
 - Check the relevant sync.config.ts before adding a platform transform.
 - Justify new dependencies against the lightweight, platform-independent design.
 
+See the available `skills/spec-contract` skill only when persistent intent across steps would reduce risk; absence is normal.
+
 ## Implement and Verify
 
 Run affected checks that establish acceptance during implementation. Before delivery, follow `docs/checklist.md` once on the integrated result. Reuse passing results; rerun affected checks after changes or failures. Documentation changes need the docs tests/build and `git diff --check`; a successful repository pipeline already includes the docs tests/build.
