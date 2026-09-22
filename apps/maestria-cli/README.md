@@ -18,6 +18,7 @@ npx maestria status
 | `maestria uninstall [platform] [--all]` | Remove a platform installation (or all installed) |
 | `maestria check <platform>` | Verify a platform installation |
 | `maestria doctor` | Diagnose skill setup without changing anything (read-only) |
+| `maestria setup [--ecosystem ...] [--xtarterize-skills] [--skill-source ...]` | Coordinate optional setup across ecosystem tools and skills (nothing runs before confirm) |
 | `maestria configure [platform] [--set agent=model,...]` | Choose which model each Maestria specialist agent uses (opencode, codex, cursor, pi, omp); `--set` configures non-interactively |
 | `maestria plugin validate <path>` | Validate an Agent Plugins v1 directory package without modifying it |
 | `maestria plugin install [source]` | Fetch or stage a portable Agent Plugin into the Maestria cache or an explicit destination |
@@ -25,6 +26,10 @@ npx maestria status
 ### Methodology skills
 
 `install`, `update`, and `uninstall` manage the `create-pull-request` and `docs-update` methodology skills through the official `skills` CLI (pinned `skills@1.7.0`); each skill source of truth is `skills/<skill>/SKILL.md` at the repository root and no skill bodies ship inside plugins. `install` and `update` accept `--skills` (CSV with `create-pull-request`, `docs-update`, or `none`) and `--exclude-skills` (CSV) plus `--yes` for non-interactive confirmation; without flags, recorded per-platform choices are preserved exactly (fresh installs default to both skills, while updates of legacy installs without a record infer only `create-pull-request`). Selections and per-skill observed source/path persist per platform under `$XDG_CONFIG_HOME/maestria/skills.json` (version 2 only) only for actually confirmed state. The equivalent native commands are `npx -y skills@1.7.0 add <source> -a <agent> -s <skill> -g -y` for global installs and the same without `-g` for project installs (`<cwd>/.agents/skills/`).
+
+### Setup
+
+`maestria setup` coordinates optional setup in one place: ecosystem binary detection (`codegraph`, `agent-browser`, `opensrc`) with manual install steps only, project skills via `xtarterize add agent/skills-install --json --cwd <dir>` (gated on the JSON status field, with `.gitignore` changes reported), skill sources via the `skills` CLI with per-source `project` or `global` scope, and Maestria methodology skills reusing the `install`/`update` selection record plus `--skills`/`--exclude-skills` semantics. Detection is read-only; interactive mode groups the categories in one multiselect plus a review screen and final confirm, while non-TTY requires full flags plus `--yes` and never prompts. Reports are per action (`ok`/`failed`/`skipped` with resume guidance); reruns skip completed work via detection. Project scope follows `--cwd` (or the current directory). When OpenCode is detected, setup notes manual goal tracking only and never installs a goal plugin. Supports `--json` and `--quiet`.
 
 ### Doctor
 
