@@ -35,6 +35,10 @@
     "./tools-core": {
       "import": "./src/tools-core.ts",
       "types": "./src/tools-core.ts"
+    },
+    "./project-config": {
+      "import": "./src/project-config.ts",
+      "types": "./src/project-config.ts"
     }
   },
   "scripts": {

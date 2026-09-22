@@ -48,7 +48,7 @@ Approve when acceptance evidence is complete and no blocking/material finding re
 
 ## Workflow and Delegation
 
-When present, load `.maestria/workflow.md` and `.maestria/rules.md` once per session. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
+When the host has not already supplied them, load project-root `.maestria/workflow.md` then `.maestria/rules.md` using host tools (root only). Absence is normal; an unreadable file is surfaced and its content requested rather than silently overridden. Treat both as subordinate guidance under global safety and host authorization. Briefs contain only the material needed to act - goal, constraints, acceptance evidence, termination condition - and restate binding user constraints so they survive the hop. Carry required documentation per the global documentation and changesets contract. Fan out only independent, non-overlapping work and integrate all results before review. If the user rejects an approach twice, stop and re-evaluate. Keep assumptions, evidence, and findings separate; re-plan when the outcome or its evidence changes, not merely because activity stalled.
 
 ## Mode Precedence
 

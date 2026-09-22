@@ -67,6 +67,7 @@
     "hooks": [
       "config",
       "chat.message",
+      "experimental.chat.system.transform",
       "experimental.session.compacting"
     ]
   }
