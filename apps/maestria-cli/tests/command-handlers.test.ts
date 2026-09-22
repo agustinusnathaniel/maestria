@@ -38,6 +38,8 @@ const transactionMocks = vi.hoisted(() => ({
 }));
 const promptMocks = vi.hoisted(() => ({
   cancel: vi.fn(),
+  // oxlint-disable-next-line require-await -- synchronous confirm stub by design.
+  confirm: vi.fn(async () => true),
   isCancel: vi.fn(() => false),
   select: vi.fn(),
   spinner: vi.fn(() => ({ message: vi.fn(), start: vi.fn(), stop: vi.fn() })),
@@ -75,10 +77,20 @@ vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
   return { ...actual, runSkillsCli: cannedSkillCli() };
 });
 
+vi.mock('@/lib/group-multiselect.js', () => ({
+  // Echo the proposed selection: interactive review keeps current skills
+  // unless a test overrides this mock to simulate a changed review.
+  // oxlint-disable-next-line require-await -- synchronous echo stub by design.
+  groupMultiselect: vi.fn(async (opts: { initialValues?: string[] }) => [
+    ...(opts.initialValues ?? []),
+  ]),
+}));
+
 const configDirs: string[] = [];
 
 vi.mock('@clack/prompts', () => ({
   cancel: promptMocks.cancel,
+  confirm: promptMocks.confirm,
   isCancel: promptMocks.isCancel,
   select: promptMocks.select,
   spinner: promptMocks.spinner,
@@ -188,23 +200,32 @@ describe('command handlers', () => {
   });
 
   describe('status', () => {
-    it('renders plain, JSON, and compact status with exit code 0', async () => {
+    it('renders the plain status table with exit code 0', async () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
 
-      const plain = await handleStatus({ quiet: true });
-      expect(plain.exitCode).toBe(0);
-      expect(plain.output).toContain('Maestria Status');
-      expect(plain.output).toContain('OpenCode');
+      const result = await handleStatus({ quiet: true });
 
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain('Maestria Status');
+      expect(result.output).toContain('OpenCode');
+    });
+
+    it('renders JSON status with exit code 0', async () => {
       const platformsStatus = [status({})];
       detectMocks.detectAll.mockReturnValue(Effect.succeed(platformsStatus));
-      const json = await handleStatus({ json: true, quiet: true });
-      expect(json.exitCode).toBe(0);
-      expect(JSON.parse(json.output)).toEqual({ platforms: platformsStatus });
 
+      const result = await handleStatus({ json: true, quiet: true });
+
+      expect(result.exitCode).toBe(0);
+      expect(JSON.parse(result.output)).toEqual({ platforms: platformsStatus });
+    });
+
+    it('renders compact status with exit code 0', async () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
-      const compact = await handleStatus({ compact: true });
-      expect(compact).toEqual({
+
+      const result = await handleStatus({ compact: true });
+
+      expect(result).toEqual({
         exitCode: 0,
         output: 'opencode: available installed=1.0.0 latest=1.0.0\n',
       });
@@ -402,14 +423,44 @@ describe('command handlers', () => {
       expect(result).toEqual({ exitCode: 0, output: 'No maestria installations found to update.' });
     });
 
-    it('reports up-to-date platforms in the interactive flow', async () => {
+    it('reviews skills with confirmation when plugins are already current', async () => {
       setTty(true);
       detectMocks.detectInstalled.mockReturnValue(Effect.succeed([status({})]));
+      // The reviewer adds the newly available docs skill; the final
+      // confirmation gate still runs even though the plugin is current.
+      const { groupMultiselect } = await import('@/lib/group-multiselect.js');
+      vi.mocked(groupMultiselect).mockResolvedValueOnce(['create-pull-request', 'docs-update']);
 
-      const result = await handleUpdate({});
+      const result = await handleUpdate({ json: true });
 
+      expect(promptMocks.confirm).toHaveBeenCalled();
       expect(result.exitCode).toBe(0);
-      expect(result.output).toContain('All platforms are up to date.');
+      expect(result.output).toContain('Already up to date');
+      const parsed: unknown = JSON.parse(result.output);
+      expect(parsed).toMatchObject([{ skills: ['create-pull-request', 'docs-update'] }]);
+      const { readSkillsRecord } = await import('@/lib/skills.js');
+      const saved = await readSkillsRecord();
+      expect(saved?.platforms.opencode?.skills).toEqual(['create-pull-request', 'docs-update']);
+    });
+
+    it('installs both skills by default and each can be selected alone', async () => {
+      const fresh = await handleInstall({ compact: true, platform: 'opencode', quiet: true });
+
+      expect(fresh.exitCode).toBe(0);
+      const { readSkillsRecord } = await import('@/lib/skills.js');
+      const saved = await readSkillsRecord();
+      expect(saved?.platforms.opencode?.skills).toEqual(['create-pull-request', 'docs-update']);
+
+      const single = await handleUpdate({
+        platform: 'opencode',
+        quiet: true,
+        skills: 'docs-update',
+        yes: true,
+      });
+
+      expect(single.exitCode).toBe(0);
+      const narrowed = await readSkillsRecord();
+      expect(narrowed?.platforms.opencode?.skills).toEqual(['docs-update']);
     });
 
     it('returns the batch failure exit code when one update fails', async () => {

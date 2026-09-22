@@ -1,42 +1,103 @@
-import { describe, expect, it } from 'vite-plus/test';
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
+import type * as FsPromises from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import { CliError } from '@/lib/command-result.js';
+import { DOCS_UPDATE_SKILL } from '@/lib/skill-companion.js';
 import { reviewSkillSelections } from '@/lib/skill-prompts.js';
 import {
   DEFAULT_SKILLS,
+  getSkillsRecordPath,
+  LEGACY_UPDATE_SKILLS,
   parseSkillsRecord,
+  readSkillsRecord,
   resolveSkillSelection,
   withoutRecordedSelection,
   withRecordedSelection,
+  writeSkillsRecord,
 } from '@/lib/skills.js';
 import { buildRecord } from './skill-test-support.js';
 
-const SKILL = 'create-pull-request';
+const source = 'test-record';
+const PR = 'create-pull-request';
+
+/** Failure injection for the record-write fs seam; every other call delegates. */
+const fsControls = vi.hoisted(() => ({ failRename: false, failWrite: false }));
+
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof FsPromises>();
+  return {
+    ...actual,
+    rename: async (from: string, to: string): Promise<void> => {
+      if (fsControls.failRename) {
+        throw new Error('rename boom');
+      }
+      await actual.rename(from, to);
+    },
+    writeFile: async (file: string, data: string, encoding: BufferEncoding): Promise<void> => {
+      if (fsControls.failWrite) {
+        throw new Error('write boom');
+      }
+      await actual.writeFile(file, data, encoding);
+    },
+  };
+});
 
 describe('skill selection', () => {
-  it('defaults fresh installs to all current default skills', () => {
-    expect(DEFAULT_SKILLS).toContain(SKILL);
+  it('defaults fresh installs to both current skills', () => {
+    expect(DEFAULT_SKILLS).toContain(PR);
+    expect(DEFAULT_SKILLS).toContain(DOCS_UPDATE_SKILL);
     const resolved = resolveSkillSelection('opencode', {}, null);
-    expect(resolved).toEqual({ changed: false, skills: [SKILL] });
+    expect(resolved).toEqual({ changed: false, skills: [PR, DOCS_UPDATE_SKILL] });
+  });
+
+  it('keeps legacy updates without a record on the prior single skill', () => {
+    expect(LEGACY_UPDATE_SKILLS).toEqual([PR]);
+    expect(resolveSkillSelection('opencode', {}, null, { updateBootstrap: true })).toEqual({
+      changed: false,
+      skills: [PR],
+    });
+    // An explicit request still opts into the new skill on the update path.
+    expect(
+      resolveSkillSelection('opencode', { skills: DOCS_UPDATE_SKILL }, null, {
+        updateBootstrap: true,
+      }),
+    ).toEqual({ changed: true, skills: [DOCS_UPDATE_SKILL] });
   });
 
   it('preserves recorded choices when no flags are passed', () => {
     const record = buildRecord({ pi: [] });
     expect(resolveSkillSelection('pi', {}, record)).toEqual({ changed: false, skills: [] });
-    expect(resolveSkillSelection('opencode', {}, record)).toEqual({
+    // A recorded exclusion of everything stays an exclusion, even on update.
+    expect(resolveSkillSelection('pi', {}, record, { updateBootstrap: true })).toEqual({
       changed: false,
-      skills: [SKILL],
+      skills: [],
+    });
+    const legacy = parseSkillsRecord(
+      JSON.stringify({ platforms: { opencode: { skills: [PR] } }, version: 2 }),
+      source,
+    );
+    expect(resolveSkillSelection('opencode', {}, legacy)).toEqual({
+      changed: false,
+      skills: [PR],
     });
   });
 
   it.each([
-    { expected: [SKILL], flags: { skills: SKILL }, name: 'explicit include' },
+    { expected: [PR], flags: { skills: PR }, name: 'explicit PR include' },
+    {
+      expected: [DOCS_UPDATE_SKILL],
+      flags: { skills: DOCS_UPDATE_SKILL },
+      name: 'explicit docs include without the other skill',
+    },
     { expected: [], flags: { skills: 'none' }, name: 'none token' },
     {
       expected: [],
-      flags: { excludeSkills: SKILL },
+      flags: { excludeSkills: PR },
       name: 'exclusion onto recorded choices',
-      record: buildRecord({ opencode: [SKILL] }),
+      record: buildRecord({ opencode: [PR] }),
     },
   ])('applies flag selections: $name', ({ expected, flags, record }) => {
     expect(resolveSkillSelection('opencode', flags, record ?? null)).toEqual({
@@ -49,13 +110,47 @@ describe('skill selection', () => {
     { flags: { skills: 'nope' }, name: 'unknown include' },
     { flags: { excludeSkills: 'nope' }, name: 'unknown exclude' },
     {
-      flags: { excludeSkills: SKILL, skills: SKILL },
+      flags: { excludeSkills: PR, skills: PR },
       name: 'conflicting include/exclude',
     },
-    { flags: { excludeSkills: SKILL, skills: 'none' }, name: 'none with exclude' },
-    { flags: { skills: `none,${SKILL}` }, name: 'none with another skill' },
+    { flags: { excludeSkills: PR, skills: 'none' }, name: 'none with exclude' },
+    { flags: { skills: `none,${PR}` }, name: 'none with another skill' },
   ])('rejects invalid flag selections before any external effect: $name', ({ flags }) => {
     expect(() => resolveSkillSelection('opencode', flags, null)).toThrow(CliError);
+  });
+
+  it('fails loudly on version 1 records, which never shipped to main', () => {
+    expect(() =>
+      parseSkillsRecord(
+        JSON.stringify({
+          platforms: { opencode: { path: '/fake/p', skills: [PR], source } },
+          version: 1,
+        }),
+        source,
+      ),
+    ).toThrow(CliError);
+  });
+
+  it('keeps v2 per-skill assets separate and preserves unknown history', () => {
+    const record = parseSkillsRecord(
+      JSON.stringify({
+        platforms: {
+          opencode: {
+            skillAssets: {
+              [PR]: { path: '/fake/pr', source },
+              [DOCS_UPDATE_SKILL]: { path: '/fake/docs', source },
+              'future-skill': { path: '/fake/future', source },
+            },
+            skills: [PR, DOCS_UPDATE_SKILL, 'future-skill'],
+          },
+        },
+        version: 2,
+      }),
+      source,
+    );
+    expect(record.platforms.opencode?.skillAssets?.[PR]?.path).toBe('/fake/pr');
+    expect(record.platforms.opencode?.skillAssets?.[DOCS_UPDATE_SKILL]?.path).toBe('/fake/docs');
+    expect(record.platforms.opencode?.skillAssets?.['future-skill']?.path).toBe('/fake/future');
   });
 
   it('fails loudly on corrupt records instead of resetting to defaults', () => {
@@ -63,7 +158,11 @@ describe('skill selection', () => {
       'not json',
       '[]',
       JSON.stringify({ platforms: {}, version: 999 }),
-      JSON.stringify({ platforms: { opencode: { skills: 'nope' } }, version: 1 }),
+      JSON.stringify({ platforms: { opencode: { skills: 'nope' } }, version: 2 }),
+      JSON.stringify({
+        platforms: { opencode: { skillAssets: { [PR]: { path: 42 } }, skills: [PR] } },
+        version: 2,
+      }),
     ];
     for (const payload of corruptPayloads) {
       expect(() => parseSkillsRecord(payload, 'test-record')).toThrow(CliError);
@@ -71,15 +170,15 @@ describe('skill selection', () => {
   });
 
   it('preserves unknown skill IDs instead of resetting them', () => {
-    const record = buildRecord({ opencode: [SKILL, 'future-skill'] });
-    expect(record.platforms.opencode?.skills).toEqual([SKILL, 'future-skill']);
-    expect(resolveSkillSelection('opencode', {}, record).skills).toEqual([SKILL, 'future-skill']);
+    const record = buildRecord({ opencode: [PR, 'future-skill'] });
+    expect(record.platforms.opencode?.skills).toEqual([PR, 'future-skill']);
+    expect(resolveSkillSelection('opencode', {}, record).skills).toEqual([PR, 'future-skill']);
   });
 
   it('keeps selections per platform and cleans up only the uninstalled entry', () => {
-    const record = buildRecord({ hermes: [], opencode: [SKILL] });
+    const record = buildRecord({ hermes: [], opencode: [PR] });
     const added = withRecordedSelection(record, 'pi', []);
-    expect(added.platforms.opencode?.skills).toEqual([SKILL]);
+    expect(added.platforms.opencode?.skills).toEqual([PR]);
     expect(added.platforms.pi?.skills).toEqual([]);
     const removed = withoutRecordedSelection(added, 'opencode');
     expect(removed?.platforms.opencode).toBeUndefined();
@@ -90,7 +189,7 @@ describe('skill selection', () => {
 
 describe('reviewSkillSelections', () => {
   it('preserves distinct per-platform intents without flags outside a TTY', async () => {
-    const record = buildRecord({ opencode: [SKILL], pi: [] });
+    const record = buildRecord({ opencode: [PR], pi: [] });
     const selections = [{ id: 'opencode' }, { id: 'pi' }].map((target) => ({
       ...target,
       selection: resolveSkillSelection(target.id, {}, record),
@@ -99,7 +198,7 @@ describe('reviewSkillSelections', () => {
     const effective = await reviewSkillSelections(selections, 'Update', {});
 
     expect(effective.map((entry) => [entry.id, entry.selection.skills])).toEqual([
-      ['opencode', [SKILL]],
+      ['opencode', [PR]],
       ['pi', []],
     ]);
     expect(effective.every((entry) => !entry.selection.changed)).toBe(true);
@@ -131,5 +230,58 @@ describe('reviewSkillSelections', () => {
     const effective = await reviewSkillSelections(selections, 'Update', {});
 
     expect(effective[0]?.selection).toEqual({ changed: false, skills: [] });
+  });
+});
+
+describe('record write atomicity', () => {
+  const dirs: string[] = [];
+
+  beforeEach(async () => {
+    fsControls.failRename = false;
+    fsControls.failWrite = false;
+    const dir = await mkdtemp(path.join(tmpdir(), 'maestria-skills-atomic-'));
+    dirs.push(dir);
+    vi.stubEnv('MAESTRIA_CONFIG_DIR', dir);
+  });
+
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await Promise.all(
+      dirs.splice(0).map(async (dir) => {
+        await rm(dir, { force: true, recursive: true });
+      }),
+    );
+  });
+
+  it('preserves the prior record when the temp write fails', async () => {
+    await writeSkillsRecord(
+      withRecordedSelection(null, 'opencode', [PR], { [PR]: { path: '/fake/p', source } }),
+    );
+    const recordPath = getSkillsRecordPath();
+    const before = await readFile(recordPath, 'utf-8');
+    fsControls.failWrite = true;
+    await expect(
+      writeSkillsRecord(withRecordedSelection(null, 'opencode', [PR, DOCS_UPDATE_SKILL])),
+    ).rejects.toThrow('write boom');
+    expect(await readFile(recordPath, 'utf-8')).toBe(before);
+    expect(await readdir(path.dirname(recordPath))).toEqual(['skills.json']);
+    const keptAfterWriteFailure = await readSkillsRecord();
+    expect(keptAfterWriteFailure?.platforms.opencode?.skills).toEqual([PR]);
+  });
+
+  it('preserves the prior record when the rename fails and cleans up the temp', async () => {
+    await writeSkillsRecord(
+      withRecordedSelection(null, 'opencode', [PR], { [PR]: { path: '/fake/p', source } }),
+    );
+    const recordPath = getSkillsRecordPath();
+    const before = await readFile(recordPath, 'utf-8');
+    fsControls.failRename = true;
+    await expect(
+      writeSkillsRecord(withRecordedSelection(null, 'opencode', [PR, DOCS_UPDATE_SKILL])),
+    ).rejects.toThrow('rename boom');
+    expect(await readFile(recordPath, 'utf-8')).toBe(before);
+    expect(await readdir(path.dirname(recordPath))).toEqual(['skills.json']);
+    const keptAfterRenameFailure = await readSkillsRecord();
+    expect(keptAfterRenameFailure?.platforms.opencode?.skills).toEqual([PR]);
   });
 });
