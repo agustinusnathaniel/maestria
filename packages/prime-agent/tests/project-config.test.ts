@@ -47,7 +47,7 @@ describe('prime project-config scope contract (thin: order passthrough plus reda
     }
   });
 
-  it('fails loudly on directories, special files, escapes, and unreadable files', () => {
+  it('fails loudly with sanitized diagnostics: no paths, contents, or causes leak', () => {
     const root = makeTempRoot();
     try {
       mkdirSync(path.join(root, '.maestria', 'rules.md'), { recursive: true });
@@ -56,6 +56,12 @@ describe('prime project-config scope contract (thin: order passthrough plus reda
       rmSync(root, { force: true, recursive: true });
     }
 
+    const sentinel = 'sentinel-secret-content-2vnm';
+    const raw = (what: string): Error => {
+      const error = new Error(`${what} /projects/acme/.maestria/workflow.md: ${sentinel}`);
+      (error as NodeJS.ErrnoException).code = 'EACCES';
+      return error;
+    };
     const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
       {
         fs: {
@@ -73,38 +79,6 @@ describe('prime project-config scope contract (thin: order passthrough plus reda
         },
         pattern: /outside the project root/u,
       },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => {
-            throw new Error('EACCES: permission denied');
-          },
-          resolveLink: (candidate) => candidate,
-        },
-        pattern: /cannot be read/u,
-      },
-    ];
-    for (const { fs, pattern } of table) {
-      let message = '';
-      try {
-        loadProjectSections('/projects/acme', fs);
-      } catch (error) {
-        message = error instanceof Error ? error.message : String(error);
-      }
-      expect(message).toMatch(pattern);
-      expect(message).not.toContain('/projects/acme');
-    }
-  });
-
-  it('sanitizes raw filesystem failures at every seam: no paths, contents, or causes leak', () => {
-    const root = '/projects/acme';
-    const sentinel = 'sentinel-secret-content-2vnm';
-    const raw = (what: string): Error => {
-      const error = new Error(`${what} ${root}/.maestria/workflow.md: ${sentinel}`);
-      (error as NodeJS.ErrnoException).code = 'EACCES';
-      return error;
-    };
-    const cases: { fs: ProjectConfigFs; pattern: RegExp }[] = [
       {
         fs: {
           kindOf: () => {
@@ -136,10 +110,10 @@ describe('prime project-config scope contract (thin: order passthrough plus reda
         pattern: /cannot be read/u,
       },
     ];
-    for (const { fs, pattern } of cases) {
+    for (const { fs, pattern } of table) {
       let caught: unknown;
       try {
-        loadProjectSections(root, fs);
+        loadProjectSections('/projects/acme', fs);
       } catch (error) {
         caught = error;
       }
@@ -147,7 +121,7 @@ describe('prime project-config scope contract (thin: order passthrough plus reda
       // oxlint-disable-next-line no-unsafe-type-assertion -- toBeInstanceOf above establishes Error; the destructured message/cause feed the leak check below.
       const { message, cause } = caught as Error & { cause?: unknown };
       expect(message).toMatch(pattern);
-      expect(message).not.toContain(root);
+      expect(message).not.toContain('/projects/acme');
       expect(message).not.toContain(sentinel);
       // Hosts serialize thrown errors: the raw failure must not ride along.
       expect(cause).toBeUndefined();

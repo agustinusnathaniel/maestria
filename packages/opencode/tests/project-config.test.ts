@@ -19,9 +19,9 @@ type SystemTransformHook = NonNullable<Hooks['experimental.chat.system.transform
 type SystemTransformInput = Parameters<SystemTransformHook>[0];
 type SystemTransformOutput = Parameters<SystemTransformHook>[1];
 
-// The hook never reads its input, so the input is a minimal stub.
+// The hook never reads its input, so one shared stub covers every call.
 // oxlint-disable-next-line no-unsafe-type-assertion -- test seam only: a full SDK Model literal would assert nothing about the hook contract.
-const stubTransformInput = (): SystemTransformInput => ({}) as SystemTransformInput;
+const transformInput = {} as SystemTransformInput;
 
 const stubTransformOutput = (system: string[] = []): SystemTransformOutput => ({ system });
 
@@ -111,7 +111,7 @@ describe('loadProjectSections (thin adapter: order passthrough plus redaction)',
     }
   });
 
-  it('fails loudly on directory entries and links escaping the project root', () => {
+  it('fails loudly with sanitized diagnostics: no paths, contents, or causes leak', () => {
     const root = makeTempRoot();
     try {
       mkdirSync(path.join(root, '.maestria', 'rules.md'), { recursive: true });
@@ -119,6 +119,12 @@ describe('loadProjectSections (thin adapter: order passthrough plus redaction)',
     } finally {
       removeRoot(root);
     }
+    const projectRoot = '/projects/acme';
+    const sentinel = 'sentinel-secret-content-8pld';
+    const raw = (what: string): Error =>
+      Object.assign(new Error(`${what} ${projectRoot}/.maestria/workflow.md: ${sentinel}`), {
+        code: 'EACCES',
+      });
     const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
       {
         fs: { kindOf: () => 'other', readFile: () => '', resolveLink: (c) => c },
@@ -132,20 +138,6 @@ describe('loadProjectSections (thin adapter: order passthrough plus redaction)',
         },
         pattern: /outside the project root/u,
       },
-    ];
-    for (const { fs, pattern } of table) {
-      expect(() => loadProjectSections('/projects/acme', fs)).toThrow(pattern);
-    }
-  });
-
-  it('sanitizes raw filesystem failures at every seam: no paths, contents, or causes leak', () => {
-    const root = '/projects/acme';
-    const sentinel = 'sentinel-secret-content-8pld';
-    const raw = (what: string): Error =>
-      Object.assign(new Error(`${what} ${root}/.maestria/workflow.md: ${sentinel}`), {
-        code: 'EACCES',
-      });
-    const cases: { fs: ProjectConfigFs; pattern: RegExp }[] = [
       {
         fs: {
           kindOf: () => {
@@ -177,10 +169,10 @@ describe('loadProjectSections (thin adapter: order passthrough plus redaction)',
         pattern: /exists but cannot be read/u,
       },
     ];
-    for (const { fs, pattern } of cases) {
+    for (const { fs, pattern } of table) {
       let caught: unknown;
       try {
-        loadProjectSections(root, fs);
+        loadProjectSections(projectRoot, fs);
       } catch (error) {
         caught = error;
       }
@@ -188,7 +180,7 @@ describe('loadProjectSections (thin adapter: order passthrough plus redaction)',
       // oxlint-disable-next-line no-unsafe-type-assertion -- toBeInstanceOf above establishes Error; the destructured message/cause feed the leak check below.
       const { message, cause } = caught as Error & { cause?: unknown };
       expect(message).toMatch(pattern);
-      expect(message).not.toContain(root);
+      expect(message).not.toContain(projectRoot);
       expect(message).not.toContain(sentinel);
       // The host serializes thrown transform errors: the raw failure must not ride along.
       expect(cause).toBeUndefined();
@@ -234,12 +226,12 @@ describe('MaestriaPlugin project content', () => {
       const plugin = await MaestriaPlugin(pluginInputForRoot(root));
       const output = stubTransformOutput(['existing system block']);
       const before: string[] = output.system;
-      await getSystemTransformHook(plugin)(stubTransformInput(), output);
+      await getSystemTransformHook(plugin)(transformInput, output);
       expect(output.system).toEqual(['existing system block']);
 
       writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
       writeProjectFile(root, '.maestria/rules.md', '# rules\n');
-      await getSystemTransformHook(plugin)(stubTransformInput(), output);
+      await getSystemTransformHook(plugin)(transformInput, output);
 
       // In-place mutation of the same array the host passed in.
       expect(output.system).toBe(before);
@@ -262,7 +254,7 @@ describe('MaestriaPlugin project content', () => {
       // here would silently disable the whole plugin.
       const plugin = await MaestriaPlugin(pluginInputForRoot(root));
       await expect(
-        getSystemTransformHook(plugin)(stubTransformInput(), stubTransformOutput()),
+        getSystemTransformHook(plugin)(transformInput, stubTransformOutput()),
       ).rejects.toThrow(/is a directory/u);
     } finally {
       removeRoot(root);

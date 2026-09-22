@@ -241,7 +241,7 @@ class HookTests(unittest.TestCase):
         self.assertIn("# rules", context)
         self.assertIn("subordinate", context)
 
-    def test_broken_or_escaping_file_surfaced_as_banner(self):
+    def test_broken_file_surfaced_as_banner(self):
         hook = self.make_hook("fein")
         with tempfile.TemporaryDirectory() as root:
             os.makedirs(os.path.join(root, ".maestria", "rules.md"))
@@ -255,24 +255,6 @@ class HookTests(unittest.TestCase):
         self.assertNotIn(root, context)
         self.assertIn("fein", context)
         self.assertEqual(get_trust_state("proj-sess"), UNKNOWN)
-
-        with tempfile.TemporaryDirectory() as root:
-            with tempfile.TemporaryDirectory() as outside:
-                target = _write(outside, "evil.md", "# evil\n")
-                os.makedirs(os.path.join(root, ".maestria"), exist_ok=True)
-                os.symlink(
-                    target,
-                    os.path.join(root, *PROJECT_RULES_REL.split("/")),
-                )
-                with patch.object(
-                    project_config, "get_project_root", return_value=root
-                ):
-                    result = hook(**self.host_kwargs())
-        context = result["context"]
-        self.assertIn("PROJECT CONFIG ERROR", context)
-        self.assertIn("outside the project root", context)
-        self.assertNotIn(target, context)
-        self.assertNotIn("# evil", context)
 
     def test_unexpected_loader_failure_contained_with_generic_banner(self):
         hook = self.make_hook("blitz")

@@ -93,14 +93,12 @@ def _read_text(candidate: str, rel: str) -> str:
 
 def _require_file_kind(rel: str, kind: str) -> None:
     """Raise rel-only when a present entry is not a regular file."""
-    if kind == "directory":
-        raise ProjectConfigError(
-            f'[maestria] Project config "{rel}" is a directory, expected a file'
-        )
-    if kind != "file":
-        raise ProjectConfigError(
-            f'[maestria] Project config "{rel}" is not a regular file'
-        )
+    if kind == "file":
+        return
+    suffix = (
+        "is a directory, expected a file" if kind == "directory" else "is not a regular file"
+    )
+    raise ProjectConfigError(f'[maestria] Project config "{rel}" {suffix}')
 
 
 def load_project_sections(
@@ -176,9 +174,8 @@ def format_project_section(section: ProjectSection) -> str:
     """Format one section; the header keeps subordinate status visible."""
     return (
         f"Project customization from {section.rel} (subordinate guidance: "
-        "it may replace configurable workflows but never waives safety, "
-        "authorization, or host permissions):\n"
-        f"{section.content}"
+        f"it may replace configurable workflows but never waives safety, "
+        f"authorization, or host permissions):\n{section.content}"
     )
 
 

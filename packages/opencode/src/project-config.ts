@@ -2,11 +2,10 @@ import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 
 /**
- * Project-root customization loader (OpenCode-local copy: this published
- * package must not depend on private @maestria/shared-pi). Mirrors the
- * Pi-family loader: root-only workflow then rules, absent/empty skipped,
- * present-but-unusable throws rel-only diagnostics; the throw propagates as
- * a failed model call. See ADR-CORE-006 and docs/runtime-support-matrix.md.
+ * OpenCode-local loader, mirroring the Pi-family contract without depending
+ * on private @maestria/shared-pi: root-only workflow then rules,
+ * absent/empty skipped, present-but-unusable throws rel-only diagnostics,
+ * failing the model call. See ADR-CORE-006 and docs/runtime-support-matrix.md.
  */
 export const PROJECT_WORKFLOW_REL = '.maestria/workflow.md';
 export const PROJECT_RULES_REL = '.maestria/rules.md';
@@ -34,7 +33,10 @@ export interface ProjectConfigFs {
 const isNonEmpty = (value: unknown): value is string => typeof value === 'string' && value !== '';
 
 const isEnoent = (error: unknown): boolean =>
-  typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'ENOENT';
+  typeof error === 'object' &&
+  error !== null &&
+  'code' in error &&
+  (error as { code?: unknown }).code === 'ENOENT';
 
 const isSanitizedDiagnostic = (error: unknown): error is Error =>
   error instanceof Error && error.message.startsWith('[maestria] Project config');

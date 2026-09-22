@@ -71,14 +71,36 @@ describe('project-config scope contract', () => {
     }
   });
 
-  it('sanitizes raw filesystem failures at every seam: no paths, contents, or causes leak', () => {
+  it('fails loudly with sanitized diagnostics: no paths, contents, or causes leak', () => {
     const root = '/projects/acme';
     const sentinel = 'sentinel-secret-content-7kqw';
     const raw = (what: string): Error =>
       Object.assign(new Error(`${what} ${root}/.maestria/workflow.md: ${sentinel}`), {
         code: 'EACCES',
       });
-    const cases: { fs: ProjectConfigFs; pattern: RegExp }[] = [
+    const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
+      {
+        fs: { kindOf: () => 'other', readFile: () => '', resolveLink: (c) => c },
+        pattern: /not a regular file/u,
+      },
+      {
+        fs: {
+          kindOf: () => 'file',
+          readFile: () => 'evil',
+          resolveLink: () => path.resolve('/elsewhere/evil.md'),
+        },
+        pattern: /outside the project root/u,
+      },
+      {
+        fs: {
+          kindOf: () => 'file',
+          readFile: () => 'x',
+          resolveLink: () => {
+            throw new Error('ENOENT: dangling link');
+          },
+        },
+        pattern: /cannot be resolved/u,
+      },
       {
         fs: {
           kindOf: () => {
@@ -110,7 +132,7 @@ describe('project-config scope contract', () => {
         pattern: /exists but cannot be read/u,
       },
     ];
-    for (const { fs, pattern } of cases) {
+    for (const { fs, pattern } of table) {
       let caught: unknown;
       try {
         loadProjectSections(root, fs);
@@ -125,36 +147,6 @@ describe('project-config scope contract', () => {
       expect(message).not.toContain(sentinel);
       // Hosts serialize thrown errors: the raw failure must not ride along.
       expect(cause).toBeUndefined();
-    }
-  });
-
-  it('fails loudly on special files, escapes, and unresolvable links', () => {
-    const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
-      {
-        fs: { kindOf: () => 'other', readFile: () => '', resolveLink: (c) => c },
-        pattern: /not a regular file/u,
-      },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => 'evil',
-          resolveLink: () => path.resolve('/elsewhere/evil.md'),
-        },
-        pattern: /outside the project root/u,
-      },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => 'x',
-          resolveLink: () => {
-            throw new Error('ENOENT: dangling link');
-          },
-        },
-        pattern: /cannot be resolved/u,
-      },
-    ];
-    for (const { fs, pattern } of table) {
-      expect(() => loadProjectSections('/projects/acme', fs)).toThrow(pattern);
     }
   });
 
