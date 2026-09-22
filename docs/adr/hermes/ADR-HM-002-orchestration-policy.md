@@ -59,24 +59,19 @@ Defense in depth (sonar and direct-blitz allowlists fail closed; unknown tools d
 
 ### Context
 
-The Revision's child model matched the native subagent-start child-role value to the seven Maestria specialist names and gave each match that specialist's tool set, so a `builder` child got full write/bash/coding/OpenCode access. Hermes' native delegated-child roles are `leaf` and `orchestrator` topology roles only, not specialist identities, and no authenticated channel binds a child to a specialist with write capability; the grant was unsupported. This Amendment records the approved role-neutral policy superseding the Revision's role-based child-permission elements.
+The Revision's child model matched the native subagent-start child-role value to the seven Maestria specialist names and gave each match that specialist's tool set. Hermes' native delegated-child roles are `leaf` and `orchestrator` topology roles only, not specialist identities, and no authenticated channel binds a child to a specialist with write capability; the grant was unsupported. This Amendment records the approved role-neutral policy superseding the Revision's role-based child-permission elements.
+
+> **Note (2026-09-22).** Reverified against the current runtime: `NATIVE_CHILD_ROLES = frozenset({"leaf", "orchestrator"})` in `packages/hermes/src/maestria_hermes/permissions.py`, topology-only handling in `session.py`, and the delegation boundary in `packages/hermes/sync.config.ts`. The Amendment below remains the active child policy.
 
 ### Decision (Approved Policy)
 
 1. **Native Hermes child roles are topology roles, not Maestria specialists.** A delegated child's native role is `leaf` (default) or `orchestrator` only; the Maestria specialist names are orchestrator routing identities, not tool-granting child identities.
-
 2. **User/delegation text cannot grant capabilities.** Capabilities come only from trusted native lifecycle state; `[MAESTRIA_ROLE: ...]`-style markers neither create a role mapping nor relax any allowlist.
-
 3. **Delegated children receive a fixed read/research/LLM-only policy.** A child may use read/research tools and LLM reasoning only: no write, execution, shell, further delegation, or OpenCode, regardless of the routed specialist name.
-
 4. **Top-level direct sessions retain normal direct behavior only with trusted native binding.** Trust comes only from recognized native lifecycle state (session start on a non-child platform, or a validated turn-to-session binding); ambiguous, invalid, or ended child state fails closed and never inherits direct or write access.
-
 5. **Sonar and direct blitz have literal positive allowlists that fail closed:** immutable sets where unknown, renamed, and new tools are denied by default.
-
 6. **Review/landing enforcement is advisory.** No native review-state or landing gate exists; reviewer dispatch for non-trivial work is directive guidance.
-
 7. **Lifecycle: session end is per-turn and resumable; finalize, reset, and subagent stop are terminal trust boundaries.** A stopped or ended child has role and trust cleared; a reused id starts clean and needs a fresh trusted event.
-
 8. **Role-specific delegated builder writes are deferred until Hermes provides an authenticated capability channel.** Until then children have no write/execute/shell/delegate/OpenCode capability; code changes run on a trusted top-level fein session, not a delegated `builder`.
 
 #### What this supersedes

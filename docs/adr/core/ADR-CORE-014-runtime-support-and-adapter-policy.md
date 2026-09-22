@@ -109,21 +109,19 @@ A runtime moves to a shipped `Native` adapter only when all of the following hol
 
 | Runtime | Promotion | Rollback | Withdrawal | Re-promotion |
 | --- | --- | --- | --- | --- |
-| Claude Code | Approved docs (blind review), then a plugin package via the core sync pipeline, `scripts/check-sync` passes, promotion gates verified | Revert the generated projection/package; canonical content stays in core | Downgrade or remove support, delivery, capability, and control claims | Only after the promotion gates are re-verified |
-| Prime Agent | Verify a stable supported API for the executable extension beyond the verified subset (mode commands, mode prompt injection, session state); skills-first package plus the verified subset via the sync pipeline; `check-sync` passes | Revert the generated package and/or the extension subset | Replace or remove claims; native `rlm` dispatch and JSON/RPC headless mode stay deferred until verified | Only after re-verification |
+| Claude Code | Approved docs (blind review), then a plugin package via [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) (`scripts/check-sync` passes), promotion gates verified | Revert the generated projection/package; canonical content stays in core | Downgrade or remove support, delivery, capability, and control claims | Only after the promotion gates are re-verified |
+| Prime Agent | Verify a stable supported API for the executable extension beyond the verified subset (mode commands, mode prompt injection, session state); skills-first package plus the verified subset via [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) (`scripts/check-sync` passes) | Revert the generated package and/or the extension subset | Replace or remove claims; native `rlm` dispatch and JSON/RPC headless mode stay deferred until verified | Only after re-verification |
 | Codex CLI | Reverify the current Codex CLI release and upstream source, retain the generated projection, native-agent/instruction tests, and `check-sync` | Remove the native-agent and instruction management while leaving unrelated Codex configuration untouched | Downgrade or remove claims after a material host change invalidates the evidence | Only after the version and evidence are re-verified |
 | Codex desktop | Separate from CLI; verify a desktop extension surface exists first | Remove the common-subset projection | Downgrade or remove parity-adjacent claims | Only after the desktop surface is re-verified |
 | JCode | Requires a confirmed first-class package/extension distribution API | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
 | Crush | Requires a confirmed first-class API and verified hooks | Remove the projection | Remove claims; keep `Deferred` | Only after the API is confirmed |
 
-### Withdrawal
-
-Withdrawal downgrades or removes a runtime's claims (support level, delivery, capability, and control). There is no automatic re-promotion: re-promotion requires the promotion gates to be re-verified against current, pinned upstream evidence.
+Withdrawal downgrades or removes a runtime's claims with no automatic re-promotion: re-promotion requires the promotion gates to be re-verified against current, pinned upstream evidence.
 
 ## Deprecation and Reverification Triggers
 
 - Any runtime whose official API changes such that the recorded shape or trust model is stale triggers reverification before further work.
-- A mechanism we marked as enforced later found advisory (or vice versa) triggers an update to this ADR and the evidence ledger.
+- A mechanism marked enforced later found advisory (or vice versa) triggers an update to this ADR and the evidence ledger.
 - Version-sensitive claims are re-dated on each review; a claim older than the runtime's current documented state is not treated as current.
 - Upstream docs on `main`/`latest` are research-only; reverify any material claim before implementation, promotion, or re-promotion, after upstream API or security changes, or within 30 days of the review date.
 

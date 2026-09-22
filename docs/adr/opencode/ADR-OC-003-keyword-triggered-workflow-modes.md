@@ -2,19 +2,17 @@
 
 ## Status
 
-Accepted
+Accepted (2026-06-14)
 
 ## Current Status
 
-The original mode table documents the historical OpenCode implementation. The current canonical contract is capability-aware: `blitz` uses direct execution for familiar, low-risk work when the host permits it, otherwise the permitted specialist; `fein` uses the full route with dynamic sequencing and required review floors. See `packages/core/agent-directives/commands/blitz.md` and `packages/core/agent-directives/commands/fein.md`.
+The mode table below documents the historical OpenCode implementation. The current canonical contract is capability-aware: `blitz` uses direct execution for familiar, low-risk work when the host permits it, otherwise the permitted specialist; `fein` uses the full route with dynamic sequencing and required review floors. See `packages/core/agent-directives/commands/blitz.md` and `packages/core/agent-directives/commands/fein.md`.
+
+> **Note (2026-09-22).** Mode prompt text is no longer defined as TypeScript strings: `packages/opencode/src/modes/prompts.ts` lazily loads each mode section from its command file (`fein.md`, `sonar.md`, `blitz.md`, generated projections of the canonical files named in Current Status above) via `@maestria/shared-mode`, with pure detection (word-boundary, priority, code-block exclusion, disabled-keyword handling, case-insensitivity) delegated to the same shared module. The "TypeScript Definition" prompt dumps and the "prompts live in TypeScript" consequence below are the historical record; the command files are the current home. Detection still runs in the `chat.message` hook with `disabledKeywords` (`packages/opencode/src/index.ts`).
 
 ## Context
 
-The orchestrator's default pipeline (`adventurer → architect/planner → builder → reviewer`) handles most work well, but three usage patterns don't fit it:
-
-1. **Full pipeline, every step** - methodical, verified work; no shortcuts; every new pattern needs an ADR; tests are non-negotiable; reviewer approval required before sign-off.
-2. **Research only** - investigation and options, not implementation; run recon, synthesize findings, produce structured output, then stop.
-3. **Fast implementation** - the user knows what they want and wants it done now; skip optional recon and design ceremony while preserving safety, authorization, branch, validation, and required-review floors.
+The orchestrator's default pipeline handles most work well, but three usage patterns don't fit it: full-pipeline methodical work with reviewer approval before sign-off; research-only investigation producing structured output then stopping; and fast implementation that skips optional ceremony while preserving safety, authorization, branch, validation, and required-review floors.
 
 Before this ADR, intent could only be expressed through ambiguous natural-language prompts ("take your time", "just explore", "ship it fast"), so research looked like a plan request and fast work triggered the full pipeline. A one-word, machine-detectable mechanism was needed to redirect the pipeline upfront.
 

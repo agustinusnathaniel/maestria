@@ -179,6 +179,8 @@ Silent escalation (flag to the user but proceed) was rejected because the user s
 
 ## Assumptions
 
+Note (2026-09-22): the `[verified]` items below record what was checked when this revision landed; they are history, not a re-verification procedure. The current canonical directives carry the same substance in `packages/core/agent-directives/rules.md` (Acceptance and Blind Review; Bounded Repair and Fail-Loud Behavior) and `specialists/orchestrator.md` (Review and Triage) rather than a verbatim REQUIRED/FORBIDDEN block. Read the block-quoted rule text in Decision 1 as the historical specification and the directives as its current home.
+
 - `[verified]` The access list rule lives in the orchestrator directive's delegation-pattern access-list section, with the REQUIRED/FORBIDDEN specification in place.
 - `[verified]` The builder produces a handoff output that includes self-assessment, per the orchestrator's Work Results format requirement and the builder's "validate before handoff" rule.
 - `[verified]` The reviewer has `edit: deny` and cannot modify code.
@@ -270,10 +272,12 @@ At max cycles with unresolved `[fix]` items, the pipeline is permanently blocked
 
 ## References
 
-- The canonical orchestrator directive - review protocol, delegation pattern, access list rule, Work Results format
-- The canonical reviewer directive - review checklist, iteration limits, multi-lens swarm
-- The canonical builder directive - test-writing responsibility, verification step, handoff output
-- The canonical rules - handoff contract, escalation format, iteration limits
+- `packages/core/agent-directives/rules.md` - maker/checker split, triage contract, escalation format, repair bounds
+- `packages/core/agent-directives/specialists/orchestrator.md` - review and triage, delegation briefs
+- `packages/core/agent-directives/specialists/reviewer.md` - review checklist, triage contract, read-only checker
+- `packages/core/agent-directives/specialists/builder.md` - test-writing responsibility, verification step, handoff output
+- `packages/core/agent-directives/skills/iteration-limits.md` - repair bounds and fail-loud report format
+- `packages/core/agent-directives/skills/handoff.md` - concise handoff contents (the orchestrator consumes the builder handoff; the reviewer must not receive it)
 - `PATTERNS.md` - maker/checker split (commitment bias, context blindness, toolset overlap), completions promise
 - `docs/testing.md` - testing philosophy (test from contracts, avoid mocks)
 - ADR-CORE-011 - boundary checkpoints vs mid-phase questions, autonomy philosophy
@@ -282,7 +286,7 @@ At max cycles with unresolved `[fix]` items, the pipeline is permanently blocked
 ## Related Decisions
 
 - ADR-CORE-011 (Eliminate Questions - Autonomy) - the boundary checkpoint concept (commit/push/PR) extends to the fail-loud exit; access list discipline reinforces "exhaust data, document assumptions, proceed"
-- ADR-CORE-005 (Shared Agent Directives via core-sync Bridge) - both decisions change canonical sources that flow through the sync pipeline
+- ADR-CORE-005 (Shared Agent Directives via core-sync Bridge) - both decisions change canonical sources that flow through the sync pipeline; verify propagation with `scripts/check-sync`
 - ADR-CORE-009 (CI Quality Gates) - schema gates, if added as a future enhancement, could integrate with CI
 
 ## Date

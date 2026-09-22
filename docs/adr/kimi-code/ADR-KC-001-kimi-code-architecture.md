@@ -2,12 +2,12 @@
 
 ## Status
 
-Accepted (Revised 2026-06-17)
+Accepted (2026-06-12; revised 2026-06-17)
 
 ### Revision History
 
 - **2026-06-12** - Original draft accepted with the orchestrator-skill pattern and the 7-specialist → 3-subagent mapping
-- **2026-06-17** - Revised after the `@maestria/opencode` plugin shipped and Kimi Code source was reverified at v0.13.1. Corrects factual errors (hooks, compaction, install URL, permission scope), adds `AgentSwarm` / swarm-mode integration as a first-class concern, revises the specialist mapping per the `@architect` review, and adds a recommended `[[hooks]]` block for `config.toml`
+- **2026-06-17** - Revised after the `@maestria/opencode` plugin shipped and Kimi Code source was reverified at v0.13.1. Corrects factual errors (hooks, compaction, install URL, permission scope), adds `AgentSwarm` / swarm-mode integration, revises the specialist mapping per the `@architect` review, and adds a recommended `[[hooks]]` block for `config.toml`
 
 ## Context
 
@@ -126,9 +126,9 @@ The orchestrator skill embeds the model-facing routing table (persona plus `suba
 - **User forgets the AGENTS.md copy** - rules are missing silently. Mitigation: INSTALL.md checklist and skills referencing AGENTS.md.
 - **User modifications are overwritten** - `/plugins install` overwrites edits to bundled skills. Mitigation: fork the plugin for customizations.
 - **User skips the recommended hooks** - destructive-command blocking and per-turn reminders are unavailable. Mitigation: the installation guide's checklist and the orchestrator's `whenToUse` reminder.
-- **Reviewer → `coder` needs the no-edit constraint** - `coder` has Write and Edit, so without the persona's no-edit line a reviewer could "fix" what it finds and violate the maker/checker split. Mitigation: the persona and routing table flag it; no per-subagent tool-disable API exists.
+- **Reviewer → `coder` needs the no-edit constraint** - `coder` has Write and Edit, so without the persona's no-edit line a reviewer could "fix" what it finds and violate the maker/checker split (see [ADR-CORE-012](../core/ADR-CORE-012-deterministic-review-signals-fail-loud-exit.md)). Mitigation: the persona and routing table flag it; no per-subagent tool-disable API exists.
 - **Architect was remapped from `plan` to `coder`** - `plan` has no Bash, blocking validation (`which`, `npm view`); `coder` restores it while making write tools technically available. Mitigation: the persona restricts Bash to read-only validation.
-- **Subagents cannot use the Skill tool** - the profiles exclude `Skill`, so a dispatched subagent cannot load further skills; specialist identity must be inlined in the prompt or `prompt_template`.
+- **Subagents cannot use the Skill tool** - the profiles exclude `Skill`, so a dispatched subagent cannot load further skills; specialist identity must be inlined in the prompt or `prompt_template`. (See the 2026-09-22 note above for the current relaxation.)
 - **`AgentSwarm` is exclusive-deny** - it must be the only tool call in its turn, so exploration and swarm fan-out take two turns. Mitigation: the orchestrator skill documents the pattern; `resume_agent_ids` re-feeds unfinished items.
 - **Sub-skill hierarchy caps at 3 levels** - the orchestrator → persona chain is at the cap; an orchestrator-of-orchestrators pipeline needs a different solution. Revisit if the limit is raised.
 
