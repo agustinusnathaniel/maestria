@@ -1,6 +1,6 @@
 # @maestria/omp
 
-A Maestria extension for the [Oh My Pi](https://omp.sh/) coding agent that deploys the 7 specialist agents and workflow modes on top of OMP's native task dispatch.
+A Maestria extension for the [Oh My Pi](https://omp.sh/) coding agent that deploys the specialist agents and workflow modes on top of OMP's native task dispatch (7 specialists as of 2026-09-22; see What It Provides below for the current list).
 
 > This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -12,8 +12,8 @@ omp install @maestria/omp
 
 ## What It Provides
 
-- **7 specialist agents** (adventurer, architect, builder, diagnose, planner, reviewer, writer) using OMP's built-in `task` dispatch - no extra subagent package needed.
-- **4 maestria skills** - orchestrator dispatcher, global rules, handoff contract, iteration limits.
+- **Specialist agents** (7 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/omp/agents) for the current list) (adventurer, architect, builder, diagnose, planner, reviewer, writer) using OMP's built-in `task` dispatch - no extra subagent package needed.
+- **Maestria skills** (4 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/omp/skills) for the current list) - orchestrator dispatcher, global rules, handoff contract, iteration limits.
 - **Workflow modes** - `/fein`, `/sonar`, `/blitz`.
 - **Review mode** - `/review`, `/restore-model`, `/review-model` with read-only tool restrictions.
 - **Session state tracking** - handoff history, file tracking, blockers, preserved across compaction.

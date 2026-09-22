@@ -1,6 +1,6 @@
 # @maestria/claude-code
 
-A declarative Claude Code plugin that encodes the Maestria engineering methodology - 7 specialist agents, an orchestrator skill, a preloaded global-rules skill, and 3 workflow commands.
+A declarative Claude Code plugin that encodes the Maestria engineering methodology - specialist agents, an orchestrator skill, a preloaded global-rules skill, and workflow commands (7 specialists, 2 skills, and 3 commands as of 2026-09-22; see What It Provides below for the current list).
 
 > This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -21,9 +21,9 @@ The CLI manages installation and updates through Claude Code's native plugin com
 
 ## What It Provides
 
-- **7 specialist agents** (`maestria:adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`), each preloading the global-rules skill.
-- **2 skills** - `maestria:global-rules` (preloaded into every agent) and `maestria:orchestrator` (routing methodology).
-- **3 workflow commands** - `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz`.
+- **Specialist agents** (7 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/agents) for the current list) (`maestria:adventurer`, `architect`, `builder`, `diagnose`, `planner`, `reviewer`, `writer`), each preloading the global-rules skill.
+- **Skills** (2 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/skills) for the current list) - `maestria:global-rules` (preloaded into every agent) and `maestria:orchestrator` (routing methodology).
+- **Workflow commands** (3 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/claude-code/commands) for the current list) - `/maestria:fein`, `/maestria:sonar`, `/maestria:blitz`.
 - **Read-only enforcement** - adventurer, planner, and reviewer deny `Write`/`Edit` via `disallowedTools` (user-authorized; the only runtime enforcement).
 - **Project customization (advisory)** - the orchestrator reads project-root `.maestria/workflow.md` then `.maestria/rules.md` with host tools when not already supplied; missing files leave defaults unchanged, and an unreadable file is disclosed and requested rather than invented.
 

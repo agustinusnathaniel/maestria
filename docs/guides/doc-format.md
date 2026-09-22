@@ -139,6 +139,8 @@ Tagging is required in ADRs (`Assumptions`), plans (`Acceptance`/`Verification`)
 - In public documents, describe the capability and link its owning page instead of listing internal source files.
 - Dated evidence is a snapshot; mark the date so readers know when it was checked.
 
+Do not maintain exhaustive lists of a directory, package, or registry contents. Link the owning page or directory instead of enumerating its members; where a numeral aids readability, give it as a dated snapshot (count plus check date plus a pointer to the source) rather than a standing total.
+
 ### Internal Rationale vs Public Usage
 
 - **Internal documents** (ADRs, plans, notes, guides, this file) capture _why_ a decision was made and its evidence trail; contributors and maintainers read them.

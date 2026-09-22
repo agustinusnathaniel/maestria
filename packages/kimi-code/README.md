@@ -1,6 +1,6 @@
 # @maestria/kimi-code
 
-A Kimi Code plugin that ships a native system-prompt contract, an orchestrator, and 7 specialist skills for engineering workflows with swarm-aware orchestration.
+A Kimi Code plugin that ships a native system-prompt contract, an orchestrator, and specialist skills for engineering workflows with swarm-aware orchestration (7 specialists as of 2026-09-22; see What It Provides below for the current list).
 
 > This package is part of the Maestria project. See [VISION.md](https://github.com/agustinusnathaniel/maestria/blob/main/VISION.md) for the project vision, motivation, and scope.
 
@@ -19,7 +19,7 @@ See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packag
 
 ## What It Provides
 
-- **8 core skills** - `orchestrator` (auto-loaded at session start) plus builder, adventurer, architect, planner, reviewer, writer, and diagnose personas, loaded on demand via the `Skill` tool.
+- **Core skills** (8 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/kimi-code/skills) for the current list) - `orchestrator` (auto-loaded at session start) plus builder, adventurer, architect, planner, reviewer, writer, and diagnose personas, loaded on demand via the `Skill` tool.
 - **Native workflow commands** - `/maestria:fein`, `/maestria:sonar`, and `/maestria:blitz` are registered through Kimi's plugin `commands` field.
 - **Swarm-aware orchestration** - routes 2 or more uniform items through Kimi Code's `AgentSwarm` for parallel fan-out.
 - **System-prompt rules** - `SYSTEM.md` is contributed through Kimi's native `systemPromptPath`; no global `AGENTS.md` file is written.

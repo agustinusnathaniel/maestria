@@ -18,7 +18,7 @@ OpenCode does not auto-update plugins; re-run the install command with `--force`
 
 ## What It Provides
 
-- **8 agents** - `@orchestrator` (delegates to the 7 specialists) plus `@adventurer`, `@architect`, `@builder`, `@diagnose`, `@planner`, `@reviewer`, and `@writer`.
+- **Agents** (8 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/opencode/agents) for the current list) - `@orchestrator` (delegates to the 7 specialists) plus `@adventurer`, `@architect`, `@builder`, `@diagnose`, `@planner`, `@reviewer`, and `@writer`.
 - **Global rules** - shared requirements injected into every session for evidence, safety, delegation, review, and bounded repair.
 - **Project customization** - when the project root contains `.maestria/workflow.md` or `.maestria/rules.md`, the full content of each file that exists is injected fresh on every model call in deterministic order (workflow first, then rules). Projects without these files see no behavior change.
 - **Zero plugin telemetry** - the plugin makes no network calls of its own.

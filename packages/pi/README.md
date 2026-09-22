@@ -19,8 +19,8 @@ Uninstall via `pnpx maestria@latest uninstall pi`. The `@gotgenes/pi-subagents` 
 
 ## What It Provides
 
-- **4 methodology skills** - orchestrator dispatcher, global agent rules, handoff contract, and iteration limits, injected into every session.
-- **3 workflow modes** - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
+- **Methodology skills** (4 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/pi/skills) for the current list) - orchestrator dispatcher, global agent rules, handoff contract, and iteration limits, injected into every session.
+- **Workflow modes** (3 as of 2026-09-22; see the [user-facing documentation](https://maestria.sznm.dev/pi-omp/) for the current list) - `/fein` (full pipeline), `/sonar` (research only), `/blitz` (fast implementation).
 - **Compaction preservation** - session state survives compaction with structured summaries.
 - **Subagent dispatch** - delegation to specialist subagents via the `@gotgenes/pi-subagents` peer package.
 - **Maker/checker split** - `/review` mode blocks destructive tools where Pi supports it.
