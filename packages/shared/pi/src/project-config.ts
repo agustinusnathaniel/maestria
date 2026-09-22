@@ -1,17 +1,15 @@
 /**
- * Root project customization for Pi-family hosts (no host SDK). Root-only
- * workflow then rules, absent/empty skipped, unusable throws rel-only
- * diagnostics; callers use formatProjectErrorBanner plus notify (hosts
- * swallow before_agent_start exceptions). See ADR-CORE-006.
+ * Root project customization for Pi-family hosts (no host SDK): root-only
+ * workflow then rules; absent/empty skipped, unusable throws rel-only
+ * diagnostics (callers: banner plus notify). See ADR-CORE-006.
  *
  * @module
  */
 
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
-/** Project workflow sequencing, loaded first. */
+
 export const PROJECT_WORKFLOW_REL = '.maestria/workflow.md';
-/** Project rules, loaded second. */
 export const PROJECT_RULES_REL = '.maestria/rules.md';
 /** Deterministic load order: workflow sequencing first, then project rules. */
 export const PROJECT_CONFIG_REL_PATHS = [PROJECT_WORKFLOW_REL, PROJECT_RULES_REL] as const;
@@ -32,7 +30,10 @@ export interface ProjectConfigFs {
 const isNonEmpty = (value: unknown): value is string => typeof value === 'string' && value !== '';
 
 const isEnoent = (error: unknown): boolean =>
-  typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'ENOENT';
+  typeof error === 'object' &&
+  error !== null &&
+  'code' in error &&
+  (error as { code?: unknown }).code === 'ENOENT';
 
 const isSanitizedDiagnostic = (error: unknown): error is Error =>
   error instanceof Error && error.message.startsWith('[maestria] Project config');

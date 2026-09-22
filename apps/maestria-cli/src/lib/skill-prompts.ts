@@ -7,8 +7,6 @@ import type { ResolvedSkillSelection } from '@/lib/skills.js';
 
 const isInteractive = (): boolean => process.stdout.isTTY && process.stdin.isTTY;
 
-export const isInteractiveTerminal = (): boolean => isInteractive();
-
 /** Interactive skill review for install/update. Empty selection means `none`. */
 export const promptSkillSelection = async (
   initial: string[],
@@ -50,7 +48,7 @@ export const confirmOrThrow = async (message: string, yes: boolean | undefined):
   }
 };
 
-export const defaultSkillSummary = (skills: string[]): string =>
+const defaultSkillSummary = (skills: string[]): string =>
   skills.length === 0 ? 'none' : skills.join(', ');
 
 export interface ReviewableSelection {
@@ -72,45 +70,43 @@ export const reviewSkillSelections = async <T extends ReviewableSelection>(
   if (!isInteractive()) {
     return [...selections];
   }
-  const groups = new Map<string, { ids: string[]; skills: string[] }>();
-  for (const entry of selections) {
+  const groups = new Map<
+    string,
+    { ids: string[]; skills: string[]; members: { entry: T; index: number }[] }
+  >();
+  for (const [index, entry] of selections.entries()) {
     const key = entry.selection.skills.join(',');
     const group = groups.get(key);
     if (group === undefined) {
-      groups.set(key, { ids: [entry.id], skills: [...entry.selection.skills] });
+      groups.set(key, {
+        ids: [entry.id],
+        members: [{ entry, index }],
+        skills: [...entry.selection.skills],
+      });
     } else {
       group.ids.push(entry.id);
+      group.members.push({ entry, index });
     }
   }
-  const reviewedByGroup = new Map<string, string[]>();
+  const effective: T[] = [];
+  const summaries: string[] = [];
   for (const group of groups.values()) {
     const scope =
       group.ids.length === 1 ? (group.ids[0] ?? 'this installation') : group.ids.join(', ');
     // oxlint-disable-next-line no-await-in-loop -- sequential prompts keep the review order deterministic.
     const reviewed = await promptSkillSelection(group.skills, scope);
-    reviewedByGroup.set(group.skills.join(','), reviewed);
+    for (const { entry, index } of group.members) {
+      const before = entry.selection.skills;
+      const changed = before.join(',') !== reviewed.join(',');
+      effective[index] = {
+        ...entry,
+        selection: { changed, skills: [...reviewed] },
+      };
+      summaries[index] = changed
+        ? `${entry.id}: [${defaultSkillSummary([...before])}] → [${defaultSkillSummary([...reviewed])}]`
+        : `${entry.id}: unchanged [${defaultSkillSummary([...reviewed])}]`;
+    }
   }
-  const beforeById = new Map(selections.map((entry) => [entry.id, entry.selection.skills]));
-  const effective = selections.map((entry) => {
-    const reviewed =
-      reviewedByGroup.get(entry.selection.skills.join(',')) ?? entry.selection.skills;
-    return {
-      ...entry,
-      selection: {
-        changed: entry.selection.skills.join(',') !== reviewed.join(','),
-        skills: [...reviewed],
-      },
-    };
-  });
-  const summary = effective
-    .map((entry) => {
-      const before = beforeById.get(entry.id) ?? [];
-      const after = entry.selection.skills;
-      return before.join(',') === after.join(',')
-        ? `${entry.id}: unchanged [${defaultSkillSummary([...after])}]`
-        : `${entry.id}: [${defaultSkillSummary([...before])}] → [${defaultSkillSummary([...after])}]`;
-    })
-    .join(', ');
-  await confirmOrThrow(`${action} with skills ${summary}?`, args.yes);
+  await confirmOrThrow(`${action} with skills ${summaries.join(', ')}?`, args.yes);
   return effective;
 };

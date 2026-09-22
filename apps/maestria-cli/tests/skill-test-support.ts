@@ -7,8 +7,6 @@
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 
-const PR_SKILL = 'create-pull-request';
-
 export interface TestSkillAsset {
   path?: string;
   source?: string;
@@ -45,23 +43,83 @@ export const buildRecord = (platforms: Record<string, TestRecordEntry>): SkillsR
   version: 2,
 });
 
-/** Canned skills-CLI transport for handler wiring and ordering tests. */
-export const cannedSkillCli =
-  (): SkillCommandRunner =>
-  // oxlint-disable-next-line require-await -- synchronous fake transport by design.
-  async (args: readonly string[]) => {
-    if (args[0] === 'add') {
-      const flag = args.indexOf('-s');
-      const skill = flag === -1 ? PR_SKILL : (args[flag + 1] ?? PR_SKILL);
+export const skillOf = (args: readonly string[]): string => {
+  const flag = args.indexOf('-s');
+  if (flag !== -1) {
+    return args[flag + 1] ?? '';
+  }
+  return args[1] ?? '';
+};
+
+export const addJson = (
+  agent: string,
+  skill: string,
+  skillPath: string,
+  status = 'installed',
+): string =>
+  [
+    'Installation Summary',
+    `  ${skillPath}`,
+    '',
+    JSON.stringify([
+      { agents: ['OpenCode'], mode: 'copy', name: skill, path: skillPath, scope: 'global', status },
+    ]),
+  ].join('\n');
+
+export const listJson = (entries: { name: string; path: string }[]): string =>
+  JSON.stringify(entries.map((entry) => ({ ...entry, scope: 'global' })));
+
+/** Observable fake of the external skills CLI (same machine shapes as the real CLI). */
+export const fakeSkillCli = (paths: Record<string, string>): SkillCommandRunner => {
+  const installed = new Map<string, { name: string; path: string }[]>();
+  const pathFor = (agent: string, skill: string): string =>
+    paths[`${agent}:${skill}`] ?? paths[agent] ?? `/fake/${agent}/${skill}`;
+  // oxlint-disable-next-line require-await -- synchronous fake runner by design.
+  return async (args: readonly string[]) => {
+    const agentFlag = args.indexOf('-a');
+    const agent = agentFlag === -1 ? '' : (args[agentFlag + 1] ?? '');
+    const [command] = args;
+    if (command === 'add') {
+      const skill = skillOf(args);
+      const list = installed.get(agent) ?? [];
+      if (!list.some((entry) => entry.name === skill)) {
+        list.push({ name: skill, path: pathFor(agent, skill) });
+      }
+      installed.set(agent, list);
+      const current = list.find((entry) => entry.name === skill);
+      return { stderr: '', stdout: addJson(agent, skill, current?.path ?? '') };
+    }
+    if (command === 'list') {
+      return { stderr: '', stdout: listJson(installed.get(agent) ?? []) };
+    }
+    if (command === 'remove') {
+      const skill = skillOf(args);
+      const list = installed.get(agent) ?? [];
+      const kept = list.filter((entry) => entry.name !== skill);
+      installed.set(agent, kept);
       return {
         stderr: '',
-        stdout: JSON.stringify([
-          { name: skill, path: `/fake/skills/${skill}`, status: 'installed' },
-        ]),
+        stdout: kept.length === list.length ? 'No skills found to remove.' : 'Done!',
       };
     }
-    if (args[0] === 'list') {
-      return { stderr: '', stdout: '[]' };
-    }
-    return { stderr: '', stdout: 'Done!' };
+    throw new Error(`unexpected fake command: ${command}`);
   };
+};
+
+/** List-only fake for read-only diagnostics (throws on any mutating command). */
+export const fakeListCli =
+  (inventory: Record<string, { name: string; path: string }[]>): SkillCommandRunner =>
+  // oxlint-disable-next-line require-await -- synchronous fake runner by design.
+  async (args: readonly string[]) => {
+    if (args[0] !== 'list') {
+      throw new Error(`doctor fake only lists, got: ${args[0]}`);
+    }
+    const flag = args.indexOf('-a');
+    const agent = flag === -1 ? '' : (args[flag + 1] ?? '');
+    return { stderr: '', stdout: listJson(inventory[agent] ?? []) };
+  };
+
+// oxlint-disable-next-line require-await -- synchronous fake runner by design.
+export const failingSkillCli: SkillCommandRunner = async () => {
+  throw new Error('boom');
+};

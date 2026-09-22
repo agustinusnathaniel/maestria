@@ -41,8 +41,13 @@ vi.mock('@/lib/detect.js', async (importOriginal) => {
 
 vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
   const actual = await importOriginal<typeof skillCompanion>();
-  const { cannedSkillCli } = await import('./skill-test-support.js');
-  return { ...actual, runSkillsCli: cannedSkillCli() };
+  const { fakeSkillCli } = await import('./skill-test-support.js');
+  // Stateless transport: a fresh fake per call keeps observed inventory empty
+  // across handler flows (same contract as the retired canned transport).
+  const runSkillsCli = async (
+    ...args: Parameters<skillCompanion.SkillCommandRunner>
+  ): ReturnType<skillCompanion.SkillCommandRunner> => await fakeSkillCli({})(...args);
+  return { ...actual, runSkillsCli };
 });
 
 const configDirs: string[] = [];

@@ -4,14 +4,14 @@ import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { MaestriaPlugin } from '@/index.js';
-import {
-  appendInstructions,
-  formatProjectSection,
-  loadProjectSections,
-  resolveProjectRoot,
-} from '@/project-config.js';
-import type { ProjectConfigFs, ProjectRootInput } from '@/project-config.js';
+import { formatProjectSection, resolveProjectRoot } from '@/project-config.js';
+import type { ProjectRootInput } from '@/project-config.js';
 import { RULES_PATH } from '@/root.js';
+
+// Thin adapter suite: the full loader contract (order, skip, escape, rel-only
+// diagnostics) lives once in packages/shared/pi/tests/project-config.test.ts.
+// This file pins the OpenCode host deltas: root resolution, section formatting,
+// and plugin integration (instructions, system transform, compaction).
 
 import { makeTempRoot, pluginInputForRoot, removeRoot, writeProjectFile } from './helpers.js';
 
@@ -19,9 +19,9 @@ type SystemTransformHook = NonNullable<Hooks['experimental.chat.system.transform
 type SystemTransformInput = Parameters<SystemTransformHook>[0];
 type SystemTransformOutput = Parameters<SystemTransformHook>[1];
 
-// The hook never reads its input, so the input is a minimal stub.
+// The hook never reads its input, so one shared stub covers every call.
 // oxlint-disable-next-line no-unsafe-type-assertion -- test seam only: a full SDK Model literal would assert nothing about the hook contract.
-const stubTransformInput = (): SystemTransformInput => ({}) as SystemTransformInput;
+const transformInput = {} as SystemTransformInput;
 
 const stubTransformOutput = (system: string[] = []): SystemTransformOutput => ({ system });
 
@@ -86,126 +86,13 @@ describe('resolveProjectRoot', () => {
   }
 });
 
-describe('loadProjectSections (thin adapter: order passthrough plus redaction)', () => {
-  it('returns empty when both project files are absent', () => {
-    const root = makeTempRoot();
-    try {
-      expect(loadProjectSections(root)).toEqual([]);
-    } finally {
-      removeRoot(root);
-    }
-  });
-
-  it('reads both files in deterministic workflow-then-rules order', () => {
-    const root = makeTempRoot();
-    try {
-      // Create in reverse order to prove ordering comes from the contract, not creation time.
-      writeProjectFile(root, '.maestria/rules.md', '# rules\n');
-      writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
-      expect(loadProjectSections(root)).toEqual([
-        { content: '# workflow\n', rel: '.maestria/workflow.md' },
-        { content: '# rules\n', rel: '.maestria/rules.md' },
-      ]);
-    } finally {
-      removeRoot(root);
-    }
-  });
-
-  it('fails loudly on directory entries and links escaping the project root', () => {
-    const root = makeTempRoot();
-    try {
-      mkdirSync(path.join(root, '.maestria', 'rules.md'), { recursive: true });
-      expect(() => loadProjectSections(root)).toThrow(/is a directory/u);
-    } finally {
-      removeRoot(root);
-    }
-    const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
-      {
-        fs: { kindOf: () => 'other', readFile: () => '', resolveLink: (c) => c },
-        pattern: /not a regular file/u,
-      },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => 'evil',
-          resolveLink: () => path.resolve('/elsewhere/evil.md'),
-        },
-        pattern: /outside the project root/u,
-      },
-    ];
-    for (const { fs, pattern } of table) {
-      expect(() => loadProjectSections('/projects/acme', fs)).toThrow(pattern);
-    }
-  });
-
-  it('sanitizes raw filesystem failures at every seam: no paths, contents, or causes leak', () => {
-    const root = '/projects/acme';
-    const sentinel = 'sentinel-secret-content-8pld';
-    const raw = (what: string): Error =>
-      Object.assign(new Error(`${what} ${root}/.maestria/workflow.md: ${sentinel}`), {
-        code: 'EACCES',
-      });
-    const cases: { fs: ProjectConfigFs; pattern: RegExp }[] = [
-      {
-        fs: {
-          kindOf: () => {
-            throw raw('lstat failed on');
-          },
-          readFile: () => '',
-          resolveLink: (candidate) => candidate,
-        },
-        pattern: /cannot be accessed/u,
-      },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => '',
-          resolveLink: () => {
-            throw raw('realpath failed on');
-          },
-        },
-        pattern: /cannot be resolved/u,
-      },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => {
-            throw raw('read failed on');
-          },
-          resolveLink: (candidate) => candidate,
-        },
-        pattern: /exists but cannot be read/u,
-      },
-    ];
-    for (const { fs, pattern } of cases) {
-      let caught: unknown;
-      try {
-        loadProjectSections(root, fs);
-      } catch (error) {
-        caught = error;
-      }
-      expect(caught).toBeInstanceOf(Error);
-      // oxlint-disable-next-line no-unsafe-type-assertion -- toBeInstanceOf above establishes Error; the destructured message/cause feed the leak check below.
-      const { message, cause } = caught as Error & { cause?: unknown };
-      expect(message).toMatch(pattern);
-      expect(message).not.toContain(root);
-      expect(message).not.toContain(sentinel);
-      // The host serializes thrown transform errors: the raw failure must not ride along.
-      expect(cause).toBeUndefined();
-    }
-  });
-});
-
-describe('formatProjectSection and appendInstructions', () => {
-  it('names the rel file with subordinate status and merges without duplicates', () => {
+describe('formatProjectSection', () => {
+  it('names the rel file with subordinate status', () => {
     const body = '# rules\n- Be careful\n';
     const formatted = formatProjectSection({ content: body, rel: '.maestria/rules.md' });
     expect(formatted).toContain('.maestria/rules.md');
     expect(formatted).toContain('subordinate');
     expect(formatted).toContain(body);
-    const once = appendInstructions(['user.md'], ['a.md', 'b.md']);
-    expect(once).toEqual(['user.md', 'a.md', 'b.md']);
-    expect(appendInstructions(once, ['a.md', 'b.md'])).toEqual(['user.md', 'a.md', 'b.md']);
   });
 });
 
@@ -234,12 +121,12 @@ describe('MaestriaPlugin project content', () => {
       const plugin = await MaestriaPlugin(pluginInputForRoot(root));
       const output = stubTransformOutput(['existing system block']);
       const before: string[] = output.system;
-      await getSystemTransformHook(plugin)(stubTransformInput(), output);
+      await getSystemTransformHook(plugin)(transformInput, output);
       expect(output.system).toEqual(['existing system block']);
 
       writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
       writeProjectFile(root, '.maestria/rules.md', '# rules\n');
-      await getSystemTransformHook(plugin)(stubTransformInput(), output);
+      await getSystemTransformHook(plugin)(transformInput, output);
 
       // In-place mutation of the same array the host passed in.
       expect(output.system).toBe(before);
@@ -262,7 +149,7 @@ describe('MaestriaPlugin project content', () => {
       // here would silently disable the whole plugin.
       const plugin = await MaestriaPlugin(pluginInputForRoot(root));
       await expect(
-        getSystemTransformHook(plugin)(stubTransformInput(), stubTransformOutput()),
+        getSystemTransformHook(plugin)(transformInput, stubTransformOutput()),
       ).rejects.toThrow(/is a directory/u);
     } finally {
       removeRoot(root);

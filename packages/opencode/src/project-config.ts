@@ -1,13 +1,6 @@
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 
-/**
- * Project-root customization loader (OpenCode-local copy: this published
- * package must not depend on private @maestria/shared-pi). Mirrors the
- * Pi-family loader: root-only workflow then rules, absent/empty skipped,
- * present-but-unusable throws rel-only diagnostics; the throw propagates as
- * a failed model call. See ADR-CORE-006 and docs/runtime-support-matrix.md.
- */
 export const PROJECT_WORKFLOW_REL = '.maestria/workflow.md';
 export const PROJECT_RULES_REL = '.maestria/rules.md';
 export const PROJECT_CONFIG_REL_PATHS = [PROJECT_WORKFLOW_REL, PROJECT_RULES_REL] as const;
@@ -34,7 +27,10 @@ export interface ProjectConfigFs {
 const isNonEmpty = (value: unknown): value is string => typeof value === 'string' && value !== '';
 
 const isEnoent = (error: unknown): boolean =>
-  typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'ENOENT';
+  typeof error === 'object' &&
+  error !== null &&
+  'code' in error &&
+  (error as { code?: unknown }).code === 'ENOENT';
 
 const isSanitizedDiagnostic = (error: unknown): error is Error =>
   error instanceof Error && error.message.startsWith('[maestria] Project config');
@@ -187,17 +183,3 @@ export const formatProjectSection = (section: ProjectSection): string =>
     `Project customization from ${section.rel} (subordinate guidance: it may replace configurable workflows but never waives safety, authorization, or host permissions):`,
     section.content,
   ].join('\n');
-
-/** Merge paths without duplicating entries on repeat calls. */
-export const appendInstructions = (
-  instructions: string[] | undefined,
-  paths: readonly string[],
-): string[] => {
-  const merged = [...(instructions ?? [])];
-  for (const entry of paths) {
-    if (!merged.includes(entry)) {
-      merged.push(entry);
-    }
-  }
-  return merged;
-};

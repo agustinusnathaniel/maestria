@@ -7,12 +7,7 @@ import { parse as parseYaml } from 'yaml';
 import { detectMode, getModeMarker, getModePrompt, stripKeyword } from '@/modes/index.js';
 import { maestriaOptionsSchema } from '@/modes/types.js';
 import type { MaestriaPluginOptions } from '@/modes/types.js';
-import {
-  appendInstructions,
-  formatProjectSection,
-  loadProjectSections,
-  resolveProjectRoot,
-} from '@/project-config.js';
+import { formatProjectSection, loadProjectSections, resolveProjectRoot } from '@/project-config.js';
 import { AGENTS_DIR, RULES_PATH } from '@/root.js';
 
 type OpenCodeAgentConfig = NonNullable<NonNullable<Config['agent']>[string]>;
@@ -167,7 +162,11 @@ const applyModeToMessage = (
 
 const configureAgents = (input: ConfigInput, agents: NonNullable<Config['agent']>): void => {
   input.agent = merge(input.agent ?? {}, agents);
-  input.instructions = appendInstructions(input.instructions, [RULES_PATH]);
+  const instructions = [...(input.instructions ?? [])];
+  if (!instructions.includes(RULES_PATH)) {
+    instructions.push(RULES_PATH);
+  }
+  input.instructions = instructions;
 };
 
 type SystemTransformOutput = Parameters<
