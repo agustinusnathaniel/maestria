@@ -2,18 +2,14 @@ import { homedir } from 'node:os';
 
 import { companionAgentFor, listCompanions, MANAGED_SKILLS } from '@/lib/skill-companion.js';
 import type { ObservedCompanion, SkillCommandRunner } from '@/lib/skill-companion.js';
-import { isSharedRecordedAsset, resolveSkillsSource } from '@/lib/skill-reconcile.js';
+import { resolveSkillsSource } from '@/lib/skill-reconcile.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 
 /**
- * Read-only skill setup diagnostics (`maestria doctor`).
- *
- * The collector never installs, updates, removes, or records anything: it
- * combines existing plugin detection with the v2 skill selection record and
- * the tool-observed `list --json` inventory per native agent. Identity flows
- * through tool output only; this module keeps no path registry and parses no
- * lockfiles.
+ * Read-only skill setup diagnostics (`maestria doctor`). The collector never
+ * installs, updates, removes, or records anything: identity flows through
+ * tool output only.
  */
 
 export interface SharedSkillNote {
@@ -45,7 +41,6 @@ export interface DoctorOutput {
   readonly recordPresent: boolean;
 }
 
-/** Replace a leading home directory with `~` so reports avoid absolute private paths. */
 export const redactHome = (value: string): string => {
   const home = homedir();
   if (home !== '' && (value === home || value.startsWith(`${home}/`))) {
@@ -54,85 +49,87 @@ export const redactHome = (value: string): string => {
   return value;
 };
 
-const redactObserved = (entries: ObservedCompanion[]): ObservedCompanion[] =>
-  entries.map((entry) => ({ name: entry.name, path: redactHome(entry.path) }));
-
-/**
- * Platforms in another record entry that already claim this skill from the
- * same source at the same observed path (shared canonical targets such as
- * `~/.agents/skills`, reached via several agent IDs). Match decision
- * delegates to the shared ownership predicate; this wrapper only expands the
- * boolean into the provider list doctor reports.
- */
-const sharedProviders = (
-  record: SkillsRecord | null,
-  platformId: string,
-  skill: string,
-  observed: string,
-  source: string,
-): string[] => {
-  if (record === null) {
-    return [];
-  }
-  return Object.keys(record.platforms).filter((otherId) => {
-    if (otherId === platformId) {
-      return false;
-    }
-    const entry = record.platforms[otherId];
-    if (entry === undefined) {
-      return false;
-    }
-    return isSharedRecordedAsset(
-      { platforms: { [otherId]: entry }, version: record.version },
-      platformId,
-      skill,
-      observed,
-      source,
-    );
-  });
-};
-
 type DoctorStatus = Pick<
   PlatformStatus,
   'available' | 'id' | 'installed' | 'installedVersion' | 'label'
 >;
 
-interface UnmanagedGuidance {
-  readonly next: string;
-  readonly note: string;
-  readonly shared?: SharedSkillNote;
-}
-
-/** Note plus next step for one observed-but-unrecorded managed skill. */
-const describeUnmanaged = (
+/**
+ * Build one platform report from already collected inputs. List failures
+ * arrive as `listError` and degrade honestly.
+ */
+// oxlint-disable-next-line max-lines-per-function, complexity -- one report builder keeps note/next accumulation order in a single place; the sections share the same accumulators, so splitting would thread four out-params through helpers.
+const buildDoctorReport = (
+  status: DoctorStatus,
   record: SkillsRecord | null,
-  platformId: string,
-  skill: string,
-  observedPath: string,
-  source: string,
-): UnmanagedGuidance => {
-  const providers = sharedProviders(record, platformId, skill, observedPath, source);
-  if (providers.length > 0) {
-    return {
-      next: `Run 'maestria install ${platformId}' to share the recorded copy.`,
-      note: `Skill '${skill}' at ${redactHome(observedPath)} is already provided by ${providers.map((p) => `'${p}'`).join(', ')} from the same source.`,
-      shared: { path: redactHome(observedPath), providers, skill },
-    };
-  }
-  return {
-    next: `Run 'maestria install ${platformId} --exclude-skills ${skill}' to leave it alone, or remove it manually first.`,
-    note: `Existing unmanaged skill '${skill}' at ${redactHome(observedPath)} has no Maestria selection record.`,
-  };
-};
-
-/** Notes plus next steps for record state, availability, and missing skills. */
-const recordGuidance = (
-  recorded: readonly string[] | null,
-  status: Pick<PlatformStatus, 'available' | 'id' | 'installed'>,
-  missing: readonly string[],
-): { next: string[]; notes: string[] } => {
-  const next: string[] = [];
+  observed: ObservedCompanion[],
+  options: { listError?: string; source?: string } = {},
+): DoctorPlatformReport => {
+  const agent = companionAgentFor(status.id);
+  const agentName = agent ?? status.id;
+  const recorded = record?.platforms[status.id]?.skills ?? null;
+  const source = options.source ?? resolveSkillsSource();
   const notes: string[] = [];
+  const next: string[] = [];
+  const shared: SharedSkillNote[] = [];
+
+  if (agent === null) {
+    notes.push(
+      `No skills-CLI target is verified for '${status.id}'; core reviewable-body fallback applies.`,
+    );
+    next.push(`Manage skills manually: npx -y skills@1.7.0 add ${source} --skill <skill> -g -y`);
+  }
+  const listError = options.listError ?? '';
+  if (listError !== '') {
+    notes.push(`Skill inventory check failed for agent '${agentName}': ${listError}`);
+    next.push(`Re-run 'maestria doctor' once the skills CLI list works again.`);
+  }
+
+  const recordedManaged = (recorded ?? []).filter((skill) => MANAGED_SKILLS.includes(skill));
+  const observedByName = new Map(observed.map((entry) => [entry.name, entry.path]));
+  const unmanaged = MANAGED_SKILLS.filter(
+    (skill) => observedByName.has(skill) && !recordedManaged.includes(skill),
+  );
+  for (const skill of unmanaged) {
+    const observedPath = observedByName.get(skill) ?? '';
+    const providers =
+      record === null
+        ? []
+        : Object.keys(record.platforms).filter((otherId) => {
+            if (otherId === status.id) {
+              return false;
+            }
+            const entry = record.platforms[otherId];
+            if (entry === undefined) {
+              return false;
+            }
+            return (
+              entry.skills.includes(skill) &&
+              entry.skillAssets?.[skill]?.source === source &&
+              entry.skillAssets?.[skill]?.path === observedPath
+            );
+          });
+    if (providers.length > 0) {
+      notes.push(
+        `Skill '${skill}' at ${redactHome(observedPath)} is already provided by ${providers.map((p) => `'${p}'`).join(', ')} from the same source.`,
+      );
+      next.push(`Run 'maestria install ${status.id}' to share the recorded copy.`);
+      shared.push({ path: redactHome(observedPath), providers, skill });
+    } else {
+      notes.push(
+        `Existing unmanaged skill '${skill}' at ${redactHome(observedPath)} has no Maestria selection record.`,
+      );
+      next.push(
+        `Run 'maestria install ${status.id} --exclude-skills ${skill}' to leave it alone, or remove it manually first.`,
+      );
+    }
+  }
+  const observedNames = new Set(observed.map((entry) => entry.name));
+  const missing = recordedManaged.filter((skill) => !observedNames.has(skill));
+
+  for (const skill of missing) {
+    notes.push(`Recorded skill '${skill}' is not observed for agent '${agentName}'.`);
+  }
   if (missing.length > 0) {
     next.push(`Run 'maestria update ${status.id}' to restore the recorded selection.`);
   }
@@ -145,87 +142,6 @@ const recordGuidance = (
   } else if (!status.installed) {
     next.push(`Run 'maestria install ${status.id}' to install the plugin.`);
   }
-  return { next, notes };
-};
-
-/**
- * Unmanaged findings for one platform: managed skills observed with no
- * record, each with its note, next step, and optional shared-path detail.
- */
-const collectUnmanaged = (
-  record: SkillsRecord | null,
-  platformId: string,
-  recordedManaged: readonly string[],
-  observed: readonly ObservedCompanion[],
-  source: string,
-): { next: string[]; notes: string[]; shared: SharedSkillNote[]; unmanaged: string[] } => {
-  const observedByName = new Map(observed.map((entry) => [entry.name, entry.path]));
-  const unmanaged = MANAGED_SKILLS.filter(
-    (skill) => observedByName.has(skill) && !recordedManaged.includes(skill),
-  );
-  const next: string[] = [];
-  const notes: string[] = [];
-  const shared: SharedSkillNote[] = [];
-  for (const skill of unmanaged) {
-    const guidance = describeUnmanaged(
-      record,
-      platformId,
-      skill,
-      observedByName.get(skill) ?? '',
-      source,
-    );
-    if (guidance.shared !== undefined) {
-      shared.push(guidance.shared);
-    }
-    notes.push(guidance.note);
-    next.push(guidance.next);
-  }
-  return { next, notes, shared, unmanaged };
-};
-
-/**
- * Build one platform report from already collected inputs. Pure apart from
- * home redaction: list failures arrive as `listError` and degrade honestly.
- * Internal: production entry is `collectDoctorReports` (see grep); tests
- * exercise this through that collector.
- */
-const buildDoctorReport = (
-  status: DoctorStatus,
-  record: SkillsRecord | null,
-  observed: ObservedCompanion[],
-  options: { listError?: string; source?: string } = {},
-): DoctorPlatformReport => {
-  const agent = companionAgentFor(status.id);
-  const recorded = record?.platforms[status.id]?.skills ?? null;
-  const source = options.source ?? resolveSkillsSource();
-  const notes: string[] = [];
-  const next: string[] = [];
-
-  if (agent === null) {
-    notes.push(
-      `No skills-CLI target is verified for '${status.id}'; core reviewable-body fallback applies.`,
-    );
-    next.push(`Manage skills manually: npx -y skills@1.7.0 add ${source} --skill <skill> -g -y`);
-  }
-  const listError = options.listError ?? '';
-  if (listError !== '') {
-    notes.push(`Skill inventory check failed for agent '${agent ?? status.id}': ${listError}`);
-    next.push(`Re-run 'maestria doctor' once the skills CLI list works again.`);
-  }
-
-  const recordedManaged = (recorded ?? []).filter((skill) => MANAGED_SKILLS.includes(skill));
-  const found = collectUnmanaged(record, status.id, recordedManaged, observed, source);
-  const observedNames = new Set(observed.map((entry) => entry.name));
-  const missing = recordedManaged.filter((skill) => !observedNames.has(skill));
-
-  notes.push(...found.notes);
-  next.push(...found.next);
-  for (const skill of missing) {
-    notes.push(`Recorded skill '${skill}' is not observed for agent '${agent ?? status.id}'.`);
-  }
-  const guidance = recordGuidance(recorded, status, missing);
-  notes.push(...guidance.notes);
-  next.push(...guidance.next);
 
   return {
     ...(listError === '' ? {} : { listError }),
@@ -238,17 +154,17 @@ const buildDoctorReport = (
     missing,
     next: [...new Set(next)],
     notes,
-    observed: redactObserved(observed),
+    observed: observed.map((entry) => ({ name: entry.name, path: redactHome(entry.path) })),
     recorded,
-    shared: found.shared,
-    unmanaged: found.unmanaged,
+    shared,
+    unmanaged,
   };
 };
 
 /**
  * Collect read-only reports for every known status plus record-only platform
- * IDs (unknown platforms degrade honestly with no list call). Lists once per
- * distinct native agent; list failures degrade into per-platform notes.
+ * IDs. Lists once per distinct native agent; list failures degrade into
+ * per-platform notes.
  */
 export const collectDoctorReports = async (
   runner: SkillCommandRunner,

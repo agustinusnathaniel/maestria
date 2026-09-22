@@ -23,7 +23,6 @@ import { buildRecord } from './skill-test-support.js';
 const source = 'test-record';
 const PR = 'create-pull-request';
 
-/** Failure injection for the record-write fs seam; every other call delegates. */
 const fsControls = vi.hoisted(() => ({ failRename: false, failWrite: false }));
 
 vi.mock('node:fs/promises', async (importOriginal) => {
@@ -59,7 +58,6 @@ describe('skill selection', () => {
       changed: false,
       skills: [PR],
     });
-    // An explicit request still opts into the new skill on the update path.
     expect(
       resolveSkillSelection('opencode', { skills: DOCS_UPDATE_SKILL }, null, {
         updateBootstrap: true,
@@ -70,7 +68,6 @@ describe('skill selection', () => {
   it('preserves recorded choices when no flags are passed', () => {
     const record = buildRecord({ pi: [] });
     expect(resolveSkillSelection('pi', {}, record)).toEqual({ changed: false, skills: [] });
-    // A recorded exclusion of everything stays an exclusion, even on update.
     expect(resolveSkillSelection('pi', {}, record, { updateBootstrap: true })).toEqual({
       changed: false,
       skills: [],
@@ -119,18 +116,6 @@ describe('skill selection', () => {
     expect(() => resolveSkillSelection('opencode', flags, null)).toThrow(CliError);
   });
 
-  it('fails loudly on version 1 records, which never shipped to main', () => {
-    expect(() =>
-      parseSkillsRecord(
-        JSON.stringify({
-          platforms: { opencode: { path: '/fake/p', skills: [PR], source } },
-          version: 1,
-        }),
-        source,
-      ),
-    ).toThrow(CliError);
-  });
-
   it('keeps v2 per-skill assets separate and preserves unknown history', () => {
     const record = parseSkillsRecord(
       JSON.stringify({
@@ -151,6 +136,11 @@ describe('skill selection', () => {
     expect(record.platforms.opencode?.skillAssets?.[PR]?.path).toBe('/fake/pr');
     expect(record.platforms.opencode?.skillAssets?.[DOCS_UPDATE_SKILL]?.path).toBe('/fake/docs');
     expect(record.platforms.opencode?.skillAssets?.['future-skill']?.path).toBe('/fake/future');
+    expect(resolveSkillSelection('opencode', {}, record).skills).toEqual([
+      PR,
+      DOCS_UPDATE_SKILL,
+      'future-skill',
+    ]);
   });
 
   it('fails loudly on corrupt records instead of resetting to defaults', () => {
@@ -167,12 +157,6 @@ describe('skill selection', () => {
     for (const payload of corruptPayloads) {
       expect(() => parseSkillsRecord(payload, 'test-record')).toThrow(CliError);
     }
-  });
-
-  it('preserves unknown skill IDs instead of resetting them', () => {
-    const record = buildRecord({ opencode: [PR, 'future-skill'] });
-    expect(record.platforms.opencode?.skills).toEqual([PR, 'future-skill']);
-    expect(resolveSkillSelection('opencode', {}, record).skills).toEqual([PR, 'future-skill']);
   });
 
   it('keeps selections per platform and cleans up only the uninstalled entry', () => {

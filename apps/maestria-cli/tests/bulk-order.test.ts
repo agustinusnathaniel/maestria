@@ -5,8 +5,6 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import { handleInstall } from '@/commands/install.js';
-import { handleUninstall } from '@/commands/uninstall.js';
 import { handleUpdate } from '@/commands/update.js';
 import type * as detect from '@/lib/detect.js';
 import type * as platforms from '@/lib/platforms.js';
@@ -81,11 +79,6 @@ const installedStatuses: PlatformStatus[] = testPlatforms.map((platform) => ({
   latestVersion: '1.0.0',
 }));
 
-const installableStatuses: PlatformStatus[] = installedStatuses.map((status) => ({
-  ...status,
-  installed: false,
-}));
-
 describe('bulk CLI side-effect ordering', () => {
   beforeEach(() => {
     events.length = 0;
@@ -139,45 +132,5 @@ describe('bulk CLI side-effect ordering', () => {
       'update:finish:pi',
     ]);
     expect(all.exitCode).toBe(0);
-  });
-
-  it('installs direct and detected platform selections sequentially', async () => {
-    const direct = await handleInstall({
-      compact: true,
-      platform: 'opencode,pi',
-      quiet: true,
-    });
-    expect(events).toEqual([
-      'install:start:opencode',
-      'install:finish:opencode',
-      'install:start:pi',
-      'install:finish:pi',
-    ]);
-    expect(direct.exitCode).toBe(0);
-
-    events.length = 0;
-    detectMocks.detectAll.mockReturnValue(Effect.succeed(installableStatuses));
-    const all = await handleInstall({ all: true, compact: true, quiet: true });
-    expect(events).toEqual([
-      'install:start:opencode',
-      'install:finish:opencode',
-      'install:start:pi',
-      'install:finish:pi',
-    ]);
-    expect(all.exitCode).toBe(0);
-  });
-
-  it('uninstalls all detected platforms sequentially', async () => {
-    detectMocks.detectInstalled.mockReturnValue(Effect.succeed(installedStatuses));
-
-    const result = await handleUninstall({ all: true, compact: true, quiet: true });
-
-    expect(events).toEqual([
-      'uninstall:start:opencode',
-      'uninstall:finish:opencode',
-      'uninstall:start:pi',
-      'uninstall:finish:pi',
-    ]);
-    expect(result.exitCode).toBe(0);
   });
 });

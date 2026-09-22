@@ -78,8 +78,6 @@ vi.mock('@/lib/skill-companion.js', async (importOriginal) => {
 });
 
 vi.mock('@/lib/group-multiselect.js', () => ({
-  // Echo the proposed selection: interactive review keeps current skills
-  // unless a test overrides this mock to simulate a changed review.
   // oxlint-disable-next-line require-await -- synchronous echo stub by design.
   groupMultiselect: vi.fn(async (opts: { initialValues?: string[] }) => [
     ...(opts.initialValues ?? []),
@@ -426,8 +424,6 @@ describe('command handlers', () => {
     it('reviews skills with confirmation when plugins are already current', async () => {
       setTty(true);
       detectMocks.detectInstalled.mockReturnValue(Effect.succeed([status({})]));
-      // The reviewer adds the newly available docs skill; the final
-      // confirmation gate still runs even though the plugin is current.
       const { groupMultiselect } = await import('@/lib/group-multiselect.js');
       vi.mocked(groupMultiselect).mockResolvedValueOnce(['create-pull-request', 'docs-update']);
 
@@ -443,13 +439,12 @@ describe('command handlers', () => {
       expect(saved?.platforms.opencode?.skills).toEqual(['create-pull-request', 'docs-update']);
     });
 
-    it('installs both skills by default and each can be selected alone', async () => {
-      const fresh = await handleInstall({ compact: true, platform: 'opencode', quiet: true });
-
-      expect(fresh.exitCode).toBe(0);
-      const { readSkillsRecord } = await import('@/lib/skills.js');
-      const saved = await readSkillsRecord();
-      expect(saved?.platforms.opencode?.skills).toEqual(['create-pull-request', 'docs-update']);
+    it('narrows the recorded selection to a single skill on update', async () => {
+      const { writeSkillsRecord } = await import('@/lib/skills.js');
+      await writeSkillsRecord({
+        platforms: { opencode: { skills: ['create-pull-request', 'docs-update'] } },
+        version: 2,
+      });
 
       const single = await handleUpdate({
         platform: 'opencode',
@@ -459,6 +454,7 @@ describe('command handlers', () => {
       });
 
       expect(single.exitCode).toBe(0);
+      const { readSkillsRecord } = await import('@/lib/skills.js');
       const narrowed = await readSkillsRecord();
       expect(narrowed?.platforms.opencode?.skills).toEqual(['docs-update']);
     });

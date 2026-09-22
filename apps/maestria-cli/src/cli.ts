@@ -14,8 +14,6 @@ import { toCommandRun } from '@/lib/command-runner.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { version } from '^/package.json';
 
-// ── Custom --help ────────────────────────────────────
-
 const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   check: {
     examples: [
@@ -196,16 +194,10 @@ const showEnhancedUsage = async <T extends ArgsDef = ArgsDef>(
   console.log(parts.join('\n'));
 };
 
-// ── Main command ─────────────────────────────────────
-
 export interface RootArgs extends StatusArgs {
   version?: boolean;
 }
 
-/**
- * Root command handler: `--version` short-circuits, otherwise the root command
- * renders status through the same flow as `maestria status`.
- */
 export const handleRoot = async (args: RootArgs): Promise<CommandResult> => {
   if (args.version === true) {
     return { exitCode: 0, output: version };
@@ -243,9 +235,7 @@ export const main = defineCommand({
     name: 'maestria',
   },
   run: async (context) => {
-    // citty runs the parent command after a matched subcommand. The runner has
-    // already recorded that subcommand's exit code, so skip the status
-    // fall-through instead of rendering root status and overwriting it.
+    // A matched subcommand already recorded its exit code; skip the status fall-through.
     if (process.exitCode !== undefined) {
       return;
     }
@@ -263,12 +253,8 @@ export const main = defineCommand({
   },
 });
 
-/**
- * CLI boundary: owns signal handlers, the citty run, and the single process
- * exit. Importing this module has no side effects; index.ts invokes runCli.
- */
+/** CLI boundary: owns signal handlers, the citty run, and the single process exit. */
 export const runCli = async (): Promise<void> => {
-  // Ensure clean exit on signals - prevents Effect runtime from keeping process alive
   process.on('SIGINT', () => process.exit(130));
   process.on('SIGTERM', () => process.exit(0));
 

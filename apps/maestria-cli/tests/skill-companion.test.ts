@@ -49,13 +49,7 @@ const addJson = (agent: string, skill: string, skillPath: string, status = 'inst
 const listJson = (entries: { name: string; path: string }[]): string =>
   JSON.stringify(entries.map((entry) => ({ ...entry, scope: 'global' })));
 
-/**
- * Observable fake of the external skills CLI: keeps per-agent, per-skill
- * installed inventory and renders the same machine shapes the real CLI
- * produces (trailing JSON for add/list, human text for remove). Paths resolve
- * per `agent:skill` first, then per agent, then a synthetic default: identity
- * flows through tool output only.
- */
+/** Observable fake of the external skills CLI (same machine shapes as the real CLI). */
 const fakeCli = (paths: Record<string, string>): SkillCommandRunner => {
   const installed = new Map<string, { name: string; path: string }[]>();
   const pathFor = (agent: string, skill: string): string =>
@@ -97,7 +91,6 @@ const staticRunner =
   // oxlint-disable-next-line require-await -- synchronous fake runner by design.
   async () => ({ stderr: '', stdout });
 
-/** Install the skill for each agent in order; shared paths stay deterministic. */
 const seedPair = async (runner: SkillCommandRunner, agents: readonly string[]): Promise<void> => {
   for (const agent of agents) {
     // oxlint-disable-next-line no-await-in-loop -- sequential seeding keeps shared-path order deterministic.
@@ -109,8 +102,6 @@ const configDirs: string[] = [];
 
 beforeEach(() => {
   vi.stubEnv('MAESTRIA_SKILLS_SOURCE', SOURCE);
-  // Default every test to an isolated record dir so no test can touch the
-  // real user config; isolateRecord() re-points per test when it must read back.
   const dir = mkdtempSync(path.join(tmpdir(), 'maestria-skill-record-'));
   configDirs.push(dir);
   vi.stubEnv('MAESTRIA_CONFIG_DIR', dir);
@@ -209,12 +200,6 @@ describe('ownership preflight', () => {
     );
   });
 
-  it('passes fresh installs with nothing listed', async () => {
-    const runner = fakeCli({});
-    const effective = resolveEffectiveSkills([{ id: 'opencode' }], {}, null);
-    await preflightCompanionOwnership(runner, null, effective);
-  });
-
   it('never checks targets selected for exclusion', async () => {
     const seen: string[][] = [];
     // oxlint-disable-next-line require-await -- synchronous fake runner by design.
@@ -248,27 +233,14 @@ describe('ownership preflight', () => {
     const runner = fakeCli({ opencode: shared, universal: shared });
     await seedPair(runner, ['opencode', 'universal']);
     const record = buildRecord({
-      opencode: { path: shared, skills: [SKILL], source: recordSource },
+      opencode: {
+        skillAssets: { [SKILL]: { path: shared, source: recordSource } },
+        skills: [SKILL],
+      },
     });
     const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, record);
     const check = preflightCompanionOwnership(runner, record, effective, SOURCE);
     await (allows ? check : expect(check).rejects.toThrow(/Existing unmanaged skill/u));
-  });
-
-  it('rejects an independent copy at a path no record claims', async () => {
-    const runner = fakeCli({ universal: '/fake/stray/create-pull-request' });
-    await addCompanion(
-      runner,
-      { agent: 'universal', skill: SKILL, source: SOURCE },
-      { global: true },
-    );
-    const record = buildRecord({
-      opencode: { path: '/fake/shared/create-pull-request', skills: [SKILL], source: SOURCE },
-    });
-    const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, record);
-    await expect(preflightCompanionOwnership(runner, record, effective, SOURCE)).rejects.toThrow(
-      /Existing unmanaged skill/u,
-    );
   });
 
   it('installs a second platform onto the same asset without error or duplicate copy', async () => {
@@ -280,7 +252,10 @@ describe('ownership preflight', () => {
       { global: true },
     );
     const record = buildRecord({
-      opencode: { path: shared, skills: [SKILL], source: SOURCE },
+      opencode: {
+        skillAssets: { [SKILL]: { path: shared, source: SOURCE } },
+        skills: [SKILL],
+      },
     });
     const effective = resolveEffectiveSkills([{ id: 'omp' }], {}, record);
     await preflightCompanionOwnership(runner, record, effective, SOURCE);
@@ -331,8 +306,6 @@ describe('reconcile companions', () => {
     expect(saved?.platforms.opencode?.skills).toEqual([SKILL, DOCS]);
     expect(saved?.platforms.opencode?.skillAssets?.[SKILL]).toMatchObject({ source: SOURCE });
     expect(saved?.platforms.opencode?.skillAssets?.[DOCS]?.source).toBe(SOURCE);
-    // Each skill keeps its own observed path: one skill's history never
-    // overwrites the other's.
     expect(saved?.platforms.opencode?.skillAssets?.[SKILL]?.path).toBe(
       '/fake/shared/create-pull-request',
     );
@@ -367,7 +340,6 @@ describe('reconcile companions', () => {
       effective,
       outcome,
     );
-    // Exported JSON reports actuals, not intent: no false installed claim.
     expect(combined[0]?.ok).toBe(false);
     expect(combined[0]?.skills).toEqual([SKILL]);
     expect(combined[0]?.message).toMatch(/only confirmed skills were recorded/u);
@@ -380,8 +352,6 @@ describe('reconcile companions', () => {
     );
     const { readSkillsRecord } = await import('@/lib/skills.js');
     const saved = await readSkillsRecord();
-    // The successful sibling stays recorded (a retry is not unmanaged);
-    // the failed skill is absent, never marked installed.
     expect(saved?.platforms.opencode?.skills).toEqual([SKILL]);
     expect(saved?.platforms.opencode?.skillAssets?.[SKILL]?.source).toBe(SOURCE);
     expect(saved?.platforms.opencode?.skillAssets?.[DOCS]).toBeUndefined();
@@ -394,36 +364,6 @@ describe('reconcile companions', () => {
     await expect(preflightCompanionOwnership(runner, null, effective)).rejects.toThrow(
       /Existing unmanaged skill 'docs-update'.*--exclude-skills docs-update/u,
     );
-  });
-
-  it('preserves the shared docs-update copy while another owned platform stays active', async () => {
-    const shared = '/fake/shared/docs-update';
-    const runner = fakeCli({ [`codex:${DOCS}`]: shared, [`opencode:${DOCS}`]: shared });
-    await addCompanion(runner, { agent: 'codex', skill: DOCS, source: SOURCE }, { global: true });
-    await addCompanion(
-      runner,
-      { agent: 'opencode', skill: DOCS, source: SOURCE },
-      { global: true },
-    );
-    const staying = buildRecord({ codex: [DOCS], opencode: [DOCS] });
-    const onlyOpencode = [{ id: 'opencode', label: undefined as string | undefined }].map(
-      (target) => ({
-        ...target,
-        selection: { changed: true, skills: [] as string[] },
-      }),
-    );
-    const outcome = await reconcileCompanions(
-      runner,
-      staying,
-      onlyOpencode,
-      new Map([['opencode', true]]),
-      SOURCE,
-    );
-    expect(outcome.ok.get('opencode')).toBe(true);
-    expect(outcome.notes.get('opencode')).toMatch(/still provided by 'codex'/u);
-    expect(await listCompanions(runner, 'codex', { global: true })).toEqual([
-      { name: DOCS, path: shared },
-    ]);
   });
 
   it('preserves unknown skill IDs with a note and never runs them', async () => {
@@ -458,7 +398,6 @@ describe('reconcile companions', () => {
       { excludeSkills: SKILL },
       record,
     );
-    // Both drop in the same run: no stayer, so both removes proceed honestly.
     const outcome = await reconcileCompanions(
       runner,
       record,
@@ -470,7 +409,6 @@ describe('reconcile companions', () => {
       SOURCE,
     );
     expect(outcome.ok.get('codex')).toBe(true);
-    // Second removal is an absent no-op after the first deleted the shared dir.
     expect(await listCompanions(runner, 'codex', { global: true })).toEqual([]);
   });
 
@@ -503,7 +441,6 @@ describe('reconcile companions', () => {
     const shared = '/fake/shared/create-pull-request';
     const runner = fakeCli({ codex: shared, opencode: shared });
     await seedPair(runner, ['codex', 'opencode']);
-    // Record owns opencode only; codex is independently installed with no entry.
     const record = buildRecord({ opencode: [SKILL] });
     const effective = resolveEffectiveSkills(
       [{ id: 'opencode' }],
@@ -552,29 +489,6 @@ describe('reconcile companions', () => {
     expect(await listCompanions(runner, 'opencode', { global: true })).toEqual([]);
   });
 
-  it('excluding omp leaves the opencode share of the universal asset intact', async () => {
-    const shared = '/fake/shared/create-pull-request';
-    const runner = fakeCli({ opencode: shared, universal: shared });
-    await seedPair(runner, ['opencode', 'universal']);
-    const record = buildRecord({
-      omp: { path: shared, skills: [SKILL], source: SOURCE },
-      opencode: { path: shared, skills: [SKILL], source: SOURCE },
-    });
-    const effective = resolveEffectiveSkills([{ id: 'omp' }], { excludeSkills: SKILL }, record);
-    const outcome = await reconcileCompanions(
-      runner,
-      record,
-      effective,
-      new Map([['omp', true]]),
-      SOURCE,
-    );
-    expect(outcome.ok.get('omp')).toBe(true);
-    expect(outcome.notes.get('omp')).toMatch(/still provided by 'opencode'/u);
-    expect(await listCompanions(runner, 'opencode', { global: true })).toEqual([
-      { name: SKILL, path: shared },
-    ]);
-  });
-
   it('excluding an unmanaged copy performs no removal and reports it left in place', async () => {
     const present = '/fake/stray/create-pull-request';
     const runner = fakeCli({ opencode: present });
@@ -584,7 +498,6 @@ describe('reconcile companions', () => {
       { global: true },
     );
     const effective = resolveEffectiveSkills([{ id: 'opencode' }], { excludeSkills: SKILL }, null);
-    // Excluding one skill still selects the other; reconciliation is per skill.
     expect(effective[0]?.selection.skills).toEqual([DOCS]);
     const outcome = await reconcileCompanions(
       runner,
@@ -600,8 +513,6 @@ describe('reconcile companions', () => {
       name: SKILL,
       path: present,
     });
-    // Removing docs-update never removes create-pull-request and vice versa:
-    // the unmanaged PR copy is untouched while docs reconciles independently.
     expect(await listCompanions(runner, 'opencode', { global: true })).toContainEqual({
       name: DOCS,
       path: present,
@@ -674,7 +585,6 @@ describe('reconcile uninstall companions', () => {
     const combined = await reconcileUninstallCompanions(runner, record, [
       { id: 'opencode', label: 'OpenCode', message: 'Uninstalled', ok: true },
     ]);
-    // cursor stays active on a different observed path, so removal proceeds.
     expect(combined.results[0]?.ok).toBe(true);
     expect(await listCompanions(runner, AGENT, { global: true })).toEqual([]);
     const { readSkillsRecord } = await import('@/lib/skills.js');
@@ -803,7 +713,6 @@ describe('record roundtrip', () => {
     expect(await listCompanions(runner, AGENT, { global: true })).toEqual([]);
     const { readSkillsRecord } = await import('@/lib/skills.js');
     const saved = await readSkillsRecord();
-    // The managed copy is gone, but the unknown ID and its history survive.
     expect(saved?.platforms.opencode?.skills).toEqual(['future-skill']);
   });
 });

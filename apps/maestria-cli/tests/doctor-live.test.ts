@@ -3,12 +3,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
-/**
- * Live list-only verification for doctor in an isolated sandbox (temp
- * HOME/XDG/npm-cache plus temp MAESTRIA_CONFIG_DIR). Doctor itself only
- * runs `list --json` here; no installs, updates, or record writes. Runs only
- * with `MAESTRIA_REAL_SKILLS_CLI=1` so the default suite stays hermetic.
- */
+/** Live list-only verification for doctor in an isolated sandbox. */
 const live = process.env.MAESTRIA_REAL_SKILLS_CLI === '1';
 const maybe = live ? describe : describe.skip;
 

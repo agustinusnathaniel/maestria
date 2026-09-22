@@ -5,63 +5,32 @@ import { CliError } from '@/lib/command-result.js';
 import { isRecord, parseJsonValue } from '@/lib/primitives.js';
 
 /**
- * Companion skill installation through the external `skills` CLI.
+ * Companion skill installation through the external `skills` CLI (pinned
+ * `1.7.0`). The CLI never copies skill bodies and keeps no path registry:
+ * path identity always comes from the tool's own machine output.
  *
- * Maestria-owned methodology skills live once at the repository root
- * (`skills/<skill>/SKILL.md`). The CLI never copies skill bodies, never
- * symlinks them, and never keeps its own path registry: it installs or
- * removes companions through the official skills CLI (pinned `1.7.0` from
- * `https://github.com/vercel-labs/skills.git`), scoped to one known managed
- * skill, source, and native target per operation. Path identity always comes
- * from the tool's own machine output (`add --json`, `list --json`); this
- * module hardcodes no target directories.
- *
- * Verified behavior (isolated HOME/XDG/npm-cache, skills@1.7.0; see
- * `/tmp/opencode/skills-cli-sandbox-evidence.md`):
- * - `add <source> -a <agent> -s <skill> -g --json -y` installs globally and
- *   prints a trailing JSON array with `{name, status, source, path, ...}`;
- *   re-adding is idempotent (`status: "installed"` again). Exit code 0 is
- *   unreliable: invalid agents also exit 0 with an `Invalid agents:` marker.
- * - `list -a <agent> -g --json` prints a JSON array with `{name, path,
- *   scope, ...}`; `source` is always null and `agents` is unreliable, so
- *   ownership comes from our own record plus observed name/path, never from
- *   those fields. `add --list` rejects `--json`; never combine them.
- * - `remove <skill> -a <agent> -g -y` prints human text only (no JSON even
- *   with `--json`); exit 0 means the command ran, not that anything was
- *   removed. Absent skills exit 0 with `No skills found to remove.`
- *   Removal is confirmed by re-listing, never by parsing prose.
- * - Scoped removal of a shared canonical path (`~/.agents/skills/<skill>`,
- *   used by opencode/codex/cursor/kimi-code-cli and by omp/prime-agent via
- *   the `universal` target) deletes the directory even while another agent
- *   still references it, so callers must guard removal while another owned
- *   platform shares the observed path.
- * - Default remote source `agustinusnathaniel/maestria` resolves only after
- *   this feature merges; until then pass a local root checkout as the
- *   source. Never claim the remote skill exists before release ordering
- *   completes.
+ * Tool quirks (verified against skills@1.7.0): exit code 0 is unreliable
+ * (invalid agents exit 0 with an `Invalid agents:` marker); `list --json`
+ * always reports `source: null` with unreliable `agents`, so ownership comes
+ * from our own record plus observed name/path; `remove` supports no `--json`
+ * and exit 0 means the command ran, not that anything was removed (confirm by
+ * re-listing); scoped removal of a shared canonical path
+ * (`~/.agents/skills/<skill>`) deletes the directory even while another agent
+ * still references it, so callers guard removal while another owned platform
+ * shares the observed path.
  */
 
 export const SKILLS_CLI_VERSION = '1.7.0';
 export const SKILLS_CLI_PACKAGE = `skills@${SKILLS_CLI_VERSION}`;
-/** Default remote source; unavailable until this feature merges to main. */
 export const SKILLS_SOURCE = 'agustinusnathaniel/maestria';
 export const COMPANION_SKILL = 'create-pull-request';
-/** Second managed methodology skill: documentation-impact assessment. */
 export const DOCS_UPDATE_SKILL = 'docs-update';
-/** Every skill this CLI version knows how to install, update, or remove. */
 export const MANAGED_SKILLS: readonly string[] = [COMPANION_SKILL, DOCS_UPDATE_SKILL];
 
 /**
  * Maestria platform ID to native skills-CLI agent ID. `null` means no
- * companion target exists and is reserved for unknown IDs (verified against
- * skills@1.7.0's valid-agent list, which carries neither `omp` nor
- * `prime-agent`). Both are aliased to `universal` because their hosts
- * natively discover `~/.agents/skills/` SKILL.md directories with no config
- * writes: Prime per E-PRIME-04, and OMP per the pinned pi-coding-agent 17.4
- * source (`src/discovery/agents.ts`: `AGENT_DIR_CANDIDATES` covers `.agent`
- * and `.agents`, `loadSkills` scans `~/.agent/skills` and `~/.agents/skills`
- * with `enableAgentsUser` defaulting to true, and `scanSkillsFromDir` loads
- * `<name>/SKILL.md` subdirectories, the exact shape the CLI installs).
+ * companion target exists. omp and prime-agent alias to `universal`: their
+ * hosts natively discover `~/.agents/skills/` SKILL.md directories.
  */
 const COMPANION_AGENTS: Record<string, string | null> = {
   'claude-code': 'claude-code',
@@ -78,7 +47,6 @@ const COMPANION_AGENTS: Record<string, string | null> = {
 export const companionAgentFor = (platformId: string): string | null =>
   COMPANION_AGENTS[platformId] ?? null;
 
-/** Distinct native agent IDs the adapter can observe with list --json. */
 export const KNOWN_COMPANION_AGENTS: readonly string[] = [
   ...new Set(Object.values(COMPANION_AGENTS).filter((agent): agent is string => agent !== null)),
 ];
@@ -91,7 +59,6 @@ export interface SkillCommandResult {
   readonly stderr: string;
 }
 
-/** Injected command runner so tests never touch the real HOME or network. */
 export type SkillCommandRunner = (
   args: readonly string[],
   options?: { cwd?: string },
@@ -100,7 +67,6 @@ export type SkillCommandRunner = (
 const MAX_ERROR_DETAIL = 1000;
 
 const stripAnsi = (value: string): string =>
-  // Single regex: CSI sequences plus the residual cursor hide/show markers.
   // oxlint-disable-next-line no-control-regex -- intentional ANSI/spinner stripping for child output.
   value.replaceAll(/\u001B\[[0-9;?]*[A-Za-z]|\u001B\?25[hl]/gu, '');
 
@@ -122,7 +88,6 @@ const extractJsonArray = (stdout: string): unknown => {
   return Array.isArray(parsed) ? parsed : undefined;
 };
 
-/** Exit 0 is unreliable: invalid agents exit 0 with an `Invalid agents:` marker. */
 const assertKnownAgent = (stdout: string, args: readonly string[]): void => {
   if (stripAnsi(stdout).includes('Invalid agents:')) {
     throw new CliError(
@@ -141,21 +106,6 @@ interface CompanionEntry {
 const asEntry = (value: unknown): CompanionEntry | null =>
   isRecord(value) ? { name: value.name, path: value.path, status: value.status } : null;
 
-const entryConfirmsInstall = (entry: CompanionEntry, skill: string): boolean =>
-  entry.name === skill && entry.status === 'installed';
-
-/** Child failure fields, when the runtime attaches them to the rejection. */
-const failureOutput = (error: unknown): string => {
-  const stderr = isRecord(error) && typeof error.stderr === 'string' ? error.stderr : '';
-  const stdout = isRecord(error) && typeof error.stdout === 'string' ? error.stdout : '';
-  const detail = stderr === '' ? stdout : stderr;
-  if (detail !== '') {
-    return detail;
-  }
-  return error instanceof Error ? error.message : 'skills CLI failed with no output';
-};
-
-/** Default runner: pinned skills CLI over npx, child stdio piped (no spinner leak). */
 export const runSkillsCli = async (
   args: readonly string[],
   options?: { cwd?: string },
@@ -179,10 +129,12 @@ export const runSkillsCli = async (
       }),
     );
   } catch (error) {
-    throw new CliError(
-      `skills CLI failed (${command}): ${sanitizeDetail(failureOutput(error))}`,
-      1,
-    );
+    const stderr = isRecord(error) && typeof error.stderr === 'string' ? error.stderr : '';
+    const stdout = isRecord(error) && typeof error.stdout === 'string' ? error.stdout : '';
+    const detail =
+      (stderr === '' ? stdout : stderr) ||
+      (error instanceof Error ? error.message : 'skills CLI failed with no output');
+    throw new CliError(`skills CLI failed (${command}): ${sanitizeDetail(detail)}`, 1);
   }
 };
 
@@ -199,7 +151,6 @@ export interface CompanionRef {
 }
 
 export interface InstalledCompanion {
-  /** Native path observed in the tool's own `add --json` output. */
   readonly path: string;
 }
 
@@ -216,7 +167,9 @@ export const addCompanion = async (
   assertKnownAgent(output.stdout, args);
   const parsed = extractJsonArray(output.stdout);
   const match = Array.isArray(parsed)
-    ? parsed.map(asEntry).find((entry) => entry !== null && entryConfirmsInstall(entry, skill))
+    ? parsed
+        .map(asEntry)
+        .find((entry) => entry !== null && entry.name === skill && entry.status === 'installed')
     : undefined;
   if (match?.path !== undefined && typeof match.path === 'string') {
     return { path: match.path };
@@ -233,10 +186,8 @@ export interface ObservedCompanion {
 }
 
 /**
- * List installed skills for one native target (ownership checks before
- * writes). Returns tool-observed name/path inventory only; the CLI reports
- * no reliable source or per-agent attribution, so callers combine this with
- * their own ownership record.
+ * List installed skills for one native target. Returns tool-observed
+ * name/path inventory only; callers combine this with their own record.
  */
 export const listCompanions = async (
   runner: SkillCommandRunner,
@@ -267,12 +218,9 @@ export const listCompanions = async (
 };
 
 /**
- * Remove one managed skill from one native target. `remove` supports no
- * `--json` (verified: the flag is ignored and output stays human-readable),
- * so success is the validated exit plus a post-`list` observational check,
- * never prose parsing. An absent skill is a successful no-op. Callers must
- * guard shared canonical paths before invoking: scoped removal deletes the
- * shared directory even while another agent still references it.
+ * Remove one managed skill from one native target. Success is the validated
+ * exit plus a post-`list` check, never prose parsing; an absent skill is a
+ * successful no-op. Callers guard shared canonical paths before invoking.
  */
 export const removeCompanion = async (
   runner: SkillCommandRunner,

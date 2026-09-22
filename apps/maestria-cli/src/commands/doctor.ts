@@ -6,7 +6,7 @@ import { toCommandRun } from '@/lib/command-runner.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { collectDoctorReports, redactHome } from '@/lib/doctor.js';
-import type { DoctorOutput, DoctorPlatformReport } from '@/lib/doctor.js';
+import type { DoctorOutput } from '@/lib/doctor.js';
 import { createSpinner } from '@/lib/output.js';
 import { defaultSkillRunner } from '@/lib/skill-reconcile.js';
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
@@ -18,47 +18,10 @@ export interface DoctorArgs {
   quiet?: boolean;
 }
 
-/** Test seam: production uses live detection plus the real skills CLI runner. */
 export interface DoctorDeps {
   detect?: () => Promise<PlatformStatus[]>;
   runner?: SkillCommandRunner;
 }
-
-const formatRecorded = (recorded: readonly string[] | null): string => {
-  if (recorded === null) {
-    return 'none recorded';
-  }
-  if (recorded.length === 0) {
-    return 'none';
-  }
-  return recorded.join(', ');
-};
-
-const formatPlugin = (p: DoctorPlatformReport): string => {
-  if (!p.available) {
-    return 'CLI not available';
-  }
-  if (!p.installed) {
-    return 'not installed';
-  }
-  if (p.installedVersion === '') {
-    return 'installed';
-  }
-  return `installed ${p.installedVersion}`;
-};
-
-const formatObserved = (p: DoctorPlatformReport): string => {
-  if (p.agent === null) {
-    return 'no skills-CLI target';
-  }
-  if (p.listError !== undefined) {
-    return 'check failed';
-  }
-  if (p.observed.length === 0) {
-    return `none (${p.agent})`;
-  }
-  return p.observed.map((e) => `${e.name} @ ${e.path}`).join(', ');
-};
 
 const renderDoctorTable = (output: DoctorOutput): string => {
   const lines: string[] = [
@@ -67,11 +30,39 @@ const renderDoctorTable = (output: DoctorOutput): string => {
     `  Record: ${output.recordPresent ? output.recordPath : `${output.recordPath} (absent)`}`,
   ];
   for (const p of output.platforms) {
+    let plugin: string;
+    if (!p.available) {
+      plugin = 'CLI not available';
+    } else if (!p.installed) {
+      plugin = 'not installed';
+    } else if (p.installedVersion === '') {
+      plugin = 'installed';
+    } else {
+      plugin = `installed ${p.installedVersion}`;
+    }
+    let recorded: string;
+    if (p.recorded === null) {
+      recorded = 'none recorded';
+    } else if (p.recorded.length === 0) {
+      recorded = 'none';
+    } else {
+      recorded = p.recorded.join(', ');
+    }
+    let observed: string;
+    if (p.agent === null) {
+      observed = 'no skills-CLI target';
+    } else if (p.listError !== undefined) {
+      observed = 'check failed';
+    } else if (p.observed.length === 0) {
+      observed = `none (${p.agent})`;
+    } else {
+      observed = p.observed.map((e) => `${e.name} @ ${e.path}`).join(', ');
+    }
     lines.push(
       `  ${picocolors.bold(p.label)} (${p.id})`,
-      `    Plugin:    ${formatPlugin(p)}`,
-      `    Recorded:  ${formatRecorded(p.recorded)}`,
-      `    Observed:  ${formatObserved(p)}`,
+      `    Plugin:    ${plugin}`,
+      `    Recorded:  ${recorded}`,
+      `    Observed:  ${observed}`,
     );
     for (const note of p.notes) {
       lines.push(`    Note:      ${note}`);

@@ -30,7 +30,6 @@ const status = (id: string, overrides: Partial<PlatformStatus> = {}): PlatformSt
 const listJson = (entries: { name: string; path: string }[]): string =>
   JSON.stringify(entries.map((entry) => ({ ...entry, scope: 'global' })));
 
-/** Fake transport: static per-agent inventory, read-only like the real list path. */
 const fakeLists =
   (inventory: Record<string, { name: string; path: string }[]>): SkillCommandRunner =>
   // oxlint-disable-next-line require-await -- synchronous fake runner by design.
@@ -118,7 +117,10 @@ describe('doctor reports', () => {
       inventory: { opencode: [{ name: COMPANION_SKILL, path: HEALTHY_PATH }] },
       name: 'healthy platform with recorded skills fully observed',
       record: buildRecord({
-        opencode: { path: HEALTHY_PATH, skills: [COMPANION_SKILL], source: SOURCE },
+        opencode: {
+          skillAssets: { [COMPANION_SKILL]: { path: HEALTHY_PATH, source: SOURCE } },
+          skills: [COMPANION_SKILL],
+        },
       }),
       recordPresent: true,
       statuses: [status('opencode', { label: 'OpenCode' })],
@@ -148,7 +150,10 @@ describe('doctor reports', () => {
       name: 'shared canonical paths instead of warning when another platform provides the copy',
       record: buildRecord({
         omp: [],
-        opencode: { path: SHARED_PATH, skills: [COMPANION_SKILL], source: SOURCE },
+        opencode: {
+          skillAssets: { [COMPANION_SKILL]: { path: SHARED_PATH, source: SOURCE } },
+          skills: [COMPANION_SKILL],
+        },
       }),
       recordPresent: true,
       statuses: [status('opencode', { label: 'OpenCode' }), status('omp', { label: 'Oh My Pi' })],
@@ -211,6 +216,42 @@ describe('doctor reports', () => {
       ),
     ).rejects.toThrow(CliError);
     expect(seen).toEqual([]);
+  });
+
+  it('lists only the true sharer when two other platforms do not share', async () => {
+    const record = buildRecord({
+      'claude-code': {
+        skillAssets: {
+          [COMPANION_SKILL]: { path: '/fake/other/skills/create-pull-request', source: SOURCE },
+        },
+        skills: [COMPANION_SKILL],
+      },
+      codex: {
+        skillAssets: { [COMPANION_SKILL]: { path: SHARED_PATH, source: 'other-source' } },
+        skills: [COMPANION_SKILL],
+      },
+      cursor: [],
+      opencode: {
+        skillAssets: { [COMPANION_SKILL]: { path: SHARED_PATH, source: SOURCE } },
+        skills: [COMPANION_SKILL],
+      },
+    });
+    const reports = await collectDoctorReports(
+      fakeLists({
+        'claude-code': [],
+        codex: [],
+        cursor: [{ name: COMPANION_SKILL, path: SHARED_PATH }],
+        opencode: [],
+      }),
+      [status('cursor'), status('opencode'), status('codex'), status('claude-code')],
+      record,
+      SOURCE,
+    );
+    const cursorReport = reports.find((report) => report.id === 'cursor');
+    expect(cursorReport?.unmanaged).toEqual([COMPANION_SKILL]);
+    expect(cursorReport?.shared).toEqual([
+      { path: SHARED_PATH, providers: ['opencode'], skill: COMPANION_SKILL },
+    ]);
   });
 
   it('redacts the home directory from observed paths', async () => {

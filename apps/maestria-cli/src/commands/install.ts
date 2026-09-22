@@ -3,7 +3,6 @@ import { defineCommand } from 'citty';
 
 import {
   assertInteractiveTerminal,
-  detectInstallable,
   detectWithSpinner,
   resolveBatchQuiet,
 } from '@/lib/batch-command.js';
@@ -37,7 +36,10 @@ const collectInstallTargets = async (
     return platformIds.map((id) => ({ id }));
   }
   if (all) {
-    const toInstall = await detectInstallable(isQuiet);
+    const detected = await detectWithSpinner(isQuiet, detectAll());
+    const toInstall = detected
+      .filter((s) => s.available && !s.installed)
+      .map((p) => ({ id: p.id, label: p.label }));
     if (toInstall.length === 0) {
       return {
         exitCode: 0,
