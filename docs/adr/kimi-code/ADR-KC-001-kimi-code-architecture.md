@@ -114,7 +114,7 @@ The orchestrator skill embeds this routing table, which the model uses to pick t
 | Feature | OpenCode Plugin (`@maestria/opencode`) | Kimi Code Plugin (`@maestria/kimi-code`) |
 | --- | --- | --- |
 | **Swarm fan-out** | Not used (sequential `task()`) | First-class `AgentSwarm` + `SwarmMode` |
-| **Lifecycle hooks** | Plugin SDK hooks | `[[hooks]]` in `config.toml` (user-managed, suggested in INSTALL.md) |
+| **Lifecycle hooks** | Plugin SDK hooks | `[[hooks]]` in `config.toml` (user-managed, suggested in the [installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/)) |
 | **Compaction** | `session.compacting` plugin hook | `experimental.micro_compaction` plus `/compact`; `PreCompact`/`PostCompact` observe only |
 | **Package management** | npm (versioned, published) | GitHub URL; latest by default, pin via ref/tag/sha |
 | **Skill overrides** | Not supported | Built-in - users can edit SKILL.md files |
@@ -122,47 +122,18 @@ The orchestrator skill embeds this routing table, which the model uses to pick t
 
 ### What Carries Over from OpenCode
 
-- `!!!` critical rule markers and "Related Agents" cross-references in every SKILL.md
-- The skill pattern, adapted: skills ship bundled, so "Check → Use → Suggest" becomes "load and use"
-- Conventional Comments for review
-- Markdown as source of truth and self-contained agent files - each SKILL.md is the plugin
+`!!!` critical rule markers and "Related Agents" cross-references in every SKILL.md; the skill pattern adapted to bundled skills ("load and use"); Conventional Comments for review; markdown as source of truth with each SKILL.md self-contained.
 
 ### What We Lose vs. OpenCode
 
-- **No custom subagent identity** - subagent types are hardcoded to `coder`/`explore`/`plan`; the 7 specialists are persona content, without distinct names, colors, or modes.
-- **No plugin-injected global rules** - `rules/AGENTS.md` ships in the plugin but must be placed at `~/.kimi-code/AGENTS.md` (`$KIMI_CODE_HOME/AGENTS.md`); the platform auto-loads scan directories, the plugin cannot place the file.
+- **No custom subagent identity** - 7 specialists run under 3 built-in names, differentiated only by persona content.
+- **No plugin-injected global rules** - `rules/AGENTS.md` ships in the plugin but the user places it at `~/.kimi-code/AGENTS.md` (`$KIMI_CODE_HOME/AGENTS.md`); the platform auto-loads scan directories, the plugin cannot place the file.
 - **No programmatic per-subagent permissions** - users add `[[permission.rules]]` to `config.toml`; `scope` gives temporal granularity but not per-subagent granularity.
-- **No `system.transform` equivalent** - the surfaces are `sessionStart.skill` (one text injection at startup), `skillInstructions` (a static string), and a user-managed `UserPromptSubmit` hook documented in the installation guide as an approximation.
-- **No compaction injection** - compaction runs automatically and `/compact` triggers a manual run, but the observation-only `PreCompact`/`PostCompact` hooks cannot inject content into summaries.
-- **Hooks are user-managed, not plugin-bundled** - `[[hooks]]` blocks live in the user's `config.toml`, not the manifest; the plugin documents them in the installation guide, but the user must copy them in.
+- **No `system.transform` equivalent** - the surfaces are `sessionStart.skill`, `skillInstructions`, and a user-managed `UserPromptSubmit` hook documented in the installation guide as an approximation.
+- **No compaction injection** - `PreCompact`/`PostCompact` observe only; compaction summaries are plugin-inaccessible.
+- **Hooks are user-managed, not plugin-bundled** - `[[hooks]]` blocks live in the user's `config.toml`; the plugin documents them in the [installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/) (including the `PreToolUse` Bash guard, `UserPromptSubmit` reminder, and `PreCompact`/`PostCompact` logging), but the user copies them in.
 
-## Proposed Package Structure
-
-Only declarative files: `kimi.plugin.json` (manifest with the skills directory and `sessionStart.skill`), `skills/` (orchestrator plus one directory per specialist), `rules/AGENTS.md`, and `README.md` / `INSTALL.md`.
-
-### Manifest Shape
-
-The manifest name must match `^[a-z0-9][a-z0-9_-]{0,63}$` ("maestria" passes). Unknown fields are dropped with a diagnostic, and the unsupported fields listed above are explicitly rejected. The manifest declares the skills path, `sessionStart.skill`, and `skillInstructions`.
-
-### SKILL.md Frontmatter Pattern
-
-Each skill uses the directory form (`skills/<name>/SKILL.md`); `name` and `description` are required (the flat form inherits the filename and first body line). Optional fields: `type` (default `prompt`; `flow` is manual-invocation only), `whenToUse`, `disableModelInvocation`, `safe`, `arguments`, `hasSubSkill`. Bodies reference arguments as `$ARGUMENTS`, `$0`, `$1`, or `$<name>`.
-
-Sub-skill nesting caps at **3 levels**: the orchestrator (level 1) can dispatch persona skills (level 2), which can dispatch one more layer. A future orchestrator-of-orchestrators pattern would need a different solution.
-
-### Lifecycle Hooks (Recommended Setup)
-
-`[[hooks]]` and `[[permission.rules]]` blocks live in the user's `config.toml`, not the plugin manifest; the [installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/) documents the optional session controls you can add there:
-
-- `PreToolUse` on `Bash` - block destructive commands (Kimi's upstream hooks documentation gives an example that exits 2 to block)
-- `UserPromptSubmit` - append a session reminder to every user message; the closest approximation of system-prompt injection
-- `PreCompact` / `PostCompact` - observation-only logging of compaction cycles
-
-`PreToolUse`, `UserPromptSubmit`, and `Stop` are blockable (return values affect the main flow); other events fire and forget. Subagent start/stop hooks are observation-only and suit telemetry.
-
-### Global Rules (rules/AGENTS.md)
-
-The user places the file at `~/.kimi-code/AGENTS.md` (`$KIMI_CODE_HOME/AGENTS.md`); Kimi Code auto-loads it from scan directories at session start and injects it alongside project-level AGENTS.md files. It carries ADR-CORE-001's cross-cutting rules; platform-specific rules (e.g., OpenCode orchestration patterns) are excluded. AGENTS.md loading is automatic but not plugin-managed, so the plugin bundles the file while the user must place it.
+> **Note (2026-09-22).** The shipped orchestrator skill reports the `Skill` tool as available to the `plan` and `coder` profiles (pre-load persona content only for `explore`), which relaxes the "subagents cannot use the Skill tool" risk recorded under Risks below. Sub-skill nesting still caps at 3 levels. The skill is the operational source; the risk entry below is retained as the original constraint record.
 
 ## Consequences
 

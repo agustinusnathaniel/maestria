@@ -28,7 +28,7 @@ See [INSTALL.md](https://github.com/agustinusnathaniel/maestria/blob/main/packag
 ## Support / Platform Notes
 
 - Kimi Code 0.38.0+ supports plugin system-prompt contributions and custom agents; this package uses the native system-prompt path and keeps specialist identities in skills and prompt templates for compatibility.
-- Persona text is advisory; tool-layer enforcement comes from the user-applied `[[hooks]]`/`[[permission.rules]]` blocks documented in `INSTALL.md`.
+- Persona text is advisory; tool-layer enforcement comes from the user-applied `[[hooks]]`/`[[permission.rules]]` blocks described in the [installation guide](https://maestria.sznm.dev/kimi-code/getting-started/installation/).
 
 ## Documentation and Changelog
 
