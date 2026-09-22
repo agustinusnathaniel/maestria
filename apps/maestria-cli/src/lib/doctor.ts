@@ -3,6 +3,7 @@ import { homedir } from 'node:os';
 import { companionAgentFor, listCompanions, MANAGED_SKILLS } from '@/lib/skill-companion.js';
 import type { ObservedCompanion, SkillCommandRunner } from '@/lib/skill-companion.js';
 import { resolveSkillsSource } from '@/lib/skill-reconcile.js';
+import { findSharedProviders } from '@/lib/skills.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 
@@ -92,23 +93,7 @@ const buildDoctorReport = (
   );
   for (const skill of unmanaged) {
     const observedPath = observedByName.get(skill) ?? '';
-    const providers =
-      record === null
-        ? []
-        : Object.keys(record.platforms).filter((otherId) => {
-            if (otherId === status.id) {
-              return false;
-            }
-            const entry = record.platforms[otherId];
-            if (entry === undefined) {
-              return false;
-            }
-            return (
-              entry.skills.includes(skill) &&
-              entry.skillAssets?.[skill]?.source === source &&
-              entry.skillAssets?.[skill]?.path === observedPath
-            );
-          });
+    const providers = findSharedProviders(record, status.id, skill, observedPath, source);
     if (providers.length > 0) {
       notes.push(
         `Skill '${skill}' at ${redactHome(observedPath)} is already provided by ${providers.map((p) => `'${p}'`).join(', ')} from the same source.`,
@@ -124,8 +109,7 @@ const buildDoctorReport = (
       );
     }
   }
-  const observedNames = new Set(observed.map((entry) => entry.name));
-  const missing = recordedManaged.filter((skill) => !observedNames.has(skill));
+  const missing = recordedManaged.filter((skill) => !observedByName.has(skill));
 
   for (const skill of missing) {
     notes.push(`Recorded skill '${skill}' is not observed for agent '${agentName}'.`);
@@ -172,12 +156,7 @@ export const collectDoctorReports = async (
   record: SkillsRecord | null,
   source: string = resolveSkillsSource(),
 ): Promise<DoctorPlatformReport[]> => {
-  const ids = statuses.map((s) => s.id);
-  for (const id of Object.keys(record?.platforms ?? {})) {
-    if (!ids.includes(id)) {
-      ids.push(id);
-    }
-  }
+  const ids = [...new Set([...statuses.map((s) => s.id), ...Object.keys(record?.platforms ?? {})])];
   const byId = new Map(statuses.map((s) => [s.id, s]));
   const statusFor = (id: string): PlatformStatus =>
     byId.get(id) ?? {
@@ -189,16 +168,16 @@ export const collectDoctorReports = async (
       latestVersion: '',
     };
 
-  const agents = new Map<string, string | null>();
+  const agents = new Set<string>();
   for (const id of ids) {
     const agent = companionAgentFor(id);
-    if (agent !== null && !agents.has(agent)) {
-      agents.set(agent, agent);
+    if (agent !== null) {
+      agents.add(agent);
     }
   }
   const inventories = new Map<string, ObservedCompanion[]>();
   const failures = new Map<string, string>();
-  for (const agent of agents.keys()) {
+  for (const agent of agents) {
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential read-only lists keep failure order deterministic.
       inventories.set(agent, await listCompanions(runner, agent, { global: true }));
