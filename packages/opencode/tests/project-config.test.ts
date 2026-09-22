@@ -4,14 +4,14 @@ import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { MaestriaPlugin } from '@/index.js';
-import {
-  appendInstructions,
-  formatProjectSection,
-  loadProjectSections,
-  resolveProjectRoot,
-} from '@/project-config.js';
-import type { ProjectConfigFs, ProjectRootInput } from '@/project-config.js';
+import { formatProjectSection, resolveProjectRoot } from '@/project-config.js';
+import type { ProjectRootInput } from '@/project-config.js';
 import { RULES_PATH } from '@/root.js';
+
+// Thin adapter suite: the full loader contract (order, skip, escape, rel-only
+// diagnostics) lives once in packages/shared/pi/tests/project-config.test.ts.
+// This file pins the OpenCode host deltas: root resolution, section formatting,
+// and plugin integration (instructions, system transform, compaction).
 
 import { makeTempRoot, pluginInputForRoot, removeRoot, writeProjectFile } from './helpers.js';
 
@@ -86,118 +86,13 @@ describe('resolveProjectRoot', () => {
   }
 });
 
-describe('loadProjectSections (thin adapter: order passthrough plus redaction)', () => {
-  it('returns empty when both project files are absent', () => {
-    const root = makeTempRoot();
-    try {
-      expect(loadProjectSections(root)).toEqual([]);
-    } finally {
-      removeRoot(root);
-    }
-  });
-
-  it('reads both files in deterministic workflow-then-rules order', () => {
-    const root = makeTempRoot();
-    try {
-      // Create in reverse order to prove ordering comes from the contract, not creation time.
-      writeProjectFile(root, '.maestria/rules.md', '# rules\n');
-      writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
-      expect(loadProjectSections(root)).toEqual([
-        { content: '# workflow\n', rel: '.maestria/workflow.md' },
-        { content: '# rules\n', rel: '.maestria/rules.md' },
-      ]);
-    } finally {
-      removeRoot(root);
-    }
-  });
-
-  it('fails loudly with sanitized diagnostics: no paths, contents, or causes leak', () => {
-    const root = makeTempRoot();
-    try {
-      mkdirSync(path.join(root, '.maestria', 'rules.md'), { recursive: true });
-      expect(() => loadProjectSections(root)).toThrow(/is a directory/u);
-    } finally {
-      removeRoot(root);
-    }
-    const projectRoot = '/projects/acme';
-    const sentinel = 'sentinel-secret-content-8pld';
-    const raw = (what: string): Error =>
-      Object.assign(new Error(`${what} ${projectRoot}/.maestria/workflow.md: ${sentinel}`), {
-        code: 'EACCES',
-      });
-    const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
-      {
-        fs: { kindOf: () => 'other', readFile: () => '', resolveLink: (c) => c },
-        pattern: /not a regular file/u,
-      },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => 'evil',
-          resolveLink: () => path.resolve('/elsewhere/evil.md'),
-        },
-        pattern: /outside the project root/u,
-      },
-      {
-        fs: {
-          kindOf: () => {
-            throw raw('lstat failed on');
-          },
-          readFile: () => '',
-          resolveLink: (candidate) => candidate,
-        },
-        pattern: /cannot be accessed/u,
-      },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => '',
-          resolveLink: () => {
-            throw raw('realpath failed on');
-          },
-        },
-        pattern: /cannot be resolved/u,
-      },
-      {
-        fs: {
-          kindOf: () => 'file',
-          readFile: () => {
-            throw raw('read failed on');
-          },
-          resolveLink: (candidate) => candidate,
-        },
-        pattern: /exists but cannot be read/u,
-      },
-    ];
-    for (const { fs, pattern } of table) {
-      let caught: unknown;
-      try {
-        loadProjectSections(projectRoot, fs);
-      } catch (error) {
-        caught = error;
-      }
-      expect(caught).toBeInstanceOf(Error);
-      // oxlint-disable-next-line no-unsafe-type-assertion -- toBeInstanceOf above establishes Error; the destructured message/cause feed the leak check below.
-      const { message, cause } = caught as Error & { cause?: unknown };
-      expect(message).toMatch(pattern);
-      expect(message).not.toContain(projectRoot);
-      expect(message).not.toContain(sentinel);
-      // The host serializes thrown transform errors: the raw failure must not ride along.
-      expect(cause).toBeUndefined();
-    }
-  });
-});
-
-describe('formatProjectSection and appendInstructions', () => {
-  it('names the rel file with subordinate status and merges without duplicates', () => {
+describe('formatProjectSection', () => {
+  it('names the rel file with subordinate status', () => {
     const body = '# rules\n- Be careful\n';
     const formatted = formatProjectSection({ content: body, rel: '.maestria/rules.md' });
     expect(formatted).toContain('.maestria/rules.md');
     expect(formatted).toContain('subordinate');
     expect(formatted).toContain(body);
-    const once = appendInstructions(['user.md'], ['a.md', 'b.md']);
-    expect(once).toEqual(['user.md', 'a.md', 'b.md']);
-    expect(appendInstructions(once, ['a.md', 'b.md'])).toEqual(['user.md', 'a.md', 'b.md']);
   });
 });
 

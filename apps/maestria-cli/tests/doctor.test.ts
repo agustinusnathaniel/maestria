@@ -11,7 +11,7 @@ import { COMPANION_SKILL, DOCS_UPDATE_SKILL } from '@/lib/skill-companion.js';
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
-import { buildRecord } from './skill-test-support.js';
+import { buildRecord, failingSkillCli, fakeListCli } from './skill-test-support.js';
 
 const SOURCE = 'test-source';
 const HEALTHY_PATH = '/fake/.agents/skills/create-pull-request';
@@ -26,26 +26,6 @@ const status = (id: string, overrides: Partial<PlatformStatus> = {}): PlatformSt
   latestVersion: '0.1.0',
   ...overrides,
 });
-
-const listJson = (entries: { name: string; path: string }[]): string =>
-  JSON.stringify(entries.map((entry) => ({ ...entry, scope: 'global' })));
-
-const fakeLists =
-  (inventory: Record<string, { name: string; path: string }[]>): SkillCommandRunner =>
-  // oxlint-disable-next-line require-await -- synchronous fake runner by design.
-  async (args: readonly string[]) => {
-    if (args[0] !== 'list') {
-      throw new Error(`doctor fake only lists, got: ${args[0]}`);
-    }
-    const flag = args.indexOf('-a');
-    const agent = flag === -1 ? '' : (args[flag + 1] ?? '');
-    return { stderr: '', stdout: listJson(inventory[agent] ?? []) };
-  };
-
-// oxlint-disable-next-line require-await -- synchronous fake runner by design.
-const failing: SkillCommandRunner = async () => {
-  throw new Error('boom');
-};
 
 const configDirs: string[] = [];
 
@@ -171,7 +151,7 @@ describe('doctor reports', () => {
   it.each(cases)(
     'reports $name',
     async ({ expectedOutput, expectedPlatforms, inventory, record, recordPresent, statuses }) => {
-      const result = await runJson(fakeLists(inventory), statuses, record);
+      const result = await runJson(fakeListCli(inventory), statuses, record);
       expect(parsed(result)).toMatchObject({ platforms: expectedPlatforms, recordPresent });
       for (const pattern of expectedOutput) {
         expect(result.output).toMatch(pattern);
@@ -180,7 +160,7 @@ describe('doctor reports', () => {
   );
 
   it('degrades honestly for unknown platforms with no skills-CLI target', async () => {
-    const runner = fakeLists({});
+    const runner = fakeListCli({});
     const seen: string[][] = [];
     const spying: SkillCommandRunner = async (args, options) => {
       seen.push([...args]);
@@ -193,7 +173,11 @@ describe('doctor reports', () => {
   });
 
   it('degrades honestly when the list call fails without failing the command', async () => {
-    const result = await runJson(failing, [status('opencode', { label: 'OpenCode' })], null);
+    const result = await runJson(
+      failingSkillCli,
+      [status('opencode', { label: 'OpenCode' })],
+      null,
+    );
     expect(parsed(result)).toMatchObject({
       platforms: [{ id: 'opencode', listError: 'boom' }],
     });
@@ -202,7 +186,7 @@ describe('doctor reports', () => {
 
   it('fails loud on a corrupt record before any observation', async () => {
     await withConfigRecord('{not-json');
-    const runner = fakeLists({});
+    const runner = fakeListCli({});
     const seen: string[][] = [];
     const spying: SkillCommandRunner = async (args, options) => {
       seen.push([...args]);
@@ -237,7 +221,7 @@ describe('doctor reports', () => {
       },
     });
     const reports = await collectDoctorReports(
-      fakeLists({
+      fakeListCli({
         'claude-code': [],
         codex: [],
         cursor: [{ name: COMPANION_SKILL, path: SHARED_PATH }],
@@ -258,7 +242,7 @@ describe('doctor reports', () => {
     const { homedir } = await import('node:os');
     const home = homedir();
     const reports = await collectDoctorReports(
-      fakeLists({
+      fakeListCli({
         opencode: [{ name: COMPANION_SKILL, path: `${home}/.agents/skills/create-pull-request` }],
       }),
       [status('opencode')],
