@@ -20,7 +20,10 @@ import {
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
 import {
   hasSkillFlags,
+  isOwned,
+  isSharedRecordedAsset,
   persistSuccessfulSelections,
+  recordedSkills,
   resolveSkillSelection,
   withoutRecordedSelection,
   withRecordedSelection,
@@ -58,12 +61,6 @@ export interface EffectiveSkillTarget {
   readonly selection: ResolvedSkillSelection;
 }
 
-const recordedFor = (record: SkillsRecord | null, platformId: string): string[] | null =>
-  record?.platforms[platformId]?.skills ?? null;
-
-const isOwned = (record: SkillsRecord | null, platformId: string, skill: string): boolean =>
-  (recordedFor(record, platformId) ?? []).includes(skill);
-
 /** Skills in a selection this CLI version does not manage. */
 const unknownSkills = (skills: readonly string[]): string[] =>
   skills.filter((skill) => !MANAGED_SKILLS.includes(skill));
@@ -93,7 +90,7 @@ export const resolveEffectiveSkills = (
         1,
       );
     }
-    const recorded = recordedFor(record, target.id);
+    const recorded = recordedSkills(record, target.id);
     return {
       ...target,
       selection: {
@@ -112,27 +109,10 @@ const observedSkillPath = async (
   return entries.find((entry) => entry.name === skill)?.path ?? null;
 };
 
-export const isSharedRecordedAsset = (
-  record: SkillsRecord | null,
-  platformId: string,
-  skill: string,
-  observed: string,
-  source: string,
-): boolean =>
-  Object.entries(record?.platforms ?? {}).some(
-    ([otherId, entry]) =>
-      otherId !== platformId &&
-      entry.skills.includes(skill) &&
-      entry.skillAssets?.[skill]?.source === source &&
-      entry.skillAssets?.[skill]?.path === observed,
-  );
-
 /**
- * Ownership preflight, run BEFORE any external effect. Each selected known
- * skill's native target is listed and compared against our own record: a
- * present copy with no record aborts with the exclude-or-remove guidance,
- * unless the observed path matches a recorded asset for another platform from
- * the same source. Exclusions never delete.
+ * Ownership preflight, run BEFORE any external effect. A present copy with no
+ * record aborts with the exclude-or-remove guidance, unless the observed path
+ * matches a recorded asset for another platform from the same source.
  */
 export const preflightCompanionOwnership = async (
   runner: SkillCommandRunner,
@@ -174,6 +154,12 @@ const appendNote = (outcome: CompanionOutcome, id: string, note: string): void =
   outcome.notes.set(id, prior === undefined ? note : `${prior} ${note}`);
 };
 
+/** Minimal shape for the shared-path guard: platform identity plus current intent. */
+interface SharerScope {
+  readonly id: string;
+  readonly selection: { readonly skills: readonly string[] };
+}
+
 /**
  * Other owned platforms that still want one skill and are not dropping it in
  * this same run. A shared tool-observed path means preserve-and-report,
@@ -181,7 +167,7 @@ const appendNote = (outcome: CompanionOutcome, id: string, note: string): void =
  */
 const stayingSharers = (
   record: SkillsRecord | null,
-  effective: readonly EffectiveSkillTarget[],
+  effective: readonly SharerScope[],
   platformId: string,
   skill: string,
 ): string[] => {
@@ -196,10 +182,15 @@ const stayingSharers = (
   );
 };
 
-const removalSharesObservedPath = async (
+/**
+ * Shared-path guard with fresh reads. Staying sharers report their
+ * platform ID, other known agents their agent name. An unreadable agent fails
+ * closed as a sharer.
+ */
+const findSharingObserver = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
-  effective: readonly EffectiveSkillTarget[],
+  effective: readonly SharerScope[],
   platformId: string,
   skill: string,
   ownPath: string,
@@ -247,7 +238,26 @@ const removalSharesObservedPath = async (
   return null;
 };
 
-/** Reconcile one selected skill: idempotent re-add of the managed triple. */
+/** Remove one owned skill when unshared; otherwise report preservation. */
+const removeOwnedSkillIfUnshared = async (
+  runner: SkillCommandRunner,
+  record: SkillsRecord | null,
+  settled: readonly SharerScope[],
+  platformId: string,
+  agent: string,
+  skill: string,
+  ownPath: string,
+  onNote: (note: string) => void,
+): Promise<void> => {
+  const sharer = await findSharingObserver(runner, record, settled, platformId, skill, ownPath);
+  if (sharer === null) {
+    await removeCompanion(runner, { agent, skill }, { global: true });
+    return;
+  }
+  onNote(`Skill '${skill}' left in place at ${ownPath}; still provided by '${sharer}'.`);
+};
+
+/** Reconcile one selected skill: idempotent re-add of the managed skill. */
 const reconcileSelectedTarget = async (
   runner: SkillCommandRunner,
   target: EffectiveSkillTarget,
@@ -298,23 +308,18 @@ const reconcileDeselectedTarget = async (
     );
     return;
   }
-  const sharer = await removalSharesObservedPath(
+  await removeOwnedSkillIfUnshared(
     runner,
     record,
     settled,
     target.id,
+    agent,
     skill,
     ownPath,
+    (note) => {
+      appendNote(outcome, target.id, note);
+    },
   );
-  if (sharer === null) {
-    await removeCompanion(runner, { agent, skill }, { global: true });
-  } else {
-    appendNote(
-      outcome,
-      target.id,
-      `Skill '${skill}' left in place at ${ownPath}; still provided by '${sharer}'.`,
-    );
-  }
 };
 
 /**
@@ -489,7 +494,7 @@ const manualRemoveCommand = (agent: string, skill: string): string =>
 const removeOwnedUninstallSkills = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
-  settled: readonly { id: string; selection: { changed: boolean; skills: string[] } }[],
+  settled: readonly SharerScope[],
   result: PlatformResult,
   agent: string,
   owned: readonly string[],
@@ -501,22 +506,18 @@ const removeOwnedUninstallSkills = async (
       const ownPath = await observedSkillPath(runner, agent, skill);
       if (ownPath !== null) {
         // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
-        const sharer = await removalSharesObservedPath(
+        await removeOwnedSkillIfUnshared(
           runner,
           record,
           settled,
           result.id,
+          agent,
           skill,
           ownPath,
+          (note) => {
+            notes.push(note);
+          },
         );
-        if (sharer === null) {
-          // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
-          await removeCompanion(runner, { agent, skill }, { global: true });
-        } else {
-          notes.push(
-            `Skill '${skill}' left in place at ${ownPath}; still provided by '${sharer}'.`,
-          );
-        }
       }
     }
   } catch (error) {
@@ -534,7 +535,7 @@ const removeOwnedUninstallSkills = async (
       },
     };
   }
-  const unrecognized = unknownSkills(recordedFor(record, result.id) ?? []);
+  const unrecognized = unknownSkills(recordedSkills(record, result.id) ?? []);
   const suffix = notes.length === 0 ? '' : ` ${notes.join(' ')}`;
   return {
     remaining: [...unrecognized],
@@ -549,14 +550,14 @@ const removeOwnedUninstallSkills = async (
 const reconcileOneUninstall = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
-  settled: readonly { id: string; selection: { changed: boolean; skills: string[] } }[],
+  settled: readonly SharerScope[],
   result: PlatformResult,
 ): Promise<{ remaining: string[] | null; result: PlatformResult }> => {
   const agent = companionAgentFor(result.id);
   if (agent === null) {
     return { remaining: [], result: { ...result, skills: [] } };
   }
-  const recorded = recordedFor(record, result.id) ?? [];
+  const recorded = recordedSkills(record, result.id) ?? [];
   const owned = recorded.filter((skill) => MANAGED_SKILLS.includes(skill));
   const unrecognized = unknownSkills(recorded);
   if (record?.platforms[result.id] === undefined) {

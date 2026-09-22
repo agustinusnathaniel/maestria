@@ -314,11 +314,46 @@ export const resolveSkillSelection = (
     const skills = (recorded ?? [...fallback]).filter((s) => !excludeIds.includes(s));
     return { changed: changedVs(skills), skills };
   }
-  if (recorded !== null) {
-    return { changed: false, skills: [...recorded] };
-  }
-  return { changed: false, skills: [...fallback] };
+  return { changed: false, skills: [...(recorded ?? fallback)] };
 };
+
+export const recordedSkills = (record: SkillsRecord | null, platformId: string): string[] | null =>
+  record?.platforms[platformId]?.skills ?? null;
+
+/** Ownership comes from our own record only, never from filesystem observation. */
+export const isOwned = (record: SkillsRecord | null, platformId: string, skill: string): boolean =>
+  (recordedSkills(record, platformId) ?? []).includes(skill);
+
+/** Platforms (other than `platformId`) whose record claims `skill` from the same source at `observedPath`. */
+export const findSharedProviders = (
+  record: SkillsRecord | null,
+  platformId: string,
+  skill: string,
+  observedPath: string,
+  source: string,
+): string[] =>
+  Object.keys(record?.platforms ?? {}).filter((otherId) => {
+    if (otherId === platformId) {
+      return false;
+    }
+    const entry = record?.platforms[otherId];
+    if (entry === undefined) {
+      return false;
+    }
+    return (
+      entry.skills.includes(skill) &&
+      entry.skillAssets?.[skill]?.source === source &&
+      entry.skillAssets?.[skill]?.path === observedPath
+    );
+  });
+
+export const isSharedRecordedAsset = (
+  record: SkillsRecord | null,
+  platformId: string,
+  skill: string,
+  observed: string,
+  source: string,
+): boolean => findSharedProviders(record, platformId, skill, observed, source).length > 0;
 
 export const withRecordedSelection = (
   record: SkillsRecord | null,
