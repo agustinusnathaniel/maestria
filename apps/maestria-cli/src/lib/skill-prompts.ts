@@ -9,11 +9,7 @@ const isInteractive = (): boolean => process.stdout.isTTY && process.stdin.isTTY
 
 export const isInteractiveTerminal = (): boolean => isInteractive();
 
-/**
- * Interactive skill review for install/update. Non-interactive callers never
- * wait: they keep the proposed selection and rely on the caller's --yes gate
- * for confirmation. Empty selection means an explicit `none`.
- */
+/** Interactive skill review for install/update. Empty selection means `none`. */
 export const promptSkillSelection = async (
   initial: string[],
   scope?: string,
@@ -62,31 +58,6 @@ export interface ReviewableSelection {
   readonly selection: ResolvedSkillSelection;
 }
 
-const groupByCurrentSelection = (
-  selections: readonly ReviewableSelection[],
-): { ids: string[]; skills: string[] }[] => {
-  const groups: { ids: string[]; skills: string[] }[] = [];
-  for (const entry of selections) {
-    const key = entry.selection.skills.join(',');
-    const group = groups.find((candidate) => candidate.skills.join(',') === key);
-    if (group === undefined) {
-      groups.push({ ids: [entry.id], skills: [...entry.selection.skills] });
-    } else {
-      group.ids.push(entry.id);
-    }
-  }
-  return groups;
-};
-
-const describeSelectionChange = (
-  id: string,
-  before: readonly string[],
-  after: readonly string[],
-): string =>
-  before.join(',') === after.join(',')
-    ? `${id}: unchanged [${defaultSkillSummary([...after])}]`
-    : `${id}: [${defaultSkillSummary([...before])}] → [${defaultSkillSummary([...after])}]`;
-
 export const reviewSkillSelections = async <T extends ReviewableSelection>(
   selections: readonly T[],
   action: 'Install' | 'Update',
@@ -101,14 +72,25 @@ export const reviewSkillSelections = async <T extends ReviewableSelection>(
   if (!isInteractive()) {
     return [...selections];
   }
+  const groups = new Map<string, { ids: string[]; skills: string[] }>();
+  for (const entry of selections) {
+    const key = entry.selection.skills.join(',');
+    const group = groups.get(key);
+    if (group === undefined) {
+      groups.set(key, { ids: [entry.id], skills: [...entry.selection.skills] });
+    } else {
+      group.ids.push(entry.id);
+    }
+  }
   const reviewedByGroup = new Map<string, string[]>();
-  for (const group of groupByCurrentSelection(selections)) {
+  for (const group of groups.values()) {
     const scope =
       group.ids.length === 1 ? (group.ids[0] ?? 'this installation') : group.ids.join(', ');
     // oxlint-disable-next-line no-await-in-loop -- sequential prompts keep the review order deterministic.
     const reviewed = await promptSkillSelection(group.skills, scope);
     reviewedByGroup.set(group.skills.join(','), reviewed);
   }
+  const beforeById = new Map(selections.map((entry) => [entry.id, entry.selection.skills]));
   const effective = selections.map((entry) => {
     const reviewed =
       reviewedByGroup.get(entry.selection.skills.join(',')) ?? entry.selection.skills;
@@ -121,13 +103,13 @@ export const reviewSkillSelections = async <T extends ReviewableSelection>(
     };
   });
   const summary = effective
-    .map((entry) =>
-      describeSelectionChange(
-        entry.id,
-        selections.find((original) => original.id === entry.id)?.selection.skills ?? [],
-        entry.selection.skills,
-      ),
-    )
+    .map((entry) => {
+      const before = beforeById.get(entry.id) ?? [];
+      const after = entry.selection.skills;
+      return before.join(',') === after.join(',')
+        ? `${entry.id}: unchanged [${defaultSkillSummary([...after])}]`
+        : `${entry.id}: [${defaultSkillSummary([...before])}] → [${defaultSkillSummary([...after])}]`;
+    })
     .join(', ');
   await confirmOrThrow(`${action} with skills ${summary}?`, args.yes);
   return effective;

@@ -16,7 +16,6 @@ import { uninstallOne } from '@/lib/platform-transaction.js';
 import { defaultSkillRunner, reconcileUninstallCompanions } from '@/lib/skill-reconcile.js';
 import { readSkillsRecord } from '@/lib/skills.js';
 import { VALID_PLATFORMS } from '@/lib/validation.js';
-import type { PlatformResult } from '@/types.js';
 
 export interface UninstallArgs {
   all?: boolean;
@@ -26,70 +25,48 @@ export interface UninstallArgs {
   quiet?: boolean;
 }
 
-const runUninstallAll = async (isQuiet: boolean): Promise<PlatformResult[] | CommandResult> => {
-  const targets = await detectInstalledOr(isQuiet, 'No maestria installations found to uninstall.');
-  if (!Array.isArray(targets)) {
-    return targets;
-  }
-  return await runBatchSelected(targets, isQuiet, uninstallOne);
-};
-
-const runUninstallInteractive = async (
+const collectUninstallTargets = async (
+  platform: string | undefined,
+  all: boolean,
   isQuiet: boolean,
-): Promise<PlatformResult[] | CommandResult> => {
+): Promise<{ id: string }[] | CommandResult> => {
+  if (platform !== undefined && platform !== null && platform !== '') {
+    const found = getPlatform(platform);
+    if (!found) {
+      throw new CliError(
+        `Unknown platform: ${platform}\nAvailable: ${platforms.map((p) => p.id).join(', ')}`,
+        1,
+      );
+    }
+    return [{ id: found.id }];
+  }
+  if (all) {
+    return await detectInstalledOr(isQuiet, 'No maestria installations found to uninstall.');
+  }
   assertInteractiveTerminal('uninstall');
   const targets = await detectInstalledOr(isQuiet, 'No maestria installations found to uninstall.');
   if (!Array.isArray(targets)) {
     return targets;
   }
-  const installed = targets;
   const selected = await select({
     message: 'Which platform do you want to uninstall maestria for?',
-    options: installed.map((p) => ({ label: p.label ?? p.id, value: p.id })),
+    options: targets.map((p) => ({ label: p.label ?? p.id, value: p.id })),
   });
   if (isCancel(selected) || typeof selected !== 'string' || selected === '') {
     cancel('Uninstall cancelled.');
     throw new CliError('', 130);
   }
-  return await runBatchSelected([{ id: selected }], isQuiet, uninstallOne);
+  return [{ id: selected }];
 };
 
 export const handleUninstall = async (args: UninstallArgs): Promise<CommandResult> => {
   const isQuiet = resolveBatchQuiet(args);
-  // Corrupt records fail before ANY external effect; a missing record
-  // proceeds (plugin state is independent) with the companion left in place.
   const record = await readSkillsRecord();
-  let targetIds: string[];
-  if (args.platform !== undefined && args.platform !== null && args.platform !== '') {
-    const platform = getPlatform(args.platform);
-    if (!platform) {
-      throw new CliError(
-        `Unknown platform: ${args.platform}\nAvailable: ${platforms.map((p) => p.id).join(', ')}`,
-        1,
-      );
-    }
-    targetIds = [platform.id];
-  } else if (args.all === true) {
-    const outcome = await runUninstallAll(isQuiet);
-    if (!Array.isArray(outcome)) {
-      return outcome;
-    }
-    // runUninstallAll already ran the batch; reconcile companions per result.
-    const combined = await reconcileUninstallCompanions(defaultSkillRunner, record, outcome);
-    return batchCommandResult(combined.results, args);
-  } else {
-    const outcome = await runUninstallInteractive(isQuiet);
-    if (!Array.isArray(outcome)) {
-      return outcome;
-    }
-    const combined = await reconcileUninstallCompanions(defaultSkillRunner, record, outcome);
-    return batchCommandResult(combined.results, args);
+  const targets = await collectUninstallTargets(args.platform, args.all === true, isQuiet);
+  if (!Array.isArray(targets)) {
+    return targets;
   }
-  const results = await runBatchSelected(
-    targetIds.map((id) => ({ id })),
-    isQuiet,
-    uninstallOne,
-  );
+  const results = await runBatchSelected(targets, isQuiet, uninstallOne);
   const combined = await reconcileUninstallCompanions(defaultSkillRunner, record, results);
   return batchCommandResult(combined.results, args);
 };

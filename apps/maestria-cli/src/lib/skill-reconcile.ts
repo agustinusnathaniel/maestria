@@ -1,4 +1,4 @@
-// oxlint-disable max-lines -- skill-reconcile is the single companion reconciler for install, update, and uninstall sharing one ownership preflight, one shared-path guard, and one outcome merge. Splitting per flow or per skill would duplicate the guard logic that must stay single so removing one skill never disturbs another.
+// oxlint-disable max-lines -- single companion reconciler keeps one ownership preflight, one shared-path guard, and one outcome merge.
 import type { Effect } from 'effect';
 
 import { batchCommandResult, runBatchSelected } from '@/lib/batch-command.js';
@@ -38,19 +38,13 @@ import { reviewSkillSelections } from '@/lib/skill-prompts.js';
 import type { PlatformResult } from '@/types.js';
 
 /**
- * Skill reconciliation between Maestria platform operations and the external
- * skills-CLI companions. Plugin lifecycle (install/update/uninstall) keeps
- * its existing behavior with no payload filtering and no forced reinstalls;
- * companion add/remove runs per known managed skill, each scoped to its own
- * source, skill name, and native target. Ownership is never inferred from the
- * filesystem: before any mutation the CLI lists the native target's
- * tool-observed inventory and compares it against its own per-skill record of
- * owned operations. Records persist only actual confirmed state: a failed
- * skill is never recorded as installed, while a successfully installed
- * sibling is kept recoverably.
+ * Skill reconciliation between platform operations and the external
+ * skills-CLI companions. Companion add/remove runs per known managed skill.
+ * Ownership is never inferred from the filesystem: before any mutation the
+ * CLI lists the native target inventory and compares it against its own
+ * per-skill record. Records persist only actual confirmed state.
  */
 
-/** Remote default resolves only after this feature merges; tests inject a local copy. */
 export const resolveSkillsSource = (): string => {
   const override = process.env.MAESTRIA_SKILLS_SOURCE?.trim();
   return override !== undefined && override !== '' ? override : SKILLS_SOURCE;
@@ -59,9 +53,7 @@ export const resolveSkillsSource = (): string => {
 export interface EffectiveSkillTarget {
   readonly id: string;
   readonly label?: string;
-  /** Per-skill tool-observed assets, attached after reconcile. */
   readonly observed?: Record<string, SkillAsset>;
-  /** Skills actually confirmed, attached after reconcile (defaults to intent). */
   readonly actualSkills?: string[];
   readonly selection: ResolvedSkillSelection;
 }
@@ -72,17 +64,14 @@ const recordedFor = (record: SkillsRecord | null, platformId: string): string[] 
 const isOwned = (record: SkillsRecord | null, platformId: string, skill: string): boolean =>
   (recordedFor(record, platformId) ?? []).includes(skill);
 
-/** Skills in a selection this CLI version does not manage: preserved, reported, never run. */
+/** Skills in a selection this CLI version does not manage. */
 const unknownSkills = (skills: readonly string[]): string[] =>
   skills.filter((skill) => !MANAGED_SKILLS.includes(skill));
 
 /**
- * Resolve per-platform selections, degrading honestly on hosts with no
- * companion target (unknown IDs only; all nine known platforms resolve):
- * an explicit skill request fails loud before effects, while a default run
- * records an empty selection and keeps the core sensible-body fallback
- * instead of faking a full feature. Pass `updateBootstrap` on the update
- * path so legacy installs without a record infer only the prior PR skill.
+ * Resolve per-platform selections. Unknown hosts degrade honestly: an
+ * explicit skill request fails loud before effects, while a default run
+ * records an empty selection and keeps the core fallback.
  */
 export const resolveEffectiveSkills = (
   targets: readonly { id: string; label?: string }[],
@@ -114,7 +103,6 @@ export const resolveEffectiveSkills = (
     };
   });
 
-/** Tool-observed native path of one skill for one agent, or null when absent. */
 const observedSkillPath = async (
   runner: SkillCommandRunner,
   agent: string,
@@ -124,7 +112,6 @@ const observedSkillPath = async (
   return entries.find((entry) => entry.name === skill)?.path ?? null;
 };
 
-/** Explicit `--skills` never authorizes adopting an independent copy. */
 export const isSharedRecordedAsset = (
   record: SkillsRecord | null,
   platformId: string,
@@ -141,15 +128,11 @@ export const isSharedRecordedAsset = (
   );
 
 /**
- * Ownership preflight, run BEFORE any external effect (after flag validation
- * and interactive confirmation). Each selected known skill's native target is
- * listed and compared against our own record: a present copy with no record
- * is unmanaged and aborts with the exclude-or-remove guidance (an explicit
- * `--skills` selection is not authorization to adopt it), unless the observed
- * path matches a recorded Maestria asset for another platform from the same
- * source, in which case re-adding is a safe idempotent share. Exclusions
- * never delete. Unknown skill IDs are never listed or adopted here. Throws
- * before any host mutation; callers must not catch it as a per-platform note.
+ * Ownership preflight, run BEFORE any external effect. Each selected known
+ * skill's native target is listed and compared against our own record: a
+ * present copy with no record aborts with the exclude-or-remove guidance,
+ * unless the observed path matches a recorded asset for another platform from
+ * the same source. Exclusions never delete.
  */
 export const preflightCompanionOwnership = async (
   runner: SkillCommandRunner,
@@ -181,13 +164,7 @@ export const preflightCompanionOwnership = async (
 
 export interface CompanionOutcome {
   readonly notes: Map<string, string>;
-  /** Per-platform, per-skill tool-observed assets for actually installed skills. */
   readonly observed: Map<string, Record<string, SkillAsset>>;
-  /**
-   * Per-platform confirmed skill lists: unknown IDs preserved, failed skills
-   * excluded. A failed skill is never recorded as installed; a successfully
-   * installed sibling stays recoverably recorded.
-   */
   readonly actual: Map<string, string[]>;
   readonly ok: Map<string, boolean>;
 }
@@ -199,10 +176,8 @@ const appendNote = (outcome: CompanionOutcome, id: string, note: string): void =
 
 /**
  * Other owned platforms that still want one skill and are not dropping it in
- * this same run. Their tool-observed paths decide whether a scoped removal
- * is safe: the skills CLI deletes a shared canonical directory even while
- * another agent still references it (verified), so a shared path means
- * preserve-and-report, never delete.
+ * this same run. A shared tool-observed path means preserve-and-report,
+ * never delete.
  */
 const stayingSharers = (
   record: SkillsRecord | null,
@@ -272,11 +247,7 @@ const removalSharesObservedPath = async (
   return null;
 };
 
-/**
- * Reconcile one selected skill: idempotent re-add of the known managed
- * triple (never a broad `skills update`). Errors propagate to the caller,
- * which records them per platform without failing siblings or skills.
- */
+/** Reconcile one selected skill: idempotent re-add of the managed triple. */
 const reconcileSelectedTarget = async (
   runner: SkillCommandRunner,
   target: EffectiveSkillTarget,
@@ -293,10 +264,7 @@ const reconcileSelectedTarget = async (
 /**
  * Reconcile one deselected skill: removal runs only for recorded (owned)
  * selections and only when no other observed consumer shares the
- * tool-observed path (owned record or independent agent inventory);
- * otherwise the copy is preserved with a note naming the sharer.
- * Unmanaged copies are left alone, with a presence note when the caller
- * explicitly reports exclusions. Removing one skill never touches another.
+ * tool-observed path. Removing one skill never touches another.
  */
 const reconcileDeselectedTarget = async (
   runner: SkillCommandRunner,
@@ -351,9 +319,8 @@ const reconcileDeselectedTarget = async (
 
 /**
  * Reconcile every managed skill for one target independently: one skill's
- * failure never blocks its sibling, and the confirmed actuals exclude failed
- * skills so the record stays truthful. Unknown skill IDs are preserved with
- * a note and never operated on.
+ * failure never blocks its sibling, and unknown IDs are preserved with a
+ * note and never operated on.
  */
 const reconcileOneTarget = async (
   runner: SkillCommandRunner,
@@ -402,11 +369,7 @@ const reconcileOneTarget = async (
   );
 };
 
-/**
- * Reconcile the companions after the plugin operation. Skipped for platforms
- * whose plugin step failed. See reconcileOneTarget for per-skill semantics;
- * records persist only actual confirmed state.
- */
+/** Reconcile the companions after the plugin operation. */
 export const reconcileCompanions = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -456,7 +419,6 @@ export const reconcileCompanions = async (
   return outcome;
 };
 
-/** Merge companion outcomes into batch results; JSON stays valid (fields, not text). */
 export const applyCompanionOutcomes = (
   results: readonly PlatformResult[],
   effective: readonly EffectiveSkillTarget[],
@@ -496,8 +458,6 @@ export const applyCompanionOutcomes = (
       ...(entry === undefined
         ? {}
         : {
-            // Report actual confirmed skills, never intent as fact: a failed
-            // skill is excluded here and from the persisted record.
             skills: actual ?? [...entry.selection.skills],
             ...(observed === undefined ? {} : { observed }),
           }),
@@ -505,7 +465,6 @@ export const applyCompanionOutcomes = (
   });
 };
 
-/** Attach tool-observed per-skill assets and confirmed skills for truthful persistence. */
 export const attachCompanionObserved = (
   effective: readonly EffectiveSkillTarget[],
   outcome: CompanionOutcome,
@@ -526,46 +485,7 @@ export const attachCompanionObserved = (
 const manualRemoveCommand = (agent: string, skill: string): string =>
   `npx -y ${SKILLS_CLI_PACKAGE} remove ${skill} -a ${agent} -g -y`;
 
-/**
- * Remove one owned skill after a successful plugin uninstall. Returns
- * whether the skill is fully reconciled plus the note for the message.
- * Shared canonical copies still observed for another consumer are preserved
- * with a naming note. Removing one skill never touches another.
- */
-const reconcileOneUninstallSkill = async (
-  runner: SkillCommandRunner,
-  record: SkillsRecord | null,
-  settled: readonly { id: string; selection: { changed: boolean; skills: string[] } }[],
-  platformId: string,
-  agent: string,
-  skill: string,
-): Promise<{ done: boolean; note?: string }> => {
-  const ownPath = await observedSkillPath(runner, agent, skill);
-  if (ownPath === null) {
-    return { done: true };
-  }
-  const sharer = await removalSharesObservedPath(
-    runner,
-    record,
-    settled,
-    platformId,
-    skill,
-    ownPath,
-  );
-  if (sharer !== null) {
-    return {
-      done: true,
-      note: `Skill '${skill}' left in place at ${ownPath}; still provided by '${sharer}'.`,
-    };
-  }
-  await removeCompanion(runner, { agent, skill }, { global: true });
-  return { done: true };
-};
-
-/**
- * Remove every owned skill for one uninstall; a failure keeps the record for
- * retry. Declared before its caller to satisfy use-before-define.
- */
+/** Remove every owned skill for one uninstall; a failure keeps the record for retry. */
 const removeOwnedUninstallSkills = async (
   runner: SkillCommandRunner,
   record: SkillsRecord | null,
@@ -578,16 +498,25 @@ const removeOwnedUninstallSkills = async (
   try {
     for (const skill of owned) {
       // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
-      const reconciled = await reconcileOneUninstallSkill(
-        runner,
-        record,
-        settled,
-        result.id,
-        agent,
-        skill,
-      );
-      if (reconciled.note !== undefined) {
-        notes.push(reconciled.note);
+      const ownPath = await observedSkillPath(runner, agent, skill);
+      if (ownPath !== null) {
+        // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
+        const sharer = await removalSharesObservedPath(
+          runner,
+          record,
+          settled,
+          result.id,
+          skill,
+          ownPath,
+        );
+        if (sharer === null) {
+          // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
+          await removeCompanion(runner, { agent, skill }, { global: true });
+        } else {
+          notes.push(
+            `Skill '${skill}' left in place at ${ownPath}; still provided by '${sharer}'.`,
+          );
+        }
       }
     }
   } catch (error) {
@@ -614,11 +543,8 @@ const removeOwnedUninstallSkills = async (
 };
 
 /**
- * Reconcile one uninstalled platform. Returns the merged result plus the
- * confirmed remaining skills (only when both sides succeeded may the record
- * entry drop or shrink). Missing records leave companions in place with a
- * manual command. Unknown skill IDs are never operated on and keep their
- * history.
+ * Reconcile one uninstalled platform. Missing records leave companions in
+ * place with a manual command. Unknown skill IDs keep their history.
  */
 const reconcileOneUninstall = async (
   runner: SkillCommandRunner,
@@ -651,22 +577,10 @@ const reconcileOneUninstall = async (
   return await removeOwnedUninstallSkills(runner, record, settled, result, agent, owned);
 };
 
-/** Assets for skills still kept, so unknown-ID history survives entry shrink. */
-const keepAssetsFor = (
-  record: SkillsRecord | null,
-  platformId: string,
-  remaining: readonly string[],
-): Record<string, SkillAsset> => {
-  const assets = record?.platforms[platformId]?.skillAssets ?? {};
-  return Object.fromEntries(Object.entries(assets).filter(([skill]) => remaining.includes(skill)));
-};
-
 /**
- * Remove managed companions after successful plugin uninstalls. Only
- * recorded (owned) known skills are removed, each only when no other
- * observed consumer shares the tool-observed path. Record entries drop only
- * when both sides succeeded; unknown skill IDs keep their history instead of
- * being dropped with the entry.
+ * Remove managed companions after successful plugin uninstalls. Only recorded
+ * (owned) known skills are removed, each only when no other observed consumer
+ * shares the tool-observed path.
  */
 export const reconcileUninstallCompanions = async (
   runner: SkillCommandRunner,
@@ -685,16 +599,17 @@ export const reconcileUninstallCompanions = async (
     }
     // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
     const reconciled = await reconcileOneUninstall(runner, next, settled, result);
-    if (reconciled.remaining !== null) {
-      next =
-        reconciled.remaining.length === 0
-          ? (withoutRecordedSelection(next, result.id) ?? next)
-          : withRecordedSelection(
-              next,
-              result.id,
-              reconciled.remaining,
-              keepAssetsFor(next, result.id, reconciled.remaining),
-            );
+    const { remaining } = reconciled;
+    if (remaining !== null) {
+      if (remaining.length === 0) {
+        next = withoutRecordedSelection(next, result.id) ?? next;
+      } else {
+        const assets = next?.platforms[result.id]?.skillAssets ?? {};
+        const kept = Object.fromEntries(
+          Object.entries(assets).filter(([skill]) => remaining.includes(skill)),
+        );
+        next = withRecordedSelection(next, result.id, remaining, kept);
+      }
     }
     merged.push(reconciled.result);
   }
@@ -704,7 +619,6 @@ export const reconcileUninstallCompanions = async (
   return { results: merged };
 };
 
-/** Default production runner (tests inject a fake). */
 export const defaultSkillRunner: SkillCommandRunner = async (args, options) =>
   await runSkillsCli(args, options);
 
@@ -714,10 +628,7 @@ export interface RawSkillArgs {
   readonly yes?: boolean;
 }
 
-/**
- * Accept both camelCase (direct handler calls, tests) and kebab-case (citty
- * parses `--exclude-skills` under its defined key) spellings.
- */
+/** Accept both camelCase and kebab-case (`--exclude-skills`) spellings. */
 export const normalizeSkillArgs = <T extends RawSkillArgs>(args: T): T => {
   const kebab = isRecord(args) ? args['exclude-skills'] : undefined;
   return {
@@ -726,11 +637,7 @@ export const normalizeSkillArgs = <T extends RawSkillArgs>(args: T): T => {
   };
 };
 
-/**
- * Interactive skill review for supported targets only. Hosts with no
- * companion target keep their degraded empty selection and are never
- * prompted for a skill they cannot receive.
- */
+/** Interactive skill review for supported targets only. */
 export const reviewSupportedSkills = async (
   effective: readonly EffectiveSkillTarget[],
   action: 'Install' | 'Update',
@@ -751,9 +658,8 @@ export interface SkillBatchArgs {
 }
 
 /**
- * Shared install/update tail: review selections, preflight ownership, run the
- * plugin batch, reconcile companions, persist successful selections, render.
- * Uninstall keeps its own tail (companion removal without re-add).
+ * Shared install/update tail: review, preflight, batch, reconcile, persist,
+ * render. Uninstall keeps its own tail (removal without re-add).
  */
 export const runSkillBatch = async (
   targets: readonly { id: string; label?: string }[],

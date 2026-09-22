@@ -46,7 +46,7 @@ interface UpdateStatus {
   needsUpdate: boolean;
 }
 
-// oxlint-disable-next-line max-lines-per-function -- collectInteractiveUpdateTargets orchestrates the interactive update picker (version checks, needsUpdate filtering, groupMultiselect) as a single cohesive flow; splitting would fragment the picker's state (statuses/needsUpdate) and duplicate version-check logic.
+// oxlint-disable-next-line max-lines-per-function -- interactive update picker keeps version checks, filtering, and selection in one flow.
 const collectInteractiveUpdateTargets = async (): Promise<
   { id: string; label?: string }[] | CommandResult
 > => {
@@ -122,11 +122,7 @@ const collectInteractiveUpdateTargets = async (): Promise<
 /**
  * Skill-only review when every installed plugin is already current. The
  * plugin step is a reported no-op per platform while companions reconcile
- * normally, so newly available skills still get reviewed and confirmed.
- * Reuses the shared install/update tail so review, final confirm,
- * preflight, reconcile, and persistence stay single-sourced: the update
- * path never invents record state, without a record it infers only the
- * prior PR skill, never the newer docs skill.
+ * normally through the shared install/update tail.
  */
 const reviewCurrentInstallSkills = async (
   args: UpdateArgs,
@@ -181,16 +177,12 @@ export const handleUpdate = async (rawArgs: UpdateArgs): Promise<CommandResult> 
   } else {
     const outcome = await collectInteractiveUpdateTargets();
     if (!Array.isArray(outcome)) {
-      // Plugins are current, but companions may still need review (a new
-      // skill can appear while the plugin version is unchanged).
       return await reviewCurrentInstallSkills(args, record, outcome, isQuiet);
     }
     targets = outcome;
   }
-  // Same-version updates skip the plugin reinstall (the host reports
-  // up-to-date) but still reconcile the companion independently.
-  // The update path never invents record state: without a record it infers
-  // only the prior PR skill, never the newer docs skill.
+  // Same-version updates skip the plugin reinstall but still reconcile the
+  // companion independently.
   return await runSkillBatch(
     targets,
     record,
