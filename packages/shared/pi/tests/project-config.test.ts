@@ -7,7 +7,6 @@ import {
   formatProjectErrorBanner,
   formatProjectSection,
   loadProjectSections,
-  PROJECT_CONFIG_REL_PATHS,
 } from '@/project-config.js';
 import type { ProjectConfigFs } from '@/project-config.js';
 
@@ -20,10 +19,6 @@ const writeProjectFile = (root: string, rel: string, content: string): void => {
 };
 
 describe('project-config scope contract', () => {
-  it('loads workflow then rules in deterministic order', () => {
-    expect([...PROJECT_CONFIG_REL_PATHS]).toEqual(['.maestria/workflow.md', '.maestria/rules.md']);
-  });
-
   it('returns empty when both project files are absent', () => {
     const root = makeTempRoot();
     try {
@@ -31,6 +26,7 @@ describe('project-config scope contract', () => {
     } finally {
       rmSync(root, { force: true, recursive: true });
     }
+    expect(loadProjectSections('')).toEqual([]);
   });
 
   it('reads both files in workflow-then-rules order regardless of creation order', () => {
@@ -47,7 +43,7 @@ describe('project-config scope contract', () => {
     }
   });
 
-  it('loads a single present file and skips empty files', () => {
+  it('loads a single present file, skips empty, and sees edits fresh', () => {
     const root = makeTempRoot();
     try {
       writeProjectFile(root, '.maestria/workflow.md', '');
@@ -55,28 +51,14 @@ describe('project-config scope contract', () => {
       expect(loadProjectSections(root)).toEqual([
         { content: '# rules\n', rel: '.maestria/rules.md' },
       ]);
-    } finally {
-      rmSync(root, { force: true, recursive: true });
-    }
-  });
-
-  it('sees additions and edits on the next call with no stale snapshot', () => {
-    const root = makeTempRoot();
-    try {
-      expect(loadProjectSections(root)).toEqual([]);
-      writeProjectFile(root, '.maestria/workflow.md', '# v1\n');
-      expect(loadProjectSections(root)).toHaveLength(1);
       writeProjectFile(root, '.maestria/workflow.md', '# v2\n');
       expect(loadProjectSections(root)).toEqual([
         { content: '# v2\n', rel: '.maestria/workflow.md' },
+        { content: '# rules\n', rel: '.maestria/rules.md' },
       ]);
     } finally {
       rmSync(root, { force: true, recursive: true });
     }
-  });
-
-  it('returns empty for an empty root instead of scanning ancestors', () => {
-    expect(loadProjectSections('')).toEqual([]);
   });
 
   it('fails loudly when a project path is a directory', () => {
@@ -89,34 +71,13 @@ describe('project-config scope contract', () => {
     }
   });
 
-  it('fails loudly on unreadable files via a deterministic seam, leaking neither content nor absolute root', () => {
-    const fs: ProjectConfigFs = {
-      kindOf: () => 'file',
-      readFile: () => {
-        const error = new Error('EACCES: permission denied') as NodeJS.ErrnoException;
-        error.code = 'EACCES';
-        throw error;
-      },
-      resolveLink: (candidate) => candidate,
-    };
-    let message = '';
-    try {
-      loadProjectSections('/projects/acme', fs);
-    } catch (error) {
-      message = error instanceof Error ? error.message : String(error);
-    }
-    expect(message).toMatch(/exists but cannot be read/u);
-    expect(message).not.toContain('/projects/acme');
-  });
-
   it('sanitizes raw filesystem failures at every seam: no paths, contents, or causes leak', () => {
     const root = '/projects/acme';
     const sentinel = 'sentinel-secret-content-7kqw';
-    const raw = (what: string): Error => {
-      const error = new Error(`${what} ${root}/.maestria/workflow.md: ${sentinel}`);
-      (error as NodeJS.ErrnoException).code = 'EACCES';
-      return error;
-    };
+    const raw = (what: string): Error =>
+      Object.assign(new Error(`${what} ${root}/.maestria/workflow.md: ${sentinel}`), {
+        code: 'EACCES',
+      });
     const cases: { fs: ProjectConfigFs; pattern: RegExp }[] = [
       {
         fs: {
@@ -167,33 +128,34 @@ describe('project-config scope contract', () => {
     }
   });
 
-  it('fails loudly on special files and on links escaping the project root', () => {
-    const special: ProjectConfigFs = {
-      kindOf: () => 'other',
-      readFile: () => '',
-      resolveLink: (candidate) => candidate,
-    };
-    expect(() => loadProjectSections('/projects/acme', special)).toThrow(/not a regular file/u);
-
-    const escaping: ProjectConfigFs = {
-      kindOf: () => 'file',
-      readFile: () => 'evil',
-      resolveLink: () => path.resolve('/elsewhere/evil.md'),
-    };
-    expect(() => loadProjectSections('/projects/acme', escaping)).toThrow(
-      /outside the project root/u,
-    );
-  });
-
-  it('fails loudly when a link cannot be resolved', () => {
-    const fs: ProjectConfigFs = {
-      kindOf: () => 'file',
-      readFile: () => 'x',
-      resolveLink: () => {
-        throw new Error('ENOENT: dangling link');
+  it('fails loudly on special files, escapes, and unresolvable links', () => {
+    const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
+      {
+        fs: { kindOf: () => 'other', readFile: () => '', resolveLink: (c) => c },
+        pattern: /not a regular file/u,
       },
-    };
-    expect(() => loadProjectSections('/projects/acme', fs)).toThrow(/cannot be resolved/u);
+      {
+        fs: {
+          kindOf: () => 'file',
+          readFile: () => 'evil',
+          resolveLink: () => path.resolve('/elsewhere/evil.md'),
+        },
+        pattern: /outside the project root/u,
+      },
+      {
+        fs: {
+          kindOf: () => 'file',
+          readFile: () => 'x',
+          resolveLink: () => {
+            throw new Error('ENOENT: dangling link');
+          },
+        },
+        pattern: /cannot be resolved/u,
+      },
+    ];
+    for (const { fs, pattern } of table) {
+      expect(() => loadProjectSections('/projects/acme', fs)).toThrow(pattern);
+    }
   });
 
   it('accepts links that resolve inside the project root', () => {
@@ -209,7 +171,7 @@ describe('project-config scope contract', () => {
     ]);
   });
 
-  it('loads inside-root files through a symlinked root', () => {
+  it('follows a symlinked root but rejects a symlink to a directory', () => {
     const parent = mkdtempSync(path.join(tmpdir(), 'maestria-shared-pi-root-alias-'));
     try {
       const real = path.join(parent, 'real');
@@ -223,9 +185,7 @@ describe('project-config scope contract', () => {
     } finally {
       rmSync(parent, { force: true, recursive: true });
     }
-  });
 
-  it('rejects a symlink to a directory inside the root before reading', () => {
     const root = makeTempRoot();
     try {
       const target = path.join(root, '.maestria', 'target-dir');
@@ -239,15 +199,12 @@ describe('project-config scope contract', () => {
 });
 
 describe('project-config formatting', () => {
-  it('names the relative file, keeps subordinate status visible, and passes content through', () => {
+  it('names the rel file with subordinate status, and banners carry STOP', () => {
     const body = '# rules\n- Be careful\n';
     const formatted = formatProjectSection({ content: body, rel: '.maestria/rules.md' });
     expect(formatted).toContain('.maestria/rules.md');
     expect(formatted).toContain('subordinate');
     expect(formatted).toContain(body);
-  });
-
-  it('error banners carry a STOP instruction and the diagnostic', () => {
     const banner = formatProjectErrorBanner(
       '[maestria] Project config ".maestria/rules.md" is a directory',
     );

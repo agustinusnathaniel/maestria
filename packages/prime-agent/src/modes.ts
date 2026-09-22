@@ -1,20 +1,8 @@
-// packages/prime-agent/src/modes.ts
-// Prime-local implementation of the Maestria workflow modes (fein/sonar/blitz).
-//
-// Pure mode mechanics (keywords, markers, `## MODE:` section extraction)
-// delegate to `@maestria/shared-mode`, mirroring
-// packages/opencode/src/modes/index.ts. Host-specific concerns stay
-// Prime-local: the `skills/<mode>/SKILL.md` layout, the module prompt cache,
-// `before_agent_start` string-shape injection, and slash-command registration.
-// This module still imports no `@maestria/pi`, `@maestria/shared-pi`, or
-// pi-coding-agent runtime (only the type-only `./pi-api.js` plus the pure,
-// host-SDK-free `@maestria/shared-mode`); `shared-mode` has no filesystem or
-// host APIs.
-//
-// Mode content is NOT duplicated here: it is loaded from the package's
-// generated skills (`skills/<mode>/SKILL.md`, the `## MODE:` section onward),
-// so the extension's injected prompt is exactly the sync-projected mode skill
-// (canonical content lives in packages/core/agent-directives/, ADR-CORE-005).
+// Prime-local workflow modes (fein/sonar/blitz). Pure mechanics delegate to
+// `@maestria/shared-mode`; Prime-local concerns are the skills/<mode> layout,
+// the prompt cache, string-shape injection, and slash commands. Mode content
+// loads from generated skills (`skills/<mode>/SKILL.md`, `## MODE:` onward),
+// so the injected prompt matches the sync-projected skill. See ADR-CORE-005.
 
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -54,11 +42,9 @@ const MODE_COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
 const _promptCache: Partial<Record<ModeKeyword, string>> = {};
 
 /**
- * Load the mode prompt for a keyword from the package's generated skills
- * directory: `skills/<mode>/SKILL.md`, sliced from the `## MODE:` heading
- * onward, prefixed with the `[MODE: <mode>]` marker. Returns an empty string
- * (and warns) when the skill file is missing or has no mode section, so a
- * packaging mistake degrades to "no injection" rather than an extension crash.
+ * Load the mode prompt from `skills/<mode>/SKILL.md` (`## MODE:` onward,
+ * prefixed with the marker). Missing or heading-less skills degrade to an
+ * empty prompt (plus a warning) instead of crashing the extension.
  */
 export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string => {
   const cachedPrompt = _promptCache[keyword];
@@ -72,10 +58,7 @@ export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string =
     if (content.includes('## MODE:')) {
       prompt = `${MODE_MARKERS[keyword]}\n\n${extractModeSection(content)}`;
     } else {
-      // A generated skill without the mode section must not leak the whole
-      // SKILL.md into the system prompt: degrade to "no injection" instead.
-      // (extractModeSection would normalize the whole file; that fail-open
-      // shape is for command files, not skill prompts.)
+      // Heading-less skills must not leak the whole SKILL.md into the prompt.
       console.warn(
         `[maestria] prime-agent: mode skill "${keyword}" has no "## MODE:" heading; ` +
           `mode prompt injection disabled for this mode.`,
@@ -97,12 +80,9 @@ export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string =
 // ---------------------------------------------------------------------------
 
 /**
- * Create the `before_agent_start` handler appending the mode prompt plus
- * root project customization (workflow then rules, read fresh from ctx.cwd
- * each turn; absent files leave the prompt unchanged). Returns undefined
- * when idle. Never throws: broken files surface via notify plus a STOP
- * banner (host swallowing is [inferred] from Pi-lineage behavior).
- * See ADR-CORE-006.
+ * before_agent_start handler: mode prompt plus root project customization,
+ * read fresh each turn. Undefined when idle. Never throws: broken files
+ * surface via notify plus a STOP banner. See ADR-CORE-006.
  */
 export const createModePromptHandler =
   (
@@ -170,10 +150,8 @@ const MODE_CLEAR_COMMAND = 'mode-clear';
 export const STATUS_COMMAND = 'maestria-status';
 
 /**
- * Install the mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`)
- * and the status/help command (`/maestria-status`). Mode selection is persisted
- * as a session custom entry; the prompt is injected on the next agent turn by
- * the `before_agent_start` handler.
+ * Install mode slash commands plus status; selection persists as a session
+ * entry and injects on the next agent turn.
  */
 export const installCommands = (pi: ExtensionAPI, state: MaestriaModeState): void => {
   for (const keyword of MODE_KEYWORDS) {
@@ -182,9 +160,7 @@ export const installCommands = (pi: ExtensionAPI, state: MaestriaModeState): voi
       handler: async (args: string, ctx: ExtensionCommandContext) => {
         state.mode = keyword;
         persistModeState(pi, state);
-        // Forward a goal argument (e.g. `/fein implement the pipeline`) so the
-        // injected mode prompt's "if the user provided a goal, run it now"
-        // instruction has the goal to act on.
+        // Forward a goal argument so the injected "run it now" instruction has content.
         if (args.trim()) {
           pi.sendUserMessage(args.trim(), { deliverAs: 'steer' });
         } else {

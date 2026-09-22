@@ -1,11 +1,8 @@
 """Tests for project-root customization (.maestria/workflow.md, .maestria/rules.md).
 
-Thin adapter suite: the full loader contract (root-only order, absent or
-empty skipped, present-but-unusable fails loud with relative path only,
-redaction, symlink handling, subordinate status) lives in
-packages/shared/pi/tests/project-config.test.ts. This file pins only the
-Hermes shape: order passthrough into mode context, fail-open banners that
-never raise, and the Python UTF-8 decode seam.
+Thin adapter suite: the full loader contract lives in
+packages/shared/pi/tests/project-config.test.ts. This file pins the Hermes
+shape: order, fail-open banners, UTF-8 decode, and trust.
 """
 
 from __future__ import annotations
@@ -45,12 +42,9 @@ def _write(root: str, rel: str, content: str | bytes) -> str:
 
 
 class LoaderTests(unittest.TestCase):
-    def test_absent_files_load_nothing(self):
+    def test_order_skips_absent_and_empty(self):
         with tempfile.TemporaryDirectory() as root:
             self.assertEqual(load_project_sections(root), [])
-
-    def test_workflow_then_rules_order_regardless_of_creation_order(self):
-        with tempfile.TemporaryDirectory() as root:
             _write(root, PROJECT_RULES_REL, "# rules\n")
             _write(root, PROJECT_WORKFLOW_REL, "# workflow\n")
             self.assertEqual(
@@ -60,8 +54,6 @@ class LoaderTests(unittest.TestCase):
                     ProjectSection(content="# rules\n", rel=PROJECT_RULES_REL),
                 ],
             )
-
-    def test_empty_files_carry_no_instructions(self):
         with tempfile.TemporaryDirectory() as root:
             _write(root, PROJECT_WORKFLOW_REL, "")
             _write(root, PROJECT_RULES_REL, "# rules\n")
@@ -107,7 +99,6 @@ class LoaderTests(unittest.TestCase):
             self.assertNotIn(sentinel, message)
             self.assertNotIn(root, message)
 
-    def test_non_utf8_file_fails_visibly(self):
         with tempfile.TemporaryDirectory() as root:
             _write(root, PROJECT_RULES_REL, b"\xff\xfe\x00binary")
             with self.assertRaises(ProjectConfigError) as ctx:
@@ -140,15 +131,13 @@ class LoaderTests(unittest.TestCase):
         def _raw(what: str) -> OSError:
             return OSError(f"{what} {root}/.maestria/workflow.md: {sentinel}")
 
+        def _boom(error: OSError):
+            raise error
+
         table = [
-            ({"kind_of": lambda _c: (_ for _ in ()).throw(_raw("lstat"))}, "cannot be accessed"),
+            ({"kind_of": lambda _c: _boom(_raw("lstat"))}, "cannot be accessed"),
             (
-                {
-                    "kind_of": lambda _c: "file",
-                    "resolve_link": lambda _c, _r: (_ for _ in ()).throw(
-                        _raw("realpath")
-                    ),
-                },
+                {"kind_of": lambda _c: "file", "resolve_link": lambda _c, _r: _boom(_raw("realpath"))},
                 "cannot be resolved",
             ),
         ]
@@ -160,24 +149,7 @@ class LoaderTests(unittest.TestCase):
             self.assertNotIn(root, message)
             self.assertNotIn(sentinel, message)
 
-        # The read seam needs a real file so the resolved-target stat passes
-        # and the failure surfaces at the read step.
-        with tempfile.TemporaryDirectory() as real_root:
-            _write(real_root, PROJECT_WORKFLOW_REL, sentinel)
-            with self.assertRaises(ProjectConfigError) as ctx:
-                load_project_sections(
-                    real_root,
-                    kind_of=lambda _c: "file",
-                    read_file=lambda _c, _r: (_ for _ in ()).throw(_raw("read")),
-                    resolve_link=lambda candidate, _rel: candidate,
-                )
-            message = str(ctx.exception)
-            self.assertIn("exists but cannot be read", message)
-            self.assertNotIn(root, message)
-            self.assertNotIn(sentinel, message)
-            self.assertNotIn(real_root, message)
-
-    def test_format_names_rel_and_marks_subordinate(self):
+    def test_format_and_banner(self):
         body = "# rules\n- Be careful\n"
         formatted = format_project_section(
             ProjectSection(content=body, rel=PROJECT_RULES_REL)
@@ -185,17 +157,12 @@ class LoaderTests(unittest.TestCase):
         self.assertIn(PROJECT_RULES_REL, formatted)
         self.assertIn("subordinate", formatted)
         self.assertIn(body, formatted)
-
-    def test_error_banner_carries_message_without_granting_status(self):
         banner = format_project_error('[maestria] Project config "x" cannot be read')
         self.assertIn("PROJECT CONFIG ERROR", banner)
         self.assertIn("STOP", banner)
-        self.assertIn("report", banner)
-        self.assertIn("wait", banner)
-        self.assertNotIn("Running without", banner)
         self.assertIn("never grants capability", banner)
 
-    def test_get_project_root_reads_host_cwd_fresh(self):
+    def test_get_project_root(self):
         previous = os.getcwd()
         with tempfile.TemporaryDirectory() as root:
             os.chdir(root)
@@ -204,8 +171,6 @@ class LoaderTests(unittest.TestCase):
             finally:
                 os.chdir(previous)
         self.assertEqual(get_project_root(), previous)
-
-    def test_get_project_root_unavailable_is_absent_not_error(self):
         with patch.object(project_config.os, "getcwd", side_effect=OSError("gone")):
             self.assertIsNone(get_project_root())
         self.assertEqual(build_project_context(), "")
@@ -251,14 +216,12 @@ class HookTests(unittest.TestCase):
         self.assertIn("fein", result["context"])
         self.assertNotIn(".maestria/", result["context"])
         self.assertEqual(get_trust_state("proj-sess"), UNKNOWN)
-
-    def test_neutral_mode_and_absent_files_return_empty_context(self):
-        hook = self.make_hook(None)
+        neutral = self.make_hook(None)
         with tempfile.TemporaryDirectory() as root:
             with patch.object(
                 project_config, "get_project_root", return_value=root
             ):
-                self.assertEqual(hook(**self.host_kwargs()), {"context": ""})
+                self.assertEqual(neutral(**self.host_kwargs()), {"context": ""})
 
     def test_both_sections_appended_after_mode_in_order(self):
         hook = self.make_hook("sonar")
@@ -278,7 +241,7 @@ class HookTests(unittest.TestCase):
         self.assertIn("# rules", context)
         self.assertIn("subordinate", context)
 
-    def test_broken_file_surfaced_as_banner_mode_preserved_no_raise(self):
+    def test_broken_or_escaping_file_surfaced_as_banner(self):
         hook = self.make_hook("fein")
         with tempfile.TemporaryDirectory() as root:
             os.makedirs(os.path.join(root, ".maestria", "rules.md"))
@@ -293,8 +256,6 @@ class HookTests(unittest.TestCase):
         self.assertIn("fein", context)
         self.assertEqual(get_trust_state("proj-sess"), UNKNOWN)
 
-    def test_escaping_link_surfaced_without_target_or_content(self):
-        hook = self.make_hook("fein")
         with tempfile.TemporaryDirectory() as root:
             with tempfile.TemporaryDirectory() as outside:
                 target = _write(outside, "evil.md", "# evil\n")

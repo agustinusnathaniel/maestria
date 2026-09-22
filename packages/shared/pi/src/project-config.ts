@@ -1,12 +1,8 @@
 /**
- * Root project customization for Pi-family hosts (no host SDK).
- *
- * Contract: root-only `.maestria/workflow.md` then `.maestria/rules.md`, no
- * ancestor scan; absent or empty files are skipped; present-but-unusable
- * entries throw sanitized diagnostics (relative path plus kind only, no
- * content, absolute paths, or causes). Hosts swallow `before_agent_start`
- * exceptions, so callers use {@link formatProjectErrorBanner} plus notify.
- * Full contract: ADR-CORE-006 plus docs/runtime-support-matrix.md.
+ * Root project customization for Pi-family hosts (no host SDK). Root-only
+ * workflow then rules, absent/empty skipped, unusable throws rel-only
+ * diagnostics; callers use formatProjectErrorBanner plus notify (hosts
+ * swallow before_agent_start exceptions). See ADR-CORE-006.
  *
  * @module
  */
@@ -36,21 +32,22 @@ export interface ProjectConfigFs {
 const isNonEmpty = (value: unknown): value is string => typeof value === 'string' && value !== '';
 
 const isEnoent = (error: unknown): boolean =>
-  typeof error === 'object' &&
-  error !== null &&
-  'code' in error &&
-  (error as { code?: unknown }).code === 'ENOENT';
+  typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'ENOENT';
 
 const isSanitizedDiagnostic = (error: unknown): error is Error =>
   error instanceof Error && error.message.startsWith('[maestria] Project config');
 
-/**
- * Wrap a filesystem failure in a diagnostic naming only the relative file
- * and the failure kind. Already-sanitized diagnostics pass through
- * untouched; raw errors (which may carry absolute paths or file contents)
- * are replaced, and never attached as `cause`, so host error serialization
- * cannot leak them.
- */
+/** Reject a present-but-unusable entry with a rel-only diagnostic. */
+const assertFileKind = (rel: string, kind: ProjectEntryKind): void => {
+  if (kind === 'directory') {
+    throw new Error(`[maestria] Project config "${rel}" is a directory, expected a file`);
+  }
+  if (kind === 'other') {
+    throw new Error(`[maestria] Project config "${rel}" is not a regular file`);
+  }
+};
+
+/** Raw fs failures name only the rel file and kind; sanitized ones pass through. */
 const sanitizeFsError = (rel: string, fallback: string, error: unknown): Error => {
   if (isSanitizedDiagnostic(error)) {
     return error;
@@ -85,11 +82,7 @@ const escapesRoot = (root: string, resolved: string): boolean => {
   return relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative);
 };
 
-/**
- * Load one project file: missing and empty entries yield nothing,
- * present-but-unusable entries throw a sanitized diagnostic. The resolved
- * link target is reclassified before reading, so special targets fail here.
- */
+/** Load one file: missing/empty yields nothing, unusable throws rel-only. */
 const loadOneSection = (
   normalizedRoot: string,
   rel: string,
@@ -105,12 +98,7 @@ const loadOneSection = (
   if (kind === 'missing') {
     return undefined;
   }
-  if (kind === 'directory') {
-    throw new Error(`[maestria] Project config "${rel}" is a directory, expected a file`);
-  }
-  if (kind === 'other') {
-    throw new Error(`[maestria] Project config "${rel}" is not a regular file`);
-  }
+  assertFileKind(rel, kind);
 
   let resolved: string;
   try {
@@ -127,17 +115,10 @@ const loadOneSection = (
   } catch (error) {
     throw sanitizeFsError(rel, 'cannot be accessed', error);
   }
-  if (targetKind === 'directory') {
-    throw new Error(`[maestria] Project config "${rel}" is a directory, expected a file`);
-  }
   if (targetKind === 'missing') {
-    // The target vanished between resolve and stat: fail loudly instead
-    // of silently skipping a present-but-unusable file.
     throw new Error(`[maestria] Project config "${rel}" cannot be accessed`);
   }
-  if (targetKind === 'other') {
-    throw new Error(`[maestria] Project config "${rel}" is not a regular file`);
-  }
+  assertFileKind(rel, targetKind);
   let content: string;
   try {
     content = fs.readFile(candidate);
@@ -150,12 +131,7 @@ const loadOneSection = (
   return { content, rel };
 };
 
-/**
- * Read project customization at call time, in deterministic order. Missing
- * or empty files are skipped; present-but-unusable entries throw a
- * sanitized diagnostic. The root is resolved through symlinks; checks
- * observe the filesystem at call time, not an atomic snapshot.
- */
+/** Read customization in order; missing/empty skipped, unusable throws. */
 export const loadProjectSections = (
   root: string,
   fs: ProjectConfigFs = defaultFs,
@@ -171,8 +147,7 @@ export const loadProjectSections = (
       // oxlint-disable-next-line preserve-caught-error -- the diagnostics contract forbids attaching the raw error (absolute paths may leak through host error serialization); the kind is preserved in the message.
       throw new Error('[maestria] Project config root cannot be accessed');
     }
-    // Absent root: keep the lexical path so the kind check below reports
-    // each file missing (normal, skipped) instead of erroring.
+    // Absent root stays lexical so files report missing (skipped) instead of erroring.
     normalizedRoot = path.resolve(root);
   }
   const sections: ProjectSection[] = [];
@@ -187,23 +162,14 @@ export const loadProjectSections = (
   return sections;
 };
 
-/**
- * Format one project section for system-prompt injection. The header keeps the
- * subordinate status visible at the point of use: project guidance may replace
- * configurable workflows but never waives safety, authorization, or host
- * permissions. The body is project-authored content, never executed.
- */
+/** Format one section; the header keeps subordinate status visible. */
 export const formatProjectSection = (section: ProjectSection): string =>
   [
     `Project customization from ${section.rel} (subordinate guidance: it may replace configurable workflows but never waives safety, authorization, or host permissions):`,
     section.content,
   ].join('\n');
 
-/**
- * Build the fail-loud banner for broken project customization. Adapters
- * surface it via notify plus the system prompt with an explicit STOP, so a
- * broken file fails visibly instead of running with silently absent config.
- */
+/** Fail-loud banner with STOP; callers surface it via notify plus prompt. */
 export const formatProjectErrorBanner = (message: string): string =>
   [
     'Project customization failed to load. STOP: do not execute the user request on potentially overridden configuration.',
@@ -211,7 +177,7 @@ export const formatProjectErrorBanner = (message: string): string =>
     message,
   ].join('\n');
 
-/** Minimal host context surface project handlers read: session cwd plus notify. */
+/** Minimal host surface handlers read: session cwd plus notify. */
 export interface ProjectPromptContext {
   cwd?: unknown;
   ui?: { notify?: (message: string) => void };
@@ -228,12 +194,7 @@ const notifyProjectError = (ctx: ProjectPromptContext | undefined, message: stri
   }
 };
 
-/**
- * Load sections for a handler context without throwing: absent root or
- * files yield no sections, present-but-unusable files yield an error
- * message (already surfaced via notify). Callers render the banner in
- * their host-specific systemPrompt shape.
- */
+/** Load for a handler context without throwing; unusable yields a banner message. */
 export const tryLoadProjectSections = (
   ctx: ProjectPromptContext | undefined,
   fs?: ProjectConfigFs,

@@ -175,9 +175,8 @@ type SystemTransformOutput = Parameters<
 >[1];
 
 /**
- * Inject project customization contents into the system prompt in place,
- * read fresh on every model call. A present-but-unreadable file throws
- * here, which the host propagates as a failed model call.
+ * Inject project contents in place, fresh on every call. Unusable files
+ * throw here, which the host propagates as a failed model call.
  */
 const injectProjectSystem = (output: SystemTransformOutput, projectRoot: string): void => {
   const sections = loadProjectSections(projectRoot);
@@ -206,8 +205,7 @@ export const MaestriaPlugin: Plugin = async (
     (parsed.modes?.disabledKeywords ?? []).map((keyword) => keyword.toLowerCase()),
   );
   const agents = loadAgents();
-  // Resolve the root string only: file contents are read fresh on every
-  // model call, so project edits need no restart and no snapshot goes stale.
+  // File contents read fresh on every call, so edits need no restart.
   const projectRoot = resolveProjectRoot(input);
   await Promise.resolve();
 

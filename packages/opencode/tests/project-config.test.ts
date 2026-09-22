@@ -19,9 +19,8 @@ type SystemTransformHook = NonNullable<Hooks['experimental.chat.system.transform
 type SystemTransformInput = Parameters<SystemTransformHook>[0];
 type SystemTransformOutput = Parameters<SystemTransformHook>[1];
 
-// The hook under test never reads its input; fabricating a full SDK Model
-// value would add no signal, so the input is a minimal stub.
-// oxlint-disable-next-line no-unsafe-type-assertion -- test seam only: system.transform ignores its input, and a full SDK Model literal would assert nothing about the hook contract.
+// The hook never reads its input, so the input is a minimal stub.
+// oxlint-disable-next-line no-unsafe-type-assertion -- test seam only: a full SDK Model literal would assert nothing about the hook contract.
 const stubTransformInput = (): SystemTransformInput => ({}) as SystemTransformInput;
 
 const stubTransformOutput = (system: string[] = []): SystemTransformOutput => ({ system });
@@ -57,11 +56,7 @@ describe('resolveProjectRoot', () => {
     },
     {
       expected: '/home/user/notes',
-      input: {
-        directory: '/home/user/notes',
-        project: { worktree: '/' },
-        worktree: '/',
-      },
+      input: { directory: '/home/user/notes', project: { worktree: '/' }, worktree: '/' },
       name: 'skips the "/" worktree sentinel and uses the session directory',
     },
     {
@@ -124,25 +119,32 @@ describe('loadProjectSections (thin adapter: order passthrough plus redaction)',
     } finally {
       removeRoot(root);
     }
-
-    const escaping: ProjectConfigFs = {
-      kindOf: () => 'file',
-      readFile: () => 'evil',
-      resolveLink: () => path.resolve('/elsewhere/evil.md'),
-    };
-    expect(() => loadProjectSections('/projects/acme', escaping)).toThrow(
-      /outside the project root/u,
-    );
+    const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
+      {
+        fs: { kindOf: () => 'other', readFile: () => '', resolveLink: (c) => c },
+        pattern: /not a regular file/u,
+      },
+      {
+        fs: {
+          kindOf: () => 'file',
+          readFile: () => 'evil',
+          resolveLink: () => path.resolve('/elsewhere/evil.md'),
+        },
+        pattern: /outside the project root/u,
+      },
+    ];
+    for (const { fs, pattern } of table) {
+      expect(() => loadProjectSections('/projects/acme', fs)).toThrow(pattern);
+    }
   });
 
   it('sanitizes raw filesystem failures at every seam: no paths, contents, or causes leak', () => {
     const root = '/projects/acme';
     const sentinel = 'sentinel-secret-content-8pld';
-    const raw = (what: string): Error => {
-      const error = new Error(`${what} ${root}/.maestria/workflow.md: ${sentinel}`);
-      (error as NodeJS.ErrnoException).code = 'EACCES';
-      return error;
-    };
+    const raw = (what: string): Error =>
+      Object.assign(new Error(`${what} ${root}/.maestria/workflow.md: ${sentinel}`), {
+        code: 'EACCES',
+      });
     const cases: { fs: ProjectConfigFs; pattern: RegExp }[] = [
       {
         fs: {
@@ -194,18 +196,13 @@ describe('loadProjectSections (thin adapter: order passthrough plus redaction)',
   });
 });
 
-describe('formatProjectSection', () => {
-  it('names the relative file, keeps subordinate status visible, and passes content through', () => {
+describe('formatProjectSection and appendInstructions', () => {
+  it('names the rel file with subordinate status and merges without duplicates', () => {
     const body = '# rules\n- Be careful\n';
     const formatted = formatProjectSection({ content: body, rel: '.maestria/rules.md' });
     expect(formatted).toContain('.maestria/rules.md');
     expect(formatted).toContain('subordinate');
     expect(formatted).toContain(body);
-  });
-});
-
-describe('appendInstructions', () => {
-  it('preserves user entries and appends without duplicates on repeat calls', () => {
     const once = appendInstructions(['user.md'], ['a.md', 'b.md']);
     expect(once).toEqual(['user.md', 'a.md', 'b.md']);
     expect(appendInstructions(once, ['a.md', 'b.md'])).toEqual(['user.md', 'a.md', 'b.md']);
@@ -234,11 +231,14 @@ describe('MaestriaPlugin project content', () => {
   it('injects both sections in place, preserving existing system entries', async () => {
     const root = makeTempRoot();
     try {
-      writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
-      writeProjectFile(root, '.maestria/rules.md', '# rules\n');
       const plugin = await MaestriaPlugin(pluginInputForRoot(root));
       const output = stubTransformOutput(['existing system block']);
       const before: string[] = output.system;
+      await getSystemTransformHook(plugin)(stubTransformInput(), output);
+      expect(output.system).toEqual(['existing system block']);
+
+      writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
+      writeProjectFile(root, '.maestria/rules.md', '# rules\n');
       await getSystemTransformHook(plugin)(stubTransformInput(), output);
 
       // In-place mutation of the same array the host passed in.
@@ -249,18 +249,6 @@ describe('MaestriaPlugin project content', () => {
       expect(output.system[1]).toContain('# workflow');
       expect(output.system[2]).toContain('.maestria/rules.md');
       expect(output.system[2]).toContain('# rules');
-    } finally {
-      removeRoot(root);
-    }
-  });
-
-  it('leaves the system array untouched when both files are absent', async () => {
-    const root = makeTempRoot();
-    try {
-      const plugin = await MaestriaPlugin(pluginInputForRoot(root));
-      const output = stubTransformOutput(['existing system block']);
-      await getSystemTransformHook(plugin)(stubTransformInput(), output);
-      expect(output.system).toEqual(['existing system block']);
     } finally {
       removeRoot(root);
     }

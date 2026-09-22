@@ -8,10 +8,9 @@ import type { ExtensionContext } from '@/pi-api.ts';
 import type { ProjectConfigFs } from '@/project-config.ts';
 import type { MaestriaModeState } from '@/state.ts';
 
-// Note: modes.ts keeps a module-level prompt cache keyed by mode keyword, so
-// each test below exercises a distinct keyword exactly once. Files are written
-// under a temp dir (never the generated skills/) so these tests are
-// deterministic and independent of the sync-projected skills on disk.
+// Note: modes.ts keeps a module-level prompt cache per keyword, so each test
+// uses a distinct keyword once. Files live under a temp dir (never the
+// generated skills/) for deterministic results.
 const tempDirs: string[] = [];
 const makeSkillsDir = (name: string, keyword: string, skillFile?: string): string => {
   const dir = mkdtempSync(path.join(tmpdir(), `maestria-prime-agent-${name}-`));
@@ -62,7 +61,7 @@ const SKILL_WITHOUT_MODE_HEADING = [
   'description: Research-only mode.',
   '---',
   '',
-  'Research-only mode. Load the orchestrator skill.',
+  'Research-only mode.',
   '',
 ].join('\n');
 
@@ -115,9 +114,7 @@ describe('before_agent_start mode prompt injection', () => {
       extensionContext,
     );
 
-    // The generated sonar SKILL.md in this dir has no mode section: the whole
-    // skill body must not be injected; the handler must leave the prompt
-    // untouched.
+    // The whole skill body must not leak into the prompt.
     expect(result).toBeUndefined();
   });
 

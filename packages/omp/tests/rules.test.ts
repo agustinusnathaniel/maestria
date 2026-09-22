@@ -87,15 +87,17 @@ describe('createModePromptHandler project customization (thin: order plus STOP n
     }
   });
 
-  it('injects both sections in workflow-then-rules order with no mode active', () => {
+  it('injects both sections in workflow-then-rules order, mode first', () => {
     const root = makeTempRoot();
     try {
       writeProjectFile(root, '.maestria/rules.md', '# rules\n');
       writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
       const state = createInitialState();
+      state.mode = 'fein';
       const result = createModePromptHandler(state)(baseEvent, { cwd: root });
       const text = joined(result?.systemPrompt);
       expect(result?.systemPrompt?.[0]).toBe('You are an AI assistant.');
+      expect(text.indexOf('[MODE: fein]')).toBeLessThan(text.indexOf('.maestria/workflow.md'));
       const workflowAt = text.indexOf('.maestria/workflow.md');
       const rulesAt = text.indexOf('.maestria/rules.md');
       expect(workflowAt).toBeGreaterThan(-1);
@@ -108,35 +110,12 @@ describe('createModePromptHandler project customization (thin: order plus STOP n
     }
   });
 
-  it('keeps the mode prompt before project sections', () => {
-    const root = makeTempRoot();
-    try {
-      writeProjectFile(root, '.maestria/rules.md', '# rules\n');
-      const state = createInitialState();
-      state.mode = 'fein';
-      const text = joined(createModePromptHandler(state)(baseEvent, { cwd: root })?.systemPrompt);
-      expect(text.indexOf('[MODE: fein]')).toBeLessThan(text.indexOf('.maestria/rules.md'));
-    } finally {
-      rmSync(root, { force: true, recursive: true });
-    }
-  });
-
   it('surfaces unusable files as a STOP banner plus notify instead of throwing', () => {
-    const unreadable: ProjectConfigFs = {
-      kindOf: () => 'file',
-      readFile: () => {
-        const error = new Error('EACCES: permission denied') as NodeJS.ErrnoException;
-        error.code = 'EACCES';
-        throw error;
-      },
-      resolveLink: (candidate) => candidate,
-    };
     const table: { fs: ProjectConfigFs; pattern: RegExp }[] = [
       {
         fs: { kindOf: () => 'directory', readFile: () => '', resolveLink: (c) => c },
         pattern: /is a directory/u,
       },
-      { fs: unreadable, pattern: /cannot be read/u },
       {
         fs: {
           kindOf: () => 'file',

@@ -1,16 +1,8 @@
 """Project-root customization loader for the maestria Hermes plugin.
 
-Reads ``.maestria/workflow.md`` then ``.maestria/rules.md`` from the session
-project root (process working directory at call time) and formats them as
-subordinate model guidance for ``pre_llm_call`` injection.
-
-Contract: root only with no ancestor or nested lookup; fresh read every
-turn; absent or empty files leave the context unchanged; a
-present-but-unusable file raises ``ProjectConfigError`` naming only the
-relative path and failure kind (no contents, absolute paths, or raw causes).
-The hook converts failures into a visible STOP banner because the host runs
-``pre_llm_call`` fail-open. Full contract: ADR-CORE-006 plus
-docs/runtime-support-matrix.md.
+Root-only workflow then rules, fresh read every turn; absent/empty leaves
+the context unchanged, present-but-unusable raises ProjectConfigError with
+rel path and kind only. See ADR-CORE-006 and docs/runtime-support-matrix.md.
 """
 
 from __future__ import annotations
@@ -27,48 +19,33 @@ logger = logging.getLogger(__name__)
 PROJECT_WORKFLOW_REL = ".maestria/workflow.md"
 PROJECT_RULES_REL = ".maestria/rules.md"
 
-# Deterministic load order: workflow sequencing first, then project rules,
-# matching the canonical orchestrator guidance and the OpenCode projection.
+# Workflow first, then rules, matching the canonical orchestrator guidance.
 PROJECT_CONFIG_REL_PATHS = (PROJECT_WORKFLOW_REL, PROJECT_RULES_REL)
 
 
 class ProjectConfigError(Exception):
-    """A project file is present but unusable (fail visible, fail loud)."""
+    """A project file is present but unusable."""
 
 
 @dataclass(frozen=True)
 class ProjectSection:
-    """One loaded project file: its content plus its root-relative path."""
+    """One loaded project file with its root-relative path."""
 
     content: str
     rel: str
 
 
 def get_project_root() -> str | None:
-    """Return the session project root for this call, or None.
-
-    The root is the host-selected session working directory read fresh on
-    every call. An undeterminable directory is treated as absent (normal,
-    unchanged behavior), never as an error naming paths.
-    """
+    """Return the session root for this call, or None when absent."""
     try:
-        cwd = os.getcwd()
+        return os.getcwd() or None
     except OSError:
         logger.debug("maestria project root unavailable (cwd unreadable)")
         return None
-    if not cwd:
-        return None
-    return cwd
 
 
 def _entry_kind(candidate: str) -> str:
-    """Classify *candidate* without following symlinks.
-
-    Returns "missing", "file", "directory", or "other". A dangling symlink
-    classifies as "file" here (lstat does not follow it); the strict
-    resolution step then fails visibly. Non-missing stat failures propagate
-    so the caller maps them with the contract rel path (no path leak).
-    """
+    """Classify without following symlinks: missing, file, directory, other."""
     try:
         st = os.lstat(candidate)
     except FileNotFoundError:
@@ -84,7 +61,7 @@ def _entry_kind(candidate: str) -> str:
 
 
 def _resolve_link(candidate: str, rel: str) -> str:
-    """Strictly resolve *candidate* (symlinks included) or raise visibly."""
+    """Strictly resolve symlinks or raise visibly."""
     try:
         return str(Path(candidate).resolve(strict=True))
     except (OSError, RuntimeError) as exc:
@@ -104,7 +81,7 @@ def _escapes_root(root: str, resolved: str) -> bool:
 
 
 def _read_text(candidate: str, rel: str) -> str:
-    """Read *candidate* as UTF-8 text or raise visibly (never leak content)."""
+    """Read UTF-8 text or raise visibly without leaking content."""
     try:
         with open(candidate, encoding="utf-8") as handle:
             return handle.read()
@@ -114,6 +91,18 @@ def _read_text(candidate: str, rel: str) -> str:
         ) from exc
 
 
+def _require_file_kind(rel: str, kind: str) -> None:
+    """Raise rel-only when a present entry is not a regular file."""
+    if kind == "directory":
+        raise ProjectConfigError(
+            f'[maestria] Project config "{rel}" is a directory, expected a file'
+        )
+    if kind != "file":
+        raise ProjectConfigError(
+            f'[maestria] Project config "{rel}" is not a regular file'
+        )
+
+
 def load_project_sections(
     root: str,
     *,
@@ -121,14 +110,7 @@ def load_project_sections(
     read_file: Callable[[str, str], str] = _read_text,
     resolve_link: Callable[[str, str], str] = _resolve_link,
 ) -> list[ProjectSection]:
-    """Load project customization sections for *root* in contract order.
-
-    Missing files are normal and skipped; empty files carry no instructions
-    and are skipped. Anything present but unusable raises
-    ProjectConfigError naming only the relative path and the failure kind.
-    The *kind_of*, *read_file*, and *resolve_link* seams exist for
-    deterministic tests; production uses the real filesystem boundary.
-    """
+    """Load sections in contract order; unusable entries raise rel-only."""
     if not isinstance(root, str) or not root:
         return []
     normalized_root = os.path.realpath(root)
@@ -146,14 +128,7 @@ def load_project_sections(
             ) from exc
         if kind == "missing":
             continue
-        if kind == "directory":
-            raise ProjectConfigError(
-                f'[maestria] Project config "{rel}" is a directory, expected a file'
-            )
-        if kind != "file":
-            raise ProjectConfigError(
-                f'[maestria] Project config "{rel}" is not a regular file'
-            )
+        _require_file_kind(rel, kind)
 
         try:
             resolved = resolve_link(candidate, rel)
@@ -167,10 +142,8 @@ def load_project_sections(
             raise ProjectConfigError(
                 f'[maestria] Project config "{rel}" resolves outside the project root'
             )
-        # Validate the resolved target before reading: a symlink to a FIFO,
-        # directory, or other special file must fail here rather than block
-        # the event loop (FIFO open waits for a writer) or misread. The
-        # resolved path contains no symlinks, so this observes the target.
+        # Resolved targets are rechecked before reading so FIFOs and
+        # special files fail here instead of blocking or misreading.
         try:
             target_mode = os.stat(resolved).st_mode
         except OSError as exc:
@@ -200,11 +173,7 @@ def load_project_sections(
 
 
 def format_project_section(section: ProjectSection) -> str:
-    """Format one section for user-message injection.
-
-    The header keeps the subordinate status visible at the point of use.
-    The body is project-authored content, never executed.
-    """
+    """Format one section; the header keeps subordinate status visible."""
     return (
         f"Project customization from {section.rel} (subordinate guidance: "
         "it may replace configurable workflows but never waives safety, "
@@ -214,12 +183,7 @@ def format_project_section(section: ProjectSection) -> str:
 
 
 def format_project_error(message: str) -> str:
-    """Format a visible config-failure banner for user-message injection.
-
-    *message* already names only the relative path and failure kind. The
-    banner advises STOP/report/wait; the hook runs fail-open, so this
-    advisory banner (not enforcement) is the loudest supported signal.
-    """
+    """Format a fail-open STOP banner; advisory, never enforcement."""
     return (
         "[MAESTRIA PROJECT CONFIG ERROR] "
         f"{message}. STOP: do not run with potentially overridden "
@@ -229,12 +193,7 @@ def format_project_error(message: str) -> str:
 
 
 def build_project_context() -> str:
-    """Load and format project context for this turn, or "" when absent.
-
-    A present-but-unusable file returns a visible error banner instead of
-    silently absent config. Never raises for filesystem state; unexpected
-    failures are the caller's to contain (see pre_llm).
-    """
+    """Load and format context for this turn, or "" when absent."""
     root = get_project_root()
     if root is None:
         return ""

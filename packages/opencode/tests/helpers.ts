@@ -27,8 +27,7 @@ export const pluginInput = {
   worktree: '/tmp/opencode-plugin-test',
 } satisfies PluginInput;
 
-// Input rooted at a given directory without touching the throwing
-// $/client getters (the plugin under test never reads those).
+// Input rooted at a directory without touching the throwing $/client getters.
 export const pluginInputForRoot = (root: string): PluginInput => ({
   get $(): PluginInput['$'] {
     return unusedInputDependency('shell');
@@ -43,9 +42,7 @@ export const pluginInputForRoot = (root: string): PluginInput => ({
   worktree: root,
 });
 
-// Shared project-config builders: thin adapter suites reuse these instead of
-// redefining temp-root helpers per file. The full loader contract lives in
-// @maestria/shared-pi tests.
+// Shared builders; the full loader contract lives in @maestria/shared-pi tests.
 export const makeTempRoot = (): string => mkdtempSync(path.join(tmpdir(), 'maestria-project-'));
 
 export const writeProjectFile = (root: string, rel: string, content: string): string => {

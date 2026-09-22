@@ -13,12 +13,9 @@ const __dirname = import.meta.dirname;
 const COMMANDS_DIR = `${__dirname}/../agents/commands`;
 
 /**
- * Creates a before_agent_start handler injecting the mode prompt plus root
- * project customization (workflow then rules, read fresh from ctx.cwd each
- * turn; absent files leave the prompt unchanged). Returns undefined when
- * idle. Never throws: broken files surface via notify plus a STOP banner
- * appended to the systemPrompt array (the OMP host swallows handler
- * exceptions). See ADR-CORE-006.
+ * before_agent_start handler: mode prompt plus root project customization,
+ * read fresh each turn. Undefined when idle. Never throws: broken files
+ * surface via notify plus a STOP banner. See ADR-CORE-006.
  */
 export const createModePromptHandler =
   (state: MaestriaState, fs?: ProjectConfigFs) =>
