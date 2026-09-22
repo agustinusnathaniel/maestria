@@ -1,12 +1,6 @@
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 
-/**
- * OpenCode-local loader, mirroring the Pi-family contract without depending
- * on private @maestria/shared-pi: root-only workflow then rules,
- * absent/empty skipped, present-but-unusable throws rel-only diagnostics,
- * failing the model call. See ADR-CORE-006 and docs/runtime-support-matrix.md.
- */
 export const PROJECT_WORKFLOW_REL = '.maestria/workflow.md';
 export const PROJECT_RULES_REL = '.maestria/rules.md';
 export const PROJECT_CONFIG_REL_PATHS = [PROJECT_WORKFLOW_REL, PROJECT_RULES_REL] as const;

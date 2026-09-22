@@ -1,7 +1,3 @@
-// Root-only project customization (no shared-pi import per ADR-CORE-014
-// isolation). Workflow then rules; absent/empty skipped, unusable throws
-// rel-only diagnostics (see ADR-CORE-006).
-
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 
