@@ -39,16 +39,11 @@ Before this ADR, intent could only be expressed through ambiguous natural-langua
 | Code blocks | Keywords inside code fences and `inline` backtick spans are excluded |
 | Stripped before orchestrator | Removed from message text |
 
-Rationale for plain words over bracketed syntax:
-
-- **Lower friction** - `fein: map the auth module` reads naturally; `[MODE: FOCUSED] ...` is noisy and mechanical.
-- **Learnable by context** - `blitz: fix this bug` infers its pattern from `sonar: what does this code do`.
-- **No prefix collision** - the keywords are not common programming terms; false positives are negligible.
-- **Most-restrictive-wins** handles rephrasing mid-message: `we need sonar for this but actually blitz it`.
+Plain words over bracketed syntax: lower friction (`fein: map the auth module` reads naturally), learnable by context, no prefix collision (the keywords are not common programming terms), and most-restrictive-wins handles mid-message rephrasing.
 
 ### Mechanism: Hybrid Hook + Prompt
 
-The design separates detection (hook) from behavior (prompt + global rules), avoiding pipeline logic in TypeScript while keeping detection reliable.
+Detection lives in the hook; behavior lives in prompts plus orchestrator and global rules. No pipeline logic in TypeScript beyond detection.
 
 | Layer               | What it does                                         |
 | ------------------- | ---------------------------------------------------- |
@@ -57,63 +52,9 @@ The design separates detection (hook) from behavior (prompt + global rules), avo
 | Orchestrator rules  | Mode behavior definitions, pipeline overrides        |
 | Global rules        | Awareness bullet: "mode keywords change pipeline"    |
 
-#### Hook Behavior
+The `chat.message` hook tests each message, resolves multiples to the most restrictive mode, strips the keyword, and prepends the `[MODE: fein]` (or `sonar`/`blitz`) marker plus that mode's summary prompt. The marker is **re-injected every turn**, so the orchestrator receives the mode instruction fresh each time and mode changes mid-task carry no stale state. Other adapters may persist mode state and must document a clear/reset path.
 
-The `chat.message` hook:
-
-1. Tests the incoming message against `\bfein\b`, `\bsonar\b`, `\bblitz\b`
-2. If multiple match, the most restrictive mode wins (fein > sonar > blitz)
-3. Strips the keyword from the message
-4. Prepends the `[MODE: fein]` (or `sonar`/`blitz`) marker plus that mode's summary prompt
-
-For OpenCode, the marker is **re-injected every turn**: the hook fires on every user message, so the orchestrator receives the mode instruction fresh each time. This eliminates stale-state bugs (what happens if the mode changes mid-task). Other adapters may persist mode state and must document a clear/reset path.
-
-#### No Phase Tracking
-
-For OpenCode, the mode is per-turn, not per-phase; conversation history tracks progress between turns. Adapters that use session state must document its lifetime and expose a neutral reset such as `/mode-clear`.
-
-### Mode Prompts (TypeScript Definition)
-
-Prompts are defined as TypeScript strings and injected by the hook at the start of each turn:
-
-#### fein prompt
-
-```
-## MODE: fein (Full Pipeline)
-
-Execute the complete fein pipeline: mandatory reconnaissance
-(@adventurer) → design/plan (@architect or @planner) →
-implementation (@builder) → review (@reviewer).
-Do NOT skip any phase unless the user explicitly overrides
-in the same turn.
-```
-
-#### sonar prompt
-
-```
-## MODE: sonar (Research Only)
-
-Research mode: reconnaissance and design only. Delegate to
-@adventurer (recon) or @planner (read-only analysis). Add only a
-second read-only @adventurer/@planner when a distinct output is needed.
-STOP after delivering findings. Do NOT implement, write code, or create
-any production files.
-```
-
-#### blitz prompt
-
-```
-## MODE: blitz (Fast Implementation)
-
-Speed mode: skip optional reconnaissance and design ceremony. Go directly
-to @builder for familiar low-risk implementation. Required validation and
-review floors remain; never use blitz to bypass safety, authorization, or
-branch requirements.
-```
-
-### Prompt Depth Gap
-
-Each prompt fully describes its mode's pipeline behavior without referencing the orchestrator's global CRITICAL RULES, so behavior changes require editing only the prompt strings. The trade-off is duplication with those rules, but mode overrides arrive as complete briefs.
+Mode is per-turn, not per-phase; conversation history tracks progress between turns. Adapters using session state must document its lifetime and expose a neutral reset such as `/mode-clear`. Each mode prompt fully describes its pipeline behavior without referencing the orchestrator's global CRITICAL RULES, so behavior changes require editing only the prompt strings at the cost of duplicating those rules.
 
 ### Config Model: Denylist Only
 
@@ -138,21 +79,11 @@ type PluginOptions = {
 MaestriaPlugin({ modes: { disabledKeywords: ['blitz'] } });
 ```
 
-Rationale:
-
-- **Denylist over allowlist** - modes are additive: a new mode works out of the box, and users exclude it by name.
-- **No default mode** - the standard pipeline is the implicit fallback.
-- **No per-agent overrides** - mode governs the orchestrator's pipeline, not agent behavior.
+Denylist over allowlist (a new mode works out of the box), no default mode (the standard pipeline is the implicit fallback), no per-agent overrides (mode governs the orchestrator's pipeline, not agent behavior).
 
 ### ADR-Naming Compliance (ADR-CORE-002)
 
-The keywords are functional descriptors, not mythological or thematic:
-
-- **fein** - German for "fine, precise" - careful, methodical work
-- **sonar** - technology metaphor - scanning and depth-finding without action
-- **blitz** - German for "lightning" - speed and minimal ceremony
-
-This follows ADR-CORE-002's principle: "functional naming tells you what the agent does."
+The keywords are functional descriptors, not mythological or thematic: **fein** (German for "fine, precise"), **sonar** (technology metaphor for scanning without action), **blitz** (German for "lightning"). Functional naming tells you what the agent does.
 
 ### What We Avoid
 
@@ -170,27 +101,11 @@ This follows ADR-CORE-002's principle: "functional naming tells you what the age
 
 ## Consequences
 
-- Positive: one-word intent that is unambiguous and machine-detectable
-- Positive: plain words integrate naturally; no bracket syntax or special characters
-- Positive: per-turn detection allows switching modes mid-task without stale state
-- Positive: the hook is minimal and easy to audit
-- Positive: denylist config is one array, with no mode resolution logic
-- Positive: prompts live in TypeScript for hook injection - faster than file reads, at the cost of a package rebuild to edit
-- Positive: ADR-CORE-002 compliant naming
-- Positive: no default mode leaves existing orchestrator behavior undisturbed
-- Positive: most-restrictive-wins lets users self-correct mid-message
-- Negative: three more concepts for users to learn
-- Negative: plain-word detection can false-positive (e.g., a code snippet containing "sonar")
-- Negative: no hybrid shortcut (e.g., "research + build" needs two turns)
-- Negative: the hook adds a trivial but measurable per-message processing step
+One-word machine-detectable intent in plain words, with per-turn detection (mid-task switching, no stale state), a minimal auditable hook, a one-array denylist, and ADR-CORE-002 compliant naming, all without disturbing existing orchestrator behavior. Costs: three more concepts to learn; plain-word false positives (e.g., "sonar" in a code snippet); no hybrid shortcut ("research + build" needs two turns); a trivial per-message processing step. (Historical note: prompts lived in TypeScript for hook injection at the cost of a package rebuild to edit; see the 2026-09-22 note above for the current file-loaded arrangement.)
 
 ## Lessons Learned
 
-1. **Plain words over brackets came from user-first reasoning.** Bracketed syntax is machine-unambiguous but human-mechanical.
-2. **Per-turn mode eliminates stale-state bugs.** A session-level flag would raise unanswerable questions about mid-session switches and compacted state; each message is evaluated fresh.
-3. **The hybrid split follows ADR-CORE-002 and ADR-OC-001.** Minimal hooks from CORE-002; policy in directives from OC-001. Detection in the hook, behavior in the orchestrator rules.
-4. **Mode prompts are orchestrator rules, not global rules.** Mode affects only the orchestrator's pipeline, per ADR-CORE-001's cross-cutting-only filter.
-5. **Denylist is forward-safe.** A fourth mode reaches all existing users automatically; an allowlist would require explicit opt-in per mode.
+Plain words over brackets came from user-first reasoning; per-turn mode eliminates stale-state bugs (no session flag to reconcile across mid-session switches or compacted state); the hybrid split follows ADR-CORE-002 (minimal hooks) and ADR-OC-001 (policy in directives); mode prompts are orchestrator rules, not global rules, per ADR-CORE-001's cross-cutting-only filter; denylist config is forward-safe (a fourth mode reaches existing users automatically).
 
 ## Date
 
