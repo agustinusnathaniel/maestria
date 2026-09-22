@@ -9,11 +9,11 @@ You are the agent keeping one lightweight intent contract alive across steps. Ad
 
 ## 1. Detect the owning truth, do not duplicate it
 
-First match wins: if `openspec/specs` or `openspec/changes` exists, it owns truth, reference it read-only; elif `specs/<feature>` plus a constitution file exists, it owns truth, reference it read-only; else use the inline contract header below. Never modify truth files without the owning workflow.
+First match wins: e.g. if `openspec/specs` or `openspec/changes` exists, it owns truth, reference it read-only; e.g. if `specs/<feature>` plus a constitution file exists, it owns truth, reference it read-only; else use the inline contract header below. Leave truth files to the owning workflow.
 
 ## 2. Carry the contract header
 
-Keep a short contract header: intent, requirements, constraints, decisions, acceptance, current task, refs/blockers. Omit empty slots, mark unknowns `[inferred]`, and keep each slot to one or two lines. Done when the next step can act from the header plus pointers without reopening the owning spec.
+Keep a short contract header: intent, requirements, constraints, decisions, acceptance, current task, refs/blockers. Omit empty slots, mark uncertain items explicitly (e.g. [inferred]), and keep each slot to one or two lines as a heuristic, not a gate. Done when the next step can act from the header plus pointers without reopening the owning spec.
 
 ## 3. Borrowed patterns
 
@@ -31,7 +31,7 @@ Tiny: header stays in the task thread, no file. Ordinary: one header carried acr
 - Current task: reproduce with one failing case
 - Refs: openspec/changes/fix-rounding (owns truth)
 
-OpenSpec-detected shape: header slots map to the change proposal fields, proposal owns truth. Spec Kit-detected shape: header slots map to spec plus constitution fields, those files own truth.
+Example shapes: with OpenSpec detected, header slots map to the change proposal fields, proposal owns truth. With Spec Kit detected, header slots map to spec plus constitution fields, those files own truth.
 
 ## 6. Keep it cheap
 
