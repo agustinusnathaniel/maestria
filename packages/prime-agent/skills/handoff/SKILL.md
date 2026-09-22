@@ -22,4 +22,4 @@ Use a handoff when another agent or later step needs context. Include only:
 Keep it concise, reference existing artifacts instead of copying history, and
 proceed on ordinary ambiguity after documenting a material assumption.
 
-For an optional 7-slot header shape, see the available `spec-contract` skill; still optional and absence is normal.
+For an optional contract header shape, see the available `spec-contract` skill; still optional and absence is normal.

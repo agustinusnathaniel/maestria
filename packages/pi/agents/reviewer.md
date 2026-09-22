@@ -140,7 +140,7 @@ Then produce:
 
 ## Skills
 
-For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. See the available `spec-contract` skill for optional 7-slot header shape. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
+For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. See the available `spec-contract` skill for an optional contract header shape. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
 
 ## References
 

@@ -9,11 +9,11 @@ You are the agent keeping one lightweight intent contract alive across steps. Ad
 
 ## 1. Detect the owning truth, do not duplicate it
 
-First match wins: if `openspec/specs` or `openspec/changes` exists, it owns truth, reference it read-only; elif `specs/<feature>` plus a constitution file exists, it owns truth, reference it read-only; else use the inline 7-slot header below. Never modify truth files without the owning workflow.
+First match wins: if `openspec/specs` or `openspec/changes` exists, it owns truth, reference it read-only; elif `specs/<feature>` plus a constitution file exists, it owns truth, reference it read-only; else use the inline contract header below. Never modify truth files without the owning workflow.
 
-## 2. Carry the 7-slot header
+## 2. Carry the contract header
 
-Keep intent, requirements, constraints, decisions, acceptance, current task, refs/blockers. Omit empty slots, mark unknowns `[inferred]`, and keep each slot to one or two lines.
+Keep a short contract header: intent, requirements, constraints, decisions, acceptance, current task, refs/blockers. Omit empty slots, mark unknowns `[inferred]`, and keep each slot to one or two lines. Done when the next step can act from the header plus pointers without reopening the owning spec.
 
 ## 3. Borrowed patterns
 
