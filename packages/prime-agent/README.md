@@ -19,7 +19,7 @@ For skills-only installs, point Prime at the package's `skills/` directory in se
 
 ## What It Provides
 
-- **7 specialist skills** - adventurer, architect, builder, diagnose, planner, reviewer, writer.
+- **Specialist skills** (7 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/prime-agent/skills) for the current list) - adventurer, architect, builder, diagnose, planner, reviewer, writer.
 - **Orchestration and rules skills** - `orchestrator`, `global-rules`, `handoff`, `iteration-limits`.
 - **Workflow mode skills** - `fein`, `sonar`, `blitz`, loaded on demand by description matching or invoked explicitly as `/skill:fein` etc.
 - **Executable extension** - `/fein`, `/sonar`, `/blitz`, `/mode-clear`, and `/maestria-status` commands with session-scoped mode state.

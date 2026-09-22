@@ -16,12 +16,12 @@ This clones the maestria repository and enables the plugin. See the [user-facing
 
 ## What It Provides
 
-- **12 skills** - 9 methodology skills (7 specialists + orchestrator + global rules) plus 3 command workflow skills (`/fein`, `/sonar`, `/blitz`).
+- **Skills** (12 as of 2026-09-22; see the [user-facing docs](https://maestria.sznm.dev/hermes/) for the current list) - 9 methodology skills (7 specialists + orchestrator + global rules) plus 3 command workflow skills (`/fein`, `/sonar`, `/blitz`).
 - **`llm_execution` middleware** - opt-in mode footer annotation (enable via `MAESTRIA_MODE_FOOTER=1`).
 - **Workflow modes** - `/fein`, `/sonar`, `/blitz`, `/mode`, `/mode-clear` with mode-based tool gating (for example, sonar write-blocking).
 - **Mode prompt injection** - the active mode is injected into the model context.
 - **Project customization** - when the session working directory contains `.maestria/workflow.md` or `.maestria/rules.md`, each file that exists is appended to the injected context in deterministic order (workflow first, then rules), after the mode context. Projects without these files see no behavior change. See below for the exact failure posture.
-- **7 slash commands** - `/fein`, `/sonar`, `/blitz`, `/mode`, `/mode-clear`, `/review`, `/plan`.
+- **Slash commands** (7 as of 2026-09-22; see the [user-facing docs](https://maestria.sznm.dev/hermes/) for the current list) - `/fein`, `/sonar`, `/blitz`, `/mode`, `/mode-clear`, `/review`, `/plan`.
 - **OpenCode CLI routing** - an `opencode_route` tool for delegating complex coding tasks.
 - **Session and subagent tracking** - pipeline tracking across sessions and subagents.
 

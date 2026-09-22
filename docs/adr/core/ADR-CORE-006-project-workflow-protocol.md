@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted - 2026-06-24
+Accepted (2026-06-24)
 
 ## Context
 
@@ -24,7 +24,7 @@ Add a lightweight protocol where projects define workflow instructions in `.maes
 - `.maestria/rules.md` - project-specific non-negotiable (`!!!`) rules that supplement the core `rules.md` for all agents, propagated via delegation prompts.
 - **Loading mechanism:** the orchestrator delegates to `@adventurer` to check for these files at project start. Contents stay in conversation history; if history is compacted, the orchestrator reloads them next turn.
 - **Usage in delegations:** workflow context goes into the "Access list" and "Context" sections of delegation prompts; project rules go into the "Known problems" section. The orchestrator does not implement work routed to a specialist - it sequences and delegates; direct-route turns run on the host.
-- **Precedence:** core rules (never implement routed work yourself, maker/checker split, commit protocol, etc.) always take precedence over project instructions. If a conflict arises, the core rule wins.
+- **Precedence:** core rules (never implement routed work yourself, maker/checker split [ADR-CORE-012](ADR-CORE-012-deterministic-review-signals-fail-loud-exit.md), commit protocol, etc.) always take precedence over project instructions. If a conflict arises, the core rule wins.
 
 ### Canonical Source Changes
 
@@ -83,6 +83,10 @@ The prompt-based protocol above still applies on every host. Each runtime host n
 | Declarative (Claude Code, Codex, Cursor, Kimi, agent-plugin) | Project root, read with host tools | Present-but-unreadable file is disclosed and needed content is requested rather than invented; no silent override run | Advisory read when not already supplied; no runtime cache | Constraints travel in delegation briefs | Constraints are re-established when missing after compaction | Canonical orchestrator prompt plus per-host sync notes (Prime sync preserves the global-rules plus project-files wording). No new plugins or hooks in this scope. |
 
 Runtime scope ports the same contract to all appropriate host mechanisms. This amendment adds no new setup, doctor, skill-extraction, installation, or persisted state.
+
+### Note 2026-09-22: read-only `maestria doctor` exists alongside this contract
+
+The scope sentence above records this amendment's boundary at the time (2026-09-18). Since #323 (2026-09-22), `maestria doctor` provides read-only skill-setup diagnostics (`apps/maestria-cli/src/lib/doctor.ts`): it collects and reports per-platform state only and never installs, updates, removes, or writes records. It does not change the loading contract above; project content still stays subordinate and reaches agents through delegation briefs and host injection.
 
 ## Date
 
