@@ -258,6 +258,21 @@ describe('command handlers', () => {
       expect(conflict.message).toBe('Cannot use --all with a specific platform. Choose one.');
     });
 
+    it('fails loud on --compact without touching detection', async () => {
+      const error = await captureCliError(handleCheck({ compact: true, platform: 'opencode' }));
+      expect(error.exitCode).toBe(1);
+      expect(error.message).toContain('--compact');
+      expect(error.message).toContain('--json');
+      expect(error.message).toContain('--quiet');
+      expect(detectMocks.detectSingle).not.toHaveBeenCalled();
+      expect(detectMocks.detectAll).not.toHaveBeenCalled();
+
+      // Unchanged behavior without the flag.
+      const current = await handleCheck({ platform: 'opencode' });
+      expect(current.exitCode).toBe(0);
+      expect(current.output).toContain('@maestria/opencode is installed for OpenCode');
+    });
+
     it('maps all-checked platforms to exit 3 when outdated and 1 when missing', async () => {
       detectMocks.detectAll.mockReturnValue(
         Effect.succeed([

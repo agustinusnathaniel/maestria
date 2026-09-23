@@ -5,6 +5,18 @@ description: Release history for the maestria CLI.
 
 ## Unreleased
 
+### Setup no-op runs
+
+- `maestria setup` skips redundant confirmations when there is nothing to change: fully no-op plans exit 0 with an already-set-up summary, unchanged selections no longer trigger the trailing skills confirmation, and the ecosystem picker labels detected tools as already installed.
+
+## v0.13.1
+
+### Tidier doctor output
+
+- `maestria doctor` human output now shows managed skills only with an omitted count pointing to `--json` for the full list, platforms sharing one agent inventory render it once with later platforms referencing the first, and Next shows a single actionable step. JSON output and behavior are unchanged.
+
+## v0.13.0
+
 ### Read-only doctor diagnostics
 
 - Added `maestria doctor` to report skill setup per platform: install state, recorded skill selection, and observed inventory, with actionable next commands.
@@ -20,6 +32,18 @@ description: Release history for the maestria CLI.
 - `install` and `update` accept `--skills`, `--exclude-skills`, and `--yes`; per-platform selections persist only after actual success.
 - Fresh installs default to `create-pull-request` plus `docs-update`; recorded choices (including empty) are preserved, and legacy installs without a record infer only `create-pull-request`.
 - Reconcile, preflight, and removal now operate per skill, with partial successes recorded recoverably.
+
+## v0.12.5
+
+### Reliable host plugin upgrades
+
+- `maestria update` no longer falsely reports failure for host plugin upgrades: install and update commands share a generous deadline for slow plugin fetches, and failed commands report the exit code plus captured output instead of a bare failure message.
+
+## v0.12.4
+
+### Terminal compatibility
+
+- Fixed the group-multiselect fallback prompt to use ASCII glyphs on terminals without Unicode support; Unicode terminals are unchanged.
 
 ## v0.12.3
 
