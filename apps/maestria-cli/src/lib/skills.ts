@@ -134,6 +134,43 @@ const parsePlatformEntry = (
   };
 };
 
+const parseV1PlatformEntry = (
+  entry: unknown,
+  platformId: string,
+  corrupt: (detail: string) => CliError,
+): PlatformSkillSelection => {
+  if (!isRecord(entry)) {
+    throw corrupt(`platform '${platformId}' is not an object`);
+  }
+  const { skills } = entry;
+  if (!isStringArray(skills)) {
+    throw corrupt(`platform '${platformId}' skills is not a string array`);
+  }
+  const { path: recordPath, source: entrySource } = entry;
+  if (recordPath !== undefined && typeof recordPath !== 'string') {
+    throw corrupt(`platform '${platformId}' path is not a string`);
+  }
+  if (entrySource !== undefined && typeof entrySource !== 'string') {
+    throw corrupt(`platform '${platformId}' source is not a string`);
+  }
+  // Version 1 only ever managed the PR skill, so shared source/path history
+  // attaches to it. Entries without that skill keep their skills list with
+  // no asset rather than inheriting unrelated history.
+  const hasAsset = typeof entrySource === 'string' || typeof recordPath === 'string';
+  if (hasAsset && skills.includes(COMPANION_SKILL)) {
+    return {
+      skillAssets: {
+        [COMPANION_SKILL]: {
+          ...(typeof entrySource === 'string' ? { source: entrySource } : {}),
+          ...(typeof recordPath === 'string' ? { path: recordPath } : {}),
+        },
+      },
+      skills: [...skills],
+    };
+  }
+  return { skills: [...skills] };
+};
+
 export const parseSkillsRecord = (text: string, source: string): SkillsRecord => {
   const corrupt = (detail: string): CliError =>
     new CliError(`Skill selection record is corrupt (${detail}): ${source}`, 1);
@@ -147,7 +184,7 @@ export const parseSkillsRecord = (text: string, source: string): SkillsRecord =>
     throw corrupt('not an object');
   }
   const { platforms: platformsValue, version } = parsed;
-  if (version !== SKILLS_RECORD_VERSION) {
+  if (version !== SKILLS_RECORD_VERSION && version !== 1) {
     throw new CliError(
       `Skill selection record version ${String(version)} is unsupported (expected ${SKILLS_RECORD_VERSION}): ${source}`,
       1,
@@ -158,8 +195,13 @@ export const parseSkillsRecord = (text: string, source: string): SkillsRecord =>
   }
   const platforms: Record<string, PlatformSkillSelection> = {};
   for (const [platformId, entry] of Object.entries(platformsValue)) {
-    platforms[platformId] = parsePlatformEntry(entry, platformId, source);
+    platforms[platformId] =
+      version === 1
+        ? parseV1PlatformEntry(entry, platformId, corrupt)
+        : parsePlatformEntry(entry, platformId, source);
   }
+  // Version 1 records migrate forward in memory; the next successful persist
+  // writes them back as version 2 through the existing write path.
   return { platforms, version: SKILLS_RECORD_VERSION };
 };
 

@@ -143,6 +143,82 @@ describe('skill selection', () => {
     ]);
   });
 
+  it('migrates v1 minimal records to v2 without assets', () => {
+    expect(
+      parseSkillsRecord(
+        JSON.stringify({ platforms: { opencode: { skills: [PR] } }, version: 1 }),
+        source,
+      ),
+    ).toEqual({ platforms: { opencode: { skills: [PR] } }, version: 2 });
+  });
+
+  it('migrates v1 source/path onto the PR skill asset', () => {
+    const record = parseSkillsRecord(
+      JSON.stringify({
+        platforms: { opencode: { path: '/fake/pr', skills: [PR], source } },
+        version: 1,
+      }),
+      source,
+    );
+    expect(record).toEqual({
+      platforms: {
+        opencode: { skillAssets: { [PR]: { path: '/fake/pr', source } }, skills: [PR] },
+      },
+      version: 2,
+    });
+  });
+
+  it('drops v1 source/path when the entry lacks the PR skill', () => {
+    const empty = parseSkillsRecord(
+      JSON.stringify({
+        platforms: { opencode: { path: '/fake/pr', skills: [], source } },
+        version: 1,
+      }),
+      source,
+    );
+    expect(empty).toEqual({ platforms: { opencode: { skills: [] } }, version: 2 });
+    const docsOnly = parseSkillsRecord(
+      JSON.stringify({
+        platforms: { opencode: { path: '/fake/pr', skills: [DOCS_UPDATE_SKILL], source } },
+        version: 1,
+      }),
+      source,
+    );
+    expect(docsOnly).toEqual({
+      platforms: { opencode: { skills: [DOCS_UPDATE_SKILL] } },
+      version: 2,
+    });
+  });
+
+  it('rejects unknown record versions exactly as before', () => {
+    for (const version of [0, 3, 99]) {
+      expect(() =>
+        parseSkillsRecord(JSON.stringify({ platforms: {}, version }), 'test-record'),
+      ).toThrow(/unsupported/u);
+    }
+  });
+
+  it('rejects malformed v1 records instead of migrating them', () => {
+    const malformed = [
+      'not json',
+      JSON.stringify({ version: 1 }),
+      JSON.stringify({ platforms: [], version: 1 }),
+      JSON.stringify({ platforms: { opencode: { skills: 'nope' } }, version: 1 }),
+      JSON.stringify({
+        platforms: { opencode: { skills: [PR], source: 42 } },
+        version: 1,
+      }),
+      JSON.stringify({
+        platforms: { opencode: { path: 42, skills: [PR] } },
+        version: 1,
+      }),
+      JSON.stringify({ platforms: { opencode: 'nope' }, version: 1 }),
+    ];
+    for (const payload of malformed) {
+      expect(() => parseSkillsRecord(payload, 'test-record')).toThrow(CliError);
+    }
+  });
+
   it('fails loudly on corrupt records instead of resetting to defaults', () => {
     const corruptPayloads = [
       'not json',
