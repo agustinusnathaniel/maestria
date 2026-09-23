@@ -8,12 +8,6 @@ import { getPlatformOrResult } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformResult } from '@/types.js';
 
-/**
- * Shared skeleton for the install/update/uninstall batch commands: quiet
- * resolution, result rendering, the concurrency-1 selection runner, and the
- * non-interactive usage guard.
- */
-
 export interface BatchCommandArgs {
   compact?: boolean;
   json?: boolean;
@@ -41,7 +35,6 @@ export const renderBatchOutput = (
   return renderResults(results);
 };
 
-/** Run a per-platform operation for each selection, strictly one at a time. */
 export const runBatchSelected = async (
   selections: readonly BatchSelection[],
   isQuiet: boolean,

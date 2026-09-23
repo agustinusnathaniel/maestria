@@ -1,11 +1,4 @@
-/**
- * Shared subagent validation utilities for Maestria platform packages.
- *
- * Pure TypeScript - no platform-specific dependencies.
- * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.
- *
- * @module
- */
+/** Shared subagent validation utilities for Pi-family packages. */
 
 /** Maestria cross-extension event names. */
 export const MAESTRIA_EVENTS = {
@@ -30,20 +23,14 @@ export const ALLOWED_AGENTS = [
 /** A valid specialist agent name. */
 export type AllowedAgent = (typeof ALLOWED_AGENTS)[number];
 
-/**
- * Asserts that `agent` is a known maestria specialist.
- * @throws {Error} if the agent name is not in ALLOWED_AGENTS.
- */
+/** Asserts that `agent` is a known maestria specialist. */
 export const assertValidAgent: (agent: string) => asserts agent is AllowedAgent = (agent) => {
   if (!ALLOWED_AGENTS.some((allowedAgent) => allowedAgent === agent)) {
     throw new Error(`Unknown agent: "${agent}". Allowed: ${ALLOWED_AGENTS.join(', ')}`);
   }
 };
 
-/**
- * Asserts that `task` is a non-empty, non-whitespace string.
- * @throws {Error} with the given label if task is falsy or all-whitespace.
- */
+/** Asserts that `task` is a non-empty string, failing with the given label. */
 export const assertNonEmptyTask: (
   task: string | undefined,
   label: string,

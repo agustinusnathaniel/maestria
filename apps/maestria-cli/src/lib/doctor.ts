@@ -7,11 +7,7 @@ import { findSharedProviders } from '@/lib/skills.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 
-/**
- * Read-only skill setup diagnostics (`maestria doctor`). The collector never
- * installs, updates, removes, or records anything: identity flows through
- * tool output only.
- */
+/** Read-only skill setup diagnostics (`maestria doctor`): never installs or records. */
 
 export interface SharedSkillNote {
   readonly providers: string[];
@@ -55,10 +51,7 @@ type DoctorStatus = Pick<
   'available' | 'id' | 'installed' | 'installedVersion' | 'label'
 >;
 
-/**
- * Build one platform report from already collected inputs. List failures
- * arrive as `listError` and degrade honestly.
- */
+/** Build one platform report; list failures degrade into notes via `listError`. */
 // oxlint-disable-next-line max-lines-per-function, complexity -- one report builder keeps note/next accumulation order in a single place; the sections share the same accumulators, so splitting would thread four out-params through helpers.
 const buildDoctorReport = (
   status: DoctorStatus,
@@ -145,11 +138,7 @@ const buildDoctorReport = (
   };
 };
 
-/**
- * Collect read-only reports for every known status plus record-only platform
- * IDs. Lists once per distinct native agent; list failures degrade into
- * per-platform notes.
- */
+/** Collect read-only reports; list failures degrade into per-platform notes. */
 export const collectDoctorReports = async (
   runner: SkillCommandRunner,
   statuses: readonly PlatformStatus[],

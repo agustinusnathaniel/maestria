@@ -1,8 +1,6 @@
-// Prime-local workflow modes (fein/sonar/blitz). Pure mechanics delegate to
-// `@maestria/shared-mode`; Prime-local concerns are the skills/<mode> layout,
-// the prompt cache, string-shape injection, and slash commands. Mode content
-// loads from generated skills (`skills/<mode>/SKILL.md`, `## MODE:` onward),
-// so the injected prompt matches the sync-projected skill. See ADR-CORE-005.
+// Prime-local workflow modes (fein/sonar/blitz). Mechanics delegate to
+// `@maestria/shared-mode`; prompt content loads from generated skills so the
+// injected prompt matches the sync-projected skill. See ADR-CORE-005.
 
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -35,16 +33,13 @@ const MODE_COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
   sonar: 'Set workflow mode to sonar (research only)',
 };
 
-// ---------------------------------------------------------------------------
-// Mode prompt loading (from generated skills)
-// ---------------------------------------------------------------------------
+/** Mode prompt loading (from generated skills). */
 
 const _promptCache: Partial<Record<ModeKeyword, string>> = {};
 
 /**
- * Load the mode prompt from `skills/<mode>/SKILL.md` (`## MODE:` onward,
- * prefixed with the marker). Missing or heading-less skills degrade to an
- * empty prompt (plus a warning) instead of crashing the extension.
+ * Load the mode prompt from `skills/<mode>/SKILL.md` (`## MODE:` onward).
+ * Missing or heading-less skills degrade to an empty prompt (plus a warning).
  */
 export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string => {
   const cachedPrompt = _promptCache[keyword];
@@ -75,14 +70,11 @@ export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string =
   return prompt;
 };
 
-// ---------------------------------------------------------------------------
-// before_agent_start mode prompt injection
-// ---------------------------------------------------------------------------
+/** before_agent_start mode prompt injection. */
 
 /**
- * before_agent_start handler: mode prompt plus root project customization,
- * read fresh each turn. Undefined when idle. Never throws: broken files
- * surface via notify plus a STOP banner. See ADR-CORE-006.
+ * before_agent_start handler: mode prompt plus project customization.
+ * Never throws: broken files surface via notify plus a STOP banner.
  */
 export const createModePromptHandler =
   (
@@ -142,17 +134,12 @@ export const createModePromptHandler =
     };
   };
 
-// ---------------------------------------------------------------------------
-// Commands
-// ---------------------------------------------------------------------------
+/** Mode slash commands plus status. */
 
 const MODE_CLEAR_COMMAND = 'mode-clear';
 export const STATUS_COMMAND = 'maestria-status';
 
-/**
- * Install mode slash commands plus status; selection persists as a session
- * entry and injects on the next agent turn.
- */
+/** Install mode slash commands plus status. */
 export const installCommands = (pi: ExtensionAPI, state: MaestriaModeState): void => {
   for (const keyword of MODE_KEYWORDS) {
     pi.registerCommand(keyword, {

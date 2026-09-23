@@ -1,19 +1,9 @@
-/**
- * Shared slash-command installation for Maestria platform packages.
- *
- * Pure TypeScript - no platform-specific dependencies.
- * Consumed by both @maestria/omp and @maestria/pi to eliminate duplication
- * of the maestria-status/review/restore-model/handoff/review-model commands.
- *
- * @module
- */
+/** Shared slash-command installation for Pi-family packages. */
 
 import { cycleToReviewModel, restoreOriginalState } from './review-core.js';
 import type { MaestriaState } from './state-core.js';
 import { persistState, recordHandoff, renderMaestriaSummary } from './state-core.js';
 import { MAESTRIA_EVENTS } from './subagent-utils.js';
-
-// ── Duck-typed platform interfaces ──
 
 export interface CommandsCtx {
   ui: {

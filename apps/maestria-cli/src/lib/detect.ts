@@ -4,10 +4,7 @@ import { getPlatform, platforms } from '@/lib/platforms.js';
 import type { PlatformHandler } from '@/lib/platforms.js';
 import type { PlatformStatus } from '@/types.js';
 
-/**
- * Check availability + installation + versions for all platforms.
- * Runs detection in parallel for speed.
- */
+/** Check availability, installation, and versions for all platforms in parallel. */
 const detectOne = (platform: PlatformHandler): Effect.Effect<PlatformStatus> =>
   Effect.gen(function* detectOneEffect() {
     const available = yield* platform.detect;
@@ -43,9 +40,7 @@ export const detectAll = (): Effect.Effect<PlatformStatus[]> =>
     { concurrency: 'unbounded' },
   );
 
-/**
- * Check availability + installation + versions for a single platform.
- */
+/** Check availability, installation, and versions for a single platform. */
 export const detectSingle = (platformId: string): Effect.Effect<PlatformStatus> => {
   const handler = getPlatform(platformId);
   if (!handler) {
@@ -61,8 +56,6 @@ export const detectSingle = (platformId: string): Effect.Effect<PlatformStatus> 
   return detectOne(handler);
 };
 
-/**
- * Get only the platforms that are both available and have maestria installed.
- */
+/** Platforms that are both available and have maestria installed. */
 export const detectInstalled = (): Effect.Effect<PlatformStatus[]> =>
   detectAll().pipe(Effect.map((stats) => stats.filter((s) => s.available && s.installed)));

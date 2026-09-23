@@ -110,7 +110,6 @@ export const renderCompactResults = (results: PlatformResult[]): string =>
       ) {
         return `${r.id}: updated ${r.prevVersion} -> ${r.nextVersion}`;
       }
-      // Install or other success with a version
       const version = r.nextVersion ?? r.prevVersion ?? '';
       return `${r.id}: installed ${version}`;
     })
