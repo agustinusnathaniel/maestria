@@ -20,7 +20,7 @@ Maestria packages do not use automatic postinstall scripts. Direct plugin instal
 
 - **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context.
 
-- **Transparency.** Every agent is a markdown file with YAML frontmatter. No TypeScript abstraction layer between you and the prompts. Canonical source with per-host projection.
+- **Transparency.** Every agent is a markdown file with YAML frontmatter. No abstraction layer between you and the prompts. One canonical source, projected per platform and checked by sync.
 
 - **Curation-driven evolution.** Patterns are promoted only after proving useful across multiple projects and sessions. Manual curation from experience and knowledge base. No automated extraction. No session mining.
 

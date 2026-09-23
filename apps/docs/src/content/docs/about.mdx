@@ -21,11 +21,11 @@ For clients that support Agent Plugins v1, [`@maestria/agent-plugin`](/agent-plu
 
 ## Why Maestria Exists
 
-I kept repeating the same personal defaults across projects: verify claims against code and docs, match effort to stakes, prefer reuse over new code, and keep output short and self-contained. Maestria packages those defaults as shared guardrails called Universal Floors in `packages/core/agent-directives/rules.md:9-16`, plus guidance for delegation and review. Safety and authorization stay on top per `packages/core/agent-directives/rules.md:61`, and the host keeps tool authority.
+I kept repeating the same personal defaults across projects. Verify claims against code and docs. Match effort to stakes. Prefer reuse over new code. Keep output short and self-contained. Maestria packages those defaults as shared guardrails, called Universal Floors, plus guidance for delegation and review. Safety and authorization stay on top, and the host keeps tool authority.
 
-Projects still need local say, but bounded. Only `.maestria/workflow.md` then `.maestria/rules.md`, subordinate to core, root-only, and never waiving safety or host permissions. See `docs/adr/core/ADR-CORE-006-project-workflow-protocol.md` for that contract.
+Projects still need local say, but bounded. Two project files, subordinate to the shared core and root-only, and never a way around safety or host permissions. That boundary keeps local tailoring useful without letting it quietly rewrite the rules.
 
-The rest is small taste that compounds: one atomic task per run, evidence before claims, and the maker/checker split from `PATTERNS.md` so no agent approves its own work. Delivery closes through completion gates in `docs/checklist.md:5-12`, with canonical directives projected per platform by `scripts/sync-all` and verified by `scripts/check-sync`.
+The rest is small taste that compounds. One atomic task per run. Evidence before claims. The maker/checker split, so no agent approves its own work. Delivery closes through completion gates, with one canonical source projected per platform and checked by sync.
 
 ## Maintainer and License
 
