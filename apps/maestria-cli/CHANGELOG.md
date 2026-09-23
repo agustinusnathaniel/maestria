@@ -1,5 +1,11 @@
 # maestria
 
+## 0.13.1
+
+### Patch Changes
+
+- [#335](https://github.com/agustinusnathaniel/maestria/pull/335) [`cd5fc25`](https://github.com/agustinusnathaniel/maestria/commit/cd5fc2544d3957088bed0c0c4f22938827bb4b3d) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Tidy `maestria doctor` human output without changing JSON or behavior. Observed lists show managed skills only with an omitted count pointing to `--json` for the full list, platforms sharing one agent inventory render it once with later platforms referencing the first, and Next shows a single actionable step (install first, then record, then the first remaining step).
+
 ## 0.13.0
 
 ### Minor Changes
