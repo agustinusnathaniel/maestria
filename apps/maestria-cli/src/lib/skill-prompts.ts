@@ -17,7 +17,7 @@ export const promptSkillSelection = async (
   }
   const selected = await groupMultiselect({
     initialValues: initial,
-    message: `Which methodology skills should be active for ${scope ?? 'this installation'}?`,
+    message: `Which methodology skills should be active for ${scope ?? 'this installation'} (global scope)?`,
     options: {
       'Methodology skills': KNOWN_SKILLS.map((skill) => ({
         label: skill,
@@ -103,8 +103,8 @@ export const reviewSkillSelections = async <T extends ReviewableSelection>(
         selection: { changed, skills: [...reviewed] },
       };
       summaries[index] = changed
-        ? `${entry.id}: [${defaultSkillSummary([...before])}] → [${defaultSkillSummary([...reviewed])}]`
-        : `${entry.id}: unchanged [${defaultSkillSummary([...reviewed])}]`;
+        ? `${entry.id} (global): [${defaultSkillSummary([...before])}] → [${defaultSkillSummary([...reviewed])}]`
+        : `${entry.id} (global): unchanged [${defaultSkillSummary([...reviewed])}]`;
     }
   }
   if (effective.some((entry) => entry.selection.changed)) {
