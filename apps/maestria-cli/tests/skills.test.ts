@@ -25,6 +25,16 @@ const PR = 'create-pull-request';
 
 const fsControls = vi.hoisted(() => ({ failRename: false, failWrite: false }));
 
+const groupMocks = vi.hoisted(() => ({
+  groupMultiselect: vi.fn(),
+}));
+const promptMocks = vi.hoisted(() => ({
+  cancel: vi.fn(),
+  // oxlint-disable-next-line require-await -- synchronous confirm stub by design.
+  confirm: vi.fn(async () => true),
+  isCancel: vi.fn(() => false),
+}));
+
 vi.mock('node:fs/promises', async (importOriginal) => {
   const actual = await importOriginal<typeof FsPromises>();
   return {
@@ -43,6 +53,37 @@ vi.mock('node:fs/promises', async (importOriginal) => {
     },
   };
 });
+
+vi.mock('@/lib/group-multiselect.js', () => ({
+  groupMultiselect: groupMocks.groupMultiselect,
+}));
+
+vi.mock('@clack/prompts', () => ({
+  cancel: promptMocks.cancel,
+  confirm: promptMocks.confirm,
+  isCancel: promptMocks.isCancel,
+}));
+
+const stdoutTty = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY');
+const stdinTty = Object.getOwnPropertyDescriptor(process.stdin, 'isTTY');
+
+const setTty = (value: boolean): void => {
+  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value });
+  Object.defineProperty(process.stdin, 'isTTY', { configurable: true, value });
+};
+
+const restoreTty = (): void => {
+  if (stdoutTty) {
+    Object.defineProperty(process.stdout, 'isTTY', stdoutTty);
+  } else {
+    Reflect.deleteProperty(process.stdout, 'isTTY');
+  }
+  if (stdinTty) {
+    Object.defineProperty(process.stdin, 'isTTY', stdinTty);
+  } else {
+    Reflect.deleteProperty(process.stdin, 'isTTY');
+  }
+};
 
 describe('skill selection', () => {
   it('defaults fresh installs to both current skills', () => {
@@ -172,6 +213,12 @@ describe('skill selection', () => {
 });
 
 describe('reviewSkillSelections', () => {
+  afterEach(() => {
+    restoreTty();
+    groupMocks.groupMultiselect.mockReset();
+    promptMocks.confirm.mockClear();
+  });
+
   it('preserves distinct per-platform intents without flags outside a TTY', async () => {
     const record = buildRecord({ opencode: [PR], pi: [] });
     const selections = [{ id: 'opencode' }, { id: 'pi' }].map((target) => ({
@@ -214,6 +261,37 @@ describe('reviewSkillSelections', () => {
     const effective = await reviewSkillSelections(selections, 'Update', {});
 
     expect(effective[0]?.selection).toEqual({ changed: false, skills: [] });
+  });
+
+  it('skips the trailing confirm when the interactive review changes nothing', async () => {
+    setTty(true);
+    const record = buildRecord({ opencode: [PR] });
+    const selections = [{ id: 'opencode' }].map((target) => ({
+      ...target,
+      selection: resolveSkillSelection(target.id, {}, record),
+    }));
+    groupMocks.groupMultiselect.mockResolvedValueOnce([PR]);
+
+    const effective = await reviewSkillSelections(selections, 'Update', {});
+
+    expect(groupMocks.groupMultiselect).toHaveBeenCalledTimes(1);
+    expect(effective[0]?.selection).toEqual({ changed: false, skills: [PR] });
+    expect(promptMocks.confirm).not.toHaveBeenCalled();
+  });
+
+  it('still confirms when the interactive review changes the selection', async () => {
+    setTty(true);
+    const record = buildRecord({ opencode: [PR] });
+    const selections = [{ id: 'opencode' }].map((target) => ({
+      ...target,
+      selection: resolveSkillSelection(target.id, {}, record),
+    }));
+    groupMocks.groupMultiselect.mockResolvedValueOnce([]);
+
+    const effective = await reviewSkillSelections(selections, 'Update', {});
+
+    expect(effective[0]?.selection).toEqual({ changed: true, skills: [] });
+    expect(promptMocks.confirm).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -135,9 +135,10 @@ const collectInteractiveSetup = async (
     groups['Ecosystem tools (detect only, manual install if missing)'] = KNOWN_ECOSYSTEM_TOOLS.map(
       (tool) => {
         const found = probes.get(tool);
+        const detected = found?.present === true;
         return {
-          hint: found?.present === true ? `detected ${found.version}` : 'not detected',
-          label: tool,
+          hint: detected ? `detected ${found.version}` : 'not detected',
+          label: detected ? `${tool} (already installed)` : tool,
           value: `eco:${tool}`,
         };
       },
@@ -285,6 +286,33 @@ export const resolveSetupPlan = async (
   };
 };
 
+export const NOOP_SETUP_SUMMARY = 'Everything is already set up; nothing to do.';
+
+/**
+ * Read-only no-op check: true when the resolved plan cannot mutate anything.
+ * Ecosystem tools are detect-only, so only already-detected tools count as
+ * settled. A selected xtarterize run always counts as will-run because
+ * conformance cannot be known without its mutating check. A Maestria skills
+ * run with installed targets always counts as will-run, matching
+ * executeSetupActions, because fresh installs keep defaults unchanged yet
+ * still need their initial reconcile.
+ */
+export const isNoopSetupPlan = (
+  selection: SetupSelection,
+  probes: ReadonlyMap<string, { present: boolean; version: string }>,
+): boolean => {
+  if (selection.xtarterize || selection.sources.length > 0) {
+    return false;
+  }
+  if (selection.maestriaActive && selection.targets.length > 0) {
+    return false;
+  }
+  if (selection.reviewed.some((entry) => entry.selection.changed)) {
+    return false;
+  }
+  return selection.ecosystem.every((tool) => probes.get(tool)?.present === true);
+};
+
 export const confirmSetupPlan = async (
   cwd: string,
   selection: SetupSelection,
@@ -324,11 +352,15 @@ const renderSetupText = (
   reports: SetupActionReport[],
   notes: string[],
   hasFailure: boolean,
+  summary?: string,
 ): string => {
   const lines = [
     picocolors.bold('\n  Maestria Setup'),
     picocolors.dim('  ─────────────────────────────────────'),
   ];
+  if (summary !== undefined && summary !== '') {
+    lines.push(`  ${picocolors.green('✓')} ${summary}`);
+  }
   for (const report of reports) {
     lines.push(
       `  ${reportMark(report.status)} [${report.category}] ${report.item}: ${report.status} ${report.detail}`,
@@ -355,6 +387,7 @@ export const renderSetupOutput = (
     };
     notes: string[];
     reports: SetupActionReport[];
+    summary?: string;
   },
 ): string => {
   const hasFailure = context.reports.some((r) => r.status === 'failed');
@@ -376,5 +409,5 @@ export const renderSetupOutput = (
       2,
     );
   }
-  return renderSetupText(context.reports, context.notes, hasFailure);
+  return renderSetupText(context.reports, context.notes, hasFailure, context.summary);
 };

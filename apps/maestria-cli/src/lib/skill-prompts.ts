@@ -107,6 +107,8 @@ export const reviewSkillSelections = async <T extends ReviewableSelection>(
         : `${entry.id}: unchanged [${defaultSkillSummary([...reviewed])}]`;
     }
   }
-  await confirmOrThrow(`${action} with skills ${summaries.join(', ')}?`, args.yes);
+  if (effective.some((entry) => entry.selection.changed)) {
+    await confirmOrThrow(`${action} with skills ${summaries.join(', ')}?`, args.yes);
+  }
   return effective;
 };
