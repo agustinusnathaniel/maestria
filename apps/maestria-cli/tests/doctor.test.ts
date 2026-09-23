@@ -224,6 +224,47 @@ describe('doctor reports', () => {
     expect(seen).toEqual([]);
   });
 
+  it('fails loud on --compact without touching detection or skill inventory', async () => {
+    await withConfigRecord(null);
+    const runner = fakeListCli({});
+    const seen: string[][] = [];
+    const spying: SkillCommandRunner = async (args, options) => {
+      seen.push([...args]);
+      return await runner(args, options);
+    };
+    let detectCalls = 0;
+    let thrown: unknown;
+    try {
+      await handleDoctor(
+        { compact: true },
+        {
+          // oxlint-disable-next-line require-await -- injected detect is synchronous by design.
+          detect: async () => {
+            detectCalls += 1;
+            return [status('opencode')];
+          },
+          runner: spying,
+        },
+      );
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(CliError);
+    if (!(thrown instanceof CliError)) {
+      throw new Error('Expected handleDoctor to throw CliError');
+    }
+    expect(thrown.exitCode).toBe(1);
+    expect(thrown.message).toContain('--compact');
+    expect(thrown.message).toContain('--json');
+    expect(thrown.message).toContain('--quiet');
+    expect(detectCalls).toBe(0);
+    expect(seen).toEqual([]);
+
+    // Unchanged behavior without the flag.
+    const healthy = await runJson(fakeListCli({}), [status('opencode')], null);
+    expect(healthy.exitCode).toBe(0);
+  });
+
   it('lists only the true sharer when two other platforms do not share', async () => {
     const record = buildRecord({
       'claude-code': {

@@ -3,6 +3,7 @@ import { Effect } from 'effect';
 import picocolors from 'picocolors';
 
 import { toCommandRun } from '@/lib/command-runner.js';
+import { CliError } from '@/lib/command-result.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { collectDoctorReports, redactHome } from '@/lib/doctor.js';
@@ -15,6 +16,7 @@ import { getSkillsRecordPath, readSkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 
 export interface DoctorArgs {
+  compact?: boolean;
   json?: boolean;
   quiet?: boolean;
 }
@@ -150,6 +152,16 @@ export const handleDoctor = async (
   args: DoctorArgs,
   deps: DoctorDeps = {},
 ): Promise<CommandResult> => {
+  // The global root --compact flag parses everywhere, but doctor has no compact
+  // rendering; fail loud before any detection or observation below.
+  if (args.compact === true) {
+    throw new CliError(
+      args.quiet === true
+        ? ''
+        : "--compact is not supported for 'maestria doctor'. Use --json or --quiet instead.",
+      1,
+    );
+  }
   const spinner = createSpinner(args.quiet === true);
   spinner.start('Checking skill setup...');
 
