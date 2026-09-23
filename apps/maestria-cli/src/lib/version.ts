@@ -1,14 +1,8 @@
-/**
- * Simple regex for semver validation.
- * Matches MAJOR.MINOR.PATCH with optional prerelease and build metadata.
- * Each prerelease/build identifier must be non-empty.
- */
+/** Semver MAJOR.MINOR.PATCH with optional prerelease and build metadata. */
 const SEMVER_REGEX =
   /^\d+\.\d+\.\d+(?<prerelease>-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?<build>\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
 
-/**
- * Validate a version string. Accepts 'latest' and '' as special values.
- */
+/** Validate a version string. Accepts 'latest' and '' as special values. */
 export const isValidVersion = (v: string): boolean => {
   if (v === 'latest' || v === '') {
     return true;
@@ -17,20 +11,11 @@ export const isValidVersion = (v: string): boolean => {
 };
 
 /**
- * Compare two version strings using numeric-aware locale comparison.
+ * Compare versions with numeric-aware ordering plus semver prerelease
+ * correction (`1.0.0-alpha < 1.0.0`; localeCompare alone reverses it).
+ * 'latest' beats any semver; 'unknown' and non-semver return null.
  *
- * Uses `localeCompare` with `{ numeric: true }` for correct numeric segment
- * ordering (e.g., `0.10.0 > 0.9.0`). Includes a semver-compliant correction
- * for prerelease ordering: `1.0.0-alpha < 1.0.0` (prerelease < release).
- *
- * Special values:
- * - 'latest' is always greater than any semver version
- * - 'unknown' returns null (insufficient information to compare)
- * - non-semver values (e.g. display sentinels like 'see GitHub releases')
- *   return null (insufficient information to compare)
- *
- * @returns -1 if a < b, 0 if equal, 1 if a > b, null if either is 'unknown'
- *   or not a valid semver version
+ * @returns -1 if a < b, 0 if equal, 1 if a > b, null if incomparable
  */
 export const compareVersions = (a: string, b: string): -1 | 0 | 1 | null => {
   if (a === 'unknown' || b === 'unknown') {
@@ -47,8 +32,7 @@ export const compareVersions = (a: string, b: string): -1 | 0 | 1 | null => {
     return null;
   }
 
-  // Per semver 2.0.0 spec section 10, build metadata MUST be ignored
-  // when determining version precedence.
+  // Per semver 2.0.0 section 10, build metadata is ignored for precedence.
   const aWithoutBuild = a.replace(/\+.*$/u, '');
   const bWithoutBuild = b.replace(/\+.*$/u, '');
 
@@ -57,11 +41,8 @@ export const compareVersions = (a: string, b: string): -1 | 0 | 1 | null => {
     return 0;
   }
 
-  // Fix prerelease ordering per semver spec:
-  // localeCompare reverses prerelease vs release because '-' sorts after
-  // end-of-string (e.g., "1.0.0-alpha" > "1.0.0" with localeCompare).
-  // If both share the same MAJOR.MINOR.PATCH and exactly one has a
-  // prerelease tag, reverse the result.
+  // localeCompare sorts '-' after end-of-string, so reverse the result when
+  // both share MAJOR.MINOR.PATCH and exactly one has a prerelease tag.
   const stripSuffix =
     /(?<prerelease>-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?<build>\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
   const aBase = aWithoutBuild.replace(stripSuffix, '');

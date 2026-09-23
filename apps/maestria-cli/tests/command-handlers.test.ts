@@ -203,32 +203,22 @@ describe('command handlers', () => {
   });
 
   describe('status', () => {
-    it('renders the plain status table with exit code 0', async () => {
+    it('renders plain, JSON, and compact status with exit code 0', async () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
+      const plain = await handleStatus({ quiet: true });
+      expect(plain.exitCode).toBe(0);
+      expect(plain.output).toContain('Maestria Status');
+      expect(plain.output).toContain('OpenCode');
 
-      const result = await handleStatus({ quiet: true });
-
-      expect(result.exitCode).toBe(0);
-      expect(result.output).toContain('Maestria Status');
-      expect(result.output).toContain('OpenCode');
-    });
-
-    it('renders JSON status with exit code 0', async () => {
       const platformsStatus = [status({})];
       detectMocks.detectAll.mockReturnValue(Effect.succeed(platformsStatus));
+      const json = await handleStatus({ json: true, quiet: true });
+      expect(json.exitCode).toBe(0);
+      expect(JSON.parse(json.output)).toEqual({ platforms: platformsStatus });
 
-      const result = await handleStatus({ json: true, quiet: true });
-
-      expect(result.exitCode).toBe(0);
-      expect(JSON.parse(result.output)).toEqual({ platforms: platformsStatus });
-    });
-
-    it('renders compact status with exit code 0', async () => {
       detectMocks.detectAll.mockReturnValue(Effect.succeed([status({})]));
-
-      const result = await handleStatus({ compact: true });
-
-      expect(result).toEqual({
+      const compact = await handleStatus({ compact: true });
+      expect(compact).toEqual({
         exitCode: 0,
         output: 'opencode: available installed=1.0.0 latest=1.0.0\n',
       });
@@ -236,75 +226,56 @@ describe('command handlers', () => {
   });
 
   describe('check', () => {
-    it('returns exit code 0 for a current installation', async () => {
-      const result = await handleCheck({ platform: 'opencode' });
+    it('maps current, outdated, and missing installs to exit 0, 3, and 1', async () => {
+      const current = await handleCheck({ platform: 'opencode' });
+      expect(current.exitCode).toBe(0);
+      expect(current.output).toContain('@maestria/opencode is installed for OpenCode (v1.0.0)');
 
-      expect(result.exitCode).toBe(0);
-      expect(result.output).toContain('@maestria/opencode is installed for OpenCode (v1.0.0)');
-    });
-
-    it('returns exit code 3 for an outdated installation', async () => {
       detectMocks.detectSingle.mockReturnValue(
         Effect.succeed(status({ installedVersion: '1.0.0', latestVersion: '2.0.0' })),
       );
+      const outdated = await handleCheck({ platform: 'opencode' });
+      expect(outdated.exitCode).toBe(3);
+      expect(outdated.output).toContain('update available: v1.0.0 -> v2.0.0');
 
-      const result = await handleCheck({ platform: 'opencode' });
-
-      expect(result.exitCode).toBe(3);
-      expect(result.output).toContain('update available: v1.0.0 -> v2.0.0');
-    });
-
-    it('returns exit code 1 with the not-installed message', async () => {
       detectMocks.detectSingle.mockReturnValue(
         Effect.succeed(status({ installed: false, installedVersion: '' })),
       );
-
-      const result = await handleCheck({ platform: 'opencode' });
-
-      expect(result).toEqual({
+      const missing = await handleCheck({ platform: 'opencode' });
+      expect(missing).toEqual({
         exitCode: 1,
         output: '@maestria/opencode is not installed for OpenCode',
       });
     });
 
-    it('throws CliError for an unknown platform', async () => {
-      const error = await captureCliError(handleCheck({ platform: 'nope' }));
+    it('rejects unknown platforms and --all with a platform', async () => {
+      const unknown = await captureCliError(handleCheck({ platform: 'nope' }));
+      expect(unknown.exitCode).toBe(1);
+      expect(unknown.message).toContain('Unknown platform: nope');
 
-      expect(error.exitCode).toBe(1);
-      expect(error.message).toContain('Unknown platform: nope');
+      const conflict = await captureCliError(handleCheck({ all: true, platform: 'opencode' }));
+      expect(conflict.exitCode).toBe(1);
+      expect(conflict.message).toBe('Cannot use --all with a specific platform. Choose one.');
     });
 
-    it('throws CliError when --all is combined with a platform', async () => {
-      const error = await captureCliError(handleCheck({ all: true, platform: 'opencode' }));
-
-      expect(error.exitCode).toBe(1);
-      expect(error.message).toBe('Cannot use --all with a specific platform. Choose one.');
-    });
-
-    it('returns exit code 3 when every checked platform is installed and outdated', async () => {
+    it('maps all-checked platforms to exit 3 when outdated and 1 when missing', async () => {
       detectMocks.detectAll.mockReturnValue(
         Effect.succeed([
           status({ installedVersion: '1.0.0', latestVersion: '2.0.0' }),
           status({ id: 'pi', installedVersion: '1.0.0', label: 'Pi', latestVersion: '2.0.0' }),
         ]),
       );
+      const outdated = await handleCheck({ all: true, json: true });
+      expect(outdated.exitCode).toBe(3);
 
-      const result = await handleCheck({ all: true, json: true });
-
-      expect(result.exitCode).toBe(3);
-    });
-
-    it('returns exit code 1 when a checked platform is not installed', async () => {
       detectMocks.detectAll.mockReturnValue(
         Effect.succeed([
           status({}),
           status({ id: 'pi', installed: false, installedVersion: '', label: 'Pi' }),
         ]),
       );
-
-      const result = await handleCheck({ all: true, json: true });
-
-      expect(result.exitCode).toBe(1);
+      const missing = await handleCheck({ all: true, json: true });
+      expect(missing.exitCode).toBe(1);
     });
   });
 

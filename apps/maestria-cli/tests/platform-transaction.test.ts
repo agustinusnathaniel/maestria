@@ -82,26 +82,22 @@ const runUpdatingPlatform = async (
 };
 
 describe('installOne', () => {
-  it('reports a successful install with the platform identity', async () => {
-    const result = await Effect.runPromise(installOne(makePlatform(), true));
-
-    expect(result).toEqual({
+  it('reports success with the platform identity and surfaces CommandError text', async () => {
+    const ok = await Effect.runPromise(installOne(makePlatform(), true));
+    expect(ok).toEqual({
       id: 'opencode',
       label: 'OpenCode',
       message: 'Installed',
       ok: true,
     });
-  });
 
-  it('reports the CommandError message when the install fails', async () => {
-    const result = await Effect.runPromise(
+    const failed = await Effect.runPromise(
       installOne(
         makePlatform({ install: Effect.fail(commandError('opencode install', 'install failed')) }),
         true,
       ),
     );
-
-    expect(result).toEqual({
+    expect(failed).toEqual({
       id: 'opencode',
       label: 'OpenCode',
       message: 'install failed',
@@ -111,19 +107,16 @@ describe('installOne', () => {
 });
 
 describe('uninstallOne', () => {
-  it('reports a successful uninstall with the platform identity', async () => {
-    const result = await Effect.runPromise(uninstallOne(makePlatform(), true));
-
-    expect(result).toEqual({
+  it('reports success with the platform identity and surfaces CommandError text', async () => {
+    const ok = await Effect.runPromise(uninstallOne(makePlatform(), true));
+    expect(ok).toEqual({
       id: 'opencode',
       label: 'OpenCode',
       message: 'Uninstalled',
       ok: true,
     });
-  });
 
-  it('reports the CommandError message when the uninstall fails', async () => {
-    const result = await Effect.runPromise(
+    const failed = await Effect.runPromise(
       uninstallOne(
         makePlatform({
           uninstall: Effect.fail(commandError('opencode uninstall', 'uninstall failed')),
@@ -131,8 +124,7 @@ describe('uninstallOne', () => {
         true,
       ),
     );
-
-    expect(result).toEqual({
+    expect(failed).toEqual({
       id: 'opencode',
       label: 'OpenCode',
       message: 'uninstall failed',

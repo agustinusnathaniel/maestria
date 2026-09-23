@@ -1,11 +1,4 @@
-/**
- * Shared tool interceptor utilities for Maestria platform packages.
- *
- * Pure TypeScript - no platform-specific dependencies.
- * Imported by both @maestria/omp and @maestria/pi to eliminate duplication.
- *
- * @module
- */
+/** Shared tool interceptor utilities for Pi-family packages. */
 
 import {
   persistState as persistStateCore,
@@ -14,10 +7,7 @@ import {
 } from './state-core.js';
 import type { MaestriaState } from './state-core.js';
 
-/**
- * Dangerous bash command patterns that should always be blocked,
- * regardless of mode or specialist role.
- */
+/** Bash patterns that are always blocked, regardless of mode or role. */
 export const DANGEROUS_PATTERNS = [
   /rm\s+-rf\s+\//u,
   /dd\s+if=/u,
@@ -32,24 +22,15 @@ export const DANGEROUS_PATTERNS = [
   /crontab\s+-r/u,
 ];
 
-/**
- * Read-only bash command prefixes allowed for the orchestrator's recon and
- * verification. Anything not matching - or chaining into a mutation - is
- * blocked; mutations belong to specialists.
- */
+/** Read-only bash prefixes for orchestrator recon; chained mutations stay blocked. */
 const READ_ONLY_BASH_PREFIX =
   /^(?<command>ls|cat|head|tail|git status|git diff|git log|git branch|find|grep|rg|pnpm test|npm test|pwd|which)\b/u;
 
 /**
- * True when a bash command performs no mutation.
- *
- * A naive prefix check is bypassable - `git status && git checkout .` or
- * `ls; rm -rf dist` both pass a prefix-only match - so every segment of a
- * chained command (`;`, `&&`, `||`, `|`, or newline) must itself be
- * read-only, and command substitution (`$(...)`, backticks) and output
- * redirection (`>` / `>>`) are rejected because they can hide a mutation
- * behind a read-only prefix. `2>&1`-style fd redirects are allowed (they
- * don't write).
+ * True when a bash command performs no mutation. Every chained segment must
+ * itself be read-only (a prefix-only check is bypassable), and command
+ * substitution plus output redirection are rejected; `2>&1` fd redirects
+ * are allowed because they do not write.
  */
 export const isReadOnlyBashCommand = (rawCommand: string): boolean => {
   const command = rawCommand.trim();
@@ -68,8 +49,6 @@ export const isReadOnlyBashCommand = (rawCommand: string): boolean => {
     .every((segment) => READ_ONLY_BASH_PREFIX.test(segment.trim()));
 };
 
-// ── Pure helpers ──
-
 export const findDangerousPattern = (command: string): RegExp | null => {
   for (const pattern of DANGEROUS_PATTERNS) {
     if (pattern.test(command)) {
@@ -85,8 +64,6 @@ const getBlockedReviewReason = (toolName: string): string | null => {
   }
   return null;
 };
-
-// ── Factory ──
 
 export interface ToolCallEventLike {
   toolName?: string;

@@ -4,11 +4,9 @@ import type { CommandResult } from './command-result.js';
 export type CommandHandler<Args> = (args: Args) => Promise<CommandResult>;
 
 /**
- * Adapt a command handler to a citty `run` function.
- *
- * The runner is the single place that prints a handler's result and records
- * its exit code. A `CliError` becomes stderr text plus its exit code; any
- * other error rethrows to the outer boundary.
+ * Adapt a command handler to a citty `run` function: print the result, record
+ * its exit code. `CliError` becomes stderr text plus its exit code; any other
+ * error rethrows to the outer boundary.
  */
 export const toCommandRun =
   <Args>(handler: CommandHandler<Args>) =>

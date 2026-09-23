@@ -237,7 +237,7 @@ describe('record write atomicity', () => {
     );
   });
 
-  it('preserves the prior record when the temp write fails', async () => {
+  it('preserves the prior record when the temp write or rename fails', async () => {
     await writeSkillsRecord(
       withRecordedSelection(null, 'opencode', [PR], { [PR]: { path: '/fake/p', source } }),
     );
@@ -251,19 +251,17 @@ describe('record write atomicity', () => {
     expect(await readdir(path.dirname(recordPath))).toEqual(['skills.json']);
     const keptAfterWriteFailure = await readSkillsRecord();
     expect(keptAfterWriteFailure?.platforms.opencode?.skills).toEqual([PR]);
-  });
+    fsControls.failWrite = false;
 
-  it('preserves the prior record when the rename fails and cleans up the temp', async () => {
     await writeSkillsRecord(
       withRecordedSelection(null, 'opencode', [PR], { [PR]: { path: '/fake/p', source } }),
     );
-    const recordPath = getSkillsRecordPath();
-    const before = await readFile(recordPath, 'utf-8');
+    const beforeRename = await readFile(recordPath, 'utf-8');
     fsControls.failRename = true;
     await expect(
       writeSkillsRecord(withRecordedSelection(null, 'opencode', [PR, DOCS_UPDATE_SKILL])),
     ).rejects.toThrow('rename boom');
-    expect(await readFile(recordPath, 'utf-8')).toBe(before);
+    expect(await readFile(recordPath, 'utf-8')).toBe(beforeRename);
     expect(await readdir(path.dirname(recordPath))).toEqual(['skills.json']);
     const keptAfterRenameFailure = await readSkillsRecord();
     expect(keptAfterRenameFailure?.platforms.opencode?.skills).toEqual([PR]);

@@ -1,14 +1,4 @@
-/**
- * Shared state management for Maestria platform packages.
- *
- * Pure TypeScript - no platform-specific dependencies.
- * Provides shared state-management types, transforms, persistence, and rendering
- * consumed directly by @maestria/omp and @maestria/pi.
- *
- * @module
- */
-
-// ── Types ──
+/** Shared state management for Pi-family packages (no platform dependencies). */
 
 export type ModeKeyword = 'fein' | 'sonar' | 'blitz';
 
@@ -29,12 +19,7 @@ export interface SubagentStatusInfo {
   completedAt?: number;
 }
 
-/**
- * Mirror of the host platform's native goal (e.g. OMP goal mode).
- *
- * Platform-agnostic by design: only the objective text and status are
- * carried so shared state stays free of platform-specific types.
- */
+/** Host platform native goal mirror (objective text and status only). */
 export interface NativeGoalMirror {
   objective: string;
   status: string;
@@ -137,7 +122,7 @@ export const persistState = (
 
 // ── Session restore ──
 
-/** Minimal shape of a persisted session entry that restore logic inspects. */
+/** Minimal persisted session entry shape for restore logic. */
 export interface SessionEntry {
   type: string;
   customType?: string;
@@ -151,13 +136,7 @@ export interface SessionBranchContext {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
-/**
- * Read the current branch of the host session, or null when unavailable.
- *
- * getBranch() is the public current-session view and avoids restoring state
- * from a sibling branch in the same session tree. Never fall back to
- * getEntries(), which spans the entire session tree.
- */
+/** Read the current host session branch, or null when unavailable. Never use getEntries (whole tree). */
 export const readSessionBranch = (ctx?: SessionBranchContext | null): SessionEntry[] | null => {
   const sessionManager = ctx?.sessionManager;
   if (typeof sessionManager?.getBranch !== 'function') {
@@ -168,12 +147,7 @@ export const readSessionBranch = (ctx?: SessionBranchContext | null): SessionEnt
   return Array.isArray(branch) ? branch : null;
 };
 
-/**
- * Build a fresh state from the last persisted `maestria_state` entry.
- *
- * The last matching entry wins, reflecting the latest persisted snapshot on
- * the branch. Null entries produce the initial state.
- */
+/** Fresh state from the last persisted `maestria_state` entry on the branch. */
 export const stateFromSessionEntries = (entries?: SessionEntry[] | null): MaestriaState => {
   const next = createInitialState();
   if (!entries) {
@@ -193,12 +167,7 @@ export const stateFromSessionEntries = (entries?: SessionEntry[] | null): Maestr
   return next;
 };
 
-/**
- * Replace every own key on `state` with the values from `next`.
- *
- * Deleting stale keys first keeps the mutable extension state in sync with
- * the restored snapshot instead of leaking fields absent from it.
- */
+/** Replace state with a snapshot, deleting stale keys so absent fields do not leak. */
 export const replaceState = (state: MaestriaState, next: MaestriaState): void => {
   for (const key of Object.keys(state)) {
     Reflect.deleteProperty(state, key);
