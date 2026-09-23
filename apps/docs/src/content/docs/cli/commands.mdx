@@ -1,6 +1,6 @@
 ---
 title: Command Reference
-description: Complete reference for all maestria commands - status, install, plugin, update, uninstall, check, and configure - with flags, options, and examples.
+description: Complete reference for all maestria commands - status, install, plugin, update, uninstall, check, configure, doctor, and setup - with flags, options, and examples.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -15,7 +15,7 @@ These flags apply across the CLI:
 | `--json`  | Output results as JSON instead of formatted text on every command |
 | `--quiet` | Suppress spinner animations on runtime platform commands          |
 
-`--compact` (machine-friendly text) is supported on runtime platform commands except `check`. Every command's `--help` shows exit codes. Examples appear on every command except `uninstall`; AI-agent tips appear only on `maestria`, `configure`, `plugin`, `plugin install`, and `plugin validate`.
+`--compact` (machine-friendly text) is supported on status, install, update, uninstall, configure, and setup. `check` and `doctor` support `--json` and `--quiet` only; `plugin validate` and `plugin install` support `--json` only. Every command's `--help` shows exit codes. Examples appear on every command except `uninstall`; AI-agent tips appear on `maestria`, `configure`, `plugin`, `plugin install`, `plugin validate`, and `setup`.
 
 `maestria` with no arguments runs `maestria status`.
 
@@ -94,7 +94,7 @@ Implies `--quiet` (no spinner animations).
 Install maestria for one or more coding agent platforms.
 
 ```bash
-maestria install [platform] [--all] [--json] [--quiet] [--compact]
+maestria install [platform] [--all] [--skills <csv>] [--exclude-skills <csv>] [--yes] [--json] [--quiet] [--compact]
 ```
 
 ### Flags
@@ -103,6 +103,9 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 | --- | --- |
 | `platform` | Positional arg - platform to install. Comma-separated for multiple (e.g., `opencode,pi`). Omit for interactive picker. |
 | `--all`, `-a` | Install for all detected platforms |
+| `--skills` | Methodology skills to activate (CSV, or `none` for no skills). Default: `create-pull-request,docs-update`. Known: `create-pull-request, docs-update`. |
+| `--exclude-skills` | Methodology skills to skip (CSV). Never touches independently installed copies. |
+| `--yes`, `-y` | Confirm skill selection non-interactively (required for non-TTY when it changes) |
 | `--json` | Output results as JSON |
 | `--quiet` | Suppress spinner animations |
 | `--compact` | Machine-friendly text output - one line per result |
@@ -116,6 +119,10 @@ maestria install [platform] [--all] [--json] [--quiet] [--compact]
 | `maestria install opencode,pi` | Installs for OpenCode and Pi in one run, one platform at a time |
 | `maestria install --all` | Installs for every detected platform that lacks maestria |
 | `maestria install opencode --json` | Installs OpenCode, outputs JSON result |
+| `maestria install opencode --skills docs-update` | Installs OpenCode with only the docs-update methodology skill |
+| `maestria install opencode --exclude-skills docs-update --yes` | Installs non-interactively, leaving an independently installed docs-update copy alone |
+
+Skill flags are validated before any change. An unmanaged skill already present for the target agent fails the run with `--exclude-skills <skill>` guidance; nothing is changed.
 
 ### Platform identifiers
 
@@ -215,7 +222,7 @@ The validator checks the closed `plugin.json` manifest, Agent Skills frontmatter
 Update maestria plugins to the latest (or specified) version.
 
 ```bash
-maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--compact]
+maestria update [platform] [--version <semver>] [--all] [--skills <csv>] [--exclude-skills <csv>] [--yes] [--json] [--quiet] [--compact]
 ```
 
 ### Flags
@@ -225,6 +232,9 @@ maestria update [platform] [--version <semver>] [--all] [--json] [--quiet] [--co
 | `platform` | Positional arg - platform to update. Comma-separated for multiple (e.g., `opencode,pi`). Omit for interactive picker. |
 | `--version`, `-V` | Specific version to install (e.g., `0.5.0`). Defaults to latest. |
 | `--all`, `-a` | Update all installed platforms |
+| `--skills` | Methodology skills to activate (CSV, or `none` for no skills). Default: recorded selection, else `create-pull-request` for legacy installs without a record. Known: `create-pull-request, docs-update`. |
+| `--exclude-skills` | Methodology skills to skip (CSV). Never touches independently installed copies. |
+| `--yes`, `-y` | Confirm skill selection non-interactively (required for non-TTY when it changes) |
 | `--json` | Output results as JSON |
 | `--quiet` | Suppress spinner animations |
 | `--compact` | Machine-friendly text output - one line per result |
@@ -245,6 +255,8 @@ Use `--version` to pin a specific version instead of the latest:
 <AllPackageManagers type="dlx" pkg="maestria" args="update opencode --version 0.5.0" />
 
 Exact version pinning is not available for `claude-code`, `codex`, `prime-agent`, or `hermes`. The first three update from the latest staged npm package and return a validation error if `--version` is passed. Hermes ignores the version, warns, and updates from its git-based plugin installation.
+
+When every installed plugin is already current, `update` still reconciles methodology skills and reports the plugin step as a no-op per platform. Legacy installs without a skill record infer only `create-pull-request`, never `docs-update`.
 
 | Invocation | What happens |
 | --- | --- |
@@ -318,6 +330,8 @@ maestria uninstall [platform] [--all] [--json] [--quiet] [--compact]
 | `maestria uninstall pi --json` | Uninstalls Pi, outputs JSON result                       |
 
 Like `install` and `update`, `uninstall` exits with code `1` in non-interactive terminals with no platform and no `--all`, showing a clear error instead of prompting. JSON output is an array of per-platform results with `id`, `label`, `ok`, and `message` fields.
+
+Uninstall removes only Maestria-recorded methodology skills, and only when no other observed consumer shares the same installed path. A platform with no skill record keeps its companion in place with a manual removal command; unknown skill IDs keep their history.
 
 Pi uninstall leaves the shared `@gotgenes/pi-subagents` peer dependency in place unless it is removed separately.
 
@@ -449,3 +463,64 @@ opencode writes the `agent.<name>.model` key (preserving comments and the `varia
 <Aside type="tip">
   Restart the coding agent (or reload its config) for changes to take effect.
 </Aside>
+
+---
+
+## `doctor`
+
+Diagnose methodology skill setup without changing anything (read-only).
+
+```bash
+maestria doctor [--json] [--quiet]
+```
+
+### Flags
+
+| Flag      | Description                                  |
+| --------- | -------------------------------------------- |
+| `--json`  | Output skill diagnostics as JSON             |
+| `--quiet` | Suppress spinner output (recommended for CI) |
+
+`doctor` has no `--compact` flag.
+
+### Behavior
+
+Reports the skill record path and whether it is present, then per platform: plugin state, recorded skill selection, observed skills with install paths, plus notes and next steps. A corrupt record fails loud before any observation. A failed skills-list degrades into a per-platform note instead of aborting the run. Exit code is always `0`; use `--json` for machine-readable output.
+
+### Example
+
+<AllPackageManagers type="dlx" pkg="maestria" args="doctor" />
+
+---
+
+## `setup`
+
+Coordinate optional project setup across ecosystem tools and skills. Read-only until the final confirmation: nothing runs before confirm.
+
+```bash
+maestria setup [--ecosystem <csv>] [--xtarterize-skills] [--skill-source <owner/repo:scope>] [--skills <csv>] [--maestria-skills <csv>] [--exclude-skills <csv>] [--cwd <dir>] [--yes] [--json] [--quiet] [--compact]
+```
+
+### Flags
+
+| Flag | Description |
+| --- | --- |
+| `--ecosystem` | Ecosystem tools to check (CSV, or omit for interactive selection). Known: `codegraph, agent-browser, opensrc`. Detection only; never installs automatically. |
+| `--xtarterize-skills` | Apply project skills via xtarterize (`agent/skills-install`) for the target cwd |
+| `--skill-source` | Skill source to install via the skills CLI (repeatable or CSV). Format: `<owner/repo:scope>` with scope `project` or `global`. Skip by omitting. |
+| `--skills` | Maestria methodology skills to activate (CSV, or `none` for no skills). Default: recorded selection, else `create-pull-request, docs-update`. |
+| `--maestria-skills` | Alias for `--skills`. `--skills` wins when both are set. |
+| `--exclude-skills` | Maestria methodology skills to skip (CSV). Never touches independently installed copies. |
+| `--cwd` | Project directory the setup targets. Defaults to the current directory. |
+| `--yes`, `-y` | Confirm all setup actions non-interactively (required for non-TTY) |
+| `--json` | Output the per-action report as JSON |
+| `--quiet` | Suppress spinner and non-essential output |
+| `--compact` | Minimal machine-friendly text output |
+
+### Behavior
+
+`setup` plans three independent groups and runs only the confirmed ones: ecosystem tool checks (detection plus manual steps, never automatic installs), xtarterize project skills for `--cwd`, and skill sources plus the Maestria methodology selection. Project scope follows `--cwd` (or the current directory); re-run with the same args to resume. Skill flags are validated before any change, same as `install`.
+
+### Example
+
+<AllPackageManagers type="dlx" pkg="maestria" args="setup --ecosystem codegraph,opensrc --yes" />

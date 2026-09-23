@@ -50,11 +50,22 @@ Use one independent reviewer for ordinary pre-merge validation, adding a securit
 
 ## Project-Specific Workflows
 
-Projects may add .maestria/workflow.md for project context, required reading, and quality gates, and .maestria/rules.md for local non-negotiable constraints; the orchestrator reads both when it starts work. Runtime safeguards, selected-route protections, review independence, bounded retries, and commit authorization still take precedence.
+Projects may add two root-only files, loaded in order: `.maestria/workflow.md` for project context, required reading, and quality gates, then `.maestria/rules.md` for local non-negotiable constraints. Each file carries a subordinate-guidance header: it may replace configurable workflows but never waives safety, authorization, or host permissions. Runtime safeguards, selected-route protections, review independence, bounded retries, and commit authorization still take precedence.
 
 Keep these files short: reusable methodology belongs in the canonical Maestria directives, project decisions in ADRs, and one-off task details in the handoff.
 
-Supported hosts load these project-root files fresh at call time, falling back to orchestrator briefing when unavailable.
+### How engines load them
+
+| Engine | Project root | Freshness |
+| --- | --- | --- |
+| OpenCode | SDK project worktree, then instance worktree, then session directory | Read fresh on every model call; edits need no restart |
+| Pi / OMP | Session working directory, each turn | Read fresh on every agent turn, composed with the mode prompt |
+
+Compaction and carry-over preserve them: OpenCode keeps active project constraints in the compaction summary while content re-injects on every call; Pi and OMP recompose sections each turn and persist the mode across turns in the same process.
+
+### Absent versus unusable
+
+Missing or empty files are skipped silently. A present-but-unusable file (a directory, a non-file, a symlink escaping the project root, or an unreadable file) fails loud with a diagnostic that names only the relative path, never absolute paths or file contents. OpenCode propagates it as a failed model call; Pi and OMP surface it via notification plus a STOP banner. Do not execute the request until the files are fixed.
 
 ## See Also
 
