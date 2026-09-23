@@ -71,6 +71,28 @@ const parsed = (result: CommandResult): unknown => {
   return value;
 };
 
+const runHuman = async (
+  runner: SkillCommandRunner,
+  statuses: PlatformStatus[],
+  record: SkillsRecord | null,
+): Promise<CommandResult> => {
+  await withConfigRecord(record === null ? null : JSON.stringify(record));
+  const result = await handleDoctor(
+    { quiet: true },
+    // oxlint-disable-next-line require-await -- injected detect is synchronous by design.
+    { detect: async () => statuses, runner },
+  );
+  expect(result.exitCode).toBe(0);
+  return result;
+};
+
+const managedFor = (dir: string): { name: string; path: string }[] => [
+  { name: COMPANION_SKILL, path: `${dir}/${COMPANION_SKILL}` },
+  { name: DOCS_UPDATE_SKILL, path: `${dir}/${DOCS_UPDATE_SKILL}` },
+];
+
+const countOf = (text: string, needle: string): number => text.split(needle).length - 1;
+
 interface DoctorTableCase {
   readonly expectedOutput: readonly RegExp[];
   readonly expectedPlatforms: unknown;
@@ -270,5 +292,103 @@ describe('doctor reports', () => {
     expect(reports).toHaveLength(3);
     expect(calls.filter((agent) => agent === 'universal')).toHaveLength(1);
     expect(calls.filter((agent) => agent === 'opencode')).toHaveLength(1);
+  });
+
+  describe('large inventories', () => {
+    const UNRELATED_COUNT = 180;
+    const unrelatedNames = Array.from({ length: UNRELATED_COUNT }, (_, i) => `unrelated-${i}`);
+    const unrelatedFor = (dir: string): { name: string; path: string }[] =>
+      unrelatedNames.map((name) => ({ name, path: `${dir}/${name}` }));
+    const inventory = {
+      cursor: [...managedFor('/fake/cursor/skills'), ...unrelatedFor('/fake/cursor/skills')],
+      opencode: [...managedFor('/fake/opencode/skills'), ...unrelatedFor('/fake/opencode/skills')],
+      universal: [...managedFor('/fake/shared/skills'), ...unrelatedFor('/fake/shared/skills')],
+    };
+    const largeStatuses = [
+      status('opencode', { label: 'OpenCode' }),
+      status('omp', { label: 'Oh My Pi' }),
+      status('prime-agent', { label: 'Prime Agent' }),
+      status('cursor', {
+        available: true,
+        installed: false,
+        installedVersion: '',
+        label: 'Cursor',
+      }),
+    ];
+
+    it('collapses unrelated skills in human output while JSON keeps the full arrays', async () => {
+      const human = await runHuman(fakeListCli(inventory), largeStatuses, null);
+      expect(human.output).toContain(
+        `${COMPANION_SKILL} @ /fake/opencode/skills/${COMPANION_SKILL}`,
+      );
+      expect(human.output).toContain(
+        `${DOCS_UPDATE_SKILL} @ /fake/shared/skills/${DOCS_UPDATE_SKILL}`,
+      );
+      expect(human.output).toContain('180 unrelated skills omitted, see --json for the full list.');
+      for (const name of unrelatedNames) {
+        expect(human.output).not.toContain(name);
+      }
+
+      const json = await runJson(fakeListCli(inventory), largeStatuses, null);
+      expect(parsed(json)).toMatchObject({
+        platforms: [
+          { id: 'opencode', observed: inventory.opencode },
+          { id: 'omp', observed: inventory.universal },
+          { id: 'prime-agent', observed: inventory.universal },
+          { id: 'cursor', observed: inventory.cursor },
+        ],
+      });
+    });
+
+    it('renders a shared inventory once and exactly one Next line per platform', async () => {
+      const human = await runHuman(fakeListCli(inventory), largeStatuses, null);
+      const observedLines = human.output.split('\n').filter((line) => line.includes('Observed:'));
+      expect(observedLines.filter((line) => line.includes('/fake/shared/skills'))).toHaveLength(1);
+      expect(human.output).toContain('same as omp');
+      expect(countOf(human.output, 'unrelated skills omitted')).toBe(3);
+      expect(countOf(human.output, 'Next:')).toBe(largeStatuses.length);
+      expect(human.output).toContain('to install the plugin');
+      expect(human.output).toContain('to record a selection');
+      expect(human.output).not.toContain('--exclude-skills');
+
+      const json = await runJson(fakeListCli(inventory), largeStatuses, null);
+      expect(parsed(json)).toMatchObject({
+        platforms: [
+          {
+            id: 'opencode',
+            next: [
+              expect.stringContaining('--exclude-skills'),
+              expect.stringContaining('--exclude-skills'),
+              expect.stringContaining('to record a selection'),
+            ],
+          },
+          {
+            id: 'omp',
+            next: [
+              expect.stringContaining('--exclude-skills'),
+              expect.stringContaining('--exclude-skills'),
+              expect.stringContaining('to record a selection'),
+            ],
+          },
+          {
+            id: 'prime-agent',
+            next: [
+              expect.stringContaining('--exclude-skills'),
+              expect.stringContaining('--exclude-skills'),
+              expect.stringContaining('to record a selection'),
+            ],
+          },
+          {
+            id: 'cursor',
+            next: [
+              expect.stringContaining('--exclude-skills'),
+              expect.stringContaining('--exclude-skills'),
+              expect.stringContaining('to record a selection'),
+              expect.stringContaining('to install the plugin'),
+            ],
+          },
+        ],
+      });
+    });
   });
 });

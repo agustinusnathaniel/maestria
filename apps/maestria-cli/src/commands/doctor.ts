@@ -6,9 +6,10 @@ import { toCommandRun } from '@/lib/command-runner.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { detectAll } from '@/lib/detect.js';
 import { collectDoctorReports, redactHome } from '@/lib/doctor.js';
-import type { DoctorOutput } from '@/lib/doctor.js';
+import type { DoctorOutput, DoctorPlatformReport } from '@/lib/doctor.js';
 import { createSpinner } from '@/lib/output.js';
 import { defaultSkillRunner } from '@/lib/skill-reconcile.js';
+import { MANAGED_SKILLS } from '@/lib/skill-companion.js';
 import type { SkillCommandRunner } from '@/lib/skill-companion.js';
 import { getSkillsRecordPath, readSkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
@@ -23,53 +24,124 @@ export interface DoctorDeps {
   runner?: SkillCommandRunner;
 }
 
+const INSTALL_PLUGIN_HINT = 'to install the plugin';
+const RECORD_SELECTION_HINT = 'to record a selection';
+
+/**
+ * Human table shows one actionable step per platform. Priority: an uninstalled
+ * plugin blocks everything else, then a missing record, otherwise the first
+ * accumulated step (share, exclude, restore, re-run, manual). The JSON output
+ * keeps the full `next` array as the machine contract.
+ */
+const selectDisplayNext = (platform: DoctorPlatformReport): string[] => {
+  if (platform.next.length <= 1) {
+    return platform.next;
+  }
+  if (platform.available && !platform.installed) {
+    const install = platform.next.find((item) => item.includes(INSTALL_PLUGIN_HINT));
+    if (install !== undefined) {
+      return [install];
+    }
+  }
+  if (platform.recorded === null) {
+    const record = platform.next.find((item) => item.includes(RECORD_SELECTION_HINT));
+    if (record !== undefined) {
+      return [record];
+    }
+  }
+  return platform.next.slice(0, 1);
+};
+
+const omittedLine = (count: number): string =>
+  count === 1
+    ? '1 unrelated skill omitted, see --json for the full list.'
+    : `${count} unrelated skills omitted, see --json for the full list.`;
+
+const pluginText = (platform: DoctorPlatformReport): string => {
+  if (!platform.available) {
+    return 'CLI not available';
+  }
+  if (!platform.installed) {
+    return 'not installed';
+  }
+  return platform.installedVersion === '' ? 'installed' : `installed ${platform.installedVersion}`;
+};
+
+const recordedText = (platform: DoctorPlatformReport): string => {
+  if (platform.recorded === null) {
+    return 'none recorded';
+  }
+  return platform.recorded.length === 0 ? 'none' : platform.recorded.join(', ');
+};
+
+interface ObservedText {
+  readonly omitted: number;
+  readonly text: string;
+}
+
+/**
+ * Human table shows managed skills only; unrelated skills collapse to a
+ * count. Platforms sharing one agent inventory render it once and reference
+ * the first platform afterwards. JSON keeps the full `observed` arrays.
+ */
+const observedText = (
+  platform: DoctorPlatformReport,
+  firstByAgent: Map<string, string>,
+): ObservedText => {
+  if (platform.agent === null) {
+    return { omitted: 0, text: 'no skills-CLI target' };
+  }
+  if (platform.listError !== undefined) {
+    return { omitted: 0, text: 'check failed' };
+  }
+  const first = firstByAgent.get(platform.agent);
+  if (first !== undefined) {
+    return { omitted: 0, text: `same as ${first}` };
+  }
+  firstByAgent.set(platform.agent, platform.id);
+  const managed = platform.observed.filter((e) => MANAGED_SKILLS.includes(e.name));
+  const omitted = platform.observed.length - managed.length;
+  if (managed.length === 0) {
+    return {
+      omitted,
+      text: omitted === 0 ? `none (${platform.agent})` : `none managed (${platform.agent})`,
+    };
+  }
+  return { omitted, text: managed.map((e) => `${e.name} @ ${e.path}`).join(', ') };
+};
+
+const renderPlatformSection = (
+  platform: DoctorPlatformReport,
+  firstByAgent: Map<string, string>,
+): string[] => {
+  const observed = observedText(platform, firstByAgent);
+  const lines = [
+    `  ${picocolors.bold(platform.label)} (${platform.id})`,
+    `    Plugin:    ${pluginText(platform)}`,
+    `    Recorded:  ${recordedText(platform)}`,
+    `    Observed:  ${observed.text}`,
+  ];
+  if (observed.omitted > 0) {
+    lines.push(`    Omitted:   ${omittedLine(observed.omitted)}`);
+  }
+  for (const note of platform.notes) {
+    lines.push(`    Note:      ${note}`);
+  }
+  for (const item of selectDisplayNext(platform)) {
+    lines.push(`    Next:      ${item}`);
+  }
+  return lines;
+};
+
 const renderDoctorTable = (output: DoctorOutput): string => {
   const lines: string[] = [
     picocolors.bold('\n  Maestria Doctor'),
     picocolors.dim('  ─────────────────────────────────────'),
     `  Record: ${output.recordPresent ? output.recordPath : `${output.recordPath} (absent)`}`,
   ];
+  const firstByAgent = new Map<string, string>();
   for (const p of output.platforms) {
-    let plugin: string;
-    if (!p.available) {
-      plugin = 'CLI not available';
-    } else if (!p.installed) {
-      plugin = 'not installed';
-    } else if (p.installedVersion === '') {
-      plugin = 'installed';
-    } else {
-      plugin = `installed ${p.installedVersion}`;
-    }
-    let recorded: string;
-    if (p.recorded === null) {
-      recorded = 'none recorded';
-    } else if (p.recorded.length === 0) {
-      recorded = 'none';
-    } else {
-      recorded = p.recorded.join(', ');
-    }
-    let observed: string;
-    if (p.agent === null) {
-      observed = 'no skills-CLI target';
-    } else if (p.listError !== undefined) {
-      observed = 'check failed';
-    } else if (p.observed.length === 0) {
-      observed = `none (${p.agent})`;
-    } else {
-      observed = p.observed.map((e) => `${e.name} @ ${e.path}`).join(', ');
-    }
-    lines.push(
-      `  ${picocolors.bold(p.label)} (${p.id})`,
-      `    Plugin:    ${plugin}`,
-      `    Recorded:  ${recorded}`,
-      `    Observed:  ${observed}`,
-    );
-    for (const note of p.notes) {
-      lines.push(`    Note:      ${note}`);
-    }
-    for (const item of p.next) {
-      lines.push(`    Next:      ${item}`);
-    }
+    lines.push(...renderPlatformSection(p, firstByAgent));
   }
   return `${lines.join('\n')}\n`;
 };
