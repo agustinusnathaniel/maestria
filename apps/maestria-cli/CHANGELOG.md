@@ -1,5 +1,13 @@
 # maestria
 
+## 0.13.2
+
+### Patch Changes
+
+- [#339](https://github.com/agustinusnathaniel/maestria/pull/339) [`8e0ca35`](https://github.com/agustinusnathaniel/maestria/commit/8e0ca35b67a54223d25c496d349e1e815bcb0937) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Fail loud when `--compact` is passed to `maestria check` or `maestria doctor`. These commands have no compact rendering, so they now exit 1 with guidance to use `--json` or `--quiet` instead of silently ignoring the flag.
+
+- [#337](https://github.com/agustinusnathaniel/maestria/pull/337) [`8b8d54e`](https://github.com/agustinusnathaniel/maestria/commit/8b8d54e5649af9400f39b236c07bad92b8a4a841) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Skip redundant `maestria setup` confirmations when there is nothing to change. Selections left unchanged no longer trigger the trailing skills confirmation, fully no-op plans exit 0 with an already-set-up summary instead of prompting, and the ecosystem picker labels detected tools as already installed.
+
 ## 0.13.1
 
 ### Patch Changes
