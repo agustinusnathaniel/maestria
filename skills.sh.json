@@ -1,0 +1,10 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "Methodology",
+      "description": "Workflow skills for intent contracts, documentation updates, and pull request drafts.",
+      "skills": ["create-pull-request", "docs-update", "spec-contract"]
+    }
+  ]
+}
