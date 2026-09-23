@@ -13,7 +13,6 @@ import {
   confirmSetupPlan,
   goalNotes,
   isNoopSetupPlan,
-  NOOP_SETUP_SUMMARY,
   renderSetupOutput,
   resolveSetupPlan,
 } from '@/lib/setup-plan.js';
@@ -305,7 +304,7 @@ export const runSetup = async (
           detection: toDetectionContext(detection, selection),
           notes: goalNotes(installed),
           reports: [],
-          summary: NOOP_SETUP_SUMMARY,
+          summary: 'Everything is already set up; nothing to do.',
         },
       ),
     };

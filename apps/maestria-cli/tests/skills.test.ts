@@ -263,35 +263,33 @@ describe('reviewSkillSelections', () => {
     expect(effective[0]?.selection).toEqual({ changed: false, skills: [] });
   });
 
-  it('skips the trailing confirm when the interactive review changes nothing', async () => {
+  it.each([
+    {
+      changed: false,
+      confirmCalls: 0,
+      name: 'skips the trailing confirm when the interactive review changes nothing',
+      reviewed: [PR],
+    },
+    {
+      changed: true,
+      confirmCalls: 1,
+      name: 'still confirms when the interactive review changes the selection',
+      reviewed: [],
+    },
+  ])('$name', async ({ changed, confirmCalls, reviewed }) => {
     setTty(true);
     const record = buildRecord({ opencode: [PR] });
     const selections = [{ id: 'opencode' }].map((target) => ({
       ...target,
       selection: resolveSkillSelection(target.id, {}, record),
     }));
-    groupMocks.groupMultiselect.mockResolvedValueOnce([PR]);
+    groupMocks.groupMultiselect.mockResolvedValueOnce(reviewed);
 
     const effective = await reviewSkillSelections(selections, 'Update', {});
 
     expect(groupMocks.groupMultiselect).toHaveBeenCalledTimes(1);
-    expect(effective[0]?.selection).toEqual({ changed: false, skills: [PR] });
-    expect(promptMocks.confirm).not.toHaveBeenCalled();
-  });
-
-  it('still confirms when the interactive review changes the selection', async () => {
-    setTty(true);
-    const record = buildRecord({ opencode: [PR] });
-    const selections = [{ id: 'opencode' }].map((target) => ({
-      ...target,
-      selection: resolveSkillSelection(target.id, {}, record),
-    }));
-    groupMocks.groupMultiselect.mockResolvedValueOnce([]);
-
-    const effective = await reviewSkillSelections(selections, 'Update', {});
-
-    expect(effective[0]?.selection).toEqual({ changed: true, skills: [] });
-    expect(promptMocks.confirm).toHaveBeenCalledTimes(1);
+    expect(effective[0]?.selection).toEqual({ changed, skills: reviewed });
+    expect(promptMocks.confirm).toHaveBeenCalledTimes(confirmCalls);
   });
 });
 

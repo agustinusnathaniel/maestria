@@ -11,7 +11,6 @@ import { parseEcosystem, parseSkillSources, runSetup } from '@/lib/setup.js';
 import type { XtarterizeRunner } from '@/lib/setup.js';
 import { isNoopSetupPlan } from '@/lib/setup-plan.js';
 import type { SetupSelection } from '@/lib/setup-plan.js';
-import type { EffectiveSkillTarget } from '@/lib/skill-reconcile.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 import { buildRecord, fakeSkillCli } from './skill-test-support.js';
@@ -480,11 +479,6 @@ describe('setup live detection only', () => {
   });
 });
 
-const unchangedTarget = (id: string): EffectiveSkillTarget => ({
-  id,
-  selection: { changed: false, skills: [] },
-});
-
 const noopPlan = (overrides: Partial<SetupSelection> = {}): SetupSelection => ({
   ecosystem: [],
   maestriaActive: false,
@@ -502,55 +496,55 @@ describe('isNoopSetupPlan', () => {
     ['opensrc', { present: false, version: '' }],
   ]);
 
-  it('is true when nothing is selected and nothing changed', () => {
-    expect(isNoopSetupPlan(noopPlan(), probes)).toBe(true);
-  });
-
-  it('is true when selected ecosystem tools are already detected', () => {
-    expect(isNoopSetupPlan(noopPlan({ ecosystem: ['codegraph'] }), probes)).toBe(true);
-  });
-
-  it('is false when a selected ecosystem tool is not detected', () => {
-    expect(isNoopSetupPlan(noopPlan({ ecosystem: ['opensrc'] }), probes)).toBe(false);
-  });
-
-  it('is false when xtarterize is selected because conformance needs its mutating check', () => {
-    expect(isNoopSetupPlan(noopPlan({ xtarterize: true }), probes)).toBe(false);
-  });
-
-  it('is false when skill sources are selected', () => {
-    expect(
-      isNoopSetupPlan(noopPlan({ sources: [{ scope: 'global', source: 'acme/a' }] }), probes),
-    ).toBe(false);
-  });
-
-  it('is false when Maestria defaults are kept on a fresh install', () => {
-    expect(
-      isNoopSetupPlan(
-        noopPlan({
-          maestriaActive: true,
-          reviewed: [
-            { id: 'opencode', selection: { changed: false, skills: ['create-pull-request'] } },
-          ],
-          targets: [{ id: 'opencode' }],
-        }),
-        probes,
-      ),
-    ).toBe(false);
-  });
-
-  it('is false when any Maestria selection changed', () => {
-    expect(
-      isNoopSetupPlan(
-        noopPlan({
-          reviewed: [
-            unchangedTarget('opencode'),
-            { id: 'pi', selection: { changed: true, skills: ['create-pull-request'] } },
-          ],
-        }),
-        probes,
-      ),
-    ).toBe(false);
+  it.each([
+    {
+      expected: true,
+      name: 'nothing selected and nothing changed',
+      plan: noopPlan(),
+    },
+    {
+      expected: true,
+      name: 'selected ecosystem tools already detected',
+      plan: noopPlan({ ecosystem: ['codegraph'] }),
+    },
+    {
+      expected: false,
+      name: 'selected ecosystem tool not detected',
+      plan: noopPlan({ ecosystem: ['opensrc'] }),
+    },
+    {
+      expected: false,
+      name: 'xtarterize selected because conformance needs its mutating check',
+      plan: noopPlan({ xtarterize: true }),
+    },
+    {
+      expected: false,
+      name: 'skill sources selected',
+      plan: noopPlan({ sources: [{ scope: 'global', source: 'acme/a' }] }),
+    },
+    {
+      expected: false,
+      name: 'Maestria defaults kept on a fresh install',
+      plan: noopPlan({
+        maestriaActive: true,
+        reviewed: [
+          { id: 'opencode', selection: { changed: false, skills: ['create-pull-request'] } },
+        ],
+        targets: [{ id: 'opencode' }],
+      }),
+    },
+    {
+      expected: false,
+      name: 'any Maestria selection changed',
+      plan: noopPlan({
+        reviewed: [
+          { id: 'opencode', selection: { changed: false, skills: [] } },
+          { id: 'pi', selection: { changed: true, skills: ['create-pull-request'] } },
+        ],
+      }),
+    },
+  ])('$name', ({ expected, plan }) => {
+    expect(isNoopSetupPlan(plan, probes)).toBe(expected);
   });
 });
 

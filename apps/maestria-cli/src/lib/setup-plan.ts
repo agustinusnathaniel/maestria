@@ -286,17 +286,7 @@ export const resolveSetupPlan = async (
   };
 };
 
-export const NOOP_SETUP_SUMMARY = 'Everything is already set up; nothing to do.';
-
-/**
- * Read-only no-op check: true when the resolved plan cannot mutate anything.
- * Ecosystem tools are detect-only, so only already-detected tools count as
- * settled. A selected xtarterize run always counts as will-run because
- * conformance cannot be known without its mutating check. A Maestria skills
- * run with installed targets always counts as will-run, matching
- * executeSetupActions, because fresh installs keep defaults unchanged yet
- * still need their initial reconcile.
- */
+// Fresh installs with targets still run to match the initial reconcile in executeSetupActions.
 export const isNoopSetupPlan = (
   selection: SetupSelection,
   probes: ReadonlyMap<string, { present: boolean; version: string }>,
