@@ -12,6 +12,7 @@ import type { SetupActionContext } from '@/lib/setup-actions.js';
 import {
   confirmSetupPlan,
   goalNotes,
+  isNoopSetupPlan,
   renderSetupOutput,
   resolveSetupPlan,
 } from '@/lib/setup-plan.js';
@@ -200,6 +201,25 @@ const collectDetection = async (
   return { doctor, platforms, probes, record, xtarterizeOnPath };
 };
 
+const toDetectionContext = (
+  detection: SetupDetection,
+  selection: SetupSelection,
+): {
+  doctor: DoctorPlatformReport[];
+  ecosystem: { present: boolean; tool: string; version: string }[];
+  recordPresent: boolean;
+  xtarterizeOnPath: string | null;
+} => ({
+  doctor: detection.doctor,
+  ecosystem: selection.ecosystem.map((tool) => ({
+    present: detection.probes.get(tool)?.present ?? false,
+    tool,
+    version: detection.probes.get(tool)?.version ?? '',
+  })),
+  recordPresent: detection.record !== null,
+  xtarterizeOnPath: detection.xtarterizeOnPath,
+});
+
 const executeConfirmedPlan = async (
   args: SetupArgs,
   cwd: string,
@@ -226,16 +246,7 @@ const executeConfirmedPlan = async (
     { json: args.json },
     {
       cwd,
-      detection: {
-        doctor: detection.doctor,
-        ecosystem: selection.ecosystem.map((tool) => ({
-          present: detection.probes.get(tool)?.present ?? false,
-          tool,
-          version: detection.probes.get(tool)?.version ?? '',
-        })),
-        recordPresent: detection.record !== null,
-        xtarterizeOnPath: detection.xtarterizeOnPath,
-      },
+      detection: toDetectionContext(detection, selection),
       notes,
       reports,
     },
@@ -282,6 +293,21 @@ export const runSetup = async (
 
   if (selection.maestriaActive && selection.targets.length > 0) {
     await preflightCompanionOwnership(skillRunner, detection.record, selection.reviewed);
+  }
+  if (isNoopSetupPlan(selection, detection.probes)) {
+    return {
+      exitCode: 0,
+      output: renderSetupOutput(
+        { json: args.json },
+        {
+          cwd,
+          detection: toDetectionContext(detection, selection),
+          notes: goalNotes(installed),
+          reports: [],
+          summary: 'Everything is already set up; nothing to do.',
+        },
+      ),
+    };
   }
   await confirmSetupPlan(cwd, selection, args.yes);
   return await executeConfirmedPlan(args, cwd, installed, detection, selection, {

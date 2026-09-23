@@ -9,6 +9,8 @@ import type { SkillCommandRunner } from '@/lib/skill-companion.js';
 import { isRecord } from '@/lib/primitives.js';
 import { parseEcosystem, parseSkillSources, runSetup } from '@/lib/setup.js';
 import type { XtarterizeRunner } from '@/lib/setup.js';
+import { isNoopSetupPlan } from '@/lib/setup-plan.js';
+import type { SetupSelection } from '@/lib/setup-plan.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 import { buildRecord, fakeSkillCli } from './skill-test-support.js';
@@ -25,12 +27,58 @@ const status = (id: string, overrides: Partial<PlatformStatus> = {}): PlatformSt
 
 const configDirs: string[] = [];
 
+const groupMocks = vi.hoisted(() => ({
+  groupMultiselect: vi.fn(),
+}));
+const promptMocks = vi.hoisted(() => ({
+  cancel: vi.fn(),
+  // oxlint-disable-next-line require-await -- synchronous confirm stub by design.
+  confirm: vi.fn(async () => true),
+  isCancel: vi.fn(() => false),
+  spinner: vi.fn(() => ({ message: vi.fn(), start: vi.fn(), stop: vi.fn() })),
+}));
+
+vi.mock('@/lib/group-multiselect.js', () => ({
+  groupMultiselect: groupMocks.groupMultiselect,
+}));
+
+vi.mock('@clack/prompts', () => ({
+  cancel: promptMocks.cancel,
+  confirm: promptMocks.confirm,
+  isCancel: promptMocks.isCancel,
+  spinner: promptMocks.spinner,
+}));
+
+const stdoutTty = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY');
+const stdinTty = Object.getOwnPropertyDescriptor(process.stdin, 'isTTY');
+
+const setTty = (value: boolean): void => {
+  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value });
+  Object.defineProperty(process.stdin, 'isTTY', { configurable: true, value });
+};
+
+const restoreTty = (): void => {
+  if (stdoutTty) {
+    Object.defineProperty(process.stdout, 'isTTY', stdoutTty);
+  } else {
+    Reflect.deleteProperty(process.stdout, 'isTTY');
+  }
+  if (stdinTty) {
+    Object.defineProperty(process.stdin, 'isTTY', stdinTty);
+  } else {
+    Reflect.deleteProperty(process.stdin, 'isTTY');
+  }
+};
+
 beforeEach(() => {
   vi.stubEnv('MAESTRIA_SKILLS_SOURCE', 'test-source');
 });
 
 afterEach(async () => {
   vi.unstubAllEnvs();
+  restoreTty();
+  groupMocks.groupMultiselect.mockReset();
+  promptMocks.confirm.mockClear();
   await Promise.all(
     configDirs.splice(0).map(async (dir) => {
       await rm(dir, { force: true, recursive: true });
@@ -428,5 +476,227 @@ describe('setup live detection only', () => {
     );
     expect(result.exitCode).toBe(0);
     expect(actionsOf(result.output).length).toBeGreaterThan(0);
+  });
+});
+
+const noopPlan = (overrides: Partial<SetupSelection> = {}): SetupSelection => ({
+  ecosystem: [],
+  maestriaActive: false,
+  maestriaSkills: undefined,
+  reviewed: [],
+  sources: [],
+  targets: [],
+  xtarterize: false,
+  ...overrides,
+});
+
+describe('isNoopSetupPlan', () => {
+  const probes = new Map([
+    ['codegraph', { present: true, version: 'codegraph 1.2.3' }],
+    ['opensrc', { present: false, version: '' }],
+  ]);
+
+  it.each([
+    {
+      expected: true,
+      name: 'nothing selected and nothing changed',
+      plan: noopPlan(),
+    },
+    {
+      expected: true,
+      name: 'selected ecosystem tools already detected',
+      plan: noopPlan({ ecosystem: ['codegraph'] }),
+    },
+    {
+      expected: false,
+      name: 'selected ecosystem tool not detected',
+      plan: noopPlan({ ecosystem: ['opensrc'] }),
+    },
+    {
+      expected: false,
+      name: 'xtarterize selected because conformance needs its mutating check',
+      plan: noopPlan({ xtarterize: true }),
+    },
+    {
+      expected: false,
+      name: 'skill sources selected',
+      plan: noopPlan({ sources: [{ scope: 'global', source: 'acme/a' }] }),
+    },
+    {
+      expected: false,
+      name: 'Maestria defaults kept on a fresh install',
+      plan: noopPlan({
+        maestriaActive: true,
+        reviewed: [
+          { id: 'opencode', selection: { changed: false, skills: ['create-pull-request'] } },
+        ],
+        targets: [{ id: 'opencode' }],
+      }),
+    },
+    {
+      expected: false,
+      name: 'any Maestria selection changed',
+      plan: noopPlan({
+        reviewed: [
+          { id: 'opencode', selection: { changed: false, skills: [] } },
+          { id: 'pi', selection: { changed: true, skills: ['create-pull-request'] } },
+        ],
+      }),
+    },
+  ])('$name', ({ expected, plan }) => {
+    expect(isNoopSetupPlan(plan, probes)).toBe(expected);
+  });
+});
+
+describe('setup no-op confirm skipping', () => {
+  it('exits 0 with an already-set-up summary and zero mutations when the plan is fully no-op', async () => {
+    await withConfigDir();
+    const skillCalls: string[][] = [];
+    const xtarterizeCalls: string[][] = [];
+    const inner = fakeSkillCli({});
+    const result = await runSetup(
+      { ecosystem: 'codegraph', json: true, quiet: true, yes: true },
+      baseDeps({
+        detect: async () => [],
+        ecosystemProbe: async () => ({ present: true, version: 'codegraph 9.9.9' }),
+        readRecord: nullRecord,
+        skillRunner: async (args, options) => {
+          skillCalls.push([...args]);
+          return await inner(args, options);
+        },
+        xtarterize: xtarterizeOk(xtarterizeCalls),
+      }),
+    );
+    expect(result.exitCode).toBe(0);
+    expect(actionsOf(result.output).length).toBe(0);
+    expect(skillCalls.length).toBe(0);
+    expect(xtarterizeCalls.length).toBe(0);
+    const parsed: unknown = JSON.parse(result.output);
+    expect(parsed).toMatchObject({
+      actions: [],
+      detection: { recordPresent: false, xtarterizeOnPath: '/usr/bin/xtarterize' },
+    });
+    if (!isRecord(parsed) || typeof parsed.resume !== 'string') {
+      throw new Error('setup JSON output is missing resume guidance');
+    }
+    expect(parsed.resume).toContain('Re-run with the same args');
+  });
+
+  it('requires --yes for a will-run xtarterize plan even when everything else is settled', async () => {
+    await withConfigDir();
+    const error = await captureCliError(
+      runSetup(
+        { ecosystem: 'codegraph', quiet: true, xtarterizeSkills: true },
+        baseDeps({
+          ecosystemProbe: async () => ({ present: true, version: 'codegraph 9.9.9' }),
+          readRecord: emptyRecord,
+        }),
+      ),
+    );
+    expect(error.message).toContain('--yes');
+  });
+
+  it('still runs a selected xtarterize check instead of short-circuiting', async () => {
+    await withConfigDir();
+    const calls: string[][] = [];
+    const result = await runSetup(
+      { ecosystem: 'codegraph', json: true, quiet: true, xtarterizeSkills: true, yes: true },
+      baseDeps({
+        ecosystemProbe: async () => ({ present: true, version: 'codegraph 9.9.9' }),
+        readRecord: emptyRecord,
+        xtarterize: xtarterizeOk(calls),
+      }),
+    );
+    expect(result.exitCode).toBe(0);
+    expect(calls.length).toBeGreaterThan(0);
+    expect(result.output).not.toContain('already set up');
+  });
+
+  it('does not short-circuit a fresh install when Maestria defaults are kept', async () => {
+    await withConfigDir();
+    const missingYes = await captureCliError(
+      runSetup(
+        { ecosystem: 'codegraph', quiet: true },
+        baseDeps({
+          ecosystemProbe: async () => ({ present: true, version: 'codegraph 9.9.9' }),
+          readRecord: nullRecord,
+        }),
+      ),
+    );
+    expect(missingYes.message).toContain('--yes');
+
+    const skillCalls: string[][] = [];
+    const inner = fakeSkillCli({});
+    const result = await runSetup(
+      { ecosystem: 'codegraph', json: true, quiet: true, yes: true },
+      baseDeps({
+        ecosystemProbe: async () => ({ present: true, version: 'codegraph 9.9.9' }),
+        readRecord: nullRecord,
+        skillRunner: async (args, options) => {
+          skillCalls.push([...args]);
+          return await inner(args, options);
+        },
+      }),
+    );
+    expect(result.exitCode).toBe(0);
+    expect(result.output).not.toContain('already set up');
+    const maestria = actionsOf(result.output).filter((a) => a.category === 'maestria-skills');
+    expect(maestria.length).toBeGreaterThan(0);
+    expect(skillCalls.some((args) => args[0] === 'add')).toBe(true);
+  });
+
+  it('replays a no-op interactive run with review prompts only and annotated picker labels', async () => {
+    await withConfigDir();
+    setTty(true);
+    interface PickerOption {
+      hint?: string;
+      label: string;
+      value: string;
+    }
+    const captured: { message: string; options: Record<string, PickerOption[]> }[] = [];
+    const skillCommands: string[] = [];
+    const xtarterizeCalls: string[][] = [];
+    const inner = fakeSkillCli({});
+    // oxlint-disable-next-line require-await -- synchronous test stub by design.
+    groupMocks.groupMultiselect.mockImplementation(
+      async (opts: {
+        initialValues?: string[];
+        message: string;
+        options?: Record<string, PickerOption[]>;
+      }) => {
+        if (opts.message.includes('Which setup items') && opts.options !== undefined) {
+          captured.push({ message: opts.message, options: opts.options });
+          return [];
+        }
+        return [...(opts.initialValues ?? [])];
+      },
+    );
+    const result = await runSetup(
+      { quiet: true },
+      baseDeps({
+        ecosystemProbe: async (tool) =>
+          tool === 'codegraph'
+            ? { present: true, version: 'codegraph 1.2.3' }
+            : { present: false, version: '' },
+        isInteractive: () => true,
+        readRecord: emptyRecord,
+        skillRunner: async (args, options) => {
+          skillCommands.push(args[0] ?? '');
+          return await inner(args, options);
+        },
+        xtarterize: xtarterizeOk(xtarterizeCalls),
+      }),
+    );
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('already set up');
+    expect(groupMocks.groupMultiselect).toHaveBeenCalledTimes(2);
+    expect(promptMocks.confirm).not.toHaveBeenCalled();
+    expect(xtarterizeCalls.length).toBe(0);
+    expect(skillCommands.every((command) => command === 'list')).toBe(true);
+    const eco =
+      captured[0]?.options['Ecosystem tools (detect only, manual install if missing)'] ?? [];
+    expect(eco.find((o) => o.value === 'eco:codegraph')?.label).toContain('already installed');
+    expect(eco.find((o) => o.value === 'eco:codegraph')?.hint).toContain('1.2.3');
+    expect(eco.find((o) => o.value === 'eco:opensrc')?.label).toBe('opensrc');
   });
 });
