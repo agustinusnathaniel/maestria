@@ -3,6 +3,24 @@ title: Changelog
 description: Release history for the maestria CLI.
 ---
 
+## Unreleased
+
+### Read-only doctor diagnostics
+
+- Added `maestria doctor` to report skill setup per platform: install state, recorded skill selection, and observed inventory, with actionable next commands.
+- Supports `--json` and `--quiet`; home directories render as `~`. No installs, updates, removals, or record writes.
+
+### Optional setup coordinator
+
+- Added `maestria setup` to walk through ecosystem tools and skills with a review screen plus final confirmation before any change.
+- Ecosystem tools report detected or manual steps and are never auto-installed; non-TTY runs require full flags plus `--yes`, with per-action reports and resume guidance.
+
+### Skill flags and selection
+
+- `install` and `update` accept `--skills`, `--exclude-skills`, and `--yes`; per-platform selections persist only after actual success.
+- Fresh installs default to `create-pull-request` plus `docs-update`; recorded choices (including empty) are preserved, and legacy installs without a record infer only `create-pull-request`.
+- Reconcile, preflight, and removal now operate per skill, with partial successes recorded recoverably.
+
 ## v0.12.3
 
 ### Internal maintenance
