@@ -45,17 +45,19 @@ Run <AllPackageManagers type="dlx" pkg="maestria@latest" /> to see which support
 
 Then use `install`, `update`, or `configure` to manage an integration; portable packages use `plugin validate` and `plugin install`. All commands support `--json`; runtime platform commands also support `--quiet` to suppress spinner animations for CI.
 
+Use `maestria doctor` to diagnose methodology skill setup without changing anything, and `maestria setup` to coordinate optional ecosystem tool checks and skill installation for a project. `install`, `update`, and `setup` accept `--skills` and `--exclude-skills` to select the `create-pull-request` and `docs-update` methodology skills; see the [command reference](/cli/commands/#install) for defaults.
+
 ## Explore the Docs
 
 <CardGrid>
   <LinkCard
     title="Getting Started"
-    description="Installation and common usage patterns - status checks, installs, updates, and per-agent model config."
+    description="Installation and common usage patterns - status checks, installs, updates, per-agent model config, skill diagnostics, and project setup."
     href="/cli/getting-started/"
   />
   <LinkCard
     title="Command Reference"
-    description="Full reference for status, install, portable plugin, update, and configure commands with flags."
+    description="Full reference for status, install, portable plugin, update, configure, doctor, and setup commands with flags."
     href="/cli/commands/"
   />
   <LinkCard

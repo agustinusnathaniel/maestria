@@ -46,6 +46,10 @@ OpenCode's V2 protocol uses an agent-native permission model: tool access is con
 
 t3code was designed around OpenCode's V1 session-level permission model. Its `buildOpenCodePermissionRules()` constructs a `PermissionRuleset` that `OpenCodeAdapter.ts` passes to `session.create()` ([source](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/provider/Layers/OpenCodeAdapter.ts)), but the V2 endpoint accepts only `{ id, agent, model, location }` with no `permission` field. The mismatch is architectural, not a bug in either project.
 
+## Project Loading
+
+`.maestria/workflow.md` then `.maestria/rules.md` load from the project root (SDK project worktree, then instance worktree, then session directory), read fresh on every model call, so edits need no restart. Missing or empty files are skipped; a present-but-unusable file propagates as a failed model call instead of running on overridden configuration. See [Workflow Patterns](/core/workflow-patterns/) for order, precedence, and carry-over.
+
 ## See Also
 
 - [Specialist Reference](/core/agents/)

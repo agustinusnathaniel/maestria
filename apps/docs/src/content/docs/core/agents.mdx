@@ -44,6 +44,14 @@ Where keyword detection is supported, mode keywords are recognized anywhere in a
 | **Reviewer** | Code review - correctness, edge cases, security, performance, maintainability | Pre-merge review, security audit, post-implementation validation | Read-only - cannot edit; one general review plus only risk-matched lenses, with blind review, observation-first verification, and [fix]/[dismiss]/[escalate] triage |
 | **Writer** | Documentation - structured patterns for READMEs, API docs, changelogs, ADRs | READMEs, API docs, changelogs, architecture decisions | Documentation scope; not a code-editing role |
 
+## Methodology Skills
+
+Standalone skills the CLI installs and agents load when the assignment calls for them. A missing skill never blocks the work; follow the core directive instead.
+
+- **[create-pull-request](https://github.com/agustinusnathaniel/maestria/blob/main/skills/create-pull-request/SKILL.md)** - Title, body, and visual-evidence conventions for a reviewable PR. Load it before drafting when the task owns an active PR, follow the project template while preserving the required information, and stop on explicit project opt-out.
+- **[docs-update](https://github.com/agustinusnathaniel/maestria/blob/main/skills/docs-update/SKILL.md)** - Documentation update procedure. Load it when docs work applies and follow it; ordinary docs work proceeds without it.
+- **[spec-contract](https://github.com/agustinusnathaniel/maestria/blob/main/skills/spec-contract/SKILL.md)** - Optional contract header shape for persistent intent across steps. Load it only when cross-step intent refs would reduce risk; absence is normal, and reviewers apply its drift and acceptance-coverage rules only when a header or owning spec is linked.
+
 ## See Also
 
 - [Pipeline & Roles](/core/pipeline/)
