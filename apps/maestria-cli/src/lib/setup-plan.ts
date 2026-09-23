@@ -313,9 +313,14 @@ export const confirmSetupPlan = async (
     `ecosystem [${selection.ecosystem.join(', ') || 'none'}]`,
     `xtarterize [${selection.xtarterize ? 'project skills' : 'skipped'}]`,
     `skill sources [${selection.sources.map((s) => `${s.source}:${s.scope}`).join(', ') || 'none'}]`,
-    `maestria skills [${selection.reviewed.map((r) => `${r.id}=[${r.selection.skills.join(', ') || 'none'}]`).join(', ') || 'none'}]`,
+    `maestria skills [${selection.reviewed.map((r) => `${r.id} (global)=[${r.selection.skills.join(', ') || 'none'}]`).join(', ') || 'none'}]`,
   ];
-  await confirmOrThrow(`Run setup with ${reviewLines.join(', ')}?`, yes);
+  await confirmOrThrow(
+    `Run setup with ${reviewLines.join(', ')}? ` +
+      `Project-scoped actions use the target directory; global actions do not depend on it. ` +
+      `Answering No cancels the entire setup with nothing changed.`,
+    yes,
+  );
 };
 
 export const goalNotes = (installed: readonly PlatformStatus[]): string[] => {

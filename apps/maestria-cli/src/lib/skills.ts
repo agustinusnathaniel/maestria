@@ -405,7 +405,7 @@ export const summarizeSelections = (
   selections: readonly { id: string; selection: ResolvedSkillSelection }[],
 ): string =>
   selections
-    .map((entry) => `${entry.id}=[${entry.selection.skills.join(', ') || 'none'}]`)
+    .map((entry) => `${entry.id} (global)=[${entry.selection.skills.join(', ') || 'none'}]`)
     .join(', ');
 
 /**

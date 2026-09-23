@@ -490,6 +490,73 @@ const noopPlan = (overrides: Partial<SetupSelection> = {}): SetupSelection => ({
   ...overrides,
 });
 
+describe('setup scope clarity', () => {
+  interface PickerCall {
+    initialValues?: string[];
+    message: string;
+    options?: Record<string, unknown>;
+  }
+
+  it('shows global scope in the skill review prompt', async () => {
+    await withConfigDir();
+    setTty(true);
+    const messages: string[] = [];
+    groupMocks.groupMultiselect.mockImplementation(async (opts: PickerCall) => {
+      messages.push(opts.message);
+      if (opts.message.includes('Which setup items')) {
+        return [];
+      }
+      return [...(opts.initialValues ?? [])];
+    });
+    const result = await runSetup(
+      { quiet: true },
+      baseDeps({ isInteractive: () => true, readRecord: emptyRecord }),
+    );
+    expect(result.exitCode).toBe(0);
+    expect(
+      messages.some(
+        (message) => message.includes('methodology skills') && message.includes('global scope'),
+      ),
+    ).toBe(true);
+  });
+
+  it('names global scope, target directory role, and full cancel semantics in setup confirms', async () => {
+    await withConfigDir();
+    setTty(true);
+    groupMocks.groupMultiselect.mockImplementation(async (opts: PickerCall) => {
+      if (opts.message.includes('Which setup items')) {
+        return [];
+      }
+      return [];
+    });
+    const result = await runSetup(
+      { quiet: true },
+      baseDeps({ isInteractive: () => true, readRecord: nullRecord }),
+    );
+    expect(result.exitCode).toBe(0);
+    const confirmMessages = (promptMocks.confirm.mock.calls as unknown[][]).map((call) => {
+      const arg: unknown = call[0];
+      return isRecord(arg) && typeof arg.message === 'string' ? arg.message : '';
+    });
+    const perGroup = confirmMessages.find((message) => message.startsWith('Install with skills'));
+    expect(perGroup).toBeDefined();
+    expect(perGroup ?? '').toContain('(global)');
+    const finalConfirm = confirmMessages.at(-1) ?? '';
+    expect(finalConfirm).toContain('opencode (global)=[');
+    expect(finalConfirm).toContain(
+      'Project-scoped actions use the target directory; global actions do not depend on it.',
+    );
+    expect(finalConfirm).toContain('Answering No cancels the entire setup with nothing changed.');
+  });
+
+  it('shows global scope in the maestria skills summary output', async () => {
+    await withConfigDir();
+    const result = await runSetup({ quiet: true, yes: true }, baseDeps({ readRecord: nullRecord }));
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('(global scope)');
+  });
+});
+
 describe('isNoopSetupPlan', () => {
   const probes = new Map([
     ['codegraph', { present: true, version: 'codegraph 1.2.3' }],

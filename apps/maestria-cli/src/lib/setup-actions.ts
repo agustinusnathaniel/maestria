@@ -256,7 +256,7 @@ export const runMaestriaSkillsAction = async (
     const actual = outcome.actual.get(target.id) ?? [];
     return {
       category: 'maestria-skills',
-      detail: note ?? `selection [${actual.join(', ') || 'none'}] reconciled`,
+      detail: note ?? `selection [${actual.join(', ') || 'none'}] reconciled (global scope)`,
       item: target.id,
       status: ok ? 'ok' : 'failed',
     } satisfies SetupActionReport;
