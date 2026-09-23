@@ -1,8 +1,6 @@
 # Maestria Vision
 
-Start with the [About page](apps/docs/src/content/docs/about.mdx) for the short public story.
-
-This file records the longer implementation-grounded vision behind it.
+I told the short version of this story on the [About page](https://maestria.sznm.dev/about/). This file is the longer version, grounded in how I actually build.
 
 ## Motivation
 
