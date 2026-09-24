@@ -117,7 +117,7 @@ For changes to rendered UI, including documentation sites and visible CLI output
 | adventurer | `explore` | Gather data; describe the terrain | Before any implementation in unfamiliar code |
 | architect | `plan` | Evaluate options; document decisions | When multiple approaches exist |
 | builder | `coder` | Implement; test; refactor | When the design is locked |
-| diagnose | `coder` | Find root cause; write regression test | When something is broken |
+| diagnose | `coder` | Find root cause; verify behavior; add coverage only for a genuine uncovered behavioral gap | When something is broken |
 | planner | `plan` | Break down work; sequence milestones | Before starting a multi-step feature |
 | reviewer | `plan` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | writer | `coder` | Document APIs; write README; create ADRs | When code needs human-facing docs |

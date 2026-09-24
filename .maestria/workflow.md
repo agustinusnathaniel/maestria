@@ -49,7 +49,7 @@ scripts/sync-all
 scripts/check-sync
 ```
 
-Generated projections must match the canonical source. Add tests for new behavior and verify idempotence when changing installers, sync, or mode detection.
+Generated projections must match the canonical source. Select behavior tests before implementation, add coverage only for a preidentified behavior gap or durable contract, and verify idempotence when changing installers, sync, or mode detection.
 
 ## Commit and Documentation
 

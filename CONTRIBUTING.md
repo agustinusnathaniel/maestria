@@ -104,7 +104,7 @@ When a platform's behavior differs from the core contract, document the boundary
 
 ## Tests and Quality Gates
 
-Test observable contracts at the highest practical boundary. Prefer real lightweight boundaries or explicit fakes over mocks, and add regression tests only for durable contracts or meaningful failure modes.
+Use the testing discipline in `packages/core/agent-directives/rules.md` and the definitions and workflow in `docs/testing.md`. Pre-code selection is required; post-code unit tests and duplicate regression tests are out. Keep lint, typecheck, build, sync, and existing package checks as verification gates.
 
 Before a commit, the delivery owner runs:
 
