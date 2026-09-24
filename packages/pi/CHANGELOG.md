@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.15
+
+### Patch Changes
+
+- [#343](https://github.com/agustinusnathaniel/maestria/pull/343) [`ec3c94d`](https://github.com/agustinusnathaniel/maestria/commit/ec3c94d47663d3fb339ee249869071ea7795ac17) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Use the same project customization loader across the Node integrations, keeping workflow/rules ordering, live reloads, symlink checks, and error reporting consistent. Existing configuration and host behavior are unchanged.
+
 ## 0.7.14
 
 ### Patch Changes

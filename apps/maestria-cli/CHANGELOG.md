@@ -1,5 +1,13 @@
 # maestria
 
+## 0.13.3
+
+### Patch Changes
+
+- [#343](https://github.com/agustinusnathaniel/maestria/pull/343) [`ec3c94d`](https://github.com/agustinusnathaniel/maestria/commit/ec3c94d47663d3fb339ee249869071ea7795ac17) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Keep recorded skill ownership after a failed add or removal when another skill succeeds, so retries can recover safely. Verify project-scoped setup sources in the requested directory and recognize xtarterize JSON status responses containing nested data.
+
+- [#341](https://github.com/agustinusnathaniel/maestria/pull/341) [`19c70ae`](https://github.com/agustinusnathaniel/maestria/commit/19c70aeaab15638a151466089c8c0c0a34d3f661) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Clarify global scope and cancel semantics in `maestria setup`. Maestria skill prompts, review lines, summary output, and action reports now carry global scope labels, and the final confirm states the target directory role plus full cancel semantics. Display strings only, no behavior change.
+
 ## 0.13.2
 
 ### Patch Changes
