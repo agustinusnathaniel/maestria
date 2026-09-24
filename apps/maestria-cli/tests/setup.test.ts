@@ -10,10 +10,12 @@ import { isRecord } from '@/lib/primitives.js';
 import { parseEcosystem, parseSkillSources, runSetup } from '@/lib/setup.js';
 import type { XtarterizeRunner } from '@/lib/setup.js';
 import { isNoopSetupPlan } from '@/lib/setup-plan.js';
+import { xtarterizeStatusOf } from '@/lib/setup-actions.js';
 import type { SetupSelection } from '@/lib/setup-plan.js';
 import type { SkillsRecord } from '@/lib/skills.js';
 import type { PlatformStatus } from '@/types.js';
 import { buildRecord, fakeSkillCli } from './skill-test-support.js';
+import { createTtyTestSupport } from './tty-test-support.js';
 
 const status = (id: string, overrides: Partial<PlatformStatus> = {}): PlatformStatus => ({
   available: true,
@@ -49,26 +51,7 @@ vi.mock('@clack/prompts', () => ({
   spinner: promptMocks.spinner,
 }));
 
-const stdoutTty = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY');
-const stdinTty = Object.getOwnPropertyDescriptor(process.stdin, 'isTTY');
-
-const setTty = (value: boolean): void => {
-  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value });
-  Object.defineProperty(process.stdin, 'isTTY', { configurable: true, value });
-};
-
-const restoreTty = (): void => {
-  if (stdoutTty) {
-    Object.defineProperty(process.stdout, 'isTTY', stdoutTty);
-  } else {
-    Reflect.deleteProperty(process.stdout, 'isTTY');
-  }
-  if (stdinTty) {
-    Object.defineProperty(process.stdin, 'isTTY', stdinTty);
-  } else {
-    Reflect.deleteProperty(process.stdin, 'isTTY');
-  }
-};
+const { restoreTty, setTty } = createTtyTestSupport();
 
 beforeEach(() => {
   vi.stubEnv('MAESTRIA_SKILLS_SOURCE', 'test-source');
@@ -351,6 +334,43 @@ describe('setup pre-effect validation', () => {
 });
 
 describe('setup reporting and reruns', () => {
+  it.each([
+    ['{"status":"applied"}', 'applied'],
+    ['{"status":"failed","result":{"status":"applied"}}', 'failed'],
+    ['banner\n{"result":{"status":"applied"}}\ndone', 'applied'],
+    ['{"data":{"status":"skipped"}}', 'skipped'],
+    ['{"summary":{"status":"ok"}}', 'ok'],
+    ['{"status":"applied","details":{"path":"{target}"}}', 'applied'],
+    ['{"status":"applied"}\n{"status":"failed"}', 'failed'],
+    ['{"status":"applied"}\n{"details":{}}', null],
+    ['{"status":false}', null],
+    ['banner only', null],
+    ['{"status":', null],
+  ])('reads the final complete xtarterize status: %s', (stdout, expected) => {
+    expect(xtarterizeStatusOf(stdout)).toBe(expected);
+  });
+
+  it('verifies project skill sources in the requested cwd', async () => {
+    const cwd = await withConfigDir();
+    const calls: { args: readonly string[]; cwd?: string }[] = [];
+    const inner = fakeSkillCli({});
+    const runner: SkillCommandRunner = async (args, options) => {
+      calls.push({ args, cwd: options?.cwd });
+      return await inner(args, options);
+    };
+    await runSetup(
+      { cwd, json: true, quiet: true, skillSource: 'acme/a:project', yes: true },
+      baseDeps({ readRecord: emptyRecord, skillRunner: runner }),
+    );
+    const projectCalls = calls.filter(({ args }) => !args.includes('-g'));
+    expect(projectCalls.length).toBeGreaterThan(0);
+    expect(projectCalls.some(({ args }) => args[0] === 'list')).toBe(true);
+    expect(projectCalls.every((call) => call.cwd === cwd)).toBe(true);
+    expect(
+      calls.filter(({ args }) => args.includes('-g')).every((call) => call.cwd === undefined),
+    ).toBe(true);
+  });
+
   it('gates xtarterize on JSON status, not exit code', async () => {
     await withConfigDir();
     const skipped = await runSetup(
@@ -485,7 +505,6 @@ const noopPlan = (overrides: Partial<SetupSelection> = {}): SetupSelection => ({
   maestriaSkills: undefined,
   reviewed: [],
   sources: [],
-  targets: [],
   xtarterize: false,
   ...overrides,
 });
@@ -597,7 +616,6 @@ describe('isNoopSetupPlan', () => {
         reviewed: [
           { id: 'opencode', selection: { changed: false, skills: ['create-pull-request'] } },
         ],
-        targets: [{ id: 'opencode' }],
       }),
     },
     {

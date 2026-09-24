@@ -19,6 +19,7 @@ import {
   writeSkillsRecord,
 } from '@/lib/skills.js';
 import { buildRecord } from './skill-test-support.js';
+import { createTtyTestSupport } from './tty-test-support.js';
 
 const source = 'test-record';
 const PR = 'create-pull-request';
@@ -64,26 +65,7 @@ vi.mock('@clack/prompts', () => ({
   isCancel: promptMocks.isCancel,
 }));
 
-const stdoutTty = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY');
-const stdinTty = Object.getOwnPropertyDescriptor(process.stdin, 'isTTY');
-
-const setTty = (value: boolean): void => {
-  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value });
-  Object.defineProperty(process.stdin, 'isTTY', { configurable: true, value });
-};
-
-const restoreTty = (): void => {
-  if (stdoutTty) {
-    Object.defineProperty(process.stdout, 'isTTY', stdoutTty);
-  } else {
-    Reflect.deleteProperty(process.stdout, 'isTTY');
-  }
-  if (stdinTty) {
-    Object.defineProperty(process.stdin, 'isTTY', stdinTty);
-  } else {
-    Reflect.deleteProperty(process.stdin, 'isTTY');
-  }
-};
+const { restoreTty, setTty } = createTtyTestSupport();
 
 describe('skill selection', () => {
   it('defaults fresh installs to both current skills', () => {

@@ -370,10 +370,11 @@ const reconcileOneTarget = async (
     }
   }
   outcome.ok.set(target.id, failed.size === 0);
-  outcome.actual.set(
-    target.id,
-    target.selection.skills.filter((skill) => !failed.has(skill)),
-  );
+  const prior = recordedSkills(record, target.id) ?? [];
+  outcome.actual.set(target.id, [
+    ...target.selection.skills.filter((skill) => !failed.has(skill)),
+    ...prior.filter((skill) => failed.has(skill)),
+  ]);
 };
 
 /** Reconcile the companions after the plugin operation. */

@@ -18,6 +18,7 @@ import type { PlatformHandler, PlatformId } from '@/lib/platforms.js';
 import type * as skillCompanion from '@/lib/skill-companion.js';
 import type { PlatformResult, PlatformStatus } from '@/types.js';
 import { version } from '^/package.json';
+import { createTtyTestSupport } from './tty-test-support.js';
 
 const platformMocks = vi.hoisted(() => ({
   getPlatform: vi.fn<(id: string) => PlatformHandler | undefined>(),
@@ -145,26 +146,7 @@ const captureCliError = async (promise: Promise<unknown>): Promise<CliError> => 
   throw new Error('Expected handler to throw CliError');
 };
 
-const stdoutTty = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY');
-const stdinTty = Object.getOwnPropertyDescriptor(process.stdin, 'isTTY');
-
-const setTty = (value: boolean): void => {
-  Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value });
-  Object.defineProperty(process.stdin, 'isTTY', { configurable: true, value });
-};
-
-const restoreTty = (): void => {
-  if (stdoutTty) {
-    Object.defineProperty(process.stdout, 'isTTY', stdoutTty);
-  } else {
-    Reflect.deleteProperty(process.stdout, 'isTTY');
-  }
-  if (stdinTty) {
-    Object.defineProperty(process.stdin, 'isTTY', stdinTty);
-  } else {
-    Reflect.deleteProperty(process.stdin, 'isTTY');
-  }
-};
+const { restoreTty, setTty } = createTtyTestSupport();
 
 describe('command handlers', () => {
   beforeEach(() => {

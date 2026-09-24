@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import { Effect } from 'effect';
 
 import { resolveBatchQuiet } from '@/lib/batch-command.js';
@@ -80,32 +81,20 @@ export type XtarterizeRunner = (
 
 export { effectiveMaestriaSkills, parseEcosystem, parseSkillSources } from '@/lib/setup-plan.js';
 
-const isInteractiveDefault = (): boolean => process.stdout.isTTY && process.stdin.isTTY;
+// oxlint-disable-next-line strict-void-return -- Node provides a custom promisifier for execFile; its ChildProcess return is intentionally unused.
+const execFileAsync = promisify(execFile);
 
-const flattenSkillSource = (args: SetupArgs): string | string[] | undefined => {
-  const kebab = args['skill-source'];
-  if (Array.isArray(kebab) || typeof kebab === 'string') {
-    return kebab;
-  }
-  return args.skillSource;
-};
+const isInteractiveDefault = (): boolean => process.stdout.isTTY && process.stdin.isTTY;
 
 const defaultEcosystemProbe = async (
   tool: string,
 ): Promise<{ present: boolean; version: string }> => {
   try {
-    const version = await Effect.runPromise(
-      Effect.callback<string, Error>((resume) => {
-        execFile(tool, ['--version'], { encoding: 'utf-8', timeout: 15_000 }, (error, stdout) => {
-          if (error) {
-            resume(Effect.fail(error));
-            return;
-          }
-          resume(Effect.succeed(stdout.trim()));
-        });
-      }),
-    );
-    return { present: true, version: version.split('\n')[0] ?? '' };
+    const { stdout } = await execFileAsync(tool, ['--version'], {
+      encoding: 'utf-8',
+      timeout: 15_000,
+    });
+    return { present: true, version: stdout.trim().split('\n')[0] ?? '' };
   } catch {
     return { present: false, version: '' };
   }
@@ -117,22 +106,11 @@ const defaultXtarterizePath = async (): Promise<string | null> => {
     return null;
   }
   try {
-    const out = await Effect.runPromise(
-      Effect.callback<string, Error>((resume) => {
-        execFile(
-          'which',
-          ['xtarterize'],
-          { encoding: 'utf-8', timeout: 10_000 },
-          (error, stdout) => {
-            if (error) {
-              resume(Effect.fail(error));
-              return;
-            }
-            resume(Effect.succeed(stdout.trim()));
-          },
-        );
-      }),
-    );
+    const { stdout } = await execFileAsync('which', ['xtarterize'], {
+      encoding: 'utf-8',
+      timeout: 10_000,
+    });
+    const out = stdout.trim();
     return out === '' ? 'xtarterize' : (out.split('\n')[0] ?? 'xtarterize');
   } catch {
     return 'xtarterize';
@@ -288,10 +266,9 @@ export const runSetup = async (
     detection.xtarterizeOnPath,
     detection.probes,
     interactive,
-    flattenSkillSource,
   );
 
-  if (selection.maestriaActive && selection.targets.length > 0) {
+  if (selection.maestriaActive && selection.reviewed.length > 0) {
     await preflightCompanionOwnership(skillRunner, detection.record, selection.reviewed);
   }
   if (isNoopSetupPlan(selection, detection.probes)) {

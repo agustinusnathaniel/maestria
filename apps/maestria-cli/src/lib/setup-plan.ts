@@ -18,7 +18,6 @@ export interface SetupSelection {
   readonly maestriaSkills: string | undefined;
   readonly reviewed: EffectiveSkillTarget[];
   readonly sources: SetupSkillSource[];
-  readonly targets: { id: string; label?: string }[];
   readonly xtarterize: boolean;
 }
 
@@ -45,6 +44,11 @@ export const parseEcosystem = (input: string | undefined): string[] => {
     );
   }
   return ids;
+};
+
+const flattenSkillSource = (args: SetupArgs): string | string[] | undefined => {
+  const kebab = args['skill-source'];
+  return Array.isArray(kebab) || typeof kebab === 'string' ? kebab : args.skillSource;
 };
 
 export const parseSkillSources = (input: string | string[] | undefined): SetupSkillSource[] => {
@@ -189,7 +193,6 @@ const promptSetupSelections = async (
   xtarterizeOnPath: string | null,
   probes: Map<string, { present: boolean; version: string }>,
   interactive: boolean,
-  flattenSkillSource: (args: SetupArgs) => string | string[] | undefined,
 ): Promise<{ ecosystem: string[]; sources: SetupSkillSource[]; xtarterize: boolean }> => {
   const ecosystemProvided = args.ecosystem !== undefined;
   const sourcesProvided = flattenSkillSource(args) !== undefined;
@@ -213,19 +216,18 @@ const reviewMaestriaTargets = async (
   maestriaSkills: string | undefined,
   installed: readonly PlatformStatus[],
   record: SkillsRecord | null,
-): Promise<{ reviewed: EffectiveSkillTarget[]; targets: { id: string; label?: string }[] }> => {
+): Promise<EffectiveSkillTarget[]> => {
   const targets = installed.map((p) => ({ id: p.id, label: p.label }));
   const resolved = resolveEffectiveSkills(
     targets,
     { excludeSkills: args.excludeSkills, skills: maestriaSkills },
     record,
   );
-  const reviewed = await reviewSkillSelections(resolved, 'Install', {
+  return await reviewSkillSelections(resolved, 'Install', {
     excludeSkills: args.excludeSkills,
     skills: maestriaSkills,
     yes: args.yes,
   });
-  return { reviewed, targets };
 };
 
 export const resolveSetupPlan = async (
@@ -235,7 +237,6 @@ export const resolveSetupPlan = async (
   xtarterizeOnPath: string | null,
   probes: Map<string, { present: boolean; version: string }>,
   interactive: boolean,
-  flattenSkillSource: (args: SetupArgs) => string | string[] | undefined,
 ): Promise<SetupSelection> => {
   const maestriaSkills = effectiveMaestriaSkills(args);
   const ecosystem = parseEcosystem(args.ecosystem);
@@ -253,14 +254,8 @@ export const resolveSetupPlan = async (
     xtarterizeOnPath,
     probes,
     interactive,
-    flattenSkillSource,
   );
-  const { reviewed, targets } = await reviewMaestriaTargets(
-    args,
-    maestriaSkills,
-    installed,
-    record,
-  );
+  const reviewed = await reviewMaestriaTargets(args, maestriaSkills, installed, record);
   const maestriaActive =
     hasSkillFlags({ excludeSkills: args.excludeSkills, skills: maestriaSkills }) ||
     reviewed.some((entry) => entry.selection.changed || entry.selection.skills.length > 0);
@@ -281,7 +276,6 @@ export const resolveSetupPlan = async (
     maestriaSkills,
     reviewed,
     sources: picked.sources,
-    targets,
     xtarterize: picked.xtarterize,
   };
 };
@@ -294,7 +288,7 @@ export const isNoopSetupPlan = (
   if (selection.xtarterize || selection.sources.length > 0) {
     return false;
   }
-  if (selection.maestriaActive && selection.targets.length > 0) {
+  if (selection.maestriaActive && selection.reviewed.length > 0) {
     return false;
   }
   if (selection.reviewed.some((entry) => entry.selection.changed)) {
