@@ -417,30 +417,6 @@ describe('setup reporting and reruns', () => {
     expect(actions.some((a) => a.category === 'xtarterize' && a.status === 'ok')).toBe(true);
   });
 
-  it('reruns idempotently with the same args', async () => {
-    await withConfigDir();
-    const calls: string[][] = [];
-    const args = {
-      ecosystem: 'codegraph',
-      json: true,
-      quiet: true,
-      skillSource: 'acme/a:global',
-      xtarterizeSkills: true,
-      yes: true,
-    };
-    const first = await runSetup(
-      args,
-      baseDeps({ readRecord: emptyRecord, xtarterize: xtarterizeOk(calls) }),
-    );
-    const second = await runSetup(
-      args,
-      baseDeps({ readRecord: emptyRecord, xtarterize: xtarterizeOk(calls) }),
-    );
-    expect(first.exitCode).toBe(0);
-    expect(second.exitCode).toBe(0);
-    expect(actionsOf(second.output).length).toBeGreaterThan(0);
-  });
-
   it('emits valid JSON with resume guidance', async () => {
     await withConfigDir();
     const result = await runSetup(

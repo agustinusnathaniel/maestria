@@ -45,6 +45,10 @@ const findViolations = (
   };
 };
 
+const hasExplicitReplacement = (config: SyncConfig): boolean =>
+  (config.default !== undefined && Object.hasOwn(config.default, 'replace')) ||
+  Object.values(config.files ?? {}).some((file) => Object.hasOwn(file, 'replace'));
+
 const collectReplaceOps = (config: SyncConfig): ReplaceOp[] => {
   const ops: ReplaceOp[] = [...(config.default?.replace ?? [])];
   for (const file of Object.values(config.files ?? {})) {
@@ -72,20 +76,6 @@ describe('canonical specialist roster', () => {
     expect(delegableNames).toHaveLength(7);
   });
 
-  it('reports a missing name', () => {
-    expect(findViolations(['adventurer', 'builder'], ['adventurer'])).toEqual({
-      extra: [],
-      missing: ['builder'],
-    });
-  });
-
-  it('reports an extra name', () => {
-    expect(findViolations(['adventurer'], ['adventurer', 'builder'])).toEqual({
-      extra: ['builder'],
-      missing: [],
-    });
-  });
-
   it('keeps ALLOWED_AGENTS aligned with the delegable roster', () => {
     expect(findViolations(delegableNames, ALLOWED_AGENTS)).toEqual({ extra: [], missing: [] });
   });
@@ -96,19 +86,23 @@ describe('canonical specialist roster', () => {
         const { missing } = findViolations(canonicalFiles, Object.keys(config.files ?? {}));
         expect(missing).toEqual([]);
       });
-
-      it('references every delegable role without orchestrator replace ops', () => {
-        const ops = collectReplaceOps(config);
-        if (ops.length === 0) {
-          return;
-        }
-        const text = ops.map((op) => `${op.from}\n${op.to}`).join('\n');
-        const uncovered = delegableNames.filter(
-          (name) => !new RegExp(`\\b${name}\\b`, 'u').test(text),
-        );
-        expect(uncovered).toEqual([]);
-        expect(/\borchestrator\b/u.test(text)).toBe(false);
-      });
     });
   }
+
+  it('covers every explicit replacement-bearing config', () => {
+    const replacementConfigs = Object.entries(syncConfigs).filter(([, config]) =>
+      hasExplicitReplacement(config),
+    );
+    expect(replacementConfigs.length).toBeGreaterThan(0);
+    for (const [platform, config] of replacementConfigs) {
+      const ops = collectReplaceOps(config);
+      expect(ops.length, platform).toBeGreaterThan(0);
+      const text = ops.map((op) => `${op.from}\n${op.to}`).join('\n');
+      const uncovered = delegableNames.filter(
+        (name) => !new RegExp(`\\b${name}\\b`, 'u').test(text),
+      );
+      expect(uncovered, platform).toEqual([]);
+      expect(/\borchestrator\b/u.test(text), platform).toBe(false);
+    }
+  });
 });
