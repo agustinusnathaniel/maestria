@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { Effect } from 'effect';
+import { promisify } from 'node:util';
 
 import { CliError } from '@/lib/command-result.js';
 import { isRecord, parseJsonValue } from '@/lib/primitives.js';
@@ -106,28 +106,20 @@ interface CompanionEntry {
 const asEntry = (value: unknown): CompanionEntry | null =>
   isRecord(value) ? { name: value.name, path: value.path, status: value.status } : null;
 
+// oxlint-disable-next-line strict-void-return -- Node provides a custom promisifier for execFile; its ChildProcess return is intentionally unused.
+const execFileAsync = promisify(execFile);
+
 export const runSkillsCli = async (
   args: readonly string[],
   options?: { cwd?: string },
 ): Promise<SkillCommandResult> => {
   const command = `npx -y ${SKILLS_CLI_PACKAGE} ${args.join(' ')}`;
   try {
-    return await Effect.runPromise(
-      Effect.callback<SkillCommandResult, Error>((resume) => {
-        execFile(
-          'npx',
-          ['-y', SKILLS_CLI_PACKAGE, ...args],
-          { cwd: options?.cwd, encoding: 'utf-8', timeout: 120_000 },
-          (error, stdout, stderr) => {
-            if (error) {
-              resume(Effect.fail(Object.assign(error, { stderr, stdout })));
-              return;
-            }
-            resume(Effect.succeed({ stderr, stdout }));
-          },
-        );
-      }),
-    );
+    return await execFileAsync('npx', ['-y', SKILLS_CLI_PACKAGE, ...args], {
+      cwd: options?.cwd,
+      encoding: 'utf-8',
+      timeout: 120_000,
+    });
   } catch (error) {
     const stderr = isRecord(error) && typeof error.stderr === 'string' ? error.stderr : '';
     const stdout = isRecord(error) && typeof error.stdout === 'string' ? error.stdout : '';

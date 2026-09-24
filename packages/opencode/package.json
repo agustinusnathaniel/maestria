@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@maestria/shared-mode": "workspace:*",
+    "@maestria/shared-project-config": "workspace:*",
     "@opencode-ai/plugin": "^1.18.30",
     "@types/node": "catalog:",
     "typescript": "catalog:",

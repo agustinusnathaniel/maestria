@@ -9,7 +9,7 @@ import type { EffectiveSkillTarget } from '@/lib/skill-reconcile.js';
 import type { SetupActionReport, SetupSkillSource, XtarterizeRunner } from '@/lib/setup.js';
 import { hasSkillFlags, persistSuccessfulSelections } from '@/lib/skills.js';
 import type { SkillsRecord } from '@/lib/skills.js';
-import { isRecord } from '@/lib/primitives.js';
+import { isRecord, parseJsonRecord } from '@/lib/primitives.js';
 import type { PlatformStatus } from '@/types.js';
 
 export const KNOWN_ECOSYSTEM_TOOLS: readonly string[] = ['codegraph', 'agent-browser', 'opensrc'];
@@ -71,30 +71,21 @@ const sanitize = (value: string): string =>
 
 export const xtarterizeStatusOf = (stdout: string): string | null => {
   const clean = stripAnsi(stdout);
-  const start = clean.lastIndexOf('{');
   const end = clean.lastIndexOf('}');
-  if (start === -1 || end <= start) {
-    return null;
-  }
-  try {
-    const parsed: unknown = JSON.parse(clean.slice(start, end + 1));
-    if (!isRecord(parsed)) {
+  let start = clean.lastIndexOf('{');
+  while (start !== -1) {
+    const parsed = parseJsonRecord(clean.slice(start, end + 1));
+    if (parsed !== undefined) {
+      for (const candidate of [parsed, parsed.result, parsed.data, parsed.summary]) {
+        if (isRecord(candidate) && typeof candidate.status === 'string') {
+          return candidate.status;
+        }
+      }
       return null;
     }
-    const direct = parsed.status;
-    if (typeof direct === 'string') {
-      return direct;
-    }
-    for (const key of ['result', 'data', 'summary']) {
-      const nested = parsed[key];
-      if (isRecord(nested) && typeof nested.status === 'string') {
-        return nested.status;
-      }
-    }
-    return null;
-  } catch {
-    return null;
+    start = clean.slice(0, start).lastIndexOf('{');
   }
+  return null;
 };
 
 const XTARTERIZE_OK = new Set(['applied', 'success', 'ok', 'completed', 'installed']);
@@ -194,18 +185,25 @@ export const runSkillSourceActions = async (
   for (const source of sources) {
     for (const [agent] of agents) {
       const globalScope = source.scope === 'global';
+      const runner: SkillCommandRunner = async (args) =>
+        await ctx.skillRunner(args, globalScope ? undefined : { cwd: ctx.cwd });
       const command = `npx -y skills@1.7.0 add ${source.source} -a ${agent}${globalScope ? ' -g' : ''} --json -y${
         globalScope ? '' : ` (cwd ${ctx.cwd})`
       }`;
       try {
         // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
-        await ctx.skillRunner(
-          ['add', source.source, '-a', agent, ...(globalScope ? ['-g'] : []), '--json', '-y'],
-          globalScope ? undefined : { cwd: ctx.cwd },
-        );
+        await runner([
+          'add',
+          source.source,
+          '-a',
+          agent,
+          ...(globalScope ? ['-g'] : []),
+          '--json',
+          '-y',
+        ]);
         // Confirm via re-list, mirroring the companion removal guard.
         // oxlint-disable-next-line no-await-in-loop -- sequential host mutations keep a deterministic order.
-        const listed = await listCompanions(ctx.skillRunner, agent, { global: globalScope });
+        const listed = await listCompanions(runner, agent, { global: globalScope });
         reports.push({
           category: 'skill-source',
           command,
@@ -270,7 +268,6 @@ export const executeSetupActions = async (
     maestriaActive: boolean;
     reviewed: readonly EffectiveSkillTarget[];
     sources: readonly SetupSkillSource[];
-    targets: readonly { id: string }[];
     xtarterize: boolean;
   },
 ): Promise<SetupActionReport[]> => {
@@ -281,7 +278,7 @@ export const executeSetupActions = async (
   if (selection.sources.length > 0) {
     reports.push(...(await runSkillSourceActions(ctx, selection.sources)));
   }
-  if (selection.maestriaActive && selection.targets.length > 0) {
+  if (selection.maestriaActive && selection.reviewed.length > 0) {
     reports.push(...(await runMaestriaSkillsAction(ctx, selection.reviewed)));
   } else if (selection.maestriaActive) {
     reports.push({

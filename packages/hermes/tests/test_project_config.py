@@ -1,7 +1,7 @@
 """Tests for project-root customization (.maestria/workflow.md, .maestria/rules.md).
 
 Thin adapter suite: the full loader contract lives in
-packages/shared/pi/tests/project-config.test.ts. This file pins the Hermes
+packages/shared/project-config/tests/project-config.test.ts. This file pins the Hermes
 shape: order, fail-open banners, UTF-8 decode, and trust.
 """
 

@@ -4,14 +4,14 @@ import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { MaestriaPlugin } from '@/index.js';
-import { formatProjectSection, resolveProjectRoot } from '@/project-config.js';
+import { resolveProjectRoot } from '@/project-config.js';
 import type { ProjectRootInput } from '@/project-config.js';
 import { RULES_PATH } from '@/root.js';
 
 // Thin adapter suite: the full loader contract (order, skip, escape, rel-only
-// diagnostics) lives once in packages/shared/pi/tests/project-config.test.ts.
-// This file pins the OpenCode host deltas: root resolution, section formatting,
-// and plugin integration (instructions, system transform, compaction).
+// diagnostics) lives once in packages/shared/project-config/tests/project-config.test.ts.
+// This file pins root resolution and plugin integration (instructions, system
+// transform, compaction).
 
 import { makeTempRoot, pluginInputForRoot, removeRoot, writeProjectFile } from './helpers.js';
 
@@ -84,16 +84,6 @@ describe('resolveProjectRoot', () => {
       expect(resolveProjectRoot(input)).toBe(expected);
     });
   }
-});
-
-describe('formatProjectSection', () => {
-  it('names the rel file with subordinate status', () => {
-    const body = '# rules\n- Be careful\n';
-    const formatted = formatProjectSection({ content: body, rel: '.maestria/rules.md' });
-    expect(formatted).toContain('.maestria/rules.md');
-    expect(formatted).toContain('subordinate');
-    expect(formatted).toContain(body);
-  });
 });
 
 describe('MaestriaPlugin project content', () => {

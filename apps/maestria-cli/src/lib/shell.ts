@@ -1,8 +1,13 @@
+import { execFile } from 'node:child_process';
 import { Data, Effect } from 'effect';
 import { homedir } from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { isRecord } from '@/lib/primitives.js';
+
+// oxlint-disable-next-line strict-void-return -- Node provides a custom promisifier for execFile; its ChildProcess return is intentionally unused.
+const execFileAsync = promisify(execFile);
 
 /** OS cache directory, respecting XDG_CACHE_HOME when set. */
 export const getCacheDir = (): string => {
@@ -81,23 +86,11 @@ export const run = (
         message: describeRunFailure(timeoutMs, error),
       }),
     try: async () => {
-      const { execFile } = await import('node:child_process');
-      const stdout = await Effect.runPromise(
-        Effect.callback<string, Error>((resume) => {
-          execFile(
-            cmd,
-            args,
-            { cwd, encoding: 'utf-8', timeout: timeoutMs },
-            (error, output, stderr) => {
-              if (error) {
-                resume(Effect.fail(Object.assign(error, { stderr, stdout: output })));
-                return;
-              }
-              resume(Effect.succeed(output));
-            },
-          );
-        }),
-      );
+      const { stdout } = await execFileAsync(cmd, args, {
+        cwd,
+        encoding: 'utf-8',
+        timeout: timeoutMs,
+      });
       return stdout.trim();
     },
   });

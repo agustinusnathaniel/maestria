@@ -299,6 +299,65 @@ describe('reconcile companions', () => {
     expect(saved?.platforms.opencode?.skillAssets?.[DOCS]).toBeUndefined();
   });
 
+  it.each([
+    { command: 'remove', name: 'removal fails', seed: true, selection: DOCS },
+    { command: 'add', name: 're-add fails', seed: false, selection: `${SKILL},${DOCS}` },
+  ])('keeps prior ownership when $name and another skill installs', async (scenario) => {
+    await isolateRecord();
+    const { persistSuccessfulSelections, readSkillsRecord } = await import('@/lib/skills.js');
+    const { attachCompanionObserved } = await import('@/lib/skill-reconcile.js');
+    const priorPath = '/fake/opencode/create-pull-request';
+    const base = fakeSkillCli({ [`${AGENT}:${SKILL}`]: priorPath });
+    if (scenario.seed) {
+      await addCompanion(base, { agent: AGENT, skill: SKILL, source: SOURCE }, { global: true });
+    }
+    const runner: SkillCommandRunner = async (args, options) => {
+      if (args[0] === scenario.command && skillOf(args) === SKILL) {
+        throw new Error(`${scenario.command} backend unavailable`);
+      }
+      return await base(args, options);
+    };
+    const record = buildRecord({
+      opencode: {
+        skillAssets: { [SKILL]: { path: priorPath, source: SOURCE } },
+        skills: [SKILL],
+      },
+    });
+    const effective = resolveEffectiveSkills(
+      [{ id: AGENT }],
+      { skills: scenario.selection },
+      record,
+    );
+    const outcome = await reconcileCompanions(
+      runner,
+      record,
+      effective,
+      new Map([[AGENT, true]]),
+      SOURCE,
+    );
+    expect(outcome.ok.get(AGENT)).toBe(false);
+    expect(outcome.actual.get(AGENT)).toEqual([DOCS, SKILL]);
+    await persistSuccessfulSelections(
+      record,
+      attachCompanionObserved(effective, outcome),
+      [{ id: AGENT, ok: false }],
+      false,
+    );
+    const saved = await readSkillsRecord();
+    expect(saved?.platforms.opencode?.skills).toEqual([DOCS, SKILL]);
+    expect(saved?.platforms.opencode?.skillAssets?.[SKILL]).toEqual({
+      path: priorPath,
+      source: SOURCE,
+    });
+    expect(saved?.platforms.opencode?.skillAssets?.[DOCS]?.source).toBe(SOURCE);
+    if (scenario.seed) {
+      expect(await listCompanions(runner, AGENT, { global: true })).toContainEqual({
+        name: SKILL,
+        path: priorPath,
+      });
+    }
+  });
+
   it('aborts on an unmanaged docs-update copy before any plugin effect', async () => {
     const runner = fakeSkillCli({ [AGENT]: '/fake/stray/docs-update' });
     await addCompanion(runner, { agent: AGENT, skill: DOCS, source: SOURCE }, { global: true });

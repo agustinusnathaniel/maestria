@@ -5,6 +5,11 @@ description: Release history for the maestria CLI.
 
 ## Unreleased
 
+### Reliable setup and skill recovery
+
+- Keep recorded skill ownership when an add or removal fails alongside a successful skill operation, so a retry can recover safely.
+- Verify project-scoped skill sources in the requested `--cwd` and recognize xtarterize JSON statuses containing nested data.
+
 ### Setup no-op runs
 
 - `maestria setup` skips redundant confirmations when there is nothing to change: fully no-op plans exit 0 with an already-set-up summary, unchanged selections no longer trigger the trailing skills confirmation, and the ecosystem picker labels detected tools as already installed.
