@@ -1,0 +1,544 @@
+---
+import config from 'virtual:config';
+
+interface PageActionConfig {
+  actions?: {
+    chatgpt?: boolean;
+    claude?: boolean;
+    cursor?: boolean;
+    custom?: Record<string, { href: string; label: string }>;
+    githubCopilot?: boolean;
+    markdown?: boolean;
+    perplexity?: boolean;
+    t3chat?: boolean;
+    v0?: boolean;
+  };
+  locales?: Record<
+    string,
+    {
+      actions?: {
+        custom?: Record<string, { href?: string; label?: string }>;
+      };
+      prompt?: string;
+    }
+  >;
+  position?: 'page-title' | 'table-of-contents';
+  prompt?: string;
+  share?: boolean;
+}
+
+interface ActionOption {
+  href: string;
+  id: string;
+  label: string;
+}
+
+const pageActionConfig = config as PageActionConfig;
+// Markdown renderers can evaluate page content without Starlight middleware.
+const starlightRoute = (() => {
+  try {
+    return Astro.locals.starlightRoute;
+  } catch {
+    return null;
+  }
+})();
+const routeData = (starlightRoute?.entry.data ?? {}) as {
+  pageActions?: boolean;
+  title?: string;
+};
+const currentPath = Astro.url.pathname.replace(/\/+$/u, '');
+const markdownPath = currentPath === '' ? '/llms.txt' : `${currentPath}.md`;
+const currentUrl = Astro.url.href;
+const routeKey =
+  starlightRoute?.id === ''
+    ? 'home'
+    : starlightRoute?.id
+        .replaceAll(/[^a-z0-9]+/giu, '-')
+        .replaceAll(/^-|-$/gu, '') || 'page';
+const localeConfig = pageActionConfig.locales?.[Astro.currentLocale ?? 'root'];
+const promptTemplate =
+  localeConfig?.prompt ??
+  pageActionConfig.prompt ??
+  'Read {url} and help me understand how to use these tools effectively.';
+const prompt = promptTemplate.includes('{url}')
+  ? promptTemplate.replace('{url}', currentUrl)
+  : `${promptTemplate} ${currentUrl}`;
+const encodedPrompt = encodeURIComponent(prompt);
+const encodedCurrentUrl = encodeURIComponent(currentUrl);
+const encodedTitle = encodeURIComponent(String(routeData.title ?? 'Documentation'));
+const translate = (key: string, fallback: string): string => {
+  try {
+    const value = Astro.locals.t(key);
+    return typeof value === 'string' ? value : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const actionOptions: ActionOption[] = [];
+const addAction = (id: string, enabled: boolean | undefined, label: string, href: string) => {
+  if (enabled) {
+    actionOptions.push({ href, id, label });
+  }
+};
+
+addAction('chatgpt', pageActionConfig.actions?.chatgpt, translate('open.chatgpt', 'Open in ChatGPT'), `https://chatgpt.com/?q=${encodedPrompt}`);
+addAction('claude', pageActionConfig.actions?.claude, translate('open.claude', 'Open in Claude'), `https://claude.ai/new?q=${encodedPrompt}`);
+addAction('t3chat', pageActionConfig.actions?.t3chat, translate('open.t3chat', 'Open in T3 Chat'), `https://t3.chat/new?q=${encodedPrompt}`);
+addAction('v0', pageActionConfig.actions?.v0, translate('open.v0', 'Open in v0'), `https://v0.app/?q=${encodedPrompt}`);
+addAction('cursor', pageActionConfig.actions?.cursor, translate('open.cursor', 'Open in Cursor'), `https://cursor.com/link/prompt?${encodedPrompt}`);
+addAction('perplexity', pageActionConfig.actions?.perplexity, translate('open.perplexity', 'Open in Perplexity'), `https://perplexity.ai/?q=${encodedPrompt}`);
+addAction('githubCopilot', pageActionConfig.actions?.githubCopilot, translate('open.githubCopilot', 'Open in GitHub Copilot'), `https://github.com/copilot/?prompt=${encodedPrompt}`);
+addAction('markdown', pageActionConfig.actions?.markdown, translate('view.markdown', 'View in Markdown'), markdownPath);
+
+for (const [id, action] of Object.entries(pageActionConfig.actions?.custom ?? {})) {
+  const localeAction = localeConfig?.actions?.custom?.[id];
+  actionOptions.push({
+    href: `${localeAction?.href ?? action.href}${encodedPrompt}`,
+    id: `custom-${id}`,
+    label: localeAction?.label ?? action.label,
+  });
+}
+
+const shareOptions: ActionOption[] = pageActionConfig.share
+  ? [
+      {
+        href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedCurrentUrl}`,
+        id: 'linkedin',
+        label: translate('share.linkedin', 'Share on LinkedIn'),
+      },
+      {
+        href: `https://x.com/intent/tweet?url=${encodedCurrentUrl}&text=${encodedTitle}`,
+        id: 'x',
+        label: translate('share.x', 'Share on X'),
+      },
+      {
+        href: `https://threads.net/intent/post?url=${encodedCurrentUrl}&text=${encodedTitle}`,
+        id: 'threads',
+        label: translate('share.threads', 'Share on Threads'),
+      },
+      {
+        href: `https://bsky.app/intent/compose?text=${encodedTitle}%20${encodedCurrentUrl}`,
+        id: 'bluesky',
+        label: translate('share.bluesky', 'Share on Bluesky'),
+      },
+      {
+        href: `https://www.facebook.com/sharer/sharer.php?u=${encodedCurrentUrl}`,
+        id: 'facebook',
+        label: translate('share.facebook', 'Share on Facebook'),
+      },
+      {
+        href: `https://reddit.com/submit?url=${encodedCurrentUrl}&title=${encodedTitle}`,
+        id: 'reddit',
+        label: translate('share.reddit', 'Share on Reddit'),
+      },
+      {
+        href: `https://news.ycombinator.com/submitlink?u=${encodedCurrentUrl}&t=${encodedTitle}`,
+        id: 'hackernews',
+        label: translate('share.hackernews', 'Share on Hacker News'),
+      },
+      {
+        href: `mailto:?subject=${encodedTitle}&body=${encodedCurrentUrl}`,
+        id: 'email',
+        label: translate('share.email', 'Share by email'),
+      },
+      {
+        href: `https://wa.me/?text=${encodedTitle}%20${encodedCurrentUrl}`,
+        id: 'whatsapp',
+        label: translate('share.whatsapp', 'Share on WhatsApp'),
+      },
+      {
+        href: `https://t.me/share/url?url=${encodedCurrentUrl}&text=${encodedTitle}`,
+        id: 'telegram',
+        label: translate('share.telegram', 'Share on Telegram'),
+      },
+    ]
+  : [];
+
+const shouldRender =
+  starlightRoute !== null &&
+  routeData.pageActions !== false &&
+  pageActionConfig.position !== 'table-of-contents';
+const openToggleId = `page-action-${routeKey}-open-toggle`;
+const openMenuId = `page-action-${routeKey}-open-menu`;
+const shareToggleId = `page-action-${routeKey}-share-toggle`;
+const shareMenuId = `page-action-${routeKey}-share-menu`;
+---
+
+{
+  shouldRender && (
+    <div class="project-page-actions" data-page-action-menu data-route-key={routeKey}>
+      <button
+        type="button"
+        class="project-page-action project-page-action-copy"
+        data-copy-markdown
+        data-markdown-path={markdownPath}
+        aria-label="Copy Markdown"
+      >
+        <span data-copy-label>Copy Markdown</span>
+        <span class="sr-only" data-copy-status aria-live="polite"></span>
+      </button>
+
+      {actionOptions.length > 0 && (
+        <div class="project-page-action-menu">
+          <button
+            type="button"
+            class="project-page-action project-page-action-toggle"
+            id={openToggleId}
+            data-action-menu-toggle
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls={openMenuId}
+          >
+            {translate('open', 'Open')}
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <div
+            class="project-page-action-items"
+            id={openMenuId}
+            data-action-menu
+            role="menu"
+            aria-labelledby={openToggleId}
+            hidden
+          >
+            {actionOptions.map((option, index) => (
+              <a
+                id={`${openMenuId}-item-${index}`}
+                class="project-page-action-item"
+                href={option.href}
+                role="menuitem"
+                tabindex="-1"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {option.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {shareOptions.length > 0 && (
+        <div class="project-page-action-menu">
+          <button
+            type="button"
+            class="project-page-action project-page-action-toggle"
+            id={shareToggleId}
+            data-action-menu-toggle
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls={shareMenuId}
+          >
+            {translate('share', 'Share')}
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <div
+            class="project-page-action-items"
+            id={shareMenuId}
+            data-action-menu
+            role="menu"
+            aria-labelledby={shareToggleId}
+            hidden
+          >
+            {shareOptions.map((option, index) => (
+              <a
+                id={`${shareMenuId}-item-${index}`}
+                class="project-page-action-item"
+                href={option.href}
+                role="menuitem"
+                tabindex="-1"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {option.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .project-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .project-page-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--ledger-rule-strong, var(--sl-color-gray-5));
+    border-radius: var(--ledger-radius-sm, 0.25rem);
+    background: var(--ledger-surface, var(--sl-color-gray-6));
+    color: var(--ledger-ink, var(--sl-color-white));
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 550;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .project-page-action:hover {
+    background: var(--ledger-surface-raised, var(--sl-color-gray-5));
+  }
+
+  .project-page-action:focus-visible {
+    outline: 2px solid var(--ledger-focus, var(--sl-color-accent));
+    outline-offset: 2px;
+  }
+
+  .project-page-action-menu {
+    position: relative;
+  }
+
+  .project-page-action-items {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    z-index: 20;
+    display: grid;
+    min-width: min(18rem, 78vw);
+    max-height: min(70vh, 28rem);
+    overflow-y: auto;
+    padding: 0.25rem;
+    border: 1px solid var(--ledger-rule-strong, var(--sl-color-gray-5));
+    border-radius: var(--ledger-radius-sm, 0.25rem);
+    background: var(--ledger-surface, var(--sl-color-gray-6));
+  }
+
+  .project-page-action-items[hidden] {
+    display: none;
+  }
+
+  .project-page-action-item {
+    display: block;
+    min-height: 44px;
+    padding: 0.7rem 0.75rem;
+    border-radius: var(--ledger-radius-sm, 0.25rem);
+    color: var(--ledger-ink, var(--sl-color-white));
+    font-size: 0.875rem;
+    line-height: 1.35;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .project-page-action-item:hover,
+  .project-page-action-item:focus-visible {
+    background: var(--ledger-surface-raised, var(--sl-color-gray-5));
+    color: var(--ledger-ink, var(--sl-color-white));
+  }
+
+  .project-page-action-item:focus-visible {
+    outline: 2px solid var(--ledger-focus, var(--sl-color-accent));
+    outline-offset: -2px;
+  }
+
+  @media (width < 50rem) {
+    .project-page-actions {
+      position: relative;
+    }
+
+    .project-page-action-menu {
+      position: static;
+    }
+
+    .project-page-action-items {
+      right: auto;
+      left: 0;
+      width: min(18rem, calc(100vw - 2rem));
+      min-width: 0;
+    }
+  }
+</style>
+
+<script>
+  type ActionMenu = HTMLElement;
+  type ActionToggle = HTMLButtonElement;
+
+  const pageActionMenus = document.querySelectorAll<HTMLElement>('[data-page-action-menu]');
+
+  const itemsFor = (menu: ActionMenu): HTMLAnchorElement[] => [
+    ...menu.querySelectorAll<HTMLAnchorElement>('[role="menuitem"]'),
+  ];
+
+  const toggleFor = (menu: ActionMenu, toggles: ActionToggle[]): ActionToggle | undefined =>
+    toggles.find((toggle) => toggle.getAttribute('aria-controls') === menu.id);
+
+  const closeMenu = (
+    menu: ActionMenu,
+    toggles: ActionToggle[],
+    restoreFocus = false,
+  ): void => {
+    const toggle = toggleFor(menu, toggles);
+    menu.hidden = true;
+    toggle?.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) {
+      toggle?.focus();
+    }
+  };
+
+  const closeAll = (menus: ActionMenu[], toggles: ActionToggle[]): void => {
+    for (const menu of menus) {
+      closeMenu(menu, toggles);
+    }
+  };
+
+  const openMenu = (
+    menu: ActionMenu,
+    menus: ActionMenu[],
+    toggles: ActionToggle[],
+    focusFirst = false,
+  ): void => {
+    const toggle = toggleFor(menu, toggles);
+    closeAll(menus, toggles);
+    menu.hidden = false;
+    toggle?.setAttribute('aria-expanded', 'true');
+    if (focusFirst) {
+      itemsFor(menu)[0]?.focus();
+    }
+  };
+
+  const handleMenuKeydown = (
+    event: KeyboardEvent,
+    menu: ActionMenu,
+    menus: ActionMenu[],
+    toggles: ActionToggle[],
+  ): void => {
+    const items = itemsFor(menu);
+    const current = items.indexOf(document.activeElement as HTMLAnchorElement);
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMenu(menu, toggles, true);
+      return;
+    }
+    if (event.key === 'Tab') {
+      closeMenu(menu, toggles);
+      return;
+    }
+    if (items.length === 0) {
+      return;
+    }
+    let next = -1;
+    if (event.key === 'ArrowDown') {
+      next = (current + 1 + items.length) % items.length;
+    } else if (event.key === 'ArrowUp') {
+      next = (current - 1 + items.length) % items.length;
+    } else if (event.key === 'Home') {
+      next = 0;
+    } else if (event.key === 'End') {
+      next = items.length - 1;
+    }
+    if (next >= 0) {
+      event.preventDefault();
+      items[next]?.focus();
+    }
+  };
+
+  const bindMenu = (
+    toggle: ActionToggle,
+    menus: ActionMenu[],
+    toggles: ActionToggle[],
+  ): void => {
+    const menu = menus.find((candidate) => candidate.id === toggle.getAttribute('aria-controls'));
+    if (!menu) {
+      return;
+    }
+    toggle.addEventListener('click', (event) => {
+      const focusFirst = event.detail === 0;
+      if (toggle.getAttribute('aria-expanded') === 'true') {
+        closeMenu(menu, toggles, true);
+      } else {
+        openMenu(menu, menus, toggles, focusFirst);
+      }
+    });
+    toggle.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        openMenu(menu, menus, toggles, true);
+      }
+      if (event.key === 'Escape') {
+        closeMenu(menu, toggles, true);
+      }
+    });
+    menu.addEventListener('keydown', (event) => handleMenuKeydown(event, menu, menus, toggles));
+  };
+
+  const bindCopy = (root: HTMLElement): void => {
+    const button = root.querySelector<HTMLButtonElement>('[data-copy-markdown]');
+    const status = root.querySelector<HTMLElement>('[data-copy-status]');
+    const label = button?.querySelector<HTMLElement>('[data-copy-label]');
+    const markdownPath = button?.dataset.markdownPath;
+    if (!button || !markdownPath) {
+      return;
+    }
+    button.addEventListener('click', async () => {
+      try {
+        const response = await fetch(markdownPath);
+        if (!response.ok) {
+          throw new Error(`Markdown request failed: ${response.status}`);
+        }
+        if (!navigator.clipboard?.writeText) {
+          throw new Error('Clipboard API unavailable');
+        }
+        await navigator.clipboard.writeText(await response.text());
+        if (label) {
+          label.textContent = 'Copied';
+        }
+        if (status) {
+          status.textContent = 'Copied';
+        }
+        window.setTimeout(() => {
+          if (label) {
+            label.textContent = 'Copy Markdown';
+          }
+          if (status) {
+            status.textContent = '';
+          }
+        }, 1800);
+      } catch {
+        if (status) {
+          status.textContent = 'Copy unavailable';
+        }
+      }
+    });
+  };
+
+  const setupPageActionMenu = (root: HTMLElement): void => {
+    if (root.dataset.pageActionReady === 'true') {
+      return;
+    }
+    root.dataset.pageActionReady = 'true';
+    const toggles = [...root.querySelectorAll<ActionToggle>('[data-action-menu-toggle]')];
+    const menus = [...root.querySelectorAll<ActionMenu>('[data-action-menu]')];
+    for (const toggle of toggles) {
+      bindMenu(toggle, menus, toggles);
+    }
+    bindCopy(root);
+    document.addEventListener('click', (event) => {
+      if (event.target instanceof Node && !root.contains(event.target)) {
+        closeAll(menus, toggles);
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        const openMenuElement = menus.find((menu) => !menu.hidden);
+        if (openMenuElement) {
+          closeMenu(openMenuElement, toggles, true);
+        }
+      }
+    });
+  };
+
+  for (const root of pageActionMenus) {
+    setupPageActionMenu(root);
+  }
+</script>

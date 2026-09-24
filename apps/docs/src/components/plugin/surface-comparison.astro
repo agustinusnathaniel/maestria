@@ -1,0 +1,88 @@
+---
+/**
+ * Two-surface comparison rail for paired runtime projections.
+ *
+ * Each surface is a separate article in source order. The shared note makes
+ * the distinction explicit without claiming that the runtimes are equivalent.
+ */
+import { markAttrs, marks } from '@/data/marks.js';
+
+interface Surface {
+  details?: readonly string[];
+  external?: boolean;
+  href?: string;
+  mark?: string;
+  name: string;
+  summary: string;
+}
+
+interface Props {
+  class?: string;
+  description?: string;
+  id?: string;
+  left: Surface;
+  note?: string;
+  right: Surface;
+  title?: string;
+}
+
+const {
+  class: className,
+  description,
+  id,
+  left,
+  note = 'Compare the surfaces without assuming they behave identically.',
+  right,
+  title = 'Compare the surfaces.',
+} = Astro.props;
+
+const routeKey =
+  Astro.url.pathname.replaceAll(/[^a-z0-9]+/giu, '-').replaceAll(/^-|-$/gu, '') || 'page';
+const comparisonId = id ?? `surface-comparison-${routeKey}`;
+const titleId = `${comparisonId}-title`;
+const surfaces = [left, right] as const;
+---
+
+<section class:list={['surface-comparison', className]} id={comparisonId} aria-labelledby={titleId}>
+  <header class="surface-comparison__header">
+    <h2 id={titleId}>{title}</h2>
+    {description && <p class="surface-comparison__description">{description}</p>}
+  </header>
+  <div class="surface-comparison__rail">
+    {
+      surfaces.map((surface, index) => {
+        const surfaceId = `${comparisonId}-surface-${index}`;
+        const mark = surface.mark === undefined ? undefined : marks[surface.mark];
+        return (
+          <article class="surface-comparison__surface" aria-labelledby={surfaceId}>
+            <header class="surface-comparison__surface-header">
+              {mark && (
+                <svg class="surface-comparison__mark" {...markAttrs} set:html={mark} />
+              )}
+              <h3 id={surfaceId}>{surface.name}</h3>
+            </header>
+            <p class="surface-comparison__summary">{surface.summary}</p>
+            {surface.details && surface.details.length > 0 && (
+              <ul class="surface-comparison__details">
+                {surface.details.map((detail) => (
+                  <li>{detail}</li>
+                ))}
+              </ul>
+            )}
+            {surface.href && (
+              <a
+                class="surface-comparison__link"
+                href={surface.href}
+                target={surface.external ? '_blank' : undefined}
+                rel={surface.external ? 'noopener noreferrer' : undefined}
+              >
+                Read {surface.name} docs<span aria-hidden="true">{surface.external ? '↗' : '→'}</span>
+              </a>
+            )}
+          </article>
+        );
+      })
+    }
+  </div>
+  <p class="surface-comparison__note">{note}</p>
+</section>

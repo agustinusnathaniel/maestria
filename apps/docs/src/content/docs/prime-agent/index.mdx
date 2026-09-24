@@ -6,101 +6,91 @@ editUrl: false
 lastUpdated: false
 ---
 
+import CapabilityLedger from '@/components/plugin/capability-ledger.astro';
 import DocsLinkList from '@/components/plugin/docs-link-list.astro';
-import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PlatformOverview from '@/components/plugin/platform-overview.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
-import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
-import SiteFooter from '@/components/plugin/site-footer.astro';
-import { Aside } from '@astrojs/starlight/components';
-import { marks } from '@/data/marks.js';
 
-<div class="plugin-root">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
-
-  <div class="home-inner">
-    <PlatformHero
-      eyebrow="@MAESTRIA/PRIME-AGENT"
-      title="Maestria skills for Prime Agent."
-      lead="Deliver the Maestria engineering methodology to Prime Agent as standard Agent Skills, plus a small verified extension for workflow-mode commands and mode prompt injection."
-      mark={marks.primeAgent}
-      primaryCta={{ href: '/prime-agent/getting-started/installation/', label: 'Get started' }}
-      secondaryCta={{ href: '/prime-agent/getting-started/quick-start/', label: 'Quick start' }}
-      installCommand="npx maestria install prime-agent"
+<PlatformOverview
+  platformId="prime-agent"
+  heroTitle="Verified subset, honest boundary."
+  heroLead="Deliver the Maestria engineering methodology to Prime Agent as standard Agent Skills, plus a small verified extension for workflow-mode commands and mode prompt injection."
+  facts={[
+    {
+      label: 'Support',
+      value: 'The generated skills match the documented Agent Skills contract and the extension matches the pinned public API, but live end-to-end behavior is not yet tested.',
+    },
+    {
+      label: 'Deferred',
+      value: 'Native recursive-subagent dispatch and JSON/RPC headless-mode integration remain deferred.',
+    },
+    {
+      label: 'Execution boundary',
+      value: 'Prime runs model-generated Python and project commands with user permissions; this package is not a sandbox.',
+    },
+  ]}
+  primaryCta={{ href: '/prime-agent/getting-started/installation/', label: 'Get started' }}
+  secondaryCta={{ href: '/prime-agent/getting-started/quick-start/', label: 'Quick start' }}
+  installCaption="Prime's direct registration is prime-agent package install npm:@maestria/prime-agent; the Maestria CLI uses the same package source."
+  reference={{
+    external: true,
+    href: 'https://github.com/PrimeIntellect-ai/prime-agent',
+    label: 'Prime Agent reference',
+  }}
+>
+  <PluginSection id="prime-agent-capabilities" title="The verified Prime subset.">
+    <CapabilityLedger
+      ariaLabel="Prime Agent skills and verified extension ledger"
+      items={[
+        {
+          detail: 'Seven specialists plus orchestrator, global-rules, handoff, iteration-limits, fein, sonar, and blitz are emitted as Agent Skills.',
+          label: 'Agent Skills',
+          value: '14 skills',
+        },
+        {
+          detail: 'Adventurer, architect, builder, diagnose, planner, reviewer, and writer are methodology skills loaded on demand.',
+          label: 'Specialist roster',
+          value: '7 specialists',
+        },
+        {
+          detail: 'dist/extension.mjs registers /fein, /sonar, /blitz, /mode-clear, and /maestria-status.',
+          label: 'Extension commands',
+          value: '5 verified commands',
+        },
+        {
+          detail: 'The extension appends the active mode prompt on every agent turn and stores mode state in host session entries.',
+          label: 'Mode injection',
+          value: 'Every agent turn',
+        },
+        {
+          detail: 'The compiled extension performs no tool interception and writes no ~/.pi or .prime/agent files.',
+          label: 'Extension writes',
+          value: 'No filesystem writes',
+        },
+        {
+          detail: 'prime-agent package install npm:@maestria/prime-agent loads both skills and the compiled extension.',
+          label: 'Prime registration',
+          value: 'Direct package registration',
+        },
+      ]}
     />
 
-    <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
-      title="14 skills and one verified extension."
-      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <FeatureGrid
-        items={[
-          { title: 'Full specialist roster', desc: 'Seven specialists: adventurer, architect, builder, diagnose, planner, reviewer, writer.' },
-          { title: 'Orchestration and rules', desc: 'The orchestrator, global-rules contract, handoff aid, and iteration-limits aid ship as skills.' },
-          { title: 'Workflow modes', desc: 'fein, sonar, and blitz skills mirror the core pipeline stages.' },
-          { title: 'Extension: mode commands', desc: 'dist/extension.mjs registers /fein, /sonar, /blitz, /mode-clear, and /maestria-status.' },
-          { title: 'Extension: mode injection', desc: 'Injects the active mode prompt on every agent turn.' },
-          { title: 'Spec-shaped skills', desc: 'Every skill is a standard Agent Skill at skills/<name>/SKILL.md with the required name/description frontmatter.' },
-        ]}
-      />
-    </PluginSection>
-
-    <PluginSection
-      index="02"
-      kicker="VERIFICATION STATUS"
-      title="Native candidate - verified subset only."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <Aside type="caution" title="Runtime behavior is not yet tested end to end">
-        The generated skills match the documented [Prime Agent](https://github.com/PrimeIntellect-ai/prime-agent)
-        Agent Skills contract and the extension is verified against the pinned Prime fork's public extension API,
-        but runtime behavior is **not yet tested end to end** in a live Prime session. Native recursive-subagent
-        (`rlm`) dispatch and JSON/RPC headless-mode integration remain **deferred**.
-      </Aside>
-    </PluginSection>
-
-    <PluginSection
-      index="03"
-      kicker="PLATFORM LIMITS"
-      title="Advisory guidance, not enforcement."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <FeatureGrid
-        columns={2}
-        items={[
-          { title: 'Verified subset only', desc: "The extension covers only mode commands and mode prompt injection. Prime's rlm(...) subagent dispatch is an IPython-side tool with no public JS extension bridge, so this package cannot spawn child agents." },
-          { title: 'Advisory, not enforced', desc: 'Skills, rules, and the extension are advisory guidance, not security enforcement. Prime Agent has no skill-level tool-denial mechanism, so read-only roles describe their intent without claiming enforcement.' },
-          { title: 'Not a sandbox', desc: 'Prime Agent executes model-generated Python and project commands with your user permissions. Restrict use to trusted repositories, skills, and instructions.' },
-        ]}
-      />
-    </PluginSection>
-
-    <PluginSection
-      index="04"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
+    <nav class="plugin-docs" aria-labelledby="prime-agent-docs-title">
+      <h3 class="plugin-docs__title" id="prime-agent-docs-title">Documentation</h3>
+      <div class="plugin-docs__links">
         <DocsLinkList
+          compact
           items={[
-            { title: 'Getting Started', description: 'Register the package with Prime, enable the extension, and verify skill discovery.', href: '/prime-agent/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Load the orchestrator and specialist skills on a real Prime Agent task.', href: '/prime-agent/getting-started/quick-start/' },
-            { title: 'Core Methodology', description: 'Roles, permissions, and when to use each specialist.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Project-specific workflows and how project files load.', href: '/core/workflow-patterns/' },
-            { title: 'Changelog', description: 'Release history for @maestria/prime-agent.', href: '/prime-agent/changelog/' },
-            { title: 'Contributing', description: 'Understand the generated Agent Skills projection and the sync pipeline.', href: '/prime-agent/contributing/' },
+            { title: 'Getting Started', href: '/prime-agent/getting-started/installation/' },
+            { title: 'Quick Start', href: '/prime-agent/getting-started/quick-start/' },
+            { title: 'Core Methodology', href: '/core/agents/' },
+            { title: 'Workflow Patterns', href: '/core/workflow-patterns/' },
+            { title: 'Changelog', href: '/prime-agent/changelog/' },
+            { title: 'Contributing', href: '/prime-agent/contributing/' },
           ]}
         />
       </div>
-    </PluginSection>
+    </nav>
 
-    <SiblingPlatforms excludeId="prime-agent" />
-
-    <SiteFooter />
-
-  </div>
-</div>
+  </PluginSection>
+</PlatformOverview>

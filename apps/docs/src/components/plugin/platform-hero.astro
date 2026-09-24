@@ -1,100 +1,316 @@
 ---
-/**
- * Left-aligned hero for plugin overview pages. Mirrors the homepage hero
- * language (mono eyebrow, Alan Sans display title, ghost secondary CTA) but
- * composes left-to-right to differentiate sub-pages from the centered
- * homepage. Renders an InstallCommand chip when `installCommand` is set.
- */
+import PageActionMenu from '@/components/docs/page-action-menu.astro';
 import InstallCommand from '@/components/plugin/install-command.astro';
 import { markAttrs } from '@/data/marks.js';
 
-interface Props {
-  /** Mono uppercase eyebrow, e.g. '@MAESTRIA/OPENCODE'. */
-  eyebrow: string;
-  /** Display title (Alan Sans, balanced, max 24ch). */
-  title: string;
-  /** Lead paragraph under the title. */
-  lead: string;
-  /** SVG inner markup from the shared marks dict (src/data/marks.ts). */
-  mark: string;
-  primaryCta: { href: string; label: string };
-  secondaryCta?: { href: string; label: string };
-  installCommand?: string;
+interface HeroFact {
+  label: string;
+  value: string;
 }
 
-const { eyebrow, title, lead, mark, primaryCta, secondaryCta, installCommand } = Astro.props;
+interface HeroReference {
+  external?: boolean;
+  href: string;
+  label: string;
+}
+
+interface Props {
+  facts?: readonly HeroFact[];
+  heading: string;
+  installCaption?: string;
+  installCommand?: string;
+  lead: string;
+  mark: string;
+  primaryCta: { href: string; label: string };
+  reference?: HeroReference;
+  secondaryCta?: { href: string; label: string };
+  title: string;
+}
+
+const {
+  facts = [],
+  heading,
+  installCaption,
+  installCommand,
+  lead,
+  mark,
+  primaryCta,
+  reference,
+  secondaryCta,
+  title,
+} = Astro.props;
 ---
 
-<header class="flex flex-col items-start text-left min-w-0 pt-[clamp(4rem,8vw,6rem)]">
-  <p class="hero-eyebrow m-0 mb-5 flex items-center gap-2.5">
-    <svg class="w-[22px] h-[22px] flex-none text-home-accent" {...markAttrs} set:html={mark} />
-    <span>{eyebrow}</span>
-  </p>
-  <h1 class="hero-title">{title}</h1>
-  <p class="hero-lead">{lead}</p>
-  <!-- mb-6 gives the install chip deliberate air: the plugin-root reset
-       zeroes sibling margin-top, so spacing rides on margin-bottom. -->
-  <div class="hero-ctas flex items-center flex-wrap gap-[1.4rem] max-md:gap-4 mb-6">
-    <a
-      class="inline-flex items-center justify-center min-h-[44px] py-2.5 px-6 bg-home-accent text-home-accent-ink border border-home-accent rounded-[3px] font-sans text-[0.9375rem] font-[560] tracking-[0.01em] no-underline transition-colors hover:bg-home-accent-strong hover:border-home-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
-      href={primaryCta.href}
-    >{primaryCta.label}</a>
+<header class="platform-masthead">
+  <div class="platform-masthead__primary">
+    <h1 id="_top" class="platform-masthead__name" tabindex="-1">
+      <svg aria-hidden="true" {...markAttrs} set:html={mark} />
+      <span>{heading}</span>
+    </h1>
+    <h2 class="platform-masthead__title">{title}</h2>
+    <p class="platform-masthead__lead">{lead}</p>
+    <div class="platform-masthead__ctas">
+      <a class="platform-masthead__button platform-masthead__button--primary" href={primaryCta.href}>
+        {primaryCta.label}
+      </a>
+      {
+        secondaryCta && (
+          <a class="platform-masthead__button platform-masthead__button--secondary" href={secondaryCta.href}>
+            {secondaryCta.label}
+            <span aria-hidden="true">→</span>
+          </a>
+        )
+      }
+    </div>
+  </div>
+
+  <aside class="platform-masthead__aside" aria-label="Installation and platform facts">
+    <PageActionMenu />
     {
-      secondaryCta && (
+      installCommand && (
+        <InstallCommand
+          command={installCommand}
+          location="plugin-hero"
+          align="start"
+          caption={installCaption}
+        />
+      )
+    }
+    {
+      facts.length > 0 && (
+        <dl class="platform-masthead__facts">
+          {facts.map((fact) => (
+            <div>
+              <dt>{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+    {
+      reference && (
         <a
-          class="inline-flex items-center gap-[0.4rem] min-h-[44px] py-1 px-0.5 text-home-text-soft font-sans text-[0.9375rem] font-medium no-underline border-b border-home-border-strong transition-colors hover:text-home-text hover:border-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
-          href={secondaryCta.href}
+          class="platform-masthead__reference"
+          href={reference.href}
+          target={reference.external ? '_blank' : undefined}
+          rel={reference.external ? 'noopener noreferrer' : undefined}
         >
-          {secondaryCta.label}
-          <span aria-hidden="true">→</span>
+          {reference.label}
+          <span aria-hidden="true">↗</span>
         </a>
       )
     }
-  </div>
-  {installCommand && <InstallCommand command={installCommand} location="plugin-hero" align="start" />}
+  </aside>
 </header>
 
 <style>
-  .hero-eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--home-text-muted);
+  .platform-masthead {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(17rem, 0.88fr);
+    gap: clamp(2.5rem, 6vw, 5.5rem);
+    min-width: 0;
+    padding-block: clamp(4rem, 8vw, 6.5rem) var(--ledger-section-gap);
   }
 
-  .hero-title {
+  .platform-masthead__primary,
+  .platform-masthead__aside {
+    min-width: 0;
+  }
+
+  .platform-masthead__name {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
     margin: 0;
-    font-family: 'Alan Sans Variable', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    font-weight: 540;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    color: var(--home-text);
+    color: var(--home-text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    text-transform: uppercase;
+  }
+
+  .platform-masthead__name svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    color: var(--home-accent);
+  }
+
+  .platform-masthead__title {
     max-width: 24ch;
+    margin: 1.25rem 0 0;
+    color: var(--home-text);
+    font-family: 'Alan Sans Variable', sans-serif;
+    font-size: clamp(2.25rem, 5.2vw, 4rem);
+    font-weight: 540;
+    letter-spacing: -0.045em;
+    line-height: 1.02;
     text-wrap: balance;
   }
 
-  .hero-lead {
-    margin: 1.25rem 0 0;
-    font-size: clamp(1rem, 1.2vw, 1.0625rem);
-    line-height: 1.65;
+  .platform-masthead__lead {
+    max-width: 54ch;
+    margin: 1.35rem 0 0;
     color: var(--home-text-soft);
-    max-width: 52rem;
+    font-size: clamp(1rem, 1.3vw, 1.125rem);
+    line-height: 1.65;
     text-wrap: pretty;
   }
 
-  /* Lead→CTA air (authored as mt-9 / max-md:mt-4 on this row). Utility
-     margin-top is stripped by the plugin-root markdown reset between block
-     siblings; a scoped rule outranks that unlayered reset. */
-  .hero-ctas {
-    margin-top: 2.25rem;
+  .platform-masthead__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem 1.4rem;
+    margin-top: 2rem;
   }
 
-  @media (width < 40rem) {
-    .hero-ctas {
-      margin-top: 1rem;
+  .platform-masthead__button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border: 1px solid transparent;
+    border-radius: var(--ledger-radius-sm);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-decoration: none;
+  }
+
+  .platform-masthead__button--primary {
+    padding: 0.7rem 1.1rem;
+    border-color: var(--home-accent);
+    background: var(--home-accent);
+    color: var(--home-accent-ink);
+  }
+
+  .platform-masthead__button--primary:hover {
+    border-color: var(--home-accent-strong);
+    background: var(--home-accent-strong);
+  }
+
+  .platform-masthead__button--secondary {
+    padding: 0.65rem 0.25rem;
+    border-bottom-color: var(--home-border-strong);
+    color: var(--home-text-soft);
+  }
+
+  .platform-masthead__button--secondary:hover {
+    border-bottom-color: var(--home-accent);
+    color: var(--home-text);
+  }
+
+  .platform-masthead__button:focus-visible,
+  .platform-masthead__reference:focus-visible {
+    outline: 2px solid var(--home-focus);
+    outline-offset: 3px;
+  }
+
+  .platform-masthead__aside {
+    align-self: stretch;
+    padding-left: clamp(1.5rem, 3vw, 2.5rem);
+    border-left: 1px solid var(--home-border);
+  }
+
+  :global(.platform-masthead__aside .project-page-actions) {
+    margin-top: 0;
+  }
+
+  :global(.platform-masthead__aside .install-cmd) {
+    margin-top: 1.5rem;
+  }
+
+  .platform-masthead__facts {
+    margin: 1.75rem 0 0;
+    border-top: 1px solid var(--home-border);
+  }
+
+  .platform-masthead__facts > div {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 0.34fr) minmax(0, 1fr);
+    gap: 0.9rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--home-border);
+  }
+
+  .platform-masthead__facts dt,
+  .platform-masthead__facts dd {
+    min-width: 0;
+    margin: 0;
+  }
+
+  .platform-masthead__facts dt {
+    color: var(--home-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .platform-masthead__facts dd {
+    color: var(--home-text-soft);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+
+  .platform-masthead__reference {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    color: var(--home-accent);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .platform-masthead__reference:hover {
+    color: var(--home-accent-strong);
+  }
+
+  @media (width < 56rem) {
+    .platform-masthead {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .platform-masthead__aside {
+      padding-top: 2rem;
+      padding-left: 0;
+      border-top: 1px solid var(--home-border);
+      border-left: 0;
+    }
+  }
+
+  @media (width < 35rem) {
+    .platform-masthead {
+      padding-top: 3rem;
+    }
+
+    .platform-masthead__ctas {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .platform-masthead__button--primary {
+      width: 100%;
+    }
+
+    .platform-masthead__button--secondary {
+      justify-content: flex-start;
+    }
+
+    .platform-masthead__facts > div {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
     }
   }
 </style>

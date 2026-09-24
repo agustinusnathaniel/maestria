@@ -1,8 +1,7 @@
 ---
 /**
- * Hairline link rows in the docs-map language: title, optional description,
- * and an arrow affordance, separated by top rules with a bottom rule closing
- * the stack. Renders rows only; the caller supplies the container.
+ * Documentation links in either the full hairline list or a compact inline set.
+ * The caller owns the surrounding navigation or list container.
  */
 interface LinkItem {
   title: string;
@@ -12,26 +11,33 @@ interface LinkItem {
 }
 
 interface Props {
-  items: LinkItem[];
+  class?: string;
+  compact?: boolean;
+  items: readonly LinkItem[];
 }
 
-const { items } = Astro.props;
+const { class: className, compact = false, items } = Astro.props;
 ---
 
 {
   items.map((item, index) => (
     <a
       class:list={[
-        'group grid grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] items-baseline gap-4 py-3.5 px-0.5 border-t border-home-border no-underline min-w-0 max-md:grid-cols-[minmax(0,1fr)_auto] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--home-focus)]',
-        index === items.length - 1 && 'border-b',
+        'docs-link-list__row',
+        compact && 'docs-link-list__row--compact',
+        className,
+        !compact && index === items.length - 1 && 'docs-link-list__row--last',
       ]}
       href={item.href}
       target={item.external ? '_blank' : undefined}
       rel={item.external ? 'noopener noreferrer' : undefined}
+      data-external={item.external ? 'true' : undefined}
     >
-      <span class="text-[0.9375rem] font-[560] text-home-text transition-colors group-hover:text-home-accent">{item.title}</span>
-      {item.description && <span class="text-sm leading-[1.5] text-home-text-muted max-md:col-span-full">{item.description}</span>}
-      <span class="text-home-text-muted transition-colors group-hover:text-home-accent group-hover:translate-x-[3px] max-md:col-2 max-md:row-1 max-md:justify-self-end" aria-hidden="true">→</span>
+      <span class="docs-link-list__title">{item.title}</span>
+      {item.description && <span class="docs-link-list__description">{item.description}</span>}
+      <span class="docs-link-list__arrow" aria-hidden="true">
+        {item.external ? '↗' : '→'}
+      </span>
     </a>
   ))
 }

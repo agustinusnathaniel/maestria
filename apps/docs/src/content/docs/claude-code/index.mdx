@@ -6,81 +6,81 @@ editUrl: false
 lastUpdated: false
 ---
 
+import CapabilityLedger from '@/components/plugin/capability-ledger.astro';
 import DocsLinkList from '@/components/plugin/docs-link-list.astro';
-import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PlatformOverview from '@/components/plugin/platform-overview.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
-import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
-import SiteFooter from '@/components/plugin/site-footer.astro';
-import { marks } from '@/data/marks.js';
 
-<div class="plugin-root">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
-
-  <div class="home-inner">
-    <PlatformHero
-      eyebrow="@MAESTRIA/CLAUDE-CODE"
-      title="Seven specialists behind Claude Code."
-      lead="Install one plugin. Get 7 specialist agents, the orchestrator methodology, global rules, and fein/sonar/blitz workflow commands."
-      mark={marks.claudeCode}
-      primaryCta={{ href: '/claude-code/getting-started/installation/', label: 'Get started' }}
-      secondaryCta={{ href: '/claude-code/getting-started/quick-start/', label: 'Quick start' }}
-      installCommand="npx maestria install claude-code"
+<PlatformOverview
+  platformId="claude-code"
+  heroTitle="Seven specialists behind Claude Code."
+  heroLead="Install one plugin for 7 specialist agents, the orchestrator methodology, global rules, and fein, sonar, and blitz workflow commands."
+  facts={[
+    {
+      label: 'Validation',
+      value: 'The package validates with claude plugin validate --strict; runtime behavior is not yet tested end to end.',
+    },
+    {
+      label: 'Runtime boundary',
+      value: 'Three roles deny Write and Edit through disallowedTools; other skills and prompts remain advisory.',
+    },
+  ]}
+  primaryCta={{ href: '/claude-code/getting-started/installation/', label: 'Get started' }}
+  secondaryCta={{ href: '/claude-code/getting-started/quick-start/', label: 'Quick start' }}
+  reference={{
+    external: true,
+    href: 'https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md',
+    label: 'Runtime support matrix',
+  }}
+>
+  <PluginSection id="claude-code-capabilities" title="The manifest carries the method.">
+    <CapabilityLedger
+      ariaLabel="Claude Code declarative plugin contract"
+      items={[
+        {
+          detail: 'A self-contained .claude-plugin/plugin.json manifest points to the generated agent, skill, and command files.',
+          label: 'Manifest',
+          value: '.claude-plugin/plugin.json',
+        },
+        {
+          detail: 'Adventurer, architect, builder, diagnose, planner, reviewer, and writer ship as namespaced agents.',
+          label: 'Agents',
+          value: '7 specialist agents',
+        },
+        {
+          detail: 'maestria:global-rules is preloaded into every agent; maestria:orchestrator is the routing skill.',
+          label: 'Skills',
+          value: '2 skills',
+        },
+        {
+          detail: '/maestria:fein, /maestria:sonar, and /maestria:blitz select workflow depth.',
+          label: 'Commands',
+          value: '3 workflow commands',
+        },
+        {
+          detail: 'The package ships no hooks, MCP servers, or runtime code.',
+          label: 'Distribution',
+          value: 'Declarative files only',
+        },
+      ]}
     />
 
-    <div class="pt-[clamp(1.25rem,2.5vw,1.75rem)]">
-      <aside class="max-w-46rem border border-home-border bg-home-surface px-[clamp(1.1rem,2vw,1.5rem)] py-4">
-        <p class="m-0 mb-1.5 font-mono text-[0.6875rem] font-medium tracking-[0.14em] uppercase text-home-accent">Native candidate</p>
-        <p class="m-0 text-sm leading-[1.65] text-home-text-muted">
-          Validates with <code>claude plugin validate --strict</code> and follows the documented
-          plugin contract, but runtime behavior is not yet tested end to end. See the
-          <a href="https://github.com/agustinusnathaniel/maestria/blob/main/docs/runtime-support-matrix.md">runtime support matrix</a> for evidence.
-        </p>
-      </aside>
-    </div>
-
-    <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
-      title="Namespaced agents, native commands."
-      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <FeatureGrid
-        items={[
-          { title: '7 specialist agents', desc: 'All seven specialists, available as namespaced @maestria:<agent> mentions in every session.' },
-          { title: 'Orchestrator skill', desc: '/maestria:orchestrator routes work to the right specialist.' },
-          { title: 'Workflow mode commands', desc: '/maestria:fein, /maestria:sonar, and /maestria:blitz select the pipeline depth for each task.' },
-          { title: 'Global rules preloaded', desc: 'Every specialist preloads the maestria:global-rules skill via its frontmatter.' },
-          { title: 'Read-only roles enforced', desc: 'adventurer, planner, and reviewer deny Write and Edit via disallowedTools.' },
-          { title: 'Declarative projection', desc: 'A .claude-plugin/plugin.json manifest plus agent files, two skills, and three commands - no build step, no runtime code.' },
-        ]}
-      />
-    </PluginSection>
-
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
+    <nav class="plugin-docs" aria-labelledby="claude-code-docs-title">
+      <h3 class="plugin-docs__title" id="claude-code-docs-title">Documentation</h3>
+      <div class="plugin-docs__links">
         <DocsLinkList
+          compact
           items={[
-            { title: 'Getting Started', description: 'Local validation, loading the plugin, and your first session.', href: '/claude-code/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Delegate to specialists and run your first workflow command.', href: '/claude-code/getting-started/quick-start/' },
-            { title: 'Agent Reference', description: 'Roles, permissions, and when to use each of the 7 specialists.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Agent usage patterns for recon, implementation, and review.', href: '/core/workflow-patterns/' },
-            { title: 'Changelog', description: 'Version history and release notes.', href: '/claude-code/changelog/' },
-            { title: 'Contributing', description: 'Project structure, the sync pipeline, and how to extend the plugin.', href: '/claude-code/contributing/' },
+            { title: 'Getting Started', href: '/claude-code/getting-started/installation/' },
+            { title: 'Quick Start', href: '/claude-code/getting-started/quick-start/' },
+            { title: 'Agent Reference', href: '/core/agents/' },
+            { title: 'Workflow Patterns', href: '/core/workflow-patterns/' },
+            { title: 'Changelog', href: '/claude-code/changelog/' },
+            { title: 'Contributing', href: '/claude-code/contributing/' },
           ]}
         />
       </div>
-    </PluginSection>
+    </nav>
 
-    <SiblingPlatforms excludeId="claude-code" />
-
-    <SiteFooter />
-
-  </div>
-</div>
+  </PluginSection>
+</PlatformOverview>

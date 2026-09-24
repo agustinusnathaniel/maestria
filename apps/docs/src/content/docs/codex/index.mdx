@@ -6,73 +6,98 @@ editUrl: false
 lastUpdated: false
 ---
 
+import CapabilityLedger from '@/components/plugin/capability-ledger.astro';
 import DocsLinkList from '@/components/plugin/docs-link-list.astro';
-import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PlatformOverview from '@/components/plugin/platform-overview.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
-import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
-import SiteFooter from '@/components/plugin/site-footer.astro';
-import { marks } from '@/data/marks.js';
+import SurfaceComparison from '@/components/plugin/surface-comparison.astro';
 
-<div class="plugin-root">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
+<PlatformOverview
+  platformId="codex"
+  heroTitle="Maestria skills for Codex CLI."
+  heroLead="Install Maestria to activate the orchestrator in Codex's primary session and make seven native specialists available for delegation."
+  facts={[
+    {
+      label: 'Support',
+      value: 'Verified against Codex CLI 0.145.0 on 2026-08-26; desktop parity is outside this package.',
+    },
+    {
+      label: 'Runtime boundary',
+      value: 'Codex sandbox, approvals, and hook trust remain host-controlled.',
+    },
+  ]}
+  primaryCta={{ href: '/codex/getting-started/installation/', label: 'Get started' }}
+  secondaryCta={{ href: '/codex/getting-started/quick-start/', label: 'Quick start' }}
+  installCaption="The CLI path also installs the native agent TOMLs and marked global instructions block."
+>
+  <SurfaceComparison
+    description="The package manifest and the CLI-managed runtime files have different jobs. Keep the layers separate when you inspect or troubleshoot the integration."
+    left={{
+      details: [
+        '14 namespaced skills carry methodology, routing, handoff, and bounded-repair guidance.',
+        'The manifest is the skills projection and direct plugin surface.',
+      ],
+      href: '/codex/getting-started/installation/',
+      mark: 'codex',
+      name: 'Plugin skills',
+      summary: 'The manifest is the direct plugin surface.',
+    }}
+    note="Direct plugin installation loads the skills. The Maestria CLI also manages the native layer."
+    right={{
+      details: [
+        'Seven maestria-* agent TOMLs under $CODEX_HOME/agents/.',
+        'A marked global orchestration block plus per-agent model configuration.',
+      ],
+      href: '/codex/getting-started/quick-start/',
+      name: 'CLI-managed layer',
+      summary: 'The companion CLI adds native roles and managed global instructions.',
+    }}
+    title="Two Codex layers, one workflow."
+  />
 
-  <div class="home-inner">
-    <div class="relative min-w-0">
-      <PlatformHero
-        eyebrow="@MAESTRIA/CODEX"
-        title="Maestria skills for Codex CLI."
-        lead="Install Maestria to activate the orchestrator in Codex's primary session and make seven native specialists available for delegation."
-        mark={marks.codex}
-        primaryCta={{ href: '/codex/getting-started/installation/', label: 'Get started' }}
-        secondaryCta={{ href: '/codex/getting-started/quick-start/', label: 'Quick start' }}
-        installCommand="npx maestria install codex"
-      />
-    </div>
+  <PluginSection id="codex-capabilities" title="What ships with Codex.">
+    <CapabilityLedger
+      ariaLabel="Codex workflow and control ledger"
+      items={[
+        {
+          detail: 'The CLI installs maestria-adventurer, architect, builder, diagnose, planner, reviewer, and writer for agent_type delegation.',
+          label: 'Native roles',
+          value: '7 agent types',
+        },
+        {
+          detail: 'Seven namespaced skills provide the specialist roles used by the orchestrator.',
+          label: 'Specialist skills',
+          value: '7 specialist skills',
+        },
+        {
+          detail: 'fein, sonar, and blitz are skills, not slash commands.',
+          label: 'Workflow modes',
+          value: 'fein, sonar, blitz',
+        },
+        {
+          detail: 'maestria configure codex creates or updates native model settings without overwriting unrelated settings.',
+          label: 'Model control',
+          value: 'Per-agent configuration',
+        },
+      ]}
+    />
 
-    <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
-      title="Seven specialists, as namespaced skills."
-      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <FeatureGrid
-        items={[
-          { title: 'Specialist skills', desc: 'The seven-specialist roster as namespaced Codex skills.' },
-          { title: 'Native specialist agents', desc: 'Seven native maestria-* agent roles with Codex sandbox settings and configurable model inheritance.' },
-          { title: 'Automatic orchestration', desc: "A marked global instruction block makes Codex's primary agent use $maestria:orchestrator and delegate to native maestria-* roles." },
-          { title: 'Global rules', desc: '$maestria:global-rules carries the universal evidence, safety, authorization, and review contract.' },
-          { title: 'Bounded multi-stage work', desc: '$maestria:handoff and $maestria:iteration-limits keep long work units contained with explicit handoff and repair budgets.' },
-          { title: 'Workflow-mode skills', desc: '$maestria:fein, $maestria:sonar, and $maestria:blitz expose the workflow mode system as invocable skills.' },
-          { title: 'Advisory by design', desc: 'Read-only specialist boundaries are documented guidance; Codex sandbox, approvals, and hook trust model remain the runtime boundary.' },
-        ]}
-      />
-    </PluginSection>
-
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
+    <nav class="plugin-docs" aria-labelledby="codex-docs-title">
+      <h3 class="plugin-docs__title" id="codex-docs-title">Documentation</h3>
+      <div class="plugin-docs__links">
         <DocsLinkList
+          compact
           items={[
-            { title: 'Getting Started', description: 'Install through Maestria and verify skill discovery.', href: '/codex/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Route a real task through the orchestrator and specialist skills.', href: '/codex/getting-started/quick-start/' },
-            { title: 'Core Methodology', description: 'Roles, permissions, and when to use each of the 7 specialists.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Project-specific workflows and how project files load.', href: '/core/workflow-patterns/' },
-            { title: 'Changelog', description: 'Release history and support-boundary changes.', href: '/codex/changelog/' },
-            { title: 'Contributing', description: 'Understand the generated skill projection and sync pipeline.', href: '/codex/contributing/' },
+            { title: 'Getting Started', href: '/codex/getting-started/installation/' },
+            { title: 'Quick Start', href: '/codex/getting-started/quick-start/' },
+            { title: 'Core Methodology', href: '/core/agents/' },
+            { title: 'Workflow Patterns', href: '/core/workflow-patterns/' },
+            { title: 'Changelog', href: '/codex/changelog/' },
+            { title: 'Contributing', href: '/codex/contributing/' },
           ]}
         />
       </div>
-    </PluginSection>
+    </nav>
 
-    <SiblingPlatforms excludeId="codex" />
-
-    <SiteFooter />
-
-  </div>
-</div>
+  </PluginSection>
+</PlatformOverview>

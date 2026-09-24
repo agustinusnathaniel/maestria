@@ -1,0 +1,68 @@
+---
+import SectionFrame from '@/components/marketing/section-frame.astro';
+import { markAttrs, marks } from '@/data/marks.js';
+import { platforms } from '@/data/platforms.js';
+
+const platformIntegrations = platforms.filter(({ auxiliary }) => auxiliary !== true);
+const sharedEcosystem = platforms.filter(({ auxiliary }) => auxiliary === true);
+---
+
+<SectionFrame
+  id="platforms"
+  class="home-platforms"
+  title="Choose your platform."
+>
+  <p class="home-platforms__lead">
+    The same method reaches each coding environment through the primitives that environment already
+    understands. Choose the integration that matches where you work.
+  </p>
+  <div class="home-platforms__registry">
+    <section class="home-platforms__group" aria-labelledby="platform-integrations-title">
+      <header class="home-platforms__group-header">
+        <p id="platform-integrations-title">Platform integrations</p>
+        <span>{platformIntegrations.length} surfaces</span>
+      </header>
+      <div class="home-platforms__directory">
+        {
+          platformIntegrations.map((platform) => (
+            <a
+              class:list={[
+                'home-platforms__row',
+                { 'home-platforms__row--flagship': platform.flagship === true },
+              ]}
+              href={platform.href}
+            >
+              <span class="home-platforms__identity">
+                <svg aria-hidden="true" {...markAttrs} set:html={marks[platform.mark]} />
+                <span>{platform.name}</span>
+                {platform.badge && <span class="home-platforms__badge">{platform.badge}</span>}
+              </span>
+              <span class="home-platforms__blurb">{platform.blurb}</span>
+              <span class="home-platforms__open" aria-hidden="true">↗</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+    <section class="home-platforms__group home-platforms__group--ecosystem" aria-labelledby="shared-ecosystem-title">
+      <header class="home-platforms__group-header">
+        <p id="shared-ecosystem-title">Shared ecosystem</p>
+        <span>companion tooling</span>
+      </header>
+      <div class="home-platforms__directory">
+        {
+          sharedEcosystem.map((platform) => (
+            <a class="home-platforms__row home-platforms__row--auxiliary" href={platform.href}>
+              <span class="home-platforms__identity">
+                <svg aria-hidden="true" {...markAttrs} set:html={marks[platform.mark]} />
+                <span>{platform.name}</span>
+              </span>
+              <span class="home-platforms__blurb">{platform.blurb}</span>
+              <span class="home-platforms__open" aria-hidden="true">↗</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+</SectionFrame>

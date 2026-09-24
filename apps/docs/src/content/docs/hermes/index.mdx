@@ -6,68 +6,84 @@ editUrl: false
 lastUpdated: false
 ---
 
+import CapabilityLedger from '@/components/plugin/capability-ledger.astro';
 import DocsLinkList from '@/components/plugin/docs-link-list.astro';
-import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PlatformOverview from '@/components/plugin/platform-overview.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
-import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
-import SiteFooter from '@/components/plugin/site-footer.astro';
-import { marks } from '@/data/marks.js';
 
-<div class="plugin-root">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
-
-  <div class="home-inner">
-    <PlatformHero
-      eyebrow="@MAESTRIA/HERMES"
-      title="Methodology for any agent."
-      lead="Install one plugin. Get 7 specialists, disciplined mode switching, and clear limits for delegated child sessions on the Hermes Agent platform."
-      mark={marks.hermes}
-      primaryCta={{ href: '/hermes/getting-started/installation/', label: 'Get started' }}
-      secondaryCta={{ href: '/hermes/commands/', label: 'Commands' }}
+<PlatformOverview
+  platformId="hermes"
+  heroTitle="A methodology worker, not a general assistant."
+  heroLead="Install one Python plugin from git for 7 specialists, disciplined mode switching, and clear limits for delegated child sessions on Hermes Agent."
+  facts={[
+    {
+      label: 'Distribution',
+      value: 'Hermes installs the plugin through its git-based plugin manager; there is no canonical maestria CLI install.',
+    },
+    {
+      label: 'Mode boundary',
+      value: 'Mode gating and child allowlists operate at the tool layer; the wider methodology remains advisory.',
+    },
+    {
+      label: 'Review',
+      value: 'Hermes has no native review gate; the reviewer pass is guidance, not enforcement.',
+    },
+  ]}
+  primaryCta={{ href: '/hermes/getting-started/installation/', label: 'Get started' }}
+  secondaryCta={{ href: '/hermes/commands/', label: 'Commands' }}
+>
+  <PluginSection id="hermes-capabilities" title="What the Hermes plugin adds.">
+    <CapabilityLedger
+      ariaLabel="Hermes Python plugin, skills, commands, and control ledger"
+      items={[
+        {
+          detail: 'hermes plugins install agustinusnathaniel/maestria/packages/hermes --enable',
+          label: 'Git install',
+          value: 'Hermes plugin path',
+        },
+        {
+          detail: 'Nine methodology skills cover the seven specialists, orchestrator, and global rules; three command skills add workflow depth.',
+          label: 'Skills',
+          value: '12 skills',
+        },
+        {
+          detail: '/fein, /sonar, /blitz, /mode, /mode-clear, /review, and /plan are registered by the plugin.',
+          label: 'Slash commands',
+          value: '7 commands',
+        },
+        {
+          detail: 'Delegated children are read, research, and LLM-only. They cannot write, execute code, shell, delegate, or invoke OpenCode.',
+          label: 'Child trust',
+          value: 'Fixed reviewed allowlists',
+        },
+        {
+          detail: 'Code changes and opencode_route, when available, run in a trusted top-level fein session.',
+          label: 'Trusted coding path',
+          value: 'Top-level fein',
+        },
+        {
+          detail: 'Hermes discovers the plugin from plugin.yaml with no startup probes for external tools.',
+          label: 'Discovery',
+          value: 'Self-contained',
+        },
+      ]}
     />
 
-    <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
-      title="A methodology worker, not a general assistant."
-      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <FeatureGrid
-        items={[
-          { title: 'Methodology skills', desc: 'Activation registers 9 methodology skills plus 3 command skills and 7 slash commands.' },
-          { title: 'Disciplined mode switching', desc: '/fein runs the full pipeline, /sonar is research only, /blitz is fast implementation, /mode-clear resets neutral; each enables its specialists and tool gates.' },
-          { title: 'Role-neutral child trust', desc: 'Delegated children are read/research/LLM-only; they cannot write, execute code, shell, delegate, or invoke OpenCode.' },
-          { title: 'Trusted coding path', desc: 'Code changes and opencode_route (when the OpenCode CLI is installed) run in a trusted top-level fein session.' },
-          { title: 'Self-contained plugin', desc: 'No startup probes for external tools. Hermes discovers its hooks, commands, and skills from plugin.yaml.' },
-          { title: 'Advisory review', desc: 'Hermes has no native review gate; the reviewer pass validates output as guidance, not an enforced gate.' },
-        ]}
-      />
-    </PluginSection>
-
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
+    <nav class="plugin-docs" aria-labelledby="hermes-docs-title">
+      <h3 class="plugin-docs__title" id="hermes-docs-title">Documentation</h3>
+      <div class="plugin-docs__links">
         <DocsLinkList
+          compact
           items={[
-            { title: 'Getting Started', description: 'Installation, setup, and your first session with the Hermes plugin.', href: '/hermes/getting-started/installation/' },
-            { title: 'Commands', description: 'Reference for all slash commands: modes, review, plan, session management.', href: '/hermes/commands/' },
-            { title: 'Workflow Patterns', description: 'Project-specific workflows and how project files load.', href: '/core/workflow-patterns/' },
-            { title: 'Changelog', description: 'Version history and release notes.', href: '/hermes/changelog/' },
-            { title: 'Contributing', description: 'Project structure and how to extend the plugin.', href: '/hermes/contributing/' },
+            { title: 'Getting Started', href: '/hermes/getting-started/installation/' },
+            { title: 'Commands', href: '/hermes/commands/' },
+            { title: 'Workflow Patterns', href: '/core/workflow-patterns/' },
+            { title: 'Changelog', href: '/hermes/changelog/' },
+            { title: 'Contributing', href: '/hermes/contributing/' },
           ]}
         />
       </div>
-    </PluginSection>
+    </nav>
 
-    <SiblingPlatforms excludeId="hermes" />
-
-    <SiteFooter />
-
-  </div>
-</div>
+  </PluginSection>
+</PlatformOverview>

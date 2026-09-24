@@ -1,0 +1,19 @@
+---
+import CommandLedger from './command-ledger.astro';
+
+interface Props {
+  commandNote?: string;
+  commands: readonly string[];
+  intent: string;
+  lead: string;
+}
+
+const { commandNote, commands, intent, lead } = Astro.props;
+---
+
+<section class="product-intro" aria-labelledby="product-intent-title">
+  <p class="ledger-kicker">Project Ledger / Intent</p>
+  <h2 id="product-intent-title">{intent}</h2>
+  <p class="product-intro__lead">{lead}</p>
+  <CommandLedger commands={commands} note={commandNote} />
+</section>

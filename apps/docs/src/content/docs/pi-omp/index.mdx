@@ -6,70 +6,106 @@ editUrl: false
 lastUpdated: false
 ---
 
+import CapabilityLedger from '@/components/plugin/capability-ledger.astro';
 import DocsLinkList from '@/components/plugin/docs-link-list.astro';
-import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PlatformOverview from '@/components/plugin/platform-overview.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
-import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
-import SiteFooter from '@/components/plugin/site-footer.astro';
-import { marks } from '@/data/marks.js';
+import SurfaceComparison from '@/components/plugin/surface-comparison.astro';
 
-<div class="plugin-root plugin-title-wrap">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
+<PlatformOverview
+  platformId="pi-omp"
+  heroTitle="Same method, two runtime contracts."
+  heroLead="Extend Pi or Oh My Pi with one shared method, 7 specialist subagents, workflow modes, and session-tree tracking."
+  facts={[
+    {
+      label: 'Shared method',
+      value: 'Seven specialist subagents and three workflow modes ship for both runtimes.',
+    },
+    {
+      label: 'Runtime contract',
+      value: 'Dispatch, context inheritance, tool enforcement, and lifecycle behavior remain runtime-specific.',
+    },
+  ]}
+  primaryCta={{ href: '/pi-omp/getting-started/installation/', label: 'Get started' }}
+  secondaryCta={{ href: '/pi-omp/reference/', label: 'Reference' }}
+  installCaption="Pi: npx maestria install pi installs the peer dependency. OMP: omp install @maestria/omp."
+>
+  <SurfaceComparison
+    description="Pi and OMP share the methodology projection, but each extension binds it to a different dispatch and lifecycle surface."
+    left={{
+      details: [
+        'npx maestria install pi installs @maestria/pi and the @gotgenes/pi-subagents peer package.',
+        'maestria_subagent dispatches through @gotgenes/pi-subagents; parallel and chain modes accept 2 to 8 tasks.',
+        'Pi subagents inherit parent context, and mode activation blocks edit, write, patch, and mutating bash.',
+      ],
+      href: '/pi-omp/getting-started/installation/',
+      mark: 'piOmp',
+      name: 'Pi',
+      summary: 'The extension uses the @gotgenes/pi-subagents peer package for dispatch.',
+    }}
+    note="Pi's parallel or chain behavior, context inheritance, and tool boundaries do not transfer directly to OMP."
+    right={{
+      details: [
+        'omp install @maestria/omp uses the native Oh My Pi plugin manager.',
+        "maestria_subagent validates the request and returns a plan for OMP's native task(); it does not copy Pi's dispatch lifecycle.",
+        'OMP manages its native session tree and mode tool boundary without a third-party extension.',
+      ],
+      href: '/pi-omp/getting-started/installation/',
+      mark: 'piOmp',
+      name: 'Oh My Pi (OMP)',
+      summary: 'The extension uses OMP native task dispatch, with no external subagent package.',
+    }}
+    title="One method. Two runtime contracts."
+  />
 
-  <div class="home-inner">
-    <PlatformHero
-      eyebrow={'@MAESTRIA/PI & @MAESTRIA/OMP'}
-      title="Spec-driven, portable workflows."
-      lead="Extend Pi or Oh My Pi with Maestria workflow modes, 7 specialist subagents, and disciplined orchestration."
-      mark={marks.piOmp}
-      primaryCta={{ href: '/pi-omp/getting-started/installation/', label: 'Get started' }}
-      secondaryCta={{ href: '/pi-omp/reference/', label: 'Reference' }}
-      installCommand="npx maestria install pi"
+  <PluginSection id="pi-omp-capabilities" title="What travels between Pi and OMP.">
+    <CapabilityLedger
+      ariaLabel="Pi and OMP shared method ledger"
+      items={[
+        {
+          detail: 'Adventurer, architect, builder, diagnose, planner, reviewer, and writer deploy on both runtimes.',
+          label: 'Specialist roster',
+          value: '7 subagents',
+        },
+        {
+          detail: '/fein runs the full pipeline, /sonar stays research-only, and /blitz takes the fast path.',
+          label: 'Workflow modes',
+          value: '3 modes',
+        },
+        {
+          detail: 'Every dispatch records its parent task ID and specialist name across turns.',
+          label: 'Session tree',
+          value: 'Tracked across turns',
+        },
+        {
+          detail: 'Mode and delegation state survive compaction, resume, and fork.',
+          label: 'Compaction',
+          value: 'State preserved',
+        },
+        {
+          detail: 'Review mode saves the model and toolset, restricts work where supported, and restores through /restore-model.',
+          label: 'Review mode',
+          value: 'Tool-level, where supported',
+        },
+      ]}
     />
 
-    <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
-      title="Two runtimes, one discipline."
-      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <FeatureGrid
-        items={[
-          { title: 'Same method, adapted', desc: 'The Maestria methodology from OpenCode, adapted for Pi and Oh My Pi (OMP). Role names and workflow ideas carry over; runtime behavior does not.' },
-          { title: '7 specialist subagents', desc: 'Activation deploys 7 specialist agent files and auto-discovers the methodology skills.' },
-          { title: 'Modes drive the pipeline', desc: '/fein runs the full pipeline, /sonar stays research-only, /blitz is fast implementation. Each mode activates its subagents in sequence.' },
-          { title: 'Dispatch per runtime', desc: 'Pi dispatches through the @gotgenes/pi-subagents extension; OMP uses its built-in task() tool with no external dependency.' },
-          { title: 'Session tree tracking', desc: 'Every subagent dispatch records its parent task ID, preserving the session tree across turns.' },
-          { title: 'Honest about differences', desc: 'Dispatch, tool enforcement, context inheritance, mode activation, and compaction are platform-specific. Read When to Use before assuming a workflow transfers unchanged.' },
-        ]}
-      />
-    </PluginSection>
-
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
+    <nav class="plugin-docs" aria-labelledby="pi-omp-docs-title">
+      <h3 class="plugin-docs__title" id="pi-omp-docs-title">Documentation</h3>
+      <div class="plugin-docs__links">
         <DocsLinkList
+          compact
           items={[
-            { title: 'Getting Started', description: 'Installation, setup, and your first session.', href: '/pi-omp/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Your first session with @maestria/pi or @maestria/omp.', href: '/pi-omp/getting-started/quick-start/' },
-            { title: 'Reference', description: 'Commands, subagent dispatch, review mode, and session management.', href: '/pi-omp/reference/' },
-            { title: 'When to Use', description: 'Which workflows transfer unchanged - read before you port.', href: '/core/when-to-use/' },
-            { title: 'Changelog', description: 'Version history and release notes.', href: '/pi-omp/changelog/' },
-            { title: 'Contributing', description: 'Project structure and how to extend.', href: '/pi-omp/contributing/' },
+            { title: 'Getting Started', href: '/pi-omp/getting-started/installation/' },
+            { title: 'Quick Start', href: '/pi-omp/getting-started/quick-start/' },
+            { title: 'Reference', href: '/pi-omp/reference/' },
+            { title: 'When to Use', href: '/core/when-to-use/' },
+            { title: 'Changelog', href: '/pi-omp/changelog/' },
+            { title: 'Contributing', href: '/pi-omp/contributing/' },
           ]}
         />
       </div>
-    </PluginSection>
+    </nav>
 
-    <SiblingPlatforms excludeId="pi-omp" />
-
-    <SiteFooter />
-
-  </div>
-</div>
+  </PluginSection>
+</PlatformOverview>

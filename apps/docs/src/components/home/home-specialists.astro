@@ -1,0 +1,169 @@
+---
+import SectionFrame from '@/components/marketing/section-frame.astro';
+import { agents } from '@/data/agents.js';
+import type { Agent } from '@/data/agents.js';
+import { markAttrs, marks } from '@/data/marks.js';
+---
+
+<SectionFrame
+  id="pipeline"
+  class="home-specialists"
+  title="Eight agents, one dispatcher."
+>
+  <p class="home-specialists__lead">
+    The orchestrator chooses the smallest safe route, then hands meaningful work to a specialist with
+    a clear scope, artifact, and constraint.
+  </p>
+  <div class="home-specialists__workspace no-js" data-specialists>
+    <div
+      class="home-specialists__tabs"
+      role="tablist"
+      aria-label="Maestria specialists"
+      data-specialist-tablist
+    >
+      {
+        agents.map((agent: Agent, index: number) => (
+          <button
+            class="agent-tab"
+            type="button"
+            role="tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            aria-controls={`panel-${agent.id}`}
+            id={`tab-${agent.id}`}
+            tabindex={index === 0 ? 0 : -1}
+          >
+            <svg class="agent-mark" aria-hidden="true" {...markAttrs} set:html={marks[agent.id]} />
+            <span class="agent-tab-name">{agent.name}</span>
+            <span class="agent-tab-role">{agent.role}</span>
+          </button>
+        ))
+      }
+    </div>
+    <div class="home-specialists__detail">
+      {
+        agents.map((agent: Agent, index: number) => (
+          <div
+            class="agent-panel"
+            role="tabpanel"
+            id={`panel-${agent.id}`}
+            aria-labelledby={`tab-${agent.id}`}
+            tabindex="0"
+          >
+            <div class="home-specialists__detail-head">
+              <svg class="agent-mark" aria-hidden="true" {...markAttrs} set:html={marks[agent.id]} />
+              <div>
+                <h3>{agent.name}</h3>
+                <p>{agent.role}</p>
+              </div>
+            </div>
+            <p class="agent-panel__description">{agent.description}</p>
+            <dl class="agent-panel__facts">
+              <div>
+                <dt>Scope</dt>
+                <dd>{agent.scope}</dd>
+              </div>
+              <div>
+                <dt>Artifact</dt>
+                <dd>{agent.artifact}</dd>
+              </div>
+              <div>
+                <dt>Constraint</dt>
+                <dd>{agent.constraint}</dd>
+              </div>
+            </dl>
+            <a class="home-specialists__reference" href="/core/agents/">
+              Full specialist reference<span aria-hidden="true">→</span>
+            </a>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</SectionFrame>
+
+<script>
+  const roots = document.querySelectorAll<HTMLElement>('[data-specialists]');
+
+  for (const root of roots) {
+    if (root.dataset.specialistsReady === 'true') {
+      continue;
+    }
+    root.dataset.specialistsReady = 'true';
+    root.classList.replace('no-js', 'js');
+
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+    const tabList = root.querySelector<HTMLElement>('[data-specialist-tablist]');
+    const compactLayout = window.matchMedia('(max-width: 64rem)');
+    const syncOrientation = (): void => {
+      tabList?.setAttribute('aria-orientation', compactLayout.matches ? 'horizontal' : 'vertical');
+    };
+
+    syncOrientation();
+    compactLayout.addEventListener('change', syncOrientation);
+
+    const activateTab = (tab: HTMLButtonElement, animate = true, track = true): void => {
+      for (const candidate of tabs) {
+        const selected = candidate === tab;
+        candidate.setAttribute('aria-selected', String(selected));
+        candidate.tabIndex = selected ? 0 : -1;
+      }
+      for (const panel of panels) {
+        panel.hidden = true;
+        panel.classList.remove('agent-panel--changed');
+      }
+
+      const panelId = tab.getAttribute('aria-controls');
+      const panel = panelId ? root.querySelector<HTMLElement>(`#${CSS.escape(panelId)}`) : null;
+      if (panel) {
+        panel.hidden = false;
+        if (animate) {
+          panel.classList.add('agent-panel--changed');
+        }
+      }
+
+      if (track && window.umami) {
+        const agentName = tab.querySelector('.agent-tab-name')?.textContent?.trim() || tab.textContent?.trim();
+        window.umami.track('agent_tab_click', { agent: agentName });
+      }
+    };
+
+    if (tabs[0]) {
+      activateTab(tabs[0], false, false);
+    }
+
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => activateTab(tab));
+    }
+
+    root.addEventListener('keydown', (event) => {
+      const target = event.target as HTMLElement;
+      const tab = target.closest<HTMLButtonElement>('[role="tab"]');
+      if (!tab) {
+        return;
+      }
+
+      const index = tabs.indexOf(tab);
+      let nextIndex: number | null = null;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+        nextIndex = (index + 1) % tabs.length;
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+        nextIndex = (index - 1 + tabs.length) % tabs.length;
+      }
+      if (event.key === 'Home') {
+        nextIndex = 0;
+      }
+      if (event.key === 'End') {
+        nextIndex = tabs.length - 1;
+      }
+
+      if (nextIndex !== null) {
+        event.preventDefault();
+        const nextTab = tabs[nextIndex];
+        activateTab(nextTab);
+        nextTab.focus();
+      }
+    });
+  }
+</script>

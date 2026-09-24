@@ -6,70 +6,105 @@ editUrl: false
 lastUpdated: false
 ---
 
+import CapabilityLedger from '@/components/plugin/capability-ledger.astro';
 import DocsLinkList from '@/components/plugin/docs-link-list.astro';
-import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PlatformOverview from '@/components/plugin/platform-overview.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
-import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
-import SiteFooter from '@/components/plugin/site-footer.astro';
-import { marks } from '@/data/marks.js';
+import SurfaceComparison from '@/components/plugin/surface-comparison.astro';
 
-<div class="plugin-root">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
+<PlatformOverview
+  platformId="cursor"
+  heroTitle="One bundle, two surfaces."
+  heroLead="Install one plugin for 7 specialist agents, an orchestrator skill, always-on rules, and fein, sonar, and blitz commands across Cursor IDE and CLI."
+  facts={[
+    {
+      label: 'Shared surface',
+      value: 'Cursor IDE and CLI discover the same local plugin bundle.',
+    },
+    {
+      label: 'Enforcement',
+      value: 'Read-only roles use readonly: true where supported; all other prompt guidance is advisory.',
+    },
+  ]}
+  primaryCta={{ href: '/cursor/getting-started/installation/', label: 'Get started' }}
+  secondaryCta={{ href: '/cursor/getting-started/quick-start/', label: 'Quick start' }}
+  installCaption="Installs the local plugin to ~/.cursor/plugins/local/maestria for both Cursor surfaces."
+>
+  <SurfaceComparison
+    description="The same local plugin is discovered by two Cursor surfaces. The bundle is shared, the entry point is not."
+    left={{
+      details: [
+        'Cursor IDE loads the plugin from ~/.cursor/plugins/local/maestria.',
+        'Use Customize -> Plugins, then restart or reload the window.',
+        'Agent chat exposes the seven Task agents and workflow commands.',
+      ],
+      href: '/cursor/getting-started/installation/',
+      mark: 'cursorMark',
+      name: 'Cursor IDE',
+      summary: 'The graphical Agent surface where the local plugin is discovered and specialists are selected.',
+    }}
+    note="IDE and CLI share the plugin contract, but discovery and session surfaces remain Cursor-owned."
+    right={{
+      details: [
+        'Cursor CLI uses agent; cursor-agent remains a compatibility alias.',
+        'It discovers the same local plugin directory.',
+        'The same specialists, orchestrator, rules, and commands are available from Agent chat.',
+      ],
+      href: '/cursor/getting-started/quick-start/',
+      name: 'Cursor CLI',
+      summary: 'The terminal Agent surface for the same bundle, without a separate CLI plugin.',
+    }}
+    title="One bundle, two Cursor surfaces."
+  />
 
-  <div class="home-inner">
-    <PlatformHero
-      eyebrow="@MAESTRIA/CURSOR"
-      title="One bundle for IDE and CLI."
-      lead="Install one plugin. Get 7 specialist agents, an orchestrator skill, always-on rules, and fein/sonar/blitz commands."
-      mark={marks.cursorMark}
-      primaryCta={{ href: '/cursor/getting-started/installation/', label: 'Get started' }}
-      secondaryCta={{ href: '/cursor/getting-started/quick-start/', label: 'Quick start' }}
-      installCommand="npx maestria install cursor"
+  <PluginSection id="cursor-capabilities" title="What the shared plugin carries.">
+    <CapabilityLedger
+      ariaLabel="Cursor plugin contract ledger"
+      items={[
+        {
+          detail: 'The .cursor-plugin/plugin.json manifest points to generated rules, agents, skills, and commands.',
+          label: 'Distribution shape',
+          value: 'One declarative plugin',
+        },
+        {
+          detail: 'Adventurer, architect, builder, diagnose, planner, reviewer, and writer run as Cursor Task agents.',
+          label: 'Task agents',
+          value: '7 specialist agents',
+        },
+        {
+          detail: 'The orchestrator auto-loads when relevant, or can be invoked through /orchestrator.',
+          label: 'Orchestrator',
+          value: '1 routing skill',
+        },
+        {
+          detail: 'rules/maestria-global.mdc sets alwaysApply: true for every Agent session.',
+          label: 'Global rules',
+          value: 'Always-on .mdc rules',
+        },
+        {
+          detail: '/fein runs the full pipeline, /sonar is research-only, and /blitz takes the fast path.',
+          label: 'Workflow commands',
+          value: 'fein, sonar, blitz',
+        },
+      ]}
     />
 
-    <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
-      title="Same bundle, both surfaces."
-      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <FeatureGrid
-        items={[
-          { title: '7 specialist agents', desc: 'adventurer, architect, builder, diagnose, planner, reviewer, and writer run as Cursor Task agents.' },
-          { title: 'Always-on global rules', desc: 'rules/maestria-global.mdc has alwaysApply: true, so rules apply in every Agent session.' },
-          { title: 'Orchestrator skill', desc: 'Auto-loads when relevant, or invoke it directly via /orchestrator.' },
-          { title: 'Workflow mode commands', desc: '/fein, /sonar, and /blitz select the pipeline depth from Agent chat.' },
-          { title: 'One install, both surfaces', desc: 'One plugin drives Cursor IDE and Cursor CLI.' },
-          { title: 'Declarative plugin', desc: 'Manifest metadata only; Cursor auto-discovers rules/, agents/, skills/, and commands/.' },
-        ]}
-      />
-    </PluginSection>
-
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
+    <nav class="plugin-docs" aria-labelledby="cursor-docs-title">
+      <h3 class="plugin-docs__title" id="cursor-docs-title">Documentation</h3>
+      <div class="plugin-docs__links">
         <DocsLinkList
+          compact
           items={[
-            { title: 'Getting Started', description: 'Installation, setup, and your first session with the plugin.', href: '/cursor/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Run your first workflow command and delegate to specialists.', href: '/cursor/getting-started/quick-start/' },
-            { title: 'Agent Reference', description: 'The 7 specialists and orchestrator methodology.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Project-specific workflows and how project files load.', href: '/core/workflow-patterns/' },
-            { title: 'Changelog', description: 'Release history for @maestria/cursor.', href: '/cursor/changelog/' },
-            { title: 'Contributing', description: 'How to edit sync config and regenerate plugin files.', href: '/cursor/contributing/' },
+            { title: 'Getting Started', href: '/cursor/getting-started/installation/' },
+            { title: 'Quick Start', href: '/cursor/getting-started/quick-start/' },
+            { title: 'Agent Reference', href: '/core/agents/' },
+            { title: 'Workflow Patterns', href: '/core/workflow-patterns/' },
+            { title: 'Changelog', href: '/cursor/changelog/' },
+            { title: 'Contributing', href: '/cursor/contributing/' },
           ]}
         />
       </div>
-    </PluginSection>
+    </nav>
 
-    <SiblingPlatforms excludeId="cursor" />
-
-    <SiteFooter />
-
-  </div>
-</div>
+  </PluginSection>
+</PlatformOverview>

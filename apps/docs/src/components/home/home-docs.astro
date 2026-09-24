@@ -1,0 +1,99 @@
+---
+import DocsLinkList from '@/components/plugin/docs-link-list.astro';
+import SectionFrame from '@/components/marketing/section-frame.astro';
+
+interface DocLink {
+  description: string;
+  external?: boolean;
+  href: string;
+  title: string;
+}
+
+const docsMap: { group: string; items: DocLink[] }[] = [
+  {
+    group: 'CLI',
+    items: [
+      {
+        description: 'Run maestria with npx wherever Node 22+ is available; no install step needed.',
+        href: '/cli/getting-started/',
+        title: 'Getting Started',
+      },
+    ],
+  },
+  {
+    group: 'Core',
+    items: [
+      {
+        description: 'The dispatcher, seven specialists, and the staged pipeline.',
+        href: '/core/how-it-works/',
+        title: 'How It Works',
+      },
+      {
+        description: 'Thinker, worker, and verifier roles, plus the maker/checker split.',
+        href: '/core/pipeline/',
+        title: 'Pipeline & Roles',
+      },
+      {
+        description: 'All eight agents: scope, artifact, and constraint for each.',
+        href: '/core/agents/',
+        title: 'Specialist Reference',
+      },
+      {
+        description: 'Decide between direct execution, a specialist, or the full pipeline.',
+        href: '/core/when-to-use/',
+        title: 'When to Use',
+      },
+    ],
+  },
+  {
+    group: 'Community',
+    items: [
+      {
+        description: 'Source, issues, and releases for every package.',
+        external: true,
+        href: 'https://github.com/agustinusnathaniel/maestria',
+        title: 'GitHub repository',
+      },
+      {
+        description: 'Add an adapter or improve the core methodology.',
+        href: '/core/contributing/',
+        title: 'Contributing',
+      },
+      {
+        description: 'What changed across the ecosystem.',
+        href: '/core/changelog/',
+        title: 'Changelog',
+      },
+      {
+        description: 'Browse independent companion tools and their boundaries.',
+        href: '/ecosystem/',
+        title: 'Ecosystem',
+      },
+    ],
+  },
+];
+
+---
+
+<SectionFrame
+  id="docs"
+  class="home-docs"
+  title="Continue with the right docs."
+>
+  <p class="home-docs__lead">
+    Learn the method, install the CLI, or browse the platform and ecosystem guides that fit the next
+    step.
+  </p>
+  <div class="home-docs__groups">
+    {
+      docsMap.map((group) => (
+        <div class="home-docs__group">
+          <p class="home-docs__group-label">{group.group}</p>
+          <div class="home-docs__links">
+            <DocsLinkList items={group.items} />
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</SectionFrame>

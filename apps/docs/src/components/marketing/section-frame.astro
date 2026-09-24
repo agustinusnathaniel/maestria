@@ -1,0 +1,29 @@
+---
+interface Props {
+  class?: string;
+  id: string;
+  label?: string;
+  title?: string;
+}
+
+const { class: className, id, label, title } = Astro.props;
+const headingId = `${id}-title`;
+---
+
+<section
+  id={id}
+  class:list={['ledger-section', className]}
+  aria-labelledby={title ? headingId : undefined}
+  aria-label={title ? undefined : label}
+>
+  {
+    title && (
+      <header class="ledger-section__header">
+        <h2 id={headingId} class="ledger-section__title">{title}</h2>
+      </header>
+    )
+  }
+  <div class="ledger-section__body">
+    <slot />
+  </div>
+</section>

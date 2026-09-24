@@ -6,71 +6,77 @@ editUrl: false
 lastUpdated: false
 ---
 
+import CapabilityLedger from '@/components/plugin/capability-ledger.astro';
 import DocsLinkList from '@/components/plugin/docs-link-list.astro';
-import PlatformHero from '@/components/plugin/platform-hero.astro';
+import PlatformOverview from '@/components/plugin/platform-overview.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
-import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
-import SiteFooter from '@/components/plugin/site-footer.astro';
-import { marks } from '@/data/marks.js';
 
-<div class="plugin-root">
-  <div class="home-glow" aria-hidden="true"></div>
-  <div class="home-grid" aria-hidden="true"></div>
-
-  <div class="home-inner">
-    <PlatformHero
-      eyebrow="@MAESTRIA/OPENCODE"
-      title="An orchestrator and seven specialists."
-      lead="Install one plugin to add 8 agents, shared workflow rules, and session-aware orchestration to OpenCode."
-      mark={marks.opencode}
-      primaryCta={{ href: '/opencode/getting-started/installation/', label: 'Get started' }}
-      secondaryCta={{ href: '/opencode/configuration/', label: 'Configuration' }}
-      installCommand="npx maestria install opencode"
+<PlatformOverview
+  platformId="opencode"
+  heroTitle="Native task agents with explicit boundaries."
+  heroLead="Install one plugin to add 8 agents, shared workflow rules, and session-aware orchestration to OpenCode."
+  facts={[
+    {
+      label: 'Runtime boundary',
+      value: 'Rules and role prompts guide behavior; OpenCode task-agent permissions supply the coarse runtime gates.',
+    },
+    {
+      label: 'Orchestrator access',
+      value: 'The orchestrator delegates through permitted task agents and does not read or edit directly.',
+    },
+  ]}
+  primaryCta={{ href: '/opencode/getting-started/installation/', label: 'Get started' }}
+  secondaryCta={{ href: '/opencode/configuration/', label: 'Configuration' }}
+>
+  <PluginSection id="opencode-capabilities" title="What OpenCode adds.">
+    <CapabilityLedger
+      ariaLabel="OpenCode native surface and control ledger"
+      items={[
+        {
+          detail: 'The orchestrator plus adventurer, architect, builder, diagnose, planner, reviewer, and writer.',
+          label: 'Native surface',
+          value: '8 task agents',
+        },
+        {
+          detail: 'Shared evidence, safety, authorization, delegation, review, and bounded-repair rules load through the plugin global-rules path.',
+          label: 'Method projection',
+          value: 'Global rules in every session',
+        },
+        {
+          detail: 'The session compaction hook adds task and project context so active work can continue after a context reset.',
+          label: 'Session continuity',
+          value: 'Compaction context',
+        },
+        {
+          detail: 'Agents register without model overrides; assign each model from your own OpenCode config.',
+          label: 'Model control',
+          value: 'Per-agent model control',
+        },
+        {
+          detail: 'Invoke @adventurer for recon, @builder for implementation, or @reviewer for an independent check.',
+          label: 'Invocation',
+          value: '@ mentions and task delegation',
+        },
+      ]}
     />
 
-    <PluginSection
-      index="01"
-      kicker="WHAT YOU GET"
-      title="One plugin, the whole harness."
-      class="pt-[clamp(3.5rem,7vw,5rem)] mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <FeatureGrid
-        items={[
-          { title: '8 specialized agents', desc: 'The orchestrator plus adventurer, architect, builder, diagnose, planner, reviewer, and writer.' },
-          { title: 'Rules in every session', desc: 'Global workflow directives are appended automatically.' },
-          { title: 'Delegate with @ mentions', desc: 'Call any specialist directly: @adventurer for recon, @builder for implementation, @reviewer for a check.' },
-          { title: 'Session state preserved', desc: 'A compaction hook retains task status across context resets.' },
-          { title: 'Per-agent model control', desc: 'Agents register without model overrides; assign models per agent from your own config.' },
-          { title: 'Native tool permissions', desc: 'Each agent has permission fields the V2 runtime honors, so read-only reviewers stay read-only.' },
-        ]}
-      />
-    </PluginSection>
-
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
+    <nav class="plugin-docs" aria-labelledby="opencode-docs-title">
+      <h3 class="plugin-docs__title" id="opencode-docs-title">Documentation</h3>
+      <div class="plugin-docs__links">
         <DocsLinkList
+          compact
           items={[
-            { title: 'Getting Started', description: 'Install, verify, and run your first session.', href: '/opencode/getting-started/installation/' },
-            { title: 'Configuration', description: 'Per-agent models and OpenCode-level settings.', href: '/opencode/configuration/' },
-            { title: 'Agent Reference', description: 'Roles, permissions, and when to use each of the 8 agents.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Agent usage patterns for recon, implementation, and review.', href: '/core/workflow-patterns/' },
-            { title: 'Reference', description: 'Tool permissions, t3code compatibility, and known limitations.', href: '/opencode/reference/' },
-            { title: 'Changelog', description: 'Version history and release notes.', href: '/opencode/changelog/' },
-            { title: 'Contributing', description: 'Development setup, project structure, and how to extend the plugin.', href: '/opencode/contributing/' },
+            { title: 'Getting Started', href: '/opencode/getting-started/installation/' },
+            { title: 'Configuration', href: '/opencode/configuration/' },
+            { title: 'Agent Reference', href: '/core/agents/' },
+            { title: 'Workflow Patterns', href: '/core/workflow-patterns/' },
+            { title: 'Reference', href: '/opencode/reference/' },
+            { title: 'Changelog', href: '/opencode/changelog/' },
+            { title: 'Contributing', href: '/opencode/contributing/' },
           ]}
         />
       </div>
-    </PluginSection>
+    </nav>
 
-    <SiblingPlatforms excludeId="opencode" />
-
-    <SiteFooter />
-
-  </div>
-</div>
+  </PluginSection>
+</PlatformOverview>

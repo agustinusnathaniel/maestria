@@ -1,0 +1,58 @@
+---
+/**
+ * Concise row-based capability ledger for plugin overview pages.
+ *
+ * Each entry is a caller-supplied label/value/detail tuple. The component does
+ * not infer support or enforcement from the state.
+ */
+type CapabilityState = 'stable' | 'advisory' | 'deferred' | 'boundary';
+
+interface CapabilityEntry {
+  detail?: string;
+  label: string;
+  state?: CapabilityState;
+  value: string;
+}
+
+interface Props {
+  ariaLabel?: string;
+  class?: string;
+  items: readonly CapabilityEntry[];
+}
+
+const {
+  ariaLabel = 'Capability details',
+  class: className,
+  items,
+} = Astro.props;
+
+const stateLabels: Record<CapabilityState, string> = {
+  advisory: 'Advisory',
+  boundary: 'Boundary',
+  deferred: 'Deferred',
+  stable: 'Stable',
+};
+---
+
+{
+  items.length > 0 && (
+    <dl class:list={['capability-ledger', className]} aria-label={ariaLabel}>
+      {items.map((item) => (
+        <div class="capability-ledger__row" data-state={item.state}>
+          <dt class="capability-ledger__label">
+            <span>{item.label}</span>
+            {item.state && (
+              <span class="capability-ledger__state" data-state={item.state}>
+                {stateLabels[item.state]}
+              </span>
+            )}
+          </dt>
+          <dd class="capability-ledger__value">
+            <span class="capability-ledger__value-text">{item.value}</span>
+            {item.detail && <span class="capability-ledger__detail">{item.detail}</span>}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  )
+}

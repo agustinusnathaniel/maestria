@@ -1,0 +1,68 @@
+---
+import SectionFrame from '@/components/marketing/section-frame.astro';
+
+const routes = [
+  {
+    detail: 'Keep familiar, low-risk work direct when the boundary and evidence are already clear.',
+    href: '/core/when-to-use/',
+    label: 'Direct execution',
+  },
+  {
+    detail: 'Bring in one focused specialist when the task needs a missing capability or a second lens.',
+    href: '/core/agents/',
+    label: 'One specialist',
+  },
+  {
+    detail: 'Use explicit stages and an independent check when drift across the work would be costly.',
+    href: '/core/pipeline/',
+    label: 'Full pipeline',
+  },
+] as const;
+
+const sequence = [
+  'Request',
+  'Route',
+  'Specialist',
+  'Handoff',
+  'Independent check',
+  'Result',
+] as const;
+
+const transcript = `request           add a first install guide
+route             direct execution
+specialist        builder | one atomic task
+handoff           implementation + tests
+independent check reviewer | fresh pass
+result            inspectable change`;
+---
+
+<SectionFrame
+  id="method"
+  class="home-method"
+  title="Choose a route. Keep the work legible."
+>
+  <p class="home-method__lead">
+    The model provides capability. Maestria provides the method that makes the work inspectable.
+  </p>
+
+  <nav class="home-method__routes" aria-label="Maestria workflow routes">
+    {
+      routes.map((route) => (
+        <a class="home-method__route" href={route.href}>
+          <h3>{route.label}</h3>
+          <p>{route.detail}</p>
+          <span aria-hidden="true">→</span>
+        </a>
+      ))
+    }
+  </nav>
+
+  <ol class="home-method__sequence" aria-label="Request to result sequence">
+    {sequence.map((step) => <li class="home-method__step">{step}</li>)}
+  </ol>
+
+  <figure class="home-method__transcript">
+    <figcaption>Illustrative transcript, not a captured terminal session</figcaption>
+    <pre tabindex="0"><code>{transcript}</code></pre>
+  </figure>
+</SectionFrame>

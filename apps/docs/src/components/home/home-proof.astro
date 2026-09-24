@@ -1,0 +1,28 @@
+---
+import { agents } from '@/data/agents.js';
+import { platforms } from '@/data/platforms.js';
+
+const workflowStages = ['thinker', 'worker', 'verifier'] as const;
+// Shared ecosystem is companion tooling, not a platform integration surface.
+const platformSurfaceCount = platforms.filter(({ auxiliary }) => auxiliary !== true).length;
+const vendorLockIn = 0;
+const stats = [
+  { label: 'pipeline agents', value: agents.length },
+  { label: 'workflow stages', value: workflowStages.length },
+  { label: 'platform surfaces', value: platformSurfaceCount },
+  { label: 'model-provider lock-in', value: vendorLockIn },
+] as const;
+---
+
+<section class="home-proof" aria-label="Maestria by the numbers">
+  <div class="home-proof__inner">
+    {
+      stats.map((stat) => (
+        <div class="home-proof__stat">
+          <strong>{stat.value}</strong>
+          <span>{stat.label}</span>
+        </div>
+      ))
+    }
+  </div>
+</section>

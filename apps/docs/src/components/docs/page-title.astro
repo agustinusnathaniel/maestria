@@ -1,0 +1,24 @@
+---
+import DefaultPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+
+import { isPlatformOverview } from '@/data/platforms.js';
+import PageActionMenu from './page-action-menu.astro';
+
+const isHomepage = Astro.url.pathname === '/';
+const isPlatformOverviewRoute = isPlatformOverview(Astro.locals.starlightRoute.id);
+const usesIntegratedTitle = isHomepage || isPlatformOverviewRoute;
+---
+
+{
+  usesIntegratedTitle ? (
+    <div
+      class:list={[
+        isHomepage ? 'home-page-title-placeholder' : 'plugin-page-title-placeholder',
+      ]}
+      aria-hidden="true"
+    />
+  ) : (
+    <DefaultPageTitle />
+  )
+}
+{!usesIntegratedTitle && <PageActionMenu />}

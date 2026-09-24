@@ -11,6 +11,7 @@ export default defineConfig({
     starlight({
       components: {
         Head: './src/components/starlight-head.astro',
+        PageTitle: './src/components/docs/page-title.astro',
       },
       customCss: ['./src/styles/global.css'],
       description:

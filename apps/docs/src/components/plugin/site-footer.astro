@@ -1,10 +1,6 @@
 ---
-/**
- * Site footer, extracted verbatim from the homepage. No props. Used by the
- * homepage and every plugin overview page (rendered after the `.plugin-root`
- * canvas so it sits on the page background).
- */
 import { markAttrs, marks } from '@/data/marks.js';
+import { platforms } from '@/data/platforms.js';
 
 interface FooterLink {
   href: string;
@@ -12,7 +8,12 @@ interface FooterLink {
   external?: boolean;
 }
 
-/** Footer navigation columns. Links mirror the sidebar and docs map. */
+interface Props {
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+
 const footerColumns: { head: string; links: FooterLink[] }[] = [
   {
     head: 'Documentation',
@@ -27,8 +28,7 @@ const footerColumns: { head: string; links: FooterLink[] }[] = [
     links: [
       { href: '/opencode/', title: 'OpenCode' },
       { href: '/claude-code/', title: 'Claude Code' },
-      // On the homepage this stays a same-page anchor; elsewhere route home.
-      { href: Astro.url.pathname === '/' ? '#adapters' : '/#adapters', title: 'All platforms' },
+      { href: Astro.url.pathname === '/' ? '#platforms' : '/#platforms', title: 'All platforms' },
     ],
   },
   {
@@ -43,51 +43,201 @@ const footerColumns: { head: string; links: FooterLink[] }[] = [
     ],
   },
 ];
+
+const platformColumns: { head: string; links: FooterLink[] }[] = [
+  {
+    head: 'Platforms',
+    links: platforms
+      .filter(({ auxiliary }) => auxiliary !== true)
+      .map((platform) => ({
+        href: platform.href,
+        title: platform.shortName ?? platform.name,
+      })),
+  },
+];
+
+const columns = compact ? platformColumns : footerColumns;
 ---
 
-<footer class="mt-[clamp(3.5rem,7vw,5rem)] border-t border-home-border pt-[clamp(2.25rem,5vw,3rem)] pb-2">
-  <div class="flex flex-wrap justify-between gap-x-12 gap-y-10">
-    <div class="min-w-0">
-      <div class="flex items-center gap-2.5">
-        <svg class="w-[22px] h-[22px] text-home-text-muted" {...markAttrs} set:html={marks.orchestrator} />
-        <span class="font-mono text-[0.9375rem] text-home-text">maestria</span>
+<footer class:list={['site-footer', compact && 'site-footer--compact']}>
+  <div class="site-footer__main">
+    <div class="site-footer__brand">
+      <div class="site-footer__identity">
+        <svg aria-hidden="true" {...markAttrs} set:html={marks.orchestrator} />
+        <span>maestria</span>
       </div>
-      <p class="mt-3 mb-0 text-[0.8125rem] leading-[1.6] text-home-text-muted max-w-[30ch]">Structured AI engineering workflows for your coding agent.</p>
+      <p>Structured AI engineering workflows for your coding agent.</p>
     </div>
-    <nav class="grid grid-cols-2 sm:grid-cols-3 gap-x-12 gap-y-8" aria-label="Footer">
-      {footerColumns.map((col) => (
-        <div>
-          <p class="foot-head">{col.head}</p>
-          <ul class="m-0 mt-3 p-0 list-none space-y-2">
-            {col.links.map((link) => (
-              <li>
-                <a
-                  class="inline-block text-sm text-home-text-soft no-underline transition-colors hover:text-home-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
-                  href={link.href}
-                  target={link.external ? '_blank' : undefined}
-                  rel={link.external ? 'noopener noreferrer' : undefined}
-                >{link.title}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+
+    <nav
+      class="site-footer__nav"
+      aria-label={compact ? 'Platform overviews' : 'Footer navigation'}
+    >
+      {
+        columns.map((column) => (
+          <div class="site-footer__column">
+            <p class="foot-head">{column.head}</p>
+            <ul>
+              {column.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    target={link.external ? '_blank' : undefined}
+                    rel={link.external ? 'noopener noreferrer' : undefined}
+                  >
+                    {link.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
     </nav>
   </div>
-  <div class="mt-10 pt-[1.5rem] border-t border-home-border flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-[0.8125rem] text-home-text-muted">
+
+  <div class="site-footer__legal">
     <span>MIT License © 2026 maestria</span>
     <span>Built with Astro &amp; Starlight</span>
   </div>
 </footer>
 
 <style>
-  .foot-head {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  .site-footer {
+    margin-top: clamp(3.5rem, 7vw, 5rem);
+    padding: clamp(2.25rem, 5vw, 3rem) 0 0.5rem;
+    border-top: 1px solid var(--home-border);
     color: var(--home-text-muted);
+  }
+
+  .site-footer__main {
+    display: grid;
+    grid-template-columns: minmax(12rem, 0.55fr) minmax(0, 1.45fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+
+  .site-footer__brand {
+    min-width: 0;
+  }
+
+  .site-footer__identity {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--home-text);
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+  }
+
+  .site-footer__identity svg {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .site-footer__brand p {
+    max-width: 30ch;
+    margin: 0.8rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+
+  .site-footer__nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    min-width: 0;
+  }
+
+  .site-footer__column {
+    min-width: 0;
+  }
+
+  .foot-head {
     margin: 0;
+    color: var(--home-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .site-footer__column ul {
+    display: grid;
+    gap: 0.2rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__column a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    color: var(--home-text-soft);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .site-footer__column a:hover {
+    color: var(--home-accent);
+  }
+
+  .site-footer__column a:focus-visible {
+    outline: 2px solid var(--home-focus);
+    outline-offset: 2px;
+  }
+
+  .site-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--home-border);
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .site-footer--compact .site-footer__main {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .site-footer--compact .site-footer__brand p {
+    display: none;
+  }
+
+  .site-footer--compact .site-footer__nav {
+    display: block;
+  }
+
+  .site-footer--compact .site-footer__column ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin-top: 0.4rem;
+  }
+
+  .site-footer--compact .site-footer__column a {
+    min-height: 44px;
+  }
+
+  @media (width < 48rem) {
+    .site-footer__main,
+    .site-footer--compact .site-footer__main {
+      grid-template-columns: 1fr;
+    }
+
+    .site-footer__nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (width < 30rem) {
+    .site-footer__nav {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

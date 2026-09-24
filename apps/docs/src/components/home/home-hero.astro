@@ -1,0 +1,27 @@
+---
+import InstallCommand from '@/components/plugin/install-command.astro';
+
+const EXAMPLE_INSTALL = 'npx maestria install opencode';
+---
+
+<section id="_top" class="home-hero" tabindex="-1" aria-labelledby="home-title">
+  <div class="home-hero__copy">
+    <p class="ledger-kicker">MAESTRIA / PORTABLE AGENT METHODOLOGY</p>
+    <h1 id="home-title">Make every step intentional.</h1>
+    <p class="home-hero__lead">
+      A portable harness for AI coding agents. Route complex work through specialists, explicit
+      handoffs, and independent review, then use the method on the platform you already work in.
+    </p>
+    <div class="home-hero__actions">
+      <a class="home-button home-button--primary" href="#platforms">Choose your platform</a>
+      <a class="home-button home-button--secondary" href="#method">See how it works</a>
+    </div>
+  </div>
+  <aside class="home-hero__install" aria-label="Example OpenCode installation">
+    <p class="ledger-kicker">Example install / OpenCode</p>
+    <InstallCommand command={EXAMPLE_INSTALL} location="home-hero" align="start" />
+    <p class="home-hero__install-note">
+      One example path. The platform chooser below shows the integration that fits your environment.
+    </p>
+  </aside>
+</section>

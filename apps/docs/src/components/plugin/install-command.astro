@@ -5,8 +5,7 @@
  * feedback, guarded umami tracking). Extracted verbatim from the homepage
  * hero; reused on plugin overview pages.
  *
- * The runtime caption below the chip is part of this component so every
- * usage carries it.
+ * Captions are optional and should state only what the caller can verify.
  */
 interface Props {
   /** Bare command copied to the clipboard; rendered without a `$`. */
@@ -18,9 +17,11 @@ interface Props {
   location?: string;
   /** Chip alignment inside its parent column ('center' matches the homepage). */
   align?: 'center' | 'start';
+  /** Optional truthful caption; omitted by default. */
+  caption?: string;
 }
 
-const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
+const { command, location = 'plugin-hero', align = 'center', caption } = Astro.props;
 ---
 
 <div
@@ -32,10 +33,10 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
 >
   <div class="install-chip inline-flex items-stretch rounded-[6px] bg-home-surface border border-home-border overflow-hidden max-w-full">
     <span class="flex items-center pl-4 pr-2 font-mono text-sm text-home-accent select-none" aria-hidden="true">$</span>
-    <code class="flex items-center py-2.5 font-mono text-[0.8125rem] text-home-text whitespace-nowrap">{command}</code>
+    <code class="flex min-w-0 items-center py-2.5 font-mono text-[0.8125rem] text-home-text whitespace-nowrap">{command}</code>
     <button
       type="button"
-      class="copy-btn inline-flex cursor-pointer items-center justify-center self-stretch w-10 ml-1 mr-0.5 rounded-[4px] bg-transparent border-0 text-home-text-muted hover:text-home-text hover:bg-home-surface-raised focus:text-home-text focus:bg-home-surface-raised transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
+      class="copy-btn inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center self-stretch w-10 ml-1 mr-0.5 rounded-[4px] bg-transparent border-0 text-home-text-muted hover:text-home-text hover:bg-home-surface-raised focus:text-home-text focus:bg-home-surface-raised transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--home-focus)]"
       aria-label="Copy install command"
       data-install-cmd={command}
     >
@@ -44,15 +45,17 @@ const { command, location = 'plugin-hero', align = 'center' } = Astro.props;
     </button>
   </div>
   <span class="copy-live sr-only" aria-live="polite"></span>
-  <!-- Two deliberate segments: below the 480px `sm` breakpoint the runtimes
-       and the tagline break onto their own lines, so no single word wraps
-       into an orphan. Above it the caption renders as one line. -->
-  <p class="font-mono text-xs text-home-text-muted m-0">
-    npm · pnpm · yarn · bun · deno<br class="sm:hidden" /> - any runtime works
-  </p>
+  {caption && <p class="install-cmd__caption">{caption}</p>}
 </div>
 
 <style>
+  @media (width < 40rem) {
+    .install-chip code {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+
   /* Copy state swap */
   .copy-btn .icon-check {
     display: none;

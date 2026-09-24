@@ -7,6 +7,7 @@
 @import '@astrojs/starlight-tailwind';
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
+@import './marketing.css';
 
 /* ============================================
    FONTS
@@ -101,10 +102,10 @@ pre {
   --color-home-text: #141713;
   --color-home-text-soft: #434a3e;
   --color-home-text-muted: #5f6858;
-  --color-home-accent: #1c5b1e;
-  --color-home-accent-strong: #144816;
+  --color-home-accent: #174d19;
+  --color-home-accent-strong: #123f14;
   --color-home-accent-ink: #f3f5ef;
-  --color-home-focus: #1c5b1e;
+  --color-home-focus: #174d19;
 }
 
 /* ============================================
@@ -122,9 +123,9 @@ pre {
 }
 
 /* Homepage shell: the page is a full-bleed canvas. The content-panel padding
-   and the Starlight content width are removed only on the homepage; a
-   `.home-inner` wrapper inside `.home` restores the 75rem measure, and the
-   `.home-punch` band breaks out to the full viewport between wrappers. */
+   and the Starlight content width are removed only on the homepage; the
+   `.marketing-inner` wrapper restores the 75rem measure, and the proof band
+   breaks out to the full viewport between wrappers. */
 .content-panel:has(.home) {
   padding: 0;
 }
@@ -186,24 +187,15 @@ pre {
   padding-bottom: clamp(3rem, 7vw, 5rem);
 }
 
-/* Starlight renders each plugin page's title (h1#_top) as a bare package
-   identifier above the custom hero. Browsers treat hyphens and slashes as
-   break opportunities, so narrow viewports split "@maestria/claude-code"
-   mid-identifier. Keep single-identifier titles on one line and scale them
-   to fit: 21ch measures ~11.1x the font size in Alan Sans 600, and
-   100vw/12 - 0.2rem stays under the padded panel width down to ~280px
-   viewports before the --sl-text-h1 cap takes over on wide screens. Titles
-   holding several identifiers (pi-omp: "@maestria/pi & @maestria/omp") opt
-   out via .plugin-title-wrap in the page source so they wrap between
-   identifiers at the normal size instead. */
-.page:has(.plugin-root) h1#_top {
-  white-space: nowrap;
-  font-size: min(var(--sl-text-h1), calc(100vw / 12 - 0.2rem));
+/* Plugin overview H1 and thesis H2 render together in PlatformHero. Collapse
+   Starlight's title-only panel so the custom masthead is the first visible
+   content panel. */
+.page:has(.plugin-root) .content-panel:has(.plugin-page-title-placeholder) {
+  display: none;
 }
 
-.page:has(.plugin-title-wrap) h1#_top {
-  white-space: normal;
-  font-size: var(--sl-text-h1);
+.page:has(.plugin-root) .content-panel + .content-panel {
+  border-top: 0;
 }
 
 /* Splash shells end with the custom SiteFooter on the canvas. Starlight's
@@ -327,22 +319,22 @@ h6 {
    LANDING PAGE - TOKENS
    ============================================ */
 
-/* Theme tokens shared by the homepage canvas (.home) and plugin overview
-   pages (.plugin-root). Shell properties stay on their own selectors below. */
+/* Legacy home/plugin names map to the shared Project Ledger palette. */
 .home,
-.plugin-root {
-  --home-bg: #0b0d0b;
-  --home-surface: #111411;
-  --home-surface-raised: #171b17;
-  --home-border: rgba(240, 245, 239, 0.16);
-  --home-border-strong: rgba(240, 245, 239, 0.34);
-  --home-text: #f1f4ef;
-  --home-text-soft: #c4cbc2;
-  --home-text-muted: #899289;
-  --home-accent: #b7ef5f;
-  --home-accent-strong: #cdf58a;
-  --home-accent-ink: #0b0d0b;
-  --home-focus: #b7ef5f;
+.plugin-root,
+.marketing-root {
+  --home-bg: var(--ledger-canvas);
+  --home-surface: var(--ledger-surface);
+  --home-surface-raised: var(--ledger-surface-raised);
+  --home-border: var(--ledger-rule);
+  --home-border-strong: var(--ledger-rule-strong);
+  --home-text: var(--ledger-ink);
+  --home-text-soft: var(--ledger-ink-soft);
+  --home-text-muted: var(--ledger-ink-muted);
+  --home-accent: var(--ledger-accent);
+  --home-accent-strong: var(--ledger-accent-strong);
+  --home-accent-ink: var(--ledger-accent-ink);
+  --home-focus: var(--ledger-focus);
   --home-glow: rgba(183, 239, 95, 0.07);
   --home-grid-line: rgba(240, 245, 239, 0.045);
 }
@@ -368,36 +360,36 @@ h6 {
 }
 
 :root[data-theme='light'] .home,
-:root[data-theme='light'] .plugin-root {
-  --home-bg: #f3f5ef;
-  --home-surface: #ffffff;
-  --home-surface-raised: #e9ede4;
-  --home-border: rgba(15, 20, 13, 0.14);
-  --home-border-strong: rgba(15, 20, 13, 0.32);
-  --home-text: #141713;
-  --home-text-soft: #363d31;
-  /* 5.30:1 on --home-bg (#f3f5ef), >= 4.5:1 for normal labels. */
-  --home-text-muted: #5f6858;
-  --home-accent: #1c5b1e;
-  --home-accent-strong: #144816;
-  --home-accent-ink: #f3f5ef;
-  --home-focus: #1c5b1e;
+:root[data-theme='light'] .plugin-root,
+:root[data-theme='light'] .marketing-root {
+  --home-bg: var(--ledger-canvas);
+  --home-surface: var(--ledger-surface);
+  --home-surface-raised: var(--ledger-surface-raised);
+  --home-border: var(--ledger-rule);
+  --home-border-strong: var(--ledger-rule-strong);
+  --home-text: var(--ledger-ink);
+  --home-text-soft: var(--ledger-ink-soft);
+  --home-text-muted: var(--ledger-ink-muted);
+  --home-accent: var(--ledger-accent);
+  --home-accent-strong: var(--ledger-accent-strong);
+  --home-accent-ink: var(--ledger-accent-ink);
+  --home-focus: var(--ledger-focus);
   --home-glow: rgba(28, 91, 30, 0.06);
   --home-grid-line: rgba(15, 20, 13, 0.055);
 
-  /* Override Tailwind theme tokens for light mode */
-  --color-home-bg: #f3f5ef;
-  --color-home-surface: #ffffff;
-  --color-home-surface-raised: #e9ede4;
-  --color-home-border: rgba(15, 20, 13, 0.14);
-  --color-home-border-strong: rgba(15, 20, 13, 0.32);
-  --color-home-text: #141713;
-  --color-home-text-soft: #363d31;
-  --color-home-text-muted: #5f6858;
-  --color-home-accent: #1c5b1e;
-  --color-home-accent-strong: #144816;
-  --color-home-accent-ink: #f3f5ef;
-  --color-home-focus: #1c5b1e;
+  /* Keep Tailwind utility names aligned with the semantic light palette. */
+  --color-home-bg: var(--ledger-canvas);
+  --color-home-surface: var(--ledger-surface);
+  --color-home-surface-raised: var(--ledger-surface-raised);
+  --color-home-border: var(--ledger-rule);
+  --color-home-border-strong: var(--ledger-rule-strong);
+  --color-home-text: var(--ledger-ink);
+  --color-home-text-soft: var(--ledger-ink-soft);
+  --color-home-text-muted: var(--ledger-ink-muted);
+  --color-home-accent: var(--ledger-accent);
+  --color-home-accent-strong: var(--ledger-accent-strong);
+  --color-home-accent-ink: var(--ledger-accent-ink);
+  --color-home-focus: var(--ledger-focus);
 }
 
 .home-inner {
@@ -507,7 +499,8 @@ h6 {
    docs pages, which do have a sidebar, keep Starlight's default behavior. */
 @media (max-width: 50rem) {
   :root:not([data-has-sidebar]):has(.home) .right-group,
-  :root:not([data-has-sidebar]):has(.plugin-root) .right-group {
+  :root:not([data-has-sidebar]):has(.plugin-root) .right-group,
+  :root:not([data-has-sidebar]):has(.marketing-root) .right-group {
     display: flex;
   }
 }
@@ -548,7 +541,13 @@ html {
 
   .home *,
   .home *::before,
-  .home *::after {
+  .home *::after,
+  .plugin-root *,
+  .plugin-root *::before,
+  .plugin-root *::after,
+  .marketing-root *,
+  .marketing-root *::before,
+  .marketing-root *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

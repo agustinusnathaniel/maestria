@@ -1,0 +1,104 @@
+---
+import PlatformHero from '@/components/plugin/platform-hero.astro';
+import SiteFooter from '@/components/plugin/site-footer.astro';
+import { marks } from '@/data/marks.js';
+import { findPlatform, getPlatformInstallCommand } from '@/data/platforms.js';
+
+interface Cta {
+  href: string;
+  label: string;
+}
+
+interface HeroFact {
+  label: string;
+  value: string;
+}
+
+interface HeroReference {
+  external?: boolean;
+  href: string;
+  label: string;
+}
+
+interface Props {
+  class?: string;
+  contentClass?: string;
+  facts?: readonly HeroFact[];
+  heroLead?: string;
+  heroTitle?: string;
+  installCaption?: string;
+  installCommand?: string | null;
+  platform?: string;
+  platformId?: string;
+  primaryCta?: Cta;
+  reference?: HeroReference;
+  secondaryCta?: Cta;
+}
+
+const {
+  class: className,
+  contentClass,
+  facts,
+  heroLead,
+  heroTitle,
+  installCaption,
+  installCommand,
+  platform: platformKey,
+  platformId,
+  primaryCta,
+  reference,
+  secondaryCta,
+} = Astro.props;
+
+const resolvedPlatformId = platformId ?? platformKey;
+if (!resolvedPlatformId) {
+  throw new Error('PlatformOverview requires a platform id.');
+}
+
+const platform = findPlatform(resolvedPlatformId);
+if (!platform) {
+  throw new Error(`Unknown platform registry id: ${resolvedPlatformId}`);
+}
+
+const routeHeading = (() => {
+  try {
+    return Astro.locals.starlightRoute?.entry.data.title ?? null;
+  } catch {
+    return null;
+  }
+})();
+const heading = typeof routeHeading === 'string' && routeHeading.trim() !== '' ? routeHeading : platform.name;
+const resolvedInstallCommand =
+  installCommand === undefined ? getPlatformInstallCommand(platform) : installCommand ?? undefined;
+const resolvedTitle = heroTitle ?? platform.shortName ?? platform.name;
+const resolvedLead = heroLead ?? platform.blurb;
+const resolvedPrimaryCta = primaryCta ?? {
+  href: `${platform.href}getting-started/installation/`,
+  label: 'Get started',
+};
+---
+
+<div
+  class:list={['plugin-root', 'platform-overview', className]}
+  data-platform-id={platform.id}
+  data-platform-href={platform.href}
+>
+  <div class:list={['home-inner', 'platform-overview__inner', contentClass]}>
+    <PlatformHero
+      facts={facts}
+      heading={heading}
+      installCaption={installCaption}
+      installCommand={resolvedInstallCommand}
+      lead={resolvedLead}
+      mark={marks[platform.mark]}
+      primaryCta={resolvedPrimaryCta}
+      reference={reference}
+      secondaryCta={secondaryCta}
+      title={resolvedTitle}
+    />
+    <div class="platform-overview__content">
+      <slot />
+    </div>
+    <SiteFooter compact />
+  </div>
+</div>

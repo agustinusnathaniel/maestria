@@ -1,9 +1,9 @@
 /**
  * Shared platform registry - single source of truth for every Maestria
- * platform adapter across the homepage adapter grid, plugin overview pages
+ * platform integration across the homepage directory, plugin overview pages
  * (see src/components/plugin/), and the footer.
  *
- * Blurbs are presentation copy; keep them in sync with the homepage card
+ * Blurbs are presentation copy; keep them in sync with the homepage directory
  * language. `mark` keys into the shared glyph dict in src/data/marks.ts.
  * `installArgs` is the argument string for `npx maestria <installArgs>`;
  * an empty string means the platform has no canonical maestria CLI install
@@ -11,13 +11,15 @@
  */
 
 export interface Platform {
-  /** Registry id, e.g. 'opencode'. Also the SiblingPlatforms exclude key. */
+  /** Registry id, e.g. 'opencode'. */
   id: string;
-  /** Display name shown on cards and chips. */
+  /** Display name shown on directory rows and chips. */
   name: string;
+  /** Compact human label for navigation surfaces. */
+  shortName?: string;
   /** Docs route for the platform overview page. */
   href: string;
-  /** Card description (matches the homepage adapters grid). */
+  /** Directory description shown in the homepage platform registry. */
   blurb: string;
   /** Key into the shared marks dict (src/data/marks.ts). */
   mark: string;
@@ -28,15 +30,15 @@ export interface Platform {
    * Empty string = no canonical CLI install for this entry.
    */
   installArgs: string;
-  /** Homepage-only: draws the accent tick on the top-left corner of the cell. */
+  /** Homepage-only: draws the accent tick on the top-left corner of the row. */
   flagship?: boolean;
-  /** Homepage-only: draws the dashed inset ring on the cell (auxiliary tooling). */
+  /** Homepage-only: marks companion tooling in the ecosystem group. */
   auxiliary?: boolean;
 }
 
 /**
- * All nine entries in homepage grid order. Nine cells complete the 3-column
- * grid; `/ecosystem/` closes it with shared companion tooling.
+ * All nine entries in registry order. `/ecosystem/` closes the directory with
+ * shared companion tooling, separate from platform integrations.
  */
 export const platforms: Platform[] = [
   {
@@ -47,6 +49,7 @@ export const platforms: Platform[] = [
     installArgs: 'install opencode',
     mark: 'opencode',
     name: '@maestria/opencode',
+    shortName: 'OpenCode',
   },
   {
     blurb: 'Namespaced agents, skills, and workflow commands for Claude Code.',
@@ -55,6 +58,7 @@ export const platforms: Platform[] = [
     installArgs: 'install claude-code',
     mark: 'claudeCode',
     name: '@maestria/claude-code',
+    shortName: 'Claude Code',
   },
   {
     blurb: 'Specialist and workflow skills for Codex CLI.',
@@ -63,6 +67,7 @@ export const platforms: Platform[] = [
     installArgs: 'install codex',
     mark: 'codex',
     name: '@maestria/codex',
+    shortName: 'Codex',
   },
   {
     blurb: '8 specialized skills with swarm-aware orchestration and no build step.',
@@ -71,6 +76,7 @@ export const platforms: Platform[] = [
     installArgs: 'install kimi-code',
     mark: 'kimiCode',
     name: '@maestria/kimi-code',
+    shortName: 'Kimi Code',
   },
   {
     blurb: 'Specialist agents, orchestrator skill, and workflow commands for Cursor IDE and CLI.',
@@ -79,6 +85,7 @@ export const platforms: Platform[] = [
     installArgs: 'install cursor',
     mark: 'cursorMark',
     name: '@maestria/cursor',
+    shortName: 'Cursor',
   },
   {
     blurb: '7 specialist subagents with spec-driven orchestration for Pi and Oh My Pi.',
@@ -88,6 +95,7 @@ export const platforms: Platform[] = [
     installArgs: 'install pi',
     mark: 'piOmp',
     name: '@maestria/pi & @maestria/omp',
+    shortName: 'Pi + OMP',
   },
   {
     blurb: 'Methodology layer for Hermes Agent: specialists, pipeline, and mode system.',
@@ -97,6 +105,7 @@ export const platforms: Platform[] = [
     installArgs: '',
     mark: 'hermes',
     name: '@maestria/hermes',
+    shortName: 'Hermes',
   },
   {
     blurb: 'Skills-first Maestria for Prime Agent: specialists, orchestrator, and workflow modes.',
@@ -105,6 +114,7 @@ export const platforms: Platform[] = [
     installArgs: 'install prime-agent',
     mark: 'primeAgent',
     name: '@maestria/prime-agent',
+    shortName: 'Prime Agent',
   },
   {
     auxiliary: true,
@@ -114,5 +124,18 @@ export const platforms: Platform[] = [
     installArgs: '',
     mark: 'ecosystem',
     name: 'Shared ecosystem',
+    shortName: 'Shared ecosystem',
   },
 ];
+
+/** Resolve a structural registry key without embedding presentation claims in the registry. */
+export const findPlatform = (id: string): Platform | undefined =>
+  platforms.find((platform) => platform.id === id);
+
+/** Identify platform overview routes, excluding auxiliary ecosystem entries. */
+export const isPlatformOverview = (id: string): boolean =>
+  platforms.some((platform) => platform.id === id && platform.auxiliary !== true);
+
+/** Return the canonical CLI install command when the registry has one. */
+export const getPlatformInstallCommand = (platform: Platform): string | undefined =>
+  platform.installArgs.trim() === '' ? undefined : `npx maestria ${platform.installArgs}`;
