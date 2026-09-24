@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@maestria/shared-mode": "workspace:*",
+    "@maestria/shared-project-config": "workspace:*",
     "es-toolkit": "^1.52.0"
   },
   "devDependencies": {
