@@ -6,6 +6,7 @@
 // global-rules description. Relative paths resolve against the importing
 // sync.config.ts.
 
+import { specialistReferenceReplacements } from './specialist-replacements.js';
 import type { SyncConfig } from './config.js';
 
 export interface AgentDirectiveSyncOptions {
@@ -21,15 +22,7 @@ export const agentDirectiveSync = ({
   commandPrefix,
 }: AgentDirectiveSyncOptions): SyncConfig => ({
   default: {
-    replace: [
-      { from: '@adventurer', to: `${commandPrefix}adventurer` },
-      { from: '@architect', to: `${commandPrefix}architect` },
-      { from: '@builder', to: `${commandPrefix}builder` },
-      { from: '@diagnose', to: `${commandPrefix}diagnose` },
-      { from: '@planner', to: `${commandPrefix}planner` },
-      { from: '@reviewer', to: `${commandPrefix}reviewer` },
-      { from: '@writer', to: `${commandPrefix}writer` },
-    ],
+    replace: specialistReferenceReplacements(commandPrefix),
     stripFrontmatter: true,
   },
   files: {

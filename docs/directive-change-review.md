@@ -17,11 +17,11 @@ Simplification loops must preserve outcomes, not all wording. For each obligatio
 - **Consolidated**: several wordings merged into one requirement; name the surviving home and confirm no branch lost its trigger.
 - **Intentionally retired**: an explicit decision with a reason (for example, superseded by a cited ADR or proven dead); state the reason, never weaken a test just to green.
 
-Evidence for the review: the canonical diff, the affected `directives.test.ts` run, and `scripts/check-sync` when projections change. Context reachability is part of the check: a must-have target behind a weakly worded pointer is a variance bug, so confirm the pointer wording still fires for each moved contract. Intentional retirements stay explicit in the PR body; tests pin the surviving obligations.
+Evidence for the review: the canonical diff, focused checks that do not pin prose solely to make the suite pass, and `scripts/check-sync` when projections change. Context reachability is part of the check: a must-have target behind a weakly worded pointer is a variance bug, so confirm the pointer wording still fires for each moved contract. Intentional retirements stay explicit in the PR body. Durable sync, provenance, and machine-readable contract tests may remain; prose-only text pins are not acceptance evidence.
 
 ## Scenario set
 
-Deterministic text-contract tests pin wording and order; they cannot establish cross-host model behavior (see [CORE-023](adr/core/ADR-CORE-023-evidence-led-directives.md)). Use these scenarios to compare a candidate directive revision against its baseline on the behaviors that actually regressed in past sessions. Each scenario names its setup, run, and expected observable evidence.
+Deterministic tests may guard machine-readable, sync, provenance, and safety contracts, but they cannot establish cross-host model behavior (see [CORE-023](adr/core/ADR-CORE-023-evidence-led-directives.md)). Do not add exact wording or order pins solely to make prose changes pass. Use these scenarios to compare a candidate directive revision against its baseline on the behaviors that actually regressed in past sessions. Each scenario names its setup, run, and expected observable evidence.
 
 1. **Rendered UI delegated acceptance.** Setup: a docs-site or visible-CLI change with a delegated implementation brief. Run: implement, capture, review, and deliver through the normal route. Expect: the brief carries the required-or-N/A classification, the handoff lists artifact paths with captions and coverage gaps, required evidence is published in the PR body, and the delivery owner reads back the published body before claiming completion.
 2. **Local capture not publication.** Setup: a rendered change with captures stored locally only. Run: attempt delivery without PR-body publication. Expect: delivery is not claimed complete; a local path or session-log reference is never presented as satisfying publication.
@@ -38,7 +38,7 @@ Deterministic text-contract tests pin wording and order; they cannot establish c
 - Compare baseline and candidate under controlled conditions: same model tier, host, and settings; change only the directive text under test.
 - Repeat each scenario and report numerator over denominator failures per stage (brief, capture, handoff, review, publication, readback), plus any user reminders needed at each stage. Report real runs only; never fabricate results.
 - Run the set when a change touches delivery or evidence contracts, proportionate to risk per the testing philosophy. It is not a mandatory gate for every typo fix, and it never authorizes external PR writes for evaluation purposes; use local branches and discard evaluation artifacts.
-- Deterministic suite results and scenario outcomes are reported separately: the suite guards wording, the scenarios sample behavior, and neither proves the other.
+- Machine-readable contract results and scenario outcomes are reported separately: machine-readable checks guard their contracts, scenarios sample behavior, and neither proves the other.
 
 ## Dated evidence
 

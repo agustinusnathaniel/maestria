@@ -3,21 +3,13 @@
 // canonical core directives. All methodology content is generated; only this
 // config and the package metadata/docs/tests are hand-authored.
 
+import { specialistReferenceReplacements } from '../core/scripts/lib/specialist-replacements.js';
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 // Plugin manifest name is `maestria` (see .claude-plugin/plugin.json), so
 // every component is referenced by its namespaced identifier, e.g.
 // `maestria:builder` for the builder agent and `maestria:global-rules` for
 // the global-rules skill.
-const AGENT_REF_REPLACES = [
-  { from: '@adventurer', to: 'maestria:adventurer' },
-  { from: '@architect', to: 'maestria:architect' },
-  { from: '@builder', to: 'maestria:builder' },
-  { from: '@diagnose', to: 'maestria:diagnose' },
-  { from: '@planner', to: 'maestria:planner' },
-  { from: '@reviewer', to: 'maestria:reviewer' },
-  { from: '@writer', to: 'maestria:writer' },
-] as const;
 
 // Global rules skill preloaded into every specialist agent. The namespaced
 // identifier matches the plugin manifest name (`maestria`).
@@ -77,7 +69,7 @@ Research-only mode. Load the \`maestria:orchestrator\` skill for routing and del
 
 export default {
   default: {
-    replace: [...AGENT_REF_REPLACES],
+    replace: specialistReferenceReplacements('maestria:'),
   },
   files: {
     'adventurer.md': {
