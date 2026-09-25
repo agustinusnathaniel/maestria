@@ -6,11 +6,10 @@ editUrl: false
 lastUpdated: false
 ---
 
-import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import { marks } from '@/data/marks.js';
 
@@ -47,27 +46,14 @@ import { marks } from '@/data/marks.js';
       />
     </PluginSection>
 
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
-        <DocsLinkList
-          items={[
-            { title: 'Getting Started', description: 'Installation, setup, and your first session with the plugin.', href: '/cursor/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Run your first workflow command and delegate to specialists.', href: '/cursor/getting-started/quick-start/' },
-            { title: 'Agent Reference', description: 'The 7 specialists and orchestrator methodology.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Project-specific workflows and how project files load.', href: '/core/workflow-patterns/' },
-            { title: 'Changelog', description: 'Release history for @maestria/cursor.', href: '/cursor/changelog/' },
-            { title: 'Contributing', description: 'How to edit sync config and regenerate plugin files.', href: '/cursor/contributing/' },
-          ]}
-        />
-      </div>
-    </PluginSection>
-
-    <SiblingPlatforms excludeId="cursor" />
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Changelog', href: '/cursor/changelog/' },
+        { label: 'Contributing', href: '/cursor/contributing/' },
+      ]}
+    />
 
     <SiteFooter />
 

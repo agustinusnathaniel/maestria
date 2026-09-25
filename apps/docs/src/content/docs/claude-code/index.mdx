@@ -6,11 +6,10 @@ editUrl: false
 lastUpdated: false
 ---
 
-import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import { marks } from '@/data/marks.js';
 
@@ -58,27 +57,14 @@ import { marks } from '@/data/marks.js';
       />
     </PluginSection>
 
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
-        <DocsLinkList
-          items={[
-            { title: 'Getting Started', description: 'Local validation, loading the plugin, and your first session.', href: '/claude-code/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Delegate to specialists and run your first workflow command.', href: '/claude-code/getting-started/quick-start/' },
-            { title: 'Agent Reference', description: 'Roles, permissions, and when to use each of the 7 specialists.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Agent usage patterns for recon, implementation, and review.', href: '/core/workflow-patterns/' },
-            { title: 'Changelog', description: 'Version history and release notes.', href: '/claude-code/changelog/' },
-            { title: 'Contributing', description: 'Project structure, the sync pipeline, and how to extend the plugin.', href: '/claude-code/contributing/' },
-          ]}
-        />
-      </div>
-    </PluginSection>
-
-    <SiblingPlatforms excludeId="claude-code" />
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Changelog', href: '/claude-code/changelog/' },
+        { label: 'Contributing', href: '/claude-code/contributing/' },
+      ]}
+    />
 
     <SiteFooter />
 
