@@ -184,20 +184,23 @@ const normalizeStringArray = (value: unknown, cap?: number): string[] => {
   return cap === undefined ? normalized : normalized.slice(0, cap);
 };
 
+const pickString = (record: Record<string, unknown>, key: string): string | null => {
+  const field = readOwnField(record, key).value;
+  return typeof field === 'string' ? field : null;
+};
+
+const pickStringArray = (record: Record<string, unknown>, key: string, cap?: number): string[] =>
+  normalizeStringArray(readOwnField(record, key).value, cap);
+
 const normalizeHandoffEntry = (value: unknown): HandoffEntry | null => {
   if (!isRecord(value)) {
     return null;
   }
-  const from = readOwnField(value, 'from').value;
-  const to = readOwnField(value, 'to').value;
-  const task = readOwnField(value, 'task').value;
+  const from = pickString(value, 'from');
+  const to = pickString(value, 'to');
+  const task = pickString(value, 'task');
   const timestamp = readOwnField(value, 'timestamp').value;
-  if (
-    typeof from !== 'string' ||
-    typeof to !== 'string' ||
-    typeof task !== 'string' ||
-    !isFiniteNumber(timestamp)
-  ) {
+  if (from === null || to === null || task === null || !isFiniteNumber(timestamp)) {
     return null;
   }
   return { from, task, timestamp, to };
@@ -217,9 +220,9 @@ const normalizeNativeGoal = (value: unknown): NativeGoalMirror | null => {
   if (!isRecord(value)) {
     return null;
   }
-  const objective = readOwnField(value, 'objective').value;
-  const status = readOwnField(value, 'status').value;
-  if (typeof objective !== 'string' || typeof status !== 'string') {
+  const objective = pickString(value, 'objective');
+  const status = pickString(value, 'status');
+  if (objective === null || status === null) {
     return null;
   }
   return { objective, status };
@@ -229,18 +232,15 @@ const normalizeSubagentInfo = (value: unknown): SubagentStatusInfo | null => {
   if (!isRecord(value)) {
     return null;
   }
-  const type = readOwnField(value, 'type').value;
-  const status = readOwnField(value, 'status').value;
+  const type = pickString(value, 'type');
+  const status = pickString(value, 'status');
   const startedAt = readOwnField(value, 'startedAt').value;
-  if (typeof type !== 'string' || typeof status !== 'string' || !isFiniteNumber(startedAt)) {
+  if (type === null || status === null || !isFiniteNumber(startedAt)) {
     return null;
   }
-  const completedAtField = readOwnField(value, 'completedAt');
-  if (!completedAtField.present) {
-    return { startedAt, status, type };
-  }
-  return isFiniteNumber(completedAtField.value)
-    ? { completedAt: completedAtField.value, startedAt, status, type }
+  const completedAt = readOwnField(value, 'completedAt').value;
+  return isFiniteNumber(completedAt)
+    ? { completedAt, startedAt, status, type }
     : { startedAt, status, type };
 };
 
@@ -259,16 +259,9 @@ const normalizeSubagentStatus = (value: unknown): Record<string, SubagentStatusI
     if (typeof key !== 'string' || UNSAFE_STATE_KEYS.has(key)) {
       continue;
     }
-    let descriptor: PropertyDescriptor | undefined;
-    try {
-      descriptor = Object.getOwnPropertyDescriptor(value, key);
-    } catch {
-      continue;
-    }
-    if (descriptor === undefined || !('value' in descriptor)) {
-      continue;
-    }
-    const info = normalizeSubagentInfo(descriptor.value);
+    // readOwnField reproduces the descriptor guards: missing keys, throwing
+    // accessors, and non-data descriptors all normalize to a skipped row.
+    const info = normalizeSubagentInfo(readOwnField(value, key).value);
     if (info !== null) {
       normalized[key] = info;
     }
@@ -281,39 +274,24 @@ const normalizePersistedState = (value: unknown): MaestriaState | null => {
     return null;
   }
   const next = createInitialState();
-  const activeTask = readOwnField(value, 'activeTask');
-  if (activeTask.present && typeof activeTask.value === 'string') {
-    next.activeTask = activeTask.value;
-  }
-  next.blockers = normalizeStringArray(readOwnField(value, 'blockers').value);
-  const completionPromise = readOwnField(value, 'completionPromise');
-  if (completionPromise.present && typeof completionPromise.value === 'string') {
-    next.completionPromise = completionPromise.value;
-  }
-  next.filesModified = normalizeStringArray(
-    readOwnField(value, 'filesModified').value,
-    FILE_HISTORY_CAP,
-  );
-  next.filesRead = normalizeStringArray(readOwnField(value, 'filesRead').value, FILE_HISTORY_CAP);
+  next.activeTask = pickString(value, 'activeTask') ?? next.activeTask;
+  next.blockers = pickStringArray(value, 'blockers');
+  next.completionPromise = pickString(value, 'completionPromise') ?? next.completionPromise;
+  next.filesModified = pickStringArray(value, 'filesModified', FILE_HISTORY_CAP);
+  next.filesRead = pickStringArray(value, 'filesRead', FILE_HISTORY_CAP);
   next.handoffHistory = normalizeHandoffHistory(readOwnField(value, 'handoffHistory').value);
 
   const mode = readOwnField(value, 'mode');
-  if (!mode.present) {
+  if (!mode.present || mode.value === null) {
     next.mode = null;
-  } else if (
-    mode.value === null ||
-    mode.value === 'fein' ||
-    mode.value === 'sonar' ||
-    mode.value === 'blitz'
-  ) {
+  } else if (mode.value === 'fein' || mode.value === 'sonar' || mode.value === 'blitz') {
     next.mode = mode.value;
   } else {
     next.mode = 'fein';
   }
 
   next.nativeGoal = normalizeNativeGoal(readOwnField(value, 'nativeGoal').value);
-  const originalModel = readOwnField(value, 'originalModel');
-  next.originalModel = typeof originalModel.value === 'string' ? originalModel.value : null;
+  next.originalModel = pickString(value, 'originalModel');
   const originalTools = readOwnField(value, 'originalTools');
   next.originalTools = Array.isArray(originalTools.value)
     ? normalizeStringArray(originalTools.value)
@@ -326,11 +304,8 @@ const normalizePersistedState = (value: unknown): MaestriaState | null => {
   } else {
     next.reviewMode = true;
   }
-  const reviewModel = readOwnField(value, 'reviewModel');
-  next.reviewModel = typeof reviewModel.value === 'string' ? reviewModel.value : null;
-  next.specialistsDelegated = normalizeStringArray(
-    readOwnField(value, 'specialistsDelegated').value,
-  );
+  next.reviewModel = pickString(value, 'reviewModel');
+  next.specialistsDelegated = pickStringArray(value, 'specialistsDelegated');
   next.subagentStatus = normalizeSubagentStatus(readOwnField(value, 'subagentStatus').value);
   return next;
 };
