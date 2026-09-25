@@ -216,24 +216,22 @@ const hasOnlySafeFlags = (value: string, allowed: ReadonlySet<string>): boolean 
   return true;
 };
 
+const isSingleDash = (argument: string): boolean =>
+  argument.startsWith('-') && argument !== '-' && !argument.startsWith('--');
+
+const hasSafeShortTokens = (args: readonly string[], short: ReadonlySet<string>): boolean =>
+  args.every((argument) => !isSingleDash(argument) || hasOnlySafeFlags(argument.slice(1), short));
+
 const hasSafeLsOptions = (args: readonly string[]): boolean => {
-  for (const argument of args) {
-    if (argument === '--') {
-      return true;
-    }
-    if (argument.startsWith('--')) {
-      if (!SAFE_OPTIONS.ls.has(optionName(argument))) {
-        return false;
-      }
-    } else if (
-      argument.startsWith('-') &&
-      argument !== '-' &&
-      !hasOnlySafeFlags(argument.slice(1), SAFE_OPTIONS.lsShort)
-    ) {
-      return false;
-    }
-  }
-  return true;
+  // A `--` terminator accepts the command when every preceding token is
+  // safe; tokens after it are never validated, matching the historic loop.
+  const scoped = args.includes('--') ? args.slice(0, args.indexOf('--')) : args;
+  return (
+    hasSafeShortTokens(scoped, SAFE_OPTIONS.lsShort) &&
+    scoped.every(
+      (argument) => !argument.startsWith('--') || SAFE_OPTIONS.ls.has(optionName(argument)),
+    )
+  );
 };
 
 const hasSafeCountOptions = (args: readonly string[]): boolean => {
@@ -243,34 +241,25 @@ const hasSafeCountOptions = (args: readonly string[]): boolean => {
   return hasSafeOptions(filtered, SAFE_OPTIONS.headTail, new Set(['--bytes', '--lines']));
 };
 
-const hasSafeGrepOptions = (args: readonly string[]): boolean => {
-  const hasSafeShortFlags = args.every((argument) => {
-    if (!argument.startsWith('-') || argument === '-' || argument.startsWith('--')) {
-      return true;
-    }
-    return hasOnlySafeFlags(argument.slice(1), SAFE_OPTIONS.grepShort);
-  });
-  return (
-    hasSafeShortFlags &&
-    hasSafeOptions(
-      args,
-      SAFE_GREP_OPTIONS,
-      new Set([
-        '--after-context',
-        '--before-context',
-        '--context',
-        '--exclude',
-        '--exclude-from',
-        '--file',
-        '--include',
-        '--max-count',
-        '--regexp',
-        '-e',
-        '-f',
-      ]),
-    )
+const hasSafeGrepOptions = (args: readonly string[]): boolean =>
+  hasSafeShortTokens(args, SAFE_OPTIONS.grepShort) &&
+  hasSafeOptions(
+    args,
+    SAFE_GREP_OPTIONS,
+    new Set([
+      '--after-context',
+      '--before-context',
+      '--context',
+      '--exclude',
+      '--exclude-from',
+      '--file',
+      '--include',
+      '--max-count',
+      '--regexp',
+      '-e',
+      '-f',
+    ]),
   );
-};
 
 const hasSafeBranchArguments = (args: readonly string[]): boolean => {
   const valueOptions = new Set([
