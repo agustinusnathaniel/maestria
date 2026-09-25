@@ -7,10 +7,7 @@ import {
 } from '@maestria/shared-pi/state-core';
 import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
-export interface GoalApi {
-  appendEntry: (type: string, data: unknown) => void;
-  on: (event: string, handler: (event: unknown, ctx: unknown) => Promise<void> | void) => void;
-}
+export type GoalApi = Pick<ExtensionAPI, 'appendEntry' | 'on'>;
 
 type NativeGoalStatus = 'active' | 'paused' | 'budget-limited';
 
@@ -159,31 +156,3 @@ export const installGoalEventHandlers = (pi: GoalApi, state: MaestriaState): voi
     }
   });
 };
-
-export const createGoalApi = (pi: ExtensionAPI): GoalApi => ({
-  appendEntry: (type, data) => {
-    pi.appendEntry(type, data);
-  },
-  on: (event, handler) => {
-    if (event === 'goal_updated') {
-      pi.on('goal_updated', async (eventData, ctx) => {
-        await handler(eventData, ctx);
-      });
-    }
-    if (event === 'session_switch') {
-      pi.on('session_switch', async (eventData, ctx) => {
-        await handler(eventData, ctx);
-      });
-    }
-    if (event === 'session_branch') {
-      pi.on('session_branch', async (eventData, ctx) => {
-        await handler(eventData, ctx);
-      });
-    }
-    if (event === 'session_tree') {
-      pi.on('session_tree', async (eventData, ctx) => {
-        await handler(eventData, ctx);
-      });
-    }
-  },
-});

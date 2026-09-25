@@ -4,11 +4,7 @@ import { createInitialState } from '@maestria/shared-pi/state-core';
 
 import { deploySpecialistAgents } from '@/agents.js';
 import { installCommands } from '@/commands.js';
-import {
-  createGoalApi,
-  installGoalEventHandlers,
-  restoreMaestriaStateForSession,
-} from '@/goals.js';
+import { installGoalEventHandlers, restoreMaestriaStateForSession } from '@/goals.js';
 import { installModeAutoDetect, installModeCommands } from '@/modes.js';
 import { createModePromptHandler } from '@/rules.js';
 import { installNativeSubagentTool } from '@/subagent.js';
@@ -42,7 +38,7 @@ const extension = (pi: ExtensionAPI): void => {
   installCommands(pi, state);
 
   // Mirror OMP's native goal state (goal_updated event) into Maestria state
-  installGoalEventHandlers(createGoalApi(pi), state);
+  installGoalEventHandlers(pi, state);
 
   // Install tool call interceptors for review mode and dangerous patterns
   installToolInterceptors(pi, state);
