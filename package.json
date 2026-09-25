@@ -25,7 +25,8 @@
     "typecheck": "vp check --no-fmt --no-lint",
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
-    "contributors:check": "all-contributors check"
+    "contributors:check": "all-contributors check",
+    "e2e:phase-b": "node --experimental-strip-types scripts/e2e/phase-b-evidence.ts --out artifacts/phase-b-evidence.json"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
