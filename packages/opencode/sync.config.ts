@@ -24,7 +24,6 @@ const READ_ONLY_BASH: readonly BashPermissionEntry[] = [
   ['stat*', 'allow'],
   ['pwd*', 'allow'],
   ['cd*', 'allow'],
-  ['find*', 'allow'],
   ['printf*', 'allow'],
 ];
 
@@ -52,22 +51,7 @@ export default {
         permission: {
           bash: bashPermissions(
             [['*', 'ask']],
-            allow(
-              'git log*',
-              'git diff*',
-              'git status*',
-              'git show*',
-              'git branch*',
-              'git rev-parse*',
-              'git remote*',
-              'git stash*',
-              'git config*',
-              'pnpm*',
-              'npm*',
-              'opensrc*',
-              'agent-browser*',
-              'rtk*',
-            ),
+            allow('git status*', 'git rev-parse*', 'opensrc*', 'agent-browser*', 'rtk*'),
           ),
           edit: 'deny',
           glob: 'allow',
@@ -86,20 +70,7 @@ export default {
         description: `Architecture decision agent for comparing implementation approaches, boundaries, threat models, and ADR decisions.`,
         mode: 'subagent',
         permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            allow(
-              'git diff*',
-              'git log*',
-              'git status*',
-              'git show*',
-              'git branch*',
-              'opensrc*',
-              'pnpm*',
-              'npm*',
-              'npm view *',
-            ),
-          ),
+          bash: bashPermissions([['*', 'ask']], allow('git status*', 'opensrc*', 'npm view *')),
           edit: 'deny',
           glob: 'allow',
           grep: 'allow',
@@ -120,7 +91,7 @@ export default {
           bash: bashPermissions(
             [['du*', 'allow']],
             [
-              ...allow('test*', 'sort*', 'git*', 'pnpm*', 'npm*'),
+              ...allow('test*', 'sort*', 'git*'),
               ['pnpx*', 'ask'],
               ...allow('tsc*', 'vitest*', 'vp*', 'rtk*', 'eslint*', 'prettier*'),
               ['*', 'ask'],
@@ -158,7 +129,7 @@ export default {
           bash: bashPermissions(
             [],
             [
-              ...allow('git status*', 'git diff*', 'git log*', 'git blame*', 'git show*'),
+              ...allow('git status*', 'git blame*'),
               ['env', 'allow'],
               ['pwd', 'allow'],
               ['*', 'ask'],
@@ -212,20 +183,7 @@ export default {
         description: `Phased planning agent with dependencies, verification criteria, timelines, and rollback points.`,
         mode: 'subagent',
         permission: {
-          bash: bashPermissions(
-            [['*', 'ask']],
-            allow(
-              'git status*',
-              'git diff*',
-              'git log*',
-              'git show*',
-              'git branch*',
-              'git rev-parse*',
-              'mkdir*',
-              'pnpm*',
-              'npm*',
-            ),
-          ),
+          bash: bashPermissions([['*', 'ask']], allow('git status*', 'git rev-parse*', 'mkdir*')),
           edit: 'ask',
           glob: 'allow',
           grep: 'allow',
@@ -244,19 +202,7 @@ export default {
         permission: {
           bash: bashPermissions(
             [['*', 'ask']],
-            allow(
-              'git status*',
-              'git diff*',
-              'git log*',
-              'git show*',
-              'git branch*',
-              'git rev-parse*',
-              'pnpm*',
-              'npm*',
-              'vp*',
-              'rtk*',
-              'node*',
-            ),
+            allow('git status*', 'git rev-parse*', 'vp*', 'rtk*', 'node*'),
           ),
           edit: 'deny',
           glob: 'allow',
@@ -278,19 +224,7 @@ export default {
         permission: {
           bash: bashPermissions(
             [['*', 'ask']],
-            allow(
-              'git status*',
-              'git diff*',
-              'git log*',
-              'git show*',
-              'git branch*',
-              'git rev-parse*',
-              'pnpm*',
-              'npm*',
-              'npm view *',
-              'vp*',
-              'mkdir*',
-            ),
+            allow('git status*', 'git rev-parse*', 'npm view *', 'vp*', 'mkdir*'),
           ),
           edit: 'allow',
           glob: 'allow',
