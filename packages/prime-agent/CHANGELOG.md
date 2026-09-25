@@ -1,5 +1,13 @@
 # @maestria/prime-agent
 
+## 0.3.15
+
+### Patch Changes
+
+- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Adopt behavior-first testing guidance across the generated Maestria methodology. Reject tautological and change-detector tests, require pre-code test selection, prefer E2E artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
+
+- [#346](https://github.com/agustinusnathaniel/maestria/pull/346) [`b3aa378`](https://github.com/agustinusnathaniel/maestria/commit/b3aa378700cf327ea702376e5fd475d99213bb4a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Guide agents to commit verified implementation slices, plan reviewable PR boundaries early, and present architect or planner designs to users before dependent implementation.
+
 ## 0.3.14
 
 ### Patch Changes
