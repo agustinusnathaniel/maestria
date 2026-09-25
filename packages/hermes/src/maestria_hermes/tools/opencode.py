@@ -196,53 +196,41 @@ def _requires_job_object() -> bool:
     return os.name == "nt"
 
 
-def _process_group_exists(process_group_id: int) -> bool:
-    try:
-        os.killpg(process_group_id, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    except OSError:
-        return True
-    return True
-
-
-def _wait_for_process_group_exit(process_group_id: int, timeout: float) -> bool:
-    deadline = time.monotonic() + timeout
-    while _process_group_exists(process_group_id):
-        if time.monotonic() >= deadline:
-            return False
-        time.sleep(0.01)
-    return True
-
-
-def _signal_process_group(process_group_id: int, process_signal: signal.Signals) -> bool:
-    try:
-        os.killpg(process_group_id, process_signal)
-    except ProcessLookupError:
-        return True
-    except OSError:
-        return False
-    return True
-
-
 def _cleanup_process_group(process: subprocess.Popen[bytes]) -> bool:
+    """Terminate the owned process group (TERM, then KILL) and verify exit."""
     process_group_id = process.pid
-    term_sent = _signal_process_group(process_group_id, signal.SIGTERM)
+
+    def _signal(process_signal: signal.Signals) -> bool:
+        try:
+            os.killpg(process_group_id, process_signal)
+        except ProcessLookupError:
+            return True
+        except OSError:
+            return False
+        return True
+
+    def _gone(timeout: float) -> bool:
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                os.killpg(process_group_id, 0)
+            except ProcessLookupError:
+                return True
+            except OSError:
+                pass
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(0.01)
+
+    term_sent = _signal(signal.SIGTERM)
     try:
         process.wait(timeout=0.05)
     except subprocess.TimeoutExpired:
         pass
-
-    term_verified = term_sent and _wait_for_process_group_exit(
-        process_group_id,
-        0.25,
-    )
-    if term_verified:
+    if term_sent and _gone(0.25):
         return True
 
-    kill_sent = _signal_process_group(process_group_id, signal.SIGKILL)
+    kill_sent = _signal(signal.SIGKILL)
     try:
         process.wait(timeout=0.5)
     except subprocess.TimeoutExpired:
@@ -251,7 +239,7 @@ def _cleanup_process_group(process: subprocess.Popen[bytes]) -> bool:
             process.wait(timeout=0.5)
         except (OSError, subprocess.TimeoutExpired):
             return False
-    return kill_sent and _wait_for_process_group_exit(process_group_id, 1.0)
+    return kill_sent and _gone(1.0)
 
 
 def _close_process_streams(process: subprocess.Popen[bytes]) -> None:
