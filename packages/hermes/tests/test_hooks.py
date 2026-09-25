@@ -1795,6 +1795,9 @@ class TrustRegistryBoundTests(HookTestBase):
 
 class FailClosedTests(HookTestBase):
     def test_malformed_tool_names_block_without_raising(self):
+        """Malformed tool names - wrong types, empties, over-long, ASCII
+        and Unicode controls/format characters, and padded names - block
+        without raising and without normalizing."""
         hook = self.make_hook("fein")
         session_id = "tool-malformed"
         mark_top_level(session_id)
@@ -1805,20 +1808,6 @@ class FailClosedTests(HookTestBase):
             " write ", "write ", " write", "\twrite", "write\n", "write\t",
             " read ", " bash ", " complete ",
             "wri\x00te", "write\x01", "\x00write",
-        ):
-            with self.subTest(tool_name=repr(tool_name)):
-                result = hook(tool_name=tool_name, session_id=session_id)
-                self.assertIsNotNone(result)
-                self.assertEqual(result["action"], "block")
-
-    def test_unicode_control_tool_names_block_without_raising(self):
-        """Unicode controls/format chars in a tool name block in every
-        trust state and mode, without raising and without normalizing."""
-        hook = self.make_hook("fein")
-        session_id = "tool-unicode"
-        mark_top_level(session_id)
-        self.cleanup_trust(session_id)
-        for tool_name in (
             "write\u200b", "re\u200cad", "\u200bread", "we\u2028bfetch",
             "\u0085write", "read\u200d", "re\u009fad", "glob\u2029",
             "complete\u200c", "bash\u200e",
@@ -2065,41 +2054,24 @@ class RoleProvenanceIntegrationTests(HookTestBase):
                     "block",
                 )
 
-    def test_requested_builder_padded_and_LEAF_arrive_as_effective_leaf(self):
-        """Requested 'builder', padded, and 'LEAF' inputs all arrive as the
-        effective native role 'leaf' (Hermes normalizes before
-        subagent_start) and receive the SAME role-neutral child policy:
-        read/research/LLM only, never a specialist mapping, never writes."""
-        requested_roles = ("builder", " LEAF ", "LEAF")
-        for i, requested_role in enumerate(requested_roles):
-            sid = f"provenance-leaf-{i}"
-            with self.subTest(requested_role=requested_role):
-                effective = self._delegate_child(sid, requested_role)
-                self.assertEqual(effective, "leaf")
-                self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
-                self._assert_child_safe_policy(sid)
-
-    def test_requested_orchestrator_variants_arrive_as_effective_role(self):
-        """Requested 'orchestrator' / padded variants arrive as the
-        effective native role 'orchestrator' and get the SAME role-neutral
-        policy as a leaf child (no orchestrator-specific capability)."""
-        for i, requested_role in enumerate(("orchestrator", " Orchestrator ")):
-            sid = f"provenance-orch-{i}"
-            with self.subTest(requested_role=requested_role):
-                effective = self._delegate_child(sid, requested_role)
-                self.assertEqual(effective, "orchestrator")
-                self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
-                self._assert_child_safe_policy(sid)
-
-    def test_effective_role_never_grants_write_in_any_mode(self):
-        """Every requested-role input - leaf and orchestrator variants -
-        yields a child that can never write, run a shell, delegate, or
-        route to OpenCode in ANY mode: the fixed policy is mode-neutral."""
+    def test_requested_roles_arrive_as_effective_roles_with_child_policy(self):
+        """Requested role strings arrive as Hermes' effective native role
+        (Hermes normalizes before subagent_start) and receive the SAME
+        role-neutral child policy in every mode: read/research/LLM only,
+        never a specialist mapping, never writes."""
+        cases = (
+            ("builder", "leaf"),
+            (" LEAF ", "leaf"),
+            ("LEAF", "leaf"),
+            ("orchestrator", "orchestrator"),
+            (" Orchestrator ", "orchestrator"),
+        )
         for mode in ("fein", "sonar", "blitz"):
-            for i, requested_role in enumerate(("builder", " LEAF ", "LEAF", "orchestrator")):
-                sid = f"prov-mode-{mode}-{i}"
+            for i, (requested_role, effective_role) in enumerate(cases):
+                sid = f"provenance-{mode}-{i}"
                 with self.subTest(mode=mode, requested_role=requested_role):
-                    self._delegate_child(sid, requested_role)
+                    effective = self._delegate_child(sid, requested_role)
+                    self.assertEqual(effective, effective_role)
                     self.assertEqual(get_trust_state(sid), TRUSTED_CHILD)
                     self._assert_child_safe_policy(sid, mode=mode)
 
