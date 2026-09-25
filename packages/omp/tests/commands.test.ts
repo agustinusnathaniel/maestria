@@ -34,7 +34,7 @@ const createMockPi = (): MockCommandsPi => ({
   registerCommand: vi.fn(),
   sendUserMessage: vi.fn(),
   setActiveTools: vi.fn(),
-  setModel: vi.fn(),
+  setModel: vi.fn().mockResolvedValue(true),
 });
 
 const createMockCtx = (overrides: Partial<CommandsCtx> = {}): CommandsCtx => {
@@ -486,7 +486,7 @@ describe('installCommands host delegation', () => {
       registerCommand: vi.fn(),
       sendUserMessage: vi.fn(),
       setActiveTools: vi.fn(),
-      setModel: vi.fn(),
+      setModel: vi.fn().mockResolvedValue(true),
     };
 
     const state: MaestriaState = {

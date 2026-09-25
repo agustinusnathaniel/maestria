@@ -20,7 +20,7 @@ interface MockPi {
     typeof vi.fn<(content: string | unknown[], options: { deliverAs: string }) => void>
   >;
   setActiveTools: ReturnType<typeof vi.fn<(tools: string[]) => void>>;
-  setModel: ReturnType<typeof vi.fn<(model: unknown) => Promise<void>>>;
+  setModel: ReturnType<typeof vi.fn<(model: unknown) => Promise<unknown>>>;
 }
 
 const createMockPi = (): MockPi => ({
@@ -31,7 +31,7 @@ const createMockPi = (): MockPi => ({
   registerCommand: vi.fn<CommandsPi['registerCommand']>(),
   sendUserMessage: vi.fn<(content: string | unknown[], options: { deliverAs: string }) => void>(),
   setActiveTools: vi.fn<(tools: string[]) => void>(),
-  setModel: vi.fn<(model: unknown) => Promise<void>>().mockResolvedValue(),
+  setModel: vi.fn<(model: unknown) => Promise<unknown>>().mockResolvedValue(true),
 });
 
 const createMockCtx = (overrides: Partial<CommandsCtx> = {}): CommandsCtx => {

@@ -27,7 +27,7 @@ const createMockPi = (): MockPi => ({
   registerCommand: vi.fn<CommandsPi['registerCommand']>(),
   sendUserMessage: vi.fn<CommandsPi['sendUserMessage']>(),
   setActiveTools: vi.fn<CommandsPi['setActiveTools']>(),
-  setModel: vi.fn<CommandsPi['setModel']>().mockResolvedValue(null),
+  setModel: vi.fn<CommandsPi['setModel']>().mockResolvedValue(true),
 });
 
 const createMockCtx = (overrides: Partial<CommandsCtx> = {}): CommandsCtx => {
