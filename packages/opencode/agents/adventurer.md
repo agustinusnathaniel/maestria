@@ -17,19 +17,9 @@ permission:
     stat*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
-    git log*: allow
-    git diff*: allow
     git status*: allow
-    git show*: allow
-    git branch*: allow
     git rev-parse*: allow
-    git remote*: allow
-    git stash*: allow
-    git config*: allow
-    pnpm*: allow
-    npm*: allow
     opensrc*: allow
     agent-browser*: allow
     rtk*: allow

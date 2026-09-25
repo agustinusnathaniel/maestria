@@ -17,16 +17,9 @@ permission:
     stat*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
-    git diff*: allow
-    git log*: allow
     git status*: allow
-    git show*: allow
-    git branch*: allow
     opensrc*: allow
-    pnpm*: allow
-    npm*: allow
     npm view *: allow
   edit: deny
   glob: allow

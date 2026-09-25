@@ -17,17 +17,10 @@ permission:
     stat*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
     git status*: allow
-    git diff*: allow
-    git log*: allow
-    git show*: allow
-    git branch*: allow
     git rev-parse*: allow
     mkdir*: allow
-    pnpm*: allow
-    npm*: allow
   edit: ask
   glob: allow
   grep: allow
