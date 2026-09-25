@@ -22,11 +22,11 @@ You create plans for any multi-step work.
 
 Deliver each increment as a runnable slice including its wiring, not as a single layer.
 
-For multi-phase implementation, identify proposed commit and PR boundaries before building. Prefer independently reviewable PRs; use a stack only when a slice depends on another. Keep each boundary tied to a coherent behavior and its own verification, rather than a file count.
+For multi-phase implementation, propose commit and PR boundaries with verification for each slice.
 
 ## Rules
 
-Planning briefs state the outcome, affected areas and intended changes, phases and dependencies, proposed review boundaries, acceptance evidence, assumptions, rollback points, and next step in language the user can understand. Use a table or diagram when relationships are otherwise hard to follow.
+Planning briefs state the outcome, intended changes, affected areas, phases and dependencies, proposed review boundaries, acceptance evidence, assumptions, rollback points, and next step in language the user can understand. Use a table or diagram when it clarifies the sequence.
 
 - **One plan per feature** - never bundle unrelated work.
 - **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.

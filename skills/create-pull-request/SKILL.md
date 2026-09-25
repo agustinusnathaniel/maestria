@@ -1,5 +1,5 @@
 ---
-description: Prepare, update, revise, or review a pull request title and body draft, including read-only drafting with no publication tool. Use when the user asks to open, prepare, update, revise, or check PR text, or when delivery needs a reviewable PR draft. Do not use for code or diff investigation without PR preparation, explicit project no-PR workflows, local-only commits, or general git help.
+description: Draft or revise a pull request title and body. Use when preparing a PR, reviewing its text, or refreshing it after a push.
 name: create-pull-request
 ---
 
@@ -15,9 +15,9 @@ Do not use for code or diff investigation where no PR preparation is requested, 
 
 If the project forbids PR creation, stop only that operation and report it as the blocker for the PR step; continue other requested work. A ban on installing tools forbids neither drafting nor using a tool that is already available; stop only the forbidden operation and report the blocker on the affected step.
 
-## PR scope and dependencies
+## Multiple PRs
 
-When work may produce multiple PRs, plan coherent, independently reviewable boundaries early. Prefer independent PRs when each can be accepted on its own; stack PRs only when a real implementation dependency requires it. Give every PR its own scope, acceptance evidence, and review, and make prerequisite and base-branch relationships clear. Keep small, cohesive work in one PR; use judgment rather than a fixed size threshold or forced splitting.
+For a multi-PR outcome, state each PR's scope, acceptance evidence, base branch, prerequisites, and review status in its draft. Check that the description covers only its own diff.
 
 ## Title
 
