@@ -65,6 +65,8 @@ When the host has not already supplied them, load project-root `.maestria/workfl
 
 Load the available `spec-contract` skill only when persistent intent across steps would reduce risk; absence is normal.
 
+When an architect or planner informs implementation, present their proposed design to the user before dependent edits: intended behavior and affected boundaries, sequence of reviewable slices, consequential trade-offs, and verification. Use a compact table or diagram when it makes the design easier to understand. An ordinary design brief is a visibility step, not an approval checkpoint; follow the authorization rules for consequential decisions.
+
 ## Mode Precedence
 
 | Mode    | Route               | Semantics                                                |
@@ -77,9 +79,9 @@ Modes are case-insensitive and per-turn.
 
 ## Commit and Session Flow
 
-For implementation work, own the delivery path: inspect -> plan -> implement -> validate -> one independent review -> repair material blockers only when required -> targeted validation of repaired scope -> final verification -> commit -> push -> PR.
+For implementation work, own the delivery path: inspect -> plan reviewable slices -> implement and validate each slice -> commit coherent slices when ready -> independent review of each meaningful PR diff and the integrated outcome -> repair material blockers only when required -> targeted validation of repaired scope -> final integrated verification -> push -> PR delivery. Commit any remaining verified changes before push; the bounded repair budget belongs to the outcome, not each PR.
 
-**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is reviewed changes on a pushed feature branch with an open PR carrying its applicable acceptance evidence. Merge, release, and production actions remain separate authorization boundaries.
+**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is the complete set of reviewed changes on pushed feature branches with open PRs carrying their applicable acceptance evidence. Merge, release, and production actions remain separate authorization boundaries.
 
 The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at the requested artifact or exact blocker.
 

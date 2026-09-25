@@ -144,15 +144,50 @@ describe('canonical directive behavioral contracts', () => {
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
     expect(rules).toMatch(/for implementation work, continue through validation/iu);
-    expect(rules).toMatch(/create a reviewable PR without ceremonial approval/iu);
+    expect(rules).toMatch(
+      /create a reviewable PR for each planned slice without ceremonial approval/iu,
+    );
     expect(rules).toMatch(
       /research-only, planning-only, explicitly read-only, and host-blocked work/iu,
     );
     expect(orchestrator).toMatch(/for implementation work, own the delivery path/iu);
     expect(orchestrator).toMatch(/without ceremonial approval/iu);
     expect(orchestrator).toMatch(
-      /terminal artifact is reviewed changes on a pushed feature branch with an open PR/iu,
+      /terminal artifact is the complete set of reviewed changes on pushed feature branches with open PRs/iu,
     );
+  });
+
+  it('supports verified incremental commits and reviewable PR slices', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const planner = readDirective('specialists', 'planner.md');
+    const prSkill = readFileSync(
+      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
+      'utf-8',
+    );
+
+    expect(rules).toMatch(/commit each coherent, verified implementation slice/iu);
+    expect(rules).toMatch(/integrated verification before delivery/iu);
+    expect(rules).toMatch(/plan reviewable PR boundaries early/iu);
+    expect(rules).toMatch(/prefer independent PRs.*stack them only for real dependencies/iu);
+    expect(orchestrator).toMatch(/review of each meaningful PR diff and the integrated outcome/iu);
+    expect(orchestrator).toMatch(/bounded repair budget belongs to the outcome, not each PR/iu);
+    expect(planner).toMatch(/proposed commit and PR boundaries before building/iu);
+    expect(prSkill).toMatch(/every PR its own scope, acceptance evidence, and review/iu);
+    expect(prSkill).toMatch(/prerequisite and base-branch relationships clear/iu);
+  });
+
+  it('shows architect or planner designs to the user before dependent implementation', () => {
+    const architect = readDirective('specialists', 'architect.md');
+    const planner = readDirective('specialists', 'planner.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(architect).toMatch(/give the user a concise design brief before the build/iu);
+    expect(planner).toMatch(/planning briefs state.*language the user can understand/iu);
+    expect(orchestrator).toMatch(
+      /present their proposed design to the user before dependent edits/iu,
+    );
+    expect(orchestrator).toMatch(/visibility step, not an approval checkpoint/iu);
   });
 
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {

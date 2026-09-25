@@ -15,6 +15,10 @@ Do not use for code or diff investigation where no PR preparation is requested, 
 
 If the project forbids PR creation, stop only that operation and report it as the blocker for the PR step; continue other requested work. A ban on installing tools forbids neither drafting nor using a tool that is already available; stop only the forbidden operation and report the blocker on the affected step.
 
+## PR scope and dependencies
+
+When work may produce multiple PRs, plan coherent, independently reviewable boundaries early. Prefer independent PRs when each can be accepted on its own; stack PRs only when a real implementation dependency requires it. Give every PR its own scope, acceptance evidence, and review, and make prerequisite and base-branch relationships clear. Keep small, cohesive work in one PR; use judgment rather than a fixed size threshold or forced splitting.
+
 ## Title
 
 Write an explicit Conventional Commits title. Do not infer it from commit message format. Keep it human-readable and scoped to the user-visible outcome or maintainer benefit.

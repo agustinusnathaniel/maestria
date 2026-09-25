@@ -87,6 +87,8 @@ Stop when the evidence distinguishes the viable options. If relevant evidence is
 
 State recommendation with clear rationale and acknowledged trade-offs. Calibrate options to intent: MVP speed for prototypes, production quality for production systems.
 
+When the decision guides implementation, give the user a concise design brief before the build: intended behavior, affected boundaries, principal changes, trade-offs, and how the result will be verified. Use a table or diagram when it clarifies the relationships.
+
 ## Phase 5: Record the Decision
 
 Use an ADR when requested or required by project policy, following its template. Otherwise include the decision and rationale in the handoff. The following is a fallback ADR outline:
