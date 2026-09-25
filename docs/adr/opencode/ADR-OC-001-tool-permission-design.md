@@ -102,48 +102,28 @@ The amendment narrows the shared policy before the implementation owner writes r
 
 The shared Pi/OMP read-only Bash policy uses a small positive allowlist. A command is allowed only when its executable and, for Git, its subcommand are recognized exactly, every option is safe for that command, and every pipeline segment is independently safe.
 
-| Allowed form | Representative inputs | Boundary |
-| --- | --- | --- |
-| Filesystem queries | `ls -la`, `cat package.json`, `head -5 file`, `tail -20 file` | No command or option that writes, executes, or substitutes another process |
-| Text queries | `grep pattern src/`, `rg pattern src/` | No preprocessor, output-file, or execution flag |
-| Location and executable queries | `pwd`, `which node` | Exact executable token only; no lookalike prefix |
-| Read-only Git queries | `git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status --short`; the same exact prefix with guarded `diff`, `log`, `show`, or `branch` | Bare and lookalike forms, `git branch` mutation flags, custom format/pretty, signature formats, and every unlisted Git subcommand are blocked |
-| Safe pipelines | `git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv --oneline \| head -5` | Every segment must independently be allowlisted; a safe prefix cannot hide a later mutation |
-| Standard-stream duplication | `ls -la 2>&1` | Allowed only when the implementation preserves parsed file-descriptor duplication; file-target stderr redirects remain blocked |
+The allowlist covers exact filesystem, text, location, and executable queries, plus normalized read-only Git commands defined in the repair amendment below. Every command token, option, and pipeline segment must pass the shared parser; a safe prefix cannot hide a later mutation. Standard-stream duplication such as `2>&1` is allowed only as a parsed file-descriptor operation, never as permission to write a file.
 
-Every allowed Git segment starts with the exact prefix `git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium`. `diff`, patch-capable `log`, and `show` must then start their subcommand options with `--no-ext-diff --no-textconv`; metadata-only `log` uses the same guards in this implementation. `branch` permits only narrow listing and inspection forms such as no arguments, `--list`, `--show-current`, `-a`, `-r`, `--contains`, `--no-contains`, `--merged`, and `--no-merged`. Delete, copy, rename, custom `--format` or `--pretty`, signature, and unknown flags remain blocked. Option validation rejects file-writing and unknown flags.
-
-The following forms are blocked before any permission exception or dangerous-pattern confirmation can allow them:
-
-- Every `find` form, including a bare `find`, `-delete`, `-exec`, `-execdir`, `-ok`, `-okdir`, `-print`, `-print0`, `-ls`, `-printf`, `-fprint`, `-fprintf`, and `-fls`.
-- Package-manager test or run forms, including `pnpm test`, `pnpm run`, `pnpm exec`, `npm test`, `npm run`, `npx`, `yarn`, `bun run`, and equivalent corepack or package-runner forms.
-- Command substitution, including `$(...)`, backticks, and process substitution forms such as `<(...)` and `>(...)`.
-- Output redirection to a file, including `>`, `>>`, `2>`, `2>>`, `&>`, and `>|`, even when the command before the redirect is read-only.
-- Chained mutations or background work, including `;`, `&&`, `||`, newline, `&`, and a pipeline containing an unapproved segment such as `ls | rm`.
-- Prefix lookalikes such as `lsass`, `gitx status`, `git statusx`, `pwdx`, and `whichfoo`.
-- Unsafe Git mutations, including `add`, `commit`, `checkout`, `switch`, `restore`, `reset`, `clean`, `rm`, `mv`, `push`, `pull`, `fetch`, `merge`, `rebase`, `stash`, `tag` mutation, `remote`, `config`, `worktree`, `submodule`, and output-writing options. An unrecognized Git subcommand fails closed.
-- The existing destructive patterns, such as `rm -rf /`, disk writes, `eval`, shell-piped downloads, and `crontab -r`, remain outside the read-only classifier. A dangerous-pattern confirmation is a separate host path and must not turn a command into a read-only query for this policy.
-
-The parser must not use a raw `startsWith` test. It must tokenize the command, validate exact command names and subcommands, recognize only the permitted safe options, and reject malformed or ambiguous input. A harmless `2>&1` is not a general redirection exception. If an implementation cannot preserve that exact standard-stream behavior, it must block the form and record the contract change before tests are accepted.
+The policy blocks `find`, package-manager execution, command or process substitution, file-target redirection, chaining, background work, lookalike command names, Git mutation, and unknown options. Destructive-pattern confirmation is a separate host path and cannot make a command read-only. The maintained option lists and representative allow/deny cases live in [`bash-policy.ts`](../../../packages/shared/pi/src/bash-policy.ts) and its [behavior tests](../../../packages/shared/pi/tests/tools-core.test.ts).
 
 ### Failure-mode inventory
 
-The following inventory is the minimum pre-code test selection for this amendment. The complete cross-platform inventory, including review, state, sandbox, and false-test cases, is in [`docs/testing.md`](../../testing.md#pre-code-remediation-inventories).
+These case IDs preserve the original failure-mode inventory. The [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) cover representative forms, and `pnpm e2e:fail-closed` samples the integrated boundary; neither produces one artifact per case.
 
-| ID | Failure mode or input | Required observable result | Planned test and artifact |
-| --- | --- | --- | --- |
-| BASH-01 | Safe filesystem, text, location, and Git queries | Allow the exact safe forms and safe options | Shared Pi/OMP parser table; `bash-policy/BASH-01.json` |
-| BASH-02 | Safe pipeline with every segment approved | Allow only when every segment passes the same allowlist | Shared Pi/OMP parser table; `bash-policy/BASH-02.json` |
-| BASH-03 | `2>&1` and other standard-stream duplication | Preserve the harmless form only if supported; never treat it as permission to write a file | Shared parser test; `bash-policy/BASH-03.json` |
-| BASH-04 | Any `find` invocation, including delete, exec, ok, and output flags | Block every form before execution | Shared parser table; `bash-policy/BASH-04.json` |
-| BASH-05 | Package-manager test, run, exec, and download forms | Block package-manager entry points because lifecycle scripts are outside the read-only boundary | Shared parser table; `bash-policy/BASH-05.json` |
-| BASH-06 | Command or process substitution | Block `$(...)`, backticks, `<(...)`, and `>(...)` | Shared parser table; `bash-policy/BASH-06.json` |
-| BASH-07 | File-target output or stderr redirection | Block all file writes, including `2>file` and `&>file` | Shared parser table; `bash-policy/BASH-07.json` |
-| BASH-08 | Chained mutation, newline, background command, or unsafe pipeline segment | Block the whole command, not only the first prefix | Shared parser and handler tests; `bash-policy/BASH-08.json` |
-| BASH-09 | Prefix lookalike or malformed command token | Block rather than normalize or partially match | Shared parser table; `bash-policy/BASH-09.json` |
-| BASH-10 | Unsafe Git mutation or output-writing option | Block the command and preserve the current model and state | Shared parser and handler tests; `bash-policy/BASH-10.json` |
-| BASH-11 | Dangerous destructive pattern behind a safe prefix | Keep it outside the read-only classifier; a dangerous-pattern confirmation must not make it read-only for this policy | Shared handler test; `bash-policy/BASH-11.json` |
-| BASH-12 | Empty, whitespace-only, leading-separator, or ambiguous input | Block without throwing or invoking a host | Shared parser test; `bash-policy/BASH-12.json` |
+| ID | Input or failure mode | Required result |
+| --- | --- | --- |
+| BASH-01 | Safe query forms | Allow exact names and safe options. |
+| BASH-02 | Pipeline | Allow only when every segment is approved. |
+| BASH-03 | `2>&1` | Allow parsed standard-stream duplication, never file redirection. |
+| BASH-04 | `find` | Block every form before execution. |
+| BASH-05 | Package-manager commands | Block lifecycle and download entry points. |
+| BASH-06 | Command or process substitution | Block substitutions. |
+| BASH-07 | File-target output or stderr redirect | Block the write. |
+| BASH-08 | Chaining, newline, background work, or unsafe pipeline segment | Block the whole command. |
+| BASH-09 | Prefix lookalike or malformed token | Block rather than partially match. |
+| BASH-10 | Git mutation or output-writing option | Block without changing model or state. |
+| BASH-11 | Destructive pattern behind a safe prefix | Do not classify it as read-only. |
+| BASH-12 | Empty, leading-separator, or ambiguous input | Block without invoking a host. |
 
 ### Host-enforcement boundary
 
@@ -164,14 +144,14 @@ The current evidence for this decision is source and configuration inspection pl
 
 ### Verification
 
-Write the selected shared parser and Pi/OMP adapter tests before implementation. Run the shared Pi test command, the Pi and OMP package tests, and the Hermes package tests after implementation. Save sanitized artifacts under the naming convention in [`docs/testing.md`](../../testing.md#process-tests-and-artifacts), then run `git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv --check`. Do not edit generated projections or canonical agent directives for this amendment.
+Run the shared parser, Pi, and OMP package tests and `pnpm e2e:fail-closed` for sampled integrated behavior. The E2E command writes one evidence file at `artifacts/fail-closed-evidence.json`; it is not proof of every inventory row. A live OpenCode host probe remains necessary before an enforcement claim.
 
 ### Related
 
 - [ADR-HM-003](../hermes/ADR-HM-003-credential-safe-subprocess-boundary.md): credential-safe subprocess boundary.
 - [ADR-CORE-025](../core/ADR-CORE-025-consumer-driven-sync-and-adapter-simplification.md): shared Pi/OMP adapter ownership.
 - [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): pre-code inventories and evidence-preserving tests.
-- [`docs/testing.md`](../../testing.md): complete remediation inventories and artifact rules.
+- [Testing Philosophy](../../testing.md): behavior-test selection and evidence requirements.
 
 ## Repair Amendment (2026-09-24): Normalized Read-Only Git Boundary
 
@@ -182,26 +162,26 @@ The earlier amendment narrowed the command family but still described Git comman
 ### Decision
 
 1. Every allowed Git segment starts with the exact prefix `git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium`. Diff-capable `diff`, `log`, and `show` forms then require `--no-ext-diff --no-textconv` in that order before parser-approved options. A bare `git diff`, `git log -p`, or `git show` is denied.
-2. Safe `git status`, `git branch`, and metadata-only `log` forms use the same fixed prefix. Custom `--format` and `--pretty` options are removed; `--oneline` may remain safe. Signature placeholders, `--show-signature`, and branch signature formats are denied. The test environment also sets `GIT_PAGER=cat`, `GIT_OPTIONAL_LOCKS=0`, and `GIT_CONFIG_NOSYSTEM=1`, and points `GIT_CONFIG_GLOBAL` to an empty or unavailable file. Tests seed pager, lock, fsmonitor, hook, alias, external-diff, textconv, and configuration behavior, then assert the observed result. The signed-commit probe configures a temporary sentinel `gpg.program`: an unguarded signature display invokes it, while the normalized controls do not.
-3. External diff commands, text conversion, helpers, aliases, arbitrary `-c` or `--config-env` values, `--exec-path`, `--git-dir`, `--work-tree`, mutation, shell substitution, redirection, output files, and unknown options are denied. Repository and user configuration cannot widen the policy.
+2. Safe `git status`, `git branch`, and metadata-only `log` forms use the same fixed prefix. Custom `--format` and `--pretty` options are removed; `--oneline` may remain safe. Signature placeholders, `--show-signature`, and branch signature formats are denied. A future process-level probe should seed pager, lock, fsmonitor, hook, alias, external-diff, textconv, and signature behavior in a temporary repository and check that the normalized command avoids them; the current parser and consolidated E2E tests do not perform that probe.
+3. External diff commands, text conversion, helpers, aliases, arbitrary `-c` or `--config-env` values, `--exec-path`, `--git-dir`, `--work-tree`, mutation, shell substitution, redirection, output files, and unknown options are denied. Repository and user configuration must not widen the policy.
 4. OpenCode permission globs remain coarse, non-token-level host configuration. They must not claim the normalized prefix, signature, option, or configuration guarantees of the repair classifier, and cannot be described as live-host-enforced without a recorded host probe. A broad historical `git*` permission remains an implementation-role capability, not evidence of the read-only Git policy.
 
-The complete repair inventory, stable case IDs, and regeneration commands are recorded in [`docs/testing.md`](../../testing.md#read-only-git-repair-cases). The repair cases are pre-code contracts and do not claim that the current implementation passes them.
+The case IDs below retain the repair contract. Current executable checks live in the [shared parser tests](../../../packages/shared/pi/tests/tools-core.test.ts) and consolidated E2E probe; they sample the inventory rather than proving every case.
 
 ### Failure inventory
 
-| ID | Required result | Regeneration and artifact |
-| --- | --- | --- |
-| GIT-01 | Deny bare `git diff` | `GIT` family command; `repair/GIT-01.json` |
-| GIT-02 | Deny bare `git log -p` | `GIT` family command; `repair/GIT-02.json` |
-| GIT-03 | Deny bare `git show` | `GIT` family command; `repair/GIT-03.json` |
-| GIT-04 | Allow only the exact normalized prefix and diff safety flags | `GIT` family command; `repair/GIT-04.json` |
-| GIT-05 | Allow only normalized log/show inspection without custom format, pretty, or signature controls | `GIT` family command; `repair/GIT-05.json` |
-| GIT-06 | Allow safe status, branch, and metadata-only log only with the exact prefix, disabled pager, locks, fsmonitor, and unsafe hooks; `--oneline` remains safe | `GIT` family command; `repair/GIT-06.json` |
-| GIT-07 | Deny external diff, textconv, helper, alias, arbitrary config, custom format/pretty, signature placeholders, branch signature formats, and unknown options | `GIT` family command; `repair/GIT-07.json` |
-| GIT-08 | Deny mutation, substitution, redirection, chaining, output files, and unknown subcommand options | `GIT` family command; `repair/GIT-08.json` |
-| GIT-09 | Prove seeded configuration cannot enable hooks, fsmonitor, pager, or optional locks | `GIT` family command; `repair/GIT-09.json` |
-| GIT-10 | Record that OpenCode globs are non-token-level and do not claim the same normalized, signature, option, or configuration guarantees without a host probe | `GIT` family command; `repair/GIT-10.json` |
+| ID | Required result |
+| --- | --- |
+| GIT-01 | Deny bare `git diff`. |
+| GIT-02 | Deny bare `git log -p`. |
+| GIT-03 | Deny bare `git show`. |
+| GIT-04 | Allow only the normalized prefix and diff safety flags. |
+| GIT-05 | Reject custom format, pretty, and signature controls in log/show. |
+| GIT-06 | Allow narrow status, branch, and metadata-only log forms under the normalized prefix. |
+| GIT-07 | Deny external diff, text conversion, helpers, aliases, arbitrary config, and unknown options. |
+| GIT-08 | Deny mutation, substitution, redirection, chaining, and output files. |
+| GIT-09 | Prove seeded configuration cannot enable hooks, fsmonitor, pager, or optional locks. |
+| GIT-10 | Keep OpenCode glob claims separate from token-level parser guarantees. |
 
 ### Consequences
 
@@ -213,16 +193,16 @@ The complete repair inventory, stable case IDs, and regeneration commands are re
 ### Assumptions
 
 - `[verified]` OpenCode permission entries are coarse glob or prefix patterns and do not expose a token-level normalized-command contract.
-- `[verified]` The detailed repair cases and artifact rules are maintained in `docs/testing.md`.
+- `[verified]` This ADR retains the repair case IDs; the executable parser checks live in `packages/shared/pi/tests/tools-core.test.ts`.
 - `[inferred]` The implementation owner will choose platform-appropriate fixed environment paths for empty Git configuration, fsmonitor, and hooks while preserving the fixed behavior contract.
 
 ### Verification
 
-Regenerate the `GIT-*` artifacts with the `GIT` family command, then run the package-specific OpenCode and shared Pi/OMP checks. A host probe is required before using the phrase host-enforced. Do not edit generated projections or canonical agent directives for this amendment.
+Run the shared Pi/OMP tests and `pnpm e2e:fail-closed` for sampled behavior. A live host probe is required before using the phrase host-enforced.
 
 ### Related
 
-- [`docs/testing.md`](../../testing.md#read-only-git-repair-cases): repair inventory, artifact schema, and regeneration commands.
+- [Testing Philosophy](../../testing.md): test selection and artifact requirements.
 - [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): pre-code selection and evidence requirements.
 
 ## Date

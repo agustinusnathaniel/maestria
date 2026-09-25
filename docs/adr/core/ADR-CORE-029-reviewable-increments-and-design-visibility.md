@@ -1,4 +1,4 @@
-# ADR-CORE-028: Reviewable Increments and Design Visibility
+# ADR-CORE-029: Reviewable Increments and Design Visibility
 
 ## Status
 

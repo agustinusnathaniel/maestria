@@ -65,19 +65,7 @@ At the end of each E2E test, produce an inspectable artifact with a stable locat
 
 ### 4. Isolated-system failure-mode inventory
 
-Isolation is an explicit exception, not a coverage shortcut. Before writing tests or code for an isolated system, write every way it could fail. The inventory must cover the applicable cases:
-
-| Failure-mode class | Questions to answer |
-| --- | --- |
-| Inputs | What happens for missing, invalid, malformed, and boundary inputs? |
-| State and lifecycle | Which transitions, persistence failures, recovery paths, and partial writes matter? |
-| Dependencies and boundaries | How do transport, serialization, and external services fail? |
-| Concurrency and time | How do retries, cancellation, races, timeouts, and resource exhaustion behave? |
-| Errors and recovery | Does the system fail closed, roll back, and leave an observable diagnostic? |
-| Authorization and security | Which permission and sensitive-data boundaries must remain protected? |
-| Evidence | What result and artifact prove each expected behavior? |
-
-Add system-specific failure modes. For each mode, record the input or state, expected observable behavior, planned test or check, and artifact. Write the tests from the inventory first, then write the code. This exception never permits a unit test after implementation.
+Isolation is an explicit exception, not a coverage shortcut. Before writing tests or code for an isolated system, record its applicable input, state, dependency, concurrency, recovery, and security failure modes. For each, name the expected behavior, planned check, and evidence artifact. Write tests from that inventory first. The detailed workflow lives in [Testing Philosophy](../../testing.md#isolated-systems); isolation never permits a unit test after implementation.
 
 ### 5. Verification gates remain gates
 
@@ -87,22 +75,13 @@ The policy does not replace repository verification. Lint, typecheck, build, syn
 
 Exact wording, heading-order, and repeated-phrase assertions are not acceptance evidence for behavior guidance. A prose-only text pin can fail after a harmless rewrite and can encourage duplication across generated projections.
 
-The integrated reduction retires the prose-only, pure heading/order, and change-detector assertions in `packages/core/tests/directives.test.ts` and restores nine durable pre-existing cases in the focused suite, including the project-workflow contract folded into the host-authority case. It does not add a new test case or testing mechanism.
+The original implementation removed prose-only, heading/order, and change-detector assertions from `packages/core/tests/directives.test.ts` while retaining durable contract coverage.
 
 Retain tests that protect durable machine-readable contracts, sync byte identity, generated provenance, file layout, manifests, safety and authorization boundaries, host-specific adapters, and actual executable behavior. Retain scenario review for model behavior. Text tests must not be used to claim that a directive produces a particular model outcome on every host.
 
 ### 7. Preserve the existing floors
 
-This ADR does not weaken:
-
-- Safety and authorization precedence.
-- Host tool permissions and runtime boundaries.
-- Independent maker and checker review.
-- Required visual evidence for rendered changes.
-- Required repository and sync checks.
-- Canonical source ownership and generated-projection verification.
-
-The Kimi platform-specific routing append must be corrected at its hand-authored sync config. The generated Kimi orchestrator file is regenerated, never edited directly.
+Safety and authorization precedence, host permissions, independent review, visual evidence, repository checks, and canonical sync remain in force. Platform-specific routing changes belong in hand-authored configuration; generated projections are regenerated from their sources.
 
 ### 8. Partial supersession of earlier decisions
 
@@ -112,28 +91,14 @@ This ADR also narrows ADR-CORE-019's use of text-pinned contracts as a general p
 
 ## Consequences
 
-### Positive
-
-- Less time and maintenance is spent on tautological, duplicate, and implementation-shape tests.
-- Complex features receive behavior-level evidence instead of parallel post-code unit suites.
-- Bug fixes add coverage only when an existing behavior suite has a real gap.
-- Isolated systems receive an explicit failure-mode contract before implementation.
-- E2E tests leave inspectable, repeatable evidence.
-- Sync, safety, authorization, host-boundary, and independent-review checks remain protected.
-- Generated projections have one concise canonical source.
-
-### Negative
-
-- Complex features require more deliberate E2E setup before implementation.
-- Isolated-system work requires an upfront failure-mode inventory.
-- Existing deterministic checks remain in the pipeline even when they are not the sole feature-test mechanism.
-- Removing prose pins reduces a cheap wording signal and requires scenario review for behavior changes.
-- The policy is guidance, not runtime enforcement, so hosts can still diverge.
+- Behavior-level evidence replaces maintenance-heavy prose and implementation-shape tests. Bug fixes add regression coverage only for a genuine gap, while complex features favor E2E evidence and isolated systems require a failure-mode contract.
+- E2E setup and failure-mode inventories add upfront work. Removing prose pins loses a cheap wording signal, so directive behavior still needs scenario review.
+- Existing deterministic checks remain verification gates. The policy is guidance, not runtime enforcement; host behavior can differ.
 
 ## Assumptions
 
 - `[verified]` The canonical rules file is projected to the global-rule outputs listed in the repository sync configurations.
-- `[verified]` The base core directive suite contains prose, heading-order, and change-detector assertions distinct from sync, provenance, manifest, and executable contract checks. The integrated focused suite retains nine durable pre-existing cases, including the project-workflow contract, and retires only pure prose, heading/order, and change-detector pins.
+- `[verified]` The original core directive suite contained prose and heading-order assertions distinct from sync, provenance, manifest, and executable contract checks.
 - `[verified]` The repository requires sync, build, lint, type, and workspace checks in addition to behavior tests.
 - `[inferred]` E2E artifacts and pre-code failure-mode inventories will improve the practical evidence quality of complex work across supported hosts. This ADR does not claim measured model-performance improvement.
 
@@ -161,26 +126,11 @@ Rejected. Deterministic package checks and pre-code isolated-system tests remain
 
 ## Verification
 
-Run the following after the source changes:
-
-```bash
-bash scripts/sync-all
-bash scripts/sync-all
-bash scripts/check-sync
-pnpm --filter @maestria/core exec vitest run tests/directives.test.ts
-pnpm --filter @maestria/core exec vitest run tests/sync.test.ts tests/roster.test.ts
-pnpm --filter @maestria/docs test
-pnpm --filter @maestria/docs build
-git diff --check
-```
-
-Confirm that the second sync run produces no additional diff. Inspect every listed global-rule projection and the Kimi orchestrator projection. Use the resulting focused directive contract suite for durable contract verification; do not rely on the retired pure-prose cases or a wholesale base-revision suite.
-
-For behavior validation, compare baseline and candidate directives under controlled conditions using the scenarios in `docs/directive-change-review.md`. Report machine-readable check results separately from scenario outcomes. Visual evidence is not applicable because the changed surface contains no rendered UI or publication flow.
+For future directive changes, regenerate projections, run `scripts/check-sync` and the repository [completion checks](../../checklist.md), then compare representative behavior using [directive change review](../../directive-change-review.md). Report machine-readable checks separately from scenario outcomes; text assertions alone do not establish model behavior.
 
 ## Rollback
 
-Revert the canonical rules, aligned hand-authored guidance, Kimi sync config, ADR implementation changes, and changeset together. Then run `bash scripts/sync-all` and `bash scripts/check-sync`. Never revert generated outputs alone. Keep this ADR as the historical record of the decision, and remove the changeset if no published behavior change remains.
+Revert the canonical rules and related hand-authored guidance together, then regenerate projections and check sync. Do not revert generated outputs alone; keep this ADR as the historical record.
 
 ## Related Decisions
 
