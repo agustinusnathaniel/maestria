@@ -131,7 +131,8 @@ describe('JSON-LD serialization round-trip', () => {
     ['softwareApplication', softwareApplicationSchema()],
     ['website', websiteSchema()],
   ])('%j survives JSON.stringify -> parse unchanged', (_name, schema) => {
-    const roundTripped = structuredClone(schema);
+    // oxlint-disable-next-line unicorn/prefer-structured-clone -- JSON round-trip is the behavior under test.
+    const roundTripped: unknown = JSON.parse(JSON.stringify(schema));
     expect(roundTripped).toEqual(schema);
   });
 });

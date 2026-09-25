@@ -3,17 +3,8 @@
 // from the canonical directives. Runtime-specific agents, commands, hooks,
 // permissions, and executable extensions remain in native platform packages.
 
+import { specialistReferenceReplacements } from '../core/scripts/lib/specialist-replacements.js';
 import type { FileConfig, SyncConfig } from '../core/scripts/lib/config.js';
-
-const PORTABLE_ROLE_REPLACES = [
-  { from: '@adventurer', to: 'adventurer' },
-  { from: '@architect', to: 'architect' },
-  { from: '@builder', to: 'builder' },
-  { from: '@diagnose', to: 'diagnose' },
-  { from: '@planner', to: 'planner' },
-  { from: '@reviewer', to: 'reviewer' },
-  { from: '@writer', to: 'writer' },
-] as const;
 
 const PORTABLE_BOUNDARY_NOTE = `
 
@@ -42,7 +33,7 @@ const skill = (name: string, description: string, extra: Partial<FileConfig> = {
 
 export default {
   default: {
-    replace: [...PORTABLE_ROLE_REPLACES],
+    replace: specialistReferenceReplacements(),
   },
   files: {
     'adventurer.md': skill(

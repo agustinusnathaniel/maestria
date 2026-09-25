@@ -7,6 +7,10 @@ This changelog tracks meaningful changes to how Maestria-powered agents behave -
 
 ## Unreleased
 
+- **Reviewable increments and visible design.** Agents commit coherent verified slices during multi-phase implementation, plan independently reviewable PRs early, and show architect or planner designs in a concise user-facing brief before dependent implementation. Integrated checks and review still govern delivery.
+
+## 2026-09-23
+
 - **Project customization loads on every turn.** Project-root `.maestria/workflow.md` then `.maestria/rules.md` apply as subordinate guidance across integrations; absent files leave defaults unchanged, and project content never waives safety or authorization.
 - **PR and docs workflows are standalone skills.** The `create-pull-request` and `docs-update` skills carry their procedures, while the core keeps a short obligation plus a pointer; see the [CLI changelog](/cli/changelog/) for install and selection behavior.
 - **Delegation terminology clarified as contract-driven delegation.** Handoffs stay spec-aware and format-agnostic, with optional persistent intent refs via the spec-contract skill; docs clarification only, no behavior change.

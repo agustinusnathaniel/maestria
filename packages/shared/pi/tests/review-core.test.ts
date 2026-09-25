@@ -16,7 +16,7 @@ const createMockCtx = (models: { id: string }[] = [{ id: 'original-model' }]): M
 
 const createMockPi = () => ({
   setActiveTools: vi.fn<(tools: string[]) => void>(),
-  setModel: vi.fn<(model: unknown) => Promise<void>>().mockResolvedValue(),
+  setModel: vi.fn<(model: unknown) => Promise<unknown>>().mockResolvedValue(true),
 });
 
 describe('restoreOriginalState', () => {
@@ -29,8 +29,9 @@ describe('restoreOriginalState', () => {
       reviewMode: true,
     };
 
-    await restoreOriginalState(pi, createMockCtx(), state);
+    const restored = await restoreOriginalState(pi, createMockCtx(), state);
 
+    expect(restored).toBe(true);
     expect(pi.setActiveTools).toHaveBeenCalledWith(['read', 'edit']);
     expect(pi.setModel).toHaveBeenCalledWith({ id: 'original-model' });
     expect(state.reviewMode).toBe(false);
@@ -63,7 +64,7 @@ describe('restoreOriginalState', () => {
     expect(pi.setModel).not.toHaveBeenCalled();
   });
 
-  it('does not switch models that are absent from the registry', async () => {
+  it('keeps review active when the original model is absent from the registry', async () => {
     const pi = createMockPi();
     const state: MaestriaState = {
       ...createInitialState(),
@@ -71,13 +72,16 @@ describe('restoreOriginalState', () => {
       reviewMode: true,
     };
 
-    await restoreOriginalState(pi, createMockCtx([{ id: 'other-model' }]), state);
+    const restored = await restoreOriginalState(pi, createMockCtx([{ id: 'other-model' }]), state);
 
+    expect(restored).toBe(false);
     expect(pi.setModel).not.toHaveBeenCalled();
-    expect(state.reviewMode).toBe(false);
+    expect(pi.setActiveTools).not.toHaveBeenCalled();
+    expect(state.reviewMode).toBe(true);
+    expect(state.originalModel).toBe('missing-model');
   });
 
-  it('swallows registry failures while still clearing review state', async () => {
+  it('keeps review active when the model registry fails', async () => {
     const pi = createMockPi();
     const ctx = createMockCtx();
     ctx.modelRegistry.getAll = vi.fn(() => {
@@ -89,10 +93,10 @@ describe('restoreOriginalState', () => {
       reviewMode: true,
     };
 
-    await expect(restoreOriginalState(pi, ctx, state)).resolves.toBeUndefined();
+    await expect(restoreOriginalState(pi, ctx, state)).resolves.toBe(false);
 
-    expect(state.reviewMode).toBe(false);
-    expect(state.originalModel).toBeNull();
+    expect(state.reviewMode).toBe(true);
+    expect(state.originalModel).toBe('original-model');
   });
 });
 

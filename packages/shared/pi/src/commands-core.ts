@@ -4,6 +4,7 @@ import { cycleToReviewModel, restoreOriginalState } from './review-core.js';
 import type { MaestriaState } from './state-core.js';
 import { persistState, recordHandoff, renderMaestriaSummary } from './state-core.js';
 import { MAESTRIA_EVENTS } from './subagent-utils.js';
+import { REVIEW_READ_ONLY_TOOLS } from './tools-core.js';
 
 export interface CommandsCtx {
   ui: {
@@ -24,11 +25,63 @@ export interface CommandsPi {
   ) => void;
   getActiveTools: () => string[];
   setActiveTools: (tools: string[]) => void | Promise<void>;
-  setModel: (model: unknown) => void | Promise<void>;
+  setModel: (model: unknown) => unknown;
   sendUserMessage: (text: string, opts: { deliverAs: string }) => void;
   appendEntry: (type: string, data: unknown) => void;
   events?: { emit: (event: string, data: unknown) => void };
 }
+
+/**
+ * Bind a platform host to the shared command API.
+ *
+ * `isModel` is the platform's model guard; a model reaches the host only
+ * when the guard accepts it. The closures read host methods at call time
+ * (never via spread), so prototype-resident SDK methods keep working.
+ */
+export const createCommandsHost = <Model>(
+  pi: {
+    appendEntry: (type: string, data: unknown) => void;
+    events?: { emit: (event: string, data: unknown) => void };
+    getActiveTools: () => string[];
+    registerCommand: (
+      name: string,
+      options: {
+        description: string;
+        handler: (args: string, ctx: CommandsCtx) => Promise<void>;
+      },
+    ) => void;
+    sendUserMessage: (text: string, options: { deliverAs: 'steer' | 'followUp' }) => void;
+    setActiveTools: (tools: string[]) => void | Promise<void>;
+    setModel: (model: Model) => Promise<unknown>;
+  },
+  isModel: (value: unknown) => value is Model,
+): CommandsPi => ({
+  appendEntry: (type, data) => {
+    pi.appendEntry(type, data);
+  },
+  events: pi.events,
+  getActiveTools: () => pi.getActiveTools(),
+  registerCommand: (name, options) => {
+    pi.registerCommand(name, {
+      description: options.description,
+      handler: async (args, ctx) => {
+        await options.handler(args, ctx);
+      },
+    });
+  },
+  sendUserMessage: (text, options) => {
+    if (options.deliverAs === 'steer' || options.deliverAs === 'followUp') {
+      pi.sendUserMessage(text, { deliverAs: options.deliverAs });
+    }
+  },
+  setActiveTools: (tools): void | Promise<void> => pi.setActiveTools(tools),
+  setModel: async (model) => {
+    if (isModel(model)) {
+      return await pi.setModel(model);
+    }
+    return null;
+  },
+});
 
 /**
  * Read-only tools that let a reviewer inspect code without making changes.
@@ -40,7 +93,7 @@ export interface CommandsPi {
  * built-in Pi tool - extensions may register it, and including it is a no-op
  * if absent.
  */
-const READ_ONLY_TOOLS = ['read', 'grep', 'find', 'ls', 'glob'];
+const READ_ONLY_TOOLS = [...REVIEW_READ_ONLY_TOOLS];
 
 const registerMaestriaStatus = (pi: CommandsPi, state: MaestriaState): void => {
   pi.registerCommand('maestria-status', {
@@ -65,30 +118,22 @@ const registerReviewCommand = (pi: CommandsPi, state: MaestriaState): void => {
         return;
       }
       const currentModelId = ctx.model?.id ?? null;
-      const currentTools = pi.getActiveTools();
-      Object.assign(state, {
-        ...state,
-        originalModel: currentModelId,
-        originalTools: currentTools,
-        reviewMode: true,
-      } as MaestriaState);
+      const currentTools = [...pi.getActiveTools()];
+      state.originalModel = currentModelId;
+      state.originalTools = currentTools;
+      state.reviewMode = true;
       persistState(pi, state);
+
+      await pi.setActiveTools(READ_ONLY_TOOLS);
+
+      let switched: string | null = null;
       if (
         state.reviewModel !== null &&
         state.reviewModel !== undefined &&
         state.reviewModel !== ''
       ) {
-        const switched = await cycleToReviewModel(pi, ctx, state);
-        if (switched !== null && switched !== undefined && switched !== '') {
-          ctx.ui.notify(`Review mode: switched to ${switched}`);
-          pi.events?.emit(MAESTRIA_EVENTS.REVIEW_ACTIVATED, {
-            originalModel: state.originalModel,
-            reviewModel: switched,
-            timestamp: Date.now(),
-          });
-        }
+        switched = await cycleToReviewModel(pi, ctx, state);
       }
-      void pi.setActiveTools(READ_ONLY_TOOLS);
       pi.sendUserMessage(
         [
           `[REVIEW: ${args}]`,
@@ -98,6 +143,14 @@ const registerReviewCommand = (pi: CommandsPi, state: MaestriaState): void => {
         ].join('\n'),
         { deliverAs: 'steer' },
       );
+      if (switched !== null && switched !== '') {
+        ctx.ui.notify(`Review mode: switched to ${switched}`);
+        pi.events?.emit(MAESTRIA_EVENTS.REVIEW_ACTIVATED, {
+          originalModel: state.originalModel,
+          reviewModel: switched,
+          timestamp: Date.now(),
+        });
+      }
     },
   });
 };
@@ -112,7 +165,10 @@ const registerRestoreModel = (pi: CommandsPi, state: MaestriaState): void => {
         return;
       }
       const prevOriginalModel = state.originalModel;
-      await restoreOriginalState(pi, ctx, state);
+      const restored = await restoreOriginalState(pi, ctx, state);
+      if (!restored) {
+        return;
+      }
       persistState(pi, state);
       ctx.ui.notify('Restored original model and tools.');
       pi.events?.emit(MAESTRIA_EVENTS.REVIEW_DEACTIVATED, {

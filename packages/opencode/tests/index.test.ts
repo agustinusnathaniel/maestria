@@ -16,10 +16,6 @@ const getAgentConfig = (config: Config, name: string): AgentConfig => {
 };
 
 describe('plugin structure', () => {
-  it('should export MaestriaPlugin', () => {
-    expect(typeof MaestriaPlugin).toBe('function');
-  });
-
   it('should load all 8 agents', async () => {
     const plugin = await MaestriaPlugin(pluginInput);
     const config: Config = { agent: {} };
@@ -95,8 +91,11 @@ describe('plugin structure', () => {
     expect(orchestratorBash['*']).toBe('deny');
     expect(Object.entries(builder.permission ?? {})).toContainEqual(['read', 'allow']);
     expect(builder.permission?.edit).toBe('allow');
-    for (const command of ['pnpm*', 'npm*', 'tsc*', 'vitest*', 'vp*']) {
+    for (const command of ['tsc*', 'vitest*', 'vp*']) {
       expect(builderBash[command]).toBe('allow');
+    }
+    for (const command of ['pnpm*', 'npm*']) {
+      expect(builderBash[command]).toBeUndefined();
     }
   });
 });

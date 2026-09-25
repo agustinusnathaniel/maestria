@@ -14,8 +14,8 @@ import { exitReviewMode } from './state-core.js';
 // ── Duck-typed platform interfaces ──
 
 interface ReviewPi {
-  setActiveTools: (tools: string[]) => void | Promise<void>;
-  setModel: (model: unknown) => void | Promise<void>;
+  setActiveTools: (tools: string[]) => unknown;
+  setModel: (model: unknown) => unknown;
 }
 
 /**
@@ -44,8 +44,9 @@ export const createReviewApi = <Model>(
   setActiveTools: (tools): void | Promise<void> => pi.setActiveTools(tools),
   setModel: async (model) => {
     if (isModel(model)) {
-      await pi.setModel(model);
+      return await pi.setModel(model);
     }
+    return null;
   },
 });
 
@@ -53,26 +54,30 @@ export const restoreOriginalState = async (
   pi: ReviewPi,
   ctx: ReviewModelContext,
   state: MaestriaState,
-): Promise<void> => {
+): Promise<boolean> => {
   const { state: clearedState, originalModel, originalTools } = exitReviewMode(state);
-
-  if (originalTools && originalTools.length > 0) {
-    await pi.setActiveTools(originalTools);
-  }
 
   if (originalModel !== undefined && originalModel !== null && originalModel !== '') {
     try {
       const models = ctx.modelRegistry.getAll();
-      const model = models.find((m: { id: string }) => m.id === originalModel);
-      if (model) {
-        await pi.setModel(model);
+      const model = models.find((candidate: { id: string }) => candidate.id === originalModel);
+      if (model === undefined || (await pi.setModel(model)) !== true) {
+        return false;
       }
     } catch {
-      // Best-effort: model restoration is non-critical
+      return false;
+    }
+  }
+
+  if (originalTools !== null) {
+    const toolsRestored = await pi.setActiveTools(originalTools);
+    if (toolsRestored === false) {
+      return false;
     }
   }
 
   Object.assign(state, clearedState);
+  return true;
 };
 
 export const cycleToReviewModel = async (
@@ -88,7 +93,11 @@ export const cycleToReviewModel = async (
     const models = ctx.modelRegistry.getAll();
     const model = models.find((m) => m.id === reviewModel);
     if (model) {
-      await pi.setModel(model);
+      const switched = await pi.setModel(model);
+      if (switched !== true) {
+        ctx.ui.notify(`Could not activate review model "${reviewModel}", staying on current.`);
+        return null;
+      }
       return reviewModel;
     }
     ctx.ui.notify(`Review model "${reviewModel}" not found in registry, staying on current.`);

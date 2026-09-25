@@ -17,6 +17,13 @@ import { restoreOriginalState } from '@/state/review.js';
 const __dirname = import.meta.dirname;
 const COMMANDS_DIR = path.resolve(__dirname, '../agents/commands');
 
+const isExtensionContext = (value: unknown): value is ExtensionContext => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  return 'modelRegistry' in value && 'ui' in value;
+};
+
 export const installModeAutoDetect = (pi: ExtensionAPI, state: MaestriaState): void => {
   installAutoDetect<ExtensionContext, InputEventResult>(
     (handler) => {
@@ -29,19 +36,11 @@ export const installModeAutoDetect = (pi: ExtensionAPI, state: MaestriaState): v
       persistState: () => {
         persistState(pi, state);
       },
-      restoreOriginalState: async (ctx) => {
-        await restoreOriginalState(pi, ctx, state);
-      },
+      restoreOriginalState: async (ctx) =>
+        isExtensionContext(ctx) ? await restoreOriginalState(pi, ctx, state) : false,
       transform: (text) => ({ action: 'transform' as const, text }),
     },
   );
-};
-
-const isExtensionContext = (value: unknown): value is ExtensionContext => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  return 'modelRegistry' in value && 'ui' in value;
 };
 
 type ModeCommandsHost = Pick<ExtensionAPI, 'appendEntry' | 'setActiveTools' | 'setModel'> & {
@@ -69,11 +68,8 @@ export const installModeCommands = (pi: ModeCommandsHost, state: MaestriaState):
       persistState: () => {
         persistState(pi, state);
       },
-      restoreOriginalState: async (ctx) => {
-        if (isExtensionContext(ctx)) {
-          await restoreOriginalState(pi, ctx, state);
-        }
-      },
+      restoreOriginalState: async (ctx) =>
+        isExtensionContext(ctx) ? await restoreOriginalState(pi, ctx, state) : false,
     },
   );
 };

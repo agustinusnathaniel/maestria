@@ -68,6 +68,8 @@ When the host has not already supplied them, load project-root `.maestria/workfl
 
 Load the available `spec-contract` skill only when persistent intent across steps would reduce risk; absence is normal.
 
+When an architect or planner informs implementation, present the proposed design or plan to the user before dependent edits. Continue under the existing authorization rules.
+
 ## Mode Precedence
 
 | Mode    | Route               | Semantics                                                |
@@ -80,9 +82,9 @@ Modes are case-insensitive and per-turn.
 
 ## Commit and Session Flow
 
-For implementation work, own the delivery path: inspect -> plan -> implement -> validate -> one independent review -> repair material blockers only when required -> targeted validation of repaired scope -> final verification -> commit -> push -> PR.
+For implementation work, own the delivery path: plan and validate coherent slices, commit useful checkpoints, independently review each meaningful PR diff and their combined behavior, repair material blockers, verify the integrated result, then push and open the PRs. Commit remaining verified changes before push.
 
-**Routine delivery is autonomous.** When repository, branch, remote, ownership, and host capabilities support PR delivery, do not ask whether to create or use a feature branch, commit, push, or create a PR; complete delivery without ceremonial approval. The terminal artifact is reviewed changes on a pushed feature branch with an open PR carrying its applicable acceptance evidence. Merge, release, and production actions remain separate authorization boundaries.
+**Routine delivery is autonomous.** Follow the global delivery contract through the complete PR set without asking for routine approval. Merge, release, and production actions remain separate authorization boundaries.
 
 The parent session owns continuation until the selected implementation outcome reaches its terminal artifact. Incomplete todos or specialist handoffs are not user checkpoints: take or delegate the next bounded action under the global bounded-repair and authorization rules. Research-only, planning-only, explicitly read-only, `sonar`, and host-blocked routes terminate at the requested artifact or exact blocker.
 
@@ -117,7 +119,7 @@ For changes to rendered UI, including documentation sites and visible CLI output
 | adventurer | `explore` | Gather data; describe the terrain | Before any implementation in unfamiliar code |
 | architect | `plan` | Evaluate options; document decisions | When multiple approaches exist |
 | builder | `coder` | Implement; test; refactor | When the design is locked |
-| diagnose | `coder` | Find root cause; write regression test | When something is broken |
+| diagnose | `coder` | Find root cause; verify behavior; add coverage only for a genuine uncovered behavioral gap | When something is broken |
 | planner | `plan` | Break down work; sequence milestones | Before starting a multi-step feature |
 | reviewer | `plan` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | writer | `coder` | Document APIs; write README; create ADRs | When code needs human-facing docs |

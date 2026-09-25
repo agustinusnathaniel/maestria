@@ -17,13 +17,10 @@ permission:
     du*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
     test*: allow
     sort*: allow
     git*: allow
-    pnpm*: allow
-    npm*: allow
     pnpx*: ask
     tsc*: allow
     vitest*: allow

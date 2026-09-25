@@ -130,12 +130,19 @@ const commandHandler = (fake: FakePi, name: string): RegisteredCommandOptions['h
   return command.options.handler;
 };
 
-const branchContext = (entries: SessionEntry[]): ExtensionContext => ({
+const branchContext = (
+  branchEntries: SessionEntry[],
+  wholeTreeEntries: SessionEntry[] = branchEntries,
+  onWholeTreeRead?: () => void,
+): ExtensionContext => ({
   cwd: '/',
   hasUI: true,
   sessionManager: {
-    getBranch: () => entries,
-    getEntries: () => entries,
+    getBranch: () => branchEntries,
+    getEntries: () => {
+      onWholeTreeRead?.();
+      return wholeTreeEntries;
+    },
   },
   ui: { notify: () => {}, setEditorText: () => {} },
 });
@@ -328,10 +335,18 @@ describe('session state persistence', () => {
   it('never restores a sibling branch mode on session_start', async () => {
     const fake = createFakePi();
     extension(fake.pi);
-    // The current branch has no mode entry; only the sibling tree does.
-    await fake.fire.sessionStart(branchContext([]));
+    const sibling = modeEntry('blitz', 987_654_321);
+    let wholeTreeReads = 0;
+    // The sibling exists only in the whole-tree fixture. A whole-tree fallback
+    // would both read this fixture and incorrectly restore its mode.
+    await fake.fire.sessionStart(
+      branchContext([], [sibling], () => {
+        wholeTreeReads += 1;
+      }),
+    );
     const result = await fake.fire.beforeAgentStart('BASE');
     expect(result).toBeUndefined();
+    expect(wholeTreeReads).toBe(0);
   });
 
   it('restores the mode on session_tree navigation', async () => {

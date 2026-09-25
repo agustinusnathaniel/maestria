@@ -4,20 +4,13 @@
 // coding-focused prompts are adapted: tool references are generalized,
 // role descriptions are broadened, and Hermes-native features are added.
 
+import { specialistReferenceReplacements } from '../core/scripts/lib/specialist-replacements.js';
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 export default {
   default: {
     replace: [
-      // Specialist mentions: @name -> name (Hermes uses bare names in skill context)
-      { from: '@adventurer', to: 'adventurer' },
-      { from: '@architect', to: 'architect' },
-      { from: '@builder', to: 'builder' },
-      { from: '@diagnose', to: 'diagnose' },
-      { from: '@planner', to: 'planner' },
-      { from: '@reviewer', to: 'reviewer' },
-      { from: '@writer', to: 'writer' },
-
+      ...specialistReferenceReplacements(),
       // Domain generalization: broaden coding-specific language for general-purpose agent
       { from: 'code for quality', to: 'output for quality' },
       { from: 'Critique code, not developers', to: 'Critique work, not the person' },
