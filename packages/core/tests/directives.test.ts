@@ -169,6 +169,9 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(
       /plan PR boundaries early around independently acceptable, verifiable changes/iu,
     );
+    expect(rules).toMatch(
+      /implementation reveals another such slice.*split the diff before PR delivery/iu,
+    );
     expect(rules).toMatch(/stack only when a later slice depends on an earlier one/iu);
     expect(orchestrator).toMatch(
       /independently review each meaningful PR diff and their combined behavior/iu,

@@ -24,7 +24,7 @@ Maestria already asks builders for small reviewable increments and planners for 
 ## Decision
 
 1. Commit coherent implementation slices after proportionate validation when they provide useful review or rollback points. Run the integrated checks before delivery, including changes made after earlier commits.
-2. For multi-slice outcomes, plan PR boundaries early. Prefer independent PRs that can be reviewed and accepted separately; use stacked PRs only for actual dependencies. Each PR carries its own scope, evidence, and review, while the outcome retains one bounded repair budget and final integrated verification.
+2. For multi-slice outcomes, plan PR boundaries early and split the diff before delivery if implementation reveals another independently acceptable, verifiable slice. Prefer independent PRs that can be reviewed and accepted separately; use stacked PRs only for actual dependencies. Each PR carries its own scope, evidence, and review, while the outcome retains one bounded repair budget and final integrated verification.
 3. When architect or planner work guides implementation, the orchestrator presents a concise user-facing design brief before dependent edits. The specialist supplies the intended behavior, affected boundaries, changes or phases, trade-offs, and verification. Use tables or diagrams when they improve understanding; no particular visual format is required.
 4. Keep cross-role delivery obligations in canonical rules and orchestrator guidance, role-specific design and planning guidance in specialist directives, and PR preparation mechanics in the standalone `create-pull-request` skill.
 

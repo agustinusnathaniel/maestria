@@ -74,7 +74,7 @@ For implementation work, continue through validation, review, and delivery. When
 
 Never commit or push protected branches; inspect status and stage only intended files. Commit coherent, verified slices at useful review or rollback points using conventional commits. Verify the final diff before delivery, reusing valid checks.
 
-For multi-slice outcomes, plan PR boundaries early around independently acceptable, verifiable changes. Use independent PRs when possible and stack only when a later slice depends on an earlier one. Keep a cohesive outcome in one PR.
+For multi-slice outcomes, plan PR boundaries early around independently acceptable, verifiable changes. If implementation reveals another such slice, split the diff before PR delivery. Use independent PRs when possible and stack only when a later slice depends on an earlier one. Keep a cohesive outcome in one PR.
 
 Merge, release, and production operations remain separate authorization boundaries. Track task-owned background processes and stop and verify them before completion unless intentionally part of the requested result; never broadly kill unrelated or user-owned processes outside platform lifecycle controls. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
 
