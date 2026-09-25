@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Phase B consolidated E2E evidence (TypeScript, stdlib only: node builtins).
+// Fail-closed consolidated E2E evidence (TypeScript, stdlib only: node builtins).
 //
-// Usage: pnpm e2e:phase-b (node --experimental-strip-types
-//   scripts/e2e/phase-b-evidence.ts --out artifacts/phase-b-evidence.json)
+// Usage: pnpm e2e:fail-closed (node --experimental-strip-types
+//   scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json)
 //
 // Four sections: permission narrowing plus guarded recon restoration,
 // fail-closed modes, safety/state + guarded-git + trust + subprocess
@@ -45,12 +45,12 @@ const brokenProject = path.join(scriptDir, 'fixtures/project-broken');
 
 const outArg = process.argv[process.argv.indexOf('--out') + 1];
 if (outArg === undefined || outArg === '') {
-  process.stderr.write('usage: phase-b-evidence.mts --out <path>\n');
+  process.stderr.write('usage: fail-closed-evidence.ts --out <path>\n');
   process.exit(2);
 }
 const outPath = path.resolve(repoRoot, outArg);
 
-const tmpRoot = fs.mkdtempSync(path.join(tmpdir(), 'phase-b-'));
+const tmpRoot = fs.mkdtempSync(path.join(tmpdir(), 'fail-closed-'));
 const hermesHome = path.join(tmpRoot, 'hermes-home');
 fs.mkdirSync(hermesHome, { recursive: true });
 // Bare working directory (no .maestria files) so context-sensitive probes
@@ -466,8 +466,8 @@ const main = (): void => {
   const flat = sections.flatMap((section) => section.checks);
   const passed = flat.filter((item) => item.pass).length;
   const report: EvidenceReport = {
-    artifact: 'artifacts/phase-b-evidence.json',
-    generator: 'scripts/e2e/phase-b-evidence.ts',
+    artifact: 'artifacts/fail-closed-evidence.json',
+    generator: 'scripts/e2e/fail-closed-evidence.ts',
     sections,
     summary: {
       checks: flat.length,
@@ -488,7 +488,7 @@ const main = (): void => {
     process.stdout.write(`[${mark}] ${section.name} (${sectionPassed}/${section.checks.length})\n`);
   }
   process.stdout.write(
-    `phase-b evidence: ${sections.length} sections, ${flat.length} checks, ${passed} passed, ${flat.length - passed} failed\nartifact: ${outPath}\n`,
+    `fail-closed evidence: ${sections.length} sections, ${flat.length} checks, ${passed} passed, ${flat.length - passed} failed\nartifact: ${outPath}\n`,
   );
   if (!fs.existsSync(outPath) || fs.readFileSync(outPath, 'utf-8') !== body) {
     process.stdout.write('artifact write mismatch\n');

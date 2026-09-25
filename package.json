@@ -26,7 +26,8 @@
     "contributors:add": "all-contributors add",
     "contributors:generate": "all-contributors generate",
     "contributors:check": "all-contributors check",
-    "e2e:phase-b": "node --experimental-strip-types scripts/e2e/phase-b-evidence.ts --out artifacts/phase-b-evidence.json"
+    "e2e:fail-closed": "node --experimental-strip-types scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json",
+    "e2e:phase-b": "node --experimental-strip-types scripts/e2e/fail-closed-evidence.ts --out artifacts/fail-closed-evidence.json"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",

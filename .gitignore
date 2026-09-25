@@ -56,5 +56,5 @@ __pycache__/
 # xtarterize internal artifacts
 /.xtarterize/
 
-# Phase B E2E evidence (regen via pnpm e2e:phase-b; do not track)
+# Fail-closed E2E evidence (regen via pnpm e2e:fail-closed; do not track)
 /artifacts/
