@@ -1,6 +1,4 @@
-// Plugin context and domain types for the V2 beta API.
-// Effect API: ground truth from @opencode-ai/plugin/effect
-
+// Plugin context and domain types for the V2 beta API (ground truth: @opencode-ai/plugin/effect).
 import type { Plugin } from '@opencode-ai/plugin/effect';
 
 export type PluginContext = Plugin.Context;

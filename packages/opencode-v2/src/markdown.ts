@@ -1,10 +1,7 @@
 import { readFileSync } from 'node:fs';
 
-/**
- * Strip the sync pipeline's auto-generated HTML comment header, if present.
- * Synced markdown files start with `<!-- Auto-generated ... -->`; the
- * template content used at runtime starts after it.
- */
+// Strip the sync pipeline's auto-generated `<!-- ... -->` header, if present;
+// the template content used at runtime starts after it.
 export const stripAutoGenComment = (content: string): string => {
   const trimmed = content.trimStart();
   if (trimmed.startsWith('<!--')) {
@@ -16,11 +13,8 @@ export const stripAutoGenComment = (content: string): string => {
   return content;
 };
 
-/**
- * Read a synced markdown file, stripped and normalized to one trailing
- * newline. Returns null (after a warning) when the file is unreadable,
- * so callers can skip that entry without throwing.
- */
+// Read a synced markdown file, stripped with one trailing newline.
+// Returns null (after a warning) when unreadable so callers skip it.
 export const readSyncedMarkdown = (filePath: string, label: string): string | null => {
   try {
     const raw = readFileSync(filePath, 'utf-8');

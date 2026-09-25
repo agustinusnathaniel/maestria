@@ -32,8 +32,7 @@ export interface ModeResult extends ModeDetectPure {
 
 /**
  * Mode prompt text for each keyword, lazily loaded on first access.
- * If a prompt file is missing or unreadable, logs a warning and caches
- * an empty string - never throws at module evaluation time.
+ * Missing or unreadable prompt files cache to '' (never throws).
  *
  * @see ADR-OC-003 (section "Mode Prompts")
  */
@@ -48,27 +47,17 @@ export const getModePrompt = (keyword: string): string => {
     return cached;
   }
   // readSyncedMarkdown warns and returns null when the file is missing, so a
-  // missing prompt caches to '' without throwing (same contract as before).
-  // extractModeSection slices from `## MODE:`, which also drops the sync
-  // header, so reuse stays equivalent to the previous raw read.
+  // missing prompt caches to '' without throwing.
   const content = readSyncedMarkdown(path.join(COMMANDS_DIR, `${keyword}.md`), 'mode prompt');
   const prompt = content === null ? '' : extractModeSection(content);
   promptCache[keyword] = prompt;
   return prompt;
 };
 
-/**
- * Detect a workflow mode keyword in the given text.
- *
- * Delegates pure detection (word-boundary, priority, code-block
- * exclusion, disabled-keyword handling, case-insensitivity) to
- * `@maestria/shared-mode` and augments with prompt/marker so the
- * existing public API and result shape are preserved.
- *
- * Behavior (per ADR-OC-003) is unchanged: most restrictive wins
- * (fein > sonar > blitz), code spans are excluded, unclosed fences
- * are not excluded (accepted false-positive).
- */
+// Pure detection (word-boundary, priority, code-block exclusion, disabled
+// keywords, case-insensitivity) is delegated to `@maestria/shared-mode`;
+// this wrapper augments with prompt/marker. Most restrictive wins
+// (fein > sonar > blitz) per ADR-OC-003.
 export const detectMode = (text: string, disabled?: Set<string>): ModeResult | null => {
   const pure = sharedDetect(text, disabled);
   if (pure === null) {

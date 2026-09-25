@@ -7,26 +7,18 @@ import type { CommandDraft, Transform } from '@/types.js';
 import { readSyncedMarkdown } from '@/markdown.js';
 import { COMMANDS_DIR } from '@/root.js';
 
-/**
- * Descriptions mirror the canonical frontmatter at
- * `packages/core/agent-directives/commands/*.md` (stripped by sync, so the
- * runtime copy lives here).
- */
+// Descriptions mirror the canonical frontmatter at
+// `packages/core/agent-directives/commands/*.md` (sync strips frontmatter,
+// so the runtime copy keeps this map).
 const COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
   blitz: 'Fast capability-aware route - skip optional recon and design ceremony',
   fein: 'Full pipeline - recon, design, implement, review',
   sonar: 'Research only - read-only recon and planning, stop before implementation',
 };
 
-/**
- * Register workflow mode commands via `command.transform`.
- *
- * Template model (pinned SDK has no `add()`, only list/get/update/remove;
- * live docs describe a newer execute-callback shape - see the README API
- * table). Missing commands are filesystem-discovered from `agents/commands/`
- * after sync, so absent entries warn instead of throwing.
- */
-
+// Workflow mode commands via `command.transform`. The pinned SDK has no
+// `add()`, only list/get/update/remove, so missing commands warn instead of
+// throwing (operator re-runs sync or checks `sync.config.ts`).
 export const registerCommandTransforms = (ctx: {
   command: { transform: Transform<CommandDraft> };
 }): Effect.Effect<void, never, Scope.Scope> =>
@@ -34,23 +26,20 @@ export const registerCommandTransforms = (ctx: {
     yield* ctx.command.transform((draft: CommandDraft) => {
       for (const name of MODE_KEYWORDS) {
         // readSyncedMarkdown warns and returns null when the synced template
-        // is missing; the template is rendered as prompt content on /<name>.
+        // is missing; the template renders as prompt content on /<name>.
         const template = readSyncedMarkdown(path.join(COMMANDS_DIR, `${name}.md`), 'command');
         if (template === null) {
           continue;
         }
-        const description = COMMAND_DESCRIPTIONS[name];
 
         try {
           const existing = draft.get(name);
           if (existing) {
             draft.update(name, (cmd) => {
               cmd.template = template;
-              cmd.description = description;
+              cmd.description = COMMAND_DESCRIPTIONS[name];
             });
           } else {
-            // No add() on this pin - warn so the operator re-runs sync or
-            // checks the `sync.config.ts` command entries.
             console.warn(
               `[maestria-v2] Command "${name}" not found in draft (no add() available) - ensure sync copied it to ${COMMANDS_DIR}.`,
             );

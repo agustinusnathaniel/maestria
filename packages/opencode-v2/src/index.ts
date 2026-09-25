@@ -9,13 +9,9 @@ import { registerCommandTransforms } from '@/transforms/commands.js';
 import { registerSkillTransforms } from '@/transforms/skills.js';
 import { registerSessionHooks } from '@/hooks/session.js';
 
-/**
- * maestria.v2 entrypoint (Effect plugin API).
- *
- * Packaging: this POC stays a separate `@maestria/opencode-v2` package
- * coexisting with stable V1; convergence is deferred until V2 leaves beta
- * (see README Known limitations).
- */
+// maestria.v2 entrypoint (Effect plugin API). This POC stays a separate
+// `@maestria/opencode-v2` package coexisting with stable V1 until V2 leaves
+// beta (see README Known limitations).
 export default Plugin.define({
   effect: (ctx: PluginContext) =>
     Effect.gen(function* initMaestriaV2() {

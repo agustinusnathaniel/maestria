@@ -6,7 +6,6 @@ import { AGENTS_DIR } from '@/root.js';
 export interface AgentInfo {
   description: string;
   mode: string;
-  // the markdown body - this maps to Agent.Info.system
   prompt: string;
   steps?: number;
   color?: string;

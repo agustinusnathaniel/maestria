@@ -10,10 +10,9 @@ export const registerAgentTransforms = (ctx: {
   Effect.gen(function* registerAgentTransformsEffect() {
     const orchestrator = loadOrchestrator();
 
-    // Orchestrator first (it is the router other agents delegate to), then
-    // specialists. registry.update() is an upsert, so missing agents are created.
-    // Mode defaults inline: orchestrator routes everywhere ('all'), specialists
-    // stay scoped to subagent work unless their frontmatter says otherwise.
+    // Orchestrator first (router other agents delegate to), then specialists.
+    // Mode defaults inline: orchestrator routes everywhere, specialists stay
+    // scoped unless their frontmatter says otherwise.
     const agents: Record<string, AgentInfo> = {
       ...(orchestrator ? { [orchestrator.name]: orchestrator } : {}),
       ...loadAgents(),
