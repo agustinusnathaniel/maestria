@@ -1,7 +1,6 @@
 /**
  * Shared platform registry - single source of truth for every Maestria
- * platform adapter across the homepage adapter grid, plugin overview pages
- * (see src/components/plugin/), and the footer.
+ * platform adapter across the homepage adapter grid and footer.
  *
  * Blurbs are presentation copy; keep them in sync with the homepage card
  * language. `mark` keys into the shared glyph dict in src/data/marks.ts.
@@ -11,7 +10,7 @@
  */
 
 export interface Platform {
-  /** Registry id, e.g. 'opencode'. Also the SiblingPlatforms exclude key. */
+  /** Registry id, e.g. 'opencode'. */
   id: string;
   /** Display name shown on cards and chips. */
   name: string;

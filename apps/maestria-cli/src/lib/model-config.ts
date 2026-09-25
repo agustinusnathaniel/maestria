@@ -23,8 +23,6 @@ import { cursorCliName } from '@/lib/cursor-cli.js';
 import { isRecord, parseJsonValue } from '@/lib/primitives.js';
 import { CommandError, fileExists, readTextFile, run } from '@/lib/shell.js';
 
-// ── Types ─────────────────────────────────────────────
-
 export type ModelConfigLevel = 'global' | 'project';
 
 /** The 7 maestria specialist agents (no orchestrator - it uses the session model) */
@@ -39,31 +37,22 @@ export const MAESTRIA_AGENTS = [
 ] as const;
 export type AgentName = (typeof MAESTRIA_AGENTS)[number];
 
-/**
- * Agent name -> model id mapping.
- * An empty string means "inherit" (use the session/primary agent model).
- */
+/** Agent name to model id. Empty string means "inherit" (session model). */
 export type AgentModels = Partial<Record<AgentName, string>>;
 
 export const isAgentName = (name: string): name is AgentName =>
   MAESTRIA_AGENTS.some((agent) => agent === name);
 
-/**
- * Handles per-agent model configuration for one platform.
- * The CLI writes native config files directly:
- * - opencode: `agent.<name>.model` in opencode.json(c)
- * - codex:    `model` in native `.codex/agents/maestria-<name>.toml` files
- * - pi/omp:   `model:` frontmatter in agent markdown files
- */
+/** Per-agent model configuration for one platform (writes native config files). */
 export interface ModelConfigHandler {
   readonly id: string;
   readonly label: string;
-  /** The platform CLI binary used to list available models */
+  /** Platform CLI binary used to list available models. */
   readonly cli: string;
   readonly agents: readonly string[];
   readonly configLevels: readonly ModelConfigLevel[];
   readonly restartHint: string;
-  /** Optional host-specific identity check when the binary name is ambiguous. */
+  /** Host-specific identity check when the binary name is ambiguous. */
   readonly isAvailable?: Effect.Effect<boolean>;
   readonly listModels: Effect.Effect<string[], CommandError>;
   readonly readCurrent: (level: ModelConfigLevel) => Effect.Effect<AgentModels, CommandError>;
@@ -72,8 +61,6 @@ export interface ModelConfigHandler {
     level: ModelConfigLevel,
   ) => Effect.Effect<void, CommandError>;
 }
-
-// ── Model listing parsers (pure) ──────────────────────
 
 /** `opencode models` -> one `provider/model` per line */
 export const parseOpenCodeModels = (out: string): string[] =>
@@ -166,14 +153,9 @@ export const parseCodexModels = (out: string): string[] => {
   ];
 };
 
-// ── JSONC helpers (pure) ──────────────────────────────
-
 const JSONC_OPTIONS = { formattingOptions: { insertSpaces: true, tabSize: 2 } } as const;
 
-/**
- * Set (or remove, when model is '') `agent.<name>.model` in an
- * opencode config file. Preserves comments and formatting.
- */
+/** Set (or remove when model is '') `agent.<name>.model`, preserving formatting. */
 const hasConfigModel = (text: string, agent: string): boolean => {
   const tree = parseTree(text);
   if (!tree) {
@@ -191,7 +173,7 @@ export const setConfigModelJsonc = (text: string, agent: string, model: string):
   return applyEdits(text, edits);
 };
 
-/** Read `agent.<name>.model` values from an opencode config file */
+/** Read `agent.<name>.model` values from an opencode config file. */
 export const parseConfigModels = (text: string): AgentModels => {
   const parsed: unknown = parse(text);
   if (!isRecord(parsed) || !isRecord(parsed.agent)) {
@@ -205,8 +187,6 @@ export const parseConfigModels = (text: string): AgentModels => {
   }
   return result;
 };
-
-// ── Codex agent TOML helpers (pure) ────────────────────
 
 /** Extract a top-level `model` value from a Codex custom-agent TOML file. */
 export const parseCodexAgentModel = (content: string): string | undefined =>
@@ -240,8 +220,6 @@ export const createCodexAgentConfig = (
   return `${lines.join('\n')}\n`;
 };
 
-// ── FS helpers ────────────────────────────────────────
-
 const writeFile = (filePath: string, content: string): Effect.Effect<void, CommandError> =>
   Effect.tryPromise({
     catch: (error) => new CommandError({ command: `write ${filePath}`, message: String(error) }),
@@ -252,12 +230,7 @@ const writeFile = (filePath: string, content: string): Effect.Effect<void, Comma
     },
   });
 
-/**
- * Read every specialist agent's file content and collect the model it declares.
- * A missing or unreadable file counts as "inherit", so the agent is absent from
- * the result. Codex TOML and markdown-frontmatter handlers differ only in how
- * one file's content is read and parsed.
- */
+/** Read every specialist agent file; missing or unreadable files count as inherit. */
 const readAgentModels = (
   readContent: (agent: AgentName) => Effect.Effect<string>,
   parseModel: (content: string) => string | undefined,
@@ -267,15 +240,13 @@ const readAgentModels = (
       const result: AgentModels = {};
       for (let i = 0; i < MAESTRIA_AGENTS.length; i += 1) {
         const model = parseModel(contents[i] ?? '');
-        if (model !== undefined && model !== null && model !== '') {
+        if (model !== undefined && model !== '') {
           result[MAESTRIA_AGENTS[i]] = model;
         }
       }
       return result;
     }),
   );
-
-// ── OpenCode handler ──────────────────────────────────
 
 const OPENCODE_GLOBAL_CANDIDATES = [
   `${homedir()}/.config/opencode/opencode.jsonc`,
@@ -331,8 +302,6 @@ const opencode: ModelConfigHandler = {
     }),
 };
 
-// ── Codex custom-agent handler ─────────────────────────
-
 export const codexHome = (): string => process.env.CODEX_HOME?.trim() ?? `${homedir()}/.codex`;
 
 const resolveCodexAgentPath = (level: ModelConfigLevel, agent: string): Effect.Effect<string> => {
@@ -381,8 +350,6 @@ const codex: ModelConfigHandler = {
     }),
 };
 
-// ── Cursor agent-file handler ─────────────────────────
-
 const listCursorModels = (): Effect.Effect<string[], CommandError> =>
   cursorCliName().pipe(
     Effect.flatMap((cli) => {
@@ -402,8 +369,6 @@ const listCursorModels = (): Effect.Effect<string[], CommandError> =>
     }),
     Effect.map(parseCursorModels),
   );
-
-// ── Pi / omp handlers (shared agent-file logic) ───────
 
 interface AgentFilePlatform {
   readonly id: string;
@@ -516,8 +481,6 @@ const omp = createAgentFileHandler({
   projectDir: '.omp/agents',
   restartHint: 'Restart omp (or start a new session) for the changes to take effect.',
 });
-
-// ── Registry ──────────────────────────────────────────
 
 export const modelConfigHandlers: readonly ModelConfigHandler[] = [
   opencode,

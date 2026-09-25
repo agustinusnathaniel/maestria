@@ -47,7 +47,7 @@ jobs:
             const mod = await import('./packages/opencode/dist/index.js');
             const plugin = await mod.MaestriaPlugin({}, {});
             const hooks = Object.keys(plugin).sort().join(',');
-            if (hooks !== 'chat.message,config,experimental.session.compacting')
+            if (hooks !== 'chat.message,config,experimental.chat.system.transform,experimental.session.compacting')
               throw new Error('Unexpected hooks: ' + hooks);
             console.log('OK opencode plugin loaded in Bun: ' + hooks);
           "

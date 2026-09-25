@@ -4,7 +4,10 @@ import type {
   SessionTreeEvent,
 } from '@earendil-works/pi-coding-agent';
 import { installCompactionHandlers } from '@maestria/shared-pi/compaction-core';
-import { installCommands as installCommandsCore } from '@maestria/shared-pi/commands-core';
+import {
+  createCommandsHost,
+  installCommands as installCommandsCore,
+} from '@maestria/shared-pi/commands-core';
 import {
   createInitialState,
   readSessionBranch,
@@ -13,8 +16,8 @@ import {
 } from '@maestria/shared-pi/state-core';
 
 import { deploySpecialistAgents } from '@/agents.js';
-import { createCommandsApi } from '@/commands.js';
 import { installModeAutoDetect, installModeCommands } from '@/modes.js';
+import { isPiModel } from '@/model.js';
 import { createModePromptHandler } from '@/rules.js';
 import { installSubagentTool } from '@/subagent.js';
 import { createSubagentToolApi } from '@/subagent-api.js';
@@ -51,7 +54,7 @@ const extension = (pi: ExtensionAPI): void => {
 
   // Install orchestration hooks: subagent tool and commands
   installSubagentTool(createSubagentToolApi(pi), state, cleanups);
-  installCommandsCore(createCommandsApi(pi), state);
+  installCommandsCore(createCommandsHost(pi, isPiModel), state);
 
   // Cleanup subscriptions on shutdown
   pi.on('session_shutdown', () => {

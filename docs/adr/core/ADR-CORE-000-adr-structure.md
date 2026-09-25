@@ -42,17 +42,6 @@ Prefixes: CORE (Core, `docs/adr/core/`), CR (Cursor, `docs/adr/cursor/`), HM (He
 
 ## Related Decisions
 
-- ADR-CORE-001 (global rules scope)
-- ADR-CORE-002 (plugin architecture)
-- ADR-CORE-003 (agent conventions)
-- ADR-CORE-004 (agent prompt template)
-- ADR-OC-000 (skill install flow)
-- ADR-OC-001 (tool permission design)
-- ADR-OC-002 (opensrc vs webfetch guidance)
-- ADR-OC-003 (keyword-triggered workflow modes)
-- ADR-OC-004 (commit authorization rules)
-- ADR-KC-000 (kimi-code distribution)
-- ADR-KC-001 (kimi-code architecture)
-- ADR-PI-000 (pi ecosystem reuse)
-- ADR-PI-001 (rules injection)
-- ADR-PI-002 (compaction state preservation)
+- ADR directories (the current list lives in each subdirectory; do not enumerate ADRs here): [core](./), [opencode](../opencode/), [kimi-code](../kimi-code/), [cursor](../cursor/), [hermes](../hermes/), [pi](../pi/).
+- [ADR-CORE-005](ADR-CORE-005-shared-agent-directives-core-sync.md) - extends this layout with the shared core content package.
+- [ADR-CORE-018](ADR-CORE-018-documentation-standard.md) - documents ADRs as a doc type under the documentation standard.

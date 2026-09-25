@@ -25,81 +25,75 @@ const getStringField = (value: unknown, key: string): string | undefined => {
 
 type PiEvents = NonNullable<SubagentEventHost['events']>;
 
-const subscribeStarted = (
-  events: PiEvents,
-  pi: SubagentEventHost,
-  state: MaestriaState,
-): (() => void) =>
-  events.on(SUBAGENT_EVENTS.STARTED, (data: unknown) => {
-    const id = getStringField(data, 'id');
-    const type = getStringField(data, 'type') ?? 'unknown';
-    if (id === undefined) {
-      return;
-    }
-    state.subagentStatus[id] = { startedAt: Date.now(), status: 'running', type };
-    persistState(pi, state);
-    events.emit(MAESTRIA_EVENTS.SUBAGENT_STARTED, { id, timestamp: Date.now(), type });
-  });
+interface SubagentEventSpec {
+  /** Host event to subscribe. */
+  readonly source: string;
+  /** Maestria event re-emitted after persist, or undefined for silent updates. */
+  readonly target?: string;
+  /** Fold the event into state; returns the specialist type for the emit payload. */
+  readonly apply: (state: MaestriaState, id: string, data: unknown) => string | undefined;
+}
 
-const subscribeCompleted = (
-  events: PiEvents,
-  pi: SubagentEventHost,
-  state: MaestriaState,
-): (() => void) =>
-  events.on(SUBAGENT_EVENTS.COMPLETED, (data: unknown) => {
-    const id = getStringField(data, 'id');
-    if (id === undefined) {
-      return;
-    }
-    const existing = state.subagentStatus[id];
-    if (existing !== null && existing !== undefined) {
-      existing.status = 'completed';
-      existing.completedAt = Date.now();
-    }
-    persistState(pi, state);
-    events.emit(MAESTRIA_EVENTS.SUBAGENT_COMPLETED, {
-      id,
-      timestamp: Date.now(),
-      type: existing?.type,
-    });
-  });
+const EVENT_SPECS: readonly SubagentEventSpec[] = [
+  {
+    apply: (state, id, data) => {
+      const type = getStringField(data, 'type') ?? 'unknown';
+      state.subagentStatus[id] = { startedAt: Date.now(), status: 'running', type };
+      return type;
+    },
+    source: SUBAGENT_EVENTS.STARTED,
+    target: MAESTRIA_EVENTS.SUBAGENT_STARTED,
+  },
+  {
+    apply: (state, id) => {
+      const existing = state.subagentStatus[id];
+      if (existing !== undefined && existing !== null) {
+        existing.status = 'completed';
+        existing.completedAt = Date.now();
+      }
+      return existing?.type;
+    },
+    source: SUBAGENT_EVENTS.COMPLETED,
+    target: MAESTRIA_EVENTS.SUBAGENT_COMPLETED,
+  },
+  {
+    apply: (state, id, data) => {
+      const status = getStringField(data, 'status') ?? 'error';
+      const existing = state.subagentStatus[id];
+      if (existing !== undefined && existing !== null) {
+        existing.status = status;
+        existing.completedAt = Date.now();
+      }
+      return existing?.type;
+    },
+    source: SUBAGENT_EVENTS.FAILED,
+    target: MAESTRIA_EVENTS.SUBAGENT_FAILED,
+  },
+  {
+    apply: (state, id) => {
+      state.subagentStatus[id] ??= { startedAt: Date.now(), status: 'running', type: 'unknown' };
+      return 'unknown';
+    },
+    source: SUBAGENT_EVENTS.STEERED,
+  },
+];
 
-const subscribeFailed = (
+const subscribeSpec = (
   events: PiEvents,
   pi: SubagentEventHost,
   state: MaestriaState,
+  spec: SubagentEventSpec,
 ): (() => void) =>
-  events.on(SUBAGENT_EVENTS.FAILED, (data: unknown) => {
+  events.on(spec.source, (data: unknown) => {
     const id = getStringField(data, 'id');
     if (id === undefined) {
       return;
     }
-    const status = getStringField(data, 'status') ?? 'error';
-    const existing = state.subagentStatus[id];
-    if (existing !== null && existing !== undefined) {
-      existing.status = status;
-      existing.completedAt = Date.now();
-    }
+    const type = spec.apply(state, id, data);
     persistState(pi, state);
-    events.emit(MAESTRIA_EVENTS.SUBAGENT_FAILED, {
-      id,
-      timestamp: Date.now(),
-      type: existing?.type,
-    });
-  });
-
-const subscribeSteered = (
-  events: PiEvents,
-  pi: SubagentEventHost,
-  state: MaestriaState,
-): (() => void) =>
-  events.on(SUBAGENT_EVENTS.STEERED, (data: unknown) => {
-    const id = getStringField(data, 'id');
-    if (id === undefined) {
-      return;
+    if (spec.target !== undefined) {
+      events.emit(spec.target, { id, timestamp: Date.now(), type });
     }
-    state.subagentStatus[id] ??= { startedAt: Date.now(), status: 'running', type: 'unknown' };
-    persistState(pi, state);
   });
 
 export const subscribeSubagentEvents = (
@@ -111,11 +105,8 @@ export const subscribeSubagentEvents = (
   if (events === null || events === undefined) {
     return;
   }
-  const subscriptions = [
-    subscribeStarted(events, pi, state),
-    subscribeCompleted(events, pi, state),
-    subscribeFailed(events, pi, state),
-    subscribeSteered(events, pi, state),
-  ];
+  // Subscribe unconditionally: cleanups only collects the teardown
+  // handles, and `cleanups?.push(...)` would skip the map entirely.
+  const subscriptions = EVENT_SPECS.map((spec) => subscribeSpec(events, pi, state, spec));
   cleanups?.push(...subscriptions);
 };

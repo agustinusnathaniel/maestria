@@ -16,13 +16,9 @@ permission:
     stat*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
     git status*: allow
-    git diff*: allow
-    git log*: allow
     git blame*: allow
-    git show*: allow
     env: allow
     pwd: allow
     "*": ask

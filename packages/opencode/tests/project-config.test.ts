@@ -1,0 +1,161 @@
+import type { Config, Hooks } from '@opencode-ai/plugin';
+import { mkdirSync } from 'node:fs';
+import path from 'node:path';
+import { describe, expect, it } from 'vite-plus/test';
+
+import { MaestriaPlugin } from '@/index.js';
+import { resolveProjectRoot } from '@/project-config.js';
+import type { ProjectRootInput } from '@/project-config.js';
+import { RULES_PATH } from '@/root.js';
+
+// Thin adapter suite: the full loader contract (order, skip, escape, rel-only
+// diagnostics) lives once in packages/shared/project-config/tests/project-config.test.ts.
+// This file pins root resolution and plugin integration (instructions, system
+// transform, compaction).
+
+import { makeTempRoot, pluginInputForRoot, removeRoot, writeProjectFile } from './helpers.js';
+
+type SystemTransformHook = NonNullable<Hooks['experimental.chat.system.transform']>;
+type SystemTransformInput = Parameters<SystemTransformHook>[0];
+type SystemTransformOutput = Parameters<SystemTransformHook>[1];
+
+// The hook never reads its input, so one shared stub covers every call.
+// oxlint-disable-next-line no-unsafe-type-assertion -- test seam only: a full SDK Model literal would assert nothing about the hook contract.
+const transformInput = {} as SystemTransformInput;
+
+const stubTransformOutput = (system: string[] = []): SystemTransformOutput => ({ system });
+
+const getSystemTransformHook = (plugin: Hooks): SystemTransformHook => {
+  const hook = plugin['experimental.chat.system.transform'];
+  if (hook === undefined) {
+    throw new Error('Expected experimental.chat.system.transform hook');
+  }
+  return hook;
+};
+
+describe('resolveProjectRoot', () => {
+  const cases: { input: ProjectRootInput; expected: string | undefined; name: string }[] = [
+    {
+      expected: '/projects/acme',
+      input: {
+        directory: '/sessions/cwd',
+        project: { worktree: '/projects/acme' },
+        worktree: '/git/worktree',
+      },
+      name: 'prefers the SDK project worktree over cwd and git worktree',
+    },
+    {
+      expected: '/git/worktree',
+      input: { directory: '/sessions/cwd', worktree: '/git/worktree' },
+      name: 'falls back to the git worktree path when no project worktree exists',
+    },
+    {
+      expected: '/sessions/cwd',
+      input: { directory: '/sessions/cwd', project: {} },
+      name: 'falls back to the session directory for non-git projects',
+    },
+    {
+      expected: '/home/user/notes',
+      input: { directory: '/home/user/notes', project: { worktree: '/' }, worktree: '/' },
+      name: 'skips the "/" worktree sentinel and uses the session directory',
+    },
+    {
+      expected: '/remote/checkout',
+      input: {
+        directory: '/sessions/cwd',
+        project: { worktree: '/' },
+        worktree: '/remote/checkout',
+      },
+      name: 'skips a sentinel project worktree but keeps a real instance worktree',
+    },
+    {
+      expected: '/',
+      input: { directory: '/', project: { worktree: '/' } },
+      name: 'accepts a genuine "/" session directory instead of rejecting the root',
+    },
+    {
+      expected: undefined,
+      input: {},
+      name: 'returns undefined when the host provides no usable root',
+    },
+  ];
+  for (const { input, expected, name } of cases) {
+    it(name, () => {
+      expect(resolveProjectRoot(input)).toBe(expected);
+    });
+  }
+});
+
+describe('MaestriaPlugin project content', () => {
+  it('keeps project paths out of config instructions and preserves user order', async () => {
+    const root = makeTempRoot();
+    try {
+      writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
+      writeProjectFile(root, '.maestria/rules.md', '# rules\n');
+      const plugin = await MaestriaPlugin(pluginInputForRoot(root));
+      const config: Config = { agent: {}, instructions: ['user.md'] };
+      await plugin.config?.(config);
+      expect(config.instructions).toEqual(['user.md', RULES_PATH]);
+
+      // Repeat config calls must not accumulate duplicates.
+      await plugin.config?.(config);
+      expect(config.instructions).toEqual(['user.md', RULES_PATH]);
+    } finally {
+      removeRoot(root);
+    }
+  });
+
+  it('injects both sections in place, preserving existing system entries', async () => {
+    const root = makeTempRoot();
+    try {
+      const plugin = await MaestriaPlugin(pluginInputForRoot(root));
+      const output = stubTransformOutput(['existing system block']);
+      const before: string[] = output.system;
+      await getSystemTransformHook(plugin)(transformInput, output);
+      expect(output.system).toEqual(['existing system block']);
+
+      writeProjectFile(root, '.maestria/workflow.md', '# workflow\n');
+      writeProjectFile(root, '.maestria/rules.md', '# rules\n');
+      await getSystemTransformHook(plugin)(transformInput, output);
+
+      // In-place mutation of the same array the host passed in.
+      expect(output.system).toBe(before);
+      expect(output.system).toHaveLength(3);
+      expect(output.system[0]).toBe('existing system block');
+      expect(output.system[1]).toContain('.maestria/workflow.md');
+      expect(output.system[1]).toContain('# workflow');
+      expect(output.system[2]).toContain('.maestria/rules.md');
+      expect(output.system[2]).toContain('# rules');
+    } finally {
+      removeRoot(root);
+    }
+  });
+
+  it('rejects the model call when a project file is unusable, while init still succeeds', async () => {
+    const root = makeTempRoot();
+    try {
+      mkdirSync(path.join(root, '.maestria', 'rules.md'), { recursive: true });
+      // Init must not throw: the host swallows factory errors, so failing
+      // here would silently disable the whole plugin.
+      const plugin = await MaestriaPlugin(pluginInputForRoot(root));
+      await expect(
+        getSystemTransformHook(plugin)(transformInput, stubTransformOutput()),
+      ).rejects.toThrow(/is a directory/u);
+    } finally {
+      removeRoot(root);
+    }
+  });
+
+  it('adds a project preservation note to compaction context', async () => {
+    const root = makeTempRoot();
+    try {
+      const plugin = await MaestriaPlugin(pluginInputForRoot(root));
+      const output = { context: [] as string[] };
+      await plugin['experimental.session.compacting']?.({ sessionID: 's' }, output);
+      expect(output.context).toHaveLength(2);
+      expect(output.context[1]).toContain('.maestria/');
+    } finally {
+      removeRoot(root);
+    }
+  });
+});

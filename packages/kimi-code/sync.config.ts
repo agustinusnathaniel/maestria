@@ -1,6 +1,7 @@
 // packages/kimi-code/sync.config.ts
 // Sync config: derives kimi-code skill files from canonical core directives
 
+import { specialistReferenceReplacements } from '../core/scripts/lib/specialist-replacements.js';
 import type { SyncConfig } from '../core/scripts/lib/config.js';
 
 // Shared `plan`-profile capability line (architect, orchestrator, planner,
@@ -11,13 +12,7 @@ const PLAN_PROFILE_PREPEND =
 export default {
   default: {
     replace: [
-      { from: '@adventurer', to: 'adventurer' },
-      { from: '@architect', to: 'architect' },
-      { from: '@builder', to: 'builder' },
-      { from: '@diagnose', to: 'diagnose' },
-      { from: '@planner', to: 'planner' },
-      { from: '@reviewer', to: 'reviewer' },
-      { from: '@writer', to: 'writer' },
+      ...specialistReferenceReplacements(),
       { from: 'run in parallel', to: 'run in parallel via `AgentSwarm`' },
     ],
   },
@@ -111,7 +106,7 @@ not.`,
 | adventurer | \`explore\` | Gather data; describe the terrain | Before any implementation in unfamiliar code |
 | architect | \`plan\` | Evaluate options; document decisions | When multiple approaches exist |
 | builder | \`coder\` | Implement; test; refactor | When the design is locked |
-| diagnose | \`coder\` | Find root cause; write regression test | When something is broken |
+| diagnose | \`coder\` | Find root cause; verify behavior; add coverage only for a genuine uncovered behavioral gap | When something is broken |
 | planner | \`plan\` | Break down work; sequence milestones | Before starting a multi-step feature |
 | reviewer | \`plan\` | Review; QA; check correctness | After the integrated builder batch is reconciled; general review first, then risk-matched lenses sequentially |
 | writer | \`coder\` | Document APIs; write README; create ADRs | When code needs human-facing docs |

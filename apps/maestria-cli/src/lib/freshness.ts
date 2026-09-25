@@ -1,15 +1,12 @@
-import { compareVersions, isVersionDifferent, isVersionGt } from '@/lib/version.js';
+import { compareVersions } from '@/lib/version.js';
 
 /** How an installed version relates to the latest published version. */
 export type Freshness = 'current' | 'outdated' | 'unknown';
 
 /**
- * Classify an installed version against the latest published version.
- *
- * - 'outdated': installed is strictly older than latest.
- * - 'current': installed equals latest, or is NEWER than latest (a local/dev
- *   build ahead of the registry is never flagged as outdated).
- * - 'unknown': either side is '', 'unknown', or otherwise not semver-comparable.
+ * Classify an installed version against latest. Newer-than-latest (a local/dev
+ * build ahead of the registry) is 'current', never outdated. Uncomparable
+ * sides ('', 'unknown', non-semver) are 'unknown'.
  */
 export const freshnessOf = (installedVersion: string, latestVersion: string): Freshness => {
   const comparison = compareVersions(installedVersion, latestVersion);
@@ -19,27 +16,21 @@ export const freshnessOf = (installedVersion: string, latestVersion: string): Fr
   if (comparison === 0) {
     return 'current';
   }
-  if (comparison === -1 && isVersionDifferent(installedVersion, latestVersion)) {
+  if (comparison === -1) {
     return 'outdated';
   }
   return 'current';
 };
 
 /**
- * Whether an installed version needs an update to reach the latest published
- * version: it must be strictly BEHIND latest. An install AHEAD of latest (a
- * local/dev build) never needs an update - mirrors freshnessOf(), which
- * classifies newer-than-latest as 'current', so `maestria check` and the
- * update paths agree on the same machine state.
+ * Whether an install needs an update: strictly BEHIND latest. Ahead-of-latest
+ * never needs one, mirroring freshnessOf(), so `maestria check` and update
+ * paths agree on the same machine state.
  */
 export const needsUpdateOf = (installedVersion: string, latestVersion: string): boolean =>
-  isVersionDifferent(installedVersion, latestVersion) &&
-  !isVersionGt(installedVersion, latestVersion);
+  compareVersions(installedVersion, latestVersion) === -1;
 
-/**
- * Exit code for `maestria check`: 0 = ok, 1 = not installed/unavailable,
- * 3 = installed but outdated.
- */
+/** Exit code for `maestria check`: 0 = ok, 1 = not installed/unavailable, 3 = outdated. */
 export const checkExitCode = (freshness: Freshness, installed: boolean): number => {
   if (!installed) {
     return 1;

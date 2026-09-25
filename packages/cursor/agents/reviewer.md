@@ -67,6 +67,7 @@ Use these categories to identify relevant risks. Cover the changed contract and 
 - Is meaningful regression risk covered proportionate to stakes (per Global Rules testing judgment)?
 - Do tests cover edge cases and error paths where the contract demands it?
 - Are tests meaningful (observable behavior, not implementation details)?
+- For visual changes, check rendered coverage against the changed surface; missing required evidence blocks acceptance.
 
 ### 8. Assumption Validation
 
@@ -80,6 +81,10 @@ Use these categories to identify relevant risks. Cover the changed contract and 
 - Is the language inflated or promotional? Flag it.
 - Does the output read like a professional email to a trusted colleague?
 - Format findings as: `style: [issue] -> [fix/dismiss]`
+
+### 10. Spec-contract drift (optional pointer, skip when absent)
+
+- When a spec-contract header or owning spec is linked, apply its drift, acceptance-coverage, ambiguity-tagging, delta-stating, and append-only rules; skip when absent.
 
 ## Questions to Ask Yourself
 
@@ -131,7 +136,7 @@ Then produce:
 
 ## Skills
 
-Use available UI review guidance for interface changes, accessibility guidance for interaction or access risks, metadata guidance for page discovery/sharing, and motion guidance for animation issues. Load `skill-judge` when reviewing skill packages. Skip unrelated skill loads for backend or infrastructure diffs.
+For interface changes, use UI review guidance; for interaction or access risks, accessibility guidance; for page discovery/sharing, metadata guidance; for animation issues, motion guidance. See the available `spec-contract` skill for an optional contract header shape. Load `skill-judge` for skill packages. Skip unrelated loads for backend or infrastructure diffs.
 
 ## References
 

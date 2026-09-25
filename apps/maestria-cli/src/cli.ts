@@ -3,8 +3,10 @@ import type { ArgsDef, CommandDef } from 'citty';
 
 import { checkCommand } from '@/commands/check.js';
 import { configureCommand } from '@/commands/configure.js';
+import { doctorCommand } from '@/commands/doctor.js';
 import { installCommand } from '@/commands/install.js';
 import { pluginCommand } from '@/commands/plugin.js';
+import { setupCommand } from '@/commands/setup.js';
 import { handleStatus, statusCommand } from '@/commands/status.js';
 import type { StatusArgs } from '@/commands/status.js';
 import { uninstallCommand } from '@/commands/uninstall.js';
@@ -12,8 +14,6 @@ import { updateCommand } from '@/commands/update.js';
 import { toCommandRun } from '@/lib/command-runner.js';
 import type { CommandResult } from '@/lib/command-result.js';
 import { version } from '^/package.json';
-
-// ── Custom --help ────────────────────────────────────
 
 const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
   check: {
@@ -42,6 +42,13 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'For CI pipelines, pass --set with --global or --project and add --quiet.',
     ].join('\n'),
   },
+  doctor: {
+    examples: [
+      'maestria doctor                   Diagnose skill setup without changing anything',
+      'maestria doctor --json            Show skill diagnostics as JSON',
+      'maestria doctor --quiet           Suppress spinner output',
+    ],
+  },
   install: {
     examples: [
       'maestria install opencode         Install for a specific platform',
@@ -51,7 +58,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria install --quiet          Suppress spinner output',
       'maestria install hermes           Install for a specific platform',
       'maestria install claude-code      Install for Claude Code',
-      'maestria install codex        Install for Codex CLI',
+      'maestria install codex            Install for Codex CLI',
       'maestria install prime-agent      Install for Prime Agent',
       'maestria install --compact        Minimal machine-friendly output',
     ],
@@ -71,19 +78,20 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update opencode,pi       Update multiple platforms at once',
       'maestria install hermes           Install for Hermes agent',
       'maestria install claude-code      Install for Claude Code',
-      'maestria install codex          Install for Codex CLI',
+      'maestria install codex            Install for Codex CLI',
       'maestria install prime-agent      Install for Prime Agent',
       'maestria configure opencode       Choose per-agent models interactively',
       'maestria configure codex          Configure native Codex custom-agent models',
       'maestria configure cursor        Configure native Cursor agent models',
       'maestria configure pi --set builder=opencode-go/deepseek-v4-flash  Set a model non-interactively',
       'maestria plugin install            Stage a portable Agent Plugin',
+      'maestria setup                   Coordinate optional ecosystem and skill setup',
       'maestria plugin validate ./my-plugin  Validate a portable Agent Plugin directory',
       'maestria --help                   Show this help',
     ],
     tip: [
       'Use --json for structured machine-readable output.',
-      'Use --compact for minimal token-efficient text output.',
+      'Use --compact for minimal token-efficient text output where supported.',
       'Use a positional platform arg (or comma-separated list), --all, or interactive prompts.',
       'For CI pipelines, add --quiet to suppress spinner control sequences.',
     ].join('\n'),
@@ -98,6 +106,21 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
     tip: [
       "The portable workflow stages and validates a directory package; it does not replace each client's own activation or permission model.",
       'Use a client-specific plugin installer or point the client at the staged directory.',
+    ].join('\n'),
+  },
+  setup: {
+    examples: [
+      'maestria setup                    Coordinate optional setup interactively',
+      'maestria setup --ecosystem codegraph,opensrc --yes  Check ecosystem tools non-interactively',
+      'maestria setup --xtarterize-skills --cwd ./my-project --yes  Apply project skills',
+      'maestria setup --skill-source acme/skills:global --yes  Install a skill source globally',
+      'maestria setup --skills create-pull-request --yes  Reconcile Maestria skills',
+      'maestria setup --json             Output the per-action report as JSON',
+    ],
+    tip: [
+      'Setup is read-only until the final confirmation; nothing runs before confirm.',
+      'Ecosystem tools are detection plus manual steps only; setup never installs them automatically.',
+      'Project scope follows --cwd (or the current directory); re-run with the same args to resume.',
     ].join('\n'),
   },
   status: {
@@ -117,7 +140,7 @@ const SECTIONS: Record<string, { examples: string[]; tip?: string }> = {
       'maestria update --json            Output results as JSON',
       'maestria update hermes            Update Hermes to latest',
       'maestria update claude-code      Update Claude Code to latest',
-      'maestria update codex         Update Codex CLI to latest',
+      'maestria update codex            Update Codex CLI to latest',
       'maestria update prime-agent      Update Prime Agent to latest',
       'maestria update --compact         Minimal machine-friendly output',
     ],
@@ -188,16 +211,10 @@ const showEnhancedUsage = async <T extends ArgsDef = ArgsDef>(
   console.log(parts.join('\n'));
 };
 
-// ── Main command ─────────────────────────────────────
-
 export interface RootArgs extends StatusArgs {
   version?: boolean;
 }
 
-/**
- * Root command handler: `--version` short-circuits, otherwise the root command
- * renders status through the same flow as `maestria status`.
- */
 export const handleRoot = async (args: RootArgs): Promise<CommandResult> => {
   if (args.version === true) {
     return { exitCode: 0, output: version };
@@ -235,9 +252,7 @@ export const main = defineCommand({
     name: 'maestria',
   },
   run: async (context) => {
-    // citty runs the parent command after a matched subcommand. The runner has
-    // already recorded that subcommand's exit code, so skip the status
-    // fall-through instead of rendering root status and overwriting it.
+    // A matched subcommand already recorded its exit code; skip the status fall-through.
     if (process.exitCode !== undefined) {
       return;
     }
@@ -246,20 +261,18 @@ export const main = defineCommand({
   subCommands: {
     check: checkCommand,
     configure: configureCommand,
+    doctor: doctorCommand,
     install: installCommand,
     plugin: pluginCommand,
+    setup: setupCommand,
     status: statusCommand,
     uninstall: uninstallCommand,
     update: updateCommand,
   },
 });
 
-/**
- * CLI boundary: owns signal handlers, the citty run, and the single process
- * exit. Importing this module has no side effects; index.ts invokes runCli.
- */
+/** CLI boundary: owns signal handlers, the citty run, and the single process exit. */
 export const runCli = async (): Promise<void> => {
-  // Ensure clean exit on signals - prevents Effect runtime from keeping process alive
   process.on('SIGINT', () => process.exit(130));
   process.on('SIGTERM', () => process.exit(0));
 

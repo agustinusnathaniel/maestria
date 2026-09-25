@@ -1,6 +1,6 @@
 {
   "name": "@maestria/pi",
-  "version": "0.7.11",
+  "version": "0.7.16",
   "description": "Maestria extension for the Pi coding agent",
   "keywords": [
     "agent-orchestration",
@@ -32,9 +32,6 @@
     "lint": "vp check",
     "validate-skills": "node --experimental-strip-types scripts/validate-skills.ts",
     "validate": "npm run validate-skills"
-  },
-  "dependencies": {
-    "effect": "catalog:"
   },
   "devDependencies": {
     "@maestria/core": "workspace:*",

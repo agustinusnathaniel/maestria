@@ -31,11 +31,12 @@ That direct path installs the plugin and skills. Use `npx maestria install codex
 
 ## What It Provides
 
-- **14 namespaced skills** - `$maestria:global-rules`, `$maestria:orchestrator`, the 7 specialists (adventurer, architect, builder, diagnose, planner, reviewer, writer), `$maestria:handoff`, `$maestria:iteration-limits`, and the workflow modes `$maestria:fein`, `$maestria:sonar`, `$maestria:blitz`.
-- **7 native custom agents** - the Maestria CLI installs `maestria-*` agent TOMLs into Codex's native `$CODEX_HOME/agents/` directory, with read-only sandbox settings for reconnaissance, architecture, planning, and review roles.
+- **Namespaced skills** (14 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/codex/skills) for the current list) - `$maestria:global-rules`, `$maestria:orchestrator`, the 7 specialists (adventurer, architect, builder, diagnose, planner, reviewer, writer), `$maestria:handoff`, `$maestria:iteration-limits`, and the workflow modes `$maestria:fein`, `$maestria:sonar`, `$maestria:blitz`.
+- **Native custom agents** (7 as of 2026-09-22; see the [package directory](https://github.com/agustinusnathaniel/maestria/blob/main/packages/codex/agents) for the current list) - the Maestria CLI installs `maestria-*` agent TOMLs into Codex's native `$CODEX_HOME/agents/` directory, with read-only sandbox settings for reconnaissance, architecture, planning, and review roles.
 - **Automatic orchestration** - the Maestria CLI installs a marked global Codex instruction block that activates the orchestrator workflow in the primary session and routes specialist work to the native roles.
 - **Maestria CLI compatibility** - install, status, check, update, and uninstall through the CLI.
 - **Native model configuration** - `maestria configure codex` can create or update Codex custom-agent TOML files without overwriting unrelated agent settings.
+- **Project customization (advisory)** - the orchestrator reads project-root `.maestria/workflow.md` then `.maestria/rules.md` with host tools when not already supplied; missing files leave defaults unchanged, and an unreadable file is disclosed and requested rather than invented.
 
 ## Support / Platform Notes
 

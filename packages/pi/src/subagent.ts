@@ -4,7 +4,6 @@ import {
   assertNonEmptyTask,
   assertValidAgent,
 } from '@maestria/shared-pi/subagent-utils';
-import { Effect } from 'effect';
 import { Type } from 'typebox';
 import type { Static } from 'typebox';
 
@@ -14,15 +13,13 @@ import {
   recordHandoff,
   recordSpecialistDelegated,
 } from '@maestria/shared-pi/state-core';
-import { pollSubagentEffect } from '@/subagent-polling.js';
+import { pollWithDefaults } from '@/subagent-polling.js';
 import type { SubagentPollingService, SubagentRecord } from '@/subagent-polling.js';
 import { subscribeSubagentEvents } from '@/subagent-events.js';
 import type { SubagentEventHost } from '@/subagent-events.js';
 
 const ALLOWED_AGENT_NAMES: readonly string[] = ALLOWED_AGENTS;
 
-const POLL_TIMEOUT_MS = 180_000;
-const POLL_INTERVAL_MS = 500;
 const MAX_PARALLEL_TASKS = 8;
 
 type SubagentSpawnService = SubagentPollingService & {
@@ -83,13 +80,6 @@ const abortSubagents = (service: SubagentPollingService, ids: readonly string[])
     }
   }
 };
-
-const pollSubagentOrAbortEffect = (options: Parameters<typeof pollSubagentEffect>[0]) =>
-  Effect.tapError(pollSubagentEffect(options), () =>
-    Effect.sync(() => {
-      abortSubagents(options.service, [options.id]);
-    }),
-  );
 
 const recordAndPersist = (
   pi: SubagentEventHost,
@@ -156,18 +146,7 @@ const handleSingleMode = async (
     inheritContext: true,
   });
   recordAndPersist(pi, state, agent, task);
-  const record = await Effect.runPromise(
-    pollSubagentOrAbortEffect({
-      id,
-      intervalMs: POLL_INTERVAL_MS,
-      label: `Subagent ${agent}`,
-      onUpdate,
-      sendUpdates: true,
-      service,
-      signal,
-      timeoutMs: POLL_TIMEOUT_MS,
-    }),
-  );
+  const record = await pollWithDefaults(service, id, `Subagent ${agent}`, true, signal, onUpdate);
   return {
     content: [{ text: record.result ?? record.error ?? 'No output.', type: 'text' as const }],
     details: { subagentId: id },
@@ -206,34 +185,34 @@ const pollParallelSubagents = async (
   service: SubagentSpawnService,
   signal: AbortSignal | undefined,
   onUpdate: ToolUpdateHandler,
-): Promise<ParallelOutcome[]> =>
-  await Effect.runPromise(
-    Effect.all(
-      spawnedIds.map((id, index) => {
-        const task = taskList[index];
-        return Effect.match(
-          pollSubagentEffect({
-            id,
-            intervalMs: POLL_INTERVAL_MS,
-            label: `${task.agent} (${index + 1}/${taskList.length})`,
-            onUpdate,
-            sendUpdates: false,
-            service,
-            signal,
-            timeoutMs: POLL_TIMEOUT_MS,
-          }),
-          {
-            onFailure: (error) => {
-              abortSubagents(service, spawnedIds);
-              return { error };
-            },
-            onSuccess: (record) => ({ record }),
-          },
+): Promise<ParallelOutcome[]> => {
+  const settled = await Promise.allSettled(
+    spawnedIds.map(async (id, index): Promise<ParallelOutcome> => {
+      const task = taskList[index];
+      try {
+        const record = await pollWithDefaults(
+          service,
+          id,
+          `${task.agent} (${index + 1}/${taskList.length})`,
+          false,
+          signal,
+          onUpdate,
         );
-      }),
-      { concurrency: 'unbounded' },
-    ),
+        return { record };
+      } catch (error) {
+        abortSubagents(service, spawnedIds);
+        return { error };
+      }
+    }),
   );
+  return settled.map((outcome): ParallelOutcome => {
+    if (outcome.status === 'fulfilled') {
+      return outcome.value;
+    }
+    const reason: unknown = outcome.reason;
+    return { error: reason };
+  });
+};
 
 const renderParallelResults = (
   taskList: SubagentTask[],
@@ -313,17 +292,13 @@ const runChainSteps = async (
 
   let nextResult: string;
   try {
-    const record = await Effect.runPromise(
-      pollSubagentOrAbortEffect({
-        id,
-        intervalMs: POLL_INTERVAL_MS,
-        label: `Chain step ${index + 1}: ${task.agent}`,
-        onUpdate,
-        sendUpdates: true,
-        service,
-        signal,
-        timeoutMs: POLL_TIMEOUT_MS,
-      }),
+    const record = await pollWithDefaults(
+      service,
+      id,
+      `Chain step ${index + 1}: ${task.agent}`,
+      true,
+      signal,
+      onUpdate,
     );
     nextResult = record.result ?? record.error ?? 'No output.';
   } catch (error) {

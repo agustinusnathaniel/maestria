@@ -6,11 +6,10 @@ editUrl: false
 lastUpdated: false
 ---
 
-import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import { marks } from '@/data/marks.js';
 
@@ -47,28 +46,15 @@ import { marks } from '@/data/marks.js';
       />
     </PluginSection>
 
-    <PluginSection
-      index="02"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
-        <DocsLinkList
-          items={[
-            { title: 'Getting Started', description: 'Install, verify, and run your first session.', href: '/opencode/getting-started/installation/' },
-            { title: 'Configuration', description: 'Per-agent models and OpenCode-level settings.', href: '/opencode/configuration/' },
-            { title: 'Agent Reference', description: 'Roles, permissions, and when to use each of the 8 agents.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Agent usage patterns for recon, implementation, and review.', href: '/core/workflow-patterns/' },
-            { title: 'Reference', description: 'Tool permissions, t3code compatibility, and known limitations.', href: '/opencode/reference/' },
-            { title: 'Changelog', description: 'Version history and release notes.', href: '/opencode/changelog/' },
-            { title: 'Contributing', description: 'Development setup, project structure, and how to extend the plugin.', href: '/opencode/contributing/' },
-          ]}
-        />
-      </div>
-    </PluginSection>
-
-    <SiblingPlatforms excludeId="opencode" />
+    <RelatedDocs
+      links={[
+        { label: 'Quick start', href: '/opencode/getting-started/quick-start/' },
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'OpenCode reference', href: '/opencode/reference/' },
+        { label: 'Changelog', href: '/opencode/changelog/' },
+        { label: 'Contributing', href: '/opencode/contributing/' },
+      ]}
+    />
 
     <SiteFooter />
 

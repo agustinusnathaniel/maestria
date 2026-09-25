@@ -1,5 +1,33 @@
 # @maestria/hermes
 
+## 0.1.21
+
+### Patch Changes
+
+- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Adopt behavior-first testing guidance across the generated Maestria methodology. Reject tautological and change-detector tests, require pre-code test selection, prefer E2E artifacts for complex features, and record failure-mode inventories before isolated-system implementation.
+
+- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Harden production subprocess, persisted-state, review-mode, Bash-policy, deployment-test, and OpenCode permission boundaries for P1 test safety.
+
+- [#347](https://github.com/agustinusnathaniel/maestria/pull/347) [`14fb301`](https://github.com/agustinusnathaniel/maestria/commit/14fb301aaf9410baf809922797eb2f25146482d4) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Remove unneeded production layers while keeping safety behavior: drop the opt-in methodology annotation hook and mode footer middleware, unify mode-switch pipeline text in one table, and pass the OMP extension API directly instead of through a GoalApi adapter.
+
+## 0.1.20
+
+### Patch Changes
+
+- [#316](https://github.com/agustinusnathaniel/maestria/pull/316) [`7a9334b`](https://github.com/agustinusnathaniel/maestria/commit/7a9334b3c020d8cbd91441e1ced33495a75b6f7a) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Restore a consistent PR delivery contract.
+  
+  - Titles use explicit Conventional Commits; bodies use literal ## headings in order (Summary, Changes, Verification, plus Visual evidence and Breaking changes when applicable), respecting explicit project templates.
+  - Changes carries the Work Results table (File, What changed, Why); Verification carries checks, results, and unresolved gaps.
+  - Pushes that change the cumulative diff or verification evidence update the PR title and body with a published-body readback. Acceptance classifies visual evidence as required or not applicable with reason, carries it through briefs, checks rendered coverage in review, reads back the published body at delivery, and treats an open PR as complete only with its applicable evidence.
+  
+  Also restores proportional documentation assessment: internal docs, user-facing docs, changelog/release notes, and required changesets are assessed separately, only affected categories are updated, plausible unaffected categories note a reason, and required docs carry through briefs to reconciliation.
+
+## 0.1.19
+
+### Patch Changes
+
+- [#314](https://github.com/agustinusnathaniel/maestria/pull/314) [`811e6c2`](https://github.com/agustinusnathaniel/maestria/commit/811e6c25c9643ee9e8ffb04731da5cededc4ba9f) Thanks [@agustinusnathaniel](https://github.com/agustinusnathaniel)! - Tighten the visual delivery evidence contract: capture, handoff, publication in the PR body, and delivery-owner readback are distinct stages. Local paths and session-log references no longer count as PR-body evidence, missing required evidence is incomplete with the checked limitation, and final reconciliation calls out PR-body evidence with readback. PR presentation stays concise and comparable without fabricated baselines, and affected evidence is refreshed with obsolete PR body references removed before delivery or re-delivery.
+
 ## 0.1.18
 
 ### Patch Changes

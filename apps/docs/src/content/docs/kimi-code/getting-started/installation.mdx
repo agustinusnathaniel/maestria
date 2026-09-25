@@ -47,6 +47,16 @@ To control extraction yourself, run `npm pack @maestria/kimi-code@latest`, extra
 
 `[[hooks]]` and `[[permission.rules]]` blocks in `~/.kimi-code/config.toml` are the only tool-layer enforcement; persona text alone is advisory. The default installation adds neither. Hooks are executable code: review them before enabling. Permission rules apply session-wide, so a deny rule for review also blocks builder and writer work.
 
+> **Note (2026-09-22):** the recommended hooks below were previously recorded in ADR-KC-001 and are re-homed here, next to the install steps, so this guide is the single how-to reference.
+
+The recommended session controls live in the user's `config.toml`, not the plugin manifest; the user copies them in:
+
+- `PreToolUse` on `Bash` - block destructive commands (Kimi's upstream hooks documentation gives an example that exits 2 to block)
+- `UserPromptSubmit` - append a session reminder to every user message; the closest approximation of system-prompt injection
+- `PreCompact` / `PostCompact` - observation-only logging of compaction cycles
+
+`PreToolUse`, `UserPromptSubmit`, and `Stop` are blockable (return values affect the main flow); other events fire and forget. Subagent start/stop hooks are observation-only and suit telemetry.
+
 ## Verify the Installation
 
 In Kimi Code, run:

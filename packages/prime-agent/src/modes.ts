@@ -1,20 +1,6 @@
-// packages/prime-agent/src/modes.ts
-// Prime-local implementation of the Maestria workflow modes (fein/sonar/blitz).
-//
-// Pure mode mechanics (keywords, markers, `## MODE:` section extraction)
-// delegate to `@maestria/shared-mode`, mirroring
-// packages/opencode/src/modes/index.ts. Host-specific concerns stay
-// Prime-local: the `skills/<mode>/SKILL.md` layout, the module prompt cache,
-// `before_agent_start` string-shape injection, and slash-command registration.
-// This module still imports no `@maestria/pi`, `@maestria/shared-pi`, or
-// pi-coding-agent runtime (only the type-only `./pi-api.js` plus the pure,
-// host-SDK-free `@maestria/shared-mode`); `shared-mode` has no filesystem or
-// host APIs.
-//
-// Mode content is NOT duplicated here: it is loaded from the package's
-// generated skills (`skills/<mode>/SKILL.md`, the `## MODE:` section onward),
-// so the extension's injected prompt is exactly the sync-projected mode skill
-// (canonical content lives in packages/core/agent-directives/, ADR-CORE-005).
+// Prime-local workflow modes (fein/sonar/blitz). Mechanics delegate to
+// `@maestria/shared-mode`; prompt content loads from generated skills so the
+// injected prompt matches the sync-projected skill. See ADR-CORE-005.
 
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -29,6 +15,12 @@ import type {
   ExtensionCommandContext,
   ExtensionContext,
 } from './pi-api.js';
+import {
+  formatProjectErrorBanner,
+  formatProjectSection,
+  loadProjectSections,
+} from './project-config.js';
+import type { ProjectConfigFs } from './project-config.js';
 import type { MaestriaModeState } from './state.js';
 import { persistModeState } from './state.js';
 
@@ -41,18 +33,13 @@ const MODE_COMMAND_DESCRIPTIONS: Record<ModeKeyword, string> = {
   sonar: 'Set workflow mode to sonar (research only)',
 };
 
-// ---------------------------------------------------------------------------
-// Mode prompt loading (from generated skills)
-// ---------------------------------------------------------------------------
+/** Mode prompt loading (from generated skills). */
 
 const _promptCache: Partial<Record<ModeKeyword, string>> = {};
 
 /**
- * Load the mode prompt for a keyword from the package's generated skills
- * directory: `skills/<mode>/SKILL.md`, sliced from the `## MODE:` heading
- * onward, prefixed with the `[MODE: <mode>]` marker. Returns an empty string
- * (and warns) when the skill file is missing or has no mode section, so a
- * packaging mistake degrades to "no injection" rather than an extension crash.
+ * Load the mode prompt from `skills/<mode>/SKILL.md` (`## MODE:` onward).
+ * Missing or heading-less skills degrade to an empty prompt (plus a warning).
  */
 export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string => {
   const cachedPrompt = _promptCache[keyword];
@@ -66,10 +53,7 @@ export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string =
     if (content.includes('## MODE:')) {
       prompt = `${MODE_MARKERS[keyword]}\n\n${extractModeSection(content)}`;
     } else {
-      // A generated skill without the mode section must not leak the whole
-      // SKILL.md into the system prompt: degrade to "no injection" instead.
-      // (extractModeSection would normalize the whole file; that fail-open
-      // shape is for command files, not skill prompts.)
+      // Heading-less skills must not leak the whole SKILL.md into the prompt.
       console.warn(
         `[maestria] prime-agent: mode skill "${keyword}" has no "## MODE:" heading; ` +
           `mode prompt injection disabled for this mode.`,
@@ -86,57 +70,76 @@ export const getModePrompt = (keyword: ModeKeyword, skillsDir: string): string =
   return prompt;
 };
 
-// ---------------------------------------------------------------------------
-// before_agent_start mode prompt injection
-// ---------------------------------------------------------------------------
+/** before_agent_start mode prompt injection. */
 
 /**
- * Create the `before_agent_start` handler that appends the active mode prompt
- * to the chained system prompt. Returns void when no mode is active (no
- * modification), so Prime's normal prompt assembly stands as-is.
+ * before_agent_start handler: mode prompt plus project customization.
+ * Never throws: broken files surface via notify plus a STOP banner.
  */
 export const createModePromptHandler =
   (
     state: MaestriaModeState,
     skillsDir: string,
+    fs?: ProjectConfigFs,
   ): ((
     event: BeforeAgentStartEvent,
-    _ctx: ExtensionContext,
+    ctx?: ExtensionContext,
   ) => BeforeAgentStartEventResult | undefined) =>
-  (event: BeforeAgentStartEvent): BeforeAgentStartEventResult | undefined => {
-    if (!state.mode) {
+  (
+    event: BeforeAgentStartEvent,
+    ctx?: ExtensionContext,
+  ): BeforeAgentStartEventResult | undefined => {
+    const root = typeof ctx?.cwd === 'string' && ctx.cwd !== '' ? ctx.cwd : undefined;
+    let sections: { content: string; rel: string }[] = [];
+    if (root !== undefined) {
+      try {
+        sections = fs === undefined ? loadProjectSections(root) : loadProjectSections(root, fs);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        try {
+          ctx?.ui?.notify?.(message);
+        } catch {
+          // Notify is best-effort; the banner below is authoritative.
+        }
+        return {
+          systemPrompt: [event.systemPrompt, '', formatProjectErrorBanner(message)].join('\n'),
+        };
+      }
+    }
+
+    if (!state.mode && sections.length === 0) {
       return undefined;
     }
 
-    const modePrompt = getModePrompt(state.mode, skillsDir);
-    if (!modePrompt) {
-      return undefined;
+    const parts: string[] = [event.systemPrompt, ''];
+    if (state.mode) {
+      const modePrompt = getModePrompt(state.mode, skillsDir);
+      if (modePrompt) {
+        parts.push(
+          modePrompt,
+          '',
+          `The user has set workflow mode to "${state.mode}". Honor this mode throughout the session until it is changed or cleared.`,
+          '',
+        );
+      } else if (sections.length === 0) {
+        return undefined;
+      }
+    }
+    for (const section of sections) {
+      parts.push(formatProjectSection(section), '');
     }
 
     return {
-      systemPrompt: [
-        event.systemPrompt,
-        '',
-        modePrompt,
-        '',
-        `The user has set workflow mode to "${state.mode}". Honor this mode throughout the session until it is changed or cleared.`,
-      ].join('\n'),
+      systemPrompt: parts.join('\n'),
     };
   };
 
-// ---------------------------------------------------------------------------
-// Commands
-// ---------------------------------------------------------------------------
+/** Mode slash commands plus status. */
 
 const MODE_CLEAR_COMMAND = 'mode-clear';
 export const STATUS_COMMAND = 'maestria-status';
 
-/**
- * Install the mode slash commands (`/fein`, `/sonar`, `/blitz`, `/mode-clear`)
- * and the status/help command (`/maestria-status`). Mode selection is persisted
- * as a session custom entry; the prompt is injected on the next agent turn by
- * the `before_agent_start` handler.
- */
+/** Install mode slash commands plus status. */
 export const installCommands = (pi: ExtensionAPI, state: MaestriaModeState): void => {
   for (const keyword of MODE_KEYWORDS) {
     pi.registerCommand(keyword, {
@@ -144,9 +147,7 @@ export const installCommands = (pi: ExtensionAPI, state: MaestriaModeState): voi
       handler: async (args: string, ctx: ExtensionCommandContext) => {
         state.mode = keyword;
         persistModeState(pi, state);
-        // Forward a goal argument (e.g. `/fein implement the pipeline`) so the
-        // injected mode prompt's "if the user provided a goal, run it now"
-        // instruction has the goal to act on.
+        // Forward a goal argument so the injected "run it now" instruction has content.
         if (args.trim()) {
           pi.sendUserMessage(args.trim(), { deliverAs: 'steer' });
         } else {

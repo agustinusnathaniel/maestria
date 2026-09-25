@@ -1,5 +1,7 @@
 # Maestria Vision
 
+I told the short version of this story on the [About page](https://maestria.sznm.dev/about/). This file is the longer version, grounded in how I actually build.
+
 ## Motivation
 
 AI coding agents provide tools, sandboxes, permissions, and model access. Teams still need to decide how agents plan work, delegate tasks, and review results.
@@ -16,7 +18,7 @@ Maestria packages do not use automatic postinstall scripts. Direct plugin instal
 
 - **Discipline over capability.** Maker/checker split prevents self-approval. Iteration limits prevent infinite loops. Handoff contracts prevent dropped context.
 
-- **Transparency.** Every agent is a markdown file with YAML frontmatter. No TypeScript abstraction layer between you and the prompts. What you see is what the agent runs.
+- **Transparency.** Every agent is a markdown file with YAML frontmatter. No abstraction layer between you and the prompts. One canonical source, projected per platform and checked by sync.
 
 - **Curation-driven evolution.** Patterns are promoted only after proving useful across multiple projects and sessions. Manual curation from experience and knowledge base. No automated extraction. No session mining.
 

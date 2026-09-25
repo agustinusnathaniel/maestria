@@ -1,14 +1,8 @@
-// packages/prime-agent/src/state.ts
-// Minimal session-scoped state for the Prime extension: the active workflow
-// mode (fein/sonar/blitz) or none.
-//
-// State is persisted through the host session API (`pi.appendEntry`) as a
-// `custom` session entry with `customType: "maestria_mode"`. Custom entries
-// are session entries: they survive reloads, forks, and compaction, and they
-// are NOT part of LLM context. Restore reads only the current branch
-// (`sessionManager.getBranch()`), never a sibling branch of the session tree,
-// mirroring the @maestria/pi extension's state pattern. No files are written
-// (no `~/.pi`, no `.prime/agent` writes); everything rides on the host session.
+// Session-scoped Prime extension state: the active workflow mode or none.
+// Persisted as a `custom` session entry (`maestria_mode`) via the host session
+// API: entries survive reloads, forks, and compaction and stay out of LLM
+// context. Restore reads only the current branch, never a sibling branch, and
+// no files are written; everything rides on the host session.
 
 import type { CustomEntry, ExtensionAPI, SessionEntry } from './pi-api.js';
 
@@ -33,18 +27,14 @@ const isModeState = (value: unknown): value is MaestriaModeState => {
   return mode === null || mode === 'fein' || mode === 'sonar' || mode === 'blitz';
 };
 
-/**
- * Read the mode state from the current session branch: the most recent
- * `maestria_mode` custom entry wins. Returns null when no entry exists.
- */
+/** Read mode state from session entries: the most recent entry wins, else null. */
 const readModeStateFromEntries = (
   entries: SessionEntry[] | null | undefined,
 ): MaestriaModeState | null => {
   if (!Array.isArray(entries)) {
     return null;
   }
-  // Entries are returned in tree order; the last matching entry is the most
-  // recently appended one on the current branch.
+  // Tree order: the last matching entry is the most recently appended one.
   for (let i = entries.length - 1; i >= 0; i -= 1) {
     const entry = entries[i];
     if (isCustomEntry(entry) && isModeState(entry.data)) {

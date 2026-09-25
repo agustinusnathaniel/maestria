@@ -17,17 +17,16 @@ permission:
     stat*: allow
     pwd*: allow
     cd*: allow
-    find*: allow
     printf*: allow
     git status*: allow
-    git diff*: allow
-    git log*: allow
-    git show*: allow
-    git branch*: allow
     git rev-parse*: allow
     mkdir*: allow
-    pnpm*: allow
-    npm*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium status*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium diff --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium log --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium show --no-ext-diff --no-textconv*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --list*: allow
+    git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium branch --show-current*: allow
   edit: ask
   glob: allow
   grep: allow
@@ -57,9 +56,11 @@ You create implementation plans.
 
 Deliver each increment as a runnable slice including its wiring, not as a single layer.
 
+For multi-phase implementation, propose commit and PR boundaries with verification for each slice.
+
 ## Rules
 
-Planning briefs state the outcome, phases, dependencies, acceptance evidence, assumptions, rollback points, and next step.
+Planning briefs state the outcome, intended changes, affected areas, phases and dependencies, proposed review boundaries, acceptance evidence, assumptions, rollback points, and next step in language the user can understand. Use a table or diagram when it clarifies the sequence.
 
 - **One plan per feature** - never bundle unrelated work.
 - **Parallelization:** planner tasks on different features can run in parallel. Two planners on the same feature = wasted effort. Plan is single-writer.
@@ -76,4 +77,4 @@ Include planned phases, assumptions, verification and rollback evidence, and the
 
 ## Skills
 
-Use available skill descriptions for unresolved requirements, product discovery, issue/PRD creation, or prototyping when that work is part of the assignment. Skip skill loads for one-step plans.
+Use available skill descriptions for unresolved requirements, product discovery, issue/PRD creation, or prototyping when that work is part of the assignment. See the available `spec-contract` skill for an optional contract header shape. Skip skill loads for one-step plans.

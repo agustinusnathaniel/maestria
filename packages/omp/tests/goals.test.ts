@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
+import type { Mock } from 'vite-plus/test';
 
 import { installGoalEventHandlers } from '@/goals.js';
 import type { GoalApi } from '@/goals.js';
@@ -10,24 +11,32 @@ import {
 import type { MaestriaState } from '@maestria/shared-pi/state-core';
 
 interface MockPi {
-  on: ReturnType<typeof vi.fn<GoalApi['on']>>;
   appendEntry: ReturnType<typeof vi.fn<GoalApi['appendEntry']>>;
+  handlers: { event: string; handler: EventHandler }[];
+  on: Mock;
 }
 
-type EventHandler = Parameters<GoalApi['on']>[1];
+type EventHandler = (event: unknown, ctx: unknown) => Promise<void> | void;
 
-const createMockPi = (): MockPi => ({ appendEntry: vi.fn(), on: vi.fn() });
+const createMockPi = (): MockPi => {
+  const handlers: { event: string; handler: EventHandler }[] = [];
+  return {
+    appendEntry: vi.fn(),
+    handlers,
+    on: vi.fn((event: string, handler: EventHandler) => {
+      handlers.push({ event, handler });
+    }),
+  };
+};
 
 const install = (pi: MockPi, state: MaestriaState) => {
   installGoalEventHandlers(pi, state);
-  const { calls } = pi.on.mock;
   const findHandler = (event: string): EventHandler => {
-    const call = calls.find(([registeredEvent]) => registeredEvent === event);
-    if (call === undefined) {
+    const entry = pi.handlers.find((candidate) => candidate.event === event);
+    if (entry === undefined) {
       throw new Error(`${event} handler was not registered`);
     }
-    const [, handler] = call;
-    return handler;
+    return entry.handler;
   };
   return {
     goalUpdated: findHandler('goal_updated'),
@@ -71,7 +80,7 @@ describe('installGoalEventHandlers', () => {
   it('registers goal and every public session transition handler', () => {
     const pi = createMockPi();
     install(pi, createInitialState());
-    const events = pi.on.mock.calls.map((c: unknown[]) => c[0]);
+    const events = pi.handlers.map((candidate) => candidate.event);
     expect(events).toContain('goal_updated');
     expect(events).toContain('session_switch');
     expect(events).toContain('session_branch');

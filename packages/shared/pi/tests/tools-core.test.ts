@@ -6,28 +6,44 @@ import type { ToolCallHandlerOptions } from '@/tools-core.js';
 
 // ── isReadOnlyBashCommand ────────────────────────────────────────────
 
+// Guarded git invocations are the only read-only git form: global safety
+// flags are required, diff/log need patch guards, and only safe options pass.
+const GUARDED_GIT =
+  'git --no-pager --no-optional-locks -c core.fsmonitor=false -c core.hooksPath=/dev/null -c log.showSignature=false -c format.pretty=medium';
+
 describe('isReadOnlyBashCommand', () => {
-  it('allows plain read-only commands', () => {
-    expect(isReadOnlyBashCommand('git status')).toBe(true);
-    expect(isReadOnlyBashCommand('git diff --stat')).toBe(true);
-    expect(isReadOnlyBashCommand('git log --oneline')).toBe(true);
+  it('allows safe queries and guarded git commands', () => {
     expect(isReadOnlyBashCommand('ls -la')).toBe(true);
     expect(isReadOnlyBashCommand('grep -r foo src/')).toBe(true);
-    expect(isReadOnlyBashCommand('find . -name "*.ts"')).toBe(true);
     expect(isReadOnlyBashCommand('pwd')).toBe(true);
     expect(isReadOnlyBashCommand('which node')).toBe(true);
+    expect(isReadOnlyBashCommand(`${GUARDED_GIT} status --short`)).toBe(true);
+    expect(isReadOnlyBashCommand(`${GUARDED_GIT} diff --no-ext-diff --no-textconv --stat`)).toBe(
+      true,
+    );
+    expect(
+      isReadOnlyBashCommand(`${GUARDED_GIT} log --no-ext-diff --no-textconv --oneline -5`),
+    ).toBe(true);
   });
 
-  it('allows read-only pipelines and fd redirects', () => {
-    expect(isReadOnlyBashCommand('git log --oneline | head -5')).toBe(true);
-    expect(isReadOnlyBashCommand('git diff --stat | grep src')).toBe(true);
-    expect(isReadOnlyBashCommand('git status 2>&1')).toBe(true);
+  it('blocks unguarded git, find, and package-manager execution', () => {
+    expect(isReadOnlyBashCommand('git status')).toBe(false);
+    expect(isReadOnlyBashCommand('git diff --stat')).toBe(false);
+    expect(isReadOnlyBashCommand('git log --oneline')).toBe(false);
+    expect(isReadOnlyBashCommand('find . -name "*.ts"')).toBe(false);
+    expect(isReadOnlyBashCommand('pnpm test')).toBe(false);
+    expect(isReadOnlyBashCommand('pnpm test --run tools')).toBe(false);
+    expect(isReadOnlyBashCommand('npm test')).toBe(false);
   });
 
-  it('allows test commands for verification', () => {
-    expect(isReadOnlyBashCommand('pnpm test')).toBe(true);
-    expect(isReadOnlyBashCommand('pnpm test --run tools')).toBe(true);
-    expect(isReadOnlyBashCommand('npm test')).toBe(true);
+  it('allows guarded pipelines and fd redirects', () => {
+    expect(
+      isReadOnlyBashCommand(`${GUARDED_GIT} log --no-ext-diff --no-textconv --oneline | head -5`),
+    ).toBe(true);
+    expect(
+      isReadOnlyBashCommand(`${GUARDED_GIT} diff --no-ext-diff --no-textconv --stat | grep src`),
+    ).toBe(true);
+    expect(isReadOnlyBashCommand(`${GUARDED_GIT} status 2>&1`)).toBe(true);
   });
 
   it('blocks mutation commands outright', () => {
@@ -115,7 +131,7 @@ describe('createToolCallHandler', () => {
     expect(result?.reason).toContain("'edit' is blocked");
   });
 
-  it('allows the delegation tool, reads, and read-only bash while a mode is active', async () => {
+  it('allows the delegation tool, reads, and guarded read-only bash while a mode is active', async () => {
     const state = { ...createInitialState(), mode: 'fein' as const };
     const handler = createToolCallHandler(
       createOptions({ getActiveTools: () => ['task', 'read'], getState: () => state }),
@@ -126,7 +142,15 @@ describe('createToolCallHandler', () => {
       handler({ input: { path: 'a.ts' }, toolName: 'read' }, {}),
     ).resolves.toBeUndefined();
     await expect(
-      handler({ input: { command: 'git status' }, toolName: 'bash' }, {}),
+      handler(
+        {
+          input: {
+            command: `${GUARDED_GIT} status --short`,
+          },
+          toolName: 'bash',
+        },
+        {},
+      ),
     ).resolves.toBeUndefined();
   });
 
