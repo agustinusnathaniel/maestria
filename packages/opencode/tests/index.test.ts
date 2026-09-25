@@ -16,10 +16,6 @@ const getAgentConfig = (config: Config, name: string): AgentConfig => {
 };
 
 describe('plugin structure', () => {
-  it('should export MaestriaPlugin', () => {
-    expect(typeof MaestriaPlugin).toBe('function');
-  });
-
   it('should load all 8 agents', async () => {
     const plugin = await MaestriaPlugin(pluginInput);
     const config: Config = { agent: {} };

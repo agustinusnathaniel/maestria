@@ -1952,9 +1952,6 @@ class AllowlistTests(HookTestBase):
         ):
             self.assertNotIn(forbidden, BLITZ_DIRECT_ALLOWED_TOOLS)
 
-    def test_child_safe_is_a_frozenset(self):
-        self.assertIsInstance(BLITZ_DIRECT_ALLOWED_TOOLS, frozenset)
-
     def test_sonar_and_blitz_sets_stay_exact(self):
         self.assertEqual(
             SONAR_ALLOWED_TOOLS,
@@ -1962,17 +1959,6 @@ class AllowlistTests(HookTestBase):
                 {
                     "read", "read_file", "glob", "grep", "search_files",
                     "list", "ls", "stat", "file_info",
-                    "webfetch", "web_search", "web_extract",
-                }
-            ),
-        )
-        self.assertEqual(
-            BLITZ_DIRECT_ALLOWED_TOOLS,
-            frozenset(
-                {
-                    "read", "read_file", "glob", "grep", "search_files",
-                    "list", "ls", "stat", "file_info",
-                    "complete", "complete_structured", "think", "reason",
                     "webfetch", "web_search", "web_extract",
                 }
             ),

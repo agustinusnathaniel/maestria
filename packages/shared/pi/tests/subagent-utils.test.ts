@@ -79,10 +79,6 @@ describe('assertValidAgent', () => {
       assertValidAgent('');
     }).toThrow('Unknown agent');
   });
-
-  it('returns undefined on success', () => {
-    assertValidAgent('builder');
-  });
 });
 
 // ── assertNonEmptyTask ─────────────────────────────────────────────

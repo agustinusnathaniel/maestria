@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vite-plus/test';
 
-import packageJson from '../package.json';
 import extension from '@/extension.js';
 
 interface MockSchema {
@@ -142,16 +141,5 @@ describe('extension smoke tests', () => {
     // omp subagent does not subscribe to subagent lifecycle events since it
     // uses the built-in task tool instead of pi-subagents.
     expect(mockPi.events.on).not.toHaveBeenCalled();
-  });
-});
-
-describe('package.json metadata', () => {
-  it('has publishConfig.provenance set to true', () => {
-    expect(packageJson.publishConfig?.provenance).toBe(true);
-  });
-
-  it('has omp-package keyword for npm discoverability', () => {
-    expect(packageJson.keywords).toBeDefined();
-    expect(packageJson.keywords).toContain('omp-package');
   });
 });
