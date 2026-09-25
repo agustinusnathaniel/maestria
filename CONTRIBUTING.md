@@ -106,7 +106,7 @@ When a platform's behavior differs from the core contract, document the boundary
 
 Test observable contracts at the highest practical boundary. Prefer real lightweight boundaries or explicit fakes over mocks, and add regression tests only for durable contracts or meaningful failure modes.
 
-Before a commit, the delivery owner runs:
+Validate each coherent implementation slice before committing it. Before delivery, the delivery owner runs the integrated gates:
 
 ```bash
 pnpm check

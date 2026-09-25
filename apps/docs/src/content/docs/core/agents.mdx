@@ -9,6 +9,8 @@ Maestria defines 8 agents: one **orchestrator** and 7 domain specialists, each w
 
 The orchestrator routes and manages: it decomposes complex tasks into atomic units, delegates each to a specialist, integrates the results, and verifies completion. It does not implement work it has delegated.
 
+For multi-slice implementation, it plans reviewable PR boundaries early and commits coherent slices after validating them. Each PR receives its own review and evidence; the integrated outcome receives final verification. When an architect or planner guides implementation, the orchestrator first presents a concise design brief so the user can understand the intended changes, sequence, and trade-offs. Tables or diagrams are used when they help explain the design.
+
 Full orchestration groups the 7 specialists into three roles:
 
 - **Thinker** - reconnaissance, design, planning, analysis

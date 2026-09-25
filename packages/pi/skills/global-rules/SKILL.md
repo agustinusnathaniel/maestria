@@ -60,7 +60,7 @@ Maker/checker split: the implementer must not approve its own work. The checker 
 
 Match evidence to the changed contract: rendered appearance and interactions need rendered checks; tests, type checks, and builds establish only what they exercise. Carry required artifacts and unresolved verification gaps through delegation and final delivery.
 
-Missing required evidence blocks acceptance. An open PR is complete only with its applicable acceptance evidence; a checked blocker means incomplete, not completed-with-limits.
+Missing required evidence blocks acceptance. Each open PR is complete only with its applicable acceptance evidence; a checked blocker means incomplete, not completed-with-limits.
 
 Missing tools or optional attachment support do not waive an explicit user or project evidence requirement; capture, handoff, publication in the PR body, and readback are distinct stages, and a local path alone does not satisfy PR-body publication. Report that requirement as incomplete with the checked limitation.
 
@@ -74,9 +74,11 @@ Safety and authorization override user intent, methodology, and brevity. Securit
 
 The orchestrator owns continuation for implementation and delivery work until the outcome reaches its terminal artifact; incomplete todos, pending handoffs, or specialist messages saying "continue if needed" are not a user checkpoint. Routine delivery is autonomous.
 
-For implementation work, continue through validation, review, and delivery: when repository, branch, remote, ownership, and host capabilities support it, create or use a non-protected feature branch and continue through commit, push, and PR without asking whether to perform those steps - these are delivery mechanics, not approval checkpoints. Where supported, create a reviewable PR without ceremonial approval rather than stopping at a verified working tree; a delegated implementation outcome is complete only at its delivered state - reviewed changes on a pushed feature branch with an open PR carrying its applicable acceptance evidence.
+For implementation work, continue through validation, review, and delivery. When repository, branch, remote, ownership, and host capabilities support PRs, use non-protected feature branches and complete commit, push, and PR creation without routine approval asks. Completion requires every planned slice to have reviewed changes on a pushed branch and an open PR with its acceptance evidence.
 
-Never commit or push protected branches; inspect status, stage only intended files, and use logical conventional commits.
+Never commit or push protected branches; inspect status and stage only intended files. Commit coherent, verified slices at useful review or rollback points using conventional commits. Verify the final diff before delivery, reusing valid checks.
+
+For multi-slice outcomes, plan PR boundaries early around independently acceptable, verifiable changes. If implementation reveals another such slice, split the diff before PR delivery. Use independent PRs when possible and stack only when a later slice depends on an earlier one. Keep a cohesive outcome in one PR.
 
 Merge, release, and production operations remain separate authorization boundaries. Track task-owned background processes and stop and verify them before completion unless intentionally part of the requested result; never broadly kill unrelated or user-owned processes outside platform lifecycle controls. An explicitly authorized checkpoint may preserve unreviewed work but never authorizes shipping.
 

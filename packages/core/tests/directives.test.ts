@@ -144,15 +144,53 @@ describe('canonical directive behavioral contracts', () => {
     const orchestrator = readDirective('specialists', 'orchestrator.md');
 
     expect(rules).toMatch(/for implementation work, continue through validation/iu);
-    expect(rules).toMatch(/create a reviewable PR without ceremonial approval/iu);
+    expect(rules).toMatch(/complete commit, push, and PR creation without routine approval asks/iu);
+    expect(rules).toMatch(/completion requires every planned slice/iu);
     expect(rules).toMatch(
       /research-only, planning-only, explicitly read-only, and host-blocked work/iu,
     );
     expect(orchestrator).toMatch(/for implementation work, own the delivery path/iu);
-    expect(orchestrator).toMatch(/without ceremonial approval/iu);
     expect(orchestrator).toMatch(
-      /terminal artifact is reviewed changes on a pushed feature branch with an open PR/iu,
+      /follow the global delivery contract through the complete PR set/iu,
     );
+  });
+
+  it('supports verified incremental commits and reviewable PR slices', () => {
+    const rules = readDirective('rules.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+    const planner = readDirective('specialists', 'planner.md');
+    const prSkill = readFileSync(
+      path.join(DIRECTIVES_DIR, '..', '..', '..', 'skills', 'create-pull-request', 'SKILL.md'),
+      'utf-8',
+    );
+
+    expect(rules).toMatch(/commit coherent, verified slices at useful review or rollback points/iu);
+    expect(rules).toMatch(/verify the final diff before delivery/iu);
+    expect(rules).toMatch(
+      /plan PR boundaries early around independently acceptable, verifiable changes/iu,
+    );
+    expect(rules).toMatch(
+      /implementation reveals another such slice.*split the diff before PR delivery/iu,
+    );
+    expect(rules).toMatch(/stack only when a later slice depends on an earlier one/iu);
+    expect(orchestrator).toMatch(
+      /independently review each meaningful PR diff and their combined behavior/iu,
+    );
+    expect(planner).toMatch(/propose commit and PR boundaries with verification for each slice/iu);
+    expect(prSkill).toMatch(/each PR's scope, acceptance evidence, base branch, prerequisites/iu);
+  });
+
+  it('shows architect or planner designs to the user before dependent implementation', () => {
+    const architect = readDirective('specialists', 'architect.md');
+    const planner = readDirective('specialists', 'planner.md');
+    const orchestrator = readDirective('specialists', 'orchestrator.md');
+
+    expect(architect).toMatch(/include a concise design brief/iu);
+    expect(planner).toMatch(/planning briefs state.*language the user can understand/iu);
+    expect(orchestrator).toMatch(
+      /present the proposed design or plan to the user before dependent edits/iu,
+    );
+    expect(orchestrator).toMatch(/continue under the existing authorization rules/iu);
   });
 
   it('uses material, outcome-oriented handoffs rather than a fixed schema', () => {
@@ -264,11 +302,8 @@ describe('canonical directive behavioral contracts', () => {
     expect(rules).toMatch(/security.*boundaries are mandatory stops/iu);
     expect(rules).toMatch(/ordinary in-scope security defects may be repaired autonomously/iu);
     expect(rules).toMatch(/routine delivery is autonomous/iu);
-    expect(rules).toMatch(/without asking whether to perform those steps/iu);
-    expect(rules).toMatch(/these are delivery mechanics, not approval checkpoints/iu);
-    expect(orchestrator).toMatch(
-      /do not ask whether to create or use a feature branch, commit, push, or create a PR/iu,
-    );
+    expect(rules).toMatch(/complete commit, push, and PR creation without routine approval asks/iu);
+    expect(orchestrator).toMatch(/complete PR set without asking for routine approval/iu);
   });
 
   it('states precedence, pause naming, and output economy', () => {
