@@ -512,9 +512,6 @@ importers:
       '@gotgenes/pi-subagents':
         specifier: ^18.0.0
         version: 18.1.2(@earendil-works/pi-ai@0.84.2(supports-color@10.2.2)(ws@8.21.3)(zod@4.4.3))(@earendil-works/pi-coding-agent@0.84.2(supports-color@10.2.2)(ws@8.21.3)(zod@4.4.3))(@earendil-works/pi-tui@0.84.2)
-      effect:
-        specifier: 'catalog:'
-        version: 4.0.0-rc.113
       typebox:
         specifier: '*'
         version: 1.3.16
