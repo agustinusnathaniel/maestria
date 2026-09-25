@@ -1,84 +1,12 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 
-import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import InstallCommand from '@/components/plugin/install-command.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import { agents } from '@/data/agents.js';
 import type { Agent } from '@/data/agents.js';
 import { markAttrs, marks } from '@/data/marks.js';
 import { platforms } from '@/data/platforms.js';
-
-interface DocLink {
-  href: string;
-  title: string;
-  description: string;
-  external?: boolean;
-}
-
-/**
- * Open docs navigation map. Every route is verified against
- * src/content/docs; omitted routes are never invented. The platform directory
- * lives in the Adapters section (03), so it is not duplicated here.
- */
-const docsMap: { group: string; items: DocLink[] }[] = [
-  {
-    group: 'CLI',
-    items: [
-      {
-        description: 'Run maestria with npx wherever Node 22+ is available; no install step needed.',
-        href: '/cli/getting-started/',
-        title: 'Getting Started',
-      },
-    ],
-  },
-  {
-    group: 'Core',
-    items: [
-      {
-        description: 'The dispatcher, seven specialists, and the staged pipeline.',
-        href: '/core/how-it-works/',
-        title: 'How It Works',
-      },
-      {
-        description: 'Thinker, worker, and verifier roles, plus the maker/checker split.',
-        href: '/core/pipeline/',
-        title: 'Pipeline & Roles',
-      },
-      {
-        description: 'All eight agents: scope, artifact, and constraint for each.',
-        href: '/core/agents/',
-        title: 'Specialist Reference',
-      },
-      {
-        description: 'Decide between direct execution, a specialist, or the full pipeline.',
-        href: '/core/when-to-use/',
-        title: 'When to Use',
-      },
-    ],
-  },
-  {
-    group: 'Community',
-    items: [
-      {
-        description: 'Source, issues, and releases for every package.',
-        external: true,
-        href: 'https://github.com/agustinusnathaniel/maestria',
-        title: 'GitHub repository',
-      },
-      {
-        description: 'Add an adapter or improve the core methodology.',
-        href: '/core/contributing/',
-        title: 'Contributing',
-      },
-      {
-        description: 'What changed across the ecosystem.',
-        href: '/core/changelog/',
-        title: 'Changelog',
-      },
-    ],
-  },
-];
 
 const INSTALL_CMD = 'npx maestria install opencode';
 ---
@@ -307,47 +235,8 @@ const INSTALL_CMD = 'npx maestria install opencode';
       </section>
     </div>
 
-    <!-- ============================= 6. PUNCH BAND ============================= -->
-    <section class="w-full bg-home-punch text-home-punch-ink mb-[var(--home-section-gap)]" aria-label="Maestria by the numbers">
-      <div class="max-w-7xl mx-auto py-[clamp(2.75rem,6vw,4.25rem)] px-[clamp(1.25rem,4vw,2.5rem)] grid grid-cols-4 gap-6 max-md:grid-cols-2 max-md:gap-8">
-        <div>
-          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">8</span>
-          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">PIPELINE AGENTS</span>
-        </div>
-        <div>
-          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">3</span>
-          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">THINKER / WORKER / VERIFIER</span>
-        </div>
-        <div>
-          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">9</span>
-          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">PLATFORM ADAPTERS</span>
-        </div>
-        <div>
-          <span class="block text-[clamp(2.5rem,6vw,4rem)] font-[560] leading-none tracking-[-0.03em] tabular-nums text-home-punch-ink">0</span>
-          <span class="block mt-2.5 text-xs font-semibold tracking-[0.08em] uppercase text-home-punch-ink/70">VENDOR LOCK-IN</span>
-        </div>
-      </div>
-    </section>
-
     <div class="home-inner">
-      <!-- ============================= 7. DOCS MAP ============================= -->
-      <section class="home-section" aria-labelledby="docs-title">
-        <p class="section-eyebrow">04 / FIND YOUR WAY</p>
-        <h2 id="docs-title">Start with the docs.</h2>
-        <div>
-          {docsMap.map((group, gi) => (
-            <div>
-              <p class:list={[
-                'pt-2 pb-2 font-mono text-xs font-medium tracking-[0.1em] uppercase text-home-text-muted',
-                gi === 0 ? 'mt-0' : 'mt-9'
-              ]}>{group.group}</p>
-              <DocsLinkList items={group.items} />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <!-- =============================== 8. FOOTER =============================== -->
+      <!-- =============================== 6. FOOTER =============================== -->
       <SiteFooter />
     </div>
   </div>

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-09-24). Implementation verification is pending.
+Accepted (2026-09-24). The adapter is implemented; complete case-by-case verification remains pending.
 
 ## Context
 
@@ -10,7 +10,7 @@ The Hermes `opencode_route` tool delegates a goal to the OpenCode CLI. The pre-r
 
 The subprocess is a delegation convenience, not a sandbox. Hermes controls the host process and credentials, and the plugin cannot promise isolation from the CLI, the host, or the user's account. The decision therefore covers data handling, process lifetime, and observable failure results without claiming a new security boundary. `[verified]`
 
-The test-audit remediation is authorized before implementation. The complete pre-code inventory is recorded in [`docs/testing.md`](../../testing.md#pre-code-remediation-inventories). This ADR records the decision and the cases that the implementation owner must select tests for before writing code.
+The failure-mode inventory below records the intended contract. [Testing Philosophy](../../testing.md) explains how to select tests; the inventory is not evidence that every case passes.
 
 ## Goals
 
@@ -52,23 +52,23 @@ Return one JSON object with a status category and any contract-approved sanitize
 
 ### Pre-code failure-mode inventory
 
-The rows below are the minimum cases for the first implementation test pass. Each row names the observable result and a planned evidence target. The builder must write the test before the corresponding implementation change.
+The rows below retain the original failure-mode inventory; they do not imply that every case has a passing test.
 
-| ID | Input or failure | Required observable result | First test or check | Planned evidence target |
-| --- | --- | --- | --- | --- |
-| SUB-01 | Child exits zero with bounded stdout and stderr | Return `completed`, the return code, and sanitized bounded output; do not report a model or host guarantee | Subprocess adapter test with a fake executable and captured streams | `hermes-subprocess/SUB-01.json` |
-| SUB-02 | Child exits non-zero | Return `failed` with the code and sanitized bounded diagnostics; never return `completed` or raw stderr | Fake executable exits with a non-zero code and a sentinel token | `hermes-subprocess/SUB-02.json` |
-| SUB-03 | Child exceeds the timeout | Terminate and reap the process, return `timeout`, and omit raw partial output | Fake executable blocks past a short test timeout | `hermes-subprocess/SUB-03.json` |
-| SUB-04 | Executable is absent | Return a clear unavailable-executable error without a traceback; do not claim a child ran | Isolated `PATH` with no `opencode` executable | `hermes-subprocess/SUB-04.json` |
-| SUB-05 | Workdir is missing, a file, inaccessible, or not a directory | Return invalid-workdir error before spawn; do not fall back to an unintended directory | Temporary workdir matrix with each invalid kind | `hermes-subprocess/SUB-05.json` |
-| SUB-06 | Stdout or stderr exceeds its cap | Return a bounded value with a truncation marker; retain no unbounded buffer in the result or artifact | Fake executable emits more than both caps | `hermes-subprocess/SUB-06.json` |
-| SUB-07 | Stdout contains a credential sentinel | Redact the sentinel everywhere visible to the caller and artifact | Inject a known secret into fake stdout | `hermes-subprocess/SUB-07.json` |
-| SUB-08 | Stderr contains a credential sentinel | Redact the sentinel and preserve only a safe diagnostic | Inject a known secret into fake stderr | `hermes-subprocess/SUB-08.json` |
-| SUB-09 | Exception text contains a credential sentinel | Return a safe internal-error category with sanitized detail; never expose `str(exception)` or a traceback | Fake runner raises an exception containing a sentinel | `hermes-subprocess/SUB-09.json` |
-| SUB-10 | Sanitizer support is missing or fails to initialize | Fail closed before spawning; return a safe sanitizer-unavailable error and no child output | Replace the sanitizer seam with an unavailable fake | `hermes-subprocess/SUB-10.json` |
-| SUB-11 | Parent environment contains unrelated and required variables | Pass only the approved runtime and credential entries; do not pass an unrelated sentinel, and never record secret values | Inspect the exact child `argv`, `cwd`, and `env` through a fake runner | `hermes-subprocess/SUB-11.json` |
-| SUB-12 | Goal or context contains shell syntax | Treat it as one data argument; do not execute substitutions, pipelines, or chained commands | Pass metacharacters and a sentinel command in the prompt | `hermes-subprocess/SUB-12.json` |
-| SUB-13 | Child creates or leaves a descendant process | Reap or terminate the process group on success, failure, and timeout; leave no owned child behind | Fake executable starts a child and exits on each path | `hermes-subprocess/SUB-13.json` |
+| ID | Failure mode | Required result |
+| --- | --- | --- |
+| SUB-01 | Successful child | Return `completed` with bounded, sanitized output and its exit code. |
+| SUB-02 | Non-zero exit | Return `failed` with the code and a safe diagnostic, never raw stderr. |
+| SUB-03 | Timeout | Terminate and reap the process; omit raw partial output. |
+| SUB-04 | Missing executable | Report unavailability without a traceback or a claim that the child ran. |
+| SUB-05 | Missing, inaccessible, or non-directory workdir | Reject before spawn without falling back to another directory. |
+| SUB-06 | Oversized stdout or stderr | Bound output and mark truncation. |
+| SUB-07 | Credential in stdout | Redact it in every caller-visible result. |
+| SUB-08 | Credential in stderr | Redact it and preserve only a safe diagnostic. |
+| SUB-09 | Credential in exception text | Return a safe internal-error category without raw exception text. |
+| SUB-10 | Unavailable sanitizer | Fail closed before spawn and return no child output. |
+| SUB-11 | Unrelated parent environment entries | Pass only approved runtime and credential entries; never expose secret values. |
+| SUB-12 | Shell syntax in goal or context | Pass it as data in one argument; execute no substitutions or chained commands. |
+| SUB-13 | Descendant process | Clean up the owned group on success, failure, and timeout. |
 
 ## Repair Amendment (2026-09-24): Process Ownership and Redaction Boundary
 
@@ -76,25 +76,23 @@ The rows below are the minimum cases for the first implementation test pass. Eac
 
 1. On POSIX, start the child in an owned process group. The adapter owns cleanup for success, non-zero exit, timeout, leader early exit, and descendants that ignore `SIGTERM`.
 2. Cleanup sends `SIGTERM`, waits a bounded grace period, escalates to `SIGKILL`, reaps the leader, and verifies that the owned group has disappeared. If verification fails, return `cleanup_failed`; do not return a normal result.
-3. On Windows, create and own a Job Object for the child. If Job Object ownership is unavailable, fail closed before spawn and return a fixed unsupported-platform result.
+3. Windows execution requires an owned Job Object. The current adapter does not provide one, so it fails closed before spawn with `cleanup_unavailable`; Job Object cleanup remains future work.
 4. Do not expose runtime redaction metadata. Sanitized repair artifacts may contain only fixed labels and booleans, never values, hashes, lengths, snippets, environment, or raw output.
 
-The complete `SUB-OWN-*`, `SUB-ART-*`, and related repair case IDs, regeneration command, and artifact schema are recorded in [`docs/testing.md`](../../testing.md#hermes-subprocess-ownership-and-artifact-repair-cases). These are pre-code contracts, not claims that the current runtime passes them.
-
-The canonical package test is `pnpm --filter @maestria/hermes test`. Process cases start from a unique empty project root and isolate `HOME`, `HERMES_HOME`, XDG roots, `TMPDIR`, `PYTHONPATH`, `PATH`, the fake executable, and the artifact root. The separate evidence generator is `python3 packages/hermes/scripts/generate_repair_artifacts.py --artifact-root <outside-repository-root>`; it is not a replacement for the package-scoped Hermes test command, and each run must use fresh staging. Redaction metadata is artifact-only, with fixed labels and booleans, and is never runtime metadata.
+The ownership cases below remain the planned contract. The current [consolidated E2E probe](../../../scripts/e2e/fail-closed-evidence.ts) samples subprocess success, timeout, output bounds, and platform cleanup availability; it does not establish every `SUB-*` case. The package tests are run with `pnpm --filter @maestria/hermes test`. No per-case repair artifact generator is maintained in this repository.
 
 ### Ownership failure inventory
 
-| ID | Required result | Regeneration and artifact |
-| --- | --- | --- |
-| SUB-OWN-01 | POSIX success terminates, reaps, and verifies an empty owned group | `pnpm --filter @maestria/hermes test`; `repair/SUB-OWN-01.json` |
-| SUB-OWN-02 | POSIX non-zero exit still cleans and verifies the whole group | `pnpm --filter @maestria/hermes test`; `repair/SUB-OWN-02.json` |
-| SUB-OWN-03 | Timeout escalates from `SIGTERM` to `SIGKILL`, reaps, and verifies before returning `timeout` | `pnpm --filter @maestria/hermes test`; `repair/SUB-OWN-03.json` |
-| SUB-OWN-04 | Leader early exit does not release ownership of descendants | `pnpm --filter @maestria/hermes test`; `repair/SUB-OWN-04.json` |
-| SUB-OWN-05 | A descendant ignoring `SIGTERM` is killed and verified gone | `pnpm --filter @maestria/hermes test`; `repair/SUB-OWN-05.json` |
-| SUB-OWN-06 | Unverified group cleanup returns `cleanup_failed` | `pnpm --filter @maestria/hermes test`; `repair/SUB-OWN-06.json` |
-| SUB-OWN-07 | Windows without Job Object ownership fails closed before spawn | `pnpm --filter @maestria/hermes test`; `repair/SUB-OWN-07.json` |
-| SUB-ART-01 | Artifacts contain only fixed labels and booleans, with no runtime redaction metadata or raw values | `pnpm --filter @maestria/hermes test`; `repair/SUB-ART-01.json` |
+| ID | Required result |
+| --- | --- |
+| SUB-OWN-01 | POSIX success terminates, reaps, and verifies an empty owned group. |
+| SUB-OWN-02 | Non-zero exit still cleans and verifies the group. |
+| SUB-OWN-03 | Timeout escalates from `SIGTERM` to `SIGKILL` before returning `timeout`. |
+| SUB-OWN-04 | Leader exit does not release ownership of descendants. |
+| SUB-OWN-05 | A descendant ignoring `SIGTERM` is killed and verified gone. |
+| SUB-OWN-06 | Unverified cleanup returns `cleanup_failed`. |
+| SUB-OWN-07 | Windows without Job Object ownership fails closed before spawn. |
+| SUB-ART-01 | Retained evidence contains fixed labels and booleans, without raw values or redaction metadata. |
 
 ## Consequences
 
@@ -147,7 +145,7 @@ Revert the route-boundary implementation, its tests, and this ADR together. Do n
 - [ADR-HM-002](ADR-HM-002-orchestration-policy.md): trusted top-level and role-neutral child capability policy.
 - [ADR-OC-001](../opencode/ADR-OC-001-tool-permission-design.md): coarse OpenCode permission policy and host-enforcement limits.
 - [ADR-CORE-028](../core/ADR-CORE-028-behavior-first-testing-and-evidence-preserving-reduction.md): pre-code test selection and repeatable evidence.
-- [`docs/testing.md`](../../testing.md#repair-contract-cases): repair case IDs, artifact schema, and regeneration commands.
+- [Testing Philosophy](../../testing.md): test selection and evidence requirements.
 
 ## Date
 

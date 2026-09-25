@@ -88,6 +88,10 @@ Rejected. Public changelog pages are curated, reader-facing summaries (for examp
 
 Rejected as out of scope. The cost of rewriting historical ADRs and notes outweighs the benefit; the standard applies to new and materially revised documents, as recorded in `doc-format.md`.
 
+## Later Clarification (2026-09-25)
+
+The original README template remains the historical standardization choice. Future README revisions follow the concise, information-based requirements in the [current documentation conventions](../../guides/doc-format.md#published-package-readme): package-specific headings are acceptable when required consumer information remains findable, and standalone Motivation, Goals, Non-Goals, or Development sections are not required. The support boundary, installation, shipped capabilities, limitations, documentation/release history, and license remain required; Development or Contributing is optional when useful.
+
 ## Related Decisions
 
 - [ADR-CORE-000](ADR-CORE-000-adr-structure.md) - the ADR prefix/subdirectory layout this record follows.

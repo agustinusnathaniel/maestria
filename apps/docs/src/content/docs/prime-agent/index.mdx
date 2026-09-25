@@ -6,11 +6,10 @@ editUrl: false
 lastUpdated: false
 ---
 
-import DocsLinkList from '@/components/plugin/docs-link-list.astro';
 import PlatformHero from '@/components/plugin/platform-hero.astro';
 import PluginSection from '@/components/plugin/plugin-section.astro';
 import FeatureGrid from '@/components/plugin/feature-grid.astro';
-import SiblingPlatforms from '@/components/plugin/sibling-platforms.astro';
+import RelatedDocs from '@/components/plugin/related-docs.astro';
 import SiteFooter from '@/components/plugin/site-footer.astro';
 import { Aside } from '@astrojs/starlight/components';
 import { marks } from '@/data/marks.js';
@@ -78,27 +77,14 @@ import { marks } from '@/data/marks.js';
       />
     </PluginSection>
 
-    <PluginSection
-      index="04"
-      kicker="FIND YOUR WAY"
-      title="Start with the plugin."
-      class="mb-[clamp(4rem,9vw,7rem)]"
-    >
-      <div>
-        <DocsLinkList
-          items={[
-            { title: 'Getting Started', description: 'Register the package with Prime, enable the extension, and verify skill discovery.', href: '/prime-agent/getting-started/installation/' },
-            { title: 'Quick Start', description: 'Load the orchestrator and specialist skills on a real Prime Agent task.', href: '/prime-agent/getting-started/quick-start/' },
-            { title: 'Core Methodology', description: 'Roles, permissions, and when to use each specialist.', href: '/core/agents/' },
-            { title: 'Workflow Patterns', description: 'Project-specific workflows and how project files load.', href: '/core/workflow-patterns/' },
-            { title: 'Changelog', description: 'Release history for @maestria/prime-agent.', href: '/prime-agent/changelog/' },
-            { title: 'Contributing', description: 'Understand the generated Agent Skills projection and the sync pipeline.', href: '/prime-agent/contributing/' },
-          ]}
-        />
-      </div>
-    </PluginSection>
-
-    <SiblingPlatforms excludeId="prime-agent" />
+    <RelatedDocs
+      links={[
+        { label: 'Specialist reference', href: '/core/agents/' },
+        { label: 'Workflow patterns', href: '/core/workflow-patterns/' },
+        { label: 'Changelog', href: '/prime-agent/changelog/' },
+        { label: 'Contributing', href: '/prime-agent/contributing/' },
+      ]}
+    />
 
     <SiteFooter />
 

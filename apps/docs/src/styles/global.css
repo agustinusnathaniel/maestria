@@ -38,9 +38,6 @@
   --color-home-accent-strong: #cdf58a;
   --color-home-accent-ink: #0b0d0b;
   --color-home-focus: #b7ef5f;
-  --color-home-punch: #b7ef5f;
-  --color-home-punch-ink: #0b0d0b;
-  --color-home-punch-ink-soft: rgba(11, 13, 11, 0.7);
 
   --breakpoint-sm: 480px;
   --breakpoint-md: 640px;
@@ -122,9 +119,8 @@ pre {
 }
 
 /* Homepage shell: the page is a full-bleed canvas. The content-panel padding
-   and the Starlight content width are removed only on the homepage; a
-   `.home-inner` wrapper inside `.home` restores the 75rem measure, and the
-   `.home-punch` band breaks out to the full viewport between wrappers. */
+   and Starlight content width are removed only on the homepage; `.home-inner`
+   restores the 75rem measure. */
 .content-panel:has(.home) {
   padding: 0;
 }
@@ -424,10 +420,6 @@ h6 {
 .home h4 {
   font-family: 'Alan Sans Variable', sans-serif;
 }
-
-/* ============================================
-   PUNCH BAND
-   ============================================ */
 
 /* ============================================
    SECTIONS - SCAFFOLD
