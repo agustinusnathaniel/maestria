@@ -1,4 +1,4 @@
-# ADR-CORE-014: Flue 2.0 as a Maestria Meta-Agent Runtime
+# ADR-CORE-030: Flue 2.0 as a Maestria Meta-Agent Runtime
 
 ## Status
 
